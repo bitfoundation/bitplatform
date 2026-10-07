@@ -527,7 +527,7 @@ public partial class BitPersonaDemo
         {
             Name = "--bit-Persona-disabled-color",
             DefaultValue = "--bit-clr-fg-dis",
-            Description = "Text of every row when IsEnabled is false.",
+            Description = "Text of every row when Disabled is true.",
         },
         new()
         {

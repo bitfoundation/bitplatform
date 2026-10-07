@@ -530,7 +530,7 @@ public partial class BitPivot : BitComponentBase
         // be activated, dragged or dismissed, the keys it announces for that, its tabindex, the panel it points
         // at, its dismiss button - and a tab whose own parameters did not change is not rendered again by the
         // render of the pivot, so the tabs are asked to whenever any of that changes.
-        var itemsState = (IsEnabled, _isVertical, Dismissible, Reorderable, OnItemDismiss.HasDelegate, OnItemReorder.HasDelegate,
+        var itemsState = (Disabled, _isVertical, Dismissible, Reorderable, OnItemDismiss.HasDelegate, OnItemReorder.HasDelegate,
                           Navigable, HeaderOnly, MountAll, KeepMounted,
                           DismissIcon?.GetCssClasses(), DismissIconName, DismissTitle, DismissAriaLabelFormat);
 
@@ -838,7 +838,7 @@ public partial class BitPivot : BitComponentBase
 
     internal bool GetItemReorderable(BitPivotItem item)
     {
-        return IsEnabled && item.IsEnabled && (item.Reorderable ?? Reorderable);
+        return Disabled is false && item.Disabled is false && (item.Reorderable ?? Reorderable);
     }
 
     internal string? GetItemDragClass(BitPivotItem item)
@@ -907,7 +907,7 @@ public partial class BitPivot : BitComponentBase
     {
         List<string> keys = [];
 
-        if (IsEnabled && item.IsEnabled && GetItemDismissible(item) && (OnItemDismiss.HasDelegate || item.OnDismiss.HasDelegate))
+        if (Disabled is false && item.Disabled is false && GetItemDismissible(item) && (OnItemDismiss.HasDelegate || item.OnDismiss.HasDelegate))
         {
             keys.Add("Delete");
         }
@@ -1117,7 +1117,7 @@ public partial class BitPivot : BitComponentBase
 
     internal async Task HandleItemClick(BitPivotItem item)
     {
-        if (IsEnabled is false || item.IsEnabled is false) return;
+        if (Disabled || item.Disabled) return;
 
         MoveFocus(item);
 
@@ -1130,7 +1130,7 @@ public partial class BitPivot : BitComponentBase
 
     internal async Task HandleItemDismiss(BitPivotItem item)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (GetItemDismissible(item) is false) return;
 
         // The focus is parked on a neighbour before the item leaves, otherwise removing the element
@@ -1209,7 +1209,7 @@ public partial class BitPivot : BitComponentBase
     // action (scrolling the page) is suppressed by UpdatePreventedKeys rather than here.
     internal async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         var current = _focusedItem is not null && IsItemFocusable(_focusedItem) ? _focusedItem : GetActiveItem();
 
@@ -1346,7 +1346,7 @@ public partial class BitPivot : BitComponentBase
     // an overflowed tab is out of the header, but its panel is still what the pivot would show.
     private static bool IsItemSelectable(BitPivotItem item)
     {
-        return item.IsEnabled && item.Visibility == BitVisibility.Visible;
+        return item.Disabled is false && item.Visibility == BitVisibility.Visible;
     }
 
     // An item folded into the overflow menu is hidden, so it can neither hold the tabindex of the
@@ -1561,7 +1561,7 @@ public partial class BitPivot : BitComponentBase
     {
         List<string?> list =
         [
-            (item?.IsEnabled is false) ? "disabled" : string.Empty,
+            (item?.Disabled is true) ? "disabled" : string.Empty,
             Classes?.Body,
             item?.BodyClass
         ];
@@ -1576,7 +1576,7 @@ public partial class BitPivot : BitComponentBase
 
     private void ToggleMenu()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (_isMenuOpen)
         {
@@ -1641,7 +1641,7 @@ public partial class BitPivot : BitComponentBase
         var index = start;
         for (var i = 0; i < count; i++)
         {
-            if (GetMenuItem(index)?.IsEnabled is true)
+            if (GetMenuItem(index)?.Disabled is false)
             {
                 _menuFocusIndex = index;
                 return;
@@ -1715,7 +1715,7 @@ public partial class BitPivot : BitComponentBase
             var index = (_menuFocusIndex + i) % count;
             var item = _overflowItems[index];
 
-            if (item.IsEnabled is false) continue;
+            if (item.Disabled) continue;
 
             var label = item.HeaderText.HasValue() ? item.HeaderText : item.Title;
 
@@ -1732,7 +1732,7 @@ public partial class BitPivot : BitComponentBase
     // into it, and Escape closes it again.
     private void HandleMoreKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (e.Key is "Escape")
         {
@@ -1779,7 +1779,7 @@ public partial class BitPivot : BitComponentBase
 
         // A disabled or hidden item cannot take the selection from the menu either, for the same reason
         // SelectKeyInternal refuses it: the selection would be left on a tab that is not shown.
-        if (IsEnabled is false || IsItemSelectable(item) is false)
+        if (Disabled || IsItemSelectable(item) is false)
         {
             StateHasChanged();
             return;
@@ -1822,14 +1822,14 @@ public partial class BitPivot : BitComponentBase
 
     private async Task HandleAddClick()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnAdd.InvokeAsync();
     }
 
     private async Task Slide(bool forward)
     {
-        if (IsEnabled is false || _jsSetup is false) return;
+        if (Disabled || _jsSetup is false) return;
 
         try
         {

@@ -306,7 +306,7 @@ private BitSplitter splitterRef = default!;";
     </SecondPanel>
 </BitSplitter>
 
-<BitSplitter IsEnabled=""false"" FirstPanelSize=""150"" Style=""height:120px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
+<BitSplitter Disabled FirstPanelSize=""150"" Style=""height:120px;border:1px solid var(--bit-clr-brd-sec)"" AriaLabel=""Resize the panels"">
     <FirstPanel>
         <div style=""padding:0.5rem"">Disabled</div>
     </FirstPanel>

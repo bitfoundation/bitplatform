@@ -163,7 +163,7 @@ private bool isStarred;";
     </ChildContent>
 </BitCard>
 
-<BitCard OnClick=""() => clickCount++"" IsEnabled=""false"" Title=""Disabled"" Width=""14rem"">
+<BitCard OnClick=""() => clickCount++"" Disabled Title=""Disabled"" Width=""14rem"">
     <BitText Typography=""BitTypography.Body2"">Answers nothing.</BitText>
 </BitCard>
 
@@ -343,9 +343,9 @@ private readonly BitCardParams[] cardParams =
 <BitCard Color=""BitColor.TertiaryBorder"" Variant=""BitVariant.Outline"" Title=""TertiaryBorder"" Width=""14rem"" />
 
 
-<BitCard IsEnabled=""false"" Color=""BitColor.Primary"" Variant=""BitVariant.Fill"" Title=""Primary"" Subtitle=""Fill"" Width=""12rem"" />
-<BitCard IsEnabled=""false"" Color=""BitColor.Success"" Variant=""BitVariant.Outline"" Title=""Success"" Subtitle=""Outline"" Width=""12rem"" />
-<BitCard IsEnabled=""false"" Color=""BitColor.Error"" Variant=""BitVariant.Text"" Title=""Error"" Subtitle=""Text"" Width=""12rem"" />";
+<BitCard Disabled Color=""BitColor.Primary"" Variant=""BitVariant.Fill"" Title=""Primary"" Subtitle=""Fill"" Width=""12rem"" />
+<BitCard Disabled Color=""BitColor.Success"" Variant=""BitVariant.Outline"" Title=""Success"" Subtitle=""Outline"" Width=""12rem"" />
+<BitCard Disabled Color=""BitColor.Error"" Variant=""BitVariant.Text"" Title=""Error"" Subtitle=""Text"" Width=""12rem"" />";
     private readonly string example15CsharpCode = @"
 private readonly BitColor[] semanticColors =
 [

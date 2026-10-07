@@ -18,7 +18,7 @@ public class BitChoiceGroupTests : BunitTestContext
         var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, GetChoiceGroupItems());
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var bitChoiceGroup = component.Find(".bit-chg");
@@ -79,7 +79,7 @@ public class BitChoiceGroupTests : BunitTestContext
         {
             //parameters.Bind(p => p.Value, value, v => value = v);
             parameters.Add(p => p.Items, choiceGroupItems);
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var itemContainers = component.FindAll(".bit-chg-icn");
@@ -87,7 +87,7 @@ public class BitChoiceGroupTests : BunitTestContext
         foreach (var itemContainer in itemContainers)
         {
             var item = choiceGroupItems[index++];
-            if (isEnabled is false || item.IsEnabled is false)
+            if (isEnabled is false || item.IsDisabled)
             {                
                 Assert.IsTrue(itemContainer.ClassList.Contains("bit-chg-ids"));
             }
@@ -274,7 +274,7 @@ public class BitChoiceGroupTests : BunitTestContext
         }
 
         // Read-only must not disable anything by itself; the one disabled input here is the item that
-        // opts out through its own IsEnabled, which read-only has nothing to do with.
+        // opts out through its own Disabled, which read-only has nothing to do with.
         Assert.AreEqual(1, inputs.Count(i => i.HasAttribute("disabled")));
 
         var bitChoiceGroup = component.Find(".bit-chg");
@@ -368,7 +368,7 @@ public class BitChoiceGroupTests : BunitTestContext
                 ImageSrc = "https://bit.com/other_icon.svg.png",
                 SelectedImageSrc = "https://bit.com/selected-other_icon.svg.png",
                 ImageAlt = "other-icon",
-                IsEnabled = false
+                IsDisabled = true
             },
             new()
             {

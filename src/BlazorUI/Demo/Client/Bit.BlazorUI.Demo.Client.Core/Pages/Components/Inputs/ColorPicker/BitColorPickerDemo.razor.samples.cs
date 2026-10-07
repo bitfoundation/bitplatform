@@ -13,7 +13,7 @@ public partial class BitColorPickerDemo
     </LabelTemplate>
 </BitColorPicker>
 
-<BitColorPicker IsEnabled=""false"" Color=""#B34D4D"" />
+<BitColorPicker Disabled Color=""#B34D4D"" />
 
 <BitColorPicker ReadOnly ShowInputs @bind-Color=""readOnlyColor"" />";
     private readonly string example1CsharpCode = @"

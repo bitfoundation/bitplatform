@@ -5,45 +5,45 @@ public partial class _BitMenuButtonOptionDemo
     private readonly string example1RazorCode = @"
 <BitMenuButton Text=""MenuButton"" TItem=""BitMenuButtonOption"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>";
 
     private readonly string example2RazorCode = @"
 <BitMenuButton Text=""Split"" TItem=""BitMenuButtonOption"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>";
 
     private readonly string example3RazorCode = @"
 <BitMenuButton Text=""Fill"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Outline"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Text"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
-<BitMenuButton Text=""Fill"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" IsEnabled=""false"">
+<BitMenuButton Text=""Fill"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""Outline"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" IsEnabled=""false"">
+<BitMenuButton Text=""Outline"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""Text"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" IsEnabled=""false"">
+<BitMenuButton Text=""Text"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
@@ -52,31 +52,31 @@ public partial class _BitMenuButtonOptionDemo
 
 <BitMenuButton Text=""Fill"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Outline"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Text"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
-<BitMenuButton Text=""Fill"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" IsEnabled=""false"" Split>
+<BitMenuButton Text=""Fill"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""Outline"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" IsEnabled=""false"" Split>
+<BitMenuButton Text=""Outline"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""Text"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" IsEnabled=""false"" Split>
+<BitMenuButton Text=""Text"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
@@ -85,102 +85,102 @@ public partial class _BitMenuButtonOptionDemo
     private readonly string example4RazorCode = @"
 <BitMenuButton TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Sticky>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Split Sticky>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Sticky>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Split Sticky>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Sticky>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Split Sticky>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>";
 
     private readonly string example5RazorCode = @"
 <BitMenuButton Text=""IconName"" IconName=""@BitIconName.Edit"" TItem=""BitMenuButtonOption"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""ChevronDownIconName"" TItem=""BitMenuButtonOption"" ChevronDownIconName=""@BitIconName.DoubleChevronDown"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""No icon"" TItem=""BitMenuButtonOption"" IconName=""@BitIconName.Edit"" NoIcon>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
 <BitMenuButton Sticky TItem=""BitMenuButtonOption"" NoIcon>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
 <BitMenuButton IconOnly AriaLabel=""More actions"" IconName=""@BitIconName.More"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
 <BitMenuButton IconOnly AriaLabel=""More actions"" IconName=""@BitIconName.More"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
 <BitMenuButton IconOnly Split AriaLabel=""Save"" IconName=""@BitIconName.Save"" TItem=""BitMenuButtonOption"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>";
 
     private readonly string example6RazorCode = @"
 <BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Background=""BitColorKind.Primary"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""Secondary"" TItem=""BitMenuButtonOption"" Background=""BitColorKind.Secondary"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""Tertiary"" TItem=""BitMenuButtonOption"" Background=""BitColorKind.Tertiary"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""Transparent"" TItem=""BitMenuButtonOption"" Background=""BitColorKind.Transparent"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
@@ -195,54 +195,54 @@ public partial class _BitMenuButtonOptionDemo
     private readonly string example7RazorCode = @"
 <BitMenuButton Text=""Toggle"" TItem=""BitMenuButtonOption"" Split Toggle>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
 <BitMenuButton Text=""DefaultIsToggled"" TItem=""BitMenuButtonOption"" Split Toggle DefaultIsToggled=""true"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
 <BitMenuButton Text=""Fill"" TItem=""BitMenuButtonOption"" Split Toggle Variant=""BitVariant.Fill"" DefaultIsToggled=""true"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Outline"" TItem=""BitMenuButtonOption"" Split Toggle Variant=""BitVariant.Outline"" DefaultIsToggled=""true"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Text"" TItem=""BitMenuButtonOption"" Split Toggle Variant=""BitVariant.Text"" DefaultIsToggled=""true"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""Fill"" TItem=""BitMenuButtonOption"" Split Toggle Variant=""BitVariant.Fill"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Outline"" TItem=""BitMenuButtonOption"" Split Toggle Variant=""BitVariant.Outline"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Text"" TItem=""BitMenuButtonOption"" Split Toggle Variant=""BitVariant.Text"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
 <BitMenuButton Text=""Two-way"" TItem=""BitMenuButtonOption"" Split Toggle @bind-IsToggled=""optionIsToggled"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitCheckbox Label=""IsToggled"" @bind-Value=""optionIsToggled"" />
@@ -250,7 +250,7 @@ public partial class _BitMenuButtonOptionDemo
 
 <BitMenuButton Text=""OnToggleChange"" TItem=""BitMenuButtonOption"" Split Toggle OnToggleChange=""v => optionToggledValue = v"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <div>OnToggleChange: @optionToggledValue</div>";
@@ -320,7 +320,7 @@ private void ResetColumns()
     </HeaderTemplate>
     <Options>
         <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-        <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+        <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
         <BitMenuButtonOption Text=""Option C"" Key=""C"" />
     </Options>
 </BitMenuButton>
@@ -357,7 +357,7 @@ private void ResetColumns()
                OnChange=""(BitMenuButtonOption item) => exampleChangedOption = item?.Key""
                OnClick=""(BitMenuButtonOption item) => exampleClickedOption = item?.Key"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
@@ -365,7 +365,7 @@ private void ResetColumns()
                OnChange=""(BitMenuButtonOption item) => exampleChangedOption = item?.Key""
                OnClick=""@((BitMenuButtonOption item) => exampleClickedOption = ""Main button clicked"")"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" OnClick=""@(_ => exampleClickedOption = $""Option A"")"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" OnClick=""@(_ => exampleClickedOption = $""Option C"")"" />
 </BitMenuButton>
 
@@ -373,7 +373,7 @@ private void ResetColumns()
                OnChange=""(BitMenuButtonOption item) => exampleChangedOption = item?.Key""
                OnClick=""(BitMenuButtonOption item) => exampleClickedOption = item?.Key"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
@@ -381,7 +381,7 @@ private void ResetColumns()
                OnChange=""(BitMenuButtonOption item) => exampleChangedOption = item?.Key""
                OnClick=""(BitMenuButtonOption item) => exampleClickedOption = item?.Key"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" OnClick=""@(_ => exampleClickedOption = $""Option A"")"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" OnClick=""@(_ => exampleClickedOption = $""Option C"")"" />
 </BitMenuButton>
 
@@ -394,17 +394,17 @@ private string? exampleChangedOption;
 private string? exampleClickedOption;";
 
     private readonly string example11RazorCode = @"
-<BitMenuButton Text=""Coming soon..."" TItem=""BitMenuButtonOption"" IsEnabled=""false"" />
+<BitMenuButton Text=""Coming soon..."" TItem=""BitMenuButtonOption"" Disabled />
 
 
 <BitMenuButton Sticky @bind-SelectedItem=""twoWaySelectedOption"" TItem=""BitMenuButtonOption"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" @ref=""optionA"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" @ref=""optionB"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" @ref=""optionB"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" @ref=""optionC"" />
 </BitMenuButton>
 <BitChoiceGroup Horizontal TItem=""BitChoiceGroupOption<BitMenuButtonOption>"" TValue=""BitMenuButtonOption"" @bind-Value=""@twoWaySelectedOption"">
     <BitChoiceGroupOption Text=""Option A"" Id=""A"" Value=""optionA"" />
-    <BitChoiceGroupOption Text=""Option B"" Id=""B"" Value=""optionB"" IsEnabled=""false"" />
+    <BitChoiceGroupOption Text=""Option B"" Id=""B"" Value=""optionB"" IsDisabled />
     <BitChoiceGroupOption Text=""Option C"" Id=""C"" Value=""optionC"" />
 </BitChoiceGroup>
 
@@ -418,7 +418,7 @@ private string? exampleClickedOption;";
 
 <BitMenuButton Sticky IsOpen=""oneWayIsOpen"" TItem=""BitMenuButtonOption"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitCheckbox Label=""One-way IsOpen"" @bind-Value=""oneWayIsOpen"" OnChange=""async _ => { await Task.Delay(2000); oneWayIsOpen = false; }"" />
@@ -426,7 +426,7 @@ private string? exampleClickedOption;";
 
 <BitMenuButton Sticky @bind-IsOpen=""twoWayIsOpen"" TItem=""BitMenuButtonOption"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitCheckbox Label=""Two-way IsOpen"" @bind-Value=""twoWayIsOpen"" />";
@@ -489,13 +489,13 @@ protected override void OnAfterRender(bool firstRender)
     private readonly string example14RazorCode = @"
 <BitMenuButton Text=""Full width"" TItem=""BitMenuButtonOption"" FullWidth>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""Full width split"" TItem=""BitMenuButtonOption"" FullWidth Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>";
 
@@ -503,20 +503,20 @@ protected override void OnAfterRender(bool firstRender)
 <BitMenuButton Split Text=""Save"" IconName=""@BitIconName.Save"" AutoLoading LoadingLabel=""Saving...""
                OnClick=""(BitMenuButtonOption _) => HandleOnSaveClick()"" TItem=""BitMenuButtonOption"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
 <BitMenuButton Split Text=""Refresh"" IconName=""@BitIconName.Refresh"" AutoLoading LoadingDelay=""500""
                OnClick=""(BitMenuButtonOption _) => HandleOnRefreshClick()"" TItem=""BitMenuButtonOption"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""Loading"" IsLoading=""optionIsLoading"" TItem=""BitMenuButtonOption"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 <BitCheckbox Label=""IsLoading"" @bind-Value=""optionIsLoading"" />
@@ -528,7 +528,7 @@ protected override void OnAfterRender(bool firstRender)
     </LoadingTemplate>
     <Options>
         <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-        <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+        <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsDisabled />
         <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
     </Options>
 </BitMenuButton>";
@@ -544,14 +544,14 @@ private async Task HandleOnRefreshClick() => await Task.Delay(2000);";
 <BitMenuButton Text=""Hover over me"" Title=""The menu button tooltip"" TItem=""BitMenuButtonOption""
                AriaDescription=""Opens a menu of three commands."">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
 <BitMenuButton Split Text=""Save"" Title=""Save the document"" ChevronDownTitle=""More save options""
                ChevronDownAriaLabel=""More save options"" TItem=""BitMenuButtonOption"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>
 
@@ -562,7 +562,7 @@ private async Task HandleOnRefreshClick() => await Task.Delay(2000);";
 
 <BitMenuButton Text=""Disabled options"" TItem=""BitMenuButtonOption"" DisabledInteractive Variant=""BitVariant.Outline"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" IconName=""@BitIconName.Emoji"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IconName=""@BitIconName.Emoji"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" IconName=""@BitIconName.Emoji2"" />
 </BitMenuButton>";
 
@@ -596,7 +596,7 @@ private async Task HandleOnRefreshClick() => await Task.Delay(2000);";
         <BitMenuButtonOption IsSeparator />
         <BitMenuButtonOption Text=""More"" Key=""more"" IconName=""@BitIconName.More"">
             <BitMenuButtonOption Text=""Scatter"" Key=""scatter"" />
-            <BitMenuButtonOption Text=""Bubble"" Key=""bubble"" IsEnabled=""false"" />
+            <BitMenuButtonOption Text=""Bubble"" Key=""bubble"" IsDisabled />
         </BitMenuButtonOption>
     </BitMenuButtonOption>
     <BitMenuButtonOption Text=""Table"" Key=""table"" IconName=""@BitIconName.Table"" />
@@ -609,7 +609,7 @@ private async Task HandleOnRefreshClick() => await Task.Delay(2000);";
     <BitMenuButtonOption Text=""Send to"" Key=""send"" IconName=""@BitIconName.Send"">
         <BitMenuButtonOption Text=""Email"" Key=""email"" IconName=""@BitIconName.Mail"" SecondaryText=""Ctrl+E"" />
         <BitMenuButtonOption Text=""Teams"" Key=""teams"" IconName=""@BitIconName.TeamsLogo"" />
-        <BitMenuButtonOption Text=""Printer"" Key=""printer"" IconName=""@BitIconName.Print"" IsEnabled=""false"" />
+        <BitMenuButtonOption Text=""Printer"" Key=""printer"" IconName=""@BitIconName.Print"" IsDisabled />
     </BitMenuButtonOption>
 </BitMenuButton>
 
@@ -620,24 +620,24 @@ private async Task HandleOnRefreshClick() => await Task.Delay(2000);";
 <BitParams Parameters=""menuButtonParams"">
     <BitMenuButton Text=""Sort"" TItem=""BitMenuButtonOption"">
         <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-        <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+        <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
         <BitMenuButtonOption Text=""Option C"" Key=""C"" />
     </BitMenuButton>
     <BitMenuButton Text=""Group"" TItem=""BitMenuButtonOption"">
         <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-        <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+        <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
         <BitMenuButtonOption Text=""Option C"" Key=""C"" />
     </BitMenuButton>
     <BitMenuButton Text=""Export"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"">
         <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-        <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+        <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
         <BitMenuButtonOption Text=""Option C"" Key=""C"" />
     </BitMenuButton>
 </BitParams>
 
 <BitMenuButton Text=""Outside the cascade"" TItem=""BitMenuButtonOption"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>";
 
@@ -654,1158 +654,1158 @@ private readonly BitMenuButtonParams[] menuButtonParams =
     private readonly string example20RazorCode = @"
 <BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Primary"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Primary"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Primary"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Primary"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Primary"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Primary"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
 <BitMenuButton Text=""Secondary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Secondary"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Secondary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Secondary"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Secondary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Secondary"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""Secondary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Secondary"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Secondary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Secondary"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Secondary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Secondary"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
 <BitMenuButton Text=""Tertiary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Tertiary"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Tertiary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Tertiary"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Tertiary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""Tertiary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Tertiary"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Tertiary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Tertiary"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Tertiary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
 <BitMenuButton Text=""Info"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Info"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Info"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Info"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Info"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Info"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""Info"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Info"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Info"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Info"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Info"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Info"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
 <BitMenuButton Text=""Success"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Success"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Success"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Success"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Success"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Success"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""Success"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Success"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Success"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Success"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Success"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Success"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
 <BitMenuButton Text=""Warning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Warning"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Warning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Warning"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Warning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Warning"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""Warning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Warning"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Warning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Warning"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Warning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Warning"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
 <BitMenuButton Text=""SevereWarning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SevereWarning"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""SevereWarning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SevereWarning"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""SevereWarning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SevereWarning"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""SevereWarning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SevereWarning"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""SevereWarning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SevereWarning"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""SevereWarning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SevereWarning"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
 <BitMenuButton Text=""Error"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Error"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Error"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Error"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Error"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Error"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""Error"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Error"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Error"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Error"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Error"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Error"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
 <BitMenuButton Text=""PrimaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBackground"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""PrimaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBackground"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""PrimaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBackground"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""PrimaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBackground"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""PrimaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBackground"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""PrimaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBackground"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
 <BitMenuButton Text=""SecondaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBackground"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""SecondaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBackground"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""SecondaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBackground"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""SecondaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBackground"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""SecondaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBackground"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""SecondaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBackground"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
 <BitMenuButton Text=""TertiaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBackground"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""TertiaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""TertiaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""TertiaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBackground"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""TertiaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""TertiaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
 <BitMenuButton Text=""PrimaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryForeground"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""PrimaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryForeground"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""PrimaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryForeground"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""PrimaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryForeground"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""PrimaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryForeground"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""PrimaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryForeground"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
 <BitMenuButton Text=""SecondaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryForeground"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""SecondaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryForeground"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""SecondaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryForeground"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""SecondaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryForeground"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""SecondaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryForeground"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""SecondaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryForeground"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
 <BitMenuButton Text=""TertiaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryForeground"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""TertiaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryForeground"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""TertiaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryForeground"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""TertiaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryForeground"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""TertiaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryForeground"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""TertiaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryForeground"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
 <BitMenuButton Text=""PrimaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBorder"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""PrimaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBorder"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""PrimaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBorder"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""PrimaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBorder"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""PrimaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBorder"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""PrimaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBorder"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
 <BitMenuButton Text=""SecondaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBorder"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""SecondaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBorder"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""SecondaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBorder"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""SecondaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBorder"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""SecondaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBorder"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""SecondaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBorder"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
 <BitMenuButton Text=""TertiaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBorder"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""TertiaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBorder"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""TertiaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBorder"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""TertiaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBorder"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""TertiaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBorder"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""TertiaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBorder"" Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
 <!-- Disabled: -->
 
-<BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Primary"" IsEnabled=""false"">
+<BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Primary"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Primary"" IsEnabled=""false"">
+<BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Primary"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Primary"" IsEnabled=""false"">
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-
-<BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Primary"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Primary"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Primary"" IsEnabled=""false"" Split>
+<BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Primary"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
-
-<BitMenuButton Text=""Secondary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Secondary"" IsEnabled=""false"">
+<BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Primary"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""Secondary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Secondary"" IsEnabled=""false"">
+<BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Primary"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""Secondary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Secondary"" IsEnabled=""false"">
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-
-<BitMenuButton Text=""Secondary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Secondary"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""Secondary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Secondary"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""Secondary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Secondary"" IsEnabled=""false"" Split>
+<BitMenuButton Text=""Primary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Primary"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
-<BitMenuButton Text=""Tertiary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Tertiary"" IsEnabled=""false"">
+<BitMenuButton Text=""Secondary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Secondary"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""Tertiary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Tertiary"" IsEnabled=""false"">
+<BitMenuButton Text=""Secondary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Secondary"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""Tertiary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"" IsEnabled=""false"">
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-
-<BitMenuButton Text=""Tertiary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Tertiary"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""Tertiary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Tertiary"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""Tertiary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"" IsEnabled=""false"" Split>
+<BitMenuButton Text=""Secondary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Secondary"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
-
-<BitMenuButton Text=""Info"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Info"" IsEnabled=""false"">
+<BitMenuButton Text=""Secondary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Secondary"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""Info"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Info"" IsEnabled=""false"">
+<BitMenuButton Text=""Secondary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Secondary"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""Info"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Info"" IsEnabled=""false"">
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-
-<BitMenuButton Text=""Info"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Info"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""Info"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Info"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""Info"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Info"" IsEnabled=""false"" Split>
+<BitMenuButton Text=""Secondary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Secondary"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
-<BitMenuButton Text=""Success"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Success"" IsEnabled=""false"">
+<BitMenuButton Text=""Tertiary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Tertiary"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""Success"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Success"" IsEnabled=""false"">
+<BitMenuButton Text=""Tertiary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Tertiary"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""Success"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Success"" IsEnabled=""false"">
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-
-<BitMenuButton Text=""Success"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Success"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""Success"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Success"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""Success"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Success"" IsEnabled=""false"" Split>
+<BitMenuButton Text=""Tertiary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
-
-<BitMenuButton Text=""Warning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Warning"" IsEnabled=""false"">
+<BitMenuButton Text=""Tertiary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Tertiary"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""Warning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Warning"" IsEnabled=""false"">
+<BitMenuButton Text=""Tertiary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Tertiary"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""Warning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Warning"" IsEnabled=""false"">
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-
-<BitMenuButton Text=""Warning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Warning"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""Warning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Warning"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""Warning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Warning"" IsEnabled=""false"" Split>
+<BitMenuButton Text=""Tertiary"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Tertiary"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
-<BitMenuButton Text=""SevereWarning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SevereWarning"" IsEnabled=""false"">
+<BitMenuButton Text=""Info"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Info"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""SevereWarning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SevereWarning"" IsEnabled=""false"">
+<BitMenuButton Text=""Info"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Info"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""SevereWarning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SevereWarning"" IsEnabled=""false"">
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-
-<BitMenuButton Text=""SevereWarning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SevereWarning"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""SevereWarning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SevereWarning"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""SevereWarning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SevereWarning"" IsEnabled=""false"" Split>
+<BitMenuButton Text=""Info"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Info"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
-
-<BitMenuButton Text=""Error"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Error"" IsEnabled=""false"">
+<BitMenuButton Text=""Info"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Info"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""Error"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Error"" IsEnabled=""false"">
+<BitMenuButton Text=""Info"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Info"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""Error"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Error"" IsEnabled=""false"">
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-
-<BitMenuButton Text=""Error"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Error"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""Error"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Error"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""Error"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Error"" IsEnabled=""false"" Split>
+<BitMenuButton Text=""Info"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Info"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
-<BitMenuButton Text=""PrimaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBackground"" IsEnabled=""false"">
+<BitMenuButton Text=""Success"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Success"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""PrimaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBackground"" IsEnabled=""false"">
+<BitMenuButton Text=""Success"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Success"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""PrimaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBackground"" IsEnabled=""false"">
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-
-<BitMenuButton Text=""PrimaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBackground"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""PrimaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBackground"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""PrimaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBackground"" IsEnabled=""false"" Split>
+<BitMenuButton Text=""Success"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Success"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
-
-<BitMenuButton Text=""SecondaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBackground"" IsEnabled=""false"">
+<BitMenuButton Text=""Success"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Success"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""SecondaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBackground"" IsEnabled=""false"">
+<BitMenuButton Text=""Success"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Success"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""SecondaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBackground"" IsEnabled=""false"">
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-
-<BitMenuButton Text=""SecondaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBackground"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""SecondaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBackground"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""SecondaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBackground"" IsEnabled=""false"" Split>
+<BitMenuButton Text=""Success"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Success"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
-<BitMenuButton Text=""TertiaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBackground"" IsEnabled=""false"">
+<BitMenuButton Text=""Warning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Warning"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""TertiaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" IsEnabled=""false"">
+<BitMenuButton Text=""Warning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Warning"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""TertiaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground"" IsEnabled=""false"">
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-
-<BitMenuButton Text=""TertiaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBackground"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""TertiaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""TertiaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground"" IsEnabled=""false"" Split>
+<BitMenuButton Text=""Warning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Warning"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
-
-<BitMenuButton Text=""PrimaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryForeground"" IsEnabled=""false"">
+<BitMenuButton Text=""Warning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Warning"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""PrimaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryForeground"" IsEnabled=""false"">
+<BitMenuButton Text=""Warning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Warning"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""PrimaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryForeground"" IsEnabled=""false"">
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-
-<BitMenuButton Text=""PrimaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryForeground"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""PrimaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryForeground"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""PrimaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryForeground"" IsEnabled=""false"" Split>
+<BitMenuButton Text=""Warning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Warning"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
-<BitMenuButton Text=""SecondaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryForeground"" IsEnabled=""false"">
+<BitMenuButton Text=""SevereWarning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SevereWarning"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""SecondaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryForeground"" IsEnabled=""false"">
+<BitMenuButton Text=""SevereWarning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SevereWarning"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""SecondaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryForeground"" IsEnabled=""false"">
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-
-<BitMenuButton Text=""SecondaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryForeground"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""SecondaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryForeground"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""SecondaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryForeground"" IsEnabled=""false"" Split>
+<BitMenuButton Text=""SevereWarning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SevereWarning"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
-
-<BitMenuButton Text=""TertiaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryForeground"" IsEnabled=""false"">
+<BitMenuButton Text=""SevereWarning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SevereWarning"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""TertiaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryForeground"" IsEnabled=""false"">
+<BitMenuButton Text=""SevereWarning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SevereWarning"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""TertiaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryForeground"" IsEnabled=""false"">
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-
-<BitMenuButton Text=""TertiaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryForeground"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""TertiaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryForeground"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""TertiaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryForeground"" IsEnabled=""false"" Split>
+<BitMenuButton Text=""SevereWarning"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SevereWarning"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
-<BitMenuButton Text=""PrimaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBorder"" IsEnabled=""false"">
+<BitMenuButton Text=""Error"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Error"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""PrimaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBorder"" IsEnabled=""false"">
+<BitMenuButton Text=""Error"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Error"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""PrimaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBorder"" IsEnabled=""false"">
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-
-<BitMenuButton Text=""PrimaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBorder"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""PrimaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBorder"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""PrimaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBorder"" IsEnabled=""false"" Split>
+<BitMenuButton Text=""Error"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Error"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
-
-<BitMenuButton Text=""SecondaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBorder"" IsEnabled=""false"">
+<BitMenuButton Text=""Error"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.Error"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""SecondaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBorder"" IsEnabled=""false"">
+<BitMenuButton Text=""Error"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.Error"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""SecondaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBorder"" IsEnabled=""false"">
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-
-<BitMenuButton Text=""SecondaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBorder"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""SecondaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBorder"" IsEnabled=""false"" Split>
-    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
-    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
-</BitMenuButton>
-<BitMenuButton Text=""SecondaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBorder"" IsEnabled=""false"" Split>
+<BitMenuButton Text=""Error"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.Error"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 
-<BitMenuButton Text=""TertiaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBorder"" IsEnabled=""false"">
+<BitMenuButton Text=""PrimaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBackground"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""TertiaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBorder"" IsEnabled=""false"">
+<BitMenuButton Text=""PrimaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBackground"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""TertiaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBorder"" IsEnabled=""false"">
+<BitMenuButton Text=""PrimaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBackground"" Disabled>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
-<BitMenuButton Text=""TertiaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBorder"" IsEnabled=""false"" Split>
+<BitMenuButton Text=""PrimaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBackground"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""TertiaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBorder"" IsEnabled=""false"" Split>
+<BitMenuButton Text=""PrimaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBackground"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
-<BitMenuButton Text=""TertiaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBorder"" IsEnabled=""false"" Split>
+<BitMenuButton Text=""PrimaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBackground"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+
+
+<BitMenuButton Text=""SecondaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBackground"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""SecondaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBackground"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""SecondaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBackground"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+
+<BitMenuButton Text=""SecondaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBackground"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""SecondaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBackground"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""SecondaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBackground"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+
+
+<BitMenuButton Text=""TertiaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBackground"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""TertiaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""TertiaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+
+<BitMenuButton Text=""TertiaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBackground"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""TertiaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBackground"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""TertiaryBackground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBackground"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+
+
+<BitMenuButton Text=""PrimaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryForeground"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""PrimaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryForeground"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""PrimaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryForeground"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+
+<BitMenuButton Text=""PrimaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryForeground"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""PrimaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryForeground"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""PrimaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryForeground"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+
+
+<BitMenuButton Text=""SecondaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryForeground"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""SecondaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryForeground"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""SecondaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryForeground"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+
+<BitMenuButton Text=""SecondaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryForeground"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""SecondaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryForeground"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""SecondaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryForeground"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+
+
+<BitMenuButton Text=""TertiaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryForeground"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""TertiaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryForeground"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""TertiaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryForeground"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+
+<BitMenuButton Text=""TertiaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryForeground"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""TertiaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryForeground"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""TertiaryForeground"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryForeground"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+
+
+<BitMenuButton Text=""PrimaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBorder"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""PrimaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBorder"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""PrimaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBorder"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+
+<BitMenuButton Text=""PrimaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.PrimaryBorder"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""PrimaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.PrimaryBorder"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""PrimaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.PrimaryBorder"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+
+
+<BitMenuButton Text=""SecondaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBorder"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""SecondaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBorder"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""SecondaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBorder"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+
+<BitMenuButton Text=""SecondaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.SecondaryBorder"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""SecondaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.SecondaryBorder"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""SecondaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.SecondaryBorder"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+
+
+<BitMenuButton Text=""TertiaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBorder"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""TertiaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBorder"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""TertiaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBorder"" Disabled>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+
+<BitMenuButton Text=""TertiaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Color=""BitColor.TertiaryBorder"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""TertiaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Color=""BitColor.TertiaryBorder"" Disabled Split>
+    <BitMenuButtonOption Text=""Option A"" Key=""A"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" />
+    <BitMenuButtonOption Text=""Option C"" Key=""C"" />
+</BitMenuButton>
+<BitMenuButton Text=""TertiaryBorder"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Color=""BitColor.TertiaryBorder"" Disabled Split>
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
     <BitMenuButtonOption Text=""Option B"" Key=""B"" />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
@@ -1881,49 +1881,49 @@ private readonly BitMenuButtonParams[] menuButtonParams =
     private readonly string example22RazorCode = @"
 <BitMenuButton Text=""Small"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Size=""BitSize.Small"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Small"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Size=""BitSize.Small"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Small"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Size=""BitSize.Small"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""Medium"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Size=""BitSize.Medium"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Medium"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Size=""BitSize.Medium"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Medium"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Size=""BitSize.Medium"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""Large"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Fill"" Size=""BitSize.Large"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Large"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Outline"" Size=""BitSize.Large"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 <BitMenuButton Text=""Large"" TItem=""BitMenuButtonOption"" Variant=""BitVariant.Text"" Size=""BitSize.Large"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>";
 
@@ -1986,13 +1986,13 @@ private readonly BitMenuButtonParams[] menuButtonParams =
 
 <BitMenuButton Text=""Styled Button"" TItem=""BitMenuButtonOption"" Style=""border-radius: 1rem; margin: 1rem; box-shadow: aqua 0 0 1rem; overflow: hidden;"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
 <BitMenuButton Text=""Classed Button"" TItem=""BitMenuButtonOption"" Class=""custom-class"" Variant=""BitVariant.Outline"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
@@ -2015,7 +2015,7 @@ private readonly BitMenuButtonParams[] menuButtonParams =
                                   Callout = ""custom-callout"",
                                   ItemButton = ""custom-item-button"" })"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 
@@ -2026,7 +2026,7 @@ private readonly BitMenuButtonParams[] menuButtonParams =
                                  ItemButton = ""background: lightcoral;"",
                                  Callout = ""border-radius: 0.25rem; box-shadow: lightgray 0 0 0.5rem;"" })"">
     <BitMenuButtonOption Text=""Option A"" Key=""A"" />
-    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsEnabled=""false"" />
+    <BitMenuButtonOption Text=""Option B"" Key=""B"" IsDisabled />
     <BitMenuButtonOption Text=""Option C"" Key=""C"" />
 </BitMenuButton>
 

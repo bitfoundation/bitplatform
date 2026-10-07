@@ -9,7 +9,7 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
-     tabindex="@((NoKeyboard || IsEnabled is false) ? null : (TabIndex ?? "0"))"
+     tabindex="@((NoKeyboard || Disabled) ? null : (TabIndex ?? "0"))"
      @onkeydown="HandleKeyDown"
      @onfocusin="HandleFocusIn"
      @onfocusout="HandleFocusOut"
@@ -33,7 +33,7 @@
                         type="button"
                         aria-controls="@_ContainerId"
                         aria-label="@(IsPaused ? PlayButtonAriaLabel : PauseButtonAriaLabel)"
-                        disabled="@(IsEnabled is false)"
+                        disabled="@(Disabled)"
                         class="bit-swp-ppb @Classes?.PlayPauseButton"
                         style="@Styles?.PlayPauseButton">
                     <i aria-hidden="true"
@@ -54,7 +54,7 @@
                                 aria-controls="@_ContainerId"
                                 aria-label="@($"{DotAriaLabel} {index + 1}")"
                                 aria-current="@(_page == index ? "true" : null)"
-                                disabled="@(IsEnabled is false)"
+                                disabled="@(Disabled)"
                                 style="@Styles?.Dots @(_page == index ? Styles?.CurrentDot : null)"
                                 class="bit-swp-dot @(DotTemplate is null ? null : "bit-swp-dtt") @((_page == index ? $"bit-swp-cud {Classes?.CurrentDot}" : "").Trim()) @Classes?.Dots">@DotTemplate?.Invoke(index)</button>
                     }
@@ -78,7 +78,7 @@
                     type="button"
                     aria-controls="@_ContainerId"
                     aria-label="@(PrevAriaLabel.HasValue() ? PrevAriaLabel : "Previous slide")"
-                    disabled="@(IsEnabled is false)"
+                    disabled="@(Disabled)"
                     class="bit-swp-lbt @Classes?.Buttons @Classes?.PrevButton"
                     style="@_prevButtonStyle @Styles?.Buttons @Styles?.PrevButton">
                 <i aria-hidden="true"
@@ -90,7 +90,7 @@
                     type="button"
                     aria-controls="@_ContainerId"
                     aria-label="@(NextAriaLabel.HasValue() ? NextAriaLabel : "Next slide")"
-                    disabled="@(IsEnabled is false)"
+                    disabled="@(Disabled)"
                     class="bit-swp-rbt @Classes?.Buttons @Classes?.NextButton"
                     style="@_nextButtonStyle @Styles?.Buttons @Styles?.NextButton">
                 <i aria-hidden="true"

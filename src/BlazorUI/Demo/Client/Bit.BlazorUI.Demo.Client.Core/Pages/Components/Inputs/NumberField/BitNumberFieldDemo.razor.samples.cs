@@ -5,7 +5,7 @@ public partial class BitNumberFieldDemo
     private readonly string example1RazorCode = @"
 <BitNumberField Label=""Basic"" TValue=""int?"" />
 
-<BitNumberField Label=""Disabled & DefaultValue"" DefaultValue=""1363"" IsEnabled=""false"" />
+<BitNumberField Label=""Disabled & DefaultValue"" DefaultValue=""1363"" Disabled />
 
 <BitNumberField Label=""Placeholder"" TValue=""int?"" Placeholder=""Enter a number..."" />
 
@@ -182,7 +182,7 @@ private bool loadingValue;";
 
 <BitNumberField TValue=""int"" Label=""Prefix & Suffix"" Prefix=""Distance:"" Suffix=""km"" Mode=""BitSpinButtonMode.Compact"" />
 
-<BitNumberField TValue=""int"" Label=""Disabled"" Prefix=""Distance:"" Suffix=""km"" IsEnabled=""false"" />
+<BitNumberField TValue=""int"" Label=""Disabled"" Prefix=""Distance:"" Suffix=""km"" Disabled />
 
 <BitNumberField TValue=""double"" Label=""Price"" Mode=""BitSpinButtonMode.Compact"" Step=""0.5"">
     <PrefixTemplate>

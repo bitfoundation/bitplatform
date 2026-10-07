@@ -13,7 +13,7 @@ internal class BitRichTextEditorSetupOptions
     public string[]? ShortcutKeys { get; set; }
 
     /// <summary>
-    /// Mirrors the effective read-only state (ReadOnly or IsEnabled=false). The bridge refuses
+    /// Mirrors the effective read-only state (ReadOnly or Disabled). The bridge refuses
     /// every mutating path while set, so paste, drop, typing, and shortcuts cannot change content
     /// the component considers locked.
     /// </summary>

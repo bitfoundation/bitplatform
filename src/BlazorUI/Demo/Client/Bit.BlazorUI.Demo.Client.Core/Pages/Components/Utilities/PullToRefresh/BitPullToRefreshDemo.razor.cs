@@ -741,7 +741,7 @@ public partial class BitPullToRefreshDemo
         eventsItems = GenerateRandomNumbers(1, 51);
     }
 
-    private bool isEnabled = true;
+    private bool isDisabled;
     private bool noMouse;
     private (int, int)[] disabledItems = GenerateRandomNumbers(1, 51);
     private async Task HandleOnRefreshDisabled()

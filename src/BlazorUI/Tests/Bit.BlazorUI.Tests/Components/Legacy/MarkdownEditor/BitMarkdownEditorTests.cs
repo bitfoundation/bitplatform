@@ -12,14 +12,14 @@ public class BitMarkdownEditorTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitMarkdownEditorShouldRespectIsEnabled(bool isEnabled)
+    public void BitMarkdownEditorShouldRespectDisabled(bool isEnabled)
     {
         Context.JSInterop.SetupVoid("BitBlazorUI.Legacy.MarkdownEditor.init");
         Context.JSInterop.Setup<string>("BitBlazorUI.Legacy.MarkdownEditor.setValue");
 
         var component = RenderComponent<BitMarkdownEditorLegacy>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var root = component.Find(".bit-mde");

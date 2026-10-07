@@ -12,12 +12,12 @@
 
 <DemoExample Title="Disabled" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2" PreventRenderForMcpClient>
     <div>
-        IsEnabled="false" on the timeline disables every item; the IsEnabled selector of an item disables that
+        <b>Disabled</b> on the timeline disables every item; the <b>IsDisabled</b> selector of an item disables that
         item alone.
     </div>
     <br /><br /><br />
     <div>Disabled component</div><br />
-    <BitTimeline Horizontal Items="basicCustoms" NameSelectors="nameSelectors" IsEnabled="false" />
+    <BitTimeline Horizontal Items="basicCustoms" NameSelectors="nameSelectors" Disabled />
     <br /><br /><br />
     <div>Disabled item</div><br />
     <BitTimeline Horizontal Items="disabledCustoms" NameSelectors="nameSelectors" />

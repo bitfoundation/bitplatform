@@ -17,7 +17,7 @@
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">
         <div>
             Unbound, the picker keeps its own state, starting on white. <b>Label</b> (or <b>LabelTemplate</b>) names
-            the panel. <b>IsEnabled="false"</b> greys it out and takes it out of the tab order; <b>ReadOnly</b> keeps
+            the panel. <b>Disabled</b> greys it out and takes it out of the tab order; <b>ReadOnly</b> keeps
             it at full contrast and focusable, and only refuses changes.
         </div>
         <br />
@@ -36,7 +36,7 @@
             </BitColorPicker>
             <br />
             <div>Disabled:</div>
-            <BitColorPicker IsEnabled="false" Color="#B34D4D" />
+            <BitColorPicker Disabled Color="#B34D4D" />
             <br />
             <div>ReadOnly:</div>
             <BitColorPicker ReadOnly ShowInputs @bind-Color="readOnlyColor" />

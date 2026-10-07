@@ -8,7 +8,7 @@
     var steps = _StepsPerItem;
     var displayValue = _DisplayValue;
     var tabbableIndex = _TabbableIndex;
-    var interactive = IsEnabled && ReadOnly is false;
+    var interactive = Disabled is false && ReadOnly is false;
     // A name given by reference wins over one given inline, so only one of the two is ever rendered. A
     // read-only rating named by reference adds its value to the reference from a hidden element of its own.
     var nameReference = _NameReference;
@@ -39,7 +39,7 @@
      aria-label="@ariaLabel"
      aria-invalid="@(ReadOnly is false && ValueInvalid is true ? "true" : null)"
      aria-required="@(_IsRequired ? "true" : null)"
-     aria-disabled="@(ReadOnly is false && IsEnabled is false ? "true" : null)"
+     aria-disabled="@(ReadOnly is false && Disabled ? "true" : null)"
      aria-orientation="@(ReadOnly is false && Vertical ? "vertical" : null)">
 
     @* Not a label element: with no single input to point a "for" at, a label here would label nothing;
@@ -97,7 +97,7 @@
                     aria-posinset="@(ReadOnly ? null : index.ToString())"
                     aria-checked="@(ReadOnly ? null : (isChecked ? "true" : "false"))"
                     data-is-current="@(isCurrent ? "true" : "false")"
-                    disabled="@(IsEnabled is false || ReadOnly)"
+                    disabled="@(Disabled || ReadOnly)"
                     tabindex="@(ReadOnly ? "-1" : (index == tabbableIndex ? (TabIndex ?? "0") : "-1"))">
 
                 @* A radio whose only content is a decorative glyph has no accessible name at all, so every item
@@ -200,7 +200,7 @@
            required="@Required"
            readonly="@ReadOnly"
            class="bit-input-hidden"
-           disabled="@(IsEnabled is false)"
+           disabled="@(Disabled)"
            min="@_MinAttribute"
            step="@_StepAttribute"
            value="@CurrentValueAsString" />

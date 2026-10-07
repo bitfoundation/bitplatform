@@ -240,7 +240,7 @@
         <DemoExample Title="Interaction" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
             <div>
                 The provider's toggles switch individual gestures off, add a scale bar or keep the view inside
-                <b>MaxBounds</b>. <b>IsEnabled="false"</b> makes the whole map inert - out of the tab order and away from
+                <b>MaxBounds</b>. <b>Disabled</b> makes the whole map inert - out of the tab order and away from
                 the pointer - and dims it.
             </div>
             <br />
@@ -249,10 +249,10 @@
                 <BitToggle Value="interDragging" ValueChanged="v => { interDragging = v; BuildInteractionProvider(); }" Text="Dragging" />
                 <BitToggle Value="interScaleBar" ValueChanged="v => { interScaleBar = v; BuildInteractionProvider(); }" Text="Scale bar" />
                 <BitToggle Value="interMaxBounds" ValueChanged="v => { interMaxBounds = v; BuildInteractionProvider(); }" Text="Keep inside London" />
-                <BitToggle @bind-Value="interEnabled" Text="Enabled" />
+                <BitToggle @bind-Value="interDisabled" Text="Disabled" />
             </div>
             <div class="map-container">
-                <BitMap TMapProvider="BitLeafletMapProvider" Provider="@interProvider" IsEnabled="interEnabled" />
+                <BitMap TMapProvider="BitLeafletMapProvider" Provider="@interProvider" Disabled="interDisabled" />
             </div>
         </DemoExample>
 

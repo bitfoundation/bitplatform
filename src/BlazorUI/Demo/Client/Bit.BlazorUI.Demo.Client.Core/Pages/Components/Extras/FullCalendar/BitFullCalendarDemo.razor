@@ -257,7 +257,7 @@
         <DemoExample Title="Read-only & permissions" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
             <div>
                 <b>ReadOnly</b> removes the add affordances, dragging, resizing and the edit/delete actions; navigation,
-                filtering and reading details keep working. <b>IsEnabled="false"</b> takes the same path. To take away only
+                filtering and reading details keep working. <b>Disabled</b> takes the same path. To take away only
                 part of it, turn off <b>AllowAdd</b>, <b>AllowEdit</b>, <b>AllowDelete</b>, <b>AllowDrag</b> or
                 <b>AllowResize</b> in <b>Settings</b> - dragging and resizing are edits too, keyboard moves included.
             </div>
@@ -305,8 +305,8 @@
                     <BitChoiceGroupOption Text="Day" Value="BitFullCalendarView.Day" />
                     <BitChoiceGroupOption Text="Week" Value="BitFullCalendarView.Week" />
                     <BitChoiceGroupOption Text="Month" Value="BitFullCalendarView.Month" />
-                    <BitChoiceGroupOption Text="Year" Value="BitFullCalendarView.Year" IsEnabled="@(bindingMode == BitFullCalendarMode.Event)" />
-                    <BitChoiceGroupOption Text="Agenda" Value="BitFullCalendarView.Agenda" IsEnabled="@(bindingMode == BitFullCalendarMode.Event)" />
+                    <BitChoiceGroupOption Text="Year" Value="BitFullCalendarView.Year" IsDisabled="@(bindingMode != BitFullCalendarMode.Event)" />
+                    <BitChoiceGroupOption Text="Agenda" Value="BitFullCalendarView.Agenda" IsDisabled="@(bindingMode != BitFullCalendarMode.Event)" />
                 </BitChoiceGroup>
                 <BitChoiceGroup Horizontal
                                 Label="Mode"

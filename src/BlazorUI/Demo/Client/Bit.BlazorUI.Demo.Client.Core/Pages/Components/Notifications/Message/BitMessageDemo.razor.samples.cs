@@ -332,7 +332,7 @@ private bool isAutoFocusDismissed = true;
 private BitMessage? focusableMessage;";
 
     private readonly string example12RazorCode = @"
-<BitMessage IsEnabled=""isMessageEnabled""
+<BitMessage Disabled=""isMessageDisabled""
             Truncate
             Dismissible
             DismissOnEscape
@@ -345,13 +345,13 @@ private BitMessage? focusableMessage;";
     everyone who is using them today; after that they turn read-only, and nothing new can be uploaded
     to them until the licence is renewed.
 </BitMessage>
-<BitToggle Label=""IsEnabled"" @bind-Value=""isMessageEnabled"" />
+<BitToggle Label=""Disabled"" @bind-Value=""isMessageDisabled"" />
 @if (isDisabledSampleDismissed)
 {
     <BitButton OnClick=""() => isDisabledSampleDismissed = false"">Bring it back</BitButton>
 }";
     private readonly string example12CsharpCode = @"
-private bool isMessageEnabled = true;
+private bool isMessageDisabled;
 private bool isDisabledSampleDismissed;";
 
     private readonly string example13RazorCode = @"
@@ -381,7 +381,7 @@ private readonly BitMessageParams[] messageParams =
     <BitChoiceGroupOption Text=""Outline"" Value=""BitVariant.Outline"" />
     <BitChoiceGroupOption Text=""Text"" Value=""BitVariant.Text"" />
 </BitChoiceGroup>
-<BitToggle Label=""Tinted"" Inline @bind-Value=""colorTinted"" IsEnabled=""colorVariant is not BitVariant.Fill"" />
+<BitToggle Label=""Tinted"" Inline @bind-Value=""colorTinted"" Disabled=""colorVariant is BitVariant.Fill"" />
 
 <BitMessage Color=""BitColor.Primary"" Variant=""colorVariant"" Tinted=""colorTinted"">Primary.</BitMessage>
 <BitMessage Color=""BitColor.Secondary"" Variant=""colorVariant"" Tinted=""colorTinted"">Secondary.</BitMessage>

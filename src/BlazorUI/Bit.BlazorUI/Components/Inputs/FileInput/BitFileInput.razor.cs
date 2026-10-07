@@ -383,7 +383,7 @@ public partial class BitFileInput : BitComponentBase
     /// </summary>
     public async Task Browse()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (AutoReset)
         {
@@ -430,7 +430,7 @@ public partial class BitFileInput : BitComponentBase
     public async Task ReadContentAsync(BitFileInputInfo? fileInfo = null, CancellationToken cancellationToken = default)
     {
         if (IsDisposed) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (fileInfo is null)
         {
@@ -499,7 +499,7 @@ public partial class BitFileInput : BitComponentBase
     public async Task RemoveFile(BitFileInputInfo? fileInfo = null)
     {
         if (IsDisposed) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (_files.Any() is false) return;
 
         if (fileInfo is null)
@@ -688,7 +688,7 @@ public partial class BitFileInput : BitComponentBase
 
         try
         {
-            if (ShowRemoveButton && IsEnabled && HideFileList is false &&
+            if (ShowRemoveButton && Disabled is false && HideFileList is false &&
                 FileViewTemplate is null && _files.Count > 0)
             {
                 var target = _files[Math.Min(index, _files.Count - 1)];
@@ -701,7 +701,7 @@ public partial class BitFileInput : BitComponentBase
                 }
             }
 
-            if (LabelTemplate is null && HideLabel is false && IsEnabled)
+            if (LabelTemplate is null && HideLabel is false && Disabled is false)
             {
                 await _labelRef.FocusAsync();
             }

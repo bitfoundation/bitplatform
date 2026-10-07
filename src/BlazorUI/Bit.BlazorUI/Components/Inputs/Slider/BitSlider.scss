@@ -17,7 +17,7 @@
 //   --bit-Slider-focus-color             the ring around the thumb that holds the focus      (default: --bit-Slider-color when set, else the role's focus color;
 //                                                                                              never used while the value is invalid - see below)
 //   --bit-Slider-disabled-color          the fill, the thumb ring, the marks and the origin
-//                                        tick while IsEnabled is false                       (default: $clr-bg-dis)
+//                                        tick while Disabled is true                       (default: $clr-bg-dis)
 //   --bit-Slider-invalid-color           the fill, the thumb ring and the focus ring while
 //                                        the value is invalid                                (default: $clr-err, and $clr-err-focus for the focus ring)
 //   --bit-Slider-rail-color              the part of the track the fill has not reached      (default: $clr-bg-sec)

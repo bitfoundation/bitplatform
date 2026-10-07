@@ -428,7 +428,7 @@ public partial class BitSliderDemo
         {
             Name = "--bit-Slider-disabled-color",
             DefaultValue = "--bit-clr-bg-dis",
-            Description = "The fill, the thumb ring, the marks and the origin tick while IsEnabled is false.",
+            Description = "The fill, the thumb ring, the marks and the origin tick while Disabled is true.",
         },
         new()
         {

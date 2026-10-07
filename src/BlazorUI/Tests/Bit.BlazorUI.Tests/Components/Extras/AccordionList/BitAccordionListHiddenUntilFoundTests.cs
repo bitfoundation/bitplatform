@@ -20,7 +20,7 @@ public class BitAccordionListHiddenUntilFoundTests : BunitTestContext
     [
         new() { Key = "a", Title = "Item A", Body = Content("Body A") },
         new() { Key = "b", Title = "Item B", Body = Content("Body B") },
-        new() { Key = "c", Title = "Item C", Body = Content("Body C"), IsEnabled = false },
+        new() { Key = "c", Title = "Item C", Body = Content("Body C"), IsDisabled = true },
     ];
 
     private static RenderFragment<BitAccordionListItem> Content(string text) => item => builder => builder.AddContent(0, text);
@@ -262,7 +262,7 @@ public class BitAccordionListHiddenUntilFoundTests : BunitTestContext
         var click = component.InvokeAsync(() => component.FindAll(".bit-acd-hdr")[0].Click());
         var reveal = component.InvokeAsync(() => component.FindAll(".bit-acd-con")[1].TriggerEventAsync("onbeforematch", EventArgs.Empty));
 
-        items[1].IsEnabled = false;
+        items[1].IsDisabled = true;
 
         toggling.SetResult();
 

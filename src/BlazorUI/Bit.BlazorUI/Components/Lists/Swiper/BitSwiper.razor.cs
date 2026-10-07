@@ -640,7 +640,7 @@ public partial class BitSwiper : BitComponentBase
     /// </param>
     public async Task GoTo(int number)
     {
-        if (IsDisposed || IsEnabled is false || _afterFirstRender is false || _allItems.Count == 0) return;
+        if (IsDisposed || Disabled || _afterFirstRender is false || _allItems.Count == 0) return;
 
         var index = Math.Clamp(number - 1, 0, _allItems.Count - 1);
 
@@ -656,7 +656,7 @@ public partial class BitSwiper : BitComponentBase
     /// </param>
     public async Task GoToPage(int number)
     {
-        if (IsDisposed || IsEnabled is false || _pagesCount < 1) return;
+        if (IsDisposed || Disabled || _pagesCount < 1) return;
 
         await _js.BitSwiperGoToPage(_Id, Math.Clamp(number - 1, 0, _pagesCount - 1));
     }
@@ -666,7 +666,7 @@ public partial class BitSwiper : BitComponentBase
     /// </summary>
     public async Task GoToStart()
     {
-        if (IsDisposed || IsEnabled is false || _afterFirstRender is false) return;
+        if (IsDisposed || Disabled || _afterFirstRender is false) return;
 
         await _js.BitSwiperGoToEdge(_Id, false);
     }
@@ -676,7 +676,7 @@ public partial class BitSwiper : BitComponentBase
     /// </summary>
     public async Task GoToEnd()
     {
-        if (IsDisposed || IsEnabled is false || _afterFirstRender is false) return;
+        if (IsDisposed || Disabled || _afterFirstRender is false) return;
 
         await _js.BitSwiperGoToEdge(_Id, true);
     }
@@ -870,7 +870,7 @@ public partial class BitSwiper : BitComponentBase
 
         ClassBuilder.Register(() => ShowScrollbar ? "bit-swp-scb" : string.Empty);
 
-        ClassBuilder.Register(() => (NoDrag || IsEnabled is false) ? "bit-swp-ndr" : string.Empty);
+        ClassBuilder.Register(() => (NoDrag || Disabled) ? "bit-swp-ndr" : string.Empty);
 
         ClassBuilder.Register(() => SnapAlign switch
         {
@@ -1060,7 +1060,7 @@ public partial class BitSwiper : BitComponentBase
             Vertical = Vertical,
             NoDrag = NoDrag,
             Wheel = Wheel,
-            Enabled = IsEnabled,
+            Enabled = Disabled is false,
             // None is the snap type that says "do not snap", so it has to read the same way an unset SnapAlign
             // does - the class builder above already leaves both of them without the snapping classes.
             Snap = SnapAlign is not null and not BitScrollSnapAlign.None,
@@ -1084,12 +1084,12 @@ public partial class BitSwiper : BitComponentBase
     private string ComputeOptionsSignature()
     {
         return FormattableString.Invariant(
-            $"{Vertical}|{NoDrag}|{Wheel}|{IsEnabled}|{SnapAlign}|{AnimationDuration}|{DragThreshold}|{_internalScrollItemsCount}|{NoKeyboard}|{Rewind}");
+            $"{Vertical}|{NoDrag}|{Wheel}|{Disabled}|{SnapAlign}|{AnimationDuration}|{DragThreshold}|{_internalScrollItemsCount}|{NoKeyboard}|{Rewind}");
     }
 
     private async Task RegisterPreventKeysAsync()
     {
-        var keys = (NoKeyboard || IsEnabled is false) ? [] : (Vertical ? _verticalNavigationKeys : _horizontalNavigationKeys);
+        var keys = (NoKeyboard || Disabled) ? [] : (Vertical ? _verticalNavigationKeys : _horizontalNavigationKeys);
 
         await _js.BitUtilsRegisterPreventKeys(RootElement, keys);
     }
@@ -1150,7 +1150,7 @@ public partial class BitSwiper : BitComponentBase
 
     private async Task Go(bool forward, int? count = null)
     {
-        if (IsDisposed || IsEnabled is false || _afterFirstRender is false) return;
+        if (IsDisposed || Disabled || _afterFirstRender is false) return;
 
         if (Rewind && _scrollable && (forward ? _atEnd : _atStart))
         {
@@ -1191,7 +1191,7 @@ public partial class BitSwiper : BitComponentBase
     {
         HandleInteraction();
 
-        if (IsDisposed || IsEnabled is false) return;
+        if (IsDisposed || Disabled) return;
 
         await _js.BitSwiperGoToPage(_Id, index);
     }
@@ -1199,7 +1199,7 @@ public partial class BitSwiper : BitComponentBase
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
         if (NoKeyboard) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (_keysOwnedByContent) return;
 
         // A swiper that swallowed a modified arrow key would take the browser shortcuts of the page with
@@ -1284,7 +1284,7 @@ public partial class BitSwiper : BitComponentBase
     private bool ShouldAutoPlay()
     {
         if (AutoPlay is false) return false;
-        if (IsEnabled is false) return false;
+        if (Disabled) return false;
         if (_isPaused || _stopped) return false;
         if (_pageHidden || _pageVisibilityPending) return false;
         if (PauseOnHover && _hovered) return false;

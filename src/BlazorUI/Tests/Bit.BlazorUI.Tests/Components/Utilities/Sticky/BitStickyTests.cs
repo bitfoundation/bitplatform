@@ -21,11 +21,11 @@ public class BitStickyTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitStickyShouldRespectIsEnabled(bool isEnabled)
+    public void BitStickyShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitSticky>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var cssClass = isEnabled ? null : " bit-dis";
@@ -34,7 +34,7 @@ public class BitStickyTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitStickyShouldRespectIsEnabledChangingAfterRender()
+    public void BitStickyShouldRespectDisabledChangingAfterRender()
     {
         var component = RenderComponent<BitSticky>();
 
@@ -42,7 +42,7 @@ public class BitStickyTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.MarkupMatches(@"<div class=""bit-stk bit-stk-top bit-dis"" id:ignore></div>");
@@ -840,7 +840,7 @@ public class BitStickyTests : BunitTestContext
         component.Render(parameters =>
         {
             parameters.Add(p => p.OnStuckEdgesChanged, (BitStickyEdges e) => edges.Add(e));
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         // Detaching the detection reports the state it leaves behind, the same way a flip would.
@@ -853,7 +853,7 @@ public class BitStickyTests : BunitTestContext
     {
         var component = RenderComponent<BitSticky>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.StuckClass, "my-stuck");
         });
 
@@ -880,7 +880,7 @@ public class BitStickyTests : BunitTestContext
         component.Render(parameters =>
         {
             parameters.Add(p => p.StuckClass, "my-stuck");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsFalse(component.Instance.IsStuck);
@@ -906,7 +906,7 @@ public class BitStickyTests : BunitTestContext
         component.Render(parameters =>
         {
             parameters.Add(p => p.OnStuckChanged, (bool stuck) => stuckStates.Add(stuck));
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsFalse(component.Instance.IsStuck);
@@ -1062,7 +1062,7 @@ public class BitStickyTests : BunitTestContext
         var component = RenderComponent<BitSticky>(parameters =>
         {
             parameters.Add(p => p.ScrollPadding, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsEmpty(Setups());
@@ -1070,7 +1070,7 @@ public class BitStickyTests : BunitTestContext
         component.Render(parameters =>
         {
             parameters.Add(p => p.ScrollPadding, true);
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         Assert.HasCount(1, Setups());
@@ -1078,7 +1078,7 @@ public class BitStickyTests : BunitTestContext
         component.Render(parameters =>
         {
             parameters.Add(p => p.ScrollPadding, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.HasCount(1, Setups());

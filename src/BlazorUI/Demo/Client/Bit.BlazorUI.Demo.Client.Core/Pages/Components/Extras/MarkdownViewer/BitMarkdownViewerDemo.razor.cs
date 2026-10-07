@@ -1042,7 +1042,7 @@ And every link, like [the bit platform](https://bitplatform.dev), is a BitLink.
 
 
 
-    private bool tasksEnabled = true;
+    private bool tasksDisabled;
 
     private string taskListMarkdown = @"## Release checklist
 

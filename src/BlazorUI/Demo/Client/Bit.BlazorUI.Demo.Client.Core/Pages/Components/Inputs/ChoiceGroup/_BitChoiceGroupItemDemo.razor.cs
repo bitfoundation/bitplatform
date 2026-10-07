@@ -42,7 +42,7 @@ public partial class _BitChoiceGroupItemDemo
     [
         new() { Text = "Item A", Value = "A" },
     new() { Text = "Item B", Value = "B" },
-    new() { Text = "Item C", Value = "C", IsEnabled = false },
+    new() { Text = "Item C", Value = "C", IsDisabled = true },
     new() { Text = "Item D", Value = "D" }
     ];
 
@@ -94,7 +94,7 @@ public partial class _BitChoiceGroupItemDemo
     [
         new() { Text = "Day", Value = "Day", IconName = BitIconName.CalendarDay },
         new() { Text = "Week", Value = "Week", IconName = BitIconName.CalendarWeek },
-        new() { Text = "Month", Value = "Month", IconName = BitIconName.Calendar, IsEnabled = false }
+        new() { Text = "Month", Value = "Month", IconName = BitIconName.Calendar, IsDisabled = true }
     ];
 
     private readonly List<BitChoiceGroupItem<string>> externalIconItems =

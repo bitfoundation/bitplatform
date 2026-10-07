@@ -7,14 +7,14 @@ public partial class BitCheckboxDemo
 <BitCheckbox Label=""Basic checkbox"" />
 <BitCheckbox Label=""Checked by default"" DefaultValue=""true"" />
 <BitCheckbox Label=""Hover over me"" Title=""The native tooltip of the checkbox"" />
-<BitCheckbox Label=""Disable checkbox"" IsEnabled=""false"" />
-<BitCheckbox Label=""Disable checked checkbox"" IsEnabled=""false"" Value=""true"" />";
+<BitCheckbox Label=""Disable checkbox"" Disabled />
+<BitCheckbox Label=""Disable checked checkbox"" Disabled Value=""true"" />";
 
     private readonly string example2RazorCode = @"
 <BitCheckbox Label=""Custom check icon"" CheckIconName=""@BitIconName.Heart"" />
 <BitCheckbox Label=""Custom unchecked icon"" UncheckedIconName=""@BitIconName.Cancel"" />
 <BitCheckbox Label=""Custom indeterminate icon"" Indeterminate IndeterminateIconName=""@BitIconName.Remove"" />
-<BitCheckbox Label=""Disabled custom check icon"" CheckIconName=""@BitIconName.WavingHand"" Value=""true"" IsEnabled=""false"" />";
+<BitCheckbox Label=""Disabled custom check icon"" CheckIconName=""@BitIconName.WavingHand"" Value=""true"" Disabled />";
 
     private readonly string example3RazorCode = @"
 <BitCheckbox Label=""End"" LabelPlacement=""BitPlacement.End"" />
@@ -83,7 +83,7 @@ public partial class BitCheckboxDemo
     private readonly string example6RazorCode = @"
 <BitCheckbox Label=""Indeterminate checkbox"" @bind-Indeterminate=""basicIndeterminate"" />
 <BitCheckbox Label=""Indeterminate by default"" DefaultIndeterminate=""true"" />
-<BitCheckbox Label=""Disabled indeterminate checkbox"" Indeterminate IsEnabled=""false"" />
+<BitCheckbox Label=""Disabled indeterminate checkbox"" Indeterminate Disabled />
 
 
 <BitCheckbox Label=""Select all fruits""
@@ -358,8 +358,8 @@ private void HandleInvalidSubmit()
 <BitCheckbox AriaLabelledby=""newsletter-label"" />
 
 
-<BitCheckbox Label=""Disabled and skipped"" IsEnabled=""false"" />
-<BitCheckbox Label=""Disabled but still reachable"" IsEnabled=""false"" AllowDisabledFocus />
+<BitCheckbox Label=""Disabled and skipped"" Disabled />
+<BitCheckbox Label=""Disabled but still reachable"" Disabled AllowDisabledFocus />
 
 
 <BitCheckbox Label=""Item 3"" AriaSetSize=""10"" AriaPositionInSet=""3"" />
@@ -495,75 +495,75 @@ private readonly BitCheckboxParams[] checkboxParams =
 <BitCheckbox Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" Value />
 
 
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.Primary"" Label=""Primary"" />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.Primary"" Label=""Primary"" Indeterminate />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.Primary"" Label=""Primary"" Value />
+<BitCheckbox Disabled Color=""BitColor.Primary"" Label=""Primary"" />
+<BitCheckbox Disabled Color=""BitColor.Primary"" Label=""Primary"" Indeterminate />
+<BitCheckbox Disabled Color=""BitColor.Primary"" Label=""Primary"" Value />
 
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.Secondary"" Label=""Secondary"" />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.Secondary"" Label=""Secondary"" Indeterminate />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.Secondary"" Label=""Secondary"" Value />
+<BitCheckbox Disabled Color=""BitColor.Secondary"" Label=""Secondary"" />
+<BitCheckbox Disabled Color=""BitColor.Secondary"" Label=""Secondary"" Indeterminate />
+<BitCheckbox Disabled Color=""BitColor.Secondary"" Label=""Secondary"" Value />
 
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.Tertiary"" Label=""Tertiary"" />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.Tertiary"" Label=""Tertiary"" Indeterminate />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.Tertiary"" Label=""Tertiary"" Value />
+<BitCheckbox Disabled Color=""BitColor.Tertiary"" Label=""Tertiary"" />
+<BitCheckbox Disabled Color=""BitColor.Tertiary"" Label=""Tertiary"" Indeterminate />
+<BitCheckbox Disabled Color=""BitColor.Tertiary"" Label=""Tertiary"" Value />
 
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.Info"" Label=""Info"" />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.Info"" Label=""Info"" Indeterminate />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.Info"" Label=""Info"" Value />
+<BitCheckbox Disabled Color=""BitColor.Info"" Label=""Info"" />
+<BitCheckbox Disabled Color=""BitColor.Info"" Label=""Info"" Indeterminate />
+<BitCheckbox Disabled Color=""BitColor.Info"" Label=""Info"" Value />
 
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.Success"" Label=""Success"" />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.Success"" Label=""Success"" Indeterminate />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.Success"" Label=""Success"" Value />
+<BitCheckbox Disabled Color=""BitColor.Success"" Label=""Success"" />
+<BitCheckbox Disabled Color=""BitColor.Success"" Label=""Success"" Indeterminate />
+<BitCheckbox Disabled Color=""BitColor.Success"" Label=""Success"" Value />
 
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.Warning"" Label=""Warning"" />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.Warning"" Label=""Warning"" Indeterminate />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.Warning"" Label=""Warning"" Value />
+<BitCheckbox Disabled Color=""BitColor.Warning"" Label=""Warning"" />
+<BitCheckbox Disabled Color=""BitColor.Warning"" Label=""Warning"" Indeterminate />
+<BitCheckbox Disabled Color=""BitColor.Warning"" Label=""Warning"" Value />
 
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.SevereWarning"" Label=""SevereWarning"" />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.SevereWarning"" Label=""SevereWarning"" Indeterminate />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.SevereWarning"" Label=""SevereWarning"" Value />
+<BitCheckbox Disabled Color=""BitColor.SevereWarning"" Label=""SevereWarning"" />
+<BitCheckbox Disabled Color=""BitColor.SevereWarning"" Label=""SevereWarning"" Indeterminate />
+<BitCheckbox Disabled Color=""BitColor.SevereWarning"" Label=""SevereWarning"" Value />
 
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.Error"" Label=""Error"" />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.Error"" Label=""Error"" Indeterminate />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.Error"" Label=""Error"" Value />
+<BitCheckbox Disabled Color=""BitColor.Error"" Label=""Error"" />
+<BitCheckbox Disabled Color=""BitColor.Error"" Label=""Error"" Indeterminate />
+<BitCheckbox Disabled Color=""BitColor.Error"" Label=""Error"" Value />
 
 <div style=""background:var(--bit-clr-fg-sec);color:var(--bit-clr-bg-sec);padding:1rem"">
-    <BitCheckbox IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Label=""PrimaryBackground"" />
-    <BitCheckbox IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Label=""PrimaryBackground"" Indeterminate />
-    <BitCheckbox IsEnabled=""false"" Color=""BitColor.PrimaryBackground"" Label=""PrimaryBackground"" Value />
+    <BitCheckbox Disabled Color=""BitColor.PrimaryBackground"" Label=""PrimaryBackground"" />
+    <BitCheckbox Disabled Color=""BitColor.PrimaryBackground"" Label=""PrimaryBackground"" Indeterminate />
+    <BitCheckbox Disabled Color=""BitColor.PrimaryBackground"" Label=""PrimaryBackground"" Value />
 
-    <BitCheckbox IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Label=""SecondaryBackground"" />
-    <BitCheckbox IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Label=""SecondaryBackground"" Indeterminate />
-    <BitCheckbox IsEnabled=""false"" Color=""BitColor.SecondaryBackground"" Label=""SecondaryBackground"" Value />
+    <BitCheckbox Disabled Color=""BitColor.SecondaryBackground"" Label=""SecondaryBackground"" />
+    <BitCheckbox Disabled Color=""BitColor.SecondaryBackground"" Label=""SecondaryBackground"" Indeterminate />
+    <BitCheckbox Disabled Color=""BitColor.SecondaryBackground"" Label=""SecondaryBackground"" Value />
 
-    <BitCheckbox IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Label=""TertiaryBackground"" />
-    <BitCheckbox IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Label=""TertiaryBackground"" Indeterminate />
-    <BitCheckbox IsEnabled=""false"" Color=""BitColor.TertiaryBackground"" Label=""TertiaryBackground"" Value />
+    <BitCheckbox Disabled Color=""BitColor.TertiaryBackground"" Label=""TertiaryBackground"" />
+    <BitCheckbox Disabled Color=""BitColor.TertiaryBackground"" Label=""TertiaryBackground"" Indeterminate />
+    <BitCheckbox Disabled Color=""BitColor.TertiaryBackground"" Label=""TertiaryBackground"" Value />
 </div>
 
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.PrimaryForeground"" Label=""PrimaryForeground"" />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.PrimaryForeground"" Label=""PrimaryForeground"" Indeterminate />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.PrimaryForeground"" Label=""PrimaryForeground"" Value />
+<BitCheckbox Disabled Color=""BitColor.PrimaryForeground"" Label=""PrimaryForeground"" />
+<BitCheckbox Disabled Color=""BitColor.PrimaryForeground"" Label=""PrimaryForeground"" Indeterminate />
+<BitCheckbox Disabled Color=""BitColor.PrimaryForeground"" Label=""PrimaryForeground"" Value />
 
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.SecondaryForeground"" Label=""SecondaryForeground"" />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.SecondaryForeground"" Label=""SecondaryForeground"" Indeterminate />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.SecondaryForeground"" Label=""SecondaryForeground"" Value />
+<BitCheckbox Disabled Color=""BitColor.SecondaryForeground"" Label=""SecondaryForeground"" />
+<BitCheckbox Disabled Color=""BitColor.SecondaryForeground"" Label=""SecondaryForeground"" Indeterminate />
+<BitCheckbox Disabled Color=""BitColor.SecondaryForeground"" Label=""SecondaryForeground"" Value />
 
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.TertiaryForeground"" Label=""TertiaryForeground"" />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.TertiaryForeground"" Label=""TertiaryForeground"" Indeterminate />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.TertiaryForeground"" Label=""TertiaryForeground"" Value />
+<BitCheckbox Disabled Color=""BitColor.TertiaryForeground"" Label=""TertiaryForeground"" />
+<BitCheckbox Disabled Color=""BitColor.TertiaryForeground"" Label=""TertiaryForeground"" Indeterminate />
+<BitCheckbox Disabled Color=""BitColor.TertiaryForeground"" Label=""TertiaryForeground"" Value />
 
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.PrimaryBorder"" Label=""PrimaryBorder"" />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.PrimaryBorder"" Label=""PrimaryBorder"" Indeterminate />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.PrimaryBorder"" Label=""PrimaryBorder"" Value />
+<BitCheckbox Disabled Color=""BitColor.PrimaryBorder"" Label=""PrimaryBorder"" />
+<BitCheckbox Disabled Color=""BitColor.PrimaryBorder"" Label=""PrimaryBorder"" Indeterminate />
+<BitCheckbox Disabled Color=""BitColor.PrimaryBorder"" Label=""PrimaryBorder"" Value />
 
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.SecondaryBorder"" Label=""SecondaryBorder"" />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.SecondaryBorder"" Label=""SecondaryBorder"" Indeterminate />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.SecondaryBorder"" Label=""SecondaryBorder"" Value />
+<BitCheckbox Disabled Color=""BitColor.SecondaryBorder"" Label=""SecondaryBorder"" />
+<BitCheckbox Disabled Color=""BitColor.SecondaryBorder"" Label=""SecondaryBorder"" Indeterminate />
+<BitCheckbox Disabled Color=""BitColor.SecondaryBorder"" Label=""SecondaryBorder"" Value />
 
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" Indeterminate />
-<BitCheckbox IsEnabled=""false"" Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" Value />";
+<BitCheckbox Disabled Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" />
+<BitCheckbox Disabled Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" Indeterminate />
+<BitCheckbox Disabled Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" Value />";
 
     private readonly string example16RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
@@ -677,6 +677,6 @@ private readonly BitCheckboxParams[] checkboxParams =
 
     private readonly string example19RazorCode = @"
 <BitCheckbox Dir=""BitDir.Rtl"" Label=""چکباکس راست به چپ"" />
-<BitCheckbox Dir=""BitDir.Rtl"" Label=""چکباکس غیرفعال"" IsEnabled=""false"" />
-<BitCheckbox Dir=""BitDir.Rtl"" Label=""چکباکس غیرفعال چک شده"" IsEnabled=""false"" Value=""true"" />";
+<BitCheckbox Dir=""BitDir.Rtl"" Label=""چکباکس غیرفعال"" Disabled />
+<BitCheckbox Dir=""BitDir.Rtl"" Label=""چکباکس غیرفعال چک شده"" Disabled Value=""true"" />";
 }

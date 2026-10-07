@@ -118,7 +118,7 @@ public class BitModalAccessibilityTests : BunitTestContext
         Assert.IsFalse(com.Find(".bit-mdl-cls").HasAttribute("disabled"));
 
         // A disabled Modal ignores the press, so the button says so instead of taking it.
-        com.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+        com.Render(parameters => parameters.Add(p => p.Disabled, true));
 
         Assert.IsTrue(com.Find(".bit-mdl-cls").HasAttribute("disabled"));
     }

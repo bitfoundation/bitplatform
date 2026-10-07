@@ -138,11 +138,11 @@ public class BitSwiperTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitSwiperShouldRespectIsEnabled(bool isEnabled)
+    public void BitSwiperShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitSwiperTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var root = component.Find(".bit-swp");
@@ -1066,7 +1066,7 @@ public class BitSwiperTests : BunitTestContext
     {
         var component = RenderComponent<BitSwiperTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         await component.InvokeAsync(component.Instance.Swiper.GoNext);

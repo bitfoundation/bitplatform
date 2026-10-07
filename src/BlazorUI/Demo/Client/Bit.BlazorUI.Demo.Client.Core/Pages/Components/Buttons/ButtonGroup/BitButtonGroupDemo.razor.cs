@@ -485,10 +485,10 @@ public partial class BitButtonGroupDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether or not the item is enabled.",
+                   DefaultValue = "false",
+                   Description = "Whether or not the item is disabled.",
                },
                new()
                {
@@ -681,10 +681,10 @@ public partial class BitButtonGroupDemo
                },
                new()
                {
-                   Name = "IsEnabled",
+                   Name = "IsDisabled",
                    Type = "bool",
-                   DefaultValue = "true",
-                   Description = "Whether or not the option is enabled.",
+                   DefaultValue = "false",
+                   Description = "Whether or not the option is disabled.",
                },
                new()
                {
@@ -951,10 +951,10 @@ public partial class BitButtonGroupDemo
                 },
                 new()
                 {
-                    Name = "IsEnabled",
+                    Name = "IsDisabled",
                     Type = "BitNameSelectorPair<TItem, bool>",
-                    DefaultValue = "new(nameof(BitButtonGroupItem.IsEnabled))",
-                    Description = "IsEnabled field name and selector of the custom input class.",
+                    DefaultValue = "new(nameof(BitButtonGroupItem.IsDisabled))",
+                    Description = "IsDisabled field name and selector of the custom input class.",
                     LinkType = LinkType.Link,
                     Href = "#name-selector-pair",
                 },

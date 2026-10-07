@@ -432,9 +432,9 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
     }
 </style>
 
-<BitToggle @bind-Value=""isEnabled"" Label=""Enabled"" />
+<BitToggle @bind-Value=""isDisabled"" Label=""Disabled"" />
 <BitToggle @bind-Value=""noMouse"" Label=""NoMouse"" />
-<BitPullToRefresh IsEnabled=""isEnabled"" NoMouse=""noMouse"" OnRefresh=""HandleOnRefreshDisabled"">
+<BitPullToRefresh Disabled=""isDisabled"" NoMouse=""noMouse"" OnRefresh=""HandleOnRefreshDisabled"">
     <div class=""anchor"">
         @foreach (var (idx, i) in disabledItems)
         {
@@ -443,7 +443,7 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
     </div>
 </BitPullToRefresh>";
     private readonly string example8CsharpCode = @"
-private bool isEnabled = true;
+private bool isDisabled;
 private bool noMouse;
 private (int, int)[] disabledItems = GenerateRandomNumbers(1, 51);
 private async Task HandleOnRefreshDisabled()

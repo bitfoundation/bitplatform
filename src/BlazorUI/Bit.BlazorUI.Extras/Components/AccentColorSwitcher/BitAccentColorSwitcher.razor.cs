@@ -213,7 +213,7 @@ public partial class BitAccentColorSwitcher : BitComponentBase
 
     private async Task HandleOnClickAsync(BitAccentColorItem item)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // The service applies per the app-wide configuration the first InitializeAsync call fixed;
         // this instance's Config is not forwarded, so a differently-configured switcher cannot

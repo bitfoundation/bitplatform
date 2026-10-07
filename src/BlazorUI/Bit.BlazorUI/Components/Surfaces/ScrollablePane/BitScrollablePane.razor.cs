@@ -48,7 +48,7 @@ public partial class BitScrollablePane : BitComponentBase
     // which a NoScroll pane does not let it do, so it adds no tab stop there. A disabled pane is taken back
     // out of the tab order rather than left in it as something that cannot be scrolled.
     private string? _tabIndex => (TabIndex ?? (Focusable && NoScroll is false ? "0" : null)) is string tabIndex
-        ? (IsEnabled ? tabIndex : "-1")
+        ? (Disabled ? "-1" : tabIndex)
         : null;
 
     // The aria-label written after the splat replaces whatever the splat put there, null included, so a name
@@ -70,7 +70,7 @@ public partial class BitScrollablePane : BitComponentBase
     // What is worth WATCHING once there is an instance - the content, the pane, both - is deliberately not
     // decided here as well: the browser side works it out from the options it is handed, so there is one
     // definition of it rather than two that a new content-dependent feature could be added to only one of.
-    private bool _needsJs => IsEnabled && (AutoScroll
+    private bool _needsJs => Disabled is false && (AutoScroll
                                            || DragScroll
                                            || HorizontalWheel
                                            || PreserveScroll
@@ -483,7 +483,7 @@ public partial class BitScrollablePane : BitComponentBase
     /// The content that does not fit is clipped and neither the wheel, a drag nor the keyboard moves it,
     /// while the content itself stays interactive and the scrolling API of the component keeps working -
     /// which is what a pane whose position is driven entirely from code wants. To take the interaction
-    /// away as well, disable the pane with <see cref="BitComponentBase.IsEnabled"/>.
+    /// away as well, disable the pane with <see cref="BitComponentBase.Disabled"/>.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public bool NoScroll { get; set; }

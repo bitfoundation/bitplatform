@@ -49,9 +49,9 @@ public class BitButtonGroupItem
     public string? IconName { get; set; }
 
     /// <summary>
-    /// Whether or not the item is enabled.
+    /// Whether or not the item is disabled.
     /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    public bool IsDisabled { get; set; }
 
     /// <summary>
     /// Whether or not the item is in the loading state, which replaces its icon with a spinner and blocks its click.

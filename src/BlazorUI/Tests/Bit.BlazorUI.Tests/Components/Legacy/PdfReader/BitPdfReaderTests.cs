@@ -132,7 +132,7 @@ public class BitPdfReaderTests : BunitTestContext
         {
             parameters.Add(p => p.Config, new BitPdfReaderLegacyConfig { Id = PdfId });
             parameters.Add(p => p.Horizontal, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var root = component.Find(".bit-pdr");

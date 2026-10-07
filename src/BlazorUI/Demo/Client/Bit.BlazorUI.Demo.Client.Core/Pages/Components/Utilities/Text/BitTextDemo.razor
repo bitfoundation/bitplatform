@@ -253,7 +253,7 @@
     <DemoExample Title="Visibility & disabled" RazorCode="@example11RazorCode" Id="example11">
         <div class="example-desc">
             <b>Visibility</b> hides the text, keeping or dropping its space, and takes it out of the accessibility tree
-            too - <b>VisuallyHidden</b> is the one that keeps it there. <b>IsEnabled="false"</b> dims the text and keeps
+            too - <b>VisuallyHidden</b> is the one that keeps it there. <b>Disabled</b> dims the text and keeps
             its paint; forced-colors mode paints it in <code>GrayText</code>.
         </div>
         <br />
@@ -261,8 +261,8 @@
             <div>Visible: [<BitText Element="span" Typography="BitTypography.Inherit" Visibility="BitVisibility.Visible">Visible text</BitText>]</div>
             <div>Hidden: [<BitText Element="span" Typography="BitTypography.Inherit" Visibility="BitVisibility.Hidden">Hidden text</BitText>]</div>
             <div>Collapsed: [<BitText Element="span" Typography="BitTypography.Inherit" Visibility="BitVisibility.Collapsed">Collapsed text</BitText>]</div>
-            <BitText IsEnabled="false">Disabled text</BitText>
-            <BitText IsEnabled="false" Gradient="linear-gradient(90deg, #7c3aed, #06b6d4)">Disabled text, keeping its gradient</BitText>
+            <BitText Disabled>Disabled text</BitText>
+            <BitText Disabled Gradient="linear-gradient(90deg, #7c3aed, #06b6d4)">Disabled text, keeping its gradient</BitText>
         </div>
     </DemoExample>
 

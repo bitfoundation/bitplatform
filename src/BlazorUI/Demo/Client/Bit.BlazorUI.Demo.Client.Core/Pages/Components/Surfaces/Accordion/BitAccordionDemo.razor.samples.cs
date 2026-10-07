@@ -44,9 +44,9 @@ public partial class BitAccordionDemo
 private int renameCount;";
 
     private readonly string example4RazorCode = @"
-<BitToggle @bind-Value=""bindingIsEnabled"" OnText=""Enabled"" OffText=""Disabled"" />
+<BitToggle @bind-Value=""bindingIsDisabled"" OnText=""Disabled"" OffText=""Enabled"" />
 <BitToggle @bind-Value=""bindingIsExpanded"" OnText=""Expanded"" OffText=""Collapsed"" />
-<BitAccordion Title=""Bound"" IsEnabled=""bindingIsEnabled"" @bind-IsExpanded=""bindingIsExpanded"">
+<BitAccordion Title=""Bound"" Disabled=""bindingIsDisabled"" @bind-IsExpanded=""bindingIsExpanded"">
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
 
@@ -67,7 +67,7 @@ private int renameCount;";
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>";
     private readonly string example4CsharpCode = @"
-private bool bindingIsEnabled = true;
+private bool bindingIsDisabled;
 private bool bindingIsExpanded;
 private int controlledExpandedItem = 1;";
 
@@ -224,7 +224,7 @@ private async Task LoadOrders(BitAccordionToggleArgs args)
               DefaultIsExpanded>
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>
-<BitAccordion Title=""Disabled"" IsEnabled=""false"" DefaultIsExpanded>
+<BitAccordion Title=""Disabled"" Disabled DefaultIsExpanded>
     Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams.
 </BitAccordion>";
     private readonly string example11CsharpCode = @"

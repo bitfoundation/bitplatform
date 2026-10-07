@@ -75,8 +75,8 @@
                 <BitColorPicker ShowPreview="true" @bind-Color="@_selectedColor" ShowAlphaSlider="false">Default ColorPicker</BitColorPicker>
             </div>
             <div class="component-box--transparent" style="height: fit-content;">
-                <BitToggle @bind-Value="_isToggleUnChecked" IsEnabled="true" OnText="On" OffText="Off" />
-                <BitToggle @bind-Value="_isToggleChecked" IsEnabled="true" OnText="On" OffText="Off" />
+                <BitToggle @bind-Value="_isToggleUnChecked" OnText="On" OffText="Off" />
+                <BitToggle @bind-Value="_isToggleChecked" OnText="On" OffText="Off" />
             </div>
         </div>
         <div class="hero-section-components-col">
@@ -85,7 +85,7 @@
                                 Horizontal Label="Select an item" DefaultValue=@("pie")>
                     <BitChoiceGroupOption Text="Clustered bar chart" Value=@("bar") IconName="@BitIconName.BarChart4" />
                     <BitChoiceGroupOption Text="Pie chart" Value=@("pie") IconName="@BitIconName.DonutChart" />
-                    <BitChoiceGroupOption Text="Disabled" IsEnabled="false" Value=@("disabled_option") IconName="@BitIconName.BarChartVerticalFill" />
+                    <BitChoiceGroupOption Text="Disabled" IsDisabled Value=@("disabled_option") IconName="@BitIconName.BarChartVerticalFill" />
                 </BitChoiceGroup>
             </div>
             <div class="component-box">
@@ -100,12 +100,12 @@
                            Style="width: 100%" />
             </div>
             <div class="component-box">
-                <BitButton IsEnabled="true"
+                <BitButton
                            SecondaryText="It is a button">
                     Fill
                 </BitButton>
                 &nbsp;&nbsp;&nbsp;
-                <BitButton IsEnabled="true"
+                <BitButton
                            AriaHidden="true"
                            SecondaryText="It is a button"
                            Variant="BitVariant.Outline">

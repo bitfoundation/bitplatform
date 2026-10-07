@@ -265,7 +265,7 @@ public partial class BitFullCalendar : BitComponentBase
     /// <para>
     /// Everything that does not modify events keeps working - date navigation, view and mode
     /// switching, filtering, the settings panel, and opening an event to read its details.
-    /// Setting <c>IsEnabled</c> to <c>false</c> has the same effect on the event-editing surface.
+    /// Setting <c>Disabled</c> to <c>true</c> has the same effect on the event-editing surface.
     /// </para>
     /// </summary>
     [Parameter] public bool ReadOnly { get; set; }
@@ -517,7 +517,7 @@ public partial class BitFullCalendar : BitComponentBase
             State.SyncResources(Resources);
             State.SyncViews(Views);
             // A disabled calendar cannot be edited either, so it takes the same presentation-only path.
-            State.SetReadOnly(ReadOnly || IsEnabled is false);
+            State.SetReadOnly(ReadOnly || Disabled);
             // The bounds are applied before the date so a bound Date outside them is clamped once,
             // by the same rule the navigation buttons obey.
             State.SetDateBounds(MinDate, MaxDate);

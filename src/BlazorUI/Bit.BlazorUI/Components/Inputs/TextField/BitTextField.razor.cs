@@ -654,7 +654,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     [JSInvokable("OnGhostTextAccepted")]
     public async Task _NotifyGhostTextAccepted(string? acceptedText)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         await OnGhostTextAccepted.InvokeAsync(acceptedText);
     }
@@ -668,7 +668,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// </summary>
     public Task ClearAsync() => InvokeAsync(async () =>
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         var cleared = await ClearValue();
 
@@ -730,7 +730,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         ClassBuilder.Register(() => IsMultilineElement && AutoHeight ? "bit-tfl-mla" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && Required ? "bit-tfl-req" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && Required ? "bit-tfl-req" : string.Empty);
 
         ClassBuilder.Register(() => Underlined ? "bit-tfl-und" : string.Empty);
 
@@ -742,7 +742,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         ClassBuilder.Register(() => _hasFocus ? Classes?.Focused : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && Required && HasLabel is false ? "bit-tfl-rnl" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && Required && HasLabel is false ? "bit-tfl-rnl" : string.Empty);
 
         // Leaving the position unset renders no class at all, so each variant keeps the layout it comes
         // with instead of every field suddenly being laid out by the same rule.
@@ -1033,7 +1033,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     protected override async Task HandleOnStringValueInputAsync(ChangeEventArgs e)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         UpdateCharCount(e.Value?.ToString());
 
@@ -1281,7 +1281,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     private async Task HandleOnFocusIn(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         SetHasFocus(true);
         await OnFocusIn.InvokeAsync(e);
@@ -1289,7 +1289,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     private async Task HandleOnFocusOut(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         SetHasFocus(false);
         await OnFocusOut.InvokeAsync(e);
@@ -1297,7 +1297,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     private async Task HandleOnFocus(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         SetHasFocus(true);
         await OnFocus.InvokeAsync(e);
@@ -1305,7 +1305,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     private async Task HandleOnBlur(FocusEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         SetHasFocus(false);
         await OnBlur.InvokeAsync(e);
@@ -1313,7 +1313,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnKeyDown.InvokeAsync(e);
 
@@ -1336,7 +1336,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     private async Task HandleOnKeyUp(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnKeyUp.InvokeAsync(e);
     }
@@ -1346,14 +1346,14 @@ public partial class BitTextField : BitTextInputBase<string?>
     // stands for - copying the value, opening what it points at - is not an edit.
     private async Task HandleOnIconClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnIconClick.InvokeAsync(e);
     }
 
     private async Task HandleOnClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnClick.InvokeAsync(e);
     }
@@ -1396,7 +1396,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     private async Task HandleOnClearButtonClick()
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         var cleared = await ClearValue();
 

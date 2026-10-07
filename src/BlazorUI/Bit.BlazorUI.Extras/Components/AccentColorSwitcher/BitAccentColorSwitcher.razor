@@ -28,7 +28,7 @@
         <button @onclick="() => HandleOnClickAsync(item)"
                 type="button"
                 title="@item.Name"
-                disabled="@(IsEnabled is false)"
+                disabled="@(Disabled)"
                 bit-accent-swatch="@(cssMarked ? token : null)"
                 class="@GetSwatchClass(isActive, classMarked)"
                 style="@GetSwatchStyle(item, isActive, classMarked)"

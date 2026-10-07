@@ -23,7 +23,7 @@
             {
                 var prevIcon = BitIconInfo.From(PreviousIcon, PreviousIconName ?? (_isVertical ? "ChevronUp" : "ChevronLeft"));
                 <button type="button"
-                        disabled="@(IsEnabled is false || _slideAtStart || _slideHasOverflow is false)"
+                        disabled="@(Disabled || _slideAtStart || _slideHasOverflow is false)"
                         style="@Styles?.SlideButton"
                         aria-label="@(PreviousAriaLabel ?? "Previous")"
                         @onclick="() => Slide(false)"
@@ -58,7 +58,7 @@
                 <button @ref="_moreRef"
                         type="button"
                         id="@_MoreId"
-                        disabled="@(IsEnabled is false)"
+                        disabled="@(Disabled)"
                         style="display:none;@Styles?.OverflowButton"
                         aria-haspopup="menu"
                         aria-label="@(OverflowAriaLabel ?? "More")"
@@ -77,7 +77,7 @@
             {
                 var nextIcon = BitIconInfo.From(NextIcon, NextIconName ?? (_isVertical ? "ChevronDown" : "ChevronRight"));
                 <button type="button"
-                        disabled="@(IsEnabled is false || _slideAtEnd || _slideHasOverflow is false)"
+                        disabled="@(Disabled || _slideAtEnd || _slideHasOverflow is false)"
                         style="@Styles?.SlideButton"
                         aria-label="@(NextAriaLabel ?? "Next")"
                         @onclick="() => Slide(true)"
@@ -92,7 +92,7 @@
                 @* Outside the tablist on purpose: it asks for a new tab rather than being one, so it keeps
                    its own natural place in the tab order instead of taking one of the arrow keys. *@
                 <button type="button"
-                        disabled="@(IsEnabled is false)"
+                        disabled="@(Disabled)"
                         title="@(AddTitle ?? "Add")"
                         style="@Styles?.AddButton"
                         aria-label="@(AddAriaLabel ?? "Add")"
@@ -134,8 +134,8 @@
                                 tabindex="-1"
                                 role="menuitemradio"
                                 title="@item.Title"
-                                disabled="@(item.IsEnabled is false)"
-                                aria-disabled="@(item.IsEnabled ? null : "true")"
+                                disabled="@(item.Disabled)"
+                                aria-disabled="@(item.Disabled ? "true" : null)"
                                 aria-checked="@(item.IsSelected ? "true" : "false")"
                                 style="@Styles?.OverflowItem"
                                 @onclick="() => SelectFromMenu(item)"

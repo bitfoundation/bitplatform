@@ -56,7 +56,7 @@
                         {
                             <BitButton @ref="_closeButtonRef"
                                        OnClick="HandleOnCloseClick"
-                                       IsEnabled="IsEnabled"
+                                       Disabled="Disabled"
                                        AutoFocus="@_AutoFocusCloseButton"
                                        Size="@Size"
                                        AutoLoading="@AutoLoading"
@@ -103,7 +103,7 @@
                             <BitButton @key="action"
                                        @ref="_buttonRefs[action]"
                                        OnClick="@(() => HandleAction(action))"
-                                       IsEnabled="IsEnabled"
+                                       Disabled="Disabled"
                                        AutoFocus="@_AutoFocusAction(action)"
                                        Size="@Size"
                                        AutoLoading="@AutoLoading"

@@ -83,8 +83,8 @@ public partial class _BitNavChild<TItem> : IDisposable where TItem : class
     private async Task HandleOnClick()
     {
         if (Nav is null) return;
-        if (Nav.IsEnabled is false) return;
-        if (Nav.GetIsEnabled(Item) is false) return;
+        if (Nav.Disabled) return;
+        if (Nav.GetIsDisabled(Item)) return;
 
         // The selection is read before the click is handled: the manual mode selects the clicked item right
         // here, and asking afterwards would report every freshly clicked item as the already-selected one
@@ -140,9 +140,9 @@ public partial class _BitNavChild<TItem> : IDisposable where TItem : class
     {
         if (Nav is null) return;
         if (Nav.NoCollapse) return;
-        if (Nav.IsEnabled is false) return;
+        if (Nav.Disabled) return;
 
-        if (Nav.GetIsEnabled(Item) is false || Nav.GetChildItems(Item).Count is 0) return;
+        if (Nav.GetIsDisabled(Item) || Nav.GetChildItems(Item).Count is 0) return;
 
         await Nav.ToggleItem(Item);
     }
@@ -151,7 +151,7 @@ public partial class _BitNavChild<TItem> : IDisposable where TItem : class
     {
         var classes = new List<string>();
 
-        if (Nav.IsEnabled is false || Nav.GetIsEnabled(Item) is false)
+        if (Nav.Disabled || Nav.GetIsDisabled(Item))
         {
             classes.Add("bit-nav-dis");
         }

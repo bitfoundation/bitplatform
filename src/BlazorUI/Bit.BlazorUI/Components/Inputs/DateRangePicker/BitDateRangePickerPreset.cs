@@ -24,9 +24,9 @@ public class BitDateRangePickerPreset
     public Func<BitDateRangePickerValue?>? ValueProvider { get; set; }
 
     /// <summary>
-    /// Whether the preset's button is enabled.
+    /// Whether the preset's button is disabled.
     /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    public bool IsDisabled { get; set; }
 
     /// <summary>
     /// The title of the preset's button (tooltip).

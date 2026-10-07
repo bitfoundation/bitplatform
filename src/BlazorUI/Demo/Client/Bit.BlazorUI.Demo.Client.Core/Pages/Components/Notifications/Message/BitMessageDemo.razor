@@ -421,12 +421,12 @@
 
         <DemoExample Title="Disabled" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
-                With <b>IsEnabled</b> off the text stays readable and announced, but the buttons and the Escape key stop
+                With <b>Disabled</b> the text stays readable and announced, but the buttons and the Escape key stop
                 working and no countdown runs; enabling it again starts the countdown over. The public methods still work.
             </div>
             <br />
             <div class="box">
-                <BitMessage IsEnabled="isMessageEnabled"
+                <BitMessage Disabled="isMessageDisabled"
                             Truncate
                             Dismissible
                             DismissOnEscape
@@ -439,7 +439,7 @@
                     everyone who is using them today; after that they turn read-only, and nothing new can be uploaded
                     to them until the licence is renewed.
                 </BitMessage>
-                <BitToggle Label="IsEnabled" @bind-Value="isMessageEnabled" />
+                <BitToggle Label="Disabled" @bind-Value="isMessageDisabled" />
                 @if (isDisabledSampleDismissed)
                 {
                     <BitButton OnClick="() => isDisabledSampleDismissed = false">Bring it back</BitButton>
@@ -479,7 +479,7 @@
                 <BitChoiceGroupOption Text="Outline" Value="BitVariant.Outline" />
                 <BitChoiceGroupOption Text="Text" Value="BitVariant.Text" />
             </BitChoiceGroup>
-            <BitToggle Label="Tinted" Inline @bind-Value="colorTinted" IsEnabled="colorVariant is not BitVariant.Fill" />
+            <BitToggle Label="Tinted" Inline @bind-Value="colorTinted" Disabled="colorVariant is BitVariant.Fill" />
             <br />
             <div class="box">
                 <BitMessage Color="BitColor.Primary" Variant="colorVariant" Tinted="colorTinted">Primary.</BitMessage>

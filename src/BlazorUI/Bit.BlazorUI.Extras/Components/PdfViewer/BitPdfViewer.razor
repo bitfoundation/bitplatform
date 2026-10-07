@@ -26,7 +26,7 @@
            implementing it tells assistive technology something untrue. A disabled viewer
            makes it inert: nothing in it can be focused, clicked or typed into. *@
         <div class="bit-pdv-toolbar @Classes?.Toolbar" style="@Styles?.Toolbar" role="group" aria-label="@ActiveTexts.ToolbarAriaLabel"
-             inert="@(IsEnabled is false)">
+             inert="@(Disabled)">
             @if (ToolbarStartTemplate is not null)
             {
                 <div class="bit-pdv-group bit-pdv-custom">@ToolbarStartTemplate(this)</div>
@@ -329,7 +329,7 @@
         @if (_showOutline && HasOutline)
         {
             <div class="bit-pdv-outline @Classes?.Outline" style="@Styles?.Outline" role="tree" aria-label="@ActiveTexts.Bookmarks"
-                 inert="@(IsEnabled is false)">
+                 inert="@(Disabled)">
                 @{ _outlineOrdinal = 0; }
                 @RenderOutline(_outline)
             </div>
@@ -337,7 +337,7 @@
         @if (_showLayers && HasLayers)
         {
             <div class="bit-pdv-layers @Classes?.Layers" style="@Styles?.Layers" role="group" aria-label="@ActiveTexts.Layers"
-                 inert="@(IsEnabled is false)">
+                 inert="@(Disabled)">
                 @foreach (var layer in _layers)
                 {
                     var item = layer;
@@ -351,7 +351,7 @@
         @if (_showAttachments && HasAttachments)
         {
             <div class="bit-pdv-attachments @Classes?.Attachments" style="@Styles?.Attachments" role="list" aria-label="@ActiveTexts.Attachments"
-                 inert="@(IsEnabled is false)">
+                 inert="@(Disabled)">
                 @foreach (var attachment in _attachments)
                 {
                     var item = attachment;
@@ -373,7 +373,7 @@
         @if (_showThumbnails && _thumbs.Count > 0)
         {
             <div class="bit-pdv-thumbs @Classes?.Thumbnails" style="@Styles?.Thumbnails" role="listbox" aria-label="@ActiveTexts.Thumbnails"
-                 inert="@(IsEnabled is false)" @ref="_thumbsRef">
+                 inert="@(Disabled)" @ref="_thumbsRef">
                 @for (int i = 0; i < _thumbs.Count; i++)
                 {
                     int index = i;

@@ -664,7 +664,7 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsTrue(component.Find(".bit-ttp").ClassList.Contains("bit-dis"));
@@ -687,7 +687,7 @@ public class BitTooltipTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
 
         Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
     }
@@ -699,7 +699,7 @@ public class BitTooltipTests : BunitTestContext
         {
             parameters.Add(p => p.Text, "Tip");
             parameters.Add(p => p.DefaultIsShown, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
@@ -711,7 +711,7 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         await component.InvokeAsync(() => component.Instance.Show());
@@ -1148,7 +1148,7 @@ public class BitTooltipTests : BunitTestContext
         var component = RenderComponent<BitTooltip>(parameters =>
         {
             parameters.Add(p => p.Text, "Tip");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         Assert.IsNull(component.Find(".bit-ttp").GetAttribute("aria-describedby"));
@@ -1359,10 +1359,10 @@ public class BitTooltipTests : BunitTestContext
         component.Find(".bit-ttp").TriggerEvent("onpointerenter", Mouse());
         Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
         Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
         Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
 
         // The pointer that was over the anchor is no longer counted, so the leave that follows it hides
@@ -2032,7 +2032,7 @@ public class BitTooltipTests : BunitTestContext
         {
             parameters.Add(p => p.Text, "Tip");
             parameters.Add(p => p.ShowOnClick, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Enter" });

@@ -72,11 +72,11 @@ public class BitElementTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitElementShouldRespectIsEnabled(bool isEnabled)
+    public void BitElementShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitElement>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         if (isEnabled)
@@ -103,7 +103,7 @@ public class BitElementTests : BunitTestContext
         var component = RenderComponent<BitElement>(parameters =>
         {
             parameters.Add(p => p.Element, element);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var el = component.Find(element);
@@ -126,7 +126,7 @@ public class BitElementTests : BunitTestContext
         var component = RenderComponent<BitElement>(parameters =>
         {
             parameters.Add(p => p.Element, element);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var el = component.Find(element);
@@ -179,7 +179,7 @@ public class BitElementTests : BunitTestContext
     {
         var component = RenderComponent<BitElementDisabledClickTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         // A screen reader activates what it announces by dispatching a click on it, which the pointer-events of the
@@ -193,7 +193,7 @@ public class BitElementTests : BunitTestContext
     {
         var component = RenderComponent<BitElementDisabledClickTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var element = component.Find(".activated");
@@ -213,7 +213,7 @@ public class BitElementTests : BunitTestContext
     {
         var component = RenderComponent<BitElementDisabledClickTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         // A hover activates nothing, so a disabled element keeps what it does on one (a tooltip, a highlight).
@@ -227,7 +227,7 @@ public class BitElementTests : BunitTestContext
     {
         var component = RenderComponent<BitElementDisabledClickTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.Find(".inner-key").KeyDown(Key.Enter);
@@ -241,12 +241,12 @@ public class BitElementTests : BunitTestContext
     {
         var component = RenderComponent<BitElementDisabledClickTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         var element = component.Find(".activated");
@@ -264,7 +264,7 @@ public class BitElementTests : BunitTestContext
     {
         var component = RenderComponent<BitElementDisabledClickTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.Find(".inner").Click();
@@ -278,12 +278,12 @@ public class BitElementTests : BunitTestContext
     {
         var component = RenderComponent<BitElementDisabledClickTest>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, true);
+            parameters.Add(p => p.Disabled, false);
         });
 
         component.FindAll(".bit-elm")[0].Click();
@@ -301,7 +301,7 @@ public class BitElementTests : BunitTestContext
         var component = RenderComponent<BitElement>(parameters =>
         {
             parameters.Add(p => p.Element, "a");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var element = component.Find("a");
@@ -345,7 +345,7 @@ public class BitElementTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitElementShouldRespectIsEnabledChangingAfterRender()
+    public void BitElementShouldRespectDisabledChangingAfterRender()
     {
         var component = RenderComponent<BitElement>();
 
@@ -353,7 +353,7 @@ public class BitElementTests : BunitTestContext
 
         component.Render(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.MarkupMatches(@"<div class=""bit-elm bit-dis"" tabindex=""-1"" aria-disabled=""true"" id:ignore></div>");
@@ -757,12 +757,25 @@ public class BitElementTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitElementShouldKeepASplattedDisabledAttributeOfAnEnabledElement()
+    public void BitElementShouldTreatALowercaseDisabledAttributeAsTheDisabledParameter()
     {
         var component = RenderComponent<BitElementHtmlAttributesTest>();
 
         var element = component.FindAll(".bit-elm")[3];
 
+        Assert.IsTrue(element.HasAttribute("disabled"));
+        Assert.AreEqual("true", element.GetAttribute("aria-disabled"));
+        Assert.IsTrue(element.ClassList.Contains("bit-dis"));
+    }
+
+    [TestMethod]
+    public void BitElementShouldKeepASplattedDisabledAttributeOfAnEnabledElement()
+    {
+        var component = RenderComponent<BitElementHtmlAttributesTest>();
+
+        var element = component.FindAll(".bit-elm")[16];
+
+        Assert.IsFalse(component.FindComponents<BitElement>()[16].Instance.Disabled);
         Assert.IsTrue(element.HasAttribute("disabled"));
         Assert.IsFalse(element.HasAttribute("aria-disabled"));
         Assert.IsFalse(element.ClassList.Contains("bit-dis"));
@@ -902,7 +915,7 @@ public class BitElementTests : BunitTestContext
         {
             parameters.Add(p => p.Element, "a");
             parameters.Add(p => p.TabIndex, "3");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         // The tab stop of the parameter is the one thing that would still reach a disabled element of a tag the
@@ -917,7 +930,7 @@ public class BitElementTests : BunitTestContext
         {
             parameters.Add(p => p.Element, "button");
             parameters.Add(p => p.TabIndex, "3");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var el = component.Find("button");

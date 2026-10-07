@@ -31,7 +31,7 @@ public partial class _BitMenuButtonCustomDemo
         Text = { Name = nameof(Operation.Name) },
         Key = { Name = nameof(Operation.Id) },
         IconName = { Name = nameof(Operation.Image) },
-        IsEnabled = { Selector = m => m.Disabled is false },
+        IsDisabled = { Selector = m => m.Disabled },
         IsSeparator = { Name = nameof(Operation.IsDivider) },
         Href = { Name = nameof(Operation.Url) },
         Target = { Name = nameof(Operation.UrlTarget) },
@@ -55,7 +55,7 @@ public partial class _BitMenuButtonCustomDemo
         Text = { Name = nameof(Operation.Name) },
         Key = { Name = nameof(Operation.Id) },
         Icon = { Selector = i => i.IconInfo },
-        IsEnabled = { Selector = m => m.Disabled is false }
+        IsDisabled = { Selector = m => m.Disabled }
     };
 
 
@@ -225,7 +225,7 @@ public partial class _BitMenuButtonCustomDemo
     ];
 
     private static IEnumerable<BitChoiceGroupItem<Operation>> choiceGroupCustoms =
-        basicCustoms.Select(i => new BitChoiceGroupItem<Operation>() { Id = i.Id, Text = i.Name, IsEnabled = i.Disabled is false, Value = i });
+        basicCustoms.Select(i => new BitChoiceGroupItem<Operation>() { Id = i.Id, Text = i.Name, IsDisabled = i.Disabled, Value = i });
 
     protected override void OnInitialized()
     {

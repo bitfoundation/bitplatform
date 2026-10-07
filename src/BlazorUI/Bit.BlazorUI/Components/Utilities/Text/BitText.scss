@@ -12,7 +12,7 @@
 //   --bit-Text-decoration-color          color of the Underline and Strikethrough lines  (default: the text color)
 //   --bit-Text-decoration-thickness      thickness of those lines                        (default: auto, from the font)
 //   --bit-Text-underline-offset          gap between the baseline and the underline      (default: auto, from the font)
-//   --bit-Text-disabled-opacity          opacity of a text whose IsEnabled is false      (default: $opa-dis)
+//   --bit-Text-disabled-opacity          opacity of a text whose Disabled is true      (default: $opa-dis)
 
 .bit-txt {
     // In the color property currentcolor is the color inherited from the parent, so this is the "inherit" it always

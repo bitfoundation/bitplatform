@@ -70,9 +70,9 @@ public class BitNavBarItem
     public string? IconName { get; set; }
 
     /// <summary>
-    /// Whether or not the navbar item is enabled.
+    /// Whether or not the navbar item is disabled.
     /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    public bool IsDisabled { get; set; }
 
     /// <summary>
     /// A unique value to use as a key or id of the navbar item, and what the DefaultSelectedKey of the navbar matches.

@@ -302,20 +302,20 @@ private int actionClickCount = 0;";
             SecondaryText=""Software Engineer""
             Presence=""BitPersonaPresence.Online""
             Size=""BitPersonaSize.Size72""
-            IsEnabled=""false""
+            Disabled
             ImageUrl=""/images/persona/persona-female.png"" />
 
 <BitPersona PrimaryText=""Saleh Khafan""
             SecondaryText=""Clickable, disabled""
             Size=""BitPersonaSize.Size72""
             OnImageClick=""() => {}""
-            IsEnabled=""false"" />
+            Disabled />
 
 <BitPersona Href=""/components/persona""
             PrimaryText=""Xafan Salina""
             SecondaryText=""Link, disabled""
             Size=""BitPersonaSize.Size72""
-            IsEnabled=""false""
+            Disabled
             ImageUrl=""/images/persona/persona-female.png"" />";
 
     private readonly string example10RazorCode = @"

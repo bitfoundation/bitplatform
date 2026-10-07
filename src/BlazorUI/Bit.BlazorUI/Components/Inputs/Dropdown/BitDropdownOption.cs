@@ -12,7 +12,7 @@ public partial class BitDropdownOption<TValue> : ComponentBase, IDisposable
     private object? _lastData;
     private TValue? _lastValue;
     private bool _lastIsHidden;
-    private bool _lastIsEnabled = true;
+    private bool _lastIsDisabled;
     private BitDropdownItemType _lastItemType = BitDropdownItemType.Normal;
 
     [CascadingParameter] protected BitDropdown<BitDropdownOption<TValue>, TValue> Parent { get; set; } = default!;
@@ -53,9 +53,9 @@ public partial class BitDropdownOption<TValue> : ComponentBase, IDisposable
     [Parameter] public object? Data { get; set; }
 
     /// <summary>
-    /// Determines if the dropdown option is enabled.
+    /// Determines if the dropdown option is disabled.
     /// </summary>
-    [Parameter] public bool IsEnabled { get; set; } = true;
+    [Parameter] public bool IsDisabled { get; set; }
 
     /// <summary>
     /// Determines if the dropdown option is hidden.
@@ -122,7 +122,7 @@ public partial class BitDropdownOption<TValue> : ComponentBase, IDisposable
             _lastText != Text ||
             _lastItemType != ItemType ||
             _lastIsHidden != IsHidden ||
-            _lastIsEnabled != IsEnabled ||
+            _lastIsDisabled != IsDisabled ||
             Equals(_lastData, Data) is false ||
             EqualityComparer<TValue>.Default.Equals(_lastValue, Value) is false)
         {
@@ -132,7 +132,7 @@ public partial class BitDropdownOption<TValue> : ComponentBase, IDisposable
             _lastValue = Value;
             _lastItemType = ItemType;
             _lastIsHidden = IsHidden;
-            _lastIsEnabled = IsEnabled;
+            _lastIsDisabled = IsDisabled;
 
             Parent?.NotifyOptionParametersChanged();
         }

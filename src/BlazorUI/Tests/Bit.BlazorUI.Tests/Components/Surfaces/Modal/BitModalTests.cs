@@ -449,7 +449,7 @@ public class BitModalTests : BunitTestContext
         var com = RenderComponent<BitModal>(parameters =>
         {
             parameters.Bind(p => p.IsOpen, isOpen, value => isOpen = value);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         com.Find(".bit-mdl-ovl").Click();

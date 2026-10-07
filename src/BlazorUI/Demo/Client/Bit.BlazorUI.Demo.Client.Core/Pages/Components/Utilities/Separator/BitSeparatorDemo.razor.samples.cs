@@ -6,7 +6,7 @@ public partial class BitSeparatorDemo
 <BitSeparator />
 <BitSeparator>Text</BitSeparator>
 <BitSeparator><BitIcon IconName=""@BitIconName.Clock"" /></BitSeparator>
-<BitSeparator IsEnabled=""false"">Disabled</BitSeparator>";
+<BitSeparator Disabled>Disabled</BitSeparator>";
 
     private readonly string example2RazorCode = @"
 <style>

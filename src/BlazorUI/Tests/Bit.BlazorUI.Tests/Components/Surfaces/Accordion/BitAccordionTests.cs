@@ -15,11 +15,11 @@ public class BitAccordionTests : BunitTestContext
         DataRow(true),
         DataRow(false),
     ]
-    public void BitAccordionIsEnabledTest(bool isEnabled)
+    public void BitAccordionDisabledTest(bool isEnabled)
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var bitAccordion = com.Find(".bit-acd");
@@ -38,11 +38,11 @@ public class BitAccordionTests : BunitTestContext
         DataRow(true),
         DataRow(false),
     ]
-    public void BitAccordionIsEnabledShouldDriveTheHeaderState(bool isEnabled)
+    public void BitAccordionDisabledShouldDriveTheHeaderState(bool isEnabled)
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var header = com.Find(".bit-acd-hdr");
@@ -59,7 +59,7 @@ public class BitAccordionTests : BunitTestContext
 
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnClick, () => clicked = true);
             parameters.Add(p => p.OnChange, () => changed = true);
         });
@@ -939,7 +939,7 @@ public class BitAccordionTests : BunitTestContext
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         await com.InvokeAsync(() => com.Instance.Toggle());
@@ -1591,7 +1591,7 @@ public class BitAccordionTests : BunitTestContext
 
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnToggling, (BitAccordionToggleArgs _) => calls++);
         });
 
@@ -2010,7 +2010,7 @@ public class BitAccordionTests : BunitTestContext
     {
         var com = RenderComponent<BitAccordion>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.TabIndex, "3");
         });
 
@@ -2600,7 +2600,7 @@ public class BitAccordionTests : BunitTestContext
         var com = RenderComponent<BitAccordion>(parameters =>
         {
             parameters.Add(p => p.HiddenUntilFound, true);
-            if (kind == "disabled") parameters.Add(p => p.IsEnabled, false);
+            if (kind == "disabled") parameters.Add(p => p.Disabled, true);
             if (kind == "readonly") parameters.Add(p => p.ReadOnly, true);
             if (kind == "controlled") parameters.Add(p => p.IsExpanded, false);
         });

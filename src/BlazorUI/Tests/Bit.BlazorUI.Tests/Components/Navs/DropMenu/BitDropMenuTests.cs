@@ -184,7 +184,7 @@ public class BitDropMenuTests : BunitTestContext
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
             parameters.Add(p => p.Text, "Menu");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         var button = component.Find(".bit-drm-btn");
@@ -843,7 +843,7 @@ public class BitDropMenuTests : BunitTestContext
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
             parameters.Add(p => p.Text, "Menu");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.OnClick, () => clicks++);
         });
 
@@ -1665,7 +1665,7 @@ public class BitDropMenuTests : BunitTestContext
         {
             parameters.Add(p => p.Text, "Menu");
             parameters.Add(p => p.OpenOnHover, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         component.Find(".bit-drm").MouseEnter();
@@ -1797,7 +1797,7 @@ public class BitDropMenuTests : BunitTestContext
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
             parameters.Add(p => p.Text, "Menu");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
         });
 
         await component.InvokeAsync(() => component.Instance.Open());
@@ -1839,7 +1839,7 @@ public class BitDropMenuTests : BunitTestContext
         component.Render(parameters =>
         {
             parameters.Add(p => p.Text, "Menu");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
@@ -1880,7 +1880,7 @@ public class BitDropMenuTests : BunitTestContext
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
             parameters.Add(p => p.Text, "Menu");
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.DefaultIsOpen, true);
         });
 
@@ -2063,7 +2063,7 @@ public class BitDropMenuTests : BunitTestContext
         {
             parameters.Add(p => p.Text, "Menu");
             parameters.Add(p => p.AutoClose, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.IsOpen, isOpen);
             parameters.Add(p => p.Body, (RenderFragment)(b => b.AddMarkupContent(0, @"<button class=""item"">Item</button>")));
         });

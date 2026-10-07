@@ -5,7 +5,7 @@ public partial class BitFileInputDemo
     private readonly string example1RazorCode = @"
 <BitFileInput Label=""Browse or drop a file"" Title=""Pick one file from your device"" />
 
-<BitFileInput Label=""Disabled file input"" IsEnabled=""false"" />";
+<BitFileInput Label=""Disabled file input"" Disabled />";
 
     private readonly string example2RazorCode = @"
 <BitCheckbox @bind-Value=""allowDrop"" Label=""AllowDrop"" />
@@ -438,9 +438,9 @@ private async Task HashTheFirstFile()
 <BitFileInput Variant=""BitVariant.Outline"" Label=""Outline"" />
 <BitFileInput Variant=""BitVariant.Text"" Label=""Text"" />
 
-<BitFileInput Variant=""BitVariant.Fill"" Label=""Fill"" IsEnabled=""false"" />
-<BitFileInput Variant=""BitVariant.Outline"" Label=""Outline"" IsEnabled=""false"" />
-<BitFileInput Variant=""BitVariant.Text"" Label=""Text"" IsEnabled=""false"" />
+<BitFileInput Variant=""BitVariant.Fill"" Label=""Fill"" Disabled />
+<BitFileInput Variant=""BitVariant.Outline"" Label=""Outline"" Disabled />
+<BitFileInput Variant=""BitVariant.Text"" Label=""Text"" Disabled />
 
 <BitFileInput Variant=""BitVariant.Fill"" Color=""BitColor.Success"" Label=""Fill"" />
 <BitFileInput Variant=""BitVariant.Outline"" Color=""BitColor.Success"" Label=""Outline"" />

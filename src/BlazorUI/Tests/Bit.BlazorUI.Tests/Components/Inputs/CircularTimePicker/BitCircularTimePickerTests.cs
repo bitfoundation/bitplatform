@@ -50,7 +50,7 @@ public class BitCircularTimePickerTests : BunitTestContext
     {
         var component = RenderComponent<BitCircularTimePicker>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var bitCircularTimePicker = component.Find(".bit-ctp");
@@ -107,7 +107,7 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         var component = RenderComponent<BitCircularTimePicker>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.OnClick, () => clickedValue++);
         });
 
@@ -2263,7 +2263,7 @@ public class BitCircularTimePickerTests : BunitTestContext
         Assert.AreEqual("3", component.Find(".bit-ctp-clf").GetAttribute("tabindex"));
 
         // a picker that is switched off is out of the tab order whatever the tab index says
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, false));
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
 
         Assert.AreEqual("-1", component.Find(".bit-ctp-clf").GetAttribute("tabindex"));
     }

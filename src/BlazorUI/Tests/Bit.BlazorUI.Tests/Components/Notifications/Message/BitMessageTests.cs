@@ -1419,7 +1419,7 @@ public class BitMessageTests : BunitTestContext
 
         var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(50));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
@@ -1436,12 +1436,12 @@ public class BitMessageTests : BunitTestContext
 
         var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.AutoDismissTime, TimeSpan.FromMilliseconds(100));
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
         });
 
-        component.Render(parameters => parameters.Add(p => p.IsEnabled, true));
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
 
         WaitUntil(() => dismissCount == 1);
 
@@ -2262,13 +2262,13 @@ public class BitMessageTests : BunitTestContext
         DataRow(true),
         DataRow(false)
     ]
-    public void BitMessageShouldRespectIsEnabled(bool isEnabled)
+    public void BitMessageShouldRespectDisabled(bool isEnabled)
     {
         var dismissCount = 0;
 
         var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.Truncate, true);
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
             parameters.AddChildContent(LongText);
@@ -2286,7 +2286,7 @@ public class BitMessageTests : BunitTestContext
 
         var component = RenderComponent<BitMessage>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.Truncate, true);
             parameters.Add(p => p.DismissOnEscape, true);
             parameters.Add(p => p.OnDismiss, () => dismissCount++);
@@ -2776,7 +2776,7 @@ public class BitMessageTests : BunitTestContext
         var component = RenderComponent<BitMessage>(parameters =>
         {
             parameters.Add(p => p.Truncate, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.AddChildContent(LongText);
         });
 
@@ -2968,7 +2968,7 @@ public class BitMessageTests : BunitTestContext
         var component = RenderComponent<BitMessage>(parameters =>
         {
             parameters.Add(p => p.Dismissible, true);
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.ShowAutoDismissProgress, true);
             parameters.Add(p => p.AutoDismissTime, TimeSpan.FromSeconds(10));
             parameters.AddChildContent("Hello");

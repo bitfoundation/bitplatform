@@ -728,7 +728,7 @@ public partial class BitModal : BitComponentBase
         // is detected, regardless of whether the instance reference changed.
         var classesRoot = Classes?.Root;
         var paramsClassesRoot = _params.Classes?.Root;
-        if (previous.IsEnabled != _params.IsEnabled ||
+        if (previous.Disabled != _params.Disabled ||
             previous.Dir != _params.Dir ||
             previous.FullHeight != _params.FullHeight ||
             previous.FullWidth != _params.FullWidth ||
@@ -1014,7 +1014,7 @@ public partial class BitModal : BitComponentBase
 
     private async Task HandleOnOverlayClick(MouseEventArgs e)
     {
-        if (_params.IsEnabled is false) return;
+        if (_params.Disabled is true) return;
 
         await _params.OnOverlayClick.InvokeAsync(e);
 
@@ -1031,7 +1031,7 @@ public partial class BitModal : BitComponentBase
     // The key is only seen while the focus is inside the Modal, which is where it is put when the Modal opens.
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (_params.IsEnabled is false) return;
+        if (_params.Disabled is true) return;
 
         if (e.Key is not "Escape") return;
 
@@ -1048,7 +1048,7 @@ public partial class BitModal : BitComponentBase
     [JSInvokable("OnEscape")]
     public async Task _OnEscape()
     {
-        if (IsOpen is false || _params.IsEnabled is false) return;
+        if (IsOpen is false || _params.Disabled is true) return;
 
         if (_params.NoDismissOnEscape ?? false)
         {
@@ -1066,7 +1066,7 @@ public partial class BitModal : BitComponentBase
 
     private async Task HandleOnCloseClick(MouseEventArgs e)
     {
-        if (_params.IsEnabled is false) return;
+        if (_params.Disabled is true) return;
 
         await TryDismiss();
     }
@@ -1653,16 +1653,16 @@ public partial class BitModal : BitComponentBase
     /// Non-nullable bools cannot distinguish "not set" from "explicitly false", so they merge
     /// asymmetrically and the component param only expresses the "stronger" intent for that flag:
     /// <list type="bullet">
-    /// <item><see cref="AbsolutePosition"/>, <see cref="AutoToggleScroll"/>, <see cref="Blocking"/>,
+    /// <item><see cref="AbsolutePosition"/>, <see cref="AutoToggleScroll"/>, <see cref="Blocking"/>, <see cref="BitComponentBase.Disabled"/>,
     /// <see cref="Draggable"/>, <see cref="FullHeight"/>, <see cref="FullSize"/>, <see cref="FullWidth"/>,
     /// <see cref="KeepMounted"/>, <see cref="ModeFull"/>, <see cref="Modeless"/>, <see cref="NoAutoFocus"/>,
     /// <see cref="NoBorder"/>, <see cref="NoDismissOnEscape"/>, <see cref="NoFocusTrap"/>,
     /// <see cref="NoRestoreFocus"/>, <see cref="NoScrollLock"/>, <see cref="ShowCloseButton"/>:
     /// the component param can only force the behavior <b>on</b>
     /// (<c>X ? true : p.X</c>); it can never force it off.</item>
-    /// <item><see cref="AriaModal"/>, <see cref="BitComponentBase.IsEnabled"/>:
+    /// <item><see cref="AriaModal"/>:
     /// the component param can only force the behavior <b>off</b> (<c>X is false ? false : p.X</c>); it
-    /// can never force it on. These default to <c>true</c>, so opting out is the meaningful override.</item>
+    /// can never force it on. It defaults to <c>true</c>, so opting out is the meaningful override.</item>
     /// </list>
     /// To express the opposite (non-overridable) intent, set the value through the cascaded
     /// <see cref="BitModalParameters"/> (e.g. via the <see cref="BitModalService"/>) rather than the component parameter.
@@ -1673,8 +1673,8 @@ public partial class BitModal : BitComponentBase
 
         return new BitModalParameters
         {
-            // Can only force off (default is enabled): see remarks on asymmetric merge.
-            IsEnabled = Merge(nameof(IsEnabled), Off(IsEnabled), p.IsEnabled),
+            // Can only force on (default is not disabled): see remarks on asymmetric merge.
+            Disabled = Merge(nameof(Disabled), On(Disabled), p.Disabled),
             // HtmlAttributes on both sources are externally settable (non-nullable) properties, so a
             // caller can still assign null. Coalesce to empty dictionaries so the Concat in
             // MergeHtmlAttributes (and the snapshot copies) never NRE, mirroring BitModalParameters.Merge.
@@ -1761,7 +1761,7 @@ public partial class BitModal : BitComponentBase
 
     private static bool? Off(bool own) => own ? null : false;
 
-    // The base component marks the root disabled, right-to-left and hidden off its own IsEnabled, Dir and
+    // The base component marks the root disabled, right-to-left and hidden off its own Disabled, Dir and
     // Visibility, which never see what the service asks for - and a BitParams default written on them would leave
     // its mark on a Modal whose showing asked for the opposite. So those three are made to hold the merged values
     // (ApplyEffectiveBaseParameters), and the ones the Modal was not given are first put back to what they hold
@@ -1769,7 +1769,7 @@ public partial class BitModal : BitComponentBase
     // the ones it was given, its parent has just set again.
     private void ResetUnsetBaseParameters()
     {
-        if (HasNotBeenSet(nameof(IsEnabled))) IsEnabled = true;
+        if (HasNotBeenSet(nameof(Disabled))) Disabled = false;
 
         // Null leaves the direction to the one cascaded from an ancestor.
         if (HasNotBeenSet(nameof(Dir))) Dir = null;
@@ -1779,7 +1779,7 @@ public partial class BitModal : BitComponentBase
 
     private void ApplyEffectiveBaseParameters()
     {
-        IsEnabled = _params.IsEnabled ?? true;
+        Disabled = _params.Disabled ?? false;
         Dir = _params.Dir;
         Visibility = EffectiveVisibility;
     }

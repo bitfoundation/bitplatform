@@ -1177,7 +1177,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     public async Task _CloseCalloutBeforeAnotherCalloutIsOpened()
     {
         if (Standalone) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (await AssignIsOpenInternal(false) is false) return;
 
@@ -1256,7 +1256,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     // something to commit; a cleared value is.
     private bool IsApplyDisabled()
     {
-        if (IsEnabled is false || ReadOnly) return true;
+        if (Disabled || ReadOnly) return true;
 
         return CurrentValue is not null && CurrentValue.StartDate.HasValue != CurrentValue.EndDate.HasValue;
     }
@@ -1282,7 +1282,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private async Task HandleOnCancelButtonClick()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnCancel.InvokeAsync();
 
@@ -1312,7 +1312,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     public async Task CloseCallout()
     {
         if (Standalone) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hoveredDate = null;
 
@@ -1355,7 +1355,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         // active while its calendar is on screen. Standalone has no input to mark in the first place.
         ClassBuilder.Register(() => IsOpen && Standalone is false ? "bit-dtrp-opn" : string.Empty);
 
-        ClassBuilder.Register(() => IsEnabled && Required ? "bit-dtrp-req" : string.Empty);
+        ClassBuilder.Register(() => Disabled is false && Required ? "bit-dtrp-req" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -1448,7 +1448,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                 // initial document, which the input of an interactively rendered picker is not, so the focus
                 // is placed from here instead. A standalone picker carries the value in a hidden input nobody
                 // is meant to land on, so it has nothing to focus.
-                if (AutoFocus && IsEnabled && Standalone is false)
+                if (AutoFocus && Disabled is false && Standalone is false)
                 {
                     await InputElement.FocusAsync();
                 }
@@ -1731,7 +1731,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private async Task HandleOnClick()
     {
         if (Standalone) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         var wasOpen = IsOpen;
 
@@ -1835,7 +1835,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private async Task HandleOnFocusIn()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hasFocus = true;
         ClassBuilder.Reset();
@@ -1845,7 +1845,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private async Task HandleOnFocusOut()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hasFocus = false;
         ClassBuilder.Reset();
@@ -1855,7 +1855,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private async Task HandleOnFocus()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         _hasFocus = true;
         ClassBuilder.Reset();
@@ -1865,7 +1865,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private void HandleOnChange(ChangeEventArgs e)
     {
-        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (Disabled || InvalidValueBinding()) return;
         if (AllowTextInput is false || ReadOnly) return;
 
         var now = Today ?? DateTimeOffset.Now;
@@ -1894,7 +1894,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private async Task HandleOnClearButtonClick()
     {
         if (ReadOnly) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // Clearing the value runs OnSetParameters, which puts the four time fields back to the ones
         // of StartingValue (or to the defaults) and re-applies the MaxRange clamp on its own.
@@ -2053,7 +2053,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private async Task SelectDate(DateTime selectedDate)
     {
         if (ReadOnly) return;
-        if (IsEnabled is false || InvalidValueBinding()) return;
+        if (Disabled || InvalidValueBinding()) return;
         if (IsDayDisabled(selectedDate)) return;
 
         _hoveredDate = null;
@@ -2151,7 +2151,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private async Task SelectPreset(BitDateRangePickerPreset preset)
     {
         if (ReadOnly) return;
-        if (IsEnabled is false || preset.IsEnabled is false || InvalidValueBinding()) return;
+        if (Disabled || preset.IsDisabled || InvalidValueBinding()) return;
 
         var presetValue = preset.ValueProvider is not null ? preset.ValueProvider() : preset.Value;
         if (presetValue is null) return;
@@ -2241,7 +2241,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private async Task HandleOnInputKeyDown(KeyboardEventArgs e)
     {
         if (Standalone) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (e.Key == "Escape")
         {
@@ -2260,7 +2260,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private async Task SelectMonth(int month)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (IsMonthOutOfMinAndMaxDate(month)) return;
 
         var previousYear = _currentYear;
@@ -2284,7 +2284,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private async Task SelectYear(int year)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (IsYearOutOfMinAndMaxDate(year)) return;
 
         var previousYear = _currentYear;
@@ -2307,7 +2307,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private void ToggleBetweenMonthAndYearPicker()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         // The year navigation of the month picker moves _currentYear without touching the year
         // picker's range, so the range is realigned whenever it no longer contains the current year.
@@ -2326,7 +2326,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private async Task HandleMonthChange(bool isNext)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (CanChangeMonth(isNext) is false) return;
 
         var previousYear = _currentYear;
@@ -2350,7 +2350,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private async Task HandleYearChange(bool isNext)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (CanChangeYear(isNext) is false) return;
 
         var previousYear = _currentYear;
@@ -2365,7 +2365,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private void HandleYearRangeChange(bool isNext)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (CanChangeYearRange(isNext) is false) return;
 
         var fromYear = _yearPickerStartYear + (isNext ? +12 : -12);
@@ -2375,7 +2375,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private async Task HandleGoToToday()
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         var previousYear = _currentYear;
         var previousMonth = _currentMonth;
@@ -2512,7 +2512,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private bool IsGoToTodayButtonDisabled(int todayYear, int todayMonth, bool showYearPicker = false)
     {
-        if (IsEnabled is false) return true;
+        if (Disabled) return true;
 
         if (showYearPicker)
         {
@@ -2573,7 +2573,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private bool CanChangeMonth(bool isNext)
     {
-        if (IsEnabled is false) return false;
+        if (Disabled) return false;
 
         var maxDate = GetMaxDate();
         var minDate = GetMinDate();
@@ -2618,7 +2618,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private bool CanChangeYear(bool isNext)
     {
-        if (IsEnabled is false) return false;
+        if (Disabled) return false;
 
         var maxDate = GetMaxDate();
         var minDate = GetMinDate();
@@ -2651,7 +2651,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private bool CanChangeYearRange(bool isNext)
     {
-        if (IsEnabled is false) return false;
+        if (Disabled) return false;
 
         var maxDate = GetMaxDate();
         var minDate = GetMinDate();
@@ -3077,7 +3077,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     // PageUp/PageDown moving to the same month of the adjacent year.
     private async Task HandleMonthKeyDown(KeyboardEventArgs e, int month)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (e.Key is "Escape")
         {
@@ -3145,7 +3145,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     // the adjacent range of years.
     private async Task HandleYearKeyDown(KeyboardEventArgs e, int year)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (e.Key is "Escape")
         {
@@ -3256,7 +3256,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     // Escape closes the callout from anywhere inside it, as the dialog pattern requires.
     private async Task HandleOnCalloutKeyDown(KeyboardEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
         if (e.Key != "Escape") return;
 
         await CloseCalloutAndRestoreFocus();
@@ -3264,7 +3264,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private async Task HandleDayKeyDown(KeyboardEventArgs e, DateTime date)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (e.Key is "Escape")
         {
@@ -3380,7 +3380,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private void HandleOnDayPointerEnter(DateTime date)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
         if (CurrentValue?.StartDate is null || CurrentValue.EndDate.HasValue) return;
         if (IsDayDisabled(date)) return;
 
@@ -3398,7 +3398,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private bool IsInHoverRange(DateTime date)
     {
         // A picker that cannot be changed has no prospective range to show.
-        if (IsEnabled is false || ReadOnly) return false;
+        if (Disabled || ReadOnly) return false;
 
         if (CurrentValue?.StartDate is null || CurrentValue.EndDate.HasValue) return false;
 
@@ -3742,7 +3742,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     // HourStep/MinuteStep, so the paging keys drive the component's own stepping instead.
     private async Task HandleOnTimeInputKeyDown(KeyboardEventArgs e, bool isHour, bool isStartTime)
     {
-        if (IsEnabled is false || ReadOnly) return;
+        if (Disabled || ReadOnly) return;
 
         if (e.Key is not ("PageUp" or "PageDown")) return;
 
@@ -3751,14 +3751,14 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private async Task HandleOnHourInputFocus(bool isStartTime)
     {
-        if (IsEnabled is false || ShowTimePicker is false || ReadOnly) return;
+        if (Disabled || ShowTimePicker is false || ReadOnly) return;
 
         await _js.BitUtilsSelectText(isStartTime ? _startTimeHourInputRef : _endTimeHourInputRef);
     }
 
     private async Task HandleOnMinuteInputFocus(bool isStartTime)
     {
-        if (IsEnabled is false || ShowTimePicker is false || ReadOnly) return;
+        if (Disabled || ShowTimePicker is false || ReadOnly) return;
 
         await _js.BitUtilsSelectText(isStartTime ? _startTimeMinuteInputRef : _endTimeMinuteInputRef);
     }
@@ -3766,7 +3766,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private void HandleOnAmClick(bool isStartTime)
     {
         if (ReadOnly) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (isStartTime)
         {
@@ -3783,7 +3783,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private void HandleOnPmClick(bool isStartTime)
     {
         if (ReadOnly) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         if (isStartTime)
         {
@@ -3817,7 +3817,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private async Task HandleOnPointerDown(bool isNext, bool isHour, bool isStartTime)
     {
         if (ReadOnly) return;
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await ChangeTime(isNext, isHour, isStartTime);
 
@@ -4055,7 +4055,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private bool IsIncreaseOrDecreaseButtonDisabled(bool isNext, bool isHour, bool isStartTime)
     {
-        if (IsEnabled is false) return true;
+        if (Disabled) return true;
         if (MaxRange.HasValue is false) return false;
 
         var startTimeHour = _startTimeHour;
@@ -4205,7 +4205,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private async Task<bool> ToggleCallout()
     {
         if (Standalone) return false;
-        if (IsEnabled is false || IsDisposed) return false;
+        if (Disabled || IsDisposed) return false;
         if (_dotnetObj is null) return false;
 
         return await _js.BitCalloutToggleCallout(
@@ -4263,7 +4263,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             classes.Add(sizeClass);
         }
 
-        if (IsEnabled is false)
+        if (Disabled)
         {
             // The callout renders outside of the root element, so it needs the disabled marker of its own.
             classes.Add("bit-dis");

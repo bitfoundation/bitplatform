@@ -2106,7 +2106,7 @@ public partial class BitPdfViewer : BitComponentBase
     [JSInvokable]
     public async Task OnShortcut(string command)
     {
-        if (IsDisposed || IsEnabled is false) return;
+        if (IsDisposed || Disabled) return;
 
         switch (command)
         {
@@ -3633,10 +3633,13 @@ public partial class BitPdfViewer : BitComponentBase
 
     private async Task ApplyFitAsync()
     {
-        if (_pages.Count == 0 || _zoomMode is BitPdfZoomMode.Custom or BitPdfZoomMode.ActualSize) return;
+        var mode = _zoomMode;
+        if (_pages.Count == 0 || mode is BitPdfZoomMode.Custom or BitPdfZoomMode.ActualSize) return;
 
         var vp = await _js.BitPdfViewerGetViewport(_containerRef);
-        if (vp.Width <= 0) return;
+        // The measurement is a JS round-trip: a zoom the reader picked meanwhile (or a
+        // newer fit) owns the value now, and this stale fit must not overwrite it.
+        if (vp.Width <= 0 || IsDisposed || _zoomMode != mode) return;
 
         // Fit the page in front of the reader, not the biggest page anywhere in the
         // document: one oversized plate would otherwise shrink every other page.
@@ -3650,7 +3653,7 @@ public partial class BitPdfViewer : BitComponentBase
         double fitWidth = (vp.Width - padding) / (pw * across);
         double fitHeight = (vp.Height - padding) / ph;
         _fitPageIndex = index;
-        await SetZoomValueAsync(_zoomMode switch
+        await SetZoomValueAsync(mode switch
         {
             BitPdfZoomMode.FitPage => Math.Min(fitWidth, fitHeight),
             BitPdfZoomMode.FitHeight => fitHeight,

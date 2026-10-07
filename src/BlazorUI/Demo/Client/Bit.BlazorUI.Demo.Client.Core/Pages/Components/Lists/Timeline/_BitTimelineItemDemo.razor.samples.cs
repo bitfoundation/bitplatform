@@ -15,7 +15,7 @@ private List<BitTimelineItem> basicItems =
 ];";
 
     private readonly string example2RazorCode = @"
-<BitTimeline Horizontal Items=""basicItems"" IsEnabled=""false"" />
+<BitTimeline Horizontal Items=""basicItems"" Disabled />
 
 <BitTimeline Horizontal Items=""disabledItems"" />";
     private readonly string example2CsharpCode = @"
@@ -29,7 +29,7 @@ private List<BitTimelineItem> basicItems =
 private List<BitTimelineItem> disabledItems =
 [
     new() { PrimaryText = ""Item 1"" },
-    new() { PrimaryText = ""Item 2"", SecondaryText = ""Item 2 Secondary"", IsEnabled = false },
+    new() { PrimaryText = ""Item 2"", SecondaryText = ""Item 2 Secondary"", IsDisabled = true },
     new() { PrimaryText = ""Item 3"" }
 ];";
 
@@ -43,7 +43,7 @@ private List<BitTimelineItem> disabledItems =
 private List<BitTimelineItem> iconItems =
 [
     new() { PrimaryText = ""Item 1"", IconName = BitIconName.Add },
-    new() { PrimaryText = ""Item 2"", IconName = BitIconName.Edit, SecondaryText = ""Item 2 Secondary"", IsEnabled = false },
+    new() { PrimaryText = ""Item 2"", IconName = BitIconName.Edit, SecondaryText = ""Item 2 Secondary"", IsDisabled = true },
     new() { PrimaryText = ""Item 3"", IconName = BitIconName.Delete }
 ];";
 
@@ -284,7 +284,7 @@ protected override void OnInitialized()
     [
         new() { PrimaryText = ""Item 1"", IconName = BitIconName.Add },
         new() { PrimaryText = ""Item 2"", IconName = BitIconName.Edit, OnClick = HandleOnItemClick },
-        new() { PrimaryText = ""Item 3"", IconName = BitIconName.Delete, IsEnabled = false }
+        new() { PrimaryText = ""Item 3"", IconName = BitIconName.Delete, IsDisabled = true }
     ];
 
     base.OnInitialized();
@@ -329,7 +329,7 @@ private readonly BitTimelineParams[] timelineParams =
 private List<BitTimelineItem> iconItems =
 [
     new() { PrimaryText = ""Item 1"", IconName = BitIconName.Add },
-    new() { PrimaryText = ""Item 2"", IconName = BitIconName.Edit, SecondaryText = ""Item 2 Secondary"", IsEnabled = false },
+    new() { PrimaryText = ""Item 2"", IconName = BitIconName.Edit, SecondaryText = ""Item 2 Secondary"", IsDisabled = true },
     new() { PrimaryText = ""Item 3"", IconName = BitIconName.Delete }
 ];";
 
@@ -357,9 +357,9 @@ private List<BitTimelineItem> variantItems =
     new() { PrimaryText = ""Fill"", IconName = BitIconName.Accept, Variant = BitVariant.Fill },
     new() { PrimaryText = ""Outline"", IconName = BitIconName.Accept, Variant = BitVariant.Outline },
     new() { PrimaryText = ""Text"", IconName = BitIconName.Accept, Variant = BitVariant.Text },
-    new() { PrimaryText = ""Fill"", SecondaryText = ""Disabled"", IconName = BitIconName.Accept, Variant = BitVariant.Fill, IsEnabled = false },
-    new() { PrimaryText = ""Outline"", SecondaryText = ""Disabled"", IconName = BitIconName.Accept, Variant = BitVariant.Outline, IsEnabled = false },
-    new() { PrimaryText = ""Text"", SecondaryText = ""Disabled"", IconName = BitIconName.Accept, Variant = BitVariant.Text, IsEnabled = false }
+    new() { PrimaryText = ""Fill"", SecondaryText = ""Disabled"", IconName = BitIconName.Accept, Variant = BitVariant.Fill, IsDisabled = true },
+    new() { PrimaryText = ""Outline"", SecondaryText = ""Disabled"", IconName = BitIconName.Accept, Variant = BitVariant.Outline, IsDisabled = true },
+    new() { PrimaryText = ""Text"", SecondaryText = ""Disabled"", IconName = BitIconName.Accept, Variant = BitVariant.Text, IsDisabled = true }
 ];";
 
     private readonly string example15RazorCode = @"
@@ -432,9 +432,9 @@ private List<BitTimelineItem> variantItems =
     new() { PrimaryText = ""Fill"", IconName = BitIconName.Accept, Variant = BitVariant.Fill },
     new() { PrimaryText = ""Outline"", IconName = BitIconName.Accept, Variant = BitVariant.Outline },
     new() { PrimaryText = ""Text"", IconName = BitIconName.Accept, Variant = BitVariant.Text },
-    new() { PrimaryText = ""Fill"", SecondaryText = ""Disabled"", IconName = BitIconName.Accept, Variant = BitVariant.Fill, IsEnabled = false },
-    new() { PrimaryText = ""Outline"", SecondaryText = ""Disabled"", IconName = BitIconName.Accept, Variant = BitVariant.Outline, IsEnabled = false },
-    new() { PrimaryText = ""Text"", SecondaryText = ""Disabled"", IconName = BitIconName.Accept, Variant = BitVariant.Text, IsEnabled = false }
+    new() { PrimaryText = ""Fill"", SecondaryText = ""Disabled"", IconName = BitIconName.Accept, Variant = BitVariant.Fill, IsDisabled = true },
+    new() { PrimaryText = ""Outline"", SecondaryText = ""Disabled"", IconName = BitIconName.Accept, Variant = BitVariant.Outline, IsDisabled = true },
+    new() { PrimaryText = ""Text"", SecondaryText = ""Disabled"", IconName = BitIconName.Accept, Variant = BitVariant.Text, IsDisabled = true }
 ];";
 
     private readonly string example17RazorCode = @"
@@ -512,7 +512,7 @@ private List<BitTimelineItem> basicItems =
 private List<BitTimelineItem> iconItems =
 [
     new() { PrimaryText = ""Item 1"", IconName = BitIconName.Add },
-    new() { PrimaryText = ""Item 2"", IconName = BitIconName.Edit, SecondaryText = ""Item 2 Secondary"", IsEnabled = false },
+    new() { PrimaryText = ""Item 2"", IconName = BitIconName.Edit, SecondaryText = ""Item 2 Secondary"", IsDisabled = true },
     new() { PrimaryText = ""Item 3"", IconName = BitIconName.Delete }
 ];
 

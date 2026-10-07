@@ -28,7 +28,7 @@
     // A disabled group says so on the group itself as well as on each of its buttons: every role it renders with -
     // radiogroup, toolbar, group - supports aria-disabled, and it is what tells a screen reader that the whole
     // toolbar is unavailable rather than leaving it to be inferred from button after button.
-    var ariaDisabled = IsEnabled ? GetSplattedAttribute("aria-disabled") : "true";
+    var ariaDisabled = Disabled ? "true" : GetSplattedAttribute("aria-disabled");
 }
 
 <div @ref="RootElement" @attributes="HtmlAttributes" @onkeydown="HandleOnKeyDown"

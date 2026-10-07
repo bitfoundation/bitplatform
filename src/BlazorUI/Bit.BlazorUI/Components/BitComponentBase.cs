@@ -85,6 +85,11 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>
+    /// Gets or sets a value indicating whether the component is disabled and cannot respond to user interaction.
+    /// </summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether the component's animations play at their full duration
     /// even when reduced motion is requested.
     /// <br />
@@ -128,13 +133,6 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     /// If the value is null, the <see cref="BitComponentBase.UniqueId"/> will be used as the HTML id attribute of the root element of the component.
     /// </remarks>
     [Parameter] public string? Id { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the component is enabled and can respond to user interaction.
-    /// <br />
-    /// The default value is <strong>true</strong>.
-    /// </summary>
-    [Parameter] public bool IsEnabled { get; set; } = true;
 
     /// <summary>
     /// Gets or sets the CSS style string to apply to the rendered element.
@@ -209,6 +207,14 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
+                case nameof(Disabled):
+                    _assignedParameters.Add(nameof(Disabled));
+                    var disabled = (bool)parameter.Value;
+                    if (Disabled != disabled) ClassBuilder.Reset();
+                    Disabled = disabled;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
                 case nameof(ForceAnimation):
                     _assignedParameters.Add(nameof(ForceAnimation));
                     var forceAnimation = (bool)parameter.Value;
@@ -220,14 +226,6 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
                 case nameof(Id):
                     _assignedParameters.Add(nameof(Id));
                     Id = (string?)parameter.Value;
-                    parametersDictionary.Remove(parameter.Key);
-                    break;
-
-                case nameof(IsEnabled):
-                    _assignedParameters.Add(nameof(IsEnabled));
-                    var isEnabled = (bool)parameter.Value;
-                    if (IsEnabled != isEnabled) ClassBuilder.Reset();
-                    IsEnabled = isEnabled;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
@@ -293,7 +291,7 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 
         ClassBuilder
               .Register(() => RootElementClass)
-              .Register(() => IsEnabled ? string.Empty : "bit-dis")
+              .Register(() => Disabled ? "bit-dis" : string.Empty)
               .Register(() => Dir == BitDir.Rtl ? "bit-rtl" : string.Empty)
               .Register(() => ForceAnimation ? "bit-fam" : string.Empty);
 

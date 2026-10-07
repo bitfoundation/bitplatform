@@ -7,7 +7,7 @@ public partial class BitActionButtonDemo
     Create account
 </BitActionButton>
 
-<BitActionButton IconName=""@BitIconName.AddFriend"" IsEnabled=""false"">
+<BitActionButton IconName=""@BitIconName.AddFriend"" Disabled>
     Disabled
 </BitActionButton>
 
@@ -274,11 +274,11 @@ private int innerClickCount;";
 </BitActionButton>
 
 
-<BitActionButton IsEnabled=""false"" IconName=""@BitIconName.Blocked"">
+<BitActionButton Disabled IconName=""@BitIconName.Blocked"">
     Disabled (skipped by Tab)
 </BitActionButton>
 
-<BitActionButton IsEnabled=""false"" AllowDisabledFocus IconName=""@BitIconName.Blocked"">
+<BitActionButton Disabled AllowDisabledFocus IconName=""@BitIconName.Blocked"">
     Disabled (still focusable)
 </BitActionButton>
 
@@ -448,28 +448,28 @@ private readonly BitActionButtonParams[] actionButtonParams =
 </BitActionButton>
 
 
-<BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.Primary"">Primary</BitActionButton>
-<BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.Secondary"">Secondary</BitActionButton>
-<BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.Tertiary"">Tertiary</BitActionButton>
-<BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.Info"">Info</BitActionButton>
-<BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.Success"">Success</BitActionButton>
-<BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.Warning"">Warning</BitActionButton>
-<BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.SevereWarning"">SevereWarning</BitActionButton>
-<BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.Error"">Error</BitActionButton>
+<BitActionButton Disabled IconName=""@BitIconName.AddFriend"" Color=""BitColor.Primary"">Primary</BitActionButton>
+<BitActionButton Disabled IconName=""@BitIconName.AddFriend"" Color=""BitColor.Secondary"">Secondary</BitActionButton>
+<BitActionButton Disabled IconName=""@BitIconName.AddFriend"" Color=""BitColor.Tertiary"">Tertiary</BitActionButton>
+<BitActionButton Disabled IconName=""@BitIconName.AddFriend"" Color=""BitColor.Info"">Info</BitActionButton>
+<BitActionButton Disabled IconName=""@BitIconName.AddFriend"" Color=""BitColor.Success"">Success</BitActionButton>
+<BitActionButton Disabled IconName=""@BitIconName.AddFriend"" Color=""BitColor.Warning"">Warning</BitActionButton>
+<BitActionButton Disabled IconName=""@BitIconName.AddFriend"" Color=""BitColor.SevereWarning"">SevereWarning</BitActionButton>
+<BitActionButton Disabled IconName=""@BitIconName.AddFriend"" Color=""BitColor.Error"">Error</BitActionButton>
 
 <div style=""background:var(--bit-clr-fg-pri);padding:1rem"">
-    <BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitActionButton>
-    <BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitActionButton>
-    <BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitActionButton>
+    <BitActionButton Disabled IconName=""@BitIconName.AddFriend"" Color=""BitColor.PrimaryBackground"">PrimaryBackground</BitActionButton>
+    <BitActionButton Disabled IconName=""@BitIconName.AddFriend"" Color=""BitColor.SecondaryBackground"">SecondaryBackground</BitActionButton>
+    <BitActionButton Disabled IconName=""@BitIconName.AddFriend"" Color=""BitColor.TertiaryBackground"">TertiaryBackground</BitActionButton>
 </div>
 
-<BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.PrimaryForeground"">PrimaryForeground</BitActionButton>
-<BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.SecondaryForeground"">SecondaryForeground</BitActionButton>
-<BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.TertiaryForeground"">TertiaryForeground</BitActionButton>
+<BitActionButton Disabled IconName=""@BitIconName.AddFriend"" Color=""BitColor.PrimaryForeground"">PrimaryForeground</BitActionButton>
+<BitActionButton Disabled IconName=""@BitIconName.AddFriend"" Color=""BitColor.SecondaryForeground"">SecondaryForeground</BitActionButton>
+<BitActionButton Disabled IconName=""@BitIconName.AddFriend"" Color=""BitColor.TertiaryForeground"">TertiaryForeground</BitActionButton>
 
-<BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.PrimaryBorder"">PrimaryBorder</BitActionButton>
-<BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.SecondaryBorder"">SecondaryBorder</BitActionButton>
-<BitActionButton IsEnabled=""false"" IconName=""@BitIconName.AddFriend"" Color=""BitColor.TertiaryBorder"">TertiaryBorder</BitActionButton>";
+<BitActionButton Disabled IconName=""@BitIconName.AddFriend"" Color=""BitColor.PrimaryBorder"">PrimaryBorder</BitActionButton>
+<BitActionButton Disabled IconName=""@BitIconName.AddFriend"" Color=""BitColor.SecondaryBorder"">SecondaryBorder</BitActionButton>
+<BitActionButton Disabled IconName=""@BitIconName.AddFriend"" Color=""BitColor.TertiaryBorder"">TertiaryBorder</BitActionButton>";
 
     private readonly string example12RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />

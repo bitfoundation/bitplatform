@@ -76,8 +76,8 @@
                     aria-activedescendant="@(IsOpen && NoSearchBox && _activeIndex >= 0 ? GetOptionId(_activeIndex) : null)"
                     aria-label="@DropdownLabel"
                     title="@DropdownTitle"
-                    disabled="@(IsEnabled is false)"
-                    tabindex="@(IsEnabled && ReadOnly is false ? (TabIndex ?? "0") : "-1")"
+                    disabled="@(Disabled)"
+                    tabindex="@(Disabled is false && ReadOnly is false ? (TabIndex ?? "0") : "-1")"
                     style="@Styles?.Dropdown"
                     class="bit-phi-drp @Classes?.Dropdown">
                 <span style="@Styles?.DropdownText" class="bit-phi-tcn @Classes?.DropdownText">
@@ -124,7 +124,7 @@
                tabindex="@TabIndex"
                autocorrect="off"
                autocapitalize="off"
-               disabled="@(IsEnabled is false)"
+               disabled="@(Disabled)"
                title="@InputTitle"
                placeholder="@InputPlaceholder"
                inputmode="@InputModeValue"
@@ -149,7 +149,7 @@
                     style="@Styles?.ClearButton"
                     class="bit-phi-cbt @Classes?.ClearButton"
                     aria-label="@(ClearButtonAriaLabel ?? "Clear number")"
-                    disabled="@(IsEnabled is false || ReadOnly)">
+                    disabled="@(Disabled || ReadOnly)">
                 @if (ClearButtonTemplate is not null)
                 {
                     @ClearButtonTemplate

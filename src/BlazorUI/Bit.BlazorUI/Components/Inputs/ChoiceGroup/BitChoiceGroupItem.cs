@@ -23,9 +23,9 @@ public class BitChoiceGroupItem<TValue>
     public string? Id { get; set; }
 
     /// <summary>
-    /// Whether the BitChoiceGroup item is enabled.
+    /// Whether the BitChoiceGroup item is disabled.
     /// </summary>
-    public bool IsEnabled { get; set; } = true;
+    public bool IsDisabled { get; set; }
 
     /// <summary>
     /// The icon to show as content of the BitChoiceGroup item.

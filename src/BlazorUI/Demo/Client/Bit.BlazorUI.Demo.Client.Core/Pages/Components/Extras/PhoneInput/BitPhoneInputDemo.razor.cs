@@ -1107,7 +1107,7 @@ private bool validationSubmitted;
 private readonly BitPhoneInputValidationModel validationModel = new();";
 
     private readonly string example15RazorCode = @"
-<BitPhoneInput IsEnabled=""false"" DefaultCountry=""BitCountries.Spain"" Value=""+341234567"" />
+<BitPhoneInput Disabled DefaultCountry=""BitCountries.Spain"" Value=""+341234567"" />
 
 <BitPhoneInput ReadOnly DefaultCountry=""BitCountries.Spain"" Value=""+341234567"" />";
 

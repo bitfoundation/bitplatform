@@ -230,7 +230,7 @@
         </div>
     }
 
-    @if (_showHelp && IsEnabled)
+    @if (_showHelp && Disabled is false)
     {
         @* The list is a scrolling region that takes the focus as the panel opens: a screen reader starts reading it,
            and the arrow keys scroll it. *@
@@ -388,7 +388,7 @@
          aria-label="@(Label is null ? (AriaLabel ?? Loc("editor", "Rich text editor")) : null)"
          aria-labelledby="@(Label is null ? null : LabelId)"
          aria-readonly="@(EffectiveReadOnly ? "true" : null)"
-         aria-disabled="@(IsEnabled ? null : "true")"
+         aria-disabled="@(Disabled ? "true" : null)"
          aria-required="@(Required ? "true" : null)"
          aria-invalid="@(IsInvalid ? "true" : null)"
          aria-busy="@(_uploadsInFlight > 0 ? "true" : null)"
@@ -396,7 +396,7 @@
          aria-describedby="@SurfaceDescribedBy"
          spellcheck="@SpellCheck.ToString().ToLowerInvariant()"
          contenteditable="@((EffectiveReadOnly is false && _inSourceView is false).ToString().ToLowerInvariant())"
-         tabindex="@(ReadOnly && IsEnabled && _inSourceView is false ? "0" : null)"
+         tabindex="@(ReadOnly && Disabled is false && _inSourceView is false ? "0" : null)"
          data-placeholder="@Placeholder"
          hidden="@_inSourceView"
          style="@Styles?.Editor"></div>
@@ -410,7 +410,7 @@
                   aria-describedby="@FieldDescribedBy"
                   spellcheck="false"
                   readonly="@EffectiveReadOnly"
-                  disabled="@(IsEnabled is false)"
+                  disabled="@(Disabled)"
                   value="@_sourceText" @oninput="OnSourceTextChanged"></textarea>
     }
 
@@ -677,7 +677,7 @@
     </div>;
 
     private RenderFragment SourceGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_inSourceView ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("source", "HTML source")" aria-label="@Loc("source-label", "HTML source view")" aria-pressed="@(_inSourceView ? "true" : "false")" disabled="@(IsEnabled is false || (EffectiveReadOnly && _inSourceView is false))"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_inSourceView ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("source", "HTML source")" aria-label="@Loc("source-label", "HTML source view")" aria-pressed="@(_inSourceView ? "true" : "false")" disabled="@(Disabled || (EffectiveReadOnly && _inSourceView is false))"
                 @onmousedown:preventDefault="true" @onclick="OnSourceToggleClick">@BitRichTextEditorIcons.Source</button>
     </div>;
 
@@ -692,7 +692,7 @@
     </div>;
 
     private RenderFragment HelpGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_showHelp ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("keyboard-help-title", "Keyboard shortcuts (Alt+0)")" aria-label="@Loc("keyboard-help", "Keyboard shortcuts")" aria-keyshortcuts="Alt+0" aria-expanded="@(_showHelp ? "true" : "false")" aria-controls="@(_showHelp ? $"{UniqueId}-help-panel" : null)" disabled="@(IsEnabled is false)"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_showHelp ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("keyboard-help-title", "Keyboard shortcuts (Alt+0)")" aria-label="@Loc("keyboard-help", "Keyboard shortcuts")" aria-keyshortcuts="Alt+0" aria-expanded="@(_showHelp ? "true" : "false")" aria-controls="@(_showHelp ? $"{UniqueId}-help-panel" : null)" disabled="@(Disabled)"
                 @onmousedown:preventDefault="true" @onclick="ToggleHelp">@BitRichTextEditorIcons.Keyboard</button>
     </div>;
 }

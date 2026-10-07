@@ -1292,14 +1292,14 @@ public partial class BitPersona : BitComponentBase
 
     private async Task HandleActionClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnActionClick.InvokeAsync(e);
     }
 
     private async Task HandleImageClick(MouseEventArgs e)
     {
-        if (IsEnabled is false) return;
+        if (Disabled) return;
 
         await OnImageClick.InvokeAsync(e);
     }

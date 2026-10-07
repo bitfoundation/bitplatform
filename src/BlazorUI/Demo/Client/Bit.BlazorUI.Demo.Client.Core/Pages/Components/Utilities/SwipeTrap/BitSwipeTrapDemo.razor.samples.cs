@@ -338,9 +338,9 @@ private void HandleOnEndThrottle(BitSwipeTrapEventArgs args)
             <input class=""no-swipe"" placeholder=""Swipes skip this field"" aria-label=""Note"" />
         </div>
     </BitSwipeTrap>
-    <BitSwipeTrap IsEnabled=""false"" OnMove=""HandleOnMoveDisabled"">
+    <BitSwipeTrap Disabled OnMove=""HandleOnMoveDisabled"">
         <div class=""box"">
-            <div><b>IsEnabled=""false""</b></div>
+            <div><b>Disabled</b></div>
             <div>(nothing is trapped)</div>
             <div>Moves: @moveCountDisabled</div>
         </div>

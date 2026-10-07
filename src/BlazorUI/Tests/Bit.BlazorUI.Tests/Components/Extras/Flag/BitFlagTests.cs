@@ -30,11 +30,11 @@ public class BitFlagTests : BunitTestContext
     [TestMethod,
         DataRow(true),
         DataRow(false)]
-    public void BitFlagShouldRespectIsEnabled(bool isEnabled)
+    public void BitFlagShouldRespectDisabled(bool isEnabled)
     {
         var component = RenderComponent<BitFlag>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, isEnabled);
+            parameters.Add(p => p.Disabled, isEnabled is false);
         });
 
         var root = component.Find(".bit-flg");
@@ -1428,7 +1428,7 @@ public class BitFlagTests : BunitTestContext
 
         var component = RenderComponent<BitFlag>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.Country, BitCountries.Netherlands);
             parameters.Add(p => p.OnClick, () => clicked++);
         });
@@ -1513,7 +1513,7 @@ public class BitFlagTests : BunitTestContext
 
         var component = RenderComponent<BitFlag>(parameters =>
         {
-            parameters.Add(p => p.IsEnabled, false);
+            parameters.Add(p => p.Disabled, true);
             parameters.Add(p => p.Country, BitCountries.Netherlands);
             parameters.Add(p => p.OnClick, () => clicked++);
         });
