@@ -3,6 +3,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Bit.Cli.Infrastructure;
+using Bit.Cli.Telemetry;
 using Bit.Cli.Templates;
 using Bit.Cli.Tools;
 using Bit.Cli.Trust;
@@ -196,9 +197,17 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         string[] arguments = ["build", project.BuildPath, .. BuildProperties];
         var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(60));
         var what = project.BuildsSolution ? "the solution" : "the web app";
+        string? detail = null;
+
+        if (result is { Succeeded: false, NotFound: false, TimedOut: false } && DiagnosticCodes.Extract(result.Output, int.MaxValue).Any(c => c.StartsWith("RZ", StringComparison.Ordinal)))
+        {
+            await Dotnet(["build-server", "shutdown", "--vbcscompiler"], cancellationToken, progress, TimeSpan.FromMinutes(2));
+            result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(60));
+            detail = "on a second try, after restarting the C# compiler server";
+        }
 
         return StepResult.FromProcess(result, $"Built {what}", $"Couldn't build {what}",
-            $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}");
+            $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}", detail);
     }
 
     public async Task<StepResult> FormatAsync(Action<string> progress, CancellationToken cancellationToken)
