@@ -2358,6 +2358,48 @@ public partial class BitCarouselTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitCarouselShouldPlayWhenStartedWithThePointerAndTheFocusOnThePlayPauseButton()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.prefersReducedMotion", _ => true).SetResult(true);
+
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 5000d);
+            parameters.Add(p => p.ShowPlayPause, true);
+        });
+
+        var carousel = component.Instance.Carousel;
+
+        component.WaitForAssertion(() => Assert.IsTrue(carousel.IsPaused));
+
+        // A click in a browser reaches the button with the pointer over the carousel and the focus moved
+        // into it, both of which pause the rotation on their own.
+        await component.Find(".bit-csl").MouseEnterAsync(new MouseEventArgs());
+        await component.Find(".bit-csl").FocusInAsync(new FocusEventArgs());
+
+        component.Find(".bit-csl-ppb").Click();
+
+        component.WaitForAssertion(() => Assert.IsTrue(carousel.IsPlaying));
+
+        // Moving the focus on (or the pointer out and back in) pauses it again, as it would anywhere else.
+        await component.Find(".bit-csl").FocusOutAsync(new FocusEventArgs());
+        await component.Find(".bit-csl").FocusInAsync(new FocusEventArgs());
+
+        component.WaitForAssertion(() => Assert.IsFalse(carousel.IsPlaying));
+
+        await component.Find(".bit-csl").FocusOutAsync(new FocusEventArgs());
+
+        component.WaitForAssertion(() => Assert.IsTrue(carousel.IsPlaying));
+
+        await component.Find(".bit-csl").MouseLeaveAsync(new MouseEventArgs());
+        await component.Find(".bit-csl").MouseEnterAsync(new MouseEventArgs());
+
+        component.WaitForAssertion(() => Assert.IsFalse(carousel.IsPlaying));
+        Assert.IsFalse(carousel.IsPaused);
+    }
+
+    [TestMethod]
     public void BitCarouselShouldStartTheAutoPlayPausedWhenItIsSwitchedOnUnderReducedMotion()
     {
         Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.prefersReducedMotion", _ => true).SetResult(true);

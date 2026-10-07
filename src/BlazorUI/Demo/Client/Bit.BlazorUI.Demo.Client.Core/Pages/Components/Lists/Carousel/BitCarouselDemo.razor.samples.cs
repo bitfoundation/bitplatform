@@ -271,14 +271,14 @@ public partial class BitCarouselDemo
     </BitCarouselItem>
 </BitCarousel>
 
-<BitCarousel AutoPlay AutoPlayReverse InfiniteScrolling HideNextPrev Style=""height: 100px"">
+<BitCarousel AutoPlay AutoPlayReverse InfiniteScrolling HideNextPrev ShowPlayPause Style=""height: 100px"">
     <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>4</div></BitCarouselItem>
 </BitCarousel>
 
-<BitCarousel AutoPlay StopOnLastSlide HideNextPrev Style=""height: 100px"">
+<BitCarousel AutoPlay StopOnLastSlide HideNextPrev ShowPlayPause Style=""height: 100px"">
     <BitCarouselItem Class=""item""><div>1</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>2</div></BitCarouselItem>
     <BitCarouselItem Class=""item""><div>3</div></BitCarouselItem>
