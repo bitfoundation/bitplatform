@@ -355,6 +355,46 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task TheAdministratorLog_Should_KeepEveryLineWhileBitReadsIt()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        var directory = Directory.CreateTempSubdirectory("bit-cli-admin-log-").FullName;
+        var log = Path.Combine(directory, "install.log");
+        var scriptPath = Path.Combine(directory, "install.ps1");
+        var action = new ToolAction
+        {
+            ToolId = "chatty",
+            Title = "Print a lot",
+            Elevation = Elevation.Admin,
+            Commands = [new ProcessSpec { FileName = "cmd.exe", Arguments = ["/d", "/c", "for /L %i in (1,1,200) do @echo line %i"], Timeout = TimeSpan.FromSeconds(60) }]
+        };
+        var script = System.Text.Encoding.UTF8.GetBytes(ToolInstaller.BuildWindowsScript([action], log, Path.Combine(directory, "results.json"), Path.Combine(directory, "cancel")));
+        File.WriteAllBytes(scriptPath, script);
+
+        using var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("powershell.exe", $"-NoProfile -NonInteractive -EncodedCommand {ToolInstaller.EncodeBootstrap(scriptPath, script)}") { UseShellExecute = false, CreateNoWindow = true })!;
+
+        while (process.HasExited is false)
+        {
+            if (File.Exists(log))
+            {
+                using var stream = new FileStream(log, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                using var reader = new StreamReader(stream);
+                await reader.ReadToEndAsync();
+            }
+
+            await Task.Delay(5);
+        }
+
+        var lines = File.ReadAllLines(log);
+        Assert.AreEqual("== Print a lot", lines[0]);
+        Assert.AreEqual(201, lines.Length, string.Join(Environment.NewLine, lines.Take(5)));
+        Assert.AreEqual("line 200", lines[^1].Trim());
+        Directory.Delete(directory, recursive: true);
+    }
+
+    [TestMethod]
     public void TheAdministratorLog_Should_TellWhichStepRunsAndWhatAFailedOneSaid()
     {
         var log = "== Install Git\r\nFound Git [Git.Git]\r\n  -\b\\\b|\r\nSuccessfully installed\n== Install WSL\nDownloading: 10%\r Downloading: 55%\n";

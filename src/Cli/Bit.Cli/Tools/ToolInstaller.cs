@@ -289,7 +289,9 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         script.AppendLine("$results = [ordered]@{}");
         script.AppendLine($"$cancelPath = {Quote(cancelPath)}");
         script.AppendLine($"$stoppedPath = {Quote(cancelPath + ".stopped")}");
-        script.AppendLine($"function Write-BitLog([string]$text) {{ Add-Content -LiteralPath {Quote(logPath)} -Value $text -Encoding UTF8 }}");
+        script.AppendLine($"$bitLog = [IO.StreamWriter]::new([IO.FileStream]::new({Quote(logPath)}, [IO.FileMode]::Append, [IO.FileAccess]::Write, [IO.FileShare]::ReadWrite), [Text.UTF8Encoding]::new($false))");
+        script.AppendLine("$bitLog.AutoFlush = $true");
+        script.AppendLine("function Write-BitLog([string]$text) { $bitLog.WriteLine($text) }");
         script.AppendLine("function Start-BitWatchdog([int]$Seconds) {");
         script.AppendLine("    Start-Job -ArgumentList $PID, $Seconds, $cancelPath, $stoppedPath -ScriptBlock {");
         script.AppendLine("        param($ParentId, $Seconds, $CancelPath, $StoppedPath)");
@@ -327,6 +329,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
             script.AppendLine($"$results[{Quote(action.ToolId)}] = $code");
         }
 
+        script.AppendLine("$bitLog.Dispose()");
         script.AppendLine($"$results | ConvertTo-Json | Set-Content -LiteralPath {Quote(resultPath)} -Encoding UTF8");
         return script.ToString();
     }
