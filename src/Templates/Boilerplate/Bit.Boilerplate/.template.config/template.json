@@ -544,6 +544,105 @@
             },
             "replaces": "use-your-api-server-url-here.com"
         },
+        "devMcpRemoteUrl": {
+            "type": "generated",
+            "generator": "regex",
+            "dataType": "string",
+            "parameters": {
+                "source": "normalizedServerUrl",
+                "steps": [
+                    {
+                        "regex": "^use-your-api-server-url-here\\.com$",
+                        "replacement": "none"
+                    },
+                    {
+                        "regex": "^(?!none$)(.+)$",
+                        "replacement": "https://$1/dev-mcp"
+                    }
+                ]
+            }
+        },
+        "devMcpWebUrl": {
+            "type": "generated",
+            "generator": "join",
+            "parameters": {
+                "symbols": [
+                    {
+                        "type": "const",
+                        "value": "http://localhost:"
+                    },
+                    {
+                        "type": "ref",
+                        "value": "serverWebPortGenerated"
+                    },
+                    {
+                        "type": "const",
+                        "value": "/dev-mcp"
+                    }
+                ]
+            }
+        },
+        "devMcpApiAndUrl": {
+            "type": "generated",
+            "generator": "join",
+            "parameters": {
+                "symbols": [
+                    {
+                        "type": "ref",
+                        "value": "api"
+                    },
+                    {
+                        "type": "const",
+                        "value": "|http://localhost:"
+                    },
+                    {
+                        "type": "ref",
+                        "value": "serveApiPortGenerated"
+                    },
+                    {
+                        "type": "const",
+                        "value": "/dev-mcp"
+                    }
+                ]
+            }
+        },
+        "devMcpApiUrl": {
+            "type": "generated",
+            "generator": "regex",
+            "dataType": "string",
+            "parameters": {
+                "source": "devMcpApiAndUrl",
+                "steps": [
+                    {
+                        "regex": "^Standalone\\|",
+                        "replacement": ""
+                    },
+                    {
+                        "regex": "^[^|]*\\|.*$",
+                        "replacement": "none"
+                    }
+                ]
+            }
+        },
+        "devMcpLocalUrl": {
+            "type": "generated",
+            "generator": "coalesce",
+            "parameters": {
+                "sourceVariableName": "devMcpApiUrl",
+                "defaultValue": "none",
+                "fallbackVariableName": "devMcpWebUrl"
+            }
+        },
+        "devMcpUrl": {
+            "type": "generated",
+            "generator": "coalesce",
+            "parameters": {
+                "sourceVariableName": "devMcpRemoteUrl",
+                "defaultValue": "none",
+                "fallbackVariableName": "devMcpLocalUrl"
+            },
+            "replaces": "https://use-your-api-server-url-here.com/dev-mcp"
+        },
         "webAppUrl": {
             "displayName": "web app url",
             "type": "parameter",

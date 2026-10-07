@@ -20,16 +20,17 @@ It needs a .NET 10 SDK or later. `dnx` asks once before it downloads the package
 `bit new` creates a project from [bit Boilerplate](https://bitplatform.dev/templates) and gets it ready, so the first run works:
 
 1. Takes the project name and options from its arguments. The [create project page](https://bitplatform.dev/templates/create-project) builds the whole command. When a newer bit is out, the run continues with it, see [Staying up to date](#staying-up-to-date).
-2. Checks this machine, lists what the project needs and is missing, and installs what you tick: Node.js, Docker, WSL, Git, the Aspire CLI, the HTTPS development certificate, VS Code, the GitHub CLI when you ask for a GitHub repository, Windows long paths, and for native apps the Windows Hypervisor Platform the Android emulator uses and Windows developer mode, plus Python 3 on Linux when the offline database's native WebAssembly build needs it. Things already installed aren't shown, and neither is anything that doesn't apply to your operating system. The versions come from the project: the .NET SDK from `global.json`, Node.js from `engines.node` in Client.Core's `package.json`, and the Aspire CLI from the AppHost's Aspire version, so an older Aspire CLI is updated to it. On macOS with a native app, it also checks that Xcode is the one the project's .NET for iOS asks for.
+2. Checks this machine, lists what the project needs and is missing, and installs what you tick: the .NET SDK the template's `global.json` pins, Node.js, Docker, WSL, Git, the Aspire CLI, the HTTPS development certificate, VS Code, the GitHub CLI when you ask for a GitHub repository, Windows long paths, and for native apps the Windows Hypervisor Platform the Android emulator uses and Windows developer mode, plus Python 3 on Linux when the offline database's native WebAssembly build needs it. Things already installed aren't shown, and neither is anything that doesn't apply to your operating system. The versions come from the project: the .NET SDK from `global.json`, Node.js from `engines.node` in Client.Core's `package.json`, and the Aspire CLI from the AppHost's Aspire version, so an older Aspire CLI is updated to it. When nvm, fnm or Volta manages Node.js, Node.js is installed or updated through it, so the version it picks is the one that runs. On macOS with a native app, it also checks that Xcode is the one the project's .NET for iOS asks for.
 3. Warns, only when it's sure, about hardware that makes development slow: virtualization turned off in the BIOS or UEFI while Docker Desktop or the Android emulator needs it, less than 24 GB of memory, or a project drive that is a hard disk rather than an SSD. Drives are judged only when they're internal and on real hardware; USB drives, virtual disks and virtual machines are left alone.
 4. Creates the project, with a development certificate of its own, and keeps only its `.slnx`: the `.sln` the template also ships for older Visual Studio versions is removed.
 5. Initializes git with `develop` and `main`, and commits.
-6. Installs the build tools the chosen platforms need (.NET workloads), restores NuGet packages, and builds, which also generates the CSS and JS. With only the web app it builds `Web.slnf`; once any native app is picked it builds the whole `.slnx`, every app the MAUI project targets on this OS included, so it also installs the MAUI build tools and the Android SDK. Then it installs the Chromium that Playwright runs the UI tests with.
+6. Checks that `dotnet` picks an SDK the project's `global.json` accepts; when it doesn't, the steps that need one are skipped with a single note instead of failing one by one. Then installs the build tools the chosen platforms need (.NET workloads), restores NuGet packages, and builds, which also generates the CSS and JS. With only the web app it builds `Web.slnf`; once any native app is picked it builds the whole `.slnx`, every app the MAUI project targets on this OS included, so it also installs the MAUI build tools and the Android SDK. Then it installs the Chromium that Playwright runs the UI tests with.
 7. Runs `dotnet format`, and commits that on its own.
 8. Adds the `Initial` EF Core migration, and commits it on its own. The app applies migrations when it starts.
-9. With `--github-repo`, signs you in to GitHub in your browser when needed, creates a private repository named after the project, pushes `develop` and `main` to it, and makes `develop` its default branch.
-10. Marks the folder as trusted for VS Code, Claude Code, Copilot CLI, Codex and Gemini CLI, so the project's tasks and MCP servers work without prompts.
-11. Installs the VS Code extensions the project recommends, like C# Dev Kit, Copilot and Claude Code, and opens the project in VS Code, or the IDE you pick. All that's left is signing in to Claude or Copilot.
+9. With Aspire, starts the project once with `aspire start`, waits until its server is healthy and stops it with `aspire stop`, so the container images are already pulled when you first start it from the IDE. It needs Docker running; without it, the step says so and the rest goes on.
+10. With `--github-repo`, signs you in to GitHub in your browser when needed, creates a private repository named after the project, pushes `develop` and `main` to it, and makes `develop` its default branch.
+11. Marks the folder as trusted for VS Code, Claude Code, Copilot CLI, Codex and Gemini CLI, so the project's tasks and MCP servers work without prompts.
+12. Installs the VS Code extensions the project recommends, like C# Dev Kit, Copilot and Claude Code, and opens the project in VS Code, or the IDE you pick. All that's left is signing in to Claude or Copilot.
 
 A step that fails doesn't stop the rest: every step runs, and the summary lists the commands that finish whatever didn't work. The first run takes a few minutes, mostly build tools and the first build.
 
@@ -98,7 +99,7 @@ bit setup
 bit setup --platforms android
 ```
 
-It installs missing tools, build tools and packages, builds, installs Playwright's Chromium for the UI tests, and the VS Code extensions the project recommends when VS Code is installed.
+It installs missing tools, build tools and packages, builds, installs Playwright's Chromium for the UI tests, starts the project once with Aspire when it has an AppHost, and installs the VS Code extensions the project recommends when VS Code is installed.
 
 ## In CI
 
@@ -119,7 +120,7 @@ A job that publishes lets bit build first too, so its CSS and JS are generated b
 
 In CI, bit installs what a build and its tests need and leaves alone what only a developer's machine needs:
 
-- Docker, WSL, the Aspire CLI and Windows features aren't installed.
+- Docker, WSL, the Aspire CLI and Windows features aren't installed, and the project isn't started with Aspire.
 - The HTTPS development certificate is trusted on Linux only. There it's trusted for some clients, and the step notes that .NET's own HTTPS calls also need `~/.aspnet/dev-certs/trust` in `SSL_CERT_DIR`; any other failure is a warning.
 - MAUI's `InstallAndroidDependencies` completes the runner's Android SDK, so a pipeline needs no `sdkmanager` step.
 - Playwright gets every browser with its system libraries, since CI may test more than Chromium.
@@ -209,9 +210,11 @@ Without a map, the newest `obj/**/bit-minifier.map` under the current folder is 
 ## What it changes on your machine
 
 - **Tools** you tick, with `winget` on Windows, Homebrew on macOS and the distribution's package manager on Linux. Each command is shown before it runs.
+- **The .NET SDK** a project pins, next to the SDKs you already have: with `winget` on Windows (Microsoft's `dotnet-install.ps1` when winget doesn't list that build yet), Microsoft's installer package on macOS after checking it's signed by Microsoft, and Microsoft's `dotnet-install.sh` on Linux.
 - **VS Code extensions** the project's `.vscode/extensions.json` recommends, only the missing ones, with `code --install-extension`.
 - **Playwright's Chromium**, in Playwright's own browser folder, with the driver the project's tests were built with.
-- **Administrator rights**: on Windows, the steps that need them (long paths, WSL, installers that need admin) run in one elevated PowerShell, so Windows asks once. On macOS and Linux, `sudo` asks for your password once.
+- **Container images** the project's AppHost uses, which Docker pulls during the first Aspire start and keeps.
+- **Administrator rights**: on Windows, the steps that need them (long paths, WSL, installers that need admin) run in one elevated PowerShell, so Windows asks once. It runs only the script bit wrote, checked by its hash, gives each command a time limit, and Ctrl+C stops it. On macOS and Linux, `sudo` asks for your password once.
 - **A private GitHub repository**, only with `--github-repo`, on the account you sign in with. The GitHub CLI keeps that sign-in, and git uses it to push.
 - **Trust entries**, only for the folder `bit new` created or the one you pass to `bit trust`: `projects` in `~/.claude.json`, `trustedFolders` in `~/.copilot/config.json`, `[projects]` in `~/.codex/config.toml`, `~/.gemini/trustedFolders.json`, and VS Code's trust store in `~/.vscode-shared/sharedStorage/state.vscdb` (only while VS Code isn't running). Each file keeps everything else in it. To undo, delete the entry, or use each tool's own trust settings.
 - **bit itself**, when a newer version is out: a copy for the run in `~/.bitplatform/cli`, then `dotnet tool update --global Bit.Cli` once the run ends.

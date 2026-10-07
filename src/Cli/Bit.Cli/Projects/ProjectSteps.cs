@@ -86,6 +86,18 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         return StepResult.Succeeded("Initialized git", "develop and main");
     }
 
+    public async Task<StepResult> SdkAsync(Action<string> progress, CancellationToken cancellationToken)
+    {
+        if (TemplateRequirements.FromProject(project.Directory, project.Name).Sdk is not { } required)
+            return StepResult.Skipped("Skipped the .NET SDK check", "the project has no global.json");
+
+        if (await ToolCatalog.ResolveSdkAsync(Runner, project.Directory, cancellationToken) is { } version)
+            return StepResult.Succeeded("The .NET SDK is ready", version);
+
+        return StepResult.Failed("The project's .NET SDK isn't installed", $"global.json asks for {(required.Pinned ? "exactly " : "")}{required.Version}",
+            $"cd {ProcessSpec.Quote(project.Directory)} && bit setup", resultCode: "sdk.missing");
+    }
+
     public async Task<StepResult> WorkloadsAsync(Action<string> progress, CancellationToken cancellationToken)
     {
         var needed = Templates.Platforms.Workloads(project.Platforms, cli.Environment.Os);
@@ -191,7 +203,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     public async Task<StepResult> FormatAsync(Action<string> progress, CancellationToken cancellationToken)
     {
-        string[] arguments = ["format", Path.GetFileName(project.WebSolutionFilter), "--exclude-diagnostics", "BL0016", "DateTimeOffsetInsteadOfDateTimeAnalyzer"];
+        string[] arguments = ["format", Path.GetFileName(project.WebSolutionFilter), "--exclude-diagnostics", "BL0016"];
         var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(30));
         var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments)}";
 
@@ -233,6 +245,59 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
         var committed = await CommitPathAsync(migrations, "Add the Initial EF Core migration", cancellationToken);
         return StepResult.Succeeded("Added the Initial migration", $"{project.Database}{(committed is null ? "" : ", committed")}");
+    }
+
+    public async Task<StepResult> AspireStartAsync(Action<string> progress, CancellationToken cancellationToken)
+    {
+        const string skipped = "Skipped Aspire's first start";
+        const string failed = "Couldn't start the project with Aspire";
+        var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && aspire start";
+
+        if (System.IO.Directory.Exists(project.AppHostDirectory) is false)
+            return StepResult.Skipped(skipped, "the project has no AppHost");
+
+        if (Runner.FindExecutable("aspire") is null)
+            return StepResult.Warning(skipped, "the Aspire CLI isn't installed", followUp);
+
+        var docker = await Runner.RunAsync(new ProcessSpec { FileName = "docker", Arguments = ["info", "--format", "{{.ServerVersion}}"], Timeout = TimeSpan.FromMinutes(1) }, cancellationToken);
+
+        if (docker.Succeeded is false)
+            return StepResult.Warning(skipped, "Docker isn't running", followUp);
+
+        var start = await Aspire(["start", "--apphost", project.AppHostDirectory, "--non-interactive"], progress, TimeSpan.FromMinutes(30), cancellationToken);
+
+        if (start.Succeeded is false)
+            return StepResult.FromProcess(start, "", failed, followUp) with { Status = StepStatus.Warning };
+
+        try
+        {
+            foreach (var resource in AspireResourcesToWaitFor(project.AppHostDirectory))
+            {
+                var wait = await Aspire(["wait", resource, "--status", "healthy", "--timeout", "1800", "--apphost", project.AppHostDirectory, "--non-interactive"], progress, TimeSpan.FromMinutes(35), cancellationToken);
+
+                if (wait.Succeeded is false)
+                    return StepResult.FromProcess(wait, "", $"Aspire started, {resource} didn't get healthy", followUp) with { Status = StepStatus.Warning };
+            }
+        }
+        finally
+        {
+            await Aspire(["stop", "--apphost", project.AppHostDirectory, "--non-interactive"], progress, TimeSpan.FromMinutes(5), CancellationToken.None);
+        }
+
+        return StepResult.Succeeded("Started and stopped the project with Aspire", "its images and builds are ready, so the IDE starts it fast");
+    }
+
+    public static IReadOnlyList<string> AspireResourcesToWaitFor(string appHostDirectory)
+    {
+        var program = Path.Combine(appHostDirectory, "Program.cs");
+        var text = File.Exists(program) ? File.ReadAllText(program) : "";
+
+        return [.. new[] { "serverweb", "serverapi" }.Where(resource => text.Contains($"\"{resource}\"", StringComparison.Ordinal))];
+    }
+
+    private Task<ProcessResult> Aspire(string[] arguments, Action<string> progress, TimeSpan timeout, CancellationToken cancellationToken)
+    {
+        return Runner.RunAsync(new ProcessSpec { FileName = "aspire", Arguments = arguments, WorkingDirectory = project.Directory, OnOutputLine = progress, Timeout = timeout }, cancellationToken);
     }
 
     public Task<StepResult> TrustAsync(Action<string> progress, CancellationToken cancellationToken)
@@ -416,15 +481,9 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             return result.Succeeded ? StepResult.Succeeded($"Opened {found.Name}") : StepResult.FromProcess(result, "", $"Couldn't open {found.Name}", spec.CommandLine);
         }
 
-        try
-        {
-            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(spec.FileName, spec.Arguments) { UseShellExecute = false })?.Dispose();
-            return StepResult.Succeeded($"Opened {found.Name}");
-        }
-        catch (System.ComponentModel.Win32Exception exp)
-        {
-            return StepResult.Failed($"Couldn't open {found.Name}", exp.Message, spec.CommandLine);
-        }
+        return Runner.StartDetached(spec)
+            ? StepResult.Succeeded($"Opened {found.Name}")
+            : StepResult.Failed($"Couldn't open {found.Name}", $"{found.Executable} didn't start", spec.CommandLine);
     }
 
     private async Task<string?> CommitAllAsync(string message, CancellationToken cancellationToken)

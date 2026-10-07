@@ -48,7 +48,7 @@ public static class DoctorCommand
                 NativeWebAssembly = projectName is not null && ProjectContext.UsesNativeWebAssembly(cli.Environment.CurrentDirectory),
                 Platforms = platforms,
                 Ide = IdeLocator.FindAll(cli.Environment, cli.Runner).FirstOrDefault()?.Id,
-                Sdk = projectName is null ? null : SetupCommand.ReadSdk(cli.Environment.CurrentDirectory),
+                Sdk = requirements.Sdk,
                 NodeMajor = requirements.NodeMajor,
                 AspireVersion = requirements.Aspire
             };

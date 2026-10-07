@@ -1,5 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 using Bit.Cli.Infrastructure;
+using Bit.Cli.Templates;
 using Spectre.Console.Testing;
 
 namespace Bit.Cli.Tests.Infrastructure;
@@ -64,12 +65,15 @@ public sealed class TestHost : IDisposable
 
     public string Output => Out.Output + Error.Output;
 
+    public string FlatOutput => System.Text.RegularExpressions.Regex.Replace(Output.Replace("│", " ", StringComparison.Ordinal), @"\s+", " ");
+
     public void AllToolsInstalled()
     {
         Runner.On("git", "--version", 0, "git version 2.47.1");
         Runner.On("node", "--version", 0, "v24.9.0");
         Runner.On("docker", "version", 0, "28.5.1");
         Runner.On("aspire", "--version", 0, "13.6.0");
+        Runner.On("dotnet", "--version", 0, TemplateRequirements.Embedded.Sdk?.Version ?? "11.0.100");
         Runner.Executables["code"] = typeof(TestHost).Assembly.Location;
     }
 

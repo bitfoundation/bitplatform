@@ -1,4 +1,5 @@
 ﻿using System.Text.Json;
+using System.Text.Json.Nodes;
 using Bit.Cli.Infrastructure;
 using Bit.Cli.Templates;
 
@@ -21,20 +22,50 @@ public sealed record ToolStatus(ToolState State, string? Version = null, string?
     public static ToolStatus Installed(string? version = null) => new(ToolState.Installed, version);
 }
 
-public sealed record SdkRequirement(Version Minimum, bool Preview, string? Exact = null)
+public sealed record SdkRequirement(string Version, string? RollForward = null, bool? AllowPrerelease = null)
 {
-    public static SdkRequirement? FromGlobalJson(string json)
+    public bool Preview => Version.Contains('-');
+
+    public bool Pinned => string.Equals(RollForward, "disable", StringComparison.OrdinalIgnoreCase);
+
+    public string Channel => string.Join('.', Version.Split('.').Take(2));
+
+    public string GlobalJson
     {
+        get
+        {
+            var sdk = new JsonObject { ["version"] = Version };
+
+            if (RollForward is not null)
+            {
+                sdk["rollForward"] = RollForward;
+            }
+
+            if (AllowPrerelease is not null)
+            {
+                sdk["allowPrerelease"] = AllowPrerelease;
+            }
+
+            return new JsonObject { ["sdk"] = sdk }.ToJsonString();
+        }
+    }
+
+    public static SdkRequirement? FromGlobalJson(string? json)
+    {
+        if (json is null)
+            return null;
+
         try
         {
             using var document = JsonDocument.Parse(json, new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
 
-            if (document.RootElement.TryGetProperty("sdk", out var sdk) is false || sdk.TryGetProperty("version", out var version) is false || version.GetString() is not { } text)
+            if (document.RootElement.TryGetProperty("sdk", out var sdk) is false || sdk.TryGetProperty("version", out var version) is false || version.GetString() is not { } text || ToolCatalog.ParseVersion(text) is null)
                 return null;
 
-            var exact = sdk.TryGetProperty("rollForward", out var rollForward) && string.Equals(rollForward.GetString(), "disable", StringComparison.OrdinalIgnoreCase) ? text : null;
+            var rollForward = sdk.TryGetProperty("rollForward", out var roll) && roll.ValueKind is JsonValueKind.String ? roll.GetString() : null;
+            bool? allowPrerelease = sdk.TryGetProperty("allowPrerelease", out var allow) && allow.ValueKind is JsonValueKind.True or JsonValueKind.False ? allow.GetBoolean() : null;
 
-            return ToolCatalog.ParseVersion(text) is { } minimum ? new(minimum, text.Contains('-'), exact) : null;
+            return new(text, rollForward, allowPrerelease);
         }
         catch (JsonException)
         {
@@ -92,6 +123,8 @@ public sealed record ToolAction
     public bool Optional { get; init; }
 
     public PartialSuccess? Partial { get; init; }
+
+    public ProcessSpec? PathProbe { get; init; }
 }
 
 public sealed record PartialSuccess(int ExitCode, string Detail, string Hint);

@@ -65,7 +65,7 @@ public sealed class NewWorkflow(CliServices cli)
 
         var ide = request.NoOpen ? IdeLocator.None : request.Ide;
         var requirements = request.TemplatePackage is null ? TemplateRequirements.Embedded : TemplateRequirements.FromPackage(Path.GetFullPath(request.TemplatePackage, cli.Environment.CurrentDirectory));
-        var needs = new ToolNeeds { Aspire = selection.Aspire, Containers = selection.AspireContainers(), NativeWebAssembly = selection.IsTrue("offlineDb"), GitHubRepo = request.GitHubRepo, Platforms = platforms, Ide = ide, Sdk = Sdk(request), NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
+        var needs = new ToolNeeds { Aspire = selection.Aspire, Containers = selection.AspireContainers(), NativeWebAssembly = selection.IsTrue("offlineDb"), GitHubRepo = request.GitHubRepo, Platforms = platforms, Ide = ide, Sdk = requirements.Sdk, NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
         var hardware = request.NoSetup ? null : ProbeHardwareAsync(cli, directory, cancellationToken);
         var selectedTools = request.NoTools ? [] : await ChooseToolsAsync(cli, needs, request.Tools, request.ToolsGiven, interactive, hardware, cancellationToken);
 
@@ -123,16 +123,26 @@ public sealed class NewWorkflow(CliServices cli)
             await RunProjectStepAsync(steps, context, "git", "Initializing git", projectSteps.GitAsync, cancellationToken);
         }
 
-        await RunSetupStepsAsync(cli, steps, context, projectSteps, request.NoWorkloads, request.NoRestore, request.NoBuild, request.NoBrowsers, cancellationToken);
+        var sdkReady = await RunSetupStepsAsync(cli, steps, context, projectSteps, request.NoWorkloads, request.NoRestore, request.NoBuild, request.NoBrowsers, cancellationToken);
 
-        if (request.NoFormat is false)
+        if (sdkReady is false)
+        {
+            steps.Add("format", StepResult.Skipped("Skipped dotnet format, the migration and Aspire's first start", "they need the project's .NET SDK"));
+        }
+
+        if (sdkReady && request.NoFormat is false)
         {
             await RunProjectStepAsync(steps, context, "format", "Formatting the code", projectSteps.FormatAsync, cancellationToken);
         }
 
-        if (request.NoMigration is false)
+        if (sdkReady && request.NoMigration is false)
         {
             await RunProjectStepAsync(steps, context, "migration", "Adding the Initial EF Core migration", projectSteps.MigrationAsync, cancellationToken);
+        }
+
+        if (sdkReady && StartsAspireOnce(cli, selection.Aspire, request.NoBuild))
+        {
+            await RunProjectStepAsync(steps, context, "aspire-start", "Starting the project once with Aspire", projectSteps.AspireStartAsync, cancellationToken);
         }
 
         if (request.GitHubRepo)
@@ -164,8 +174,16 @@ public sealed class NewWorkflow(CliServices cli)
         return steps.AnyFailed ? CliApp.ExitFailed : CliApp.ExitOk;
     }
 
-    public static async Task RunSetupStepsAsync(CliServices cli, StepRunner steps, ProjectContext context, ProjectSteps projectSteps, bool noWorkloads, bool noRestore, bool noBuild, bool noBrowsers, CancellationToken cancellationToken)
+    public static async Task<bool> RunSetupStepsAsync(CliServices cli, StepRunner steps, ProjectContext context, ProjectSteps projectSteps, bool noWorkloads, bool noRestore, bool noBuild, bool noBrowsers, CancellationToken cancellationToken)
     {
+        await RunProjectStepAsync(steps, context, "sdk", "Checking the .NET SDK", projectSteps.SdkAsync, cancellationToken);
+
+        if (steps.Reports.LastOrDefault() is { Id: "sdk", Result.Status: StepStatus.Failed })
+        {
+            steps.Add("setup", StepResult.Skipped("Skipped build tools, restore and build", "they need the project's .NET SDK"));
+            return false;
+        }
+
         if (noWorkloads is false)
         {
             await RunProjectStepAsync(steps, context, "workloads", "Installing build tools", projectSteps.WorkloadsAsync, cancellationToken);
@@ -195,7 +213,11 @@ public sealed class NewWorkflow(CliServices cli)
         {
             await RunProjectStepAsync(steps, context, "playwright", cli.Environment.IsCI ? "Installing Playwright's browsers" : "Installing Chromium for UI tests", projectSteps.PlaywrightAsync, cancellationToken);
         }
+
+        return true;
     }
+
+    public static bool StartsAspireOnce(CliServices cli, bool aspire, bool noBuild) => aspire && noBuild is false && cli.Environment.IsCI is false;
 
     public static async Task RunProjectStepAsync(StepRunner steps, ProjectContext context, string id, string title, Func<Action<string>, CancellationToken, Task<StepResult>> work, CancellationToken cancellationToken)
     {
@@ -312,28 +334,6 @@ public sealed class NewWorkflow(CliServices cli)
         cli.Console.Out.MarkupLine($"  [bold blue]bit[/] [grey]CLI {Markup.Escape(BuildInfo.Version)}[/]");
         cli.Console.Out.MarkupLine($"  [grey]open source at github.com/bitfoundation/bitplatform · {Markup.Escape(provenance)} · details: bit about[/]");
         cli.Console.Out.WriteLine();
-    }
-
-    private SdkRequirement? Sdk(NewRequest request)
-    {
-        string? globalJson = null;
-
-        if (request.TemplatePackage is not null)
-        {
-            globalJson = TemplateSource.ReadEntry(Path.GetFullPath(request.TemplatePackage, cli.Environment.CurrentDirectory), "Bit.Boilerplate/global.json");
-        }
-
-        if (globalJson is null)
-        {
-            var cachedHive = Path.Combine(cli.Environment.BitDirectory, "templates", request.TemplateVersion ?? BuildInfo.Version, "packages");
-
-            if (Directory.Exists(cachedHive) && Directory.EnumerateFiles(cachedHive, "*.nupkg").FirstOrDefault() is { } cached)
-            {
-                globalJson = TemplateSource.ReadEntry(cached, "Bit.Boilerplate/global.json");
-            }
-        }
-
-        return globalJson is null ? null : SdkRequirement.FromGlobalJson(globalJson);
     }
 
     public static HashSet<Platform> AskPlatforms(CliServices cli, HashSet<Platform> current)
@@ -455,6 +455,7 @@ public sealed class NewWorkflow(CliServices cli)
         var stepsList = new List<string> { "create" };
         if (request.NoCertificate is false) stepsList.Add("unique app certificate");
         if (request.NoGit is false) stepsList.Add("git with develop and main");
+        stepsList.Add(".NET SDK check");
         if (request.NoWorkloads is false) stepsList.Add("build tools");
         if (cli.Environment.IsMacOS && context.BuildsSolution) stepsList.Add("Xcode check");
         if (request.NoRestore is false) stepsList.Add("restore");
@@ -462,6 +463,7 @@ public sealed class NewWorkflow(CliServices cli)
         if (request.NoBuild is false && request.NoBrowsers is false) stepsList.Add(cli.Environment.IsCI ? "Playwright's browsers" : "Chromium for UI tests");
         if (request.NoFormat is false) stepsList.Add("dotnet format");
         if (request.NoMigration is false && selection.Database is not "Other") stepsList.Add("initial migration");
+        if (StartsAspireOnce(cli, selection.Aspire, request.NoBuild)) stepsList.Add("a first Aspire start");
         if (request.GitHubRepo) stepsList.Add("private GitHub repository");
         if (request.NoTrust is false) stepsList.Add("trust for VS Code and AI tools");
         if (ide is IdeLocator.VsCode) stepsList.Add("VS Code extensions");
