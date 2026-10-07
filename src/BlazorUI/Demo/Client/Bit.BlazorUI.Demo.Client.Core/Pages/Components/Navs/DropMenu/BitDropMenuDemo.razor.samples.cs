@@ -607,12 +607,13 @@ private BitColor color = BitColor.Primary;";
     <div style=""display:flex;gap:0.5rem;
                 --bit-DropMenu-min-height: 2.5rem;
                 --bit-DropMenu-active-color: var(--bit-clr-pri-text);
-                --bit-DropMenu-active-background: var(--bit-clr-pri);"">
+                --bit-DropMenu-active-background: var(--bit-clr-pri);
+                --bit-DropMenu-callout-background: var(--bit-clr-pri-light);"">
         <BitDropMenu Text=""Inherited"" Variant=""BitVariant.Outline"">
-            <BitText Style=""padding:0.5rem"">Taller, and primary while open</BitText>
+            <BitText Style=""padding:0.5rem"">Taller, primary while open, on a tinted callout</BitText>
         </BitDropMenu>
         <BitDropMenu Text=""From the ancestor"" Variant=""BitVariant.Outline"">
-            <BitText Style=""padding:0.5rem"">Taller, and primary while open</BitText>
+            <BitText Style=""padding:0.5rem"">Taller, primary while open, on a tinted callout</BitText>
         </BitDropMenu>
     </div>
 </BitStack>";

@@ -452,10 +452,10 @@
 
     <DemoExample Title="CSS variables" RazorCode="@example17RazorCode" Id="example17">
         <div>
-            The <code>--bit-TimePicker-*</code> properties inherit: set them on <code>:root</code> for every picker or
-            on <code>Style</code> for one. <code>Style</code>'s values are copied to the callout too, which leaves the
-            picker while open (so an ancestor other than <code>:root</code> reaches the field only). Full list in the
-            <b>CSS variables</b> table below.
+            The <code>--bit-TimePicker-*</code> properties inherit: set them on <code>:root</code> for every picker, on
+            an ancestor for the pickers inside it, or on <code>Style</code> for one. The callout leaves the picker while
+            open, yet it keeps inheriting from it, so the same values reach the field and the callout alike. Full list
+            in the <b>CSS variables</b> table below.
         </div>
         <br />
         <div class="example-content">

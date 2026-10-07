@@ -4229,7 +4229,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                       : (CalloutFooterTemplate is not null ? _footerId : ""),
             setCalloutWidth: false,
             fixedCalloutWidth: false,
-            maxWindowWidth: GetMaxWidth());
+            maxWindowWidth: GetMaxWidth(),
+            rootId: _Id);
     }
 
     // The presets panel and every extra month widen the callout, so the threshold that decides
@@ -4252,9 +4253,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     private string GetCalloutCssClasses()
     {
-        // The callout is rendered outside of the root element (and is reparented to the body while it is
+        // The callout is rendered outside of the root element (and is relocated to the body while it is
         // open), so the custom properties of the color and the size have to be declared on it as well -
-        // nothing of the root cascades down to it.
+        // nothing the root's own bit-dtrp-* classes declare cascades down to it.
         List<string> classes = ["bit-dtrp-cal", GetColorClass()];
 
         var sizeClass = GetSizeClass();
@@ -4299,74 +4300,27 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         return string.Join(' ', classes).Trim();
     }
 
-    // The public custom properties of the component, which are what its stylesheet reads with a fallback
-    // (see BitDateRangePicker.scss). Nothing else in a style string is copied to the callout.
-    private const string PUBLIC_CSS_VARIABLE_PREFIX = "--bit-DateRangePicker-";
-
-    private string? _publicCssVariables;
-    private string? _lastRootStyle;
-    private string? _lastStylesRoot;
-
-    // The callout and the overlay are rendered outside the root element - and reparented to the body while the
-    // callout is open - so they inherit nothing an author sets on the picker: neither the Style of the instance
-    // nor a custom property declared on an ancestor of it (only :root and body stay ancestors of them once they
-    // have moved). The public --bit-DateRangePicker-* declarations are therefore carried across by hand, so ONE
-    // Style on the component restyles the field and the calendar it opens together, the way it reads as if it would.
-    private string? GetPublicCssVariables()
-    {
-        var style = Style;
-        var stylesRoot = Styles?.Root;
-
-        // Rebuilt only when one of the two strings it is made of has actually changed: the callout is
-        // re-rendered on every hover over a day while a range is being picked.
-        if (string.Equals(style, _lastRootStyle, StringComparison.Ordinal) &&
-            string.Equals(stylesRoot, _lastStylesRoot, StringComparison.Ordinal))
-        {
-            return _publicCssVariables;
-        }
-
-        _lastRootStyle = style;
-        _lastStylesRoot = stylesRoot;
-
-        StringBuilder? builder = null;
-
-        AppendPublicCssVariables(ref builder, style);
-        AppendPublicCssVariables(ref builder, stylesRoot);
-
-        _publicCssVariables = builder?.ToString();
-
-        return _publicCssVariables;
-    }
-
-    // Styles.Callout is appended last, so a value written for the callout still wins over the copy.
-    private string? GetCalloutStyles()
-    {
-        var variables = GetPublicCssVariables();
-        var stylesCallout = Styles?.Callout;
-
-        if (variables.HasNoValue()) return stylesCallout;
-        if (stylesCallout.HasNoValue()) return variables;
-
-        return variables + stylesCallout;
-    }
-
-    // Styles.Overlay is appended last for the same reason Styles.Callout is. The display is written here
-    // rather than in the stylesheet because it is what the component toggles the layer with.
+    // The callout and the overlay are rendered outside the root element and relocated to the body while the
+    // callout is open; Callouts.ts carries what the root and its ancestors declare into them (a public
+    // --bit-DateRangePicker-* variable set on an ancestor or through its class, in Style or in Styles.Root), so it
+    // reaches them like any inherited value. The display is written here rather than in the stylesheet because
+    // it is what the component toggles the layer with.
     private string GetOverlayStyles()
     {
-        return $"display:{(IsOpen ? "block" : "none")};{GetPublicCssVariables()}{Styles?.Overlay}";
+        return $"display:{(IsOpen ? "block" : "none")};{Styles?.Overlay}";
     }
 
-    private static void AppendPublicCssVariables(ref StringBuilder? builder, string? style)
+    // The public custom properties of the component, which are what its stylesheet reads with a fallback.
+    private readonly BitPublicCssVariables _standaloneCssVariables = new("--bit-DateRangePicker-");
+
+    // A standalone calendar is never opened as a callout, so it is never relocated either, and the chain Callouts.ts
+    // carries the root's declarations through is never built for it: it stays where it is rendered, a sibling of
+    // the root. What an ancestor declares still reaches it, as it shares the root's ancestors, but what the Style of
+    // the instance and Styles.Root declare does not, so their public --bit-DateRangePicker-* declarations are copied
+    // onto the calendar by hand - ahead of its own style, which therefore still wins.
+    private string? GetStandaloneStyles(string? style)
     {
-        if (style.HasNoValue()) return;
-
-        foreach (var declaration in style!.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-        {
-            if (declaration.StartsWith(PUBLIC_CSS_VARIABLE_PREFIX, StringComparison.Ordinal) is false) continue;
-
-            (builder ??= new StringBuilder()).Append(declaration).Append(';');
-        }
+        return Standalone ? _standaloneCssVariables.Prepend(Style, Styles?.Root, style) : style;
     }
 
 

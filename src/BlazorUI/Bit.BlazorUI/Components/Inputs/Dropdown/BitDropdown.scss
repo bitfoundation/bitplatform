@@ -3,9 +3,9 @@
 
 // Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins
 // every dropdown and one set on the Style of an instance re-skins that one alone.
-// The callout and the overlay are rendered outside the root element (and reparented to the body while the
-// callout is open), so the component copies the --bit-Dropdown-* declarations of Style and Styles.Root onto
-// both of them by hand - see GetPublicCssVariables.
+// The callout and the overlay are rendered outside the root element and relocated to the body while the
+// callout is open; Callouts.ts carries what the root and its ancestors declare into them, so a variable set
+// on an ancestor or through its class, in Style or in Styles.Root reaches them like any inherited value.
 //
 //   FIELD
 //   --bit-Dropdown-background              background of the field                  (default: $clr-bg-pri, transparent with Transparent)
@@ -102,7 +102,8 @@
 
 // The one place the public variables meet the per-size and per-role defaults. Every rule below reads the
 // private variables this leaves behind, so no use site repeats the fallback chain - and the block is
-// included on the callout as well, which is a sibling of the root and inherits nothing from it.
+// included on the callout as well, which is a sibling of the root and so never sees the private variables
+// the root's own classes declare.
 @mixin drp-vars {
     --bit-drp-fs: var(--bit-Dropdown-font-size, var(--bit-drp-sz-fs));
     --bit-drp-h: var(--bit-Dropdown-min-height, var(--bit-drp-sz-h));

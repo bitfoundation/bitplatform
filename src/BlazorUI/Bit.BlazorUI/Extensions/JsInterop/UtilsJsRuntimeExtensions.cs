@@ -39,6 +39,12 @@ internal static class UtilsJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.focusFirstElement", elementId, selector);
     }
 
+    // Focuses the trigger inside the given container unless the focus is already in it; see Utils.focusClickedTrigger.
+    internal static ValueTask BitUtilsFocusClickedTrigger(this IJSRuntime jsRuntime, string containerId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.focusClickedTrigger", containerId);
+    }
+
 
     // Mirrors the popup relationship of a popup component onto the element the user actually reaches: the
     // anchor of a callout is a plain container around the consumer's own trigger, and relationship

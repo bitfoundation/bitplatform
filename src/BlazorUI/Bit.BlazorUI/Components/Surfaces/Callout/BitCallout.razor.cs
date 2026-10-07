@@ -1,5 +1,4 @@
-﻿using System.Text;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -12,9 +11,6 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitCallout : BitComponentBase
 {
-    // The public custom properties of the component, which are what its stylesheet reads with a fallback.
-    private const string PUBLIC_CSS_VARIABLE_PREFIX = "--bit-Callout-";
-
     private string _anchorId = default!;
     private string _arrowId = default!;
     private string _bodyId = default!;
@@ -33,10 +29,6 @@ public partial class BitCallout : BitComponentBase
     private bool _focusOriginCaptured;
     private bool _escapeRegistered;
     private bool _tabOutRegistered;
-    private string? _publicCssVariables;
-    private string? _lastRootStyle;
-    private string? _lastStylesRoot;
-    private string? _lastStylesOpened;
     private bool _scrollLocked;
     private bool _hoverInside;
     private bool _openedByHover;
@@ -842,11 +834,32 @@ public partial class BitCallout : BitComponentBase
         if (IsOpen is false)
         {
             await OpenCallout();
+
+            // Not every engine focuses a button it has just dispatched a click for - WebKit leaves the focus
+            // where it was - and a callout whose trigger never took the focus is a callout without its Escape
+            // key, since the key is answered on the root around the anchor. Doing it here is what the engines
+            // that focus it have already done, so nothing moves for them. It is left alone where the callout is
+            // the one taking the focus, which AutoFocus and the modes that keep the focus ask for.
+            if (IsOpen && (AutoFocus || KeepsFocus) is false)
+            {
+                await FocusClickedTrigger();
+            }
         }
         else if (HoverDriven is false || _hoverInside is false)
         {
             await CloseCallout();
         }
+    }
+
+    private async Task FocusClickedTrigger()
+    {
+        if (IsDisposed || Anchor is null || _dotnetObj is null) return;
+
+        try
+        {
+            await _js.BitUtilsFocusClickedTrigger(_anchorId);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
     private async Task HandleOnOverlayClick()
@@ -1127,7 +1140,8 @@ public partial class BitCallout : BitComponentBase
                 collisionPadding: CollisionPadding,
                 alignmentOffset: AlignmentOffset,
                 arrowPadding: ArrowPadding ?? 0,
-                noScrollDismiss: NoDismissOnScroll);
+                noScrollDismiss: NoDismissOnScroll,
+                rootId: _Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1754,52 +1768,16 @@ public partial class BitCallout : BitComponentBase
         // theme sizes it to when nothing is asked for, and the consumer's own styles still win over both.
         var size = ArrowSize > 0 ? $"--bit-clo-arw-siz:{ArrowSize.Value}px;" : null;
 
-        var result = $"{GetPublicCssVariables()}{size}{Styles?.Arrow}";
+        var result = $"{size}{Styles?.Arrow}";
 
         return result.HasValue() ? result : null;
     }
 
     // The display is written here rather than in the stylesheet because it is what the component toggles the
-    // overlay with; Styles.Overlay is appended last, so a value written for the overlay still wins over the copy.
+    // overlay with; Styles.Overlay is appended last, so a value written for the overlay still wins.
     private string GetOverlayStyles()
     {
-        return $"display:{(IsOpen ? "block" : "none")};{GetPublicCssVariables()}{Styles?.Overlay}";
-    }
-
-    // The public custom properties of the component (see BitCallout.scss). The callout, its arrow and its overlay
-    // are rendered outside the root and relocated to the body while the callout is open, so none of them inherits
-    // what the root declares; the --bit-Callout-* declarations of Style, Styles.Root and - while the callout is
-    // open, which is when the root carries it - Styles.Opened are copied onto them by hand, and nothing else in
-    // those strings is. One Style on the component then restyles the callout it opens, which is what an author
-    // setting a variable on it expects.
-    private string? GetPublicCssVariables()
-    {
-        var style = Style;
-        var stylesRoot = Styles?.Root;
-        var stylesOpened = IsOpen ? Styles?.Opened : null;
-
-        // Rebuilt only when one of the strings it is made of has actually changed, since the three parts that
-        // read it ask for it on every render.
-        if (string.Equals(style, _lastRootStyle, StringComparison.Ordinal) &&
-            string.Equals(stylesRoot, _lastStylesRoot, StringComparison.Ordinal) &&
-            string.Equals(stylesOpened, _lastStylesOpened, StringComparison.Ordinal))
-        {
-            return _publicCssVariables;
-        }
-
-        _lastRootStyle = style;
-        _lastStylesRoot = stylesRoot;
-        _lastStylesOpened = stylesOpened;
-
-        StringBuilder? builder = null;
-
-        BitPublicCssVariables.Append(ref builder, style, PUBLIC_CSS_VARIABLE_PREFIX);
-        BitPublicCssVariables.Append(ref builder, stylesRoot, PUBLIC_CSS_VARIABLE_PREFIX);
-        BitPublicCssVariables.Append(ref builder, stylesOpened, PUBLIC_CSS_VARIABLE_PREFIX);
-
-        _publicCssVariables = builder?.ToString();
-
-        return _publicCssVariables;
+        return $"display:{(IsOpen ? "block" : "none")};{Styles?.Overlay}";
     }
 
     private string GetArrowCssClasses()
@@ -1818,6 +1796,12 @@ public partial class BitCallout : BitComponentBase
 
     private string? GetCalloutStyles()
     {
+        // The callout, its arrow and its overlay are rendered outside the root and relocated to the body while
+        // the callout is open, but the public --bit-Callout-* variables need nothing here: whether they are set
+        // on an ancestor or through its class, in Style, Styles.Root or Styles.Opened, Callouts.ts carries what the
+        // root and its ancestors declare into the relocated parts, so they reach all three like any inherited
+        // value and one Style on the component restyles the callout it opens.
+        //
         // The positioning code clears the callout's inline sizing on every layout pass, so the caps travel
         // as custom properties the stylesheet reads instead of as declarations of their own.
         var maxHeight = MaxHeight.HasValue() ? $"--bit-clo-mxh:{MaxHeight};" : null;
@@ -1825,7 +1809,7 @@ public partial class BitCallout : BitComponentBase
         var minWidth = MinWidth.HasValue() ? $"--bit-clo-mnw:{MinWidth};" : null;
         var maxWidth = MaxWidth.HasValue() ? $"--bit-clo-mxw:{MaxWidth};" : null;
 
-        var result = $"{GetPublicCssVariables()}{maxHeight}{width}{minWidth}{maxWidth}{Styles?.Content}";
+        var result = $"{maxHeight}{width}{minWidth}{maxWidth}{Styles?.Content}";
 
         return result.HasValue() ? result : null;
     }
@@ -1839,9 +1823,10 @@ public partial class BitCallout : BitComponentBase
             classes.Add("bit-clo-ocl");
         }
 
-        // While open the callout is relocated to the body, which takes it out of the subtree that carries
-        // the root's bit-fam class, so ForceAnimation has to be rendered on the callout itself for its
-        // opening animation to opt out of reduced motion.
+        // The callout is a sibling of the root, so the root's bit-fam class never reaches it where it is
+        // rendered - only while it is relocated, through the copy of the root Callouts.ts moves it into. So
+        // ForceAnimation is rendered on the callout itself, for its motion to opt out of reduced motion
+        // whether or not it is relocated.
         if (ForceAnimation)
         {
             classes.Add("bit-fam");

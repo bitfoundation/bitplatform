@@ -492,8 +492,9 @@
     <div>
         <b>Style</b>/<b>Class</b> reach the root, an option's own <b>Style</b>/<b>Class</b> reach that option, and
         <b>Styles</b>/<b>Classes</b> reach every part by name. The <BitLink Href="#css-variables-section">CSS variables</BitLink>
-        inherit: set on <code>:root</code> or an ancestor they re-skin every breadcrumb below it, and set in a
-        breadcrumb's <b>Style</b> they reach its overflow menu too.
+        inherit: set on <code>:root</code> or an ancestor they re-skin every breadcrumb below it, set in a
+        breadcrumb's <b>Style</b> or class just that one - and in every case its overflow menu as well, which keeps
+        inheriting from the breadcrumb while it is open at the end of the body.
     </div>
     <br />
     <div class="example-box">

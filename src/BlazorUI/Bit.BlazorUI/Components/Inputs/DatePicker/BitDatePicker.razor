@@ -26,6 +26,7 @@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
+     data-bit-popup-style="@(GetPopupStyle(_hasFocus, Styles?.Focused, Styles?.Root))"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
 
@@ -147,13 +148,13 @@
      class="bit-dtp-ovl @Classes?.Overlay"></div>
 }
 
-@* The callout is rendered outside of the root element - and reparented to the body while it is open -
-   so it inherits nothing of its direction and has to carry it itself. The explicit Dir is set here as
-   it is on the root; a direction that only the culture implies rides on the bit-dtp-rtl class. *@
+@* The callout is rendered outside of the root element - and relocated to the body while it is open - so
+   it carries its direction itself rather than relying on the root's. The explicit Dir is set here as it
+   is on the root; a direction that only the culture implies rides on the bit-dtp-rtl class. *@
 <div id="@_calloutId"
      @onkeydown="HandleOnCalloutKeyDown"
      dir="@Dir?.ToString().ToLower()"
-     style="@GetCalloutStyles()"
+     style="@GetStandaloneStyles(Styles?.Callout)"
      class="@GetCalloutCssClasses()">
     @* The callout is a modal dialog only when it floats over the page, where an overlay closes the rest of it
        off and the focus is held inside it; standalone it is a group of controls that is part of the page like
@@ -932,7 +933,7 @@
     {
         @if (HasErrorMessage)
         {
-            <div id="@_errorId" dir="@(Standalone ? Dir?.ToString().ToLower() : null)" style="@GetOutsideRootStyles(Styles?.ErrorMessageContainer)" class="bit-dtp-erm @Classes?.ErrorMessageContainer">
+            <div id="@_errorId" dir="@(Standalone ? Dir?.ToString().ToLower() : null)" style="@GetStandaloneStyles(Styles?.ErrorMessageContainer)" class="bit-dtp-erm @Classes?.ErrorMessageContainer">
                 @if (ErrorMessageTemplate is not null)
                 {
                     @ErrorMessageTemplate
@@ -946,7 +947,7 @@
 
         @if (HasDescription)
         {
-            <div id="@_descriptionId" dir="@(Standalone ? Dir?.ToString().ToLower() : null)" style="@GetOutsideRootStyles(Styles?.DescriptionContainer)" class="bit-dtp-des @Classes?.DescriptionContainer">
+            <div id="@_descriptionId" dir="@(Standalone ? Dir?.ToString().ToLower() : null)" style="@GetStandaloneStyles(Styles?.DescriptionContainer)" class="bit-dtp-des @Classes?.DescriptionContainer">
                 @if (DescriptionTemplate is not null)
                 {
                     @DescriptionTemplate

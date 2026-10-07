@@ -1416,7 +1416,7 @@ public class BitDropdownTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDropdownCalloutShouldInheritThePublicCssVariablesOfTheStyle()
+    public void BitDropdownCalloutShouldCarryOnlyItsOwnStyle()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
@@ -1427,41 +1427,40 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.Styles, new BitDropdownClassStyles { Root = "--bit-Dropdown-callout-radius:1rem", Callout = "z-index:9" });
         });
 
-        // The callout is a sibling of the root (and is moved to the body while it is open), so it inherits
-        // nothing the author sets on the dropdown. The public variables are carried across by hand, from the
-        // Style of the instance and from Styles.Root; Styles.Callout is appended last so it still wins.
-        var callout = component.Find(".bit-drp-cal").GetAttribute("style");
-
-        Assert.IsNotNull(callout);
-        StringAssert.Contains(callout, "--bit-Dropdown-accent-color:red;");
-        StringAssert.Contains(callout, "--bit-Dropdown-item-height:3rem;");
-        StringAssert.Contains(callout, "--bit-Dropdown-callout-radius:1rem;");
-        StringAssert.Contains(callout, "z-index:9");
-        Assert.IsTrue(callout.IndexOf("--bit-Dropdown-callout-radius", StringComparison.Ordinal) < callout.IndexOf("z-index:9", StringComparison.Ordinal));
-
-        // Only the public variables travel: a layout declaration written for the field would move the callout
-        // away from the trigger it is positioned against.
-        Assert.IsFalse(callout.Contains("margin:1rem", StringComparison.Ordinal));
+        // The callout is a sibling of the root and is relocated to the body while it is open, but the public
+        // variables set on the dropdown are no longer copied onto it: Callouts.ts carries what the root
+        // declares into the popup, so its inline style is only what was written for the callout itself.
+        Assert.AreEqual("z-index:9", component.Find(".bit-drp-cal").GetAttribute("style"));
 
         // ... and the root keeps everything it was given.
         var root = component.Find(".bit-drp").GetAttribute("style");
         Assert.IsNotNull(root);
         StringAssert.Contains(root, "margin:1rem");
+        StringAssert.Contains(root, "--bit-Dropdown-accent-color:red");
+        StringAssert.Contains(root, "--bit-Dropdown-item-height:3rem");
+        StringAssert.Contains(root, "--bit-Dropdown-callout-radius:1rem");
     }
 
     [TestMethod]
-    public void BitDropdownCalloutShouldCarryOnlyItsOwnStyleWithoutPublicCssVariables()
+    public void BitDropdownShouldNameItsRootWhenItTogglesTheCallout()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, BitDropdownTests.GetShortDropdownItems());
-            parameters.Add(p => p.Style, "margin:1rem");
-            parameters.Add(p => p.Styles, new BitDropdownClassStyles { Callout = "z-index:9" });
+            parameters.Add(p => p.Style, "--bit-Dropdown-accent-color:red");
         });
 
-        Assert.AreEqual("z-index:9", component.Find(".bit-drp-cal").GetAttribute("style"));
+        component.Find(".bit-drp-wrp").Click();
+
+        // The root is what Callouts.ts copies into the chain it relocates the callout and the overlay into,
+        // which is how the public variables of the instance still reach them once they sit under the body.
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+        var rootId = component.Find(".bit-drp").Id;
+
+        Assert.IsFalse(string.IsNullOrEmpty(rootId));
+        Assert.AreEqual(rootId, toggle.Arguments[^1]);
     }
 
     [TestMethod]
@@ -3953,7 +3952,7 @@ public class BitDropdownTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDropdownOverlayShouldInheritThePublicCssVariablesOfTheStyle()
+    public void BitDropdownOverlayShouldCarryOnlyItsDisplayAndItsOwnStyle()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
@@ -3964,20 +3963,16 @@ public class BitDropdownTests : BunitTestContext
             parameters.Add(p => p.Styles, new BitDropdownClassStyles { Root = "--bit-Dropdown-accent-color:red", Overlay = "z-index:9" });
         });
 
-        // The overlay is a sibling of the root and is moved to the body along with the callout, so the
-        // public variables reach it the same way they reach the callout - by hand. Styles.Overlay is
-        // appended last, so a value written for the layer itself still wins.
-        var overlay = component.Find(".bit-drp-ovl").GetAttribute("style");
+        // The overlay is relocated to the body along with the callout, and the public variables reach it the
+        // same way they reach the callout - through what Callouts.ts carries from the root - so its inline
+        // style is only the display the component toggles it with, followed by Styles.Overlay.
+        Assert.AreEqual("display:none;z-index:9", component.Find(".bit-drp-ovl").GetAttribute("style"));
 
-        Assert.IsNotNull(overlay);
-        StringAssert.Contains(overlay, "--bit-Dropdown-overlay-background:rgba(0,0,0,.4);");
-        StringAssert.Contains(overlay, "--bit-Dropdown-accent-color:red;");
-        StringAssert.Contains(overlay, "z-index:9");
-        Assert.IsTrue(overlay.IndexOf("--bit-Dropdown-accent-color", StringComparison.Ordinal) < overlay.IndexOf("z-index:9", StringComparison.Ordinal));
-
-        // Only the public variables travel, and the layer keeps the display the component toggles it with.
-        Assert.IsFalse(overlay.Contains("margin:1rem", StringComparison.Ordinal));
-        StringAssert.Contains(overlay, "display:none");
+        var root = component.Find(".bit-drp").GetAttribute("style");
+        Assert.IsNotNull(root);
+        StringAssert.Contains(root, "margin:1rem");
+        StringAssert.Contains(root, "--bit-Dropdown-overlay-background:rgba(0,0,0,.4)");
+        StringAssert.Contains(root, "--bit-Dropdown-accent-color:red");
     }
 
     [TestMethod]

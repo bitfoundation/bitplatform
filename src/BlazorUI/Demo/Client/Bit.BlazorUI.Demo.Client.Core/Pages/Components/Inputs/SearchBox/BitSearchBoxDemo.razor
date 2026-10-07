@@ -942,8 +942,9 @@
                 <br /><br />
                 For a re-skin that follows every state on its own, set the public <b>CSS variables</b> listed in the API
                 section instead: on <code>:root</code> they re-skin every search box of the app, on <b>Style</b> they
-                re-skin one. The suggest callout is rendered outside the root element, so its own variables are set through
-                the <b>Callout</b> key of <b>Styles</b>.
+                re-skin one. The suggest callout is moved to the end of the body while it is open, yet it keeps inheriting
+                from the search box and its ancestors, so those variables reach it as well; the <b>Callout</b> key of
+                <b>Styles</b> sets one on the callout alone, as the example below does.
             </div>
             <br /><br />
             <div class="example-box">
