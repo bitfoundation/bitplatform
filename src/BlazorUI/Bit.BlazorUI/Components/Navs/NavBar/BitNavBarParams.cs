@@ -109,6 +109,17 @@ public class BitNavBarParams : BitComponentBaseParams, IBitComponentParams
     public BitNavMode? Mode { get; set; }
 
     /// <summary>
+    /// The text the items opening a new tab are announced with. The default is "(opens in a new tab)"; an empty
+    /// value takes the announcement off.
+    /// </summary>
+    public string? NewTabHint { get; set; }
+
+    /// <summary>
+    /// Stops the items opening a new tab from announcing that they do.
+    /// </summary>
+    public bool? NoNewTabHint { get; set; }
+
+    /// <summary>
     /// Lets the click and the select events of the already selected item through: on a click in the manual
     /// mode, and on a navigation back to its URL in the automatic mode. By default they are swallowed.
     /// </summary>
@@ -284,6 +295,18 @@ public class BitNavBarParams : BitComponentBaseParams, IBitComponentParams
             urlMatchingChanged |= bitNavBar.Mode != Mode.Value;
 
             bitNavBar.Mode = Mode.Value;
+        }
+
+        // an empty hint is a value of its own - the one that takes the announcement off - so only null is
+        // what leaves the component to its default.
+        if (NewTabHint is not null && bitNavBar.HasNotBeenSet(nameof(NewTabHint)))
+        {
+            bitNavBar.NewTabHint = NewTabHint;
+        }
+
+        if (NoNewTabHint.HasValue && bitNavBar.HasNotBeenSet(nameof(NoNewTabHint)))
+        {
+            bitNavBar.NoNewTabHint = NoNewTabHint.Value;
         }
 
         if (Reselectable.HasValue && bitNavBar.HasNotBeenSet(nameof(Reselectable)))

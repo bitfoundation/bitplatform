@@ -1,4 +1,7 @@
-﻿namespace Bit.BlazorUI;
+﻿using System;
+using System.Linq;
+
+namespace Bit.BlazorUI;
 
 internal static class BitLinkRelUtils
 {

@@ -311,7 +311,7 @@ public partial class BitButtonDemo
             Name = "Target",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Specifies target attribute of the link when the button renders as an anchor (by providing the Href parameter). When set to _blank and no Rel is provided, rel=\"noopener\" gets added automatically for security.",
+            Description = "Specifies target attribute of the link when the button renders as an anchor (by providing the Href parameter). When set to _blank and no opener-related Rel is provided, noopener is added to the rel automatically for security.",
         },
         new()
         {

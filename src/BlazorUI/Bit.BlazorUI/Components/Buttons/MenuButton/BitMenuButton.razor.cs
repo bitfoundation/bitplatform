@@ -249,9 +249,33 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     public bool IconOnly { get; set; }
 
     /// <summary>
+    /// Replaces the text the items opening a new tab are announced with, for translating it or for saying it
+    /// another way.
+    /// </summary>
+    /// <remarks>
+    /// A link opening a new tab takes the reader somewhere the back button no longer returns from, so one whose
+    /// target is <c>_blank</c> carries the sentence saying so - "<c>(opens in a new tab)</c>" unless this
+    /// replaces it - as visually hidden text after its content, or appended to its aria-label when it has one,
+    /// since an aria-label replaces the content rather than adding to it.
+    /// <br />
+    /// An empty value takes the announcement off, the same as <see cref="NoNewTabHint"/> does.
+    /// </remarks>
+    [Parameter] public string? NewTabHint { get; set; }
+
+    /// <summary>
     /// If true, removes the icon from the header button.
     /// </summary>
     [Parameter] public bool NoIcon { get; set; }
+
+    /// <summary>
+    /// Stops the items opening a new tab from announcing that they do.
+    /// </summary>
+    /// <remarks>
+    /// Only set this where the announcement would be made twice - on items whose own labels already say they open
+    /// a new tab, or under a heading that already says every one of them does. See <see cref="NewTabHint"/> for
+    /// what is being taken off.
+    /// </remarks>
+    [Parameter] public bool NoNewTabHint { get; set; }
 
     /// <summary>
     /// Determines whether the menu button is in the loading state.
@@ -864,6 +888,30 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         }
 
         return item.GetValueFromProperty<string?>(NameSelectors.RadioGroup.Name);
+    }
+
+    internal BitLinkRels? GetRel(TItem? item)
+    {
+        if (item is null) return null;
+
+        if (item is BitMenuButtonItem menuButtonItem)
+        {
+            return menuButtonItem.Rel;
+        }
+
+        if (item is BitMenuButtonOption menuButtonOption)
+        {
+            return menuButtonOption.Rel;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Rel.Selector is not null)
+        {
+            return NameSelectors.Rel.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<BitLinkRels?>(NameSelectors.Rel.Name);
     }
 
     internal string? GetSecondaryText(TItem? item)

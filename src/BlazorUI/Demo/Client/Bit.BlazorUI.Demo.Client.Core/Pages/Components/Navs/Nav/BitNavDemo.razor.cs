@@ -196,10 +196,24 @@ public partial class BitNavDemo
         },
         new()
         {
+            Name = "NewTabHint",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "Replaces the visually hidden \"(opens in a new tab)\" an item whose Target is _blank is announced with, e.g. to translate it. An empty value removes it.",
+        },
+        new()
+        {
             Name = "NoCollapse",
             Type = "bool",
             DefaultValue = "false",
             Description = "Keeps every item expanded and hides the collapse/expand buttons together with the space they reserve at the start of each item."
+        },
+        new()
+        {
+            Name = "NoNewTabHint",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stops the items whose Target is _blank from announcing that they open a new tab - only for where a visible label or heading already says so.",
         },
         new()
         {
@@ -614,6 +628,13 @@ public partial class BitNavDemo
                },
                new()
                {
+                   Name = "Rel",
+                   Type = "BitLinkRels?",
+                   DefaultValue = "null",
+                   Description = "The rel attribute of the link of the nav item. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
+               },
+               new()
+               {
                    Name = "Style",
                    Type = "string?",
                    DefaultValue = "null",
@@ -798,6 +819,13 @@ public partial class BitNavDemo
                },
                new()
                {
+                   Name = "Rel",
+                   Type = "BitLinkRels?",
+                   DefaultValue = "null",
+                   Description = "The rel attribute of the link of the nav option. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
+               },
+               new()
+               {
                    Name = "Style",
                    Type = "string?",
                    DefaultValue = "null",
@@ -979,6 +1007,13 @@ public partial class BitNavDemo
                    Description = "The Match field name and selector of the custom input class.",
                    Href = "#nav-match-enum",
                    LinkType = LinkType.Link,
+               },
+               new()
+               {
+                   Name = "Rel",
+                   Type = "BitNameSelectorPair<TItem, BitLinkRels?>",
+                   DefaultValue = "new(nameof(BitNavItem.Rel))",
+                   Description = "The Rel field name and selector of the custom input class."
                },
                new()
                {

@@ -304,7 +304,7 @@
     <DemoExample Title="Link" RazorCode="@example8RazorCode" Id="example8">
         <div>
             <b>Href</b> makes the coin a real link to the person's profile, named after them. <b>Target</b> <b>_blank</b> adds
-            <b>rel="noopener"</b> unless <b>Rel</b> says otherwise, and <b>ImageOverlayText</b> puts a veil back on it.
+            <b>noopener</b> to the rel unless <b>Rel</b> already says NoOpener, NoReferrer or Opener, and <b>ImageOverlayText</b> puts a veil back on it.
         </div>
         <br />
         <BitPersona Href="/components/persona"

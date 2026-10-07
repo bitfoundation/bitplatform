@@ -1161,6 +1161,25 @@ public class BitLinkTests : BunitTestContext
     }
 
     [TestMethod,
+        DataRow("_BLANK"),
+        DataRow("_Blank")
+    ]
+    public void BitLinkShouldTreatTheBlankTargetCaseInsensitively(string target)
+    {
+        // The browser matches the target keyword case-insensitively, so this opens a new tab like any
+        // "_blank" does - and has to be announced and hardened like one.
+        var component = RenderComponent<BitLink>(parameters =>
+        {
+            parameters.Add(p => p.Target, target);
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.AddChildContent("bit");
+        });
+
+        Assert.AreEqual("(opens in a new tab)", component.Find(".bit-lnk-hnt").TextContent);
+        Assert.AreEqual("noopener", component.Find(".bit-lnk").GetAttribute("rel"));
+    }
+
+    [TestMethod,
         DataRow("_self"),
         DataRow(""),
         DataRow(null)

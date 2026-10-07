@@ -361,7 +361,7 @@ public partial class BitButton : BitComponentBase
 
     /// <summary>
     /// Specifies target attribute of the link when the button renders as an anchor (by providing the Href parameter).
-    /// When set to <c>_blank</c> and no <see cref="Rel"/> is provided, <c>rel="noopener"</c> gets added automatically for security.
+    /// When set to <c>_blank</c> and no opener-related <see cref="Rel"/> is provided, <c>noopener</c> is added to the rel attribute automatically for security.
     /// </summary>
     [Parameter]
     [CallOnSet(nameof(OnSetHrefRelAndTarget))]
@@ -591,52 +591,27 @@ public partial class BitButton : BitComponentBase
         _resetDragPosition = true;
     }
 
+    // Only the Rel parameter itself is kept here, never the noopener a new tab adds to it: a null left for a link
+    // that has no Rel is what lets GetRel fall back to a rel written by hand.
     internal void OnSetHrefRelAndTarget()
     {
-        if (Href.HasNoValue() || Href!.StartsWith('#'))
-        {
-            _rel = null;
-            return;
-        }
-
-        var rel = Rel.HasValue ? BitLinkRelUtils.GetRels(Rel.Value) : null;
-
-        // protects against reverse-tabnabbing when opening the link in a new browsing context, unless the
-        // author already asked for one of the two rels that close that hole.
-        if (Target is "_blank" && (rel is null || (rel.Contains("noopener") is false && rel.Contains("noreferrer") is false)))
-        {
-            rel = rel.HasValue() ? $"{rel} noopener" : "noopener";
-        }
-
-        _rel = rel;
+        _rel = BitNewTabUtils.IsInPageHref(Href) || Rel.HasValue is false ? null : BitLinkRelUtils.GetRels(Rel.Value);
     }
 
 
 
-    // The Target parameter's rel is resolved the moment the parameter is set. Neither a target nor a rel written by
-    // hand is a parameter, so neither reaches that path: the rel the anchor renders is resolved against the splatted
-    // one instead of overwriting it with the Rel parameter's null, and the reverse-tabnabbing guard is re-applied
-    // here against the target the anchor actually renders; it is idempotent, so a rel that already carries one of the
-    // two closing rels passes through untouched.
+    // Neither a target nor a rel written by hand is a parameter, so the rel the anchor renders is resolved against the
+    // splatted one instead of overwriting it with the Rel parameter's null, and the reverse-tabnabbing guard is applied
+    // once, here, against the target the anchor actually renders - unless the author already said what the opener
+    // relationship should be.
     private string? GetRel(string? target)
     {
         var rel = _rel ?? GetSplattedAttribute("rel");
 
-        if (target is not "_blank") return rel;
+        if (BitNewTabUtils.IsInPageHref(Href)) return rel;
 
-        if (Href.HasNoValue() || Href!.StartsWith('#')) return rel;
-
-        if (HasRelToken(rel, "noopener") || HasRelToken(rel, "noreferrer")) return rel;
-
-        return rel.HasValue() ? $"{rel} noopener" : "noopener";
+        return BitNewTabUtils.AddNoOpener(rel, target);
     }
-
-    // rel is a space separated set of case insensitive tokens, so the guard asks whether one of them IS the token
-    // rather than whether the string contains it - a rel of "noopener-policy" closes nothing.
-    private static bool HasRelToken(string? rel, string token)
-        => rel is not null &&
-           rel.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)
-              .Any(t => string.Equals(t, token, StringComparison.OrdinalIgnoreCase));
 
     private string? GetTabIndex(bool ariaHidden)
     {

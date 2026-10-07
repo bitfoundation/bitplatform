@@ -407,15 +407,117 @@ public class BitNavBarTests : BunitTestContext
     }
 
     [TestMethod]
-    [DataRow("https://bitplatform.dev", "_blank", "noopener noreferrer")]
-    [DataRow("//bitplatform.dev", "_blank", "noopener noreferrer")]
-    [DataRow("/home", "_blank", null)]
+    [DataRow("https://bitplatform.dev", "_blank", "noopener")]
+    [DataRow("//bitplatform.dev", "_blank", "noopener")]
+    [DataRow("/home", "_blank", "noopener")]
+    [DataRow("/home", "_Blank", "noopener")]
+    [DataRow("https://bitplatform.dev", "_self", null)]
     [DataRow("https://bitplatform.dev", null, null)]
-    public void BitNavBarShouldProtectAnExternalTargetOnly(string url, string? target, string? expectedRel)
+    public void BitNavBarShouldOnlyHardenALinkOpeningANewTab(string url, string? target, string? expectedRel)
     {
+        // The rule every anchor of the library shares: noopener on a new tab whatever its origin, and nothing on
+        // a target that opens no new browsing context - the referrer is the app's to withhold, not the navbar's.
         var component = RenderNavBar([new() { Text = "Home", Url = url, Target = target }]);
 
         Assert.AreEqual(expectedRel, component.Find(".bit-nbr-itm").GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    [DataRow(BitLinkRels.NoFollow, "nofollow noopener")]
+    [DataRow(BitLinkRels.NoReferrer, "noreferrer")]
+    [DataRow(BitLinkRels.Opener, "opener")]
+    public void BitNavBarShouldRenderTheRelOfAnItem(BitLinkRels rel, string expectedRel)
+    {
+        var component = RenderNavBar([new() { Text = "Home", Url = "https://bitplatform.dev", Target = "_blank", Rel = rel }]);
+
+        Assert.AreEqual(expectedRel, component.Find(".bit-nbr-itm").GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldAnnounceAnItemOpeningANewTab()
+    {
+        var component = RenderNavBar([new() { Text = "Docs", Url = "https://bitplatform.dev", Target = "_blank" },
+                                      new() { Text = "Home", Url = "/home" }]);
+
+        var items = component.FindAll(".bit-nbr-itm");
+
+        Assert.AreEqual("(opens in a new tab)", items[0].QuerySelector(".bit-nbr-vhd")?.TextContent);
+        Assert.IsNull(items[1].QuerySelector(".bit-nbr-vhd"));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldAppendTheNewTabHintToTheLabelOfAnIconOnlyItem()
+    {
+        // An icon-only item is named by an aria-label, which replaces the content, so the sentence goes there.
+        var component = RenderNavBar([new() { Text = "Docs", IconName = "Info", Url = "https://bitplatform.dev", Target = "_blank" }],
+                                     p => p.Add(c => c.IconOnly, true));
+
+        var item = component.Find(".bit-nbr-itm");
+
+        Assert.AreEqual("Docs (opens in a new tab)", item.GetAttribute("aria-label"));
+        Assert.IsNull(item.QuerySelector(".bit-nbr-vhd"));
+    }
+
+    [TestMethod]
+    public void BitNavBarNewTabHintShouldRewordOrRemoveTheAnnouncement()
+    {
+        BitNavBarItem[] items = [new() { Text = "Docs", Url = "https://bitplatform.dev", Target = "_blank" }];
+
+        Assert.AreEqual("(new window)", RenderNavBar(items, p => p.Add(c => c.NewTabHint, "(new window)")).Find(".bit-nbr-vhd").TextContent);
+        Assert.IsEmpty(RenderNavBar(items, p => p.Add(c => c.NewTabHint, "")).FindAll(".bit-nbr-vhd"));
+
+        var suppressed = RenderNavBar(items, p => p.Add(c => c.NoNewTabHint, true));
+        Assert.IsEmpty(suppressed.FindAll(".bit-nbr-vhd"));
+        Assert.AreEqual("noopener", suppressed.Find(".bit-nbr-itm").GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldNotAnnounceADisabledItemAsOpeningANewTab()
+    {
+        var component = RenderNavBar([new() { Text = "Docs", Url = "https://bitplatform.dev", Target = "_blank", IsDisabled = true }]);
+
+        Assert.IsEmpty(component.FindAll(".bit-nbr-vhd"));
+    }
+
+    [TestMethod]
+    public void BitNavBarParamsShouldCascadeTheNewTabHint()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, [new BitNavBarParams { NewTabHint = "(new window)" }]);
+            parameters.AddChildContent<BitNavBar<BitNavBarItem>>(navBar =>
+            {
+                navBar.Add(p => p.Items, [new() { Text = "Docs", Url = "https://bitplatform.dev", Target = "_blank" }]);
+            });
+        });
+
+        Assert.AreEqual("(new window)", component.Find(".bit-nbr-vhd").TextContent);
+    }
+
+    [TestMethod]
+    public void BitNavBarShouldReadTheRelOfACustomItemThroughTheNameSelectors()
+    {
+        var component = RenderComponent<BitNavBar<BitNavBarRelItem>>(p =>
+        {
+            p.Add(c => c.Items, [new() { Caption = "Docs", Link = "https://bitplatform.dev", Window = "_blank", Relation = BitLinkRels.External }]);
+            p.Add(c => c.NameSelectors, new()
+            {
+                Text = { Selector = i => i.Caption },
+                Url = { Selector = i => i.Link },
+                Target = { Selector = i => i.Window },
+                Rel = { Selector = i => i.Relation }
+            });
+        });
+
+        Assert.AreEqual("external noopener", component.Find(".bit-nbr-itm").GetAttribute("rel"));
+    }
+
+    public class BitNavBarRelItem
+    {
+        public string? Caption { get; set; }
+        public string? Link { get; set; }
+        public string? Window { get; set; }
+        public BitLinkRels? Relation { get; set; }
     }
 
 
@@ -1900,7 +2002,8 @@ public class BitNavBarTests : BunitTestContext
         Assert.AreEqual("7", component.Find(".bit-nbr-bdg").TextContent);
 
         Assert.IsTrue(rendered[2].ClassList.Contains("bit-nbr-dis"));
-        Assert.AreEqual("Products (7 new products)", rendered[1].GetAttribute("aria-label"));
+        // It opens a new tab as well, which is said after everything else its name is made of.
+        Assert.AreEqual("Products (7 new products) (opens in a new tab)", rendered[1].GetAttribute("aria-label"));
         Assert.AreEqual("Your profile", rendered[2].GetAttribute("aria-label"));
         Assert.AreEqual(1, component.FindAll(".bit-nbr-bdt").Count);
     }

@@ -780,6 +780,27 @@ public class BitButtonGroupTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitButtonGroupLinkItemShouldBeHardenedForAnyCaseOfTheBlankTarget()
+    {
+        // The browser matches the target keyword case-insensitively, so "_BLANK" opens a new context too.
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "New tab", Href = "https://bitplatform.dev", Target = "_BLANK" },
+            new() { Text = "Tagged", Href = "https://bitplatform.dev", Target = "_Blank", Rel = BitLinkRels.NoFollow }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        var links = comp.FindAll("a");
+
+        Assert.AreEqual("noopener", links[0].GetAttribute("rel"));
+        Assert.AreEqual("nofollow noopener", links[1].GetAttribute("rel"));
+    }
+
+    [TestMethod]
     public void BitButtonGroupLinkItemShouldBeHardenedAgainstReverseTabnabbing()
     {
         var items = new List<BitButtonGroupItem>

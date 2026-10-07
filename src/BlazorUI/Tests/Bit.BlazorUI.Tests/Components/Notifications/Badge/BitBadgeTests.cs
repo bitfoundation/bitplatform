@@ -1684,6 +1684,27 @@ public class BitBadgeTests : BunitTestContext
         Assert.AreEqual("nofollow noreferrer", component.Find(".bit-bdg-ctn").GetAttribute("rel"));
     }
 
+    [TestMethod,
+        DataRow("_blank", BitLinkRels.NoFollow, "nofollow noopener"),
+        DataRow("_BLANK", BitLinkRels.NoFollow, "nofollow noopener"),
+        DataRow("_BLANK", null, "noopener"),
+        DataRow("_blank", BitLinkRels.Opener, "opener")
+    ]
+    public void BitBadgeAnchorShouldAddNoOpenerToAnExplicitRel(string target, BitLinkRels? rel, string expectedRel)
+    {
+        // a NoFollow is about crawling and says nothing about the opener, so it does not stand in for the
+        // noopener a new tab needs - but an explicit Opener is the author asking for the opener back
+        var component = RenderComponent<BitBadge>(parameters =>
+        {
+            parameters.Add(p => p.Content, 5);
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Target, target);
+            parameters.Add(p => p.Rel, rel);
+        });
+
+        Assert.AreEqual(expectedRel, component.Find(".bit-bdg-ctn").GetAttribute("rel"));
+    }
+
     [TestMethod]
     public void BitBadgeAnchorShouldNotAddARelToAnAnchorOnlyHref()
     {

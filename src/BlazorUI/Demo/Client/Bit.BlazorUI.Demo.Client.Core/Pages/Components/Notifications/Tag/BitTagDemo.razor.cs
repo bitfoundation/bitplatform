@@ -160,6 +160,13 @@ public partial class BitTagDemo
         },
         new()
         {
+            Name = "NoNewTabHint",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Stops a Target=\"_blank\" link from announcing that it opens a new tab - only for where a visible label or heading already says so."
+        },
+        new()
+        {
             Name = "NoWrap",
             Type = "bool",
             DefaultValue = "false",
@@ -207,7 +214,7 @@ public partial class BitTagDemo
             Name = "Rel",
             Type = "BitLinkRels?",
             DefaultValue = "null",
-            Description = "The rel of the link. A _blank link without one gets rel=\"noopener\".",
+            Description = "The rel of the link. A _blank link gets noopener added to it, unless it already says NoOpener, NoReferrer or Opener.",
             LinkType = LinkType.Link,
             Href = "#link-rels-enum"
         },

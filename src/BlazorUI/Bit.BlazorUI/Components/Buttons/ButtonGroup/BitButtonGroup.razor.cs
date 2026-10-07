@@ -1743,16 +1743,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// </summary>
     internal string? GetItemRel(TItem item)
     {
-        var rels = GetRel(item);
-        var rel = rels.HasValue ? BitLinkRelUtils.GetRels(rels.Value) : null;
-
-        if (GetTarget(item) is "_blank" &&
-            (rel is null || (rel.Contains("noopener") is false && rel.Contains("noreferrer") is false && rel.Contains("opener") is false)))
-        {
-            rel = rel.HasValue() ? $"{rel} noopener" : "noopener";
-        }
-
-        return rel.HasValue() ? rel : null;
+        return BitNewTabUtils.AddNoOpener(GetRel(item), GetTarget(item));
     }
 
     private BitLinkRels? GetRel(TItem? item)

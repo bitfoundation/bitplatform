@@ -272,6 +272,19 @@
     text-overflow: ellipsis;
 }
 
+// The sentence saying that an item opens a new tab: read by assistive technologies, drawn nowhere.
+.bit-nbr-vhd {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
 .bit-nbr-bdg {
     top: 0;
     display: flex;
