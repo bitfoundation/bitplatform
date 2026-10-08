@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// ArcGIS Maps SDK for JavaScript 5.0 provider for <see cref="BitMap{TMapProvider}"/>.

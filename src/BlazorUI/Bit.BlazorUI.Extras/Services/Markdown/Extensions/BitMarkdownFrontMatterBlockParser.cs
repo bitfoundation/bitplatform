@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Parses the metadata block a document may open with: <c>---</c> (YAML) or <c>+++</c> (TOML) on

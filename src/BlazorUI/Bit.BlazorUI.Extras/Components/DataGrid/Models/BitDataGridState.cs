@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A serializable snapshot of a <see cref="BitDataGrid{TItem}"/>'s user-adjustable state

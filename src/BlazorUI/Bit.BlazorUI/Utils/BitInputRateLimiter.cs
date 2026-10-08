@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Combines the debounce and throttle behaviors to rate-limit the handling of immediate input events.

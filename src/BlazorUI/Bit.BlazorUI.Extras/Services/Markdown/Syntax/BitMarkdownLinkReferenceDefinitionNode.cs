@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A link reference definition (<c>[label]: /url "title"</c>). It is not part of the

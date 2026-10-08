@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 // Full-screen mode, text direction, and localization.
 public partial class BitRichTextEditor

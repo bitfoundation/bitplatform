@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Enables the emphasis flavors beyond CommonMark's <c>*</c>/<c>_</c> and GFM's <c>~~</c>:

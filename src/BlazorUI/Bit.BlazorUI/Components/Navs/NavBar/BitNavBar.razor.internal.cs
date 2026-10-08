@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 // Reads a single property of an item, whichever of the three input APIs it comes from: the BitNavBarItem
 // class, the BitNavBarOption component, or a custom type read through the NameSelectors.

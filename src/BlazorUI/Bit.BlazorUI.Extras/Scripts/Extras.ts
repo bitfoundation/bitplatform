@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class Extras {
         public static applyRootClasses(cssClasses: string[], cssVariables: any) {
             cssClasses?.forEach(c => document.documentElement.classList.add(c));

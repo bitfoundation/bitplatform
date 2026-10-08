@@ -1,4 +1,4 @@
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>An interactive data-driven element (bar, point, arc, ...).</summary>

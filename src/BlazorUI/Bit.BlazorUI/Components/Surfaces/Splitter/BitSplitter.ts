@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     interface SplitterOptions {
         vertical: boolean;
         disabled: boolean;

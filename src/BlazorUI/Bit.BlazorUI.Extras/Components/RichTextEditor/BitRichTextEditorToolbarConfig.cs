@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Configures toolbar ordering and custom items. Provide via the <c>ToolbarConfig</c> parameter.

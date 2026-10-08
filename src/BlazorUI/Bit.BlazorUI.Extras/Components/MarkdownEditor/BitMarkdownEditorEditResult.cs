@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The result of applying a <see cref="BitMarkdownEditorCommand"/> to a piece of text.

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A single tab of a <see cref="BitPivot"/>: its header, which is rendered into the tablist, and the

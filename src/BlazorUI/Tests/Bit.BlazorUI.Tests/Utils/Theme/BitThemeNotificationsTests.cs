@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

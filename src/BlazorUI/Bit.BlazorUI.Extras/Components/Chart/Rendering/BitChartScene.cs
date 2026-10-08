@@ -1,4 +1,4 @@
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>The full computed scene the component renders.</summary>

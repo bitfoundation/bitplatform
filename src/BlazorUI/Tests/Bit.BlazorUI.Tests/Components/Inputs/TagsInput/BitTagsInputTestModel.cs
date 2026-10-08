@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Bit.BlazorUI.Tests.Components.Inputs.TagsInput;

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Enables GitHub-style pipe tables.</summary>
 public sealed class BitMarkdownPipeTableExtension : IBitMarkdownExtension

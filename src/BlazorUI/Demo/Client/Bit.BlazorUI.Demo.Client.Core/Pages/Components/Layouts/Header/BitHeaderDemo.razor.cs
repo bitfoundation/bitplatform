@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Layouts.Header;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Layouts.Header;
 
 public partial class BitHeaderDemo
 {

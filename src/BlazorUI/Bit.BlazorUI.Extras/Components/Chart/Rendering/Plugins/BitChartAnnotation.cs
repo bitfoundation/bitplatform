@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>A single annotation (line, box, point or label).</summary>
 public sealed class BitChartAnnotation

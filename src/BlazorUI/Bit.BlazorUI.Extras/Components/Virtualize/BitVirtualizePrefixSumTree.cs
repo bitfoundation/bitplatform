@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A Fenwick (binary indexed) tree specialized for virtual scrolling.

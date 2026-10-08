@@ -1,4 +1,4 @@
-# bit BlazorUI
+﻿# bit BlazorUI
 
 Guidance for the bit BlazorUI component library and its demo app. Coding style comes from the
 `.editorconfig` at the root of the `src` folder ([../CLAUDE.md](../CLAUDE.md)).

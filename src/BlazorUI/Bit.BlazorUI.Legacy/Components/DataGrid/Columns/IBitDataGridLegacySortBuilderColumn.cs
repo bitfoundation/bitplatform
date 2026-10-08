@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Legacy;
+﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
 /// An interface that, if implemented by a <see cref="BitDataGridLegacyColumnBase{TGridItem}"/> subclass, allows a <see cref="BitDataGridLegacy{TGridItem}"/>

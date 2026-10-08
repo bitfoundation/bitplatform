@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.NumberField;
 

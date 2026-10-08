@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class NavBar {
         // The navbar owns the arrow keys, Home and End: they move the focus along the bar. The browser's
         // default for those keys is to scroll the page, which has to be cancelled *before* the event

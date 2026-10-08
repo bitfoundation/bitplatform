@@ -1,4 +1,4 @@
-// Size and opacity tokens - the dimensions a design system decides once and every component repeats.
+﻿// Size and opacity tokens - the dimensions a design system decides once and every component repeats.
 // The control heights and selection sizes are density-aware (multiples of the spacing unit times the
 // density multiplier, exactly what spacing() computes) so the compact/spacious presets keep working;
 // a preset built for another design system may set absolute lengths instead (Material: 40px

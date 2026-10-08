@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Enables YAML (<c>---</c>) and TOML (<c>+++</c>) front matter: a metadata block at the very top

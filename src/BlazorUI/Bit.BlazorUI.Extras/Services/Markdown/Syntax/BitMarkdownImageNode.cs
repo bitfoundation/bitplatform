@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>An image.</summary>
 public sealed class BitMarkdownImageNode : BitMarkdownNode

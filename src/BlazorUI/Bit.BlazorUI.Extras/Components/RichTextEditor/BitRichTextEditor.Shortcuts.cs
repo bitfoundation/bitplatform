@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 // Keyboard shortcuts and paste behavior.
 public partial class BitRichTextEditor

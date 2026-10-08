@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Default element options, mirroring Chart.js <c>options.elements</c>. Every value here is the

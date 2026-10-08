@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Layouts.Spacer;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Layouts.Spacer;
 
 public partial class BitSpacerDemo
 {

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Tests;
+﻿namespace Bit.BlazorUI.Tests;
 
 internal static class TestStrings
 {

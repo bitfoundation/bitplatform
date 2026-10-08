@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Swiper;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Lists.Swiper;
 
 public partial class BitSwiperDemo
 {

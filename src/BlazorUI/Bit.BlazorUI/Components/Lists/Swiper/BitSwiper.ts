@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     // The options the swiper is driven with. They are handed over as a whole (both at setup and on
     // every change), so the instance never has to keep them in sync member by member.
     interface SwiperOptions {

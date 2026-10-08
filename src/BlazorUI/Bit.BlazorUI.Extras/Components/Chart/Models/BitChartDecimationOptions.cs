@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Downsampling options for large line datasets. Decimation applies to unstacked lines and areas:

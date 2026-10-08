@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A footnote definition (<c>[^label]: text</c>). The definition is written wherever the

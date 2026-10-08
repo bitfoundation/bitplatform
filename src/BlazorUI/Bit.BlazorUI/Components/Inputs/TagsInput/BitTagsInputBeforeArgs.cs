@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Arguments for the OnBeforeAdd and OnBeforeRemove callbacks of BitTagsInput.

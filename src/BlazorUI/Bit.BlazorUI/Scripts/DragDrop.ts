@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class DragDrop {
         private static _listeners: { [key: string]: any } = {};
 

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Point label configuration for radial (radar/polar) scales.</summary>
 public sealed class BitChartPointLabelOptions

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>A custom toolbar button supplied by the host.</summary>
 public sealed class BitRichTextEditorToolbarItem

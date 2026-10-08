@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.NumberField;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.NumberField;
 
 public partial class BitNumberFieldDemo
 {

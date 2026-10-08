@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Which item the keyboard handling asks Dropdowns.ts to focus. It is internal because it is only the

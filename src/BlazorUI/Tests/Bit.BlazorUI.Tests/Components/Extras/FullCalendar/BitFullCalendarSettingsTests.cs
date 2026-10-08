@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.FullCalendar;

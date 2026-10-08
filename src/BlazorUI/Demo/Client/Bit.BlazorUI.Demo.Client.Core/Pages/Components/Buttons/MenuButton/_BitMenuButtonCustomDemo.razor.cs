@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.MenuButton;
 
 public partial class _BitMenuButtonCustomDemo
 {

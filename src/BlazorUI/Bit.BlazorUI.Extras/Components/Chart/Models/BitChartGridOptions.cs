@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Grid line configuration for a scale.</summary>
 public sealed class BitChartGridOptions

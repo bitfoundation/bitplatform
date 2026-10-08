@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.DataGrid;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.DataGrid;
 
 public enum Category
 {

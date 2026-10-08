@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A live <see cref="IList{BitMarkdownNode}"/> view over a <see cref="BitMarkdownListNode"/>'s strongly

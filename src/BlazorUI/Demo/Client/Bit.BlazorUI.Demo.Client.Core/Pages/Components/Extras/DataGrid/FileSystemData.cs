@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.DataGrid;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.DataGrid;
 
 /// <summary>A node in a file-system style hierarchy used by the Tree View demo.</summary>
 public class FileNode

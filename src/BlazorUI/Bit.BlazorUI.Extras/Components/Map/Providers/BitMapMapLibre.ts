@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     /**
      * MapLibre GL JS provider. Loads from a CDN; the C# layer adds the script tag.
      * Routes every method through BitMapGlBase using the 'maplibre' provider key.

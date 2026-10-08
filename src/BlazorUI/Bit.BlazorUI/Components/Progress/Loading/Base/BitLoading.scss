@@ -1,4 +1,4 @@
-// Public CSS variables, shared by all eighteen loaders. They are read with a fallback and never declared here, so
+﻿// Public CSS variables, shared by all eighteen loaders. They are read with a fallback and never declared here, so
 // a value set on :root re-skins every loader, one set on an ancestor the loaders inside it, and one set on the
 // Style of a loader that loader alone.
 //   --bit-Loading-color               color of the drawing                          (default: $clr-pri)

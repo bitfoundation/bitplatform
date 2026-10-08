@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Legacy;
+﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
 /// Holds data being supplied to a <see cref="BitDataGridLegacy{TGridItem}"/>'s <see cref="BitDataGridLegacy{TGridItem}.ItemsProvider"/>.

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.FullCalendar;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.FullCalendar;
 
 public partial class BitFullCalendarDemo
 {

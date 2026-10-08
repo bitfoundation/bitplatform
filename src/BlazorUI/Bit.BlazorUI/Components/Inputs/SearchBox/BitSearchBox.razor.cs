@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
 

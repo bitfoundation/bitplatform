@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The scroll metrics of the BitVirtualize viewport reported by the JavaScript side.

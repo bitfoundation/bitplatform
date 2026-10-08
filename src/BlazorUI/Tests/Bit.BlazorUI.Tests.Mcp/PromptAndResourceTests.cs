@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using ModelContextProtocol.Protocol;
 using Bit.BlazorUI.Tests.Mcp.Infrastructure;
 

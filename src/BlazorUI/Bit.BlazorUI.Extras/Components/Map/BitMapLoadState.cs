@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Lifecycle state of a <see cref="BitMap{TMapProvider}"/>, surfaced through

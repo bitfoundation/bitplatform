@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Represents a shortcut that fills the BitDateRangePicker with a predefined range (e.g. "Last 7 days").
