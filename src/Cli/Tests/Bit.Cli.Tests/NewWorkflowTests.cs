@@ -40,7 +40,7 @@ public class NewWorkflowTests
 
         Assert.AreEqual(CliApp.ExitFailed, exitCode, host.Output);
 
-        var order = new[] { "new install", "new bit-bp", "workload list", "restore", "build Contoso.Web.slnf", "format", "dnx dotnet-ef" };
+        var order = new[] { "new install", "new bit-bp", "workload list", "restore", "build Contoso.Web.slnf", "format Contoso", "dnx dotnet-ef" };
         var dotnetCalls = host.Runner.Calls.Where(c => c.FileName is "dotnet").Select(c => string.Join(' ', c.Arguments)).ToList();
         var positions = order.Select(step => dotnetCalls.FindIndex(call => call.Contains(step, StringComparison.Ordinal))).ToArray();
 

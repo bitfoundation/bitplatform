@@ -30,15 +30,15 @@ public class RoleAdministrationGuardTests
 
         var globalAdminRoleId = await ReadRoleId(server, AppRoles.GlobalAdmin);
 
-        var assignmentsBefore = await CountRoleAssignments(server, globalAdminRoleId);
-        Assert.IsGreaterThan(0, assignmentsBefore, "This test just granted itself the role, so there is at least one assignment.");
+        var membersBefore = await ReadMembersOtherTestsLeaveAlone(server, globalAdminRoleId, signedInUserId);
+        Assert.Contains(signedInUserId, membersBefore, "This test just granted itself the role.");
 
         await Assert.ThrowsExactlyAsync<BadRequestException>(
             () => roleManagementController.RemoveAllUsersFromRole(globalAdminRoleId, TestContext.CancellationToken),
             "Emptying g-admin removes the last global admin, and no endpoint can appoint another one.");
 
-        Assert.AreEqual(assignmentsBefore, await CountRoleAssignments(server, globalAdminRoleId),
-            "The rejected call must not have deleted anything.");
+        Assert.AreSequenceEqual(membersBefore, await ReadMembersOtherTestsLeaveAlone(server, globalAdminRoleId, signedInUserId),
+            Microsoft.VisualStudio.TestTools.UnitTesting.SequenceOrder.InAnyOrder, "The rejected call must not have deleted anything.");
 
         // Every other role can be emptied. Asserted against a role this test creates and assigns itself to, NOT against
         // the seeded demo role: the database outlives the run, so emptying a seeded role would strip a seeded account's
@@ -161,6 +161,21 @@ public class RoleAdministrationGuardTests
         var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         return await dbContext.UserRoles.CountAsync(ur => ur.RoleId == roleId, TestContext.CancellationToken);
+    }
+
+    private async Task<Guid[]> ReadMembersOtherTestsLeaveAlone(AppTestServer server, Guid roleId, Guid ownUserId)
+    {
+        await using var scope = server.ApiApp.Services.CreateAsyncScope();
+        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var members = await dbContext.UserRoles
+            .Where(ur => ur.RoleId == roleId)
+            .Join(dbContext.Users, ur => ur.UserId, u => u.Id, (ur, u) => new { u.Id, u.Email })
+            .ToArrayAsync(TestContext.CancellationToken);
+
+        return [.. members
+            .Where(m => m.Id == ownUserId || Guid.TryParse(m.Email?.Split('@')[0], out _) is false)
+            .Select(m => m.Id)];
     }
 
     private async Task<string[]> ReadClaimValues(AppTestServer server, Guid roleId, string claimType)

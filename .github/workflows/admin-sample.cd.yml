@@ -129,7 +129,7 @@ jobs:
     # Every publish renames afresh, so this map reads the stack traces of this release and of no other. It lives in
     # obj, which this checkout throws away - kept here, and never next to the client, which would serve it.
     - name: Upload minifier map artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: AdminPanel-minifier-map
         path: bit-minifier.map
@@ -148,7 +148,7 @@ jobs:
 
     - name: Upload server web artifact
       id: server_web_artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: AdminPanel
         path: server-web
@@ -162,7 +162,7 @@ jobs:
 
     - name: Upload server api artifact
       id: server_api_artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: AdminPanelApi
         path: server-api
@@ -275,7 +275,7 @@ jobs:
 
     # what the stack traces this client logs are read back through: see the note in the server web job
     - name: Upload minifier map artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: AdminPanelClient-minifier-map
         path: bit-minifier.map
@@ -457,7 +457,7 @@ jobs:
 
     - name: Upload artifact
       id: artifact
-      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         name: android-bundle
         path: AdminPanel/src/Client/AdminPanel.Client.Maui/bin/Release/net10.0-android/*-Signed.apk
@@ -561,7 +561,7 @@ jobs:
 
     # App Store submission stays manual.
     - name: Upload to TestFlight
-      uses: apple-actions/upload-testflight-build@14df18fee5a4ff3b76971dd382f033494a0194e9 # v5.5.0
+      uses: apple-actions/upload-testflight-build@65a84cdb671ee2ccfa93710cd58e8f7b5d251967 # v5.5.1
       with:
         app-path: ${{ steps.ipa.outputs.path }}
         app-type: ios

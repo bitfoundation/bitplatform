@@ -3,6 +3,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Bit.Cli.Infrastructure;
+using Bit.Cli.Telemetry;
 using Bit.Cli.Templates;
 using Bit.Cli.Tools;
 using Bit.Cli.Trust;
@@ -46,6 +47,11 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         if (Runner.FindExecutable("git") is null)
             return StepResult.Failed(title, "git isn't installed", followUp, resultCode: "tool.git.missing");
 
+        if (cli.Environment.IsWindows && (await Git(["config", "--global", "--get", "core.longpaths"], cancellationToken)).Output.Trim() is not "true")
+        {
+            await Git(["config", "--global", "core.longpaths", "true"], cancellationToken);
+        }
+
         var parentRepository = await Git(["rev-parse", "--show-toplevel"], cancellationToken, Path.GetDirectoryName(project.Directory));
 
         if (parentRepository.Succeeded)
@@ -68,22 +74,27 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
         await Git(["add", "-A"], cancellationToken);
         var commit = await Git(["commit", "-q", "-m", $"Create {project.Name} with bit new"], cancellationToken);
+        string? identity = null;
+
+        if (commit.Succeeded is false && (commit.Output.Contains("user.email", StringComparison.Ordinal) || commit.Output.Contains("Please tell me who you are", StringComparison.Ordinal)))
+        {
+            var name = cli.Environment.GetVariable("USERNAME") ?? cli.Environment.GetVariable("USER") ?? Path.GetFileName(cli.Environment.HomeDirectory.TrimEnd('/', '\\'));
+            var email = $"{(GitEmailRegex().Replace(name, ".").Trim('.') is { Length: > 0 } local ? local : "user")}@git.com";
+            await Git(["config", "user.name", name], cancellationToken);
+            await Git(["config", "user.email", email], cancellationToken);
+            commit = await Git(["commit", "-q", "-m", $"Create {project.Name} with bit new"], cancellationToken);
+            identity = $"{name} <{email}>";
+        }
 
         if (commit.Succeeded is false)
-        {
-            var identityMissing = commit.Output.Contains("user.email", StringComparison.Ordinal) || commit.Output.Contains("Please tell me who you are", StringComparison.Ordinal);
-
-            if (identityMissing is false)
-                return StepResult.FromProcess(commit, "", title, followUp);
-
-            var identityFollowUp = $"git config --global user.name \"Your Name\" && git config --global user.email you@example.com && cd {ProcessSpec.Quote(project.Directory)} && git commit -m \"Create {project.Name} with bit new\" && git branch main";
-            return StepResult.Warning("Initialized git, nothing committed", "git doesn't know your name and email yet", identityFollowUp, resultCode: "git.identity.missing");
-        }
+            return StepResult.FromProcess(commit, "", title, followUp);
 
         await Git(["branch", "main"], cancellationToken);
         project.GitReady = true;
 
-        return StepResult.Succeeded("Initialized git", "develop and main");
+        return identity is null
+            ? StepResult.Succeeded("Initialized git", "develop and main")
+            : StepResult.Succeeded("Initialized git", $"develop and main, committed as {identity}", "git didn't know your name, so this repository uses your user name; change it with git config user.name and user.email");
     }
 
     public async Task<StepResult> SdkAsync(Action<string> progress, CancellationToken cancellationToken)
@@ -196,9 +207,17 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         string[] arguments = ["build", project.BuildPath, .. BuildProperties];
         var result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(60));
         var what = project.BuildsSolution ? "the solution" : "the web app";
+        string? detail = null;
+
+        if (result is { Succeeded: false, NotFound: false, TimedOut: false } && DiagnosticCodes.Extract(result.Output, int.MaxValue).Any(c => c.StartsWith("RZ", StringComparison.Ordinal)))
+        {
+            await Dotnet(["build-server", "shutdown", "--vbcscompiler"], cancellationToken, progress, TimeSpan.FromMinutes(2));
+            result = await Dotnet(arguments, cancellationToken, progress, TimeSpan.FromMinutes(60));
+            detail = "on a second try, after restarting the C# compiler server";
+        }
 
         return StepResult.FromProcess(result, $"Built {what}", $"Couldn't build {what}",
-            $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}");
+            $"cd {ProcessSpec.Quote(project.Directory)} && dotnet {string.Join(' ', arguments.Select(ProcessSpec.Quote))}", detail);
     }
 
     public async Task<StepResult> FormatAsync(Action<string> progress, CancellationToken cancellationToken)
@@ -259,10 +278,8 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         if (Runner.FindExecutable("aspire") is null)
             return StepResult.Warning(skipped, "the Aspire CLI isn't installed", followUp);
 
-        var docker = await Runner.RunAsync(new ProcessSpec { FileName = "docker", Arguments = ["info", "--format", "{{.ServerVersion}}"], Timeout = TimeSpan.FromMinutes(1) }, cancellationToken);
-
-        if (docker.Succeeded is false)
-            return StepResult.Warning(skipped, "Docker isn't running", followUp);
+        if (await ContainerRuntimeProblemAsync(cancellationToken) is { } problem)
+            return StepResult.Warning(skipped, problem.Detail, followUp, problem.Fix);
 
         var start = await Aspire(["start", "--apphost", project.AppHostDirectory, "--non-interactive"], progress, TimeSpan.FromMinutes(30), cancellationToken);
 
@@ -273,10 +290,8 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         {
             foreach (var resource in AspireResourcesToWaitFor(project.AppHostDirectory))
             {
-                var wait = await Aspire(["wait", resource, "--status", "healthy", "--timeout", "1800", "--apphost", project.AppHostDirectory, "--non-interactive"], progress, TimeSpan.FromMinutes(35), cancellationToken);
-
-                if (wait.Succeeded is false)
-                    return StepResult.FromProcess(wait, "", $"Aspire started, {resource} didn't get healthy", followUp) with { Status = StepStatus.Warning };
+                if (await WaitUntilHealthyAsync(resource, progress, cancellationToken) is { } reason)
+                    return StepResult.Warning($"Aspire started, {resource} didn't get healthy", reason, followUp);
             }
         }
         finally
@@ -286,6 +301,106 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
         return StepResult.Succeeded("Started and stopped the project with Aspire", "its images and builds are ready, so the IDE starts it fast");
     }
+
+    private async Task<(string Detail, string? Fix)?> ContainerRuntimeProblemAsync(CancellationToken cancellationToken)
+    {
+        var doctor = await Aspire(["doctor", "--format", "json", "--non-interactive", "--nologo"], _ => { }, TimeSpan.FromMinutes(2), cancellationToken);
+        var checks = ReadJson(doctor.Output, root => root.TryGetProperty("checks", out var all) && all.ValueKind is JsonValueKind.Array
+            ? all.EnumerateArray().Where(c => Text(c, "category") is "container").Select(c => (Status: Text(c, "status"), Message: Text(c, "message"), Fix: Text(c, "fix"))).ToList()
+            : null) ?? [];
+
+        if (checks.Count == 0)
+        {
+            var docker = await Runner.RunAsync(new ProcessSpec { FileName = "docker", Arguments = ["info", "--format", "{{.ServerVersion}}"], Timeout = TimeSpan.FromMinutes(1) }, cancellationToken);
+            return docker.Succeeded ? null : ("Docker isn't running", null);
+        }
+
+        if (checks.Any(c => c.Status is "pass"))
+            return null;
+
+        var worst = checks.OrderBy(c => c.Status is "fail" ? 0 : 1).First();
+        return (worst.Message ?? "Aspire can't use a container runtime", worst.Fix);
+    }
+
+    private async Task<string?> WaitUntilHealthyAsync(string resource, Action<string> progress, CancellationToken cancellationToken)
+    {
+        const int roundSeconds = 30;
+        const int maxRounds = 60;
+        const int unhealthyRuntimeRounds = 4;
+        var runtimeUnhealthyRounds = 0;
+        var pending = "";
+
+        for (var round = 1; round <= maxRounds; round++)
+        {
+            var wait = await Aspire(["wait", resource, "--status", "healthy", "--timeout", $"{roundSeconds}", "--apphost", project.AppHostDirectory, "--non-interactive"], _ => { }, TimeSpan.FromSeconds(roundSeconds + 90), cancellationToken);
+
+            if (wait.Succeeded)
+                return null;
+
+            var resources = await DescribeAspireResourcesAsync(cancellationToken);
+            var failed = resources.Where(r => r.State is "FailedToStart" || (r.State is "Exited" or "Finished" && r.ExitCode is not (null or 0))).ToList();
+
+            if (failed.Count > 0)
+                return $"{Join(failed.Select(r => r.Name))} failed to start";
+
+            if (wait.ExitCode is not AspireWaitTimedOut || wait.TimedOut)
+                return DiagnosticCodes.FirstErrorLine(wait.Output) ?? $"aspire wait {resource} ended with exit code {wait.ExitCode}";
+
+            var unhealthy = resources.Where(r => r.State is "RuntimeUnhealthy").ToList();
+            runtimeUnhealthyRounds = unhealthy.Count > 0 ? runtimeUnhealthyRounds + 1 : 0;
+
+            if (runtimeUnhealthyRounds >= unhealthyRuntimeRounds)
+                return $"Docker can't run {Join(unhealthy.Select(r => r.Name))}: Aspire reports its container runtime as unhealthy";
+
+            pending = Join(resources.Where(r => r.State is not "Running" || r.HealthStatus is not (null or "Healthy")).Take(4).Select(r => r.HealthStatus is null or "Healthy" ? $"{r.Name} {r.State}" : $"{r.Name} {r.State} ({r.HealthStatus})"));
+            progress(pending.Length > 0 ? $"Waiting for {resource}: {pending}" : $"Waiting for {resource}");
+        }
+
+        return pending.Length > 0 ? $"still waiting after {maxRounds * roundSeconds / 60} minutes on {pending}" : $"not healthy after {maxRounds * roundSeconds / 60} minutes";
+    }
+
+    private const int AspireWaitTimedOut = 17;
+
+    private async Task<IReadOnlyList<(string Name, string? State, string? HealthStatus, int? ExitCode)>> DescribeAspireResourcesAsync(CancellationToken cancellationToken)
+    {
+        var describe = await Aspire(["describe", "--format", "json", "--apphost", project.AppHostDirectory, "--non-interactive", "--nologo"], _ => { }, TimeSpan.FromMinutes(1), cancellationToken);
+
+        return ReadJson(describe.Output, root => root.TryGetProperty("resources", out var all) && all.ValueKind is JsonValueKind.Array
+            ? all.EnumerateArray().Select(r => (Name: Text(r, "displayName") ?? Text(r, "name") ?? "?", State: Text(r, "state"), HealthStatus: Text(r, "healthStatus"), ExitCode: r.TryGetProperty("exitCode", out var code) && code.ValueKind is JsonValueKind.Number ? code.GetInt32() : (int?)null)).ToList()
+            : null) ?? [];
+    }
+
+    private static T? ReadJson<T>(string output, Func<JsonElement, T?> read) where T : class
+    {
+        var start = output.IndexOf('{');
+        var end = output.LastIndexOf('}');
+
+        if (start < 0 || end <= start)
+            return null;
+
+        try
+        {
+            using var document = JsonDocument.Parse(output[start..(end + 1)]);
+            return read(document.RootElement);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    private static string? Text(JsonElement element, string name)
+    {
+        foreach (var property in element.EnumerateObject())
+        {
+            if (string.Equals(property.Name, name, StringComparison.OrdinalIgnoreCase))
+                return property.Value.ValueKind is JsonValueKind.String ? property.Value.GetString() : null;
+        }
+
+        return null;
+    }
+
+    private static string Join(IEnumerable<string> items) => string.Join(", ", items);
 
     public static IReadOnlyList<string> AspireResourcesToWaitFor(string appHostDirectory)
     {
@@ -420,7 +535,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         var names = string.Join(", ", missing.Take(3).Select(id => id[(id.IndexOf('.') + 1)..])) + (missing.Count > 3 ? $" and {missing.Count - 3} more" : "");
 
         return StepResult.FromProcess(result, $"Installed {missing.Count} VS Code extension{(missing.Count == 1 ? "" : "s")}", "Couldn't install the VS Code extensions",
-            $"code {string.Join(' ', arguments)}", names);
+            $"{ProcessSpec.Quote(code.Executable)} {string.Join(' ', arguments)}", names);
     }
 
     public static IReadOnlyList<string> ReadRecommendedExtensions(string projectDirectory)
@@ -462,7 +577,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         var found = IdeLocator.Find(ide, cli.Environment, Runner);
 
         if (found is null)
-            return StepResult.Warning("Didn't open an IDE", $"{ide} wasn't found");
+            return StepResult.Warning("Didn't open an IDE", $"{IdeLocator.Title(ide)} isn't installed");
 
         ProcessSpec spec = ide switch
         {
@@ -513,6 +628,8 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     public async Task<StepResult> GitHubSignInAsync(Action<string> progress, CancellationToken cancellationToken)
     {
+        await Gh(["auth", "setup-git", "--hostname", "github.com", "--force"], cancellationToken);
+
         var login = await Runner.RunAsync(new ProcessSpec
         {
             FileName = "gh",
@@ -611,4 +728,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     [GeneratedRegex(@"Xcode\s+(?<version>\d+\.\d+(\.\d+)?)")]
     private static partial Regex XcodeVersionRegex();
+
+    [GeneratedRegex(@"[^A-Za-z0-9._-]+")]
+    private static partial Regex GitEmailRegex();
 }

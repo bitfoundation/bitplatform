@@ -10,6 +10,7 @@ public static partial class ToolCatalog
     public static IReadOnlyList<Tool> All { get; } =
     [
         new DotnetSdkTool(),
+        new NuGetOrgTool(),
         new GitTool(),
         new GitHubCliTool(),
         new NodeTool(),
@@ -23,8 +24,7 @@ public static partial class ToolCatalog
         new DeveloperModeTool(),
         new PythonTool(),
         new XcodeTool(),
-        new VsCodeTool(),
-        new VisualStudioTool()
+        new VsCodeTool()
     ];
 
     public static Tool? Find(string id) => All.FirstOrDefault(t => string.Equals(t.Id, id, StringComparison.OrdinalIgnoreCase));
@@ -205,6 +205,59 @@ public static partial class ToolCatalog
             };
         }
     }
+
+    private sealed class NuGetOrgTool : Tool
+    {
+        public const string Url = "https://api.nuget.org/v3/index.json";
+
+        public override string Id => "nuget-org";
+
+        public override string Name => "nuget.org package source";
+
+        public override bool AppliesInCi(ToolContext context) => false;
+
+        public override string Why(ToolContext context) => "bit Boilerplate and the project's packages come from nuget.org";
+
+        public override bool IsNeeded(ToolContext context) => true;
+
+        public override async Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
+        {
+            var sources = await context.Runner.RunAsync(new ProcessSpec { FileName = "dotnet", Arguments = ["nuget", "list", "source", "--format", "detailed"], WorkingDirectory = context.Environment.HomeDirectory, Timeout = TimeSpan.FromSeconds(30), Environment = new Dictionary<string, string?> { ["DOTNET_CLI_UI_LANGUAGE"] = "en" } }, cancellationToken);
+
+            if (sources.Succeeded is false)
+                return ToolStatus.Installed();
+
+            return FindNuGetOrg(sources.Output) switch
+            {
+                null => ToolStatus.Missing(),
+                { Enabled: false } source => new ToolStatus(ToolState.Missing, null, $"disabled as {source.Name}"),
+                _ => ToolStatus.Installed()
+            };
+        }
+
+        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status) => new()
+        {
+            ToolId = Id,
+            Title = status.Detail is null ? "Add nuget.org as a package source" : "Enable the nuget.org package source",
+            Commands = [new ProcessSpec { FileName = "dotnet", Arguments = status.Detail is { } disabled ? ["nuget", "enable", "source", disabled["disabled as ".Length..]] : ["nuget", "add", "source", Url, "--name", "nuget.org"], WorkingDirectory = context.Environment.HomeDirectory }]
+        };
+    }
+
+    public static (string Name, bool Enabled)? FindNuGetOrg(string sources)
+    {
+        var lines = sources.Split('\n').Select(l => l.Trim()).ToList();
+
+        for (var i = 0; i < lines.Count - 1; i++)
+        {
+            if (NuGetSourceRegex().Match(lines[i]) is { Success: true } source && lines[i + 1].Contains("api.nuget.org/v3/index.json", StringComparison.OrdinalIgnoreCase))
+                return (source.Groups["name"].Value, source.Groups["state"].Value is "Enabled");
+        }
+
+        return null;
+    }
+
+    [GeneratedRegex(@"^\d+\.\s+(?<name>.+?)\s+\[(?<state>Enabled|Disabled)\]$")]
+    private static partial Regex NuGetSourceRegex();
 
     private sealed class GitTool : Tool
     {
@@ -428,6 +481,24 @@ public static partial class ToolCatalog
         public override string? ManualInstructions(ToolContext context) => "https://brew.sh";
     }
 
+    private static async Task<bool> WindowsFeatureEnabledAsync(ToolContext context, string feature, CancellationToken cancellationToken)
+    {
+        var result = await context.RunAsync("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", $"(Get-CimInstance Win32_OptionalFeature -Filter \"Name='{feature}'\").InstallState"], cancellationToken);
+        return result.Succeeded && result.Output.Trim() == "1";
+    }
+
+    private static ProcessSpec EnableFeatureCommand(string feature) => new() { FileName = "dism.exe", Arguments = ["/online", "/enable-feature", $"/featurename:{feature}", "/all", "/norestart"], Timeout = TimeSpan.FromMinutes(30) };
+
+    private static ToolAction EnableWindowsFeature(string toolId, string name, string feature) => new()
+    {
+        ToolId = toolId,
+        Title = $"Turn on the {name}",
+        Elevation = Elevation.Admin,
+        AfterInstall = $"Restart Windows to finish turning on the {name}.",
+        SuccessExitCodes = [0, 3010],
+        Commands = [EnableFeatureCommand(feature)]
+    };
+
     private sealed class WslTool : Tool
     {
         public override string Id => "wsl";
@@ -448,15 +519,17 @@ public static partial class ToolCatalog
             return result.Succeeded ? ToolStatus.Installed() : ToolStatus.Missing();
         }
 
-        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status) => new()
-        {
-            ToolId = Id,
-            Title = "Install WSL",
-            Elevation = Elevation.Admin,
-            AfterInstall = "Restart Windows to finish installing WSL.",
-            SuccessExitCodes = [0, 3010],
-            Commands = [new ProcessSpec { FileName = "wsl.exe", Arguments = ["--install", "--no-distribution"], Timeout = TimeSpan.FromMinutes(30) }]
-        };
+        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status) => context.PackageManagers.WingetInstall(Id, "Install WSL", "Microsoft.WSL", afterInstall: "Restart Windows to finish installing WSL.") is { } winget
+            ? winget with { Commands = [EnableFeatureCommand("VirtualMachinePlatform"), .. winget.Commands] }
+            : new()
+            {
+                ToolId = Id,
+                Title = "Install WSL",
+                Elevation = Elevation.Admin,
+                AfterInstall = "Restart Windows to finish installing WSL.",
+                SuccessExitCodes = [0, 3010],
+                Commands = [new ProcessSpec { FileName = "wsl.exe", Arguments = ["--install", "--no-distribution"], Timeout = TimeSpan.FromMinutes(30) }]
+            };
 
         public override string? ManualInstructions(ToolContext context) => "https://learn.microsoft.com/windows/wsl/install";
     }
@@ -512,7 +585,7 @@ public static partial class ToolCatalog
 
             return context.Environment.Os switch
             {
-                HostOs.Windows => context.PackageManagers.WingetInstall(Id, "Install Docker Desktop", "Docker.DockerDesktop", afterInstall: "Start Docker Desktop once and accept its terms; Windows may need a restart first."),
+                HostOs.Windows => context.PackageManagers.WingetInstall(Id, "Install Docker Desktop", "Docker.DockerDesktop", afterInstall: "Start Docker Desktop once; Windows may need a restart first.", installerArguments: "install --quiet --accept-license"),
                 HostOs.MacOS => context.PackageManagers.BrewInstall(Id, "Install Docker Desktop", "docker", cask: true, afterInstall: "Open Docker Desktop once and accept its terms."),
                 _ when context.PackageManagers.Apt is not null || context.PackageManagers.Dnf is not null => new ToolAction
                 {
@@ -668,19 +741,10 @@ public static partial class ToolCatalog
 
         public override async Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
         {
-            var result = await context.RunAsync("powershell.exe", ["-NoProfile", "-NonInteractive", "-Command", "(Get-CimInstance Win32_OptionalFeature -Filter \"Name='HypervisorPlatform'\").InstallState"], cancellationToken);
-            return result.Succeeded && result.Output.Trim() == "1" ? ToolStatus.Installed() : ToolStatus.Missing();
+            return await WindowsFeatureEnabledAsync(context, "HypervisorPlatform", cancellationToken) ? ToolStatus.Installed() : ToolStatus.Missing();
         }
 
-        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status) => new()
-        {
-            ToolId = Id,
-            Title = "Turn on the Windows Hypervisor Platform",
-            Elevation = Elevation.Admin,
-            AfterInstall = "Restart Windows to finish turning on the Windows Hypervisor Platform.",
-            SuccessExitCodes = [0, 3010],
-            Commands = [new ProcessSpec { FileName = "dism.exe", Arguments = ["/online", "/enable-feature", "/featurename:HypervisorPlatform", "/all", "/norestart"], Timeout = TimeSpan.FromMinutes(30) }]
-        };
+        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status) => EnableWindowsFeature(Id, Name, "HypervisorPlatform");
 
         public override string? ManualInstructions(ToolContext context) => "https://learn.microsoft.com/dotnet/maui/android/emulator/hardware-acceleration";
     }
@@ -797,42 +861,5 @@ public static partial class ToolCatalog
         };
 
         public override string? ManualInstructions(ToolContext context) => "https://code.visualstudio.com/download";
-    }
-
-    private sealed class VisualStudioTool : Tool
-    {
-        public override string Id => "visual-studio";
-
-        public override string Name => "Visual Studio";
-
-        public override bool AppliesTo(ToolContext context) => context.Environment.IsWindows;
-
-        public override string Why(ToolContext context) => "a full IDE; large download, free for individuals and small teams under its license";
-
-        public override bool IsNeeded(ToolContext context) => context.Needs.Ide is IdeLocator.VisualStudio;
-
-        public override Task<ToolStatus> DetectAsync(ToolContext context, CancellationToken cancellationToken)
-        {
-            return Task.FromResult(IdeLocator.FindVisualStudio(context.Environment, context.Runner) is null ? ToolStatus.Missing() : ToolStatus.Installed());
-        }
-
-        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status)
-        {
-            var action = context.PackageManagers.WingetInstall(Id, "Install Visual Studio Community", "Microsoft.VisualStudio.Community");
-
-            return action is null ? null : action with
-            {
-                Commands =
-                [
-                    action.Commands[0] with
-                    {
-                        Arguments = [.. action.Commands[0].Arguments, "--override", "--passive --wait --add Microsoft.VisualStudio.Workload.NetWeb --add Microsoft.VisualStudio.Workload.NetCrossPlat --includeRecommended"],
-                        Timeout = TimeSpan.FromHours(2)
-                    }
-                ]
-            };
-        }
-
-        public override string? ManualInstructions(ToolContext context) => "https://visualstudio.microsoft.com/downloads/";
     }
 }

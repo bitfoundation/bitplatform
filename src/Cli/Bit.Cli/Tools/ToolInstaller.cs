@@ -21,6 +21,12 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         if (withActions.Count == 0)
             return;
 
+        if (withActions.FirstOrDefault(c => c.Tool.Id is "dev-cert") is { } certificate && withActions.Any(c => c.Tool.Id is "dotnet-sdk") is false)
+        {
+            await RunActionAsync(certificate.Action!, useSudo: false, cancellationToken);
+            withActions.Remove(certificate);
+        }
+
         if (cli.Environment.IsWindows)
         {
             var adminActions = withActions.Select(c => c.Action!).Where(a => a.Elevation is Elevation.Admin).ToList();
@@ -179,7 +185,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         await cli.Console.RunWithStatusAsync(title, async progress =>
         {
             using var tail = new CancellationTokenSource();
-            var tailing = TailAsync(logPath, progress, tail.Token);
+            var tailing = TailAsync(logPath, actions.Count, progress, tail.Token);
             using var cancelled = cancellationToken.Register(() => TryWriteCancel(cancelPath));
 
             try
@@ -235,10 +241,8 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
             return 0;
         });
 
-        if (File.Exists(logPath))
-        {
-            cli.Log.Write(File.ReadAllText(logPath));
-        }
+        var log = File.Exists(logPath) ? File.ReadAllText(logPath) : "";
+        cli.Log.Write(log);
 
         var exitCodes = ReadResults(resultPath);
 
@@ -271,7 +275,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
                     ? code switch { TimedOutCode => "it took too long and was stopped", CancelledCode => "it was cancelled", _ => $"exit code {code}" }
                     : "it didn't run";
 
-                steps.Add(action.ToolId, StepResult.Failed($"Couldn't {char.ToLowerInvariant(action.Title[0])}{action.Title[1..]}", detail, followUp));
+                steps.Add(action.ToolId, StepResult.Failed($"Couldn't {char.ToLowerInvariant(action.Title[0])}{action.Title[1..]}", detail, followUp, hint: AdministratorOutput(log, action.Title)));
             }
         }
     }
@@ -287,10 +291,13 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         var script = new StringBuilder();
         script.AppendLine("$ErrorActionPreference = 'Continue'");
         script.AppendLine("$ProgressPreference = 'SilentlyContinue'");
+        script.AppendLine("$env:WSL_UTF8 = '1'");
         script.AppendLine("$results = [ordered]@{}");
         script.AppendLine($"$cancelPath = {Quote(cancelPath)}");
         script.AppendLine($"$stoppedPath = {Quote(cancelPath + ".stopped")}");
-        script.AppendLine($"function Write-BitLog([string]$text) {{ Add-Content -LiteralPath {Quote(logPath)} -Value $text -Encoding UTF8 }}");
+        script.AppendLine($"$bitLog = [IO.StreamWriter]::new([IO.FileStream]::new({Quote(logPath)}, [IO.FileMode]::Append, [IO.FileAccess]::Write, [IO.FileShare]::ReadWrite), [Text.UTF8Encoding]::new($false))");
+        script.AppendLine("$bitLog.AutoFlush = $true");
+        script.AppendLine("function Write-BitLog([string]$text) { $bitLog.WriteLine($text) }");
         script.AppendLine("function Start-BitWatchdog([int]$Seconds) {");
         script.AppendLine("    Start-Job -ArgumentList $PID, $Seconds, $cancelPath, $stoppedPath -ScriptBlock {");
         script.AppendLine("        param($ParentId, $Seconds, $CancelPath, $StoppedPath)");
@@ -328,6 +335,7 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
             script.AppendLine($"$results[{Quote(action.ToolId)}] = $code");
         }
 
+        script.AppendLine("$bitLog.Dispose()");
         script.AppendLine($"$results | ConvertTo-Json | Set-Content -LiteralPath {Quote(resultPath)} -Encoding UTF8");
         return script.ToString();
     }
@@ -371,10 +379,32 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
         }
     }
 
-    private static async Task TailAsync(string path, Action<string> progress, CancellationToken cancellationToken)
-    {
-        long position = 0;
+    private static List<string> LogLines(string log) => log.Split('\n')
+        .Select(line => line.Split('\r').Select(part => new string([.. part.Where(c => char.IsControl(c) is false)]).Trim()).LastOrDefault(part => part.Length > 0))
+        .OfType<string>()
+        .ToList();
 
+    public static string? AdministratorOutput(string log, string title)
+    {
+        return LogLines(log).SkipWhile(line => line != "== " + title).Skip(1).TakeWhile(line => line.StartsWith("== ", StringComparison.Ordinal) is false).LastOrDefault();
+    }
+
+    public static string? AdministratorProgress(string log, int total)
+    {
+        var lines = LogLines(log);
+        var current = lines.FindLastIndex(line => line.StartsWith("== ", StringComparison.Ordinal));
+
+        if (current < 0)
+            return null;
+
+        var step = lines.Take(current + 1).Count(line => line.StartsWith("== ", StringComparison.Ordinal));
+        var output = lines.Skip(current + 1).LastOrDefault();
+
+        return $"{step} of {total}: {lines[current][3..]}{(output is null ? "" : $" · {output}")}";
+    }
+
+    private static async Task TailAsync(string path, int total, Action<string> progress, CancellationToken cancellationToken)
+    {
         while (cancellationToken.IsCancellationRequested is false)
         {
             try
@@ -382,15 +412,11 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
                 if (File.Exists(path))
                 {
                     using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
-                    stream.Seek(position, SeekOrigin.Begin);
                     using var reader = new StreamReader(stream);
-                    var text = await reader.ReadToEndAsync(CancellationToken.None);
-                    position = stream.Position;
 
-                    var last = text.Split('\n').Select(l => l.Trim()).LastOrDefault(l => l.Length > 0);
-                    if (last is not null)
+                    if (AdministratorProgress(await reader.ReadToEndAsync(CancellationToken.None), total) is { } status)
                     {
-                        progress(last);
+                        progress(status);
                     }
                 }
 

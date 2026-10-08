@@ -70,10 +70,11 @@ public sealed class TestHost : IDisposable
     public void AllToolsInstalled()
     {
         Runner.On("git", "--version", 0, "git version 2.47.1");
-        Runner.On("node", "--version", 0, "v24.9.0");
+        Runner.On("node", "--version", 0, $"v{TemplateRequirements.Embedded.NodeMajor ?? 24}.9.0");
         Runner.On("docker", "version", 0, "28.5.1");
-        Runner.On("aspire", "--version", 0, "13.6.0");
+        Runner.On("aspire", "--version", 0, TemplateRequirements.Embedded.Aspire?.ToString() ?? "13.6.0");
         Runner.On("dotnet", "--version", 0, TemplateRequirements.Embedded.Sdk?.Version ?? "11.0.100");
+        Runner.On("dotnet", "nuget list source", 0, "Registered Sources:\n  1.  nuget.org [Enabled]\n      https://api.nuget.org/v3/index.json\n");
         Runner.Executables["code"] = typeof(TestHost).Assembly.Location;
     }
 

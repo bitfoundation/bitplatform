@@ -98,7 +98,7 @@ public class WizardTests
         host.AllToolsInstalled();
 
         Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--dry-run", "--yes"), host.Output);
-        StringAssert.Contains(host.FlatOutput, "VS Code extensions, open in VS Code");
+        StringAssert.Contains(host.FlatOutput, "VS Code extensions, a first Aspire start, open in VS Code");
 
         using var ci = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["GITHUB_ACTIONS"] = "true" });
         ci.AllToolsInstalled();

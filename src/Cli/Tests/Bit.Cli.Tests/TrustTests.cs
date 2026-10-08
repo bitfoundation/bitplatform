@@ -77,6 +77,22 @@ public class TrustTests
     }
 
     [TestMethod]
+    public void VsCode_Should_CreateItsTrustStoreWhenItHasNeverRun()
+    {
+        using var host = new TestHost();
+        host.Runner.Executables["code"] = typeof(TrustTests).Assembly.Location;
+        var folder = ProjectFolder(host);
+        var store = VsCodeTrust.SharedStore(host.Environment);
+
+        var outcome = new VsCodeTrust().Trust(new TrustContext(host.Environment, host.Runner) { IsVsCodeRunning = () => false }, folder);
+
+        Assert.AreEqual(TrustResultKind.Trusted, outcome.Kind, outcome.Detail);
+        Assert.IsTrue(File.Exists(store));
+        Assert.AreEqual(TrustResultKind.AlreadyTrusted, new VsCodeTrust().TrustInStore(store, folder, host.Environment, createKey: true).Kind);
+        Microsoft.Data.Sqlite.SqliteConnection.ClearAllPools();
+    }
+
+    [TestMethod]
     public void CopilotCli_Should_AddTheFolderOnceAndRespectTrustedParents()
     {
         using var host = new TestHost();

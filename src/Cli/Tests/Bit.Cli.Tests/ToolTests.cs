@@ -113,7 +113,73 @@ public class ToolTests
 
         var checks = await CheckAsync(host, new ToolNeeds { Aspire = true, Platforms = new HashSet<Platform> { Platform.Web, Platform.Android } });
 
-        Assert.IsFalse(checks.Any(c => c.Tool.Id is "long-paths" or "wsl" or "visual-studio" or "xcode" or "homebrew"));
+        Assert.IsFalse(checks.Any(c => c.Tool.Id is "long-paths" or "wsl" or "xcode" or "homebrew"));
+    }
+
+    [TestMethod]
+    public async Task TheCertificatePrompt_Should_ComeBeforeTheLongInstalls()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+        host.Runner.NotFound("aspire");
+        host.Runner.On("dotnet", "dev-certs https --check", 1);
+        var needs = new ToolNeeds { Aspire = true };
+        var context = new ToolContext(host.Environment, host.Runner, needs, PackageManagers.Detect(host.Environment, host.Runner));
+        var checks = (await CheckAsync(host, needs)).Where(c => c.Tool.Id is "aspire" or "dev-cert").ToList();
+
+        var first = new StepRunner(host.Services);
+        await new ToolInstaller(host.Services, first).InstallAsync(checks, context, CancellationToken.None);
+
+        CollectionAssert.AreEqual(new[] { "dev-cert", "aspire" }, first.Reports.Select(r => r.Id).ToArray());
+
+        var sdk = new ToolCheck(ToolCatalog.Find("dotnet-sdk")!, ToolStatus.Missing(), true, "", new ToolAction { ToolId = "dotnet-sdk", Title = "Install the .NET SDK", Commands = [new ProcessSpec { FileName = "dotnet-install" }] }, null);
+        var afterSdk = new StepRunner(host.Services);
+        await new ToolInstaller(host.Services, afterSdk).InstallAsync([sdk, .. checks], context, CancellationToken.None);
+
+        CollectionAssert.AreEqual(new[] { "dotnet-sdk", "aspire", "dev-cert" }, afterSdk.Reports.Select(r => r.Id).ToArray());
+    }
+
+    [TestMethod]
+    public async Task NuGetOrg_Should_BeAddedOrEnabledWhenItIsNotUsable()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        AllInstalled(host.Runner);
+
+        Assert.IsFalse((await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "nuget-org").Status.IsSatisfied is false);
+
+        host.Runner.On("dotnet", "nuget list source", 0, NuGetSources("company", "Enabled", "https://packages.contoso.com/v3/index.json"));
+        var missing = (await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "nuget-org").Action!;
+        Assert.AreEqual("dotnet nuget add source https://api.nuget.org/v3/index.json --name nuget.org", missing.Commands.Single().CommandLine);
+        Assert.AreEqual(Elevation.None, missing.Elevation);
+
+        host.Runner.On("dotnet", "nuget list source", 0, NuGetSources("NuGet official package source", "Disabled"));
+        var disabled = (await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "nuget-org").Action!;
+        CollectionAssert.AreEqual(new[] { "nuget", "enable", "source", "NuGet official package source" }, disabled.Commands.Single().Arguments.ToArray());
+
+        host.Runner.On("dotnet", "nuget list source", 1, "dotnet isn't here yet");
+        Assert.IsTrue((await CheckAsync(host, new ToolNeeds())).Single(c => c.Tool.Id == "nuget-org").Status.IsSatisfied);
+    }
+
+    [TestMethod]
+    public async Task Wsl_Should_ComeFromMicrosoftsReleaseThroughWinget()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        AllInstalled(host.Runner);
+        host.Runner.On("wsl", "--status", 1);
+        host.Runner.NotFound("docker");
+        host.Runner.Executables["winget"] = @"C:\winget.exe";
+
+        var wsl = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "wsl").Action!;
+
+        Assert.AreEqual(Elevation.Admin, wsl.Elevation);
+        Assert.HasCount(2, wsl.Commands);
+        CollectionAssert.Contains(wsl.Commands[0].Arguments.ToArray(), "/featurename:VirtualMachinePlatform");
+        CollectionAssert.IsSubsetOf(new[] { "install", "--id", "Microsoft.WSL", "--exact" }, wsl.Commands[1].Arguments.ToArray());
+
+        host.Runner.Executables.Remove("winget");
+        var fallback = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "wsl").Action!;
+
+        Assert.AreEqual("wsl.exe --install --no-distribution", fallback.Commands.Single().CommandLine);
     }
 
     [TestMethod]
@@ -337,7 +403,10 @@ public class ToolTests
 
         Assert.AreEqual(Elevation.Admin, node.Elevation);
         CollectionAssert.IsSubsetOf(new[] { "install", "--id", "OpenJS.NodeJS.LTS", "--exact" }, node.Commands[0].Arguments.ToArray());
-        Assert.AreEqual("Install Docker Desktop", checks.Single(c => c.Tool.Id == "docker").Action!.Title);
+        var docker = checks.Single(c => c.Tool.Id == "docker").Action!;
+        Assert.AreEqual("Install Docker Desktop", docker.Title);
+        CollectionAssert.IsSubsetOf(new[] { "Docker.DockerDesktop", "--override", "install --quiet --accept-license" }, docker.Commands[0].Arguments.ToArray());
+        CollectionAssert.DoesNotContain(docker.Commands[0].Arguments.ToArray(), "--silent");
 
         host.Runner.On("dotnet", "--version", 145);
         host.Runner.Executables["dotnet"] = @"C:\Program Files\dotnet\dotnet.exe";
@@ -349,6 +418,59 @@ public class ToolTests
         StringAssert.Contains(preview.Commands[0].CommandLine, "winget install --id Microsoft.DotNet.SDK.Preview --exact --version '11.0.100-rc.1.26425.128'");
         StringAssert.Contains(preview.Commands[0].CommandLine, "dotnet-install.ps1");
         StringAssert.Contains(preview.Commands[0].CommandLine, @"-InstallDir 'C:\Program Files\dotnet'");
+    }
+
+    [TestMethod]
+    public async Task TheAdministratorLog_Should_KeepEveryLineWhileBitReadsIt()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        var directory = Directory.CreateTempSubdirectory("bit-cli-admin-log-").FullName;
+        var log = Path.Combine(directory, "install.log");
+        var scriptPath = Path.Combine(directory, "install.ps1");
+        var action = new ToolAction
+        {
+            ToolId = "chatty",
+            Title = "Print a lot",
+            Elevation = Elevation.Admin,
+            Commands = [new ProcessSpec { FileName = "cmd.exe", Arguments = ["/d", "/c", "for /L %i in (1,1,200) do @echo line %i"], Timeout = TimeSpan.FromSeconds(60) }]
+        };
+        var script = System.Text.Encoding.UTF8.GetBytes(ToolInstaller.BuildWindowsScript([action], log, Path.Combine(directory, "results.json"), Path.Combine(directory, "cancel")));
+        File.WriteAllBytes(scriptPath, script);
+
+        using var process = System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("powershell.exe", $"-NoProfile -NonInteractive -EncodedCommand {ToolInstaller.EncodeBootstrap(scriptPath, script)}") { UseShellExecute = false, CreateNoWindow = true })!;
+
+        while (process.HasExited is false)
+        {
+            if (File.Exists(log))
+            {
+                using var stream = new FileStream(log, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete);
+                using var reader = new StreamReader(stream);
+                await reader.ReadToEndAsync();
+            }
+
+            await Task.Delay(5);
+        }
+
+        var lines = File.ReadAllLines(log);
+        Assert.AreEqual("== Print a lot", lines[0]);
+        Assert.AreEqual(201, lines.Length, string.Join(Environment.NewLine, lines.Take(5)));
+        Assert.AreEqual("line 200", lines[^1].Trim());
+        Directory.Delete(directory, recursive: true);
+    }
+
+    [TestMethod]
+    public void TheAdministratorLog_Should_TellWhichStepRunsAndWhatAFailedOneSaid()
+    {
+        var log = "== Install Git\r\nFound Git [Git.Git]\r\n  -\b\\\b|\r\nSuccessfully installed\n== Install WSL\nDownloading: 10%\r Downloading: 55%\n";
+
+        Assert.AreEqual("2 of 7: Install WSL · Downloading: 55%", ToolInstaller.AdministratorProgress(log, 7));
+        Assert.AreEqual("1 of 3: Install Git", ToolInstaller.AdministratorProgress("== Install Git\n", 3));
+        Assert.IsNull(ToolInstaller.AdministratorProgress("", 3));
+        Assert.AreEqual("Successfully installed", ToolInstaller.AdministratorOutput(log, "Install Git"));
+        Assert.AreEqual("Downloading: 55%", ToolInstaller.AdministratorOutput(log, "Install WSL"));
+        Assert.IsNull(ToolInstaller.AdministratorOutput(log, "Install Docker Desktop"));
     }
 
     [TestMethod]
@@ -470,6 +592,7 @@ public class ToolTests
 
         Assert.IsFalse((await CheckAsync(host, new ToolNeeds())).Any(c => c.Tool.Id == "hypervisor-platform"));
     }
+
 
     [TestMethod]
     public async Task DeveloperMode_Should_BeOfferedForMauiWithoutBeingNeeded()
@@ -644,6 +767,9 @@ public class ToolTests
         return await ToolCatalog.CheckAsync(context, CancellationToken.None);
     }
 
+    private static string NuGetSources(string name, string state, string url = "https://api.nuget.org/v3/index.json")
+        => $"Registered Sources:\n  1.  {name} [{state}]\n      {url}\n  2.  Microsoft Visual Studio Offline Packages [Enabled]\n      C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\\n";
+
     private static void AllInstalled(FakeProcessRunner runner)
     {
         runner.On("git", "--version", 0, "git version 2.47.1");
@@ -653,6 +779,7 @@ public class ToolTests
         runner.On("aspire", "--version", 0, "13.6.0+abc");
         runner.On("dotnet", "dev-certs", 0);
         runner.On("dotnet", "--list-sdks", 0, "10.0.401 [/usr/share/dotnet/sdk]");
+        runner.On("dotnet", "nuget list source", 0, NuGetSources("nuget.org", "Enabled"));
         runner.On("wsl", "--status", 0);
         runner.On("xcodebuild", "-version", 0, "Xcode 26.0");
         runner.Executables["code"] = typeof(ToolTests).Assembly.Location;
