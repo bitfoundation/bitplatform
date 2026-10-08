@@ -433,14 +433,9 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
             bitTimePicker.TakeFromCascade(nameof(ContinuousSpinInterval), ContinuousSpinInterval.Value, static t => t.ContinuousSpinInterval, static (t, v) => t.ContinuousSpinInterval = v);
         }
 
-        // The culture decides how the value is written, how a typed one is read, and which way the picker
-        // lays itself out, and the component reads all three off it in a hook that has already run by the
-        // time this cascade reaches it - so the hook is run once more below.
-        var recomputeCulture = false;
-
-        if (Culture is not null && bitTimePicker.TakeFromCascade(nameof(Culture), Culture, static t => t.Culture, static (t, v) => t.Culture = v))
+        if (Culture is not null)
         {
-            recomputeCulture = true;
+            bitTimePicker.TakeFromCascade(nameof(Culture), Culture, static t => t.Culture, static (t, v) => t.Culture = v);
         }
 
         if (DecreaseHourIcon is not null)
@@ -761,13 +756,6 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
         if (ValueFormat.HasValue())
         {
             bitTimePicker.TakeFromCascade(nameof(ValueFormat), ValueFormat, static t => t.ValueFormat, static (t, v) => t.ValueFormat = v);
-        }
-
-        if (recomputeCulture)
-        {
-            bitTimePicker.OnSetCulture();
-
-            bitTimePicker.ClassBuilder.Reset();
         }
     }
 }

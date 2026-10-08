@@ -839,14 +839,6 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
 
         UpdateBaseParameters(bitDateRangePicker);
 
-        // The parameters the picker rebuilds its view from are the ones carrying a [CallOnSet(OnSetParameters)]
-        // on the component, and the component has already run that pass in OnInitialized - before anything
-        // cascaded here reached it. So whichever of them the cascade fills in, the pass is run once more at the end.
-        // Only a value that actually differs asks for it: this runs on every OnParametersSet, and the pass rebases
-        // the calendar on the selected month, so rebuilding on an unchanged cascade would slide an open calendar
-        // back off whatever month the user had navigated to.
-        var rebuildView = false;
-
         if (AllowTextInput.HasValue)
         {
             bitDateRangePicker.TakeFromCascade(nameof(AllowTextInput), AllowTextInput.Value, static d => d.AllowTextInput, static (d, v) => d.AllowTextInput = v);
@@ -947,9 +939,9 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.TakeFromCascade(nameof(ContinuousSpinInterval), ContinuousSpinInterval.Value, static d => d.ContinuousSpinInterval, static (d, v) => d.ContinuousSpinInterval = v);
         }
 
-        if (Culture is not null && bitDateRangePicker.TakeFromCascade(nameof(Culture), Culture, static d => d.Culture, static (d, v) => d.Culture = v))
+        if (Culture is not null)
         {
-            rebuildView = true;
+            bitDateRangePicker.TakeFromCascade(nameof(Culture), Culture, static d => d.Culture, static (d, v) => d.Culture = v);
         }
 
         if (DateFormat.HasValue())
@@ -962,14 +954,14 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.TakeFromCascade(nameof(DayCellTemplate), DayCellTemplate, static d => d.DayCellTemplate, static (d, v) => d.DayCellTemplate = v);
         }
 
-        if (DisableFuture.HasValue && bitDateRangePicker.TakeFromCascade(nameof(DisableFuture), DisableFuture.Value, static d => d.DisableFuture, static (d, v) => d.DisableFuture = v))
+        if (DisableFuture.HasValue)
         {
-            rebuildView = true;
+            bitDateRangePicker.TakeFromCascade(nameof(DisableFuture), DisableFuture.Value, static d => d.DisableFuture, static (d, v) => d.DisableFuture = v);
         }
 
-        if (DisablePast.HasValue && bitDateRangePicker.TakeFromCascade(nameof(DisablePast), DisablePast.Value, static d => d.DisablePast, static (d, v) => d.DisablePast = v))
+        if (DisablePast.HasValue)
         {
-            rebuildView = true;
+            bitDateRangePicker.TakeFromCascade(nameof(DisablePast), DisablePast.Value, static d => d.DisablePast, static (d, v) => d.DisablePast = v);
         }
 
         if (DisabledDateErrorMessage.HasValue())
@@ -977,14 +969,14 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.TakeFromCascade(nameof(DisabledDateErrorMessage), DisabledDateErrorMessage, static d => d.DisabledDateErrorMessage, static (d, v) => d.DisabledDateErrorMessage = v);
         }
 
-        if (DisabledDates is not null && bitDateRangePicker.TakeFromCascade(nameof(DisabledDates), DisabledDates, static d => d.DisabledDates, static (d, v) => d.DisabledDates = v))
+        if (DisabledDates is not null)
         {
-            rebuildView = true;
+            bitDateRangePicker.TakeFromCascade(nameof(DisabledDates), DisabledDates, static d => d.DisabledDates, static (d, v) => d.DisabledDates = v);
         }
 
-        if (DisabledDaysOfWeek is not null && bitDateRangePicker.TakeFromCascade(nameof(DisabledDaysOfWeek), DisabledDaysOfWeek, static d => d.DisabledDaysOfWeek, static (d, v) => d.DisabledDaysOfWeek = v))
+        if (DisabledDaysOfWeek is not null)
         {
-            rebuildView = true;
+            bitDateRangePicker.TakeFromCascade(nameof(DisabledDaysOfWeek), DisabledDaysOfWeek, static d => d.DisabledDaysOfWeek, static (d, v) => d.DisabledDaysOfWeek = v);
         }
 
         if (DropDirection.HasValue)
@@ -1062,19 +1054,19 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.TakeFromCascade(nameof(EndTimeMinuteInputAriaLabel), EndTimeMinuteInputAriaLabel!, static d => d.EndTimeMinuteInputAriaLabel, static (d, v) => d.EndTimeMinuteInputAriaLabel = v);
         }
 
-        if (ExcludeDisabledDates.HasValue && bitDateRangePicker.TakeFromCascade(nameof(ExcludeDisabledDates), ExcludeDisabledDates.Value, static d => d.ExcludeDisabledDates, static (d, v) => d.ExcludeDisabledDates = v))
+        if (ExcludeDisabledDates.HasValue)
         {
-            rebuildView = true;
+            bitDateRangePicker.TakeFromCascade(nameof(ExcludeDisabledDates), ExcludeDisabledDates.Value, static d => d.ExcludeDisabledDates, static (d, v) => d.ExcludeDisabledDates = v);
         }
 
-        if (FirstDayOfWeek.HasValue && bitDateRangePicker.TakeFromCascade(nameof(FirstDayOfWeek), FirstDayOfWeek, static d => d.FirstDayOfWeek, static (d, v) => d.FirstDayOfWeek = v))
+        if (FirstDayOfWeek.HasValue)
         {
-            rebuildView = true;
+            bitDateRangePicker.TakeFromCascade(nameof(FirstDayOfWeek), FirstDayOfWeek, static d => d.FirstDayOfWeek, static (d, v) => d.FirstDayOfWeek = v);
         }
 
-        if (FixedWeeks.HasValue && bitDateRangePicker.TakeFromCascade(nameof(FixedWeeks), FixedWeeks.Value, static d => d.FixedWeeks, static (d, v) => d.FixedWeeks = v))
+        if (FixedWeeks.HasValue)
         {
-            rebuildView = true;
+            bitDateRangePicker.TakeFromCascade(nameof(FixedWeeks), FixedWeeks.Value, static d => d.FixedWeeks, static (d, v) => d.FixedWeeks = v);
         }
 
         if (GetDayClass is not null)
@@ -1162,9 +1154,9 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.TakeFromCascade(nameof(HighlightToday), HighlightToday.Value, static d => d.HighlightToday, static (d, v) => d.HighlightToday = v);
         }
 
-        if (HighlightedDates is not null && bitDateRangePicker.TakeFromCascade(nameof(HighlightedDates), HighlightedDates, static d => d.HighlightedDates, static (d, v) => d.HighlightedDates = v))
+        if (HighlightedDates is not null)
         {
-            rebuildView = true;
+            bitDateRangePicker.TakeFromCascade(nameof(HighlightedDates), HighlightedDates, static d => d.HighlightedDates, static (d, v) => d.HighlightedDates = v);
         }
 
         if (HourStep.HasValue)
@@ -1197,14 +1189,14 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.TakeFromCascade(nameof(InvalidErrorMessage), InvalidErrorMessage, static d => d.InvalidErrorMessage, static (d, v) => d.InvalidErrorMessage = v);
         }
 
-        if (IsDateDisabled is not null && bitDateRangePicker.TakeFromCascade(nameof(IsDateDisabled), IsDateDisabled, static d => d.IsDateDisabled, static (d, v) => d.IsDateDisabled = v))
+        if (IsDateDisabled is not null)
         {
-            rebuildView = true;
+            bitDateRangePicker.TakeFromCascade(nameof(IsDateDisabled), IsDateDisabled, static d => d.IsDateDisabled, static (d, v) => d.IsDateDisabled = v);
         }
 
-        if (IsMonthPickerVisible.HasValue && bitDateRangePicker.TakeFromCascade(nameof(IsMonthPickerVisible), IsMonthPickerVisible.Value, static d => d.IsMonthPickerVisible, static (d, v) => d.IsMonthPickerVisible = v))
+        if (IsMonthPickerVisible.HasValue)
         {
-            rebuildView = true;
+            bitDateRangePicker.TakeFromCascade(nameof(IsMonthPickerVisible), IsMonthPickerVisible.Value, static d => d.IsMonthPickerVisible, static (d, v) => d.IsMonthPickerVisible = v);
         }
 
         if (Label.HasValue())
@@ -1217,9 +1209,9 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.TakeFromCascade(nameof(LabelTemplate), LabelTemplate, static d => d.LabelTemplate, static (d, v) => d.LabelTemplate = v);
         }
 
-        if (MaxDate.HasValue && bitDateRangePicker.TakeFromCascade(nameof(MaxDate), MaxDate, static d => d.MaxDate, static (d, v) => d.MaxDate = v))
+        if (MaxDate.HasValue)
         {
-            rebuildView = true;
+            bitDateRangePicker.TakeFromCascade(nameof(MaxDate), MaxDate, static d => d.MaxDate, static (d, v) => d.MaxDate = v);
         }
 
         if (MaxRange.HasValue)
@@ -1227,9 +1219,9 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.TakeFromCascade(nameof(MaxRange), MaxRange, static d => d.MaxRange, static (d, v) => d.MaxRange = v);
         }
 
-        if (MinDate.HasValue && bitDateRangePicker.TakeFromCascade(nameof(MinDate), MinDate, static d => d.MinDate, static (d, v) => d.MinDate = v))
+        if (MinDate.HasValue)
         {
-            rebuildView = true;
+            bitDateRangePicker.TakeFromCascade(nameof(MinDate), MinDate, static d => d.MinDate, static (d, v) => d.MinDate = v);
         }
 
         if (MinRange.HasValue)
@@ -1247,9 +1239,9 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.TakeFromCascade(nameof(MonthCellTemplate), MonthCellTemplate, static d => d.MonthCellTemplate, static (d, v) => d.MonthCellTemplate = v);
         }
 
-        if (MonthCount.HasValue && bitDateRangePicker.TakeFromCascade(nameof(MonthCount), MonthCount.Value, static d => d.MonthCount, static (d, v) => d.MonthCount = v))
+        if (MonthCount.HasValue)
         {
-            rebuildView = true;
+            bitDateRangePicker.TakeFromCascade(nameof(MonthCount), MonthCount.Value, static d => d.MonthCount, static (d, v) => d.MonthCount = v);
         }
 
         if (MonthPickerToggleTitle.HasValue())
@@ -1372,9 +1364,9 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.TakeFromCascade(nameof(ShowGoToToday), ShowGoToToday.Value, static d => d.ShowGoToToday, static (d, v) => d.ShowGoToToday = v);
         }
 
-        if (ShowMonthPickerAsOverlay.HasValue && bitDateRangePicker.TakeFromCascade(nameof(ShowMonthPickerAsOverlay), ShowMonthPickerAsOverlay.Value, static d => d.ShowMonthPickerAsOverlay, static (d, v) => d.ShowMonthPickerAsOverlay = v))
+        if (ShowMonthPickerAsOverlay.HasValue)
         {
-            rebuildView = true;
+            bitDateRangePicker.TakeFromCascade(nameof(ShowMonthPickerAsOverlay), ShowMonthPickerAsOverlay.Value, static d => d.ShowMonthPickerAsOverlay, static (d, v) => d.ShowMonthPickerAsOverlay = v);
         }
 
         if (ShowOutsideDays.HasValue)
@@ -1382,14 +1374,14 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.TakeFromCascade(nameof(ShowOutsideDays), ShowOutsideDays.Value, static d => d.ShowOutsideDays, static (d, v) => d.ShowOutsideDays = v);
         }
 
-        if (ShowTimePicker.HasValue && bitDateRangePicker.TakeFromCascade(nameof(ShowTimePicker), ShowTimePicker.Value, static d => d.ShowTimePicker, static (d, v) => d.ShowTimePicker = v))
+        if (ShowTimePicker.HasValue)
         {
-            rebuildView = true;
+            bitDateRangePicker.TakeFromCascade(nameof(ShowTimePicker), ShowTimePicker.Value, static d => d.ShowTimePicker, static (d, v) => d.ShowTimePicker = v);
         }
 
-        if (ShowTimePickerAsOverlay.HasValue && bitDateRangePicker.TakeFromCascade(nameof(ShowTimePickerAsOverlay), ShowTimePickerAsOverlay.Value, static d => d.ShowTimePickerAsOverlay, static (d, v) => d.ShowTimePickerAsOverlay = v))
+        if (ShowTimePickerAsOverlay.HasValue)
         {
-            rebuildView = true;
+            bitDateRangePicker.TakeFromCascade(nameof(ShowTimePickerAsOverlay), ShowTimePickerAsOverlay.Value, static d => d.ShowTimePickerAsOverlay, static (d, v) => d.ShowTimePickerAsOverlay = v);
         }
 
         if (ShowTimePickerIcon is not null)
@@ -1417,9 +1409,9 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.TakeFromCascade(nameof(Size), Size, static d => d.Size, static (d, v) => d.Size = v);
         }
 
-        if (Standalone.HasValue && bitDateRangePicker.TakeFromCascade(nameof(Standalone), Standalone.Value, static d => d.Standalone, static (d, v) => d.Standalone = v))
+        if (Standalone.HasValue)
         {
-            rebuildView = true;
+            bitDateRangePicker.TakeFromCascade(nameof(Standalone), Standalone.Value, static d => d.Standalone, static (d, v) => d.Standalone = v);
         }
 
         if (StartTimeDecreaseHourIcon is not null)
@@ -1492,9 +1484,9 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.TakeFromCascade(nameof(StartTimeMinuteInputAriaLabel), StartTimeMinuteInputAriaLabel!, static d => d.StartTimeMinuteInputAriaLabel, static (d, v) => d.StartTimeMinuteInputAriaLabel = v);
         }
 
-        if (StartingValue is not null && bitDateRangePicker.TakeFromCascade(nameof(StartingValue), StartingValue, static d => d.StartingValue, static (d, v) => d.StartingValue = v))
+        if (StartingValue is not null)
         {
-            rebuildView = true;
+            bitDateRangePicker.TakeFromCascade(nameof(StartingValue), StartingValue, static d => d.StartingValue, static (d, v) => d.StartingValue = v);
         }
 
         if (Styles is not null)
@@ -1507,14 +1499,14 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.TakeFromCascade(nameof(TimeFormat), TimeFormat.Value, static d => d.TimeFormat, static (d, v) => d.TimeFormat = v);
         }
 
-        if (TimeZone is not null && bitDateRangePicker.TakeFromCascade(nameof(TimeZone), TimeZone, static d => d.TimeZone, static (d, v) => d.TimeZone = v))
+        if (TimeZone is not null)
         {
-            rebuildView = true;
+            bitDateRangePicker.TakeFromCascade(nameof(TimeZone), TimeZone, static d => d.TimeZone, static (d, v) => d.TimeZone = v);
         }
 
-        if (Today.HasValue && bitDateRangePicker.TakeFromCascade(nameof(Today), Today, static d => d.Today, static (d, v) => d.Today = v))
+        if (Today.HasValue)
         {
-            rebuildView = true;
+            bitDateRangePicker.TakeFromCascade(nameof(Today), Today, static d => d.Today, static (d, v) => d.Today = v);
         }
 
         if (Underlined.HasValue)
@@ -1555,11 +1547,6 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
         if (YearRangePickerToggleTitle.HasValue())
         {
             bitDateRangePicker.TakeFromCascade(nameof(YearRangePickerToggleTitle), YearRangePickerToggleTitle!, static d => d.YearRangePickerToggleTitle, static (d, v) => d.YearRangePickerToggleTitle = v);
-        }
-
-        if (rebuildView)
-        {
-            bitDateRangePicker.OnSetParameters();
         }
     }
 }

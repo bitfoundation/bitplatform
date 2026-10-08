@@ -297,12 +297,9 @@ public class BitCheckboxParams : BitComponentBaseParams, IBitComponentParams
             bitCheckbox.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static c => c.FullWidth, static (c, v) => c.FullWidth = v);
         }
 
-        // The mixed state lives in a DOM property rather than an attribute, so it has to be pushed onto the element
-        // the way the setter of a parameter written on the component itself does. Only once there is an element to
-        // push it onto: the state the checkbox starts out with is pushed on its first render.
-        if (Indeterminate.HasValue && bitCheckbox.TakeFromCascade(nameof(Indeterminate), Indeterminate.Value, static c => c.Indeterminate, static (c, v) => c.Indeterminate = v))
+        if (Indeterminate.HasValue)
         {
-            bitCheckbox.OnSetIndeterminateFromParams();
+            bitCheckbox.TakeFromCascade(nameof(Indeterminate), Indeterminate.Value, static c => c.Indeterminate, static (c, v) => c.Indeterminate = v);
         }
 
         if (IndeterminateIcon is not null)

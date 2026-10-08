@@ -232,9 +232,16 @@ public class BitAccordionListParams : BitComponentBaseParams, IBitComponentParam
 
         // The icon takes precedence over the icon name, so a cascaded icon is only a default for a list that has
         // set neither: applied over a list's own ExpandedExpanderIconName it would override it rather than default it.
-        if (ExpandedExpanderIcon is not null && bitAccordionList.HasNotBeenSet(nameof(ExpandedExpanderIconName)))
+        if (ExpandedExpanderIcon is not null)
         {
-            bitAccordionList.TakeFromCascade(nameof(ExpandedExpanderIcon), ExpandedExpanderIcon, static a => a.ExpandedExpanderIcon, static (a, v) => a.ExpandedExpanderIcon = v);
+            if (bitAccordionList.HasNotBeenSet(nameof(ExpandedExpanderIconName)))
+            {
+                bitAccordionList.TakeFromCascade(nameof(ExpandedExpanderIcon), ExpandedExpanderIcon, static a => a.ExpandedExpanderIcon, static (a, v) => a.ExpandedExpanderIcon = v);
+            }
+            else
+            {
+                bitAccordionList.ReleaseFromCascade(nameof(ExpandedExpanderIcon));
+            }
         }
 
         if (ExpandedExpanderIconName.HasValue())
@@ -243,9 +250,16 @@ public class BitAccordionListParams : BitComponentBaseParams, IBitComponentParam
         }
 
         // Likewise for the collapsed expander icon and the list's own ExpanderIconName.
-        if (ExpanderIcon is not null && bitAccordionList.HasNotBeenSet(nameof(ExpanderIconName)))
+        if (ExpanderIcon is not null)
         {
-            bitAccordionList.TakeFromCascade(nameof(ExpanderIcon), ExpanderIcon, static a => a.ExpanderIcon, static (a, v) => a.ExpanderIcon = v);
+            if (bitAccordionList.HasNotBeenSet(nameof(ExpanderIconName)))
+            {
+                bitAccordionList.TakeFromCascade(nameof(ExpanderIcon), ExpanderIcon, static a => a.ExpanderIcon, static (a, v) => a.ExpanderIcon = v);
+            }
+            else
+            {
+                bitAccordionList.ReleaseFromCascade(nameof(ExpanderIcon));
+            }
         }
 
         if (ExpanderIconName.HasValue())

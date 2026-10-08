@@ -184,11 +184,6 @@ public class BitNavBarParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitNavBar);
 
-        // Mode and Match decide which item the current URL points at, so a change to either re-runs the match.
-        // Only an actual change does: the cascade is re-applied on every parameter set, and a re-match on each
-        // one would re-fire OnSelectItem on a Reselectable navbar.
-        var urlMatchingChanged = false;
-
         if (Alignment.HasValue)
         {
             bitNavBar.TakeFromCascade(nameof(Alignment), Alignment.Value, static n => n.Alignment, static (n, v) => n.Alignment = v);
@@ -259,14 +254,14 @@ public class BitNavBarParams : BitComponentBaseParams, IBitComponentParams
             bitNavBar.TakeFromCascade(nameof(Justified), Justified.Value, static n => n.Justified, static (n, v) => n.Justified = v);
         }
 
-        if (Match.HasValue && bitNavBar.TakeFromCascade(nameof(Match), Match.Value, static n => n.Match, static (n, v) => n.Match = v))
+        if (Match.HasValue)
         {
-            urlMatchingChanged = true;
+            bitNavBar.TakeFromCascade(nameof(Match), Match.Value, static n => n.Match, static (n, v) => n.Match = v);
         }
 
-        if (Mode.HasValue && bitNavBar.TakeFromCascade(nameof(Mode), Mode.Value, static n => n.Mode, static (n, v) => n.Mode = v))
+        if (Mode.HasValue)
         {
-            urlMatchingChanged = true;
+            bitNavBar.TakeFromCascade(nameof(Mode), Mode.Value, static n => n.Mode, static (n, v) => n.Mode = v);
         }
 
         // an empty hint is a value of its own - the one that takes the announcement off - so only null is
@@ -324,11 +319,6 @@ public class BitNavBarParams : BitComponentBaseParams, IBitComponentParams
         if (WrapNavigation.HasValue)
         {
             bitNavBar.TakeFromCascade(nameof(WrapNavigation), WrapNavigation.Value, static n => n.WrapNavigation, static (n, v) => n.WrapNavigation = v);
-        }
-
-        if (urlMatchingChanged)
-        {
-            bitNavBar.OnUrlMatchingChanged();
         }
     }
 }

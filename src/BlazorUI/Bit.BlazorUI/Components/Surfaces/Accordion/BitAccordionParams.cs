@@ -197,9 +197,16 @@ public class BitAccordionParams : BitComponentBaseParams, IBitComponentParams
         }
 
         // A nested accordion takes the level below the one holding it, so only a top-level one is given the default.
-        if (HeadingLevel.HasValue && bitAccordion.ParentHeadingLevel is null)
+        if (HeadingLevel.HasValue)
         {
-            bitAccordion.TakeFromCascade(nameof(HeadingLevel), HeadingLevel.Value, static a => a.HeadingLevel, static (a, v) => a.HeadingLevel = v);
+            if (bitAccordion.ParentHeadingLevel is null)
+            {
+                bitAccordion.TakeFromCascade(nameof(HeadingLevel), HeadingLevel.Value, static a => a.HeadingLevel, static (a, v) => a.HeadingLevel = v);
+            }
+            else
+            {
+                bitAccordion.ReleaseFromCascade(nameof(HeadingLevel));
+            }
         }
 
         if (HiddenUntilFound.HasValue)

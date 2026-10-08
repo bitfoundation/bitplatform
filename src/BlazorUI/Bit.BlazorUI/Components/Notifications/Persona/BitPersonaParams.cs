@@ -289,8 +289,6 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitPersona);
 
-        var linkWasSet = false;
-
         if (ActionButtonTitle.HasValue())
         {
             bitPersona.TakeFromCascade(nameof(ActionButtonTitle), ActionButtonTitle!, static p => p.ActionButtonTitle, static (p, v) => p.ActionButtonTitle = v);
@@ -333,9 +331,16 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
 
         // A persona that turns AutoCoinColor on itself is asking for the hashed color, which a CoinColor handed
         // down from here would otherwise win over.
-        if (CoinColor.HasValue && (bitPersona.HasNotBeenSet(nameof(AutoCoinColor)) || bitPersona.AutoCoinColor is false))
+        if (CoinColor.HasValue)
         {
-            bitPersona.TakeFromCascade(nameof(CoinColor), CoinColor.Value, static p => p.CoinColor, static (p, v) => p.CoinColor = v);
+            if ((bitPersona.HasNotBeenSet(nameof(AutoCoinColor)) || bitPersona.AutoCoinColor is false))
+            {
+                bitPersona.TakeFromCascade(nameof(CoinColor), CoinColor.Value, static p => p.CoinColor, static (p, v) => p.CoinColor = v);
+            }
+            else
+            {
+                bitPersona.ReleaseFromCascade(nameof(CoinColor));
+            }
         }
 
         if (CoinIcon is not null)
@@ -350,9 +355,16 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
 
         // A size class set on the persona itself is the size it asked for, and a CoinSize handed down from here
         // would otherwise override it.
-        if (CoinSize.HasValue && bitPersona.HasNotBeenSet(nameof(Size)))
+        if (CoinSize.HasValue)
         {
-            bitPersona.TakeFromCascade(nameof(CoinSize), CoinSize.Value, static p => p.CoinSize, static (p, v) => p.CoinSize = v);
+            if (bitPersona.HasNotBeenSet(nameof(Size)))
+            {
+                bitPersona.TakeFromCascade(nameof(CoinSize), CoinSize.Value, static p => p.CoinSize, static (p, v) => p.CoinSize = v);
+            }
+            else
+            {
+                bitPersona.ReleaseFromCascade(nameof(CoinSize));
+            }
         }
 
         if (CoinVariant.HasValue)
@@ -389,14 +401,28 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
         // down from here would otherwise hide the glyph the persona set for itself.
         var hasOwnPresenceIcon = bitPersona.PresenceIcon is not null || bitPersona.PresenceIconName.HasValue();
 
-        if (PresenceIcons is not null && hasOwnPresenceIcon is false)
+        if (PresenceIcons is not null)
         {
-            bitPersona.TakeFromCascade(nameof(PresenceIcons), PresenceIcons, static p => p.PresenceIcons, static (p, v) => p.PresenceIcons = v);
+            if (hasOwnPresenceIcon is false)
+            {
+                bitPersona.TakeFromCascade(nameof(PresenceIcons), PresenceIcons, static p => p.PresenceIcons, static (p, v) => p.PresenceIcons = v);
+            }
+            else
+            {
+                bitPersona.ReleaseFromCascade(nameof(PresenceIcons));
+            }
         }
 
-        if (PresenceIconNames is not null && hasOwnPresenceIcon is false)
+        if (PresenceIconNames is not null)
         {
-            bitPersona.TakeFromCascade(nameof(PresenceIconNames), PresenceIconNames, static p => p.PresenceIconNames, static (p, v) => p.PresenceIconNames = v);
+            if (hasOwnPresenceIcon is false)
+            {
+                bitPersona.TakeFromCascade(nameof(PresenceIconNames), PresenceIconNames, static p => p.PresenceIconNames, static (p, v) => p.PresenceIconNames = v);
+            }
+            else
+            {
+                bitPersona.ReleaseFromCascade(nameof(PresenceIconNames));
+            }
         }
 
         if (PresenceTitles is not null)
@@ -404,9 +430,9 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
             bitPersona.TakeFromCascade(nameof(PresenceTitles), PresenceTitles, static p => p.PresenceTitles, static (p, v) => p.PresenceTitles = v);
         }
 
-        if (Rel.HasValue && bitPersona.TakeFromCascade(nameof(Rel), Rel.Value, static p => p.Rel, static (p, v) => p.Rel = v))
+        if (Rel.HasValue)
         {
-            linkWasSet = true;
+            bitPersona.TakeFromCascade(nameof(Rel), Rel.Value, static p => p.Rel, static (p, v) => p.Rel = v);
         }
 
         if (Reversed.HasValue)
@@ -416,9 +442,16 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
 
         // Shape wins over Squared, so a Shape handed down from here would otherwise override a persona that
         // squares itself.
-        if (Shape.HasValue && (bitPersona.HasNotBeenSet(nameof(Squared)) || bitPersona.Squared is false))
+        if (Shape.HasValue)
         {
-            bitPersona.TakeFromCascade(nameof(Shape), Shape.Value, static p => p.Shape, static (p, v) => p.Shape = v);
+            if ((bitPersona.HasNotBeenSet(nameof(Squared)) || bitPersona.Squared is false))
+            {
+                bitPersona.TakeFromCascade(nameof(Shape), Shape.Value, static p => p.Shape, static (p, v) => p.Shape = v);
+            }
+            else
+            {
+                bitPersona.ReleaseFromCascade(nameof(Shape));
+            }
         }
 
         if (ShowDefaultPresenceIcons.HasValue)
@@ -456,9 +489,9 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
             bitPersona.TakeFromCascade(nameof(Styles), Styles, static p => p.Styles, static (p, v) => p.Styles = v);
         }
 
-        if (Target.HasValue() && bitPersona.TakeFromCascade(nameof(Target), Target, static p => p.Target, static (p, v) => p.Target = v))
+        if (Target.HasValue())
         {
-            linkWasSet = true;
+            bitPersona.TakeFromCascade(nameof(Target), Target, static p => p.Target, static (p, v) => p.Target = v);
         }
 
         if (UnknownIcon is not null)
@@ -474,13 +507,6 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
         if (Vertical.HasValue)
         {
             bitPersona.TakeFromCascade(nameof(Vertical), Vertical.Value, static p => p.Vertical, static (p, v) => p.Vertical = v);
-        }
-
-        // The rel attribute is worked out when Href, Rel or Target is set on the persona itself, which a value
-        // handed down from here does not trigger.
-        if (linkWasSet)
-        {
-            bitPersona.OnSetHrefAndRel();
         }
     }
 }

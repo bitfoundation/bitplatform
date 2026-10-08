@@ -624,9 +624,9 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
             bitTagsInput.TakeFromCascade(nameof(FixedTagAriaDescription), FixedTagAriaDescription, static t => t.FixedTagAriaDescription, static (t, v) => t.FixedTagAriaDescription = v);
         }
 
-        if (EnterKeyHint.HasValue && bitTagsInput.TakeFromCascade(nameof(EnterKeyHint), EnterKeyHint.Value, static t => t.EnterKeyHint, static (t, v) => t.EnterKeyHint = v))
+        if (EnterKeyHint.HasValue)
         {
-            bitTagsInput.OnSetEnterKeyHint();
+            bitTagsInput.TakeFromCascade(nameof(EnterKeyHint), EnterKeyHint.Value, static t => t.EnterKeyHint, static (t, v) => t.EnterKeyHint = v);
         }
 
         if (GetInvalidMessage is not null)
@@ -649,9 +649,9 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
             bitTagsInput.TakeFromCascade(nameof(GetTagStyle), GetTagStyle, static t => t.GetTagStyle, static (t, v) => t.GetTagStyle = v);
         }
 
-        if (InputMode.HasValue && bitTagsInput.TakeFromCascade(nameof(InputMode), InputMode.Value, static t => t.InputMode, static (t, v) => t.InputMode = v))
+        if (InputMode.HasValue)
         {
-            bitTagsInput.OnSetInputMode();
+            bitTagsInput.TakeFromCascade(nameof(InputMode), InputMode.Value, static t => t.InputMode, static (t, v) => t.InputMode = v);
         }
 
         if (InvalidAnnouncementFormat is not null)
@@ -754,9 +754,9 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
             bitTagsInput.TakeFromCascade(nameof(NoTrim), NoTrim.Value, static t => t.NoTrim, static (t, v) => t.NoTrim = v);
         }
 
-        if (Pattern.HasValue() && bitTagsInput.TakeFromCascade(nameof(Pattern), Pattern, static t => t.Pattern, static (t, v) => t.Pattern = v))
+        if (Pattern.HasValue())
         {
-            bitTagsInput.OnSetPattern();
+            bitTagsInput.TakeFromCascade(nameof(Pattern), Pattern, static t => t.Pattern, static (t, v) => t.Pattern = v);
         }
 
         if (PickedUpAnnouncementFormat is not null)
@@ -814,9 +814,9 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
             bitTagsInput.TakeFromCascade(nameof(RestrictToSuggestions), RestrictToSuggestions.Value, static t => t.RestrictToSuggestions, static (t, v) => t.RestrictToSuggestions = v);
         }
 
-        if (Separators is not null && bitTagsInput.TakeFromCascade(nameof(Separators), Separators, static t => t.Separators, static (t, v) => t.Separators = v))
+        if (Separators is not null)
         {
-            bitTagsInput.OnSetSeparators();
+            bitTagsInput.TakeFromCascade(nameof(Separators), Separators, static t => t.Separators, static (t, v) => t.Separators = v);
         }
 
         if (ShowClearButton.HasValue)

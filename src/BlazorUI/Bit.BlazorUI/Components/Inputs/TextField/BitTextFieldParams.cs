@@ -440,11 +440,9 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
             bitTextField.TakeFromCascade(nameof(Border), Border.Value, static t => t.Border, static (t, v) => t.Border = v);
         }
 
-        bool elementTypeChanged = false;
-
-        if (CanRevealPassword.HasValue && bitTextField.TakeFromCascade(nameof(CanRevealPassword), CanRevealPassword.Value, static t => t.CanRevealPassword, static (t, v) => t.CanRevealPassword = v))
+        if (CanRevealPassword.HasValue)
         {
-            elementTypeChanged = true;
+            bitTextField.TakeFromCascade(nameof(CanRevealPassword), CanRevealPassword.Value, static t => t.CanRevealPassword, static (t, v) => t.CanRevealPassword = v);
         }
 
         if (Classes is not null)
@@ -557,9 +555,9 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
             bitTextField.TakeFromCascade(nameof(Immediate), Immediate.Value, static t => t.Immediate, static (t, v) => t.Immediate = v);
         }
 
-        if (InputMode.HasValue && bitTextField.TakeFromCascade(nameof(InputMode), InputMode.Value, static t => t.InputMode, static (t, v) => t.InputMode = v))
+        if (InputMode.HasValue)
         {
-            bitTextField.SetInputMode();
+            bitTextField.TakeFromCascade(nameof(InputMode), InputMode.Value, static t => t.InputMode, static (t, v) => t.InputMode = v);
         }
 
         if (Label.HasValue())
@@ -727,16 +725,9 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
             bitTextField.TakeFromCascade(nameof(Trim), Trim.Value, static t => t.Trim, static (t, v) => t.Trim = v);
         }
 
-        if (Type.HasValue && bitTextField.TakeFromCascade(nameof(Type), Type.Value, static t => t.Type, static (t, v) => t.Type = v))
+        if (Type.HasValue)
         {
-            elementTypeChanged = true;
-        }
-
-        // The type of the rendered element follows both the Type and the reveal button, so it is resolved
-        // once after either of them was filled in rather than twice.
-        if (elementTypeChanged)
-        {
-            bitTextField.SetElementType();
+            bitTextField.TakeFromCascade(nameof(Type), Type.Value, static t => t.Type, static (t, v) => t.Type = v);
         }
 
         if (Underlined.HasValue)

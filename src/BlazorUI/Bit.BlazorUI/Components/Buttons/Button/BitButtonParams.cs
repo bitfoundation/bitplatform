@@ -335,13 +335,9 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
             bitButton.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static b => b.FullWidth, static (b, v) => b.FullWidth = v);
         }
 
-        bool hrefWasSet = false;
-        bool relWasSet = false;
-        bool targetWasSet = false;
-
-        if (Href.HasValue() && bitButton.TakeFromCascade(nameof(Href), Href, static b => b.Href, static (b, v) => b.Href = v))
+        if (Href.HasValue())
         {
-            hrefWasSet = true;
+            bitButton.TakeFromCascade(nameof(Href), Href, static b => b.Href, static (b, v) => b.Href = v);
         }
 
         if (Icon is not null)
@@ -399,9 +395,9 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
             bitButton.TakeFromCascade(nameof(Reclickable), Reclickable.Value, static b => b.Reclickable, static (b, v) => b.Reclickable = v);
         }
 
-        if (Rel.HasValue && bitButton.TakeFromCascade(nameof(Rel), Rel.Value, static b => b.Rel, static (b, v) => b.Rel = v))
+        if (Rel.HasValue)
         {
-            relWasSet = true;
+            bitButton.TakeFromCascade(nameof(Rel), Rel.Value, static b => b.Rel, static (b, v) => b.Rel = v);
         }
 
         if (Rounded.HasValue)
@@ -429,15 +425,9 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
             bitButton.TakeFromCascade(nameof(Styles), Styles, static b => b.Styles, static (b, v) => b.Styles = v);
         }
 
-        if (Target.HasValue() && bitButton.TakeFromCascade(nameof(Target), Target, static b => b.Target, static (b, v) => b.Target = v))
+        if (Target.HasValue())
         {
-            targetWasSet = true;
-        }
-
-        // Call OnSetHrefRelAndTarget if any of Href, Rel or Target was set, to update the rel attribute value
-        if (hrefWasSet || relWasSet || targetWasSet)
-        {
-            bitButton.OnSetHrefRelAndTarget();
+            bitButton.TakeFromCascade(nameof(Target), Target, static b => b.Target, static (b, v) => b.Target = v);
         }
 
         if (Title.HasValue())

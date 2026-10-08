@@ -492,9 +492,9 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
             bitNumberField.TakeFromCascade(nameof(IncrementTitle), IncrementTitle, static n => n.IncrementTitle, static (n, v) => n.IncrementTitle = v);
         }
 
-        if (InputMode.HasValue && bitNumberField.TakeFromCascade(nameof(InputMode), InputMode.Value, static n => n.InputMode, static (n, v) => n.InputMode = v))
+        if (InputMode.HasValue)
         {
-            bitNumberField.OnSetInputMode();
+            bitNumberField.TakeFromCascade(nameof(InputMode), InputMode.Value, static n => n.InputMode, static (n, v) => n.InputMode = v);
         }
 
         if (InvertMouseWheel.HasValue)
@@ -606,29 +606,29 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
         // generated parameter assignment calls and a plain property write does not. They also go through the
         // digit normalization assigned above, and the precision is derived from the Step, so they are applied
         // last and in that order.
-        if (Min.HasValue() && bitNumberField.TakeFromCascade(nameof(Min), Min, static n => n.Min, static (n, v) => n.Min = v))
+        if (Min.HasValue())
         {
-            bitNumberField.OnSetMin();
+            bitNumberField.TakeFromCascade(nameof(Min), Min, static n => n.Min, static (n, v) => n.Min = v);
         }
 
-        if (Max.HasValue() && bitNumberField.TakeFromCascade(nameof(Max), Max, static n => n.Max, static (n, v) => n.Max = v))
+        if (Max.HasValue())
         {
-            bitNumberField.OnSetMax();
+            bitNumberField.TakeFromCascade(nameof(Max), Max, static n => n.Max, static (n, v) => n.Max = v);
         }
 
-        if (Step.HasValue() && bitNumberField.TakeFromCascade(nameof(Step), Step, static n => n.Step, static (n, v) => n.Step = v))
+        if (Step.HasValue())
         {
-            bitNumberField.OnSetStep();
+            bitNumberField.TakeFromCascade(nameof(Step), Step, static n => n.Step, static (n, v) => n.Step = v);
         }
 
-        if (PageStep.HasValue() && bitNumberField.TakeFromCascade(nameof(PageStep), PageStep, static n => n.PageStep, static (n, v) => n.PageStep = v))
+        if (PageStep.HasValue())
         {
-            bitNumberField.OnSetPageStep();
+            bitNumberField.TakeFromCascade(nameof(PageStep), PageStep, static n => n.PageStep, static (n, v) => n.PageStep = v);
         }
 
-        if (Precision.HasValue && bitNumberField.TakeFromCascade(nameof(Precision), Precision.Value, static n => n.Precision, static (n, v) => n.Precision = v))
+        if (Precision.HasValue)
         {
-            bitNumberField.OnSetPrecision();
+            bitNumberField.TakeFromCascade(nameof(Precision), Precision.Value, static n => n.Precision, static (n, v) => n.Precision = v);
         }
     }
 }

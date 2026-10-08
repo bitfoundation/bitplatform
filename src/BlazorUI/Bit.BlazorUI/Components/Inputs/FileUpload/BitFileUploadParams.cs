@@ -664,9 +664,9 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitFileUpload);
 
-        // the working chunk size is only worth deriving again when one of the two parameters it comes from
-        // actually moves, exactly as the generated setter of each of them decides.
-        var chunkSizeChanged = false;
+        // The working chunk size is derived from ChunkSize and AutoChunkSize. A changed ChunkSize derives it through its
+        // own [CallOnSet] hook; AutoChunkSize has none, so a change to it is followed here.
+        var autoChunkSizeChanged = false;
 
         if (Accept.HasValue())
         {
@@ -705,7 +705,7 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
 
         if (AutoChunkSize.HasValue && bitFileUpload.TakeFromCascade(nameof(AutoChunkSize), AutoChunkSize.Value, static f => f.AutoChunkSize, static (f, v) => f.AutoChunkSize = v))
         {
-            chunkSizeChanged = true;
+            autoChunkSizeChanged = true;
         }
 
         if (AutoReset.HasValue)
@@ -763,9 +763,9 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
             bitFileUpload.TakeFromCascade(nameof(Capture), Capture, static f => f.Capture, static (f, v) => f.Capture = v);
         }
 
-        if (ChunkSize.HasValue && bitFileUpload.TakeFromCascade(nameof(ChunkSize), ChunkSize.Value, static f => f.ChunkSize, static (f, v) => f.ChunkSize = v))
+        if (ChunkSize.HasValue)
         {
-            chunkSizeChanged = true;
+            bitFileUpload.TakeFromCascade(nameof(ChunkSize), ChunkSize.Value, static f => f.ChunkSize, static (f, v) => f.ChunkSize = v);
         }
 
         if (ChunkedUpload.HasValue)
@@ -1128,11 +1128,9 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
             bitFileUpload.TakeFromCascade(nameof(WithCredentials), WithCredentials.Value, static f => f.WithCredentials, static (f, v) => f.WithCredentials = v);
         }
 
-        // The working chunk size is derived from ChunkSize and AutoChunkSize by a setter that assigning
-        // the properties here goes around, so it is derived again once both of them are in place. Deriving
-        // it on every parameter set instead would throw away the speed AutoChunkSize has measured, since
-        // this runs on each render of whatever holds the BitParams rather than only when one of them moves.
-        if (chunkSizeChanged)
+        // Only when AutoChunkSize actually moves: deriving the chunk size on every parameter set would throw away the
+        // speed AutoChunkSize has measured, since this runs on each render of whatever holds the BitParams.
+        if (autoChunkSizeChanged)
         {
             bitFileUpload.OnSetChunkSize();
         }

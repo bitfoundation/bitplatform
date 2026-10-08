@@ -164,9 +164,16 @@ public class BitLoadingParams : BitComponentBaseParams, IBitComponentParams
 
         // A theme role outranks a custom color, so a cascaded one would silently override the CustomColor written on
         // the loader itself - which is the loader's own choice, and so the one that has to win.
-        if (Color.HasValue && bitLoading.HasNotBeenSet(nameof(CustomColor)))
+        if (Color.HasValue)
         {
-            bitLoading.TakeFromCascade(nameof(Color), Color, static l => l.Color, static (l, v) => l.Color = v);
+            if (bitLoading.HasNotBeenSet(nameof(CustomColor)))
+            {
+                bitLoading.TakeFromCascade(nameof(Color), Color, static l => l.Color, static (l, v) => l.Color = v);
+            }
+            else
+            {
+                bitLoading.ReleaseFromCascade(nameof(Color));
+            }
         }
 
         if (CustomColor.HasValue())
@@ -178,9 +185,16 @@ public class BitLoadingParams : BitComponentBaseParams, IBitComponentParams
         // that asked for it itself keeps it against a cascaded size, the way its own CustomColor is kept above.
         var ownInline = bitLoading.Inline && bitLoading.HasNotBeenSet(nameof(Inline)) is false;
 
-        if (CustomSize.HasValue && ownInline is false)
+        if (CustomSize.HasValue)
         {
-            bitLoading.TakeFromCascade(nameof(CustomSize), CustomSize, static l => l.CustomSize, static (l, v) => l.CustomSize = v);
+            if (ownInline is false)
+            {
+                bitLoading.TakeFromCascade(nameof(CustomSize), CustomSize, static l => l.CustomSize, static (l, v) => l.CustomSize = v);
+            }
+            else
+            {
+                bitLoading.ReleaseFromCascade(nameof(CustomSize));
+            }
         }
 
         if (Delay.HasValue)
@@ -214,9 +228,16 @@ public class BitLoadingParams : BitComponentBaseParams, IBitComponentParams
         }
 
         // The same holds between a cascaded Size and the CustomSize or the Inline written on the loader itself.
-        if (Size.HasValue && bitLoading.HasNotBeenSet(nameof(CustomSize)) && ownInline is false)
+        if (Size.HasValue)
         {
-            bitLoading.TakeFromCascade(nameof(Size), Size, static l => l.Size, static (l, v) => l.Size = v);
+            if (bitLoading.HasNotBeenSet(nameof(CustomSize)) && ownInline is false)
+            {
+                bitLoading.TakeFromCascade(nameof(Size), Size, static l => l.Size, static (l, v) => l.Size = v);
+            }
+            else
+            {
+                bitLoading.ReleaseFromCascade(nameof(Size));
+            }
         }
 
         if (Speed.HasValue)

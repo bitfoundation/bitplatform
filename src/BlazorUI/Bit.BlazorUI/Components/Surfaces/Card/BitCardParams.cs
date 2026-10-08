@@ -341,9 +341,9 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
             bitCard.TakeFromCascade(nameof(Outlined), Outlined.Value, static c => c.Outlined, static (c, v) => c.Outlined = v);
         }
 
-        if (Rel.HasValue && bitCard.TakeFromCascade(nameof(Rel), Rel.Value, static c => c.Rel, static (c, v) => c.Rel = v))
+        if (Rel.HasValue)
         {
-            bitCard.OnSetHrefAndRel();
+            bitCard.TakeFromCascade(nameof(Rel), Rel.Value, static c => c.Rel, static (c, v) => c.Rel = v);
         }
 
         if (ScrollableBody.HasValue)
@@ -371,9 +371,9 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
             bitCard.TakeFromCascade(nameof(Variant), Variant.Value, static c => c.Variant, static (c, v) => c.Variant = v);
         }
 
-        if (Target is not null && bitCard.TakeFromCascade(nameof(Target), Target, static c => c.Target, static (c, v) => c.Target = v))
+        if (Target is not null)
         {
-            bitCard.OnSetHrefAndRel();
+            bitCard.TakeFromCascade(nameof(Target), Target, static c => c.Target, static (c, v) => c.Target = v);
         }
 
         if (Height is not null)

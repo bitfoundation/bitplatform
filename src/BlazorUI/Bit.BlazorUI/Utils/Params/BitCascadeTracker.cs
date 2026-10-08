@@ -106,6 +106,17 @@ internal sealed class BitCascadeTracker
     }
 
     /// <summary>
+    /// The value the named parameter held before the params object first supplied it, which stays recorded for as
+    /// long as the params object supplies it and the markup does not set it.
+    /// </summary>
+    public bool TryGetOriginal(string name, out object? original)
+    {
+        original = null;
+
+        return _cascadeOriginals?.TryGetValue(name, out original) is true;
+    }
+
+    /// <summary>
     /// Runs the setup hooks of the parameters <see cref="RestoreDropped"/> put back, which keep the state derived
     /// from a parameter in step with it exactly as they do when the markup or the params object sets one.
     /// </summary>

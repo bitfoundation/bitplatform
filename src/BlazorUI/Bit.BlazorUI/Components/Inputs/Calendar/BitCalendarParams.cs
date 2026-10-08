@@ -571,11 +571,6 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitCalendar);
 
-        // The parameters the calendar rebuilds its view from are the ones carrying a [CallOnSet(OnSetParameters)] on
-        // the component, and the component has already run that pass in OnInitialized - before anything cascaded
-        // here reached it. So whichever of them the cascade fills in, the pass is run once more at the end.
-        var rebuildView = false;
-
         if (AllowDeselect.HasValue)
         {
             bitCalendar.TakeFromCascade(nameof(AllowDeselect), AllowDeselect.Value, static c => c.AllowDeselect, static (c, v) => c.AllowDeselect = v);
@@ -601,9 +596,9 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.TakeFromCascade(nameof(ContinuousSpinInterval), ContinuousSpinInterval.Value, static c => c.ContinuousSpinInterval, static (c, v) => c.ContinuousSpinInterval = v);
         }
 
-        if (Culture is not null && bitCalendar.TakeFromCascade(nameof(Culture), Culture, static c => c.Culture, static (c, v) => c.Culture = v))
+        if (Culture is not null)
         {
-            rebuildView = true;
+            bitCalendar.TakeFromCascade(nameof(Culture), Culture, static c => c.Culture, static (c, v) => c.Culture = v);
         }
 
         if (DateFormat.HasValue())
@@ -616,14 +611,14 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.TakeFromCascade(nameof(DayCellTemplate), DayCellTemplate, static c => c.DayCellTemplate, static (c, v) => c.DayCellTemplate = v);
         }
 
-        if (DisableFuture.HasValue && bitCalendar.TakeFromCascade(nameof(DisableFuture), DisableFuture.Value, static c => c.DisableFuture, static (c, v) => c.DisableFuture = v))
+        if (DisableFuture.HasValue)
         {
-            rebuildView = true;
+            bitCalendar.TakeFromCascade(nameof(DisableFuture), DisableFuture.Value, static c => c.DisableFuture, static (c, v) => c.DisableFuture = v);
         }
 
-        if (DisablePast.HasValue && bitCalendar.TakeFromCascade(nameof(DisablePast), DisablePast.Value, static c => c.DisablePast, static (c, v) => c.DisablePast = v))
+        if (DisablePast.HasValue)
         {
-            rebuildView = true;
+            bitCalendar.TakeFromCascade(nameof(DisablePast), DisablePast.Value, static c => c.DisablePast, static (c, v) => c.DisablePast = v);
         }
 
         if (DisabledDates is not null)
@@ -666,14 +661,14 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.TakeFromCascade(nameof(FooterTemplate), FooterTemplate, static c => c.FooterTemplate, static (c, v) => c.FooterTemplate = v);
         }
 
-        if (FirstDayOfWeek.HasValue && bitCalendar.TakeFromCascade(nameof(FirstDayOfWeek), FirstDayOfWeek.Value, static c => c.FirstDayOfWeek, static (c, v) => c.FirstDayOfWeek = v))
+        if (FirstDayOfWeek.HasValue)
         {
-            rebuildView = true;
+            bitCalendar.TakeFromCascade(nameof(FirstDayOfWeek), FirstDayOfWeek.Value, static c => c.FirstDayOfWeek, static (c, v) => c.FirstDayOfWeek = v);
         }
 
-        if (FixedWeeks.HasValue && bitCalendar.TakeFromCascade(nameof(FixedWeeks), FixedWeeks.Value, static c => c.FixedWeeks, static (c, v) => c.FixedWeeks = v))
+        if (FixedWeeks.HasValue)
         {
-            rebuildView = true;
+            bitCalendar.TakeFromCascade(nameof(FixedWeeks), FixedWeeks.Value, static c => c.FixedWeeks, static (c, v) => c.FixedWeeks = v);
         }
 
         if (GetDayClass is not null)
@@ -796,14 +791,14 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.TakeFromCascade(nameof(IsDateDisabled), IsDateDisabled, static c => c.IsDateDisabled, static (c, v) => c.IsDateDisabled = v);
         }
 
-        if (MaxDate.HasValue && bitCalendar.TakeFromCascade(nameof(MaxDate), MaxDate.Value, static c => c.MaxDate, static (c, v) => c.MaxDate = v))
+        if (MaxDate.HasValue)
         {
-            rebuildView = true;
+            bitCalendar.TakeFromCascade(nameof(MaxDate), MaxDate.Value, static c => c.MaxDate, static (c, v) => c.MaxDate = v);
         }
 
-        if (MinDate.HasValue && bitCalendar.TakeFromCascade(nameof(MinDate), MinDate.Value, static c => c.MinDate, static (c, v) => c.MinDate = v))
+        if (MinDate.HasValue)
         {
-            rebuildView = true;
+            bitCalendar.TakeFromCascade(nameof(MinDate), MinDate.Value, static c => c.MinDate, static (c, v) => c.MinDate = v);
         }
 
         if (MinuteStep.HasValue)
@@ -811,9 +806,9 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.TakeFromCascade(nameof(MinuteStep), MinuteStep.Value, static c => c.MinuteStep, static (c, v) => c.MinuteStep = v);
         }
 
-        if (MonthCount.HasValue && bitCalendar.TakeFromCascade(nameof(MonthCount), MonthCount.Value, static c => c.MonthCount, static (c, v) => c.MonthCount = v))
+        if (MonthCount.HasValue)
         {
-            rebuildView = true;
+            bitCalendar.TakeFromCascade(nameof(MonthCount), MonthCount.Value, static c => c.MonthCount, static (c, v) => c.MonthCount = v);
         }
 
         if (MonthCellTemplate is not null)
@@ -911,14 +906,14 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.TakeFromCascade(nameof(ShowEventDetails), ShowEventDetails.Value, static c => c.ShowEventDetails, static (c, v) => c.ShowEventDetails = v);
         }
 
-        if (ShowMonthPicker.HasValue && bitCalendar.TakeFromCascade(nameof(ShowMonthPicker), ShowMonthPicker.Value, static c => c.ShowMonthPicker, static (c, v) => c.ShowMonthPicker = v))
+        if (ShowMonthPicker.HasValue)
         {
-            rebuildView = true;
+            bitCalendar.TakeFromCascade(nameof(ShowMonthPicker), ShowMonthPicker.Value, static c => c.ShowMonthPicker, static (c, v) => c.ShowMonthPicker = v);
         }
 
-        if (ShowMonthPickerAsOverlay.HasValue && bitCalendar.TakeFromCascade(nameof(ShowMonthPickerAsOverlay), ShowMonthPickerAsOverlay.Value, static c => c.ShowMonthPickerAsOverlay, static (c, v) => c.ShowMonthPickerAsOverlay = v))
+        if (ShowMonthPickerAsOverlay.HasValue)
         {
-            rebuildView = true;
+            bitCalendar.TakeFromCascade(nameof(ShowMonthPickerAsOverlay), ShowMonthPickerAsOverlay.Value, static c => c.ShowMonthPickerAsOverlay, static (c, v) => c.ShowMonthPickerAsOverlay = v);
         }
 
         if (ShowOutsideDays.HasValue)
@@ -926,14 +921,14 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.TakeFromCascade(nameof(ShowOutsideDays), ShowOutsideDays.Value, static c => c.ShowOutsideDays, static (c, v) => c.ShowOutsideDays = v);
         }
 
-        if (ShowTimePicker.HasValue && bitCalendar.TakeFromCascade(nameof(ShowTimePicker), ShowTimePicker.Value, static c => c.ShowTimePicker, static (c, v) => c.ShowTimePicker = v))
+        if (ShowTimePicker.HasValue)
         {
-            rebuildView = true;
+            bitCalendar.TakeFromCascade(nameof(ShowTimePicker), ShowTimePicker.Value, static c => c.ShowTimePicker, static (c, v) => c.ShowTimePicker = v);
         }
 
-        if (ShowTimePickerAsOverlay.HasValue && bitCalendar.TakeFromCascade(nameof(ShowTimePickerAsOverlay), ShowTimePickerAsOverlay.Value, static c => c.ShowTimePickerAsOverlay, static (c, v) => c.ShowTimePickerAsOverlay = v))
+        if (ShowTimePickerAsOverlay.HasValue)
         {
-            rebuildView = true;
+            bitCalendar.TakeFromCascade(nameof(ShowTimePickerAsOverlay), ShowTimePickerAsOverlay.Value, static c => c.ShowTimePickerAsOverlay, static (c, v) => c.ShowTimePickerAsOverlay = v);
         }
 
         if (ShowTimePickerIcon is not null)
@@ -961,9 +956,9 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.TakeFromCascade(nameof(Size), Size.Value, static c => c.Size, static (c, v) => c.Size = v);
         }
 
-        if (StartingValue.HasValue && bitCalendar.TakeFromCascade(nameof(StartingValue), StartingValue.Value, static c => c.StartingValue, static (c, v) => c.StartingValue = v))
+        if (StartingValue.HasValue)
         {
-            rebuildView = true;
+            bitCalendar.TakeFromCascade(nameof(StartingValue), StartingValue.Value, static c => c.StartingValue, static (c, v) => c.StartingValue = v);
         }
 
         if (Styles is not null)
@@ -1046,9 +1041,9 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.TakeFromCascade(nameof(TimePickerIncreaseMinuteTitle), TimePickerIncreaseMinuteTitle!, static c => c.TimePickerIncreaseMinuteTitle, static (c, v) => c.TimePickerIncreaseMinuteTitle = v);
         }
 
-        if (TimeZone is not null && bitCalendar.TakeFromCascade(nameof(TimeZone), TimeZone, static c => c.TimeZone, static (c, v) => c.TimeZone = v))
+        if (TimeZone is not null)
         {
-            rebuildView = true;
+            bitCalendar.TakeFromCascade(nameof(TimeZone), TimeZone, static c => c.TimeZone, static (c, v) => c.TimeZone = v);
         }
 
         if (Today.HasValue)
@@ -1084,11 +1079,6 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
         if (YearRangePickerToggleTitle.HasValue())
         {
             bitCalendar.TakeFromCascade(nameof(YearRangePickerToggleTitle), YearRangePickerToggleTitle!, static c => c.YearRangePickerToggleTitle, static (c, v) => c.YearRangePickerToggleTitle = v);
-        }
-
-        if (rebuildView)
-        {
-            bitCalendar.OnSetParameters();
         }
     }
 }

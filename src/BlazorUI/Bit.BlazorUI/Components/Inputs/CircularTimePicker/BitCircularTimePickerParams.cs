@@ -337,19 +337,8 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
 
         UpdateBaseParameters(bitCircularTimePicker);
 
-        // Some of the parameters below carry a [CallOnSet] hook on the component, which has already run for
-        // whatever the markup set before anything cascaded here reached it. Assigning through the cascade
-        // bypasses the setter, so the hooks are re-run at the end - but only when the assignment actually
-        // changed something. This method runs on every parameters-set, and re-running them unconditionally
-        // would drag the dial back to its starting view on every re-render of the page around it.
-        // The flags are kept apart rather than rolled into one because what each parameter does to the dial
-        // is not the same: the edit mode moves it back to where a picker begins, the seconds only move it off
-        // a ring the picker has stopped carrying, and the start view - which has no hook of its own when it is
-        // written on the markup - leaves the view the person is on exactly where it is.
-        var cultureChanged = false;
-        var editModeChanged = false;
-        var startViewChanged = false;
-        var secondsChanged = false;
+        // Whether any of the parameters the dial starts out on is filled in, which the first pass reads.
+        var viewSourceChanged = false;
 
         if (AllowTextInput.HasValue)
         {
@@ -446,9 +435,9 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
             bitCircularTimePicker.TakeFromCascade(nameof(Color), Color.Value, static c => c.Color, static (c, v) => c.Color = v);
         }
 
-        if (Culture is not null && bitCircularTimePicker.TakeFromCascade(nameof(Culture), Culture, static c => c.Culture, static (c, v) => c.Culture = v))
+        if (Culture is not null)
         {
-            cultureChanged = true;
+            bitCircularTimePicker.TakeFromCascade(nameof(Culture), Culture, static c => c.Culture, static (c, v) => c.Culture = v);
         }
 
         if (DisallowedTimeErrorMessage.HasValue())
@@ -473,7 +462,7 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
 
         if (EditMode.HasValue && bitCircularTimePicker.TakeFromCascade(nameof(EditMode), EditMode.Value, static c => c.EditMode, static (c, v) => c.EditMode = v))
         {
-            editModeChanged = true;
+            viewSourceChanged = true;
         }
 
         if (HasBorder.HasValue)
@@ -598,7 +587,7 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
 
         if (ShowSeconds.HasValue && bitCircularTimePicker.TakeFromCascade(nameof(ShowSeconds), ShowSeconds.Value, static c => c.ShowSeconds, static (c, v) => c.ShowSeconds = v))
         {
-            secondsChanged = true;
+            viewSourceChanged = true;
         }
 
         if (Size.HasValue)
@@ -618,7 +607,7 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
 
         if (StartView.HasValue && bitCircularTimePicker.TakeFromCascade(nameof(StartView), StartView.Value, static c => c.StartView, static (c, v) => c.StartView = v))
         {
-            startViewChanged = true;
+            viewSourceChanged = true;
         }
 
         if (Styles is not null)
@@ -641,6 +630,6 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
             bitCircularTimePicker.TakeFromCascade(nameof(ValueFormat), ValueFormat, static c => c.ValueFormat, static (c, v) => c.ValueFormat = v);
         }
 
-        bitCircularTimePicker.ApplyCascadedParameters(cultureChanged, editModeChanged, startViewChanged, secondsChanged);
+        bitCircularTimePicker.ApplyCascadedView(viewSourceChanged);
     }
 }

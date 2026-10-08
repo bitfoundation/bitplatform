@@ -197,9 +197,16 @@ public class BitNavParams : BitComponentBaseParams, IBitComponentParams
 
         // The icon takes precedence over the icon name, so a cascaded icon is only a default for a nav that has
         // set neither: applied over a nav's own ChevronDownIconName it would override it rather than default it.
-        if (ChevronDownIcon is not null && bitNav.HasNotBeenSet(nameof(ChevronDownIconName)))
+        if (ChevronDownIcon is not null)
         {
-            bitNav.TakeFromCascade(nameof(ChevronDownIcon), ChevronDownIcon, static n => n.ChevronDownIcon, static (n, v) => n.ChevronDownIcon = v);
+            if (bitNav.HasNotBeenSet(nameof(ChevronDownIconName)))
+            {
+                bitNav.TakeFromCascade(nameof(ChevronDownIcon), ChevronDownIcon, static n => n.ChevronDownIcon, static (n, v) => n.ChevronDownIcon = v);
+            }
+            else
+            {
+                bitNav.ReleaseFromCascade(nameof(ChevronDownIcon));
+            }
         }
 
         if (ChevronDownIconName.HasValue())
@@ -267,24 +274,14 @@ public class BitNavParams : BitComponentBaseParams, IBitComponentParams
             bitNav.TakeFromCascade(nameof(ItemTemplateRenderMode), ItemTemplateRenderMode.Value, static n => n.ItemTemplateRenderMode, static (n, v) => n.ItemTemplateRenderMode = v);
         }
 
-        // The URL match of the automatic mode depends on both of these, and it is only re-run when one of them
-        // actually changes: the cascade is applied on every parameter set, and re-running the match each time
-        // would re-select the current item over and over - and re-raise OnSelectItem for a Reselectable nav.
-        var urlMatchingChanged = false;
-
-        if (Match.HasValue && bitNav.TakeFromCascade(nameof(Match), Match.Value, static n => n.Match, static (n, v) => n.Match = v))
+        if (Match.HasValue)
         {
-            urlMatchingChanged = true;
+            bitNav.TakeFromCascade(nameof(Match), Match.Value, static n => n.Match, static (n, v) => n.Match = v);
         }
 
-        if (Mode.HasValue && bitNav.TakeFromCascade(nameof(Mode), Mode.Value, static n => n.Mode, static (n, v) => n.Mode = v))
+        if (Mode.HasValue)
         {
-            urlMatchingChanged = true;
-        }
-
-        if (urlMatchingChanged)
-        {
-            bitNav.OnUrlMatchingChanged();
+            bitNav.TakeFromCascade(nameof(Mode), Mode.Value, static n => n.Mode, static (n, v) => n.Mode = v);
         }
 
         // an empty hint is a value of its own - the one that takes the announcement off - so only null is

@@ -156,8 +156,8 @@ public class BitAppShellParams : BitComponentBaseParams, IBitComponentParams
     /// this object, if those properties have not already been set on the <see cref="BitAppShell"/> itself.
     /// </summary>
     /// <remarks>
-    /// A property this object leaves unset puts the app shell's own default back, unless the app shell set it itself: a
-    /// value an earlier update wrote is otherwise left behind on the app shell once the BitParams stops cascading it.
+    /// Only properties that have a value set and have not already been set on the <paramref name="bitAppShell"/> will be updated.
+    /// A value it wrote goes back to the app shell's own once this object stops supplying it.
     /// </remarks>
     /// <param name="bitAppShell">
     /// The <see cref="BitAppShell"/> instance whose properties will be updated. Cannot be null.
@@ -168,187 +168,124 @@ public class BitAppShellParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitAppShell);
 
-        if (bitAppShell.HasNotBeenSet(nameof(AutoGoToTop)))
+        if (AutoGoToTop.HasValue)
         {
-            bitAppShell.AutoGoToTop = AutoGoToTop ?? false;
+            bitAppShell.TakeFromCascade(nameof(AutoGoToTop), AutoGoToTop.Value, static a => a.AutoGoToTop, static (a, v) => a.AutoGoToTop = v);
         }
 
-        if (bitAppShell.HasNotBeenSet(nameof(AutoScroll)))
+        if (AutoScroll.HasValue)
         {
-            bitAppShell.AutoScroll = AutoScroll ?? false;
+            bitAppShell.TakeFromCascade(nameof(AutoScroll), AutoScroll.Value, static a => a.AutoScroll, static (a, v) => a.AutoScroll = v);
         }
 
-        if (bitAppShell.HasNotBeenSet(nameof(AutoScrollThreshold)))
+        if (AutoScrollThreshold.HasValue)
         {
-            bitAppShell.AutoScrollThreshold = AutoScrollThreshold ?? 0;
+            bitAppShell.TakeFromCascade(nameof(AutoScrollThreshold), AutoScrollThreshold.Value, static a => a.AutoScrollThreshold, static (a, v) => a.AutoScrollThreshold = v);
         }
 
-        if (bitAppShell.HasNotBeenSet(nameof(AvoidKeyboard)))
+        if (AvoidKeyboard.HasValue)
         {
-            bitAppShell.AvoidKeyboard = AvoidKeyboard ?? false;
+            bitAppShell.TakeFromCascade(nameof(AvoidKeyboard), AvoidKeyboard.Value, static a => a.AvoidKeyboard, static (a, v) => a.AvoidKeyboard = v);
         }
 
-        if (bitAppShell.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            var classes = Classes;
-
-            if (bitAppShell.Classes != classes)
-            {
-                bitAppShell.Classes = classes;
-
-                bitAppShell.ClassBuilder.Reset();
-            }
+            bitAppShell.TakeFromCascade(nameof(Classes), Classes, static a => a.Classes, static (a, v) => a.Classes = v);
         }
 
-        if (bitAppShell.HasNotBeenSet(nameof(FullScreen)))
+        if (FullScreen.HasValue)
         {
-            var fullScreen = FullScreen ?? false;
-
-            if (bitAppShell.FullScreen != fullScreen)
-            {
-                bitAppShell.FullScreen = fullScreen;
-
-                bitAppShell.ClassBuilder.Reset();
-            }
+            bitAppShell.TakeFromCascade(nameof(FullScreen), FullScreen.Value, static a => a.FullScreen, static (a, v) => a.FullScreen = v);
         }
 
-        if (bitAppShell.HasNotBeenSet(nameof(Gutter)))
+        if (Gutter.HasValue)
         {
-            bitAppShell.Gutter = Gutter;
+            bitAppShell.TakeFromCascade(nameof(Gutter), Gutter, static a => a.Gutter, static (a, v) => a.Gutter = v);
         }
 
-        if (bitAppShell.HasNotBeenSet(nameof(NoBottomInset)))
+        if (NoBottomInset.HasValue)
         {
-            var noBottomInset = NoBottomInset ?? false;
-
-            if (bitAppShell.NoBottomInset != noBottomInset)
-            {
-                bitAppShell.NoBottomInset = noBottomInset;
-
-                bitAppShell.ClassBuilder.Reset();
-            }
+            bitAppShell.TakeFromCascade(nameof(NoBottomInset), NoBottomInset.Value, static a => a.NoBottomInset, static (a, v) => a.NoBottomInset = v);
         }
 
-        if (bitAppShell.HasNotBeenSet(nameof(NoEndInset)))
+        if (NoEndInset.HasValue)
         {
-            var noEndInset = NoEndInset ?? false;
-
-            if (bitAppShell.NoEndInset != noEndInset)
-            {
-                bitAppShell.NoEndInset = noEndInset;
-
-                bitAppShell.ClassBuilder.Reset();
-            }
+            bitAppShell.TakeFromCascade(nameof(NoEndInset), NoEndInset.Value, static a => a.NoEndInset, static (a, v) => a.NoEndInset = v);
         }
 
-        if (bitAppShell.HasNotBeenSet(nameof(NoInsets)))
+        if (NoInsets.HasValue)
         {
-            var noInsets = NoInsets ?? false;
-
-            if (bitAppShell.NoInsets != noInsets)
-            {
-                bitAppShell.NoInsets = noInsets;
-
-                bitAppShell.ClassBuilder.Reset();
-            }
+            bitAppShell.TakeFromCascade(nameof(NoInsets), NoInsets.Value, static a => a.NoInsets, static (a, v) => a.NoInsets = v);
         }
 
-        if (bitAppShell.HasNotBeenSet(nameof(NoScroll)))
+        if (NoScroll.HasValue)
         {
-            bitAppShell.NoScroll = NoScroll ?? false;
+            bitAppShell.TakeFromCascade(nameof(NoScroll), NoScroll.Value, static a => a.NoScroll, static (a, v) => a.NoScroll = v);
         }
 
-        if (bitAppShell.HasNotBeenSet(nameof(NoStartInset)))
+        if (NoStartInset.HasValue)
         {
-            var noStartInset = NoStartInset ?? false;
-
-            if (bitAppShell.NoStartInset != noStartInset)
-            {
-                bitAppShell.NoStartInset = noStartInset;
-
-                bitAppShell.ClassBuilder.Reset();
-            }
+            bitAppShell.TakeFromCascade(nameof(NoStartInset), NoStartInset.Value, static a => a.NoStartInset, static (a, v) => a.NoStartInset = v);
         }
 
-        if (bitAppShell.HasNotBeenSet(nameof(NoTopInset)))
+        if (NoTopInset.HasValue)
         {
-            var noTopInset = NoTopInset ?? false;
-
-            if (bitAppShell.NoTopInset != noTopInset)
-            {
-                bitAppShell.NoTopInset = noTopInset;
-
-                bitAppShell.ClassBuilder.Reset();
-            }
+            bitAppShell.TakeFromCascade(nameof(NoTopInset), NoTopInset.Value, static a => a.NoTopInset, static (a, v) => a.NoTopInset = v);
         }
 
-        if (bitAppShell.HasNotBeenSet(nameof(OverflowX)))
+        if (OverflowX.HasValue)
         {
-            bitAppShell.OverflowX = OverflowX;
+            bitAppShell.TakeFromCascade(nameof(OverflowX), OverflowX, static a => a.OverflowX, static (a, v) => a.OverflowX = v);
         }
 
-        if (bitAppShell.HasNotBeenSet(nameof(OverflowY)))
+        if (OverflowY.HasValue)
         {
-            bitAppShell.OverflowY = OverflowY;
+            bitAppShell.TakeFromCascade(nameof(OverflowY), OverflowY, static a => a.OverflowY, static (a, v) => a.OverflowY = v);
         }
 
-        if (bitAppShell.HasNotBeenSet(nameof(Overscroll)))
+        if (Overscroll.HasValue)
         {
-            bitAppShell.Overscroll = Overscroll;
+            bitAppShell.TakeFromCascade(nameof(Overscroll), Overscroll, static a => a.Overscroll, static (a, v) => a.Overscroll = v);
         }
 
-        if (bitAppShell.HasNotBeenSet(nameof(PreserveScroll)))
+        if (PreserveScroll.HasValue)
         {
-            bitAppShell.PreserveScroll = PreserveScroll ?? false;
+            bitAppShell.TakeFromCascade(nameof(PreserveScroll), PreserveScroll.Value, static a => a.PreserveScroll, static (a, v) => a.PreserveScroll = v);
         }
 
-        if (bitAppShell.HasNotBeenSet(nameof(ReachOffset)))
+        if (ReachOffset.HasValue)
         {
-            bitAppShell.ReachOffset = ReachOffset ?? 0;
+            bitAppShell.TakeFromCascade(nameof(ReachOffset), ReachOffset.Value, static a => a.ReachOffset, static (a, v) => a.ReachOffset = v);
         }
 
-        if (bitAppShell.HasNotBeenSet(nameof(ScrollBehavior)))
+        if (ScrollBehavior.HasValue)
         {
-            bitAppShell.ScrollBehavior = ScrollBehavior;
+            bitAppShell.TakeFromCascade(nameof(ScrollBehavior), ScrollBehavior, static a => a.ScrollBehavior, static (a, v) => a.ScrollBehavior = v);
         }
 
-        if (bitAppShell.HasNotBeenSet(nameof(ScrollPadding)))
+        if (ScrollPadding.HasValue())
         {
-            bitAppShell.ScrollPadding = ScrollPadding.HasValue() ? ScrollPadding : null;
+            bitAppShell.TakeFromCascade(nameof(ScrollPadding), ScrollPadding, static a => a.ScrollPadding, static (a, v) => a.ScrollPadding = v);
         }
 
-        if (bitAppShell.HasNotBeenSet(nameof(ScrollThrottle)))
+        if (ScrollThrottle.HasValue)
         {
-            bitAppShell.ScrollThrottle = ScrollThrottle ?? 0;
+            bitAppShell.TakeFromCascade(nameof(ScrollThrottle), ScrollThrottle.Value, static a => a.ScrollThrottle, static (a, v) => a.ScrollThrottle = v);
         }
 
-        if (bitAppShell.HasNotBeenSet(nameof(StableInsets)))
+        if (StableInsets.HasValue)
         {
-            var stableInsets = StableInsets ?? false;
-
-            if (bitAppShell.StableInsets != stableInsets)
-            {
-                bitAppShell.StableInsets = stableInsets;
-
-                bitAppShell.ClassBuilder.Reset();
-            }
+            bitAppShell.TakeFromCascade(nameof(StableInsets), StableInsets.Value, static a => a.StableInsets, static (a, v) => a.StableInsets = v);
         }
 
-        if (bitAppShell.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            var styles = Styles;
-
-            if (bitAppShell.Styles != styles)
-            {
-                bitAppShell.Styles = styles;
-
-                bitAppShell.StyleBuilder.Reset();
-            }
+            bitAppShell.TakeFromCascade(nameof(Styles), Styles, static a => a.Styles, static (a, v) => a.Styles = v);
         }
 
-        if (bitAppShell.HasNotBeenSet(nameof(TrackScrollState)))
+        if (TrackScrollState.HasValue)
         {
-            bitAppShell.TrackScrollState = TrackScrollState ?? false;
+            bitAppShell.TakeFromCascade(nameof(TrackScrollState), TrackScrollState.Value, static a => a.TrackScrollState, static (a, v) => a.TrackScrollState = v);
         }
     }
 }

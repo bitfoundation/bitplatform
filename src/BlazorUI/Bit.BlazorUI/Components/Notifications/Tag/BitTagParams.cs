@@ -316,12 +316,9 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
             bitTag.TakeFromCascade(nameof(NoWrap), NoWrap.Value, static t => t.NoWrap, static (t, v) => t.NoWrap = v);
         }
 
-        var relWasSet = false;
-        var targetWasSet = false;
-
-        if (Rel.HasValue && bitTag.TakeFromCascade(nameof(Rel), Rel.Value, static t => t.Rel, static (t, v) => t.Rel = v))
+        if (Rel.HasValue)
         {
-            relWasSet = true;
+            bitTag.TakeFromCascade(nameof(Rel), Rel.Value, static t => t.Rel, static (t, v) => t.Rel = v);
         }
 
         if (Reversed.HasValue)
@@ -374,16 +371,9 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
             bitTag.TakeFromCascade(nameof(Styles), Styles, static t => t.Styles, static (t, v) => t.Styles = v);
         }
 
-        if (Target.HasValue() && bitTag.TakeFromCascade(nameof(Target), Target, static t => t.Target, static (t, v) => t.Target = v))
+        if (Target.HasValue())
         {
-            targetWasSet = true;
-        }
-
-        // the rel attribute is derived from Href, Rel and Target together, so it is recalculated
-        // whenever one of the two that can be cascaded has just been filled in from here.
-        if (relWasSet || targetWasSet)
-        {
-            bitTag.OnSetHrefAndRel();
+            bitTag.TakeFromCascade(nameof(Target), Target, static t => t.Target, static (t, v) => t.Target = v);
         }
 
         if (Text.HasValue())

@@ -210,11 +210,9 @@ public class BitBadgeParams : BitComponentBaseParams, IBitComponentParams
             bitBadge.TakeFromCascade(nameof(Color), Color.Value, static b => b.Color, static (b, v) => b.Color = v);
         }
 
-        bool contentOrMaxWasSet = false;
-
-        if (Content is not null && bitBadge.TakeFromCascade(nameof(Content), Content, static b => b.Content, static (b, v) => b.Content = v))
+        if (Content is not null)
         {
-            contentOrMaxWasSet = true;
+            bitBadge.TakeFromCascade(nameof(Content), Content, static b => b.Content, static (b, v) => b.Content = v);
         }
 
         if (ContentTemplate is not null)
@@ -242,11 +240,9 @@ public class BitBadgeParams : BitComponentBaseParams, IBitComponentParams
             bitBadge.TakeFromCascade(nameof(Hidden), Hidden.Value, static b => b.Hidden, static (b, v) => b.Hidden = v);
         }
 
-        bool linkWasSet = false;
-
-        if (Href.HasValue() && bitBadge.TakeFromCascade(nameof(Href), Href, static b => b.Href, static (b, v) => b.Href = v))
+        if (Href.HasValue())
         {
-            linkWasSet = true;
+            bitBadge.TakeFromCascade(nameof(Href), Href, static b => b.Href, static (b, v) => b.Href = v);
         }
 
         if (Icon is not null)
@@ -269,16 +265,9 @@ public class BitBadgeParams : BitComponentBaseParams, IBitComponentParams
             bitBadge.TakeFromCascade(nameof(Live), Live.Value, static b => b.Live, static (b, v) => b.Live = v);
         }
 
-        if (Max.HasValue && bitBadge.TakeFromCascade(nameof(Max), Max.Value, static b => b.Max, static (b, v) => b.Max = v))
+        if (Max.HasValue)
         {
-            contentOrMaxWasSet = true;
-        }
-
-        // Content and Max decide together what the badge prints, so the pair is read again once either of them
-        // has been filled in from the cascade rather than through its own setter.
-        if (contentOrMaxWasSet)
-        {
-            bitBadge.OnSetContentAndMax();
+            bitBadge.TakeFromCascade(nameof(Max), Max.Value, static b => b.Max, static (b, v) => b.Max = v);
         }
 
         if (OffsetX.HasValue())
@@ -306,9 +295,9 @@ public class BitBadgeParams : BitComponentBaseParams, IBitComponentParams
             bitBadge.TakeFromCascade(nameof(Pulse), Pulse.Value, static b => b.Pulse, static (b, v) => b.Pulse = v);
         }
 
-        if (Rel.HasValue && bitBadge.TakeFromCascade(nameof(Rel), Rel.Value, static b => b.Rel, static (b, v) => b.Rel = v))
+        if (Rel.HasValue)
         {
-            linkWasSet = true;
+            bitBadge.TakeFromCascade(nameof(Rel), Rel.Value, static b => b.Rel, static (b, v) => b.Rel = v);
         }
 
         if (Reversed.HasValue)
@@ -336,16 +325,9 @@ public class BitBadgeParams : BitComponentBaseParams, IBitComponentParams
             bitBadge.TakeFromCascade(nameof(Styles), Styles, static b => b.Styles, static (b, v) => b.Styles = v);
         }
 
-        if (Target.HasValue() && bitBadge.TakeFromCascade(nameof(Target), Target, static b => b.Target, static (b, v) => b.Target = v))
+        if (Target.HasValue())
         {
-            linkWasSet = true;
-        }
-
-        // The rel attribute is derived from Href, Rel and Target together, so it is worked out again once any of
-        // them has been filled in from the cascade.
-        if (linkWasSet)
-        {
-            bitBadge.OnSetHrefAndRel();
+            bitBadge.TakeFromCascade(nameof(Target), Target, static b => b.Target, static (b, v) => b.Target = v);
         }
 
         if (Title.HasValue())

@@ -72,6 +72,33 @@ public class BitParamsContractTests
         Assert.AreEqual(0, unmatched.Count, string.Join(Environment.NewLine, unmatched));
     }
 
+    [TestMethod]
+    public void NoValueAParamsTypeSuppliesShouldHaveAnAsyncSetupHook()
+    {
+        // A params object is applied from the synchronous OnParametersSet, where TakeFromCascade runs the [CallOnSet]
+        // hook of what it writes but has no way to await a [CallOnSetAsync] one.
+        var hooked = new List<string>();
+
+        foreach (var (component, cascade) in Readers())
+        {
+            var properties = component.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+            foreach (var source in cascade.PropertyType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
+            {
+                var target = properties.Where(p => p.Name == source.Name && p.IsDefined(typeof(ParameterAttribute)))
+                                       .OrderByDescending(p => Depth(p.DeclaringType))
+                                       .FirstOrDefault();
+
+                if (target?.GetCustomAttributesData().Any(a => a.AttributeType.FullName == "Bit.BlazorUI.CallOnSetAsyncAttribute") is true)
+                {
+                    hooked.Add($"{component.Name}.{source.Name}");
+                }
+            }
+        }
+
+        Assert.AreEqual(0, hooked.Count, string.Join(Environment.NewLine, hooked));
+    }
+
 
 
     private static IEnumerable<Type> ParamsTypes()

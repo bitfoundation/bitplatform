@@ -291,13 +291,9 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
             bitActionButton.TakeFromCascade(nameof(FormId), FormId, static a => a.FormId, static (a, v) => a.FormId = v);
         }
 
-        bool hrefWasSet = false;
-        bool relWasSet = false;
-        bool targetWasSet = false;
-
-        if (Href.HasValue() && bitActionButton.TakeFromCascade(nameof(Href), Href, static a => a.Href, static (a, v) => a.Href = v))
+        if (Href.HasValue())
         {
-            hrefWasSet = true;
+            bitActionButton.TakeFromCascade(nameof(Href), Href, static a => a.Href, static (a, v) => a.Href = v);
         }
 
         if (Icon is not null)
@@ -350,9 +346,9 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
             bitActionButton.TakeFromCascade(nameof(Reclickable), Reclickable.Value, static a => a.Reclickable, static (a, v) => a.Reclickable = v);
         }
 
-        if (Rel.HasValue && bitActionButton.TakeFromCascade(nameof(Rel), Rel.Value, static a => a.Rel, static (a, v) => a.Rel = v))
+        if (Rel.HasValue)
         {
-            relWasSet = true;
+            bitActionButton.TakeFromCascade(nameof(Rel), Rel.Value, static a => a.Rel, static (a, v) => a.Rel = v);
         }
 
         if (Size.HasValue)
@@ -370,15 +366,9 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
             bitActionButton.TakeFromCascade(nameof(Styles), Styles, static a => a.Styles, static (a, v) => a.Styles = v);
         }
 
-        if (Target.HasValue() && bitActionButton.TakeFromCascade(nameof(Target), Target, static a => a.Target, static (a, v) => a.Target = v))
+        if (Target.HasValue())
         {
-            targetWasSet = true;
-        }
-
-        // Call OnSetHrefRelAndTarget if any of Href, Rel or Target was set, to update the rel attribute value
-        if (hrefWasSet || relWasSet || targetWasSet)
-        {
-            bitActionButton.OnSetHrefRelAndTarget();
+            bitActionButton.TakeFromCascade(nameof(Target), Target, static a => a.Target, static (a, v) => a.Target = v);
         }
 
         if (Title.HasValue())
