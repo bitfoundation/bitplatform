@@ -260,7 +260,7 @@ public partial class BitDropMenuDemo
             Name = "OpenOnHover",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Opens the callout when the pointer enters the drop menu and closes it when the pointer leaves it, which is what a navigation menu is usually expected to do. The button keeps toggling the callout on a click, so the keyboard and the touch screens - where hovering does not exist and this mode turns itself off - are left with a way to reach it."
+            Description = "Opens the callout when the pointer enters the drop menu and closes it when the pointer leaves it, which is what a navigation menu is usually expected to do. The button keeps toggling the callout on a click, so the keyboard and the touch screens - where hovering does not exist and this mode turns itself off - are left with a way to reach it. A callout opened by hovering stays out of the keyboard's way - a Tab on the button moves on past it, and AutoFocus and TrapFocus leave the focus where it is - until an arrow key, Enter or Space on the button, or the focus going into it, hands it to the keyboard."
         },
         new()
         {

@@ -299,7 +299,9 @@ public partial class BitDropMenu : BitComponentBase
     /// Opens the callout when the pointer enters the drop menu and closes it when the pointer leaves it,
     /// which is what a navigation menu is usually expected to do. The button keeps toggling the callout on
     /// a click, so the keyboard and the touch screens - where hovering does not exist and this mode turns
-    /// itself off - are left with a way to reach it.
+    /// itself off - are left with a way to reach it. A callout opened by hovering stays out of the keyboard's
+    /// way - a Tab on the button moves on past it, and AutoFocus and TrapFocus leave the focus where it is -
+    /// until an arrow key, Enter or Space on the button, or the focus going into it, hands it to the keyboard.
     /// </summary>
     [Parameter] public bool OpenOnHover { get; set; }
 
@@ -685,6 +687,11 @@ public partial class BitDropMenu : BitComponentBase
         {
             await OpenCallout(focusCallout);
         }
+        else if (focusCallout && _openedByHover)
+        {
+            await TakeOverFromHover();
+            await FocusCalloutIfNeeded(force: true);
+        }
         else if (HoverDriven is false || _hoverInside is false)
         {
             await CloseCallout();
@@ -695,8 +702,9 @@ public partial class BitDropMenu : BitComponentBase
         // Escape key, since the handler that closes the callout on it sits on the trigger. Doing it here
         // is what the engines that focus it have already done, so nothing moves for them. It is left
         // alone where the callout is the one taking the focus, which is the case an activation from the
-        // keyboard and the AutoFocus and TrapFocus modes each ask for.
-        if (focusCallout is false && AutoFocus is false && TrapFocus is false)
+        // keyboard and the AutoFocus and TrapFocus modes each ask for - except on a callout the pointer
+        // opened, which those two modes leave the focus out of (see FocusCalloutIfNeeded).
+        if (focusCallout is false && ((AutoFocus || TrapFocus) is false || _openedByHover))
         {
             await FocusButton();
         }
@@ -721,6 +729,10 @@ public partial class BitDropMenu : BitComponentBase
 
             if (e.Key is "Tab" && e.ShiftKey is false && _tabOutSetUp) return;
 
+            // A callout the pointer opened is the pointer's to close, by leaving it, so a Tab passing through the
+            // button leaves it showing for as long as the pointer is on it (WCAG 1.4.13). Escape still dismisses it.
+            if (e.Key is "Tab" && _openedByHover) return;
+
             await CloseCallout();
             StateHasChanged();
         }
@@ -729,7 +741,13 @@ public partial class BitDropMenu : BitComponentBase
             // Activating a menu button from the keyboard hands the focus over to what it opens, unlike a
             // click, which leaves the focus where the pointer put it. The opening itself is left to the
             // click the browser dispatches for these keys, so the two do not each toggle the callout.
-            if (IsOpen) return;
+            // A callout the pointer opened is already showing, so for that one the key is the keyboard
+            // asking for it, and the click hands it over rather than closing it (see HandleOnClick).
+            if (IsOpen)
+            {
+                _focusCalloutOnClick = _openedByHover;
+                return;
+            }
 
             _focusCalloutOnClick = true;
         }
@@ -741,6 +759,7 @@ public partial class BitDropMenu : BitComponentBase
             {
                 // The callout is already open, which is the state an arrow key from the trigger reaches
                 // when the pointer opened it: the content is showing but the keyboard is still outside it.
+                await TakeOverFromHover();
                 await FocusCalloutIfNeeded(force: true);
                 return;
             }
@@ -748,6 +767,13 @@ public partial class BitDropMenu : BitComponentBase
             await OpenCallout(focusCallout: true);
             StateHasChanged();
         }
+    }
+
+    // The focus going into a callout the pointer opened - a click on a field in it, a script focusing one - is
+    // the keyboard taking it over too, so its Tab key is handled from there on.
+    private async Task HandleOnCalloutFocusIn()
+    {
+        await TakeOverFromHover();
     }
 
     private async Task HandleOnCalloutClick()
@@ -1003,6 +1029,11 @@ public partial class BitDropMenu : BitComponentBase
         // first Tab out of the callout, since the trap only ever sees the keys pressed inside of it.
         if ((force || AutoFocus || TrapFocus) is false || IsOpen is false || IsDisposed) return;
 
+        // One the pointer opened was not asked for from the keyboard, and the pointer only passing over the
+        // button must not pull the focus out of whatever the user is typing into (WCAG 3.2.1). The keyboard
+        // that does ask for it is handed it through TakeOverFromHover, which forces the focus in.
+        if (_openedByHover) return;
+
         if (_dotnetObj is null) return;
 
         try
@@ -1107,6 +1138,11 @@ public partial class BitDropMenu : BitComponentBase
         {
             await SetupEscape();
 
+            // A callout the pointer opened takes no part in the tab order until the keyboard asks for it (see
+            // TakeOverFromHover): a Tab on the button moves on through the page rather than diverting into a
+            // callout the keyboard never opened, and nothing is there to trap while the focus is outside it.
+            if (_openedByHover) return;
+
             if (TrapFocus)
             {
                 if (_tabOutSetUp)
@@ -1135,6 +1171,21 @@ public partial class BitDropMenu : BitComponentBase
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
+    // A callout the pointer opened becomes the keyboard's once the keyboard asks for it - an arrow key, Enter or
+    // Space on the button, or the focus going into the content - and from then on it is handled as one opened
+    // from the keyboard: its Tab key is handled (or trapped), and the close the pointer leaving it may already
+    // have scheduled is called off, so the callout does not disappear from under the focus that just went in.
+    private async Task TakeOverFromHover()
+    {
+        if (_openedByHover is false || IsOpen is false) return;
+
+        _openedByHover = false;
+
+        CancelHover();
+
+        await SetupFocusTrap();
     }
 
     // Escape pressed inside the callout closes it. One opened by hovering is shown wherever the focus happens to

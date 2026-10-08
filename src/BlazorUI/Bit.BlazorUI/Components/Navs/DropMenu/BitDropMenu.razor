@@ -96,16 +96,20 @@
    far from the button in the reading order. It is only a modal one when TrapFocus keeps the keyboard in it. *@
 @* Escape is answered through Utils.setupEscape rather than an @onkeydown here: only the JS side can tell a
    press that closes a popup opened from inside the callout from one meant for the callout itself. *@
+@* A callout the pointer opened stays out of the keyboard's way until the focus goes into it, and focusin is
+   what hands it over then. Until that happens it traps nothing, so it does not claim to be modal either: a
+   screen reader would otherwise make the page around it unreachable for content it was only shown. *@
 <div @onclick="HandleOnCalloutClick"
      @onmouseenter="HandleOnMouseEnter"
      @onmouseleave="HandleOnMouseLeave"
+     @onfocusin="HandleOnCalloutFocusIn"
      id="@_calloutId"
      tabindex="-1"
      role="dialog"
      style="@GetCalloutStyles()"
      class="@GetCalloutCssClasses()"
      aria-labelledby="@_buttonId"
-     aria-modal="@(TrapFocus ? "true" : null)"
+     aria-modal="@(TrapFocus && _openedByHover is false ? "true" : null)"
      dir="@Dir?.ToString().ToLower()">
     @if (ContentRendered)
     {
