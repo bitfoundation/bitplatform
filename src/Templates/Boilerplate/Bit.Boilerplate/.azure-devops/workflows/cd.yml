@@ -40,7 +40,7 @@ jobs:
       dotnet tool install Bit.Cli --prerelease --tool-path "$(Agent.ToolsDirectory)/bit-cli"
     displayName: 'Install the bit CLI'
 
-  - script: bit setup --no-browsers -p:Configuration=Release -p:Version="$(APP_VERSION)" --yes
+  - script: bit setup --no-build --yes
     displayName: 'Prepare this machine with bit setup'
 
   - script: |
@@ -137,7 +137,7 @@ jobs:
       dotnet tool install Bit.Cli --prerelease --tool-path "$(Agent.ToolsDirectory)/bit-cli"
     displayName: 'Install the bit CLI'
 
-  - script: bit setup --platforms windows --no-browsers --yes
+  - script: bit setup --platforms windows --no-build --yes
     displayName: 'Prepare this machine with bit setup'
 
   - script: |
@@ -213,7 +213,7 @@ jobs:
       dotnet tool install Bit.Cli --prerelease --tool-path "$(Agent.ToolsDirectory)/bit-cli"
     displayName: 'Install the bit CLI'
 
-  - script: bit setup --platforms android --no-browsers --yes
+  - script: bit setup --platforms android --no-build --yes
     displayName: 'Prepare this machine with bit setup'
 
   - task: DownloadSecureFile@1
