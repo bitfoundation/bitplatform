@@ -457,21 +457,23 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 
         if (HtmlAttributes.Count == 0) return false;
 
-        if (HtmlAttributes.TryGetValue(name, out var exact))
-        {
-            value = StringifyAttributeValue(exact);
-            return true;
-        }
+        // The render tree keeps the last of several differently cased spellings, so the last one in render order wins
+        // here too, an exact match included.
+        var found = false;
+        object? selected = null;
 
         foreach (var attribute in HtmlAttributes)
         {
             if (string.Equals(attribute.Key, name, StringComparison.OrdinalIgnoreCase) is false) continue;
 
-            value = StringifyAttributeValue(attribute.Value);
-            return true;
+            selected = attribute.Value;
+            found = true;
         }
 
-        return false;
+        if (found is false) return false;
+
+        value = StringifyAttributeValue(selected);
+        return true;
     }
 
     /// <summary>
