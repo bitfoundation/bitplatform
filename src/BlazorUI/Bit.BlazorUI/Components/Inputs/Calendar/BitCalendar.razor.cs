@@ -857,11 +857,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         {
             _focusTimePickerAfterRender = false;
 
-            try
-            {
-                await _inputTimeHourRef.FocusAsync();
-            }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
+            await _inputTimeHourRef.FocusSafelyAsync();
         }
 
         await SyncEventDialogFocus();

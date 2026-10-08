@@ -929,7 +929,7 @@ public partial class BitPagination : BitComponentBase
 
             if (_IsHidden is false && ShowPageSizeSelector)
             {
-                await Focus(_pageSizeSelectRef);
+                await _pageSizeSelectRef.FocusSafelyAsync();
             }
         }
 
@@ -971,13 +971,13 @@ public partial class BitPagination : BitComponentBase
                 case FocusTarget.SelectedPage:
                     if (_pageRefs.TryGetValue(_SelectedPage, out var pageRef))
                     {
-                        await Focus(pageRef);
+                        await pageRef.FocusSafelyAsync();
                     }
                     break;
-                case FocusTarget.First: await Focus(_firstButtonRef); break;
-                case FocusTarget.Previous: await Focus(_previousButtonRef); break;
-                case FocusTarget.Next: await Focus(_nextButtonRef); break;
-                case FocusTarget.Last: await Focus(_lastButtonRef); break;
+                case FocusTarget.First: await _firstButtonRef.FocusSafelyAsync(); break;
+                case FocusTarget.Previous: await _previousButtonRef.FocusSafelyAsync(); break;
+                case FocusTarget.Next: await _nextButtonRef.FocusSafelyAsync(); break;
+                case FocusTarget.Last: await _lastButtonRef.FocusSafelyAsync(); break;
             }
         }
 

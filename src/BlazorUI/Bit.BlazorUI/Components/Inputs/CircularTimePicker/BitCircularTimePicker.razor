@@ -5,6 +5,7 @@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
+     data-bit-popup-style="@(GetPopupStyle(HasFocus, Styles?.Focused, Styles?.Root))"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
 

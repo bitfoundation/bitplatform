@@ -337,27 +337,29 @@
             are not cascaded.
         </div>
         <br />
-        <BitParams Parameters="@swiperParams">
-            <div>Takes its dots, step, rewinding, snapping and sizing from the cascade:</div>
-            <br />
-            <BitSwiper>
-                @for (int i = 1; i <= 12; i++)
-                {
-                    var index = i;
-                    <BitSwiperItem><div class="card-item">@index</div></BitSwiperItem>
-                }
-            </BitSwiper>
-            <br /><br />
-            <div>Its own VisibleItemsCount and no dots, the cascaded rest:</div>
-            <br />
-            <BitSwiper VisibleItemsCount="2" ShowDots="false">
-                @for (int i = 1; i <= 12; i++)
-                {
-                    var index = i;
-                    <BitSwiperItem><div class="card-item">@index</div></BitSwiperItem>
-                }
-            </BitSwiper>
-        </BitParams>
+        <div>
+            <BitParams Parameters="@swiperParams">
+                <div>Takes its dots, step, rewinding, snapping and sizing from the cascade:</div>
+                <br />
+                <BitSwiper>
+                    @for (int i = 1; i <= 12; i++)
+                    {
+                        var index = i;
+                        <BitSwiperItem><div class="card-item">@index</div></BitSwiperItem>
+                    }
+                </BitSwiper>
+                <br /><br />
+                <div>Its own VisibleItemsCount and no dots, the cascaded rest:</div>
+                <br />
+                <BitSwiper VisibleItemsCount="2" ShowDots="false">
+                    @for (int i = 1; i <= 12; i++)
+                    {
+                        var index = i;
+                        <BitSwiperItem><div class="card-item">@index</div></BitSwiperItem>
+                    }
+                </BitSwiper>
+            </BitParams>
+        </div>
     </DemoExample>
 
     <DemoExample Title="Color" RazorCode="@example13RazorCode" Id="example13">

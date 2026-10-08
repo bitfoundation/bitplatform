@@ -6,6 +6,7 @@ using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.JSInterop;
 
 namespace Bit.BlazorUI.Tests.Components.Navs.Pivot;
 
@@ -493,6 +494,21 @@ public class BitPivotTests : BunitTestContext
         Assert.AreEqual("0", tabs[0].GetAttribute("tabindex"));
         Assert.AreEqual("0", tabs[1].GetAttribute("tabindex"));
         Assert.AreEqual("-1", tabs[2].GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitPivotShouldKeepNavigatingWhenTheFocusFailsOnTheJsSide()
+    {
+        // A tab taken out of the document before the focus call reaches it fails in the browser, which
+        // reaches .NET as a JSException: the roving tabindex still moves, and nothing is thrown.
+        Context.JSInterop.SetupVoid("Blazor._internal.domWrapper.focus", _ => true).SetException(new JSException("Unable to focus an invalid element."));
+
+        var component = RenderPivot(3);
+
+        component.Find(".bit-pvt-hct").KeyDown("ArrowRight");
+
+        Assert.AreEqual("0", component.FindAll("[role=tab]")[1].GetAttribute("tabindex"));
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
     }
 
     [TestMethod]

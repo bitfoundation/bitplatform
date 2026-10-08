@@ -3,10 +3,10 @@
 @import "../../../Styles/color-role-maps.scss";
 
 // Public CSS variables, read off the element and never declared here, so a value set on :root re-skins every
-// DatePicker. The callout is rendered outside of the root and reparented to the body while it is open, so it
-// inherits nothing of an ancestor; the component copies the --bit-DatePicker-* declarations of Style and
-// Styles.Root onto it instead, so one Style restyles the field and its calendar together (Styles.Callout is
-// applied after the copy and wins).
+// DatePicker. The callout is rendered outside of the root and relocated to the body while it is open;
+// Callouts.ts carries what the root and its ancestors declare into it (a variable set on an ancestor, through
+// a class, in Style or in Styles.Root), so it reaches the calendar like any inherited value and one Style
+// restyles the field and its calendar together (Styles.Callout is declared on the callout itself and wins).
 //
 // The field:
 //   --bit-DatePicker-label-color             text color of the label                        (default: $clr-fg-pri)
@@ -77,10 +77,10 @@
 // focus rings whatever either says.
 
 // The medium size of the parts no public variable reaches, declared as a mixin so both the root element and
-// the callout - which is rendered outside of it and therefore inherits nothing from it - can fall back to it.
-// The values an author can override are published by an explicit Size alone and named apart from the ones
-// they feed (see dtp-size-resolution below), so a size class and a CSS variable never fight over the same
-// property.
+// the callout - which is rendered outside of it and therefore inherits nothing its classes declare - can fall
+// back to it. The values an author can override are published by an explicit Size alone and named apart from
+// the ones they feed (see dtp-size-resolution below), so a size class and a CSS variable never fight over the
+// same property.
 @mixin dtp-size-medium {
     --bit-dtp-mcell-w: #{spacing(6)};
     --bit-dtp-mcell-h: #{spacing(5)};
@@ -1148,8 +1148,8 @@
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
 // They are applied to the root element and to the callout alike, since the callout is rendered
-// outside of the root and inherits nothing from it. Published only by an explicit Color; an unset
-// one is the primary role, which every read spells out after the public variable.
+// outside of the root and inherits nothing its classes declare. Published only by an explicit Color; an
+// unset one is the primary role, which every read spells out after the public variable.
 @each $role, $tokens in $bit-color-roles {
     .bit-dtp-#{$role} {
         --bit-dtp-clr: #{role($tokens, main)};

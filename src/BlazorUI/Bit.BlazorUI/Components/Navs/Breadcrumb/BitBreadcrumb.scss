@@ -2,8 +2,9 @@
 
 // Public CSS variables, read with a fallback and never declared here, so they inherit: set one on :root,
 // on any ancestor, or on the Style of a single breadcrumb. The overflow menu is rendered outside the root
-// element (and moved to the body by the callout positioning), so the component copies the
-// --bit-Breadcrumb-* declarations of Style and Styles.Root onto it by hand - see GetCalloutStyles.
+// element and relocated to the body while it is open, and Callouts.ts carries what the root and its
+// ancestors declare (a variable set on an ancestor or through its class, in Style or Styles.Root) into it, so
+// they reach it like any inherited value.
 //
 //   TRAIL
 //   --bit-Breadcrumb-color                  text of the items                          (default: $clr-fg-pri)
@@ -54,7 +55,8 @@
 
 // The one place the public variables meet the values an explicit Color and Size publish. Every rule below reads
 // the private variables this leaves behind, and the block is included on the callout as well, which is a
-// sibling of the root (a child of the body once it is open) and inherits nothing from it.
+// sibling of the root rather than a descendant of it, so it resolves the public variables it inherits on its
+// own.
 @mixin brc-vars {
     // The values the Color and Size classes publish start out unset, so a breadcrumb never inherits another one's
     // choice from an ancestor carrying those classes, and the classes - declared further down at the same weight -

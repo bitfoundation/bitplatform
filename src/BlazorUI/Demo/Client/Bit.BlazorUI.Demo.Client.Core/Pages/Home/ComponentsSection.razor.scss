@@ -1,6 +1,7 @@
 @import '../../Styles/abstracts/_docs.scss';
 
-.categories-lead {
+// A BitText, whose root does not carry this file's scope attribute.
+::deep .categories-lead {
     margin-top: $doc-space-2xs;
 }
 

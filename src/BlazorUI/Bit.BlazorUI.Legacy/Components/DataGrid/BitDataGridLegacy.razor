@@ -29,6 +29,10 @@
                             </td>
                         </tr>
                     }
+                    else if (_hasRendered is false)
+                    {
+                        @_renderPreInteractiveVirtualizedRows
+                    }
                     else
                     {
                         <Virtualize @ref="@_virtualizeComponent"
@@ -38,6 +42,13 @@
                                     ItemsProvider="@ProvideVirtualizedItems"
                                     ItemContent="@(item => builder => RenderRow(builder, item.RowIndex, item.Data))"
                                     Placeholder="@(placeholderContext => builder => RenderPlaceholderRow(builder, placeholderContext))" />
+                        @* Virtualize renders no row until its JS has measured the viewport, so the rows rendered before
+                           the grid was interactive stay in its place - after it, so its spacers stay at the top where its
+                           JS looks for them - until it has rows of its own (see ProvideVirtualizedItems). *@
+                        if (_preInteractiveRowsShown)
+                        {
+                            @_renderPreInteractiveVirtualizedRows
+                        }
                     }
                 }
                 else
@@ -81,6 +92,38 @@
                     <td colspan="@_columns.Count"></td>
                 </tr>
             }
+        }
+    }
+
+    private void RenderPreInteractiveVirtualizedRows(RenderTreeBuilder __builder)
+    {
+        // Without rows that could be read in place (an items provider, or an asynchronous query), the
+        // window is filled with the same placeholder rows Virtualize shows while it loads.
+        if (_preInteractiveVirtualizedItems is null)
+        {
+            var placeholderCount = Pagination is null
+                ? PreInteractiveWindowSize
+                : Math.Min(PreInteractiveWindowSize, Pagination.ItemsPerPage);
+
+            for (var index = 0; index < placeholderCount; index++)
+            {
+                RenderPlaceholderRow(__builder, new PlaceholderContext(index, ItemSize));
+            }
+
+            return;
+        }
+
+        var rowIndex = 2; // aria-rowindex is 1-based, plus the first row is the header
+        foreach (var item in _preInteractiveVirtualizedItems)
+        {
+            RenderRow(__builder, rowIndex++, item);
+        }
+
+        // The rows past the window are reserved the way Virtualize's own trailing spacer reserves them, so the
+        // table already has its full height and the scrollbar its final length.
+        if (_preInteractiveItemsAfter > 0)
+        {
+            <tr aria-hidden="true" style="@PreInteractiveSpacerStyle()"></tr>
         }
     }
 

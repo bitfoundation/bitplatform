@@ -12,10 +12,6 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     // The number of suggest items the page up & page down keys jump over at once.
     private const int SuggestPageSize = 5;
 
-    // The public custom properties of the component, which are what its stylesheet reads with a fallback
-    // (see BitSearchBox.scss). Nothing else in a style string is copied to the callout.
-    private const string PUBLIC_CSS_VARIABLE_PREFIX = "--bit-SearchBox-";
-
     private bool _isOpen;
     private bool _isLoading;
     private bool _autoFilled;
@@ -40,9 +36,6 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     private string? _calloutColorClass;
     private string? _registeredShortcut;
     private string? _pendingAutoFillTerm;
-    private string? _publicCssVariables;
-    private string? _lastRootStyle;
-    private string? _lastStylesRoot;
     private string _inputId = string.Empty;
     private string _labelId = string.Empty;
     private string _errorId = string.Empty;
@@ -776,62 +769,6 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         StyleBuilder.Register(() => _inputHasFocus ? Styles?.Focused : string.Empty);
     }
 
-    // The callout is rendered outside the root element - and reparented to the body while it is open - so it
-    // inherits nothing an author sets on the search box: neither the Style of the instance nor a custom
-    // property declared on an ancestor of it (only :root and body stay ancestors of it once it has moved). The
-    // public --bit-SearchBox-* declarations are therefore carried across by hand, so ONE Style on the component
-    // restyles the field and the suggest list it opens together.
-    private string? GetPublicCssVariables()
-    {
-        var style = Style;
-        var stylesRoot = Styles?.Root;
-
-        // Rebuilt only when one of the two strings it is made of has actually changed: the callout is
-        // re-rendered on every keystroke, and parsing two style strings per render for a result that almost
-        // never changes is work no one asked for.
-        if (string.Equals(style, _lastRootStyle, StringComparison.Ordinal) &&
-            string.Equals(stylesRoot, _lastStylesRoot, StringComparison.Ordinal))
-        {
-            return _publicCssVariables;
-        }
-
-        _lastRootStyle = style;
-        _lastStylesRoot = stylesRoot;
-
-        StringBuilder? builder = null;
-
-        AppendPublicCssVariables(ref builder, style);
-        AppendPublicCssVariables(ref builder, stylesRoot);
-
-        _publicCssVariables = builder?.ToString();
-
-        return _publicCssVariables;
-    }
-
-    // Styles.Callout is appended last, so a value written for the callout still wins over the copy.
-    private string? GetCalloutStyles()
-    {
-        var variables = GetPublicCssVariables();
-        var stylesCallout = Styles?.Callout;
-
-        if (variables.HasNoValue()) return stylesCallout;
-        if (stylesCallout.HasNoValue()) return variables;
-
-        return variables + stylesCallout;
-    }
-
-    private static void AppendPublicCssVariables(ref StringBuilder? builder, string? style)
-    {
-        if (style.HasNoValue()) return;
-
-        foreach (var declaration in style!.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-        {
-            if (declaration.StartsWith(PUBLIC_CSS_VARIABLE_PREFIX, StringComparison.Ordinal) is false) continue;
-
-            (builder ??= new StringBuilder()).Append(declaration).Append(';');
-        }
-    }
-
     protected override async Task OnInitializedAsync()
     {
         _calloutId = $"BitSearchBox-{UniqueId}-callout";
@@ -1124,7 +1061,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     {
         if (Disabled) return;
 
-        await InputElement.FocusAsync();
+        await InputElement.FocusSafelyAsync();
     }
 
     private async Task HandleOnFocus(FocusEventArgs e)
@@ -1201,7 +1138,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
         await ClearValue();
 
-        await InputElement.FocusAsync();
+        await InputElement.FocusSafelyAsync();
     }
 
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
@@ -1929,7 +1866,8 @@ public partial class BitSearchBox : BitTextInputBase<string?>
                 footerId: string.Empty,
                 setCalloutWidth: true,
                 fixedCalloutWidth: FixedCalloutWidth,
-                maxWindowWidth: 0);
+                maxWindowWidth: 0,
+                rootId: _Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }

@@ -14,6 +14,9 @@ namespace Bit.BlazorUI;
 public partial class BitMarkdownEditor : BitInputBase<string?>
 {
     private string _value = string.Empty;
+    // What the textarea is rendered with: the value as it stood until the first render, frozen after it (see the
+    // textarea in the markup).
+    private string _seedValue = string.Empty;
     private string _previewValue = string.Empty;
     private bool _showHelp;
     private bool _focusHelp;
@@ -803,6 +806,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
         SetDefaultValue();
 
         _value = Value ?? string.Empty;
+        _seedValue = _value;
         _previewValue = _value;
         _valueChanged = false;
 
@@ -827,8 +831,13 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
             _value = Value ?? string.Empty;
             _previewValue = _value;
 
-            // Before the first render there is nothing to push it into; init seeds the textarea.
-            if (IsRendered)
+            // Before the first render there is nothing to push it into; init seeds the textarea, and until then the
+            // markup carries it.
+            if (IsRendered is false)
+            {
+                _seedValue = _value;
+            }
+            else
             {
                 try
                 {
@@ -858,13 +867,13 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
         if (_focusHelp)
         {
             _focusHelp = false;
-            await _helpRef.FocusAsync();
+            await _helpRef.FocusSafelyAsync();
         }
 
         if (_focusFind)
         {
             _focusFind = false;
-            try { await _findRef.FocusAsync(); } catch (JSException) { } // panel may already be gone
+            await _findRef.FocusSafelyAsync();
         }
 
         var config = BuildConfig();
@@ -1487,7 +1496,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     // nothing is announced when focus passes through them.
     private async Task FocusHelpClose()
     {
-        try { await _helpCloseRef.FocusAsync(); } catch (JSException) { }
+        await _helpCloseRef.FocusSafelyAsync();
     }
 
     private async Task CycleMode()

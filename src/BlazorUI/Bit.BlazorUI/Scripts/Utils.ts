@@ -144,6 +144,23 @@
             } catch (e) { console.error("BitBlazorUI.Utils.focusFirstElement:", e); }
         }
 
+        // Moves the focus to the trigger inside the given container - its first focusable element - unless the
+        // focus is somewhere inside the container already. A click focuses the button it lands on in most engines
+        // but not in WebKit, which leaves the focus where it was, and a popup whose trigger never took the focus
+        // is a popup without its Escape key wherever that key is listened for on the trigger. Where the engine
+        // has already focused what was clicked, nothing moves; the container itself is never focused, as a
+        // container with nothing focusable in it is not a trigger the keyboard could have reached either.
+        public static focusClickedTrigger(containerId: string) {
+            try {
+                const container = document.getElementById(containerId);
+                if (!container || container.contains(document.activeElement)) return;
+
+                const trigger = Array.from(container.querySelectorAll<HTMLElement>(Utils._focusables)).find(Utils.isFocusable);
+
+                trigger?.focus({ preventScroll: true });
+            } catch (e) { console.error("BitBlazorUI.Utils.focusClickedTrigger:", e); }
+        }
+
         // Mirrors the popup relationship onto the element the user actually reaches. A callout renders its
         // anchor as a plain container around the consumer's own trigger, and aria-haspopup, aria-controls
         // and aria-expanded on a container that is neither focusable nor interactive are attributes no
@@ -1558,6 +1575,17 @@
                 console.error("BitBlazorUI.Utils.getProperty:", e);
                 return '';
             }
+        }
+
+        // How far the browser has got with an img: 2 when it has finished it, 1 while it is still painting one it
+        // already knows the size of, 0 when there is nothing of it on screen yet (or it is broken - complete too,
+        // but with nothing decoded).
+        public static getImageProgress(element: HTMLImageElement): number {
+            if (!element) return 0;
+
+            if (element.naturalWidth > 0) return element.complete ? 2 : 1;
+
+            return 0;
         }
 
         public static getChildrenAttributes(containerId: string, attribute: string): string[] {

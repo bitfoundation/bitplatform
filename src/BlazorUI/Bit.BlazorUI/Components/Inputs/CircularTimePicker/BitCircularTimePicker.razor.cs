@@ -39,6 +39,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     private string _calloutId = string.Empty;
     private string _overlayId = string.Empty;
     private string _circularTimePickerId = string.Empty;
+    private readonly BitPublicCssVariables _standaloneCssVariables = new("--bit-CircularTimePicker-");
     private BitCircularTimePickerView _view = BitCircularTimePickerView.Hour;
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
     private DotNetObjectReference<BitCircularTimePicker> _dotnetObj = default!;
@@ -916,7 +917,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             // that is actually on the screen - takes the focus in its place.
             if (AutoFocus && Disabled is false)
             {
-                await (Standalone ? _clockRef.FocusAsync() : InputElement.FocusAsync());
+                await (Standalone ? _clockRef : InputElement).FocusSafelyAsync();
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
@@ -1694,7 +1695,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             footerId: CalloutFooterTemplate is not null ? _footerId : "",
             setCalloutWidth: false,
             fixedCalloutWidth: false,
-            maxWindowWidth: 0);
+            maxWindowWidth: 0,
+            // The callout is anchored to the input wrapper, but the root is the element whose public variables
+            // (of Style and Styles.Root) and classes the dial has to go on inheriting once the callout is
+            // relocated to the body, so it is named apart.
+            rootId: _Id);
     }
 
     // Maps a position on the dial - an angle clockwise from 12 o'clock and a distance as a fraction of the
@@ -2075,11 +2080,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         if (Standalone || IsRendered is false || IsDisposed) return;
 
-        try
-        {
-            await InputElement.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        await InputElement.FocusSafelyAsync();
     }
 
     // The dial is the part of an opened picker the keyboard acts on, so it takes the focus - unless the input
@@ -2095,11 +2096,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         if (IsRendered is false || IsDisposed) return;
 
-        try
-        {
-            await _clockRef.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        await _clockRef.FocusSafelyAsync();
     }
 
     private string? GetHourButtonStyle()
@@ -2174,6 +2171,12 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     // A picker with a field does not need it: the callout of a hidden field is a closed one, and the script
     // that opens a callout writes the display of the element itself - which is the one declaration an inline
     // style would be overwritten by.
+    //
+    // A standalone dial is never opened as a callout, so it is never relocated either, and the chain Callouts.ts
+    // carries the root's declarations through is never built for it: it stays where it is rendered, a sibling of
+    // the root. What an ancestor declares still reaches it, as it shares the root's ancestors, but what the Style of
+    // the instance and Styles.Root declare does not, so their public --bit-CircularTimePicker-* declarations are
+    // copied onto the dial by hand - ahead of its own style, which therefore still wins.
     private string? GetCalloutStyle()
     {
         if (Standalone is false) return Styles?.Callout;
@@ -2185,7 +2188,9 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             _ => null
         };
 
-        return visibility is null ? Styles?.Callout : JoinStyles(Styles?.Callout, visibility);
+        var style = visibility is null ? Styles?.Callout : JoinStyles(Styles?.Callout, visibility);
+
+        return _standaloneCssVariables.Prepend(Style, Styles?.Root, style);
     }
 
     private string GetCalloutCssClasses()
@@ -2206,9 +2211,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         }
 
         // The callout is a sibling of the root, so the class that opts a subtree out of the reduced-motion
-        // collapse never reaches it from there - and the slide the callout opens with, along with the sheet
-        // the responsive mode turns it into, are exactly the motion ForceAnimation is asked for. Rendered
-        // onto the callout itself for the same reason BitCallout, BitDropMenu and BitMenuButton do it.
+        // collapse only reaches it while it is relocated, through the copy of the root Callouts.ts moves it
+        // into, and never where it is rendered - standalone, or on its way out - while the slide the callout
+        // opens with, along with the sheet the responsive mode turns it into, are exactly the motion
+        // ForceAnimation is asked for. Rendered onto the callout itself for the same reason BitCallout,
+        // BitDropMenu and BitMenuButton do it.
         if (ForceAnimation)
         {
             classes.Add("bit-fam");

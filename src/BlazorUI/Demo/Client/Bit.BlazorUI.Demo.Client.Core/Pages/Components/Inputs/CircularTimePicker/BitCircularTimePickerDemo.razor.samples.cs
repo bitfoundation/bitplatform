@@ -556,8 +556,8 @@ private readonly BitCircularTimePickerParams[] bookingPickerParams =
         color: blueviolet;
     }
 
-    /* A wrapper reaches the field, the label and the icon. The callout is moved to the body when it opens,
-       so the variables of the dial go on Styles.Callout - or on :root, to reach every picker of the app. */
+    /* A wrapper reaches the field, the label and the icon, and the dial as well: the callout keeps inheriting
+       from the picker's ancestors while it is open. On :root they reach every picker of the app. */
     .custom-vars {
         --bit-CircularTimePicker-color: #6b3fa0;
         --bit-CircularTimePicker-focus-color: #b58cf0;
@@ -566,6 +566,10 @@ private readonly BitCircularTimePickerParams[] bookingPickerParams =
         --bit-CircularTimePicker-border-radius: 1rem;
         --bit-CircularTimePicker-input-background: #f4efff;
         --bit-CircularTimePicker-input-color: #3a2358;
+        --bit-CircularTimePicker-callout-radius: 1.25rem;
+        --bit-CircularTimePicker-clock-background: #f4efff;
+        --bit-CircularTimePicker-number-color: #3a2358;
+        --bit-CircularTimePicker-number-hover-background: #e4d8fb;
     }
 </style>
 
@@ -609,11 +613,7 @@ private readonly BitCircularTimePickerParams[] bookingPickerParams =
 
 <div class=""custom-vars"">
     <BitCircularTimePicker Label=""Reservation"" Placeholder=""Select a time"" ShowNowButton ShowClearButton
-                           MinuteStep=""5"" TimeFormat=""BitTimeFormat.TwelveHours"" AmPmInClock
-                           Styles=""@(new() { Callout = ""--bit-CircularTimePicker-callout-radius: 1.25rem;"" +
-                                                       ""--bit-CircularTimePicker-clock-background: #f4efff;"" +
-                                                       ""--bit-CircularTimePicker-number-color: #3a2358;"" +
-                                                       ""--bit-CircularTimePicker-number-hover-background: #e4d8fb;"" })"" />
+                           MinuteStep=""5"" TimeFormat=""BitTimeFormat.TwelveHours"" AmPmInClock />
 </div>
 
 <BitCircularTimePicker Label=""Reservation"" Placeholder=""Select a time"" ShowSeconds

@@ -546,13 +546,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
             if (ReadOnly || GetIsItemDisabled(item)) return;
 
-            try
-            {
-                await InputElement.FocusAsync();
-            }
-            catch (JSDisconnectedException) { } // the circuit is gone (e.g. the user navigated away), nothing to focus
-            catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
-            catch (InvalidOperationException) { } // the element reference is detached from its renderer, same as above
+            await InputElement.FocusSafelyAsync();
         }
     }
 

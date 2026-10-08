@@ -33,6 +33,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     private bool _retrying;
     private int? _totalCount;
     private bool _initialized;
+    private bool _awaitsTakeOver;
     private int _loadVersion;
     private object? _resetKey;
     private bool _resetKeyRead;
@@ -66,6 +67,17 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     // The manual mode, or the automatic one that has used up the pages it may load on its own.
     private bool _isManual => Manual || (AutoLoadLimit is int limit && _loadedPages >= Math.Max(0, limit));
 
+    // The first page is fetched once the list is interactive (by the observer, or by the first render of the manual
+    // mode), which a prerender or a static SSR page never gets to, and Preload is the one opt-in for fetching it on the
+    // server. Until it is under way such a list is shown as loading it, rather than as a blank box that flashes into
+    // the loading state as soon as the page turns interactive - and so is the interactive render that replaces it, so
+    // nothing on screen changes. A list that was never prerendered is left as it was: its observer may well not fire
+    // yet (a list below the fold), and a loader shown until it does would announce a load that is not happening.
+    private bool _awaitsFirstLoad => _awaitsTakeOver && _initialized is false && _isLoading is false && _error is null
+                                     && _items.Count == 0 && Disabled is false && ItemsProvider is not null;
+
+    private bool _showLoading => _isLoading || _awaitsFirstLoad;
+
     private bool _showEmpty => _initialized && _isLoading is false && _error is null && _items.Count == 0;
 
     private bool _showEnd => _initialized && _isLoading is false && _error is null && _hasMore is false && _items.Count > 0
@@ -97,6 +109,8 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+
+    [Inject] private IServiceProvider _services { get; set; } = default!;
 
 
 
@@ -257,7 +271,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     [Parameter] public string LoadingMessage { get; set; } = "Loading...";
 
     /// <summary>
-    /// The custom template to render while loading the new items.
+    /// The custom template to render while loading the new items, and until the first page is fetched.
     /// </summary>
     [Parameter] public RenderFragment? LoadingTemplate { get; set; }
 
@@ -307,7 +321,9 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     [Parameter] public int PageSize { get; set; }
 
     /// <summary>
-    /// Pre-loads the data at the initialization of the component. Useful in prerendering mode.
+    /// Pre-loads the data at the initialization of the component. Useful in prerendering mode: the first page is then in
+    /// the HTML of a prerendered (or statically rendered) page, which otherwise shows the loading state, since the items
+    /// provider is not called on the server without it.
     /// </summary>
     [Parameter] public bool Preload { get; set; }
 
@@ -642,6 +658,8 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
         CascadingParameters?.UpdateParameters(this);
 
         _itemsProvider = ItemsProvider;
+
+        _awaitsTakeOver = BitPrerender.IsHandOver(_services, _js);
 
         if (Preload)
         {

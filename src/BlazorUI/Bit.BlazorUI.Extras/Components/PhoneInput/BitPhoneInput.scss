@@ -3,9 +3,9 @@
 
 // Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every
 // phone input and one set on the Style of an instance (or through Styles.Root) re-skins that one alone.
-// The callout and the overlay are rendered outside the root element (and reparented to the body while the
-// callout is open), so the component copies the --bit-PhoneInput-* declarations of Style and Styles.Root
-// onto both of them by hand - see GetPublicCssVariables.
+// The callout and the overlay are rendered beside the root element and relocated to the body while the callout
+// is open; Callouts.ts carries what the root and its ancestors declare into them, so a variable set on an
+// ancestor or through its class, in Style or in Styles.Root reaches them like any inherited value.
 //
 //   FIELD
 //   --bit-PhoneInput-background              fill of the field                        (default: $clr-bg-pri)
@@ -112,8 +112,8 @@
 // The one place the public variables meet the parameters and the defaults: the value an explicit parameter
 // publishes first, then the public variable, then the default an unset parameter stands for. Every rule below
 // reads the private variables this leaves behind, so no use site repeats the fallback chain - and the block is
-// included on the callout as well, which is a sibling of the root and inherits nothing from it. An explicit
-// Border kind is read before the main color of an explicit Color, which keeps the focus ring.
+// included on the callout as well, which is a sibling of the root and inherits nothing its classes declare. An
+// explicit Border kind is read before the main color of an explicit Color, which keeps the focus ring.
 @mixin phi-vars {
     --bit-phi-fs: var(--bit-phi-sz-fs, var(--bit-PhoneInput-font-size, #{$tg-fs-sm}));
     --bit-phi-lbl-fs: var(--bit-phi-sz-fs, var(--bit-PhoneInput-label-font-size, var(--bit-PhoneInput-font-size, #{$tg-fs-sm})));

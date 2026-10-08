@@ -1610,11 +1610,11 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     {
         if (Split)
         {
-            await _chevronButtonRef.FocusAsync();
+            await _chevronButtonRef.FocusSafelyAsync();
         }
         else
         {
-            await _operatorButtonRef.FocusAsync();
+            await _operatorButtonRef.FocusSafelyAsync();
         }
     }
 
@@ -1741,7 +1741,10 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             footerId: "",
             setCalloutWidth: true,
             fixedCalloutWidth: false,
-            maxWindowWidth: 0);
+            maxWindowWidth: 0,
+            // The root is named so that what it declares - the custom properties of Style and Styles.Root,
+            // and ForceAnimation's bit-fam - goes on reaching the callout once it is relocated to the body.
+            rootId: _Id);
     }
 
     private void OnSetIsOpen()
@@ -1804,20 +1807,22 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             classes.Add("bit-mnb-ocl");
         }
 
-        // While open the callout is reparented to the body, which takes it out of the subtree that
-        // carries the root's bit-fam class, so ForceAnimation has to be rendered on the callout
-        // itself for its opening animation to opt out of reduced motion.
+        // The callout is a sibling of the root, so the root's bit-fam class never reaches it where it is
+        // rendered - only while it is relocated, through the copy of the root Callouts.ts moves it into. So
+        // ForceAnimation is rendered on the callout itself, for its motion to opt out of reduced motion
+        // whether or not it is relocated.
         if (ForceAnimation)
         {
             classes.Add("bit-fam");
         }
 
         // The callout is rendered outside the root element - and moved to the body while it is open - so it is
-        // a sibling of the root rather than a descendant of it, and nothing the root declares reaches it. The
-        // two classes that carry what the items need are repeated here: the size class sizes their text, their
-        // height and their padding, and the color class paints the focus ring of the focused one and the glyph
-        // of a checked one in the color the menu button was given. Like the root, the callout carries neither
-        // while it is unset, so the public variables restyle the default there and never an explicit value.
+        // a sibling of the root rather than a descendant of it. Callouts.ts carries the custom properties and the
+        // author's classes of the root into it, but none of the component's own bit- classes, so the two that
+        // carry what the items need are repeated here: the size class sizes their text, their height and their
+        // padding, and the color class paints the focus ring of the focused one and the glyph of a checked one in
+        // the color the menu button was given. Like the root, the callout carries neither while it is unset, so
+        // the public variables restyle the default there and never an explicit value.
         classes.AddIfHasValue(BitCssClasses.Color(Color, "bit-mnb"));
         classes.AddIfHasValue(BitCssClasses.Size(Size, "bit-mnb"));
 

@@ -3152,6 +3152,54 @@ public class BitCircularTimePickerTests : BunitTestContext
         Assert.IsFalse(component.Instance.IsOpen);
     }
 
+    [TestMethod]
+    public async Task BitCircularTimePickerShouldNameItsRootToTheCallout()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Style, "--bit-CircularTimePicker-color: red;");
+        });
+
+        await component.InvokeAsync(() => component.Instance.OpenCallout());
+
+        // The callout is anchored to the input wrapper, but what the dial goes on inheriting once it is
+        // relocated to the body is the root, which is the last argument of Callouts.toggle.
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        Assert.AreEqual(component.Find(".bit-ctp").Id, toggle.Arguments[^1]);
+        Assert.AreNotEqual(component.Find(".bit-ctp-wrp").Id, toggle.Arguments[^1]);
+        Assert.IsFalse((component.Find(".bit-ctp-cal").GetAttribute("style") ?? "").Contains("--bit-CircularTimePicker-"));
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerStandaloneShouldCarryThePublicCssVariablesOfTheStyleOntoTheDial()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Style, "margin:1rem;--bit-CircularTimePicker-color:red");
+            parameters.Add(p => p.Styles, new BitCircularTimePickerClassStyles { Root = "--bit-CircularTimePicker-text-color:blue", Callout = "padding:2px" });
+        });
+
+        // A standalone dial is never relocated, so the chain Callouts.ts carries the root's declarations through is
+        // never built for it: the public variables of Style and Styles.Root are copied onto it, ahead of its own
+        // style - and nothing else of the Style travels.
+        Assert.AreEqual("--bit-CircularTimePicker-color:red;--bit-CircularTimePicker-text-color:blue;padding:2px",
+                        component.Find(".bit-ctp-cal").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldCopyNothingOntoTheDialUnlessItIsStandalone()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Style, "--bit-CircularTimePicker-color:red");
+            parameters.Add(p => p.Styles, new BitCircularTimePickerClassStyles { Callout = "padding:2px" });
+        });
+
+        Assert.AreEqual("padding:2px", component.Find(".bit-ctp-cal").GetAttribute("style"));
+    }
+
     private static string GetOverlayDisplay(IRenderedComponent<BitCircularTimePicker> component)
     {
         var style = component.Find(".bit-ctp-ovl").GetAttribute("style") ?? string.Empty;

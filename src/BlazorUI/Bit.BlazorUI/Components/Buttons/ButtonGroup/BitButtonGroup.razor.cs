@@ -481,6 +481,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             await element.FocusAsync();
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
     }
 
 

@@ -218,7 +218,7 @@ public partial class BitVirtualizeDemo
             Name = "PlaceholderTemplate",
             Type = "RenderFragment<BitVirtualizePlaceholderContext>?",
             DefaultValue = "null",
-            Description = "The custom template to render an item whose data has not been loaded yet in provider mode.",
+            Description = "The custom template to render an item whose data has not been loaded yet in provider mode, the first window too: before the provider tells the count of the items (and so in a prerendered or statically rendered page) the window it is first asked for is rendered as placeholders, unless a LoadingTemplate is provided.",
             LinkType = LinkType.Link,
             Href = "#placeholder-context",
          },

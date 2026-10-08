@@ -10,7 +10,8 @@ internal interface IBitMenuButtonSubmenu
     int Level { get; }
 
     // Gives focus back to the item the submenu was opened from, which is where the keyboard returns to
-    // when the submenu is left (Escape, or the arrow key that walks back out of it).
+    // when the submenu is left (Escape, or the arrow key that walks back out of it). An item that can no
+    // longer take the focus only leaves it where it is, so this never throws.
     ValueTask FocusAsync();
 
     Task CloseSubmenuAsync();

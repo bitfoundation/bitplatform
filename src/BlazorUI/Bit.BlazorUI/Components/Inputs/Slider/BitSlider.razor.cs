@@ -1618,7 +1618,7 @@ public partial class BitSlider : BitInputBase<double>
 
         // The thumb is already on the screen - the pointer was just on it - so there is nothing to scroll to,
         // and scrolling to it would move the page out from under the gesture that has only now finished.
-        await _lowerInputRef.FocusAsync(true);
+        await _lowerInputRef.FocusSafelyAsync(true);
     }
 
     /// <summary>

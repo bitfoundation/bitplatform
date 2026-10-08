@@ -2,9 +2,10 @@
 @import "../../../Styles/media-queries.scss";
 @import "../../../Styles/color-role-maps.scss";
 
-// Public CSS variables, read off the root (and off the callout, which the component copies them onto by
-// hand because the callout is reparented to the body while it is open) and never declared here, so a value
-// set on :root re-skins every time picker and one set on the Style of an instance re-skins that one alone:
+// Public CSS variables, read off the root (and off the callout, which is rendered inside the root and, while
+// it is open, relocated into a copy of the chain of ancestors it leaves - the root among them - so they reach
+// it like any inherited value) and never declared here, so a value set on :root re-skins every time picker and one set
+// on the Style of an instance re-skins that one alone:
 //   --bit-TimePicker-color                    accent: the selected AM/PM button and the text of the
 //                                             now/clear buttons                    (default: $clr-pri)
 //   --bit-TimePicker-on-color                 text over that accent                (default: $clr-pri-text)
@@ -808,10 +809,10 @@
 
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
-// They are applied to the root element and to the callout alike, since the callout is moved out of
-// the root while it is open and inherits nothing from it. Published only by an explicit Color, and read
-// ahead of the public custom properties by tpc-color-resolution, so a choice outranks the variable
-// that restyles the default.
+// They are applied to the root element and to the callout alike, since the copy of the root the callout is
+// relocated into while it is open leaves the root's bit-tpc-* classes behind. Published only by an explicit
+// Color, and read ahead of the public custom properties by tpc-color-resolution, so a choice outranks the
+// variable that restyles the default.
 @each $role, $tokens in $bit-color-roles {
     .bit-tpc-#{$role} {
         --bit-tpc-rl-clr: #{role($tokens, main)};

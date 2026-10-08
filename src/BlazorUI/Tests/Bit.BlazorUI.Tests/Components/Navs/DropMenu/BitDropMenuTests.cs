@@ -2388,7 +2388,7 @@ public class BitDropMenuTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDropMenuShouldCarryItsPublicCssVariablesOverToTheCalloutAndTheOverlay()
+    public void BitDropMenuShouldLeaveItsPublicCssVariablesOnTheRootAndNameTheRootToTheCallout()
     {
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
@@ -2397,32 +2397,36 @@ public class BitDropMenuTests : BunitTestContext
             parameters.Add(p => p.Styles, new BitDropMenuClassStyles
             {
                 Root = "--bit-DropMenu-callout-radius:2px",
-                Callout = "--bit-DropMenu-callout-background:gold"
+                Callout = "padding:4px"
             });
             parameters.Add(p => p.MinWidth, "8rem");
         });
 
-        var calloutStyle = component.Find(".bit-drm-cal").GetAttribute("style")!;
-        var overlayStyle = component.Find(".bit-drm-ovl").GetAttribute("style")!;
+        // The root keeps all of what was written for it, the public variables included.
+        var rootStyle = component.Find(".bit-drm").GetAttribute("style")!;
 
-        // The callout is rendered outside the root and relocated to the body, so the public variables set on
-        // the drop menu reach it only by being copied - and only they are: color:blue belongs to the button.
-        Assert.IsTrue(calloutStyle.Contains("--bit-DropMenu-callout-background: pink;"));
-        Assert.IsTrue(calloutStyle.Contains("--bit-DropMenu-radius:0;"));
-        Assert.IsTrue(calloutStyle.Contains("--bit-DropMenu-callout-radius:2px;"));
-        Assert.IsFalse(calloutStyle.Contains("color:blue"));
-        Assert.IsTrue(overlayStyle.Contains("--bit-DropMenu-callout-background: pink;"));
+        Assert.IsTrue(rootStyle.Contains("color:blue"));
+        Assert.IsTrue(rootStyle.Contains("--bit-DropMenu-callout-background: pink"));
+        Assert.IsTrue(rootStyle.Contains("--bit-DropMenu-radius:0"));
+        Assert.IsTrue(rootStyle.Contains("--bit-DropMenu-callout-radius:2px"));
 
-        // The sizing parameters come after the copy and Styles.Callout after them, so the most specific wins.
-        var copied = calloutStyle.IndexOf("--bit-DropMenu-callout-background: pink", StringComparison.Ordinal);
-        var minWidth = calloutStyle.IndexOf("--bit-DropMenu-callout-min-width:8rem", StringComparison.Ordinal);
-        var own = calloutStyle.IndexOf("--bit-DropMenu-callout-background:gold", StringComparison.Ordinal);
+        // Nothing of it is copied onto the callout or the overlay, which write only what the component composes
+        // for them: the sizing parameters, then Styles.Callout, and the display of the overlay.
+        Assert.AreEqual("--bit-DropMenu-callout-min-width:8rem;padding:4px", component.Find(".bit-drm-cal").GetAttribute("style"));
+        Assert.AreEqual("display:none;", component.Find(".bit-drm-ovl").GetAttribute("style"));
 
-        Assert.IsTrue(copied >= 0 && copied < minWidth && minWidth < own);
+        component.Find(".bit-drm-btn").Click();
+
+        // The callout and the overlay are siblings of the root, so the root is named to Callouts.toggle - its
+        // last argument - for what it declares to go on reaching them once they are relocated to the body.
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        Assert.AreEqual(component.Find(".bit-drm").Id, toggle.Arguments[^1]);
+        Assert.AreEqual("display:block;", component.Find(".bit-drm-ovl").GetAttribute("style"));
     }
 
     [TestMethod]
-    public void BitDropMenuShouldCarryTheOpenedStylesPublicCssVariablesOnlyWhileOpen()
+    public void BitDropMenuShouldLeaveTheOpenedStylesOnTheRootWhileOpen()
     {
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
@@ -2430,11 +2434,19 @@ public class BitDropMenuTests : BunitTestContext
             parameters.Add(p => p.Styles, new BitDropMenuClassStyles { Opened = "--bit-DropMenu-callout-shadow:none" });
         });
 
+        Assert.IsFalse((component.Find(".bit-drm").GetAttribute("style") ?? "").Contains("--bit-DropMenu-callout-shadow:none"));
         Assert.IsNull(component.Find(".bit-drm-cal").GetAttribute("style"));
 
         component.Find(".bit-drm-btn").Click();
 
-        Assert.IsTrue(component.Find(".bit-drm-cal").GetAttribute("style")!.Contains("--bit-DropMenu-callout-shadow:none"));
+        // Styles.Opened lands on the root while the callout is open, which is where Callouts.ts reads it from for
+        // the relocated callout; the callout itself is left without a style of its own.
+        Assert.IsTrue(component.Find(".bit-drm").GetAttribute("style")!.Contains("--bit-DropMenu-callout-shadow:none"));
+        Assert.IsNull(component.Find(".bit-drm-cal").GetAttribute("style"));
+
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        Assert.AreEqual(component.Find(".bit-drm").Id, toggle.Arguments[^1]);
     }
 
     [TestMethod]
@@ -2477,25 +2489,6 @@ public class BitDropMenuTests : BunitTestContext
         component.Render(parameters => parameters.Add(p => p.Template, builder => builder.AddContent(0, "More")));
 
         Assert.IsFalse(component.Find(".bit-drm").ClassList.Contains("bit-drm-ion"));
-    }
-
-    [TestMethod]
-    public void BitDropMenuShouldCopyAPublicCssVariableWhoseValueHoldsASemicolon()
-    {
-        var component = RenderComponent<BitDropMenu>(parameters =>
-        {
-            parameters.Add(p => p.Text, "Menu");
-            parameters.Add(p => p.Style, "--bit-DropMenu-callout-background:url(data:image/png;base64,AAA);color:blue;--bit-DropMenu-radius:'a;b'");
-            parameters.Add(p => p.Width, "16rem");
-        });
-
-        var calloutStyle = component.Find(".bit-drm-cal").GetAttribute("style")!;
-
-        // A semicolon inside brackets or quotes is part of the value: cutting the declaration there would leave an
-        // unclosed url( that swallows everything written after it, the sizing parameters included.
-        Assert.IsTrue(calloutStyle.StartsWith("--bit-DropMenu-callout-background:url(data:image/png;base64,AAA);--bit-DropMenu-radius:'a;b';", StringComparison.Ordinal));
-        Assert.IsTrue(calloutStyle.Contains("--bit-DropMenu-callout-width:16rem;"));
-        Assert.IsFalse(calloutStyle.Contains("color:blue"));
     }
 
     [TestMethod]

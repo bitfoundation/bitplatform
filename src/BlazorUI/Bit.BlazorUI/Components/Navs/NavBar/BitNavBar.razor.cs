@@ -22,6 +22,9 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     private IList<TItem>? _oldItems;
     private bool _optionsOrderDirty;
     private readonly Dictionary<TItem, ElementReference> _itemElements = [];
+    private BitNavCurrentUrlMatcher<TItem>? _currentUrlMatcher;
+    // The item an option of the interactive first render was selected as, before the render that reports it.
+    private TItem? _unreportedSelection;
 
 
 
@@ -62,12 +65,24 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
 
 
-    internal void RegisterOption(BitNavBarOption option)
+    internal async Task RegisterOption(BitNavBarOption option)
     {
-        _items.Add((option as TItem)!);
+        var item = (option as TItem)!;
+
+        _items.Add(item);
         _selectionDirty = true;
         _optionsOrderDirty = true;
         StateHasChanged();
+
+        // The options of the first render register during the very render a prerender (or a static SSR page)
+        // sends as HTML, and neither of those ever gets to the after-render pass that resolves the selection
+        // waiting for them, so there the option that selection is waiting for is selected as it registers instead.
+        // The interactive render that replaces a prerendered one does the same, so it shows the selection the
+        // prerender showed rather than taking it away for the round trip its after-render pass waits for.
+        // Every other option is left to that pass, which handles a whole batch of them at once.
+        if (IsRendered) return;
+
+        await SelectRegisteringOption(item);
     }
 
     internal void UnregisterOption(BitNavBarOption option)
@@ -294,7 +309,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
         if (Mode == BitNavMode.Automatic)
         {
-            await SetSelectedItemByCurrentUrl();
+            await SetSelectedItemByCurrentUrl(isPrerender: _js.IsRuntimeInvalid());
         }
         else
         {
@@ -366,10 +381,20 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         {
             _selectionDirty = false;
 
+            var unreported = _unreportedSelection;
+            _unreportedSelection = null;
+
             // A selection that actually moves pushes the render to the options it moved between itself, so
             // a pass that changes nothing leaves the options (and the element references they hand over)
             // exactly as they are.
             await InvokeAsync(() => SetSelectedItemByCurrentUrl());
+
+            // The selection the first render already showed is reported here, where a match of the whole batch
+            // would have reported it - unless that match moved it on, which reported the item it moved to.
+            if (unreported is not null && IsSelected(unreported))
+            {
+                await OnSelectItem.InvokeAsync(unreported);
+            }
         }
 
         // A navbar that scrolls has to bring its selected item into view as the selection moves, since the
@@ -682,13 +707,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
         if (_itemElements.TryGetValue(item, out var element) is false) return;
 
-        try
-        {
-            await element.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (JSException) { } // the focus call itself failed, which is nothing to tear the navbar down for
-        catch (InvalidOperationException) { } // the element is no longer in the DOM
+        await element.FocusSafelyAsync();
     }
 
     private void OnSetSelectedItem()
@@ -794,32 +813,91 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     // Only a navigation can re-select the item that is already selected (a Reselectable navbar reports the
     // destination the reader went back to): every other match - the one of the first render, the ones after
     // the items or the matching rules changed - is the navbar re-checking where it already is, and reporting
-    // that as a selection would fire OnSelectItem for nothing the reader did.
-    private async Task SetSelectedItemByCurrentUrl(bool isNavigation = false)
+    // that as a selection would fire OnSelectItem for nothing the reader did. A prerender selects without the
+    // callback altogether: it is only drawing the page, and the interactive render that replaces it reports the
+    // selection itself, where a handler is free to call JavaScript or navigate.
+    private async Task SetSelectedItemByCurrentUrl(bool isNavigation = false, bool isPrerender = false)
     {
         if (IsDisposed) return;
         if (Mode is not BitNavMode.Automatic) return;
 
-        var (currentUrl, currentPath) = BitNavUrlMatcher.GetCurrentUrl(_navigationManager);
-        var baseUri = _navigationManager.BaseUri;
-
-        var currentItem = _items.FirstOrDefault(item =>
-        {
-            var match = GetMatch(item) ?? Match ?? BitNavMatch.Exact;
-
-            if (IsMatch(GetUrl(item), match)) return true;
-
-            return GetAdditionalUrls(item)?.Any(u => IsMatch(u, match)) is true;
-        });
+        var currentItem = _items.FirstOrDefault(IsCurrentUrlItem);
 
         if (isNavigation is false && IsSelected(currentItem)) return;
 
-        await SetSelectedItem(currentItem);
-
-        bool IsMatch(string? itemUrl, BitNavMatch match)
+        if (isPrerender)
         {
-            return BitNavUrlMatcher.IsMatch(itemUrl, match, currentUrl, currentPath, baseUri);
+            await AssignPrerenderedSelection(currentItem);
         }
+        else
+        {
+            await SetSelectedItem(currentItem);
+        }
+    }
+
+    private async Task AssignPrerenderedSelection(TItem? item)
+    {
+        // A SelectedKey bound one way holds the selection, as it does in SetSelectedItem.
+        if (SelectedKeyHasBeenSet && SelectedKeyChanged.HasDelegate is false) return;
+
+        if (await AssignSelectedItem(item) is false) return;
+
+        await SyncSelectedKey();
+
+        RefreshOptions();
+        StateHasChanged();
+    }
+
+    // Whether an item points at the page the app currently sits on (see BitNavCurrentUrlMatcher).
+    private bool IsCurrentUrlItem(TItem item)
+    {
+        _currentUrlMatcher ??= new(_navigationManager, GetUrl, GetAdditionalUrls, i => GetMatch(i) ?? Match ?? BitNavMatch.Exact);
+
+        return _currentUrlMatcher.IsCurrent(item);
+    }
+
+    // Selects an option of a prerender as it registers, when it is the one the selection is waiting for: the one
+    // pointing at the current URL in the automatic mode, the one carrying the pending SelectedKey or
+    // DefaultSelectedKey in the manual one. Only such an option runs the lookup, which keeps the first render
+    // from scanning every option once per option. The options of the first render register in their markup
+    // order, so the first of them to match is the one the lookup over the whole bar would have picked as well.
+    // The URL match selects without OnSelectItem: a prerender is only drawing the page, and the interactive render
+    // reports the selection after its own first render (see OnAfterRenderAsync), where a handler is free to call
+    // JavaScript or navigate.
+    private async Task SelectRegisteringOption(TItem item)
+    {
+        if (Mode is BitNavMode.Automatic)
+        {
+            if (IsCurrentUrlItem(item) is false) return;
+
+            var previous = SelectedItem;
+
+            await SetSelectedItemByCurrentUrl(isPrerender: true);
+
+            // A prerender is only drawing the page; the interactive render that replaces it is the one that
+            // reports, and only a selection that actually moved (a bound selection may hold it where it is).
+            if (_js.IsRuntimeInvalid() is false && IsSelected(previous) is false)
+            {
+                _unreportedSelection = SelectedItem;
+            }
+
+            return;
+        }
+
+        var key = GetKey(item);
+        if (key is null) return;
+
+        if (_selectedKeyPending && key == SelectedKey)
+        {
+            await ApplySelectedKey();
+        }
+        else if (_defaultSelectedKeyPending && key == DefaultSelectedKey)
+        {
+            await ApplyDefaultSelectedKey();
+        }
+
+        // The key follows the item once it is selected, so a bound SelectedKey learns the default as well.
+        await SyncSelectedKey();
     }
 
     // Reads the Items collection into the list the navbar renders from. The content of the collection is

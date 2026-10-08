@@ -1,6 +1,7 @@
 @import '../../Styles/abstracts/_docs.scss';
 
-.benefits-lead {
+// A BitText, whose root does not carry this file's scope attribute.
+::deep .benefits-lead {
     margin-top: $doc-space-2xs;
 }
 

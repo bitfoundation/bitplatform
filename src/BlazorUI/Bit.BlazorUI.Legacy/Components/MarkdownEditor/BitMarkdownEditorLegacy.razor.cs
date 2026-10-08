@@ -5,6 +5,7 @@
 /// </summary>
 public partial class BitMarkdownEditorLegacy : BitComponentBase
 {
+    private string? _initialValue;
     private ElementReference _textAreaRef = default!;
     private DotNetObjectReference<BitMarkdownEditorLegacy>? _dotnetObj = null;
 
@@ -80,6 +81,17 @@ public partial class BitMarkdownEditorLegacy : BitComponentBase
 
 
     protected override string RootElementClass => "bit-mde";
+
+    protected override void OnInitialized()
+    {
+        // Rendered as the textarea's value, so the markdown is there before the page is interactive: a
+        // prerender or a static SSR page never runs the JS that sets it. It is captured once and never
+        // re-rendered, since the editor's JS owns the textarea from then on (a later Value reaches it through
+        // setValue) and a value attribute Blazor re-applied would overwrite what is being typed.
+        _initialValue = Value ?? DefaultValue;
+
+        base.OnInitialized();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

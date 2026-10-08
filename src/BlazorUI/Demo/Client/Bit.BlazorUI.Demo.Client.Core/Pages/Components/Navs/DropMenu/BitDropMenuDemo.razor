@@ -644,47 +644,51 @@
             overlay, the callout, and <b>Opened</b>, applied to the root only while the callout is open.
         </div>
         <br />
-        <BitStack Horizontal Wrap Gap="1rem" FitHeight>
-            <BitDropMenu Text="Styled" Style="background-color: transparent; border-color: blueviolet; color: blueviolet;">
-                <BitStack Gap="0.25rem" Style="padding:0.5rem">
-                    <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Edit">Rename</BitButton>
-                    <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Copy">Duplicate</BitButton>
-                </BitStack>
-            </BitDropMenu>
-            <BitDropMenu Text="Classed" Class="custom-class">
-                <BitStack Gap="0.25rem" Style="padding:0.5rem">
-                    <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Edit">Rename</BitButton>
-                    <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Copy">Duplicate</BitButton>
-                </BitStack>
-            </BitDropMenu>
-            <BitDropMenu Text="Styles"
-                         Styles="@(new() { Root = "background-color: peachpuff; border-color: peachpuff;",
-                                           Text = "color: tomato; font-weight: bold;",
-                                           Callout = "border: 2px solid tomato;",
-                                           Opened = "border-color: tomato; background-color: goldenrod;" })">
-                <BitStack Gap="0.25rem" Style="padding:0.5rem">
-                    <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Edit">Rename</BitButton>
-                    <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Copy">Duplicate</BitButton>
-                </BitStack>
-            </BitDropMenu>
-            <BitDropMenu Text="Classes"
-                         Classes="@(new() { Root = "custom-root",
-                                            Text = "custom-text",
-                                            ChevronDown = "custom-chevron",
-                                            Opened = "custom-opened" })">
-                <BitStack Gap="0.25rem" Style="padding:0.5rem">
-                    <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Edit">Rename</BitButton>
-                    <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Copy">Duplicate</BitButton>
-                </BitStack>
-            </BitDropMenu>
-        </BitStack>
+        <div>
+            <BitStack Horizontal Wrap Gap="1rem" FitHeight>
+                <BitDropMenu Text="Styled" Style="background-color: transparent; border-color: blueviolet; color: blueviolet;">
+                    <BitStack Gap="0.25rem" Style="padding:0.5rem">
+                        <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Edit">Rename</BitButton>
+                        <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Copy">Duplicate</BitButton>
+                    </BitStack>
+                </BitDropMenu>
+                <BitDropMenu Text="Classed" Class="custom-class">
+                    <BitStack Gap="0.25rem" Style="padding:0.5rem">
+                        <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Edit">Rename</BitButton>
+                        <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Copy">Duplicate</BitButton>
+                    </BitStack>
+                </BitDropMenu>
+                <BitDropMenu Text="Styles"
+                             Styles="@(new() { Root = "background-color: peachpuff; border-color: peachpuff;",
+                                               Text = "color: tomato; font-weight: bold;",
+                                               Callout = "border: 2px solid tomato;",
+                                               Opened = "border-color: tomato; background-color: goldenrod;" })">
+                    <BitStack Gap="0.25rem" Style="padding:0.5rem">
+                        <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Edit">Rename</BitButton>
+                        <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Copy">Duplicate</BitButton>
+                    </BitStack>
+                </BitDropMenu>
+                <BitDropMenu Text="Classes"
+                             Classes="@(new() { Root = "custom-root",
+                                                Text = "custom-text",
+                                                ChevronDown = "custom-chevron",
+                                                Opened = "custom-opened" })">
+                    <BitStack Gap="0.25rem" Style="padding:0.5rem">
+                        <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Edit">Rename</BitButton>
+                        <BitButton Variant="BitVariant.Text" IconName="@BitIconName.Copy">Duplicate</BitButton>
+                    </BitStack>
+                </BitDropMenu>
+            </BitStack>
+        </div>
         <br /><br />
         <div>
-            The drop menu reads the <BitLink Href="#css-variables-section">CSS variables</BitLink> listed below. Set on
-            <code>:root</code> they re-skin every drop menu, and on the <b>Style</b> of one drop menu they re-skin that one,
-            its callout included. An ancestor element reaches the button's variables only: the open callout is moved to
-            the end of the body, out of the ancestor's reach. They restyle the default, not a choice: an explicit
-            <b>Color</b>, <b>Size</b>, <b>Background</b> or <b>Border</b> wins over the variables for what it sets.
+            For what no parameter covers, the drop menu reads the <BitLink Href="#css-variables-section">CSS variables</BitLink>
+            listed below. Set on <code>:root</code> they re-skin every drop menu, and on the <b>Style</b> of one drop
+            menu they re-skin that one, its callout included. An ancestor element, or a class, reaches the callout
+            as well: the open callout is moved to the end of the body, yet it keeps inheriting from the drop menu and
+            its ancestors, so the last two menus below take the button's and the callout's variables from the
+            element around them. They restyle the default, not a choice: an explicit <b>Color</b>, <b>Size</b>,
+            <b>Background</b> or <b>Border</b> wins over the variables for what it sets.
         </div>
         <br />
         <BitStack Horizontal Wrap Gap="1rem" FitHeight>
@@ -701,12 +705,13 @@
             <div style="display:flex;gap:0.5rem;
                         --bit-DropMenu-min-height: 2.5rem;
                         --bit-DropMenu-active-color: var(--bit-clr-pri-text);
-                        --bit-DropMenu-active-background: var(--bit-clr-pri);">
+                        --bit-DropMenu-active-background: var(--bit-clr-pri);
+                        --bit-DropMenu-callout-background: var(--bit-clr-pri-light);">
                 <BitDropMenu Text="Inherited" Variant="BitVariant.Outline">
-                    <BitText Style="padding:0.5rem">Taller, and primary while open</BitText>
+                    <BitText Style="padding:0.5rem">Taller, primary while open, on a tinted callout</BitText>
                 </BitDropMenu>
                 <BitDropMenu Text="From the ancestor" Variant="BitVariant.Outline">
-                    <BitText Style="padding:0.5rem">Taller, and primary while open</BitText>
+                    <BitText Style="padding:0.5rem">Taller, primary while open, on a tinted callout</BitText>
                 </BitDropMenu>
             </div>
         </BitStack>

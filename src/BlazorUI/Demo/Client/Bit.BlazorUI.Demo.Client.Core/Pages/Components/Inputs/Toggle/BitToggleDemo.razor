@@ -658,27 +658,29 @@
         </div>
         <br /><br />
         <div><b>Component's style &amp; class</b>:</div><br />
-        <BitToggle Label="Styled toggle" Style="background-color:#ff6a00b3;padding:0.5rem;border-radius:0.25rem" />
-        <br />
-        <BitToggle Label="Classed toggle" Class="custom-class" />
-        <br /><br /><br />
-        <div><b>Styles &amp; Classes</b>:</div><br />
-        <BitToggle Label="Styles"
-                   Styles="@(new() { Root = "--bit-Toggle-track-background: lightgray; --bit-Toggle-track-border-color: transparent;",
-                                     Checked = "--bit-Toggle-checked-background: #2ecc71;",
-                                     Thumb = "background: whitesmoke;" } )" />
-        <br />
-        <BitToggle Label="Classes"
-                   Classes="@(new() { Thumb = "custom-thumb",
-                                      Button = "custom-button",
-                                      Checked = "custom-check" } )" />
-        <br />
-        <BitToggle Label="Each side of the track content"
-                   Classes="@(new() { OnContent = "custom-on-content",
-                                      OffContent = "custom-off-content" } )">
-            <OnContent>ON</OnContent>
-            <OffContent>OFF</OffContent>
-        </BitToggle>
+        <div>
+            <BitToggle Label="Styled toggle" Style="background-color:#ff6a00b3;padding:0.5rem;border-radius:0.25rem" />
+            <br />
+            <BitToggle Label="Classed toggle" Class="custom-class" />
+            <br /><br /><br />
+            <div><b>Styles &amp; Classes</b>:</div><br />
+            <BitToggle Label="Styles"
+                       Styles="@(new() { Root = "--bit-Toggle-track-background: lightgray; --bit-Toggle-track-border-color: transparent;",
+                                         Checked = "--bit-Toggle-checked-background: #2ecc71;",
+                                         Thumb = "background: whitesmoke;" } )" />
+            <br />
+            <BitToggle Label="Classes"
+                       Classes="@(new() { Thumb = "custom-thumb",
+                                          Button = "custom-button",
+                                          Checked = "custom-check" } )" />
+            <br />
+            <BitToggle Label="Each side of the track content"
+                       Classes="@(new() { OnContent = "custom-on-content",
+                                          OffContent = "custom-off-content" } )">
+                <OnContent>ON</OnContent>
+                <OffContent>OFF</OffContent>
+            </BitToggle>
+        </div>
         <br /><br /><br />
         <div>
             The BitToggle also reads a set of <BitLink Href="#css-variables-section">CSS variables</BitLink> off its
