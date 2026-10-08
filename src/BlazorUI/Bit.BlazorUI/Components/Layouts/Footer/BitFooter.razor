@@ -4,10 +4,16 @@
 @* Only the explicit Hidden takes the content of the footer out of reach (inert). A footer that the
    scroll slid away is still meant to be reachable: it brings itself back as soon as anything inside
    it takes the focus, and an inert footer can never receive that focus in the first place. *@
+@{
+    // A null written over a splatted attribute removes it, so the label and the inert state are resolved against what
+    // the page wrote by hand (see BitComponentBase.GetSplattedAttribute) rather than overwritten with the parameter's null.
+    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
+    var inert = Hidden || GetSplattedAttribute("inert") is not null;
+}
 <footer @ref=RootElement @attributes="HtmlAttributes"
         id="@_Id"
-        inert="@Hidden"
-        aria-label="@AriaLabel"
+        inert="@inert"
+        aria-label="@ariaLabel"
         style="@StyleBuilder.Value"
         class="@ClassBuilder.Value"
         dir="@Dir?.ToString().ToLower()">

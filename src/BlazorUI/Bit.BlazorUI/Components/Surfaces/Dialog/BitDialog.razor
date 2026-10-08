@@ -5,7 +5,9 @@
 {
     @* While a kept-mounted Dialog is closed it is still in the page, only hidden: inert and aria-hidden
        take it out of the tab sequence and out of the reading order for the browsers that would otherwise
-       still reach into a display:none subtree through a stale reference. *@
+       still reach into a display:none subtree through a stale reference. Both are the Dialog's own state and
+       are written after the splatted attributes on purpose, so an open Dialog is never left hidden by one the
+       page passed. *@
     @* Escape is answered through Utils.setupSurfaceEscape on this root rather than an @onkeydown here: only
        the JS side can tell, as the key is pressed, a press that closes a popup opened from inside the Dialog
        (or that a control inside it took) from one meant for the Dialog itself, and it answers from anywhere

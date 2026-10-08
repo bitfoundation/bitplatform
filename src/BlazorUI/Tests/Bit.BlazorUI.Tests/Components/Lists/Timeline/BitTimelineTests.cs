@@ -1421,4 +1421,19 @@ public class BitTimelineTests : BunitTestContext
     }
 
     #endregion
+
+    [TestMethod]
+    public void BitTimelineShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitTimeline<BitTimelineOption>>(0);
+            builder.AddAttribute(1, "aria-label", "Main");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-tln");
+
+        Assert.AreEqual("Main", root.GetAttribute("aria-label"));
+    }
 }

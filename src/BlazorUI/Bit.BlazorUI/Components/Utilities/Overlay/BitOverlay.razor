@@ -17,13 +17,18 @@
    faded out, and until then it would still take the clicks meant for the page it is uncovering and let Tab
    into the content it is fading away with; inert hands both back the moment it closes. A focus that was
    inside it falls to the body, which is where Utils.restoreFocusOrigin picks it up from. *@
+@{
+    // A null written over a splatted attribute removes it, so the label is resolved against what the page wrote by hand
+    // (see BitComponentBase.GetSplattedAttribute) rather than overwritten with the parameter's null.
+    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
+}
 <div @ref="RootElement"
      tabindex="@(TabIndex ?? "-1")"
      @attributes="HtmlAttributes"
      @onclick="HandleOnClick"
      @onmousedown="HandleOnMouseDown"
      id="@_Id"
-     aria-label="@AriaLabel"
+     aria-label="@ariaLabel"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value"
      dir="@Dir?.ToString().ToLower()"

@@ -2691,4 +2691,19 @@ public class BitPhoneInputTests : BunitTestContext
         Assert.AreEqual(1, BitCountries.Russia.Priority);
         Assert.AreEqual(0, BitCountries.Kazakhstan.Priority);
     }
+
+    [TestMethod]
+    public void BitPhoneInputShouldKeepASplattedAriaOwnsWhileClosed()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitPhoneInput>(0);
+            builder.AddAttribute(1, "aria-owns", "page-listbox");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-phi");
+
+        Assert.AreEqual("page-listbox", root.GetAttribute("aria-owns"));
+    }
 }

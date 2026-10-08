@@ -3001,4 +3001,37 @@ public class BitCalendarTests : BunitTestContext
         // The strip opens on the month the cascaded StartingValue falls in, which only the rebuilt view knows about.
         Assert.IsTrue(component.FindAll(".bit-cal-dbt").Any(b => b.Id!.EndsWith("day-2021-03-10")));
     }
+
+    [TestMethod]
+    public void BitCalendarShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitCalendar>(0);
+            builder.AddAttribute(1, "aria-label", "Main");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-cal");
+
+        Assert.AreEqual("Main", root.GetAttribute("aria-label"));
+        Assert.AreEqual("group", root.GetAttribute("role"));
+    }
+
+    [TestMethod,
+        DataRow(null),
+        DataRow("Departure"),
+    ]
+    public void BitCalendarShouldKeepARoleThePagePassesItself(string? ariaLabel)
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitCalendar>(0);
+            builder.AddAttribute(1, nameof(BitCalendar.AriaLabel), ariaLabel);
+            builder.AddAttribute(2, "role", "application");
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("application", component.Find(".bit-cal").GetAttribute("role"));
+    }
 }

@@ -1513,4 +1513,22 @@ public class BitBasicListTests : BunitTestContext
         }
         return people;
     }
+
+    [TestMethod]
+    public void BitBasicListShouldKeepASplattedRoleAndAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitBasicList<string>>(0);
+            builder.AddAttribute(1, nameof(BitBasicList<string>.Items), new[] { "One", "Two" });
+            builder.AddAttribute(2, "role", "region");
+            builder.AddAttribute(3, "aria-label", "Results");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-bsl");
+
+        Assert.AreEqual("region", root.GetAttribute("role"));
+        Assert.AreEqual("Results", root.GetAttribute("aria-label"));
+    }
 }

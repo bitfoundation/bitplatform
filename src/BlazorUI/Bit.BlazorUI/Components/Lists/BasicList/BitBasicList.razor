@@ -2,10 +2,16 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
-     id="@_Id"
+@* The role comes ahead of the splatted attributes, since the last of two attributes of the same name wins: a role
+   the page passes itself is kept, rather than replaced by this one or dropped along with its null. The label is
+   written after them and only replaces the page's own while the list itself is named by the AriaLabel; otherwise
+   the one the page splatted on is written back (see BitComponentBase.GetSplattedAttribute), since a null written
+   over it would remove it. *@
+<div @ref="RootElement"
      role="@(_LabelOnRoot ? "group" : null)"
-     aria-label="@(_LabelOnRoot ? AriaLabel : null)"
+     @attributes="HtmlAttributes"
+     id="@_Id"
+     aria-label="@(_LabelOnRoot ? AriaLabel : GetSplattedAttribute("aria-label"))"
      tabindex="@(TabIndex ?? (_focusHandedToRoot ? "-1" : null))"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"

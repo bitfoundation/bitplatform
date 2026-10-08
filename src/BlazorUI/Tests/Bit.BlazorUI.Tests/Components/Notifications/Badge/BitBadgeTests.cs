@@ -2505,4 +2505,20 @@ public class BitBadgeTests : BunitTestContext
             });
         });
     }
+
+    [TestMethod]
+    public void BitBadgeShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitBadge>(0);
+            builder.AddAttribute(1, nameof(BitBadge.Content), 5);
+            builder.AddAttribute(2, "aria-label", "Main");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-bdg");
+
+        Assert.AreEqual("Main", root.GetAttribute("aria-label"));
+    }
 }

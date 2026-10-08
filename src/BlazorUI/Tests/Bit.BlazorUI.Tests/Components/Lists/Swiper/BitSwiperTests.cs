@@ -1858,4 +1858,22 @@ public class BitSwiperTests : BunitTestContext
 
         return property.GetValue(options);
     }
+
+    [TestMethod]
+    public void BitSwiperShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitSwiper>(0);
+            builder.AddAttribute(1, "aria-label", "Featured");
+            builder.AddAttribute(2, nameof(BitSwiper.ChildContent), (RenderFragment)(items =>
+            {
+                items.OpenComponent<BitSwiperItem>(0);
+                items.CloseComponent();
+            }));
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("Featured", component.Find(".bit-swp").GetAttribute("aria-label"));
+    }
 }

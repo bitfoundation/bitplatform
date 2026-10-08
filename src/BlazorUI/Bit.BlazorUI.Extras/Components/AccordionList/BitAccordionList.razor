@@ -9,7 +9,7 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
-     aria-label="@AriaLabel">
+     aria-label="@_AriaLabel">
     @if (ChildContent is not null || Options is not null)
     {
         <CascadingValue Value="this" IsFixed="true">

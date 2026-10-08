@@ -15,7 +15,8 @@
 <div class="bit-isc-sts" role="status" aria-busy="false" dir="@Dir?.ToString().ToLower()">@GetStatusMessage()</div>
 
 @* The role and the name are written BEFORE the splatted attributes, so a role or a name the page writes as a
-   plain attribute wins over them - and a null name never removes the one it wrote. *@
+   plain attribute wins over them - and a null name never removes the one it wrote. aria-busy is the list's own
+   state and is written after them, always as "true" or "false", so it is never a null that removes anything. *@
 <div @ref="RootElement"
      role="@_Role"
      aria-label="@(Feed ? null : AriaLabel)"

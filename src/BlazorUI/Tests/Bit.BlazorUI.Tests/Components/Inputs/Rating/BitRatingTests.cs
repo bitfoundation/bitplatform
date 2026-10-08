@@ -2317,4 +2317,31 @@ public class BitRatingTests : BunitTestContext
 
         Assert.IsFalse(component.Find(".bit-rtg").ClassList.Contains("bit-inv"));
     }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true),
+    ]
+    public void BitRatingShouldKeepTheSplattedStatesOfAnInteractiveRatingOnly(bool readOnly)
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitRating>(0);
+            builder.AddAttribute(1, nameof(BitRating.ReadOnly), readOnly);
+            builder.AddAttribute(2, "aria-required", "true");
+            builder.AddAttribute(3, "aria-invalid", "true");
+            builder.AddAttribute(4, "aria-disabled", "true");
+            builder.AddAttribute(5, "aria-orientation", "horizontal");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-rtg");
+
+        // A read-only rating is an image, which supports none of them, so it writes none of them - the page's included.
+        var expected = readOnly ? null : "true";
+        Assert.AreEqual(expected, root.GetAttribute("aria-required"));
+        Assert.AreEqual(expected, root.GetAttribute("aria-invalid"));
+        Assert.AreEqual(expected, root.GetAttribute("aria-disabled"));
+        Assert.AreEqual(readOnly ? null : "horizontal", root.GetAttribute("aria-orientation"));
+    }
 }

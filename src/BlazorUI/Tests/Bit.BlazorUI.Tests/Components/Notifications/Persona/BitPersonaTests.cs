@@ -3109,4 +3109,22 @@ public class BitPersonaTests : BunitTestContext
 
         return colorClass;
     }
+
+    [TestMethod]
+    public void BitPersonaShouldKeepASplattedRoleAndAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitPersona>(0);
+            builder.AddAttribute(1, nameof(BitPersona.PrimaryText), "Annie Lindqvist");
+            builder.AddAttribute(2, "role", "listitem");
+            builder.AddAttribute(3, "aria-label", "Annie Lindqvist");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-prs");
+
+        Assert.AreEqual("listitem", root.GetAttribute("role"));
+        Assert.AreEqual("Annie Lindqvist", root.GetAttribute("aria-label"));
+    }
 }

@@ -668,8 +668,9 @@ public partial class BitColorPicker : BitComponentBase
     private string _TabIndex => Disabled ? "-1" : (TabIndex ?? "0");
 
     /// <summary>
-    /// The accessible name of the picker as a whole. An explicit AriaLabel wins; otherwise the color itself
-    /// is spelled out, since a gradient carries no text a screen reader could read instead.
+    /// The accessible name of the picker as a whole. An explicit AriaLabel wins, then an aria-label the page
+    /// splatted on; otherwise the color itself is spelled out, since a gradient carries no text a screen reader
+    /// could read instead.
     /// </summary>
     /// <remarks>
     /// The color is both named and spelled out in channels. The name is what actually tells someone which
@@ -681,6 +682,10 @@ public partial class BitColorPicker : BitComponentBase
         get
         {
             if (AriaLabel.HasValue()) return AriaLabel!;
+
+            var splattedAriaLabel = GetSplattedAttribute("aria-label");
+
+            if (splattedAriaLabel.HasValue()) return splattedAriaLabel!;
 
             var texts = _Texts;
 
@@ -870,10 +875,20 @@ public partial class BitColorPicker : BitComponentBase
     private string _ContrastId => $"{_Id}-contrast";
 
     /// <summary>
-    /// An explicit AriaLabel still wins, and a Label names the panel through the element it is rendered
-    /// into. Only a picker with neither falls back to spelling the color out on the group itself.
+    /// An explicit AriaLabel (or one the page splatted on) still wins, and a Label names the panel through the
+    /// element it is rendered into; without one, an aria-labelledby the page splatted on is written back, since a
+    /// null written after the splat would remove it. Only a picker with none of them falls back to spelling the
+    /// color out on the group itself.
     /// </summary>
-    private string? _AriaLabelledBy => AriaLabel.HasValue() is false && _HasLabel ? _LabelId : null;
+    private string? _AriaLabelledBy
+    {
+        get
+        {
+            if (AriaLabel.HasValue() || GetSplattedAttribute("aria-label").HasValue()) return null;
+
+            return _HasLabel ? _LabelId : GetSplattedAttribute("aria-labelledby");
+        }
+    }
 
     /// <summary>
     /// How far the picked color stands from the one it will be read on, on the WCAG 2 scale of 1 to 21.

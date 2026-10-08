@@ -2410,4 +2410,21 @@ public class BitColorPickerTests : BunitTestContext
         Assert.AreEqual(0, com.FindAll(".bit-clp-hsd").Count);
         Assert.AreEqual(2, com.FindAll(".bit-clp-prt").Count);
     }
+
+    [TestMethod]
+    public void BitColorPickerShouldKeepASplattedAriaLabelAndAriaDisabled()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitColorPicker>(0);
+            builder.AddAttribute(1, "aria-label", "Brand color");
+            builder.AddAttribute(2, "aria-disabled", "true");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-clp");
+
+        Assert.AreEqual("Brand color", root.GetAttribute("aria-label"));
+        Assert.AreEqual("true", root.GetAttribute("aria-disabled"));
+    }
 }

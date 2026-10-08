@@ -2225,4 +2225,31 @@ public class BitPivotTests : BunitTestContext
             }
         });
     }
+
+    [TestMethod]
+    public void BitPivotItemShouldKeepTheAttributesThePageSplatsOn()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitPivot>(0);
+            builder.AddAttribute(1, nameof(BitPivot.ChildContent), (RenderFragment)(items =>
+            {
+                items.OpenComponent<BitPivotItem>(0);
+                items.AddAttribute(1, nameof(BitPivotItem.HeaderText), "Files");
+                items.AddAttribute(2, "aria-label", "All files");
+                items.AddAttribute(3, "aria-disabled", "true");
+                items.AddAttribute(4, "aria-keyshortcuts", "Alt+1");
+                items.AddAttribute(5, "draggable", "false");
+                items.CloseComponent();
+            }));
+            builder.CloseComponent();
+        });
+
+        var tab = component.Find(".bit-pvti");
+
+        Assert.AreEqual("All files", tab.GetAttribute("aria-label"));
+        Assert.AreEqual("true", tab.GetAttribute("aria-disabled"));
+        Assert.AreEqual("Alt+1", tab.GetAttribute("aria-keyshortcuts"));
+        Assert.AreEqual("false", tab.GetAttribute("draggable"));
+    }
 }

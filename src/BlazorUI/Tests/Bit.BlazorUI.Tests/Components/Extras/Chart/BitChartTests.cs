@@ -2109,6 +2109,22 @@ public class BitChartTests : BunitTestContext
 
         StringAssert.Contains(component.Find(".bit-cht-ttl > div").GetAttribute("style"), "text-align:start");
     }
+
+    [TestMethod]
+    public void BitChartShouldKeepASplattedAriaBusyWhileNotLoading()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitChart>(0);
+            builder.AddAttribute(1, nameof(BitChart.Data), TwoSeries());
+            builder.AddAttribute(2, "aria-busy", "false");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-cht");
+
+        Assert.AreEqual("false", root.GetAttribute("aria-busy"));
+    }
 }
 
 internal static class BitChartTestExtensions

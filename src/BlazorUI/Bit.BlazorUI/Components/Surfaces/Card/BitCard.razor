@@ -17,11 +17,12 @@
 
     @* An attribute written after the splat wins over the one the app passed in through HtmlAttributes, and a
        null one takes it off the element altogether. What the card has of its own therefore comes first, but
-       it falls back to whatever came in with the attributes. *@
+       it falls back to whatever came in with the attributes, however the app cased its name (see
+       BitComponentBase.GetSplattedAttribute). *@
     var splattedRole = _SplattedRole;
-    var splattedLabel = HtmlAttributes.TryGetValue("aria-label", out var sal) ? sal?.ToString() : null;
-    var splattedTabIndex = HtmlAttributes.TryGetValue("tabindex", out var sti) ? sti?.ToString() : null;
-    var splattedLabelledBy = HtmlAttributes.TryGetValue("aria-labelledby", out var slb) ? slb?.ToString() : null;
+    var splattedLabel = GetSplattedAttribute("aria-label");
+    var splattedTabIndex = GetSplattedAttribute("tabindex");
+    var splattedLabelledBy = GetSplattedAttribute("aria-labelledby");
 
     var label = AriaLabel ?? splattedLabel;
     var tabIndex = TabIndex ?? splattedTabIndex;
@@ -66,7 +67,13 @@
        generic role, which prohibits it, and a validator flags it there. It is only reported where the card has
        a role that can carry it - the group it becomes with a name, or whatever the app splatted in. What
        actually takes a disabled card off the pointer and out of the tab order is the bit-dis class and the
-       missing tab index, and neither of those depends on this. *@
+       missing tab index, and neither of those depends on this. The states the card does not report itself are the
+       ones the app splatted in, written back rather than wiped by a null. *@
+    var ariaPressed = (role is "button" ? selectedState : null) ?? GetSplattedAttribute("aria-pressed");
+    var ariaSelected = (selectedRole ? selectedState : null) ?? GetSplattedAttribute("aria-selected");
+    var ariaChecked = (checkedRole ? selectedState : null) ?? GetSplattedAttribute("aria-checked");
+    var ariaBusy = Loading ? "true" : GetSplattedAttribute("aria-busy");
+    var ariaDisabled = role is not null && Disabled ? "true" : GetSplattedAttribute("aria-disabled");
 
     @* The stretched link or button carries no text of its own, so what names it is whatever the card was named
        by: an aria-labelledby the app splatted in, or failing that the title of the card, or failing that its
@@ -108,11 +115,11 @@
      tabindex="@rootTabIndex"
      aria-label="@(labelOnRoot ? label : null)"
      aria-labelledby="@(labelOnRoot ? splattedLabelledBy : null)"
-     aria-pressed="@(role is "button" ? selectedState : null)"
-     aria-selected="@(selectedRole ? selectedState : null)"
-     aria-checked="@(checkedRole ? selectedState : null)"
-     aria-busy="@(Loading ? "true" : null)"
-     aria-disabled="@(role is not null && Disabled ? "true" : null)"
+     aria-pressed="@ariaPressed"
+     aria-selected="@ariaSelected"
+     aria-checked="@ariaChecked"
+     aria-busy="@ariaBusy"
+     aria-disabled="@ariaDisabled"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">

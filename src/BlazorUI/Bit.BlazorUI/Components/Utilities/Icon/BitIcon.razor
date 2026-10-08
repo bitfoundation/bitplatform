@@ -11,13 +11,13 @@
        and a null one takes it off the element altogether. Everything the icon decides below therefore
        has to read what came in with the attributes and write it back, or setting it that way would
        stop working. *@
-    var splattedLabel = HtmlAttributes.TryGetValue("aria-label", out var sal) ? sal?.ToString() : null;
-    var splattedTitle = HtmlAttributes.TryGetValue("title", out var stl) ? stl?.ToString() : null;
-    var splattedRole = HtmlAttributes.TryGetValue("role", out var srl) ? srl?.ToString() : null;
-    var splattedTabIndex = HtmlAttributes.TryGetValue("tabindex", out var sti) ? sti?.ToString() : null;
-    var splattedHidden = HtmlAttributes.TryGetValue("aria-hidden", out var shd) ? shd?.ToString() : null;
-    var splattedTranslate = HtmlAttributes.TryGetValue("translate", out var stn) ? stn?.ToString() : null;
-    var splattedDisabled = HtmlAttributes.TryGetValue("aria-disabled", out var sdd) ? sdd?.ToString() : null;
+    var splattedLabel = GetSplattedAttribute("aria-label");
+    var splattedTitle = GetSplattedAttribute("title");
+    var splattedRole = GetSplattedAttribute("role");
+    var splattedTabIndex = GetSplattedAttribute("tabindex");
+    var splattedHidden = GetSplattedAttribute("aria-hidden");
+    var splattedTranslate = GetSplattedAttribute("translate");
+    var splattedDisabled = GetSplattedAttribute("aria-disabled");
 
     var label = AriaLabel ?? splattedLabel;
     var title = Title ?? splattedTitle;

@@ -1025,21 +1025,24 @@ public partial class BitMessage : BitComponentBase
     // A name turns the message into something a screen reader can announce as one unit and step over as one,
     // which is what a group is for. Without a name there is nothing to announce, and an unnamed group would only
     // add a boundary to walk in and out of, so the root stays a plain div.
-    private bool _HasRootName => AriaLabel.HasValue() || _HasTitle;
+    private bool _HasRootName => _AriaLabel.HasValue() || _HasTitle;
+
+    // A null written over a splatted attribute removes it, so the label is resolved against what the page wrote by hand
+    // (see BitComponentBase.GetSplattedAttribute) rather than overwritten with the parameter's null.
+    private string? _AriaLabel => AriaLabel ?? GetSplattedAttribute("aria-label");
 
     // Everything the message writes on its root is written after the splatted attributes, and an attribute
     // written after the splat replaces what the splat put there, null included - which would quietly wipe an
     // aria attribute a consumer had put on the component. So what was written on the component itself is handed
-    // back out where there was one: it was put there on purpose, and it wins.
-    private string? RootAttribute(string name, string? value)
-        => HtmlAttributes.TryGetValue(name, out var written) ? written?.ToString() : value;
+    // back out where there was one, however it was cased: it was put there on purpose, and it wins.
+    private string? RootAttribute(string name, string? value) => GetSplattedAttribute(name) ?? value;
 
     private string? _RootRole => RootAttribute("role", _HasRootName ? "group" : null);
 
     // An explicit label wins; otherwise the title of the message is the name of the group, the way the heading
     // of a section names the section.
     private string? _RootLabelledBy
-        => RootAttribute("aria-labelledby", (AriaLabel.HasValue() is false && _HasTitle) ? $"{_Id}-ttl" : null);
+        => RootAttribute("aria-labelledby", (_AriaLabel.HasValue() is false && _HasTitle) ? $"{_Id}-ttl" : null);
 
     // A description is only ever read out where the focus lands on the thing it describes, so the message points
     // at its own text only while the focus can land on it at all. Without it, a reader taken to the message by

@@ -2850,4 +2850,22 @@ public partial class BitCarouselTests : BunitTestContext
             });
         });
     }
+
+    [TestMethod]
+    public void BitCarouselShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitCarousel>(0);
+            builder.AddAttribute(1, "aria-label", "Featured");
+            builder.AddAttribute(2, nameof(BitCarousel.ChildContent), (RenderFragment)(items =>
+            {
+                items.OpenComponent<BitCarouselItem>(0);
+                items.CloseComponent();
+            }));
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("Featured", component.Find(".bit-csl").GetAttribute("aria-label"));
+    }
 }

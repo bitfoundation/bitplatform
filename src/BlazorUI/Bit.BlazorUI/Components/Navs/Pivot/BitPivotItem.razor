@@ -7,6 +7,15 @@
    The default of the dragover is prevented only while the tab can actually take a drop: a tab that
    always prevented it would swallow anything else dropped on it - a file, a link - that the page
    itself would otherwise be handling. *@
+@{
+    // A null written over a splatted attribute removes it, so what a page can also write by hand is resolved against
+    // what it wrote (see BitComponentBase.GetSplattedAttribute) rather than overwritten with the component's null. The
+    // role, the roving tab index, aria-selected and the position in the set belong to the tablist and stay its own.
+    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
+    var ariaDisabled = _IsDisabled ? "true" : GetSplattedAttribute("aria-disabled");
+    var draggable = _IsReorderable ? "true" : GetSplattedAttribute("draggable");
+    var keyShortcuts = string.Join(' ', new[] { GetSplattedAttribute("aria-keyshortcuts"), Parent?.GetItemKeyShortcuts(this) }.Where(keys => keys.HasValue()));
+}
 <div @ref="RootElement" @attributes="HtmlAttributes"
      @onclick="HandleOnClick"
      @onfocusin="HandleOnFocusIn"
@@ -18,17 +27,17 @@
      id="@_Id"
      role="tab"
      title="@Title"
-     aria-label="@AriaLabel"
+     aria-label="@ariaLabel"
      data-content="@HeaderText"
-     draggable="@(_IsReorderable ? "true" : null)"
+     draggable="@draggable"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value @Parent?.GetItemDragClass(this) @Parent?.GetItemOverflowClass(this)"
      tabindex="@Parent?.GetItemTabIndex(this)"
      aria-controls="@Parent?.GetItemPanelId(this)"
      aria-posinset="@Parent?.GetItemPosInSet(this)"
      aria-setsize="@Parent?.GetItemSetSize(this)"
-     aria-keyshortcuts="@Parent?.GetItemKeyShortcuts(this)"
-     aria-disabled="@(_IsDisabled ? "true" : null)"
+     aria-keyshortcuts="@(keyShortcuts.HasValue() ? keyShortcuts : null)"
+     aria-disabled="@ariaDisabled"
      aria-selected="@(IsSelected ? "true": "false")">
     <span style="@Parent?.Styles?.HeaderItemContent" class="bit-pvti-cnt @Parent?.Classes?.HeaderItemContent">
         @{

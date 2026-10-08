@@ -3,6 +3,16 @@
 @typeparam TItem
 @typeparam TValue
 
+@{
+    // A null written over a splatted attribute removes it, so every attribute a page can also write by hand is resolved
+    // against what it wrote (see BitComponentBase.GetSplattedAttribute) instead of being overwritten with the null of the
+    // parameter or of a state the group is not in. The radiogroup role and the orientation are the pattern's own.
+    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
+    var ariaRequired = IsRequired ? "true" : GetSplattedAttribute("aria-required");
+    var ariaInvalid = ValueInvalid is true ? "true" : GetSplattedAttribute("aria-invalid");
+    var ariaReadOnly = ReadOnly ? "true" : GetSplattedAttribute("aria-readonly");
+    var ariaDisabled = Disabled ? "true" : GetSplattedAttribute("aria-disabled");
+}
 @* The invalid state belongs to the choice as a whole, not to the option that happens to be focused,
    so the group carries the aria-invalid too and not only the individual radio inputs of the base class. *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
@@ -11,13 +21,13 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
-     aria-label="@AriaLabel"
+     aria-label="@ariaLabel"
      aria-labelledby="@GetAriaLabelledBy()"
      aria-describedby="@GetAriaDescribedBy()"
-     aria-required="@(IsRequired ? "true" : null)"
-     aria-invalid="@(ValueInvalid is true ? "true" : null)"
-     aria-readonly="@(ReadOnly ? "true" : null)"
-     aria-disabled="@(Disabled ? "true" : null)"
+     aria-required="@ariaRequired"
+     aria-invalid="@ariaInvalid"
+     aria-readonly="@ariaReadOnly"
+     aria-disabled="@ariaDisabled"
      aria-orientation="@(Horizontal ? "horizontal" : "vertical")">
 
     @if (HasLabel)
