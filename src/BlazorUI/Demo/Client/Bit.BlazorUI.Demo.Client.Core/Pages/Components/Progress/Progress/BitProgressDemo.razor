@@ -155,12 +155,18 @@
 
         <DemoExample Title="Rounded & striped" RazorCode="@example7RazorCode" Id="example7">
             <div>
-                <b>Rounded</b> gives the bar pill ends and the ring a round cap. <b>Striped</b> paints diagonal stripes
-                over a linear bar and <b>StripedAnimation</b> makes them travel - the conventional "still running" on a
-                bar that is not moving much.
+                <b>Rounded</b> gives the bar pill ends and the ring a round cap. Left off, the bar takes the corner the
+                theme gives a progress, so <b>Shape</b> is what pins one down: <b>Pill</b> is <b>Rounded</b>,
+                <b>Rounded</b> the theme's corner and <b>Square</b> sharp corners whatever the theme says.
+                <b>Striped</b> paints diagonal stripes over a linear bar and <b>StripedAnimation</b> makes them travel -
+                the conventional "still running" on a bar that is not moving much.
             </div>
             <br />
             <BitProgress Rounded AriaLabel="Rounded bar" Percent="42" Thickness="10" />
+            <br />
+            <BitProgress Shape="BitShape.Rounded" AriaLabel="Bar with the theme's corners" Percent="42" Thickness="10" />
+            <br />
+            <BitProgress Shape="BitShape.Square" AriaLabel="Square bar" Percent="42" Thickness="10" />
             <br />
             <BitProgress Rounded Indeterminate AriaLabel="Rounded indeterminate bar" Thickness="10" />
             <br />

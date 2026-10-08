@@ -89,6 +89,10 @@ private double bufferPercent = 40;";
     private readonly string example7RazorCode = @"
 <BitProgress Rounded AriaLabel=""Rounded bar"" Percent=""42"" Thickness=""10"" />
 
+<BitProgress Shape=""BitShape.Rounded"" AriaLabel=""Bar with the theme's corners"" Percent=""42"" Thickness=""10"" />
+
+<BitProgress Shape=""BitShape.Square"" AriaLabel=""Square bar"" Percent=""42"" Thickness=""10"" />
+
 <BitProgress Rounded Indeterminate AriaLabel=""Rounded indeterminate bar"" Thickness=""10"" />
 
 <BitProgress Striped AriaLabel=""Striped bar"" Percent=""42"" Thickness=""12"" />

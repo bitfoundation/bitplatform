@@ -53,8 +53,12 @@
     // M3 primary tab indicator: 3dp corners on the edge facing the label, square on the edge it stands on.
     --bit-shp-radius-tab-indicator: 0.1875rem; //3px
     --bit-shp-radius-tab-indicator-base: 0;
-    // M3 linear progress indicator: full corners on the track and on the active indicator.
-    --bit-shp-radius-progress: var(--bit-shp-radius-full);
+    // M3 linear progress indicator: full corners on the track and on the active indicator. A length of its
+    // own rather than var(--bit-shp-radius-full): a var() here is substituted on :root, so a theme applied
+    // lower in the tree that re-values the full radius would reach every other reader of it but not this,
+    // and BitThemeMapper has no family alias to re-declare for a preset. A theme re-shapes the bars through
+    // Radius.Progress; a Pill bar reads the full radius where it is drawn, and follows such a theme.
+    --bit-shp-radius-progress: 9999px;
     // M3 focus indicator: 3dp ring offset 2dp.
     --bit-shp-focus-ring-width: 0.1875rem; //3px
     --bit-shp-focus-ring-offset: 0.125rem; //2px

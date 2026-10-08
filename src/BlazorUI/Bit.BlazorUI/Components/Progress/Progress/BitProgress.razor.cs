@@ -249,6 +249,11 @@ public partial class BitProgress : BitComponentBase
     /// Rounds the ends of the bar: a pill-shaped track and bar in linear mode, and a round stroke cap
     /// in circular mode.
     /// </summary>
+    /// <remarks>
+    /// This is the shorthand for <see cref="BitShape.Pill"/>; a <see cref="Shape"/> of its own takes precedence
+    /// over it. Left off, the bar is not square but takes the corner the theme gives a linear progress - square
+    /// under Fluent, rounded under the Extras presets - so <see cref="Shape"/> is what asks for a square one.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Rounded { get; set; }
 
@@ -264,6 +269,26 @@ public partial class BitProgress : BitComponentBase
     /// The gap between two <see cref="Segments"/>, in pixels.
     /// </summary>
     [Parameter] public int SegmentGap { get; set; } = 4;
+
+    /// <summary>
+    /// The corners of the linear track and bar, and the stroke cap of the ring.
+    /// </summary>
+    /// <remarks>
+    /// Only <see cref="BitShape.Pill"/>, <see cref="BitShape.Rounded"/> and <see cref="BitShape.Square"/> mean
+    /// anything here: <see cref="BitShape.Pill"/> is a pill-shaped bar and a round cap on the ring,
+    /// <see cref="BitShape.Rounded"/> the corner the theme gives a linear progress and <see cref="BitShape.Square"/>
+    /// sharp corners, the last two with the ring's flat cap. <see cref="BitShape.Circle"/> has no proportions to
+    /// impose on a bar and falls back to the default.
+    /// <br />
+    /// This supersedes <see cref="Rounded"/>, which is the same as <see cref="BitShape.Pill"/> said with a flag.
+    /// When both are set, this one wins.
+    /// <br />
+    /// An explicit value wins over <c>--bit-Progress-radius</c>; left unset (and with <see cref="Rounded"/> off),
+    /// the bar takes the theme's progress corner - a segmented one stays square, since its pieces are cut square
+    /// on their inner edges - unless that variable says otherwise.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public BitShape? Shape { get; set; }
 
     /// <summary>
     /// Writes the percentage beside the bar, or in the middle of the ring. <see cref="PercentNumberPosition"/>
@@ -334,7 +359,13 @@ public partial class BitProgress : BitComponentBase
 
         ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-prb"));
 
-        ClassBuilder.Register(() => Rounded ? "bit-prb-rnd" : string.Empty);
+        ClassBuilder.Register(() => (Shape ?? (Rounded ? BitShape.Pill : null)) switch
+        {
+            BitShape.Pill => "bit-prb-rnd",
+            BitShape.Rounded => "bit-prb-shr",
+            BitShape.Square => "bit-prb-sqr",
+            _ => string.Empty
+        });
 
         ClassBuilder.Register(() => Reversed ? "bit-prb-rev" : string.Empty);
 

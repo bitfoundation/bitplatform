@@ -1693,7 +1693,7 @@ public partial class BitFileUploadDemo
         new()
         {
             Name = "--bit-FileUpload-progress-radius",
-            DefaultValue = "--bit-shp-radius-full",
+            DefaultValue = "--bit-shp-radius-progress",
             Description = "Corner radius of a file's progress bar and its track.",
         },
         new()

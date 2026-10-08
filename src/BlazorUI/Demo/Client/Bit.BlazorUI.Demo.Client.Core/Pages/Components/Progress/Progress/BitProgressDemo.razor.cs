@@ -206,7 +206,7 @@ public partial class BitProgressDemo
             Name = "Rounded",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Pill-shaped ends on the bar and round caps on the ring.",
+            Description = "Pill-shaped ends on the bar and round caps on the ring - the shorthand for a Pill Shape, which wins over it when set. Left off, the bar is not square: it takes the corner the theme gives a linear progress (--bit-shp-radius-progress - square under Fluent, rounded under the Fluent 2, Material and Cupertino presets), so Shape Square is what asks for a square one.",
         },
         new()
         {
@@ -221,6 +221,15 @@ public partial class BitProgressDemo
             Type = "int?",
             DefaultValue = "null",
             Description = "Cuts the bar into this many equal segments. The value still fills continuously. No effect on a ring.",
+        },
+        new()
+        {
+            Name = "Shape",
+            Type = "BitShape?",
+            DefaultValue = "null",
+            Description = "The corners of the track and the bar, and the stroke cap of the ring. Only Pill (a pill-shaped bar, a round cap), Rounded (the corner the theme gives a linear progress) and Square (sharp corners) are honoured; Circle falls back to the default. Supersedes Rounded when both are set. An explicit value wins over --bit-Progress-radius; left unset, the bar takes the theme's progress corner and a segmented one stays square, unless that variable says otherwise.",
+            LinkType = LinkType.Link,
+            Href = "#shape-enum"
         },
         new()
         {
@@ -338,8 +347,8 @@ public partial class BitProgressDemo
         new()
         {
             Name = "--bit-Progress-radius",
-            DefaultValue = "--bit-shp-radius-progress",
-            Description = "Corner radius of the track and the bar. Rounded wins over it with a full radius.",
+            DefaultValue = "--bit-shp-radius-progress (--bit-shp-radius-none when segmented)",
+            Description = "Corner radius of the track and the bar. The Shape and Rounded parameters win over it.",
         },
         new()
         {
@@ -489,6 +498,7 @@ public partial class BitProgressDemo
                 new() { Name = "Top", Description = "Above the bar, on the same row as the label and aligned to the end of it. Without a label it is a line of its own above the bar.", Value = "4" }
             ]
         },
+        DemoSharedEnums.BitShape().Only("Rounded", "Square", "Pill"),
         DemoSharedEnums.BitSize()
     ];
 

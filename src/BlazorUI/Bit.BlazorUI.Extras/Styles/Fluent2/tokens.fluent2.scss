@@ -46,9 +46,9 @@
     --bit-shp-radius-selection: 0.125rem; //2px - Checkbox indicator
     // The TabList selection indicator is a capsule (borderRadiusCircular).
     --bit-shp-radius-tab-indicator: var(--bit-shp-radius-full);
-    // The ProgressBar is rounded by default (shape="rounded"), which on its thin track reads as round
-    // ends, so a linear progress takes full corners on its track and bar.
-    --bit-shp-radius-progress: var(--bit-shp-radius-full);
+    // The ProgressBar is rounded by default (shape="rounded"), which is borderRadiusMedium on the track and
+    // the bar - round ends on its 2px/4px tracks, but a 4px corner rather than a pill on a thicker one.
+    --bit-shp-radius-progress: 0.25rem; //4px - borderRadiusMedium
     // strokeWidthThin / strokeWidthThick.
     --bit-shp-brd-width: 0.0625rem; //1px
     --bit-shp-brd-width-thick: 0.125rem; //2px

@@ -478,8 +478,9 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
 --bit-shp-radius-tab-indicator
 --bit-shp-radius-tab-indicator-base
 
-/* the track and bar of a linear progress - a primitive of its own, 0 under Fluent and full
-   under Fluent 2, Material and Cupertino (a Rounded progress is a pill regardless) */
+/* the track and bar of a linear progress (BitProgress, BitFileUpload) - a primitive of its own,
+   0 under Fluent, 4px under Fluent 2 and full under Material and Cupertino (an explicit Shape
+   or Rounded on a BitProgress wins over it) */
 --bit-shp-radius-progress
 
 /* elevation per surface family */

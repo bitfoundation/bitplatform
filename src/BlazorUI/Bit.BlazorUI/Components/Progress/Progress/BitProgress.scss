@@ -9,7 +9,7 @@
 //   --bit-Progress-stripe-color         the stripes of a Striped bar                 (default: $clr-bg-pri at 25%)
 //   --bit-Progress-stripe-size          pitch of the stripes                         (default: spacing(2))
 //   --bit-Progress-thickness            bar height, vertical bar width, ring stroke  (default: $siz-track-sm for a bar, $siz-spinner-stroke for a ring)
-//   --bit-Progress-radius               corner radius of a linear bar not Rounded    (default: $shp-radius-progress)
+//   --bit-Progress-radius               corner radius of a linear bar with no Shape  (default: $shp-radius-progress, $shp-radius-none when segmented)
 //   --bit-Progress-diameter             smallest diameter of the ring                (default: spacing(6.25))
 //   --bit-Progress-length               length of a Vertical bar                     (default: spacing(20))
 //   --bit-Progress-transition-duration  how long the fill takes to follow the value  (default: $mot-duration)
@@ -23,7 +23,7 @@
 //
 // A parameter written on the progress wins over the variable that restyles what it sets: an explicit Color over the
 // bar and bar-text colors, an explicit Size over the font sizes, the thickness and the diameter, and
-// BarColor, TrackColor, Thickness, Diameter, Length and Rounded over theirs. The variables restyle the default, not
+// BarColor, TrackColor, Thickness, Diameter, Length, Shape and Rounded over theirs. The variables restyle the default, not
 // a choice - which is why Color and Size publish nothing while they are left unset: a class that always carried the
 // default would be indistinguishable from one that was asked for. The readout in a ring is the exception: its step
 // up the type ramp is one the component works out from the drawn size rather than one that was asked for, so
@@ -420,8 +420,16 @@
 }
 
 
-// Rounded: a pill in linear mode, a round stroke cap in circular mode. The track is rounded with the
-// bar so the two ends of an empty bar are not square while the filled one is round.
+// Segments: the mask below cuts the inner edges of every piece square, so a corner radius would only ever
+// reach the two outer ends of the bar - a first and a last segment rounded on one side alone. The default
+// corner of a segmented bar is therefore square whatever the theme rounds a plain bar to; the public
+// variable and an explicit Shape still say otherwise, the shape classes coming later at the same weight.
+.bit-prb-seg {
+    --bit-prb-radius: var(--bit-Progress-radius, #{$shp-radius-none});
+}
+
+// Shape Pill, and Rounded: a pill in linear mode, a round stroke cap in circular mode. The track is rounded
+// with the bar so the two ends of an empty bar are not square while the filled one is round.
 .bit-prb-rnd {
     --bit-prb-radius: #{$shp-radius-full};
 
@@ -430,6 +438,17 @@
     .bit-prb-cri {
         stroke-linecap: round;
     }
+}
+
+// Shape Rounded: the corner the theme gives a linear progress, asked for explicitly - so it wins over the public
+// variable, and over the square default of a segmented bar.
+.bit-prb-shr {
+    --bit-prb-radius: #{$shp-radius-progress};
+}
+
+// Shape Square: sharp corners whatever the theme rounds a progress to.
+.bit-prb-sqr {
+    --bit-prb-radius: #{$shp-radius-none};
 }
 
 // Reversed: the bar is absolutely positioned and takes its static position - the start edge - when no

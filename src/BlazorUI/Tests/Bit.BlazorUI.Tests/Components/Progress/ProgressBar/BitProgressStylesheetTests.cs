@@ -91,6 +91,38 @@ public class BitProgressStylesheetTests
     }
 
     [TestMethod]
+    public void BitProgressExplicitShapesShouldWinOverTheRadiusVariable()
+    {
+        var stylesheet = ReadStylesheet();
+        var themed = SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb-shr {");
+        var square = SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb-sqr {");
+
+        // Rounded and Square are choices too, so neither reads the public variable that restyles the default.
+        StringAssert.Contains(themed, "--bit-prb-radius: #{$shp-radius-progress};");
+        StringAssert.Contains(square, "--bit-prb-radius: #{$shp-radius-none};");
+        Assert.IsFalse(themed.Contains("--bit-Progress-radius"), "Shape Rounded reads the public radius variable.");
+        Assert.IsFalse(square.Contains("--bit-Progress-radius"), "Shape Square reads the public radius variable.");
+    }
+
+    [TestMethod]
+    public void BitProgressSegmentsShouldDefaultToSquareCornersBeforeTheShapeClasses()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The segment mask cuts every inner edge square, so a theme's rounded corner would only reach the two
+        // outer ends; the default of a segmented bar is square, and an explicit shape - declared later at the
+        // same weight - still wins over it.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb-seg {"), "--bit-prb-radius: var(--bit-Progress-radius, #{$shp-radius-none});");
+
+        var segments = stylesheet.IndexOf("\n.bit-prb-seg {", StringComparison.Ordinal);
+
+        foreach (var shape in new[] { "\n.bit-prb-rnd {", "\n.bit-prb-shr {", "\n.bit-prb-sqr {" })
+        {
+            Assert.IsTrue(segments < stylesheet.IndexOf(shape, StringComparison.Ordinal), $"the segment default is declared after {shape.Trim()} and outranks it");
+        }
+    }
+
+    [TestMethod]
     public void BitProgressBarShouldTakeItsThicknessFromTheTrackToken()
     {
         var stylesheet = ReadStylesheet();

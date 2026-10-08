@@ -1246,6 +1246,34 @@ public class BitProgressTests : BunitTestContext
     }
 
     [TestMethod,
+        DataRow(null, false, ""),
+        DataRow(null, true, "bit-prb-rnd"),
+        DataRow(BitShape.Pill, false, "bit-prb-rnd"),
+        DataRow(BitShape.Rounded, false, "bit-prb-shr"),
+        DataRow(BitShape.Rounded, true, "bit-prb-shr"),
+        DataRow(BitShape.Square, false, "bit-prb-sqr"),
+        DataRow(BitShape.Square, true, "bit-prb-sqr"),
+        DataRow(BitShape.Circle, false, "")
+    ]
+    public void BitProgressShapeTest(BitShape? shape, bool rounded, string expectedClass)
+    {
+        var component = RenderComponent<BitProgress>(parameters =>
+        {
+            parameters.Add(p => p.Shape, shape);
+            parameters.Add(p => p.Rounded, rounded);
+        });
+
+        var classList = component.Find(".bit-prb").ClassList;
+        string[] shapeClasses = ["bit-prb-rnd", "bit-prb-shr", "bit-prb-sqr"];
+
+        // Shape supersedes Rounded, and an unset shape publishes nothing, so the theme's corner stays the default.
+        foreach (var shapeClass in shapeClasses)
+        {
+            Assert.AreEqual(shapeClass == expectedClass, classList.Contains(shapeClass), shapeClass);
+        }
+    }
+
+    [TestMethod,
         DataRow(true),
         DataRow(false)
     ]

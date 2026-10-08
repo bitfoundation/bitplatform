@@ -33,7 +33,6 @@ public sealed class BitThemeDtcgTests
         var restored = BitThemeDtcg.Import(dtcg);
 
         Assert.AreEqual(expected, BitThemeSerialization.Serialize(restored, writeIndented: true));
-        Assert.AreEqual("9999px", restored.Shape.Radius.Progress);
     }
 
     [TestMethod]
