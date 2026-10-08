@@ -445,7 +445,7 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
         // time this cascade reaches it - so the hook is run once more below.
         var recomputeCulture = false;
 
-        if (Culture is not null && bitTimePicker.HasNotBeenSet(nameof(Culture)) && Equals(bitTimePicker.Culture, Culture) is false)
+        if (Culture is not null && bitTimePicker.HasNotBeenSet(nameof(Culture)) && ReferenceEquals(bitTimePicker.Culture, Culture) is false)
         {
             bitTimePicker.Culture = Culture;
 

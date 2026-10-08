@@ -966,7 +966,7 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.ContinuousSpinInterval = ContinuousSpinInterval.Value;
         }
 
-        if (Culture is not null && bitDatePicker.HasNotBeenSet(nameof(Culture)) && Equals(bitDatePicker.Culture, Culture) is false)
+        if (Culture is not null && bitDatePicker.HasNotBeenSet(nameof(Culture)) && ReferenceEquals(bitDatePicker.Culture, Culture) is false)
         {
             rebuildView = true;
 

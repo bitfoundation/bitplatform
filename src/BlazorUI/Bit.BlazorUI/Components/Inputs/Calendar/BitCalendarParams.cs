@@ -608,7 +608,7 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.ContinuousSpinInterval = ContinuousSpinInterval.Value;
         }
 
-        if (Culture is not null && bitCalendar.HasNotBeenSet(nameof(Culture)) && Equals(bitCalendar.Culture, Culture) is false)
+        if (Culture is not null && bitCalendar.HasNotBeenSet(nameof(Culture)) && ReferenceEquals(bitCalendar.Culture, Culture) is false)
         {
             bitCalendar.Culture = Culture;
 
