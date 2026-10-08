@@ -389,7 +389,7 @@ public partial class BitTextShimmer : BitComponentBase
         builder.AddAttribute(3, "style", JoinStyles(GetSplattedAttribute("style"), StyleBuilder.Value));
         builder.AddAttribute(4, "class", JoinClasses(ClassBuilder.Value, GetSplattedAttribute("class")));
         builder.AddAttribute(5, "dir", Dir?.ToString().ToLowerInvariant() ?? GetSplattedAttribute("dir"));
-        builder.AddAttribute(6, "aria-label", AriaLabel ?? GetSplattedAttribute("aria-label"));
+        builder.AddAttribute(6, "aria-label", ResolveAriaLabel());
         builder.AddAttribute(7, "tabindex", TabIndex ?? GetSplattedAttribute("tabindex"));
         builder.AddElementReferenceCapture(8, v => RootElement = v);
         // A void element is defined to hold no content: the static renderer writes it self-closed, so anything put

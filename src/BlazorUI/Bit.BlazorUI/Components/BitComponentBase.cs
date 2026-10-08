@@ -418,6 +418,17 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>
+    /// Splices two space-separated lists of tokens - the ids of an aria-owns, the keys of an aria-keyshortcuts - into
+    /// the single list the attribute holds, and null where neither has anything in it.
+    /// </summary>
+    private protected static string? JoinTokenLists(string? list, string? extraList)
+    {
+        var joined = JoinClasses(list, extraList);
+
+        return joined.HasValue() ? joined : null;
+    }
+
+    /// <summary>
     /// The value of an attribute the page wrote as a plain HTML attribute rather than as a parameter of the component.
     /// </summary>
     /// <remarks>
@@ -427,18 +438,52 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     /// written over a splatted attribute does not leave that attribute alone, it removes it.
     /// </remarks>
     private protected string? GetSplattedAttribute(string name)
-    {
-        if (HtmlAttributes.Count == 0) return null;
+        => TryGetSplattedAttribute(name, out var value) ? value : null;
 
-        if (HtmlAttributes.TryGetValue(name, out var value)) return StringifyAttributeValue(value);
+    /// <summary>
+    /// Determines whether the page wrote an attribute as a plain HTML attribute, however it cased its name and whatever
+    /// value it gave it - a null or a false included, which is how a page takes an attribute off the element.
+    /// </summary>
+    private protected bool HasSplattedAttribute(string name) => TryGetSplattedAttribute(name, out _);
+
+    /// <summary>
+    /// Looks up an attribute the page wrote as a plain HTML attribute, matching its name case insensitively the way the
+    /// render tree does. True whenever the attribute was written, even with a null or a false value, which the value
+    /// comes out as null for.
+    /// </summary>
+    private protected bool TryGetSplattedAttribute(string name, out string? value)
+    {
+        value = null;
+
+        if (HtmlAttributes.Count == 0) return false;
+
+        // The render tree keeps the last of several differently cased spellings, so the last one in render order wins
+        // here too, an exact match included.
+        var found = false;
+        object? selected = null;
 
         foreach (var attribute in HtmlAttributes)
         {
-            if (string.Equals(attribute.Key, name, StringComparison.OrdinalIgnoreCase)) return StringifyAttributeValue(attribute.Value);
+            if (string.Equals(attribute.Key, name, StringComparison.OrdinalIgnoreCase) is false) continue;
+
+            selected = attribute.Value;
+            found = true;
         }
 
-        return null;
+        if (found is false) return false;
+
+        value = StringifyAttributeValue(selected);
+        return true;
     }
+
+    /// <summary>
+    /// The aria-label the root is named with: the AriaLabel parameter, or else the aria-label the page splatted on.
+    /// </summary>
+    /// <remarks>
+    /// The root's aria-label is written after the splatted attributes, and a null written over a splatted attribute
+    /// removes it, so the parameter is resolved against what the page wrote by hand rather than written over it.
+    /// </remarks>
+    private protected string? ResolveAriaLabel() => AriaLabel ?? GetSplattedAttribute("aria-label");
 
     // A boolean is the one attribute value the renderer does not write as its text: an attribute is written with no
     // value at all while it is true and left out altogether while it is false, which is what an attribute splatted

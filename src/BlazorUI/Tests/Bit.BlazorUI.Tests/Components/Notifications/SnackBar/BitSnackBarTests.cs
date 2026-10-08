@@ -3955,4 +3955,19 @@ public class BitSnackBarTests : BunitTestContext
 
         Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.SnackBars.restoreFocus"));
     }
+
+    [TestMethod]
+    public void BitSnackBarShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitSnackBar>(0);
+            builder.AddAttribute(1, "aria-label", "Main");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-snb");
+
+        Assert.AreEqual("Main", root.GetAttribute("aria-label"));
+    }
 }

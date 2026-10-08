@@ -3246,4 +3246,41 @@ public class BitMessageTests : BunitTestContext
         Assert.AreEqual(false, invocations[0].Arguments[3]);
         Assert.AreEqual(true, invocations[1].Arguments[3]);
     }
+
+    [TestMethod]
+    public void BitMessageShouldKeepASplattedAriaLabelWhateverItIsCased()
+    {
+        // Attribute names are case insensitive, so a differently cased aria-label is the same attribute.
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitMessage>(0);
+            builder.AddAttribute(1, "Aria-Label", "Saved");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-msg");
+
+        Assert.AreEqual("Saved", root.GetAttribute("aria-label"));
+        Assert.AreEqual("group", root.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldLetANullSplattedAttributeTakeItsOwnOffTheRoot()
+    {
+        // A null or false splatted attribute is how a page opts out of one the message would write itself.
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitMessage>(0);
+            builder.AddAttribute(1, nameof(BitMessage.Title), "Saved");
+            builder.AddAttribute(2, nameof(BitMessage.AutoFocus), true);
+            builder.AddAttribute(3, "aria-labelledby", (object?)null);
+            builder.AddAttribute(4, "aria-describedby", false);
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-msg");
+
+        Assert.IsFalse(root.HasAttribute("aria-labelledby"));
+        Assert.IsFalse(root.HasAttribute("aria-describedby"));
+    }
 }

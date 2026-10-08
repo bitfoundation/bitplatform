@@ -3270,4 +3270,24 @@ public class BitCardTests : BunitTestContext
     }
 
     #endregion
+
+    [TestMethod]
+    public void BitCardShouldKeepTheSplattedStatesItDoesNotReportItself()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitCard>(0);
+            builder.AddAttribute(1, "role", "button");
+            builder.AddAttribute(2, "aria-pressed", "true");
+            builder.AddAttribute(3, "aria-busy", "true");
+            builder.AddAttribute(4, "aria-disabled", "true");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-crd");
+
+        Assert.AreEqual("true", root.GetAttribute("aria-pressed"));
+        Assert.AreEqual("true", root.GetAttribute("aria-busy"));
+        Assert.AreEqual("true", root.GetAttribute("aria-disabled"));
+    }
 }

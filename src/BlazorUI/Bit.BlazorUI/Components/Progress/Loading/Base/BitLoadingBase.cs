@@ -474,10 +474,7 @@ public abstract class BitLoadingBase : BitComponentBase
                                           ? null
                                           : (AriaLabel ?? DefaultLoadingText);
 
-    private string? PassedThrough(string attribute)
-    {
-        return HtmlAttributes.TryGetValue(attribute, out var value) ? value?.ToString() : null;
-    }
+    private string? PassedThrough(string attribute) => GetSplattedAttribute(attribute);
 
 
 

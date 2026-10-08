@@ -210,13 +210,14 @@ public partial class BitSpacer : BitComponentBase
         // the groups on either side of it instead. A separator is horizontal unless told otherwise, so one dividing
         // the items of a row states its orientation. All of them are added before the splatted attributes so an
         // explicit aria-hidden, role or aria-orientation in HtmlAttributes can still take them back.
-        var isLabelled = AriaLabel.HasValue();
+        var ariaLabel = ResolveAriaLabel();
+        var isLabelled = ariaLabel.HasValue();
         builder.AddAttribute(1, "aria-hidden", isLabelled ? null : "true");
         builder.AddAttribute(2, "role", isLabelled ? "separator" : null);
         builder.AddAttribute(3, "aria-orientation", (isLabelled && IsHorizontalSeparator is false) ? "vertical" : null);
         builder.AddMultipleAttributes(4, RuntimeHelpers.TypeCheck(HtmlAttributes));
         builder.AddAttribute(5, "id", _Id);
-        builder.AddAttribute(6, "aria-label", AriaLabel);
+        builder.AddAttribute(6, "aria-label", ariaLabel);
         builder.AddAttribute(7, "style", StyleBuilder.Value);
         builder.AddAttribute(8, "class", ClassBuilder.Value);
         builder.AddAttribute(9, "dir", Dir?.ToString().ToLower());

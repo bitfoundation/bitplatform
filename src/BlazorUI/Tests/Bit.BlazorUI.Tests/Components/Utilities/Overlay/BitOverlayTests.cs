@@ -1490,4 +1490,19 @@ public class BitOverlayTests : BunitTestContext
 
         Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchLayerEscape"].Count);
     }
+
+    [TestMethod]
+    public void BitOverlayShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitOverlay>(0);
+            builder.AddAttribute(1, "aria-label", "Main");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-ovl");
+
+        Assert.AreEqual("Main", root.GetAttribute("aria-label"));
+    }
 }

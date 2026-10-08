@@ -78,8 +78,8 @@
           class="@ClassBuilder.Value"
           dir="@Dir?.ToString().ToLower()"
           role="@_role"
-          aria-label="@AriaLabel"
-          aria-busy="@(_loaded ? null : "true")">@body</span>
+          aria-label="@_ariaLabel"
+          aria-busy="@_ariaBusy">@body</span>
 }
 else
 {
@@ -89,8 +89,8 @@ else
          class="@ClassBuilder.Value"
          dir="@Dir?.ToString().ToLower()"
          role="@_role"
-         aria-label="@AriaLabel"
-         aria-busy="@(_loaded ? null : "true")">@body</div>
+         aria-label="@_ariaLabel"
+         aria-busy="@_ariaBusy">@body</div>
 }
 
 @if (_hasLiveRegion)

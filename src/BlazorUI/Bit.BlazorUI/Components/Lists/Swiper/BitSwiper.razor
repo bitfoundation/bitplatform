@@ -1,11 +1,16 @@
 @namespace Bit.BlazorUI
 @inherits BitComponentBase
 
+@{
+    // The region role and its "carousel" description are the pattern's own and stay after the splatted attributes, as
+    // does the tab index, which NoKeyboard and Disabled take off the root on purpose.
+    var ariaLabel = ResolveAriaLabel();
+}
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      role="region"
      aria-roledescription="carousel"
-     aria-label="@AriaLabel"
+     aria-label="@ariaLabel"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"

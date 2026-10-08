@@ -265,7 +265,7 @@ public partial class BitElement : BitComponentBase
         builder.AddAttribute(6, "tabindex", Disabled && nativelyDisabled is false
                                             ? "-1"
                                             : (TabIndex ?? GetSplattedAttribute("tabindex")));
-        builder.AddAttribute(7, "aria-label", AriaLabel ?? GetSplattedAttribute("aria-label"));
+        builder.AddAttribute(7, "aria-label", ResolveAriaLabel());
         // The attribute is only written while the element is disabled, since writing it as false over a splatted
         // disabled attribute would remove that one rather than leave it alone.
         if (nativelyDisabled)

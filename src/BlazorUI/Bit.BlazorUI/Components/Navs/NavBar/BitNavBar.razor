@@ -4,7 +4,7 @@
 
 <nav @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
-     aria-label="@AriaLabel"
+     aria-label="@ResolveAriaLabel()"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">

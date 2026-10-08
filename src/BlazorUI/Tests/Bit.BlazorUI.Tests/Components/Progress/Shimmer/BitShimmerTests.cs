@@ -2105,4 +2105,20 @@ public class BitShimmerTests : BunitTestContext
 
         protected override void OnInitialized() => InitializedCount++;
     }
+
+    [TestMethod]
+    public void BitShimmerShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitShimmer>(0);
+            builder.AddAttribute(1, "aria-label", "Main");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-smr");
+
+        Assert.AreEqual("Main", root.GetAttribute("aria-label"));
+        Assert.AreEqual("progressbar", root.GetAttribute("role"));
+    }
 }

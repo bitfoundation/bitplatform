@@ -1236,8 +1236,8 @@ public partial class BitSnackBar : BitComponentBase
     private string _DismissAriaLabel => DismissAriaLabel ?? "Close";
 
     // The shortcut is spelled out in the default name, the way Radix Toast names its viewport, so the people it is
-    // for can discover it from the landmark list.
-    private string _RootAriaLabel => AriaLabel ?? (Hotkey is { Length: > 0 } ? $"Notifications ({FormatHotkey(Hotkey)})" : "Notifications");
+    // for can discover it from the landmark list. An aria-label the page splatted on is kept rather than replaced by it.
+    private string _RootAriaLabel => ResolveAriaLabel() ?? (Hotkey is { Length: > 0 } ? $"Notifications ({FormatHotkey(Hotkey)})" : "Notifications");
 
     // ["KeyT", "altKey"] reads as "Alt+T": the modifiers first and in the order people say them, the key codes
     // without the prefix that only tells the kind of key apart.

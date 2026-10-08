@@ -749,4 +749,19 @@ public class BitLabelTests : BunitTestContext
         Assert.IsFalse(labels[1].ClassList.Contains("bit-lbl-lg"));
         Assert.IsTrue(labels[1].ClassList.Contains("bit-lbl-err"));
     }
+
+    [TestMethod]
+    public void BitLabelShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitLabel>(0);
+            builder.AddAttribute(1, "aria-label", "Main");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-lbl");
+
+        Assert.AreEqual("Main", root.GetAttribute("aria-label"));
+    }
 }

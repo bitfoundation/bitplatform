@@ -53,7 +53,7 @@ public partial class BitScrollablePane : BitComponentBase
 
     // The aria-label written after the splat replaces whatever the splat put there, null included, so a name
     // passed as a plain aria-label attribute - which binds no parameter - is handed back out here.
-    private string? _ariaLabel => AriaLabel ?? GetSplattedAttribute("aria-label");
+    private string? _ariaLabel => ResolveAriaLabel();
 
     // A name on a plain div is one assistive technology ignores - ARIA prohibits naming the generic role - so
     // a pane that was given one is exposed as the region it names unless it was told to be something else.

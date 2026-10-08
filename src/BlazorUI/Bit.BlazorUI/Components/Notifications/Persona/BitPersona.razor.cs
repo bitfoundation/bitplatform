@@ -1292,9 +1292,15 @@ public partial class BitPersona : BitComponentBase
     /// announce is worse than no role at all: it makes everything inside the persona presentational and then
     /// has nothing of its own to put in their place.
     /// </para>
+    /// <para>
+    /// A role the page splatted on is the one kept: the role is written after the splatted attributes, so the null
+    /// of an unnamed persona would otherwise remove it, and a role of its own would replace it.
+    /// </para>
     /// </remarks>
     private string? GetRootRole()
     {
+        if (GetSplattedAttribute("role") is { } splattedRole) return splattedRole;
+
         if (GetRootAriaLabel().HasNoValue()) return null;
 
         return IsCoinOnly ? "img" : "group";
@@ -1303,11 +1309,16 @@ public partial class BitPersona : BitComponentBase
     /// <summary>
     /// The name of a persona that shows nothing but its coin. The presence dot is folded into it rather than
     /// left to name itself: role="img" on the coin makes everything inside it presentational, so a nested
-    /// label would never be read.
+    /// label would never be read. An aria-label the page splatted on comes right after the AriaLabel, since the
+    /// null this is for a persona showing its details would otherwise remove it.
     /// </summary>
     private string? GetRootAriaLabel()
     {
         if (AriaLabel.HasValue()) return AriaLabel;
+
+        var splattedAriaLabel = GetSplattedAttribute("aria-label");
+
+        if (splattedAriaLabel.HasValue()) return splattedAriaLabel;
 
         if (IsCoinOnly is false) return null;
 

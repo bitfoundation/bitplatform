@@ -496,7 +496,9 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     // since aria-labelledby wins over aria-label that would leave the group without an accessible name.
     internal bool HasLabel => LabelTemplate is not null || Label.HasValue();
 
-    private string? GetAriaLabelledBy() => AriaLabelledBy ?? (HasLabel ? _labelId : null);
+    // Without a label of its own to point at, an aria-labelledby the page splatted is written back, since a null
+    // written after the HtmlAttributes splat would remove it.
+    private string? GetAriaLabelledBy() => AriaLabelledBy ?? (HasLabel ? _labelId : GetSplattedAttribute("aria-labelledby"));
 
     // Follows the required asterisk the label shows, which a disabled group drops: a disabled field is
     // neither submitted nor validated, so announcing it as required would say the opposite of what the
@@ -512,8 +514,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
 
     private string? GetAriaDescribedBy()
     {
-        HtmlAttributes.TryGetValue("aria-describedby", out var splatted);
-        var splattedDescribedBy = splatted?.ToString();
+        var splattedDescribedBy = GetSplattedAttribute("aria-describedby");
 
         if (HasDescription is false) return splattedDescribedBy;
 

@@ -2547,4 +2547,22 @@ public class BitVirtualizeTests : BunitTestContext
 
         private object? Call(string name, params object[] args) => _type.GetMethod(name)!.Invoke(_tree, args);
     }
+
+    [TestMethod]
+    public void BitVirtualizeShouldKeepASplattedAriaLabelAndAriaBusy()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitVirtualize<int>>(0);
+            builder.AddAttribute(1, nameof(BitVirtualize<int>.Items), new[] { 1, 2, 3 });
+            builder.AddAttribute(2, "aria-label", "Rows");
+            builder.AddAttribute(3, "aria-busy", "false");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-vir");
+
+        Assert.AreEqual("Rows", root.GetAttribute("aria-label"));
+        Assert.AreEqual("false", root.GetAttribute("aria-busy"));
+    }
 }

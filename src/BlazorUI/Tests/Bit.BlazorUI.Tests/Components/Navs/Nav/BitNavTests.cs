@@ -3286,4 +3286,19 @@ public class BitNavTests : BunitTestContext
     }
 
     #endregion
+
+    [TestMethod]
+    public void BitNavShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitNav<BitNavItem>>(0);
+            builder.AddAttribute(1, "aria-label", "Main");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-nav");
+
+        Assert.AreEqual("Main", root.GetAttribute("aria-label"));
+    }
 }

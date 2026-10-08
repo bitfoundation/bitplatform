@@ -40,9 +40,7 @@ public partial class BitCard : BitComponentBase
     // The role the app splatted onto the root, read in one place so the markup and the checks below never disagree
     // about whether there is one. A blank role says nothing, and is treated as no role at all - which also puts the
     // role the card works out for itself in its place.
-    private string? _SplattedRole => HtmlAttributes.TryGetValue("role", out var role) && role?.ToString() is { } value && value.HasValue()
-                                        ? value.Trim()
-                                        : null;
+    private string? _SplattedRole => GetSplattedAttribute("role") is { } value && value.HasValue() ? value.Trim() : null;
 
     // Where that button lives. A card the app splatted a widget role onto - an option of a listbox, a tab of a tab
     // strip, a row of a grid - is that control itself, so the root takes the focus and the keys. Any other clickable

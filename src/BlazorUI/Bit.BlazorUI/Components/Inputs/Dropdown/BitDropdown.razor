@@ -89,12 +89,14 @@
     </CascadingValue>
 }
 
+@* aria-owns is a list of ids, so one the page splatted on is kept beside the popup's rather than replaced by it or
+   removed by the null written while the popup is closed (see BitComponentBase.GetSplattedAttribute). *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
-     aria-owns="@(IsOpen? _scrollContainerId : null)">
+     aria-owns="@JoinTokenLists(GetSplattedAttribute("aria-owns"), IsOpen ? _scrollContainerId : null)">
     @if (LabelTemplate is not null)
     {
         <label id="@_labelId">

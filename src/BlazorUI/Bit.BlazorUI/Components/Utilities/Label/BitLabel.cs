@@ -274,7 +274,7 @@ public partial class BitLabel : BitComponentBase
         builder.AddAttribute(3, "style", StyleBuilder.Value);
         builder.AddAttribute(4, "class", ClassBuilder.Value);
         builder.AddAttribute(5, "dir", Dir?.ToString().ToLower(CultureInfo.InvariantCulture));
-        builder.AddAttribute(6, "aria-label", AriaLabel);
+        builder.AddAttribute(6, "aria-label", ResolveAriaLabel());
         // A label is not focusable of itself, so the tab index is only ever written by a page that means to reach it -
         // a "-1" for a caption the validation of a form moves the focus to, for instance.
         builder.AddAttribute(7, "tabindex", TabIndex);

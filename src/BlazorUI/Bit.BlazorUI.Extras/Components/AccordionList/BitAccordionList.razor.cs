@@ -1698,9 +1698,11 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     }
 
     // A label on a plain container is dropped by a screen reader, so the list that carries one - an AriaLabel, or an
-    // aria-labelledby the page splats on - says what it is. It is rendered before the splatted attributes, so a
-    // role the page sets itself still wins over it.
-    private string? _Role => AriaLabel.HasValue() || GetSplattedAttribute("aria-labelledby").HasValue() ? "group" : null;
+    // aria-label or aria-labelledby the page splats on - says what it is. It is rendered before the splatted
+    // attributes, so a role the page sets itself still wins over it.
+    private string? _Role => _AriaLabel.HasValue() || GetSplattedAttribute("aria-labelledby").HasValue() ? "group" : null;
+
+    private string? _AriaLabel => ResolveAriaLabel();
 
     // The header of the one panel that has to stay open reports itself as aria-disabled, the way the WAI-ARIA
     // authoring practices ask a header whose panel cannot be collapsed to.

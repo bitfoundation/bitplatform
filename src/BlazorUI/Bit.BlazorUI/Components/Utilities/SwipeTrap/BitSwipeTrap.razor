@@ -4,7 +4,7 @@
 @{
     // The values the page splatted as plain attributes are resolved here rather than written over: a null written
     // after the splat does not leave the attribute alone, it removes it.
-    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
+    var ariaLabel = ResolveAriaLabel();
 }
 <div @ref="RootElement"
      @attributes="HtmlAttributes"

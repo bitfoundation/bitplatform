@@ -351,4 +351,21 @@ public class BitAccentColorSwitcherTests : BunitTestContext
         var active = component.Find(".bit-acs-act");
         Assert.AreEqual("Purple", active.GetAttribute("title"));
     }
+
+    [TestMethod]
+    public void BitAccentColorSwitcherShouldKeepASplattedAriaLabel()
+    {
+        RegisterServices();
+
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitAccentColorSwitcher>(0);
+            builder.AddAttribute(1, "aria-label", "Main");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-acs");
+
+        Assert.AreEqual("Main", root.GetAttribute("aria-label"));
+    }
 }

@@ -5124,4 +5124,19 @@ public class BitDropdownTests : BunitTestContext
             Value = item.ToString(),
             Text = $"Item {item}"
         }).ToArray();
+
+    [TestMethod]
+    public void BitDropdownShouldKeepASplattedAriaOwnsWhileClosed()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitDropdown<BitDropdownItem<string>, string>>(0);
+            builder.AddAttribute(1, "aria-owns", "page-listbox");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-drp");
+
+        Assert.AreEqual("page-listbox", root.GetAttribute("aria-owns"));
+    }
 }
