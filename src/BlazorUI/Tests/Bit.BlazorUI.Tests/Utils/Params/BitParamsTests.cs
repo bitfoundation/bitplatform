@@ -487,6 +487,35 @@ public class BitParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void AnInheritedInputParameterOfANonTextInputTheParamsObjectStopsSupplyingShouldGoBack()
+    {
+        var component = RenderComponent<BitParams>(builder =>
+        {
+            builder.Add(p => p.Parameters, [new BitRatingParams { ReadOnly = true, Required = true }]);
+            builder.AddChildContent<StaticRatingsHost>();
+        });
+
+        var ratings = component.FindComponents<BitRating>();
+        var cascaded = ratings[0].Instance;
+        var ownChoice = ratings[1].Instance;
+
+        Assert.IsTrue(cascaded.ReadOnly);
+        Assert.IsTrue(cascaded.Required);
+        Assert.IsTrue(ownChoice.ReadOnly);
+        Assert.IsTrue(ownChoice.Required);
+
+        component.Render(builder => builder.Add(p => p.Parameters, [new BitRatingParams()]));
+
+        Assert.IsFalse(cascaded.ReadOnly);
+        Assert.IsFalse(cascaded.Required);
+        Assert.IsFalse(ratings[0].Find(".bit-rtg").ClassList.Contains("bit-rtg-rdl"));
+        Assert.IsFalse(ratings[0].Find(".bit-rtg").ClassList.Contains("bit-rtg-req"));
+        Assert.IsTrue(ownChoice.ReadOnly, "a value the markup sets stays");
+        Assert.IsTrue(ownChoice.Required);
+        Assert.IsTrue(ratings[1].Find(".bit-rtg").ClassList.Contains("bit-rtg-rdl"));
+    }
+
+    [TestMethod]
     public void AnInheritedInputParameterSuppliedAgainUnchangedShouldNotRebuildTheClass()
     {
         var component = RenderComponent<BitParams>(builder =>
@@ -1116,6 +1145,20 @@ public class BitParamsTests : BunitTestContext
         {
             builder.OpenComponent<BitTextField>(0);
             builder.AddComponentParameter(1, nameof(BitTextField.Label), "Name");
+            builder.CloseComponent();
+        }
+    }
+
+    private sealed class StaticRatingsHost : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<BitRating>(0);
+            builder.CloseComponent();
+
+            builder.OpenComponent<BitRating>(1);
+            builder.AddComponentParameter(2, nameof(BitRating.ReadOnly), true);
+            builder.AddComponentParameter(3, nameof(BitRating.Required), true);
             builder.CloseComponent();
         }
     }
