@@ -355,478 +355,319 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitStack);
 
-        if (AlignContent.HasValue && bitStack.HasNotBeenSet(nameof(AlignContent)))
+        if (AlignContent.HasValue)
         {
-            bitStack.AlignContent = AlignContent.Value;
-
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(AlignContent), AlignContent.Value, static s => s.AlignContent, static (s, v) => s.AlignContent = v);
         }
 
-        if (Alignment.HasValue && bitStack.HasNotBeenSet(nameof(Alignment)))
+        if (Alignment.HasValue)
         {
-            bitStack.Alignment = Alignment.Value;
-
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(Alignment), Alignment.Value, static s => s.Alignment, static (s, v) => s.Alignment = v);
         }
 
-        if (AutoHeight.HasValue && bitStack.HasNotBeenSet(nameof(AutoHeight)))
+        if (AutoHeight.HasValue)
         {
-            bitStack.AutoHeight = AutoHeight.Value;
-
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(AutoHeight), AutoHeight.Value, static s => s.AutoHeight, static (s, v) => s.AutoHeight = v);
         }
 
-        if (AutoSize.HasValue && bitStack.HasNotBeenSet(nameof(AutoSize)))
+        if (AutoSize.HasValue)
         {
-            bitStack.AutoSize = AutoSize.Value;
-
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(AutoSize), AutoSize.Value, static s => s.AutoSize, static (s, v) => s.AutoSize = v);
         }
 
-        if (AutoWidth.HasValue && bitStack.HasNotBeenSet(nameof(AutoWidth)))
+        if (AutoWidth.HasValue)
         {
-            bitStack.AutoWidth = AutoWidth.Value;
-
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(AutoWidth), AutoWidth.Value, static s => s.AutoWidth, static (s, v) => s.AutoWidth = v);
         }
 
-        if (Basis.HasValue() && bitStack.HasNotBeenSet(nameof(Basis)))
+        if (Basis.HasValue())
         {
-            bitStack.Basis = Basis;
-
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(Basis), Basis, static s => s.Basis, static (s, v) => s.Basis = v);
         }
 
-        if (Element.HasValue() && bitStack.HasNotBeenSet(nameof(Element)))
+        if (Element.HasValue())
         {
-            bitStack.Element = Element;
+            bitStack.TakeFromCascade(nameof(Element), Element, static s => s.Element, static (s, v) => s.Element = v);
         }
 
-        if (EqualContent.HasValue && bitStack.HasNotBeenSet(nameof(EqualContent)))
+        if (EqualContent.HasValue)
         {
-            bitStack.EqualContent = EqualContent.Value;
-
-            bitStack.ClassBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(EqualContent), EqualContent.Value, static s => s.EqualContent, static (s, v) => s.EqualContent = v);
         }
 
-        if (FillContent.HasValue && bitStack.HasNotBeenSet(nameof(FillContent)))
+        if (FillContent.HasValue)
         {
-            bitStack.FillContent = FillContent.Value;
-
-            bitStack.ClassBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(FillContent), FillContent.Value, static s => s.FillContent, static (s, v) => s.FillContent = v);
         }
 
-        if (FitHeight.HasValue && bitStack.HasNotBeenSet(nameof(FitHeight)))
+        if (FitHeight.HasValue)
         {
-            bitStack.FitHeight = FitHeight.Value;
-
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(FitHeight), FitHeight.Value, static s => s.FitHeight, static (s, v) => s.FitHeight = v);
         }
 
-        if (FitSize.HasValue && bitStack.HasNotBeenSet(nameof(FitSize)))
+        if (FitSize.HasValue)
         {
-            bitStack.FitSize = FitSize.Value;
-
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(FitSize), FitSize.Value, static s => s.FitSize, static (s, v) => s.FitSize = v);
         }
 
-        if (FitWidth.HasValue && bitStack.HasNotBeenSet(nameof(FitWidth)))
+        if (FitWidth.HasValue)
         {
-            bitStack.FitWidth = FitWidth.Value;
-
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(FitWidth), FitWidth.Value, static s => s.FitWidth, static (s, v) => s.FitWidth = v);
         }
 
-        if (Gap.HasValue() && bitStack.HasNotBeenSet(nameof(Gap)))
+        if (Gap.HasValue())
         {
-            bitStack.Gap = Gap;
-
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(Gap), Gap, static s => s.Gap, static (s, v) => s.Gap = v);
         }
 
-        if (GapXs.HasValue() && bitStack.HasNotBeenSet(nameof(GapXs)))
+        if (GapXs.HasValue())
         {
-            bitStack.GapXs = GapXs;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(GapXs), GapXs, static s => s.GapXs, static (s, v) => s.GapXs = v);
         }
 
-        if (GapSm.HasValue() && bitStack.HasNotBeenSet(nameof(GapSm)))
+        if (GapSm.HasValue())
         {
-            bitStack.GapSm = GapSm;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(GapSm), GapSm, static s => s.GapSm, static (s, v) => s.GapSm = v);
         }
 
-        if (GapMd.HasValue() && bitStack.HasNotBeenSet(nameof(GapMd)))
+        if (GapMd.HasValue())
         {
-            bitStack.GapMd = GapMd;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(GapMd), GapMd, static s => s.GapMd, static (s, v) => s.GapMd = v);
         }
 
-        if (GapLg.HasValue() && bitStack.HasNotBeenSet(nameof(GapLg)))
+        if (GapLg.HasValue())
         {
-            bitStack.GapLg = GapLg;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(GapLg), GapLg, static s => s.GapLg, static (s, v) => s.GapLg = v);
         }
 
-        if (GapXl.HasValue() && bitStack.HasNotBeenSet(nameof(GapXl)))
+        if (GapXl.HasValue())
         {
-            bitStack.GapXl = GapXl;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(GapXl), GapXl, static s => s.GapXl, static (s, v) => s.GapXl = v);
         }
 
-        if (GapXxl.HasValue() && bitStack.HasNotBeenSet(nameof(GapXxl)))
+        if (GapXxl.HasValue())
         {
-            bitStack.GapXxl = GapXxl;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(GapXxl), GapXxl, static s => s.GapXxl, static (s, v) => s.GapXxl = v);
         }
 
-        if (Grow.HasValue() && bitStack.HasNotBeenSet(nameof(Grow)))
+        if (Grow.HasValue())
         {
-            bitStack.Grow = Grow;
-
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(Grow), Grow, static s => s.Grow, static (s, v) => s.Grow = v);
         }
 
-        if (GrowContent.HasValue && bitStack.HasNotBeenSet(nameof(GrowContent)))
+        if (GrowContent.HasValue)
         {
-            bitStack.GrowContent = GrowContent.Value;
-
-            bitStack.ClassBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(GrowContent), GrowContent.Value, static s => s.GrowContent, static (s, v) => s.GrowContent = v);
         }
 
-        if (Grows.HasValue && bitStack.HasNotBeenSet(nameof(Grows)))
+        if (Grows.HasValue)
         {
-            bitStack.Grows = Grows.Value;
-
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(Grows), Grows.Value, static s => s.Grows, static (s, v) => s.Grows = v);
         }
 
-        if (Horizontal.HasValue && bitStack.HasNotBeenSet(nameof(Horizontal)))
+        if (Horizontal.HasValue)
         {
-            bitStack.Horizontal = Horizontal.Value;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(Horizontal), Horizontal.Value, static s => s.Horizontal, static (s, v) => s.Horizontal = v);
         }
 
-        if (HorizontalAlign.HasValue && bitStack.HasNotBeenSet(nameof(HorizontalAlign)))
+        if (HorizontalAlign.HasValue)
         {
-            bitStack.HorizontalAlign = HorizontalAlign.Value;
-
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(HorizontalAlign), HorizontalAlign.Value, static s => s.HorizontalAlign, static (s, v) => s.HorizontalAlign = v);
         }
 
-        if (HorizontalGap.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGap)))
+        if (HorizontalGap.HasValue())
         {
-            bitStack.HorizontalGap = HorizontalGap;
-
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(HorizontalGap), HorizontalGap, static s => s.HorizontalGap, static (s, v) => s.HorizontalGap = v);
         }
 
-        if (HorizontalGapXs.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapXs)))
+        if (HorizontalGapXs.HasValue())
         {
-            bitStack.HorizontalGapXs = HorizontalGapXs;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(HorizontalGapXs), HorizontalGapXs, static s => s.HorizontalGapXs, static (s, v) => s.HorizontalGapXs = v);
         }
 
-        if (HorizontalGapSm.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapSm)))
+        if (HorizontalGapSm.HasValue())
         {
-            bitStack.HorizontalGapSm = HorizontalGapSm;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(HorizontalGapSm), HorizontalGapSm, static s => s.HorizontalGapSm, static (s, v) => s.HorizontalGapSm = v);
         }
 
-        if (HorizontalGapMd.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapMd)))
+        if (HorizontalGapMd.HasValue())
         {
-            bitStack.HorizontalGapMd = HorizontalGapMd;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(HorizontalGapMd), HorizontalGapMd, static s => s.HorizontalGapMd, static (s, v) => s.HorizontalGapMd = v);
         }
 
-        if (HorizontalGapLg.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapLg)))
+        if (HorizontalGapLg.HasValue())
         {
-            bitStack.HorizontalGapLg = HorizontalGapLg;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(HorizontalGapLg), HorizontalGapLg, static s => s.HorizontalGapLg, static (s, v) => s.HorizontalGapLg = v);
         }
 
-        if (HorizontalGapXl.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapXl)))
+        if (HorizontalGapXl.HasValue())
         {
-            bitStack.HorizontalGapXl = HorizontalGapXl;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(HorizontalGapXl), HorizontalGapXl, static s => s.HorizontalGapXl, static (s, v) => s.HorizontalGapXl = v);
         }
 
-        if (HorizontalGapXxl.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapXxl)))
+        if (HorizontalGapXxl.HasValue())
         {
-            bitStack.HorizontalGapXxl = HorizontalGapXxl;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(HorizontalGapXxl), HorizontalGapXxl, static s => s.HorizontalGapXxl, static (s, v) => s.HorizontalGapXxl = v);
         }
 
-        if (HorizontalXs.HasValue && bitStack.HasNotBeenSet(nameof(HorizontalXs)))
+        if (HorizontalXs.HasValue)
         {
-            bitStack.HorizontalXs = HorizontalXs.Value;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(HorizontalXs), HorizontalXs.Value, static s => s.HorizontalXs, static (s, v) => s.HorizontalXs = v);
         }
 
-        if (HorizontalSm.HasValue && bitStack.HasNotBeenSet(nameof(HorizontalSm)))
+        if (HorizontalSm.HasValue)
         {
-            bitStack.HorizontalSm = HorizontalSm.Value;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(HorizontalSm), HorizontalSm.Value, static s => s.HorizontalSm, static (s, v) => s.HorizontalSm = v);
         }
 
-        if (HorizontalMd.HasValue && bitStack.HasNotBeenSet(nameof(HorizontalMd)))
+        if (HorizontalMd.HasValue)
         {
-            bitStack.HorizontalMd = HorizontalMd.Value;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(HorizontalMd), HorizontalMd.Value, static s => s.HorizontalMd, static (s, v) => s.HorizontalMd = v);
         }
 
-        if (HorizontalLg.HasValue && bitStack.HasNotBeenSet(nameof(HorizontalLg)))
+        if (HorizontalLg.HasValue)
         {
-            bitStack.HorizontalLg = HorizontalLg.Value;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(HorizontalLg), HorizontalLg.Value, static s => s.HorizontalLg, static (s, v) => s.HorizontalLg = v);
         }
 
-        if (HorizontalXl.HasValue && bitStack.HasNotBeenSet(nameof(HorizontalXl)))
+        if (HorizontalXl.HasValue)
         {
-            bitStack.HorizontalXl = HorizontalXl.Value;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(HorizontalXl), HorizontalXl.Value, static s => s.HorizontalXl, static (s, v) => s.HorizontalXl = v);
         }
 
-        if (HorizontalXxl.HasValue && bitStack.HasNotBeenSet(nameof(HorizontalXxl)))
+        if (HorizontalXxl.HasValue)
         {
-            bitStack.HorizontalXxl = HorizontalXxl.Value;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(HorizontalXxl), HorizontalXxl.Value, static s => s.HorizontalXxl, static (s, v) => s.HorizontalXxl = v);
         }
 
-        if (Inline.HasValue && bitStack.HasNotBeenSet(nameof(Inline)))
+        if (Inline.HasValue)
         {
-            bitStack.Inline = Inline.Value;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(Inline), Inline.Value, static s => s.Inline, static (s, v) => s.Inline = v);
         }
 
-        if (NoShrink.HasValue && bitStack.HasNotBeenSet(nameof(NoShrink)))
+        if (NoShrink.HasValue)
         {
-            bitStack.NoShrink = NoShrink.Value;
-
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(NoShrink), NoShrink.Value, static s => s.NoShrink, static (s, v) => s.NoShrink = v);
         }
 
-        if (NoShrinkContent.HasValue && bitStack.HasNotBeenSet(nameof(NoShrinkContent)))
+        if (NoShrinkContent.HasValue)
         {
-            bitStack.NoShrinkContent = NoShrinkContent.Value;
-
-            bitStack.ClassBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(NoShrinkContent), NoShrinkContent.Value, static s => s.NoShrinkContent, static (s, v) => s.NoShrinkContent = v);
         }
 
-        if (Order.HasValue && bitStack.HasNotBeenSet(nameof(Order)))
+        if (Order.HasValue)
         {
-            bitStack.Order = Order.Value;
-
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(Order), Order.Value, static s => s.Order, static (s, v) => s.Order = v);
         }
 
-        if (Padding.HasValue() && bitStack.HasNotBeenSet(nameof(Padding)))
+        if (Padding.HasValue())
         {
-            bitStack.Padding = Padding;
-
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(Padding), Padding, static s => s.Padding, static (s, v) => s.Padding = v);
         }
 
-        if (Reversed.HasValue && bitStack.HasNotBeenSet(nameof(Reversed)))
+        if (Reversed.HasValue)
         {
-            bitStack.Reversed = Reversed.Value;
-
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(Reversed), Reversed.Value, static s => s.Reversed, static (s, v) => s.Reversed = v);
         }
 
-        if (Self.HasValue && bitStack.HasNotBeenSet(nameof(Self)))
+        if (Self.HasValue)
         {
-            bitStack.Self = Self.Value;
-
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(Self), Self.Value, static s => s.Self, static (s, v) => s.Self = v);
         }
 
-        if (Shrink.HasValue() && bitStack.HasNotBeenSet(nameof(Shrink)))
+        if (Shrink.HasValue())
         {
-            bitStack.Shrink = Shrink;
-
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(Shrink), Shrink, static s => s.Shrink, static (s, v) => s.Shrink = v);
         }
 
-        if (Shrinkable.HasValue && bitStack.HasNotBeenSet(nameof(Shrinkable)))
+        if (Shrinkable.HasValue)
         {
-            bitStack.Shrinkable = Shrinkable.Value;
-
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(Shrinkable), Shrinkable.Value, static s => s.Shrinkable, static (s, v) => s.Shrinkable = v);
         }
 
-        if (Size.HasValue && bitStack.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue)
         {
-            bitStack.Size = Size.Value;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(Size), Size.Value, static s => s.Size, static (s, v) => s.Size = v);
         }
 
-        if (VerticalAlign.HasValue && bitStack.HasNotBeenSet(nameof(VerticalAlign)))
+        if (VerticalAlign.HasValue)
         {
-            bitStack.VerticalAlign = VerticalAlign.Value;
-
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(VerticalAlign), VerticalAlign.Value, static s => s.VerticalAlign, static (s, v) => s.VerticalAlign = v);
         }
 
-        if (VerticalGap.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGap)))
+        if (VerticalGap.HasValue())
         {
-            bitStack.VerticalGap = VerticalGap;
-
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(VerticalGap), VerticalGap, static s => s.VerticalGap, static (s, v) => s.VerticalGap = v);
         }
 
-        if (VerticalGapXs.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapXs)))
+        if (VerticalGapXs.HasValue())
         {
-            bitStack.VerticalGapXs = VerticalGapXs;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(VerticalGapXs), VerticalGapXs, static s => s.VerticalGapXs, static (s, v) => s.VerticalGapXs = v);
         }
 
-        if (VerticalGapSm.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapSm)))
+        if (VerticalGapSm.HasValue())
         {
-            bitStack.VerticalGapSm = VerticalGapSm;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(VerticalGapSm), VerticalGapSm, static s => s.VerticalGapSm, static (s, v) => s.VerticalGapSm = v);
         }
 
-        if (VerticalGapMd.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapMd)))
+        if (VerticalGapMd.HasValue())
         {
-            bitStack.VerticalGapMd = VerticalGapMd;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(VerticalGapMd), VerticalGapMd, static s => s.VerticalGapMd, static (s, v) => s.VerticalGapMd = v);
         }
 
-        if (VerticalGapLg.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapLg)))
+        if (VerticalGapLg.HasValue())
         {
-            bitStack.VerticalGapLg = VerticalGapLg;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(VerticalGapLg), VerticalGapLg, static s => s.VerticalGapLg, static (s, v) => s.VerticalGapLg = v);
         }
 
-        if (VerticalGapXl.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapXl)))
+        if (VerticalGapXl.HasValue())
         {
-            bitStack.VerticalGapXl = VerticalGapXl;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(VerticalGapXl), VerticalGapXl, static s => s.VerticalGapXl, static (s, v) => s.VerticalGapXl = v);
         }
 
-        if (VerticalGapXxl.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapXxl)))
+        if (VerticalGapXxl.HasValue())
         {
-            bitStack.VerticalGapXxl = VerticalGapXxl;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(VerticalGapXxl), VerticalGapXxl, static s => s.VerticalGapXxl, static (s, v) => s.VerticalGapXxl = v);
         }
 
-        if (Wrap.HasValue && bitStack.HasNotBeenSet(nameof(Wrap)))
+        if (Wrap.HasValue)
         {
-            bitStack.Wrap = Wrap.Value;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(Wrap), Wrap.Value, static s => s.Wrap, static (s, v) => s.Wrap = v);
         }
 
-        if (WrapXs.HasValue && bitStack.HasNotBeenSet(nameof(WrapXs)))
+        if (WrapXs.HasValue)
         {
-            bitStack.WrapXs = WrapXs.Value;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(WrapXs), WrapXs.Value, static s => s.WrapXs, static (s, v) => s.WrapXs = v);
         }
 
-        if (WrapSm.HasValue && bitStack.HasNotBeenSet(nameof(WrapSm)))
+        if (WrapSm.HasValue)
         {
-            bitStack.WrapSm = WrapSm.Value;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(WrapSm), WrapSm.Value, static s => s.WrapSm, static (s, v) => s.WrapSm = v);
         }
 
-        if (WrapMd.HasValue && bitStack.HasNotBeenSet(nameof(WrapMd)))
+        if (WrapMd.HasValue)
         {
-            bitStack.WrapMd = WrapMd.Value;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(WrapMd), WrapMd.Value, static s => s.WrapMd, static (s, v) => s.WrapMd = v);
         }
 
-        if (WrapLg.HasValue && bitStack.HasNotBeenSet(nameof(WrapLg)))
+        if (WrapLg.HasValue)
         {
-            bitStack.WrapLg = WrapLg.Value;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(WrapLg), WrapLg.Value, static s => s.WrapLg, static (s, v) => s.WrapLg = v);
         }
 
-        if (WrapXl.HasValue && bitStack.HasNotBeenSet(nameof(WrapXl)))
+        if (WrapXl.HasValue)
         {
-            bitStack.WrapXl = WrapXl.Value;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(WrapXl), WrapXl.Value, static s => s.WrapXl, static (s, v) => s.WrapXl = v);
         }
 
-        if (WrapXxl.HasValue && bitStack.HasNotBeenSet(nameof(WrapXxl)))
+        if (WrapXxl.HasValue)
         {
-            bitStack.WrapXxl = WrapXxl.Value;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(WrapXxl), WrapXxl.Value, static s => s.WrapXxl, static (s, v) => s.WrapXxl = v);
         }
 
-        if (WrapReverse.HasValue && bitStack.HasNotBeenSet(nameof(WrapReverse)))
+        if (WrapReverse.HasValue)
         {
-            bitStack.WrapReverse = WrapReverse.Value;
-
-            bitStack.ClassBuilder.Reset();
-            bitStack.StyleBuilder.Reset();
+            bitStack.TakeFromCascade(nameof(WrapReverse), WrapReverse.Value, static s => s.WrapReverse, static (s, v) => s.WrapReverse = v);
         }
     }
 }

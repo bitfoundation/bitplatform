@@ -228,201 +228,198 @@ public class BitDialogParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitDialog);
 
-        if (AbsolutePosition.HasValue && bitDialog.HasNotBeenSet(nameof(AbsolutePosition)))
+        if (AbsolutePosition.HasValue)
         {
-            bitDialog.AbsolutePosition = AbsolutePosition.Value;
-
-            bitDialog.ClassBuilder.Reset();
+            bitDialog.TakeFromCascade(nameof(AbsolutePosition), AbsolutePosition.Value, static d => d.AbsolutePosition, static (d, v) => d.AbsolutePosition = v);
         }
 
-        if (AutoFocus.HasValue && bitDialog.HasNotBeenSet(nameof(AutoFocus)))
+        if (AutoFocus.HasValue)
         {
-            bitDialog.AutoFocus = AutoFocus.Value;
+            bitDialog.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static d => d.AutoFocus, static (d, v) => d.AutoFocus = v);
         }
 
-        if (AutoFocusButton.HasValue && bitDialog.HasNotBeenSet(nameof(AutoFocusButton)))
+        if (AutoFocusButton.HasValue)
         {
-            bitDialog.AutoFocusButton = AutoFocusButton.Value;
+            bitDialog.TakeFromCascade(nameof(AutoFocusButton), AutoFocusButton.Value, static d => d.AutoFocusButton, static (d, v) => d.AutoFocusButton = v);
         }
 
-        if (AutoToggleScroll.HasValue && bitDialog.HasNotBeenSet(nameof(AutoToggleScroll)))
+        if (AutoToggleScroll.HasValue)
         {
-            bitDialog.AutoToggleScroll = AutoToggleScroll.Value;
+            bitDialog.TakeFromCascade(nameof(AutoToggleScroll), AutoToggleScroll.Value, static d => d.AutoToggleScroll, static (d, v) => d.AutoToggleScroll = v);
         }
 
-        if (CancelText.HasValue() && bitDialog.HasNotBeenSet(nameof(CancelText)))
+        if (CancelText.HasValue())
         {
-            bitDialog.CancelText = CancelText;
+            bitDialog.TakeFromCascade(nameof(CancelText), CancelText, static d => d.CancelText, static (d, v) => d.CancelText = v);
         }
 
-        if (Classes is not null && bitDialog.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitDialog.Classes = Classes;
-
-            bitDialog.ClassBuilder.Reset();
+            bitDialog.TakeFromCascade(nameof(Classes), Classes, static d => d.Classes, static (d, v) => d.Classes = v);
         }
 
-        if (CloseButtonTitle.HasValue() && bitDialog.HasNotBeenSet(nameof(CloseButtonTitle)))
+        if (CloseButtonTitle.HasValue())
         {
-            bitDialog.CloseButtonTitle = CloseButtonTitle;
+            bitDialog.TakeFromCascade(nameof(CloseButtonTitle), CloseButtonTitle, static d => d.CloseButtonTitle, static (d, v) => d.CloseButtonTitle = v);
         }
 
         // The two are one setting - which icon the close button shows - and CloseIcon wins over CloseIconName,
         // so a Dialog that picked its icon through either of them keeps it: a cascaded CloseIcon filled in beside
         // a CloseIconName of its own would otherwise replace the icon the Dialog asked for.
-        if (bitDialog.HasNotBeenSet(nameof(CloseIcon)) && bitDialog.HasNotBeenSet(nameof(CloseIconName)))
+        var ownCloseIcon = bitDialog.HasNotBeenSet(nameof(CloseIcon)) is false || bitDialog.HasNotBeenSet(nameof(CloseIconName)) is false;
+
+        if (CloseIcon is not null)
         {
-            if (CloseIcon is not null)
+            if (ownCloseIcon is false)
             {
-                bitDialog.CloseIcon = CloseIcon;
+                bitDialog.TakeFromCascade(nameof(CloseIcon), CloseIcon, static d => d.CloseIcon, static (d, v) => d.CloseIcon = v);
             }
-
-            if (CloseIconName.HasValue())
+            else
             {
-                bitDialog.CloseIconName = CloseIconName;
+                bitDialog.ReleaseFromCascade(nameof(CloseIcon));
             }
         }
 
-        if (CloseOnEscape.HasValue && bitDialog.HasNotBeenSet(nameof(CloseOnEscape)))
+        if (CloseIconName.HasValue())
         {
-            bitDialog.CloseOnEscape = CloseOnEscape.Value;
+            if (ownCloseIcon is false)
+            {
+                bitDialog.TakeFromCascade(nameof(CloseIconName), CloseIconName, static d => d.CloseIconName, static (d, v) => d.CloseIconName = v);
+            }
+            else
+            {
+                bitDialog.ReleaseFromCascade(nameof(CloseIconName));
+            }
         }
 
-        if (CloseOnOverlayClick.HasValue && bitDialog.HasNotBeenSet(nameof(CloseOnOverlayClick)))
+        if (CloseOnEscape.HasValue)
         {
-            bitDialog.CloseOnOverlayClick = CloseOnOverlayClick.Value;
+            bitDialog.TakeFromCascade(nameof(CloseOnEscape), CloseOnEscape.Value, static d => d.CloseOnEscape, static (d, v) => d.CloseOnEscape = v);
         }
 
-        if (Color.HasValue && bitDialog.HasNotBeenSet(nameof(Color)))
+        if (CloseOnOverlayClick.HasValue)
         {
-            bitDialog.Color = Color.Value;
-
-            bitDialog.ClassBuilder.Reset();
+            bitDialog.TakeFromCascade(nameof(CloseOnOverlayClick), CloseOnOverlayClick.Value, static d => d.CloseOnOverlayClick, static (d, v) => d.CloseOnOverlayClick = v);
         }
 
-        if (FullHeight.HasValue && bitDialog.HasNotBeenSet(nameof(FullHeight)))
+        if (Color.HasValue)
         {
-            bitDialog.FullHeight = FullHeight.Value;
-
-            bitDialog.ClassBuilder.Reset();
+            bitDialog.TakeFromCascade(nameof(Color), Color.Value, static d => d.Color, static (d, v) => d.Color = v);
         }
 
-        if (FullSize.HasValue && bitDialog.HasNotBeenSet(nameof(FullSize)))
+        if (FullHeight.HasValue)
         {
-            bitDialog.FullSize = FullSize.Value;
-
-            bitDialog.ClassBuilder.Reset();
+            bitDialog.TakeFromCascade(nameof(FullHeight), FullHeight.Value, static d => d.FullHeight, static (d, v) => d.FullHeight = v);
         }
 
-        if (FullWidth.HasValue && bitDialog.HasNotBeenSet(nameof(FullWidth)))
+        if (FullSize.HasValue)
         {
-            bitDialog.FullWidth = FullWidth.Value;
-
-            bitDialog.ClassBuilder.Reset();
+            bitDialog.TakeFromCascade(nameof(FullSize), FullSize.Value, static d => d.FullSize, static (d, v) => d.FullSize = v);
         }
 
-        if (Height.HasValue() && bitDialog.HasNotBeenSet(nameof(Height)))
+        if (FullWidth.HasValue)
         {
-            bitDialog.Height = Height;
+            bitDialog.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static d => d.FullWidth, static (d, v) => d.FullWidth = v);
         }
 
-        if (Blocking.HasValue && bitDialog.HasNotBeenSet(nameof(Blocking)))
+        if (Height.HasValue())
         {
-            bitDialog.Blocking = Blocking.Value;
+            bitDialog.TakeFromCascade(nameof(Height), Height, static d => d.Height, static (d, v) => d.Height = v);
         }
 
-        if (IsDraggable.HasValue && bitDialog.HasNotBeenSet(nameof(IsDraggable)))
+        if (Blocking.HasValue)
         {
-            bitDialog.IsDraggable = IsDraggable.Value;
+            bitDialog.TakeFromCascade(nameof(Blocking), Blocking.Value, static d => d.Blocking, static (d, v) => d.Blocking = v);
         }
 
-        if (Modeless.HasValue && bitDialog.HasNotBeenSet(nameof(Modeless)))
+        if (IsDraggable.HasValue)
         {
-            bitDialog.Modeless = Modeless.Value;
-
-            bitDialog.ClassBuilder.Reset();
+            bitDialog.TakeFromCascade(nameof(IsDraggable), IsDraggable.Value, static d => d.IsDraggable, static (d, v) => d.IsDraggable = v);
         }
 
-        if (KeepMounted.HasValue && bitDialog.HasNotBeenSet(nameof(KeepMounted)))
+        if (Modeless.HasValue)
         {
-            bitDialog.KeepMounted = KeepMounted.Value;
+            bitDialog.TakeFromCascade(nameof(Modeless), Modeless.Value, static d => d.Modeless, static (d, v) => d.Modeless = v);
         }
 
-        if (MaxHeight.HasValue() && bitDialog.HasNotBeenSet(nameof(MaxHeight)))
+        if (KeepMounted.HasValue)
         {
-            bitDialog.MaxHeight = MaxHeight;
+            bitDialog.TakeFromCascade(nameof(KeepMounted), KeepMounted.Value, static d => d.KeepMounted, static (d, v) => d.KeepMounted = v);
         }
 
-        if (MaxWidth.HasValue() && bitDialog.HasNotBeenSet(nameof(MaxWidth)))
+        if (MaxHeight.HasValue())
         {
-            bitDialog.MaxWidth = MaxWidth;
+            bitDialog.TakeFromCascade(nameof(MaxHeight), MaxHeight, static d => d.MaxHeight, static (d, v) => d.MaxHeight = v);
         }
 
-        if (MinHeight.HasValue() && bitDialog.HasNotBeenSet(nameof(MinHeight)))
+        if (MaxWidth.HasValue())
         {
-            bitDialog.MinHeight = MinHeight;
+            bitDialog.TakeFromCascade(nameof(MaxWidth), MaxWidth, static d => d.MaxWidth, static (d, v) => d.MaxWidth = v);
         }
 
-        if (MinWidth.HasValue() && bitDialog.HasNotBeenSet(nameof(MinWidth)))
+        if (MinHeight.HasValue())
         {
-            bitDialog.MinWidth = MinWidth;
+            bitDialog.TakeFromCascade(nameof(MinHeight), MinHeight, static d => d.MinHeight, static (d, v) => d.MinHeight = v);
         }
 
-        if (NoDismissPreventedAnimation.HasValue && bitDialog.HasNotBeenSet(nameof(NoDismissPreventedAnimation)))
+        if (MinWidth.HasValue())
         {
-            bitDialog.NoDismissPreventedAnimation = NoDismissPreventedAnimation.Value;
+            bitDialog.TakeFromCascade(nameof(MinWidth), MinWidth, static d => d.MinWidth, static (d, v) => d.MinWidth = v);
         }
 
-        if (OkText.HasValue() && bitDialog.HasNotBeenSet(nameof(OkText)))
+        if (NoDismissPreventedAnimation.HasValue)
         {
-            bitDialog.OkText = OkText;
+            bitDialog.TakeFromCascade(nameof(NoDismissPreventedAnimation), NoDismissPreventedAnimation.Value, static d => d.NoDismissPreventedAnimation, static (d, v) => d.NoDismissPreventedAnimation = v);
         }
 
-        if (Position.HasValue && bitDialog.HasNotBeenSet(nameof(Position)))
+        if (OkText.HasValue())
         {
-            bitDialog.Position = Position.Value;
+            bitDialog.TakeFromCascade(nameof(OkText), OkText, static d => d.OkText, static (d, v) => d.OkText = v);
         }
 
-        if (RestoreFocus.HasValue && bitDialog.HasNotBeenSet(nameof(RestoreFocus)))
+        if (Position.HasValue)
         {
-            bitDialog.RestoreFocus = RestoreFocus.Value;
+            bitDialog.TakeFromCascade(nameof(Position), Position.Value, static d => d.Position, static (d, v) => d.Position = v);
         }
 
-        if (ScrollerSelector.HasValue() && bitDialog.HasNotBeenSet(nameof(ScrollerSelector)))
+        if (RestoreFocus.HasValue)
         {
-            bitDialog.ScrollerSelector = ScrollerSelector;
+            bitDialog.TakeFromCascade(nameof(RestoreFocus), RestoreFocus.Value, static d => d.RestoreFocus, static (d, v) => d.RestoreFocus = v);
         }
 
-        if (ShowCancelButton.HasValue && bitDialog.HasNotBeenSet(nameof(ShowCancelButton)))
+        if (ScrollerSelector.HasValue())
         {
-            bitDialog.ShowCancelButton = ShowCancelButton.Value;
+            bitDialog.TakeFromCascade(nameof(ScrollerSelector), ScrollerSelector, static d => d.ScrollerSelector, static (d, v) => d.ScrollerSelector = v);
         }
 
-        if (ShowCloseButton.HasValue && bitDialog.HasNotBeenSet(nameof(ShowCloseButton)))
+        if (ShowCancelButton.HasValue)
         {
-            bitDialog.ShowCloseButton = ShowCloseButton.Value;
+            bitDialog.TakeFromCascade(nameof(ShowCancelButton), ShowCancelButton.Value, static d => d.ShowCancelButton, static (d, v) => d.ShowCancelButton = v);
         }
 
-        if (ShowOkButton.HasValue && bitDialog.HasNotBeenSet(nameof(ShowOkButton)))
+        if (ShowCloseButton.HasValue)
         {
-            bitDialog.ShowOkButton = ShowOkButton.Value;
+            bitDialog.TakeFromCascade(nameof(ShowCloseButton), ShowCloseButton.Value, static d => d.ShowCloseButton, static (d, v) => d.ShowCloseButton = v);
         }
 
-        if (Styles is not null && bitDialog.HasNotBeenSet(nameof(Styles)))
+        if (ShowOkButton.HasValue)
         {
-            bitDialog.Styles = Styles;
-
-            bitDialog.StyleBuilder.Reset();
+            bitDialog.TakeFromCascade(nameof(ShowOkButton), ShowOkButton.Value, static d => d.ShowOkButton, static (d, v) => d.ShowOkButton = v);
         }
 
-        if (TrapFocus.HasValue && bitDialog.HasNotBeenSet(nameof(TrapFocus)))
+        if (Styles is not null)
         {
-            bitDialog.TrapFocus = TrapFocus.Value;
+            bitDialog.TakeFromCascade(nameof(Styles), Styles, static d => d.Styles, static (d, v) => d.Styles = v);
         }
 
-        if (Width.HasValue() && bitDialog.HasNotBeenSet(nameof(Width)))
+        if (TrapFocus.HasValue)
         {
-            bitDialog.Width = Width;
+            bitDialog.TakeFromCascade(nameof(TrapFocus), TrapFocus.Value, static d => d.TrapFocus, static (d, v) => d.TrapFocus = v);
+        }
+
+        if (Width.HasValue())
+        {
+            bitDialog.TakeFromCascade(nameof(Width), Width, static d => d.Width, static (d, v) => d.Width = v);
         }
     }
 }

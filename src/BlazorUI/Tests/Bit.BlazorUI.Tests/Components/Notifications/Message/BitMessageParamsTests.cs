@@ -232,9 +232,10 @@ public class BitMessageParamsTests : BunitTestContext
         Assert.AreEqual("Dismiss", instance.DismissAriaLabel);
         Assert.AreEqual("Expand", instance.ExpandAriaLabel);
         Assert.AreEqual("Collapse", instance.CollapseAriaLabel);
-        Assert.IsTrue(root.ClassList.Contains("bit-msg-inf"));
+        // An unset Color and Size publish no class: the stylesheet draws the Info, medium message they stand for.
+        Assert.IsFalse(root.ClassList.Contains("bit-msg-inf"));
         Assert.IsTrue(root.ClassList.Contains("bit-msg-fil"));
-        Assert.IsTrue(root.ClassList.Contains("bit-msg-md"));
+        Assert.IsFalse(root.ClassList.Contains("bit-msg-md"));
         Assert.IsEmpty(component.FindAll(".bit-msg-dmb"));
     }
 }

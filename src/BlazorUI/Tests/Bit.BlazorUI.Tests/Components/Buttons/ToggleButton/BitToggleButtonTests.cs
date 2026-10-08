@@ -657,6 +657,57 @@ public class BitToggleButtonTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitToggleButtonShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitToggleButton>();
+
+        var bitToggleButton = component.Find(".bit-tgb");
+
+        // An unset Color or Size publishes nothing, in either state, so the public --bit-ToggleButton-* variables
+        // restyle the default while an explicit value - which does publish its class - wins over them.
+        AssertPublishesNoColorOrSize(bitToggleButton);
+
+        bitToggleButton.Click();
+
+        Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-tgb-chk"));
+        AssertPublishesNoColorOrSize(bitToggleButton);
+    }
+
+    [TestMethod]
+    public void BitToggleButtonShouldPublishAPerStateColorOnlyInItsOwnState()
+    {
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.OnColor, BitColor.Success);
+        });
+
+        var bitToggleButton = component.Find(".bit-tgb");
+
+        // OnColor is a choice for the checked state alone: unchecked, with no Color to fall back to, the toggle
+        // button publishes no color and is left to the public variables and the primary default.
+        AssertPublishesNoColorOrSize(bitToggleButton);
+
+        bitToggleButton.Click();
+
+        Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-tgb-suc"));
+    }
+
+    private static void AssertPublishesNoColorOrSize(AngleSharp.Dom.IElement bitToggleButton)
+    {
+        var published = new[]
+        {
+            "bit-tgb-pri", "bit-tgb-sec", "bit-tgb-ter", "bit-tgb-inf", "bit-tgb-suc", "bit-tgb-wrn", "bit-tgb-swr", "bit-tgb-err",
+            "bit-tgb-pbg", "bit-tgb-sbg", "bit-tgb-tbg", "bit-tgb-pfg", "bit-tgb-sfg", "bit-tgb-tfg", "bit-tgb-pbr", "bit-tgb-sbr", "bit-tgb-tbr",
+            "bit-tgb-sm", "bit-tgb-md", "bit-tgb-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(bitToggleButton.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
+    }
+
+    [TestMethod]
     public void BitToggleButtonShouldRenderThePerStateTemplate()
     {
         var component = RenderComponent<BitToggleButton>(parameters =>

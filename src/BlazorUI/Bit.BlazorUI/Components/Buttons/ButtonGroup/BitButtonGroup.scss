@@ -2,45 +2,86 @@
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // button group and one set on the Style of an instance re-skins that one alone:
-//   --bit-ButtonGroup-color                       text and icon color of a button at rest       (default: per variant, from the Color role)
-//   --bit-ButtonGroup-background                  background of a button at rest                (default: per variant, from the Color role)
+//   --bit-ButtonGroup-color                       text and icon color of a button at rest       (default: per variant - $clr-pri-text filled,
+//                                                                                               $clr-pri otherwise)
+//   --bit-ButtonGroup-background                  background of a button at rest                (default: per variant - $clr-pri filled,
+//                                                                                               transparent otherwise)
 //   --bit-ButtonGroup-border-color                the group's outer border and the separators
-//                                                 between its buttons                           (default: per variant, from the Color role)
+//                                                 between its buttons                           (default: $clr-pri for the outer border,
+//                                                                                               transparent in Text; $clr-pri-dark for
+//                                                                                               the separators)
 //   --bit-ButtonGroup-separator-color             the separators alone, where they are lines of
 //                                                 their own rather than the outer border        (default: the border color)
-//   --bit-ButtonGroup-hover-color                 text and icon color while hovered             (default: the role's on color)
-//   --bit-ButtonGroup-hover-background            background while hovered                      (default: the role's hover color)
-//   --bit-ButtonGroup-active-background           background while pressed                      (default: the hover background)
-//   --bit-ButtonGroup-selected-color              text and icon color of a toggled button       (default: the role's on color)
-//   --bit-ButtonGroup-selected-background         background and border of a toggled button     (default: the role's dark color)
-//   --bit-ButtonGroup-selected-hover-background   the same while hovered or pressed             (default: the role's dark-hover color)
+//   --bit-ButtonGroup-hover-color                 text and icon color while hovered             (default: $clr-pri-text)
+//   --bit-ButtonGroup-hover-background            background while hovered                      (default: $clr-pri-hover)
+//   --bit-ButtonGroup-active-background           background while pressed                      (default: the hover background, then
+//                                                                                               $clr-pri-active)
+//   --bit-ButtonGroup-selected-color              text and icon color of a toggled button       (default: $clr-pri-text)
+//   --bit-ButtonGroup-selected-background         background and border of a toggled button     (default: $clr-pri-dark)
+//   --bit-ButtonGroup-selected-hover-background   the same while hovered or pressed             (default: $clr-pri-dark-hover)
 //   --bit-ButtonGroup-selected-border-color       border of a toggled button, for a selection
 //                                                 whose outline is not its background, and it
 //                                                 is kept through hover and press               (default: the selected background)
-//   --bit-ButtonGroup-disabled-color              text and icon color while disabled            (default: the role's disabled text color)
-//   --bit-ButtonGroup-disabled-background         background while disabled                     (default: per variant, transparent unless filled)
-//   --bit-ButtonGroup-disabled-border-color       border and separators while disabled          (default: the role's disabled color)
-//   --bit-ButtonGroup-focus-color                 keyboard focus indicator color                (default: per variant, from the Color role)
-//   --bit-ButtonGroup-radius                      outer corner radius of the group              (default: $shp-radius-button, or fully round when Rounded)
+//   --bit-ButtonGroup-disabled-color              text and icon color while disabled            (default: $clr-pri-dis-text)
+//   --bit-ButtonGroup-disabled-background         background while disabled                     (default: per variant - $clr-pri-dis filled,
+//                                                                                               transparent otherwise)
+//   --bit-ButtonGroup-disabled-border-color       border and separators while disabled          (default: $clr-pri-dis)
+//   --bit-ButtonGroup-focus-color                 keyboard focus indicator color                (default: per variant - $clr-pri-text filled
+//                                                                                               and toggled, $clr-pri otherwise; the
+//                                                                                               group's own ring $clr-pri-focus)
+//   --bit-ButtonGroup-radius                      outer corner radius of the group              (default: $shp-radius-button)
 //   --bit-ButtonGroup-border-width                the outer border and the separators           (default: $shp-border-width)
 //   --bit-ButtonGroup-min-height                  smallest height of a button, which keeps it
 //                                                 above the 24px minimum pointer target of
-//                                                 WCAG 2.2 (SC 2.5.8)                           (default: per Size, $siz-ctrl-*)
-//   --bit-ButtonGroup-padding                     padding of a button                           (default: per Size, $siz-ctrl-pad-*)
-//   --bit-ButtonGroup-font-size                   text size of a button                         (default: per Size, from the type ramp)
+//                                                 WCAG 2.2 (SC 2.5.8)                           (default: $siz-ctrl-md)
+//   --bit-ButtonGroup-padding                     padding of a button                           (default: $siz-ctrl-pad-y-md $siz-ctrl-pad-x-md)
+//   --bit-ButtonGroup-font-size                   text size of a button                         (default: $tg-fs-sm)
 //   --bit-ButtonGroup-font-weight                 text weight of a button                       (default: $tg-font-weight)
 //   --bit-ButtonGroup-icon-size                   size of the icon, the spinner and the
-//                                                 selection indicator, which share one slot     (default: per Size, $siz-icon-*)
+//                                                 selection indicator, which share one slot     (default: $siz-icon-md)
 //   --bit-ButtonGroup-content-gap                 room between the icon, the text and the badge (default: spacing(1))
 //   --bit-ButtonGroup-gap                         room between the buttons in the Detached
 //                                                 mode, which the Gap parameter sets per
 //                                                 instance                                      (default: spacing(1))
 //   --bit-ButtonGroup-badge-color                 text color of a button's badge                (default: the button's own text color)
 //   --bit-ButtonGroup-badge-background            background of a button's badge                (default: a 20% tint of that text color)
-//   --bit-ButtonGroup-badge-font-size             text size of a button's badge                 (default: per Size, one ramp step below
+//   --bit-ButtonGroup-badge-font-size             text size of a button's badge                 (default: $tg-fs-xs, one ramp step below
 //                                                                                               the button's own text)
+//
+// A parameter written on the group wins over the variable that restyles what it sets: an explicit Color over every
+// color above that it paints - the toggled, disabled and focus colors included (the variables keep what a Color
+// leaves alone - the transparent backgrounds of Outline and Text and the transparent outer border of Text), an
+// explicit Size over the min-height, the padding, the font size, the icon size and the badge font size, and Rounded
+// over the radius. The variables restyle the default, not a choice - which is why Color and Size publish nothing
+// while they are left unset: a class that always carried the default would be indistinguishable from one that was
+// asked for. The Gap parameter writes --bit-ButtonGroup-gap on the group itself, after its Style.
 
 .bit-btg {
+    // The values the Color and Size classes and Rounded publish start out unset on every group, so one placed in
+    // the template of another one's button never inherits the outer group's choice; those classes - declared
+    // further down at the same weight - still win on the root that carries them. Left unset, each sends the var()
+    // reading it on to the public variable and then to the default, which is what lets an explicit parameter
+    // outrank the variable while an unset one leaves the variable in charge.
+    --bit-btg-clr: initial;
+    --bit-btg-clr-txt: initial;
+    --bit-btg-clr-brd: initial;
+    --bit-btg-clr-hover: initial;
+    --bit-btg-clr-active: initial;
+    --bit-btg-clr-focus: initial;
+    --bit-btg-clr-dark: initial;
+    --bit-btg-clr-dark-hover: initial;
+    --bit-btg-clr-dark-active: initial;
+    --bit-btg-clr-dis: initial;
+    --bit-btg-clr-dis-text: initial;
+    --bit-btg-itm-min-height: initial;
+    --bit-btg-itm-pad-y: initial;
+    --bit-btg-itm-padding: initial;
+    --bit-btg-itm-fontsize: initial;
+    --bit-btg-itm-bdg-fs: initial;
+    --bit-btg-itm-iconsize: initial;
+    --bit-btg-rad: initial;
+    // The separators' default, which the disabled state below swaps for the disabled one.
+    --bit-btg-dfl-brd: #{$clr-pri-dark};
     overflow: hidden;
     width: fit-content;
     flex-direction: row;
@@ -48,16 +89,17 @@
     box-sizing: border-box;
     border-style: $shp-border-style;
     border-width: var(--bit-ButtonGroup-border-width, #{$shp-border-width});
-    border-radius: var(--bit-ButtonGroup-radius, #{$shp-radius-button});
-    // Each variant repaints --bit-btg-clr-outer as the group is hovered and pressed rather than
-    // repainting border-color itself, so this one declaration is where the public override lands
-    // and it wins in every one of those states.
-    border-color: var(--bit-ButtonGroup-border-color, var(--bit-btg-clr-outer));
+    border-radius: var(--bit-btg-rad, var(--bit-ButtonGroup-radius, #{$shp-radius-button}));
+    // Each variant repaints --bit-btg-clr-outer (from an explicit Color) and --bit-btg-dfl-outer (the primary
+    // role an unset one stands for) as the group is hovered and pressed rather than repainting border-color
+    // itself, so this one declaration is where the public override lands, between the two, in every one of
+    // those states.
+    border-color: var(--bit-btg-clr-outer, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-outer)));
     // The line between two buttons: a separator of its own in the attached single-row layout, and the outer
     // border itself in the detached and wrapping ones, which redirect it below. It is resolved here rather than
     // on the button so that those two can redirect it with a selector on the group - a selector on the button
     // would outrank the toggled and disabled states, which paint a border of their own.
-    --bit-btg-sep: var(--bit-ButtonGroup-separator-color, var(--bit-ButtonGroup-border-color, var(--bit-btg-itm-clr-brd)));
+    --bit-btg-sep: var(--bit-btg-itm-clr-brd, var(--bit-ButtonGroup-separator-color, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-brd))));
     --bit-btg-itm-brd-wid: var(--bit-ButtonGroup-border-width, #{$shp-border-width});
     --bit-btg-itm-brd-wid-ver: 0;
     // Only the border is painted on the group itself: the filled and outline variants repaint it
@@ -69,7 +111,7 @@
     // buttons holds it. The root keeps a ring of its own only for a consumer who makes it
     // focusable through a tabindex of their own.
     &:focus-visible {
-        @include focus-ring(var(--bit-ButtonGroup-focus-color, var(--bit-btg-clr-focus)));
+        @include focus-ring(var(--bit-btg-clr-focus, var(--bit-ButtonGroup-focus-color, #{$clr-pri-focus})));
     }
 
     &.bit-dis, &.bit-dis * {
@@ -78,13 +120,15 @@
     }
 
     &.bit-dis {
-        color: var(--bit-ButtonGroup-disabled-color, var(--bit-btg-clr-dis-text));
-        border-color: var(--bit-ButtonGroup-disabled-border-color, var(--bit-btg-clr-dis));
+        color: var(--bit-btg-clr-dis-text, var(--bit-ButtonGroup-disabled-color, #{$clr-pri-dis-text}));
+        border-color: var(--bit-btg-clr-dis, var(--bit-ButtonGroup-disabled-border-color, #{$clr-pri-dis}));
 
         // Resolve through the per-variant `*-dis` tokens so outline/text variants keep transparent
         // backgrounds and only filled variants render the colored disabled tint.
         --bit-btg-itm-clr-bg: var(--bit-btg-itm-clr-bg-dis);
-        --bit-btg-itm-clr-brd: var(--bit-btg-itm-clr-brd-dis, var(--bit-btg-clr-dis));
+        --bit-btg-dfl-bg: var(--bit-btg-dfl-bg-dis);
+        --bit-btg-itm-clr-brd: var(--bit-btg-clr-dis);
+        --bit-btg-dfl-brd: #{$clr-pri-dis};
     }
 }
 
@@ -92,8 +136,11 @@
     width: 100%;
 }
 
+// Rounded is a choice rather than a default, so the full radius it publishes is read before a --bit-ButtonGroup-radius
+// set on an ancestor or on the group's own Style (see .bit-btg and the detached buttons). A vertical group is not
+// rounded as a whole - a column of pills is not a pill - so it keeps the corner an unset Rounded gives it.
 .bit-btg-rnd {
-    border-radius: var(--bit-ButtonGroup-radius, #{$shp-radius-full});
+    --bit-btg-rad: #{$shp-radius-full};
 
     &.bit-btg-vrt {
         border-radius: var(--bit-ButtonGroup-radius, #{$shp-radius-button});
@@ -141,21 +188,24 @@
     -webkit-tap-highlight-color: transparent;
     gap: var(--bit-ButtonGroup-content-gap, #{spacing(1)});
     font-weight: var(--bit-ButtonGroup-font-weight, #{$tg-font-weight});
-    padding: var(--bit-ButtonGroup-padding, var(--bit-btg-itm-padding));
-    color: var(--bit-ButtonGroup-color, var(--bit-btg-itm-clr-txt));
+    // Every value an explicit Size or Color publishes - inherited from the group, where its classes sit - is read
+    // first, then the public variable (read here, so one set on the Style of a single button reaches it), then the
+    // medium primary group an unset one stands for (per variant, see .bit-btg-fil).
+    padding: var(--bit-btg-itm-padding, var(--bit-ButtonGroup-padding, #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-md}));
+    color: var(--bit-btg-itm-clr-txt, var(--bit-ButtonGroup-color, var(--bit-btg-dfl-txt)));
     border-color: var(--bit-btg-sep);
-    background-color: var(--bit-ButtonGroup-background, var(--bit-btg-itm-clr-bg));
+    background-color: var(--bit-btg-itm-clr-bg, var(--bit-ButtonGroup-background, var(--bit-btg-dfl-bg)));
     // The control height of the size class, as a floor rather than a height: the button still grows
     // with a wrapped label or a taller template. It is what lines a group up with the other controls
     // of its size, and what keeps the smallest one above the 24px minimum pointer target of
     // WCAG 2.2 (SC 2.5.8) - a Small icon-only button is a 12px glyph in 4px of padding without it.
-    min-height: var(--bit-ButtonGroup-min-height, var(--bit-btg-itm-min-height));
+    min-height: var(--bit-btg-itm-min-height, var(--bit-ButtonGroup-min-height, #{$siz-ctrl-md}));
     border-inline-end-width: var(--bit-btg-itm-brd-wid);
     border-block-end-width: var(--bit-btg-itm-brd-wid-ver);
     // The text, the icon, the spinner, the badge and the selection indicator all read these two, so
     // one public override resizes the button and everything inside it stays in proportion.
-    --bit-btg-itm-fs: var(--bit-ButtonGroup-font-size, var(--bit-btg-itm-fontsize));
-    --bit-btg-itm-ics: var(--bit-ButtonGroup-icon-size, var(--bit-btg-itm-iconsize));
+    --bit-btg-itm-fs: var(--bit-btg-itm-fontsize, var(--bit-ButtonGroup-font-size, #{$tg-fs-sm}));
+    --bit-btg-itm-ics: var(--bit-btg-itm-iconsize, var(--bit-ButtonGroup-icon-size, #{$siz-icon-md}));
     font-size: var(--bit-btg-itm-fs);
     // The hover, active, checked and disabled states all resolve through the --bit-btg-itm-clr-*
     // tokens above, so animating the three properties here covers every variant of the group.
@@ -163,13 +213,13 @@
 
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-ButtonGroup-hover-color, var(--bit-btg-itm-clr-hover));
-            background-color: var(--bit-ButtonGroup-hover-background, var(--bit-btg-itm-clr-bg-hover));
+            color: var(--bit-btg-itm-clr-hover, var(--bit-ButtonGroup-hover-color, #{$clr-pri-text}));
+            background-color: var(--bit-btg-itm-clr-bg-hover, var(--bit-ButtonGroup-hover-background, #{$clr-pri-hover}));
         }
     }
 
     &:active {
-        background-color: var(--bit-ButtonGroup-active-background, var(--bit-ButtonGroup-hover-background, var(--bit-btg-itm-clr-bg-active)));
+        background-color: var(--bit-btg-itm-clr-bg-active, var(--bit-ButtonGroup-active-background, var(--bit-ButtonGroup-hover-background, #{$clr-pri-active})));
     }
 
     // The focus ring is drawn inside the button because the group clips its overflow, which would
@@ -179,16 +229,16 @@
     // takes the real ring back below.
     &:focus-visible {
         z-index: 1;
-        outline: #{$shp-focus-ring-width} solid var(--bit-ButtonGroup-focus-color, var(--bit-btg-itm-clr-fcs));
+        outline: #{$shp-focus-ring-width} solid var(--bit-btg-itm-clr-fcs, var(--bit-ButtonGroup-focus-color, var(--bit-btg-dfl-fcs)));
         outline-offset: calc(-1 * #{$shp-focus-ring-width});
     }
 
     &[disabled],
     &[aria-disabled="true"] {
         cursor: default;
-        color: var(--bit-ButtonGroup-disabled-color, var(--bit-btg-clr-dis-text));
-        border-color: var(--bit-ButtonGroup-disabled-border-color, var(--bit-btg-itm-clr-brd-dis, var(--bit-btg-clr-dis)));
-        background-color: var(--bit-ButtonGroup-disabled-background, var(--bit-btg-itm-clr-bg-dis));
+        color: var(--bit-btg-clr-dis-text, var(--bit-ButtonGroup-disabled-color, #{$clr-pri-dis-text}));
+        border-color: var(--bit-btg-clr-dis, var(--bit-ButtonGroup-disabled-border-color, #{$clr-pri-dis}));
+        background-color: var(--bit-btg-itm-clr-bg-dis, var(--bit-ButtonGroup-disabled-background, var(--bit-btg-dfl-bg-dis)));
     }
 
     &[disabled] {
@@ -210,11 +260,13 @@
     border-width: 0;
     gap: var(--bit-ButtonGroup-gap, #{spacing(1)});
     // Every button draws the whole outline here, so there are no separators for a separator color to paint.
-    --bit-btg-sep: var(--bit-ButtonGroup-border-color, var(--bit-btg-itm-clr-brd));
+    --bit-btg-sep: var(--bit-btg-itm-clr-brd, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-brd)));
 
+    // The radius Rounded publishes on the group reaches every button here, ahead of the public radius - whether the
+    // group is vertical or not, since each button is a pill of its own.
     .bit-btg-itm {
         border-width: var(--bit-ButtonGroup-border-width, #{$shp-border-width});
-        border-radius: var(--bit-ButtonGroup-radius, #{$shp-radius-button});
+        border-radius: var(--bit-btg-rad, var(--bit-ButtonGroup-radius, #{$shp-radius-button}));
     }
 
     // Nothing is clipped here, so the focused button takes the library's real focus ring back: an outset
@@ -222,15 +274,11 @@
     // Except while the group scrolls, which clips along its own axis like the attached layout does - there
     // a ring held off the button is exactly what gets cut off, so the inset outline above is kept.
     &:not(.bit-btg-scr):not(.bit-btg-scb) .bit-btg-itm:focus-visible {
-        @include focus-ring(var(--bit-ButtonGroup-focus-color, var(--bit-btg-itm-clr-fcs)));
+        @include focus-ring(var(--bit-btg-itm-clr-fcs, var(--bit-ButtonGroup-focus-color, var(--bit-btg-dfl-fcs))));
     }
 
     &.bit-btg-rnd {
         border-radius: 0;
-
-        .bit-btg-itm {
-            border-radius: var(--bit-ButtonGroup-radius, #{$shp-radius-full});
-        }
     }
 }
 
@@ -245,7 +293,7 @@
     flex-wrap: wrap;
     // As in the detached layout: each button draws a full border, which the overlap below collapses into the
     // shared lines, so the whole outline is the border color and no part of it is a separator on its own.
-    --bit-btg-sep: var(--bit-ButtonGroup-border-color, var(--bit-btg-itm-clr-brd));
+    --bit-btg-sep: var(--bit-btg-itm-clr-brd, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-brd)));
 
     // Without this the buttons of every row stretch to fill their own row, so a row holding fewer
     // buttons renders them much wider than the rows above it.
@@ -348,7 +396,7 @@
     justify-content: center;
     padding: spacing(0.25) spacing(0.75);
     border-radius: $shp-radius-full;
-    font-size: var(--bit-ButtonGroup-badge-font-size, var(--bit-btg-itm-bdg-fs));
+    font-size: var(--bit-btg-itm-bdg-fs, var(--bit-ButtonGroup-badge-font-size, #{$tg-fs-xs}));
 
     // Tinting the current foreground keeps the badge legible on every variant,
     // including the ones whose button background is transparent.
@@ -391,46 +439,65 @@
 }
 
 .bit-btg-fil {
+    // The variants hand the buttons two values for each color: the one an explicit Color publishes (the
+    // --bit-btg-itm-clr-* ones, which stay unset while the role classes do) and the primary-role default an unset
+    // one stands for (--bit-btg-dfl-*), which the buttons read on either side of the public variables (see
+    // .bit-btg-itm). A color the role leaves alone - the transparent backgrounds of Outline and Text - has no first
+    // value and is the variables' alone.
     --bit-btg-clr-outer: var(--bit-btg-clr);
+    --bit-btg-dfl-outer: #{$clr-pri};
     --bit-btg-itm-clr-bg: var(--bit-btg-clr);
+    --bit-btg-dfl-bg: #{$clr-pri};
     --bit-btg-itm-clr-txt: var(--bit-btg-clr-txt);
+    --bit-btg-dfl-txt: #{$clr-pri-text};
     --bit-btg-itm-clr-brd: var(--bit-btg-clr-brd);
     --bit-btg-itm-clr-hover: var(--bit-btg-clr-txt);
     --bit-btg-itm-clr-bg-hover: var(--bit-btg-clr-hover);
     --bit-btg-itm-clr-bg-active: var(--bit-btg-clr-active);
     --bit-btg-itm-clr-bg-dis: var(--bit-btg-clr-dis);
+    --bit-btg-dfl-bg-dis: #{$clr-pri-dis};
     --bit-btg-itm-clr-fcs: var(--bit-btg-clr-txt);
+    --bit-btg-dfl-fcs: #{$clr-pri-text};
 
     @media (hover: hover) {
         &:hover {
             --bit-btg-clr-outer: var(--bit-btg-clr-hover);
+            --bit-btg-dfl-outer: #{$clr-pri-hover};
         }
     }
 
     &:active {
         --bit-btg-clr-outer: var(--bit-btg-clr-active);
+        --bit-btg-dfl-outer: #{$clr-pri-active};
     }
 }
 
 .bit-btg-otl {
     --bit-btg-clr-outer: var(--bit-btg-clr);
-    --bit-btg-itm-clr-bg: transparent;
+    --bit-btg-dfl-outer: #{$clr-pri};
+    --bit-btg-itm-clr-bg: initial;
+    --bit-btg-dfl-bg: transparent;
     --bit-btg-itm-clr-txt: var(--bit-btg-clr);
+    --bit-btg-dfl-txt: #{$clr-pri};
     --bit-btg-itm-clr-brd: var(--bit-btg-clr-brd);
     --bit-btg-itm-clr-hover: var(--bit-btg-clr-txt);
     --bit-btg-itm-clr-bg-hover: var(--bit-btg-clr-hover);
     --bit-btg-itm-clr-bg-active: var(--bit-btg-clr-active);
-    --bit-btg-itm-clr-bg-dis: transparent;
+    --bit-btg-itm-clr-bg-dis: initial;
+    --bit-btg-dfl-bg-dis: transparent;
     --bit-btg-itm-clr-fcs: var(--bit-btg-clr);
+    --bit-btg-dfl-fcs: #{$clr-pri};
 
     @media (hover: hover) {
         &:hover {
             --bit-btg-clr-outer: var(--bit-btg-clr-hover);
+            --bit-btg-dfl-outer: #{$clr-pri-hover};
         }
     }
 
     &:active {
         --bit-btg-clr-outer: var(--bit-btg-clr-active);
+        --bit-btg-dfl-outer: #{$clr-pri-active};
     }
 
     &.bit-dis {
@@ -439,15 +506,20 @@
 }
 
 .bit-btg-txt {
-    --bit-btg-clr-outer: transparent;
-    --bit-btg-itm-clr-bg: transparent;
+    --bit-btg-clr-outer: initial;
+    --bit-btg-dfl-outer: transparent;
+    --bit-btg-itm-clr-bg: initial;
+    --bit-btg-dfl-bg: transparent;
     --bit-btg-itm-clr-txt: var(--bit-btg-clr);
+    --bit-btg-dfl-txt: #{$clr-pri};
     --bit-btg-itm-clr-brd: var(--bit-btg-clr-brd);
     --bit-btg-itm-clr-hover: var(--bit-btg-clr-txt);
     --bit-btg-itm-clr-bg-hover: var(--bit-btg-clr-hover);
     --bit-btg-itm-clr-bg-active: var(--bit-btg-clr-active);
-    --bit-btg-itm-clr-bg-dis: transparent;
+    --bit-btg-itm-clr-bg-dis: initial;
+    --bit-btg-dfl-bg-dis: transparent;
     --bit-btg-itm-clr-fcs: var(--bit-btg-clr);
+    --bit-btg-dfl-fcs: #{$clr-pri};
 
     &.bit-dis {
         border-color: var(--bit-ButtonGroup-disabled-border-color, transparent);
@@ -457,27 +529,31 @@
 // The toggled button's border follows its background unless it is given a color of its own, which is what a
 // selection marked by a tinted background and a strong outline needs: the two are one declaration otherwise,
 // so tinting the background would take the outline down with it. A color given here is kept through hover and
-// press, the way the group's own border color is.
+// press, the way the group's own border color is. An explicit Color's toggled colors are read before all of them,
+// and the primary role's after.
 .bit-btg-chk {
-    color: var(--bit-ButtonGroup-selected-color, var(--bit-btg-clr-txt));
-    border-color: var(--bit-ButtonGroup-selected-border-color, var(--bit-ButtonGroup-selected-background, var(--bit-btg-clr-dark)));
-    background-color: var(--bit-ButtonGroup-selected-background, var(--bit-btg-clr-dark));
+    color: var(--bit-btg-clr-txt, var(--bit-ButtonGroup-selected-color, #{$clr-pri-text}));
+    border-color: var(--bit-btg-clr-dark, var(--bit-ButtonGroup-selected-border-color, var(--bit-ButtonGroup-selected-background, #{$clr-pri-dark})));
+    background-color: var(--bit-btg-clr-dark, var(--bit-ButtonGroup-selected-background, #{$clr-pri-dark}));
     --bit-btg-itm-clr-fcs: var(--bit-btg-clr-txt);
+    --bit-btg-dfl-fcs: #{$clr-pri-text};
 
     @media (hover: hover) {
         &:hover {
-            border-color: var(--bit-ButtonGroup-selected-border-color, var(--bit-ButtonGroup-selected-hover-background, var(--bit-btg-clr-dark-hover)));
-            background-color: var(--bit-ButtonGroup-selected-hover-background, var(--bit-btg-clr-dark-hover));
+            border-color: var(--bit-btg-clr-dark-hover, var(--bit-ButtonGroup-selected-border-color, var(--bit-ButtonGroup-selected-hover-background, #{$clr-pri-dark-hover})));
+            background-color: var(--bit-btg-clr-dark-hover, var(--bit-ButtonGroup-selected-hover-background, #{$clr-pri-dark-hover}));
         }
     }
 
     &:active {
-        border-color: var(--bit-ButtonGroup-selected-border-color, var(--bit-ButtonGroup-selected-hover-background, var(--bit-btg-clr-dark-active)));
-        background-color: var(--bit-ButtonGroup-selected-hover-background, var(--bit-btg-clr-dark-active));
+        border-color: var(--bit-btg-clr-dark-active, var(--bit-ButtonGroup-selected-border-color, var(--bit-ButtonGroup-selected-hover-background, #{$clr-pri-dark-active})));
+        background-color: var(--bit-btg-clr-dark-active, var(--bit-ButtonGroup-selected-hover-background, #{$clr-pri-dark-active}));
     }
 }
 
-// Role classes are generated from the shared $bit-semantic-color-roles map (see color-role-maps.scss).
+// Role classes are generated from the shared $bit-semantic-color-roles map (see color-role-maps.scss), the surface
+// ones written out below it. Published only by an explicit Color; an unset one is the primary role, which the
+// --bit-btg-dfl-* values and the fallbacks above spell out after the public variables.
 @each $role, $tokens in $bit-semantic-color-roles {
     .bit-btg-#{$role} {
         --bit-btg-clr: #{role($tokens, main)};
@@ -624,7 +700,9 @@
 
 // The size classes carry nothing but the four dimensions of a button: its floor height, its padding,
 // its text size and the slot the icon, spinner and selection indicator share. Every one of them is a
-// global token, so a density preset or another design system resizes the group without touching it.
+// global token, so a density preset or another design system resizes the group without touching it. Published
+// only by an explicit Size; an unset one is the medium group, which the fallbacks above spell out after the public
+// variables.
 .bit-btg-sm {
     --bit-btg-itm-min-height: #{$siz-ctrl-sm};
     --bit-btg-itm-pad-y: #{$siz-ctrl-pad-y-sm};
@@ -659,8 +737,8 @@
 // reads come from, and after .bit-btg-jst, whose equal-width buttons are wider than the floor anyway.
 .bit-btg-ion {
     .bit-btg-itm {
-        min-width: var(--bit-ButtonGroup-min-height, var(--bit-btg-itm-min-height));
-        padding: var(--bit-ButtonGroup-padding, var(--bit-btg-itm-pad-y));
+        min-width: var(--bit-btg-itm-min-height, var(--bit-ButtonGroup-min-height, #{$siz-ctrl-md}));
+        padding: var(--bit-btg-itm-pad-y, var(--bit-ButtonGroup-padding, #{$siz-ctrl-pad-y-md}));
     }
 }
 

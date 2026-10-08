@@ -167,6 +167,16 @@ public partial class BitCollapseStylesheetTests
         StringAssert.Contains(print, "--bit-col-fade: initial;");
     }
 
+    [TestMethod]
+    public void BitCollapseShouldNotHoldBackTheHidingOfASearchableSectionWithADiscreteTransition()
+    {
+        var code = ReadStylesheet().Split('\n').Where(line => line.TrimStart().StartsWith("//", System.StringComparison.Ordinal) is false);
+
+        // WebKit lays out content mid-way through a discrete content-visibility transition as already hidden, which
+        // snaps the track shut; the component applies hidden="until-found" at the end of the close instead.
+        Assert.IsFalse(code.Any(line => line.Contains("allow-discrete")), "A discrete transition snaps a searchable close shut in WebKit.");
+    }
+
     private static string[] DocumentedVariables(string stylesheet)
     {
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();

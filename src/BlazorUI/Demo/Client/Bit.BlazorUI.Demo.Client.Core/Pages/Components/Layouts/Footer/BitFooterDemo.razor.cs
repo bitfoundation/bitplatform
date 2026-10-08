@@ -48,7 +48,7 @@ public partial class BitFooterDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the BitFooter. It is applied through the Variant: as the background color in the Fill variant, and as the text and border color in the Outline and Text variants.",
+            Description = "The general color of the BitFooter. It is applied through the Variant: as the background color in the Fill variant, and as the text and border color in the Outline and Text variants. An explicit value wins over the --bit-Footer-* color variables; left unset, the footer keeps the primary background and foreground colors of the theme unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -155,7 +155,7 @@ public partial class BitFooterDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the BitFooter, which determines the paddings around its content.",
+            Description = "The size of the BitFooter, which determines the paddings around its content. An explicit value wins over --bit-Footer-padding; left unset, the footer is medium unless it says otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -232,26 +232,26 @@ public partial class BitFooterDemo
         new()
         {
             Name = "--bit-Footer-background",
-            DefaultValue = "The Color role's main color (--bit-clr-bg-pri without a Color)",
-            Description = "Background of the Fill variant, softened by Translucent.",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Background of the Fill variant, softened by Translucent. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Footer-color",
-            DefaultValue = "The Color role's on color (Fill) or main color (Outline, Text)",
-            Description = "Text color.",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text color. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Footer-border-color",
-            DefaultValue = "The Color role's main color (--bit-clr-brd-pri without a Color)",
-            Description = "Color of the Outline border and of the Bordered divider.",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "Color of the Outline border and of the Bordered divider. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Footer-padding",
-            DefaultValue = "Per Size",
-            Description = "Padding around the content. NoGutter still removes it.",
+            DefaultValue = "spacing(1) spacing(3)",
+            Description = "Padding around the content. The Size parameter wins over it, and NoGutter still removes it.",
         },
         new()
         {

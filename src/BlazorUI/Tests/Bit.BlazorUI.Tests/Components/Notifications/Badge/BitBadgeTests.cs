@@ -449,16 +449,37 @@ public class BitBadgeTests : BunitTestContext
     [DataRow(BitColor.PrimaryBorder, "bit-bdg-pbr")]
     [DataRow(BitColor.SecondaryBorder, "bit-bdg-sbr")]
     [DataRow(BitColor.TertiaryBorder, "bit-bdg-tbr")]
-    [DataRow(null, "bit-bdg-pri")]
-    public void BitBadgeShouldRespectColor(BitColor? color, string expectedClass)
+    public void BitBadgeShouldRespectColor(BitColor color, string expectedClass)
     {
         var component = RenderComponent<BitBadge>(parameters =>
         {
-            if (color.HasValue) parameters.Add(p => p.Color, color.Value);
+            parameters.Add(p => p.Color, color);
         });
 
         var root = component.Find(".bit-bdg");
         Assert.IsTrue(root.ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldPublishNoColorSizeOrShapeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitBadge>();
+
+        // An unset Color, Size or Shape publishes nothing, so the public --bit-Badge-* variables restyle the
+        // default while an explicit value - which does publish its class - wins over them.
+        var root = component.Find(".bit-bdg");
+        var published = new[]
+        {
+            "bit-bdg-pri", "bit-bdg-sec", "bit-bdg-ter", "bit-bdg-inf", "bit-bdg-suc", "bit-bdg-wrn", "bit-bdg-swr", "bit-bdg-err",
+            "bit-bdg-pbg", "bit-bdg-sbg", "bit-bdg-tbg", "bit-bdg-pfg", "bit-bdg-sfg", "bit-bdg-tfg", "bit-bdg-pbr", "bit-bdg-sbr", "bit-bdg-tbr",
+            "bit-bdg-sm", "bit-bdg-md", "bit-bdg-lg",
+            "bit-bdg-cir", "bit-bdg-rnd", "bit-bdg-sqr",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
     }
 
     [TestMethod]
@@ -482,12 +503,11 @@ public class BitBadgeTests : BunitTestContext
     [DataRow(BitSize.Small, "bit-bdg-sm")]
     [DataRow(BitSize.Medium, "bit-bdg-md")]
     [DataRow(BitSize.Large, "bit-bdg-lg")]
-    [DataRow(null, "bit-bdg-md")]
-    public void BitBadgeShouldRespectSize(BitSize? size, string expectedClass)
+    public void BitBadgeShouldRespectSize(BitSize size, string expectedClass)
     {
         var component = RenderComponent<BitBadge>(parameters =>
         {
-            if (size.HasValue) parameters.Add(p => p.Size, size.Value);
+            parameters.Add(p => p.Size, size);
         });
 
         var root = component.Find(".bit-bdg");
@@ -514,12 +534,11 @@ public class BitBadgeTests : BunitTestContext
     [DataRow(BitShape.Pill, "bit-bdg-cir")]
     [DataRow(BitShape.Rounded, "bit-bdg-rnd")]
     [DataRow(BitShape.Square, "bit-bdg-sqr")]
-    [DataRow(null, "bit-bdg-cir")]
-    public void BitBadgeShouldRespectShape(BitShape? shape, string expectedClass)
+    public void BitBadgeShouldRespectShape(BitShape shape, string expectedClass)
     {
         var component = RenderComponent<BitBadge>(parameters =>
         {
-            if (shape.HasValue) parameters.Add(p => p.Shape, shape.Value);
+            parameters.Add(p => p.Shape, shape);
         });
 
         var root = component.Find(".bit-bdg");

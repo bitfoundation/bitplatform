@@ -1,37 +1,54 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
-// ancestor or on the Style of a progress inherits down to whatever reads it. A parameter that says the same thing
-// (BarColor, TrackColor, Thickness, Diameter, Length, Rounded) still wins over the variable:
-//   --bit-Progress-bar-color            fill of the bar and stroke of the ring       (default: per Color)
-//   --bit-Progress-bar-text-color       readout placed Inside the bar                (default: per Color)
+// ancestor or on the Style of a progress inherits down to whatever reads it:
+//   --bit-Progress-bar-color            fill of the bar and stroke of the ring       (default: $clr-pri)
+//   --bit-Progress-bar-text-color       readout placed Inside the bar                (default: $clr-pri-text)
 //   --bit-Progress-track-color          unfilled part of every shape                 (default: $clr-bg-sec)
 //   --bit-Progress-buffer-color         the buffered second value                    (default: the bar color at 38%)
 //   --bit-Progress-stripe-color         the stripes of a Striped bar                 (default: $clr-bg-pri at 25%)
 //   --bit-Progress-stripe-size          pitch of the stripes                         (default: spacing(2))
-//   --bit-Progress-thickness            bar height, vertical bar width, ring stroke  (default: per Size, $siz-track-* for a bar, 1/2/4 x $siz-spinner-stroke for a ring)
+//   --bit-Progress-thickness            bar height, vertical bar width, ring stroke  (default: $siz-track-sm for a bar, $siz-spinner-stroke for a ring)
 //   --bit-Progress-radius               corner radius of a linear bar not Rounded    (default: $shp-radius-progress)
-//   --bit-Progress-diameter             smallest diameter of the ring                (default: per Size)
+//   --bit-Progress-diameter             smallest diameter of the ring                (default: spacing(6.25))
 //   --bit-Progress-length               length of a Vertical bar                     (default: spacing(20))
 //   --bit-Progress-transition-duration  how long the fill takes to follow the value  (default: $mot-duration)
-//   --bit-Progress-font-size            text size of the label and the readout       (default: per Size)
+//   --bit-Progress-font-size            text size of the label and the readout       (default: $tg-fs-sm)
 //   --bit-Progress-label-color          color of the label                           (default: $clr-fg-pri)
 //   --bit-Progress-label-font-weight    weight of the label                          (default: $tg-fw-regular)
 //   --bit-Progress-percent-color        color of the readout beside the bar or ring  (default: $clr-fg-pri, $clr-fg-sec in a ring)
 //   --bit-Progress-percent-font-size    text size of the readout in a ring           (default: $tg-fs-xs up the ramp to $tg-fs-4xl, per the drawn size)
 //   --bit-Progress-description-color    color of the description                     (default: $clr-fg-sec)
-//   --bit-Progress-description-font-size text size of the description                (default: per Size, $tg-fs-2xs / $tg-fs-xs)
+//   --bit-Progress-description-font-size text size of the description                (default: $tg-fs-2xs)
+//
+// A parameter written on the progress wins over the variable that restyles what it sets: an explicit Color over the
+// bar and bar-text colors, an explicit Size over the font sizes, the thickness and the diameter, and
+// BarColor, TrackColor, Thickness, Diameter, Length and Rounded over theirs. The variables restyle the default, not
+// a choice - which is why Color and Size publish nothing while they are left unset: a class that always carried the
+// default would be indistinguishable from one that was asked for. The readout in a ring is the exception: its step
+// up the type ramp is one the component works out from the drawn size rather than one that was asked for, so
+// --bit-Progress-percent-font-size still wins over it. So does --bit-Progress-buffer-color over the buffer: no parameter
+// paints the buffer - its default is only derived from the bar color, which Color and BarColor replace - so the
+// variable keeps it, the way the Outline background of a badge stays the badge's variable under an explicit Color.
 
 .bit-prb {
     font-weight: $tg-fw-regular;
     position: relative;
-    font-size: var(--bit-Progress-font-size, var(--bit-prb-fs));
+    font-size: var(--bit-prb-fs, var(--bit-Progress-font-size, #{$tg-fs-sm}));
     font-family: $tg-font-family;
-    --bit-prb-fs: #{$tg-fs-sm};
-    // The description is set a step or two below the label, and follows it up the ramp.
-    --bit-prb-des-fs: #{$tg-fs-2xs};
-    --bit-prb-bar-color: var(--bit-Progress-bar-color, #{$clr-pri});
-    --bit-prb-bar-on-color: var(--bit-Progress-bar-text-color, #{$clr-pri-text});
+    // The values the Color and Size classes publish start out unset on every root, so a progress nested in the
+    // label of another one never inherits the outer one's choice; the classes - declared further down at the same
+    // weight - still win on the root that carries them. Left unset, each var() reading them moves on to the public
+    // variable and then to the default an unset Color or Size stands for: the primary role, and the sizes below.
+    --bit-prb-fs: initial;
+    --bit-prb-des-fs: initial;
+    --bit-prb-clr: initial;
+    --bit-prb-clr-on: initial;
+    --bit-prb-thk: initial;
+    --bit-prb-dia: initial;
+    --bit-prb-ring-stroke: initial;
+    --bit-prb-bar-color: var(--bit-prb-clr, var(--bit-Progress-bar-color, #{$clr-pri}));
+    --bit-prb-bar-on-color: var(--bit-prb-clr-on, var(--bit-Progress-bar-text-color, #{$clr-pri-text}));
     // The unfilled part of every shape reads one token, so a custom track color reaches the linear track,
     // the ring behind the stroke and the two ends the indeterminate sweep fades into at once.
     --bit-prb-track-color: var(--bit-Progress-track-color, #{$clr-bg-sec});
@@ -44,14 +61,14 @@
     // How much of the full circle the stroke is allowed to use, which is the whole of it until a gap
     // is cut out of the ring.
     --bit-prb-arc: 1;
-    --bit-prb-thickness: var(--bit-Progress-thickness, #{$siz-track-sm});
+    --bit-prb-thickness: var(--bit-prb-thk, var(--bit-Progress-thickness, #{$siz-track-sm}));
     // The stroke of the ring, which a design system sizes apart from its bar track: the spinner token, doubled
-    // and quadrupled up the size classes. It is only the fallback of --bit-Progress-thickness.
-    --bit-prb-ring-stroke: #{$siz-spinner-stroke};
+    // and quadrupled up the size classes. The ring reads it whenever no Thickness is given.
+    --bit-prb-ring-width: var(--bit-prb-ring-stroke, var(--bit-Progress-thickness, #{$siz-spinner-stroke}));
     // The floor the circular variant is drawn at. The C# side still sizes the svg from
     // Thickness * Radius, so a ring asked to be bigger than this stays bigger; what the token adds is
     // a sensible diameter per size class, which the raw multiplication never gave.
-    --bit-prb-diameter: var(--bit-Progress-diameter, #{spacing(6.25)});
+    --bit-prb-diameter: var(--bit-prb-dia, var(--bit-Progress-diameter, #{spacing(6.25)}));
     // The pitch of the diagonal stripes, and how far the animation travels in one cycle.
     --bit-prb-stripe-size: var(--bit-Progress-stripe-size, #{spacing(2)});
     // How long a vertical bar is when nothing asked for a length. A horizontal one takes the width of
@@ -249,7 +266,8 @@
 
 .bit-prb-des {
     color: var(--bit-Progress-description-color, #{$clr-fg-sec});
-    font-size: var(--bit-Progress-description-font-size, var(--bit-prb-des-fs));
+    // The description is set a step or two below the label, and follows it up the ramp.
+    font-size: var(--bit-prb-des-fs, var(--bit-Progress-description-font-size, #{$tg-fs-2xs}));
     line-height: spacing(2.25);
 }
 
@@ -526,33 +544,40 @@
 }
 
 
+// Published only by an explicit Size, so every value of the size wins over the public variable that restyles it -
+// the small and medium ones spell out the description size and the ring stroke an unset Size shares with them. An
+// unset Size is the defaults the root and .bit-prb-des spell out after those variables.
 .bit-prb-sm {
     --bit-prb-fs: #{$tg-fs-xs};
-    --bit-prb-thickness: var(--bit-Progress-thickness, #{$siz-track-sm});
-    --bit-prb-diameter: var(--bit-Progress-diameter, #{spacing(4)});
+    --bit-prb-des-fs: #{$tg-fs-2xs};
+    --bit-prb-thk: #{$siz-track-sm};
+    --bit-prb-ring-stroke: #{$siz-spinner-stroke};
+    --bit-prb-dia: #{spacing(4)};
 }
 
 .bit-prb-md {
     --bit-prb-fs: #{$tg-fs-sm};
-    --bit-prb-thickness: var(--bit-Progress-thickness, #{$siz-track-md});
+    --bit-prb-des-fs: #{$tg-fs-2xs};
+    --bit-prb-thk: #{$siz-track-md};
     --bit-prb-ring-stroke: calc(#{$siz-spinner-stroke} * 2);
-    --bit-prb-diameter: var(--bit-Progress-diameter, #{spacing(6.25)});
+    --bit-prb-dia: #{spacing(6.25)};
 }
 
 .bit-prb-lg {
     --bit-prb-fs: #{$tg-fs-md};
     --bit-prb-des-fs: #{$tg-fs-xs};
-    --bit-prb-thickness: var(--bit-Progress-thickness, #{$siz-track-lg});
+    --bit-prb-thk: #{$siz-track-lg};
     --bit-prb-ring-stroke: calc(#{$siz-spinner-stroke} * 4);
-    --bit-prb-diameter: var(--bit-Progress-diameter, #{spacing(9)});
+    --bit-prb-dia: #{spacing(9)};
 }
 
 
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss), and are only rendered
+// for an explicit Color.
 @each $role, $tokens in $bit-color-roles {
     .bit-prb-#{$role} {
-        --bit-prb-bar-color: var(--bit-Progress-bar-color, #{role($tokens, main)});
-        --bit-prb-bar-on-color: var(--bit-Progress-bar-text-color, #{role($tokens, on)});
+        --bit-prb-clr: #{role($tokens, main)};
+        --bit-prb-clr-on: #{role($tokens, on)};
     }
 }
 

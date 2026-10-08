@@ -153,123 +153,99 @@ public class BitChoiceGroupParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitChoiceGroup);
 
-        if (AriaLabelledBy.HasValue() && bitChoiceGroup.HasNotBeenSet(nameof(AriaLabelledBy)))
+        if (AriaLabelledBy.HasValue())
         {
-            bitChoiceGroup.AriaLabelledBy = AriaLabelledBy;
+            bitChoiceGroup.TakeFromCascade(nameof(AriaLabelledBy), AriaLabelledBy, static c => c.AriaLabelledBy, static (c, v) => c.AriaLabelledBy = v);
         }
 
-        if (AutoFocus.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(AutoFocus)))
+        if (AutoFocus.HasValue)
         {
-            bitChoiceGroup.AutoFocus = AutoFocus.Value;
+            bitChoiceGroup.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static c => c.AutoFocus, static (c, v) => c.AutoFocus = v);
         }
 
-        if (AutoReorderOptions.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(AutoReorderOptions)))
+        if (AutoReorderOptions.HasValue)
         {
-            bitChoiceGroup.AutoReorderOptions = AutoReorderOptions.Value;
+            bitChoiceGroup.TakeFromCascade(nameof(AutoReorderOptions), AutoReorderOptions.Value, static c => c.AutoReorderOptions, static (c, v) => c.AutoReorderOptions = v);
         }
 
-        if (Classes is not null && bitChoiceGroup.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitChoiceGroup.Classes = Classes;
-
-            bitChoiceGroup.ClassBuilder.Reset();
+            bitChoiceGroup.TakeFromCascade(nameof(Classes), Classes, static c => c.Classes, static (c, v) => c.Classes = v);
         }
 
-        if (Color.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue)
         {
-            bitChoiceGroup.Color = Color.Value;
-
-            bitChoiceGroup.ClassBuilder.Reset();
+            bitChoiceGroup.TakeFromCascade(nameof(Color), Color.Value, static c => c.Color, static (c, v) => c.Color = v);
         }
 
-        if (Description.HasValue() && bitChoiceGroup.HasNotBeenSet(nameof(Description)))
+        if (Description.HasValue())
         {
-            bitChoiceGroup.Description = Description;
+            bitChoiceGroup.TakeFromCascade(nameof(Description), Description, static c => c.Description, static (c, v) => c.Description = v);
         }
 
-        if (DescriptionTemplate is not null && bitChoiceGroup.HasNotBeenSet(nameof(DescriptionTemplate)))
+        if (DescriptionTemplate is not null)
         {
-            bitChoiceGroup.DescriptionTemplate = DescriptionTemplate;
+            bitChoiceGroup.TakeFromCascade(nameof(DescriptionTemplate), DescriptionTemplate, static c => c.DescriptionTemplate, static (c, v) => c.DescriptionTemplate = v);
         }
 
-        if (FullWidth.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue)
         {
-            bitChoiceGroup.FullWidth = FullWidth.Value;
-
-            bitChoiceGroup.ClassBuilder.Reset();
+            bitChoiceGroup.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static c => c.FullWidth, static (c, v) => c.FullWidth = v);
         }
 
-        if (Gap.HasValue() && bitChoiceGroup.HasNotBeenSet(nameof(Gap)))
+        if (Gap.HasValue())
         {
-            bitChoiceGroup.Gap = Gap;
-
-            bitChoiceGroup.StyleBuilder.Reset();
+            bitChoiceGroup.TakeFromCascade(nameof(Gap), Gap, static c => c.Gap, static (c, v) => c.Gap = v);
         }
 
-        if (Horizontal.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(Horizontal)))
+        if (Horizontal.HasValue)
         {
-            bitChoiceGroup.Horizontal = Horizontal.Value;
-
-            bitChoiceGroup.ClassBuilder.Reset();
+            bitChoiceGroup.TakeFromCascade(nameof(Horizontal), Horizontal.Value, static c => c.Horizontal, static (c, v) => c.Horizontal = v);
         }
 
-        if (Inline.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(Inline)))
+        if (Inline.HasValue)
         {
-            bitChoiceGroup.Inline = Inline.Value;
-
-            bitChoiceGroup.ClassBuilder.Reset();
+            bitChoiceGroup.TakeFromCascade(nameof(Inline), Inline.Value, static c => c.Inline, static (c, v) => c.Inline = v);
         }
 
-        if (Label.HasValue() && bitChoiceGroup.HasNotBeenSet(nameof(Label)))
+        if (Label.HasValue())
         {
-            bitChoiceGroup.Label = Label;
+            bitChoiceGroup.TakeFromCascade(nameof(Label), Label, static c => c.Label, static (c, v) => c.Label = v);
         }
 
-        if (LabelPlacement.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(LabelPlacement)))
+        if (LabelPlacement.HasValue)
         {
-            bitChoiceGroup.LabelPlacement = LabelPlacement.Value;
-
-            bitChoiceGroup.ClassBuilder.Reset();
+            bitChoiceGroup.TakeFromCascade(nameof(LabelPlacement), LabelPlacement.Value, static c => c.LabelPlacement, static (c, v) => c.LabelPlacement = v);
         }
 
-        if (LabelTemplate is not null && bitChoiceGroup.HasNotBeenSet(nameof(LabelTemplate)))
+        if (LabelTemplate is not null)
         {
-            bitChoiceGroup.LabelTemplate = LabelTemplate;
+            bitChoiceGroup.TakeFromCascade(nameof(LabelTemplate), LabelTemplate, static c => c.LabelTemplate, static (c, v) => c.LabelTemplate = v);
         }
 
-        if (NoCircle.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(NoCircle)))
+        if (NoCircle.HasValue)
         {
-            bitChoiceGroup.NoCircle = NoCircle.Value;
-
-            bitChoiceGroup.ClassBuilder.Reset();
+            bitChoiceGroup.TakeFromCascade(nameof(NoCircle), NoCircle.Value, static c => c.NoCircle, static (c, v) => c.NoCircle = v);
         }
 
-        if (Size.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue)
         {
-            bitChoiceGroup.Size = Size.Value;
-
-            bitChoiceGroup.ClassBuilder.Reset();
+            bitChoiceGroup.TakeFromCascade(nameof(Size), Size.Value, static c => c.Size, static (c, v) => c.Size = v);
         }
 
-        if (StretchItemLabel.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(StretchItemLabel)))
+        if (StretchItemLabel.HasValue)
         {
-            bitChoiceGroup.StretchItemLabel = StretchItemLabel.Value;
-
-            bitChoiceGroup.ClassBuilder.Reset();
+            bitChoiceGroup.TakeFromCascade(nameof(StretchItemLabel), StretchItemLabel.Value, static c => c.StretchItemLabel, static (c, v) => c.StretchItemLabel = v);
         }
 
-        if (Styles is not null && bitChoiceGroup.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitChoiceGroup.Styles = Styles;
-
-            bitChoiceGroup.StyleBuilder.Reset();
+            bitChoiceGroup.TakeFromCascade(nameof(Styles), Styles, static c => c.Styles, static (c, v) => c.Styles = v);
         }
 
-        if (Variant.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue)
         {
-            bitChoiceGroup.Variant = Variant.Value;
-
-            bitChoiceGroup.ClassBuilder.Reset();
+            bitChoiceGroup.TakeFromCascade(nameof(Variant), Variant.Value, static c => c.Variant, static (c, v) => c.Variant = v);
         }
     }
 }

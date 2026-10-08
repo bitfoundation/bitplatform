@@ -1419,20 +1419,16 @@ public class BitDatePickerTests : BunitTestContext
     // ── Color & Size ──────────────────────────────────────────────────────────
 
     [TestMethod,
-        DataRow(null, "bit-dtp-pri"),
         DataRow(BitColor.Primary, "bit-dtp-pri"),
         DataRow(BitColor.Secondary, "bit-dtp-sec"),
         DataRow(BitColor.Success, "bit-dtp-suc"),
         DataRow(BitColor.Error, "bit-dtp-err"),
         DataRow(BitColor.TertiaryBorder, "bit-dtp-tbr")]
-    public void BitDatePickerShouldRespectColor(BitColor? color, string expectedClass)
+    public void BitDatePickerShouldRespectColor(BitColor color, string expectedClass)
     {
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
-            if (color.HasValue)
-            {
-                parameters.Add(p => p.Color, color.Value);
-            }
+            parameters.Add(p => p.Color, color);
         });
 
         Assert.IsTrue(component.Find(".bit-dtp").ClassList.Contains(expectedClass));
@@ -1465,6 +1461,30 @@ public class BitDatePickerTests : BunitTestContext
         Assert.IsFalse(classList.Contains("bit-dtp-sm"));
         Assert.IsFalse(classList.Contains("bit-dtp-md"));
         Assert.IsFalse(classList.Contains("bit-dtp-lg"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitDatePicker>();
+
+        // An unset Color or Size publishes nothing - on the root or on the callout rendered outside it - so the public
+        // --bit-DatePicker-* variables restyle the default while an explicit value, which does publish its class, wins
+        // over them.
+        var published = new[]
+        {
+            "bit-dtp-pri", "bit-dtp-sec", "bit-dtp-ter", "bit-dtp-inf", "bit-dtp-suc", "bit-dtp-wrn", "bit-dtp-swr", "bit-dtp-err",
+            "bit-dtp-pbg", "bit-dtp-sbg", "bit-dtp-tbg", "bit-dtp-pfg", "bit-dtp-sfg", "bit-dtp-tfg", "bit-dtp-pbr", "bit-dtp-sbr", "bit-dtp-tbr",
+            "bit-dtp-sm", "bit-dtp-md", "bit-dtp-lg",
+        };
+
+        foreach (var element in new[] { component.Find(".bit-dtp"), component.Find(".bit-dtp-cal") })
+        {
+            foreach (var cssClass in published)
+            {
+                Assert.IsFalse(element.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+            }
+        }
     }
 
     // ── MonthPicker visibility ────────────────────────────────────────────────

@@ -46,14 +46,53 @@ public class BitPivotStylesheetTests
     }
 
     [TestMethod]
-    public void BitPivotShouldResolveTheAccentOfEveryColorFromThePublicVariables()
+    public void BitPivotShouldLetAParameterWinOverItsPublicVariable()
     {
         var stylesheet = ReadStylesheet();
+        var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt {");
 
-        StringAssert.Contains(stylesheet, "--bit-pvt-clr: var(--bit-Pivot-color, #{role($tokens, main)});");
-        StringAssert.Contains(stylesheet, "--bit-pvt-clr-focus: var(--bit-Pivot-focus-color, #{role($tokens, focus)});");
-        StringAssert.Contains(stylesheet, "--bit-pvt-clr-dis: var(--bit-Pivot-disabled-color, #{role($tokens, dis)});");
-        StringAssert.Contains(stylesheet, "--bit-pvt-clr-dis-text: var(--bit-Pivot-disabled-text-color, #{role($tokens, dis-text)});");
+        // The accent is resolved once per pivot on its root: the role an explicit Color publishes first, then the
+        // public variable, then the primary role an unset Color stands for.
+        StringAssert.Contains(root, "--bit-pvt-clr: var(--bit-pvt-role-main, var(--bit-Pivot-color, #{$clr-pri}));");
+        StringAssert.Contains(root, "--bit-pvt-clr-focus: var(--bit-pvt-role-focus, var(--bit-Pivot-focus-color, #{$clr-pri-focus}));");
+        StringAssert.Contains(root, "--bit-pvt-clr-dis: var(--bit-pvt-role-dis, var(--bit-Pivot-disabled-color, #{$clr-pri-dis}));");
+        StringAssert.Contains(root, "--bit-pvt-clr-dis-text: var(--bit-pvt-role-dis-text, var(--bit-Pivot-disabled-text-color, #{$clr-pri-dis-text}));");
+
+        // The indicator and the colors of a Tab item are the Color's as well, ahead of their own variables.
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-pvt-role-main, var(--bit-Pivot-indicator-color, var(--bit-Pivot-color, #{$clr-pri})));");
+        StringAssert.Contains(stylesheet, "color: var(--bit-pvt-role-text, var(--bit-Pivot-item-selected-color, #{$clr-pri-text}));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-pvt-role-hover, var(--bit-Pivot-item-hover-background, #{$clr-pri-hover}));");
+
+        // An explicit Size publishes the font size and the item height, which an unset one leaves to the variables.
+        StringAssert.Contains(stylesheet, "font-size: var(--bit-pvt-fs, var(--bit-Pivot-font-size, #{$tg-fs-sm}));");
+        StringAssert.Contains(stylesheet, "height: var(--bit-pvt-ih, var(--bit-Pivot-item-height, #{$siz-tab}));");
+
+        // The role classes publish the bare role and nothing that reads a public variable.
+        var roles = SourceFiles.GetScssBlock(stylesheet, "\n    .bit-pvt-#{$role} {");
+        StringAssert.Contains(roles, "--bit-pvt-role-main: #{role($tokens, main)};");
+        Assert.IsFalse(roles.Contains("--bit-Pivot-"), "A role class reads a public variable ahead of the role.");
+
+        Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Pivot-[a-z-]+, var\(--bit-pvt-"), "A public variable is read before the parameter it restyles the default of.");
+    }
+
+    [TestMethod]
+    public void BitPivotShouldPublishItsColorAndSizeOnlyWhereTheyAreSet()
+    {
+        var stylesheet = ReadStylesheet();
+        var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt {");
+
+        // A pivot nested in the panel of another one must not inherit the outer pivot's Color or Size: each root starts
+        // the values those classes publish out unset, and the classes - declared further down at the same weight -
+        // still win on the root that carries them.
+        foreach (var property in new[] { "--bit-pvt-role-main", "--bit-pvt-role-hover", "--bit-pvt-role-focus", "--bit-pvt-role-text",
+                                         "--bit-pvt-role-dis", "--bit-pvt-role-dis-text", "--bit-pvt-fs", "--bit-pvt-ih", "--bit-pvt-is", "--bit-pvt-mh" })
+        {
+            StringAssert.Contains(root, $"{property}: initial;");
+        }
+
+        var rootAt = stylesheet.IndexOf("\n.bit-pvt {", System.StringComparison.Ordinal);
+        Assert.IsTrue(rootAt < stylesheet.IndexOf("\n    .bit-pvt-#{$role} {", System.StringComparison.Ordinal), "The color classes are declared ahead of the root that resets them.");
+        Assert.IsTrue(rootAt < stylesheet.IndexOf("\n.bit-pvt-md {", System.StringComparison.Ordinal), "The size classes are declared ahead of the root that resets them.");
     }
 
     [TestMethod]
@@ -81,8 +120,8 @@ public class BitPivotStylesheetTests
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-md {"), "--bit-pvt-ih: #{$siz-tab};");
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-lg {"), "--bit-pvt-ih: calc(#{$siz-tab} * 1.25);");
 
-        // The public variable still wins over every size.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvti {"), "height: var(--bit-Pivot-item-height, var(--bit-pvt-ih, #{$siz-tab}));");
+        // An explicit Size wins over the public variable, which restyles the medium height an unset one stands for.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvti {"), "height: var(--bit-pvt-ih, var(--bit-Pivot-item-height, #{$siz-tab}));");
     }
 
     [TestMethod]

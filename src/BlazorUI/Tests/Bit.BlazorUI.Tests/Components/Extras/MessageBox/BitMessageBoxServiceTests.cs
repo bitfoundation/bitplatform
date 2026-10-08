@@ -129,7 +129,7 @@ public class BitMessageBoxServiceTests : BunitTestContext
 
         var buttons = container.FindAll(".bit-msb-ftr .bit-btn");
         Assert.IsTrue(buttons[0].ClassList.Contains("bit-btn-err"));
-        Assert.IsTrue(buttons[1].ClassList.Contains("bit-btn-ter"));
+        Assert.IsTrue(buttons[1].ClassList.Contains("bit-btn-dft-ter"));
 
         container.FindAll(".bit-msb-ftr .bit-btn")[1].Click();
 

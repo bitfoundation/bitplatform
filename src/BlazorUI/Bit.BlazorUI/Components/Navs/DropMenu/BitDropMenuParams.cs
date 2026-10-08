@@ -232,205 +232,189 @@ public class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitDropMenu);
 
-        if (Alignment.HasValue && bitDropMenu.HasNotBeenSet(nameof(Alignment)))
+        if (Alignment.HasValue)
         {
-            bitDropMenu.Alignment = Alignment.Value;
+            bitDropMenu.TakeFromCascade(nameof(Alignment), Alignment.Value, static d => d.Alignment, static (d, v) => d.Alignment = v);
         }
 
-        if (AriaDescription.HasValue() && bitDropMenu.HasNotBeenSet(nameof(AriaDescription)))
+        if (AriaDescription.HasValue())
         {
-            bitDropMenu.AriaDescription = AriaDescription;
+            bitDropMenu.TakeFromCascade(nameof(AriaDescription), AriaDescription, static d => d.AriaDescription, static (d, v) => d.AriaDescription = v);
         }
 
-        if (AriaHidden.HasValue && bitDropMenu.HasNotBeenSet(nameof(AriaHidden)))
+        if (AriaHidden.HasValue)
         {
-            bitDropMenu.AriaHidden = AriaHidden.Value;
+            bitDropMenu.TakeFromCascade(nameof(AriaHidden), AriaHidden.Value, static d => d.AriaHidden, static (d, v) => d.AriaHidden = v);
         }
 
-        if (AutoClose.HasValue && bitDropMenu.HasNotBeenSet(nameof(AutoClose)))
+        if (AutoClose.HasValue)
         {
-            bitDropMenu.AutoClose = AutoClose.Value;
+            bitDropMenu.TakeFromCascade(nameof(AutoClose), AutoClose.Value, static d => d.AutoClose, static (d, v) => d.AutoClose = v);
         }
 
-        if (AutoFocus.HasValue && bitDropMenu.HasNotBeenSet(nameof(AutoFocus)))
+        if (AutoFocus.HasValue)
         {
-            bitDropMenu.AutoFocus = AutoFocus.Value;
+            bitDropMenu.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static d => d.AutoFocus, static (d, v) => d.AutoFocus = v);
         }
 
-        if (Background.HasValue && bitDropMenu.HasNotBeenSet(nameof(Background)))
+        if (Background.HasValue)
         {
-            bitDropMenu.Background = Background.Value;
+            bitDropMenu.TakeFromCascade(nameof(Background), Background.Value, static d => d.Background, static (d, v) => d.Background = v);
         }
 
-        if (Border.HasValue && bitDropMenu.HasNotBeenSet(nameof(Border)))
+        if (Border.HasValue)
         {
-            bitDropMenu.Border = Border.Value;
+            bitDropMenu.TakeFromCascade(nameof(Border), Border.Value, static d => d.Border, static (d, v) => d.Border = v);
         }
 
-        if (ChevronDownIcon is not null && bitDropMenu.HasNotBeenSet(nameof(ChevronDownIcon)))
+        if (ChevronDownIcon is not null)
         {
-            bitDropMenu.ChevronDownIcon = ChevronDownIcon;
+            bitDropMenu.TakeFromCascade(nameof(ChevronDownIcon), ChevronDownIcon, static d => d.ChevronDownIcon, static (d, v) => d.ChevronDownIcon = v);
         }
 
-        if (ChevronDownIconName.HasValue() && bitDropMenu.HasNotBeenSet(nameof(ChevronDownIconName)))
+        if (ChevronDownIconName.HasValue())
         {
-            bitDropMenu.ChevronDownIconName = ChevronDownIconName;
+            bitDropMenu.TakeFromCascade(nameof(ChevronDownIconName), ChevronDownIconName, static d => d.ChevronDownIconName, static (d, v) => d.ChevronDownIconName = v);
         }
 
-        if (Classes is not null && bitDropMenu.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitDropMenu.Classes = Classes;
-
-            bitDropMenu.ClassBuilder.Reset();
+            bitDropMenu.TakeFromCascade(nameof(Classes), Classes, static d => d.Classes, static (d, v) => d.Classes = v);
         }
 
-        if (Color.HasValue && bitDropMenu.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue)
         {
-            bitDropMenu.Color = Color.Value;
-
-            bitDropMenu.ClassBuilder.Reset();
+            bitDropMenu.TakeFromCascade(nameof(Color), Color.Value, static d => d.Color, static (d, v) => d.Color = v);
         }
 
-        if (DropDirection.HasValue && bitDropMenu.HasNotBeenSet(nameof(DropDirection)))
+        if (DropDirection.HasValue)
         {
-            bitDropMenu.DropDirection = DropDirection.Value;
+            bitDropMenu.TakeFromCascade(nameof(DropDirection), DropDirection.Value, static d => d.DropDirection, static (d, v) => d.DropDirection = v);
         }
 
-        if (FullWidth.HasValue && bitDropMenu.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue)
         {
-            bitDropMenu.FullWidth = FullWidth.Value;
-
-            bitDropMenu.ClassBuilder.Reset();
+            bitDropMenu.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static d => d.FullWidth, static (d, v) => d.FullWidth = v);
         }
 
-        if (Gap.HasValue && bitDropMenu.HasNotBeenSet(nameof(Gap)))
+        if (Gap.HasValue)
         {
-            bitDropMenu.Gap = Gap.Value;
+            bitDropMenu.TakeFromCascade(nameof(Gap), Gap.Value, static d => d.Gap, static (d, v) => d.Gap = v);
         }
 
-        if (HoverCloseDelay.HasValue && bitDropMenu.HasNotBeenSet(nameof(HoverCloseDelay)))
+        if (HoverCloseDelay.HasValue)
         {
-            bitDropMenu.HoverCloseDelay = HoverCloseDelay.Value;
+            bitDropMenu.TakeFromCascade(nameof(HoverCloseDelay), HoverCloseDelay.Value, static d => d.HoverCloseDelay, static (d, v) => d.HoverCloseDelay = v);
         }
 
-        if (HoverOpenDelay.HasValue && bitDropMenu.HasNotBeenSet(nameof(HoverOpenDelay)))
+        if (HoverOpenDelay.HasValue)
         {
-            bitDropMenu.HoverOpenDelay = HoverOpenDelay.Value;
+            bitDropMenu.TakeFromCascade(nameof(HoverOpenDelay), HoverOpenDelay.Value, static d => d.HoverOpenDelay, static (d, v) => d.HoverOpenDelay = v);
         }
 
-        if (Icon is not null && bitDropMenu.HasNotBeenSet(nameof(Icon)))
+        if (Icon is not null)
         {
-            bitDropMenu.Icon = Icon;
+            bitDropMenu.TakeFromCascade(nameof(Icon), Icon, static d => d.Icon, static (d, v) => d.Icon = v);
         }
 
-        if (IconName.HasValue() && bitDropMenu.HasNotBeenSet(nameof(IconName)))
+        if (IconName.HasValue())
         {
-            bitDropMenu.IconName = IconName;
+            bitDropMenu.TakeFromCascade(nameof(IconName), IconName, static d => d.IconName, static (d, v) => d.IconName = v);
         }
 
-        if (IsLoading.HasValue && bitDropMenu.HasNotBeenSet(nameof(IsLoading)))
+        if (IsLoading.HasValue)
         {
-            bitDropMenu.IsLoading = IsLoading.Value;
-
-            bitDropMenu.ClassBuilder.Reset();
+            bitDropMenu.TakeFromCascade(nameof(IsLoading), IsLoading.Value, static d => d.IsLoading, static (d, v) => d.IsLoading = v);
         }
 
-        if (LazyRender.HasValue && bitDropMenu.HasNotBeenSet(nameof(LazyRender)))
+        if (LazyRender.HasValue)
         {
-            bitDropMenu.LazyRender = LazyRender.Value;
+            bitDropMenu.TakeFromCascade(nameof(LazyRender), LazyRender.Value, static d => d.LazyRender, static (d, v) => d.LazyRender = v);
         }
 
-        if (MatchWidth.HasValue && bitDropMenu.HasNotBeenSet(nameof(MatchWidth)))
+        if (MatchWidth.HasValue)
         {
-            bitDropMenu.MatchWidth = MatchWidth.Value;
+            bitDropMenu.TakeFromCascade(nameof(MatchWidth), MatchWidth.Value, static d => d.MatchWidth, static (d, v) => d.MatchWidth = v);
         }
 
-        if (MaxHeight.HasValue() && bitDropMenu.HasNotBeenSet(nameof(MaxHeight)))
+        if (MaxHeight.HasValue())
         {
-            bitDropMenu.MaxHeight = MaxHeight;
+            bitDropMenu.TakeFromCascade(nameof(MaxHeight), MaxHeight, static d => d.MaxHeight, static (d, v) => d.MaxHeight = v);
         }
 
-        if (MaxWidth.HasValue() && bitDropMenu.HasNotBeenSet(nameof(MaxWidth)))
+        if (MaxWidth.HasValue())
         {
-            bitDropMenu.MaxWidth = MaxWidth;
+            bitDropMenu.TakeFromCascade(nameof(MaxWidth), MaxWidth, static d => d.MaxWidth, static (d, v) => d.MaxWidth = v);
         }
 
-        if (MinWidth.HasValue() && bitDropMenu.HasNotBeenSet(nameof(MinWidth)))
+        if (MinWidth.HasValue())
         {
-            bitDropMenu.MinWidth = MinWidth;
+            bitDropMenu.TakeFromCascade(nameof(MinWidth), MinWidth, static d => d.MinWidth, static (d, v) => d.MinWidth = v);
         }
 
-        if (NoChevron.HasValue && bitDropMenu.HasNotBeenSet(nameof(NoChevron)))
+        if (NoChevron.HasValue)
         {
-            bitDropMenu.NoChevron = NoChevron.Value;
+            bitDropMenu.TakeFromCascade(nameof(NoChevron), NoChevron.Value, static d => d.NoChevron, static (d, v) => d.NoChevron = v);
         }
 
-        if (NoShadow.HasValue && bitDropMenu.HasNotBeenSet(nameof(NoShadow)))
+        if (NoShadow.HasValue)
         {
-            bitDropMenu.NoShadow = NoShadow.Value;
+            bitDropMenu.TakeFromCascade(nameof(NoShadow), NoShadow.Value, static d => d.NoShadow, static (d, v) => d.NoShadow = v);
         }
 
-        if (OpenOnHover.HasValue && bitDropMenu.HasNotBeenSet(nameof(OpenOnHover)))
+        if (OpenOnHover.HasValue)
         {
-            bitDropMenu.OpenOnHover = OpenOnHover.Value;
+            bitDropMenu.TakeFromCascade(nameof(OpenOnHover), OpenOnHover.Value, static d => d.OpenOnHover, static (d, v) => d.OpenOnHover = v);
         }
 
-        if (PanelPlacement.HasValue && bitDropMenu.HasNotBeenSet(nameof(PanelPlacement)))
+        if (PanelPlacement.HasValue)
         {
-            bitDropMenu.PanelPlacement = PanelPlacement.Value;
+            bitDropMenu.TakeFromCascade(nameof(PanelPlacement), PanelPlacement.Value, static d => d.PanelPlacement, static (d, v) => d.PanelPlacement = v);
         }
 
-        if (Responsive.HasValue && bitDropMenu.HasNotBeenSet(nameof(Responsive)))
+        if (Responsive.HasValue)
         {
-            bitDropMenu.Responsive = Responsive.Value;
+            bitDropMenu.TakeFromCascade(nameof(Responsive), Responsive.Value, static d => d.Responsive, static (d, v) => d.Responsive = v);
         }
 
-        if (Placement.HasValue && bitDropMenu.HasNotBeenSet(nameof(Placement)))
+        if (Placement.HasValue)
         {
-            bitDropMenu.Placement = Placement.Value;
+            bitDropMenu.TakeFromCascade(nameof(Placement), Placement.Value, static d => d.Placement, static (d, v) => d.Placement = v);
         }
 
-        if (Size.HasValue && bitDropMenu.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue)
         {
-            bitDropMenu.Size = Size.Value;
-
-            bitDropMenu.ClassBuilder.Reset();
+            bitDropMenu.TakeFromCascade(nameof(Size), Size.Value, static d => d.Size, static (d, v) => d.Size = v);
         }
 
-        if (Styles is not null && bitDropMenu.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitDropMenu.Styles = Styles;
-
-            bitDropMenu.StyleBuilder.Reset();
+            bitDropMenu.TakeFromCascade(nameof(Styles), Styles, static d => d.Styles, static (d, v) => d.Styles = v);
         }
 
-        if (Title.HasValue() && bitDropMenu.HasNotBeenSet(nameof(Title)))
+        if (Title.HasValue())
         {
-            bitDropMenu.Title = Title;
+            bitDropMenu.TakeFromCascade(nameof(Title), Title, static d => d.Title, static (d, v) => d.Title = v);
         }
 
-        if (Transparent.HasValue && bitDropMenu.HasNotBeenSet(nameof(Transparent)))
+        if (Transparent.HasValue)
         {
-            bitDropMenu.Transparent = Transparent.Value;
-
-            bitDropMenu.ClassBuilder.Reset();
+            bitDropMenu.TakeFromCascade(nameof(Transparent), Transparent.Value, static d => d.Transparent, static (d, v) => d.Transparent = v);
         }
 
-        if (TrapFocus.HasValue && bitDropMenu.HasNotBeenSet(nameof(TrapFocus)))
+        if (TrapFocus.HasValue)
         {
-            bitDropMenu.TrapFocus = TrapFocus.Value;
+            bitDropMenu.TakeFromCascade(nameof(TrapFocus), TrapFocus.Value, static d => d.TrapFocus, static (d, v) => d.TrapFocus = v);
         }
 
-        if (Variant.HasValue && bitDropMenu.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue)
         {
-            bitDropMenu.Variant = Variant.Value;
-
-            bitDropMenu.ClassBuilder.Reset();
+            bitDropMenu.TakeFromCascade(nameof(Variant), Variant.Value, static d => d.Variant, static (d, v) => d.Variant = v);
         }
 
-        if (Width.HasValue() && bitDropMenu.HasNotBeenSet(nameof(Width)))
+        if (Width.HasValue())
         {
-            bitDropMenu.Width = Width;
+            bitDropMenu.TakeFromCascade(nameof(Width), Width, static d => d.Width, static (d, v) => d.Width = v);
         }
     }
 }

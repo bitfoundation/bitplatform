@@ -100,82 +100,64 @@ public class BitLabelParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitLabel);
 
-        if (Classes is not null && bitLabel.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitLabel.Classes = Classes;
-
-            bitLabel.ClassBuilder.Reset();
+            bitLabel.TakeFromCascade(nameof(Classes), Classes, static l => l.Classes, static (l, v) => l.Classes = v);
         }
 
-        if (Color.HasValue && bitLabel.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue)
         {
-            bitLabel.Color = Color.Value;
-
-            bitLabel.ClassBuilder.Reset();
+            bitLabel.TakeFromCascade(nameof(Color), Color.Value, static l => l.Color, static (l, v) => l.Color = v);
         }
 
-        if (Element.HasValue() && bitLabel.HasNotBeenSet(nameof(Element)))
+        if (Element.HasValue())
         {
-            bitLabel.Element = Element;
+            bitLabel.TakeFromCascade(nameof(Element), Element, static l => l.Element, static (l, v) => l.Element = v);
         }
 
-        if (NoSelect.HasValue && bitLabel.HasNotBeenSet(nameof(NoSelect)))
+        if (NoSelect.HasValue)
         {
-            bitLabel.NoSelect = NoSelect.Value;
-
-            bitLabel.ClassBuilder.Reset();
+            bitLabel.TakeFromCascade(nameof(NoSelect), NoSelect.Value, static l => l.NoSelect, static (l, v) => l.NoSelect = v);
         }
 
-        if (NoWrap.HasValue && bitLabel.HasNotBeenSet(nameof(NoWrap)))
+        if (NoWrap.HasValue)
         {
-            bitLabel.NoWrap = NoWrap.Value;
-
-            bitLabel.ClassBuilder.Reset();
+            bitLabel.TakeFromCascade(nameof(NoWrap), NoWrap.Value, static l => l.NoWrap, static (l, v) => l.NoWrap = v);
         }
 
-        if (Optional.HasValue && bitLabel.HasNotBeenSet(nameof(Optional)))
+        if (Optional.HasValue)
         {
-            bitLabel.Optional = Optional.Value;
-
-            bitLabel.ClassBuilder.Reset();
+            bitLabel.TakeFromCascade(nameof(Optional), Optional.Value, static l => l.Optional, static (l, v) => l.Optional = v);
         }
 
-        if (OptionalText.HasValue() && bitLabel.HasNotBeenSet(nameof(OptionalText)))
+        if (OptionalText.HasValue())
         {
-            bitLabel.OptionalText = OptionalText;
+            bitLabel.TakeFromCascade(nameof(OptionalText), OptionalText, static l => l.OptionalText, static (l, v) => l.OptionalText = v);
         }
 
-        if (Required.HasValue && bitLabel.HasNotBeenSet(nameof(Required)))
+        if (Required.HasValue)
         {
-            bitLabel.Required = Required.Value;
-
-            bitLabel.ClassBuilder.Reset();
+            bitLabel.TakeFromCascade(nameof(Required), Required.Value, static l => l.Required, static (l, v) => l.Required = v);
         }
 
-        if (RequiredText.HasValue() && bitLabel.HasNotBeenSet(nameof(RequiredText)))
+        if (RequiredText.HasValue())
         {
-            bitLabel.RequiredText = RequiredText;
+            bitLabel.TakeFromCascade(nameof(RequiredText), RequiredText, static l => l.RequiredText, static (l, v) => l.RequiredText = v);
         }
 
-        if (Size.HasValue && bitLabel.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue)
         {
-            bitLabel.Size = Size.Value;
-
-            bitLabel.ClassBuilder.Reset();
+            bitLabel.TakeFromCascade(nameof(Size), Size.Value, static l => l.Size, static (l, v) => l.Size = v);
         }
 
-        if (Styles is not null && bitLabel.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitLabel.Styles = Styles;
-
-            bitLabel.StyleBuilder.Reset();
+            bitLabel.TakeFromCascade(nameof(Styles), Styles, static l => l.Styles, static (l, v) => l.Styles = v);
         }
 
-        if (VisuallyHidden.HasValue && bitLabel.HasNotBeenSet(nameof(VisuallyHidden)))
+        if (VisuallyHidden.HasValue)
         {
-            bitLabel.VisuallyHidden = VisuallyHidden.Value;
-
-            bitLabel.ClassBuilder.Reset();
+            bitLabel.TakeFromCascade(nameof(VisuallyHidden), VisuallyHidden.Value, static l => l.VisuallyHidden, static (l, v) => l.VisuallyHidden = v);
         }
     }
 }

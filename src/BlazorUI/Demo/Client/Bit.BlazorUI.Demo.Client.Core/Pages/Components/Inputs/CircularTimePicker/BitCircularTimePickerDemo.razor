@@ -744,9 +744,10 @@
         <br /><br /><br />
         <div>
             <b>CSS variables</b> (listed in the table at the bottom of this page) restyle the picker without a
-            selector. On <b>:root</b> they re-skin every picker of the app. The callout moves to the end of the
-            <b>body</b> while it is open, yet it keeps inheriting from the picker's ancestors, so a wrapper around the
-            picker reaches the field, the label, the icon and the dial alike:
+            selector. On <b>:root</b> they re-skin every picker of the app. They restyle the default, not a choice:
+            an explicit <b>Color</b> or <b>Size</b> wins over the variables for what it sets. The callout moves to the
+            end of the <b>body</b> while it is open, yet it keeps inheriting from the picker's ancestors, so a wrapper
+            around the picker reaches the field, the label, the icon and the dial alike:
         </div><br />
         <div class="custom-vars">
             <div class="example-content">

@@ -102,7 +102,7 @@ public class BitParams : ComponentBase
             return Task.CompletedTask;
         }
 
-        _scope = BitParamsScope.Create(ParentScope, Parameters, Isolated);
+        _scope = BitParamsScope.Create(ParentScope, Parameters, Isolated, _scope);
 
         UpdateValues();
 

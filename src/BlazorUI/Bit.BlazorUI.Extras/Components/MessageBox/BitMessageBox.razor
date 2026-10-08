@@ -63,7 +63,7 @@
                                        Icon="@_CloseIcon"
                                        Title="@_CloseButtonTitle"
                                        AriaLabel="@_CloseButtonTitle"
-                                       Color="BitColor.Tertiary"
+                                       Class="bit-btn-dft-ter"
                                        Variant="BitVariant.Text"
                                        Styles="@Styles?.CloseButton"
                                        Classes="@Classes?.CloseButton" />
@@ -108,6 +108,7 @@
                                        Size="@Size"
                                        AutoLoading="@AutoLoading"
                                        Color="@GetActionColor(action)"
+                                       Class="@(GetActionColor(action) is null ? "bit-btn-dft-ter" : null)"
                                        Variant="@(action == _PrimaryAction ? BitVariant.Fill : BitVariant.Outline)"
                                        Styles="@GetActionStyles(action)"
                                        Classes="@GetActionClasses(action)">

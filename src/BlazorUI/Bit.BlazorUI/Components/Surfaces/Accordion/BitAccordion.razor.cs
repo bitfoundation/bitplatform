@@ -21,6 +21,19 @@ public partial class BitAccordion : BitComponentBase
     private bool _hasBeenExpanded;
     private bool _contentHasFocus;
     private ElementReference _headerRef;
+    private ElementReference _contentRef;
+
+    // Whether a HiddenUntilFound panel is still playing its close, which is what holds hidden="until-found" back:
+    // the attribute stops the panel from being drawn at all, so it is only put on once the browser reports the
+    // transitions of the close finished, whatever the theme, a TransitionDuration or a reduced-motion preference
+    // made them. The stylesheet cannot hold the hiding back on its own: WebKit lays out a panel whose
+    // content-visibility is being transitioned or animated (allow-discrete, a keyframe) as already hidden, so the
+    // row would snap shut the moment the attribute landed. The version tells the close a wait belongs to apart
+    // from a later one, so a wait that outlives its close - the panel reopened and closed again - hides nothing.
+    private bool _closing;
+    private int _closingVersion;
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
 
     // Settles when the awaited OnToggling in flight is over, so that a find-in-page reveal landing meanwhile can wait
     // for it rather than be turned away as if it had been refused.
@@ -68,7 +81,10 @@ public partial class BitAccordion : BitComponentBase
     /// The color kind of the background of the accordion.
     /// </summary>
     /// <remarks>
-    /// It wins over a --bit-Accordion-background inherited from an ancestor, since it is asked for by the instance itself.
+    /// An explicit value wins over <c>--bit-Accordion-background</c> and the two header shades that travel with the fill
+    /// (<c>--bit-Accordion-header-hover-background</c>, <c>--bit-Accordion-header-active-background</c>), inherited or
+    /// set on the instance alike; left unset, the accordion takes the primary background (the secondary one with
+    /// <see cref="NoBorder"/>) unless those variables say otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColorKind? Background { get; set; }
@@ -77,7 +93,8 @@ public partial class BitAccordion : BitComponentBase
     /// The color kind of the border of the accordion.
     /// </summary>
     /// <remarks>
-    /// It wins over a --bit-Accordion-border-color inherited from an ancestor, since it is asked for by the instance itself.
+    /// An explicit value wins over <c>--bit-Accordion-border-color</c>, inherited or set on the instance alike; left
+    /// unset, the outline takes the primary border color unless that variable says otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColorKind? Border { get; set; }
@@ -215,9 +232,9 @@ public partial class BitAccordion : BitComponentBase
     /// </summary>
     /// <remarks>
     /// This is what a FAQ or a page of collapsed documentation wants: text the reader cannot see is still text they
-    /// can search for. The attribute is applied as the close starts and the stylesheet keeps the panel drawn until the
-    /// close has played, whatever its duration, and the expansion the browser asks for is reported like any other (<see cref="BitAccordionToggleReason.Reveal"/>), so <see cref="OnToggling"/> can still
-    /// refuse it.
+    /// can search for. The attribute is applied once the close the browser plays has finished, whatever its duration,
+    /// so the close still animates, and the expansion the browser asks for is reported like any other
+    /// (<see cref="BitAccordionToggleReason.Reveal"/>), so <see cref="OnToggling"/> can still refuse it.
     /// <br />
     /// The panel has to be in the DOM to be found, so <see cref="LazyContent"/> and <see cref="UnmountOnCollapse"/>
     /// are ignored while it is on. An accordion that cannot expand itself - a disabled or <see cref="ReadOnly"/> one,
@@ -341,9 +358,11 @@ public partial class BitAccordion : BitComponentBase
     /// <summary>
     /// Gets or sets the size of the accordion, which drives the padding of the header and of the content
     /// and the size of the title.
-    /// <br />
-    /// The default value is <see cref="BitSize.Medium"/>.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Accordion-*</c> size variables (font sizes, header and content padding,
+    /// icon size); left unset, the accordion is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -444,10 +463,10 @@ public partial class BitAccordion : BitComponentBase
     // the match is, since the browser would otherwise reveal content inside a panel that stays shut.
     private bool _IsSearchable => HiddenUntilFound && Disabled is false && ReadOnly is false && (_OwnsExpansion || RevealHandler is not null) && _revealRefused is false;
 
-    // Whether the panel is hidden until found right now. The attribute is applied as the close starts, and the
-    // stylesheet keeps the panel drawn until the transition is over (content-visibility, allow-discrete), which is the
-    // one place that knows how long the theme, a TransitionDuration or a reduced-motion preference made it.
-    private bool _IsHiddenUntilFound => _IsSearchable && IsExpanded is false;
+    // Whether the panel is hidden until found right now. The attribute waits for the end of the close: the render
+    // that starts it (the last one rendered expanded, _wasExpanded) and the ones while it plays (_closing) leave the
+    // panel to the ordinary collapsed state, whose visibility is held back for the length of the transition.
+    private bool _IsHiddenUntilFound => _IsSearchable && IsExpanded is false && _wasExpanded is false && _closing is false;
 
     private Dictionary<string, object>? _ContentAttributes => _IsSearchable
         ? (_beforeMatchAttributes ??= new() { ["onbeforematch"] = EventCallback.Factory.Create(this, HandleOnBeforeMatch) })
@@ -508,13 +527,9 @@ public partial class BitAccordion : BitComponentBase
 
         ClassBuilder.Register(() => ExpanderIconPlacement is BitPlacement.Start ? "bit-acd-sei" : string.Empty);
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-acd-sm",
-            BitSize.Medium => "bit-acd-md",
-            BitSize.Large => "bit-acd-lg",
-            _ => "bit-acd-md"
-        });
+        // Size, Background and Border publish nothing while they are unset, which is what lets the stylesheet tell a
+        // default from a choice: the public --bit-Accordion-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-acd"));
 
         ClassBuilder.Register(() => Background switch
         {
@@ -610,7 +625,20 @@ public partial class BitAccordion : BitComponentBase
             _revealRefused = false;
         }
 
+        var closed = _wasExpanded && IsExpanded is false;
+
         _wasExpanded = IsExpanded;
+
+        if (IsExpanded)
+        {
+            _closing = false;
+        }
+        else if (closed && HiddenUntilFound)
+        {
+            _closing = true;
+
+            _ = HideUntilFoundOnceClosedAsync(++_closingVersion);
+        }
 
         await base.OnAfterRenderAsync(firstRender);
     }
@@ -758,6 +786,27 @@ public partial class BitAccordion : BitComponentBase
         if (revealed || IsExpanded || IsDisposed) return;
 
         _revealRefused = true;
+    }
+
+    // The render that started the close has just put the collapsed state on the panel, so the transitions the browser
+    // waits out are the ones it is playing now, at whatever pace it resolved.
+    private async Task HideUntilFoundOnceClosedAsync(int version)
+    {
+        try
+        {
+            await _js.BitAccordionWaitForTransitions(_contentRef);
+        }
+        catch (JSDisconnectedException) { }
+        catch (JSException) { }
+        catch (TaskCanceledException) { }
+
+        if (version != _closingVersion || IsDisposed || IsExpanded) return;
+
+        _closing = false;
+
+        _skipRender = false;
+
+        await InvokeAsync(StateHasChanged);
     }
 
     private void HandleOnContentFocusIn()

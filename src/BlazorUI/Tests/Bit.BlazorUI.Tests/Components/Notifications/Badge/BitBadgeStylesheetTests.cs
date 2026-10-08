@@ -57,16 +57,17 @@ public partial class BitBadgeStylesheetTests
         var block = SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-dis {", "The disabled badge has no rule of its own.");
 
         // The disabled colors are handed over from the disabled tokens alone, never through the public color variables...
-        StringAssert.Contains(block, "--bit-bdg-dis-txt: var(--bit-bdg-clr-dis-text);");
+        StringAssert.Contains(block, "--bit-bdg-dis-txt: var(--bit-bdg-clr-dis-text, #{$clr-pri-dis-text});");
         StringAssert.Contains(block, "--bit-bdg-dis-bg: var(--bit-bdg-clr-bg-dis);");
         StringAssert.Contains(block, "--bit-bdg-dis-brd: var(--bit-bdg-clr-brd-dis);");
         Assert.IsFalse(block.Contains("--bit-Badge-"));
 
-        // ...and the badge reads them ahead of those variables, so a re-tinted badge that is disabled still reads as
-        // disabled, while the rule painting it keeps the weight of a single class a Classes.Badge class can compete with.
-        StringAssert.Contains(stylesheet, "color: var(--bit-bdg-dis-txt, var(--bit-Badge-color, ");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-bdg-dis-bg, var(--bit-Badge-background, ");
-        StringAssert.Contains(stylesheet, "border-color: var(--bit-bdg-dis-brd, var(--bit-Badge-border-color, ");
+        // ...and the badge reads them ahead of the colors the variants resolve out of the Color and those variables,
+        // so a re-tinted badge that is disabled still reads as disabled, while the rule painting it keeps the weight
+        // of a single class a Classes.Badge class can compete with.
+        StringAssert.Contains(stylesheet, "color: var(--bit-bdg-dis-txt, var(--bit-bdg-cnt-clr-txt));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-bdg-dis-bg, var(--bit-bdg-cnt-clr-bg));");
+        StringAssert.Contains(stylesheet, "border-color: var(--bit-bdg-dis-brd, var(--bit-bdg-cnt-clr-brd));");
         Assert.IsFalse(stylesheet.Contains("\n.bit-bdg.bit-dis .bit-bdg-ctn {"), "The disabled colors are set by a heavier rule of their own.");
     }
 
@@ -77,9 +78,9 @@ public partial class BitBadgeStylesheetTests
 
         // A dot is a circle of its own size whatever the public height, padding and radius say, read first by the one
         // rule painting the badge rather than set by a heavier rule, so a Classes.Badge class can still re-size it.
-        StringAssert.Contains(stylesheet, "height: var(--bit-bdg-dot-size, var(--bit-Badge-height, ");
-        StringAssert.Contains(stylesheet, "padding: var(--bit-bdg-dot-padding, var(--bit-Badge-padding, ");
-        StringAssert.Contains(stylesheet, "border-radius: var(--bit-bdg-dot-radius, var(--bit-Badge-radius, ");
+        StringAssert.Contains(stylesheet, "height: var(--bit-bdg-dot-size, var(--bit-bdg-height, var(--bit-Badge-height, ");
+        StringAssert.Contains(stylesheet, "padding: var(--bit-bdg-dot-padding, var(--bit-bdg-padding, var(--bit-Badge-padding, ");
+        StringAssert.Contains(stylesheet, "border-radius: var(--bit-bdg-dot-radius, var(--bit-bdg-radius, var(--bit-Badge-radius, ");
         Assert.IsFalse(stylesheet.Contains("\n.bit-bdg-dot .bit-bdg-ctn {"), "The dot is set by a heavier rule of its own.");
     }
 
@@ -123,6 +124,44 @@ public partial class BitBadgeStylesheetTests
         var stylesheet = ReadStylesheet();
         StringAssert.Contains(stylesheet, "--bit-bdg-ofs-x: initial;");
         StringAssert.Contains(stylesheet, "--bit-bdg-ofs-y: initial;");
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldLetAParameterWinOverItsPublicVariable()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // An explicit Size or Shape publishes these, so they are read before the variable, which only restyles the
+        // default an unset one stands for.
+        StringAssert.Contains(stylesheet, "var(--bit-bdg-height, var(--bit-Badge-height, #{$siz-badge-md}))");
+        StringAssert.Contains(stylesheet, "var(--bit-bdg-padding, var(--bit-Badge-padding, ");
+        StringAssert.Contains(stylesheet, "var(--bit-bdg-fontsize, var(--bit-Badge-font-size, #{$tg-fs-sm}))");
+        StringAssert.Contains(stylesheet, "var(--bit-bdg-radius, var(--bit-Badge-radius, #{$shp-radius-full}))");
+        StringAssert.Contains(stylesheet, "var(--bit-bdg-dotsize, var(--bit-Badge-dot-size, #{$siz-badge-dot-md}))");
+
+        // So does an explicit Color, for every color it paints.
+        StringAssert.Contains(stylesheet, "--bit-bdg-cnt-clr-bg: var(--bit-bdg-clr, var(--bit-Badge-background, #{$clr-pri}));");
+        StringAssert.Contains(stylesheet, "--bit-bdg-cnt-clr-txt: var(--bit-bdg-clr-txt, var(--bit-Badge-color, #{$clr-pri-text}));");
+        StringAssert.Contains(stylesheet, "var(--bit-bdg-clr-fcs, var(--bit-Badge-focus-color, #{$clr-pri-focus}))");
+        StringAssert.Contains(stylesheet, "var(--bit-bdg-clr, var(--bit-Badge-pulse-color, #{$clr-pri}))");
+
+        Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Badge-[a-z-]+, var\(--bit-bdg-"), "A public variable is read before the parameter it restyles the default of.");
+    }
+
+    [TestMethod]
+    public void BitBadgeShouldPublishItsColorSizeAndShapeOnlyWhereTheyAreSet()
+    {
+        var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-bdg {");
+
+        // A badge can sit in the child content of another one, which must not inherit the outer badge's Color, Size or
+        // Shape: each root starts the values those classes publish out unset, and the classes - declared further down
+        // at the same weight - still win on the root that carries them.
+        foreach (var property in new[] { "--bit-bdg-clr", "--bit-bdg-clr-txt", "--bit-bdg-clr-dis", "--bit-bdg-clr-dis-text", "--bit-bdg-clr-hover",
+                                         "--bit-bdg-clr-active", "--bit-bdg-clr-light", "--bit-bdg-clr-light-hover", "--bit-bdg-clr-fcs",
+                                         "--bit-bdg-height", "--bit-bdg-padding", "--bit-bdg-fontsize", "--bit-bdg-dotsize", "--bit-bdg-radius" })
+        {
+            StringAssert.Contains(root, $"{property}: initial;");
+        }
     }
 
     [TestMethod]

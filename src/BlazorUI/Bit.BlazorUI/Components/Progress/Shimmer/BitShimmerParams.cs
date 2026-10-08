@@ -167,158 +167,124 @@ public class BitShimmerParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitShimmer);
 
-        if (Animation.HasValue && bitShimmer.HasNotBeenSet(nameof(Animation)))
+        if (Animation.HasValue)
         {
-            bitShimmer.Animation = Animation.Value;
-
-            bitShimmer.ClassBuilder.Reset();
+            bitShimmer.TakeFromCascade(nameof(Animation), Animation.Value, static s => s.Animation, static (s, v) => s.Animation = v);
         }
 
-        if (Background.HasValue && bitShimmer.HasNotBeenSet(nameof(Background)))
+        if (Background.HasValue)
         {
-            bitShimmer.Background = Background.Value;
+            bitShimmer.TakeFromCascade(nameof(Background), Background.Value, static s => s.Background, static (s, v) => s.Background = v);
         }
 
-        if (Circle.HasValue && bitShimmer.HasNotBeenSet(nameof(Circle)))
+        if (Circle.HasValue)
         {
-            bitShimmer.Circle = Circle.Value;
-
-            bitShimmer.ClassBuilder.Reset();
+            bitShimmer.TakeFromCascade(nameof(Circle), Circle.Value, static s => s.Circle, static (s, v) => s.Circle = v);
         }
 
-        if (Classes is not null && bitShimmer.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitShimmer.Classes = Classes;
-
-            bitShimmer.ClassBuilder.Reset();
+            bitShimmer.TakeFromCascade(nameof(Classes), Classes, static s => s.Classes, static (s, v) => s.Classes = v);
         }
 
-        if (Color.HasValue && bitShimmer.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue)
         {
-            bitShimmer.Color = Color.Value;
-
-            bitShimmer.ClassBuilder.Reset();
+            bitShimmer.TakeFromCascade(nameof(Color), Color.Value, static s => s.Color, static (s, v) => s.Color = v);
         }
 
-        if (Delay.HasValue && bitShimmer.HasNotBeenSet(nameof(Delay)))
+        if (Delay.HasValue)
         {
-            bitShimmer.Delay = Delay.Value;
+            bitShimmer.TakeFromCascade(nameof(Delay), Delay.Value, static s => s.Delay, static (s, v) => s.Delay = v);
         }
 
-        if (Duration.HasValue && bitShimmer.HasNotBeenSet(nameof(Duration)))
+        if (Duration.HasValue)
         {
-            bitShimmer.Duration = Duration.Value;
+            bitShimmer.TakeFromCascade(nameof(Duration), Duration.Value, static s => s.Duration, static (s, v) => s.Duration = v);
         }
 
-        if (Gap.HasValue() && bitShimmer.HasNotBeenSet(nameof(Gap)))
+        if (Gap.HasValue())
         {
-            bitShimmer.Gap = Gap;
-
-            bitShimmer.StyleBuilder.Reset();
+            bitShimmer.TakeFromCascade(nameof(Gap), Gap, static s => s.Gap, static (s, v) => s.Gap = v);
         }
 
-        if (Height.HasValue() && bitShimmer.HasNotBeenSet(nameof(Height)))
+        if (Height.HasValue())
         {
-            bitShimmer.Height = Height;
-
-            bitShimmer.StyleBuilder.Reset();
+            bitShimmer.TakeFromCascade(nameof(Height), Height, static s => s.Height, static (s, v) => s.Height = v);
         }
 
-        if (Inline.HasValue && bitShimmer.HasNotBeenSet(nameof(Inline)))
+        if (Inline.HasValue)
         {
-            bitShimmer.Inline = Inline.Value;
-
-            bitShimmer.ClassBuilder.Reset();
+            bitShimmer.TakeFromCascade(nameof(Inline), Inline.Value, static s => s.Inline, static (s, v) => s.Inline = v);
         }
 
-        if (LastLineWidth.HasValue() && bitShimmer.HasNotBeenSet(nameof(LastLineWidth)))
+        if (LastLineWidth.HasValue())
         {
-            bitShimmer.LastLineWidth = LastLineWidth;
-
-            bitShimmer.StyleBuilder.Reset();
+            bitShimmer.TakeFromCascade(nameof(LastLineWidth), LastLineWidth, static s => s.LastLineWidth, static (s, v) => s.LastLineWidth = v);
         }
 
-        if (Lines.HasValue && bitShimmer.HasNotBeenSet(nameof(Lines)))
+        if (Lines.HasValue)
         {
-            bitShimmer.Lines = Lines.Value;
-
-            bitShimmer.ClassBuilder.Reset();
+            bitShimmer.TakeFromCascade(nameof(Lines), Lines.Value, static s => s.Lines, static (s, v) => s.Lines = v);
         }
 
-        if (LineWidths is not null && bitShimmer.HasNotBeenSet(nameof(LineWidths)))
+        if (LineWidths is not null)
         {
-            bitShimmer.LineWidths = LineWidths;
+            bitShimmer.TakeFromCascade(nameof(LineWidths), LineWidths, static s => s.LineWidths, static (s, v) => s.LineWidths = v);
         }
 
-        if (MinShowTime.HasValue && bitShimmer.HasNotBeenSet(nameof(MinShowTime)))
+        if (MinShowTime.HasValue)
         {
-            bitShimmer.MinShowTime = MinShowTime.Value;
+            bitShimmer.TakeFromCascade(nameof(MinShowTime), MinShowTime.Value, static s => s.MinShowTime, static (s, v) => s.MinShowTime = v);
         }
 
-        if (Overlay.HasValue && bitShimmer.HasNotBeenSet(nameof(Overlay)))
+        if (Overlay.HasValue)
         {
-            bitShimmer.Overlay = Overlay.Value;
-
-            bitShimmer.ClassBuilder.Reset();
+            bitShimmer.TakeFromCascade(nameof(Overlay), Overlay.Value, static s => s.Overlay, static (s, v) => s.Overlay = v);
         }
 
-        if (Politeness.HasValue && bitShimmer.HasNotBeenSet(nameof(Politeness)))
+        if (Politeness.HasValue)
         {
-            bitShimmer.Politeness = Politeness.Value;
+            bitShimmer.TakeFromCascade(nameof(Politeness), Politeness.Value, static s => s.Politeness, static (s, v) => s.Politeness = v);
         }
 
-        if (Pulse.HasValue && bitShimmer.HasNotBeenSet(nameof(Pulse)))
+        if (Pulse.HasValue)
         {
-            bitShimmer.Pulse = Pulse.Value;
-
-            bitShimmer.ClassBuilder.Reset();
+            bitShimmer.TakeFromCascade(nameof(Pulse), Pulse.Value, static s => s.Pulse, static (s, v) => s.Pulse = v);
         }
 
-        if (Radius.HasValue() && bitShimmer.HasNotBeenSet(nameof(Radius)))
+        if (Radius.HasValue())
         {
-            bitShimmer.Radius = Radius;
-
-            bitShimmer.StyleBuilder.Reset();
+            bitShimmer.TakeFromCascade(nameof(Radius), Radius, static s => s.Radius, static (s, v) => s.Radius = v);
         }
 
-        if (Shape.HasValue && bitShimmer.HasNotBeenSet(nameof(Shape)))
+        if (Shape.HasValue)
         {
-            bitShimmer.Shape = Shape.Value;
-
-            bitShimmer.ClassBuilder.Reset();
+            bitShimmer.TakeFromCascade(nameof(Shape), Shape.Value, static s => s.Shape, static (s, v) => s.Shape = v);
         }
 
-        if (ShowDelay.HasValue && bitShimmer.HasNotBeenSet(nameof(ShowDelay)))
+        if (ShowDelay.HasValue)
         {
-            bitShimmer.ShowDelay = ShowDelay.Value;
-
-            bitShimmer.StyleBuilder.Reset();
+            bitShimmer.TakeFromCascade(nameof(ShowDelay), ShowDelay.Value, static s => s.ShowDelay, static (s, v) => s.ShowDelay = v);
         }
 
-        if (Size.HasValue && bitShimmer.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue)
         {
-            bitShimmer.Size = Size.Value;
-
-            bitShimmer.ClassBuilder.Reset();
+            bitShimmer.TakeFromCascade(nameof(Size), Size.Value, static s => s.Size, static (s, v) => s.Size = v);
         }
 
-        if (Stagger.HasValue && bitShimmer.HasNotBeenSet(nameof(Stagger)))
+        if (Stagger.HasValue)
         {
-            bitShimmer.Stagger = Stagger.Value;
+            bitShimmer.TakeFromCascade(nameof(Stagger), Stagger.Value, static s => s.Stagger, static (s, v) => s.Stagger = v);
         }
 
-        if (Styles is not null && bitShimmer.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitShimmer.Styles = Styles;
-
-            bitShimmer.StyleBuilder.Reset();
+            bitShimmer.TakeFromCascade(nameof(Styles), Styles, static s => s.Styles, static (s, v) => s.Styles = v);
         }
 
-        if (Width.HasValue() && bitShimmer.HasNotBeenSet(nameof(Width)))
+        if (Width.HasValue())
         {
-            bitShimmer.Width = Width;
-
-            bitShimmer.StyleBuilder.Reset();
+            bitShimmer.TakeFromCascade(nameof(Width), Width, static s => s.Width, static (s, v) => s.Width = v);
         }
     }
 }

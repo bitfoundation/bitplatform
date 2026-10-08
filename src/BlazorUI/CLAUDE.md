@@ -380,6 +380,38 @@ the calendar of a `Standalone` date picker or date range picker, the dial of a `
 picker - which get no chain, so they still have the public declarations of `Style` / `Styles.Root`
 copied onto them (`BitPublicCssVariables`, `GetStandaloneStyles` / `GetCalloutStyle`).
 
+**A parameter written on the component wins over the public variable that restyles what it sets** -
+the variables restyle the default, never a choice, so `:root { --bit-Badge-background: gray }` leaves
+`<BitBadge Color="BitColor.Error">` red. Three things make that hold:
+
+- **An unset parameter publishes nothing.** The `_ =>` arm of a `Color` / `Size` / `Shape` switch is
+  `string.Empty`, and a value parameter (`Height`, `Gap`) writes no inline property while it is null: a
+  class that always carried the default would be indistinguishable from one that was asked for. A value
+  from a `BitParams` ancestor counts as set.
+- **The root rule resets what those classes publish** (`--bit-bdg-clr: initial;`), so an instance nested
+  in another one's content never inherits the outer one's choice; the classes come later in the file
+  at the same weight and still win on the root that carries them.
+- **Every read ranks private, then public, then default**:
+  `var(--bit-bdg-clr, var(--bit-Badge-background, #{$clr-pri}))`, never
+  `var(--bit-Badge-background, var(--bit-bdg-clr))` - the last fallback being the token the unset
+  parameter stands for (the primary role, the medium size). A state the component is in (disabled, a
+  dot) is read before all three, as before.
+
+What a parameter does not paint stays the variable's: the transparent background of an Outline badge is
+the Variant's recipe rather than the Color's, so `--bit-Badge-background` still fills it under an
+explicit `Color`. The demo page's `componentCssVariables` row says which parameter wins over each
+variable ("The Color parameter wins over it."), and the stylesheet test pins the order - no
+`var(--bit-<Component>-..., var(--bit-<prefix>-` left where the private one is a parameter's, plus the
+resets on the root. `BitBadge` and `BitShimmer` are the reference implementations. Every private property a
+role or size class publishes has to be declared again by the component's own rules (`initial`, or the default
+the unset parameter stands for); `BitComponentPrivatePropertyResetTests` fails on one that is not, for every
+stylesheet at once.
+
+A component that renders a core one and wants a default other than the core one's (BitMessageBox's neutral
+buttons) never passes it as the parameter, which would make it a choice that outranks an app's variables. It
+leaves the parameter unset and adds the core component's host-default class instead (`bit-btn-dft-<role>`),
+read after the public variables as the last fallback.
+
 Adding a preset means touching all of: its `Styles/<Name>/` folder and bundle entry point,
 `Bit.BlazorUI.Extras/compilerconfig.json` and the csproj `BuildCss` target, `BitExtraThemePresets`,
 `BitExtraThemeName` and the two extension containers (`BitThemePresetsExtensions` /

@@ -198,6 +198,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// The general color of the TimePicker, applied to the toolbar, the dial pointer and the selected numbers.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-CircularTimePicker-*</c> accent, text and focus color variables and
+    /// over every color variable that defaults to them (toolbar, selected number and meridiem, pointer, actions);
+    /// left unset, the picker is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -513,6 +518,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// The size of the TimePicker.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-CircularTimePicker-*</c> size variables (label, field, read-out,
+    /// meridiem and number text sizes, field height, clock, number and thumb sizes); left unset, the picker is
+    /// medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -748,6 +758,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from
+        // a choice: the public --bit-CircularTimePicker-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => ColorClass);
 
         ClassBuilder.Register(() => SizeClass);
@@ -805,46 +817,22 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         base.OnParametersSet();
     }
 
-    // Re-runs the [CallOnSet] hooks of the parameters a BitParams cascade filled in, which the cascade
-    // itself bypasses by assigning the properties directly. Only the hooks whose parameters actually
-    // changed are run: the edit mode moves the dial back to where a picker begins, and doing that on every
-    // parameters-set would undo the view the person had switched to on any re-render around the picker. The
-    // seconds get a hook of their own rather than that one, since turning them on or off only moves the dial
-    // off a ring the picker has stopped carrying. The start view gets neither: it has no hook when it is
-    // written on the markup, so a cascade that changes it must not move a dial the markup would have left be.
-    internal void ApplyCascadedParameters(bool cultureChanged, bool editModeChanged, bool startViewChanged, bool secondsChanged)
+    // The first pass is where the cascaded values reach the picker at all: the view was worked out in
+    // OnInitialized, which runs before OnParametersSet and so before any of them had arrived. It is worked out
+    // again here, once the edit mode, the start view and the seconds it is read from are all in place - the start
+    // view included, which has no hook of its own. Every later pass is an actual change, which the [CallOnSet]
+    // hooks TakeFromCascade runs take care of exactly as they do for the markup: the edit mode moves the dial back
+    // to where a picker begins, the seconds only move it off a ring the picker has stopped carrying, and the start
+    // view leaves the view the person is on exactly where it is.
+    internal void ApplyCascadedView(bool viewSourceChanged)
     {
-        if (cultureChanged)
-        {
-            OnSetCulture();
-        }
+        if (_cascadeApplied) return;
 
-        // The first pass is where the cascaded values reach the picker at all: the view was worked out in
-        // OnInitialized, which runs before OnParametersSet and so before any of them had arrived. It is worked
-        // out again here, with all three of the parameters it is read from finally in place. Every later pass
-        // is an actual change and goes through the hooks below.
-        if (_cascadeApplied is false)
-        {
-            _cascadeApplied = true;
+        _cascadeApplied = true;
 
-            if (editModeChanged || startViewChanged || secondsChanged)
-            {
-                _view = GetInitialView();
-            }
-
-            return;
-        }
-
-        if (editModeChanged)
+        if (viewSourceChanged)
         {
-            OnSetEditMode();
-        }
-        else if (secondsChanged)
-        {
-            // Only the ring the picker has stopped carrying is moved off, exactly as setting ShowSeconds on
-            // the markup does - a cascade that turns the seconds on must not also throw away the part of the
-            // time the dial had been moved on to.
-            OnSetShowSeconds();
+            _view = GetInitialView();
         }
     }
 
@@ -2185,15 +2173,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         List<string> classes = ["bit-ctp-cal"];
 
-        if (ColorClass.HasValue())
-        {
-            classes.Add(ColorClass);
-        }
-
-        if (SizeClass.HasValue())
-        {
-            classes.Add(SizeClass);
-        }
+        classes.AddIfHasValue(ColorClass);
+        classes.AddIfHasValue(SizeClass);
 
         if (Classes?.Callout is not null)
         {
@@ -2344,12 +2325,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private string ColorClass => BitCssClasses.Color(Color, "bit-ctp");
 
-    private string SizeClass => Size switch
-    {
-        BitSize.Small => "bit-ctp-sm",
-        BitSize.Large => "bit-ctp-lg",
-        _ => "bit-ctp-md"
-    };
+    private string SizeClass => BitCssClasses.Size(Size, "bit-ctp");
 
     // Where the 24-hour dial stops reading the pointer as the outer ring and starts reading it as the inner
     // one: halfway between the two radii the numbers are laid out on, as a fraction of the radius of the dial.

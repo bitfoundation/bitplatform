@@ -252,6 +252,10 @@ public partial class BitFileUpload : BitComponentBase
     /// The general color of the file upload, applied to the browse button, the drag-and-drop indicator,
     /// the progress bars and the hovered action buttons.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-FileUpload-*</c> color variables; left unset, the file upload is
+    /// primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -707,6 +711,11 @@ public partial class BitFileUpload : BitComponentBase
     /// <summary>
     /// The size of the file upload, applied to the browse button and the file list items.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-FileUpload-*</c> size variables (the browse button's height floor,
+    /// padding, text and icon size, the description, file name and meta text sizes, the thumbnail side and the
+    /// action buttons); left unset, the file upload is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -1233,35 +1242,11 @@ public partial class BitFileUpload : BitComponentBase
             _ => "bit-upl-fil"
         });
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-upl-pri",
-            BitColor.Secondary => "bit-upl-sec",
-            BitColor.Tertiary => "bit-upl-ter",
-            BitColor.Info => "bit-upl-inf",
-            BitColor.Success => "bit-upl-suc",
-            BitColor.Warning => "bit-upl-wrn",
-            BitColor.SevereWarning => "bit-upl-swr",
-            BitColor.Error => "bit-upl-err",
-            BitColor.PrimaryBackground => "bit-upl-pbg",
-            BitColor.SecondaryBackground => "bit-upl-sbg",
-            BitColor.TertiaryBackground => "bit-upl-tbg",
-            BitColor.PrimaryForeground => "bit-upl-pfg",
-            BitColor.SecondaryForeground => "bit-upl-sfg",
-            BitColor.TertiaryForeground => "bit-upl-tfg",
-            BitColor.PrimaryBorder => "bit-upl-pbr",
-            BitColor.SecondaryBorder => "bit-upl-sbr",
-            BitColor.TertiaryBorder => "bit-upl-tbr",
-            _ => "bit-upl-pri"
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-FileUpload-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-upl"));
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-upl-sm",
-            BitSize.Medium => "bit-upl-md",
-            BitSize.Large => "bit-upl-lg",
-            _ => "bit-upl-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-upl"));
 
         ClassBuilder.Register(() => ShowDropArea ? "bit-upl-dra" : string.Empty);
 

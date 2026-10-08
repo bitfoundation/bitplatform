@@ -91,49 +91,49 @@ public class BitMarkdownViewerParams : BitComponentBaseParams, IBitComponentPara
 
         UpdateBaseParameters(bitMarkdownViewer);
 
-        if (CodeBlockTemplate is not null && bitMarkdownViewer.HasNotBeenSet(nameof(CodeBlockTemplate)))
+        if (CodeBlockTemplate is not null)
         {
-            bitMarkdownViewer.CodeBlockTemplate = CodeBlockTemplate;
+            bitMarkdownViewer.TakeFromCascade(nameof(CodeBlockTemplate), CodeBlockTemplate, static m => m.CodeBlockTemplate, static (m, v) => m.CodeBlockTemplate = v);
         }
 
-        if (HeadingLevelOffset.HasValue && bitMarkdownViewer.HasNotBeenSet(nameof(HeadingLevelOffset)))
+        if (HeadingLevelOffset.HasValue)
         {
-            bitMarkdownViewer.HeadingLevelOffset = HeadingLevelOffset.Value;
+            bitMarkdownViewer.TakeFromCascade(nameof(HeadingLevelOffset), HeadingLevelOffset.Value, static m => m.HeadingLevelOffset, static (m, v) => m.HeadingLevelOffset = v);
         }
 
-        if (ImageRendering.HasValue && bitMarkdownViewer.HasNotBeenSet(nameof(ImageRendering)))
+        if (ImageRendering.HasValue)
         {
-            bitMarkdownViewer.ImageRendering = ImageRendering.Value;
+            bitMarkdownViewer.TakeFromCascade(nameof(ImageRendering), ImageRendering.Value, static m => m.ImageRendering, static (m, v) => m.ImageRendering = v);
         }
 
-        if (ImageTemplate is not null && bitMarkdownViewer.HasNotBeenSet(nameof(ImageTemplate)))
+        if (ImageTemplate is not null)
         {
-            bitMarkdownViewer.ImageTemplate = ImageTemplate;
+            bitMarkdownViewer.TakeFromCascade(nameof(ImageTemplate), ImageTemplate, static m => m.ImageTemplate, static (m, v) => m.ImageTemplate = v);
         }
 
-        if (LinkTemplate is not null && bitMarkdownViewer.HasNotBeenSet(nameof(LinkTemplate)))
+        if (LinkTemplate is not null)
         {
-            bitMarkdownViewer.LinkTemplate = LinkTemplate;
+            bitMarkdownViewer.TakeFromCascade(nameof(LinkTemplate), LinkTemplate, static m => m.LinkTemplate, static (m, v) => m.LinkTemplate = v);
         }
 
-        if (MaxLength.HasValue && bitMarkdownViewer.HasNotBeenSet(nameof(MaxLength)))
+        if (MaxLength.HasValue)
         {
-            bitMarkdownViewer.MaxLength = MaxLength.Value;
+            bitMarkdownViewer.TakeFromCascade(nameof(MaxLength), MaxLength.Value, static m => m.MaxLength, static (m, v) => m.MaxLength = v);
         }
 
-        if (MaxNestingDepth.HasValue && bitMarkdownViewer.HasNotBeenSet(nameof(MaxNestingDepth)))
+        if (MaxNestingDepth.HasValue)
         {
-            bitMarkdownViewer.MaxNestingDepth = MaxNestingDepth.Value;
+            bitMarkdownViewer.TakeFromCascade(nameof(MaxNestingDepth), MaxNestingDepth.Value, static m => m.MaxNestingDepth, static (m, v) => m.MaxNestingDepth = v);
         }
 
-        if (Pipeline is not null && bitMarkdownViewer.HasNotBeenSet(nameof(Pipeline)))
+        if (Pipeline is not null)
         {
-            bitMarkdownViewer.Pipeline = Pipeline;
+            bitMarkdownViewer.TakeFromCascade(nameof(Pipeline), Pipeline, static m => m.Pipeline, static (m, v) => m.Pipeline = v);
         }
 
-        if (StripBidiControlCharacters.HasValue && bitMarkdownViewer.HasNotBeenSet(nameof(StripBidiControlCharacters)))
+        if (StripBidiControlCharacters.HasValue)
         {
-            bitMarkdownViewer.StripBidiControlCharacters = StripBidiControlCharacters.Value;
+            bitMarkdownViewer.TakeFromCascade(nameof(StripBidiControlCharacters), StripBidiControlCharacters.Value, static m => m.StripBidiControlCharacters, static (m, v) => m.StripBidiControlCharacters = v);
         }
     }
 }

@@ -714,7 +714,7 @@ private bool isDetailsShown = true;";
                                PrimaryTextContainer = ""custom-primary-text"" })"" />
 
 
-<div>CSS variables, set once on an ancestor:</div>
+<div>CSS variables, set once on an ancestor - they restyle what the personas leave unset (no Size here, so the gap is the variable's):</div>
 
 <div style=""--bit-Persona-coin-background: #7a2e8e;
             --bit-Persona-coin-color: #fff;
@@ -726,11 +726,10 @@ private bool isDetailsShown = true;";
             --bit-Persona-presence-icon-color: #fff;"">
     <BitPersona PrimaryText=""Saleh Khafan""
                 SecondaryText=""Out of office""
-                Size=""BitPersonaSize.Size56""
                 Presence=""BitPersonaPresence.OutOfOffice""
                 PresenceIconName=""@BitIconName.Airplane"" />
 
-    <BitPersona Active PrimaryText=""Ted Randall"" SecondaryText=""Designer"" Size=""BitPersonaSize.Size56"" />
+    <BitPersona Active PrimaryText=""Ted Randall"" SecondaryText=""Designer"" />
 </div>
 
 

@@ -748,8 +748,9 @@
         </div>
         <br /><br />
         <div>
-            The button also reads a set of <BitLink Href="#css-variables-section">CSS variables</BitLink> off its root for what no parameter covers. They inherit, so a value on <code>:root</code>
+            The button also reads a set of <BitLink Href="#css-variables-section">CSS variables</BitLink> off its root, which restyle its defaults. They inherit, so a value on <code>:root</code>
             or any ancestor re-skins every button below it, and one on the <b>Style</b> of an instance re-skins that one alone.
+            They restyle the default, not a choice: an explicit <b>Color</b> or <b>Size</b> wins over the variables for what it sets.
         </div>
         <br />
         <div>CSS variables:</div>
@@ -769,7 +770,7 @@
             </BitActionButton>
         </div>
         <br />
-        <div>Set once on an ancestor, inherited by every button inside it:</div>
+        <div>Set once on an ancestor, inherited by every button inside it - except where a button chose otherwise: the explicit <b>Color</b> of Delete keeps its hover color its own.</div>
         <br />
         <div class="example-content" style="--bit-ActionButton-hover-background: var(--bit-clr-bg-sec); --bit-ActionButton-active-background: var(--bit-clr-bg-ter); --bit-ActionButton-hover-color: var(--bit-clr-fg-pri);">
             <BitActionButton IconName="@BitIconName.Add">New</BitActionButton>

@@ -2,10 +2,10 @@
 
 // Public CSS variables (read here with a fallback and never declared, so they inherit: set one on
 // :root, on any ancestor, or on the Style of a single footer):
-//   --bit-Footer-background    background of the Fill variant              (default: the Color role's main color / $clr-bg-pri)
-//   --bit-Footer-color         text color                                  (default: the Color role's on color (Fill) or main color)
-//   --bit-Footer-border-color  Outline border and Bordered divider color   (default: the Color role's main color / $clr-brd-pri)
-//   --bit-Footer-padding       padding around the content                  (default: per size)
+//   --bit-Footer-background    background of the Fill variant              (default: $clr-bg-pri)
+//   --bit-Footer-color         text color                                  (default: $clr-fg-pri)
+//   --bit-Footer-border-color  Outline border and Bordered divider color   (default: $clr-brd-pri)
+//   --bit-Footer-padding       padding around the content                  (default: spacing(1) spacing(3))
 //   --bit-Footer-gap           room between the children                   (default: 0; the Gap parameter wins)
 //   --bit-Footer-max-width     maximum width of the centered content       (default: none; the MaxWidth parameter wins)
 //   --bit-Footer-min-height    smallest height of the footer               (default: auto)
@@ -14,6 +14,22 @@
 //   --bit-Footer-shadow        shadow of an Elevated footer                (default: $box-shadow-appbar-bottom)
 //   --bit-Footer-blur          backdrop blur of a Translucent footer       (default: 12px)
 //   --bit-Footer-z-index       stacking order of a Fixed/Sticky/Absolute footer (default: $zindex-base)
+//
+// A parameter written on the footer wins over the variable that restyles what it sets: an explicit Color over the
+// background, the color and the border color, an explicit Size over the padding, NoGutter over the padding as well,
+// and Gap and MaxWidth over theirs. The variables restyle the default, not a choice - which is why Color and Size
+// publish nothing while they are left unset: a class that always carried the default would be indistinguishable
+// from one that was asked for. A disabled footer keeps the disabled colors whatever the variables say.
+
+// Each of these reads the value an explicit Color or Size publishes first, then the public variable, then the
+// default an unset one stands for: the plain page surface of an uncolored footer, and the medium spacing.
+$ftr-bg: var(--bit-ftr-bg, var(--bit-Footer-background, #{$clr-bg-pri}));
+$ftr-on: var(--bit-ftr-on, var(--bit-Footer-color, #{$clr-fg-pri}));
+$ftr-fg: var(--bit-ftr-fg, var(--bit-Footer-color, #{$clr-fg-pri}));
+$ftr-brd: var(--bit-ftr-brd, var(--bit-Footer-border-color, #{$clr-brd-pri}));
+$ftr-bg-dis: var(--bit-ftr-bg-dis, #{$clr-bg-pri});
+$ftr-fg-dis: var(--bit-ftr-fg-dis, #{$clr-fg-dis});
+
 .bit-ftr {
     display: flex;
     flex-shrink: 0;
@@ -28,18 +44,24 @@
     font-weight: $tg-fw-regular;
     font-family: $tg-font-family;
 
-    // The uncolored footer keeps the plain page surface it always had: the Fill variant below resolves
-    // --bit-ftr-bg/-on to these, and the borderless variants resolve --bit-ftr-fg/-brd to the neutral
-    // foreground and border of the theme, so a footer with no Color set never turns invisible.
-    --bit-ftr-bg: #{$clr-bg-pri};
-    --bit-ftr-on: #{$clr-fg-pri};
-    --bit-ftr-fg: #{$clr-fg-pri};
-    --bit-ftr-brd: #{$clr-brd-pri};
-    --bit-ftr-bg-dis: #{$clr-bg-pri};
-    --bit-ftr-fg-dis: #{$clr-fg-dis};
-
-    // Medium is the historical spacing of the footer and stays the default when no Size is set.
-    --bit-ftr-padding: #{spacing(1)} #{spacing(3)};
+    // Every value a parameter publishes starts out unset on every root, so a footer nested in another one never
+    // inherits the outer one's choice; the classes - declared further down at the same weight - and the inline
+    // Gap and MaxWidth still win on the root that carries them. Left unset, each var() reading them moves on to
+    // the public variable and then to the default (see $ftr-bg and the rest at the top): the plain page surface
+    // an uncolored footer always had - so a footer with no Color set never turns invisible - and the medium
+    // spacing.
+    --bit-ftr-bg: initial;
+    --bit-ftr-on: initial;
+    --bit-ftr-fg: initial;
+    --bit-ftr-brd: initial;
+    --bit-ftr-bg-dis: initial;
+    --bit-ftr-fg-dis: initial;
+    --bit-ftr-padding: initial;
+    --bit-ftr-gap: initial;
+    --bit-ftr-max-width: initial;
+    --bit-ftr-wrap: initial;
+    --bit-ftr-align: initial;
+    --bit-ftr-justify: initial;
 }
 
 // The content sits in its own box so the paddings can be themed, removed (NoGutter) and targeted by
@@ -52,7 +74,7 @@
     display: flex;
     position: relative;
     box-sizing: border-box;
-    padding: var(--bit-Footer-padding, var(--bit-ftr-padding));
+    padding: var(--bit-ftr-padding, var(--bit-Footer-padding, #{spacing(1)} #{spacing(3)}));
 
     // MaxWidth caps the content alone and centers it, so the background, the border and the shadow of the
     // footer still run edge to edge while its content lines up with a page body centered in the same column.
@@ -70,32 +92,32 @@
 
 
 .bit-ftr-fil {
-    color: var(--bit-Footer-color, var(--bit-ftr-on));
-    background-color: var(--bit-Footer-background, var(--bit-ftr-bg));
+    color: $ftr-on;
+    background-color: $ftr-bg;
 
     &.bit-dis {
-        color: var(--bit-ftr-fg-dis);
-        background-color: var(--bit-ftr-bg-dis);
+        color: $ftr-fg-dis;
+        background-color: $ftr-bg-dis;
     }
 }
 
 .bit-ftr-otl {
-    color: var(--bit-Footer-color, var(--bit-ftr-fg));
+    color: $ftr-fg;
     background-color: transparent;
-    border: $shp-border-width $shp-border-style var(--bit-Footer-border-color, var(--bit-ftr-brd));
+    border: $shp-border-width $shp-border-style $ftr-brd;
 
     &.bit-dis {
-        color: var(--bit-ftr-fg-dis);
-        border-color: var(--bit-ftr-fg-dis);
+        color: $ftr-fg-dis;
+        border-color: $ftr-fg-dis;
     }
 }
 
 .bit-ftr-txt {
-    color: var(--bit-Footer-color, var(--bit-ftr-fg));
+    color: $ftr-fg;
     background-color: transparent;
 
     &.bit-dis {
-        color: var(--bit-ftr-fg-dis);
+        color: $ftr-fg-dis;
     }
 }
 
@@ -107,14 +129,15 @@
 .bit-ftr-trs.bit-ftr-fil {
     backdrop-filter: blur(var(--bit-Footer-blur, #{rem2(12px)}));
     -webkit-backdrop-filter: blur(var(--bit-Footer-blur, #{rem2(12px)}));
-    background-color: translucent(var(--bit-Footer-background, var(--bit-ftr-bg)), 72%);
+    background-color: translucent($ftr-bg, 72%);
 
     &.bit-dis {
-        background-color: translucent(var(--bit-ftr-bg-dis), 72%);
+        background-color: translucent($ftr-bg-dis, 72%);
     }
 }
 
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss), and are only
+// rendered for an explicit Color.
 // The border and the text of the borderless variants take the main color of the role, so an Outline
 // footer reads as that role even though its background stays transparent.
 @each $role, $tokens in $bit-color-roles {
@@ -129,6 +152,8 @@
 }
 
 
+// Published only by an explicit Size, so it wins over --bit-Footer-padding; an unset one is the medium spacing,
+// which .bit-ftr-gut spells out after that variable.
 .bit-ftr-sm {
     --bit-ftr-padding: #{spacing(0.5)} #{spacing(2)};
 }
@@ -240,7 +265,7 @@
 
 
 .bit-ftr-brd {
-    border-block-start: $shp-border-width $shp-border-style var(--bit-Footer-border-color, var(--bit-ftr-brd));
+    border-block-start: $shp-border-width $shp-border-style $ftr-brd;
 }
 
 // The shadow is cast upwards, towards the content the footer covers, which is the opposite of the

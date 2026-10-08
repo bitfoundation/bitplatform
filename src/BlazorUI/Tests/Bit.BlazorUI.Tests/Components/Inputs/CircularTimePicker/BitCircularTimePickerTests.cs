@@ -2349,10 +2349,9 @@ public class BitCircularTimePickerTests : BunitTestContext
     [TestMethod,
         DataRow(BitColor.Primary, "bit-ctp-pri"),
         DataRow(BitColor.Success, "bit-ctp-suc"),
-        DataRow(BitColor.Error, "bit-ctp-err"),
-        DataRow(null, "bit-ctp-pri")
+        DataRow(BitColor.Error, "bit-ctp-err")
     ]
-    public void BitCircularTimePickerShouldRespectColor(BitColor? color, string expectedClass)
+    public void BitCircularTimePickerShouldRespectColor(BitColor color, string expectedClass)
     {
         var component = RenderComponent<BitCircularTimePicker>(parameters =>
         {
@@ -2368,10 +2367,9 @@ public class BitCircularTimePickerTests : BunitTestContext
     [TestMethod,
         DataRow(BitSize.Small, "bit-ctp-sm"),
         DataRow(BitSize.Medium, "bit-ctp-md"),
-        DataRow(BitSize.Large, "bit-ctp-lg"),
-        DataRow(null, "bit-ctp-md")
+        DataRow(BitSize.Large, "bit-ctp-lg")
     ]
-    public void BitCircularTimePickerShouldRespectSize(BitSize? size, string expectedClass)
+    public void BitCircularTimePickerShouldRespectSize(BitSize size, string expectedClass)
     {
         var component = RenderComponent<BitCircularTimePicker>(parameters =>
         {
@@ -2380,6 +2378,30 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         Assert.IsTrue(component.Find(".bit-ctp").ClassList.Contains(expectedClass));
         Assert.IsTrue(component.Find(".bit-ctp-cal").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitCircularTimePicker>();
+
+        // An unset Color or Size publishes nothing - on the root or on the callout rendered beside it - so the public
+        // --bit-CircularTimePicker-* variables restyle the default while an explicit value, which does publish its
+        // class, wins over them.
+        var published = new[]
+        {
+            "bit-ctp-pri", "bit-ctp-sec", "bit-ctp-ter", "bit-ctp-inf", "bit-ctp-suc", "bit-ctp-wrn", "bit-ctp-swr", "bit-ctp-err",
+            "bit-ctp-pbg", "bit-ctp-sbg", "bit-ctp-tbg", "bit-ctp-pfg", "bit-ctp-sfg", "bit-ctp-tfg", "bit-ctp-pbr", "bit-ctp-sbr", "bit-ctp-tbr",
+            "bit-ctp-sm", "bit-ctp-md", "bit-ctp-lg",
+        };
+
+        foreach (var element in new[] { component.Find(".bit-ctp"), component.Find(".bit-ctp-cal") })
+        {
+            foreach (var cssClass in published)
+            {
+                Assert.IsFalse(element.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+            }
+        }
     }
 
     [TestMethod,

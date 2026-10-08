@@ -120,7 +120,7 @@ public partial class BitTagsInputDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The color role of the tags input (Primary by default). It is carried by the tags themselves, the way a BitTag carries it, and by the border and the focus ring of the focused field. How much of it the tags are painted with is decided by the TagVariant.",
+            Description = "The color role of the tags input (Primary by default). It is carried by the tags themselves, the way a BitTag carries it, and by the border and the focus ring of the focused field. How much of it the tags are painted with is decided by the TagVariant. An explicit value wins over the --bit-TagsInput-* color variables it paints (the chip colors, the field's focus ring and rule, the spinner); left unset, the tags input is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -639,7 +639,7 @@ public partial class BitTagsInputDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the tags input.",
+            Description = "The size of the tags input. An explicit value wins over the --bit-TagsInput-* size variables (font sizes, min heights, paddings, gap, icon size); left unset, the tags input is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -761,8 +761,8 @@ public partial class BitTagsInputDemo
         new()
         {
             Name = "--bit-TagsInput-font-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Text size of the field. The helper text and the counter take theirs from --bit-TagsInput-description-font-size, and the chips from --bit-TagsInput-tag-font-size.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the field. The helper text and the counter take theirs from --bit-TagsInput-description-font-size, and the chips from --bit-TagsInput-tag-font-size. The Size parameter wins over it.",
         },
         new()
         {
@@ -797,8 +797,8 @@ public partial class BitTagsInputDemo
         new()
         {
             Name = "--bit-TagsInput-description-font-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Text size of the helper text and of the counter under the field, a step under the field's own.",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Text size of the helper text and of the counter under the field, a step under the field's own. The Size parameter wins over it.",
         },
         new()
         {
@@ -845,32 +845,32 @@ public partial class BitTagsInputDemo
         new()
         {
             Name = "--bit-TagsInput-min-height",
-            DefaultValue = "Per Size, --bit-siz-ctrl-*",
-            Description = "Smallest height of the field, which is what lines an empty tags input up with the text fields and pickers beside it. It is a floor: the field still grows with every line of chips that wraps into it.",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Smallest height of the field, which is what lines an empty tags input up with the text fields and pickers beside it. It is a floor: the field still grows with every line of chips that wraps into it. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-TagsInput-padding",
-            DefaultValue = "Per Size",
-            Description = "Inset between the field and the chips, the input and the affixes inside it.",
+            DefaultValue = "spacing(0.375) spacing(0.5)",
+            Description = "Inset between the field and the chips, the input and the affixes inside it. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-TagsInput-gap",
-            DefaultValue = "Per Size",
-            Description = "Room between the chips, the input and the affixes, on both axes.",
+            DefaultValue = "spacing(0.375)",
+            Description = "Room between the chips, the input and the affixes, on both axes. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-TagsInput-focus-color",
-            DefaultValue = "The Color role's focus color",
-            Description = "Color of the focus ring the field wears while anything inside it holds the focus.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the focus ring the field wears while anything inside it holds the focus. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-TagsInput-focus-border-color",
-            DefaultValue = "The Color role's main color",
-            Description = "Rule around the focused field, and the focus ring of the clear button.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Rule around the focused field, and the focus ring of the clear button. The Color parameter wins over it.",
         },
         new()
         {
@@ -899,20 +899,20 @@ public partial class BitTagsInputDemo
         new()
         {
             Name = "--bit-TagsInput-tag-color",
-            DefaultValue = "Per TagVariant, from the Color role",
-            Description = "Text of a chip, and of the chip that folds the tags away.",
+            DefaultValue = "Per TagVariant, from the primary role",
+            Description = "Text of a chip, and of the chip that folds the tags away. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-TagsInput-tag-background",
-            DefaultValue = "Per TagVariant, from the Color role",
-            Description = "Fill of a chip. Setting it is how a field paints its chips apart from its accent.",
+            DefaultValue = "Per TagVariant, from the primary role",
+            Description = "Fill of a chip. Setting it is how a field paints its chips apart from its accent. The Color parameter wins over it in the Fill tag variant; the transparent fill of Outline and Text is its alone.",
         },
         new()
         {
             Name = "--bit-TagsInput-tag-border-color",
-            DefaultValue = "Per TagVariant, from the Color role",
-            Description = "Rule of a chip, drawn in every tag variant and transparent where it is not painted, so switching variants never moves the text in a chip.",
+            DefaultValue = "Per TagVariant, from the primary role",
+            Description = "Rule of a chip, drawn in every tag variant and transparent where it is not painted, so switching variants never moves the text in a chip. The Color parameter wins over it, except over the transparent rule of Text.",
         },
         new()
         {
@@ -929,8 +929,8 @@ public partial class BitTagsInputDemo
         new()
         {
             Name = "--bit-TagsInput-tag-padding",
-            DefaultValue = "Per Size",
-            Description = "Inset of a chip. The block half is 0 on purpose: the height is set by the minimum height below, so the text stays centered whatever the chip holds.",
+            DefaultValue = "0 calc(--bit-siz-ctrl-pad-x-md / 2)",
+            Description = "Inset of a chip. The block half is 0 on purpose: the height is set by the minimum height below, so the text stays centered whatever the chip holds. The Size parameter wins over it.",
         },
         new()
         {
@@ -941,14 +941,14 @@ public partial class BitTagsInputDemo
         new()
         {
             Name = "--bit-TagsInput-tag-font-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Text size of a chip, which is a step under the field's own at the Medium and Large sizes.",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Text size of a chip, which is a step under the field's own at the Medium and Large sizes. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-TagsInput-tag-min-height",
-            DefaultValue = "Per Size, --bit-siz-chip-*",
-            Description = "Smallest height of a chip, of the input and of the affixes, so a chip holding an icon or a template is exactly as tall as the one beside it.",
+            DefaultValue = "--bit-siz-chip-sm",
+            Description = "Smallest height of a chip, of the input and of the affixes, so a chip holding an icon or a template is exactly as tall as the one beside it. The Size parameter wins over it.",
         },
         new()
         {
@@ -960,19 +960,19 @@ public partial class BitTagsInputDemo
         {
             Name = "--bit-TagsInput-tag-hover-color",
             DefaultValue = "Per TagVariant",
-            Description = "The text of a chip an OnTagClick opens, while the pointer is over it. A chip nothing opens does not react, a target that lights up without doing anything being a promise the field does not keep.",
+            Description = "The text of a chip an OnTagClick opens, while the pointer is over it. A chip nothing opens does not react, a target that lights up without doing anything being a promise the field does not keep. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-TagsInput-tag-hover-background",
             DefaultValue = "Per TagVariant",
-            Description = "The fill and the rule of that same chip while it is hovered.",
+            Description = "The fill and the rule of that same chip while it is hovered. The Color parameter wins over it where the tag variant paints them.",
         },
         new()
         {
             Name = "--bit-TagsInput-tag-focus-color",
             DefaultValue = "Per TagVariant",
-            Description = "The inset ring of the focused chip, of the focused dismiss button and of the chip a dragged one would land on.",
+            Description = "The inset ring of the focused chip, of the focused dismiss button and of the chip a dragged one would land on. The Color parameter wins over it.",
         },
         new()
         {
@@ -995,14 +995,14 @@ public partial class BitTagsInputDemo
         new()
         {
             Name = "--bit-TagsInput-icon-size",
-            DefaultValue = "Per Size, --bit-siz-icon-*",
-            Description = "Glyph of the clear button, and the diameter of the spinner, at the end of the field.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Glyph of the clear button, and the diameter of the spinner, at the end of the field. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-TagsInput-spinner-color",
-            DefaultValue = "The Color role's main color",
-            Description = "The turning arc of the spinner IsLoading draws.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "The turning arc of the spinner IsLoading draws. The Color parameter wins over it.",
         },
         new()
         {
@@ -1026,13 +1026,13 @@ public partial class BitTagsInputDemo
         {
             Name = "--bit-TagsInput-toggle-hover-color",
             DefaultValue = "Per TagVariant",
-            Description = "Text of the hovered chip that folds and unfolds the tags MaxDisplayedTags put away.",
+            Description = "Text of the hovered chip that folds and unfolds the tags MaxDisplayedTags put away. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-TagsInput-toggle-hover-background",
             DefaultValue = "Per TagVariant",
-            Description = "Fill and rule of that same chip while it is hovered.",
+            Description = "Fill and rule of that same chip while it is hovered. The Color parameter wins over it where the tag variant paints them.",
         },
     ];
 

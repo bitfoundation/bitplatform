@@ -155,7 +155,7 @@ public partial class BitTimePickerDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the TimePicker, which applies to the selected AM/PM button, the now and clear action buttons, and the focus indicator of the input.",
+            Description = "The general color of the TimePicker, which applies to the selected AM/PM button, the now and clear action buttons, and the focus indicator of the input. An explicit value wins over the --bit-TimePicker-* accent, on-color, hover, active and focus color variables; left unset, the TimePicker is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -671,7 +671,7 @@ public partial class BitTimePickerDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the TimePicker, which scales the input, the label, the time inputs and the spin buttons.",
+            Description = "The size of the TimePicker, which scales the input, the label, the time inputs and the spin buttons. An explicit value wins over the --bit-TimePicker-* size variables (height, font size, icon size, label and description font sizes, cell size, and the cell, separator, spin, meridiem and action font sizes); left unset, the TimePicker is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -1180,32 +1180,32 @@ public partial class BitTimePickerDemo
         new()
         {
             Name = "--bit-TimePicker-color",
-            DefaultValue = "The Color role's main color",
-            Description = "Accent of the picker: the background of the selected AM/PM button and the text of the now and clear action buttons.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Accent of the picker: the background of the selected AM/PM button and the text of the now and clear action buttons. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-TimePicker-on-color",
-            DefaultValue = "The Color role's on-color",
-            Description = "Text color over that accent, which is what the selected AM/PM button is written in.",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "Text color over that accent, which is what the selected AM/PM button is written in. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-TimePicker-hover-color",
-            DefaultValue = "The Color role's hover color",
-            Description = "Accent of the selected AM/PM button while it is hovered (pointer devices only).",
+            DefaultValue = "--bit-clr-pri-hover",
+            Description = "Accent of the selected AM/PM button while it is hovered (pointer devices only). The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-TimePicker-active-color",
-            DefaultValue = "The Color role's active color",
-            Description = "Accent of the selected AM/PM button while it is pressed.",
+            DefaultValue = "--bit-clr-pri-active",
+            Description = "Accent of the selected AM/PM button while it is pressed. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-TimePicker-focus-color",
-            DefaultValue = "The Color role's focus color",
-            Description = "Color of the keyboard focus ring drawn around the field and around every control of the callout.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the keyboard focus ring drawn around the field and around every control of the callout. The Color parameter wins over it.",
         },
         new()
         {
@@ -1258,8 +1258,8 @@ public partial class BitTimePickerDemo
         new()
         {
             Name = "--bit-TimePicker-height",
-            DefaultValue = "per Size, --bit-siz-ctrl-*",
-            Description = "Height of the input field.",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Height of the input field. The Size parameter wins over it.",
         },
         new()
         {
@@ -1270,8 +1270,8 @@ public partial class BitTimePickerDemo
         new()
         {
             Name = "--bit-TimePicker-font-size",
-            DefaultValue = "per Size",
-            Description = "Text size of the input field.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the input field. The Size parameter wins over it.",
         },
         new()
         {
@@ -1282,8 +1282,8 @@ public partial class BitTimePickerDemo
         new()
         {
             Name = "--bit-TimePicker-icon-size",
-            DefaultValue = "per Size, --bit-siz-icon-*",
-            Description = "Size of the field icon and of the clear button glyph.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Size of the field icon and of the clear button glyph. The Size parameter wins over it.",
         },
         new()
         {
@@ -1318,8 +1318,8 @@ public partial class BitTimePickerDemo
         new()
         {
             Name = "--bit-TimePicker-label-font-size",
-            DefaultValue = "per Size",
-            Description = "Text size of the label.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the label. The Size parameter wins over it.",
         },
         new()
         {
@@ -1342,8 +1342,8 @@ public partial class BitTimePickerDemo
         new()
         {
             Name = "--bit-TimePicker-description-font-size",
-            DefaultValue = "per Size",
-            Description = "Text size of the helper text and of the error message.",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Text size of the helper text and of the error message. The Size parameter wins over it.",
         },
         new()
         {
@@ -1402,14 +1402,14 @@ public partial class BitTimePickerDemo
         new()
         {
             Name = "--bit-TimePicker-cell-size",
-            DefaultValue = "per Size",
-            Description = "Width and height of a time input and of a spin button.",
+            DefaultValue = "spacing(3.75)",
+            Description = "Width and height of a time input and of a spin button. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-TimePicker-cell-font-size",
-            DefaultValue = "per Size",
-            Description = "Text size of the time inputs.",
+            DefaultValue = "--bit-tpg-fs-lg",
+            Description = "Text size of the time inputs. The Size parameter wins over it.",
         },
         new()
         {
@@ -1438,8 +1438,8 @@ public partial class BitTimePickerDemo
         new()
         {
             Name = "--bit-TimePicker-separator-font-size",
-            DefaultValue = "per Size",
-            Description = "Size of the \":\" between the parts of the time.",
+            DefaultValue = "--bit-tpg-fs-xl",
+            Description = "Size of the \":\" between the parts of the time. The Size parameter wins over it.",
         },
         new()
         {
@@ -1450,8 +1450,8 @@ public partial class BitTimePickerDemo
         new()
         {
             Name = "--bit-TimePicker-spin-font-size",
-            DefaultValue = "per Size",
-            Description = "Glyph size of a spin button.",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Glyph size of a spin button. The Size parameter wins over it.",
         },
         new()
         {
@@ -1468,14 +1468,14 @@ public partial class BitTimePickerDemo
         new()
         {
             Name = "--bit-TimePicker-meridiem-font-size",
-            DefaultValue = "per Size",
-            Description = "Text size of the AM/PM buttons.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the AM/PM buttons. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-TimePicker-action-font-size",
-            DefaultValue = "per Size",
-            Description = "Text size of the now and clear action buttons.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the now and clear action buttons. The Size parameter wins over it.",
         },
     ];
 

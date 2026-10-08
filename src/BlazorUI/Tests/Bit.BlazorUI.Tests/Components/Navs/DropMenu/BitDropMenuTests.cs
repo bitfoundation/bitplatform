@@ -227,7 +227,7 @@ public class BitDropMenuTests : BunitTestContext
         var component = RenderComponent<BitDropMenuHtmlAttributesTest>();
 
         component.MarkupMatches(@"
-<div data-val-test=""bit"" class=""bit-drm bit-drm-md"" id:ignore>
+<div data-val-test=""bit"" class=""bit-drm"" id:ignore>
     <button type=""button"" aria-haspopup=""dialog"" aria-expanded=""false"" class=""bit-drm-btn "" id:ignore aria-controls:ignore>
         <span class=""bit-drm-txt "">Menu</span>
         <i aria-hidden=""true"" class=""bit-drm-chv bit-icon bit-icon--ChevronRight bit-ico-r90 ""></i>
@@ -537,14 +537,28 @@ public class BitDropMenuTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDropMenuShouldFallBackToTheMediumSize()
+    public void BitDropMenuShouldPublishNoColorOrSizeWhileTheyAreUnset()
     {
         var component = RenderComponent<BitDropMenu>(parameters =>
         {
             parameters.Add(p => p.Text, "Menu");
         });
 
-        Assert.IsTrue(component.Find(".bit-drm").ClassList.Contains("bit-drm-md"));
+        // An unset Color or Size publishes nothing - the stylesheet falls back to the medium PrimaryBackground look on
+        // its own - so the public --bit-DropMenu-* variables restyle the default while an explicit value, which does
+        // publish its class, wins over them.
+        var root = component.Find(".bit-drm");
+        var published = new[]
+        {
+            "bit-drm-pri", "bit-drm-sec", "bit-drm-ter", "bit-drm-inf", "bit-drm-suc", "bit-drm-wrn", "bit-drm-swr", "bit-drm-err",
+            "bit-drm-pbg", "bit-drm-sbg", "bit-drm-tbg", "bit-drm-pfg", "bit-drm-sfg", "bit-drm-tfg", "bit-drm-pbr", "bit-drm-sbr", "bit-drm-tbr",
+            "bit-drm-sm", "bit-drm-md", "bit-drm-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
     }
 
     [TestMethod]

@@ -700,7 +700,7 @@ private async Task OpenSnackBarClasses()
 
 private async Task OpenCssVars()
 {
-    await cssVarsRef.Info(""Restyled"", ""Background, text, icon, bar, radius, padding and width from CSS variables."");
+    await cssVarsRef.Show(""Restyled"", ""Background, text, icon, bar, radius, padding and width from CSS variables."");
 }";
 
     private readonly string example20RazorCode = @"

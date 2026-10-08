@@ -218,173 +218,169 @@ public class BitMapParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitMap);
 
-        if (AnnounceViewChanges.HasValue && bitMap.HasNotBeenSet(nameof(AnnounceViewChanges)))
+        if (AnnounceViewChanges.HasValue)
         {
-            bitMap.AnnounceViewChanges = AnnounceViewChanges.Value;
+            bitMap.TakeFromCascade(nameof(AnnounceViewChanges), AnnounceViewChanges.Value, static m => m.AnnounceViewChanges, static (m, v) => m.AnnounceViewChanges = v);
         }
 
-        if (AutoResize.HasValue && bitMap.HasNotBeenSet(nameof(AutoResize)))
+        if (AutoResize.HasValue)
         {
-            bitMap.AutoResize = AutoResize.Value;
+            bitMap.TakeFromCascade(nameof(AutoResize), AutoResize.Value, static m => m.AutoResize, static (m, v) => m.AutoResize = v);
         }
 
-        if (Classes is not null && bitMap.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitMap.Classes = Classes;
-
-            bitMap.ClassBuilder.Reset();
+            bitMap.TakeFromCascade(nameof(Classes), Classes, static m => m.Classes, static (m, v) => m.Classes = v);
         }
 
-        if (CooperativeGestures.HasValue && bitMap.HasNotBeenSet(nameof(CooperativeGestures)))
+        if (CooperativeGestures.HasValue)
         {
-            bitMap.CooperativeGestures = CooperativeGestures.Value;
+            bitMap.TakeFromCascade(nameof(CooperativeGestures), CooperativeGestures.Value, static m => m.CooperativeGestures, static (m, v) => m.CooperativeGestures = v);
         }
 
-        if (CooperativeGesturesTouchHint.HasValue() && bitMap.HasNotBeenSet(nameof(CooperativeGesturesTouchHint)))
+        if (CooperativeGesturesTouchHint.HasValue())
         {
-            bitMap.CooperativeGesturesTouchHint = CooperativeGesturesTouchHint!;
+            bitMap.TakeFromCascade(nameof(CooperativeGesturesTouchHint), CooperativeGesturesTouchHint!, static m => m.CooperativeGesturesTouchHint, static (m, v) => m.CooperativeGesturesTouchHint = v);
         }
 
-        if (CooperativeGesturesWheelHint.HasValue() && bitMap.HasNotBeenSet(nameof(CooperativeGesturesWheelHint)))
+        if (CooperativeGesturesWheelHint.HasValue())
         {
-            bitMap.CooperativeGesturesWheelHint = CooperativeGesturesWheelHint!;
+            bitMap.TakeFromCascade(nameof(CooperativeGesturesWheelHint), CooperativeGesturesWheelHint!, static m => m.CooperativeGesturesWheelHint, static (m, v) => m.CooperativeGesturesWheelHint = v);
         }
 
-        if (ErrorLabel.HasValue() && bitMap.HasNotBeenSet(nameof(ErrorLabel)))
+        if (ErrorLabel.HasValue())
         {
-            bitMap.ErrorLabel = ErrorLabel!;
+            bitMap.TakeFromCascade(nameof(ErrorLabel), ErrorLabel!, static m => m.ErrorLabel, static (m, v) => m.ErrorLabel = v);
         }
 
-        if (ErrorTemplate is not null && bitMap.HasNotBeenSet(nameof(ErrorTemplate)))
+        if (ErrorTemplate is not null)
         {
-            bitMap.ErrorTemplate = ErrorTemplate;
+            bitMap.TakeFromCascade(nameof(ErrorTemplate), ErrorTemplate, static m => m.ErrorTemplate, static (m, v) => m.ErrorTemplate = v);
         }
 
-        if (EscapeToExit.HasValue && bitMap.HasNotBeenSet(nameof(EscapeToExit)))
+        if (EscapeToExit.HasValue)
         {
-            bitMap.EscapeToExit = EscapeToExit.Value;
+            bitMap.TakeFromCascade(nameof(EscapeToExit), EscapeToExit.Value, static m => m.EscapeToExit, static (m, v) => m.EscapeToExit = v);
         }
 
-        if (KeyboardInstructions.HasValue() && bitMap.HasNotBeenSet(nameof(KeyboardInstructions)))
+        if (KeyboardInstructions.HasValue())
         {
-            bitMap.KeyboardInstructions = KeyboardInstructions!;
+            bitMap.TakeFromCascade(nameof(KeyboardInstructions), KeyboardInstructions!, static m => m.KeyboardInstructions, static (m, v) => m.KeyboardInstructions = v);
         }
 
-        if (LazyLoad.HasValue && bitMap.HasNotBeenSet(nameof(LazyLoad)))
+        if (LazyLoad.HasValue)
         {
-            bitMap.LazyLoad = LazyLoad.Value;
+            bitMap.TakeFromCascade(nameof(LazyLoad), LazyLoad.Value, static m => m.LazyLoad, static (m, v) => m.LazyLoad = v);
         }
 
-        if (LazyLoadRootMargin.HasValue() && bitMap.HasNotBeenSet(nameof(LazyLoadRootMargin)))
+        if (LazyLoadRootMargin.HasValue())
         {
-            bitMap.LazyLoadRootMargin = LazyLoadRootMargin!;
+            bitMap.TakeFromCascade(nameof(LazyLoadRootMargin), LazyLoadRootMargin!, static m => m.LazyLoadRootMargin, static (m, v) => m.LazyLoadRootMargin = v);
         }
 
-        if (LoadingLabel.HasValue() && bitMap.HasNotBeenSet(nameof(LoadingLabel)))
+        if (LoadingLabel.HasValue())
         {
-            bitMap.LoadingLabel = LoadingLabel!;
+            bitMap.TakeFromCascade(nameof(LoadingLabel), LoadingLabel!, static m => m.LoadingLabel, static (m, v) => m.LoadingLabel = v);
         }
 
-        if (LoadingTemplate is not null && bitMap.HasNotBeenSet(nameof(LoadingTemplate)))
+        if (LoadingTemplate is not null)
         {
-            bitMap.LoadingTemplate = LoadingTemplate;
+            bitMap.TakeFromCascade(nameof(LoadingTemplate), LoadingTemplate, static m => m.LoadingTemplate, static (m, v) => m.LoadingTemplate = v);
         }
 
-        if (MarkerListActionHeader.HasValue() && bitMap.HasNotBeenSet(nameof(MarkerListActionHeader)))
+        if (MarkerListActionHeader.HasValue())
         {
-            bitMap.MarkerListActionHeader = MarkerListActionHeader!;
+            bitMap.TakeFromCascade(nameof(MarkerListActionHeader), MarkerListActionHeader!, static m => m.MarkerListActionHeader, static (m, v) => m.MarkerListActionHeader = v);
         }
 
-        if (MarkerListCaption.HasValue() && bitMap.HasNotBeenSet(nameof(MarkerListCaption)))
+        if (MarkerListCaption.HasValue())
         {
-            bitMap.MarkerListCaption = MarkerListCaption!;
+            bitMap.TakeFromCascade(nameof(MarkerListCaption), MarkerListCaption!, static m => m.MarkerListCaption, static (m, v) => m.MarkerListCaption = v);
         }
 
-        if (MarkerListLatitudeHeader.HasValue() && bitMap.HasNotBeenSet(nameof(MarkerListLatitudeHeader)))
+        if (MarkerListLatitudeHeader.HasValue())
         {
-            bitMap.MarkerListLatitudeHeader = MarkerListLatitudeHeader!;
+            bitMap.TakeFromCascade(nameof(MarkerListLatitudeHeader), MarkerListLatitudeHeader!, static m => m.MarkerListLatitudeHeader, static (m, v) => m.MarkerListLatitudeHeader = v);
         }
 
-        if (MarkerListLongitudeHeader.HasValue() && bitMap.HasNotBeenSet(nameof(MarkerListLongitudeHeader)))
+        if (MarkerListLongitudeHeader.HasValue())
         {
-            bitMap.MarkerListLongitudeHeader = MarkerListLongitudeHeader!;
+            bitMap.TakeFromCascade(nameof(MarkerListLongitudeHeader), MarkerListLongitudeHeader!, static m => m.MarkerListLongitudeHeader, static (m, v) => m.MarkerListLongitudeHeader = v);
         }
 
-        if (MarkerListMode.HasValue && bitMap.HasNotBeenSet(nameof(MarkerListMode)))
+        if (MarkerListMode.HasValue)
         {
-            bitMap.MarkerListMode = MarkerListMode.Value;
+            bitMap.TakeFromCascade(nameof(MarkerListMode), MarkerListMode.Value, static m => m.MarkerListMode, static (m, v) => m.MarkerListMode = v);
         }
 
-        if (MarkerListNameHeader.HasValue() && bitMap.HasNotBeenSet(nameof(MarkerListNameHeader)))
+        if (MarkerListNameHeader.HasValue())
         {
-            bitMap.MarkerListNameHeader = MarkerListNameHeader!;
+            bitMap.TakeFromCascade(nameof(MarkerListNameHeader), MarkerListNameHeader!, static m => m.MarkerListNameHeader, static (m, v) => m.MarkerListNameHeader = v);
         }
 
-        if (MarkerListZoom.HasValue && bitMap.HasNotBeenSet(nameof(MarkerListZoom)))
+        if (MarkerListZoom.HasValue)
         {
-            bitMap.MarkerListZoom = MarkerListZoom;
+            bitMap.TakeFromCascade(nameof(MarkerListZoom), MarkerListZoom, static m => m.MarkerListZoom, static (m, v) => m.MarkerListZoom = v);
         }
 
-        if (PopupAutoPan.HasValue && bitMap.HasNotBeenSet(nameof(PopupAutoPan)))
+        if (PopupAutoPan.HasValue)
         {
-            bitMap.PopupAutoPan = PopupAutoPan.Value;
+            bitMap.TakeFromCascade(nameof(PopupAutoPan), PopupAutoPan.Value, static m => m.PopupAutoPan, static (m, v) => m.PopupAutoPan = v);
         }
 
-        if (PopupCloseLabel.HasValue() && bitMap.HasNotBeenSet(nameof(PopupCloseLabel)))
+        if (PopupCloseLabel.HasValue())
         {
-            bitMap.PopupCloseLabel = PopupCloseLabel!;
+            bitMap.TakeFromCascade(nameof(PopupCloseLabel), PopupCloseLabel!, static m => m.PopupCloseLabel, static (m, v) => m.PopupCloseLabel = v);
         }
 
-        if (PopupLabel.HasValue() && bitMap.HasNotBeenSet(nameof(PopupLabel)))
+        if (PopupLabel.HasValue())
         {
-            bitMap.PopupLabel = PopupLabel!;
+            bitMap.TakeFromCascade(nameof(PopupLabel), PopupLabel!, static m => m.PopupLabel, static (m, v) => m.PopupLabel = v);
         }
 
-        if (ReplayStateOnProviderSwap.HasValue && bitMap.HasNotBeenSet(nameof(ReplayStateOnProviderSwap)))
+        if (ReplayStateOnProviderSwap.HasValue)
         {
-            bitMap.ReplayStateOnProviderSwap = ReplayStateOnProviderSwap.Value;
+            bitMap.TakeFromCascade(nameof(ReplayStateOnProviderSwap), ReplayStateOnProviderSwap.Value, static m => m.ReplayStateOnProviderSwap, static (m, v) => m.ReplayStateOnProviderSwap = v);
         }
 
-        if (RespectReducedMotion.HasValue && bitMap.HasNotBeenSet(nameof(RespectReducedMotion)))
+        if (RespectReducedMotion.HasValue)
         {
-            bitMap.RespectReducedMotion = RespectReducedMotion.Value;
+            bitMap.TakeFromCascade(nameof(RespectReducedMotion), RespectReducedMotion.Value, static m => m.RespectReducedMotion, static (m, v) => m.RespectReducedMotion = v);
         }
 
-        if (RoleDescription.HasValue() && bitMap.HasNotBeenSet(nameof(RoleDescription)))
+        if (RoleDescription.HasValue())
         {
-            bitMap.RoleDescription = RoleDescription!;
+            bitMap.TakeFromCascade(nameof(RoleDescription), RoleDescription!, static m => m.RoleDescription, static (m, v) => m.RoleDescription = v);
         }
 
-        if (ShowLoading.HasValue && bitMap.HasNotBeenSet(nameof(ShowLoading)))
+        if (ShowLoading.HasValue)
         {
-            bitMap.ShowLoading = ShowLoading.Value;
+            bitMap.TakeFromCascade(nameof(ShowLoading), ShowLoading.Value, static m => m.ShowLoading, static (m, v) => m.ShowLoading = v);
         }
 
-        if (Styles is not null && bitMap.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitMap.Styles = Styles;
-
-            bitMap.StyleBuilder.Reset();
+            bitMap.TakeFromCascade(nameof(Styles), Styles, static m => m.Styles, static (m, v) => m.Styles = v);
         }
 
-        if (UnsupportedLabel.HasValue() && bitMap.HasNotBeenSet(nameof(UnsupportedLabel)))
+        if (UnsupportedLabel.HasValue())
         {
-            bitMap.UnsupportedLabel = UnsupportedLabel!;
+            bitMap.TakeFromCascade(nameof(UnsupportedLabel), UnsupportedLabel!, static m => m.UnsupportedLabel, static (m, v) => m.UnsupportedLabel = v);
         }
 
-        if (UnsupportedTemplate is not null && bitMap.HasNotBeenSet(nameof(UnsupportedTemplate)))
+        if (UnsupportedTemplate is not null)
         {
-            bitMap.UnsupportedTemplate = UnsupportedTemplate;
+            bitMap.TakeFromCascade(nameof(UnsupportedTemplate), UnsupportedTemplate, static m => m.UnsupportedTemplate, static (m, v) => m.UnsupportedTemplate = v);
         }
 
-        if (ViewAnnouncementFormatter is not null && bitMap.HasNotBeenSet(nameof(ViewAnnouncementFormatter)))
+        if (ViewAnnouncementFormatter is not null)
         {
-            bitMap.ViewAnnouncementFormatter = ViewAnnouncementFormatter;
+            bitMap.TakeFromCascade(nameof(ViewAnnouncementFormatter), ViewAnnouncementFormatter, static m => m.ViewAnnouncementFormatter, static (m, v) => m.ViewAnnouncementFormatter = v);
         }
 
-        if (ViewAnnouncementThrottle.HasValue && bitMap.HasNotBeenSet(nameof(ViewAnnouncementThrottle)))
+        if (ViewAnnouncementThrottle.HasValue)
         {
-            bitMap.ViewAnnouncementThrottle = ViewAnnouncementThrottle.Value;
+            bitMap.TakeFromCascade(nameof(ViewAnnouncementThrottle), ViewAnnouncementThrottle.Value, static m => m.ViewAnnouncementThrottle, static (m, v) => m.ViewAnnouncementThrottle = v);
         }
     }
 }

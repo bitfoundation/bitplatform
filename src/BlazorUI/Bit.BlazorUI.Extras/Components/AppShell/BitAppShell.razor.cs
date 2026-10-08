@@ -61,7 +61,6 @@ public partial class BitAppShell : BitComponentBase
 
 
 
-    private bool _cascaded;
     private bool _registered;
     private bool _subscribed;
     private bool _scrollInit;
@@ -786,20 +785,7 @@ public partial class BitAppShell : BitComponentBase
     {
         // First, so that every decision below - the navigation subscription above all - is taken on the
         // values the shell ends up with rather than on the ones its own markup happened to set.
-        if (CascadingParameters is not null)
-        {
-            _cascaded = true;
-
-            CascadingParameters.UpdateParameters(this);
-        }
-        else if (_cascaded)
-        {
-            // A BitParams that has gone away takes what it had cascaded with it: an empty set of parameters puts
-            // back the defaults of everything the shell's own markup does not set.
-            _cascaded = false;
-
-            new BitAppShellParams().UpdateParameters(this);
-        }
+        CascadingParameters?.UpdateParameters(this);
 
         // The two navigation features are parameters like any other, so turning either of them on after
         // the shell has been rendered has to subscribe it - and turning both of them off, unsubscribe it.
