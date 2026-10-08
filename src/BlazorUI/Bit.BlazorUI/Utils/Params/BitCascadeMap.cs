@@ -12,6 +12,8 @@ internal sealed class BitCascadeMap
 {
     private const string CallOnSetAttributeName = "Bit.BlazorUI.CallOnSetAttribute";
     private const string CallOnSetAsyncAttributeName = "Bit.BlazorUI.CallOnSetAsyncAttribute";
+    private const string ResetClassBuilderAttributeName = "Bit.BlazorUI.ResetClassBuilderAttribute";
+    private const string ResetStyleBuilderAttributeName = "Bit.BlazorUI.ResetStyleBuilderAttribute";
 
     private static readonly ConcurrentDictionary<Type, BitCascadeMap?> _maps = new();
 
@@ -117,7 +119,40 @@ internal sealed class BitCascadeMap
             _target = target;
             _onSet = FindHook(target, CallOnSetAttributeName);
             _onSetAsync = FindHook(target, CallOnSetAsyncAttributeName);
+
+            var attributes = target.GetCustomAttributesData();
+
+            ResetsClass = attributes.Any(a => a.AttributeType.FullName == ResetClassBuilderAttributeName);
+            ResetsStyle = attributes.Any(a => a.AttributeType.FullName == ResetStyleBuilderAttributeName);
+
+            // A parameter that names the string it is built into rebuilds only that one. Many name neither while
+            // either string still reads them (a Classes the root class is built from, a parameter of a base class
+            // whose SetParametersAsync is written by hand), so one that names neither rebuilds both.
+            if (ResetsClass is false && ResetsStyle is false)
+            {
+                ResetsClass = ResetsStyle = true;
+            }
         }
+
+
+
+        /// <summary>
+        /// Whether the class string of the component is built from the parameter, so that it is rebuilt once the
+        /// parameter changes.
+        /// </summary>
+        public bool ResetsClass { get; }
+
+        /// <summary>
+        /// Whether the style string of the component is built from the parameter, so that it is rebuilt once the
+        /// parameter changes.
+        /// </summary>
+        public bool ResetsStyle { get; }
+
+        /// <summary>
+        /// Whether the parameter has a [CallOnSetAsync] hook, which a params object applied from a synchronous
+        /// OnParametersSet has no way to await.
+        /// </summary>
+        public bool HasAsyncSetupHook => _onSetAsync is not null;
 
         public static BitCascadeParameter Create(PropertyInfo source, PropertyInfo target)
         {
@@ -128,7 +163,10 @@ internal sealed class BitCascadeMap
                 : new BitCascadeParameter(source, target);
         }
 
-        public object? GetFromParams(IBitComponentParams parameters) => _source.GetValue(parameters);
+        /// <summary>
+        /// Whether the params object supplies the parameter, by the rule its UpdateParameters writes it by.
+        /// </summary>
+        public bool IsSuppliedBy(IBitComponentParams parameters) => BitCascadeExtensions.IsSupplied(_source.GetValue(parameters));
 
         public virtual object? GetFromComponent(IBitCascadeTarget component) => _target.GetValue(component);
 
@@ -137,7 +175,7 @@ internal sealed class BitCascadeMap
         /// </summary>
         public virtual bool SetOnComponent(IBitCascadeTarget component, object? value)
         {
-            if (Equals(_target.GetValue(component), value)) return false;
+            if (BitCascadeExtensions.AreSame(_target.GetValue(component), value)) return false;
 
             _target.SetValue(component, value);
 
@@ -150,10 +188,16 @@ internal sealed class BitCascadeMap
         /// </summary>
         public Task RunSetupHooks(IBitCascadeTarget component)
         {
-            _onSet?.Invoke(component, null);
+            RunSetupHook(component);
 
             return _onSetAsync?.Invoke(component, null) as Task ?? Task.CompletedTask;
         }
+
+        /// <summary>
+        /// Runs what the [CallOnSet] attribute of the parameter names: the synchronous half of
+        /// <see cref="RunSetupHooks"/>, which is all a params object applied from OnParametersSet can run.
+        /// </summary>
+        public void RunSetupHook(IBitCascadeTarget component) => _onSet?.Invoke(component, null);
 
         // The attributes are internal to every assembly that declares components, so they are matched by name.
         [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "A setup hook is called by the generated code of its component, so it is never trimmed away.")]

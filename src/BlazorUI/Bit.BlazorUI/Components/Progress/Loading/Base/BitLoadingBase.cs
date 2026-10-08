@@ -405,29 +405,6 @@ public abstract class BitLoadingBase : BitComponentBase
     private protected override IBitComponentParams? CascadedParams => CascadingParameters;
 
     /// <summary>
-    /// Fills in a parameter from a <see cref="BitLoadingParams"/> cascade. BitComponentBase remembers the value it
-    /// held before the cascade first wrote it, and puts it back once the cascade stops setting it.
-    /// </summary>
-    /// <remarks>
-    /// The class and style builders are only reset when the value actually changes, so a loader under a cascade
-    /// that re-renders with the same parameters rebuilds neither string. The accessors are taken as static
-    /// lambdas, so that applying a cascade on every render allocates nothing.
-    /// </remarks>
-    internal void Cascade<T>(T value,
-                             Func<BitLoadingBase, T> get,
-                             Action<BitLoadingBase, T> set,
-                             bool resetClass = false,
-                             bool resetStyle = false)
-    {
-        if (EqualityComparer<T>.Default.Equals(get(this), value)) return;
-
-        set(this, value);
-
-        if (resetClass) ClassBuilder.Reset();
-        if (resetStyle) StyleBuilder.Reset();
-    }
-
-    /// <summary>
     /// The role the root element ends up with: the parameter where it was given one, then a plain 'role'
     /// HTML attribute passed through the splat, and the "status" default when neither was supplied.
     /// </summary>

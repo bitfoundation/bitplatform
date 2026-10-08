@@ -127,97 +127,89 @@ public class BitChartParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitChart);
 
-        if (Classes is not null && bitChart.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitChart.Classes = Classes;
-
-            bitChart.ClassBuilder.Reset();
+            bitChart.TakeFromCascade(nameof(Classes), Classes, static c => c.Classes, static (c, v) => c.Classes = v);
         }
 
-        if (GenerateTable.HasValue && bitChart.HasNotBeenSet(nameof(GenerateTable)))
+        if (GenerateTable.HasValue)
         {
-            bitChart.GenerateTable = GenerateTable.Value;
+            bitChart.TakeFromCascade(nameof(GenerateTable), GenerateTable.Value, static c => c.GenerateTable, static (c, v) => c.GenerateTable = v);
         }
 
-        if (Height.HasValue() && bitChart.HasNotBeenSet(nameof(Height)))
+        if (Height.HasValue())
         {
-            bitChart.Height = Height;
-
-            bitChart.StyleBuilder.Reset();
+            bitChart.TakeFromCascade(nameof(Height), Height, static c => c.Height, static (c, v) => c.Height = v);
         }
 
-        if (LoadingLabel.HasValue() && bitChart.HasNotBeenSet(nameof(LoadingLabel)))
+        if (LoadingLabel.HasValue())
         {
-            bitChart.LoadingLabel = LoadingLabel;
+            bitChart.TakeFromCascade(nameof(LoadingLabel), LoadingLabel, static c => c.LoadingLabel, static (c, v) => c.LoadingLabel = v);
         }
 
-        if (LoadingTemplate is not null && bitChart.HasNotBeenSet(nameof(LoadingTemplate)))
+        if (LoadingTemplate is not null)
         {
-            bitChart.LoadingTemplate = LoadingTemplate;
+            bitChart.TakeFromCascade(nameof(LoadingTemplate), LoadingTemplate, static c => c.LoadingTemplate, static (c, v) => c.LoadingTemplate = v);
         }
 
-        if (MaxTableColumns.HasValue && bitChart.HasNotBeenSet(nameof(MaxTableColumns)))
+        if (MaxTableColumns.HasValue)
         {
-            bitChart.MaxTableColumns = MaxTableColumns.Value;
+            bitChart.TakeFromCascade(nameof(MaxTableColumns), MaxTableColumns.Value, static c => c.MaxTableColumns, static (c, v) => c.MaxTableColumns = v);
         }
 
-        if (MaxTableRows.HasValue && bitChart.HasNotBeenSet(nameof(MaxTableRows)))
+        if (MaxTableRows.HasValue)
         {
-            bitChart.MaxTableRows = MaxTableRows.Value;
+            bitChart.TakeFromCascade(nameof(MaxTableRows), MaxTableRows.Value, static c => c.MaxTableRows, static (c, v) => c.MaxTableRows = v);
         }
 
-        if (NavigationHint.HasValue() && bitChart.HasNotBeenSet(nameof(NavigationHint)))
+        if (NavigationHint.HasValue())
         {
-            bitChart.NavigationHint = NavigationHint;
+            bitChart.TakeFromCascade(nameof(NavigationHint), NavigationHint, static c => c.NavigationHint, static (c, v) => c.NavigationHint = v);
         }
 
-        if (NoDataTemplate is not null && bitChart.HasNotBeenSet(nameof(NoDataTemplate)))
+        if (NoDataTemplate is not null)
         {
-            bitChart.NoDataTemplate = NoDataTemplate;
+            bitChart.TakeFromCascade(nameof(NoDataTemplate), NoDataTemplate, static c => c.NoDataTemplate, static (c, v) => c.NoDataTemplate = v);
         }
 
-        if (NoDataText.HasValue() && bitChart.HasNotBeenSet(nameof(NoDataText)))
+        if (NoDataText.HasValue())
         {
-            bitChart.NoDataText = NoDataText!;
+            bitChart.TakeFromCascade(nameof(NoDataText), NoDataText!, static c => c.NoDataText, static (c, v) => c.NoDataText = v);
         }
 
-        if (Options is not null && bitChart.HasNotBeenSet(nameof(Options)))
+        if (Options is not null)
         {
-            bitChart.Options = Options;
+            bitChart.TakeFromCascade(nameof(Options), Options, static c => c.Options, static (c, v) => c.Options = v);
         }
 
-        if (Styles is not null && bitChart.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitChart.Styles = Styles;
-
-            bitChart.StyleBuilder.Reset();
+            bitChart.TakeFromCascade(nameof(Styles), Styles, static c => c.Styles, static (c, v) => c.Styles = v);
         }
 
-        if (Texts is not null && bitChart.HasNotBeenSet(nameof(Texts)))
+        if (Texts is not null)
         {
-            bitChart.Texts = Texts;
+            bitChart.TakeFromCascade(nameof(Texts), Texts, static c => c.Texts, static (c, v) => c.Texts = v);
         }
 
-        if (TooltipTemplate is not null && bitChart.HasNotBeenSet(nameof(TooltipTemplate)))
+        if (TooltipTemplate is not null)
         {
-            bitChart.TooltipTemplate = TooltipTemplate;
+            bitChart.TakeFromCascade(nameof(TooltipTemplate), TooltipTemplate, static c => c.TooltipTemplate, static (c, v) => c.TooltipTemplate = v);
         }
 
-        if (Type.HasValue && bitChart.HasNotBeenSet(nameof(Type)))
+        if (Type.HasValue)
         {
-            bitChart.Type = Type.Value;
+            bitChart.TakeFromCascade(nameof(Type), Type.Value, static c => c.Type, static (c, v) => c.Type = v);
         }
 
-        if (Width.HasValue() && bitChart.HasNotBeenSet(nameof(Width)))
+        if (Width.HasValue())
         {
-            bitChart.Width = Width!;
-
-            bitChart.StyleBuilder.Reset();
+            bitChart.TakeFromCascade(nameof(Width), Width!, static c => c.Width, static (c, v) => c.Width = v);
         }
 
-        if (ZoomHint.HasValue() && bitChart.HasNotBeenSet(nameof(ZoomHint)))
+        if (ZoomHint.HasValue())
         {
-            bitChart.ZoomHint = ZoomHint;
+            bitChart.TakeFromCascade(nameof(ZoomHint), ZoomHint, static c => c.ZoomHint, static (c, v) => c.ZoomHint = v);
         }
     }
 }

@@ -115,76 +115,69 @@ public class BitVirtualizeParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitVirtualize);
 
-        // This runs on every render of every list under the BitParams, so the value that drives the class or the
-        // style of the root is only assigned - and the builder only reset - when it differs from the one the list
-        // already holds: an unchanged one would rebuild both strings on every render for nothing.
-        if (Classes is not null && bitVirtualize.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitVirtualize.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitVirtualize.Classes = Classes;
-
-            bitVirtualize.ClassBuilder.Reset();
+            bitVirtualize.TakeFromCascade(nameof(Classes), Classes, static l => l.Classes, static (l, v) => l.Classes = v);
         }
 
-        if (Dynamic.HasValue && bitVirtualize.HasNotBeenSet(nameof(Dynamic)))
+        if (Dynamic.HasValue)
         {
-            bitVirtualize.Dynamic = Dynamic.Value;
+            bitVirtualize.TakeFromCascade(nameof(Dynamic), Dynamic.Value, static l => l.Dynamic, static (l, v) => l.Dynamic = v);
         }
 
-        if (EmptyTemplate is not null && bitVirtualize.HasNotBeenSet(nameof(EmptyTemplate)))
+        if (EmptyTemplate is not null)
         {
-            bitVirtualize.EmptyTemplate = EmptyTemplate;
+            bitVirtualize.TakeFromCascade(nameof(EmptyTemplate), EmptyTemplate, static l => l.EmptyTemplate, static (l, v) => l.EmptyTemplate = v);
         }
 
-        if (EstimatedItemSize.HasValue && bitVirtualize.HasNotBeenSet(nameof(EstimatedItemSize)))
+        if (EstimatedItemSize.HasValue)
         {
-            bitVirtualize.EstimatedItemSize = EstimatedItemSize.Value;
+            bitVirtualize.TakeFromCascade(nameof(EstimatedItemSize), EstimatedItemSize.Value, static l => l.EstimatedItemSize, static (l, v) => l.EstimatedItemSize = v);
         }
 
-        if (Gap.HasValue && bitVirtualize.HasNotBeenSet(nameof(Gap)))
+        if (Gap.HasValue)
         {
-            bitVirtualize.Gap = Gap.Value;
+            bitVirtualize.TakeFromCascade(nameof(Gap), Gap.Value, static l => l.Gap, static (l, v) => l.Gap = v);
         }
 
-        if (ItemRole is not null && bitVirtualize.HasNotBeenSet(nameof(ItemRole)))
+        if (ItemRole is not null)
         {
-            bitVirtualize.ItemRole = ItemRole;
+            bitVirtualize.TakeFromCascade(nameof(ItemRole), ItemRole, static l => l.ItemRole, static (l, v) => l.ItemRole = v);
         }
 
-        if (ItemSize.HasValue && bitVirtualize.HasNotBeenSet(nameof(ItemSize)))
+        if (ItemSize.HasValue)
         {
-            bitVirtualize.ItemSize = ItemSize.Value;
+            bitVirtualize.TakeFromCascade(nameof(ItemSize), ItemSize.Value, static l => l.ItemSize, static (l, v) => l.ItemSize = v);
         }
 
-        if (LoadingTemplate is not null && bitVirtualize.HasNotBeenSet(nameof(LoadingTemplate)))
+        if (LoadingTemplate is not null)
         {
-            bitVirtualize.LoadingTemplate = LoadingTemplate;
+            bitVirtualize.TakeFromCascade(nameof(LoadingTemplate), LoadingTemplate, static l => l.LoadingTemplate, static (l, v) => l.LoadingTemplate = v);
         }
 
-        if (OverscanCount.HasValue && bitVirtualize.HasNotBeenSet(nameof(OverscanCount)))
+        if (OverscanCount.HasValue)
         {
-            bitVirtualize.OverscanCount = OverscanCount.Value;
+            bitVirtualize.TakeFromCascade(nameof(OverscanCount), OverscanCount.Value, static l => l.OverscanCount, static (l, v) => l.OverscanCount = v);
         }
 
-        if (PlaceholderTemplate is not null && bitVirtualize.HasNotBeenSet(nameof(PlaceholderTemplate)))
+        if (PlaceholderTemplate is not null)
         {
-            bitVirtualize.PlaceholderTemplate = PlaceholderTemplate;
+            bitVirtualize.TakeFromCascade(nameof(PlaceholderTemplate), PlaceholderTemplate, static l => l.PlaceholderTemplate, static (l, v) => l.PlaceholderTemplate = v);
         }
 
-        if (ReachedThreshold.HasValue && bitVirtualize.HasNotBeenSet(nameof(ReachedThreshold)))
+        if (ReachedThreshold.HasValue)
         {
-            bitVirtualize.ReachedThreshold = ReachedThreshold.Value;
+            bitVirtualize.TakeFromCascade(nameof(ReachedThreshold), ReachedThreshold.Value, static l => l.ReachedThreshold, static (l, v) => l.ReachedThreshold = v);
         }
 
-        if (Role is not null && bitVirtualize.HasNotBeenSet(nameof(Role)))
+        if (Role is not null)
         {
-            bitVirtualize.Role = Role;
+            bitVirtualize.TakeFromCascade(nameof(Role), Role, static l => l.Role, static (l, v) => l.Role = v);
         }
 
-        if (Styles is not null && bitVirtualize.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitVirtualize.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitVirtualize.Styles = Styles;
-
-            bitVirtualize.StyleBuilder.Reset();
+            bitVirtualize.TakeFromCascade(nameof(Styles), Styles, static l => l.Styles, static (l, v) => l.Styles = v);
         }
     }
 }

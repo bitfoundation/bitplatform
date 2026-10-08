@@ -83,63 +83,7 @@ public class BitSwipeTrapParams : BitComponentBaseParams, IBitComponentParams
     {
         if (bitSwipeTrap is null) return;
 
-        // The inherited parameters go through the same bookkeeping as the swipe trap's own rather than through
-        // UpdateBaseParameters, which rebuilds the class and style strings on every render it supplies one, even
-        // an unchanged one - and a swipe trap re-renders on every OnMove a handler answers.
-        if (AriaLabel.HasValue())
-        {
-            bitSwipeTrap.TakeFromCascade(nameof(AriaLabel), AriaLabel, static s => s.AriaLabel, static (s, v) => s.AriaLabel = v);
-        }
-
-        if (Class.HasValue())
-        {
-            bitSwipeTrap.TakeFromCascade(nameof(Class), Class, static s => s.Class, static (s, v) => s.Class = v);
-        }
-
-        if (Dir.HasValue)
-        {
-            bitSwipeTrap.TakeFromCascade(nameof(Dir), Dir, static s => s.Dir, static (s, v) => s.Dir = v);
-        }
-
-        if (ForceAnimation.HasValue)
-        {
-            bitSwipeTrap.TakeFromCascade(nameof(ForceAnimation), ForceAnimation.Value, static s => s.ForceAnimation, static (s, v) => s.ForceAnimation = v);
-        }
-
-        // The attributes are gathered again from the markup on every render, so what the cascade adds to them is
-        // gone the moment it stops adding it; there is nothing to take back.
-        if (HtmlAttributes is not null)
-        {
-            foreach (var attr in HtmlAttributes)
-            {
-                bitSwipeTrap.HtmlAttributes.TryAdd(attr.Key, attr.Value);
-            }
-        }
-
-        if (Id.HasValue())
-        {
-            bitSwipeTrap.TakeFromCascade(nameof(Id), Id, static s => s.Id, static (s, v) => s.Id = v);
-        }
-
-        if (Disabled.HasValue)
-        {
-            bitSwipeTrap.TakeFromCascade(nameof(Disabled), Disabled.Value, static s => s.Disabled, static (s, v) => s.Disabled = v);
-        }
-
-        if (Style.HasValue())
-        {
-            bitSwipeTrap.TakeFromCascade(nameof(Style), Style, static s => s.Style, static (s, v) => s.Style = v);
-        }
-
-        if (TabIndex.HasValue())
-        {
-            bitSwipeTrap.TakeFromCascade(nameof(TabIndex), TabIndex, static s => s.TabIndex, static (s, v) => s.TabIndex = v);
-        }
-
-        if (Visibility.HasValue)
-        {
-            bitSwipeTrap.TakeFromCascade(nameof(Visibility), Visibility.Value, static s => s.Visibility, static (s, v) => s.Visibility = v);
-        }
+        UpdateBaseParameters(bitSwipeTrap);
 
         if (KeyboardTrigger.HasValue)
         {

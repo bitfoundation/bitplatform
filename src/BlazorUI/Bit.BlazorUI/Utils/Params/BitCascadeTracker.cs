@@ -26,9 +26,15 @@ internal sealed class BitCascadeTracker
     /// newly supplied one replaces. Called once every parameter is assigned and before the params object is applied,
     /// which is when a parameter still holds the value it had before the cascade.
     /// </summary>
+    /// <param name="component">The component the params object is cascaded to.</param>
+    /// <param name="map">The parameters the params object can supply to the component.</param>
+    /// <param name="current">The params object cascaded to the component on this render, if any.</param>
+    /// <param name="paramsChanged">Whether that is another params object than the one cascaded on the last render.</param>
     /// <returns>The parameters put back, or null when there were none.</returns>
-    public List<BitCascadeMap.BitCascadeParameter>? RestoreDropped(IBitCascadeTarget component, BitCascadeMap map, IBitComponentParams? current)
+    public List<BitCascadeMap.BitCascadeParameter>? RestoreDropped(IBitCascadeTarget component, BitCascadeMap map, IBitComponentParams? current, out bool paramsChanged)
     {
+        paramsChanged = false;
+
         // Nothing supplied now and nothing before, which is where a component stays once a params object has gone.
         if (current is null && _cascadedParams is null) return null;
 
@@ -38,6 +44,8 @@ internal sealed class BitCascadeTracker
         // parameters, and only what the markup took over or let go of since is left to keep track of.
         if (ReferenceEquals(current, _cascadedParams) is false)
         {
+            paramsChanged = true;
+
             _cascadedParams = current;
 
             if (_cascadeOriginals is { Count: > 0 })
@@ -46,7 +54,7 @@ internal sealed class BitCascadeTracker
 
                 foreach (var name in _cascadeOriginals.Keys)
                 {
-                    if (current is not null && map.Parameters[name].GetFromParams(current) is not null) continue;
+                    if (current is not null && map.Parameters[name].IsSuppliedBy(current)) continue;
 
                     (dropped ??= []).Add(name);
                 }
@@ -69,14 +77,14 @@ internal sealed class BitCascadeTracker
 
             if (_cascadeSetByMarkup is { Count: > 0 })
             {
-                _cascadeSetByMarkup.RemoveWhere(name => current is null || map.Parameters[name].GetFromParams(current) is null);
+                _cascadeSetByMarkup.RemoveWhere(name => current is null || map.Parameters[name].IsSuppliedBy(current) is false);
             }
 
             if (current is not null)
             {
                 foreach (var (name, parameter) in map.Parameters)
                 {
-                    if (parameter.GetFromParams(current) is null) continue;
+                    if (parameter.IsSuppliedBy(current) is false) continue;
                     if (_cascadeOriginals?.ContainsKey(name) is true) continue;
                     if (_cascadeSetByMarkup?.Contains(name) is true) continue;
 
@@ -95,6 +103,17 @@ internal sealed class BitCascadeTracker
         TrackMarkupChanges(component, map);
 
         return restored;
+    }
+
+    /// <summary>
+    /// The value the named parameter held before the params object first supplied it, which stays recorded for as
+    /// long as the params object supplies it and the markup does not set it.
+    /// </summary>
+    public bool TryGetOriginal(string name, out object? original)
+    {
+        original = null;
+
+        return _cascadeOriginals?.TryGetValue(name, out original) is true;
     }
 
     /// <summary>

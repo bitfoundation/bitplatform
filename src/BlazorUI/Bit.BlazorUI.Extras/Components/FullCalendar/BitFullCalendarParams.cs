@@ -178,140 +178,136 @@ public class BitFullCalendarParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitFullCalendar);
 
-        if (AgendaEventTemplate is not null && bitFullCalendar.HasNotBeenSet(nameof(AgendaEventTemplate)))
+        if (AgendaEventTemplate is not null)
         {
-            bitFullCalendar.AgendaEventTemplate = AgendaEventTemplate;
+            bitFullCalendar.TakeFromCascade(nameof(AgendaEventTemplate), AgendaEventTemplate, static f => f.AgendaEventTemplate, static (f, v) => f.AgendaEventTemplate = v);
         }
 
-        if (Classes is not null && bitFullCalendar.HasNotBeenSet(nameof(Classes)) && bitFullCalendar.Classes != Classes)
+        if (Classes is not null)
         {
-            bitFullCalendar.Classes = Classes;
-
-            bitFullCalendar.ClassBuilder.Reset();
+            bitFullCalendar.TakeFromCascade(nameof(Classes), Classes, static f => f.Classes, static (f, v) => f.Classes = v);
         }
 
-        if (Culture is not null && bitFullCalendar.HasNotBeenSet(nameof(Culture)))
+        if (Culture is not null)
         {
-            bitFullCalendar.Culture = Culture;
+            bitFullCalendar.TakeFromCascade(nameof(Culture), Culture, static f => f.Culture, static (f, v) => f.Culture = v);
         }
 
-        if (CultureName.HasValue() && bitFullCalendar.HasNotBeenSet(nameof(CultureName)))
+        if (CultureName.HasValue())
         {
-            bitFullCalendar.CultureName = CultureName;
+            bitFullCalendar.TakeFromCascade(nameof(CultureName), CultureName, static f => f.CultureName, static (f, v) => f.CultureName = v);
         }
 
-        if (DayEventTemplate is not null && bitFullCalendar.HasNotBeenSet(nameof(DayEventTemplate)))
+        if (DayEventTemplate is not null)
         {
-            bitFullCalendar.DayEventTemplate = DayEventTemplate;
+            bitFullCalendar.TakeFromCascade(nameof(DayEventTemplate), DayEventTemplate, static f => f.DayEventTemplate, static (f, v) => f.DayEventTemplate = v);
         }
 
-        if (DefaultMode.HasValue && bitFullCalendar.HasNotBeenSet(nameof(DefaultMode)))
+        if (DefaultMode.HasValue)
         {
-            bitFullCalendar.DefaultMode = DefaultMode.Value;
+            bitFullCalendar.TakeFromCascade(nameof(DefaultMode), DefaultMode.Value, static f => f.DefaultMode, static (f, v) => f.DefaultMode = v);
         }
 
-        if (DefaultView.HasValue && bitFullCalendar.HasNotBeenSet(nameof(DefaultView)))
+        if (DefaultView.HasValue)
         {
-            bitFullCalendar.DefaultView = DefaultView.Value;
+            bitFullCalendar.TakeFromCascade(nameof(DefaultView), DefaultView.Value, static f => f.DefaultView, static (f, v) => f.DefaultView = v);
         }
 
-        if (EventColorOptions is not null && bitFullCalendar.HasNotBeenSet(nameof(EventColorOptions)))
+        if (EventColorOptions is not null)
         {
-            bitFullCalendar.EventColorOptions = EventColorOptions;
+            bitFullCalendar.TakeFromCascade(nameof(EventColorOptions), EventColorOptions, static f => f.EventColorOptions, static (f, v) => f.EventColorOptions = v);
         }
 
-        if (EventDetailsTemplate is not null && bitFullCalendar.HasNotBeenSet(nameof(EventDetailsTemplate)))
+        if (EventDetailsTemplate is not null)
         {
-            bitFullCalendar.EventDetailsTemplate = EventDetailsTemplate;
+            bitFullCalendar.TakeFromCascade(nameof(EventDetailsTemplate), EventDetailsTemplate, static f => f.EventDetailsTemplate, static (f, v) => f.EventDetailsTemplate = v);
         }
 
-        if (EventEditorTemplate is not null && bitFullCalendar.HasNotBeenSet(nameof(EventEditorTemplate)))
+        if (EventEditorTemplate is not null)
         {
-            bitFullCalendar.EventEditorTemplate = EventEditorTemplate;
+            bitFullCalendar.TakeFromCascade(nameof(EventEditorTemplate), EventEditorTemplate, static f => f.EventEditorTemplate, static (f, v) => f.EventEditorTemplate = v);
         }
 
-        if (HideFilters.HasValue && bitFullCalendar.HasNotBeenSet(nameof(HideFilters)))
+        if (HideFilters.HasValue)
         {
-            bitFullCalendar.HideFilters = HideFilters.Value;
+            bitFullCalendar.TakeFromCascade(nameof(HideFilters), HideFilters.Value, static f => f.HideFilters, static (f, v) => f.HideFilters = v);
         }
 
-        if (HideHeader.HasValue && bitFullCalendar.HasNotBeenSet(nameof(HideHeader)))
+        if (HideHeader.HasValue)
         {
-            bitFullCalendar.HideHeader = HideHeader.Value;
+            bitFullCalendar.TakeFromCascade(nameof(HideHeader), HideHeader.Value, static f => f.HideHeader, static (f, v) => f.HideHeader = v);
         }
 
-        if (HideSettings.HasValue && bitFullCalendar.HasNotBeenSet(nameof(HideSettings)))
+        if (HideSettings.HasValue)
         {
-            bitFullCalendar.HideSettings = HideSettings.Value;
+            bitFullCalendar.TakeFromCascade(nameof(HideSettings), HideSettings.Value, static f => f.HideSettings, static (f, v) => f.HideSettings = v);
         }
 
-        if (MaxDate.HasValue && bitFullCalendar.HasNotBeenSet(nameof(MaxDate)))
+        if (MaxDate.HasValue)
         {
-            bitFullCalendar.MaxDate = MaxDate.Value;
+            bitFullCalendar.TakeFromCascade(nameof(MaxDate), MaxDate.Value, static f => f.MaxDate, static (f, v) => f.MaxDate = v);
         }
 
-        if (MinDate.HasValue && bitFullCalendar.HasNotBeenSet(nameof(MinDate)))
+        if (MinDate.HasValue)
         {
-            bitFullCalendar.MinDate = MinDate.Value;
+            bitFullCalendar.TakeFromCascade(nameof(MinDate), MinDate.Value, static f => f.MinDate, static (f, v) => f.MinDate = v);
         }
 
-        if (MonthCellTemplate is not null && bitFullCalendar.HasNotBeenSet(nameof(MonthCellTemplate)))
+        if (MonthCellTemplate is not null)
         {
-            bitFullCalendar.MonthCellTemplate = MonthCellTemplate;
+            bitFullCalendar.TakeFromCascade(nameof(MonthCellTemplate), MonthCellTemplate, static f => f.MonthCellTemplate, static (f, v) => f.MonthCellTemplate = v);
         }
 
-        if (MonthEventTemplate is not null && bitFullCalendar.HasNotBeenSet(nameof(MonthEventTemplate)))
+        if (MonthEventTemplate is not null)
         {
-            bitFullCalendar.MonthEventTemplate = MonthEventTemplate;
+            bitFullCalendar.TakeFromCascade(nameof(MonthEventTemplate), MonthEventTemplate, static f => f.MonthEventTemplate, static (f, v) => f.MonthEventTemplate = v);
         }
 
-        if (ReadOnly.HasValue && bitFullCalendar.HasNotBeenSet(nameof(ReadOnly)))
+        if (ReadOnly.HasValue)
         {
-            bitFullCalendar.ReadOnly = ReadOnly.Value;
+            bitFullCalendar.TakeFromCascade(nameof(ReadOnly), ReadOnly.Value, static f => f.ReadOnly, static (f, v) => f.ReadOnly = v);
         }
 
-        if (ResourceTemplate is not null && bitFullCalendar.HasNotBeenSet(nameof(ResourceTemplate)))
+        if (ResourceTemplate is not null)
         {
-            bitFullCalendar.ResourceTemplate = ResourceTemplate;
+            bitFullCalendar.TakeFromCascade(nameof(ResourceTemplate), ResourceTemplate, static f => f.ResourceTemplate, static (f, v) => f.ResourceTemplate = v);
         }
 
         // The calendar writes the user's preference changes back onto its Settings object, so the shared one is
         // assigned as it is - never copied - or a change made from one calendar's panel would be lost on the next pass.
-        if (Settings is not null && bitFullCalendar.HasNotBeenSet(nameof(Settings)))
+        if (Settings is not null)
         {
-            bitFullCalendar.Settings = Settings;
+            bitFullCalendar.TakeFromCascade(nameof(Settings), Settings, static f => f.Settings, static (f, v) => f.Settings = v);
         }
 
-        if (Styles is not null && bitFullCalendar.HasNotBeenSet(nameof(Styles)) && bitFullCalendar.Styles != Styles)
+        if (Styles is not null)
         {
-            bitFullCalendar.Styles = Styles;
-
-            bitFullCalendar.StyleBuilder.Reset();
+            bitFullCalendar.TakeFromCascade(nameof(Styles), Styles, static f => f.Styles, static (f, v) => f.Styles = v);
         }
 
-        if (Texts is not null && bitFullCalendar.HasNotBeenSet(nameof(Texts)))
+        if (Texts is not null)
         {
-            bitFullCalendar.Texts = Texts;
+            bitFullCalendar.TakeFromCascade(nameof(Texts), Texts, static f => f.Texts, static (f, v) => f.Texts = v);
         }
 
-        if (TimeProvider is not null && bitFullCalendar.HasNotBeenSet(nameof(TimeProvider)))
+        if (TimeProvider is not null)
         {
-            bitFullCalendar.TimeProvider = TimeProvider;
+            bitFullCalendar.TakeFromCascade(nameof(TimeProvider), TimeProvider, static f => f.TimeProvider, static (f, v) => f.TimeProvider = v);
         }
 
-        if (TimelineEventTemplate is not null && bitFullCalendar.HasNotBeenSet(nameof(TimelineEventTemplate)))
+        if (TimelineEventTemplate is not null)
         {
-            bitFullCalendar.TimelineEventTemplate = TimelineEventTemplate;
+            bitFullCalendar.TakeFromCascade(nameof(TimelineEventTemplate), TimelineEventTemplate, static f => f.TimelineEventTemplate, static (f, v) => f.TimelineEventTemplate = v);
         }
 
-        if (Views is not null && bitFullCalendar.HasNotBeenSet(nameof(Views)))
+        if (Views is not null)
         {
-            bitFullCalendar.Views = Views;
+            bitFullCalendar.TakeFromCascade(nameof(Views), Views, static f => f.Views, static (f, v) => f.Views = v);
         }
 
-        if (WeekEventTemplate is not null && bitFullCalendar.HasNotBeenSet(nameof(WeekEventTemplate)))
+        if (WeekEventTemplate is not null)
         {
-            bitFullCalendar.WeekEventTemplate = WeekEventTemplate;
+            bitFullCalendar.TakeFromCascade(nameof(WeekEventTemplate), WeekEventTemplate, static f => f.WeekEventTemplate, static (f, v) => f.WeekEventTemplate = v);
         }
     }
 }

@@ -817,46 +817,22 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         base.OnParametersSet();
     }
 
-    // Re-runs the [CallOnSet] hooks of the parameters a BitParams cascade filled in, which the cascade
-    // itself bypasses by assigning the properties directly. Only the hooks whose parameters actually
-    // changed are run: the edit mode moves the dial back to where a picker begins, and doing that on every
-    // parameters-set would undo the view the person had switched to on any re-render around the picker. The
-    // seconds get a hook of their own rather than that one, since turning them on or off only moves the dial
-    // off a ring the picker has stopped carrying. The start view gets neither: it has no hook when it is
-    // written on the markup, so a cascade that changes it must not move a dial the markup would have left be.
-    internal void ApplyCascadedParameters(bool cultureChanged, bool editModeChanged, bool startViewChanged, bool secondsChanged)
+    // The first pass is where the cascaded values reach the picker at all: the view was worked out in
+    // OnInitialized, which runs before OnParametersSet and so before any of them had arrived. It is worked out
+    // again here, once the edit mode, the start view and the seconds it is read from are all in place - the start
+    // view included, which has no hook of its own. Every later pass is an actual change, which the [CallOnSet]
+    // hooks TakeFromCascade runs take care of exactly as they do for the markup: the edit mode moves the dial back
+    // to where a picker begins, the seconds only move it off a ring the picker has stopped carrying, and the start
+    // view leaves the view the person is on exactly where it is.
+    internal void ApplyCascadedView(bool viewSourceChanged)
     {
-        if (cultureChanged)
-        {
-            OnSetCulture();
-        }
+        if (_cascadeApplied) return;
 
-        // The first pass is where the cascaded values reach the picker at all: the view was worked out in
-        // OnInitialized, which runs before OnParametersSet and so before any of them had arrived. It is worked
-        // out again here, with all three of the parameters it is read from finally in place. Every later pass
-        // is an actual change and goes through the hooks below.
-        if (_cascadeApplied is false)
-        {
-            _cascadeApplied = true;
+        _cascadeApplied = true;
 
-            if (editModeChanged || startViewChanged || secondsChanged)
-            {
-                _view = GetInitialView();
-            }
-
-            return;
-        }
-
-        if (editModeChanged)
+        if (viewSourceChanged)
         {
-            OnSetEditMode();
-        }
-        else if (secondsChanged)
-        {
-            // Only the ring the picker has stopped carrying is moved off, exactly as setting ShowSeconds on
-            // the markup does - a cascade that turns the seconds on must not also throw away the part of the
-            // time the dial had been moved on to.
-            OnSetShowSeconds();
+            _view = GetInitialView();
         }
     }
 

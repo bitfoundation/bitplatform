@@ -215,186 +215,174 @@ public class BitSnackBarParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitSnackBar);
 
-        if (AutoDismiss.HasValue && bitSnackBar.HasNotBeenSet(nameof(AutoDismiss)))
+        if (AutoDismiss.HasValue)
         {
-            bitSnackBar.AutoDismiss = AutoDismiss.Value;
+            bitSnackBar.TakeFromCascade(nameof(AutoDismiss), AutoDismiss.Value, static s => s.AutoDismiss, static (s, v) => s.AutoDismiss = v);
         }
 
-        if (AutoDismissTime.HasValue && bitSnackBar.HasNotBeenSet(nameof(AutoDismissTime)))
+        if (AutoDismissTime.HasValue)
         {
-            bitSnackBar.AutoDismissTime = AutoDismissTime.Value;
+            bitSnackBar.TakeFromCascade(nameof(AutoDismissTime), AutoDismissTime.Value, static s => s.AutoDismissTime, static (s, v) => s.AutoDismissTime = v);
         }
 
-        if (Classes is not null && bitSnackBar.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitSnackBar.Classes = Classes;
-
-            bitSnackBar.ClassBuilder.Reset();
+            bitSnackBar.TakeFromCascade(nameof(Classes), Classes, static s => s.Classes, static (s, v) => s.Classes = v);
         }
 
-        if (ClearOnNavigation.HasValue && bitSnackBar.HasNotBeenSet(nameof(ClearOnNavigation)))
+        if (ClearOnNavigation.HasValue)
         {
-            bitSnackBar.ClearOnNavigation = ClearOnNavigation.Value;
+            bitSnackBar.TakeFromCascade(nameof(ClearOnNavigation), ClearOnNavigation.Value, static s => s.ClearOnNavigation, static (s, v) => s.ClearOnNavigation = v);
         }
 
-        if (DismissAriaLabel.HasValue() && bitSnackBar.HasNotBeenSet(nameof(DismissAriaLabel)))
+        if (DismissAriaLabel.HasValue())
         {
-            bitSnackBar.DismissAriaLabel = DismissAriaLabel;
+            bitSnackBar.TakeFromCascade(nameof(DismissAriaLabel), DismissAriaLabel, static s => s.DismissAriaLabel, static (s, v) => s.DismissAriaLabel = v);
         }
 
-        if (DismissIcon is not null && bitSnackBar.HasNotBeenSet(nameof(DismissIcon)))
+        if (DismissIcon is not null)
         {
-            bitSnackBar.DismissIcon = DismissIcon;
+            bitSnackBar.TakeFromCascade(nameof(DismissIcon), DismissIcon, static s => s.DismissIcon, static (s, v) => s.DismissIcon = v);
         }
 
-        if (DismissIconName.HasValue() && bitSnackBar.HasNotBeenSet(nameof(DismissIconName)))
+        if (DismissIconName.HasValue())
         {
-            bitSnackBar.DismissIconName = DismissIconName;
+            bitSnackBar.TakeFromCascade(nameof(DismissIconName), DismissIconName, static s => s.DismissIconName, static (s, v) => s.DismissIconName = v);
         }
 
-        if (DismissOnClick.HasValue && bitSnackBar.HasNotBeenSet(nameof(DismissOnClick)))
+        if (DismissOnClick.HasValue)
         {
-            bitSnackBar.DismissOnClick = DismissOnClick.Value;
+            bitSnackBar.TakeFromCascade(nameof(DismissOnClick), DismissOnClick.Value, static s => s.DismissOnClick, static (s, v) => s.DismissOnClick = v);
         }
 
-        if (HideDismiss.HasValue && bitSnackBar.HasNotBeenSet(nameof(HideDismiss)))
+        if (HideDismiss.HasValue)
         {
-            bitSnackBar.HideDismiss = HideDismiss.Value;
+            bitSnackBar.TakeFromCascade(nameof(HideDismiss), HideDismiss.Value, static s => s.HideDismiss, static (s, v) => s.HideDismiss = v);
         }
 
-        if (HideProgress.HasValue && bitSnackBar.HasNotBeenSet(nameof(HideProgress)))
+        if (HideProgress.HasValue)
         {
-            bitSnackBar.HideProgress = HideProgress.Value;
+            bitSnackBar.TakeFromCascade(nameof(HideProgress), HideProgress.Value, static s => s.HideProgress, static (s, v) => s.HideProgress = v);
         }
 
-        if (Hotkey is not null && bitSnackBar.HasNotBeenSet(nameof(Hotkey)))
+        if (Hotkey is not null)
         {
-            bitSnackBar.Hotkey = Hotkey;
+            bitSnackBar.TakeFromCascade(nameof(Hotkey), Hotkey, static s => s.Hotkey, static (s, v) => s.Hotkey = v);
         }
 
-        if (Icon is not null && bitSnackBar.HasNotBeenSet(nameof(Icon)))
+        if (Icon is not null)
         {
-            bitSnackBar.Icon = Icon;
+            bitSnackBar.TakeFromCascade(nameof(Icon), Icon, static s => s.Icon, static (s, v) => s.Icon = v);
         }
 
-        if (IconName.HasValue() && bitSnackBar.HasNotBeenSet(nameof(IconName)))
+        if (IconName.HasValue())
         {
-            bitSnackBar.IconName = IconName;
+            bitSnackBar.TakeFromCascade(nameof(IconName), IconName, static s => s.IconName, static (s, v) => s.IconName = v);
         }
 
-        if (MaxItems.HasValue && bitSnackBar.HasNotBeenSet(nameof(MaxItems)))
+        if (MaxItems.HasValue)
         {
-            bitSnackBar.MaxItems = MaxItems.Value;
+            bitSnackBar.TakeFromCascade(nameof(MaxItems), MaxItems.Value, static s => s.MaxItems, static (s, v) => s.MaxItems = v);
         }
 
-        if (MaxWidth.HasValue() && bitSnackBar.HasNotBeenSet(nameof(MaxWidth)))
+        if (MaxWidth.HasValue())
         {
-            bitSnackBar.MaxWidth = MaxWidth;
-
-            bitSnackBar.StyleBuilder.Reset();
+            bitSnackBar.TakeFromCascade(nameof(MaxWidth), MaxWidth, static s => s.MaxWidth, static (s, v) => s.MaxWidth = v);
         }
 
-        if (Multiline.HasValue && bitSnackBar.HasNotBeenSet(nameof(Multiline)))
+        if (Multiline.HasValue)
         {
-            bitSnackBar.Multiline = Multiline.Value;
+            bitSnackBar.TakeFromCascade(nameof(Multiline), Multiline.Value, static s => s.Multiline, static (s, v) => s.Multiline = v);
         }
 
-        if (NewestOnTop.HasValue && bitSnackBar.HasNotBeenSet(nameof(NewestOnTop)))
+        if (NewestOnTop.HasValue)
         {
-            bitSnackBar.NewestOnTop = NewestOnTop.Value;
+            bitSnackBar.TakeFromCascade(nameof(NewestOnTop), NewestOnTop.Value, static s => s.NewestOnTop, static (s, v) => s.NewestOnTop = v);
         }
 
-        if (Offset.HasValue() && bitSnackBar.HasNotBeenSet(nameof(Offset)))
+        if (Offset.HasValue())
         {
-            bitSnackBar.Offset = Offset;
-
-            bitSnackBar.StyleBuilder.Reset();
+            bitSnackBar.TakeFromCascade(nameof(Offset), Offset, static s => s.Offset, static (s, v) => s.Offset = v);
         }
 
-        if (OverflowBehavior.HasValue && bitSnackBar.HasNotBeenSet(nameof(OverflowBehavior)))
+        if (OverflowBehavior.HasValue)
         {
-            bitSnackBar.OverflowBehavior = OverflowBehavior.Value;
+            bitSnackBar.TakeFromCascade(nameof(OverflowBehavior), OverflowBehavior.Value, static s => s.OverflowBehavior, static (s, v) => s.OverflowBehavior = v);
         }
 
-        if (PauseOnHover.HasValue && bitSnackBar.HasNotBeenSet(nameof(PauseOnHover)))
+        if (PauseOnHover.HasValue)
         {
-            bitSnackBar.PauseOnHover = PauseOnHover.Value;
+            bitSnackBar.TakeFromCascade(nameof(PauseOnHover), PauseOnHover.Value, static s => s.PauseOnHover, static (s, v) => s.PauseOnHover = v);
         }
 
-        if (PauseOnPageHidden.HasValue && bitSnackBar.HasNotBeenSet(nameof(PauseOnPageHidden)))
+        if (PauseOnPageHidden.HasValue)
         {
-            bitSnackBar.PauseOnPageHidden = PauseOnPageHidden.Value;
+            bitSnackBar.TakeFromCascade(nameof(PauseOnPageHidden), PauseOnPageHidden.Value, static s => s.PauseOnPageHidden, static (s, v) => s.PauseOnPageHidden = v);
         }
 
-        if (PauseOnWindowBlur.HasValue && bitSnackBar.HasNotBeenSet(nameof(PauseOnWindowBlur)))
+        if (PauseOnWindowBlur.HasValue)
         {
-            bitSnackBar.PauseOnWindowBlur = PauseOnWindowBlur.Value;
+            bitSnackBar.TakeFromCascade(nameof(PauseOnWindowBlur), PauseOnWindowBlur.Value, static s => s.PauseOnWindowBlur, static (s, v) => s.PauseOnWindowBlur = v);
         }
 
-        if (Persistent.HasValue && bitSnackBar.HasNotBeenSet(nameof(Persistent)))
+        if (Persistent.HasValue)
         {
-            bitSnackBar.Persistent = Persistent.Value;
+            bitSnackBar.TakeFromCascade(nameof(Persistent), Persistent.Value, static s => s.Persistent, static (s, v) => s.Persistent = v);
         }
 
-        if (Position.HasValue && bitSnackBar.HasNotBeenSet(nameof(Position)))
+        if (Position.HasValue)
         {
-            bitSnackBar.Position = Position.Value;
-
-            bitSnackBar.ClassBuilder.Reset();
+            bitSnackBar.TakeFromCascade(nameof(Position), Position.Value, static s => s.Position, static (s, v) => s.Position = v);
         }
 
-        if (PreventDuplicates.HasValue && bitSnackBar.HasNotBeenSet(nameof(PreventDuplicates)))
+        if (PreventDuplicates.HasValue)
         {
-            bitSnackBar.PreventDuplicates = PreventDuplicates.Value;
+            bitSnackBar.TakeFromCascade(nameof(PreventDuplicates), PreventDuplicates.Value, static s => s.PreventDuplicates, static (s, v) => s.PreventDuplicates = v);
         }
 
-        if (ReverseProgress.HasValue && bitSnackBar.HasNotBeenSet(nameof(ReverseProgress)))
+        if (ReverseProgress.HasValue)
         {
-            bitSnackBar.ReverseProgress = ReverseProgress.Value;
+            bitSnackBar.TakeFromCascade(nameof(ReverseProgress), ReverseProgress.Value, static s => s.ReverseProgress, static (s, v) => s.ReverseProgress = v);
         }
 
-        if (Role.HasValue() && bitSnackBar.HasNotBeenSet(nameof(Role)))
+        if (Role.HasValue())
         {
-            bitSnackBar.Role = Role;
+            bitSnackBar.TakeFromCascade(nameof(Role), Role, static s => s.Role, static (s, v) => s.Role = v);
         }
 
-        if (ShowIcon.HasValue && bitSnackBar.HasNotBeenSet(nameof(ShowIcon)))
+        if (ShowIcon.HasValue)
         {
-            bitSnackBar.ShowIcon = ShowIcon.Value;
+            bitSnackBar.TakeFromCascade(nameof(ShowIcon), ShowIcon.Value, static s => s.ShowIcon, static (s, v) => s.ShowIcon = v);
         }
 
-        if (Size.HasValue && bitSnackBar.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue)
         {
-            bitSnackBar.Size = Size.Value;
+            bitSnackBar.TakeFromCascade(nameof(Size), Size.Value, static s => s.Size, static (s, v) => s.Size = v);
         }
 
-        if (Styles is not null && bitSnackBar.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitSnackBar.Styles = Styles;
-
-            bitSnackBar.StyleBuilder.Reset();
+            bitSnackBar.TakeFromCascade(nameof(Styles), Styles, static s => s.Styles, static (s, v) => s.Styles = v);
         }
 
-        if (SwipeToDismiss.HasValue && bitSnackBar.HasNotBeenSet(nameof(SwipeToDismiss)))
+        if (SwipeToDismiss.HasValue)
         {
-            bitSnackBar.SwipeToDismiss = SwipeToDismiss.Value;
+            bitSnackBar.TakeFromCascade(nameof(SwipeToDismiss), SwipeToDismiss.Value, static s => s.SwipeToDismiss, static (s, v) => s.SwipeToDismiss = v);
         }
 
-        if (SwipeThreshold.HasValue && bitSnackBar.HasNotBeenSet(nameof(SwipeThreshold)))
+        if (SwipeThreshold.HasValue)
         {
-            bitSnackBar.SwipeThreshold = SwipeThreshold.Value;
+            bitSnackBar.TakeFromCascade(nameof(SwipeThreshold), SwipeThreshold.Value, static s => s.SwipeThreshold, static (s, v) => s.SwipeThreshold = v);
         }
 
-        if (TransitionDuration.HasValue && bitSnackBar.HasNotBeenSet(nameof(TransitionDuration)))
+        if (TransitionDuration.HasValue)
         {
-            bitSnackBar.TransitionDuration = TransitionDuration.Value;
-
-            bitSnackBar.StyleBuilder.Reset();
+            bitSnackBar.TakeFromCascade(nameof(TransitionDuration), TransitionDuration.Value, static s => s.TransitionDuration, static (s, v) => s.TransitionDuration = v);
         }
 
-        if (Variant.HasValue && bitSnackBar.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue)
         {
-            bitSnackBar.Variant = Variant.Value;
+            bitSnackBar.TakeFromCascade(nameof(Variant), Variant.Value, static s => s.Variant, static (s, v) => s.Variant = v);
         }
     }
 }

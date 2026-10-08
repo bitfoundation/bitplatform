@@ -168,83 +168,69 @@ public class BitImageParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitImage);
 
-        if (AspectRatio.HasValue() && bitImage.HasNotBeenSet(nameof(AspectRatio)))
+        if (AspectRatio.HasValue())
         {
-            bitImage.AspectRatio = AspectRatio;
-
-            bitImage.StyleBuilder.Reset();
+            bitImage.TakeFromCascade(nameof(AspectRatio), AspectRatio, static i => i.AspectRatio, static (i, v) => i.AspectRatio = v);
         }
 
-        if (Bordered.HasValue && bitImage.HasNotBeenSet(nameof(Bordered)))
+        if (Bordered.HasValue)
         {
-            bitImage.Bordered = Bordered.Value;
-
-            bitImage.ClassBuilder.Reset();
+            bitImage.TakeFromCascade(nameof(Bordered), Bordered.Value, static i => i.Bordered, static (i, v) => i.Bordered = v);
         }
 
-        if (Circular.HasValue && bitImage.HasNotBeenSet(nameof(Circular)))
+        if (Circular.HasValue)
         {
-            bitImage.Circular = Circular.Value;
-
-            bitImage.ClassBuilder.Reset();
+            bitImage.TakeFromCascade(nameof(Circular), Circular.Value, static i => i.Circular, static (i, v) => i.Circular = v);
         }
 
-        if (Classes is not null && bitImage.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitImage.Classes = Classes;
-
-            bitImage.ClassBuilder.Reset();
+            bitImage.TakeFromCascade(nameof(Classes), Classes, static i => i.Classes, static (i, v) => i.Classes = v);
         }
 
-        if (Cover.HasValue && bitImage.HasNotBeenSet(nameof(Cover)))
+        if (Cover.HasValue)
         {
-            bitImage.Cover = Cover.Value;
+            bitImage.TakeFromCascade(nameof(Cover), Cover.Value, static i => i.Cover, static (i, v) => i.Cover = v);
         }
 
-        if (CrossOrigin.HasValue && bitImage.HasNotBeenSet(nameof(CrossOrigin)))
+        if (CrossOrigin.HasValue)
         {
-            bitImage.CrossOrigin = CrossOrigin.Value;
+            bitImage.TakeFromCascade(nameof(CrossOrigin), CrossOrigin.Value, static i => i.CrossOrigin, static (i, v) => i.CrossOrigin = v);
         }
 
-        if (Decoding.HasValue && bitImage.HasNotBeenSet(nameof(Decoding)))
+        if (Decoding.HasValue)
         {
-            bitImage.Decoding = Decoding.Value;
+            bitImage.TakeFromCascade(nameof(Decoding), Decoding.Value, static i => i.Decoding, static (i, v) => i.Decoding = v);
         }
 
-        if (Draggable.HasValue && bitImage.HasNotBeenSet(nameof(Draggable)))
+        if (Draggable.HasValue)
         {
-            bitImage.Draggable = Draggable.Value;
+            bitImage.TakeFromCascade(nameof(Draggable), Draggable.Value, static i => i.Draggable, static (i, v) => i.Draggable = v);
         }
 
-        if (FadeIn.HasValue && bitImage.HasNotBeenSet(nameof(FadeIn)))
+        if (FadeIn.HasValue)
         {
-            bitImage.FadeIn = FadeIn.Value;
-
-            bitImage.ClassBuilder.Reset();
+            bitImage.TakeFromCascade(nameof(FadeIn), FadeIn.Value, static i => i.FadeIn, static (i, v) => i.FadeIn = v);
         }
 
-        if (FallbackSrc.HasValue() && bitImage.HasNotBeenSet(nameof(FallbackSrc)))
+        if (FallbackSrc.HasValue())
         {
-            bitImage.FallbackSrc = FallbackSrc;
+            bitImage.TakeFromCascade(nameof(FallbackSrc), FallbackSrc, static i => i.FallbackSrc, static (i, v) => i.FallbackSrc = v);
         }
 
-        if (FetchPriority.HasValue && bitImage.HasNotBeenSet(nameof(FetchPriority)))
+        if (FetchPriority.HasValue)
         {
-            bitImage.FetchPriority = FetchPriority.Value;
+            bitImage.TakeFromCascade(nameof(FetchPriority), FetchPriority.Value, static i => i.FetchPriority, static (i, v) => i.FetchPriority = v);
         }
 
-        if (Fluid.HasValue && bitImage.HasNotBeenSet(nameof(Fluid)))
+        if (Fluid.HasValue)
         {
-            bitImage.Fluid = Fluid.Value;
-
-            bitImage.ClassBuilder.Reset();
+            bitImage.TakeFromCascade(nameof(Fluid), Fluid.Value, static i => i.Fluid, static (i, v) => i.Fluid = v);
         }
 
-        if (Height.HasValue() && bitImage.HasNotBeenSet(nameof(Height)))
+        if (Height.HasValue())
         {
-            bitImage.Height = Height;
-
-            bitImage.StyleBuilder.Reset();
+            bitImage.TakeFromCascade(nameof(Height), Height, static i => i.Height, static (i, v) => i.Height = v);
         }
 
         // The cascaded attributes are merged into a copy rather than into the image's own dictionary: that one
@@ -268,64 +254,54 @@ public class BitImageParams : BitComponentBaseParams, IBitComponentParams
             }
         }
 
-        if (ImageFit.HasValue && bitImage.HasNotBeenSet(nameof(ImageFit)))
+        if (ImageFit.HasValue)
         {
-            bitImage.ImageFit = ImageFit.Value;
+            bitImage.TakeFromCascade(nameof(ImageFit), ImageFit.Value, static i => i.ImageFit, static (i, v) => i.ImageFit = v);
         }
 
-        if (ImagePosition.HasValue() && bitImage.HasNotBeenSet(nameof(ImagePosition)))
+        if (ImagePosition.HasValue())
         {
-            bitImage.ImagePosition = ImagePosition;
+            bitImage.TakeFromCascade(nameof(ImagePosition), ImagePosition, static i => i.ImagePosition, static (i, v) => i.ImagePosition = v);
         }
 
-        if (Loading.HasValue && bitImage.HasNotBeenSet(nameof(Loading)))
+        if (Loading.HasValue)
         {
-            bitImage.Loading = Loading.Value;
+            bitImage.TakeFromCascade(nameof(Loading), Loading.Value, static i => i.Loading, static (i, v) => i.Loading = v);
         }
 
-        if (MaximizeFrame.HasValue && bitImage.HasNotBeenSet(nameof(MaximizeFrame)))
+        if (MaximizeFrame.HasValue)
         {
-            bitImage.MaximizeFrame = MaximizeFrame.Value;
-
-            bitImage.ClassBuilder.Reset();
+            bitImage.TakeFromCascade(nameof(MaximizeFrame), MaximizeFrame.Value, static i => i.MaximizeFrame, static (i, v) => i.MaximizeFrame = v);
         }
 
-        if (ReferrerPolicy.HasValue && bitImage.HasNotBeenSet(nameof(ReferrerPolicy)))
+        if (ReferrerPolicy.HasValue)
         {
-            bitImage.ReferrerPolicy = ReferrerPolicy.Value;
+            bitImage.TakeFromCascade(nameof(ReferrerPolicy), ReferrerPolicy.Value, static i => i.ReferrerPolicy, static (i, v) => i.ReferrerPolicy = v);
         }
 
-        if (Rounded.HasValue && bitImage.HasNotBeenSet(nameof(Rounded)))
+        if (Rounded.HasValue)
         {
-            bitImage.Rounded = Rounded.Value;
-
-            bitImage.ClassBuilder.Reset();
+            bitImage.TakeFromCascade(nameof(Rounded), Rounded.Value, static i => i.Rounded, static (i, v) => i.Rounded = v);
         }
 
-        if (Shadow.HasValue && bitImage.HasNotBeenSet(nameof(Shadow)))
+        if (Shadow.HasValue)
         {
-            bitImage.Shadow = Shadow.Value;
-
-            bitImage.ClassBuilder.Reset();
+            bitImage.TakeFromCascade(nameof(Shadow), Shadow.Value, static i => i.Shadow, static (i, v) => i.Shadow = v);
         }
 
-        if (StartVisible.HasValue && bitImage.HasNotBeenSet(nameof(StartVisible)))
+        if (StartVisible.HasValue)
         {
-            bitImage.StartVisible = StartVisible.Value;
+            bitImage.TakeFromCascade(nameof(StartVisible), StartVisible.Value, static i => i.StartVisible, static (i, v) => i.StartVisible = v);
         }
 
-        if (Styles is not null && bitImage.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitImage.Styles = Styles;
-
-            bitImage.StyleBuilder.Reset();
+            bitImage.TakeFromCascade(nameof(Styles), Styles, static i => i.Styles, static (i, v) => i.Styles = v);
         }
 
-        if (Width.HasValue() && bitImage.HasNotBeenSet(nameof(Width)))
+        if (Width.HasValue())
         {
-            bitImage.Width = Width;
-
-            bitImage.StyleBuilder.Reset();
+            bitImage.TakeFromCascade(nameof(Width), Width, static i => i.Width, static (i, v) => i.Width = v);
         }
     }
 }

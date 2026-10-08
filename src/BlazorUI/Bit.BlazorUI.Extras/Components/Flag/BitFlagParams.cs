@@ -175,163 +175,109 @@ public class BitFlagParams : BitComponentBaseParams, IBitComponentParams
         var height = ownSize ? null : Height;
         var width = ownSize || (ownAspectRatio && height.HasValue()) ? null : Width;
 
-        // This runs on every render of every flag under the BitParams - a country picker renders two hundred of them -
-        // so a value that drives the class or the style of the root only resets the builders when it differs from the
-        // one the flag already holds: an unchanged one would rebuild both strings on every render for nothing.
-        if (AspectRatio.HasValue() && bitFlag.HasNotBeenSet(nameof(AspectRatio)))
+        // Two lengths of the flag's own are its proportions already.
+        if (AspectRatio.HasValue())
         {
-            // Two lengths of the flag's own are its proportions already.
-            var aspectRatio = ownWidth && ownHeight ? null : AspectRatio;
-
-            if (bitFlag.AspectRatio != aspectRatio)
-            {
-                bitFlag.AspectRatio = aspectRatio;
-
-                bitFlag.ClassBuilder.Reset();
-                bitFlag.StyleBuilder.Reset();
-            }
+            bitFlag.TakeFromCascade(nameof(AspectRatio), ownWidth && ownHeight ? null : AspectRatio, static f => f.AspectRatio, static (f, v) => f.AspectRatio = v);
         }
 
-        if (AutoAlt.HasValue && bitFlag.HasNotBeenSet(nameof(AutoAlt)))
+        if (AutoAlt.HasValue)
         {
-            bitFlag.AutoAlt = AutoAlt.Value;
+            bitFlag.TakeFromCascade(nameof(AutoAlt), AutoAlt.Value, static f => f.AutoAlt, static (f, v) => f.AutoAlt = v);
         }
 
-        if (AutoTitle.HasValue && bitFlag.HasNotBeenSet(nameof(AutoTitle)))
+        if (AutoTitle.HasValue)
         {
-            bitFlag.AutoTitle = AutoTitle.Value;
+            bitFlag.TakeFromCascade(nameof(AutoTitle), AutoTitle.Value, static f => f.AutoTitle, static (f, v) => f.AutoTitle = v);
         }
 
-        if (Bordered.HasValue && bitFlag.HasNotBeenSet(nameof(Bordered)) && bitFlag.Bordered != Bordered.Value)
+        if (Bordered.HasValue)
         {
-            bitFlag.Bordered = Bordered.Value;
-
-            bitFlag.ClassBuilder.Reset();
-            bitFlag.StyleBuilder.Reset();
+            bitFlag.TakeFromCascade(nameof(Bordered), Bordered.Value, static f => f.Bordered, static (f, v) => f.Bordered = v);
         }
 
-        if (Circular.HasValue && bitFlag.HasNotBeenSet(nameof(Circular)))
+        if (Circular.HasValue)
         {
-            var circular = Circular.Value && ownRounded is false;
-
-            if (bitFlag.Circular != circular)
-            {
-                bitFlag.Circular = circular;
-
-                bitFlag.ClassBuilder.Reset();
-                bitFlag.StyleBuilder.Reset();
-            }
+            bitFlag.TakeFromCascade(nameof(Circular), Circular.Value && ownRounded is false, static f => f.Circular, static (f, v) => f.Circular = v);
         }
 
-        if (Classes is not null && bitFlag.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitFlag.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitFlag.Classes = Classes;
-
-            bitFlag.ClassBuilder.Reset();
+            bitFlag.TakeFromCascade(nameof(Classes), Classes, static f => f.Classes, static (f, v) => f.Classes = v);
         }
 
-        if (Emoji.HasValue && bitFlag.HasNotBeenSet(nameof(Emoji)))
+        if (Emoji.HasValue)
         {
-            var emoji = Emoji.Value && ownImage is false;
-
-            if (bitFlag.Emoji != emoji)
-            {
-                bitFlag.Emoji = emoji;
-
-                bitFlag.ClassBuilder.Reset();
-                bitFlag.StyleBuilder.Reset();
-            }
+            bitFlag.TakeFromCascade(nameof(Emoji), Emoji.Value && ownImage is false, static f => f.Emoji, static (f, v) => f.Emoji = v);
         }
 
-        if (FallbackTemplate is not null && bitFlag.HasNotBeenSet(nameof(FallbackTemplate)))
+        if (FallbackTemplate is not null)
         {
-            bitFlag.FallbackTemplate = FallbackTemplate;
+            bitFlag.TakeFromCascade(nameof(FallbackTemplate), FallbackTemplate, static f => f.FallbackTemplate, static (f, v) => f.FallbackTemplate = v);
         }
 
-        if (Fit.HasValue && bitFlag.HasNotBeenSet(nameof(Fit)) && bitFlag.Fit != Fit.Value)
+        if (Fit.HasValue)
         {
-            bitFlag.Fit = Fit.Value;
-
-            // Whether the frame is cut to the flag, which is written into its style, follows the fit too.
-            bitFlag.ClassBuilder.Reset();
-            bitFlag.StyleBuilder.Reset();
+            bitFlag.TakeFromCascade(nameof(Fit), Fit.Value, static f => f.Fit, static (f, v) => f.Fit = v);
         }
 
-        if (Grayscale.HasValue && bitFlag.HasNotBeenSet(nameof(Grayscale)) && bitFlag.Grayscale != Grayscale.Value)
+        if (Grayscale.HasValue)
         {
-            bitFlag.Grayscale = Grayscale.Value;
-
-            bitFlag.ClassBuilder.Reset();
+            bitFlag.TakeFromCascade(nameof(Grayscale), Grayscale.Value, static f => f.Grayscale, static (f, v) => f.Grayscale = v);
         }
 
-        if (Height.HasValue() && bitFlag.HasNotBeenSet(nameof(Height)) && bitFlag.Height != height)
+        if (Height.HasValue())
         {
-            bitFlag.Height = height;
-
-            bitFlag.ClassBuilder.Reset();
-            bitFlag.StyleBuilder.Reset();
+            bitFlag.TakeFromCascade(nameof(Height), height, static f => f.Height, static (f, v) => f.Height = v);
         }
 
         // The ImageAttributes are not written onto the flag: it renders the cascaded ones under its own, which is
         // what keeps both dictionaries uncopied and untouched, and a cascaded attribute taken away or changed since
         // gone or changed on the very next render.
 
-        if (ImageSet.HasValue && bitFlag.HasNotBeenSet(nameof(ImageSet)))
+        if (ImageSet.HasValue)
         {
-            bitFlag.ImageSet = ImageSet.Value;
+            bitFlag.TakeFromCascade(nameof(ImageSet), ImageSet.Value, static f => f.ImageSet, static (f, v) => f.ImageSet = v);
         }
 
-        if (ImageSize.HasValue && bitFlag.HasNotBeenSet(nameof(ImageSize)))
+        if (ImageSize.HasValue)
         {
-            bitFlag.ImageSize = ImageSize.Value;
+            bitFlag.TakeFromCascade(nameof(ImageSize), ImageSize.Value, static f => f.ImageSize, static (f, v) => f.ImageSize = v);
         }
 
-        if (Loading.HasValue && bitFlag.HasNotBeenSet(nameof(Loading)))
+        if (Loading.HasValue)
         {
-            bitFlag.Loading = Loading.Value;
+            bitFlag.TakeFromCascade(nameof(Loading), Loading.Value, static f => f.Loading, static (f, v) => f.Loading = v);
         }
 
-        if (Rounded.HasValue && bitFlag.HasNotBeenSet(nameof(Rounded)) && bitFlag.Rounded != Rounded.Value)
+        if (Rounded.HasValue)
         {
-            bitFlag.Rounded = Rounded.Value;
-
-            bitFlag.ClassBuilder.Reset();
-            bitFlag.StyleBuilder.Reset();
+            bitFlag.TakeFromCascade(nameof(Rounded), Rounded.Value, static f => f.Rounded, static (f, v) => f.Rounded = v);
         }
 
-        if (Shadow.HasValue && bitFlag.HasNotBeenSet(nameof(Shadow)) && bitFlag.Shadow != Shadow.Value)
+        if (Shadow.HasValue)
         {
-            bitFlag.Shadow = Shadow.Value;
-
-            bitFlag.ClassBuilder.Reset();
-            bitFlag.StyleBuilder.Reset();
+            bitFlag.TakeFromCascade(nameof(Shadow), Shadow.Value, static f => f.Shadow, static (f, v) => f.Shadow = v);
         }
 
-        if (Size.HasValue && bitFlag.HasNotBeenSet(nameof(Size)) && bitFlag.Size != Size.Value)
+        if (Size.HasValue)
         {
-            bitFlag.Size = Size.Value;
-
-            bitFlag.ClassBuilder.Reset();
+            bitFlag.TakeFromCascade(nameof(Size), Size.Value, static f => f.Size, static (f, v) => f.Size = v);
         }
 
-        if (SrcPattern.HasValue() && bitFlag.HasNotBeenSet(nameof(SrcPattern)))
+        if (SrcPattern.HasValue())
         {
-            bitFlag.SrcPattern = ownImageSet ? null : SrcPattern;
+            bitFlag.TakeFromCascade(nameof(SrcPattern), ownImageSet ? null : SrcPattern, static f => f.SrcPattern, static (f, v) => f.SrcPattern = v);
         }
 
-        if (Styles is not null && bitFlag.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitFlag.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitFlag.Styles = Styles;
-
-            bitFlag.StyleBuilder.Reset();
+            bitFlag.TakeFromCascade(nameof(Styles), Styles, static f => f.Styles, static (f, v) => f.Styles = v);
         }
 
-        if (Width.HasValue() && bitFlag.HasNotBeenSet(nameof(Width)) && bitFlag.Width != width)
+        if (Width.HasValue())
         {
-            bitFlag.Width = width;
-
-            bitFlag.ClassBuilder.Reset();
-            bitFlag.StyleBuilder.Reset();
+            bitFlag.TakeFromCascade(nameof(Width), width, static f => f.Width, static (f, v) => f.Width = v);
         }
 
         static bool IsOwn(BitFlag flag, string name) => flag.HasNotBeenSet(name) is false;

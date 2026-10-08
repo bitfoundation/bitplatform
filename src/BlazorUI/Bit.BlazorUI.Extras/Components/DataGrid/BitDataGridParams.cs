@@ -257,224 +257,214 @@ public class BitDataGridParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitDataGrid);
 
-        if (AllowUnsorted.HasValue && bitDataGrid.HasNotBeenSet(nameof(AllowUnsorted)))
+        if (AllowUnsorted.HasValue)
         {
-            bitDataGrid.AllowUnsorted = AllowUnsorted.Value;
+            bitDataGrid.TakeFromCascade(nameof(AllowUnsorted), AllowUnsorted.Value, static d => d.AllowUnsorted, static (d, v) => d.AllowUnsorted = v);
         }
 
-        if (Bordered.HasValue && bitDataGrid.HasNotBeenSet(nameof(Bordered)))
+        if (Bordered.HasValue)
         {
-            bitDataGrid.Bordered = Bordered.Value;
-
-            bitDataGrid.ClassBuilder.Reset();
+            bitDataGrid.TakeFromCascade(nameof(Bordered), Bordered.Value, static d => d.Bordered, static (d, v) => d.Bordered = v);
         }
 
-        if (CellNavigation.HasValue && bitDataGrid.HasNotBeenSet(nameof(CellNavigation)))
+        if (CellNavigation.HasValue)
         {
-            bitDataGrid.CellNavigation = CellNavigation.Value;
+            bitDataGrid.TakeFromCascade(nameof(CellNavigation), CellNavigation.Value, static d => d.CellNavigation, static (d, v) => d.CellNavigation = v);
         }
 
-        if (Classes is not null && bitDataGrid.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitDataGrid.Classes = Classes;
-
-            bitDataGrid.ClassBuilder.Reset();
+            bitDataGrid.TakeFromCascade(nameof(Classes), Classes, static d => d.Classes, static (d, v) => d.Classes = v);
         }
 
-        if (ClipboardCopy.HasValue && bitDataGrid.HasNotBeenSet(nameof(ClipboardCopy)))
+        if (ClipboardCopy.HasValue)
         {
-            bitDataGrid.ClipboardCopy = ClipboardCopy.Value;
+            bitDataGrid.TakeFromCascade(nameof(ClipboardCopy), ClipboardCopy.Value, static d => d.ClipboardCopy, static (d, v) => d.ClipboardCopy = v);
         }
 
-        if (EmptyTemplate is not null && bitDataGrid.HasNotBeenSet(nameof(EmptyTemplate)))
+        if (EmptyTemplate is not null)
         {
-            bitDataGrid.EmptyTemplate = EmptyTemplate;
+            bitDataGrid.TakeFromCascade(nameof(EmptyTemplate), EmptyTemplate, static d => d.EmptyTemplate, static (d, v) => d.EmptyTemplate = v);
         }
 
-        if (ExcelExportStyled.HasValue && bitDataGrid.HasNotBeenSet(nameof(ExcelExportStyled)))
+        if (ExcelExportStyled.HasValue)
         {
-            bitDataGrid.ExcelExportStyled = ExcelExportStyled.Value;
+            bitDataGrid.TakeFromCascade(nameof(ExcelExportStyled), ExcelExportStyled.Value, static d => d.ExcelExportStyled, static (d, v) => d.ExcelExportStyled = v);
         }
 
-        if (ExpandDetailOnRowClick.HasValue && bitDataGrid.HasNotBeenSet(nameof(ExpandDetailOnRowClick)))
+        if (ExpandDetailOnRowClick.HasValue)
         {
-            bitDataGrid.ExpandDetailOnRowClick = ExpandDetailOnRowClick.Value;
+            bitDataGrid.TakeFromCascade(nameof(ExpandDetailOnRowClick), ExpandDetailOnRowClick.Value, static d => d.ExpandDetailOnRowClick, static (d, v) => d.ExpandDetailOnRowClick = v);
         }
 
-        if (FilterDebounce.HasValue && bitDataGrid.HasNotBeenSet(nameof(FilterDebounce)))
+        if (FilterDebounce.HasValue)
         {
-            bitDataGrid.FilterDebounce = FilterDebounce.Value;
+            bitDataGrid.TakeFromCascade(nameof(FilterDebounce), FilterDebounce.Value, static d => d.FilterDebounce, static (d, v) => d.FilterDebounce = v);
         }
 
-        if (FilterOperators.HasValue && bitDataGrid.HasNotBeenSet(nameof(FilterOperators)))
+        if (FilterOperators.HasValue)
         {
-            bitDataGrid.FilterOperators = FilterOperators.Value;
+            bitDataGrid.TakeFromCascade(nameof(FilterOperators), FilterOperators.Value, static d => d.FilterOperators, static (d, v) => d.FilterOperators = v);
         }
 
-        if (Filterable.HasValue && bitDataGrid.HasNotBeenSet(nameof(Filterable)))
+        if (Filterable.HasValue)
         {
-            bitDataGrid.Filterable = Filterable.Value;
+            bitDataGrid.TakeFromCascade(nameof(Filterable), Filterable.Value, static d => d.Filterable, static (d, v) => d.Filterable = v);
         }
 
-        if (Groupable.HasValue && bitDataGrid.HasNotBeenSet(nameof(Groupable)))
+        if (Groupable.HasValue)
         {
-            bitDataGrid.Groupable = Groupable.Value;
+            bitDataGrid.TakeFromCascade(nameof(Groupable), Groupable.Value, static d => d.Groupable, static (d, v) => d.Groupable = v);
         }
 
-        if (GroupsInitiallyCollapsed.HasValue && bitDataGrid.HasNotBeenSet(nameof(GroupsInitiallyCollapsed)))
+        if (GroupsInitiallyCollapsed.HasValue)
         {
-            bitDataGrid.GroupsInitiallyCollapsed = GroupsInitiallyCollapsed.Value;
+            bitDataGrid.TakeFromCascade(nameof(GroupsInitiallyCollapsed), GroupsInitiallyCollapsed.Value, static d => d.GroupsInitiallyCollapsed, static (d, v) => d.GroupsInitiallyCollapsed = v);
         }
 
-        if (Height.HasValue() && bitDataGrid.HasNotBeenSet(nameof(Height)))
+        if (Height.HasValue())
         {
-            bitDataGrid.Height = Height;
+            bitDataGrid.TakeFromCascade(nameof(Height), Height, static d => d.Height, static (d, v) => d.Height = v);
         }
 
-        if (Hoverable.HasValue && bitDataGrid.HasNotBeenSet(nameof(Hoverable)))
+        if (Hoverable.HasValue)
         {
-            bitDataGrid.Hoverable = Hoverable.Value;
-
-            bitDataGrid.ClassBuilder.Reset();
+            bitDataGrid.TakeFromCascade(nameof(Hoverable), Hoverable.Value, static d => d.Hoverable, static (d, v) => d.Hoverable = v);
         }
 
-        if (LoadMoreBatchSize.HasValue && bitDataGrid.HasNotBeenSet(nameof(LoadMoreBatchSize)))
+        if (LoadMoreBatchSize.HasValue)
         {
-            bitDataGrid.LoadMoreBatchSize = LoadMoreBatchSize.Value;
+            bitDataGrid.TakeFromCascade(nameof(LoadMoreBatchSize), LoadMoreBatchSize.Value, static d => d.LoadMoreBatchSize, static (d, v) => d.LoadMoreBatchSize = v);
         }
 
-        if (LoadingTemplate is not null && bitDataGrid.HasNotBeenSet(nameof(LoadingTemplate)))
+        if (LoadingTemplate is not null)
         {
-            bitDataGrid.LoadingTemplate = LoadingTemplate;
+            bitDataGrid.TakeFromCascade(nameof(LoadingTemplate), LoadingTemplate, static d => d.LoadingTemplate, static (d, v) => d.LoadingTemplate = v);
         }
 
-        if (MultiSort.HasValue && bitDataGrid.HasNotBeenSet(nameof(MultiSort)))
+        if (MultiSort.HasValue)
         {
-            bitDataGrid.MultiSort = MultiSort.Value;
+            bitDataGrid.TakeFromCascade(nameof(MultiSort), MultiSort.Value, static d => d.MultiSort, static (d, v) => d.MultiSort = v);
         }
 
-        if (PageSize.HasValue && bitDataGrid.HasNotBeenSet(nameof(PageSize)))
+        if (PageSize.HasValue)
         {
-            bitDataGrid.PageSize = PageSize.Value;
+            bitDataGrid.TakeFromCascade(nameof(PageSize), PageSize.Value, static d => d.PageSize, static (d, v) => d.PageSize = v);
         }
 
-        if (PageSizeOptions is not null && bitDataGrid.HasNotBeenSet(nameof(PageSizeOptions)))
+        if (PageSizeOptions is not null)
         {
-            bitDataGrid.PageSizeOptions = PageSizeOptions;
+            bitDataGrid.TakeFromCascade(nameof(PageSizeOptions), PageSizeOptions, static d => d.PageSizeOptions, static (d, v) => d.PageSizeOptions = v);
         }
 
-        if (Pageable.HasValue && bitDataGrid.HasNotBeenSet(nameof(Pageable)))
+        if (Pageable.HasValue)
         {
-            bitDataGrid.Pageable = Pageable.Value;
+            bitDataGrid.TakeFromCascade(nameof(Pageable), Pageable.Value, static d => d.Pageable, static (d, v) => d.Pageable = v);
         }
 
-        if (PagerPlacement.HasValue && bitDataGrid.HasNotBeenSet(nameof(PagerPlacement)))
+        if (PagerPlacement.HasValue)
         {
-            bitDataGrid.PagerPlacement = PagerPlacement.Value;
+            bitDataGrid.TakeFromCascade(nameof(PagerPlacement), PagerPlacement.Value, static d => d.PagerPlacement, static (d, v) => d.PagerPlacement = v);
         }
 
-        if (Reorderable.HasValue && bitDataGrid.HasNotBeenSet(nameof(Reorderable)))
+        if (Reorderable.HasValue)
         {
-            bitDataGrid.Reorderable = Reorderable.Value;
+            bitDataGrid.TakeFromCascade(nameof(Reorderable), Reorderable.Value, static d => d.Reorderable, static (d, v) => d.Reorderable = v);
         }
 
-        if (Resizable.HasValue && bitDataGrid.HasNotBeenSet(nameof(Resizable)))
+        if (Resizable.HasValue)
         {
-            bitDataGrid.Resizable = Resizable.Value;
+            bitDataGrid.TakeFromCascade(nameof(Resizable), Resizable.Value, static d => d.Resizable, static (d, v) => d.Resizable = v);
         }
 
-        if (RowHeight.HasValue && bitDataGrid.HasNotBeenSet(nameof(RowHeight)))
+        if (RowHeight.HasValue)
         {
-            bitDataGrid.RowHeight = RowHeight.Value;
+            bitDataGrid.TakeFromCascade(nameof(RowHeight), RowHeight.Value, static d => d.RowHeight, static (d, v) => d.RowHeight = v);
         }
 
-        if (SearchDebounce.HasValue && bitDataGrid.HasNotBeenSet(nameof(SearchDebounce)))
+        if (SearchDebounce.HasValue)
         {
-            bitDataGrid.SearchDebounce = SearchDebounce.Value;
+            bitDataGrid.TakeFromCascade(nameof(SearchDebounce), SearchDebounce.Value, static d => d.SearchDebounce, static (d, v) => d.SearchDebounce = v);
         }
 
-        if (ShowCellTooltips.HasValue && bitDataGrid.HasNotBeenSet(nameof(ShowCellTooltips)))
+        if (ShowCellTooltips.HasValue)
         {
-            bitDataGrid.ShowCellTooltips = ShowCellTooltips.Value;
+            bitDataGrid.TakeFromCascade(nameof(ShowCellTooltips), ShowCellTooltips.Value, static d => d.ShowCellTooltips, static (d, v) => d.ShowCellTooltips = v);
         }
 
-        if (ShowColumnChooser.HasValue && bitDataGrid.HasNotBeenSet(nameof(ShowColumnChooser)))
+        if (ShowColumnChooser.HasValue)
         {
-            bitDataGrid.ShowColumnChooser = ShowColumnChooser.Value;
+            bitDataGrid.TakeFromCascade(nameof(ShowColumnChooser), ShowColumnChooser.Value, static d => d.ShowColumnChooser, static (d, v) => d.ShowColumnChooser = v);
         }
 
-        if (ShowCsvExport.HasValue && bitDataGrid.HasNotBeenSet(nameof(ShowCsvExport)))
+        if (ShowCsvExport.HasValue)
         {
-            bitDataGrid.ShowCsvExport = ShowCsvExport.Value;
+            bitDataGrid.TakeFromCascade(nameof(ShowCsvExport), ShowCsvExport.Value, static d => d.ShowCsvExport, static (d, v) => d.ShowCsvExport = v);
         }
 
-        if (ShowDetailToggle.HasValue && bitDataGrid.HasNotBeenSet(nameof(ShowDetailToggle)))
+        if (ShowDetailToggle.HasValue)
         {
-            bitDataGrid.ShowDetailToggle = ShowDetailToggle.Value;
+            bitDataGrid.TakeFromCascade(nameof(ShowDetailToggle), ShowDetailToggle.Value, static d => d.ShowDetailToggle, static (d, v) => d.ShowDetailToggle = v);
         }
 
-        if (ShowExcelExport.HasValue && bitDataGrid.HasNotBeenSet(nameof(ShowExcelExport)))
+        if (ShowExcelExport.HasValue)
         {
-            bitDataGrid.ShowExcelExport = ShowExcelExport.Value;
+            bitDataGrid.TakeFromCascade(nameof(ShowExcelExport), ShowExcelExport.Value, static d => d.ShowExcelExport, static (d, v) => d.ShowExcelExport = v);
         }
 
-        if (ShowFooter.HasValue && bitDataGrid.HasNotBeenSet(nameof(ShowFooter)))
+        if (ShowFooter.HasValue)
         {
-            bitDataGrid.ShowFooter = ShowFooter.Value;
+            bitDataGrid.TakeFromCascade(nameof(ShowFooter), ShowFooter.Value, static d => d.ShowFooter, static (d, v) => d.ShowFooter = v);
         }
 
-        if (ShowHeader.HasValue && bitDataGrid.HasNotBeenSet(nameof(ShowHeader)))
+        if (ShowHeader.HasValue)
         {
-            bitDataGrid.ShowHeader = ShowHeader.Value;
+            bitDataGrid.TakeFromCascade(nameof(ShowHeader), ShowHeader.Value, static d => d.ShowHeader, static (d, v) => d.ShowHeader = v);
         }
 
-        if (ShowRowNumbers.HasValue && bitDataGrid.HasNotBeenSet(nameof(ShowRowNumbers)))
+        if (ShowRowNumbers.HasValue)
         {
-            bitDataGrid.ShowRowNumbers = ShowRowNumbers.Value;
+            bitDataGrid.TakeFromCascade(nameof(ShowRowNumbers), ShowRowNumbers.Value, static d => d.ShowRowNumbers, static (d, v) => d.ShowRowNumbers = v);
         }
 
-        if (ShowSearchBox.HasValue && bitDataGrid.HasNotBeenSet(nameof(ShowSearchBox)))
+        if (ShowSearchBox.HasValue)
         {
-            bitDataGrid.ShowSearchBox = ShowSearchBox.Value;
+            bitDataGrid.TakeFromCascade(nameof(ShowSearchBox), ShowSearchBox.Value, static d => d.ShowSearchBox, static (d, v) => d.ShowSearchBox = v);
         }
 
-        if (ShowToolbar.HasValue && bitDataGrid.HasNotBeenSet(nameof(ShowToolbar)))
+        if (ShowToolbar.HasValue)
         {
-            bitDataGrid.ShowToolbar = ShowToolbar.Value;
+            bitDataGrid.TakeFromCascade(nameof(ShowToolbar), ShowToolbar.Value, static d => d.ShowToolbar, static (d, v) => d.ShowToolbar = v);
         }
 
-        if (Sortable.HasValue && bitDataGrid.HasNotBeenSet(nameof(Sortable)))
+        if (Sortable.HasValue)
         {
-            bitDataGrid.Sortable = Sortable.Value;
+            bitDataGrid.TakeFromCascade(nameof(Sortable), Sortable.Value, static d => d.Sortable, static (d, v) => d.Sortable = v);
         }
 
-        if (Strings is not null && bitDataGrid.HasNotBeenSet(nameof(Strings)))
+        if (Strings is not null)
         {
-            bitDataGrid.Strings = Strings;
+            bitDataGrid.TakeFromCascade(nameof(Strings), Strings, static d => d.Strings, static (d, v) => d.Strings = v);
         }
 
-        if (Striped.HasValue && bitDataGrid.HasNotBeenSet(nameof(Striped)))
+        if (Striped.HasValue)
         {
-            bitDataGrid.Striped = Striped.Value;
-
-            bitDataGrid.ClassBuilder.Reset();
+            bitDataGrid.TakeFromCascade(nameof(Striped), Striped.Value, static d => d.Striped, static (d, v) => d.Striped = v);
         }
 
-        if (Styles is not null && bitDataGrid.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitDataGrid.Styles = Styles;
-
-            bitDataGrid.StyleBuilder.Reset();
+            bitDataGrid.TakeFromCascade(nameof(Styles), Styles, static d => d.Styles, static (d, v) => d.Styles = v);
         }
 
-        if (TreeInitiallyExpanded.HasValue && bitDataGrid.HasNotBeenSet(nameof(TreeInitiallyExpanded)))
+        if (TreeInitiallyExpanded.HasValue)
         {
-            bitDataGrid.TreeInitiallyExpanded = TreeInitiallyExpanded.Value;
+            bitDataGrid.TakeFromCascade(nameof(TreeInitiallyExpanded), TreeInitiallyExpanded.Value, static d => d.TreeInitiallyExpanded, static (d, v) => d.TreeInitiallyExpanded = v);
         }
 
-        if (WrapCellText.HasValue && bitDataGrid.HasNotBeenSet(nameof(WrapCellText)))
+        if (WrapCellText.HasValue)
         {
-            bitDataGrid.WrapCellText = WrapCellText.Value;
+            bitDataGrid.TakeFromCascade(nameof(WrapCellText), WrapCellText.Value, static d => d.WrapCellText, static (d, v) => d.WrapCellText = v);
         }
     }
 }

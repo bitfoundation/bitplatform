@@ -175,173 +175,139 @@ public class BitLayoutParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitLayout);
 
-        if (AsideAriaLabel.HasValue() && bitLayout.HasNotBeenSet(nameof(AsideAriaLabel)))
+        if (AsideAriaLabel.HasValue())
         {
-            bitLayout.AsideAriaLabel = AsideAriaLabel;
+            bitLayout.TakeFromCascade(nameof(AsideAriaLabel), AsideAriaLabel, static l => l.AsideAriaLabel, static (l, v) => l.AsideAriaLabel = v);
         }
 
-        if (AsideWidth.HasValue && bitLayout.HasNotBeenSet(nameof(AsideWidth)))
+        if (AsideWidth.HasValue)
         {
-            bitLayout.AsideWidth = AsideWidth.Value;
+            bitLayout.TakeFromCascade(nameof(AsideWidth), AsideWidth.Value, static l => l.AsideWidth, static (l, v) => l.AsideWidth = v);
         }
 
-        if (Bordered.HasValue && bitLayout.HasNotBeenSet(nameof(Bordered)))
+        if (Bordered.HasValue)
         {
-            bitLayout.Bordered = Bordered.Value;
-
-            bitLayout.ClassBuilder.Reset();
+            bitLayout.TakeFromCascade(nameof(Bordered), Bordered.Value, static l => l.Bordered, static (l, v) => l.Bordered = v);
         }
 
-        if (Classes is not null && bitLayout.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitLayout.Classes = Classes;
-
-            bitLayout.ClassBuilder.Reset();
+            bitLayout.TakeFromCascade(nameof(Classes), Classes, static l => l.Classes, static (l, v) => l.Classes = v);
         }
 
-        if (FooterHeight.HasValue && bitLayout.HasNotBeenSet(nameof(FooterHeight)))
+        if (FooterHeight.HasValue)
         {
-            bitLayout.FooterHeight = FooterHeight.Value;
-
-            bitLayout.StyleBuilder.Reset();
+            bitLayout.TakeFromCascade(nameof(FooterHeight), FooterHeight.Value, static l => l.FooterHeight, static (l, v) => l.FooterHeight = v);
         }
 
-        if (FullHeight.HasValue && bitLayout.HasNotBeenSet(nameof(FullHeight)))
+        if (FullHeight.HasValue)
         {
-            bitLayout.FullHeight = FullHeight.Value;
-
-            bitLayout.ClassBuilder.Reset();
+            bitLayout.TakeFromCascade(nameof(FullHeight), FullHeight.Value, static l => l.FullHeight, static (l, v) => l.FullHeight = v);
         }
 
-        if (FullHeightPanels.HasValue && bitLayout.HasNotBeenSet(nameof(FullHeightPanels)))
+        if (FullHeightPanels.HasValue)
         {
-            bitLayout.FullHeightPanels = FullHeightPanels.Value;
-
-            bitLayout.ClassBuilder.Reset();
+            bitLayout.TakeFromCascade(nameof(FullHeightPanels), FullHeightPanels.Value, static l => l.FullHeightPanels, static (l, v) => l.FullHeightPanels = v);
         }
 
-        if (Gap.HasValue() && bitLayout.HasNotBeenSet(nameof(Gap)))
+        if (Gap.HasValue())
         {
-            bitLayout.Gap = Gap;
-
-            bitLayout.StyleBuilder.Reset();
+            bitLayout.TakeFromCascade(nameof(Gap), Gap, static l => l.Gap, static (l, v) => l.Gap = v);
         }
 
-        if (HeaderHeight.HasValue && bitLayout.HasNotBeenSet(nameof(HeaderHeight)))
+        if (HeaderHeight.HasValue)
         {
-            bitLayout.HeaderHeight = HeaderHeight.Value;
-
-            bitLayout.StyleBuilder.Reset();
+            bitLayout.TakeFromCascade(nameof(HeaderHeight), HeaderHeight.Value, static l => l.HeaderHeight, static (l, v) => l.HeaderHeight = v);
         }
 
-        if (HideAside.HasValue && bitLayout.HasNotBeenSet(nameof(HideAside)))
+        if (HideAside.HasValue)
         {
-            bitLayout.HideAside = HideAside.Value;
+            bitLayout.TakeFromCascade(nameof(HideAside), HideAside.Value, static l => l.HideAside, static (l, v) => l.HideAside = v);
         }
 
-        if (HideFooter.HasValue && bitLayout.HasNotBeenSet(nameof(HideFooter)))
+        if (HideFooter.HasValue)
         {
-            bitLayout.HideFooter = HideFooter.Value;
+            bitLayout.TakeFromCascade(nameof(HideFooter), HideFooter.Value, static l => l.HideFooter, static (l, v) => l.HideFooter = v);
         }
 
-        if (HideHeader.HasValue && bitLayout.HasNotBeenSet(nameof(HideHeader)))
+        if (HideHeader.HasValue)
         {
-            bitLayout.HideHeader = HideHeader.Value;
+            bitLayout.TakeFromCascade(nameof(HideHeader), HideHeader.Value, static l => l.HideHeader, static (l, v) => l.HideHeader = v);
         }
 
-        if (HideNavPanel.HasValue && bitLayout.HasNotBeenSet(nameof(HideNavPanel)))
+        if (HideNavPanel.HasValue)
         {
-            bitLayout.HideNavPanel = HideNavPanel.Value;
+            bitLayout.TakeFromCascade(nameof(HideNavPanel), HideNavPanel.Value, static l => l.HideNavPanel, static (l, v) => l.HideNavPanel = v);
         }
 
-        if (NavPanelAriaLabel.HasValue() && bitLayout.HasNotBeenSet(nameof(NavPanelAriaLabel)))
+        if (NavPanelAriaLabel.HasValue())
         {
-            bitLayout.NavPanelAriaLabel = NavPanelAriaLabel;
+            bitLayout.TakeFromCascade(nameof(NavPanelAriaLabel), NavPanelAriaLabel, static l => l.NavPanelAriaLabel, static (l, v) => l.NavPanelAriaLabel = v);
         }
 
-        if (NavPanelWidth.HasValue && bitLayout.HasNotBeenSet(nameof(NavPanelWidth)))
+        if (NavPanelWidth.HasValue)
         {
-            bitLayout.NavPanelWidth = NavPanelWidth.Value;
+            bitLayout.TakeFromCascade(nameof(NavPanelWidth), NavPanelWidth.Value, static l => l.NavPanelWidth, static (l, v) => l.NavPanelWidth = v);
         }
 
-        if (Nested.HasValue && bitLayout.HasNotBeenSet(nameof(Nested)))
+        if (Nested.HasValue)
         {
-            bitLayout.Nested = Nested.Value;
+            bitLayout.TakeFromCascade(nameof(Nested), Nested.Value, static l => l.Nested, static (l, v) => l.Nested = v);
         }
 
-        if (Padding.HasValue() && bitLayout.HasNotBeenSet(nameof(Padding)))
+        if (Padding.HasValue())
         {
-            bitLayout.Padding = Padding;
-
-            bitLayout.StyleBuilder.Reset();
+            bitLayout.TakeFromCascade(nameof(Padding), Padding, static l => l.Padding, static (l, v) => l.Padding = v);
         }
 
-        if (ReverseNavPanel.HasValue && bitLayout.HasNotBeenSet(nameof(ReverseNavPanel)))
+        if (ReverseNavPanel.HasValue)
         {
-            bitLayout.ReverseNavPanel = ReverseNavPanel.Value;
-
-            bitLayout.ClassBuilder.Reset();
+            bitLayout.TakeFromCascade(nameof(ReverseNavPanel), ReverseNavPanel.Value, static l => l.ReverseNavPanel, static (l, v) => l.ReverseNavPanel = v);
         }
 
-        if (ScrollableMain.HasValue && bitLayout.HasNotBeenSet(nameof(ScrollableMain)))
+        if (ScrollableMain.HasValue)
         {
-            bitLayout.ScrollableMain = ScrollableMain.Value;
-
-            bitLayout.ClassBuilder.Reset();
+            bitLayout.TakeFromCascade(nameof(ScrollableMain), ScrollableMain.Value, static l => l.ScrollableMain, static (l, v) => l.ScrollableMain = v);
         }
 
-        if (SkipLink.HasValue && bitLayout.HasNotBeenSet(nameof(SkipLink)))
+        if (SkipLink.HasValue)
         {
-            bitLayout.SkipLink = SkipLink.Value;
-
-            bitLayout.ClassBuilder.Reset();
+            bitLayout.TakeFromCascade(nameof(SkipLink), SkipLink.Value, static l => l.SkipLink, static (l, v) => l.SkipLink = v);
         }
 
-        if (SkipLinkText.HasValue() && bitLayout.HasNotBeenSet(nameof(SkipLinkText)))
+        if (SkipLinkText.HasValue())
         {
-            bitLayout.SkipLinkText = SkipLinkText;
+            bitLayout.TakeFromCascade(nameof(SkipLinkText), SkipLinkText, static l => l.SkipLinkText, static (l, v) => l.SkipLinkText = v);
         }
 
-        if (StickyAside.HasValue && bitLayout.HasNotBeenSet(nameof(StickyAside)))
+        if (StickyAside.HasValue)
         {
-            bitLayout.StickyAside = StickyAside.Value;
-
-            bitLayout.ClassBuilder.Reset();
+            bitLayout.TakeFromCascade(nameof(StickyAside), StickyAside.Value, static l => l.StickyAside, static (l, v) => l.StickyAside = v);
         }
 
-        if (StickyFooter.HasValue && bitLayout.HasNotBeenSet(nameof(StickyFooter)))
+        if (StickyFooter.HasValue)
         {
-            bitLayout.StickyFooter = StickyFooter.Value;
-
-            bitLayout.ClassBuilder.Reset();
+            bitLayout.TakeFromCascade(nameof(StickyFooter), StickyFooter.Value, static l => l.StickyFooter, static (l, v) => l.StickyFooter = v);
         }
 
-        if (StickyHeader.HasValue && bitLayout.HasNotBeenSet(nameof(StickyHeader)))
+        if (StickyHeader.HasValue)
         {
-            bitLayout.StickyHeader = StickyHeader.Value;
-
-            bitLayout.ClassBuilder.Reset();
+            bitLayout.TakeFromCascade(nameof(StickyHeader), StickyHeader.Value, static l => l.StickyHeader, static (l, v) => l.StickyHeader = v);
         }
 
-        if (StickyNavPanel.HasValue && bitLayout.HasNotBeenSet(nameof(StickyNavPanel)))
+        if (StickyNavPanel.HasValue)
         {
-            bitLayout.StickyNavPanel = StickyNavPanel.Value;
-
-            bitLayout.ClassBuilder.Reset();
+            bitLayout.TakeFromCascade(nameof(StickyNavPanel), StickyNavPanel.Value, static l => l.StickyNavPanel, static (l, v) => l.StickyNavPanel = v);
         }
 
-        if (Styles is not null && bitLayout.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitLayout.Styles = Styles;
-
-            bitLayout.StyleBuilder.Reset();
+            bitLayout.TakeFromCascade(nameof(Styles), Styles, static l => l.Styles, static (l, v) => l.Styles = v);
         }
 
-        if (ZIndex.HasValue && bitLayout.HasNotBeenSet(nameof(ZIndex)))
+        if (ZIndex.HasValue)
         {
-            bitLayout.ZIndex = ZIndex.Value;
-
-            bitLayout.StyleBuilder.Reset();
+            bitLayout.TakeFromCascade(nameof(ZIndex), ZIndex.Value, static l => l.ZIndex, static (l, v) => l.ZIndex = v);
         }
     }
 }

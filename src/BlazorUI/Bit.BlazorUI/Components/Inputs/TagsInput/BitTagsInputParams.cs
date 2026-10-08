@@ -484,448 +484,424 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitTagsInput);
 
-        if (AddedAnnouncementFormat is not null && bitTagsInput.HasNotBeenSet(nameof(AddedAnnouncementFormat)))
+        if (AddedAnnouncementFormat is not null)
         {
-            bitTagsInput.AddedAnnouncementFormat = AddedAnnouncementFormat;
+            bitTagsInput.TakeFromCascade(nameof(AddedAnnouncementFormat), AddedAnnouncementFormat, static t => t.AddedAnnouncementFormat, static (t, v) => t.AddedAnnouncementFormat = v);
         }
 
-        if (AddedManyAnnouncementFormat is not null && bitTagsInput.HasNotBeenSet(nameof(AddedManyAnnouncementFormat)))
+        if (AddedManyAnnouncementFormat is not null)
         {
-            bitTagsInput.AddedManyAnnouncementFormat = AddedManyAnnouncementFormat;
+            bitTagsInput.TakeFromCascade(nameof(AddedManyAnnouncementFormat), AddedManyAnnouncementFormat, static t => t.AddedManyAnnouncementFormat, static (t, v) => t.AddedManyAnnouncementFormat = v);
         }
 
-        if (AllowReorder.HasValue && bitTagsInput.HasNotBeenSet(nameof(AllowReorder)))
+        if (AllowReorder.HasValue)
         {
-            bitTagsInput.AllowReorder = AllowReorder.Value;
+            bitTagsInput.TakeFromCascade(nameof(AllowReorder), AllowReorder.Value, static t => t.AllowReorder, static (t, v) => t.AllowReorder = v);
         }
 
-        if (AutoComplete.HasValue() && bitTagsInput.HasNotBeenSet(nameof(AutoComplete)))
+        if (AutoComplete.HasValue())
         {
-            bitTagsInput.AutoComplete = AutoComplete;
+            bitTagsInput.TakeFromCascade(nameof(AutoComplete), AutoComplete, static t => t.AutoComplete, static (t, v) => t.AutoComplete = v);
         }
 
-        if (AutoFocus.HasValue && bitTagsInput.HasNotBeenSet(nameof(AutoFocus)))
+        if (AutoFocus.HasValue)
         {
-            bitTagsInput.AutoFocus = AutoFocus.Value;
+            bitTagsInput.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static t => t.AutoFocus, static (t, v) => t.AutoFocus = v);
         }
 
-        if (BackspaceEditsLastTag.HasValue && bitTagsInput.HasNotBeenSet(nameof(BackspaceEditsLastTag)))
+        if (BackspaceEditsLastTag.HasValue)
         {
-            bitTagsInput.BackspaceEditsLastTag = BackspaceEditsLastTag.Value;
+            bitTagsInput.TakeFromCascade(nameof(BackspaceEditsLastTag), BackspaceEditsLastTag.Value, static t => t.BackspaceEditsLastTag, static (t, v) => t.BackspaceEditsLastTag = v);
         }
 
-        if (CancelConfirmKeysOnEmpty.HasValue && bitTagsInput.HasNotBeenSet(nameof(CancelConfirmKeysOnEmpty)))
+        if (CancelConfirmKeysOnEmpty.HasValue)
         {
-            bitTagsInput.CancelConfirmKeysOnEmpty = CancelConfirmKeysOnEmpty.Value;
+            bitTagsInput.TakeFromCascade(nameof(CancelConfirmKeysOnEmpty), CancelConfirmKeysOnEmpty.Value, static t => t.CancelConfirmKeysOnEmpty, static (t, v) => t.CancelConfirmKeysOnEmpty = v);
         }
 
-        if (CanRemoveTag is not null && bitTagsInput.HasNotBeenSet(nameof(CanRemoveTag)))
+        if (CanRemoveTag is not null)
         {
-            bitTagsInput.CanRemoveTag = CanRemoveTag;
+            bitTagsInput.TakeFromCascade(nameof(CanRemoveTag), CanRemoveTag, static t => t.CanRemoveTag, static (t, v) => t.CanRemoveTag = v);
         }
 
-        if (Classes is not null && bitTagsInput.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitTagsInput.Classes = Classes;
-
-            bitTagsInput.ClassBuilder.Reset();
+            bitTagsInput.TakeFromCascade(nameof(Classes), Classes, static t => t.Classes, static (t, v) => t.Classes = v);
         }
 
-        if (ClearButtonAriaLabel.HasValue() && bitTagsInput.HasNotBeenSet(nameof(ClearButtonAriaLabel)))
+        if (ClearButtonAriaLabel.HasValue())
         {
-            bitTagsInput.ClearButtonAriaLabel = ClearButtonAriaLabel;
+            bitTagsInput.TakeFromCascade(nameof(ClearButtonAriaLabel), ClearButtonAriaLabel, static t => t.ClearButtonAriaLabel, static (t, v) => t.ClearButtonAriaLabel = v);
         }
 
-        if (ClearButtonIcon is not null && bitTagsInput.HasNotBeenSet(nameof(ClearButtonIcon)))
+        if (ClearButtonIcon is not null)
         {
-            bitTagsInput.ClearButtonIcon = ClearButtonIcon;
+            bitTagsInput.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static t => t.ClearButtonIcon, static (t, v) => t.ClearButtonIcon = v);
         }
 
-        if (ClearButtonIconName.HasValue() && bitTagsInput.HasNotBeenSet(nameof(ClearButtonIconName)))
+        if (ClearButtonIconName.HasValue())
         {
-            bitTagsInput.ClearButtonIconName = ClearButtonIconName;
+            bitTagsInput.TakeFromCascade(nameof(ClearButtonIconName), ClearButtonIconName, static t => t.ClearButtonIconName, static (t, v) => t.ClearButtonIconName = v);
         }
 
-        if (ClearButtonTitle.HasValue() && bitTagsInput.HasNotBeenSet(nameof(ClearButtonTitle)))
+        if (ClearButtonTitle.HasValue())
         {
-            bitTagsInput.ClearButtonTitle = ClearButtonTitle;
+            bitTagsInput.TakeFromCascade(nameof(ClearButtonTitle), ClearButtonTitle, static t => t.ClearButtonTitle, static (t, v) => t.ClearButtonTitle = v);
         }
 
-        if (ClearedAnnouncementFormat is not null && bitTagsInput.HasNotBeenSet(nameof(ClearedAnnouncementFormat)))
+        if (ClearedAnnouncementFormat is not null)
         {
-            bitTagsInput.ClearedAnnouncementFormat = ClearedAnnouncementFormat;
+            bitTagsInput.TakeFromCascade(nameof(ClearedAnnouncementFormat), ClearedAnnouncementFormat, static t => t.ClearedAnnouncementFormat, static (t, v) => t.ClearedAnnouncementFormat = v);
         }
 
-        if (ClearOnBlur.HasValue && bitTagsInput.HasNotBeenSet(nameof(ClearOnBlur)))
+        if (ClearOnBlur.HasValue)
         {
-            bitTagsInput.ClearOnBlur = ClearOnBlur.Value;
+            bitTagsInput.TakeFromCascade(nameof(ClearOnBlur), ClearOnBlur.Value, static t => t.ClearOnBlur, static (t, v) => t.ClearOnBlur = v);
         }
 
-        if (Color.HasValue && bitTagsInput.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue)
         {
-            bitTagsInput.Color = Color.Value;
-
-            bitTagsInput.ClassBuilder.Reset();
+            bitTagsInput.TakeFromCascade(nameof(Color), Color.Value, static t => t.Color, static (t, v) => t.Color = v);
         }
 
-        if (Comparison.HasValue && bitTagsInput.HasNotBeenSet(nameof(Comparison)))
+        if (Comparison.HasValue)
         {
-            bitTagsInput.Comparison = Comparison.Value;
+            bitTagsInput.TakeFromCascade(nameof(Comparison), Comparison.Value, static t => t.Comparison, static (t, v) => t.Comparison = v);
         }
 
-        if (DebounceTime.HasValue && bitTagsInput.HasNotBeenSet(nameof(DebounceTime)))
+        if (DebounceTime.HasValue)
         {
-            bitTagsInput.DebounceTime = DebounceTime.Value;
+            bitTagsInput.TakeFromCascade(nameof(DebounceTime), DebounceTime.Value, static t => t.DebounceTime, static (t, v) => t.DebounceTime = v);
         }
 
-        if (Description.HasValue() && bitTagsInput.HasNotBeenSet(nameof(Description)))
+        if (Description.HasValue())
         {
-            bitTagsInput.Description = Description;
+            bitTagsInput.TakeFromCascade(nameof(Description), Description, static t => t.Description, static (t, v) => t.Description = v);
         }
 
-        if (DismissAriaLabelFormat.HasValue() && bitTagsInput.HasNotBeenSet(nameof(DismissAriaLabelFormat)))
+        if (DismissAriaLabelFormat.HasValue())
         {
-            bitTagsInput.DismissAriaLabelFormat = DismissAriaLabelFormat;
+            bitTagsInput.TakeFromCascade(nameof(DismissAriaLabelFormat), DismissAriaLabelFormat, static t => t.DismissAriaLabelFormat, static (t, v) => t.DismissAriaLabelFormat = v);
         }
 
-        if (DismissIcon is not null && bitTagsInput.HasNotBeenSet(nameof(DismissIcon)))
+        if (DismissIcon is not null)
         {
-            bitTagsInput.DismissIcon = DismissIcon;
+            bitTagsInput.TakeFromCascade(nameof(DismissIcon), DismissIcon, static t => t.DismissIcon, static (t, v) => t.DismissIcon = v);
         }
 
-        if (DismissIconName.HasValue() && bitTagsInput.HasNotBeenSet(nameof(DismissIconName)))
+        if (DismissIconName.HasValue())
         {
-            bitTagsInput.DismissIconName = DismissIconName;
+            bitTagsInput.TakeFromCascade(nameof(DismissIconName), DismissIconName, static t => t.DismissIconName, static (t, v) => t.DismissIconName = v);
         }
 
-        if (DismissTitle.HasValue() && bitTagsInput.HasNotBeenSet(nameof(DismissTitle)))
+        if (DismissTitle.HasValue())
         {
-            bitTagsInput.DismissTitle = DismissTitle;
+            bitTagsInput.TakeFromCascade(nameof(DismissTitle), DismissTitle, static t => t.DismissTitle, static (t, v) => t.DismissTitle = v);
         }
 
-        if (Duplicates.HasValue && bitTagsInput.HasNotBeenSet(nameof(Duplicates)))
+        if (Duplicates.HasValue)
         {
-            bitTagsInput.Duplicates = Duplicates.Value;
+            bitTagsInput.TakeFromCascade(nameof(Duplicates), Duplicates.Value, static t => t.Duplicates, static (t, v) => t.Duplicates = v);
         }
 
-        if (EditAriaLabelFormat.HasValue() && bitTagsInput.HasNotBeenSet(nameof(EditAriaLabelFormat)))
+        if (EditAriaLabelFormat.HasValue())
         {
-            bitTagsInput.EditAriaLabelFormat = EditAriaLabelFormat;
+            bitTagsInput.TakeFromCascade(nameof(EditAriaLabelFormat), EditAriaLabelFormat, static t => t.EditAriaLabelFormat, static (t, v) => t.EditAriaLabelFormat = v);
         }
 
-        if (EditableTags.HasValue && bitTagsInput.HasNotBeenSet(nameof(EditableTags)))
+        if (EditableTags.HasValue)
         {
-            bitTagsInput.EditableTags = EditableTags.Value;
+            bitTagsInput.TakeFromCascade(nameof(EditableTags), EditableTags.Value, static t => t.EditableTags, static (t, v) => t.EditableTags = v);
         }
 
-        if (EditedAnnouncementFormat is not null && bitTagsInput.HasNotBeenSet(nameof(EditedAnnouncementFormat)))
+        if (EditedAnnouncementFormat is not null)
         {
-            bitTagsInput.EditedAnnouncementFormat = EditedAnnouncementFormat;
+            bitTagsInput.TakeFromCascade(nameof(EditedAnnouncementFormat), EditedAnnouncementFormat, static t => t.EditedAnnouncementFormat, static (t, v) => t.EditedAnnouncementFormat = v);
         }
 
-        if (FixedTagAriaDescription is not null && bitTagsInput.HasNotBeenSet(nameof(FixedTagAriaDescription)))
+        if (FixedTagAriaDescription is not null)
         {
-            bitTagsInput.FixedTagAriaDescription = FixedTagAriaDescription;
+            bitTagsInput.TakeFromCascade(nameof(FixedTagAriaDescription), FixedTagAriaDescription, static t => t.FixedTagAriaDescription, static (t, v) => t.FixedTagAriaDescription = v);
         }
 
-        if (EnterKeyHint.HasValue && bitTagsInput.HasNotBeenSet(nameof(EnterKeyHint)))
+        if (EnterKeyHint.HasValue)
         {
-            bitTagsInput.EnterKeyHint = EnterKeyHint.Value;
-
-            bitTagsInput.OnSetEnterKeyHint();
+            bitTagsInput.TakeFromCascade(nameof(EnterKeyHint), EnterKeyHint.Value, static t => t.EnterKeyHint, static (t, v) => t.EnterKeyHint = v);
         }
 
-        if (GetInvalidMessage is not null && bitTagsInput.HasNotBeenSet(nameof(GetInvalidMessage)))
+        if (GetInvalidMessage is not null)
         {
-            bitTagsInput.GetInvalidMessage = GetInvalidMessage;
+            bitTagsInput.TakeFromCascade(nameof(GetInvalidMessage), GetInvalidMessage, static t => t.GetInvalidMessage, static (t, v) => t.GetInvalidMessage = v);
         }
 
-        if (GetTagName is not null && bitTagsInput.HasNotBeenSet(nameof(GetTagName)))
+        if (GetTagName is not null)
         {
-            bitTagsInput.GetTagName = GetTagName;
+            bitTagsInput.TakeFromCascade(nameof(GetTagName), GetTagName, static t => t.GetTagName, static (t, v) => t.GetTagName = v);
         }
 
-        if (GetTagClass is not null && bitTagsInput.HasNotBeenSet(nameof(GetTagClass)))
+        if (GetTagClass is not null)
         {
-            bitTagsInput.GetTagClass = GetTagClass;
+            bitTagsInput.TakeFromCascade(nameof(GetTagClass), GetTagClass, static t => t.GetTagClass, static (t, v) => t.GetTagClass = v);
         }
 
-        if (GetTagStyle is not null && bitTagsInput.HasNotBeenSet(nameof(GetTagStyle)))
+        if (GetTagStyle is not null)
         {
-            bitTagsInput.GetTagStyle = GetTagStyle;
+            bitTagsInput.TakeFromCascade(nameof(GetTagStyle), GetTagStyle, static t => t.GetTagStyle, static (t, v) => t.GetTagStyle = v);
         }
 
-        if (InputMode.HasValue && bitTagsInput.HasNotBeenSet(nameof(InputMode)))
+        if (InputMode.HasValue)
         {
-            bitTagsInput.InputMode = InputMode.Value;
-
-            bitTagsInput.OnSetInputMode();
+            bitTagsInput.TakeFromCascade(nameof(InputMode), InputMode.Value, static t => t.InputMode, static (t, v) => t.InputMode = v);
         }
 
-        if (InvalidAnnouncementFormat is not null && bitTagsInput.HasNotBeenSet(nameof(InvalidAnnouncementFormat)))
+        if (InvalidAnnouncementFormat is not null)
         {
-            bitTagsInput.InvalidAnnouncementFormat = InvalidAnnouncementFormat;
+            bitTagsInput.TakeFromCascade(nameof(InvalidAnnouncementFormat), InvalidAnnouncementFormat, static t => t.InvalidAnnouncementFormat, static (t, v) => t.InvalidAnnouncementFormat = v);
         }
 
-        if (IsLoading.HasValue && bitTagsInput.HasNotBeenSet(nameof(IsLoading)))
+        if (IsLoading.HasValue)
         {
-            bitTagsInput.IsLoading = IsLoading.Value;
+            bitTagsInput.TakeFromCascade(nameof(IsLoading), IsLoading.Value, static t => t.IsLoading, static (t, v) => t.IsLoading = v);
         }
 
-        if (Label.HasValue() && bitTagsInput.HasNotBeenSet(nameof(Label)))
+        if (Label.HasValue())
         {
-            bitTagsInput.Label = Label;
-
-            bitTagsInput.ClassBuilder.Reset();
+            bitTagsInput.TakeFromCascade(nameof(Label), Label, static t => t.Label, static (t, v) => t.Label = v);
         }
 
-        if (LessTagsText.HasValue() && bitTagsInput.HasNotBeenSet(nameof(LessTagsText)))
+        if (LessTagsText.HasValue())
         {
-            bitTagsInput.LessTagsText = LessTagsText;
+            bitTagsInput.TakeFromCascade(nameof(LessTagsText), LessTagsText, static t => t.LessTagsText, static (t, v) => t.LessTagsText = v);
         }
 
-        if (LoadingAriaLabel.HasValue() && bitTagsInput.HasNotBeenSet(nameof(LoadingAriaLabel)))
+        if (LoadingAriaLabel.HasValue())
         {
-            bitTagsInput.LoadingAriaLabel = LoadingAriaLabel;
+            bitTagsInput.TakeFromCascade(nameof(LoadingAriaLabel), LoadingAriaLabel, static t => t.LoadingAriaLabel, static (t, v) => t.LoadingAriaLabel = v);
         }
 
-        if (MaxDisplayedTags.HasValue && bitTagsInput.HasNotBeenSet(nameof(MaxDisplayedTags)))
+        if (MaxDisplayedTags.HasValue)
         {
-            bitTagsInput.MaxDisplayedTags = MaxDisplayedTags.Value;
+            bitTagsInput.TakeFromCascade(nameof(MaxDisplayedTags), MaxDisplayedTags.Value, static t => t.MaxDisplayedTags, static (t, v) => t.MaxDisplayedTags = v);
         }
 
-        if (MaxLength.HasValue && bitTagsInput.HasNotBeenSet(nameof(MaxLength)))
+        if (MaxLength.HasValue)
         {
-            bitTagsInput.MaxLength = MaxLength.Value;
+            bitTagsInput.TakeFromCascade(nameof(MaxLength), MaxLength.Value, static t => t.MaxLength, static (t, v) => t.MaxLength = v);
         }
 
-        if (MaxSuggestions.HasValue && bitTagsInput.HasNotBeenSet(nameof(MaxSuggestions)))
+        if (MaxSuggestions.HasValue)
         {
-            bitTagsInput.MaxSuggestions = MaxSuggestions.Value;
+            bitTagsInput.TakeFromCascade(nameof(MaxSuggestions), MaxSuggestions.Value, static t => t.MaxSuggestions, static (t, v) => t.MaxSuggestions = v);
         }
 
-        if (MaxTags.HasValue && bitTagsInput.HasNotBeenSet(nameof(MaxTags)))
+        if (MaxTags.HasValue)
         {
-            bitTagsInput.MaxTags = MaxTags.Value;
+            bitTagsInput.TakeFromCascade(nameof(MaxTags), MaxTags.Value, static t => t.MaxTags, static (t, v) => t.MaxTags = v);
         }
 
-        if (MinLength.HasValue && bitTagsInput.HasNotBeenSet(nameof(MinLength)))
+        if (MinLength.HasValue)
         {
-            bitTagsInput.MinLength = MinLength.Value;
+            bitTagsInput.TakeFromCascade(nameof(MinLength), MinLength.Value, static t => t.MinLength, static (t, v) => t.MinLength = v);
         }
 
-        if (MoreTagsAriaLabelFormat.HasValue() && bitTagsInput.HasNotBeenSet(nameof(MoreTagsAriaLabelFormat)))
+        if (MoreTagsAriaLabelFormat.HasValue())
         {
-            bitTagsInput.MoreTagsAriaLabelFormat = MoreTagsAriaLabelFormat;
+            bitTagsInput.TakeFromCascade(nameof(MoreTagsAriaLabelFormat), MoreTagsAriaLabelFormat, static t => t.MoreTagsAriaLabelFormat, static (t, v) => t.MoreTagsAriaLabelFormat = v);
         }
 
-        if (MoreTagsFormat.HasValue() && bitTagsInput.HasNotBeenSet(nameof(MoreTagsFormat)))
+        if (MoreTagsFormat.HasValue())
         {
-            bitTagsInput.MoreTagsFormat = MoreTagsFormat;
+            bitTagsInput.TakeFromCascade(nameof(MoreTagsFormat), MoreTagsFormat, static t => t.MoreTagsFormat, static (t, v) => t.MoreTagsFormat = v);
         }
 
-        if (MovedAnnouncementFormat is not null && bitTagsInput.HasNotBeenSet(nameof(MovedAnnouncementFormat)))
+        if (MovedAnnouncementFormat is not null)
         {
-            bitTagsInput.MovedAnnouncementFormat = MovedAnnouncementFormat;
+            bitTagsInput.TakeFromCascade(nameof(MovedAnnouncementFormat), MovedAnnouncementFormat, static t => t.MovedAnnouncementFormat, static (t, v) => t.MovedAnnouncementFormat = v);
         }
 
-        if (NoAddOnBlur.HasValue && bitTagsInput.HasNotBeenSet(nameof(NoAddOnBlur)))
+        if (NoAddOnBlur.HasValue)
         {
-            bitTagsInput.NoAddOnBlur = NoAddOnBlur.Value;
+            bitTagsInput.TakeFromCascade(nameof(NoAddOnBlur), NoAddOnBlur.Value, static t => t.NoAddOnBlur, static (t, v) => t.NoAddOnBlur = v);
         }
 
-        if (NoAddOnTab.HasValue && bitTagsInput.HasNotBeenSet(nameof(NoAddOnTab)))
+        if (NoAddOnTab.HasValue)
         {
-            bitTagsInput.NoAddOnTab = NoAddOnTab.Value;
+            bitTagsInput.TakeFromCascade(nameof(NoAddOnTab), NoAddOnTab.Value, static t => t.NoAddOnTab, static (t, v) => t.NoAddOnTab = v);
         }
 
-        if (NoBackspaceRemove.HasValue && bitTagsInput.HasNotBeenSet(nameof(NoBackspaceRemove)))
+        if (NoBackspaceRemove.HasValue)
         {
-            bitTagsInput.NoBackspaceRemove = NoBackspaceRemove.Value;
+            bitTagsInput.TakeFromCascade(nameof(NoBackspaceRemove), NoBackspaceRemove.Value, static t => t.NoBackspaceRemove, static (t, v) => t.NoBackspaceRemove = v);
         }
 
-        if (NoBorder.HasValue && bitTagsInput.HasNotBeenSet(nameof(NoBorder)))
+        if (NoBorder.HasValue)
         {
-            bitTagsInput.NoBorder = NoBorder.Value;
-
-            bitTagsInput.ClassBuilder.Reset();
+            bitTagsInput.TakeFromCascade(nameof(NoBorder), NoBorder.Value, static t => t.NoBorder, static (t, v) => t.NoBorder = v);
         }
 
-        if (NoClearOnEscape.HasValue && bitTagsInput.HasNotBeenSet(nameof(NoClearOnEscape)))
+        if (NoClearOnEscape.HasValue)
         {
-            bitTagsInput.NoClearOnEscape = NoClearOnEscape.Value;
+            bitTagsInput.TakeFromCascade(nameof(NoClearOnEscape), NoClearOnEscape.Value, static t => t.NoClearOnEscape, static (t, v) => t.NoClearOnEscape = v);
         }
 
-        if (NoInvalidHighlight.HasValue && bitTagsInput.HasNotBeenSet(nameof(NoInvalidHighlight)))
+        if (NoInvalidHighlight.HasValue)
         {
-            bitTagsInput.NoInvalidHighlight = NoInvalidHighlight.Value;
+            bitTagsInput.TakeFromCascade(nameof(NoInvalidHighlight), NoInvalidHighlight.Value, static t => t.NoInvalidHighlight, static (t, v) => t.NoInvalidHighlight = v);
         }
 
-        if (NoTrim.HasValue && bitTagsInput.HasNotBeenSet(nameof(NoTrim)))
+        if (NoTrim.HasValue)
         {
-            bitTagsInput.NoTrim = NoTrim.Value;
+            bitTagsInput.TakeFromCascade(nameof(NoTrim), NoTrim.Value, static t => t.NoTrim, static (t, v) => t.NoTrim = v);
         }
 
-        if (Pattern.HasValue() && bitTagsInput.HasNotBeenSet(nameof(Pattern)))
+        if (Pattern.HasValue())
         {
-            bitTagsInput.Pattern = Pattern;
-
-            bitTagsInput.OnSetPattern();
+            bitTagsInput.TakeFromCascade(nameof(Pattern), Pattern, static t => t.Pattern, static (t, v) => t.Pattern = v);
         }
 
-        if (PickedUpAnnouncementFormat is not null && bitTagsInput.HasNotBeenSet(nameof(PickedUpAnnouncementFormat)))
+        if (PickedUpAnnouncementFormat is not null)
         {
-            bitTagsInput.PickedUpAnnouncementFormat = PickedUpAnnouncementFormat;
+            bitTagsInput.TakeFromCascade(nameof(PickedUpAnnouncementFormat), PickedUpAnnouncementFormat, static t => t.PickedUpAnnouncementFormat, static (t, v) => t.PickedUpAnnouncementFormat = v);
         }
 
-        if (Placeholder.HasValue() && bitTagsInput.HasNotBeenSet(nameof(Placeholder)))
+        if (Placeholder.HasValue())
         {
-            bitTagsInput.Placeholder = Placeholder;
+            bitTagsInput.TakeFromCascade(nameof(Placeholder), Placeholder, static t => t.Placeholder, static (t, v) => t.Placeholder = v);
         }
 
-        if (Prefix.HasValue() && bitTagsInput.HasNotBeenSet(nameof(Prefix)))
+        if (Prefix.HasValue())
         {
-            bitTagsInput.Prefix = Prefix;
+            bitTagsInput.TakeFromCascade(nameof(Prefix), Prefix, static t => t.Prefix, static (t, v) => t.Prefix = v);
         }
 
-        if (RemovedAnnouncementFormat is not null && bitTagsInput.HasNotBeenSet(nameof(RemovedAnnouncementFormat)))
+        if (RemovedAnnouncementFormat is not null)
         {
-            bitTagsInput.RemovedAnnouncementFormat = RemovedAnnouncementFormat;
+            bitTagsInput.TakeFromCascade(nameof(RemovedAnnouncementFormat), RemovedAnnouncementFormat, static t => t.RemovedAnnouncementFormat, static (t, v) => t.RemovedAnnouncementFormat = v);
         }
 
-        if (PutBackAnnouncementFormat is not null && bitTagsInput.HasNotBeenSet(nameof(PutBackAnnouncementFormat)))
+        if (PutBackAnnouncementFormat is not null)
         {
-            bitTagsInput.PutBackAnnouncementFormat = PutBackAnnouncementFormat;
+            bitTagsInput.TakeFromCascade(nameof(PutBackAnnouncementFormat), PutBackAnnouncementFormat, static t => t.PutBackAnnouncementFormat, static (t, v) => t.PutBackAnnouncementFormat = v);
         }
 
-        if (ReorderAriaLabelFormat.HasValue() && bitTagsInput.HasNotBeenSet(nameof(ReorderAriaLabelFormat)))
+        if (ReorderAriaLabelFormat.HasValue())
         {
-            bitTagsInput.ReorderAriaLabelFormat = ReorderAriaLabelFormat;
+            bitTagsInput.TakeFromCascade(nameof(ReorderAriaLabelFormat), ReorderAriaLabelFormat, static t => t.ReorderAriaLabelFormat, static (t, v) => t.ReorderAriaLabelFormat = v);
         }
 
-        if (ReorderDropAriaLabelFormat.HasValue() && bitTagsInput.HasNotBeenSet(nameof(ReorderDropAriaLabelFormat)))
+        if (ReorderDropAriaLabelFormat.HasValue())
         {
-            bitTagsInput.ReorderDropAriaLabelFormat = ReorderDropAriaLabelFormat;
+            bitTagsInput.TakeFromCascade(nameof(ReorderDropAriaLabelFormat), ReorderDropAriaLabelFormat, static t => t.ReorderDropAriaLabelFormat, static (t, v) => t.ReorderDropAriaLabelFormat = v);
         }
 
-        if (ReorderIcon is not null && bitTagsInput.HasNotBeenSet(nameof(ReorderIcon)))
+        if (ReorderIcon is not null)
         {
-            bitTagsInput.ReorderIcon = ReorderIcon;
+            bitTagsInput.TakeFromCascade(nameof(ReorderIcon), ReorderIcon, static t => t.ReorderIcon, static (t, v) => t.ReorderIcon = v);
         }
 
-        if (ReorderIconName.HasValue() && bitTagsInput.HasNotBeenSet(nameof(ReorderIconName)))
+        if (ReorderIconName.HasValue())
         {
-            bitTagsInput.ReorderIconName = ReorderIconName;
+            bitTagsInput.TakeFromCascade(nameof(ReorderIconName), ReorderIconName, static t => t.ReorderIconName, static (t, v) => t.ReorderIconName = v);
         }
 
-        if (ReorderTitle.HasValue() && bitTagsInput.HasNotBeenSet(nameof(ReorderTitle)))
+        if (ReorderTitle.HasValue())
         {
-            bitTagsInput.ReorderTitle = ReorderTitle;
+            bitTagsInput.TakeFromCascade(nameof(ReorderTitle), ReorderTitle, static t => t.ReorderTitle, static (t, v) => t.ReorderTitle = v);
         }
 
-        if (RestrictToSuggestions.HasValue && bitTagsInput.HasNotBeenSet(nameof(RestrictToSuggestions)))
+        if (RestrictToSuggestions.HasValue)
         {
-            bitTagsInput.RestrictToSuggestions = RestrictToSuggestions.Value;
+            bitTagsInput.TakeFromCascade(nameof(RestrictToSuggestions), RestrictToSuggestions.Value, static t => t.RestrictToSuggestions, static (t, v) => t.RestrictToSuggestions = v);
         }
 
-        if (Separators is not null && bitTagsInput.HasNotBeenSet(nameof(Separators)))
+        if (Separators is not null)
         {
-            bitTagsInput.Separators = Separators;
-
-            bitTagsInput.OnSetSeparators();
+            bitTagsInput.TakeFromCascade(nameof(Separators), Separators, static t => t.Separators, static (t, v) => t.Separators = v);
         }
 
-        if (ShowClearButton.HasValue && bitTagsInput.HasNotBeenSet(nameof(ShowClearButton)))
+        if (ShowClearButton.HasValue)
         {
-            bitTagsInput.ShowClearButton = ShowClearButton.Value;
+            bitTagsInput.TakeFromCascade(nameof(ShowClearButton), ShowClearButton.Value, static t => t.ShowClearButton, static (t, v) => t.ShowClearButton = v);
         }
 
-        if (ShowCounter.HasValue && bitTagsInput.HasNotBeenSet(nameof(ShowCounter)))
+        if (ShowCounter.HasValue)
         {
-            bitTagsInput.ShowCounter = ShowCounter.Value;
+            bitTagsInput.TakeFromCascade(nameof(ShowCounter), ShowCounter.Value, static t => t.ShowCounter, static (t, v) => t.ShowCounter = v);
         }
 
-        if (ShowInvalidMessage.HasValue && bitTagsInput.HasNotBeenSet(nameof(ShowInvalidMessage)))
+        if (ShowInvalidMessage.HasValue)
         {
-            bitTagsInput.ShowInvalidMessage = ShowInvalidMessage.Value;
+            bitTagsInput.TakeFromCascade(nameof(ShowInvalidMessage), ShowInvalidMessage.Value, static t => t.ShowInvalidMessage, static (t, v) => t.ShowInvalidMessage = v);
         }
 
-        if (Size.HasValue && bitTagsInput.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue)
         {
-            bitTagsInput.Size = Size.Value;
-
-            bitTagsInput.ClassBuilder.Reset();
+            bitTagsInput.TakeFromCascade(nameof(Size), Size.Value, static t => t.Size, static (t, v) => t.Size = v);
         }
 
-        if (SpellCheck.HasValue && bitTagsInput.HasNotBeenSet(nameof(SpellCheck)))
+        if (SpellCheck.HasValue)
         {
-            bitTagsInput.SpellCheck = SpellCheck.Value;
+            bitTagsInput.TakeFromCascade(nameof(SpellCheck), SpellCheck.Value, static t => t.SpellCheck, static (t, v) => t.SpellCheck = v);
         }
 
-        if (Styles is not null && bitTagsInput.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitTagsInput.Styles = Styles;
-
-            bitTagsInput.StyleBuilder.Reset();
+            bitTagsInput.TakeFromCascade(nameof(Styles), Styles, static t => t.Styles, static (t, v) => t.Styles = v);
         }
 
-        if (Suffix.HasValue() && bitTagsInput.HasNotBeenSet(nameof(Suffix)))
+        if (Suffix.HasValue())
         {
-            bitTagsInput.Suffix = Suffix;
+            bitTagsInput.TakeFromCascade(nameof(Suffix), Suffix, static t => t.Suffix, static (t, v) => t.Suffix = v);
         }
 
-        if (Suggestions is not null && bitTagsInput.HasNotBeenSet(nameof(Suggestions)))
+        if (Suggestions is not null)
         {
-            bitTagsInput.Suggestions = Suggestions;
+            bitTagsInput.TakeFromCascade(nameof(Suggestions), Suggestions, static t => t.Suggestions, static (t, v) => t.Suggestions = v);
         }
 
-        if (TagAriaDescription is not null && bitTagsInput.HasNotBeenSet(nameof(TagAriaDescription)))
+        if (TagAriaDescription is not null)
         {
-            bitTagsInput.TagAriaDescription = TagAriaDescription;
+            bitTagsInput.TakeFromCascade(nameof(TagAriaDescription), TagAriaDescription, static t => t.TagAriaDescription, static (t, v) => t.TagAriaDescription = v);
         }
 
-        if (TagCountAriaDescriptionFormat is not null && bitTagsInput.HasNotBeenSet(nameof(TagCountAriaDescriptionFormat)))
+        if (TagCountAriaDescriptionFormat is not null)
         {
-            bitTagsInput.TagCountAriaDescriptionFormat = TagCountAriaDescriptionFormat;
+            bitTagsInput.TakeFromCascade(nameof(TagCountAriaDescriptionFormat), TagCountAriaDescriptionFormat, static t => t.TagCountAriaDescriptionFormat, static (t, v) => t.TagCountAriaDescriptionFormat = v);
         }
 
-        if (TagsAriaLabel.HasValue() && bitTagsInput.HasNotBeenSet(nameof(TagsAriaLabel)))
+        if (TagsAriaLabel.HasValue())
         {
-            bitTagsInput.TagsAriaLabel = TagsAriaLabel;
+            bitTagsInput.TakeFromCascade(nameof(TagsAriaLabel), TagsAriaLabel, static t => t.TagsAriaLabel, static (t, v) => t.TagsAriaLabel = v);
         }
 
-        if (TagsPlaceholder.HasValue() && bitTagsInput.HasNotBeenSet(nameof(TagsPlaceholder)))
+        if (TagsPlaceholder.HasValue())
         {
-            bitTagsInput.TagsPlaceholder = TagsPlaceholder;
+            bitTagsInput.TakeFromCascade(nameof(TagsPlaceholder), TagsPlaceholder, static t => t.TagsPlaceholder, static (t, v) => t.TagsPlaceholder = v);
         }
 
-        if (TagVariant.HasValue && bitTagsInput.HasNotBeenSet(nameof(TagVariant)))
+        if (TagVariant.HasValue)
         {
-            bitTagsInput.TagVariant = TagVariant.Value;
-
-            bitTagsInput.ClassBuilder.Reset();
+            bitTagsInput.TakeFromCascade(nameof(TagVariant), TagVariant.Value, static t => t.TagVariant, static (t, v) => t.TagVariant = v);
         }
 
-        if (ThrottleTime.HasValue && bitTagsInput.HasNotBeenSet(nameof(ThrottleTime)))
+        if (ThrottleTime.HasValue)
         {
-            bitTagsInput.ThrottleTime = ThrottleTime.Value;
+            bitTagsInput.TakeFromCascade(nameof(ThrottleTime), ThrottleTime.Value, static t => t.ThrottleTime, static (t, v) => t.ThrottleTime = v);
         }
 
-        if (Transformer is not null && bitTagsInput.HasNotBeenSet(nameof(Transformer)))
+        if (Transformer is not null)
         {
-            bitTagsInput.Transformer = Transformer;
+            bitTagsInput.TakeFromCascade(nameof(Transformer), Transformer, static t => t.Transformer, static (t, v) => t.Transformer = v);
         }
 
-        if (Validator is not null && bitTagsInput.HasNotBeenSet(nameof(Validator)))
+        if (Validator is not null)
         {
-            bitTagsInput.Validator = Validator;
+            bitTagsInput.TakeFromCascade(nameof(Validator), Validator, static t => t.Validator, static (t, v) => t.Validator = v);
         }
 
-        if (Variant.HasValue && bitTagsInput.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue)
         {
-            bitTagsInput.Variant = Variant.Value;
-
-            bitTagsInput.ClassBuilder.Reset();
+            bitTagsInput.TakeFromCascade(nameof(Variant), Variant.Value, static t => t.Variant, static (t, v) => t.Variant = v);
         }
     }
 }

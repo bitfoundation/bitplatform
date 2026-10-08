@@ -567,24 +567,13 @@ public partial class BitCheckbox : BitInputBase<bool>
         await _js.BitUtilsSetProperty(InputElement, "indeterminate", Indeterminate);
     }
 
+    // Before the first render there is no element to push onto yet: the state the checkbox starts out with is pushed
+    // from OnAfterRenderAsync instead, whether the markup or a BitParams handed it down.
     private void OnSetIndeterminate()
-    {
-        _ = SetIndeterminate();
-    }
-
-    /// <summary>
-    /// Pushes a mixed state that arrived from <see cref="BitCheckboxParams"/> onto the element, the way the
-    /// setter of an <see cref="Indeterminate"/> written on the component itself does.
-    /// </summary>
-    /// <remarks>
-    /// Skipped before the first render, where there is no element to push onto yet: the state the checkbox
-    /// starts out with is pushed from <see cref="OnAfterRenderAsync(bool)"/> instead.
-    /// </remarks>
-    internal void OnSetIndeterminateFromParams()
     {
         if (IsRendered is false) return;
 
-        OnSetIndeterminate();
+        _ = SetIndeterminate();
     }
 
     private Task HandleOnBlur(FocusEventArgs e) => OnBlur.InvokeAsync(e);
