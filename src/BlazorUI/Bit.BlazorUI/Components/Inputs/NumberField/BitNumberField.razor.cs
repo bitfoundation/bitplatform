@@ -19,7 +19,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private TValue? _displayValueSource;
     private bool _displayValueIsTransient;
     private bool _keepDisplayValueOnNextChange;
-    private bool _lastNormalizationActive;
+    private bool _lastNormalizeDigits;
+    private Func<string?, string?>? _lastDigitsNormalizer;
     private TValue _min = default!;
     private TValue _max = default!;
     private bool _hasExplicitMin;
@@ -860,21 +861,21 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         CascadingParameters?.UpdateParameters(this);
 
-        // Whether digit normalization (built-in NormalizeDigits or a custom DigitsNormalizer) is
-        // currently active. The Min/Max/Step string parameters are parsed through this normalization,
-        // so their cached numeric values (and the derived precision) must be recomputed whenever the
-        // normalization is toggled. Re-running only on a state change - rather than on every render -
-        // avoids repeatedly invoking a potentially expensive or side-effectful custom DigitsNormalizer
-        // delegate, while still covering:
+        // The digit normalization (built-in NormalizeDigits or a custom DigitsNormalizer) the Min/Max/Step
+        // string parameters are parsed through, so their cached numeric values (and the derived precision)
+        // must be recomputed whenever it changes - toggled, or one custom normalizer swapped for another,
+        // whether by the markup or by a params object writing or putting back either input. Re-running only
+        // on a change - rather than on every render - avoids repeatedly invoking a potentially expensive or
+        // side-effectful custom DigitsNormalizer delegate, while still covering:
         //   * the first render, where the Min/Max/Step CallOnSet handlers may have executed during
         //     SetParametersAsync before NormalizeDigits/DigitsNormalizer were assigned (parameter
         //     assignment order is not guaranteed), and
         //   * toggling normalization off, where a previously parsed non-Latin Min/Max/Step no longer
         //     parses and must fall back to the type defaults instead of keeping its stale value.
-        var normalizationActive = NormalizeDigits || DigitsNormalizer is not null;
-        if (normalizationActive != _lastNormalizationActive)
+        if (NormalizeDigits != _lastNormalizeDigits || Equals(DigitsNormalizer, _lastDigitsNormalizer) is false)
         {
-            _lastNormalizationActive = normalizationActive;
+            _lastNormalizeDigits = NormalizeDigits;
+            _lastDigitsNormalizer = DigitsNormalizer;
 
             // Only re-run for parameters that were actually provided. Re-running a setter for an
             // unset parameter would reset it to its default (and is unnecessary work).

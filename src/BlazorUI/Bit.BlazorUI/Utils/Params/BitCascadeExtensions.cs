@@ -61,6 +61,14 @@ internal static class BitCascadeExtensions
     }
 
     /// <summary>
+    /// Whether a value read off a params object supplies its parameter: anything but null, except a string that is
+    /// empty or white space, which every UpdateParameters skips with HasValue. What a params object writes and what
+    /// BitComponentBase puts back once it stops writing it are decided by this one rule, so a string cleared to ""
+    /// is let go of rather than left behind as the last value written.
+    /// </summary>
+    public static bool IsSupplied(object? value) => value is string text ? text.HasValue() : value is not null;
+
+    /// <summary>
     /// Whether two values of a parameter are the same value, so that writing one over the other changes nothing.
     /// </summary>
     /// <remarks>

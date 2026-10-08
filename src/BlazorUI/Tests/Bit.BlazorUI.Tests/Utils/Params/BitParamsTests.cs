@@ -460,6 +460,56 @@ public class BitParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void AStringClearedToEmptyShouldGoBack()
+    {
+        var component = RenderComponent<BitParams>(builder =>
+        {
+            builder.Add(p => p.Parameters, [new BitButtonParams { Class = "shared" }]);
+            builder.AddChildContent<StaticButtonHost>();
+        });
+
+        var button = component.FindComponent<BitButton>().Instance;
+
+        Assert.IsTrue(component.Find("button").ClassList.Contains("shared"));
+
+        component.Render(builder => builder.Add(p => p.Parameters, [new BitButtonParams { Class = "" }]));
+
+        Assert.IsNull(button.Class, "an empty string supplies nothing, so the value written before is taken back");
+        Assert.IsFalse(component.Find("button").ClassList.Contains("shared"));
+    }
+
+    [TestMethod]
+    public void ANormalizerChangeShouldParseTheNumericParametersAgain()
+    {
+        static string? toSeven(string? value) => value?.Replace('۵', '7');
+        static string? toNine(string? value) => value?.Replace('۵', '9');
+
+        var component = RenderComponent<BitParams>(builder =>
+        {
+            builder.Add(p => p.Parameters, [new BitNumberFieldParams { Min = "۵", NormalizeDigits = true, DigitsNormalizer = toSeven }]);
+            builder.AddChildContent<StaticInputsHost>();
+        });
+
+        Assert.AreEqual("7", component.Find("input[role=spinbutton]").GetAttribute("aria-valuemin"));
+
+        // One custom normalizer swapped for another, while Min stays the same string.
+        component.Render(builder => builder.Add(p => p.Parameters, [new BitNumberFieldParams { Min = "۵", NormalizeDigits = true, DigitsNormalizer = toNine }]));
+
+        Assert.AreEqual("9", component.Find("input[role=spinbutton]").GetAttribute("aria-valuemin"));
+
+        // The custom normalizer dropped, so the built-in one the field still has takes over.
+        component.Render(builder => builder.Add(p => p.Parameters, [new BitNumberFieldParams { Min = "۵", NormalizeDigits = true }]));
+
+        Assert.IsNull(component.FindComponent<BitNumberField<int>>().Instance.DigitsNormalizer);
+        Assert.AreEqual("5", component.Find("input[role=spinbutton]").GetAttribute("aria-valuemin"));
+
+        // And restored again.
+        component.Render(builder => builder.Add(p => p.Parameters, [new BitNumberFieldParams { Min = "۵", NormalizeDigits = true, DigitsNormalizer = toSeven }]));
+
+        Assert.AreEqual("7", component.Find("input[role=spinbutton]").GetAttribute("aria-valuemin"));
+    }
+
+    [TestMethod]
     public void AParameterTheMarkupLetsGoOfShouldGoBackToWhatTheMarkupLeft()
     {
         var component = RenderComponent<BitParams>(builder =>

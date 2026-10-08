@@ -163,7 +163,10 @@ internal sealed class BitCascadeMap
                 : new BitCascadeParameter(source, target);
         }
 
-        public object? GetFromParams(IBitComponentParams parameters) => _source.GetValue(parameters);
+        /// <summary>
+        /// Whether the params object supplies the parameter, by the rule its UpdateParameters writes it by.
+        /// </summary>
+        public bool IsSuppliedBy(IBitComponentParams parameters) => BitCascadeExtensions.IsSupplied(_source.GetValue(parameters));
 
         public virtual object? GetFromComponent(IBitCascadeTarget component) => _target.GetValue(component);
 

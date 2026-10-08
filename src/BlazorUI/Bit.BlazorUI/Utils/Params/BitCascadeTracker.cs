@@ -54,7 +54,7 @@ internal sealed class BitCascadeTracker
 
                 foreach (var name in _cascadeOriginals.Keys)
                 {
-                    if (current is not null && map.Parameters[name].GetFromParams(current) is not null) continue;
+                    if (current is not null && map.Parameters[name].IsSuppliedBy(current)) continue;
 
                     (dropped ??= []).Add(name);
                 }
@@ -77,14 +77,14 @@ internal sealed class BitCascadeTracker
 
             if (_cascadeSetByMarkup is { Count: > 0 })
             {
-                _cascadeSetByMarkup.RemoveWhere(name => current is null || map.Parameters[name].GetFromParams(current) is null);
+                _cascadeSetByMarkup.RemoveWhere(name => current is null || map.Parameters[name].IsSuppliedBy(current) is false);
             }
 
             if (current is not null)
             {
                 foreach (var (name, parameter) in map.Parameters)
                 {
-                    if (parameter.GetFromParams(current) is null) continue;
+                    if (parameter.IsSuppliedBy(current) is false) continue;
                     if (_cascadeOriginals?.ContainsKey(name) is true) continue;
                     if (_cascadeSetByMarkup?.Contains(name) is true) continue;
 
