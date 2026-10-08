@@ -175,189 +175,139 @@ public class BitTextParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitText);
 
-        if (Align.HasValue && bitText.HasNotBeenSet(nameof(Align)) && bitText.Align != Align)
+        if (Align.HasValue)
         {
-            bitText.Align = Align.Value;
-
-            bitText.StyleBuilder.Reset();
+            bitText.TakeFromCascade(nameof(Align), Align.Value, static t => t.Align, static (t, v) => t.Align = v);
         }
 
-        if (AriaLevel.HasValue && bitText.HasNotBeenSet(nameof(AriaLevel)))
+        if (AriaLevel.HasValue)
         {
-            bitText.AriaLevel = AriaLevel.Value;
+            bitText.TakeFromCascade(nameof(AriaLevel), AriaLevel.Value, static t => t.AriaLevel, static (t, v) => t.AriaLevel = v);
         }
 
-        if (Block.HasValue && bitText.HasNotBeenSet(nameof(Block)) && bitText.Block != Block)
+        if (Block.HasValue)
         {
-            bitText.Block = Block.Value;
-
-            bitText.ClassBuilder.Reset();
+            bitText.TakeFromCascade(nameof(Block), Block.Value, static t => t.Block, static (t, v) => t.Block = v);
         }
 
-        if (BreakWord.HasValue && bitText.HasNotBeenSet(nameof(BreakWord)) && bitText.BreakWord != BreakWord)
+        if (BreakWord.HasValue)
         {
-            bitText.BreakWord = BreakWord.Value;
-
-            bitText.ClassBuilder.Reset();
+            bitText.TakeFromCascade(nameof(BreakWord), BreakWord.Value, static t => t.BreakWord, static (t, v) => t.BreakWord = v);
         }
 
-        if (Color.HasValue && bitText.HasNotBeenSet(nameof(Color)) && bitText.Color != Color)
+        if (Color.HasValue)
         {
-            bitText.Color = Color.Value;
-
-            bitText.ClassBuilder.Reset();
+            bitText.TakeFromCascade(nameof(Color), Color.Value, static t => t.Color, static (t, v) => t.Color = v);
         }
 
-        if (Element.HasValue() && bitText.HasNotBeenSet(nameof(Element)))
+        if (Element.HasValue())
         {
-            bitText.Element = Element;
+            bitText.TakeFromCascade(nameof(Element), Element, static t => t.Element, static (t, v) => t.Element = v);
         }
 
-        if (ForceBreak.HasValue && bitText.HasNotBeenSet(nameof(ForceBreak)) && bitText.ForceBreak != ForceBreak)
+        if (ForceBreak.HasValue)
         {
-            bitText.ForceBreak = ForceBreak.Value;
-
-            bitText.ClassBuilder.Reset();
+            bitText.TakeFromCascade(nameof(ForceBreak), ForceBreak.Value, static t => t.ForceBreak, static (t, v) => t.ForceBreak = v);
         }
 
-        if (Foreground.HasValue && bitText.HasNotBeenSet(nameof(Foreground)) && bitText.Foreground != Foreground)
+        if (Foreground.HasValue)
         {
-            bitText.Foreground = Foreground.Value;
-
-            bitText.ClassBuilder.Reset();
+            bitText.TakeFromCascade(nameof(Foreground), Foreground.Value, static t => t.Foreground, static (t, v) => t.Foreground = v);
         }
 
-        if (Gradient.HasValue() && bitText.HasNotBeenSet(nameof(Gradient)) && bitText.Gradient != Gradient)
+        if (Gradient.HasValue())
         {
-            bitText.Gradient = Gradient;
-
-            bitText.ClassBuilder.Reset();
-            bitText.StyleBuilder.Reset();
+            bitText.TakeFromCascade(nameof(Gradient), Gradient, static t => t.Gradient, static (t, v) => t.Gradient = v);
         }
 
-        if (Gutter.HasValue && bitText.HasNotBeenSet(nameof(Gutter)) && bitText.Gutter != Gutter)
+        if (Gutter.HasValue)
         {
-            bitText.Gutter = Gutter.Value;
-
-            bitText.ClassBuilder.Reset();
+            bitText.TakeFromCascade(nameof(Gutter), Gutter.Value, static t => t.Gutter, static (t, v) => t.Gutter = v);
         }
 
-        if (Hyphenate.HasValue && bitText.HasNotBeenSet(nameof(Hyphenate)) && bitText.Hyphenate != Hyphenate)
+        if (Hyphenate.HasValue)
         {
-            bitText.Hyphenate = Hyphenate.Value;
-
-            bitText.ClassBuilder.Reset();
+            bitText.TakeFromCascade(nameof(Hyphenate), Hyphenate.Value, static t => t.Hyphenate, static (t, v) => t.Hyphenate = v);
         }
 
-        if (Italic.HasValue && bitText.HasNotBeenSet(nameof(Italic)) && bitText.Italic != Italic)
+        if (Italic.HasValue)
         {
-            bitText.Italic = Italic.Value;
-
-            bitText.ClassBuilder.Reset();
+            bitText.TakeFromCascade(nameof(Italic), Italic.Value, static t => t.Italic, static (t, v) => t.Italic = v);
         }
 
-        if (Lang.HasValue() && bitText.HasNotBeenSet(nameof(Lang)))
+        if (Lang.HasValue())
         {
-            bitText.Lang = Lang;
+            bitText.TakeFromCascade(nameof(Lang), Lang, static t => t.Lang, static (t, v) => t.Lang = v);
         }
 
-        if (LineClamp.HasValue && bitText.HasNotBeenSet(nameof(LineClamp)) && bitText.LineClamp != LineClamp)
+        if (LineClamp.HasValue)
         {
-            bitText.LineClamp = LineClamp.Value;
-
-            bitText.ClassBuilder.Reset();
-            bitText.StyleBuilder.Reset();
+            bitText.TakeFromCascade(nameof(LineClamp), LineClamp.Value, static t => t.LineClamp, static (t, v) => t.LineClamp = v);
         }
 
-        if (Monospace.HasValue && bitText.HasNotBeenSet(nameof(Monospace)) && bitText.Monospace != Monospace)
+        if (Monospace.HasValue)
         {
-            bitText.Monospace = Monospace.Value;
-
-            bitText.ClassBuilder.Reset();
+            bitText.TakeFromCascade(nameof(Monospace), Monospace.Value, static t => t.Monospace, static (t, v) => t.Monospace = v);
         }
 
-        if (NoSelect.HasValue && bitText.HasNotBeenSet(nameof(NoSelect)) && bitText.NoSelect != NoSelect)
+        if (NoSelect.HasValue)
         {
-            bitText.NoSelect = NoSelect.Value;
-
-            bitText.ClassBuilder.Reset();
+            bitText.TakeFromCascade(nameof(NoSelect), NoSelect.Value, static t => t.NoSelect, static (t, v) => t.NoSelect = v);
         }
 
-        if (NoWrap.HasValue && bitText.HasNotBeenSet(nameof(NoWrap)) && bitText.NoWrap != NoWrap)
+        if (NoWrap.HasValue)
         {
-            bitText.NoWrap = NoWrap.Value;
-
-            bitText.ClassBuilder.Reset();
+            bitText.TakeFromCascade(nameof(NoWrap), NoWrap.Value, static t => t.NoWrap, static (t, v) => t.NoWrap = v);
         }
 
-        if (Numeric.HasValue && bitText.HasNotBeenSet(nameof(Numeric)) && bitText.Numeric != Numeric)
+        if (Numeric.HasValue)
         {
-            bitText.Numeric = Numeric.Value;
-
-            bitText.ClassBuilder.Reset();
+            bitText.TakeFromCascade(nameof(Numeric), Numeric.Value, static t => t.Numeric, static (t, v) => t.Numeric = v);
         }
 
-        if (PreserveWhitespace.HasValue && bitText.HasNotBeenSet(nameof(PreserveWhitespace)) && bitText.PreserveWhitespace != PreserveWhitespace)
+        if (PreserveWhitespace.HasValue)
         {
-            bitText.PreserveWhitespace = PreserveWhitespace.Value;
-
-            bitText.ClassBuilder.Reset();
+            bitText.TakeFromCascade(nameof(PreserveWhitespace), PreserveWhitespace.Value, static t => t.PreserveWhitespace, static (t, v) => t.PreserveWhitespace = v);
         }
 
-        if (Strikethrough.HasValue && bitText.HasNotBeenSet(nameof(Strikethrough)) && bitText.Strikethrough != Strikethrough)
+        if (Strikethrough.HasValue)
         {
-            bitText.Strikethrough = Strikethrough.Value;
-
-            bitText.ClassBuilder.Reset();
+            bitText.TakeFromCascade(nameof(Strikethrough), Strikethrough.Value, static t => t.Strikethrough, static (t, v) => t.Strikethrough = v);
         }
 
-        if (Transform.HasValue && bitText.HasNotBeenSet(nameof(Transform)) && bitText.Transform != Transform)
+        if (Transform.HasValue)
         {
-            bitText.Transform = Transform.Value;
-
-            bitText.ClassBuilder.Reset();
+            bitText.TakeFromCascade(nameof(Transform), Transform.Value, static t => t.Transform, static (t, v) => t.Transform = v);
         }
 
-        if (Trim.HasValue && bitText.HasNotBeenSet(nameof(Trim)) && bitText.Trim != Trim)
+        if (Trim.HasValue)
         {
-            bitText.Trim = Trim.Value;
-
-            bitText.ClassBuilder.Reset();
+            bitText.TakeFromCascade(nameof(Trim), Trim.Value, static t => t.Trim, static (t, v) => t.Trim = v);
         }
 
-        if (Typography.HasValue && bitText.HasNotBeenSet(nameof(Typography)) && bitText.Typography != Typography)
+        if (Typography.HasValue)
         {
-            bitText.Typography = Typography.Value;
-
-            bitText.ClassBuilder.Reset();
+            bitText.TakeFromCascade(nameof(Typography), Typography.Value, static t => t.Typography, static (t, v) => t.Typography = v);
         }
 
-        if (Underline.HasValue && bitText.HasNotBeenSet(nameof(Underline)) && bitText.Underline != Underline)
+        if (Underline.HasValue)
         {
-            bitText.Underline = Underline.Value;
-
-            bitText.ClassBuilder.Reset();
+            bitText.TakeFromCascade(nameof(Underline), Underline.Value, static t => t.Underline, static (t, v) => t.Underline = v);
         }
 
-        if (VisuallyHidden.HasValue && bitText.HasNotBeenSet(nameof(VisuallyHidden)) && bitText.VisuallyHidden != VisuallyHidden)
+        if (VisuallyHidden.HasValue)
         {
-            bitText.VisuallyHidden = VisuallyHidden.Value;
-
-            bitText.ClassBuilder.Reset();
+            bitText.TakeFromCascade(nameof(VisuallyHidden), VisuallyHidden.Value, static t => t.VisuallyHidden, static (t, v) => t.VisuallyHidden = v);
         }
 
-        if (Wrap.HasValue && bitText.HasNotBeenSet(nameof(Wrap)) && bitText.Wrap != Wrap)
+        if (Wrap.HasValue)
         {
-            bitText.Wrap = Wrap.Value;
-
-            bitText.ClassBuilder.Reset();
+            bitText.TakeFromCascade(nameof(Wrap), Wrap.Value, static t => t.Wrap, static (t, v) => t.Wrap = v);
         }
 
-        if (Weight.HasValue && bitText.HasNotBeenSet(nameof(Weight)) && bitText.Weight != Weight)
+        if (Weight.HasValue)
         {
-            bitText.Weight = Weight.Value;
-
-            bitText.ClassBuilder.Reset();
+            bitText.TakeFromCascade(nameof(Weight), Weight.Value, static t => t.Weight, static (t, v) => t.Weight = v);
         }
     }
 }

@@ -2319,12 +2319,30 @@ public class BitTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitTimePickerShouldFallBackToThePrimaryColor()
+    public void BitTimePickerShouldPublishNoColorOrSizeWhileTheyAreUnset()
     {
         var component = RenderComponent<BitTimePicker>();
 
-        Assert.IsTrue(component.Find(".bit-tpc").ClassList.Contains("bit-tpc-pri"));
-        Assert.IsTrue(component.Find(".bit-tpc-cal").ClassList.Contains("bit-tpc-pri"));
+        // An unset Color or Size publishes nothing - on the root or on the callout rendered outside it - so the public
+        // --bit-TimePicker-* variables restyle the default (the primary, medium TimePicker) while an explicit value,
+        // which does publish its class, wins over them.
+        var published = new[]
+        {
+            "bit-tpc-pri", "bit-tpc-sec", "bit-tpc-ter", "bit-tpc-inf", "bit-tpc-suc", "bit-tpc-wrn", "bit-tpc-swr", "bit-tpc-err",
+            "bit-tpc-pbg", "bit-tpc-sbg", "bit-tpc-tbg", "bit-tpc-pfg", "bit-tpc-sfg", "bit-tpc-tfg", "bit-tpc-pbr", "bit-tpc-sbr", "bit-tpc-tbr",
+            "bit-tpc-sm", "bit-tpc-md", "bit-tpc-lg",
+        };
+
+        foreach (var element in new[] { component.Find(".bit-tpc"), component.Find(".bit-tpc-cal") })
+        {
+            foreach (var cssClass in published)
+            {
+                Assert.IsFalse(element.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+            }
+        }
+
+        // The callout's class list is joined from parts, so an unset one must leave no empty entry behind.
+        Assert.IsFalse(component.Find(".bit-tpc-cal").GetAttribute("class")!.Contains("  "), "An unset parameter left a gap in the callout's class list.");
     }
 
     [TestMethod,

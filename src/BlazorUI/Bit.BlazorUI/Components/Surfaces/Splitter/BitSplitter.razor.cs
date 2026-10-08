@@ -10,7 +10,6 @@ public partial class BitSplitter : BitComponentBase
 {
     private bool _isDragging;
     private bool _isCollapsing;
-    private bool _cascadeChanged;
     private string? _controllerId;
     private double? _percentBeforeCollapse;
     private ElementReference _gutterRef;
@@ -738,7 +737,7 @@ public partial class BitSplitter : BitComponentBase
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitSplitterParams))]
     protected override void OnParametersSet()
     {
-        ApplyCascade();
+        CascadingParameters?.UpdateParameters(this);
 
         base.OnParametersSet();
     }
@@ -838,23 +837,6 @@ public partial class BitSplitter : BitComponentBase
 
 
     /// <summary>
-    /// Supplies a parameter from the cascade, unless the markup has set it. BitComponentBase remembers the value it
-    /// held before the cascade first supplied it, and puts it back once the cascade stops giving one.
-    /// </summary>
-    internal void TakeFromCascade<T>(string name, T value, Func<BitSplitter, T> get, Action<BitSplitter, T> set)
-    {
-        if (IsSetByMarkup(name)) return;
-
-        // A value the cascade supplies again unchanged is no change: the class and style strings built from it the
-        // last time still hold, so they are only rebuilt when something the cascade gives actually moves.
-        if (EqualityComparer<T>.Default.Equals(get(this), value)) return;
-
-        set(this, value);
-
-        _cascadeChanged = true;
-    }
-
-    /// <summary>
     /// Whether the markup sizes the panels itself, through any of <see cref="DefaultPercent"/>,
     /// <see cref="FirstPanelSize"/> and <see cref="SecondPanelSize"/>.
     /// </summary>
@@ -866,20 +848,6 @@ public partial class BitSplitter : BitComponentBase
     internal bool SizesItsOwnPanels => IsSetByMarkup(nameof(DefaultPercent))
                                     || IsSetByMarkup(nameof(FirstPanelSize))
                                     || IsSetByMarkup(nameof(SecondPanelSize));
-
-    private void ApplyCascade()
-    {
-        if (CascadingParameters is null) return;
-
-        _cascadeChanged = false;
-
-        CascadingParameters.UpdateParameters(this);
-
-        if (_cascadeChanged is false) return;
-
-        ClassBuilder.Reset();
-        StyleBuilder.Reset();
-    }
 
     private BitSplitterJsOptions CurrentJsOptions()
         => new(Vertical,

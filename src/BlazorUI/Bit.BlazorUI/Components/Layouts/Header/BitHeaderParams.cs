@@ -178,184 +178,139 @@ public class BitHeaderParams : BitComponentBaseParams, IBitComponentParams
         // The three positions decide whether the header is pinned to the top of the screen, which is what
         // the safe area inset added to an explicit Height keys off, so each of them resets the styles as
         // well as the classes.
-        if (Absolute.HasValue && bitHeader.HasNotBeenSet(nameof(Absolute)) && bitHeader.Absolute != Absolute)
+        if (Absolute.HasValue)
         {
-            bitHeader.Absolute = Absolute.Value;
-
-            bitHeader.ClassBuilder.Reset();
-            bitHeader.StyleBuilder.Reset();
+            bitHeader.TakeFromCascade(nameof(Absolute), Absolute.Value, static h => h.Absolute, static (h, v) => h.Absolute = v);
         }
 
-        if (Alignment.HasValue && bitHeader.HasNotBeenSet(nameof(Alignment)) && bitHeader.Alignment != Alignment)
+        if (Alignment.HasValue)
         {
-            bitHeader.Alignment = Alignment.Value;
-
-            bitHeader.ClassBuilder.Reset();
+            bitHeader.TakeFromCascade(nameof(Alignment), Alignment.Value, static h => h.Alignment, static (h, v) => h.Alignment = v);
         }
 
-        if (Bordered.HasValue && bitHeader.HasNotBeenSet(nameof(Bordered)) && bitHeader.Bordered != Bordered)
+        if (Bordered.HasValue)
         {
-            bitHeader.Bordered = Bordered.Value;
-
-            bitHeader.ClassBuilder.Reset();
+            bitHeader.TakeFromCascade(nameof(Bordered), Bordered.Value, static h => h.Bordered, static (h, v) => h.Bordered = v);
         }
 
-        if (Classes is not null && bitHeader.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitHeader.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitHeader.Classes = Classes;
-
-            bitHeader.ClassBuilder.Reset();
+            bitHeader.TakeFromCascade(nameof(Classes), Classes, static h => h.Classes, static (h, v) => h.Classes = v);
         }
 
-        if (Color.HasValue && bitHeader.HasNotBeenSet(nameof(Color)) && bitHeader.Color != Color)
+        if (Color.HasValue)
         {
-            bitHeader.Color = Color.Value;
-
-            bitHeader.ClassBuilder.Reset();
+            bitHeader.TakeFromCascade(nameof(Color), Color.Value, static h => h.Color, static (h, v) => h.Color = v);
         }
 
-        if (ElevateOffset.HasValue && bitHeader.HasNotBeenSet(nameof(ElevateOffset)))
+        if (ElevateOffset.HasValue)
         {
-            bitHeader.ElevateOffset = ElevateOffset.Value;
+            bitHeader.TakeFromCascade(nameof(ElevateOffset), ElevateOffset.Value, static h => h.ElevateOffset, static (h, v) => h.ElevateOffset = v);
         }
 
-        if (ElevateOnScroll.HasValue && bitHeader.HasNotBeenSet(nameof(ElevateOnScroll)) && bitHeader.ElevateOnScroll != ElevateOnScroll)
+        if (ElevateOnScroll.HasValue)
         {
-            bitHeader.ElevateOnScroll = ElevateOnScroll.Value;
-
-            bitHeader.ClassBuilder.Reset();
+            bitHeader.TakeFromCascade(nameof(ElevateOnScroll), ElevateOnScroll.Value, static h => h.ElevateOnScroll, static (h, v) => h.ElevateOnScroll = v);
         }
 
-        if (Elevated.HasValue && bitHeader.HasNotBeenSet(nameof(Elevated)) && bitHeader.Elevated != Elevated)
+        if (Elevated.HasValue)
         {
-            bitHeader.Elevated = Elevated.Value;
-
-            bitHeader.ClassBuilder.Reset();
+            bitHeader.TakeFromCascade(nameof(Elevated), Elevated.Value, static h => h.Elevated, static (h, v) => h.Elevated = v);
         }
 
-        if (Fixed.HasValue && bitHeader.HasNotBeenSet(nameof(Fixed)) && bitHeader.Fixed != Fixed)
+        if (Fixed.HasValue)
         {
-            bitHeader.Fixed = Fixed.Value;
-
-            bitHeader.ClassBuilder.Reset();
-            bitHeader.StyleBuilder.Reset();
+            bitHeader.TakeFromCascade(nameof(Fixed), Fixed.Value, static h => h.Fixed, static (h, v) => h.Fixed = v);
         }
 
-        if (Gap is not null && bitHeader.HasNotBeenSet(nameof(Gap)) && bitHeader.Gap != Gap)
+        if (Gap is not null)
         {
-            bitHeader.Gap = Gap;
-
-            bitHeader.StyleBuilder.Reset();
+            bitHeader.TakeFromCascade(nameof(Gap), Gap, static h => h.Gap, static (h, v) => h.Gap = v);
         }
 
-        if (Height.HasValue && bitHeader.HasNotBeenSet(nameof(Height)) && bitHeader.Height != Height)
+        if (Height.HasValue)
         {
-            bitHeader.Height = Height.Value;
-
-            bitHeader.StyleBuilder.Reset();
+            bitHeader.TakeFromCascade(nameof(Height), Height.Value, static h => h.Height, static (h, v) => h.Height = v);
         }
 
-        if (Hidden.HasValue && bitHeader.HasNotBeenSet(nameof(Hidden)) && bitHeader.Hidden != Hidden)
+        if (Hidden.HasValue)
         {
-            bitHeader.Hidden = Hidden.Value;
-
-            bitHeader.ClassBuilder.Reset();
+            bitHeader.TakeFromCascade(nameof(Hidden), Hidden.Value, static h => h.Hidden, static (h, v) => h.Hidden = v);
         }
 
-        if (MaxWidth is not null && bitHeader.HasNotBeenSet(nameof(MaxWidth)) && bitHeader.MaxWidth != MaxWidth)
+        if (MaxWidth is not null)
         {
-            bitHeader.MaxWidth = MaxWidth;
-
-            bitHeader.StyleBuilder.Reset();
+            bitHeader.TakeFromCascade(nameof(MaxWidth), MaxWidth, static h => h.MaxWidth, static (h, v) => h.MaxWidth = v);
         }
 
-        if (NoGutter.HasValue && bitHeader.HasNotBeenSet(nameof(NoGutter)) && bitHeader.NoGutter != NoGutter)
+        if (NoGutter.HasValue)
         {
-            bitHeader.NoGutter = NoGutter.Value;
-
-            bitHeader.ClassBuilder.Reset();
+            bitHeader.TakeFromCascade(nameof(NoGutter), NoGutter.Value, static h => h.NoGutter, static (h, v) => h.NoGutter = v);
         }
 
-        if (Reveal.HasValue && bitHeader.HasNotBeenSet(nameof(Reveal)) && bitHeader.Reveal != Reveal)
+        if (Reveal.HasValue)
         {
-            bitHeader.Reveal = Reveal.Value;
-
-            bitHeader.ClassBuilder.Reset();
+            bitHeader.TakeFromCascade(nameof(Reveal), Reveal.Value, static h => h.Reveal, static (h, v) => h.Reveal = v);
         }
 
-        if (RevealOffset.HasValue && bitHeader.HasNotBeenSet(nameof(RevealOffset)))
+        if (RevealOffset.HasValue)
         {
-            bitHeader.RevealOffset = RevealOffset.Value;
+            bitHeader.TakeFromCascade(nameof(RevealOffset), RevealOffset.Value, static h => h.RevealOffset, static (h, v) => h.RevealOffset = v);
         }
 
-        if (ScrollPadding.HasValue && bitHeader.HasNotBeenSet(nameof(ScrollPadding)))
+        if (ScrollPadding.HasValue)
         {
-            bitHeader.ScrollPadding = ScrollPadding.Value;
+            bitHeader.TakeFromCascade(nameof(ScrollPadding), ScrollPadding.Value, static h => h.ScrollPadding, static (h, v) => h.ScrollPadding = v);
         }
 
-        if (ScrollTarget is not null && bitHeader.HasNotBeenSet(nameof(ScrollTarget)))
+        if (ScrollTarget is not null)
         {
-            bitHeader.ScrollTarget = ScrollTarget;
+            bitHeader.TakeFromCascade(nameof(ScrollTarget), ScrollTarget, static h => h.ScrollTarget, static (h, v) => h.ScrollTarget = v);
         }
 
-        if (Size.HasValue && bitHeader.HasNotBeenSet(nameof(Size)) && bitHeader.Size != Size)
+        if (Size.HasValue)
         {
-            bitHeader.Size = Size.Value;
-
-            bitHeader.ClassBuilder.Reset();
+            bitHeader.TakeFromCascade(nameof(Size), Size.Value, static h => h.Size, static (h, v) => h.Size = v);
         }
 
-        if (SkipLinkHref is not null && bitHeader.HasNotBeenSet(nameof(SkipLinkHref)))
+        if (SkipLinkHref is not null)
         {
-            bitHeader.SkipLinkHref = SkipLinkHref;
+            bitHeader.TakeFromCascade(nameof(SkipLinkHref), SkipLinkHref, static h => h.SkipLinkHref, static (h, v) => h.SkipLinkHref = v);
         }
 
-        if (SkipLinkText is not null && bitHeader.HasNotBeenSet(nameof(SkipLinkText)))
+        if (SkipLinkText is not null)
         {
-            bitHeader.SkipLinkText = SkipLinkText;
+            bitHeader.TakeFromCascade(nameof(SkipLinkText), SkipLinkText, static h => h.SkipLinkText, static (h, v) => h.SkipLinkText = v);
         }
 
-        if (Sticky.HasValue && bitHeader.HasNotBeenSet(nameof(Sticky)) && bitHeader.Sticky != Sticky)
+        if (Sticky.HasValue)
         {
-            bitHeader.Sticky = Sticky.Value;
-
-            bitHeader.ClassBuilder.Reset();
-            bitHeader.StyleBuilder.Reset();
+            bitHeader.TakeFromCascade(nameof(Sticky), Sticky.Value, static h => h.Sticky, static (h, v) => h.Sticky = v);
         }
 
-        if (Styles is not null && bitHeader.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitHeader.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitHeader.Styles = Styles;
-
-            bitHeader.StyleBuilder.Reset();
+            bitHeader.TakeFromCascade(nameof(Styles), Styles, static h => h.Styles, static (h, v) => h.Styles = v);
         }
 
-        if (Translucent.HasValue && bitHeader.HasNotBeenSet(nameof(Translucent)) && bitHeader.Translucent != Translucent)
+        if (Translucent.HasValue)
         {
-            bitHeader.Translucent = Translucent.Value;
-
-            bitHeader.ClassBuilder.Reset();
+            bitHeader.TakeFromCascade(nameof(Translucent), Translucent.Value, static h => h.Translucent, static (h, v) => h.Translucent = v);
         }
 
-        if (Variant.HasValue && bitHeader.HasNotBeenSet(nameof(Variant)) && bitHeader.Variant != Variant)
+        if (Variant.HasValue)
         {
-            bitHeader.Variant = Variant.Value;
-
-            bitHeader.ClassBuilder.Reset();
+            bitHeader.TakeFromCascade(nameof(Variant), Variant.Value, static h => h.Variant, static (h, v) => h.Variant = v);
         }
 
-        if (VerticalAlign.HasValue && bitHeader.HasNotBeenSet(nameof(VerticalAlign)) && bitHeader.VerticalAlign != VerticalAlign)
+        if (VerticalAlign.HasValue)
         {
-            bitHeader.VerticalAlign = VerticalAlign.Value;
-
-            bitHeader.ClassBuilder.Reset();
+            bitHeader.TakeFromCascade(nameof(VerticalAlign), VerticalAlign.Value, static h => h.VerticalAlign, static (h, v) => h.VerticalAlign = v);
         }
 
-        if (Wrap.HasValue && bitHeader.HasNotBeenSet(nameof(Wrap)) && bitHeader.Wrap != Wrap)
+        if (Wrap.HasValue)
         {
-            bitHeader.Wrap = Wrap.Value;
-
-            bitHeader.ClassBuilder.Reset();
+            bitHeader.TakeFromCascade(nameof(Wrap), Wrap.Value, static h => h.Wrap, static (h, v) => h.Wrap = v);
         }
     }
 }

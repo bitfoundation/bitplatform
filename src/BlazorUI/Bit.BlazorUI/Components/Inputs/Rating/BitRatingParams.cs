@@ -197,148 +197,134 @@ public class BitRatingParams : BitInputBaseParams<double>, IBitComponentParams
 
         UpdateInputBaseParameters(bitRating);
 
-        if (AllowClear.HasValue && bitRating.HasNotBeenSet(nameof(AllowClear)))
+        if (AllowClear.HasValue)
         {
-            bitRating.AllowClear = AllowClear.Value;
+            bitRating.TakeFromCascade(nameof(AllowClear), AllowClear.Value, static r => r.AllowClear, static (r, v) => r.AllowClear = v);
         }
 
-        if (AllowZeroStars.HasValue && bitRating.HasNotBeenSet(nameof(AllowZeroStars)))
+        if (AllowZeroStars.HasValue)
         {
-            bitRating.AllowZeroStars = AllowZeroStars.Value;
+            bitRating.TakeFromCascade(nameof(AllowZeroStars), AllowZeroStars.Value, static r => r.AllowZeroStars, static (r, v) => r.AllowZeroStars = v);
         }
 
-        if (AriaLabelFormat.HasValue() && bitRating.HasNotBeenSet(nameof(AriaLabelFormat)))
+        if (AriaLabelFormat.HasValue())
         {
-            bitRating.AriaLabelFormat = AriaLabelFormat;
+            bitRating.TakeFromCascade(nameof(AriaLabelFormat), AriaLabelFormat, static r => r.AriaLabelFormat, static (r, v) => r.AriaLabelFormat = v);
         }
 
-        if (AriaLabelledBy.HasValue() && bitRating.HasNotBeenSet(nameof(AriaLabelledBy)))
+        if (AriaLabelledBy.HasValue())
         {
-            bitRating.AriaLabelledBy = AriaLabelledBy;
+            bitRating.TakeFromCascade(nameof(AriaLabelledBy), AriaLabelledBy, static r => r.AriaLabelledBy, static (r, v) => r.AriaLabelledBy = v);
         }
 
-        if (AutoFocus.HasValue && bitRating.HasNotBeenSet(nameof(AutoFocus)))
+        if (AutoFocus.HasValue)
         {
-            bitRating.AutoFocus = AutoFocus.Value;
+            bitRating.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static r => r.AutoFocus, static (r, v) => r.AutoFocus = v);
         }
 
-        if (Classes is not null && bitRating.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitRating.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitRating.Classes = Classes;
-
-            bitRating.ClassBuilder.Reset();
+            bitRating.TakeFromCascade(nameof(Classes), Classes, static r => r.Classes, static (r, v) => r.Classes = v);
         }
 
-        if (Color.HasValue && bitRating.HasNotBeenSet(nameof(Color)) && bitRating.Color != Color)
+        if (Color.HasValue)
         {
-            bitRating.Color = Color.Value;
-
-            bitRating.ClassBuilder.Reset();
+            bitRating.TakeFromCascade(nameof(Color), Color.Value, static r => r.Color, static (r, v) => r.Color = v);
         }
 
-        if (Description.HasValue() && bitRating.HasNotBeenSet(nameof(Description)))
+        if (Description.HasValue())
         {
-            bitRating.Description = Description;
+            bitRating.TakeFromCascade(nameof(Description), Description, static r => r.Description, static (r, v) => r.Description = v);
         }
 
-        if (GetAriaLabel is not null && bitRating.HasNotBeenSet(nameof(GetAriaLabel)))
+        if (GetAriaLabel is not null)
         {
-            bitRating.GetAriaLabel = GetAriaLabel;
+            bitRating.TakeFromCascade(nameof(GetAriaLabel), GetAriaLabel, static r => r.GetAriaLabel, static (r, v) => r.GetAriaLabel = v);
         }
 
-        if (GetSelectedIcon is not null && bitRating.HasNotBeenSet(nameof(GetSelectedIcon)))
+        if (GetSelectedIcon is not null)
         {
-            bitRating.GetSelectedIcon = GetSelectedIcon;
+            bitRating.TakeFromCascade(nameof(GetSelectedIcon), GetSelectedIcon, static r => r.GetSelectedIcon, static (r, v) => r.GetSelectedIcon = v);
         }
 
-        if (GetUnselectedIcon is not null && bitRating.HasNotBeenSet(nameof(GetUnselectedIcon)))
+        if (GetUnselectedIcon is not null)
         {
-            bitRating.GetUnselectedIcon = GetUnselectedIcon;
+            bitRating.TakeFromCascade(nameof(GetUnselectedIcon), GetUnselectedIcon, static r => r.GetUnselectedIcon, static (r, v) => r.GetUnselectedIcon = v);
         }
 
-        if (HighlightSelectedOnly.HasValue && bitRating.HasNotBeenSet(nameof(HighlightSelectedOnly)))
+        if (HighlightSelectedOnly.HasValue)
         {
-            bitRating.HighlightSelectedOnly = HighlightSelectedOnly.Value;
+            bitRating.TakeFromCascade(nameof(HighlightSelectedOnly), HighlightSelectedOnly.Value, static r => r.HighlightSelectedOnly, static (r, v) => r.HighlightSelectedOnly = v);
         }
 
-        if (ItemTitles is not null && bitRating.HasNotBeenSet(nameof(ItemTitles)))
+        if (ItemTitles is not null)
         {
-            bitRating.ItemTitles = ItemTitles;
+            bitRating.TakeFromCascade(nameof(ItemTitles), ItemTitles, static r => r.ItemTitles, static (r, v) => r.ItemTitles = v);
         }
 
-        if (Label.HasValue() && bitRating.HasNotBeenSet(nameof(Label)))
+        if (Label.HasValue())
         {
-            bitRating.Label = Label;
+            bitRating.TakeFromCascade(nameof(Label), Label, static r => r.Label, static (r, v) => r.Label = v);
         }
 
-        if (LabelPlacement.HasValue && bitRating.HasNotBeenSet(nameof(LabelPlacement)) && bitRating.LabelPlacement != LabelPlacement)
+        if (LabelPlacement.HasValue)
         {
-            bitRating.LabelPlacement = LabelPlacement.Value;
-
-            bitRating.ClassBuilder.Reset();
+            bitRating.TakeFromCascade(nameof(LabelPlacement), LabelPlacement.Value, static r => r.LabelPlacement, static (r, v) => r.LabelPlacement = v);
         }
 
-        if (Max.HasValue && bitRating.HasNotBeenSet(nameof(Max)))
+        if (Max.HasValue)
         {
-            bitRating.Max = Max.Value;
+            bitRating.TakeFromCascade(nameof(Max), Max.Value, static r => r.Max, static (r, v) => r.Max = v);
         }
 
-        if (NoHoverPreview.HasValue && bitRating.HasNotBeenSet(nameof(NoHoverPreview)) && bitRating.NoHoverPreview != NoHoverPreview)
+        if (NoHoverPreview.HasValue)
         {
-            bitRating.NoHoverPreview = NoHoverPreview.Value;
-
-            bitRating.ClassBuilder.Reset();
+            bitRating.TakeFromCascade(nameof(NoHoverPreview), NoHoverPreview.Value, static r => r.NoHoverPreview, static (r, v) => r.NoHoverPreview = v);
         }
 
-        if (Precision.HasValue && bitRating.HasNotBeenSet(nameof(Precision)))
+        if (Precision.HasValue)
         {
-            bitRating.Precision = Precision.Value;
+            bitRating.TakeFromCascade(nameof(Precision), Precision.Value, static r => r.Precision, static (r, v) => r.Precision = v);
         }
 
-        if (SelectedIcon is not null && bitRating.HasNotBeenSet(nameof(SelectedIcon)))
+        if (SelectedIcon is not null)
         {
-            bitRating.SelectedIcon = SelectedIcon;
+            bitRating.TakeFromCascade(nameof(SelectedIcon), SelectedIcon, static r => r.SelectedIcon, static (r, v) => r.SelectedIcon = v);
         }
 
-        if (SelectedIconName.HasValue() && bitRating.HasNotBeenSet(nameof(SelectedIconName)))
+        if (SelectedIconName.HasValue())
         {
-            bitRating.SelectedIconName = SelectedIconName;
+            bitRating.TakeFromCascade(nameof(SelectedIconName), SelectedIconName, static r => r.SelectedIconName, static (r, v) => r.SelectedIconName = v);
         }
 
-        if (Size.HasValue && bitRating.HasNotBeenSet(nameof(Size)) && bitRating.Size != Size)
+        if (Size.HasValue)
         {
-            bitRating.Size = Size.Value;
-
-            bitRating.ClassBuilder.Reset();
+            bitRating.TakeFromCascade(nameof(Size), Size.Value, static r => r.Size, static (r, v) => r.Size = v);
         }
 
-        if (Styles is not null && bitRating.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitRating.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitRating.Styles = Styles;
-
-            bitRating.StyleBuilder.Reset();
+            bitRating.TakeFromCascade(nameof(Styles), Styles, static r => r.Styles, static (r, v) => r.Styles = v);
         }
 
-        if (UnselectedIcon is not null && bitRating.HasNotBeenSet(nameof(UnselectedIcon)))
+        if (UnselectedIcon is not null)
         {
-            bitRating.UnselectedIcon = UnselectedIcon;
+            bitRating.TakeFromCascade(nameof(UnselectedIcon), UnselectedIcon, static r => r.UnselectedIcon, static (r, v) => r.UnselectedIcon = v);
         }
 
-        if (UnselectedIconName.HasValue() && bitRating.HasNotBeenSet(nameof(UnselectedIconName)))
+        if (UnselectedIconName.HasValue())
         {
-            bitRating.UnselectedIconName = UnselectedIconName;
+            bitRating.TakeFromCascade(nameof(UnselectedIconName), UnselectedIconName, static r => r.UnselectedIconName, static (r, v) => r.UnselectedIconName = v);
         }
 
-        if (ValueTextFormat.HasValue() && bitRating.HasNotBeenSet(nameof(ValueTextFormat)))
+        if (ValueTextFormat.HasValue())
         {
-            bitRating.ValueTextFormat = ValueTextFormat;
+            bitRating.TakeFromCascade(nameof(ValueTextFormat), ValueTextFormat, static r => r.ValueTextFormat, static (r, v) => r.ValueTextFormat = v);
         }
 
-        if (Vertical.HasValue && bitRating.HasNotBeenSet(nameof(Vertical)) && bitRating.Vertical != Vertical)
+        if (Vertical.HasValue)
         {
-            bitRating.Vertical = Vertical.Value;
-
-            bitRating.ClassBuilder.Reset();
+            bitRating.TakeFromCascade(nameof(Vertical), Vertical.Value, static r => r.Vertical, static (r, v) => r.Vertical = v);
         }
     }
 }

@@ -294,272 +294,254 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitCarousel);
 
-        if (Accent.HasValue && bitCarousel.HasNotBeenSet(nameof(Accent)) && bitCarousel.Accent != Accent)
+        if (Accent.HasValue)
         {
-            bitCarousel.Accent = Accent.Value;
-
-            bitCarousel.ClassBuilder.Reset();
+            bitCarousel.TakeFromCascade(nameof(Accent), Accent.Value, static c => c.Accent, static (c, v) => c.Accent = v);
         }
 
-        if (AnimationDuration.HasValue && bitCarousel.HasNotBeenSet(nameof(AnimationDuration)) && bitCarousel.AnimationDuration != AnimationDuration)
+        if (AnimationDuration.HasValue)
         {
-            bitCarousel.AnimationDuration = AnimationDuration.Value;
-
-            bitCarousel.StyleBuilder.Reset();
+            bitCarousel.TakeFromCascade(nameof(AnimationDuration), AnimationDuration.Value, static c => c.AnimationDuration, static (c, v) => c.AnimationDuration = v);
         }
 
-        if (AutoPlay.HasValue && bitCarousel.HasNotBeenSet(nameof(AutoPlay)))
+        if (AutoPlay.HasValue)
         {
-            bitCarousel.AutoPlay = AutoPlay.Value;
+            bitCarousel.TakeFromCascade(nameof(AutoPlay), AutoPlay.Value, static c => c.AutoPlay, static (c, v) => c.AutoPlay = v);
         }
 
-        if (AutoPlayInterval.HasValue && bitCarousel.HasNotBeenSet(nameof(AutoPlayInterval)))
+        if (AutoPlayInterval.HasValue)
         {
-            bitCarousel.AutoPlayInterval = AutoPlayInterval.Value;
+            bitCarousel.TakeFromCascade(nameof(AutoPlayInterval), AutoPlayInterval.Value, static c => c.AutoPlayInterval, static (c, v) => c.AutoPlayInterval = v);
         }
 
-        if (AutoPlayReverse.HasValue && bitCarousel.HasNotBeenSet(nameof(AutoPlayReverse)))
+        if (AutoPlayReverse.HasValue)
         {
-            bitCarousel.AutoPlayReverse = AutoPlayReverse.Value;
+            bitCarousel.TakeFromCascade(nameof(AutoPlayReverse), AutoPlayReverse.Value, static c => c.AutoPlayReverse, static (c, v) => c.AutoPlayReverse = v);
         }
 
-        if (Classes is not null && bitCarousel.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitCarousel.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitCarousel.Classes = Classes;
-
-            bitCarousel.ClassBuilder.Reset();
+            bitCarousel.TakeFromCascade(nameof(Classes), Classes, static c => c.Classes, static (c, v) => c.Classes = v);
         }
 
-        if (Color.HasValue && bitCarousel.HasNotBeenSet(nameof(Color)) && bitCarousel.Color != Color)
+        if (Color.HasValue)
         {
-            bitCarousel.Color = Color.Value;
-
-            bitCarousel.ClassBuilder.Reset();
+            bitCarousel.TakeFromCascade(nameof(Color), Color.Value, static c => c.Color, static (c, v) => c.Color = v);
         }
 
-        if (DotAriaLabel.HasValue() && bitCarousel.HasNotBeenSet(nameof(DotAriaLabel)))
+        if (DotAriaLabel.HasValue())
         {
-            bitCarousel.DotAriaLabel = DotAriaLabel!;
+            bitCarousel.TakeFromCascade(nameof(DotAriaLabel), DotAriaLabel!, static c => c.DotAriaLabel, static (c, v) => c.DotAriaLabel = v);
         }
 
-        if (DotsAriaLabel.HasValue() && bitCarousel.HasNotBeenSet(nameof(DotsAriaLabel)))
+        if (DotsAriaLabel.HasValue())
         {
-            bitCarousel.DotsAriaLabel = DotsAriaLabel!;
+            bitCarousel.TakeFromCascade(nameof(DotsAriaLabel), DotsAriaLabel!, static c => c.DotsAriaLabel, static (c, v) => c.DotsAriaLabel = v);
         }
 
-        if (DotsPlacement.HasValue && bitCarousel.HasNotBeenSet(nameof(DotsPlacement)) && bitCarousel.DotsPlacement != DotsPlacement)
+        if (DotsPlacement.HasValue)
         {
-            bitCarousel.DotsPlacement = DotsPlacement.Value;
-
-            bitCarousel.ClassBuilder.Reset();
+            bitCarousel.TakeFromCascade(nameof(DotsPlacement), DotsPlacement.Value, static c => c.DotsPlacement, static (c, v) => c.DotsPlacement = v);
         }
 
-        if (DotTemplate is not null && bitCarousel.HasNotBeenSet(nameof(DotTemplate)))
+        if (DotTemplate is not null)
         {
-            bitCarousel.DotTemplate = DotTemplate;
+            bitCarousel.TakeFromCascade(nameof(DotTemplate), DotTemplate, static c => c.DotTemplate, static (c, v) => c.DotTemplate = v);
         }
 
-        if (DragThreshold.HasValue && bitCarousel.HasNotBeenSet(nameof(DragThreshold)))
+        if (DragThreshold.HasValue)
         {
-            bitCarousel.DragThreshold = DragThreshold.Value;
+            bitCarousel.TakeFromCascade(nameof(DragThreshold), DragThreshold.Value, static c => c.DragThreshold, static (c, v) => c.DragThreshold = v);
         }
 
-        if (Fade.HasValue && bitCarousel.HasNotBeenSet(nameof(Fade)))
+        if (Fade.HasValue)
         {
-            bitCarousel.Fade = Fade.Value;
+            bitCarousel.TakeFromCascade(nameof(Fade), Fade.Value, static c => c.Fade, static (c, v) => c.Fade = v);
         }
 
-        if (Gap.HasValue() && bitCarousel.HasNotBeenSet(nameof(Gap)) && bitCarousel.Gap != Gap)
+        if (Gap.HasValue())
         {
-            bitCarousel.Gap = Gap;
-
-            bitCarousel.StyleBuilder.Reset();
+            bitCarousel.TakeFromCascade(nameof(Gap), Gap, static c => c.Gap, static (c, v) => c.Gap = v);
         }
 
-        if (GoLeftAriaLabel.HasValue() && bitCarousel.HasNotBeenSet(nameof(GoLeftAriaLabel)))
+        if (GoLeftAriaLabel.HasValue())
         {
-            bitCarousel.GoLeftAriaLabel = GoLeftAriaLabel;
+            bitCarousel.TakeFromCascade(nameof(GoLeftAriaLabel), GoLeftAriaLabel, static c => c.GoLeftAriaLabel, static (c, v) => c.GoLeftAriaLabel = v);
         }
 
-        if (GoLeftIcon is not null && bitCarousel.HasNotBeenSet(nameof(GoLeftIcon)))
+        if (GoLeftIcon is not null)
         {
-            bitCarousel.GoLeftIcon = GoLeftIcon;
+            bitCarousel.TakeFromCascade(nameof(GoLeftIcon), GoLeftIcon, static c => c.GoLeftIcon, static (c, v) => c.GoLeftIcon = v);
         }
 
-        if (GoLeftIconName.HasValue() && bitCarousel.HasNotBeenSet(nameof(GoLeftIconName)))
+        if (GoLeftIconName.HasValue())
         {
-            bitCarousel.GoLeftIconName = GoLeftIconName;
+            bitCarousel.TakeFromCascade(nameof(GoLeftIconName), GoLeftIconName, static c => c.GoLeftIconName, static (c, v) => c.GoLeftIconName = v);
         }
 
-        if (GoRightAriaLabel.HasValue() && bitCarousel.HasNotBeenSet(nameof(GoRightAriaLabel)))
+        if (GoRightAriaLabel.HasValue())
         {
-            bitCarousel.GoRightAriaLabel = GoRightAriaLabel;
+            bitCarousel.TakeFromCascade(nameof(GoRightAriaLabel), GoRightAriaLabel, static c => c.GoRightAriaLabel, static (c, v) => c.GoRightAriaLabel = v);
         }
 
-        if (GoRightIcon is not null && bitCarousel.HasNotBeenSet(nameof(GoRightIcon)))
+        if (GoRightIcon is not null)
         {
-            bitCarousel.GoRightIcon = GoRightIcon;
+            bitCarousel.TakeFromCascade(nameof(GoRightIcon), GoRightIcon, static c => c.GoRightIcon, static (c, v) => c.GoRightIcon = v);
         }
 
-        if (GoRightIconName.HasValue() && bitCarousel.HasNotBeenSet(nameof(GoRightIconName)))
+        if (GoRightIconName.HasValue())
         {
-            bitCarousel.GoRightIconName = GoRightIconName;
+            bitCarousel.TakeFromCascade(nameof(GoRightIconName), GoRightIconName, static c => c.GoRightIconName, static (c, v) => c.GoRightIconName = v);
         }
 
-        if (HideDots.HasValue && bitCarousel.HasNotBeenSet(nameof(HideDots)))
+        if (HideDots.HasValue)
         {
-            bitCarousel.HideDots = HideDots.Value;
+            bitCarousel.TakeFromCascade(nameof(HideDots), HideDots.Value, static c => c.HideDots, static (c, v) => c.HideDots = v);
         }
 
-        if (HideNextPrev.HasValue && bitCarousel.HasNotBeenSet(nameof(HideNextPrev)))
+        if (HideNextPrev.HasValue)
         {
-            bitCarousel.HideNextPrev = HideNextPrev.Value;
+            bitCarousel.TakeFromCascade(nameof(HideNextPrev), HideNextPrev.Value, static c => c.HideNextPrev, static (c, v) => c.HideNextPrev = v);
         }
 
-        if (InfiniteScrolling.HasValue && bitCarousel.HasNotBeenSet(nameof(InfiniteScrolling)))
+        if (InfiniteScrolling.HasValue)
         {
-            bitCarousel.InfiniteScrolling = InfiniteScrolling.Value;
+            bitCarousel.TakeFromCascade(nameof(InfiniteScrolling), InfiniteScrolling.Value, static c => c.InfiniteScrolling, static (c, v) => c.InfiniteScrolling = v);
         }
 
-        if (ItemAriaLabelFormat.HasValue() && bitCarousel.HasNotBeenSet(nameof(ItemAriaLabelFormat)))
+        if (ItemAriaLabelFormat.HasValue())
         {
-            bitCarousel.ItemAriaLabelFormat = ItemAriaLabelFormat;
+            bitCarousel.TakeFromCascade(nameof(ItemAriaLabelFormat), ItemAriaLabelFormat, static c => c.ItemAriaLabelFormat, static (c, v) => c.ItemAriaLabelFormat = v);
         }
 
-        if (NoDrag.HasValue && bitCarousel.HasNotBeenSet(nameof(NoDrag)))
+        if (NoDrag.HasValue)
         {
-            bitCarousel.NoDrag = NoDrag.Value;
+            bitCarousel.TakeFromCascade(nameof(NoDrag), NoDrag.Value, static c => c.NoDrag, static (c, v) => c.NoDrag = v);
         }
 
-        if (NoKeyboard.HasValue && bitCarousel.HasNotBeenSet(nameof(NoKeyboard)))
+        if (NoKeyboard.HasValue)
         {
-            bitCarousel.NoKeyboard = NoKeyboard.Value;
+            bitCarousel.TakeFromCascade(nameof(NoKeyboard), NoKeyboard.Value, static c => c.NoKeyboard, static (c, v) => c.NoKeyboard = v);
         }
 
-        if (PauseButtonAriaLabel.HasValue() && bitCarousel.HasNotBeenSet(nameof(PauseButtonAriaLabel)))
+        if (PauseButtonAriaLabel.HasValue())
         {
-            bitCarousel.PauseButtonAriaLabel = PauseButtonAriaLabel!;
+            bitCarousel.TakeFromCascade(nameof(PauseButtonAriaLabel), PauseButtonAriaLabel!, static c => c.PauseButtonAriaLabel, static (c, v) => c.PauseButtonAriaLabel = v);
         }
 
-        if (PauseIcon is not null && bitCarousel.HasNotBeenSet(nameof(PauseIcon)))
+        if (PauseIcon is not null)
         {
-            bitCarousel.PauseIcon = PauseIcon;
+            bitCarousel.TakeFromCascade(nameof(PauseIcon), PauseIcon, static c => c.PauseIcon, static (c, v) => c.PauseIcon = v);
         }
 
-        if (PauseIconName.HasValue() && bitCarousel.HasNotBeenSet(nameof(PauseIconName)))
+        if (PauseIconName.HasValue())
         {
-            bitCarousel.PauseIconName = PauseIconName;
+            bitCarousel.TakeFromCascade(nameof(PauseIconName), PauseIconName, static c => c.PauseIconName, static (c, v) => c.PauseIconName = v);
         }
 
-        if (PauseOnFocus.HasValue && bitCarousel.HasNotBeenSet(nameof(PauseOnFocus)))
+        if (PauseOnFocus.HasValue)
         {
-            bitCarousel.PauseOnFocus = PauseOnFocus.Value;
+            bitCarousel.TakeFromCascade(nameof(PauseOnFocus), PauseOnFocus.Value, static c => c.PauseOnFocus, static (c, v) => c.PauseOnFocus = v);
         }
 
-        if (PauseOnHover.HasValue && bitCarousel.HasNotBeenSet(nameof(PauseOnHover)))
+        if (PauseOnHover.HasValue)
         {
-            bitCarousel.PauseOnHover = PauseOnHover.Value;
+            bitCarousel.TakeFromCascade(nameof(PauseOnHover), PauseOnHover.Value, static c => c.PauseOnHover, static (c, v) => c.PauseOnHover = v);
         }
 
-        if (PlayButtonAriaLabel.HasValue() && bitCarousel.HasNotBeenSet(nameof(PlayButtonAriaLabel)))
+        if (PlayButtonAriaLabel.HasValue())
         {
-            bitCarousel.PlayButtonAriaLabel = PlayButtonAriaLabel!;
+            bitCarousel.TakeFromCascade(nameof(PlayButtonAriaLabel), PlayButtonAriaLabel!, static c => c.PlayButtonAriaLabel, static (c, v) => c.PlayButtonAriaLabel = v);
         }
 
-        if (PlayIcon is not null && bitCarousel.HasNotBeenSet(nameof(PlayIcon)))
+        if (PlayIcon is not null)
         {
-            bitCarousel.PlayIcon = PlayIcon;
+            bitCarousel.TakeFromCascade(nameof(PlayIcon), PlayIcon, static c => c.PlayIcon, static (c, v) => c.PlayIcon = v);
         }
 
-        if (PlayIconName.HasValue() && bitCarousel.HasNotBeenSet(nameof(PlayIconName)))
+        if (PlayIconName.HasValue())
         {
-            bitCarousel.PlayIconName = PlayIconName;
+            bitCarousel.TakeFromCascade(nameof(PlayIconName), PlayIconName, static c => c.PlayIconName, static (c, v) => c.PlayIconName = v);
         }
 
-        if (ResponsiveOptions is not null && bitCarousel.HasNotBeenSet(nameof(ResponsiveOptions)))
+        if (ResponsiveOptions is not null)
         {
-            bitCarousel.ResponsiveOptions = ResponsiveOptions;
+            bitCarousel.TakeFromCascade(nameof(ResponsiveOptions), ResponsiveOptions, static c => c.ResponsiveOptions, static (c, v) => c.ResponsiveOptions = v);
         }
 
-        if (ScrollItemsCount.HasValue && bitCarousel.HasNotBeenSet(nameof(ScrollItemsCount)))
+        if (ScrollItemsCount.HasValue)
         {
-            bitCarousel.ScrollItemsCount = ScrollItemsCount.Value;
+            bitCarousel.TakeFromCascade(nameof(ScrollItemsCount), ScrollItemsCount.Value, static c => c.ScrollItemsCount, static (c, v) => c.ScrollItemsCount = v);
         }
 
-        if (ShowPlayPause.HasValue && bitCarousel.HasNotBeenSet(nameof(ShowPlayPause)))
+        if (ShowPlayPause.HasValue)
         {
-            bitCarousel.ShowPlayPause = ShowPlayPause.Value;
+            bitCarousel.TakeFromCascade(nameof(ShowPlayPause), ShowPlayPause.Value, static c => c.ShowPlayPause, static (c, v) => c.ShowPlayPause = v);
         }
 
-        if (Size.HasValue && bitCarousel.HasNotBeenSet(nameof(Size)) && bitCarousel.Size != Size)
+        if (Size.HasValue)
         {
-            bitCarousel.Size = Size.Value;
-
-            bitCarousel.ClassBuilder.Reset();
+            bitCarousel.TakeFromCascade(nameof(Size), Size.Value, static c => c.Size, static (c, v) => c.Size = v);
         }
 
-        if (StopOnInteraction.HasValue && bitCarousel.HasNotBeenSet(nameof(StopOnInteraction)))
+        if (StopOnInteraction.HasValue)
         {
-            bitCarousel.StopOnInteraction = StopOnInteraction.Value;
+            bitCarousel.TakeFromCascade(nameof(StopOnInteraction), StopOnInteraction.Value, static c => c.StopOnInteraction, static (c, v) => c.StopOnInteraction = v);
         }
 
-        if (StopOnLastSlide.HasValue && bitCarousel.HasNotBeenSet(nameof(StopOnLastSlide)))
+        if (StopOnLastSlide.HasValue)
         {
-            bitCarousel.StopOnLastSlide = StopOnLastSlide.Value;
+            bitCarousel.TakeFromCascade(nameof(StopOnLastSlide), StopOnLastSlide.Value, static c => c.StopOnLastSlide, static (c, v) => c.StopOnLastSlide = v);
         }
 
-        if (Styles is not null && bitCarousel.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitCarousel.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitCarousel.Styles = Styles;
-
-            bitCarousel.StyleBuilder.Reset();
+            bitCarousel.TakeFromCascade(nameof(Styles), Styles, static c => c.Styles, static (c, v) => c.Styles = v);
         }
 
-        if (Vertical.HasValue && bitCarousel.HasNotBeenSet(nameof(Vertical)) && bitCarousel.Vertical != Vertical)
+        if (Vertical.HasValue)
         {
-            bitCarousel.Vertical = Vertical.Value;
-
-            bitCarousel.ClassBuilder.Reset();
+            bitCarousel.TakeFromCascade(nameof(Vertical), Vertical.Value, static c => c.Vertical, static (c, v) => c.Vertical = v);
         }
 
-        if (VisibleItemsCount.HasValue && bitCarousel.HasNotBeenSet(nameof(VisibleItemsCount)))
+        if (VisibleItemsCount.HasValue)
         {
-            bitCarousel.VisibleItemsCount = VisibleItemsCount.Value;
+            bitCarousel.TakeFromCascade(nameof(VisibleItemsCount), VisibleItemsCount.Value, static c => c.VisibleItemsCount, static (c, v) => c.VisibleItemsCount = v);
         }
 
-        if (VisibleItemsCountXs.HasValue && bitCarousel.HasNotBeenSet(nameof(VisibleItemsCountXs)))
+        if (VisibleItemsCountXs.HasValue)
         {
-            bitCarousel.VisibleItemsCountXs = VisibleItemsCountXs.Value;
+            bitCarousel.TakeFromCascade(nameof(VisibleItemsCountXs), VisibleItemsCountXs.Value, static c => c.VisibleItemsCountXs, static (c, v) => c.VisibleItemsCountXs = v);
         }
 
-        if (VisibleItemsCountSm.HasValue && bitCarousel.HasNotBeenSet(nameof(VisibleItemsCountSm)))
+        if (VisibleItemsCountSm.HasValue)
         {
-            bitCarousel.VisibleItemsCountSm = VisibleItemsCountSm.Value;
+            bitCarousel.TakeFromCascade(nameof(VisibleItemsCountSm), VisibleItemsCountSm.Value, static c => c.VisibleItemsCountSm, static (c, v) => c.VisibleItemsCountSm = v);
         }
 
-        if (VisibleItemsCountMd.HasValue && bitCarousel.HasNotBeenSet(nameof(VisibleItemsCountMd)))
+        if (VisibleItemsCountMd.HasValue)
         {
-            bitCarousel.VisibleItemsCountMd = VisibleItemsCountMd.Value;
+            bitCarousel.TakeFromCascade(nameof(VisibleItemsCountMd), VisibleItemsCountMd.Value, static c => c.VisibleItemsCountMd, static (c, v) => c.VisibleItemsCountMd = v);
         }
 
-        if (VisibleItemsCountLg.HasValue && bitCarousel.HasNotBeenSet(nameof(VisibleItemsCountLg)))
+        if (VisibleItemsCountLg.HasValue)
         {
-            bitCarousel.VisibleItemsCountLg = VisibleItemsCountLg.Value;
+            bitCarousel.TakeFromCascade(nameof(VisibleItemsCountLg), VisibleItemsCountLg.Value, static c => c.VisibleItemsCountLg, static (c, v) => c.VisibleItemsCountLg = v);
         }
 
-        if (VisibleItemsCountXl.HasValue && bitCarousel.HasNotBeenSet(nameof(VisibleItemsCountXl)))
+        if (VisibleItemsCountXl.HasValue)
         {
-            bitCarousel.VisibleItemsCountXl = VisibleItemsCountXl.Value;
+            bitCarousel.TakeFromCascade(nameof(VisibleItemsCountXl), VisibleItemsCountXl.Value, static c => c.VisibleItemsCountXl, static (c, v) => c.VisibleItemsCountXl = v);
         }
 
-        if (VisibleItemsCountXxl.HasValue && bitCarousel.HasNotBeenSet(nameof(VisibleItemsCountXxl)))
+        if (VisibleItemsCountXxl.HasValue)
         {
-            bitCarousel.VisibleItemsCountXxl = VisibleItemsCountXxl.Value;
+            bitCarousel.TakeFromCascade(nameof(VisibleItemsCountXxl), VisibleItemsCountXxl.Value, static c => c.VisibleItemsCountXxl, static (c, v) => c.VisibleItemsCountXxl = v);
         }
 
-        if (Wheel.HasValue && bitCarousel.HasNotBeenSet(nameof(Wheel)))
+        if (Wheel.HasValue)
         {
-            bitCarousel.Wheel = Wheel.Value;
+            bitCarousel.TakeFromCascade(nameof(Wheel), Wheel.Value, static c => c.Wheel, static (c, v) => c.Wheel = v);
         }
     }
 }

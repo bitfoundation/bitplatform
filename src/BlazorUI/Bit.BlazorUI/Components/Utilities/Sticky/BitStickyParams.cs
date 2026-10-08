@@ -97,79 +97,59 @@ public class BitStickyParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitSticky);
 
-        if (Bottom.HasValue() && bitSticky.HasNotBeenSet(nameof(Bottom)) && bitSticky.Bottom != Bottom)
+        if (Bottom.HasValue())
         {
-            bitSticky.Bottom = Bottom;
-
-            bitSticky.ClassBuilder.Reset();
-            bitSticky.StyleBuilder.Reset();
+            bitSticky.TakeFromCascade(nameof(Bottom), Bottom, static s => s.Bottom, static (s, v) => s.Bottom = v);
         }
 
-        if (Element.HasValue() && bitSticky.HasNotBeenSet(nameof(Element)))
+        if (Element.HasValue())
         {
-            bitSticky.Element = Element;
+            bitSticky.TakeFromCascade(nameof(Element), Element, static s => s.Element, static (s, v) => s.Element = v);
         }
 
-        if (ElevateOnStuck.HasValue && bitSticky.HasNotBeenSet(nameof(ElevateOnStuck)) && bitSticky.ElevateOnStuck != ElevateOnStuck)
+        if (ElevateOnStuck.HasValue)
         {
-            bitSticky.ElevateOnStuck = ElevateOnStuck.Value;
-
-            bitSticky.ClassBuilder.Reset();
+            bitSticky.TakeFromCascade(nameof(ElevateOnStuck), ElevateOnStuck.Value, static s => s.ElevateOnStuck, static (s, v) => s.ElevateOnStuck = v);
         }
 
-        if (Left.HasValue() && bitSticky.HasNotBeenSet(nameof(Left)) && bitSticky.Left != Left)
+        if (Left.HasValue())
         {
-            bitSticky.Left = Left;
-
-            bitSticky.ClassBuilder.Reset();
-            bitSticky.StyleBuilder.Reset();
+            bitSticky.TakeFromCascade(nameof(Left), Left, static s => s.Left, static (s, v) => s.Left = v);
         }
 
-        if (Placement.HasValue && bitSticky.HasNotBeenSet(nameof(Placement)) && bitSticky.Placement != Placement)
+        if (Placement.HasValue)
         {
-            bitSticky.Placement = Placement.Value;
-
-            bitSticky.ClassBuilder.Reset();
+            bitSticky.TakeFromCascade(nameof(Placement), Placement.Value, static s => s.Placement, static (s, v) => s.Placement = v);
         }
 
-        if (Right.HasValue() && bitSticky.HasNotBeenSet(nameof(Right)) && bitSticky.Right != Right)
+        if (Right.HasValue())
         {
-            bitSticky.Right = Right;
-
-            bitSticky.ClassBuilder.Reset();
-            bitSticky.StyleBuilder.Reset();
+            bitSticky.TakeFromCascade(nameof(Right), Right, static s => s.Right, static (s, v) => s.Right = v);
         }
 
-        if (ScrollPadding.HasValue && bitSticky.HasNotBeenSet(nameof(ScrollPadding)))
+        if (ScrollPadding.HasValue)
         {
-            bitSticky.ScrollPadding = ScrollPadding.Value;
+            bitSticky.TakeFromCascade(nameof(ScrollPadding), ScrollPadding.Value, static s => s.ScrollPadding, static (s, v) => s.ScrollPadding = v);
         }
 
-        if (StuckClass.HasValue() && bitSticky.HasNotBeenSet(nameof(StuckClass)) && bitSticky.StuckClass != StuckClass)
+        if (StuckClass.HasValue())
         {
-            bitSticky.StuckClass = StuckClass;
-
-            bitSticky.ClassBuilder.Reset();
+            bitSticky.TakeFromCascade(nameof(StuckClass), StuckClass, static s => s.StuckClass, static (s, v) => s.StuckClass = v);
         }
 
-        if (StuckStyle.HasValue() && bitSticky.HasNotBeenSet(nameof(StuckStyle)))
+        if (StuckStyle.HasValue())
         {
-            bitSticky.StuckStyle = StuckStyle;
+            bitSticky.TakeFromCascade(nameof(StuckStyle), StuckStyle, static s => s.StuckStyle, static (s, v) => s.StuckStyle = v);
         }
 
-        if (Top.HasValue() && bitSticky.HasNotBeenSet(nameof(Top)) && bitSticky.Top != Top)
+        if (Top.HasValue())
         {
-            bitSticky.Top = Top;
-
-            bitSticky.ClassBuilder.Reset();
-            bitSticky.StyleBuilder.Reset();
+            bitSticky.TakeFromCascade(nameof(Top), Top, static s => s.Top, static (s, v) => s.Top = v);
         }
 
-        if (ZIndex.HasValue && bitSticky.HasNotBeenSet(nameof(ZIndex)) && bitSticky.ZIndex != ZIndex)
+        if (ZIndex.HasValue)
         {
-            bitSticky.ZIndex = ZIndex.Value;
-
-            bitSticky.StyleBuilder.Reset();
+            bitSticky.TakeFromCascade(nameof(ZIndex), ZIndex.Value, static s => s.ZIndex, static (s, v) => s.ZIndex = v);
         }
     }
 }

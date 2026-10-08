@@ -236,150 +236,109 @@ public class BitGridParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitGrid);
 
-        if (AlignContent.HasValue && bitGrid.HasNotBeenSet(nameof(AlignContent)) && bitGrid.AlignContent != AlignContent)
+        if (AlignContent.HasValue)
         {
-            bitGrid.AlignContent = AlignContent.Value;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(AlignContent), AlignContent.Value, static g => g.AlignContent, static (g, v) => g.AlignContent = v);
         }
 
-        if (Alignment.HasValue && bitGrid.HasNotBeenSet(nameof(Alignment)) && bitGrid.Alignment != Alignment)
+        if (Alignment.HasValue)
         {
-            bitGrid.Alignment = Alignment.Value;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(Alignment), Alignment.Value, static g => g.Alignment, static (g, v) => g.Alignment = v);
         }
 
-        if (Columns.HasValue && bitGrid.HasNotBeenSet(nameof(Columns)) && bitGrid.Columns != Columns)
+        if (Columns.HasValue)
         {
-            bitGrid.Columns = Columns.Value;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(Columns), Columns.Value, static g => g.Columns, static (g, v) => g.Columns = v);
         }
 
-        if (ColumnsXs.HasValue && bitGrid.HasNotBeenSet(nameof(ColumnsXs)) && bitGrid.ColumnsXs != ColumnsXs)
+        if (ColumnsXs.HasValue)
         {
-            bitGrid.ColumnsXs = ColumnsXs.Value;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(ColumnsXs), ColumnsXs.Value, static g => g.ColumnsXs, static (g, v) => g.ColumnsXs = v);
         }
 
-        if (ColumnsSm.HasValue && bitGrid.HasNotBeenSet(nameof(ColumnsSm)) && bitGrid.ColumnsSm != ColumnsSm)
+        if (ColumnsSm.HasValue)
         {
-            bitGrid.ColumnsSm = ColumnsSm.Value;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(ColumnsSm), ColumnsSm.Value, static g => g.ColumnsSm, static (g, v) => g.ColumnsSm = v);
         }
 
-        if (ColumnsMd.HasValue && bitGrid.HasNotBeenSet(nameof(ColumnsMd)) && bitGrid.ColumnsMd != ColumnsMd)
+        if (ColumnsMd.HasValue)
         {
-            bitGrid.ColumnsMd = ColumnsMd.Value;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(ColumnsMd), ColumnsMd.Value, static g => g.ColumnsMd, static (g, v) => g.ColumnsMd = v);
         }
 
-        if (ColumnsLg.HasValue && bitGrid.HasNotBeenSet(nameof(ColumnsLg)) && bitGrid.ColumnsLg != ColumnsLg)
+        if (ColumnsLg.HasValue)
         {
-            bitGrid.ColumnsLg = ColumnsLg.Value;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(ColumnsLg), ColumnsLg.Value, static g => g.ColumnsLg, static (g, v) => g.ColumnsLg = v);
         }
 
-        if (ColumnsXl.HasValue && bitGrid.HasNotBeenSet(nameof(ColumnsXl)) && bitGrid.ColumnsXl != ColumnsXl)
+        if (ColumnsXl.HasValue)
         {
-            bitGrid.ColumnsXl = ColumnsXl.Value;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(ColumnsXl), ColumnsXl.Value, static g => g.ColumnsXl, static (g, v) => g.ColumnsXl = v);
         }
 
-        if (ColumnsXxl.HasValue && bitGrid.HasNotBeenSet(nameof(ColumnsXxl)) && bitGrid.ColumnsXxl != ColumnsXxl)
+        if (ColumnsXxl.HasValue)
         {
-            bitGrid.ColumnsXxl = ColumnsXxl.Value;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(ColumnsXxl), ColumnsXxl.Value, static g => g.ColumnsXxl, static (g, v) => g.ColumnsXxl = v);
         }
 
-        if (Container.HasValue && bitGrid.HasNotBeenSet(nameof(Container)) && bitGrid.Container != Container)
+        if (Container.HasValue)
         {
-            bitGrid.Container = Container.Value;
-
-            bitGrid.ClassBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(Container), Container.Value, static g => g.Container, static (g, v) => g.Container = v);
         }
 
-        if (Element.HasValue() && bitGrid.HasNotBeenSet(nameof(Element)))
+        if (Element.HasValue())
         {
-            bitGrid.Element = Element;
+            bitGrid.TakeFromCascade(nameof(Element), Element, static g => g.Element, static (g, v) => g.Element = v);
         }
 
-        if (Grow.HasValue && bitGrid.HasNotBeenSet(nameof(Grow)) && bitGrid.Grow != Grow)
+        if (Grow.HasValue)
         {
-            bitGrid.Grow = Grow.Value;
-
-            bitGrid.ClassBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(Grow), Grow.Value, static g => g.Grow, static (g, v) => g.Grow = v);
         }
 
-        if (HorizontalAlign.HasValue && bitGrid.HasNotBeenSet(nameof(HorizontalAlign)) && bitGrid.HorizontalAlign != HorizontalAlign)
+        if (HorizontalAlign.HasValue)
         {
-            bitGrid.HorizontalAlign = HorizontalAlign.Value;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(HorizontalAlign), HorizontalAlign.Value, static g => g.HorizontalAlign, static (g, v) => g.HorizontalAlign = v);
         }
 
-        if (HorizontalSpacing.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacing)) && bitGrid.HorizontalSpacing != HorizontalSpacing)
+        if (HorizontalSpacing.HasValue())
         {
-            bitGrid.HorizontalSpacing = HorizontalSpacing;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(HorizontalSpacing), HorizontalSpacing, static g => g.HorizontalSpacing, static (g, v) => g.HorizontalSpacing = v);
         }
 
-        if (MinItemWidth.HasValue() && bitGrid.HasNotBeenSet(nameof(MinItemWidth)) && bitGrid.MinItemWidth != MinItemWidth)
+        if (MinItemWidth.HasValue())
         {
-            bitGrid.MinItemWidth = MinItemWidth;
-
-            bitGrid.ClassBuilder.Reset();
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(MinItemWidth), MinItemWidth, static g => g.MinItemWidth, static (g, v) => g.MinItemWidth = v);
         }
 
-        if (NoWrap.HasValue && bitGrid.HasNotBeenSet(nameof(NoWrap)) && bitGrid.NoWrap != NoWrap)
+        if (NoWrap.HasValue)
         {
-            bitGrid.NoWrap = NoWrap.Value;
-
-            bitGrid.ClassBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(NoWrap), NoWrap.Value, static g => g.NoWrap, static (g, v) => g.NoWrap = v);
         }
 
-        if (Reversed.HasValue && bitGrid.HasNotBeenSet(nameof(Reversed)) && bitGrid.Reversed != Reversed)
+        if (Reversed.HasValue)
         {
-            bitGrid.Reversed = Reversed.Value;
-
-            bitGrid.ClassBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(Reversed), Reversed.Value, static g => g.Reversed, static (g, v) => g.Reversed = v);
         }
 
-        if (Spacing.HasValue() && bitGrid.HasNotBeenSet(nameof(Spacing)) && bitGrid.Spacing != Spacing)
+        if (Spacing.HasValue())
         {
-            bitGrid.Spacing = Spacing;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(Spacing), Spacing, static g => g.Spacing, static (g, v) => g.Spacing = v);
         }
 
-        if (Span.HasValue && bitGrid.HasNotBeenSet(nameof(Span)) && bitGrid.Span != Span)
+        if (Span.HasValue)
         {
-            bitGrid.Span = Span.Value;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(Span), Span.Value, static g => g.Span, static (g, v) => g.Span = v);
         }
 
-        if (VerticalAlign.HasValue && bitGrid.HasNotBeenSet(nameof(VerticalAlign)) && bitGrid.VerticalAlign != VerticalAlign)
+        if (VerticalAlign.HasValue)
         {
-            bitGrid.VerticalAlign = VerticalAlign.Value;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(VerticalAlign), VerticalAlign.Value, static g => g.VerticalAlign, static (g, v) => g.VerticalAlign = v);
         }
 
-        if (VerticalSpacing.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacing)) && bitGrid.VerticalSpacing != VerticalSpacing)
+        if (VerticalSpacing.HasValue())
         {
-            bitGrid.VerticalSpacing = VerticalSpacing;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(VerticalSpacing), VerticalSpacing, static g => g.VerticalSpacing, static (g, v) => g.VerticalSpacing = v);
         }
 
         UpdateResponsiveSpacingParameters(bitGrid);
@@ -389,130 +348,94 @@ public class BitGridParams : BitComponentBaseParams, IBitComponentParams
 
     private void UpdateResponsiveSpacingParameters(BitGrid bitGrid)
     {
-        if (SpacingXs.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingXs)) && bitGrid.SpacingXs != SpacingXs)
+        if (SpacingXs.HasValue())
         {
-            bitGrid.SpacingXs = SpacingXs;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(SpacingXs), SpacingXs, static g => g.SpacingXs, static (g, v) => g.SpacingXs = v);
         }
 
-        if (SpacingSm.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingSm)) && bitGrid.SpacingSm != SpacingSm)
+        if (SpacingSm.HasValue())
         {
-            bitGrid.SpacingSm = SpacingSm;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(SpacingSm), SpacingSm, static g => g.SpacingSm, static (g, v) => g.SpacingSm = v);
         }
 
-        if (SpacingMd.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingMd)) && bitGrid.SpacingMd != SpacingMd)
+        if (SpacingMd.HasValue())
         {
-            bitGrid.SpacingMd = SpacingMd;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(SpacingMd), SpacingMd, static g => g.SpacingMd, static (g, v) => g.SpacingMd = v);
         }
 
-        if (SpacingLg.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingLg)) && bitGrid.SpacingLg != SpacingLg)
+        if (SpacingLg.HasValue())
         {
-            bitGrid.SpacingLg = SpacingLg;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(SpacingLg), SpacingLg, static g => g.SpacingLg, static (g, v) => g.SpacingLg = v);
         }
 
-        if (SpacingXl.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingXl)) && bitGrid.SpacingXl != SpacingXl)
+        if (SpacingXl.HasValue())
         {
-            bitGrid.SpacingXl = SpacingXl;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(SpacingXl), SpacingXl, static g => g.SpacingXl, static (g, v) => g.SpacingXl = v);
         }
 
-        if (SpacingXxl.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingXxl)) && bitGrid.SpacingXxl != SpacingXxl)
+        if (SpacingXxl.HasValue())
         {
-            bitGrid.SpacingXxl = SpacingXxl;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(SpacingXxl), SpacingXxl, static g => g.SpacingXxl, static (g, v) => g.SpacingXxl = v);
         }
 
-        if (HorizontalSpacingXs.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingXs)) && bitGrid.HorizontalSpacingXs != HorizontalSpacingXs)
+        if (HorizontalSpacingXs.HasValue())
         {
-            bitGrid.HorizontalSpacingXs = HorizontalSpacingXs;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(HorizontalSpacingXs), HorizontalSpacingXs, static g => g.HorizontalSpacingXs, static (g, v) => g.HorizontalSpacingXs = v);
         }
 
-        if (HorizontalSpacingSm.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingSm)) && bitGrid.HorizontalSpacingSm != HorizontalSpacingSm)
+        if (HorizontalSpacingSm.HasValue())
         {
-            bitGrid.HorizontalSpacingSm = HorizontalSpacingSm;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(HorizontalSpacingSm), HorizontalSpacingSm, static g => g.HorizontalSpacingSm, static (g, v) => g.HorizontalSpacingSm = v);
         }
 
-        if (HorizontalSpacingMd.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingMd)) && bitGrid.HorizontalSpacingMd != HorizontalSpacingMd)
+        if (HorizontalSpacingMd.HasValue())
         {
-            bitGrid.HorizontalSpacingMd = HorizontalSpacingMd;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(HorizontalSpacingMd), HorizontalSpacingMd, static g => g.HorizontalSpacingMd, static (g, v) => g.HorizontalSpacingMd = v);
         }
 
-        if (HorizontalSpacingLg.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingLg)) && bitGrid.HorizontalSpacingLg != HorizontalSpacingLg)
+        if (HorizontalSpacingLg.HasValue())
         {
-            bitGrid.HorizontalSpacingLg = HorizontalSpacingLg;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(HorizontalSpacingLg), HorizontalSpacingLg, static g => g.HorizontalSpacingLg, static (g, v) => g.HorizontalSpacingLg = v);
         }
 
-        if (HorizontalSpacingXl.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingXl)) && bitGrid.HorizontalSpacingXl != HorizontalSpacingXl)
+        if (HorizontalSpacingXl.HasValue())
         {
-            bitGrid.HorizontalSpacingXl = HorizontalSpacingXl;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(HorizontalSpacingXl), HorizontalSpacingXl, static g => g.HorizontalSpacingXl, static (g, v) => g.HorizontalSpacingXl = v);
         }
 
-        if (HorizontalSpacingXxl.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingXxl)) && bitGrid.HorizontalSpacingXxl != HorizontalSpacingXxl)
+        if (HorizontalSpacingXxl.HasValue())
         {
-            bitGrid.HorizontalSpacingXxl = HorizontalSpacingXxl;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(HorizontalSpacingXxl), HorizontalSpacingXxl, static g => g.HorizontalSpacingXxl, static (g, v) => g.HorizontalSpacingXxl = v);
         }
 
-        if (VerticalSpacingXs.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingXs)) && bitGrid.VerticalSpacingXs != VerticalSpacingXs)
+        if (VerticalSpacingXs.HasValue())
         {
-            bitGrid.VerticalSpacingXs = VerticalSpacingXs;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(VerticalSpacingXs), VerticalSpacingXs, static g => g.VerticalSpacingXs, static (g, v) => g.VerticalSpacingXs = v);
         }
 
-        if (VerticalSpacingSm.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingSm)) && bitGrid.VerticalSpacingSm != VerticalSpacingSm)
+        if (VerticalSpacingSm.HasValue())
         {
-            bitGrid.VerticalSpacingSm = VerticalSpacingSm;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(VerticalSpacingSm), VerticalSpacingSm, static g => g.VerticalSpacingSm, static (g, v) => g.VerticalSpacingSm = v);
         }
 
-        if (VerticalSpacingMd.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingMd)) && bitGrid.VerticalSpacingMd != VerticalSpacingMd)
+        if (VerticalSpacingMd.HasValue())
         {
-            bitGrid.VerticalSpacingMd = VerticalSpacingMd;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(VerticalSpacingMd), VerticalSpacingMd, static g => g.VerticalSpacingMd, static (g, v) => g.VerticalSpacingMd = v);
         }
 
-        if (VerticalSpacingLg.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingLg)) && bitGrid.VerticalSpacingLg != VerticalSpacingLg)
+        if (VerticalSpacingLg.HasValue())
         {
-            bitGrid.VerticalSpacingLg = VerticalSpacingLg;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(VerticalSpacingLg), VerticalSpacingLg, static g => g.VerticalSpacingLg, static (g, v) => g.VerticalSpacingLg = v);
         }
 
-        if (VerticalSpacingXl.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingXl)) && bitGrid.VerticalSpacingXl != VerticalSpacingXl)
+        if (VerticalSpacingXl.HasValue())
         {
-            bitGrid.VerticalSpacingXl = VerticalSpacingXl;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(VerticalSpacingXl), VerticalSpacingXl, static g => g.VerticalSpacingXl, static (g, v) => g.VerticalSpacingXl = v);
         }
 
-        if (VerticalSpacingXxl.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingXxl)) && bitGrid.VerticalSpacingXxl != VerticalSpacingXxl)
+        if (VerticalSpacingXxl.HasValue())
         {
-            bitGrid.VerticalSpacingXxl = VerticalSpacingXxl;
-
-            bitGrid.StyleBuilder.Reset();
+            bitGrid.TakeFromCascade(nameof(VerticalSpacingXxl), VerticalSpacingXxl, static g => g.VerticalSpacingXxl, static (g, v) => g.VerticalSpacingXxl = v);
         }
     }
 }

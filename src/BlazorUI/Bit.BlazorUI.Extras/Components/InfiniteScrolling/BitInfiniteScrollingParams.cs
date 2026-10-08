@@ -179,141 +179,134 @@ public class BitInfiniteScrollingParams : BitComponentBaseParams, IBitComponentP
 
         UpdateBaseParameters(bitInfiniteScrolling);
 
-        // This runs on every render of every list under the BitParams, so the value that drives the class or the
-        // style of the root is only assigned - and the builder only reset - when it differs from the one the list
-        // already holds: an unchanged one would rebuild both strings on every render for nothing.
-        if (AutoLoadLimit.HasValue && bitInfiniteScrolling.HasNotBeenSet(nameof(AutoLoadLimit)))
+        if (AutoLoadLimit.HasValue)
         {
-            bitInfiniteScrolling.AutoLoadLimit = AutoLoadLimit.Value;
+            bitInfiniteScrolling.TakeFromCascade(nameof(AutoLoadLimit), AutoLoadLimit.Value, static i => i.AutoLoadLimit, static (i, v) => i.AutoLoadLimit = v);
         }
 
-        if (Classes is not null && bitInfiniteScrolling.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitInfiniteScrolling.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitInfiniteScrolling.Classes = Classes;
-
-            bitInfiniteScrolling.ClassBuilder.Reset();
+            bitInfiniteScrolling.TakeFromCascade(nameof(Classes), Classes, static i => i.Classes, static (i, v) => i.Classes = v);
         }
 
-        if (EmptyMessage is not null && bitInfiniteScrolling.HasNotBeenSet(nameof(EmptyMessage)))
+        if (EmptyMessage is not null)
         {
-            bitInfiniteScrolling.EmptyMessage = EmptyMessage;
+            bitInfiniteScrolling.TakeFromCascade(nameof(EmptyMessage), EmptyMessage, static i => i.EmptyMessage, static (i, v) => i.EmptyMessage = v);
         }
 
-        if (EmptyTemplate is not null && bitInfiniteScrolling.HasNotBeenSet(nameof(EmptyTemplate)))
+        if (EmptyTemplate is not null)
         {
-            bitInfiniteScrolling.EmptyTemplate = EmptyTemplate;
+            bitInfiniteScrolling.TakeFromCascade(nameof(EmptyTemplate), EmptyTemplate, static i => i.EmptyTemplate, static (i, v) => i.EmptyTemplate = v);
         }
 
-        if (EndMessage is not null && bitInfiniteScrolling.HasNotBeenSet(nameof(EndMessage)))
+        if (EndMessage is not null)
         {
-            bitInfiniteScrolling.EndMessage = EndMessage;
+            bitInfiniteScrolling.TakeFromCascade(nameof(EndMessage), EndMessage, static i => i.EndMessage, static (i, v) => i.EndMessage = v);
         }
 
-        if (EndTemplate is not null && bitInfiniteScrolling.HasNotBeenSet(nameof(EndTemplate)))
+        if (EndTemplate is not null)
         {
-            bitInfiniteScrolling.EndTemplate = EndTemplate;
+            bitInfiniteScrolling.TakeFromCascade(nameof(EndTemplate), EndTemplate, static i => i.EndTemplate, static (i, v) => i.EndTemplate = v);
         }
 
-        if (ErrorMessage is not null && bitInfiniteScrolling.HasNotBeenSet(nameof(ErrorMessage)))
+        if (ErrorMessage is not null)
         {
-            bitInfiniteScrolling.ErrorMessage = ErrorMessage;
+            bitInfiniteScrolling.TakeFromCascade(nameof(ErrorMessage), ErrorMessage, static i => i.ErrorMessage, static (i, v) => i.ErrorMessage = v);
         }
 
-        if (ErrorTemplate is not null && bitInfiniteScrolling.HasNotBeenSet(nameof(ErrorTemplate)))
+        if (ErrorTemplate is not null)
         {
-            bitInfiniteScrolling.ErrorTemplate = ErrorTemplate;
+            bitInfiniteScrolling.TakeFromCascade(nameof(ErrorTemplate), ErrorTemplate, static i => i.ErrorTemplate, static (i, v) => i.ErrorTemplate = v);
         }
 
-        if (Feed.HasValue && bitInfiniteScrolling.HasNotBeenSet(nameof(Feed)))
+        if (Feed.HasValue)
         {
-            bitInfiniteScrolling.Feed = Feed.Value;
+            bitInfiniteScrolling.TakeFromCascade(nameof(Feed), Feed.Value, static i => i.Feed, static (i, v) => i.Feed = v);
         }
 
-        if (LastElementClass is not null && bitInfiniteScrolling.HasNotBeenSet(nameof(LastElementClass)))
+        if (LastElementClass is not null)
         {
-            bitInfiniteScrolling.LastElementClass = LastElementClass;
+            bitInfiniteScrolling.TakeFromCascade(nameof(LastElementClass), LastElementClass, static i => i.LastElementClass, static (i, v) => i.LastElementClass = v);
         }
 
-        if (LastElementHeight is not null && bitInfiniteScrolling.HasNotBeenSet(nameof(LastElementHeight)))
+        if (LastElementHeight is not null)
         {
-            bitInfiniteScrolling.LastElementHeight = LastElementHeight;
+            bitInfiniteScrolling.TakeFromCascade(nameof(LastElementHeight), LastElementHeight, static i => i.LastElementHeight, static (i, v) => i.LastElementHeight = v);
         }
 
-        if (LastElementStyle is not null && bitInfiniteScrolling.HasNotBeenSet(nameof(LastElementStyle)))
+        if (LastElementStyle is not null)
         {
-            bitInfiniteScrolling.LastElementStyle = LastElementStyle;
+            bitInfiniteScrolling.TakeFromCascade(nameof(LastElementStyle), LastElementStyle, static i => i.LastElementStyle, static (i, v) => i.LastElementStyle = v);
         }
 
-        if (LastElementWidth is not null && bitInfiniteScrolling.HasNotBeenSet(nameof(LastElementWidth)))
+        if (LastElementWidth is not null)
         {
-            bitInfiniteScrolling.LastElementWidth = LastElementWidth;
+            bitInfiniteScrolling.TakeFromCascade(nameof(LastElementWidth), LastElementWidth, static i => i.LastElementWidth, static (i, v) => i.LastElementWidth = v);
         }
 
-        if (LoadedMessage is not null && bitInfiniteScrolling.HasNotBeenSet(nameof(LoadedMessage)))
+        if (LoadedMessage is not null)
         {
-            bitInfiniteScrolling.LoadedMessage = LoadedMessage;
+            bitInfiniteScrolling.TakeFromCascade(nameof(LoadedMessage), LoadedMessage, static i => i.LoadedMessage, static (i, v) => i.LoadedMessage = v);
         }
 
-        if (LoadingMessage is not null && bitInfiniteScrolling.HasNotBeenSet(nameof(LoadingMessage)))
+        if (LoadingMessage is not null)
         {
-            bitInfiniteScrolling.LoadingMessage = LoadingMessage;
+            bitInfiniteScrolling.TakeFromCascade(nameof(LoadingMessage), LoadingMessage, static i => i.LoadingMessage, static (i, v) => i.LoadingMessage = v);
         }
 
-        if (LoadingTemplate is not null && bitInfiniteScrolling.HasNotBeenSet(nameof(LoadingTemplate)))
+        if (LoadingTemplate is not null)
         {
-            bitInfiniteScrolling.LoadingTemplate = LoadingTemplate;
+            bitInfiniteScrolling.TakeFromCascade(nameof(LoadingTemplate), LoadingTemplate, static i => i.LoadingTemplate, static (i, v) => i.LoadingTemplate = v);
         }
 
-        if (LoadMoreTemplate is not null && bitInfiniteScrolling.HasNotBeenSet(nameof(LoadMoreTemplate)))
+        if (LoadMoreTemplate is not null)
         {
-            bitInfiniteScrolling.LoadMoreTemplate = LoadMoreTemplate;
+            bitInfiniteScrolling.TakeFromCascade(nameof(LoadMoreTemplate), LoadMoreTemplate, static i => i.LoadMoreTemplate, static (i, v) => i.LoadMoreTemplate = v);
         }
 
-        if (LoadMoreText is not null && bitInfiniteScrolling.HasNotBeenSet(nameof(LoadMoreText)))
+        if (LoadMoreText is not null)
         {
-            bitInfiniteScrolling.LoadMoreText = LoadMoreText;
+            bitInfiniteScrolling.TakeFromCascade(nameof(LoadMoreText), LoadMoreText, static i => i.LoadMoreText, static (i, v) => i.LoadMoreText = v);
         }
 
-        if (Manual.HasValue && bitInfiniteScrolling.HasNotBeenSet(nameof(Manual)))
+        if (Manual.HasValue)
         {
-            bitInfiniteScrolling.Manual = Manual.Value;
+            bitInfiniteScrolling.TakeFromCascade(nameof(Manual), Manual.Value, static i => i.Manual, static (i, v) => i.Manual = v);
         }
 
-        if (MaxItems.HasValue && bitInfiniteScrolling.HasNotBeenSet(nameof(MaxItems)))
+        if (MaxItems.HasValue)
         {
-            bitInfiniteScrolling.MaxItems = MaxItems.Value;
+            bitInfiniteScrolling.TakeFromCascade(nameof(MaxItems), MaxItems.Value, static i => i.MaxItems, static (i, v) => i.MaxItems = v);
         }
 
-        if (PageSize.HasValue && bitInfiniteScrolling.HasNotBeenSet(nameof(PageSize)))
+        if (PageSize.HasValue)
         {
-            bitInfiniteScrolling.PageSize = PageSize.Value;
+            bitInfiniteScrolling.TakeFromCascade(nameof(PageSize), PageSize.Value, static i => i.PageSize, static (i, v) => i.PageSize = v);
         }
 
-        if (Preload.HasValue && bitInfiniteScrolling.HasNotBeenSet(nameof(Preload)))
+        if (Preload.HasValue)
         {
-            bitInfiniteScrolling.Preload = Preload.Value;
+            bitInfiniteScrolling.TakeFromCascade(nameof(Preload), Preload.Value, static i => i.Preload, static (i, v) => i.Preload = v);
         }
 
-        if (RetryText is not null && bitInfiniteScrolling.HasNotBeenSet(nameof(RetryText)))
+        if (RetryText is not null)
         {
-            bitInfiniteScrolling.RetryText = RetryText;
+            bitInfiniteScrolling.TakeFromCascade(nameof(RetryText), RetryText, static i => i.RetryText, static (i, v) => i.RetryText = v);
         }
 
-        if (RootMargin is not null && bitInfiniteScrolling.HasNotBeenSet(nameof(RootMargin)))
+        if (RootMargin is not null)
         {
-            bitInfiniteScrolling.RootMargin = RootMargin;
+            bitInfiniteScrolling.TakeFromCascade(nameof(RootMargin), RootMargin, static i => i.RootMargin, static (i, v) => i.RootMargin = v);
         }
 
-        if (Styles is not null && bitInfiniteScrolling.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitInfiniteScrolling.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitInfiniteScrolling.Styles = Styles;
-
-            bitInfiniteScrolling.StyleBuilder.Reset();
+            bitInfiniteScrolling.TakeFromCascade(nameof(Styles), Styles, static i => i.Styles, static (i, v) => i.Styles = v);
         }
 
-        if (Threshold.HasValue && bitInfiniteScrolling.HasNotBeenSet(nameof(Threshold)))
+        if (Threshold.HasValue)
         {
-            bitInfiniteScrolling.Threshold = Threshold.Value;
+            bitInfiniteScrolling.TakeFromCascade(nameof(Threshold), Threshold.Value, static i => i.Threshold, static (i, v) => i.Threshold = v);
         }
     }
 }

@@ -229,191 +229,169 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitMessage);
 
-        if (Alignment.HasValue && bitMessage.HasNotBeenSet(nameof(Alignment)) && bitMessage.Alignment != Alignment)
+        if (Alignment.HasValue)
         {
-            bitMessage.Alignment = Alignment.Value;
-
-            bitMessage.StyleBuilder.Reset();
+            bitMessage.TakeFromCascade(nameof(Alignment), Alignment.Value, static m => m.Alignment, static (m, v) => m.Alignment = v);
         }
 
-        if (AutoDismissTime.HasValue && bitMessage.HasNotBeenSet(nameof(AutoDismissTime)))
+        if (AutoDismissTime.HasValue)
         {
-            bitMessage.AutoDismissTime = AutoDismissTime.Value;
+            bitMessage.TakeFromCascade(nameof(AutoDismissTime), AutoDismissTime.Value, static m => m.AutoDismissTime, static (m, v) => m.AutoDismissTime = v);
         }
 
-        if (AutoMultiline.HasValue && bitMessage.HasNotBeenSet(nameof(AutoMultiline)))
+        if (AutoMultiline.HasValue)
         {
-            bitMessage.AutoMultiline = AutoMultiline.Value;
+            bitMessage.TakeFromCascade(nameof(AutoMultiline), AutoMultiline.Value, static m => m.AutoMultiline, static (m, v) => m.AutoMultiline = v);
         }
 
-        if (Classes is not null && bitMessage.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitMessage.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitMessage.Classes = Classes;
-
-            bitMessage.ClassBuilder.Reset();
+            bitMessage.TakeFromCascade(nameof(Classes), Classes, static m => m.Classes, static (m, v) => m.Classes = v);
         }
 
-        if (CollapseAriaLabel.HasValue() && bitMessage.HasNotBeenSet(nameof(CollapseAriaLabel)))
+        if (CollapseAriaLabel.HasValue())
         {
-            bitMessage.CollapseAriaLabel = CollapseAriaLabel!;
+            bitMessage.TakeFromCascade(nameof(CollapseAriaLabel), CollapseAriaLabel!, static m => m.CollapseAriaLabel, static (m, v) => m.CollapseAriaLabel = v);
         }
 
-        if (CollapseIcon is not null && bitMessage.HasNotBeenSet(nameof(CollapseIcon)))
+        if (CollapseIcon is not null)
         {
-            bitMessage.CollapseIcon = CollapseIcon;
+            bitMessage.TakeFromCascade(nameof(CollapseIcon), CollapseIcon, static m => m.CollapseIcon, static (m, v) => m.CollapseIcon = v);
         }
 
-        if (CollapseIconName.HasValue() && bitMessage.HasNotBeenSet(nameof(CollapseIconName)))
+        if (CollapseIconName.HasValue())
         {
-            bitMessage.CollapseIconName = CollapseIconName;
+            bitMessage.TakeFromCascade(nameof(CollapseIconName), CollapseIconName, static m => m.CollapseIconName, static (m, v) => m.CollapseIconName = v);
         }
 
-        if (Color.HasValue && bitMessage.HasNotBeenSet(nameof(Color)) && bitMessage.Color != Color)
+        if (Color.HasValue)
         {
-            bitMessage.Color = Color.Value;
-
-            bitMessage.ClassBuilder.Reset();
+            bitMessage.TakeFromCascade(nameof(Color), Color.Value, static m => m.Color, static (m, v) => m.Color = v);
         }
 
-        if (DelayedAnnouncement.HasValue && bitMessage.HasNotBeenSet(nameof(DelayedAnnouncement)))
+        if (DelayedAnnouncement.HasValue)
         {
-            bitMessage.DelayedAnnouncement = DelayedAnnouncement.Value;
+            bitMessage.TakeFromCascade(nameof(DelayedAnnouncement), DelayedAnnouncement.Value, static m => m.DelayedAnnouncement, static (m, v) => m.DelayedAnnouncement = v);
         }
 
-        if (DismissAriaLabel.HasValue() && bitMessage.HasNotBeenSet(nameof(DismissAriaLabel)))
+        if (DismissAriaLabel.HasValue())
         {
-            bitMessage.DismissAriaLabel = DismissAriaLabel!;
+            bitMessage.TakeFromCascade(nameof(DismissAriaLabel), DismissAriaLabel!, static m => m.DismissAriaLabel, static (m, v) => m.DismissAriaLabel = v);
         }
 
-        if (Dismissible.HasValue && bitMessage.HasNotBeenSet(nameof(Dismissible)))
+        if (Dismissible.HasValue)
         {
-            bitMessage.Dismissible = Dismissible.Value;
+            bitMessage.TakeFromCascade(nameof(Dismissible), Dismissible.Value, static m => m.Dismissible, static (m, v) => m.Dismissible = v);
         }
 
-        if (DismissIcon is not null && bitMessage.HasNotBeenSet(nameof(DismissIcon)))
+        if (DismissIcon is not null)
         {
-            bitMessage.DismissIcon = DismissIcon;
+            bitMessage.TakeFromCascade(nameof(DismissIcon), DismissIcon, static m => m.DismissIcon, static (m, v) => m.DismissIcon = v);
         }
 
-        if (DismissIconName.HasValue() && bitMessage.HasNotBeenSet(nameof(DismissIconName)))
+        if (DismissIconName.HasValue())
         {
-            bitMessage.DismissIconName = DismissIconName;
+            bitMessage.TakeFromCascade(nameof(DismissIconName), DismissIconName, static m => m.DismissIconName, static (m, v) => m.DismissIconName = v);
         }
 
-        if (DismissOnEscape.HasValue && bitMessage.HasNotBeenSet(nameof(DismissOnEscape)))
+        if (DismissOnEscape.HasValue)
         {
-            bitMessage.DismissOnEscape = DismissOnEscape.Value;
+            bitMessage.TakeFromCascade(nameof(DismissOnEscape), DismissOnEscape.Value, static m => m.DismissOnEscape, static (m, v) => m.DismissOnEscape = v);
         }
 
-        if (Elevation.HasValue && bitMessage.HasNotBeenSet(nameof(Elevation)) && bitMessage.Elevation != Elevation)
+        if (Elevation.HasValue)
         {
-            bitMessage.Elevation = Elevation.Value;
-
-            bitMessage.StyleBuilder.Reset();
+            bitMessage.TakeFromCascade(nameof(Elevation), Elevation.Value, static m => m.Elevation, static (m, v) => m.Elevation = v);
         }
 
-        if (ExpandAriaLabel.HasValue() && bitMessage.HasNotBeenSet(nameof(ExpandAriaLabel)))
+        if (ExpandAriaLabel.HasValue())
         {
-            bitMessage.ExpandAriaLabel = ExpandAriaLabel!;
+            bitMessage.TakeFromCascade(nameof(ExpandAriaLabel), ExpandAriaLabel!, static m => m.ExpandAriaLabel, static (m, v) => m.ExpandAriaLabel = v);
         }
 
-        if (ExpandIcon is not null && bitMessage.HasNotBeenSet(nameof(ExpandIcon)))
+        if (ExpandIcon is not null)
         {
-            bitMessage.ExpandIcon = ExpandIcon;
+            bitMessage.TakeFromCascade(nameof(ExpandIcon), ExpandIcon, static m => m.ExpandIcon, static (m, v) => m.ExpandIcon = v);
         }
 
-        if (ExpandIconName.HasValue() && bitMessage.HasNotBeenSet(nameof(ExpandIconName)))
+        if (ExpandIconName.HasValue())
         {
-            bitMessage.ExpandIconName = ExpandIconName;
+            bitMessage.TakeFromCascade(nameof(ExpandIconName), ExpandIconName, static m => m.ExpandIconName, static (m, v) => m.ExpandIconName = v);
         }
 
-        if (HideIcon.HasValue && bitMessage.HasNotBeenSet(nameof(HideIcon)))
+        if (HideIcon.HasValue)
         {
-            bitMessage.HideIcon = HideIcon.Value;
+            bitMessage.TakeFromCascade(nameof(HideIcon), HideIcon.Value, static m => m.HideIcon, static (m, v) => m.HideIcon = v);
         }
 
-        if (Icon is not null && bitMessage.HasNotBeenSet(nameof(Icon)))
+        if (Icon is not null)
         {
-            bitMessage.Icon = Icon;
+            bitMessage.TakeFromCascade(nameof(Icon), Icon, static m => m.Icon, static (m, v) => m.Icon = v);
         }
 
-        if (IconName.HasValue() && bitMessage.HasNotBeenSet(nameof(IconName)))
+        if (IconName.HasValue())
         {
-            bitMessage.IconName = IconName;
+            bitMessage.TakeFromCascade(nameof(IconName), IconName, static m => m.IconName, static (m, v) => m.IconName = v);
         }
 
-        if (MaxLines.HasValue && bitMessage.HasNotBeenSet(nameof(MaxLines)) && bitMessage.MaxLines != MaxLines)
+        if (MaxLines.HasValue)
         {
-            bitMessage.MaxLines = MaxLines.Value;
-
-            bitMessage.StyleBuilder.Reset();
+            bitMessage.TakeFromCascade(nameof(MaxLines), MaxLines.Value, static m => m.MaxLines, static (m, v) => m.MaxLines = v);
         }
 
-        if (Multiline.HasValue && bitMessage.HasNotBeenSet(nameof(Multiline)) && bitMessage.Multiline != Multiline)
+        if (Multiline.HasValue)
         {
-            bitMessage.Multiline = Multiline.Value;
-
-            bitMessage.StyleBuilder.Reset();
+            bitMessage.TakeFromCascade(nameof(Multiline), Multiline.Value, static m => m.Multiline, static (m, v) => m.Multiline = v);
         }
 
-        if (PauseOnPageHidden.HasValue && bitMessage.HasNotBeenSet(nameof(PauseOnPageHidden)))
+        if (PauseOnPageHidden.HasValue)
         {
-            bitMessage.PauseOnPageHidden = PauseOnPageHidden.Value;
+            bitMessage.TakeFromCascade(nameof(PauseOnPageHidden), PauseOnPageHidden.Value, static m => m.PauseOnPageHidden, static (m, v) => m.PauseOnPageHidden = v);
         }
 
-        if (PauseOnWindowBlur.HasValue && bitMessage.HasNotBeenSet(nameof(PauseOnWindowBlur)))
+        if (PauseOnWindowBlur.HasValue)
         {
-            bitMessage.PauseOnWindowBlur = PauseOnWindowBlur.Value;
+            bitMessage.TakeFromCascade(nameof(PauseOnWindowBlur), PauseOnWindowBlur.Value, static m => m.PauseOnWindowBlur, static (m, v) => m.PauseOnWindowBlur = v);
         }
 
-        if (ShowAutoDismissProgress.HasValue && bitMessage.HasNotBeenSet(nameof(ShowAutoDismissProgress)))
+        if (ShowAutoDismissProgress.HasValue)
         {
-            bitMessage.ShowAutoDismissProgress = ShowAutoDismissProgress.Value;
+            bitMessage.TakeFromCascade(nameof(ShowAutoDismissProgress), ShowAutoDismissProgress.Value, static m => m.ShowAutoDismissProgress, static (m, v) => m.ShowAutoDismissProgress = v);
         }
 
-        if (Size.HasValue && bitMessage.HasNotBeenSet(nameof(Size)) && bitMessage.Size != Size)
+        if (Size.HasValue)
         {
-            bitMessage.Size = Size.Value;
-
-            bitMessage.ClassBuilder.Reset();
+            bitMessage.TakeFromCascade(nameof(Size), Size.Value, static m => m.Size, static (m, v) => m.Size = v);
         }
 
-        if (Square.HasValue && bitMessage.HasNotBeenSet(nameof(Square)) && bitMessage.Square != Square)
+        if (Square.HasValue)
         {
-            bitMessage.Square = Square.Value;
-
-            bitMessage.ClassBuilder.Reset();
+            bitMessage.TakeFromCascade(nameof(Square), Square.Value, static m => m.Square, static (m, v) => m.Square = v);
         }
 
-        if (Styles is not null && bitMessage.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitMessage.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitMessage.Styles = Styles;
-
-            bitMessage.StyleBuilder.Reset();
+            bitMessage.TakeFromCascade(nameof(Styles), Styles, static m => m.Styles, static (m, v) => m.Styles = v);
         }
 
-        if (Tinted.HasValue && bitMessage.HasNotBeenSet(nameof(Tinted)) && bitMessage.Tinted != Tinted)
+        if (Tinted.HasValue)
         {
-            bitMessage.Tinted = Tinted.Value;
-
-            bitMessage.ClassBuilder.Reset();
+            bitMessage.TakeFromCascade(nameof(Tinted), Tinted.Value, static m => m.Tinted, static (m, v) => m.Tinted = v);
         }
 
-        if (TitleElement.HasValue() && bitMessage.HasNotBeenSet(nameof(TitleElement)))
+        if (TitleElement.HasValue())
         {
-            bitMessage.TitleElement = TitleElement;
+            bitMessage.TakeFromCascade(nameof(TitleElement), TitleElement, static m => m.TitleElement, static (m, v) => m.TitleElement = v);
         }
 
-        if (Truncate.HasValue && bitMessage.HasNotBeenSet(nameof(Truncate)))
+        if (Truncate.HasValue)
         {
-            bitMessage.Truncate = Truncate.Value;
+            bitMessage.TakeFromCascade(nameof(Truncate), Truncate.Value, static m => m.Truncate, static (m, v) => m.Truncate = v);
         }
 
-        if (Variant.HasValue && bitMessage.HasNotBeenSet(nameof(Variant)) && bitMessage.Variant != Variant)
+        if (Variant.HasValue)
         {
-            bitMessage.Variant = Variant.Value;
-
-            bitMessage.ClassBuilder.Reset();
+            bitMessage.TakeFromCascade(nameof(Variant), Variant.Value, static m => m.Variant, static (m, v) => m.Variant = v);
         }
     }
 }

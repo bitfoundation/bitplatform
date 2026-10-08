@@ -3,41 +3,46 @@
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // icon and one set on the Style of an instance re-skins that one alone:
 //   --bit-Icon-color                 the icon's color: the glyph of a Text or an
-//                                    Outline icon, the box of a Fill one            (default: from the Color role)
+//                                    Outline icon, the box of a Fill one            (default: $clr-pri)
 //   --bit-Icon-contrast-color        the glyph drawn over the box of a Fill icon,
 //                                    and of a clickable Outline one under the
-//                                    pointer                                        (default: from the Color role)
+//                                    pointer                                        (default: $clr-pri-text)
 //   --bit-Icon-hover-color           the icon's color under the pointer, when it
 //                                    has a click handler                            (default: a shade of --bit-Icon-color
-//                                                                                   when it is set, otherwise from the
-//                                                                                   Color role)
+//                                                                                   when it is set, otherwise
+//                                                                                   $clr-pri-hover)
 //   --bit-Icon-active-color          the icon's color while pressed, when it has a
 //                                    click handler                                  (default: a shade of the hover color
 //                                                                                   when either variable above is set,
-//                                                                                   otherwise from the Color role)
-//   --bit-Icon-focus-color           color of the keyboard focus ring               (default: from the Color role)
-//   --bit-Icon-size                  font size, which is the size of the glyph      (default: per Size, $siz-icon-*)
+//                                                                                   otherwise $clr-pri-active)
+//   --bit-Icon-focus-color           color of the keyboard focus ring               (default: $clr-pri-focus)
+//   --bit-Icon-size                  font size, which is the size of the glyph      (default: $siz-icon-md)
 //   --bit-Icon-padding               room around the glyph in a Fill or an Outline
 //                                    box                                            (default: spacing(0.5))
 //   --bit-Icon-radius                corner radius of a Fill or an Outline box      (default: $shp-radius-control)
 //   --bit-Icon-border-width          border width of a Fill or an Outline box       (default: $shp-border-width)
 //   --bit-Icon-fixed-width           width of a FixedWidth icon                     (default: 1.25em)
 //
-// As on every other component of the library, the variables win over the Color and the Size of the icon, which
-// only supply their defaults. Two parameters still win over them, since they are not a theme decision at all:
-// FontSize, an inline size of the instance's own, and Circular, a shape rather than a corner radius. A disabled
-// icon ignores the colors and keeps the disabled colors of the theme, so it never reads as an enabled one.
+// A parameter written on the icon wins over the variable that restyles what it sets: an explicit Color over every
+// color above, an explicit Size (and FontSize, an inline size of the instance's own) over --bit-Icon-size, and
+// Circular, a shape rather than a corner radius, over --bit-Icon-radius. The variables restyle the default, not a
+// choice - which is why Color and Size publish nothing while they are left unset: a class that always carried the
+// default would be indistinguishable from one that was asked for. A disabled icon ignores the colors and keeps the
+// disabled colors of the theme, so it never reads as an enabled one.
 //
 // currentColor makes a Text icon follow the color of the text it sits in, the way a glyph of a font does - but
 // only a Text one. A Fill icon paints its box in --bit-Icon-color and its glyph in the contrast color, and
 // currentColor on the box is the element's own color, which is that contrast color: the box and the glyph come
 // out the same, and the icon is a blank square. Scope such a value to the Text variant (.bit-ico-txt) or to the
 // icon's own Style rather than to an ancestor holding icons of every variant.
-$ico-clr: var(--bit-Icon-color, var(--bit-ico-clr, #{$clr-pri}));
-$ico-clr-txt: var(--bit-Icon-contrast-color, var(--bit-ico-clr-txt, #{$clr-pri-text}));
-$ico-clr-hover: var(--bit-Icon-hover-color, var(--bit-ico-pub-hover, var(--bit-ico-clr-hover, #{$clr-pri-hover})));
-$ico-clr-active: var(--bit-Icon-active-color, var(--bit-ico-pub-active, var(--bit-ico-clr-active, #{$clr-pri-active})));
-$ico-clr-focus: var(--bit-Icon-focus-color, var(--bit-ico-clr-focus, #{$clr-pri-focus}));
+//
+// Each color reads the role an explicit Color publishes first, then the public variable (or the shade an app's own
+// --bit-Icon-color is moved by, see .bit-ico-int), then the primary role an unset Color stands for.
+$ico-clr: var(--bit-ico-clr, var(--bit-Icon-color, #{$clr-pri}));
+$ico-clr-txt: var(--bit-ico-clr-txt, var(--bit-Icon-contrast-color, #{$clr-pri-text}));
+$ico-clr-hover: var(--bit-ico-clr-hover, var(--bit-Icon-hover-color, var(--bit-ico-pub-hover, #{$clr-pri-hover})));
+$ico-clr-active: var(--bit-ico-clr-active, var(--bit-Icon-active-color, var(--bit-ico-pub-active, #{$clr-pri-active})));
+$ico-clr-focus: var(--bit-ico-clr-focus, var(--bit-Icon-focus-color, #{$clr-pri-focus}));
 $ico-clr-dis: var(--bit-ico-clr-dis, #{$clr-pri-dis});
 $ico-clr-dis-text: var(--bit-ico-clr-dis-text, #{$clr-pri-dis-text});
 
@@ -68,7 +73,7 @@ $ico-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
     // an inline svg, or written as a ligature brings nothing - and an inline box takes neither the
     // padding nor the rule that the filled and outlined variants are drawn with.
     display: inline-block;
-    font-size: var(--bit-Icon-size, var(--bit-ico-size, #{$siz-icon-md}));
+    font-size: var(--bit-ico-size, var(--bit-Icon-size, #{$siz-icon-md}));
     padding: var(--bit-Icon-padding, #{spacing(0.5)});
     border-radius: var(--bit-Icon-radius, #{$shp-radius-control});
     border-style: $shp-border-style;
@@ -136,8 +141,9 @@ $ico-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss), which
 // carries the nine surface families beside the eight accent ones and every slot each of them has - so
 // the hover, the active and the focus color an icon with a click handler is drawn in come from the
-// same place as its main color, for all seventeen roles. An icon given no Color is given the primary
-// one, and the chains at the top of this file read the public variables before any of them.
+// same place as its main color, for all seventeen roles. Only an explicit Color renders one, which the
+// chains at the top of this file read before the public variables; an icon given no Color is painted in
+// the variables, and in the primary role after them.
 @each $role, $tokens in $bit-color-roles {
     .bit-ico-#{$role} {
         --bit-ico-clr: #{role($tokens, main)};
@@ -151,8 +157,8 @@ $ico-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
 }
 
 
-// A Size is the default of --bit-Icon-size rather than an override of it, the same as a Color is of the
-// colors, so it sets the private variable the root reads after the public one.
+// Published only by an explicit Size, which wins over --bit-Icon-size the same as a Color does over the
+// colors: the root reads this private variable before the public one, and the medium size after both.
 .bit-ico-sm {
     --bit-ico-size: #{$siz-icon-sm};
 }
@@ -429,7 +435,8 @@ $ico-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
     // and the role's hover and active shades belong to a different color. So the hover is that color moved
     // a step toward the page's text - darker on a light scheme, lighter on a dark one - and the press a step
     // further. Each is a var() of the public variables without a fallback, so it is unset, and the chains
-    // fall through to the role, for as long as neither variable is set.
+    // fall through to the primary role, for as long as neither variable is set. An explicit Color is read
+    // before either shade, so its own hover and active shades still win.
     --bit-ico-pub-hover: color-mix(in srgb, var(--bit-Icon-color) 85%, #{$clr-fg-pri});
     --bit-ico-pub-active: color-mix(in srgb, var(--bit-Icon-hover-color, var(--bit-ico-pub-hover)) 85%, #{$clr-fg-pri});
 

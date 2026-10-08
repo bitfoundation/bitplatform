@@ -206,9 +206,8 @@ public class BitTagsInputTests : BunitTestContext
     [TestMethod,
         DataRow(BitSize.Small, "bit-tgi-sm"),
         DataRow(BitSize.Medium, "bit-tgi-md"),
-        DataRow(BitSize.Large, "bit-tgi-lg"),
-        DataRow(null, "bit-tgi-md")]
-    public void BitTagsInputSizeTest(BitSize? size, string expectedClass)
+        DataRow(BitSize.Large, "bit-tgi-lg")]
+    public void BitTagsInputSizeTest(BitSize size, string expectedClass)
     {
         var com = RenderComponent<BitTagsInput>(parameters =>
         {
@@ -221,9 +220,8 @@ public class BitTagsInputTests : BunitTestContext
     [TestMethod,
         DataRow(BitColor.Primary, "bit-tgi-pri"),
         DataRow(BitColor.Success, "bit-tgi-suc"),
-        DataRow(BitColor.Error, "bit-tgi-err"),
-        DataRow(null, "bit-tgi-pri")]
-    public void BitTagsInputColorTest(BitColor? color, string expectedClass)
+        DataRow(BitColor.Error, "bit-tgi-err")]
+    public void BitTagsInputColorTest(BitColor color, string expectedClass)
     {
         var com = RenderComponent<BitTagsInput>(parameters =>
         {
@@ -231,6 +229,27 @@ public class BitTagsInputTests : BunitTestContext
         });
 
         Assert.IsTrue(com.Find(".bit-tgi").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitTagsInputShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var com = RenderComponent<BitTagsInput>();
+
+        // An unset Color or Size publishes nothing, so the public --bit-TagsInput-* variables restyle the default
+        // while an explicit value - which does publish its class - wins over them.
+        var root = com.Find(".bit-tgi");
+        var published = new[]
+        {
+            "bit-tgi-pri", "bit-tgi-sec", "bit-tgi-ter", "bit-tgi-inf", "bit-tgi-suc", "bit-tgi-wrn", "bit-tgi-swr", "bit-tgi-err",
+            "bit-tgi-pbg", "bit-tgi-sbg", "bit-tgi-tbg", "bit-tgi-pfg", "bit-tgi-sfg", "bit-tgi-tfg", "bit-tgi-pbr", "bit-tgi-sbr", "bit-tgi-tbr",
+            "bit-tgi-sm", "bit-tgi-md", "bit-tgi-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
     }
 
     [TestMethod,

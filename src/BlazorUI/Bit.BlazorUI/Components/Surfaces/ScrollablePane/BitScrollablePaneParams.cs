@@ -276,315 +276,239 @@ public class BitScrollablePaneParams : BitComponentBaseParams, IBitComponentPara
 
         // The values that only the browser side reads (the JS options) need no builder reset: the options are
         // rebuilt from the properties after every render and compared with the ones last sent.
-        if (AutoScroll.HasValue && bitScrollablePane.HasNotBeenSet(nameof(AutoScroll)))
+        if (AutoScroll.HasValue)
         {
-            bitScrollablePane.AutoScroll = AutoScroll.Value;
+            bitScrollablePane.TakeFromCascade(nameof(AutoScroll), AutoScroll.Value, static s => s.AutoScroll, static (s, v) => s.AutoScroll = v);
         }
 
-        if (AutoScrollThreshold.HasValue && bitScrollablePane.HasNotBeenSet(nameof(AutoScrollThreshold)))
+        if (AutoScrollThreshold.HasValue)
         {
-            bitScrollablePane.AutoScrollThreshold = AutoScrollThreshold.Value;
+            bitScrollablePane.TakeFromCascade(nameof(AutoScrollThreshold), AutoScrollThreshold.Value, static s => s.AutoScrollThreshold, static (s, v) => s.AutoScrollThreshold = v);
         }
 
-        if (AutoHeight.HasValue && bitScrollablePane.HasNotBeenSet(nameof(AutoHeight)) && bitScrollablePane.AutoHeight != AutoHeight)
+        if (AutoHeight.HasValue)
         {
-            bitScrollablePane.AutoHeight = AutoHeight.Value;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(AutoHeight), AutoHeight.Value, static s => s.AutoHeight, static (s, v) => s.AutoHeight = v);
         }
 
-        if (AutoSize.HasValue && bitScrollablePane.HasNotBeenSet(nameof(AutoSize)) && bitScrollablePane.AutoSize != AutoSize)
+        if (AutoSize.HasValue)
         {
-            bitScrollablePane.AutoSize = AutoSize.Value;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(AutoSize), AutoSize.Value, static s => s.AutoSize, static (s, v) => s.AutoSize = v);
         }
 
-        if (AutoWidth.HasValue && bitScrollablePane.HasNotBeenSet(nameof(AutoWidth)) && bitScrollablePane.AutoWidth != AutoWidth)
+        if (AutoWidth.HasValue)
         {
-            bitScrollablePane.AutoWidth = AutoWidth.Value;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(AutoWidth), AutoWidth.Value, static s => s.AutoWidth, static (s, v) => s.AutoWidth = v);
         }
 
-        if (AutoHideScrollbar.HasValue && bitScrollablePane.HasNotBeenSet(nameof(AutoHideScrollbar)) && bitScrollablePane.AutoHideScrollbar != AutoHideScrollbar)
+        if (AutoHideScrollbar.HasValue)
         {
-            bitScrollablePane.AutoHideScrollbar = AutoHideScrollbar.Value;
-
-            bitScrollablePane.ClassBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(AutoHideScrollbar), AutoHideScrollbar.Value, static s => s.AutoHideScrollbar, static (s, v) => s.AutoHideScrollbar = v);
         }
 
-        if (AutoHideDelay.HasValue && bitScrollablePane.HasNotBeenSet(nameof(AutoHideDelay)))
+        if (AutoHideDelay.HasValue)
         {
-            bitScrollablePane.AutoHideDelay = AutoHideDelay.Value;
+            bitScrollablePane.TakeFromCascade(nameof(AutoHideDelay), AutoHideDelay.Value, static s => s.AutoHideDelay, static (s, v) => s.AutoHideDelay = v);
         }
 
-        if (DragScroll.HasValue && bitScrollablePane.HasNotBeenSet(nameof(DragScroll)) && bitScrollablePane.DragScroll != DragScroll)
+        if (DragScroll.HasValue)
         {
-            bitScrollablePane.DragScroll = DragScroll.Value;
-
-            bitScrollablePane.ClassBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(DragScroll), DragScroll.Value, static s => s.DragScroll, static (s, v) => s.DragScroll = v);
         }
 
-        if (DragMomentum.HasValue && bitScrollablePane.HasNotBeenSet(nameof(DragMomentum)))
+        if (DragMomentum.HasValue)
         {
-            bitScrollablePane.DragMomentum = DragMomentum.Value;
+            bitScrollablePane.TakeFromCascade(nameof(DragMomentum), DragMomentum.Value, static s => s.DragMomentum, static (s, v) => s.DragMomentum = v);
         }
 
-        if (ExpandOnPrint.HasValue && bitScrollablePane.HasNotBeenSet(nameof(ExpandOnPrint)) && bitScrollablePane.ExpandOnPrint != ExpandOnPrint)
+        if (ExpandOnPrint.HasValue)
         {
-            bitScrollablePane.ExpandOnPrint = ExpandOnPrint.Value;
-
-            bitScrollablePane.ClassBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(ExpandOnPrint), ExpandOnPrint.Value, static s => s.ExpandOnPrint, static (s, v) => s.ExpandOnPrint = v);
         }
 
-        if (Fade.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Fade)) && bitScrollablePane.Fade != Fade)
+        if (Fade.HasValue)
         {
-            bitScrollablePane.Fade = Fade.Value;
-
-            bitScrollablePane.ClassBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(Fade), Fade.Value, static s => s.Fade, static (s, v) => s.Fade = v);
         }
 
-        if (FadeSize.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(FadeSize)) && bitScrollablePane.FadeSize != FadeSize)
+        if (FadeSize.HasValue())
         {
-            bitScrollablePane.FadeSize = FadeSize;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(FadeSize), FadeSize, static s => s.FadeSize, static (s, v) => s.FadeSize = v);
         }
 
-        if (FitHeight.HasValue && bitScrollablePane.HasNotBeenSet(nameof(FitHeight)) && bitScrollablePane.FitHeight != FitHeight)
+        if (FitHeight.HasValue)
         {
-            bitScrollablePane.FitHeight = FitHeight.Value;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(FitHeight), FitHeight.Value, static s => s.FitHeight, static (s, v) => s.FitHeight = v);
         }
 
-        if (FitSize.HasValue && bitScrollablePane.HasNotBeenSet(nameof(FitSize)) && bitScrollablePane.FitSize != FitSize)
+        if (FitSize.HasValue)
         {
-            bitScrollablePane.FitSize = FitSize.Value;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(FitSize), FitSize.Value, static s => s.FitSize, static (s, v) => s.FitSize = v);
         }
 
-        if (FitWidth.HasValue && bitScrollablePane.HasNotBeenSet(nameof(FitWidth)) && bitScrollablePane.FitWidth != FitWidth)
+        if (FitWidth.HasValue)
         {
-            bitScrollablePane.FitWidth = FitWidth.Value;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(FitWidth), FitWidth.Value, static s => s.FitWidth, static (s, v) => s.FitWidth = v);
         }
 
-        if (Focusable.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Focusable)))
+        if (Focusable.HasValue)
         {
-            bitScrollablePane.Focusable = Focusable.Value;
+            bitScrollablePane.TakeFromCascade(nameof(Focusable), Focusable.Value, static s => s.Focusable, static (s, v) => s.Focusable = v);
         }
 
-        if (FullHeight.HasValue && bitScrollablePane.HasNotBeenSet(nameof(FullHeight)) && bitScrollablePane.FullHeight != FullHeight)
+        if (FullHeight.HasValue)
         {
-            bitScrollablePane.FullHeight = FullHeight.Value;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(FullHeight), FullHeight.Value, static s => s.FullHeight, static (s, v) => s.FullHeight = v);
         }
 
-        if (FullSize.HasValue && bitScrollablePane.HasNotBeenSet(nameof(FullSize)) && bitScrollablePane.FullSize != FullSize)
+        if (FullSize.HasValue)
         {
-            bitScrollablePane.FullSize = FullSize.Value;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(FullSize), FullSize.Value, static s => s.FullSize, static (s, v) => s.FullSize = v);
         }
 
-        if (FullWidth.HasValue && bitScrollablePane.HasNotBeenSet(nameof(FullWidth)) && bitScrollablePane.FullWidth != FullWidth)
+        if (FullWidth.HasValue)
         {
-            bitScrollablePane.FullWidth = FullWidth.Value;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static s => s.FullWidth, static (s, v) => s.FullWidth = v);
         }
 
-        if (Gutter.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Gutter)) && bitScrollablePane.Gutter != Gutter)
+        if (Gutter.HasValue)
         {
-            bitScrollablePane.Gutter = Gutter.Value;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(Gutter), Gutter.Value, static s => s.Gutter, static (s, v) => s.Gutter = v);
         }
 
-        if (Height.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(Height)) && bitScrollablePane.Height != Height)
+        if (Height.HasValue())
         {
-            bitScrollablePane.Height = Height;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(Height), Height, static s => s.Height, static (s, v) => s.Height = v);
         }
 
-        if (Horizontal.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Horizontal)) && bitScrollablePane.Horizontal != Horizontal)
+        if (Horizontal.HasValue)
         {
-            bitScrollablePane.Horizontal = Horizontal.Value;
-
-            bitScrollablePane.ClassBuilder.Reset();
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(Horizontal), Horizontal.Value, static s => s.Horizontal, static (s, v) => s.Horizontal = v);
         }
 
-        if (HorizontalWheel.HasValue && bitScrollablePane.HasNotBeenSet(nameof(HorizontalWheel)))
+        if (HorizontalWheel.HasValue)
         {
-            bitScrollablePane.HorizontalWheel = HorizontalWheel.Value;
+            bitScrollablePane.TakeFromCascade(nameof(HorizontalWheel), HorizontalWheel.Value, static s => s.HorizontalWheel, static (s, v) => s.HorizontalWheel = v);
         }
 
-        if (MaxHeight.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(MaxHeight)) && bitScrollablePane.MaxHeight != MaxHeight)
+        if (MaxHeight.HasValue())
         {
-            bitScrollablePane.MaxHeight = MaxHeight;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(MaxHeight), MaxHeight, static s => s.MaxHeight, static (s, v) => s.MaxHeight = v);
         }
 
-        if (MaxWidth.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(MaxWidth)) && bitScrollablePane.MaxWidth != MaxWidth)
+        if (MaxWidth.HasValue())
         {
-            bitScrollablePane.MaxWidth = MaxWidth;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(MaxWidth), MaxWidth, static s => s.MaxWidth, static (s, v) => s.MaxWidth = v);
         }
 
-        if (MinHeight.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(MinHeight)) && bitScrollablePane.MinHeight != MinHeight)
+        if (MinHeight.HasValue())
         {
-            bitScrollablePane.MinHeight = MinHeight;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(MinHeight), MinHeight, static s => s.MinHeight, static (s, v) => s.MinHeight = v);
         }
 
-        if (MinWidth.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(MinWidth)) && bitScrollablePane.MinWidth != MinWidth)
+        if (MinWidth.HasValue())
         {
-            bitScrollablePane.MinWidth = MinWidth;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(MinWidth), MinWidth, static s => s.MinWidth, static (s, v) => s.MinWidth = v);
         }
 
-        if (Modern.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Modern)) && bitScrollablePane.Modern != Modern)
+        if (Modern.HasValue)
         {
-            bitScrollablePane.Modern = Modern.Value;
-
-            bitScrollablePane.ClassBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(Modern), Modern.Value, static s => s.Modern, static (s, v) => s.Modern = v);
         }
 
-        if (NoScroll.HasValue && bitScrollablePane.HasNotBeenSet(nameof(NoScroll)) && bitScrollablePane.NoScroll != NoScroll)
+        if (NoScroll.HasValue)
         {
-            bitScrollablePane.NoScroll = NoScroll.Value;
-
-            bitScrollablePane.ClassBuilder.Reset();
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(NoScroll), NoScroll.Value, static s => s.NoScroll, static (s, v) => s.NoScroll = v);
         }
 
-        if (Overflow.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Overflow)) && bitScrollablePane.Overflow != Overflow)
+        if (Overflow.HasValue)
         {
-            bitScrollablePane.Overflow = Overflow.Value;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(Overflow), Overflow.Value, static s => s.Overflow, static (s, v) => s.Overflow = v);
         }
 
-        if (OverflowX.HasValue && bitScrollablePane.HasNotBeenSet(nameof(OverflowX)) && bitScrollablePane.OverflowX != OverflowX)
+        if (OverflowX.HasValue)
         {
-            bitScrollablePane.OverflowX = OverflowX.Value;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(OverflowX), OverflowX.Value, static s => s.OverflowX, static (s, v) => s.OverflowX = v);
         }
 
-        if (OverflowY.HasValue && bitScrollablePane.HasNotBeenSet(nameof(OverflowY)) && bitScrollablePane.OverflowY != OverflowY)
+        if (OverflowY.HasValue)
         {
-            bitScrollablePane.OverflowY = OverflowY.Value;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(OverflowY), OverflowY.Value, static s => s.OverflowY, static (s, v) => s.OverflowY = v);
         }
 
-        if (Overscroll.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Overscroll)) && bitScrollablePane.Overscroll != Overscroll)
+        if (Overscroll.HasValue)
         {
-            bitScrollablePane.Overscroll = Overscroll.Value;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(Overscroll), Overscroll.Value, static s => s.Overscroll, static (s, v) => s.Overscroll = v);
         }
 
-        if (OverscrollX.HasValue && bitScrollablePane.HasNotBeenSet(nameof(OverscrollX)) && bitScrollablePane.OverscrollX != OverscrollX)
+        if (OverscrollX.HasValue)
         {
-            bitScrollablePane.OverscrollX = OverscrollX.Value;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(OverscrollX), OverscrollX.Value, static s => s.OverscrollX, static (s, v) => s.OverscrollX = v);
         }
 
-        if (OverscrollY.HasValue && bitScrollablePane.HasNotBeenSet(nameof(OverscrollY)) && bitScrollablePane.OverscrollY != OverscrollY)
+        if (OverscrollY.HasValue)
         {
-            bitScrollablePane.OverscrollY = OverscrollY.Value;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(OverscrollY), OverscrollY.Value, static s => s.OverscrollY, static (s, v) => s.OverscrollY = v);
         }
 
-        if (PreserveScroll.HasValue && bitScrollablePane.HasNotBeenSet(nameof(PreserveScroll)))
+        if (PreserveScroll.HasValue)
         {
-            bitScrollablePane.PreserveScroll = PreserveScroll.Value;
+            bitScrollablePane.TakeFromCascade(nameof(PreserveScroll), PreserveScroll.Value, static s => s.PreserveScroll, static (s, v) => s.PreserveScroll = v);
         }
 
-        if (ReachOffset.HasValue && bitScrollablePane.HasNotBeenSet(nameof(ReachOffset)))
+        if (ReachOffset.HasValue)
         {
-            bitScrollablePane.ReachOffset = ReachOffset.Value;
+            bitScrollablePane.TakeFromCascade(nameof(ReachOffset), ReachOffset.Value, static s => s.ReachOffset, static (s, v) => s.ReachOffset = v);
         }
 
-        if (Role.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(Role)))
+        if (Role.HasValue())
         {
-            bitScrollablePane.Role = Role;
+            bitScrollablePane.TakeFromCascade(nameof(Role), Role, static s => s.Role, static (s, v) => s.Role = v);
         }
 
-        if (ScrollbarColor.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(ScrollbarColor)) && bitScrollablePane.ScrollbarColor != ScrollbarColor)
+        if (ScrollbarColor.HasValue())
         {
-            bitScrollablePane.ScrollbarColor = ScrollbarColor;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(ScrollbarColor), ScrollbarColor, static s => s.ScrollbarColor, static (s, v) => s.ScrollbarColor = v);
         }
 
-        if (ScrollbarWidth.HasValue && bitScrollablePane.HasNotBeenSet(nameof(ScrollbarWidth)) && bitScrollablePane.ScrollbarWidth != ScrollbarWidth)
+        if (ScrollbarWidth.HasValue)
         {
-            bitScrollablePane.ScrollbarWidth = ScrollbarWidth.Value;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(ScrollbarWidth), ScrollbarWidth.Value, static s => s.ScrollbarWidth, static (s, v) => s.ScrollbarWidth = v);
         }
 
-        if (ScrollPadding.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(ScrollPadding)) && bitScrollablePane.ScrollPadding != ScrollPadding)
+        if (ScrollPadding.HasValue())
         {
-            bitScrollablePane.ScrollPadding = ScrollPadding;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(ScrollPadding), ScrollPadding, static s => s.ScrollPadding, static (s, v) => s.ScrollPadding = v);
         }
 
-        if (ScrollThrottle.HasValue && bitScrollablePane.HasNotBeenSet(nameof(ScrollThrottle)))
+        if (ScrollThrottle.HasValue)
         {
-            bitScrollablePane.ScrollThrottle = ScrollThrottle.Value;
+            bitScrollablePane.TakeFromCascade(nameof(ScrollThrottle), ScrollThrottle.Value, static s => s.ScrollThrottle, static (s, v) => s.ScrollThrottle = v);
         }
 
-        if (Smooth.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Smooth)) && bitScrollablePane.Smooth != Smooth)
+        if (Smooth.HasValue)
         {
-            bitScrollablePane.Smooth = Smooth.Value;
-
-            bitScrollablePane.ClassBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(Smooth), Smooth.Value, static s => s.Smooth, static (s, v) => s.Smooth = v);
         }
 
-        if (Snap.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Snap)) && bitScrollablePane.Snap != Snap)
+        if (Snap.HasValue)
         {
-            bitScrollablePane.Snap = Snap.Value;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(Snap), Snap.Value, static s => s.Snap, static (s, v) => s.Snap = v);
         }
 
-        if (SnapAlign.HasValue && bitScrollablePane.HasNotBeenSet(nameof(SnapAlign)) && bitScrollablePane.SnapAlign != SnapAlign)
+        if (SnapAlign.HasValue)
         {
-            bitScrollablePane.SnapAlign = SnapAlign.Value;
-
-            bitScrollablePane.ClassBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(SnapAlign), SnapAlign.Value, static s => s.SnapAlign, static (s, v) => s.SnapAlign = v);
         }
 
-        if (SnapStop.HasValue && bitScrollablePane.HasNotBeenSet(nameof(SnapStop)) && bitScrollablePane.SnapStop != SnapStop)
+        if (SnapStop.HasValue)
         {
-            bitScrollablePane.SnapStop = SnapStop.Value;
-
-            bitScrollablePane.ClassBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(SnapStop), SnapStop.Value, static s => s.SnapStop, static (s, v) => s.SnapStop = v);
         }
 
-        if (Width.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(Width)) && bitScrollablePane.Width != Width)
+        if (Width.HasValue())
         {
-            bitScrollablePane.Width = Width;
-
-            bitScrollablePane.StyleBuilder.Reset();
+            bitScrollablePane.TakeFromCascade(nameof(Width), Width, static s => s.Width, static (s, v) => s.Width = v);
         }
     }
 }

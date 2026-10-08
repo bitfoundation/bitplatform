@@ -337,73 +337,62 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
 
         UpdateBaseParameters(bitCircularTimePicker);
 
-        // Some of the parameters below carry a [CallOnSet] hook on the component, which has already run for
-        // whatever the markup set before anything cascaded here reached it. Assigning through the cascade
-        // bypasses the setter, so the hooks are re-run at the end - but only when the assignment actually
-        // changed something. This method runs on every parameters-set, and re-running them unconditionally
-        // would drag the dial back to its starting view on every re-render of the page around it.
-        // The flags are kept apart rather than rolled into one because what each parameter does to the dial
-        // is not the same: the edit mode moves it back to where a picker begins, the seconds only move it off
-        // a ring the picker has stopped carrying, and the start view - which has no hook of its own when it is
-        // written on the markup - leaves the view the person is on exactly where it is.
-        var cultureChanged = false;
-        var editModeChanged = false;
-        var startViewChanged = false;
-        var secondsChanged = false;
+        // Whether any of the parameters the dial starts out on is filled in, which the first pass reads.
+        var viewSourceChanged = false;
 
-        if (AllowTextInput.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(AllowTextInput)))
+        if (AllowTextInput.HasValue)
         {
-            bitCircularTimePicker.AllowTextInput = AllowTextInput.Value;
+            bitCircularTimePicker.TakeFromCascade(nameof(AllowTextInput), AllowTextInput.Value, static c => c.AllowTextInput, static (c, v) => c.AllowTextInput = v);
         }
 
-        if (AllowedHours is not null && bitCircularTimePicker.HasNotBeenSet(nameof(AllowedHours)))
+        if (AllowedHours is not null)
         {
-            bitCircularTimePicker.AllowedHours = AllowedHours;
+            bitCircularTimePicker.TakeFromCascade(nameof(AllowedHours), AllowedHours, static c => c.AllowedHours, static (c, v) => c.AllowedHours = v);
         }
 
-        if (AllowedMinutes is not null && bitCircularTimePicker.HasNotBeenSet(nameof(AllowedMinutes)))
+        if (AllowedMinutes is not null)
         {
-            bitCircularTimePicker.AllowedMinutes = AllowedMinutes;
+            bitCircularTimePicker.TakeFromCascade(nameof(AllowedMinutes), AllowedMinutes, static c => c.AllowedMinutes, static (c, v) => c.AllowedMinutes = v);
         }
 
-        if (AllowedSeconds is not null && bitCircularTimePicker.HasNotBeenSet(nameof(AllowedSeconds)))
+        if (AllowedSeconds is not null)
         {
-            bitCircularTimePicker.AllowedSeconds = AllowedSeconds;
+            bitCircularTimePicker.TakeFromCascade(nameof(AllowedSeconds), AllowedSeconds, static c => c.AllowedSeconds, static (c, v) => c.AllowedSeconds = v);
         }
 
-        if (AmPmInClock.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(AmPmInClock)))
+        if (AmPmInClock.HasValue)
         {
-            bitCircularTimePicker.AmPmInClock = AmPmInClock.Value;
+            bitCircularTimePicker.TakeFromCascade(nameof(AmPmInClock), AmPmInClock.Value, static c => c.AmPmInClock, static (c, v) => c.AmPmInClock = v);
         }
 
-        if (AutoClose.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(AutoClose)))
+        if (AutoClose.HasValue)
         {
-            bitCircularTimePicker.AutoClose = AutoClose.Value;
+            bitCircularTimePicker.TakeFromCascade(nameof(AutoClose), AutoClose.Value, static c => c.AutoClose, static (c, v) => c.AutoClose = v);
         }
 
-        if (AutoCloseDelay.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(AutoCloseDelay)))
+        if (AutoCloseDelay.HasValue)
         {
-            bitCircularTimePicker.AutoCloseDelay = AutoCloseDelay.Value;
+            bitCircularTimePicker.TakeFromCascade(nameof(AutoCloseDelay), AutoCloseDelay.Value, static c => c.AutoCloseDelay, static (c, v) => c.AutoCloseDelay = v);
         }
 
-        if (AutoFocus.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(AutoFocus)))
+        if (AutoFocus.HasValue)
         {
-            bitCircularTimePicker.AutoFocus = AutoFocus.Value;
+            bitCircularTimePicker.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static c => c.AutoFocus, static (c, v) => c.AutoFocus = v);
         }
 
-        if (CalloutAriaLabel.HasValue() && bitCircularTimePicker.HasNotBeenSet(nameof(CalloutAriaLabel)))
+        if (CalloutAriaLabel.HasValue())
         {
-            bitCircularTimePicker.CalloutAriaLabel = CalloutAriaLabel!;
+            bitCircularTimePicker.TakeFromCascade(nameof(CalloutAriaLabel), CalloutAriaLabel!, static c => c.CalloutAriaLabel, static (c, v) => c.CalloutAriaLabel = v);
         }
 
-        if (CalloutFooterTemplate is not null && bitCircularTimePicker.HasNotBeenSet(nameof(CalloutFooterTemplate)))
+        if (CalloutFooterTemplate is not null)
         {
-            bitCircularTimePicker.CalloutFooterTemplate = CalloutFooterTemplate;
+            bitCircularTimePicker.TakeFromCascade(nameof(CalloutFooterTemplate), CalloutFooterTemplate, static c => c.CalloutFooterTemplate, static (c, v) => c.CalloutFooterTemplate = v);
         }
 
-        if (CalloutHeaderTemplate is not null && bitCircularTimePicker.HasNotBeenSet(nameof(CalloutHeaderTemplate)))
+        if (CalloutHeaderTemplate is not null)
         {
-            bitCircularTimePicker.CalloutHeaderTemplate = CalloutHeaderTemplate;
+            bitCircularTimePicker.TakeFromCascade(nameof(CalloutHeaderTemplate), CalloutHeaderTemplate, static c => c.CalloutHeaderTemplate, static (c, v) => c.CalloutHeaderTemplate = v);
         }
 
         if (CalloutHtmlAttributes is not null)
@@ -416,264 +405,231 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
             }
         }
 
-        if (Classes is not null && bitCircularTimePicker.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitCircularTimePicker.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitCircularTimePicker.Classes = Classes;
-
-            bitCircularTimePicker.ClassBuilder.Reset();
+            bitCircularTimePicker.TakeFromCascade(nameof(Classes), Classes, static c => c.Classes, static (c, v) => c.Classes = v);
         }
 
-        if (ClearButtonText.HasValue() && bitCircularTimePicker.HasNotBeenSet(nameof(ClearButtonText)))
+        if (ClearButtonText.HasValue())
         {
-            bitCircularTimePicker.ClearButtonText = ClearButtonText!;
+            bitCircularTimePicker.TakeFromCascade(nameof(ClearButtonText), ClearButtonText!, static c => c.ClearButtonText, static (c, v) => c.ClearButtonText = v);
         }
 
-        if (CloseButtonIcon is not null && bitCircularTimePicker.HasNotBeenSet(nameof(CloseButtonIcon)))
+        if (CloseButtonIcon is not null)
         {
-            bitCircularTimePicker.CloseButtonIcon = CloseButtonIcon;
+            bitCircularTimePicker.TakeFromCascade(nameof(CloseButtonIcon), CloseButtonIcon, static c => c.CloseButtonIcon, static (c, v) => c.CloseButtonIcon = v);
         }
 
-        if (CloseButtonIconName.HasValue() && bitCircularTimePicker.HasNotBeenSet(nameof(CloseButtonIconName)))
+        if (CloseButtonIconName.HasValue())
         {
-            bitCircularTimePicker.CloseButtonIconName = CloseButtonIconName;
+            bitCircularTimePicker.TakeFromCascade(nameof(CloseButtonIconName), CloseButtonIconName, static c => c.CloseButtonIconName, static (c, v) => c.CloseButtonIconName = v);
         }
 
-        if (CloseButtonTitle.HasValue() && bitCircularTimePicker.HasNotBeenSet(nameof(CloseButtonTitle)))
+        if (CloseButtonTitle.HasValue())
         {
-            bitCircularTimePicker.CloseButtonTitle = CloseButtonTitle!;
+            bitCircularTimePicker.TakeFromCascade(nameof(CloseButtonTitle), CloseButtonTitle!, static c => c.CloseButtonTitle, static (c, v) => c.CloseButtonTitle = v);
         }
 
-        if (Color.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(Color)) && bitCircularTimePicker.Color != Color)
+        if (Color.HasValue)
         {
-            bitCircularTimePicker.Color = Color.Value;
-
-            bitCircularTimePicker.ClassBuilder.Reset();
+            bitCircularTimePicker.TakeFromCascade(nameof(Color), Color.Value, static c => c.Color, static (c, v) => c.Color = v);
         }
 
-        // An equal culture in another instance - one created inline, carried by a new copy of the params object - is
-        // taken but changes nothing, exactly as the markup treats it.
-        if (Culture is not null && bitCircularTimePicker.HasNotBeenSet(nameof(Culture)) && ReferenceEquals(bitCircularTimePicker.Culture, Culture) is false)
+        if (Culture is not null)
         {
-            cultureChanged = Equals(bitCircularTimePicker.Culture, Culture) is false;
-
-            bitCircularTimePicker.Culture = Culture;
-
-            if (cultureChanged)
-            {
-                bitCircularTimePicker.ClassBuilder.Reset();
-            }
+            bitCircularTimePicker.TakeFromCascade(nameof(Culture), Culture, static c => c.Culture, static (c, v) => c.Culture = v);
         }
 
-        if (DisallowedTimeErrorMessage.HasValue() && bitCircularTimePicker.HasNotBeenSet(nameof(DisallowedTimeErrorMessage)))
+        if (DisallowedTimeErrorMessage.HasValue())
         {
-            bitCircularTimePicker.DisallowedTimeErrorMessage = DisallowedTimeErrorMessage;
+            bitCircularTimePicker.TakeFromCascade(nameof(DisallowedTimeErrorMessage), DisallowedTimeErrorMessage, static c => c.DisallowedTimeErrorMessage, static (c, v) => c.DisallowedTimeErrorMessage = v);
         }
 
-        if (DisableFuture.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(DisableFuture)))
+        if (DisableFuture.HasValue)
         {
-            bitCircularTimePicker.DisableFuture = DisableFuture.Value;
+            bitCircularTimePicker.TakeFromCascade(nameof(DisableFuture), DisableFuture.Value, static c => c.DisableFuture, static (c, v) => c.DisableFuture = v);
         }
 
-        if (DisablePast.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(DisablePast)))
+        if (DisablePast.HasValue)
         {
-            bitCircularTimePicker.DisablePast = DisablePast.Value;
+            bitCircularTimePicker.TakeFromCascade(nameof(DisablePast), DisablePast.Value, static c => c.DisablePast, static (c, v) => c.DisablePast = v);
         }
 
-        if (DropDirection.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(DropDirection)))
+        if (DropDirection.HasValue)
         {
-            bitCircularTimePicker.DropDirection = DropDirection.Value;
+            bitCircularTimePicker.TakeFromCascade(nameof(DropDirection), DropDirection.Value, static c => c.DropDirection, static (c, v) => c.DropDirection = v);
         }
 
-        if (EditMode.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(EditMode)) && bitCircularTimePicker.EditMode != EditMode)
+        if (EditMode.HasValue && bitCircularTimePicker.TakeFromCascade(nameof(EditMode), EditMode.Value, static c => c.EditMode, static (c, v) => c.EditMode = v))
         {
-            editModeChanged = true;
-
-            bitCircularTimePicker.EditMode = EditMode.Value;
-
-            bitCircularTimePicker.ClassBuilder.Reset();
+            viewSourceChanged = true;
         }
 
-        if (HasBorder.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(HasBorder)) && bitCircularTimePicker.HasBorder != HasBorder)
+        if (HasBorder.HasValue)
         {
-            bitCircularTimePicker.HasBorder = HasBorder.Value;
-
-            bitCircularTimePicker.ClassBuilder.Reset();
+            bitCircularTimePicker.TakeFromCascade(nameof(HasBorder), HasBorder.Value, static c => c.HasBorder, static (c, v) => c.HasBorder = v);
         }
 
-        if (HourButtonTitle.HasValue() && bitCircularTimePicker.HasNotBeenSet(nameof(HourButtonTitle)))
+        if (HourButtonTitle.HasValue())
         {
-            bitCircularTimePicker.HourButtonTitle = HourButtonTitle!;
+            bitCircularTimePicker.TakeFromCascade(nameof(HourButtonTitle), HourButtonTitle!, static c => c.HourButtonTitle, static (c, v) => c.HourButtonTitle = v);
         }
 
-        if (HourStep.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(HourStep)))
+        if (HourStep.HasValue)
         {
-            bitCircularTimePicker.HourStep = HourStep.Value;
+            bitCircularTimePicker.TakeFromCascade(nameof(HourStep), HourStep.Value, static c => c.HourStep, static (c, v) => c.HourStep = v);
         }
 
-        if (Icon is not null && bitCircularTimePicker.HasNotBeenSet(nameof(Icon)))
+        if (Icon is not null)
         {
-            bitCircularTimePicker.Icon = Icon;
+            bitCircularTimePicker.TakeFromCascade(nameof(Icon), Icon, static c => c.Icon, static (c, v) => c.Icon = v);
         }
 
-        if (IconPlacement.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(IconPlacement)) && bitCircularTimePicker.IconPlacement != IconPlacement)
+        if (IconPlacement.HasValue)
         {
-            bitCircularTimePicker.IconPlacement = IconPlacement.Value;
-
-            bitCircularTimePicker.ClassBuilder.Reset();
+            bitCircularTimePicker.TakeFromCascade(nameof(IconPlacement), IconPlacement.Value, static c => c.IconPlacement, static (c, v) => c.IconPlacement = v);
         }
 
-        if (IconName.HasValue() && bitCircularTimePicker.HasNotBeenSet(nameof(IconName)))
+        if (IconName.HasValue())
         {
-            bitCircularTimePicker.IconName = IconName;
+            bitCircularTimePicker.TakeFromCascade(nameof(IconName), IconName, static c => c.IconName, static (c, v) => c.IconName = v);
         }
 
-        if (IconTemplate is not null && bitCircularTimePicker.HasNotBeenSet(nameof(IconTemplate)))
+        if (IconTemplate is not null)
         {
-            bitCircularTimePicker.IconTemplate = IconTemplate;
+            bitCircularTimePicker.TakeFromCascade(nameof(IconTemplate), IconTemplate, static c => c.IconTemplate, static (c, v) => c.IconTemplate = v);
         }
 
-        if (InvalidErrorMessage.HasValue() && bitCircularTimePicker.HasNotBeenSet(nameof(InvalidErrorMessage)))
+        if (InvalidErrorMessage.HasValue())
         {
-            bitCircularTimePicker.InvalidErrorMessage = InvalidErrorMessage;
+            bitCircularTimePicker.TakeFromCascade(nameof(InvalidErrorMessage), InvalidErrorMessage, static c => c.InvalidErrorMessage, static (c, v) => c.InvalidErrorMessage = v);
         }
 
-        if (InvertMouseWheel.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(InvertMouseWheel)))
+        if (InvertMouseWheel.HasValue)
         {
-            bitCircularTimePicker.InvertMouseWheel = InvertMouseWheel.Value;
+            bitCircularTimePicker.TakeFromCascade(nameof(InvertMouseWheel), InvertMouseWheel.Value, static c => c.InvertMouseWheel, static (c, v) => c.InvertMouseWheel = v);
         }
 
-        if (Landscape.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(Landscape)))
+        if (Landscape.HasValue)
         {
-            bitCircularTimePicker.Landscape = Landscape.Value;
+            bitCircularTimePicker.TakeFromCascade(nameof(Landscape), Landscape.Value, static c => c.Landscape, static (c, v) => c.Landscape = v);
         }
 
-        if (MaxTime.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(MaxTime)))
+        if (MaxTime.HasValue)
         {
-            bitCircularTimePicker.MaxTime = MaxTime.Value;
+            bitCircularTimePicker.TakeFromCascade(nameof(MaxTime), MaxTime.Value, static c => c.MaxTime, static (c, v) => c.MaxTime = v);
         }
 
-        if (MinTime.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(MinTime)))
+        if (MinTime.HasValue)
         {
-            bitCircularTimePicker.MinTime = MinTime.Value;
+            bitCircularTimePicker.TakeFromCascade(nameof(MinTime), MinTime.Value, static c => c.MinTime, static (c, v) => c.MinTime = v);
         }
 
-        if (MinuteButtonTitle.HasValue() && bitCircularTimePicker.HasNotBeenSet(nameof(MinuteButtonTitle)))
+        if (MinuteButtonTitle.HasValue())
         {
-            bitCircularTimePicker.MinuteButtonTitle = MinuteButtonTitle!;
+            bitCircularTimePicker.TakeFromCascade(nameof(MinuteButtonTitle), MinuteButtonTitle!, static c => c.MinuteButtonTitle, static (c, v) => c.MinuteButtonTitle = v);
         }
 
-        if (MinuteStep.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(MinuteStep)))
+        if (MinuteStep.HasValue)
         {
-            bitCircularTimePicker.MinuteStep = MinuteStep.Value;
+            bitCircularTimePicker.TakeFromCascade(nameof(MinuteStep), MinuteStep.Value, static c => c.MinuteStep, static (c, v) => c.MinuteStep = v);
         }
 
-        if (NoMouseWheel.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(NoMouseWheel)))
+        if (NoMouseWheel.HasValue)
         {
-            bitCircularTimePicker.NoMouseWheel = NoMouseWheel.Value;
+            bitCircularTimePicker.TakeFromCascade(nameof(NoMouseWheel), NoMouseWheel.Value, static c => c.NoMouseWheel, static (c, v) => c.NoMouseWheel = v);
         }
 
-        if (NowButtonText.HasValue() && bitCircularTimePicker.HasNotBeenSet(nameof(NowButtonText)))
+        if (NowButtonText.HasValue())
         {
-            bitCircularTimePicker.NowButtonText = NowButtonText!;
+            bitCircularTimePicker.TakeFromCascade(nameof(NowButtonText), NowButtonText!, static c => c.NowButtonText, static (c, v) => c.NowButtonText = v);
         }
 
-        if (OutOfRangeErrorMessage.HasValue() && bitCircularTimePicker.HasNotBeenSet(nameof(OutOfRangeErrorMessage)))
+        if (OutOfRangeErrorMessage.HasValue())
         {
-            bitCircularTimePicker.OutOfRangeErrorMessage = OutOfRangeErrorMessage;
+            bitCircularTimePicker.TakeFromCascade(nameof(OutOfRangeErrorMessage), OutOfRangeErrorMessage, static c => c.OutOfRangeErrorMessage, static (c, v) => c.OutOfRangeErrorMessage = v);
         }
 
-        if (Placeholder.HasValue() && bitCircularTimePicker.HasNotBeenSet(nameof(Placeholder)))
+        if (Placeholder.HasValue())
         {
-            bitCircularTimePicker.Placeholder = Placeholder;
+            bitCircularTimePicker.TakeFromCascade(nameof(Placeholder), Placeholder, static c => c.Placeholder, static (c, v) => c.Placeholder = v);
         }
 
-        if (Responsive.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(Responsive)))
+        if (Responsive.HasValue)
         {
-            bitCircularTimePicker.Responsive = Responsive.Value;
+            bitCircularTimePicker.TakeFromCascade(nameof(Responsive), Responsive.Value, static c => c.Responsive, static (c, v) => c.Responsive = v);
         }
 
-        if (SecondButtonTitle.HasValue() && bitCircularTimePicker.HasNotBeenSet(nameof(SecondButtonTitle)))
+        if (SecondButtonTitle.HasValue())
         {
-            bitCircularTimePicker.SecondButtonTitle = SecondButtonTitle!;
+            bitCircularTimePicker.TakeFromCascade(nameof(SecondButtonTitle), SecondButtonTitle!, static c => c.SecondButtonTitle, static (c, v) => c.SecondButtonTitle = v);
         }
 
-        if (SecondStep.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(SecondStep)))
+        if (SecondStep.HasValue)
         {
-            bitCircularTimePicker.SecondStep = SecondStep.Value;
+            bitCircularTimePicker.TakeFromCascade(nameof(SecondStep), SecondStep.Value, static c => c.SecondStep, static (c, v) => c.SecondStep = v);
         }
 
-        if (ShowClearButton.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(ShowClearButton)))
+        if (ShowClearButton.HasValue)
         {
-            bitCircularTimePicker.ShowClearButton = ShowClearButton.Value;
+            bitCircularTimePicker.TakeFromCascade(nameof(ShowClearButton), ShowClearButton.Value, static c => c.ShowClearButton, static (c, v) => c.ShowClearButton = v);
         }
 
-        if (ShowCloseButton.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(ShowCloseButton)))
+        if (ShowCloseButton.HasValue)
         {
-            bitCircularTimePicker.ShowCloseButton = ShowCloseButton.Value;
+            bitCircularTimePicker.TakeFromCascade(nameof(ShowCloseButton), ShowCloseButton.Value, static c => c.ShowCloseButton, static (c, v) => c.ShowCloseButton = v);
         }
 
-        if (ShowNowButton.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(ShowNowButton)))
+        if (ShowNowButton.HasValue)
         {
-            bitCircularTimePicker.ShowNowButton = ShowNowButton.Value;
+            bitCircularTimePicker.TakeFromCascade(nameof(ShowNowButton), ShowNowButton.Value, static c => c.ShowNowButton, static (c, v) => c.ShowNowButton = v);
         }
 
-        if (ShowSeconds.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(ShowSeconds)))
+        if (ShowSeconds.HasValue && bitCircularTimePicker.TakeFromCascade(nameof(ShowSeconds), ShowSeconds.Value, static c => c.ShowSeconds, static (c, v) => c.ShowSeconds = v))
         {
-            secondsChanged = bitCircularTimePicker.ShowSeconds != ShowSeconds.Value;
-
-            bitCircularTimePicker.ShowSeconds = ShowSeconds.Value;
+            viewSourceChanged = true;
         }
 
-        if (Size.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(Size)) && bitCircularTimePicker.Size != Size)
+        if (Size.HasValue)
         {
-            bitCircularTimePicker.Size = Size.Value;
-
-            bitCircularTimePicker.ClassBuilder.Reset();
+            bitCircularTimePicker.TakeFromCascade(nameof(Size), Size.Value, static c => c.Size, static (c, v) => c.Size = v);
         }
 
-        if (Standalone.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(Standalone)) && bitCircularTimePicker.Standalone != Standalone)
+        if (Standalone.HasValue)
         {
-            bitCircularTimePicker.Standalone = Standalone.Value;
-
-            bitCircularTimePicker.ClassBuilder.Reset();
+            bitCircularTimePicker.TakeFromCascade(nameof(Standalone), Standalone.Value, static c => c.Standalone, static (c, v) => c.Standalone = v);
         }
 
-        if (StartingValue.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(StartingValue)))
+        if (StartingValue.HasValue)
         {
-            bitCircularTimePicker.StartingValue = StartingValue.Value;
+            bitCircularTimePicker.TakeFromCascade(nameof(StartingValue), StartingValue.Value, static c => c.StartingValue, static (c, v) => c.StartingValue = v);
         }
 
-        if (StartView.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(StartView)))
+        if (StartView.HasValue && bitCircularTimePicker.TakeFromCascade(nameof(StartView), StartView.Value, static c => c.StartView, static (c, v) => c.StartView = v))
         {
-            startViewChanged = bitCircularTimePicker.StartView != StartView.Value;
-
-            bitCircularTimePicker.StartView = StartView.Value;
+            viewSourceChanged = true;
         }
 
-        if (Styles is not null && bitCircularTimePicker.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitCircularTimePicker.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitCircularTimePicker.Styles = Styles;
-
-            bitCircularTimePicker.StyleBuilder.Reset();
+            bitCircularTimePicker.TakeFromCascade(nameof(Styles), Styles, static c => c.Styles, static (c, v) => c.Styles = v);
         }
 
-        if (TimeFormat.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(TimeFormat)))
+        if (TimeFormat.HasValue)
         {
-            bitCircularTimePicker.TimeFormat = TimeFormat.Value;
+            bitCircularTimePicker.TakeFromCascade(nameof(TimeFormat), TimeFormat.Value, static c => c.TimeFormat, static (c, v) => c.TimeFormat = v);
         }
 
-        if (Underlined.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(Underlined)) && bitCircularTimePicker.Underlined != Underlined)
+        if (Underlined.HasValue)
         {
-            bitCircularTimePicker.Underlined = Underlined.Value;
-
-            bitCircularTimePicker.ClassBuilder.Reset();
+            bitCircularTimePicker.TakeFromCascade(nameof(Underlined), Underlined.Value, static c => c.Underlined, static (c, v) => c.Underlined = v);
         }
 
-        if (ValueFormat.HasValue() && bitCircularTimePicker.HasNotBeenSet(nameof(ValueFormat)))
+        if (ValueFormat.HasValue())
         {
-            bitCircularTimePicker.ValueFormat = ValueFormat;
+            bitCircularTimePicker.TakeFromCascade(nameof(ValueFormat), ValueFormat, static c => c.ValueFormat, static (c, v) => c.ValueFormat = v);
         }
 
-        bitCircularTimePicker.ApplyCascadedParameters(cultureChanged, editModeChanged, startViewChanged, secondsChanged);
+        bitCircularTimePicker.ApplyCascadedView(viewSourceChanged);
     }
 }

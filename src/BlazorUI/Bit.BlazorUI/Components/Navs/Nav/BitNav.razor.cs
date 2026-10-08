@@ -276,13 +276,9 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
         ClassBuilder.Register(() => IconOnly ? "bit-nav-ion" : string.Empty);
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-nav-sm",
-            BitSize.Medium => "bit-nav-md",
-            BitSize.Large => "bit-nav-lg",
-            _ => "bit-nav-md"
-        });
+        // Size, Accent and Color publish nothing while they are unset, which is what lets the stylesheet tell a
+        // default from a choice: the public --bit-Nav-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-nav"));
 
         ClassBuilder.Register(() => Accent switch
         {
@@ -303,7 +299,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
             BitColor.PrimaryBorder => "bit-nav-apbr",
             BitColor.SecondaryBorder => "bit-nav-asbr",
             BitColor.TertiaryBorder => "bit-nav-atbr",
-            _ => "bit-nav-apbg",
+            _ => string.Empty,
         });
 
         ClassBuilder.Register(() => Color switch
@@ -325,7 +321,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
             BitColor.PrimaryBorder => "bit-nav-pbr",
             BitColor.SecondaryBorder => "bit-nav-sbr",
             BitColor.TertiaryBorder => "bit-nav-tbr",
-            _ => "bit-nav-pri",
+            _ => string.Empty,
         });
     }
 

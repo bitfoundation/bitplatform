@@ -184,189 +184,141 @@ public class BitNavBarParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitNavBar);
 
-        // Mode and Match decide which item the current URL points at, so a change to either re-runs the match.
-        // Only an actual change does: the cascade is re-applied on every parameter set, and a re-match on each
-        // one would re-fire OnSelectItem on a Reselectable navbar.
-        var urlMatchingChanged = false;
-
-        if (Alignment.HasValue && bitNavBar.HasNotBeenSet(nameof(Alignment)) && bitNavBar.Alignment != Alignment)
+        if (Alignment.HasValue)
         {
-            bitNavBar.Alignment = Alignment.Value;
-
-            bitNavBar.ClassBuilder.Reset();
+            bitNavBar.TakeFromCascade(nameof(Alignment), Alignment.Value, static n => n.Alignment, static (n, v) => n.Alignment = v);
         }
 
-        if (AutoReorderOptions.HasValue && bitNavBar.HasNotBeenSet(nameof(AutoReorderOptions)))
+        if (AutoReorderOptions.HasValue)
         {
-            bitNavBar.AutoReorderOptions = AutoReorderOptions.Value;
+            bitNavBar.TakeFromCascade(nameof(AutoReorderOptions), AutoReorderOptions.Value, static n => n.AutoReorderOptions, static (n, v) => n.AutoReorderOptions = v);
         }
 
-        if (Classes is not null && bitNavBar.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitNavBar.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitNavBar.Classes = Classes;
-
-            bitNavBar.ClassBuilder.Reset();
+            bitNavBar.TakeFromCascade(nameof(Classes), Classes, static n => n.Classes, static (n, v) => n.Classes = v);
         }
 
-        if (Color.HasValue && bitNavBar.HasNotBeenSet(nameof(Color)) && bitNavBar.Color != Color)
+        if (Color.HasValue)
         {
-            bitNavBar.Color = Color.Value;
-
-            bitNavBar.ClassBuilder.Reset();
+            bitNavBar.TakeFromCascade(nameof(Color), Color.Value, static n => n.Color, static (n, v) => n.Color = v);
         }
 
-        if (Filled.HasValue && bitNavBar.HasNotBeenSet(nameof(Filled)) && bitNavBar.Filled != Filled)
+        if (Filled.HasValue)
         {
-            bitNavBar.Filled = Filled.Value;
-
-            bitNavBar.ClassBuilder.Reset();
+            bitNavBar.TakeFromCascade(nameof(Filled), Filled.Value, static n => n.Filled, static (n, v) => n.Filled = v);
         }
 
-        if (FitWidth.HasValue && bitNavBar.HasNotBeenSet(nameof(FitWidth)) && bitNavBar.FitWidth != FitWidth)
+        if (FitWidth.HasValue)
         {
-            bitNavBar.FitWidth = FitWidth.Value;
-
-            bitNavBar.ClassBuilder.Reset();
+            bitNavBar.TakeFromCascade(nameof(FitWidth), FitWidth.Value, static n => n.FitWidth, static (n, v) => n.FitWidth = v);
         }
 
-        if (FlipIndicator.HasValue && bitNavBar.HasNotBeenSet(nameof(FlipIndicator)) && bitNavBar.FlipIndicator != FlipIndicator)
+        if (FlipIndicator.HasValue)
         {
-            bitNavBar.FlipIndicator = FlipIndicator.Value;
-
-            bitNavBar.ClassBuilder.Reset();
+            bitNavBar.TakeFromCascade(nameof(FlipIndicator), FlipIndicator.Value, static n => n.FlipIndicator, static (n, v) => n.FlipIndicator = v);
         }
 
-        if (FullWidth.HasValue && bitNavBar.HasNotBeenSet(nameof(FullWidth)) && bitNavBar.FullWidth != FullWidth)
+        if (FullWidth.HasValue)
         {
-            bitNavBar.FullWidth = FullWidth.Value;
-
-            bitNavBar.ClassBuilder.Reset();
+            bitNavBar.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static n => n.FullWidth, static (n, v) => n.FullWidth = v);
         }
 
-        if (HideUnselectedText.HasValue && bitNavBar.HasNotBeenSet(nameof(HideUnselectedText)) && bitNavBar.HideUnselectedText != HideUnselectedText)
+        if (HideUnselectedText.HasValue)
         {
-            bitNavBar.HideUnselectedText = HideUnselectedText.Value;
-
-            bitNavBar.ClassBuilder.Reset();
+            bitNavBar.TakeFromCascade(nameof(HideUnselectedText), HideUnselectedText.Value, static n => n.HideUnselectedText, static (n, v) => n.HideUnselectedText = v);
         }
 
-        if (IconOnly.HasValue && bitNavBar.HasNotBeenSet(nameof(IconOnly)) && bitNavBar.IconOnly != IconOnly)
+        if (IconOnly.HasValue)
         {
-            bitNavBar.IconOnly = IconOnly.Value;
-
-            bitNavBar.ClassBuilder.Reset();
+            bitNavBar.TakeFromCascade(nameof(IconOnly), IconOnly.Value, static n => n.IconOnly, static (n, v) => n.IconOnly = v);
         }
 
-        if (Indicator.HasValue && bitNavBar.HasNotBeenSet(nameof(Indicator)) && bitNavBar.Indicator != Indicator)
+        if (Indicator.HasValue)
         {
-            bitNavBar.Indicator = Indicator.Value;
-
-            bitNavBar.ClassBuilder.Reset();
+            bitNavBar.TakeFromCascade(nameof(Indicator), Indicator.Value, static n => n.Indicator, static (n, v) => n.Indicator = v);
         }
 
-        if (InlineText.HasValue && bitNavBar.HasNotBeenSet(nameof(InlineText)) && bitNavBar.InlineText != InlineText)
+        if (InlineText.HasValue)
         {
-            bitNavBar.InlineText = InlineText.Value;
-
-            bitNavBar.ClassBuilder.Reset();
+            bitNavBar.TakeFromCascade(nameof(InlineText), InlineText.Value, static n => n.InlineText, static (n, v) => n.InlineText = v);
         }
 
-        if (ItemTemplateRenderMode.HasValue && bitNavBar.HasNotBeenSet(nameof(ItemTemplateRenderMode)))
+        if (ItemTemplateRenderMode.HasValue)
         {
-            bitNavBar.ItemTemplateRenderMode = ItemTemplateRenderMode.Value;
+            bitNavBar.TakeFromCascade(nameof(ItemTemplateRenderMode), ItemTemplateRenderMode.Value, static n => n.ItemTemplateRenderMode, static (n, v) => n.ItemTemplateRenderMode = v);
         }
 
-        if (Justified.HasValue && bitNavBar.HasNotBeenSet(nameof(Justified)) && bitNavBar.Justified != Justified)
+        if (Justified.HasValue)
         {
-            bitNavBar.Justified = Justified.Value;
-
-            bitNavBar.ClassBuilder.Reset();
+            bitNavBar.TakeFromCascade(nameof(Justified), Justified.Value, static n => n.Justified, static (n, v) => n.Justified = v);
         }
 
-        if (Match.HasValue && bitNavBar.HasNotBeenSet(nameof(Match)))
+        if (Match.HasValue)
         {
-            urlMatchingChanged |= bitNavBar.Match != Match.Value;
-
-            bitNavBar.Match = Match.Value;
+            bitNavBar.TakeFromCascade(nameof(Match), Match.Value, static n => n.Match, static (n, v) => n.Match = v);
         }
 
-        if (Mode.HasValue && bitNavBar.HasNotBeenSet(nameof(Mode)))
+        if (Mode.HasValue)
         {
-            urlMatchingChanged |= bitNavBar.Mode != Mode.Value;
-
-            bitNavBar.Mode = Mode.Value;
+            bitNavBar.TakeFromCascade(nameof(Mode), Mode.Value, static n => n.Mode, static (n, v) => n.Mode = v);
         }
 
         // an empty hint is a value of its own - the one that takes the announcement off - so only null is
         // what leaves the component to its default.
-        if (NewTabHint is not null && bitNavBar.HasNotBeenSet(nameof(NewTabHint)))
+        if (NewTabHint is not null)
         {
-            bitNavBar.NewTabHint = NewTabHint;
+            bitNavBar.TakeFromCascade(nameof(NewTabHint), NewTabHint, static n => n.NewTabHint, static (n, v) => n.NewTabHint = v);
         }
 
-        if (NoNewTabHint.HasValue && bitNavBar.HasNotBeenSet(nameof(NoNewTabHint)))
+        if (NoNewTabHint.HasValue)
         {
-            bitNavBar.NoNewTabHint = NoNewTabHint.Value;
+            bitNavBar.TakeFromCascade(nameof(NoNewTabHint), NoNewTabHint.Value, static n => n.NoNewTabHint, static (n, v) => n.NoNewTabHint = v);
         }
 
-        if (Reselectable.HasValue && bitNavBar.HasNotBeenSet(nameof(Reselectable)))
+        if (Reselectable.HasValue)
         {
-            bitNavBar.Reselectable = Reselectable.Value;
+            bitNavBar.TakeFromCascade(nameof(Reselectable), Reselectable.Value, static n => n.Reselectable, static (n, v) => n.Reselectable = v);
         }
 
-        if (SafeArea.HasValue && bitNavBar.HasNotBeenSet(nameof(SafeArea)) && bitNavBar.SafeArea != SafeArea)
+        if (SafeArea.HasValue)
         {
-            bitNavBar.SafeArea = SafeArea.Value;
-
-            bitNavBar.ClassBuilder.Reset();
+            bitNavBar.TakeFromCascade(nameof(SafeArea), SafeArea.Value, static n => n.SafeArea, static (n, v) => n.SafeArea = v);
         }
 
-        if (Scrollable.HasValue && bitNavBar.HasNotBeenSet(nameof(Scrollable)) && bitNavBar.Scrollable != Scrollable)
+        if (Scrollable.HasValue)
         {
-            bitNavBar.Scrollable = Scrollable.Value;
-
-            bitNavBar.ClassBuilder.Reset();
+            bitNavBar.TakeFromCascade(nameof(Scrollable), Scrollable.Value, static n => n.Scrollable, static (n, v) => n.Scrollable = v);
         }
 
-        if (SelectOnFocus.HasValue && bitNavBar.HasNotBeenSet(nameof(SelectOnFocus)))
+        if (SelectOnFocus.HasValue)
         {
-            bitNavBar.SelectOnFocus = SelectOnFocus.Value;
+            bitNavBar.TakeFromCascade(nameof(SelectOnFocus), SelectOnFocus.Value, static n => n.SelectOnFocus, static (n, v) => n.SelectOnFocus = v);
         }
 
-        if (SingleTabStop.HasValue && bitNavBar.HasNotBeenSet(nameof(SingleTabStop)))
+        if (SingleTabStop.HasValue)
         {
-            bitNavBar.SingleTabStop = SingleTabStop.Value;
+            bitNavBar.TakeFromCascade(nameof(SingleTabStop), SingleTabStop.Value, static n => n.SingleTabStop, static (n, v) => n.SingleTabStop = v);
         }
 
-        if (Size.HasValue && bitNavBar.HasNotBeenSet(nameof(Size)) && bitNavBar.Size != Size)
+        if (Size.HasValue)
         {
-            bitNavBar.Size = Size.Value;
-
-            bitNavBar.ClassBuilder.Reset();
+            bitNavBar.TakeFromCascade(nameof(Size), Size.Value, static n => n.Size, static (n, v) => n.Size = v);
         }
 
-        if (Styles is not null && bitNavBar.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitNavBar.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitNavBar.Styles = Styles;
-
-            bitNavBar.StyleBuilder.Reset();
+            bitNavBar.TakeFromCascade(nameof(Styles), Styles, static n => n.Styles, static (n, v) => n.Styles = v);
         }
 
-        if (Vertical.HasValue && bitNavBar.HasNotBeenSet(nameof(Vertical)) && bitNavBar.Vertical != Vertical)
+        if (Vertical.HasValue)
         {
-            bitNavBar.Vertical = Vertical.Value;
-
-            bitNavBar.ClassBuilder.Reset();
+            bitNavBar.TakeFromCascade(nameof(Vertical), Vertical.Value, static n => n.Vertical, static (n, v) => n.Vertical = v);
         }
 
-        if (WrapNavigation.HasValue && bitNavBar.HasNotBeenSet(nameof(WrapNavigation)))
+        if (WrapNavigation.HasValue)
         {
-            bitNavBar.WrapNavigation = WrapNavigation.Value;
-        }
-
-        if (urlMatchingChanged)
-        {
-            bitNavBar.OnUrlMatchingChanged();
+            bitNavBar.TakeFromCascade(nameof(WrapNavigation), WrapNavigation.Value, static n => n.WrapNavigation, static (n, v) => n.WrapNavigation = v);
         }
     }
 }

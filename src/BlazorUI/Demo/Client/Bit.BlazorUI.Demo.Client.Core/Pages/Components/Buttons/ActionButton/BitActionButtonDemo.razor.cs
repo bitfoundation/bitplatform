@@ -76,7 +76,7 @@ public partial class BitActionButtonDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The color role of the action button. At rest it paints the icon and the spinner while the text keeps the neutral foreground; on hover and press it takes over the text as well, and it also picks the focus ring color.",
+            Description = "The color role of the action button. At rest it paints the icon and the spinner while the text keeps the neutral foreground; on hover and press it takes over the text as well, and it also picks the focus ring color. An explicit value wins over the --bit-ActionButton-* color variables it paints; left unset, the action button is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -218,7 +218,7 @@ public partial class BitActionButtonDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "Sets the preset size (Small, Medium, Large) for typography and padding of the action button.",
+            Description = "Sets the preset size (Small, Medium, Large) for typography and padding of the action button. An explicit value wins over the --bit-ActionButton-* size variables (min-height, padding, font size, icon size); left unset, the action button is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -282,32 +282,32 @@ public partial class BitActionButtonDemo
         new()
         {
             Name = "--bit-ActionButton-icon-color",
-            DefaultValue = "The Color role's main color",
-            Description = "Icon and spinner color at rest.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Icon and spinner color at rest. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-ActionButton-hover-color",
-            DefaultValue = "The Color role's hover color",
-            Description = "Text and icon color while hovered (pointer devices only).",
+            DefaultValue = "--bit-clr-pri-hover",
+            Description = "Text and icon color while hovered (pointer devices only). The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-ActionButton-active-color",
-            DefaultValue = "The Color role's active color",
-            Description = "Text and icon color while pressed.",
+            DefaultValue = "--bit-clr-pri-active",
+            Description = "Text and icon color while pressed. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-ActionButton-disabled-color",
-            DefaultValue = "--bit-clr-fg-dis (text), the Color role's disabled text color (icon)",
-            Description = "Text and icon color when Disabled is true; also the focus ring color of a disabled button kept focusable with AllowDisabledFocus.",
+            DefaultValue = "--bit-clr-fg-dis (text), --bit-clr-pri-dis-text (icon)",
+            Description = "Text and icon color when Disabled is true; also the focus ring color of a disabled button kept focusable with AllowDisabledFocus. The Color parameter wins over it for the icon and the focus ring; the text is its alone.",
         },
         new()
         {
             Name = "--bit-ActionButton-focus-color",
-            DefaultValue = "The Color role's focus color",
-            Description = "Color of the keyboard focus ring.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the keyboard focus ring. The Color parameter wins over it.",
         },
         new()
         {
@@ -336,14 +336,14 @@ public partial class BitActionButtonDemo
         new()
         {
             Name = "--bit-ActionButton-min-height",
-            DefaultValue = "Per Size: --bit-siz-ctrl-sm / -md / -lg",
-            Description = "Smallest height of the box, which is what lines an action button up with the other controls of its size and keeps the smallest one above the 24px minimum pointer target of WCAG 2.2. It is a floor, not a height: a wrapped label still grows the box. Set it to 0 for a button that has to sit on the line of the running text around it.",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Smallest height of the box, which is what lines an action button up with the other controls of its size and keeps the smallest one above the 24px minimum pointer target of WCAG 2.2. It is a floor, not a height: a wrapped label still grows the box. Set it to 0 for a button that has to sit on the line of the running text around it. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-ActionButton-padding",
-            DefaultValue = "Per Size: the control's y padding and one step below the standalone button's x padding",
-            Description = "Padding of the box. Set it to 0 for a button that sits flush inside running text or a table cell.",
+            DefaultValue = "--bit-siz-ctrl-pad-y-md --bit-siz-ctrl-pad-x-sm",
+            Description = "Padding of the box: the control's y padding and one step below the standalone button's x padding. Set it to 0 for a button that sits flush inside running text or a table cell. The Size parameter wins over it.",
         },
         new()
         {
@@ -354,14 +354,14 @@ public partial class BitActionButtonDemo
         new()
         {
             Name = "--bit-ActionButton-font-size",
-            DefaultValue = "Per Size: --bit-tpg-fs-xs / -sm / -md",
-            Description = "Font size of the text and the loading label.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Font size of the text and the loading label. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-ActionButton-icon-size",
-            DefaultValue = "Per Size: --bit-siz-icon-sm / -md / -lg",
-            Description = "Size of the icon, the IconUrl image and the spinner, which share one slot so entering the loading state moves nothing.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Size of the icon, the IconUrl image and the spinner, which share one slot so entering the loading state moves nothing. The Size parameter wins over it.",
         },
     ];
 

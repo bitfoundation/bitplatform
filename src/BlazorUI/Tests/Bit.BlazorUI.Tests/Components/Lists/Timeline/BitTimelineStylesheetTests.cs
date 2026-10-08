@@ -72,5 +72,43 @@ public class BitTimelineStylesheetTests : BunitTestContext
         StringAssert.Contains(horizontal, "\n    > .bit-tln-itm.bit-tln-irv {");
     }
 
+    [TestMethod]
+    public void BitTimelineShouldLetAParameterWinOverItsPublicVariable()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // An explicit Size - of the timeline or of an item - publishes these, so they are read before the variable, which
+        // only restyles the medium timeline an unset one stands for.
+        StringAssert.Contains(stylesheet, "font-size: var(--bit-tln-fs, var(--bit-Timeline-font-size, #{$tg-fs-sm}));");
+        StringAssert.Contains(stylesheet, "--bit-tln-dot-size: var(--bit-tln-dot-sz, var(--bit-Timeline-dot-size, #{spacing(3.75)}));");
+
+        // So does an explicit Color, for every dot color its role paints; the transparent dot of Outline and Text is the
+        // variable's alone.
+        var fill = SourceFiles.GetScssBlock(stylesheet, "@mixin timeline-variant-fill {");
+        StringAssert.Contains(fill, "--bit-tln-dot-clr-bg: var(--bit-tln-clr, var(--bit-Timeline-dot-background, #{$clr-pri}));");
+        StringAssert.Contains(fill, "--bit-tln-dot-clr-brd: var(--bit-tln-clr, var(--bit-Timeline-dot-border-color, #{$clr-pri}));");
+        StringAssert.Contains(fill, "--bit-tln-dot-ico-clr: var(--bit-tln-clr-fg, var(--bit-Timeline-icon-color, #{$clr-pri-text}));");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "@mixin timeline-variant-outline {"), "--bit-tln-dot-clr-bg: var(--bit-Timeline-dot-background, transparent);");
+
+        // Left in front: the legacy line color behind the public one, and the plate of a Text dot, which no Color paints.
+        var publicFirst = Regex.Matches(stylesheet, @"var\(--bit-Timeline-[a-z-]+, var\(--bit-tln-([a-z-]+)").Select(m => m.Groups[1].Value).Distinct().Order().ToArray();
+        CollectionAssert.AreEqual(new[] { "dot-ico-clr-bg", "dvd-clr" }, publicFirst);
+    }
+
+    [TestMethod]
+    public void BitTimelineShouldPublishItsColorAndSizeOnlyWhereTheyAreSet()
+    {
+        var root = SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-tln {");
+
+        // A timeline can sit in the template of an item of another one, which must not inherit the outer timeline's
+        // Color or Size: each root starts the values those classes publish out unset, and the classes - declared further
+        // down at the same weight - still win on the root that carries them. The items are left to inherit their root's.
+        foreach (var property in new[] { "--bit-tln-clr", "--bit-tln-clr-fg", "--bit-tln-clr-focus", "--bit-tln-clr-dis-bg", "--bit-tln-clr-dis-text",
+                                         "--bit-tln-dot-sz", "--bit-tln-fs" })
+        {
+            StringAssert.Contains(root, $"{property}: initial;");
+        }
+    }
+
     private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Lists", "Timeline", "BitTimeline.scss");
 }

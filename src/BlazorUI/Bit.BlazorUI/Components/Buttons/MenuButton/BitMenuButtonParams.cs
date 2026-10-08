@@ -289,254 +289,226 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitMenuButton);
 
-        if (AriaDescription.HasValue() && bitMenuButton.HasNotBeenSet(nameof(AriaDescription)))
+        if (AriaDescription.HasValue())
         {
-            bitMenuButton.AriaDescription = AriaDescription;
+            bitMenuButton.TakeFromCascade(nameof(AriaDescription), AriaDescription, static m => m.AriaDescription, static (m, v) => m.AriaDescription = v);
         }
 
-        if (AriaHidden.HasValue && bitMenuButton.HasNotBeenSet(nameof(AriaHidden)))
+        if (AriaHidden.HasValue)
         {
-            bitMenuButton.AriaHidden = AriaHidden.Value;
+            bitMenuButton.TakeFromCascade(nameof(AriaHidden), AriaHidden.Value, static m => m.AriaHidden, static (m, v) => m.AriaHidden = v);
         }
 
-        if (AutoFocus.HasValue && bitMenuButton.HasNotBeenSet(nameof(AutoFocus)))
+        if (AutoFocus.HasValue)
         {
-            bitMenuButton.AutoFocus = AutoFocus.Value;
+            bitMenuButton.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static m => m.AutoFocus, static (m, v) => m.AutoFocus = v);
         }
 
-        if (AutoLoading.HasValue && bitMenuButton.HasNotBeenSet(nameof(AutoLoading)))
+        if (AutoLoading.HasValue)
         {
-            bitMenuButton.AutoLoading = AutoLoading.Value;
+            bitMenuButton.TakeFromCascade(nameof(AutoLoading), AutoLoading.Value, static m => m.AutoLoading, static (m, v) => m.AutoLoading = v);
         }
 
-        if (Background.HasValue && bitMenuButton.HasNotBeenSet(nameof(Background)) && bitMenuButton.Background != Background)
+        if (Background.HasValue)
         {
-            bitMenuButton.Background = Background.Value;
-
-            bitMenuButton.ClassBuilder.Reset();
+            bitMenuButton.TakeFromCascade(nameof(Background), Background.Value, static m => m.Background, static (m, v) => m.Background = v);
         }
 
-        if (ButtonType.HasValue && bitMenuButton.HasNotBeenSet(nameof(ButtonType)))
+        if (ButtonType.HasValue)
         {
-            bitMenuButton.ButtonType = ButtonType.Value;
+            bitMenuButton.TakeFromCascade(nameof(ButtonType), ButtonType.Value, static m => m.ButtonType, static (m, v) => m.ButtonType = v);
         }
 
-        if (CheckIcon is not null && bitMenuButton.HasNotBeenSet(nameof(CheckIcon)))
+        if (CheckIcon is not null)
         {
-            bitMenuButton.CheckIcon = CheckIcon;
+            bitMenuButton.TakeFromCascade(nameof(CheckIcon), CheckIcon, static m => m.CheckIcon, static (m, v) => m.CheckIcon = v);
         }
 
-        if (CheckIconName.HasValue() && bitMenuButton.HasNotBeenSet(nameof(CheckIconName)))
+        if (CheckIconName.HasValue())
         {
-            bitMenuButton.CheckIconName = CheckIconName;
+            bitMenuButton.TakeFromCascade(nameof(CheckIconName), CheckIconName, static m => m.CheckIconName, static (m, v) => m.CheckIconName = v);
         }
 
-        if (ChevronDownAriaLabel.HasValue() && bitMenuButton.HasNotBeenSet(nameof(ChevronDownAriaLabel)))
+        if (ChevronDownAriaLabel.HasValue())
         {
-            bitMenuButton.ChevronDownAriaLabel = ChevronDownAriaLabel;
+            bitMenuButton.TakeFromCascade(nameof(ChevronDownAriaLabel), ChevronDownAriaLabel, static m => m.ChevronDownAriaLabel, static (m, v) => m.ChevronDownAriaLabel = v);
         }
 
-        if (ChevronDownIcon is not null && bitMenuButton.HasNotBeenSet(nameof(ChevronDownIcon)))
+        if (ChevronDownIcon is not null)
         {
-            bitMenuButton.ChevronDownIcon = ChevronDownIcon;
+            bitMenuButton.TakeFromCascade(nameof(ChevronDownIcon), ChevronDownIcon, static m => m.ChevronDownIcon, static (m, v) => m.ChevronDownIcon = v);
         }
 
-        if (ChevronDownIconName.HasValue() && bitMenuButton.HasNotBeenSet(nameof(ChevronDownIconName)))
+        if (ChevronDownIconName.HasValue())
         {
-            bitMenuButton.ChevronDownIconName = ChevronDownIconName;
+            bitMenuButton.TakeFromCascade(nameof(ChevronDownIconName), ChevronDownIconName, static m => m.ChevronDownIconName, static (m, v) => m.ChevronDownIconName = v);
         }
 
-        if (ChevronDownTitle.HasValue() && bitMenuButton.HasNotBeenSet(nameof(ChevronDownTitle)))
+        if (ChevronDownTitle.HasValue())
         {
-            bitMenuButton.ChevronDownTitle = ChevronDownTitle;
+            bitMenuButton.TakeFromCascade(nameof(ChevronDownTitle), ChevronDownTitle, static m => m.ChevronDownTitle, static (m, v) => m.ChevronDownTitle = v);
         }
 
-        if (Classes is not null && bitMenuButton.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitMenuButton.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitMenuButton.Classes = Classes;
-
-            bitMenuButton.ClassBuilder.Reset();
+            bitMenuButton.TakeFromCascade(nameof(Classes), Classes, static m => m.Classes, static (m, v) => m.Classes = v);
         }
 
-        if (CloseOnItemClick.HasValue && bitMenuButton.HasNotBeenSet(nameof(CloseOnItemClick)))
+        if (CloseOnItemClick.HasValue)
         {
-            bitMenuButton.CloseOnItemClick = CloseOnItemClick.Value;
+            bitMenuButton.TakeFromCascade(nameof(CloseOnItemClick), CloseOnItemClick.Value, static m => m.CloseOnItemClick, static (m, v) => m.CloseOnItemClick = v);
         }
 
-        if (Color.HasValue && bitMenuButton.HasNotBeenSet(nameof(Color)) && bitMenuButton.Color != Color)
+        if (Color.HasValue)
         {
-            bitMenuButton.Color = Color.Value;
-
-            bitMenuButton.ClassBuilder.Reset();
+            bitMenuButton.TakeFromCascade(nameof(Color), Color.Value, static m => m.Color, static (m, v) => m.Color = v);
         }
 
-        if (DefaultIsToggled.HasValue && bitMenuButton.HasNotBeenSet(nameof(DefaultIsToggled)))
+        if (DefaultIsToggled.HasValue)
         {
-            bitMenuButton.DefaultIsToggled = DefaultIsToggled.Value;
+            bitMenuButton.TakeFromCascade(nameof(DefaultIsToggled), DefaultIsToggled.Value, static m => m.DefaultIsToggled, static (m, v) => m.DefaultIsToggled = v);
         }
 
-        if (DisabledInteractive.HasValue && bitMenuButton.HasNotBeenSet(nameof(DisabledInteractive)))
+        if (DisabledInteractive.HasValue)
         {
-            bitMenuButton.DisabledInteractive = DisabledInteractive.Value;
+            bitMenuButton.TakeFromCascade(nameof(DisabledInteractive), DisabledInteractive.Value, static m => m.DisabledInteractive, static (m, v) => m.DisabledInteractive = v);
         }
 
-        if (DropDirection.HasValue && bitMenuButton.HasNotBeenSet(nameof(DropDirection)))
+        if (DropDirection.HasValue)
         {
-            bitMenuButton.DropDirection = DropDirection.Value;
+            bitMenuButton.TakeFromCascade(nameof(DropDirection), DropDirection.Value, static m => m.DropDirection, static (m, v) => m.DropDirection = v);
         }
 
-        if (FormId.HasValue() && bitMenuButton.HasNotBeenSet(nameof(FormId)))
+        if (FormId.HasValue())
         {
-            bitMenuButton.FormId = FormId;
+            bitMenuButton.TakeFromCascade(nameof(FormId), FormId, static m => m.FormId, static (m, v) => m.FormId = v);
         }
 
-        if (FullWidth.HasValue && bitMenuButton.HasNotBeenSet(nameof(FullWidth)) && bitMenuButton.FullWidth != FullWidth)
+        if (FullWidth.HasValue)
         {
-            bitMenuButton.FullWidth = FullWidth.Value;
-
-            bitMenuButton.ClassBuilder.Reset();
+            bitMenuButton.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static m => m.FullWidth, static (m, v) => m.FullWidth = v);
         }
 
-        if (Icon is not null && bitMenuButton.HasNotBeenSet(nameof(Icon)))
+        if (Icon is not null)
         {
-            bitMenuButton.Icon = Icon;
+            bitMenuButton.TakeFromCascade(nameof(Icon), Icon, static m => m.Icon, static (m, v) => m.Icon = v);
         }
 
-        if (IconName.HasValue() && bitMenuButton.HasNotBeenSet(nameof(IconName)))
+        if (IconName.HasValue())
         {
-            bitMenuButton.IconName = IconName;
+            bitMenuButton.TakeFromCascade(nameof(IconName), IconName, static m => m.IconName, static (m, v) => m.IconName = v);
         }
 
-        if (IconOnly.HasValue && bitMenuButton.HasNotBeenSet(nameof(IconOnly)) && bitMenuButton.IconOnly != IconOnly)
+        if (IconOnly.HasValue)
         {
-            bitMenuButton.IconOnly = IconOnly.Value;
-
-            bitMenuButton.ClassBuilder.Reset();
+            bitMenuButton.TakeFromCascade(nameof(IconOnly), IconOnly.Value, static m => m.IconOnly, static (m, v) => m.IconOnly = v);
         }
 
-        if (IsLoading.HasValue && bitMenuButton.HasNotBeenSet(nameof(IsLoading)) && bitMenuButton.IsLoading != IsLoading)
+        if (IsLoading.HasValue)
         {
-            bitMenuButton.IsLoading = IsLoading.Value;
-
-            bitMenuButton.ClassBuilder.Reset();
+            bitMenuButton.TakeFromCascade(nameof(IsLoading), IsLoading.Value, static m => m.IsLoading, static (m, v) => m.IsLoading = v);
         }
 
-        if (LoadingDelay.HasValue && bitMenuButton.HasNotBeenSet(nameof(LoadingDelay)))
+        if (LoadingDelay.HasValue)
         {
-            bitMenuButton.LoadingDelay = LoadingDelay.Value;
+            bitMenuButton.TakeFromCascade(nameof(LoadingDelay), LoadingDelay.Value, static m => m.LoadingDelay, static (m, v) => m.LoadingDelay = v);
         }
 
-        if (LoadingLabel.HasValue() && bitMenuButton.HasNotBeenSet(nameof(LoadingLabel)))
+        if (LoadingLabel.HasValue())
         {
-            bitMenuButton.LoadingLabel = LoadingLabel;
+            bitMenuButton.TakeFromCascade(nameof(LoadingLabel), LoadingLabel, static m => m.LoadingLabel, static (m, v) => m.LoadingLabel = v);
         }
 
-        if (MaxHeight.HasValue() && bitMenuButton.HasNotBeenSet(nameof(MaxHeight)))
+        if (MaxHeight.HasValue())
         {
-            bitMenuButton.MaxHeight = MaxHeight;
+            bitMenuButton.TakeFromCascade(nameof(MaxHeight), MaxHeight, static m => m.MaxHeight, static (m, v) => m.MaxHeight = v);
         }
 
         // an empty hint is a value of its own - the one that takes the announcement off - so only null is
         // what leaves the component to its default.
-        if (NewTabHint is not null && bitMenuButton.HasNotBeenSet(nameof(NewTabHint)))
+        if (NewTabHint is not null)
         {
-            bitMenuButton.NewTabHint = NewTabHint;
+            bitMenuButton.TakeFromCascade(nameof(NewTabHint), NewTabHint, static m => m.NewTabHint, static (m, v) => m.NewTabHint = v);
         }
 
-        if (NoNewTabHint.HasValue && bitMenuButton.HasNotBeenSet(nameof(NoNewTabHint)))
+        if (NoNewTabHint.HasValue)
         {
-            bitMenuButton.NoNewTabHint = NoNewTabHint.Value;
+            bitMenuButton.TakeFromCascade(nameof(NoNewTabHint), NoNewTabHint.Value, static m => m.NoNewTabHint, static (m, v) => m.NoNewTabHint = v);
         }
 
-        if (NoIcon.HasValue && bitMenuButton.HasNotBeenSet(nameof(NoIcon)))
+        if (NoIcon.HasValue)
         {
-            bitMenuButton.NoIcon = NoIcon.Value;
+            bitMenuButton.TakeFromCascade(nameof(NoIcon), NoIcon.Value, static m => m.NoIcon, static (m, v) => m.NoIcon = v);
         }
 
-        if (RadioIcon is not null && bitMenuButton.HasNotBeenSet(nameof(RadioIcon)))
+        if (RadioIcon is not null)
         {
-            bitMenuButton.RadioIcon = RadioIcon;
+            bitMenuButton.TakeFromCascade(nameof(RadioIcon), RadioIcon, static m => m.RadioIcon, static (m, v) => m.RadioIcon = v);
         }
 
-        if (RadioIconName.HasValue() && bitMenuButton.HasNotBeenSet(nameof(RadioIconName)))
+        if (RadioIconName.HasValue())
         {
-            bitMenuButton.RadioIconName = RadioIconName;
+            bitMenuButton.TakeFromCascade(nameof(RadioIconName), RadioIconName, static m => m.RadioIconName, static (m, v) => m.RadioIconName = v);
         }
 
-        if (Reclickable.HasValue && bitMenuButton.HasNotBeenSet(nameof(Reclickable)) && bitMenuButton.Reclickable != Reclickable)
+        if (Reclickable.HasValue)
         {
-            bitMenuButton.Reclickable = Reclickable.Value;
-
-            bitMenuButton.ClassBuilder.Reset();
+            bitMenuButton.TakeFromCascade(nameof(Reclickable), Reclickable.Value, static m => m.Reclickable, static (m, v) => m.Reclickable = v);
         }
 
-        if (Size.HasValue && bitMenuButton.HasNotBeenSet(nameof(Size)) && bitMenuButton.Size != Size)
+        if (Size.HasValue)
         {
-            bitMenuButton.Size = Size.Value;
-
-            bitMenuButton.ClassBuilder.Reset();
+            bitMenuButton.TakeFromCascade(nameof(Size), Size.Value, static m => m.Size, static (m, v) => m.Size = v);
         }
 
-        if (Split.HasValue && bitMenuButton.HasNotBeenSet(nameof(Split)) && bitMenuButton.Split != Split)
+        if (Split.HasValue)
         {
-            bitMenuButton.Split = Split.Value;
-
-            bitMenuButton.ClassBuilder.Reset();
+            bitMenuButton.TakeFromCascade(nameof(Split), Split.Value, static m => m.Split, static (m, v) => m.Split = v);
         }
 
-        if (Sticky.HasValue && bitMenuButton.HasNotBeenSet(nameof(Sticky)) && bitMenuButton.Sticky != Sticky)
+        if (Sticky.HasValue)
         {
-            bitMenuButton.Sticky = Sticky.Value;
-
-            bitMenuButton.ClassBuilder.Reset();
-            bitMenuButton.StyleBuilder.Reset();
+            bitMenuButton.TakeFromCascade(nameof(Sticky), Sticky.Value, static m => m.Sticky, static (m, v) => m.Sticky = v);
         }
 
-        if (StopPropagation.HasValue && bitMenuButton.HasNotBeenSet(nameof(StopPropagation)))
+        if (StopPropagation.HasValue)
         {
-            bitMenuButton.StopPropagation = StopPropagation.Value;
+            bitMenuButton.TakeFromCascade(nameof(StopPropagation), StopPropagation.Value, static m => m.StopPropagation, static (m, v) => m.StopPropagation = v);
         }
 
-        if (Styles is not null && bitMenuButton.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitMenuButton.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitMenuButton.Styles = Styles;
-
-            bitMenuButton.StyleBuilder.Reset();
+            bitMenuButton.TakeFromCascade(nameof(Styles), Styles, static m => m.Styles, static (m, v) => m.Styles = v);
         }
 
-        if (SubmenuIcon is not null && bitMenuButton.HasNotBeenSet(nameof(SubmenuIcon)))
+        if (SubmenuIcon is not null)
         {
-            bitMenuButton.SubmenuIcon = SubmenuIcon;
+            bitMenuButton.TakeFromCascade(nameof(SubmenuIcon), SubmenuIcon, static m => m.SubmenuIcon, static (m, v) => m.SubmenuIcon = v);
         }
 
-        if (SubmenuIconName.HasValue() && bitMenuButton.HasNotBeenSet(nameof(SubmenuIconName)))
+        if (SubmenuIconName.HasValue())
         {
-            bitMenuButton.SubmenuIconName = SubmenuIconName;
+            bitMenuButton.TakeFromCascade(nameof(SubmenuIconName), SubmenuIconName, static m => m.SubmenuIconName, static (m, v) => m.SubmenuIconName = v);
         }
 
-        if (Text.HasValue() && bitMenuButton.HasNotBeenSet(nameof(Text)))
+        if (Text.HasValue())
         {
-            bitMenuButton.Text = Text;
+            bitMenuButton.TakeFromCascade(nameof(Text), Text, static m => m.Text, static (m, v) => m.Text = v);
         }
 
-        if (Title.HasValue() && bitMenuButton.HasNotBeenSet(nameof(Title)))
+        if (Title.HasValue())
         {
-            bitMenuButton.Title = Title;
+            bitMenuButton.TakeFromCascade(nameof(Title), Title, static m => m.Title, static (m, v) => m.Title = v);
         }
 
-        if (Toggle.HasValue && bitMenuButton.HasNotBeenSet(nameof(Toggle)) && bitMenuButton.Toggle != Toggle)
+        if (Toggle.HasValue)
         {
-            bitMenuButton.Toggle = Toggle.Value;
-
-            bitMenuButton.ClassBuilder.Reset();
-            bitMenuButton.StyleBuilder.Reset();
+            bitMenuButton.TakeFromCascade(nameof(Toggle), Toggle.Value, static m => m.Toggle, static (m, v) => m.Toggle = v);
         }
 
-        if (Variant.HasValue && bitMenuButton.HasNotBeenSet(nameof(Variant)) && bitMenuButton.Variant != Variant)
+        if (Variant.HasValue)
         {
-            bitMenuButton.Variant = Variant.Value;
-
-            bitMenuButton.ClassBuilder.Reset();
+            bitMenuButton.TakeFromCascade(nameof(Variant), Variant.Value, static m => m.Variant, static (m, v) => m.Variant = v);
         }
     }
 }

@@ -279,9 +279,35 @@ public class BitChoiceGroupParamsTests : BunitTestContext
 
         var root = component.Find(".bit-chg");
 
-        Assert.IsTrue(root.ClassList.Contains("bit-chg-pri"));
-        Assert.IsTrue(root.ClassList.Contains("bit-chg-md"));
+        // Nothing cascades, so Color and Size stay unset and publish nothing - the public --bit-ChoiceGroup-*
+        // variables restyle that default - while the Variant keeps its structural default class.
+        Assert.IsFalse(root.ClassList.Contains("bit-chg-pri"));
+        Assert.IsFalse(root.ClassList.Contains("bit-chg-md"));
         Assert.IsTrue(root.ClassList.Contains("bit-chg-txt"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, new List<BitChoiceGroupItem<string>> { new() { Text = "A", Value = "A" } });
+        });
+
+        // An unset Color or Size publishes nothing, so the public --bit-ChoiceGroup-* variables restyle the default
+        // while an explicit value - which does publish its class - wins over them.
+        var root = component.Find(".bit-chg");
+        var published = new[]
+        {
+            "bit-chg-pri", "bit-chg-sec", "bit-chg-ter", "bit-chg-inf", "bit-chg-suc", "bit-chg-wrn", "bit-chg-swr", "bit-chg-err",
+            "bit-chg-pbg", "bit-chg-sbg", "bit-chg-tbg", "bit-chg-pfg", "bit-chg-sfg", "bit-chg-tfg", "bit-chg-pbr", "bit-chg-sbr", "bit-chg-tbr",
+            "bit-chg-sm", "bit-chg-md", "bit-chg-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
     }
 
     [TestMethod]

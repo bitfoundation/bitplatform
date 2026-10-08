@@ -135,132 +135,99 @@ public class BitCollapseParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitCollapse);
 
-        if (Background.HasValue && bitCollapse.HasNotBeenSet(nameof(Background)) && bitCollapse.Background != Background)
+        if (Background.HasValue)
         {
-            bitCollapse.Background = Background.Value;
-
-            bitCollapse.ClassBuilder.Reset();
+            bitCollapse.TakeFromCascade(nameof(Background), Background.Value, static c => c.Background, static (c, v) => c.Background = v);
         }
 
-        if (Classes is not null && bitCollapse.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitCollapse.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitCollapse.Classes = Classes;
-
-            bitCollapse.ClassBuilder.Reset();
+            bitCollapse.TakeFromCascade(nameof(Classes), Classes, static c => c.Classes, static (c, v) => c.Classes = v);
         }
 
-        if (CollapseDuration.HasValue && bitCollapse.HasNotBeenSet(nameof(CollapseDuration)) && bitCollapse.CollapseDuration != CollapseDuration)
+        if (CollapseDuration.HasValue)
         {
-            bitCollapse.CollapseDuration = CollapseDuration.Value;
-
-            bitCollapse.StyleBuilder.Reset();
+            bitCollapse.TakeFromCascade(nameof(CollapseDuration), CollapseDuration.Value, static c => c.CollapseDuration, static (c, v) => c.CollapseDuration = v);
         }
 
-        if (CollapsedSize.HasValue() && bitCollapse.HasNotBeenSet(nameof(CollapsedSize)) && bitCollapse.CollapsedSize != CollapsedSize)
+        if (CollapsedSize.HasValue())
         {
-            bitCollapse.CollapsedSize = CollapsedSize;
-
-            bitCollapse.ClassBuilder.Reset();
-            bitCollapse.StyleBuilder.Reset();
+            bitCollapse.TakeFromCascade(nameof(CollapsedSize), CollapsedSize, static c => c.CollapsedSize, static (c, v) => c.CollapsedSize = v);
         }
 
-        if (Delay.HasValue && bitCollapse.HasNotBeenSet(nameof(Delay)) && bitCollapse.Delay != Delay)
+        if (Delay.HasValue)
         {
-            bitCollapse.Delay = Delay.Value;
-
-            bitCollapse.StyleBuilder.Reset();
+            bitCollapse.TakeFromCascade(nameof(Delay), Delay.Value, static c => c.Delay, static (c, v) => c.Delay = v);
         }
 
-        if (Duration.HasValue && bitCollapse.HasNotBeenSet(nameof(Duration)) && bitCollapse.Duration != Duration)
+        if (Duration.HasValue)
         {
-            bitCollapse.Duration = Duration.Value;
-
-            bitCollapse.StyleBuilder.Reset();
+            bitCollapse.TakeFromCascade(nameof(Duration), Duration.Value, static c => c.Duration, static (c, v) => c.Duration = v);
         }
 
-        if (Easing.HasValue() && bitCollapse.HasNotBeenSet(nameof(Easing)) && bitCollapse.Easing != Easing)
+        if (Easing.HasValue())
         {
-            bitCollapse.Easing = Easing;
-
-            bitCollapse.StyleBuilder.Reset();
+            bitCollapse.TakeFromCascade(nameof(Easing), Easing, static c => c.Easing, static (c, v) => c.Easing = v);
         }
 
-        if (ExpandDuration.HasValue && bitCollapse.HasNotBeenSet(nameof(ExpandDuration)) && bitCollapse.ExpandDuration != ExpandDuration)
+        if (ExpandDuration.HasValue)
         {
-            bitCollapse.ExpandDuration = ExpandDuration.Value;
-
-            bitCollapse.StyleBuilder.Reset();
+            bitCollapse.TakeFromCascade(nameof(ExpandDuration), ExpandDuration.Value, static c => c.ExpandDuration, static (c, v) => c.ExpandDuration = v);
         }
 
-        if (ExpandOnPrint.HasValue && bitCollapse.HasNotBeenSet(nameof(ExpandOnPrint)) && bitCollapse.ExpandOnPrint != ExpandOnPrint)
+        if (ExpandOnPrint.HasValue)
         {
-            bitCollapse.ExpandOnPrint = ExpandOnPrint.Value;
-
-            bitCollapse.ClassBuilder.Reset();
+            bitCollapse.TakeFromCascade(nameof(ExpandOnPrint), ExpandOnPrint.Value, static c => c.ExpandOnPrint, static (c, v) => c.ExpandOnPrint = v);
         }
 
-        if (HiddenUntilFound.HasValue && bitCollapse.HasNotBeenSet(nameof(HiddenUntilFound)) && bitCollapse.HiddenUntilFound != HiddenUntilFound)
+        if (HiddenUntilFound.HasValue)
         {
-            bitCollapse.HiddenUntilFound = HiddenUntilFound.Value;
-
-            bitCollapse.ClassBuilder.Reset();
+            bitCollapse.TakeFromCascade(nameof(HiddenUntilFound), HiddenUntilFound.Value, static c => c.HiddenUntilFound, static (c, v) => c.HiddenUntilFound = v);
         }
 
-        if (Horizontal.HasValue && bitCollapse.HasNotBeenSet(nameof(Horizontal)) && bitCollapse.Horizontal != Horizontal)
+        if (Horizontal.HasValue)
         {
-            bitCollapse.Horizontal = Horizontal.Value;
-
-            bitCollapse.ClassBuilder.Reset();
+            bitCollapse.TakeFromCascade(nameof(Horizontal), Horizontal.Value, static c => c.Horizontal, static (c, v) => c.Horizontal = v);
         }
 
-        if (LazyRender.HasValue && bitCollapse.HasNotBeenSet(nameof(LazyRender)))
+        if (LazyRender.HasValue)
         {
-            bitCollapse.LazyRender = LazyRender.Value;
+            bitCollapse.TakeFromCascade(nameof(LazyRender), LazyRender.Value, static c => c.LazyRender, static (c, v) => c.LazyRender = v);
         }
 
-        if (NoAnimation.HasValue && bitCollapse.HasNotBeenSet(nameof(NoAnimation)) && bitCollapse.NoAnimation != NoAnimation)
+        if (NoAnimation.HasValue)
         {
-            bitCollapse.NoAnimation = NoAnimation.Value;
-
-            bitCollapse.ClassBuilder.Reset();
+            bitCollapse.TakeFromCascade(nameof(NoAnimation), NoAnimation.Value, static c => c.NoAnimation, static (c, v) => c.NoAnimation = v);
         }
 
-        if (NoClip.HasValue && bitCollapse.HasNotBeenSet(nameof(NoClip)) && bitCollapse.NoClip != NoClip)
+        if (NoClip.HasValue)
         {
-            bitCollapse.NoClip = NoClip.Value;
-
-            bitCollapse.ClassBuilder.Reset();
+            bitCollapse.TakeFromCascade(nameof(NoClip), NoClip.Value, static c => c.NoClip, static (c, v) => c.NoClip = v);
         }
 
-        if (NoFade.HasValue && bitCollapse.HasNotBeenSet(nameof(NoFade)) && bitCollapse.NoFade != NoFade)
+        if (NoFade.HasValue)
         {
-            bitCollapse.NoFade = NoFade.Value;
-
-            bitCollapse.ClassBuilder.Reset();
+            bitCollapse.TakeFromCascade(nameof(NoFade), NoFade.Value, static c => c.NoFade, static (c, v) => c.NoFade = v);
         }
 
-        if (NoPadding.HasValue && bitCollapse.HasNotBeenSet(nameof(NoPadding)) && bitCollapse.NoPadding != NoPadding)
+        if (NoPadding.HasValue)
         {
-            bitCollapse.NoPadding = NoPadding.Value;
-
-            bitCollapse.ClassBuilder.Reset();
+            bitCollapse.TakeFromCascade(nameof(NoPadding), NoPadding.Value, static c => c.NoPadding, static (c, v) => c.NoPadding = v);
         }
 
-        if (Role is not null && bitCollapse.HasNotBeenSet(nameof(Role)))
+        if (Role is not null)
         {
-            bitCollapse.Role = Role;
+            bitCollapse.TakeFromCascade(nameof(Role), Role, static c => c.Role, static (c, v) => c.Role = v);
         }
 
-        if (Styles is not null && bitCollapse.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitCollapse.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitCollapse.Styles = Styles;
-
-            bitCollapse.StyleBuilder.Reset();
+            bitCollapse.TakeFromCascade(nameof(Styles), Styles, static c => c.Styles, static (c, v) => c.Styles = v);
         }
 
-        if (UnmountOnCollapse.HasValue && bitCollapse.HasNotBeenSet(nameof(UnmountOnCollapse)))
+        if (UnmountOnCollapse.HasValue)
         {
-            bitCollapse.UnmountOnCollapse = UnmountOnCollapse.Value;
+            bitCollapse.TakeFromCascade(nameof(UnmountOnCollapse), UnmountOnCollapse.Value, static c => c.UnmountOnCollapse, static (c, v) => c.UnmountOnCollapse = v);
         }
     }
 }

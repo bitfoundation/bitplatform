@@ -80,59 +80,44 @@ public class BitSpacerParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitSpacer);
 
-        if (Element.HasValue() && bitSpacer.HasNotBeenSet(nameof(Element)))
+        if (Element.HasValue())
         {
-            bitSpacer.Element = Element;
+            bitSpacer.TakeFromCascade(nameof(Element), Element, static s => s.Element, static (s, v) => s.Element = v);
         }
 
-        if (Gap.HasValue() && bitSpacer.HasNotBeenSet(nameof(Gap)) && bitSpacer.Gap != Gap)
+        if (Gap.HasValue())
         {
-            bitSpacer.Gap = Gap;
-
-            bitSpacer.StyleBuilder.Reset();
+            bitSpacer.TakeFromCascade(nameof(Gap), Gap, static s => s.Gap, static (s, v) => s.Gap = v);
         }
 
-        if (Grow.HasValue() && bitSpacer.HasNotBeenSet(nameof(Grow)) && bitSpacer.Grow != Grow)
+        if (Grow.HasValue())
         {
-            bitSpacer.Grow = Grow;
-
-            bitSpacer.StyleBuilder.Reset();
+            bitSpacer.TakeFromCascade(nameof(Grow), Grow, static s => s.Grow, static (s, v) => s.Grow = v);
         }
 
-        if (Height.HasValue && bitSpacer.HasNotBeenSet(nameof(Height)) && bitSpacer.Height != Height)
+        if (Height.HasValue)
         {
-            bitSpacer.Height = Height.Value;
-
-            bitSpacer.StyleBuilder.Reset();
+            bitSpacer.TakeFromCascade(nameof(Height), Height.Value, static s => s.Height, static (s, v) => s.Height = v);
         }
 
-        if (MinGap.HasValue() && bitSpacer.HasNotBeenSet(nameof(MinGap)) && bitSpacer.MinGap != MinGap)
+        if (MinGap.HasValue())
         {
-            bitSpacer.MinGap = MinGap;
-
-            bitSpacer.StyleBuilder.Reset();
+            bitSpacer.TakeFromCascade(nameof(MinGap), MinGap, static s => s.MinGap, static (s, v) => s.MinGap = v);
         }
 
-        if (Size.HasValue && bitSpacer.HasNotBeenSet(nameof(Size)) && bitSpacer.Size != Size)
+        if (Size.HasValue)
         {
-            bitSpacer.Size = Size.Value;
-
-            bitSpacer.ClassBuilder.Reset();
-            bitSpacer.StyleBuilder.Reset();
+            bitSpacer.TakeFromCascade(nameof(Size), Size.Value, static s => s.Size, static (s, v) => s.Size = v);
         }
 
-        if (Vertical.HasValue && bitSpacer.HasNotBeenSet(nameof(Vertical)) && bitSpacer.Vertical != Vertical)
+        if (Vertical.HasValue)
         {
-            bitSpacer.Vertical = Vertical.Value;
-
-            bitSpacer.StyleBuilder.Reset();
+            bitSpacer.TakeFromCascade(nameof(Vertical), Vertical.Value, static s => s.Vertical, static (s, v) => s.Vertical = v);
         }
 
-        if (Width.HasValue && bitSpacer.HasNotBeenSet(nameof(Width)) && bitSpacer.Width != Width)
+        if (Width.HasValue)
         {
-            bitSpacer.Width = Width.Value;
-
-            bitSpacer.StyleBuilder.Reset();
+            bitSpacer.TakeFromCascade(nameof(Width), Width.Value, static s => s.Width, static (s, v) => s.Width = v);
         }
     }
 }

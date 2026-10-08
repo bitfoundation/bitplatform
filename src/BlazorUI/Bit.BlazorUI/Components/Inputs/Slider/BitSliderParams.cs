@@ -220,190 +220,174 @@ public class BitSliderParams : BitInputBaseParams<double>, IBitComponentParams
 
         UpdateInputBaseParameters(bitSlider);
 
-        if (AriaDescription.HasValue() && bitSlider.HasNotBeenSet(nameof(AriaDescription)))
+        if (AriaDescription.HasValue())
         {
-            bitSlider.AriaDescription = AriaDescription;
+            bitSlider.TakeFromCascade(nameof(AriaDescription), AriaDescription, static s => s.AriaDescription, static (s, v) => s.AriaDescription = v);
         }
 
-        if (AriaValueText is not null && bitSlider.HasNotBeenSet(nameof(AriaValueText)))
+        if (AriaValueText is not null)
         {
-            bitSlider.AriaValueText = AriaValueText;
+            bitSlider.TakeFromCascade(nameof(AriaValueText), AriaValueText, static s => s.AriaValueText, static (s, v) => s.AriaValueText = v);
         }
 
-        if (AutoFocus.HasValue && bitSlider.HasNotBeenSet(nameof(AutoFocus)))
+        if (AutoFocus.HasValue)
         {
-            bitSlider.AutoFocus = AutoFocus.Value;
+            bitSlider.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static s => s.AutoFocus, static (s, v) => s.AutoFocus = v);
         }
 
-        if (Classes is not null && bitSlider.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitSlider.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitSlider.Classes = Classes;
-
-            bitSlider.ClassBuilder.Reset();
+            bitSlider.TakeFromCascade(nameof(Classes), Classes, static s => s.Classes, static (s, v) => s.Classes = v);
         }
 
-        if (Color.HasValue && bitSlider.HasNotBeenSet(nameof(Color)) && bitSlider.Color != Color)
+        if (Color.HasValue)
         {
-            bitSlider.Color = Color.Value;
-
-            bitSlider.ClassBuilder.Reset();
+            bitSlider.TakeFromCascade(nameof(Color), Color.Value, static s => s.Color, static (s, v) => s.Color = v);
         }
 
-        if (DraggableTrack.HasValue && bitSlider.HasNotBeenSet(nameof(DraggableTrack)))
+        if (DraggableTrack.HasValue)
         {
-            bitSlider.DraggableTrack = DraggableTrack.Value;
+            bitSlider.TakeFromCascade(nameof(DraggableTrack), DraggableTrack.Value, static s => s.DraggableTrack, static (s, v) => s.DraggableTrack = v);
         }
 
-        if (GetValueText is not null && bitSlider.HasNotBeenSet(nameof(GetValueText)))
+        if (GetValueText is not null)
         {
-            bitSlider.GetValueText = GetValueText;
+            bitSlider.TakeFromCascade(nameof(GetValueText), GetValueText, static s => s.GetValueText, static (s, v) => s.GetValueText = v);
         }
 
-        if (Inverted.HasValue && bitSlider.HasNotBeenSet(nameof(Inverted)) && bitSlider.Inverted != Inverted)
+        if (Inverted.HasValue)
         {
-            bitSlider.Inverted = Inverted.Value;
-
-            bitSlider.ClassBuilder.Reset();
+            bitSlider.TakeFromCascade(nameof(Inverted), Inverted.Value, static s => s.Inverted, static (s, v) => s.Inverted = v);
         }
 
-        if (IsOriginFromZero.HasValue && bitSlider.HasNotBeenSet(nameof(IsOriginFromZero)))
+        if (IsOriginFromZero.HasValue)
         {
-            bitSlider.IsOriginFromZero = IsOriginFromZero.Value;
+            bitSlider.TakeFromCascade(nameof(IsOriginFromZero), IsOriginFromZero.Value, static s => s.IsOriginFromZero, static (s, v) => s.IsOriginFromZero = v);
         }
 
-        if (IsRanged.HasValue && bitSlider.HasNotBeenSet(nameof(IsRanged)) && bitSlider.IsRanged != IsRanged)
+        if (IsRanged.HasValue)
         {
-            bitSlider.IsRanged = IsRanged.Value;
-
-            bitSlider.ClassBuilder.Reset();
+            bitSlider.TakeFromCascade(nameof(IsRanged), IsRanged.Value, static s => s.IsRanged, static (s, v) => s.IsRanged = v);
         }
 
-        if (IsVertical.HasValue && bitSlider.HasNotBeenSet(nameof(IsVertical)) && bitSlider.IsVertical != IsVertical)
+        if (IsVertical.HasValue)
         {
-            bitSlider.IsVertical = IsVertical.Value;
-
-            bitSlider.ClassBuilder.Reset();
+            bitSlider.TakeFromCascade(nameof(IsVertical), IsVertical.Value, static s => s.IsVertical, static (s, v) => s.IsVertical = v);
         }
 
-        if (LargeStep.HasValue && bitSlider.HasNotBeenSet(nameof(LargeStep)))
+        if (LargeStep.HasValue)
         {
-            bitSlider.LargeStep = LargeStep.Value;
+            bitSlider.TakeFromCascade(nameof(LargeStep), LargeStep.Value, static s => s.LargeStep, static (s, v) => s.LargeStep = v);
         }
 
-        if (LowerAriaLabel.HasValue() && bitSlider.HasNotBeenSet(nameof(LowerAriaLabel)))
+        if (LowerAriaLabel.HasValue())
         {
-            bitSlider.LowerAriaLabel = LowerAriaLabel;
+            bitSlider.TakeFromCascade(nameof(LowerAriaLabel), LowerAriaLabel, static s => s.LowerAriaLabel, static (s, v) => s.LowerAriaLabel = v);
         }
 
-        if (Marks is not null && bitSlider.HasNotBeenSet(nameof(Marks)))
+        if (Marks is not null)
         {
-            bitSlider.Marks = Marks;
+            bitSlider.TakeFromCascade(nameof(Marks), Marks, static s => s.Marks, static (s, v) => s.Marks = v);
         }
 
-        if (MarkStep.HasValue && bitSlider.HasNotBeenSet(nameof(MarkStep)))
+        if (MarkStep.HasValue)
         {
-            bitSlider.MarkStep = MarkStep.Value;
+            bitSlider.TakeFromCascade(nameof(MarkStep), MarkStep.Value, static s => s.MarkStep, static (s, v) => s.MarkStep = v);
         }
 
-        if (Max.HasValue && bitSlider.HasNotBeenSet(nameof(Max)))
+        if (Max.HasValue)
         {
-            bitSlider.Max = Max.Value;
+            bitSlider.TakeFromCascade(nameof(Max), Max.Value, static s => s.Max, static (s, v) => s.Max = v);
         }
 
-        if (MaxRange.HasValue && bitSlider.HasNotBeenSet(nameof(MaxRange)))
+        if (MaxRange.HasValue)
         {
-            bitSlider.MaxRange = MaxRange.Value;
+            bitSlider.TakeFromCascade(nameof(MaxRange), MaxRange.Value, static s => s.MaxRange, static (s, v) => s.MaxRange = v);
         }
 
-        if (Min.HasValue && bitSlider.HasNotBeenSet(nameof(Min)))
+        if (Min.HasValue)
         {
-            bitSlider.Min = Min.Value;
+            bitSlider.TakeFromCascade(nameof(Min), Min.Value, static s => s.Min, static (s, v) => s.Min = v);
         }
 
-        if (MinRange.HasValue && bitSlider.HasNotBeenSet(nameof(MinRange)))
+        if (MinRange.HasValue)
         {
-            bitSlider.MinRange = MinRange.Value;
+            bitSlider.TakeFromCascade(nameof(MinRange), MinRange.Value, static s => s.MinRange, static (s, v) => s.MinRange = v);
         }
 
-        if (NoFill.HasValue && bitSlider.HasNotBeenSet(nameof(NoFill)))
+        if (NoFill.HasValue)
         {
-            bitSlider.NoFill = NoFill.Value;
+            bitSlider.TakeFromCascade(nameof(NoFill), NoFill.Value, static s => s.NoFill, static (s, v) => s.NoFill = v);
         }
 
-        if (NoSwap.HasValue && bitSlider.HasNotBeenSet(nameof(NoSwap)))
+        if (NoSwap.HasValue)
         {
-            bitSlider.NoSwap = NoSwap.Value;
+            bitSlider.TakeFromCascade(nameof(NoSwap), NoSwap.Value, static s => s.NoSwap, static (s, v) => s.NoSwap = v);
         }
 
-        if (Origin.HasValue && bitSlider.HasNotBeenSet(nameof(Origin)))
+        if (Origin.HasValue)
         {
-            bitSlider.Origin = Origin.Value;
+            bitSlider.TakeFromCascade(nameof(Origin), Origin.Value, static s => s.Origin, static (s, v) => s.Origin = v);
         }
 
-        if (Pushable.HasValue && bitSlider.HasNotBeenSet(nameof(Pushable)))
+        if (Pushable.HasValue)
         {
-            bitSlider.Pushable = Pushable.Value;
+            bitSlider.TakeFromCascade(nameof(Pushable), Pushable.Value, static s => s.Pushable, static (s, v) => s.Pushable = v);
         }
 
-        if (RestrictToMarks.HasValue && bitSlider.HasNotBeenSet(nameof(RestrictToMarks)))
+        if (RestrictToMarks.HasValue)
         {
-            bitSlider.RestrictToMarks = RestrictToMarks.Value;
+            bitSlider.TakeFromCascade(nameof(RestrictToMarks), RestrictToMarks.Value, static s => s.RestrictToMarks, static (s, v) => s.RestrictToMarks = v);
         }
 
-        if (ShowMarkLabels.HasValue && bitSlider.HasNotBeenSet(nameof(ShowMarkLabels)))
+        if (ShowMarkLabels.HasValue)
         {
-            bitSlider.ShowMarkLabels = ShowMarkLabels.Value;
+            bitSlider.TakeFromCascade(nameof(ShowMarkLabels), ShowMarkLabels.Value, static s => s.ShowMarkLabels, static (s, v) => s.ShowMarkLabels = v);
         }
 
-        if (ShowMarks.HasValue && bitSlider.HasNotBeenSet(nameof(ShowMarks)))
+        if (ShowMarks.HasValue)
         {
-            bitSlider.ShowMarks = ShowMarks.Value;
+            bitSlider.TakeFromCascade(nameof(ShowMarks), ShowMarks.Value, static s => s.ShowMarks, static (s, v) => s.ShowMarks = v);
         }
 
-        if (ShowValue.HasValue && bitSlider.HasNotBeenSet(nameof(ShowValue)))
+        if (ShowValue.HasValue)
         {
-            bitSlider.ShowValue = ShowValue.Value;
+            bitSlider.TakeFromCascade(nameof(ShowValue), ShowValue.Value, static s => s.ShowValue, static (s, v) => s.ShowValue = v);
         }
 
-        if (Size.HasValue && bitSlider.HasNotBeenSet(nameof(Size)) && bitSlider.Size != Size)
+        if (Size.HasValue)
         {
-            bitSlider.Size = Size.Value;
-
-            bitSlider.ClassBuilder.Reset();
+            bitSlider.TakeFromCascade(nameof(Size), Size.Value, static s => s.Size, static (s, v) => s.Size = v);
         }
 
-        if (SliderBoxHtmlAttributes is not null && bitSlider.HasNotBeenSet(nameof(SliderBoxHtmlAttributes)))
+        if (SliderBoxHtmlAttributes is not null)
         {
-            bitSlider.SliderBoxHtmlAttributes = SliderBoxHtmlAttributes;
+            bitSlider.TakeFromCascade(nameof(SliderBoxHtmlAttributes), SliderBoxHtmlAttributes, static s => s.SliderBoxHtmlAttributes, static (s, v) => s.SliderBoxHtmlAttributes = v);
         }
 
-        if (Step.HasValue && bitSlider.HasNotBeenSet(nameof(Step)))
+        if (Step.HasValue)
         {
-            bitSlider.Step = Step.Value;
+            bitSlider.TakeFromCascade(nameof(Step), Step.Value, static s => s.Step, static (s, v) => s.Step = v);
         }
 
-        if (Styles is not null && bitSlider.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitSlider.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitSlider.Styles = Styles;
-
-            bitSlider.StyleBuilder.Reset();
+            bitSlider.TakeFromCascade(nameof(Styles), Styles, static s => s.Styles, static (s, v) => s.Styles = v);
         }
 
-        if (ThumbLabel.HasValue && bitSlider.HasNotBeenSet(nameof(ThumbLabel)) && bitSlider.ThumbLabel != ThumbLabel)
+        if (ThumbLabel.HasValue)
         {
-            bitSlider.ThumbLabel = ThumbLabel.Value;
-
-            bitSlider.ClassBuilder.Reset();
+            bitSlider.TakeFromCascade(nameof(ThumbLabel), ThumbLabel.Value, static s => s.ThumbLabel, static (s, v) => s.ThumbLabel = v);
         }
 
-        if (UpperAriaLabel.HasValue() && bitSlider.HasNotBeenSet(nameof(UpperAriaLabel)))
+        if (UpperAriaLabel.HasValue())
         {
-            bitSlider.UpperAriaLabel = UpperAriaLabel;
+            bitSlider.TakeFromCascade(nameof(UpperAriaLabel), UpperAriaLabel, static s => s.UpperAriaLabel, static (s, v) => s.UpperAriaLabel = v);
         }
 
-        if (ValueFormat.HasValue() && bitSlider.HasNotBeenSet(nameof(ValueFormat)))
+        if (ValueFormat.HasValue())
         {
-            bitSlider.ValueFormat = ValueFormat;
+            bitSlider.TakeFromCascade(nameof(ValueFormat), ValueFormat, static s => s.ValueFormat, static (s, v) => s.ValueFormat = v);
         }
     }
 }

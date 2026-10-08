@@ -296,27 +296,7 @@ public partial class BitTextShimmer : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-tsh-pri",
-            BitColor.Secondary => "bit-tsh-sec",
-            BitColor.Tertiary => "bit-tsh-ter",
-            BitColor.Info => "bit-tsh-inf",
-            BitColor.Success => "bit-tsh-suc",
-            BitColor.Warning => "bit-tsh-wrn",
-            BitColor.SevereWarning => "bit-tsh-swr",
-            BitColor.Error => "bit-tsh-err",
-            BitColor.PrimaryBackground => "bit-tsh-pbg",
-            BitColor.SecondaryBackground => "bit-tsh-sbg",
-            BitColor.TertiaryBackground => "bit-tsh-tbg",
-            BitColor.PrimaryForeground => "bit-tsh-pfg",
-            BitColor.SecondaryForeground => "bit-tsh-sfg",
-            BitColor.TertiaryForeground => "bit-tsh-tfg",
-            BitColor.PrimaryBorder => "bit-tsh-pbr",
-            BitColor.SecondaryBorder => "bit-tsh-sbr",
-            BitColor.TertiaryBorder => "bit-tsh-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-tsh"));
 
         // The band follows the reading direction of its own accord - the stylesheet reads it off the element - so
         // this class only says whether it runs with that direction or against it.

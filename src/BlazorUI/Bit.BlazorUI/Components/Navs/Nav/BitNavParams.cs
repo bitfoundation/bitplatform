@@ -185,175 +185,150 @@ public class BitNavParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitNav);
 
-        if (Accent.HasValue && bitNav.HasNotBeenSet(nameof(Accent)) && bitNav.Accent != Accent)
+        if (Accent.HasValue)
         {
-            bitNav.Accent = Accent.Value;
-
-            bitNav.ClassBuilder.Reset();
+            bitNav.TakeFromCascade(nameof(Accent), Accent.Value, static n => n.Accent, static (n, v) => n.Accent = v);
         }
 
-        if (AllExpanded.HasValue && bitNav.HasNotBeenSet(nameof(AllExpanded)))
+        if (AllExpanded.HasValue)
         {
-            bitNav.AllExpanded = AllExpanded.Value;
+            bitNav.TakeFromCascade(nameof(AllExpanded), AllExpanded.Value, static n => n.AllExpanded, static (n, v) => n.AllExpanded = v);
         }
 
         // The icon takes precedence over the icon name, so a cascaded icon is only a default for a nav that has
         // set neither: applied over a nav's own ChevronDownIconName it would override it rather than default it.
-        if (ChevronDownIcon is not null &&
-            bitNav.HasNotBeenSet(nameof(ChevronDownIcon)) &&
-            bitNav.HasNotBeenSet(nameof(ChevronDownIconName)))
+        if (ChevronDownIcon is not null)
         {
-            bitNav.ChevronDownIcon = ChevronDownIcon;
+            if (bitNav.HasNotBeenSet(nameof(ChevronDownIconName)))
+            {
+                bitNav.TakeFromCascade(nameof(ChevronDownIcon), ChevronDownIcon, static n => n.ChevronDownIcon, static (n, v) => n.ChevronDownIcon = v);
+            }
+            else
+            {
+                bitNav.ReleaseFromCascade(nameof(ChevronDownIcon));
+            }
         }
 
-        if (ChevronDownIconName.HasValue() && bitNav.HasNotBeenSet(nameof(ChevronDownIconName)))
+        if (ChevronDownIconName.HasValue())
         {
-            bitNav.ChevronDownIconName = ChevronDownIconName;
+            bitNav.TakeFromCascade(nameof(ChevronDownIconName), ChevronDownIconName, static n => n.ChevronDownIconName, static (n, v) => n.ChevronDownIconName = v);
         }
 
-        if (Classes is not null && bitNav.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitNav.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitNav.Classes = Classes;
-
-            bitNav.ClassBuilder.Reset();
+            bitNav.TakeFromCascade(nameof(Classes), Classes, static n => n.Classes, static (n, v) => n.Classes = v);
         }
 
-        if (CollapseAriaLabel.HasValue() && bitNav.HasNotBeenSet(nameof(CollapseAriaLabel)))
+        if (CollapseAriaLabel.HasValue())
         {
-            bitNav.CollapseAriaLabel = CollapseAriaLabel;
+            bitNav.TakeFromCascade(nameof(CollapseAriaLabel), CollapseAriaLabel, static n => n.CollapseAriaLabel, static (n, v) => n.CollapseAriaLabel = v);
         }
 
-        if (Color.HasValue && bitNav.HasNotBeenSet(nameof(Color)) && bitNav.Color != Color)
+        if (Color.HasValue)
         {
-            bitNav.Color = Color.Value;
-
-            bitNav.ClassBuilder.Reset();
+            bitNav.TakeFromCascade(nameof(Color), Color.Value, static n => n.Color, static (n, v) => n.Color = v);
         }
 
-        if (ExpandAriaLabel.HasValue() && bitNav.HasNotBeenSet(nameof(ExpandAriaLabel)))
+        if (ExpandAriaLabel.HasValue())
         {
-            bitNav.ExpandAriaLabel = ExpandAriaLabel;
+            bitNav.TakeFromCascade(nameof(ExpandAriaLabel), ExpandAriaLabel, static n => n.ExpandAriaLabel, static (n, v) => n.ExpandAriaLabel = v);
         }
 
-        if (FitWidth.HasValue && bitNav.HasNotBeenSet(nameof(FitWidth)) && bitNav.FitWidth != FitWidth)
+        if (FitWidth.HasValue)
         {
-            bitNav.FitWidth = FitWidth.Value;
-
-            bitNav.ClassBuilder.Reset();
+            bitNav.TakeFromCascade(nameof(FitWidth), FitWidth.Value, static n => n.FitWidth, static (n, v) => n.FitWidth = v);
         }
 
-        if (FullWidth.HasValue && bitNav.HasNotBeenSet(nameof(FullWidth)) && bitNav.FullWidth != FullWidth)
+        if (FullWidth.HasValue)
         {
-            bitNav.FullWidth = FullWidth.Value;
-
-            bitNav.ClassBuilder.Reset();
+            bitNav.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static n => n.FullWidth, static (n, v) => n.FullWidth = v);
         }
 
-        if (HeaderTemplateRenderMode.HasValue && bitNav.HasNotBeenSet(nameof(HeaderTemplateRenderMode)))
+        if (HeaderTemplateRenderMode.HasValue)
         {
-            bitNav.HeaderTemplateRenderMode = HeaderTemplateRenderMode.Value;
+            bitNav.TakeFromCascade(nameof(HeaderTemplateRenderMode), HeaderTemplateRenderMode.Value, static n => n.HeaderTemplateRenderMode, static (n, v) => n.HeaderTemplateRenderMode = v);
         }
 
-        if (IconOnly.HasValue && bitNav.HasNotBeenSet(nameof(IconOnly)) && bitNav.IconOnly != IconOnly)
+        if (IconOnly.HasValue)
         {
-            bitNav.IconOnly = IconOnly.Value;
-
-            bitNav.ClassBuilder.Reset();
+            bitNav.TakeFromCascade(nameof(IconOnly), IconOnly.Value, static n => n.IconOnly, static (n, v) => n.IconOnly = v);
         }
 
-        if (IndentPadding.HasValue && bitNav.HasNotBeenSet(nameof(IndentPadding)))
+        if (IndentPadding.HasValue)
         {
-            bitNav.IndentPadding = IndentPadding.Value;
+            bitNav.TakeFromCascade(nameof(IndentPadding), IndentPadding.Value, static n => n.IndentPadding, static (n, v) => n.IndentPadding = v);
         }
 
-        if (IndentReversedPadding.HasValue && bitNav.HasNotBeenSet(nameof(IndentReversedPadding)))
+        if (IndentReversedPadding.HasValue)
         {
-            bitNav.IndentReversedPadding = IndentReversedPadding.Value;
+            bitNav.TakeFromCascade(nameof(IndentReversedPadding), IndentReversedPadding.Value, static n => n.IndentReversedPadding, static (n, v) => n.IndentReversedPadding = v);
         }
 
-        if (IndentValue.HasValue && bitNav.HasNotBeenSet(nameof(IndentValue)))
+        if (IndentValue.HasValue)
         {
-            bitNav.IndentValue = IndentValue.Value;
+            bitNav.TakeFromCascade(nameof(IndentValue), IndentValue.Value, static n => n.IndentValue, static (n, v) => n.IndentValue = v);
         }
 
-        if (ItemTemplateRenderMode.HasValue && bitNav.HasNotBeenSet(nameof(ItemTemplateRenderMode)))
+        if (ItemTemplateRenderMode.HasValue)
         {
-            bitNav.ItemTemplateRenderMode = ItemTemplateRenderMode.Value;
+            bitNav.TakeFromCascade(nameof(ItemTemplateRenderMode), ItemTemplateRenderMode.Value, static n => n.ItemTemplateRenderMode, static (n, v) => n.ItemTemplateRenderMode = v);
         }
 
-        // The URL match of the automatic mode depends on both of these, and it is only re-run when one of them
-        // actually changes: the cascade is applied on every parameter set, and re-running the match each time
-        // would re-select the current item over and over - and re-raise OnSelectItem for a Reselectable nav.
-        var urlMatchingChanged = false;
-
-        if (Match.HasValue && bitNav.HasNotBeenSet(nameof(Match)) && bitNav.Match != Match.Value)
+        if (Match.HasValue)
         {
-            bitNav.Match = Match.Value;
-
-            urlMatchingChanged = true;
+            bitNav.TakeFromCascade(nameof(Match), Match.Value, static n => n.Match, static (n, v) => n.Match = v);
         }
 
-        if (Mode.HasValue && bitNav.HasNotBeenSet(nameof(Mode)) && bitNav.Mode != Mode.Value)
+        if (Mode.HasValue)
         {
-            bitNav.Mode = Mode.Value;
-
-            urlMatchingChanged = true;
-        }
-
-        if (urlMatchingChanged)
-        {
-            bitNav.OnUrlMatchingChanged();
+            bitNav.TakeFromCascade(nameof(Mode), Mode.Value, static n => n.Mode, static (n, v) => n.Mode = v);
         }
 
         // an empty hint is a value of its own - the one that takes the announcement off - so only null is
         // what leaves the component to its default.
-        if (NewTabHint is not null && bitNav.HasNotBeenSet(nameof(NewTabHint)))
+        if (NewTabHint is not null)
         {
-            bitNav.NewTabHint = NewTabHint;
+            bitNav.TakeFromCascade(nameof(NewTabHint), NewTabHint, static n => n.NewTabHint, static (n, v) => n.NewTabHint = v);
         }
 
-        if (NoNewTabHint.HasValue && bitNav.HasNotBeenSet(nameof(NoNewTabHint)))
+        if (NoNewTabHint.HasValue)
         {
-            bitNav.NoNewTabHint = NoNewTabHint.Value;
+            bitNav.TakeFromCascade(nameof(NoNewTabHint), NoNewTabHint.Value, static n => n.NoNewTabHint, static (n, v) => n.NoNewTabHint = v);
         }
 
-        if (NoCollapse.HasValue && bitNav.HasNotBeenSet(nameof(NoCollapse)))
+        if (NoCollapse.HasValue)
         {
-            bitNav.NoCollapse = NoCollapse.Value;
+            bitNav.TakeFromCascade(nameof(NoCollapse), NoCollapse.Value, static n => n.NoCollapse, static (n, v) => n.NoCollapse = v);
         }
 
-        if (RenderType.HasValue && bitNav.HasNotBeenSet(nameof(RenderType)))
+        if (RenderType.HasValue)
         {
-            bitNav.RenderType = RenderType.Value;
+            bitNav.TakeFromCascade(nameof(RenderType), RenderType.Value, static n => n.RenderType, static (n, v) => n.RenderType = v);
         }
 
-        if (Reselectable.HasValue && bitNav.HasNotBeenSet(nameof(Reselectable)))
+        if (Reselectable.HasValue)
         {
-            bitNav.Reselectable = Reselectable.Value;
+            bitNav.TakeFromCascade(nameof(Reselectable), Reselectable.Value, static n => n.Reselectable, static (n, v) => n.Reselectable = v);
         }
 
-        if (ReversedChevron.HasValue && bitNav.HasNotBeenSet(nameof(ReversedChevron)))
+        if (ReversedChevron.HasValue)
         {
-            bitNav.ReversedChevron = ReversedChevron.Value;
+            bitNav.TakeFromCascade(nameof(ReversedChevron), ReversedChevron.Value, static n => n.ReversedChevron, static (n, v) => n.ReversedChevron = v);
         }
 
-        if (SingleExpand.HasValue && bitNav.HasNotBeenSet(nameof(SingleExpand)))
+        if (SingleExpand.HasValue)
         {
-            bitNav.SingleExpand = SingleExpand.Value;
+            bitNav.TakeFromCascade(nameof(SingleExpand), SingleExpand.Value, static n => n.SingleExpand, static (n, v) => n.SingleExpand = v);
         }
 
-        if (Size.HasValue && bitNav.HasNotBeenSet(nameof(Size)) && bitNav.Size != Size)
+        if (Size.HasValue)
         {
-            bitNav.Size = Size.Value;
-
-            bitNav.ClassBuilder.Reset();
+            bitNav.TakeFromCascade(nameof(Size), Size.Value, static n => n.Size, static (n, v) => n.Size = v);
         }
 
-        if (Styles is not null && bitNav.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitNav.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitNav.Styles = Styles;
-
-            bitNav.StyleBuilder.Reset();
+            bitNav.TakeFromCascade(nameof(Styles), Styles, static n => n.Styles, static (n, v) => n.Styles = v);
         }
     }
 }

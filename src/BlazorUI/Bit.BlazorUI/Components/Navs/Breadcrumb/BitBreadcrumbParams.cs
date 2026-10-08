@@ -175,145 +175,131 @@ public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitBreadcrumb);
 
-        if (AutoCollapse.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(AutoCollapse)))
+        if (AutoCollapse.HasValue)
         {
-            bitBreadcrumb.AutoCollapse = AutoCollapse.Value;
+            bitBreadcrumb.TakeFromCascade(nameof(AutoCollapse), AutoCollapse.Value, static b => b.AutoCollapse, static (b, v) => b.AutoCollapse = v);
         }
 
-        if (AutoReorderOptions.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(AutoReorderOptions)))
+        if (AutoReorderOptions.HasValue)
         {
-            bitBreadcrumb.AutoReorderOptions = AutoReorderOptions.Value;
+            bitBreadcrumb.TakeFromCascade(nameof(AutoReorderOptions), AutoReorderOptions.Value, static b => b.AutoReorderOptions, static (b, v) => b.AutoReorderOptions = v);
         }
 
-        if (Classes is not null && bitBreadcrumb.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitBreadcrumb.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitBreadcrumb.Classes = Classes;
-
-            bitBreadcrumb.ClassBuilder.Reset();
+            bitBreadcrumb.TakeFromCascade(nameof(Classes), Classes, static b => b.Classes, static (b, v) => b.Classes = v);
         }
 
-        if (Color.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(Color)) && bitBreadcrumb.Color != Color)
+        if (Color.HasValue)
         {
-            bitBreadcrumb.Color = Color.Value;
-
-            bitBreadcrumb.ClassBuilder.Reset();
+            bitBreadcrumb.TakeFromCascade(nameof(Color), Color.Value, static b => b.Color, static (b, v) => b.Color = v);
         }
 
-        if (DividerIcon is not null && bitBreadcrumb.HasNotBeenSet(nameof(DividerIcon)))
+        if (DividerIcon is not null)
         {
-            bitBreadcrumb.DividerIcon = DividerIcon;
+            bitBreadcrumb.TakeFromCascade(nameof(DividerIcon), DividerIcon, static b => b.DividerIcon, static (b, v) => b.DividerIcon = v);
         }
 
-        if (DividerIconName.HasValue() && bitBreadcrumb.HasNotBeenSet(nameof(DividerIconName)))
+        if (DividerIconName.HasValue())
         {
-            bitBreadcrumb.DividerIconName = DividerIconName;
+            bitBreadcrumb.TakeFromCascade(nameof(DividerIconName), DividerIconName, static b => b.DividerIconName, static (b, v) => b.DividerIconName = v);
         }
 
-        if (DividerIconTemplate is not null && bitBreadcrumb.HasNotBeenSet(nameof(DividerIconTemplate)))
+        if (DividerIconTemplate is not null)
         {
-            bitBreadcrumb.DividerIconTemplate = DividerIconTemplate;
+            bitBreadcrumb.TakeFromCascade(nameof(DividerIconTemplate), DividerIconTemplate, static b => b.DividerIconTemplate, static (b, v) => b.DividerIconTemplate = v);
         }
 
-        if (DividerText.HasValue() && bitBreadcrumb.HasNotBeenSet(nameof(DividerText)))
+        if (DividerText.HasValue())
         {
-            bitBreadcrumb.DividerText = DividerText;
+            bitBreadcrumb.TakeFromCascade(nameof(DividerText), DividerText, static b => b.DividerText, static (b, v) => b.DividerText = v);
         }
 
-        if (ExpandOverflow.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(ExpandOverflow)))
+        if (ExpandOverflow.HasValue)
         {
-            bitBreadcrumb.ExpandOverflow = ExpandOverflow.Value;
+            bitBreadcrumb.TakeFromCascade(nameof(ExpandOverflow), ExpandOverflow.Value, static b => b.ExpandOverflow, static (b, v) => b.ExpandOverflow = v);
         }
 
-        if (IconPlacement.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(IconPlacement)))
+        if (IconPlacement.HasValue)
         {
-            bitBreadcrumb.IconPlacement = IconPlacement.Value;
+            bitBreadcrumb.TakeFromCascade(nameof(IconPlacement), IconPlacement.Value, static b => b.IconPlacement, static (b, v) => b.IconPlacement = v);
         }
 
-        if (MaxDisplayedItems.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(MaxDisplayedItems)))
+        if (MaxDisplayedItems.HasValue)
         {
-            bitBreadcrumb.MaxDisplayedItems = MaxDisplayedItems.Value;
+            bitBreadcrumb.TakeFromCascade(nameof(MaxDisplayedItems), MaxDisplayedItems.Value, static b => b.MaxDisplayedItems, static (b, v) => b.MaxDisplayedItems = v);
         }
 
-        if (MaxItemWidth.HasValue() && bitBreadcrumb.HasNotBeenSet(nameof(MaxItemWidth)) && bitBreadcrumb.MaxItemWidth != MaxItemWidth)
+        if (MaxItemWidth.HasValue())
         {
-            bitBreadcrumb.MaxItemWidth = MaxItemWidth;
-
-            bitBreadcrumb.StyleBuilder.Reset();
+            bitBreadcrumb.TakeFromCascade(nameof(MaxItemWidth), MaxItemWidth, static b => b.MaxItemWidth, static (b, v) => b.MaxItemWidth = v);
         }
 
         // an empty hint is a value of its own - the one that takes the announcement off - so only null is
         // what leaves the component to its default.
-        if (NewTabHint is not null && bitBreadcrumb.HasNotBeenSet(nameof(NewTabHint)))
+        if (NewTabHint is not null)
         {
-            bitBreadcrumb.NewTabHint = NewTabHint;
+            bitBreadcrumb.TakeFromCascade(nameof(NewTabHint), NewTabHint, static b => b.NewTabHint, static (b, v) => b.NewTabHint = v);
         }
 
-        if (NoNewTabHint.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(NoNewTabHint)))
+        if (NoNewTabHint.HasValue)
         {
-            bitBreadcrumb.NoNewTabHint = NoNewTabHint.Value;
+            bitBreadcrumb.TakeFromCascade(nameof(NoNewTabHint), NoNewTabHint.Value, static b => b.NoNewTabHint, static (b, v) => b.NoNewTabHint = v);
         }
 
-        if (OverflowAriaLabel.HasValue() && bitBreadcrumb.HasNotBeenSet(nameof(OverflowAriaLabel)))
+        if (OverflowAriaLabel.HasValue())
         {
-            bitBreadcrumb.OverflowAriaLabel = OverflowAriaLabel;
+            bitBreadcrumb.TakeFromCascade(nameof(OverflowAriaLabel), OverflowAriaLabel, static b => b.OverflowAriaLabel, static (b, v) => b.OverflowAriaLabel = v);
         }
 
-        if (OverflowIcon is not null && bitBreadcrumb.HasNotBeenSet(nameof(OverflowIcon)))
+        if (OverflowIcon is not null)
         {
-            bitBreadcrumb.OverflowIcon = OverflowIcon;
+            bitBreadcrumb.TakeFromCascade(nameof(OverflowIcon), OverflowIcon, static b => b.OverflowIcon, static (b, v) => b.OverflowIcon = v);
         }
 
-        if (OverflowIconName.HasValue() && bitBreadcrumb.HasNotBeenSet(nameof(OverflowIconName)))
+        if (OverflowIconName.HasValue())
         {
-            bitBreadcrumb.OverflowIconName = OverflowIconName;
+            bitBreadcrumb.TakeFromCascade(nameof(OverflowIconName), OverflowIconName, static b => b.OverflowIconName, static (b, v) => b.OverflowIconName = v);
         }
 
-        if (OverflowIconTemplate is not null && bitBreadcrumb.HasNotBeenSet(nameof(OverflowIconTemplate)))
+        if (OverflowIconTemplate is not null)
         {
-            bitBreadcrumb.OverflowIconTemplate = OverflowIconTemplate;
+            bitBreadcrumb.TakeFromCascade(nameof(OverflowIconTemplate), OverflowIconTemplate, static b => b.OverflowIconTemplate, static (b, v) => b.OverflowIconTemplate = v);
         }
 
-        if (OverflowIndex.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(OverflowIndex)))
+        if (OverflowIndex.HasValue)
         {
-            bitBreadcrumb.OverflowIndex = OverflowIndex.Value;
+            bitBreadcrumb.TakeFromCascade(nameof(OverflowIndex), OverflowIndex.Value, static b => b.OverflowIndex, static (b, v) => b.OverflowIndex = v);
         }
 
-        if (Scrollable.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(Scrollable)) && bitBreadcrumb.Scrollable != Scrollable)
+        if (Scrollable.HasValue)
         {
-            bitBreadcrumb.Scrollable = Scrollable.Value;
-
-            bitBreadcrumb.ClassBuilder.Reset();
+            bitBreadcrumb.TakeFromCascade(nameof(Scrollable), Scrollable.Value, static b => b.Scrollable, static (b, v) => b.Scrollable = v);
         }
 
-        if (SelectedItemAsText.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(SelectedItemAsText)))
+        if (SelectedItemAsText.HasValue)
         {
-            bitBreadcrumb.SelectedItemAsText = SelectedItemAsText.Value;
+            bitBreadcrumb.TakeFromCascade(nameof(SelectedItemAsText), SelectedItemAsText.Value, static b => b.SelectedItemAsText, static (b, v) => b.SelectedItemAsText = v);
         }
 
-        if (Size.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(Size)) && bitBreadcrumb.Size != Size)
+        if (Size.HasValue)
         {
-            bitBreadcrumb.Size = Size.Value;
-
-            bitBreadcrumb.ClassBuilder.Reset();
+            bitBreadcrumb.TakeFromCascade(nameof(Size), Size.Value, static b => b.Size, static (b, v) => b.Size = v);
         }
 
-        if (StructuredData.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(StructuredData)))
+        if (StructuredData.HasValue)
         {
-            bitBreadcrumb.StructuredData = StructuredData.Value;
+            bitBreadcrumb.TakeFromCascade(nameof(StructuredData), StructuredData.Value, static b => b.StructuredData, static (b, v) => b.StructuredData = v);
         }
 
-        if (Styles is not null && bitBreadcrumb.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitBreadcrumb.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitBreadcrumb.Styles = Styles;
-
-            bitBreadcrumb.StyleBuilder.Reset();
+            bitBreadcrumb.TakeFromCascade(nameof(Styles), Styles, static b => b.Styles, static (b, v) => b.Styles = v);
         }
 
-        if (Wrap.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(Wrap)) && bitBreadcrumb.Wrap != Wrap)
+        if (Wrap.HasValue)
         {
-            bitBreadcrumb.Wrap = Wrap.Value;
-
-            bitBreadcrumb.ClassBuilder.Reset();
+            bitBreadcrumb.TakeFromCascade(nameof(Wrap), Wrap.Value, static b => b.Wrap, static (b, v) => b.Wrap = v);
         }
     }
 }

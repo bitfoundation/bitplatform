@@ -123,6 +123,11 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     /// <br />
     /// The default value is <strong>null</strong>, which keeps the default foreground color of the theme.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Breadcrumb-*</c> color variables of the trail (text, selected, hover,
+    /// divider and focus colors); left unset, the trail keeps the theme's foreground colors unless those variables
+    /// say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -287,6 +292,11 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// The size of the items of the breadcrumb.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Breadcrumb-*</c> size variables (font size, item height, divider
+    /// size, overflow row height and font size); left unset, the breadcrumb is medium unless those variables say
+    /// otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -406,6 +416,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-Breadcrumb-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(GetColorClass);
 
         ClassBuilder.Register(GetSizeClass);

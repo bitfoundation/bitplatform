@@ -264,8 +264,8 @@
     <DemoExample Title="Color" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
         <div>
             <b>Color</b> paints the icon in a theme role, so every preset and both schemes re-skin it. The semantic roles carry meaning; the
-            background, foreground and border roles are the neutral tiers of the surface. Like every component's colors, it is the default of
-            the <b>--bit-Icon-*</b> color variables, so one of those set around the icon wins over it.
+            background, foreground and border roles are the neutral tiers of the surface. Like every component's colors, it wins over the
+            <b>--bit-Icon-*</b> color variables, which only restyle the primary an icon given no Color is painted in.
         </div>
         <br /><br />
         <div class="color-grid">
@@ -334,8 +334,9 @@
 
     <DemoExample Title="Size" RazorCode="@example12RazorCode" Id="example12">
         <div>
-            <b>Size</b> picks one of the theme's three icon sizes, as the default of <b>--bit-Icon-size</b>, which wins over it. <b>FontSize</b>
-            takes any CSS length, or <code>inherit</code> to match the surrounding text, and wins over both.
+            <b>Size</b> picks one of the theme's three icon sizes, and wins over <b>--bit-Icon-size</b>, which only restyles the medium size
+            an icon given no Size is drawn at. <b>FontSize</b> takes any CSS length, or <code>inherit</code> to match the surrounding text,
+            and wins over both.
         </div>
         <br /><br />
         <div class="example-content">

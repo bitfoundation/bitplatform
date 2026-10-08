@@ -7,15 +7,19 @@
         // Reading what is left rather than the whole duration keeps the time the render took to get here, and
         // the call to take this reading, from being waited out a second time. The transitions are the root's
         // (the size) and the content region's (the fade and the visibility); nothing inside the content counts.
-        // null means there is nothing to read, and the component falls back to its own estimate.
-        public static getRemainingTransitionTime(root: HTMLElement): number | null {
+        // null means there is nothing to read, and the component falls back to its own estimate. elapsed is how
+        // long ago, in ms, the transition started, which is all a browser that cannot list what it is playing
+        // leaves to work out what is left of it.
+        public static getRemainingTransitionTime(root: HTMLElement, elapsed: number): number | null {
             if (!root || !(root instanceof Element)) return null;
 
             try {
                 const content = root.querySelector(':scope > .bit-col-con');
 
                 if (typeof root.getAnimations !== 'function') {
-                    return Collapse.getTransitionTime(root, content);
+                    const total = Collapse.getTransitionTime(root, content);
+
+                    return total === null ? null : Math.max(0, total - Math.max(0, Number(elapsed) || 0));
                 }
 
                 // getAnimations brings the style up to date first, so a transition the last render started is

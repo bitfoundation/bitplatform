@@ -353,6 +353,10 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// The general color of the DateRangePicker that applies to the today day button, the selected range,
     /// the highlighted current month and the selected AM/PM buttons.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-DateRangePicker-*</c> accent, text, hover, active, range and focus
+    /// color variables; left unset, the DateRangePicker is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -892,6 +896,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// <summary>
     /// Sets the preset size (Small, Medium, Large) of the field, the calendar cells and the label.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-DateRangePicker-*</c> size variables (input height and font size,
+    /// label font size, day size and font size); left unset, the DateRangePicker is medium unless those variables
+    /// say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -1335,6 +1344,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from
+        // a choice: the public --bit-DateRangePicker-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => GetColorClass());
 
         ClassBuilder.Register(GetSizeClass);
@@ -4246,15 +4257,12 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private string GetCalloutCssClasses()
     {
         // The callout is rendered outside of the root element (and is relocated to the body while it is
-        // open), so the custom properties of the color and the size have to be declared on it as well -
+        // open), so the custom properties of an explicit color and size have to be declared on it as well -
         // nothing the root's own bit-dtrp-* classes declare cascades down to it.
-        List<string> classes = ["bit-dtrp-cal", GetColorClass()];
+        List<string> classes = ["bit-dtrp-cal"];
 
-        var sizeClass = GetSizeClass();
-        if (sizeClass.HasValue())
-        {
-            classes.Add(sizeClass);
-        }
+        classes.AddIfHasValue(GetColorClass());
+        classes.AddIfHasValue(GetSizeClass());
 
         if (Disabled)
         {

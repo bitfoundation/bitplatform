@@ -41,7 +41,7 @@ public partial class BitPaginationDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the pagination.",
+            Description = "The general color of the pagination. An explicit value wins over the --bit-Pagination-* button, selected and focus color variables; left unset, the pagination is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum"
         },
@@ -381,7 +381,7 @@ public partial class BitPaginationDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the buttons.",
+            Description = "The size of the buttons. An explicit value wins over --bit-Pagination-font-size and --bit-Pagination-button-size; left unset, the pagination is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -686,14 +686,14 @@ public partial class BitPaginationDemo
         new()
         {
             Name = "--bit-Pagination-font-size",
-            DefaultValue = "Per Size, --bit-tpg-fs-xs/sm/md",
-            Description = "Text size of every control.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of every control. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Pagination-button-size",
-            DefaultValue = "Per Size, --bit-siz-ctrl-sm/md/lg",
-            Description = "Height and minimum width of a button, which the ellipsis, the summary, the selector and the jump stand at too.",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Height and minimum width of a button, which the ellipsis, the summary, the selector and the jump stand at too. The Size parameter wins over it.",
         },
         new()
         {
@@ -710,56 +710,56 @@ public partial class BitPaginationDemo
         new()
         {
             Name = "--bit-Pagination-button-color",
-            DefaultValue = "Per Color and Variant",
-            Description = "Label color of a button at rest.",
+            DefaultValue = "Per Variant, from the primary role",
+            Description = "Label color of a button at rest. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Pagination-button-background",
-            DefaultValue = "Per Color and Variant",
-            Description = "Fill of a button at rest.",
+            DefaultValue = "Per Variant, from the primary role",
+            Description = "Fill of a button at rest. The Color parameter wins over it in Fill; the transparent fill of Outline and Text is its alone.",
         },
         new()
         {
             Name = "--bit-Pagination-button-border-color",
-            DefaultValue = "Per Color and Variant",
-            Description = "Border color of a button at rest.",
+            DefaultValue = "Per Variant, from the primary role",
+            Description = "Border color of a button at rest. The Color parameter wins over it, except over the transparent border of Text.",
         },
         new()
         {
             Name = "--bit-Pagination-button-hover-color",
-            DefaultValue = "The Color role's on color",
-            Description = "Label color of a hovered button.",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "Label color of a hovered button. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Pagination-button-hover-background",
-            DefaultValue = "The Color role's hover color",
-            Description = "Fill and border color of a hovered button.",
+            DefaultValue = "--bit-clr-pri-hover",
+            Description = "Fill and border color of a hovered button. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Pagination-button-active-color",
-            DefaultValue = "--bit-Pagination-button-hover-color, then the Color role's on color",
-            Description = "Label color of a pressed button.",
+            DefaultValue = "--bit-Pagination-button-hover-color, then --bit-clr-pri-text",
+            Description = "Label color of a pressed button. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Pagination-button-active-background",
-            DefaultValue = "--bit-Pagination-button-hover-background, then the Color role's active color",
-            Description = "Fill and border color of a pressed button.",
+            DefaultValue = "--bit-Pagination-button-hover-background, then --bit-clr-pri-active",
+            Description = "Fill and border color of a pressed button. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Pagination-selected-color",
-            DefaultValue = "The Color role's on color",
-            Description = "Label color of the current page, held under the pointer too.",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "Label color of the current page, held under the pointer too. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Pagination-selected-background",
-            DefaultValue = "The Color role's dark color",
-            Description = "Fill and border color of the current page, held under the pointer too.",
+            DefaultValue = "--bit-clr-pri-dark",
+            Description = "Fill and border color of the current page, held under the pointer too. The Color parameter wins over it.",
         },
         new()
         {
@@ -770,8 +770,8 @@ public partial class BitPaginationDemo
         new()
         {
             Name = "--bit-Pagination-focus-color",
-            DefaultValue = "The Color role's focus color",
-            Description = "Color of the keyboard focus ring of every control.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the keyboard focus ring of every control. The Color parameter wins over it.",
         },
         new()
         {

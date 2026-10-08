@@ -264,7 +264,7 @@ public partial class BitSnackBarDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the snack bar items. The default value is Medium.",
+            Description = "The size of the snack bar items. An explicit value wins over the --bit-SnackBar-* size variables; left unset, the items are medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -638,7 +638,7 @@ public partial class BitSnackBarDemo
                     Name = "Color",
                     Type = "BitColor?",
                     DefaultValue = "null",
-                    Description = "The color theme of the snack bar item, which also decides its default icon and the politeness of its live region.",
+                    Description = "The color theme of the snack bar item, which also decides its default icon and the politeness of its live region. An explicit value wins over the --bit-SnackBar-* color variables; left unset, the item is Info unless they say otherwise.",
                     LinkType = LinkType.Link,
                     Href = "#color-enum",
                 },
@@ -818,8 +818,8 @@ public partial class BitSnackBarDemo
         new()
         {
             Name = "Show",
-            Type = "Task<BitSnackBarItem> Show(string title, string? body = \"\", BitColor color = BitColor.Info, string? cssClass = null, string? cssStyle = null, bool persistent = false, TimeSpan? autoDismissTime = null)",
-            Description = "Shows a new snackbar.",
+            Type = "Task<BitSnackBarItem> Show(string title, string? body = \"\", BitColor? color = null, string? cssClass = null, string? cssStyle = null, bool persistent = false, TimeSpan? autoDismissTime = null)",
+            Description = "Shows a new snackbar. A color left out is no color at all: the item is Info unless the --bit-SnackBar-* color variables say otherwise, while one passed in (or the one Info, Success, Warning, SevereWarning and Error pass) wins over them.",
             LinkType = LinkType.Link,
             Href = "#snackbar-item",
         },
@@ -926,20 +926,20 @@ public partial class BitSnackBarDemo
         new()
         {
             Name = "--bit-SnackBar-background",
-            DefaultValue = "Per Color and Variant",
-            Description = "Fill of an item.",
+            DefaultValue = "--bit-clr-inf (Fill), --bit-clr-bg-pri (Outline, Text)",
+            Description = "Fill of an item. The Color of the item wins over it in Fill; the page surface of Outline and Text is its alone.",
         },
         new()
         {
             Name = "--bit-SnackBar-color",
-            DefaultValue = "Per Color and Variant",
-            Description = "Text color of an item, which the icon, the dismiss button and the countdown bar follow.",
+            DefaultValue = "--bit-clr-inf-text (Fill), --bit-clr-inf-fg (Outline, Text)",
+            Description = "Text color of an item, which the icon, the dismiss button and the countdown bar follow. The Color of the item wins over it.",
         },
         new()
         {
             Name = "--bit-SnackBar-border-color",
-            DefaultValue = "Per Color and Variant",
-            Description = "Border color of an item.",
+            DefaultValue = "--bit-clr-inf, transparent (Text)",
+            Description = "Border color of an item. The Color of the item wins over it, except over the transparent border of Text.",
         },
         new()
         {
@@ -962,14 +962,14 @@ public partial class BitSnackBarDemo
         new()
         {
             Name = "--bit-SnackBar-padding",
-            DefaultValue = "Per Size",
-            Description = "Inner padding of an item.",
+            DefaultValue = "spacing(1.25)",
+            Description = "Inner padding of an item. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-SnackBar-title-font-size",
-            DefaultValue = "Per Size",
-            Description = "Text size of the title.",
+            DefaultValue = "--bit-tpg-fs-md",
+            Description = "Text size of the title. The Size parameter wins over it.",
         },
         new()
         {
@@ -980,8 +980,8 @@ public partial class BitSnackBarDemo
         new()
         {
             Name = "--bit-SnackBar-body-font-size",
-            DefaultValue = "Per Size",
-            Description = "Text size of the body.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the body. The Size parameter wins over it.",
         },
         new()
         {
@@ -992,8 +992,8 @@ public partial class BitSnackBarDemo
         new()
         {
             Name = "--bit-SnackBar-icon-size",
-            DefaultValue = "Per Size",
-            Description = "Size of the leading icon and of the loading spinner.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Size of the leading icon and of the loading spinner. The Size parameter wins over it.",
         },
         new()
         {
@@ -1430,7 +1430,7 @@ public partial class BitSnackBarDemo
 
     private async Task OpenCssVars()
     {
-        await cssVarsRef.Info("Restyled", "Background, text, icon, bar, radius, padding and width from CSS variables.");
+        await cssVarsRef.Show("Restyled", "Background, text, icon, bar, radius, padding and width from CSS variables.");
     }
 
 

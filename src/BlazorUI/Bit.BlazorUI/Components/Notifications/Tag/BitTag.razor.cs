@@ -118,6 +118,10 @@ public partial class BitTag : BitComponentBase
     /// <summary>
     /// The general color of the tag.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Tag-*</c> color variables for every color its role paints; left unset,
+    /// the tag is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -487,6 +491,9 @@ public partial class BitTag : BitComponentBase
     /// The default follows the chip corner of the current theme, which is what keeps a tag in the same visual
     /// language as the rest of the library; the other two pin it to a pill or to a rectangle whatever the
     /// theme says.
+    /// <br />
+    /// An explicit value wins over <c>--bit-Tag-radius</c>; left unset, the tag takes the chip corner unless that
+    /// variable says otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitShape? Shape { get; set; }
@@ -494,6 +501,10 @@ public partial class BitTag : BitComponentBase
     /// <summary>
     /// The size of the tag.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Tag-*</c> size variables (min height, paddings, gap, font sizes,
+    /// image size); left unset, the tag is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -567,27 +578,9 @@ public partial class BitTag : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-tag-pri",
-            BitColor.Secondary => "bit-tag-sec",
-            BitColor.Tertiary => "bit-tag-ter",
-            BitColor.Info => "bit-tag-inf",
-            BitColor.Success => "bit-tag-suc",
-            BitColor.Warning => "bit-tag-wrn",
-            BitColor.SevereWarning => "bit-tag-swr",
-            BitColor.Error => "bit-tag-err",
-            BitColor.PrimaryBackground => "bit-tag-pbg",
-            BitColor.SecondaryBackground => "bit-tag-sbg",
-            BitColor.TertiaryBackground => "bit-tag-tbg",
-            BitColor.PrimaryForeground => "bit-tag-pfg",
-            BitColor.SecondaryForeground => "bit-tag-sfg",
-            BitColor.TertiaryForeground => "bit-tag-tfg",
-            BitColor.PrimaryBorder => "bit-tag-pbr",
-            BitColor.SecondaryBorder => "bit-tag-sbr",
-            BitColor.TertiaryBorder => "bit-tag-tbr",
-            _ => "bit-tag-pri"
-        });
+        // Color, Size and Shape publish nothing while they are unset, which is what lets the stylesheet tell a
+        // default from a choice: the public --bit-Tag-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-tag"));
 
         ClassBuilder.Register(() => Reversed ? "bit-tag-rvs" : string.Empty);
 
@@ -597,20 +590,14 @@ public partial class BitTag : BitComponentBase
 
         ClassBuilder.Register(() => Selected ? $"bit-tag-sel {Classes?.Selected}" : string.Empty);
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-tag-sm",
-            BitSize.Medium => "bit-tag-md",
-            BitSize.Large => "bit-tag-lg",
-            _ => "bit-tag-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-tag"));
 
         ClassBuilder.Register(() => Shape switch
         {
             BitShape.Rounded => "bit-tag-rnd",
             BitShape.Pill or BitShape.Circle => "bit-tag-cir",
             BitShape.Square => "bit-tag-sqr",
-            _ => "bit-tag-rnd"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Variant switch

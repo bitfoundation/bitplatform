@@ -203,63 +203,7 @@ public class BitSplitterParams : BitComponentBaseParams, IBitComponentParams
     {
         if (bitSplitter is null) return;
 
-        // The inherited parameters go through the same bookkeeping as the splitter's own rather than through
-        // UpdateBaseParameters, which cannot take a value back: an AriaLabel or a Class the cascade stops giving
-        // would otherwise stay on the splitter for good.
-        if (AriaLabel.HasValue())
-        {
-            bitSplitter.TakeFromCascade(nameof(AriaLabel), AriaLabel, static s => s.AriaLabel, static (s, v) => s.AriaLabel = v);
-        }
-
-        if (Class.HasValue())
-        {
-            bitSplitter.TakeFromCascade(nameof(Class), Class, static s => s.Class, static (s, v) => s.Class = v);
-        }
-
-        if (Dir.HasValue)
-        {
-            bitSplitter.TakeFromCascade(nameof(Dir), Dir, static s => s.Dir, static (s, v) => s.Dir = v);
-        }
-
-        if (ForceAnimation.HasValue)
-        {
-            bitSplitter.TakeFromCascade(nameof(ForceAnimation), ForceAnimation.Value, static s => s.ForceAnimation, static (s, v) => s.ForceAnimation = v);
-        }
-
-        // The attributes are gathered again from the markup on every render, so what the cascade adds to them is
-        // gone the moment it stops adding it; there is nothing to take back.
-        if (HtmlAttributes is not null)
-        {
-            foreach (var attr in HtmlAttributes)
-            {
-                bitSplitter.HtmlAttributes.TryAdd(attr.Key, attr.Value);
-            }
-        }
-
-        if (Id.HasValue())
-        {
-            bitSplitter.TakeFromCascade(nameof(Id), Id, static s => s.Id, static (s, v) => s.Id = v);
-        }
-
-        if (Disabled.HasValue)
-        {
-            bitSplitter.TakeFromCascade(nameof(Disabled), Disabled.Value, static s => s.Disabled, static (s, v) => s.Disabled = v);
-        }
-
-        if (Style.HasValue())
-        {
-            bitSplitter.TakeFromCascade(nameof(Style), Style, static s => s.Style, static (s, v) => s.Style = v);
-        }
-
-        if (TabIndex.HasValue())
-        {
-            bitSplitter.TakeFromCascade(nameof(TabIndex), TabIndex, static s => s.TabIndex, static (s, v) => s.TabIndex = v);
-        }
-
-        if (Visibility.HasValue)
-        {
-            bitSplitter.TakeFromCascade(nameof(Visibility), Visibility.Value, static s => s.Visibility, static (s, v) => s.Visibility = v);
-        }
+        UpdateBaseParameters(bitSplitter);
 
         if (Classes is not null)
         {

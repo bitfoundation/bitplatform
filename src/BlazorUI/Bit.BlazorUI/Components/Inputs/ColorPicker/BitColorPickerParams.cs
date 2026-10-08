@@ -189,137 +189,129 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitColorPicker);
 
-        if (AutoFocus.HasValue && bitColorPicker.HasNotBeenSet(nameof(AutoFocus)))
+        if (AutoFocus.HasValue)
         {
-            bitColorPicker.AutoFocus = AutoFocus.Value;
+            bitColorPicker.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static c => c.AutoFocus, static (c, v) => c.AutoFocus = v);
         }
 
-        if (Classes is not null && bitColorPicker.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitColorPicker.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitColorPicker.Classes = Classes;
-
-            bitColorPicker.ClassBuilder.Reset();
+            bitColorPicker.TakeFromCascade(nameof(Classes), Classes, static c => c.Classes, static (c, v) => c.Classes = v);
         }
 
-        if (ContrastColor.HasValue() && bitColorPicker.HasNotBeenSet(nameof(ContrastColor)))
+        if (ContrastColor.HasValue())
         {
-            bitColorPicker.ContrastColor = ContrastColor;
+            bitColorPicker.TakeFromCascade(nameof(ContrastColor), ContrastColor, static c => c.ContrastColor, static (c, v) => c.ContrastColor = v);
         }
 
-        if (DefaultInputsMode.HasValue && bitColorPicker.HasNotBeenSet(nameof(DefaultInputsMode)))
+        if (DefaultInputsMode.HasValue)
         {
-            bitColorPicker.DefaultInputsMode = DefaultInputsMode.Value;
+            bitColorPicker.TakeFromCascade(nameof(DefaultInputsMode), DefaultInputsMode.Value, static c => c.DefaultInputsMode, static (c, v) => c.DefaultInputsMode = v);
         }
 
-        if (EyeDropperIcon is not null && bitColorPicker.HasNotBeenSet(nameof(EyeDropperIcon)))
+        if (EyeDropperIcon is not null)
         {
-            bitColorPicker.EyeDropperIcon = EyeDropperIcon;
+            bitColorPicker.TakeFromCascade(nameof(EyeDropperIcon), EyeDropperIcon, static c => c.EyeDropperIcon, static (c, v) => c.EyeDropperIcon = v);
         }
 
-        if (EyeDropperIconName.HasValue() && bitColorPicker.HasNotBeenSet(nameof(EyeDropperIconName)))
+        if (EyeDropperIconName.HasValue())
         {
-            bitColorPicker.EyeDropperIconName = EyeDropperIconName;
+            bitColorPicker.TakeFromCascade(nameof(EyeDropperIconName), EyeDropperIconName, static c => c.EyeDropperIconName, static (c, v) => c.EyeDropperIconName = v);
         }
 
-        if (Format.HasValue && bitColorPicker.HasNotBeenSet(nameof(Format)))
+        if (Format.HasValue)
         {
-            bitColorPicker.Format = Format.Value;
+            bitColorPicker.TakeFromCascade(nameof(Format), Format.Value, static c => c.Format, static (c, v) => c.Format = v);
         }
 
-        if (InputsModeSwitchIcon is not null && bitColorPicker.HasNotBeenSet(nameof(InputsModeSwitchIcon)))
+        if (InputsModeSwitchIcon is not null)
         {
-            bitColorPicker.InputsModeSwitchIcon = InputsModeSwitchIcon;
+            bitColorPicker.TakeFromCascade(nameof(InputsModeSwitchIcon), InputsModeSwitchIcon, static c => c.InputsModeSwitchIcon, static (c, v) => c.InputsModeSwitchIcon = v);
         }
 
-        if (InputsModeSwitchIconName.HasValue() && bitColorPicker.HasNotBeenSet(nameof(InputsModeSwitchIconName)))
+        if (InputsModeSwitchIconName.HasValue())
         {
-            bitColorPicker.InputsModeSwitchIconName = InputsModeSwitchIconName;
+            bitColorPicker.TakeFromCascade(nameof(InputsModeSwitchIconName), InputsModeSwitchIconName, static c => c.InputsModeSwitchIconName, static (c, v) => c.InputsModeSwitchIconName = v);
         }
 
-        if (Label.HasValue() && bitColorPicker.HasNotBeenSet(nameof(Label)))
+        if (Label.HasValue())
         {
-            bitColorPicker.Label = Label;
+            bitColorPicker.TakeFromCascade(nameof(Label), Label, static c => c.Label, static (c, v) => c.Label = v);
         }
 
-        if (LabelTemplate is not null && bitColorPicker.HasNotBeenSet(nameof(LabelTemplate)))
+        if (LabelTemplate is not null)
         {
-            bitColorPicker.LabelTemplate = LabelTemplate;
+            bitColorPicker.TakeFromCascade(nameof(LabelTemplate), LabelTemplate, static c => c.LabelTemplate, static (c, v) => c.LabelTemplate = v);
         }
 
-        if (Presets is not null && bitColorPicker.HasNotBeenSet(nameof(Presets)))
+        if (Presets is not null)
         {
-            bitColorPicker.Presets = Presets;
+            bitColorPicker.TakeFromCascade(nameof(Presets), Presets, static c => c.Presets, static (c, v) => c.Presets = v);
         }
 
-        if (PresetsPerRow.HasValue && bitColorPicker.HasNotBeenSet(nameof(PresetsPerRow)))
+        if (PresetsPerRow.HasValue)
         {
-            bitColorPicker.PresetsPerRow = PresetsPerRow.Value;
+            bitColorPicker.TakeFromCascade(nameof(PresetsPerRow), PresetsPerRow.Value, static c => c.PresetsPerRow, static (c, v) => c.PresetsPerRow = v);
         }
 
-        if (ReadOnly.HasValue && bitColorPicker.HasNotBeenSet(nameof(ReadOnly)) && bitColorPicker.ReadOnly != ReadOnly)
+        if (ReadOnly.HasValue)
         {
-            bitColorPicker.ReadOnly = ReadOnly.Value;
-
-            bitColorPicker.ClassBuilder.Reset();
+            bitColorPicker.TakeFromCascade(nameof(ReadOnly), ReadOnly.Value, static c => c.ReadOnly, static (c, v) => c.ReadOnly = v);
         }
 
-        if (ShowAlphaSlider.HasValue && bitColorPicker.HasNotBeenSet(nameof(ShowAlphaSlider)))
+        if (ShowAlphaSlider.HasValue)
         {
-            bitColorPicker.ShowAlphaSlider = ShowAlphaSlider.Value;
+            bitColorPicker.TakeFromCascade(nameof(ShowAlphaSlider), ShowAlphaSlider.Value, static c => c.ShowAlphaSlider, static (c, v) => c.ShowAlphaSlider = v);
         }
 
-        if (ShowContrast.HasValue && bitColorPicker.HasNotBeenSet(nameof(ShowContrast)))
+        if (ShowContrast.HasValue)
         {
-            bitColorPicker.ShowContrast = ShowContrast.Value;
+            bitColorPicker.TakeFromCascade(nameof(ShowContrast), ShowContrast.Value, static c => c.ShowContrast, static (c, v) => c.ShowContrast = v);
         }
 
-        if (ShowEyeDropper.HasValue && bitColorPicker.HasNotBeenSet(nameof(ShowEyeDropper)))
+        if (ShowEyeDropper.HasValue)
         {
-            bitColorPicker.ShowEyeDropper = ShowEyeDropper.Value;
+            bitColorPicker.TakeFromCascade(nameof(ShowEyeDropper), ShowEyeDropper.Value, static c => c.ShowEyeDropper, static (c, v) => c.ShowEyeDropper = v);
         }
 
-        if (ShowHueSlider.HasValue && bitColorPicker.HasNotBeenSet(nameof(ShowHueSlider)))
+        if (ShowHueSlider.HasValue)
         {
-            bitColorPicker.ShowHueSlider = ShowHueSlider.Value;
+            bitColorPicker.TakeFromCascade(nameof(ShowHueSlider), ShowHueSlider.Value, static c => c.ShowHueSlider, static (c, v) => c.ShowHueSlider = v);
         }
 
-        if (ShowInputs.HasValue && bitColorPicker.HasNotBeenSet(nameof(ShowInputs)))
+        if (ShowInputs.HasValue)
         {
-            bitColorPicker.ShowInputs = ShowInputs.Value;
+            bitColorPicker.TakeFromCascade(nameof(ShowInputs), ShowInputs.Value, static c => c.ShowInputs, static (c, v) => c.ShowInputs = v);
         }
 
-        if (ShowInputsModeSwitch.HasValue && bitColorPicker.HasNotBeenSet(nameof(ShowInputsModeSwitch)))
+        if (ShowInputsModeSwitch.HasValue)
         {
-            bitColorPicker.ShowInputsModeSwitch = ShowInputsModeSwitch.Value;
+            bitColorPicker.TakeFromCascade(nameof(ShowInputsModeSwitch), ShowInputsModeSwitch.Value, static c => c.ShowInputsModeSwitch, static (c, v) => c.ShowInputsModeSwitch = v);
         }
 
-        if (ShowPreview.HasValue && bitColorPicker.HasNotBeenSet(nameof(ShowPreview)))
+        if (ShowPreview.HasValue)
         {
-            bitColorPicker.ShowPreview = ShowPreview.Value;
+            bitColorPicker.TakeFromCascade(nameof(ShowPreview), ShowPreview.Value, static c => c.ShowPreview, static (c, v) => c.ShowPreview = v);
         }
 
-        if (ShowSaturationArea.HasValue && bitColorPicker.HasNotBeenSet(nameof(ShowSaturationArea)))
+        if (ShowSaturationArea.HasValue)
         {
-            bitColorPicker.ShowSaturationArea = ShowSaturationArea.Value;
+            bitColorPicker.TakeFromCascade(nameof(ShowSaturationArea), ShowSaturationArea.Value, static c => c.ShowSaturationArea, static (c, v) => c.ShowSaturationArea = v);
         }
 
-        if (Size.HasValue && bitColorPicker.HasNotBeenSet(nameof(Size)) && bitColorPicker.Size != Size)
+        if (Size.HasValue)
         {
-            bitColorPicker.Size = Size.Value;
-
-            bitColorPicker.ClassBuilder.Reset();
+            bitColorPicker.TakeFromCascade(nameof(Size), Size.Value, static c => c.Size, static (c, v) => c.Size = v);
         }
 
-        if (Styles is not null && bitColorPicker.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitColorPicker.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitColorPicker.Styles = Styles;
-
-            bitColorPicker.StyleBuilder.Reset();
+            bitColorPicker.TakeFromCascade(nameof(Styles), Styles, static c => c.Styles, static (c, v) => c.Styles = v);
         }
 
-        if (Texts is not null && bitColorPicker.HasNotBeenSet(nameof(Texts)))
+        if (Texts is not null)
         {
-            bitColorPicker.Texts = Texts;
+            bitColorPicker.TakeFromCascade(nameof(Texts), Texts, static c => c.Texts, static (c, v) => c.Texts = v);
         }
     }
 }

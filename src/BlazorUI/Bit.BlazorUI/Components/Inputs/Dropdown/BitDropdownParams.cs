@@ -667,497 +667,479 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
 
         UpdateBaseParameters(bitDropdown);
 
-        if (AriaDescription.HasValue() && bitDropdown.HasNotBeenSet(nameof(AriaDescription)))
+        if (AriaDescription.HasValue())
         {
-            bitDropdown.AriaDescription = AriaDescription;
+            bitDropdown.TakeFromCascade(nameof(AriaDescription), AriaDescription, static d => d.AriaDescription, static (d, v) => d.AriaDescription = v);
         }
 
-        if (AutoClearSearch.HasValue && bitDropdown.HasNotBeenSet(nameof(AutoClearSearch)))
+        if (AutoClearSearch.HasValue)
         {
-            bitDropdown.AutoClearSearch = AutoClearSearch.Value;
+            bitDropdown.TakeFromCascade(nameof(AutoClearSearch), AutoClearSearch.Value, static d => d.AutoClearSearch, static (d, v) => d.AutoClearSearch = v);
         }
 
-        if (AutoFocus.HasValue && bitDropdown.HasNotBeenSet(nameof(AutoFocus)))
+        if (AutoFocus.HasValue)
         {
-            bitDropdown.AutoFocus = AutoFocus.Value;
+            bitDropdown.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static d => d.AutoFocus, static (d, v) => d.AutoFocus = v);
         }
 
-        if (AutoFocusSearchBox.HasValue && bitDropdown.HasNotBeenSet(nameof(AutoFocusSearchBox)))
+        if (AutoFocusSearchBox.HasValue)
         {
-            bitDropdown.AutoFocusSearchBox = AutoFocusSearchBox.Value;
+            bitDropdown.TakeFromCascade(nameof(AutoFocusSearchBox), AutoFocusSearchBox.Value, static d => d.AutoFocusSearchBox, static (d, v) => d.AutoFocusSearchBox = v);
         }
 
-        if (AutoSelectFirstMatch.HasValue && bitDropdown.HasNotBeenSet(nameof(AutoSelectFirstMatch)))
+        if (AutoSelectFirstMatch.HasValue)
         {
-            bitDropdown.AutoSelectFirstMatch = AutoSelectFirstMatch.Value;
+            bitDropdown.TakeFromCascade(nameof(AutoSelectFirstMatch), AutoSelectFirstMatch.Value, static d => d.AutoSelectFirstMatch, static (d, v) => d.AutoSelectFirstMatch = v);
         }
 
-        if (CaretDownIcon is not null && bitDropdown.HasNotBeenSet(nameof(CaretDownIcon)))
+        if (CaretDownIcon is not null)
         {
-            bitDropdown.CaretDownIcon = CaretDownIcon;
+            bitDropdown.TakeFromCascade(nameof(CaretDownIcon), CaretDownIcon, static d => d.CaretDownIcon, static (d, v) => d.CaretDownIcon = v);
         }
 
-        if (CaretDownIconName.HasValue() && bitDropdown.HasNotBeenSet(nameof(CaretDownIconName)))
+        if (CaretDownIconName.HasValue())
         {
-            bitDropdown.CaretDownIconName = CaretDownIconName;
+            bitDropdown.TakeFromCascade(nameof(CaretDownIconName), CaretDownIconName, static d => d.CaretDownIconName, static (d, v) => d.CaretDownIconName = v);
         }
 
-        if (Chips.HasValue && bitDropdown.HasNotBeenSet(nameof(Chips)) && bitDropdown.Chips != Chips)
+        if (Chips.HasValue)
         {
-            bitDropdown.Chips = Chips.Value;
-
-            bitDropdown.ClassBuilder.Reset();
+            bitDropdown.TakeFromCascade(nameof(Chips), Chips.Value, static d => d.Chips, static (d, v) => d.Chips = v);
         }
 
-        if (ChipsRemoveButtonAriaLabel.HasValue() && bitDropdown.HasNotBeenSet(nameof(ChipsRemoveButtonAriaLabel)))
+        if (ChipsRemoveButtonAriaLabel.HasValue())
         {
-            bitDropdown.ChipsRemoveButtonAriaLabel = ChipsRemoveButtonAriaLabel;
+            bitDropdown.TakeFromCascade(nameof(ChipsRemoveButtonAriaLabel), ChipsRemoveButtonAriaLabel, static d => d.ChipsRemoveButtonAriaLabel, static (d, v) => d.ChipsRemoveButtonAriaLabel = v);
         }
 
-        if (ChipsRemoveIcon is not null && bitDropdown.HasNotBeenSet(nameof(ChipsRemoveIcon)))
+        if (ChipsRemoveIcon is not null)
         {
-            bitDropdown.ChipsRemoveIcon = ChipsRemoveIcon;
+            bitDropdown.TakeFromCascade(nameof(ChipsRemoveIcon), ChipsRemoveIcon, static d => d.ChipsRemoveIcon, static (d, v) => d.ChipsRemoveIcon = v);
         }
 
-        if (ChipsRemoveIconName.HasValue() && bitDropdown.HasNotBeenSet(nameof(ChipsRemoveIconName)))
+        if (ChipsRemoveIconName.HasValue())
         {
-            bitDropdown.ChipsRemoveIconName = ChipsRemoveIconName;
+            bitDropdown.TakeFromCascade(nameof(ChipsRemoveIconName), ChipsRemoveIconName, static d => d.ChipsRemoveIconName, static (d, v) => d.ChipsRemoveIconName = v);
         }
 
-        if (Classes is not null && bitDropdown.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitDropdown.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitDropdown.Classes = Classes;
-
-            bitDropdown.ClassBuilder.Reset();
+            bitDropdown.TakeFromCascade(nameof(Classes), Classes, static d => d.Classes, static (d, v) => d.Classes = v);
         }
 
-        if (ClearButtonAriaLabel.HasValue() && bitDropdown.HasNotBeenSet(nameof(ClearButtonAriaLabel)))
+        if (ClearButtonAriaLabel.HasValue())
         {
-            bitDropdown.ClearButtonAriaLabel = ClearButtonAriaLabel;
+            bitDropdown.TakeFromCascade(nameof(ClearButtonAriaLabel), ClearButtonAriaLabel, static d => d.ClearButtonAriaLabel, static (d, v) => d.ClearButtonAriaLabel = v);
         }
 
-        if (ClearButtonIcon is not null && bitDropdown.HasNotBeenSet(nameof(ClearButtonIcon)))
+        if (ClearButtonIcon is not null)
         {
-            bitDropdown.ClearButtonIcon = ClearButtonIcon;
+            bitDropdown.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static d => d.ClearButtonIcon, static (d, v) => d.ClearButtonIcon = v);
         }
 
-        if (ClearButtonIconName.HasValue() && bitDropdown.HasNotBeenSet(nameof(ClearButtonIconName)))
+        if (ClearButtonIconName.HasValue())
         {
-            bitDropdown.ClearButtonIconName = ClearButtonIconName;
+            bitDropdown.TakeFromCascade(nameof(ClearButtonIconName), ClearButtonIconName, static d => d.ClearButtonIconName, static (d, v) => d.ClearButtonIconName = v);
         }
 
-        if (ClearOnEscape.HasValue && bitDropdown.HasNotBeenSet(nameof(ClearOnEscape)))
+        if (ClearOnEscape.HasValue)
         {
-            bitDropdown.ClearOnEscape = ClearOnEscape.Value;
+            bitDropdown.TakeFromCascade(nameof(ClearOnEscape), ClearOnEscape.Value, static d => d.ClearOnEscape, static (d, v) => d.ClearOnEscape = v);
         }
 
-        if (CloseOnSelect.HasValue && bitDropdown.HasNotBeenSet(nameof(CloseOnSelect)))
+        if (CloseOnSelect.HasValue)
         {
-            bitDropdown.CloseOnSelect = CloseOnSelect.Value;
+            bitDropdown.TakeFromCascade(nameof(CloseOnSelect), CloseOnSelect.Value, static d => d.CloseOnSelect, static (d, v) => d.CloseOnSelect = v);
         }
 
-        if (Color.HasValue && bitDropdown.HasNotBeenSet(nameof(Color)) && bitDropdown.Color != Color)
+        if (Color.HasValue)
         {
-            bitDropdown.Color = Color.Value;
-
-            bitDropdown.ClassBuilder.Reset();
+            bitDropdown.TakeFromCascade(nameof(Color), Color.Value, static d => d.Color, static (d, v) => d.Color = v);
         }
 
-        if (Combo.HasValue && bitDropdown.HasNotBeenSet(nameof(Combo)))
+        if (Combo.HasValue)
         {
-            bitDropdown.Combo = Combo.Value;
+            bitDropdown.TakeFromCascade(nameof(Combo), Combo.Value, static d => d.Combo, static (d, v) => d.Combo = v);
         }
 
-        if (ComboBoxAddButtonAriaLabel.HasValue() && bitDropdown.HasNotBeenSet(nameof(ComboBoxAddButtonAriaLabel)))
+        if (ComboBoxAddButtonAriaLabel.HasValue())
         {
-            bitDropdown.ComboBoxAddButtonAriaLabel = ComboBoxAddButtonAriaLabel;
+            bitDropdown.TakeFromCascade(nameof(ComboBoxAddButtonAriaLabel), ComboBoxAddButtonAriaLabel, static d => d.ComboBoxAddButtonAriaLabel, static (d, v) => d.ComboBoxAddButtonAriaLabel = v);
         }
 
-        if (ComboBoxAddButtonIcon is not null && bitDropdown.HasNotBeenSet(nameof(ComboBoxAddButtonIcon)))
+        if (ComboBoxAddButtonIcon is not null)
         {
-            bitDropdown.ComboBoxAddButtonIcon = ComboBoxAddButtonIcon;
+            bitDropdown.TakeFromCascade(nameof(ComboBoxAddButtonIcon), ComboBoxAddButtonIcon, static d => d.ComboBoxAddButtonIcon, static (d, v) => d.ComboBoxAddButtonIcon = v);
         }
 
-        if (ComboBoxAddButtonIconName.HasValue() && bitDropdown.HasNotBeenSet(nameof(ComboBoxAddButtonIconName)))
+        if (ComboBoxAddButtonIconName.HasValue())
         {
-            bitDropdown.ComboBoxAddButtonIconName = ComboBoxAddButtonIconName;
+            bitDropdown.TakeFromCascade(nameof(ComboBoxAddButtonIconName), ComboBoxAddButtonIconName, static d => d.ComboBoxAddButtonIconName, static (d, v) => d.ComboBoxAddButtonIconName = v);
         }
 
-        if (DebounceTime.HasValue && bitDropdown.HasNotBeenSet(nameof(DebounceTime)))
+        if (DebounceTime.HasValue)
         {
-            bitDropdown.DebounceTime = DebounceTime.Value;
+            bitDropdown.TakeFromCascade(nameof(DebounceTime), DebounceTime.Value, static d => d.DebounceTime, static (d, v) => d.DebounceTime = v);
         }
 
-        if (Description.HasValue() && bitDropdown.HasNotBeenSet(nameof(Description)))
+        if (Description.HasValue())
         {
-            bitDropdown.Description = Description;
+            bitDropdown.TakeFromCascade(nameof(Description), Description, static d => d.Description, static (d, v) => d.Description = v);
         }
 
-        if (DropDirection.HasValue && bitDropdown.HasNotBeenSet(nameof(DropDirection)))
+        if (DropDirection.HasValue)
         {
-            bitDropdown.DropDirection = DropDirection.Value;
+            bitDropdown.TakeFromCascade(nameof(DropDirection), DropDirection.Value, static d => d.DropDirection, static (d, v) => d.DropDirection = v);
         }
 
-        if (Dynamic.HasValue && bitDropdown.HasNotBeenSet(nameof(Dynamic)))
+        if (Dynamic.HasValue)
         {
-            bitDropdown.Dynamic = Dynamic.Value;
+            bitDropdown.TakeFromCascade(nameof(Dynamic), Dynamic.Value, static d => d.Dynamic, static (d, v) => d.Dynamic = v);
         }
 
-        if (DynamicItemTextFormat.HasValue() && bitDropdown.HasNotBeenSet(nameof(DynamicItemTextFormat)))
+        if (DynamicItemTextFormat.HasValue())
         {
-            bitDropdown.DynamicItemTextFormat = DynamicItemTextFormat;
+            bitDropdown.TakeFromCascade(nameof(DynamicItemTextFormat), DynamicItemTextFormat, static d => d.DynamicItemTextFormat, static (d, v) => d.DynamicItemTextFormat = v);
         }
 
-        if (DynamicValueGenerator is not null && bitDropdown.HasNotBeenSet(nameof(DynamicValueGenerator)))
+        if (DynamicValueGenerator is not null)
         {
-            bitDropdown.DynamicValueGenerator = DynamicValueGenerator;
+            bitDropdown.TakeFromCascade(nameof(DynamicValueGenerator), DynamicValueGenerator, static d => d.DynamicValueGenerator, static (d, v) => d.DynamicValueGenerator = v);
         }
 
-        if (EmptyText.HasValue() && bitDropdown.HasNotBeenSet(nameof(EmptyText)))
+        if (EmptyText.HasValue())
         {
-            bitDropdown.EmptyText = EmptyText;
+            bitDropdown.TakeFromCascade(nameof(EmptyText), EmptyText, static d => d.EmptyText, static (d, v) => d.EmptyText = v);
         }
 
-        if (ExistsSelectedItemFunction is not null && bitDropdown.HasNotBeenSet(nameof(ExistsSelectedItemFunction)))
+        if (ExistsSelectedItemFunction is not null)
         {
-            bitDropdown.ExistsSelectedItemFunction = ExistsSelectedItemFunction;
+            bitDropdown.TakeFromCascade(nameof(ExistsSelectedItemFunction), ExistsSelectedItemFunction, static d => d.ExistsSelectedItemFunction, static (d, v) => d.ExistsSelectedItemFunction = v);
         }
 
-        if (FindItemFunction is not null && bitDropdown.HasNotBeenSet(nameof(FindItemFunction)))
+        if (FindItemFunction is not null)
         {
-            bitDropdown.FindItemFunction = FindItemFunction;
+            bitDropdown.TakeFromCascade(nameof(FindItemFunction), FindItemFunction, static d => d.FindItemFunction, static (d, v) => d.FindItemFunction = v);
         }
 
-        if (FitWidth.HasValue && bitDropdown.HasNotBeenSet(nameof(FitWidth)) && bitDropdown.FitWidth != FitWidth)
+        if (FitWidth.HasValue)
         {
-            bitDropdown.FitWidth = FitWidth.Value;
-
-            bitDropdown.StyleBuilder.Reset();
+            bitDropdown.TakeFromCascade(nameof(FitWidth), FitWidth.Value, static d => d.FitWidth, static (d, v) => d.FitWidth = v);
         }
 
-        if (HideSelectedItems.HasValue && bitDropdown.HasNotBeenSet(nameof(HideSelectedItems)))
+        if (HideSelectedItems.HasValue)
         {
-            bitDropdown.HideSelectedItems = HideSelectedItems.Value;
+            bitDropdown.TakeFromCascade(nameof(HideSelectedItems), HideSelectedItems.Value, static d => d.HideSelectedItems, static (d, v) => d.HideSelectedItems = v);
         }
 
-        if (HighlightSearch.HasValue && bitDropdown.HasNotBeenSet(nameof(HighlightSearch)))
+        if (HighlightSearch.HasValue)
         {
-            bitDropdown.HighlightSearch = HighlightSearch.Value;
+            bitDropdown.TakeFromCascade(nameof(HighlightSearch), HighlightSearch.Value, static d => d.HighlightSearch, static (d, v) => d.HighlightSearch = v);
         }
 
-        if (Immediate.HasValue && bitDropdown.HasNotBeenSet(nameof(Immediate)))
+        if (Immediate.HasValue)
         {
-            bitDropdown.Immediate = Immediate.Value;
+            bitDropdown.TakeFromCascade(nameof(Immediate), Immediate.Value, static d => d.Immediate, static (d, v) => d.Immediate = v);
         }
 
-        if (IsLoading.HasValue && bitDropdown.HasNotBeenSet(nameof(IsLoading)))
+        if (IsLoading.HasValue)
         {
-            bitDropdown.IsLoading = IsLoading.Value;
+            bitDropdown.TakeFromCascade(nameof(IsLoading), IsLoading.Value, static d => d.IsLoading, static (d, v) => d.IsLoading = v);
         }
 
-        if (ItemCheckIcon is not null && bitDropdown.HasNotBeenSet(nameof(ItemCheckIcon)))
+        if (ItemCheckIcon is not null)
         {
-            bitDropdown.ItemCheckIcon = ItemCheckIcon;
+            bitDropdown.TakeFromCascade(nameof(ItemCheckIcon), ItemCheckIcon, static d => d.ItemCheckIcon, static (d, v) => d.ItemCheckIcon = v);
         }
 
-        if (ItemCheckIconName.HasValue() && bitDropdown.HasNotBeenSet(nameof(ItemCheckIconName)))
+        if (ItemCheckIconName.HasValue())
         {
-            bitDropdown.ItemCheckIconName = ItemCheckIconName;
+            bitDropdown.TakeFromCascade(nameof(ItemCheckIconName), ItemCheckIconName, static d => d.ItemCheckIconName, static (d, v) => d.ItemCheckIconName = v);
         }
 
-        if (Items is not null && bitDropdown.HasNotBeenSet(nameof(Items)))
+        if (Items is not null)
         {
-            bitDropdown.Items = Items;
+            bitDropdown.TakeFromCascade(nameof(Items), Items, static d => d.Items, static (d, v) => d.Items = v);
         }
 
-        if (ItemSize.HasValue && bitDropdown.HasNotBeenSet(nameof(ItemSize)))
+        if (ItemSize.HasValue)
         {
-            bitDropdown.ItemSize = ItemSize.Value;
+            bitDropdown.TakeFromCascade(nameof(ItemSize), ItemSize.Value, static d => d.ItemSize, static (d, v) => d.ItemSize = v);
         }
 
-        if (ItemsProvider is not null && bitDropdown.HasNotBeenSet(nameof(ItemsProvider)))
+        if (ItemsProvider is not null)
         {
-            bitDropdown.ItemsProvider = ItemsProvider;
+            bitDropdown.TakeFromCascade(nameof(ItemsProvider), ItemsProvider, static d => d.ItemsProvider, static (d, v) => d.ItemsProvider = v);
         }
 
-        if (ItemsProviderDebounceTime.HasValue && bitDropdown.HasNotBeenSet(nameof(ItemsProviderDebounceTime)))
+        if (ItemsProviderDebounceTime.HasValue)
         {
-            bitDropdown.ItemsProviderDebounceTime = ItemsProviderDebounceTime.Value;
+            bitDropdown.TakeFromCascade(nameof(ItemsProviderDebounceTime), ItemsProviderDebounceTime.Value, static d => d.ItemsProviderDebounceTime, static (d, v) => d.ItemsProviderDebounceTime = v);
         }
 
-        if (Label.HasValue() && bitDropdown.HasNotBeenSet(nameof(Label)))
+        if (Label.HasValue())
         {
-            bitDropdown.Label = Label;
+            bitDropdown.TakeFromCascade(nameof(Label), Label, static d => d.Label, static (d, v) => d.Label = v);
         }
 
-        if (LoadingText.HasValue() && bitDropdown.HasNotBeenSet(nameof(LoadingText)))
+        if (LoadingText.HasValue())
         {
-            bitDropdown.LoadingText = LoadingText;
+            bitDropdown.TakeFromCascade(nameof(LoadingText), LoadingText, static d => d.LoadingText, static (d, v) => d.LoadingText = v);
         }
 
-        if (MaxDisplayedItems.HasValue && bitDropdown.HasNotBeenSet(nameof(MaxDisplayedItems)))
+        if (MaxDisplayedItems.HasValue)
         {
-            bitDropdown.MaxDisplayedItems = MaxDisplayedItems.Value;
+            bitDropdown.TakeFromCascade(nameof(MaxDisplayedItems), MaxDisplayedItems.Value, static d => d.MaxDisplayedItems, static (d, v) => d.MaxDisplayedItems = v);
         }
 
-        if (MaxHeight.HasValue && bitDropdown.HasNotBeenSet(nameof(MaxHeight)))
+        if (MaxHeight.HasValue)
         {
-            bitDropdown.MaxHeight = MaxHeight.Value;
+            bitDropdown.TakeFromCascade(nameof(MaxHeight), MaxHeight.Value, static d => d.MaxHeight, static (d, v) => d.MaxHeight = v);
         }
 
-        if (MaxSelectedItems.HasValue && bitDropdown.HasNotBeenSet(nameof(MaxSelectedItems)))
+        if (MaxSelectedItems.HasValue)
         {
-            bitDropdown.MaxSelectedItems = MaxSelectedItems.Value;
+            bitDropdown.TakeFromCascade(nameof(MaxSelectedItems), MaxSelectedItems.Value, static d => d.MaxSelectedItems, static (d, v) => d.MaxSelectedItems = v);
         }
 
-        if (MaxSelectedItemsText.HasValue() && bitDropdown.HasNotBeenSet(nameof(MaxSelectedItemsText)))
+        if (MaxSelectedItemsText.HasValue())
         {
-            bitDropdown.MaxSelectedItemsText = MaxSelectedItemsText;
+            bitDropdown.TakeFromCascade(nameof(MaxSelectedItemsText), MaxSelectedItemsText, static d => d.MaxSelectedItemsText, static (d, v) => d.MaxSelectedItemsText = v);
         }
 
-        if (MinSearchLength.HasValue && bitDropdown.HasNotBeenSet(nameof(MinSearchLength)))
+        if (MinSearchLength.HasValue)
         {
-            bitDropdown.MinSearchLength = MinSearchLength.Value;
+            bitDropdown.TakeFromCascade(nameof(MinSearchLength), MinSearchLength.Value, static d => d.MinSearchLength, static (d, v) => d.MinSearchLength = v);
         }
 
-        if (MinSearchLengthText.HasValue() && bitDropdown.HasNotBeenSet(nameof(MinSearchLengthText)))
+        if (MinSearchLengthText.HasValue())
         {
-            bitDropdown.MinSearchLengthText = MinSearchLengthText;
+            bitDropdown.TakeFromCascade(nameof(MinSearchLengthText), MinSearchLengthText, static d => d.MinSearchLengthText, static (d, v) => d.MinSearchLengthText = v);
         }
 
-        if (MultiSelect.HasValue && bitDropdown.HasNotBeenSet(nameof(MultiSelect)))
+        if (MultiSelect.HasValue)
         {
-            bitDropdown.MultiSelect = MultiSelect.Value;
+            bitDropdown.TakeFromCascade(nameof(MultiSelect), MultiSelect.Value, static d => d.MultiSelect, static (d, v) => d.MultiSelect = v);
         }
 
-        if (MultiSelectDelimiter.HasValue() && bitDropdown.HasNotBeenSet(nameof(MultiSelectDelimiter)))
+        if (MultiSelectDelimiter.HasValue())
         {
-            bitDropdown.MultiSelectDelimiter = MultiSelectDelimiter;
+            bitDropdown.TakeFromCascade(nameof(MultiSelectDelimiter), MultiSelectDelimiter!, static d => d.MultiSelectDelimiter, static (d, v) => d.MultiSelectDelimiter = v);
         }
 
-        if (NameSelectors is not null && bitDropdown.HasNotBeenSet(nameof(NameSelectors)))
+        if (NameSelectors is not null)
         {
-            bitDropdown.NameSelectors = NameSelectors;
+            bitDropdown.TakeFromCascade(nameof(NameSelectors), NameSelectors, static d => d.NameSelectors, static (d, v) => d.NameSelectors = v);
         }
 
-        if (NoBorder.HasValue && bitDropdown.HasNotBeenSet(nameof(NoBorder)) && bitDropdown.NoBorder != NoBorder)
+        if (NoBorder.HasValue)
         {
-            bitDropdown.NoBorder = NoBorder.Value;
-
-            bitDropdown.ClassBuilder.Reset();
+            bitDropdown.TakeFromCascade(nameof(NoBorder), NoBorder.Value, static d => d.NoBorder, static (d, v) => d.NoBorder = v);
         }
 
-        if (NoResultsText.HasValue() && bitDropdown.HasNotBeenSet(nameof(NoResultsText)))
+        if (NoResultsText.HasValue())
         {
-            bitDropdown.NoResultsText = NoResultsText;
+            bitDropdown.TakeFromCascade(nameof(NoResultsText), NoResultsText, static d => d.NoResultsText, static (d, v) => d.NoResultsText = v);
         }
 
-        if (NoWrapNavigation.HasValue && bitDropdown.HasNotBeenSet(nameof(NoWrapNavigation)))
+        if (NoWrapNavigation.HasValue)
         {
-            bitDropdown.NoWrapNavigation = NoWrapNavigation.Value;
+            bitDropdown.TakeFromCascade(nameof(NoWrapNavigation), NoWrapNavigation.Value, static d => d.NoWrapNavigation, static (d, v) => d.NoWrapNavigation = v);
         }
 
-        if (OpenOnFocus.HasValue && bitDropdown.HasNotBeenSet(nameof(OpenOnFocus)))
+        if (OpenOnFocus.HasValue)
         {
-            bitDropdown.OpenOnFocus = OpenOnFocus.Value;
+            bitDropdown.TakeFromCascade(nameof(OpenOnFocus), OpenOnFocus.Value, static d => d.OpenOnFocus, static (d, v) => d.OpenOnFocus = v);
         }
 
-        if (OverflowTextFormat.HasValue() && bitDropdown.HasNotBeenSet(nameof(OverflowTextFormat)))
+        if (OverflowTextFormat.HasValue())
         {
-            bitDropdown.OverflowTextFormat = OverflowTextFormat;
+            bitDropdown.TakeFromCascade(nameof(OverflowTextFormat), OverflowTextFormat, static d => d.OverflowTextFormat, static (d, v) => d.OverflowTextFormat = v);
         }
 
-        if (OverscanCount.HasValue && bitDropdown.HasNotBeenSet(nameof(OverscanCount)))
+        if (OverscanCount.HasValue)
         {
-            bitDropdown.OverscanCount = OverscanCount.Value;
+            bitDropdown.TakeFromCascade(nameof(OverscanCount), OverscanCount.Value, static d => d.OverscanCount, static (d, v) => d.OverscanCount = v);
         }
 
-        if (Placeholder.HasValue() && bitDropdown.HasNotBeenSet(nameof(Placeholder)))
+        if (Placeholder.HasValue())
         {
-            bitDropdown.Placeholder = Placeholder;
+            bitDropdown.TakeFromCascade(nameof(Placeholder), Placeholder, static d => d.Placeholder, static (d, v) => d.Placeholder = v);
         }
 
-        if (Prefix.HasValue() && bitDropdown.HasNotBeenSet(nameof(Prefix)))
+        if (Prefix.HasValue())
         {
-            bitDropdown.Prefix = Prefix;
+            bitDropdown.TakeFromCascade(nameof(Prefix), Prefix, static d => d.Prefix, static (d, v) => d.Prefix = v);
         }
 
-        if (PreserveCalloutWidth.HasValue && bitDropdown.HasNotBeenSet(nameof(PreserveCalloutWidth)))
+        if (PreserveCalloutWidth.HasValue)
         {
-            bitDropdown.PreserveCalloutWidth = PreserveCalloutWidth.Value;
+            bitDropdown.TakeFromCascade(nameof(PreserveCalloutWidth), PreserveCalloutWidth.Value, static d => d.PreserveCalloutWidth, static (d, v) => d.PreserveCalloutWidth = v);
         }
 
-        if (Reselectable.HasValue && bitDropdown.HasNotBeenSet(nameof(Reselectable)))
+        if (Reselectable.HasValue)
         {
-            bitDropdown.Reselectable = Reselectable.Value;
+            bitDropdown.TakeFromCascade(nameof(Reselectable), Reselectable.Value, static d => d.Reselectable, static (d, v) => d.Reselectable = v);
         }
 
-        if (Responsive.HasValue && bitDropdown.HasNotBeenSet(nameof(Responsive)))
+        if (Responsive.HasValue)
         {
-            bitDropdown.Responsive = Responsive.Value;
+            bitDropdown.TakeFromCascade(nameof(Responsive), Responsive.Value, static d => d.Responsive, static (d, v) => d.Responsive = v);
         }
 
-        if (ResponsiveCloseButtonAriaLabel.HasValue() && bitDropdown.HasNotBeenSet(nameof(ResponsiveCloseButtonAriaLabel)))
+        if (ResponsiveCloseButtonAriaLabel.HasValue())
         {
-            bitDropdown.ResponsiveCloseButtonAriaLabel = ResponsiveCloseButtonAriaLabel;
+            bitDropdown.TakeFromCascade(nameof(ResponsiveCloseButtonAriaLabel), ResponsiveCloseButtonAriaLabel, static d => d.ResponsiveCloseButtonAriaLabel, static (d, v) => d.ResponsiveCloseButtonAriaLabel = v);
         }
 
-        if (ResponsiveCloseIcon is not null && bitDropdown.HasNotBeenSet(nameof(ResponsiveCloseIcon)))
+        if (ResponsiveCloseIcon is not null)
         {
-            bitDropdown.ResponsiveCloseIcon = ResponsiveCloseIcon;
+            bitDropdown.TakeFromCascade(nameof(ResponsiveCloseIcon), ResponsiveCloseIcon, static d => d.ResponsiveCloseIcon, static (d, v) => d.ResponsiveCloseIcon = v);
         }
 
-        if (ResponsiveCloseIconName.HasValue() && bitDropdown.HasNotBeenSet(nameof(ResponsiveCloseIconName)))
+        if (ResponsiveCloseIconName.HasValue())
         {
-            bitDropdown.ResponsiveCloseIconName = ResponsiveCloseIconName;
+            bitDropdown.TakeFromCascade(nameof(ResponsiveCloseIconName), ResponsiveCloseIconName, static d => d.ResponsiveCloseIconName, static (d, v) => d.ResponsiveCloseIconName = v);
         }
 
-        if (SearchBoxAriaLabel.HasValue() && bitDropdown.HasNotBeenSet(nameof(SearchBoxAriaLabel)))
+        if (SearchBoxAriaLabel.HasValue())
         {
-            bitDropdown.SearchBoxAriaLabel = SearchBoxAriaLabel;
+            bitDropdown.TakeFromCascade(nameof(SearchBoxAriaLabel), SearchBoxAriaLabel, static d => d.SearchBoxAriaLabel, static (d, v) => d.SearchBoxAriaLabel = v);
         }
 
-        if (SearchBoxClearButtonAriaLabel.HasValue() && bitDropdown.HasNotBeenSet(nameof(SearchBoxClearButtonAriaLabel)))
+        if (SearchBoxClearButtonAriaLabel.HasValue())
         {
-            bitDropdown.SearchBoxClearButtonAriaLabel = SearchBoxClearButtonAriaLabel;
+            bitDropdown.TakeFromCascade(nameof(SearchBoxClearButtonAriaLabel), SearchBoxClearButtonAriaLabel, static d => d.SearchBoxClearButtonAriaLabel, static (d, v) => d.SearchBoxClearButtonAriaLabel = v);
         }
 
-        if (SearchBoxClearIcon is not null && bitDropdown.HasNotBeenSet(nameof(SearchBoxClearIcon)))
+        if (SearchBoxClearIcon is not null)
         {
-            bitDropdown.SearchBoxClearIcon = SearchBoxClearIcon;
+            bitDropdown.TakeFromCascade(nameof(SearchBoxClearIcon), SearchBoxClearIcon, static d => d.SearchBoxClearIcon, static (d, v) => d.SearchBoxClearIcon = v);
         }
 
-        if (SearchBoxClearIconName.HasValue() && bitDropdown.HasNotBeenSet(nameof(SearchBoxClearIconName)))
+        if (SearchBoxClearIconName.HasValue())
         {
-            bitDropdown.SearchBoxClearIconName = SearchBoxClearIconName;
+            bitDropdown.TakeFromCascade(nameof(SearchBoxClearIconName), SearchBoxClearIconName, static d => d.SearchBoxClearIconName, static (d, v) => d.SearchBoxClearIconName = v);
         }
 
-        if (SearchBoxIcon is not null && bitDropdown.HasNotBeenSet(nameof(SearchBoxIcon)))
+        if (SearchBoxIcon is not null)
         {
-            bitDropdown.SearchBoxIcon = SearchBoxIcon;
+            bitDropdown.TakeFromCascade(nameof(SearchBoxIcon), SearchBoxIcon, static d => d.SearchBoxIcon, static (d, v) => d.SearchBoxIcon = v);
         }
 
-        if (SearchBoxIconName.HasValue() && bitDropdown.HasNotBeenSet(nameof(SearchBoxIconName)))
+        if (SearchBoxIconName.HasValue())
         {
-            bitDropdown.SearchBoxIconName = SearchBoxIconName;
+            bitDropdown.TakeFromCascade(nameof(SearchBoxIconName), SearchBoxIconName, static d => d.SearchBoxIconName, static (d, v) => d.SearchBoxIconName = v);
         }
 
-        if (SearchBoxPlaceholder.HasValue() && bitDropdown.HasNotBeenSet(nameof(SearchBoxPlaceholder)))
+        if (SearchBoxPlaceholder.HasValue())
         {
-            bitDropdown.SearchBoxPlaceholder = SearchBoxPlaceholder;
+            bitDropdown.TakeFromCascade(nameof(SearchBoxPlaceholder), SearchBoxPlaceholder, static d => d.SearchBoxPlaceholder, static (d, v) => d.SearchBoxPlaceholder = v);
         }
 
-        if (SearchFunction is not null && bitDropdown.HasNotBeenSet(nameof(SearchFunction)))
+        if (SearchFunction is not null)
         {
-            bitDropdown.SearchFunction = SearchFunction;
+            bitDropdown.TakeFromCascade(nameof(SearchFunction), SearchFunction, static d => d.SearchFunction, static (d, v) => d.SearchFunction = v);
         }
 
-        if (SearchIgnoreDiacritics.HasValue && bitDropdown.HasNotBeenSet(nameof(SearchIgnoreDiacritics)))
+        if (SearchIgnoreDiacritics.HasValue)
         {
-            bitDropdown.SearchIgnoreDiacritics = SearchIgnoreDiacritics.Value;
+            bitDropdown.TakeFromCascade(nameof(SearchIgnoreDiacritics), SearchIgnoreDiacritics.Value, static d => d.SearchIgnoreDiacritics, static (d, v) => d.SearchIgnoreDiacritics = v);
         }
 
-        if (SearchMode.HasValue && bitDropdown.HasNotBeenSet(nameof(SearchMode)))
+        if (SearchMode.HasValue)
         {
-            bitDropdown.SearchMode = SearchMode.Value;
+            bitDropdown.TakeFromCascade(nameof(SearchMode), SearchMode.Value, static d => d.SearchMode, static (d, v) => d.SearchMode = v);
         }
 
-        if (SearchResultsText.HasValue() && bitDropdown.HasNotBeenSet(nameof(SearchResultsText)))
+        if (SearchResultsText.HasValue())
         {
-            bitDropdown.SearchResultsText = SearchResultsText;
+            bitDropdown.TakeFromCascade(nameof(SearchResultsText), SearchResultsText, static d => d.SearchResultsText, static (d, v) => d.SearchResultsText = v);
         }
 
-        if (SelectAllText.HasValue() && bitDropdown.HasNotBeenSet(nameof(SelectAllText)))
+        if (SelectAllText.HasValue())
         {
-            bitDropdown.SelectAllText = SelectAllText;
+            bitDropdown.TakeFromCascade(nameof(SelectAllText), SelectAllText, static d => d.SelectAllText, static (d, v) => d.SelectAllText = v);
         }
 
-        if (SelectedItemsTextFormat.HasValue() && bitDropdown.HasNotBeenSet(nameof(SelectedItemsTextFormat)))
+        if (SelectedItemsTextFormat.HasValue())
         {
-            bitDropdown.SelectedItemsTextFormat = SelectedItemsTextFormat;
+            bitDropdown.TakeFromCascade(nameof(SelectedItemsTextFormat), SelectedItemsTextFormat, static d => d.SelectedItemsTextFormat, static (d, v) => d.SelectedItemsTextFormat = v);
         }
 
-        if (SelectTextOnFocus.HasValue && bitDropdown.HasNotBeenSet(nameof(SelectTextOnFocus)))
+        if (SelectTextOnFocus.HasValue)
         {
-            bitDropdown.SelectTextOnFocus = SelectTextOnFocus.Value;
+            bitDropdown.TakeFromCascade(nameof(SelectTextOnFocus), SelectTextOnFocus.Value, static d => d.SelectTextOnFocus, static (d, v) => d.SelectTextOnFocus = v);
         }
 
-        if (ShowClearButton.HasValue && bitDropdown.HasNotBeenSet(nameof(ShowClearButton)))
+        if (ShowClearButton.HasValue)
         {
-            bitDropdown.ShowClearButton = ShowClearButton.Value;
+            bitDropdown.TakeFromCascade(nameof(ShowClearButton), ShowClearButton.Value, static d => d.ShowClearButton, static (d, v) => d.ShowClearButton = v);
         }
 
-        if (ShowSearchBox.HasValue && bitDropdown.HasNotBeenSet(nameof(ShowSearchBox)))
+        if (ShowSearchBox.HasValue)
         {
-            bitDropdown.ShowSearchBox = ShowSearchBox.Value;
+            bitDropdown.TakeFromCascade(nameof(ShowSearchBox), ShowSearchBox.Value, static d => d.ShowSearchBox, static (d, v) => d.ShowSearchBox = v);
         }
 
-        if (ShowSelectAll.HasValue && bitDropdown.HasNotBeenSet(nameof(ShowSelectAll)))
+        if (ShowSelectAll.HasValue)
         {
-            bitDropdown.ShowSelectAll = ShowSelectAll.Value;
+            bitDropdown.TakeFromCascade(nameof(ShowSelectAll), ShowSelectAll.Value, static d => d.ShowSelectAll, static (d, v) => d.ShowSelectAll = v);
         }
 
-        if (Size.HasValue && bitDropdown.HasNotBeenSet(nameof(Size)) && bitDropdown.Size != Size)
+        if (Size.HasValue)
         {
-            bitDropdown.Size = Size.Value;
-
-            bitDropdown.ClassBuilder.Reset();
+            bitDropdown.TakeFromCascade(nameof(Size), Size.Value, static d => d.Size, static (d, v) => d.Size = v);
         }
 
-        if (StickyHeaders.HasValue && bitDropdown.HasNotBeenSet(nameof(StickyHeaders)))
+        if (StickyHeaders.HasValue)
         {
-            bitDropdown.StickyHeaders = StickyHeaders.Value;
+            bitDropdown.TakeFromCascade(nameof(StickyHeaders), StickyHeaders.Value, static d => d.StickyHeaders, static (d, v) => d.StickyHeaders = v);
         }
 
-        if (Styles is not null && bitDropdown.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitDropdown.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitDropdown.Styles = Styles;
-
-            bitDropdown.StyleBuilder.Reset();
+            bitDropdown.TakeFromCascade(nameof(Styles), Styles, static d => d.Styles, static (d, v) => d.Styles = v);
         }
 
-        if (Suffix.HasValue() && bitDropdown.HasNotBeenSet(nameof(Suffix)))
+        if (Suffix.HasValue())
         {
-            bitDropdown.Suffix = Suffix;
+            bitDropdown.TakeFromCascade(nameof(Suffix), Suffix, static d => d.Suffix, static (d, v) => d.Suffix = v);
         }
 
-        if (ThrottleTime.HasValue && bitDropdown.HasNotBeenSet(nameof(ThrottleTime)))
+        if (ThrottleTime.HasValue)
         {
-            bitDropdown.ThrottleTime = ThrottleTime.Value;
+            bitDropdown.TakeFromCascade(nameof(ThrottleTime), ThrottleTime.Value, static d => d.ThrottleTime, static (d, v) => d.ThrottleTime = v);
         }
 
-        if (Title.HasValue() && bitDropdown.HasNotBeenSet(nameof(Title)))
+        if (Title.HasValue())
         {
-            bitDropdown.Title = Title;
+            bitDropdown.TakeFromCascade(nameof(Title), Title, static d => d.Title, static (d, v) => d.Title = v);
         }
 
-        if (TokenSeparators is not null && bitDropdown.HasNotBeenSet(nameof(TokenSeparators)))
+        if (TokenSeparators is not null)
         {
-            bitDropdown.TokenSeparators = TokenSeparators;
+            bitDropdown.TakeFromCascade(nameof(TokenSeparators), TokenSeparators, static d => d.TokenSeparators, static (d, v) => d.TokenSeparators = v);
         }
 
-        if (Transparent.HasValue && bitDropdown.HasNotBeenSet(nameof(Transparent)) && bitDropdown.Transparent != Transparent)
+        if (Transparent.HasValue)
         {
-            bitDropdown.Transparent = Transparent.Value;
-
-            bitDropdown.ClassBuilder.Reset();
+            bitDropdown.TakeFromCascade(nameof(Transparent), Transparent.Value, static d => d.Transparent, static (d, v) => d.Transparent = v);
         }
 
-        if (Underlined.HasValue && bitDropdown.HasNotBeenSet(nameof(Underlined)) && bitDropdown.Underlined != Underlined)
+        if (Underlined.HasValue)
         {
-            bitDropdown.Underlined = Underlined.Value;
-
-            bitDropdown.ClassBuilder.Reset();
+            bitDropdown.TakeFromCascade(nameof(Underlined), Underlined.Value, static d => d.Underlined, static (d, v) => d.Underlined = v);
         }
 
-        if (ValueComparer is not null && bitDropdown.HasNotBeenSet(nameof(ValueComparer)))
+        if (ValueComparer is not null)
         {
-            bitDropdown.ValueComparer = ValueComparer;
+            bitDropdown.TakeFromCascade(nameof(ValueComparer), ValueComparer, static d => d.ValueComparer, static (d, v) => d.ValueComparer = v);
         }
 
-        if (Virtualize.HasValue && bitDropdown.HasNotBeenSet(nameof(Virtualize)))
+        if (Virtualize.HasValue)
         {
-            bitDropdown.Virtualize = Virtualize.Value;
+            bitDropdown.TakeFromCascade(nameof(Virtualize), Virtualize.Value, static d => d.Virtualize, static (d, v) => d.Virtualize = v);
         }
     }
 }

@@ -70,34 +70,34 @@ public class BitElementParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitElement);
 
-        if (Element.HasValue() && bitElement.HasNotBeenSet(nameof(Element)))
+        if (Element.HasValue())
         {
-            bitElement.Element = Element;
+            bitElement.TakeFromCascade(nameof(Element), Element, static e => e.Element, static (e, v) => e.Element = v);
         }
 
-        if (NoWrapper.HasValue && bitElement.HasNotBeenSet(nameof(NoWrapper)))
+        if (NoWrapper.HasValue)
         {
-            bitElement.NoWrapper = NoWrapper.Value;
+            bitElement.TakeFromCascade(nameof(NoWrapper), NoWrapper.Value, static e => e.NoWrapper, static (e, v) => e.NoWrapper = v);
         }
 
-        if (PreventDefault.HasValue && bitElement.HasNotBeenSet(nameof(PreventDefault)))
+        if (PreventDefault.HasValue)
         {
-            bitElement.PreventDefault = PreventDefault.Value;
+            bitElement.TakeFromCascade(nameof(PreventDefault), PreventDefault.Value, static e => e.PreventDefault, static (e, v) => e.PreventDefault = v);
         }
 
-        if (PreventDefaultEvents is not null && bitElement.HasNotBeenSet(nameof(PreventDefaultEvents)))
+        if (PreventDefaultEvents is not null)
         {
-            bitElement.PreventDefaultEvents = PreventDefaultEvents;
+            bitElement.TakeFromCascade(nameof(PreventDefaultEvents), PreventDefaultEvents, static e => e.PreventDefaultEvents, static (e, v) => e.PreventDefaultEvents = v);
         }
 
-        if (StopPropagation.HasValue && bitElement.HasNotBeenSet(nameof(StopPropagation)))
+        if (StopPropagation.HasValue)
         {
-            bitElement.StopPropagation = StopPropagation.Value;
+            bitElement.TakeFromCascade(nameof(StopPropagation), StopPropagation.Value, static e => e.StopPropagation, static (e, v) => e.StopPropagation = v);
         }
 
-        if (StopPropagationEvents is not null && bitElement.HasNotBeenSet(nameof(StopPropagationEvents)))
+        if (StopPropagationEvents is not null)
         {
-            bitElement.StopPropagationEvents = StopPropagationEvents;
+            bitElement.TakeFromCascade(nameof(StopPropagationEvents), StopPropagationEvents, static e => e.StopPropagationEvents, static (e, v) => e.StopPropagationEvents = v);
         }
     }
 }

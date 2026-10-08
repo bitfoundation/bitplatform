@@ -207,175 +207,164 @@ public class BitPdfViewerParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitPdfViewer);
 
-        if (AllowDropFile.HasValue && bitPdfViewer.HasNotBeenSet(nameof(AllowDropFile)))
+        if (AllowDropFile.HasValue)
         {
-            bitPdfViewer.AllowDropFile = AllowDropFile.Value;
+            bitPdfViewer.TakeFromCascade(nameof(AllowDropFile), AllowDropFile.Value, static p => p.AllowDropFile, static (p, v) => p.AllowDropFile = v);
         }
 
-        if (BackgroundRendering.HasValue && bitPdfViewer.HasNotBeenSet(nameof(BackgroundRendering)))
+        if (BackgroundRendering.HasValue)
         {
-            bitPdfViewer.BackgroundRendering = BackgroundRendering.Value;
+            bitPdfViewer.TakeFromCascade(nameof(BackgroundRendering), BackgroundRendering.Value, static p => p.BackgroundRendering, static (p, v) => p.BackgroundRendering = v);
         }
 
-        // This runs on every render of every viewer under the BitParams, so the values that drive the class or the
-        // style of the root are only assigned - and the builder only reset - when they differ from the ones the
-        // viewer already holds: an unchanged one would rebuild both strings on every render for nothing.
-        if (Classes is not null && bitPdfViewer.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitPdfViewer.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitPdfViewer.Classes = Classes;
-
-            bitPdfViewer.ClassBuilder.Reset();
+            bitPdfViewer.TakeFromCascade(nameof(Classes), Classes, static p => p.Classes, static (p, v) => p.Classes = v);
         }
 
-        if (CursorTool.HasValue && bitPdfViewer.HasNotBeenSet(nameof(CursorTool)))
+        if (CursorTool.HasValue)
         {
-            bitPdfViewer.CursorTool = CursorTool.Value;
+            bitPdfViewer.TakeFromCascade(nameof(CursorTool), CursorTool.Value, static p => p.CursorTool, static (p, v) => p.CursorTool = v);
         }
 
-        if (DefaultSidebar.HasValue && bitPdfViewer.HasNotBeenSet(nameof(DefaultSidebar)))
+        if (DefaultSidebar.HasValue)
         {
-            bitPdfViewer.DefaultSidebar = DefaultSidebar.Value;
+            bitPdfViewer.TakeFromCascade(nameof(DefaultSidebar), DefaultSidebar.Value, static p => p.DefaultSidebar, static (p, v) => p.DefaultSidebar = v);
         }
 
-        if (EmptyTemplate is not null && bitPdfViewer.HasNotBeenSet(nameof(EmptyTemplate)))
+        if (EmptyTemplate is not null)
         {
-            bitPdfViewer.EmptyTemplate = EmptyTemplate;
+            bitPdfViewer.TakeFromCascade(nameof(EmptyTemplate), EmptyTemplate, static p => p.EmptyTemplate, static (p, v) => p.EmptyTemplate = v);
         }
 
-        if (EnableKeyboardShortcuts.HasValue && bitPdfViewer.HasNotBeenSet(nameof(EnableKeyboardShortcuts)))
+        if (EnableKeyboardShortcuts.HasValue)
         {
-            bitPdfViewer.EnableKeyboardShortcuts = EnableKeyboardShortcuts.Value;
+            bitPdfViewer.TakeFromCascade(nameof(EnableKeyboardShortcuts), EnableKeyboardShortcuts.Value, static p => p.EnableKeyboardShortcuts, static (p, v) => p.EnableKeyboardShortcuts = v);
         }
 
-        if (ErrorTemplate is not null && bitPdfViewer.HasNotBeenSet(nameof(ErrorTemplate)))
+        if (ErrorTemplate is not null)
         {
-            bitPdfViewer.ErrorTemplate = ErrorTemplate;
+            bitPdfViewer.TakeFromCascade(nameof(ErrorTemplate), ErrorTemplate, static p => p.ErrorTemplate, static (p, v) => p.ErrorTemplate = v);
         }
 
-        if (Height is not null && bitPdfViewer.HasNotBeenSet(nameof(Height)) && bitPdfViewer.Height != Height)
+        if (Height is not null)
         {
-            bitPdfViewer.Height = Height;
-
-            bitPdfViewer.StyleBuilder.Reset();
+            bitPdfViewer.TakeFromCascade(nameof(Height), Height, static p => p.Height, static (p, v) => p.Height = v);
         }
 
-        if (InitialZoomMode.HasValue && bitPdfViewer.HasNotBeenSet(nameof(InitialZoomMode)))
+        if (InitialZoomMode.HasValue)
         {
-            bitPdfViewer.InitialZoomMode = InitialZoomMode.Value;
+            bitPdfViewer.TakeFromCascade(nameof(InitialZoomMode), InitialZoomMode.Value, static p => p.InitialZoomMode, static (p, v) => p.InitialZoomMode = v);
         }
 
-        if (LoadingTemplate is not null && bitPdfViewer.HasNotBeenSet(nameof(LoadingTemplate)))
+        if (LoadingTemplate is not null)
         {
-            bitPdfViewer.LoadingTemplate = LoadingTemplate;
+            bitPdfViewer.TakeFromCascade(nameof(LoadingTemplate), LoadingTemplate, static p => p.LoadingTemplate, static (p, v) => p.LoadingTemplate = v);
         }
 
-        if (MaxOpenFileSize.HasValue && bitPdfViewer.HasNotBeenSet(nameof(MaxOpenFileSize)))
+        if (MaxOpenFileSize.HasValue)
         {
-            bitPdfViewer.MaxOpenFileSize = MaxOpenFileSize.Value;
+            bitPdfViewer.TakeFromCascade(nameof(MaxOpenFileSize), MaxOpenFileSize.Value, static p => p.MaxOpenFileSize, static (p, v) => p.MaxOpenFileSize = v);
         }
 
-        if (MaxRenderedPageCount.HasValue && bitPdfViewer.HasNotBeenSet(nameof(MaxRenderedPageCount)))
+        if (MaxRenderedPageCount.HasValue)
         {
-            bitPdfViewer.MaxRenderedPageCount = MaxRenderedPageCount.Value;
+            bitPdfViewer.TakeFromCascade(nameof(MaxRenderedPageCount), MaxRenderedPageCount.Value, static p => p.MaxRenderedPageCount, static (p, v) => p.MaxRenderedPageCount = v);
         }
 
-        if (MaxRenderedThumbnailCount.HasValue && bitPdfViewer.HasNotBeenSet(nameof(MaxRenderedThumbnailCount)))
+        if (MaxRenderedThumbnailCount.HasValue)
         {
-            bitPdfViewer.MaxRenderedThumbnailCount = MaxRenderedThumbnailCount.Value;
+            bitPdfViewer.TakeFromCascade(nameof(MaxRenderedThumbnailCount), MaxRenderedThumbnailCount.Value, static p => p.MaxRenderedThumbnailCount, static (p, v) => p.MaxRenderedThumbnailCount = v);
         }
 
-        if (MaxZoom.HasValue && bitPdfViewer.HasNotBeenSet(nameof(MaxZoom)))
+        if (MaxZoom.HasValue)
         {
-            bitPdfViewer.MaxZoom = MaxZoom.Value;
+            bitPdfViewer.TakeFromCascade(nameof(MaxZoom), MaxZoom.Value, static p => p.MaxZoom, static (p, v) => p.MaxZoom = v);
         }
 
-        if (MinZoom.HasValue && bitPdfViewer.HasNotBeenSet(nameof(MinZoom)))
+        if (MinZoom.HasValue)
         {
-            bitPdfViewer.MinZoom = MinZoom.Value;
+            bitPdfViewer.TakeFromCascade(nameof(MinZoom), MinZoom.Value, static p => p.MinZoom, static (p, v) => p.MinZoom = v);
         }
 
-        if (OnPasswordRequested is not null && bitPdfViewer.HasNotBeenSet(nameof(OnPasswordRequested)))
+        if (OnPasswordRequested is not null)
         {
-            bitPdfViewer.OnPasswordRequested = OnPasswordRequested;
+            bitPdfViewer.TakeFromCascade(nameof(OnPasswordRequested), OnPasswordRequested, static p => p.OnPasswordRequested, static (p, v) => p.OnPasswordRequested = v);
         }
 
-        if (RenderMode.HasValue && bitPdfViewer.HasNotBeenSet(nameof(RenderMode)))
+        if (RenderMode.HasValue)
         {
-            bitPdfViewer.RenderMode = RenderMode.Value;
+            bitPdfViewer.TakeFromCascade(nameof(RenderMode), RenderMode.Value, static p => p.RenderMode, static (p, v) => p.RenderMode = v);
         }
 
-        if (RespectPermissions.HasValue && bitPdfViewer.HasNotBeenSet(nameof(RespectPermissions)))
+        if (RespectPermissions.HasValue)
         {
-            bitPdfViewer.RespectPermissions = RespectPermissions.Value;
+            bitPdfViewer.TakeFromCascade(nameof(RespectPermissions), RespectPermissions.Value, static p => p.RespectPermissions, static (p, v) => p.RespectPermissions = v);
         }
 
-        if (ScrollMode.HasValue && bitPdfViewer.HasNotBeenSet(nameof(ScrollMode)))
+        if (ScrollMode.HasValue)
         {
-            bitPdfViewer.ScrollMode = ScrollMode.Value;
+            bitPdfViewer.TakeFromCascade(nameof(ScrollMode), ScrollMode.Value, static p => p.ScrollMode, static (p, v) => p.ScrollMode = v);
         }
 
-        if (ShowPasswordPrompt.HasValue && bitPdfViewer.HasNotBeenSet(nameof(ShowPasswordPrompt)))
+        if (ShowPasswordPrompt.HasValue)
         {
-            bitPdfViewer.ShowPasswordPrompt = ShowPasswordPrompt.Value;
+            bitPdfViewer.TakeFromCascade(nameof(ShowPasswordPrompt), ShowPasswordPrompt.Value, static p => p.ShowPasswordPrompt, static (p, v) => p.ShowPasswordPrompt = v);
         }
 
-        if (ShowToolbar.HasValue && bitPdfViewer.HasNotBeenSet(nameof(ShowToolbar)))
+        if (ShowToolbar.HasValue)
         {
-            bitPdfViewer.ShowToolbar = ShowToolbar.Value;
+            bitPdfViewer.TakeFromCascade(nameof(ShowToolbar), ShowToolbar.Value, static p => p.ShowToolbar, static (p, v) => p.ShowToolbar = v);
         }
 
-        if (SpreadMode.HasValue && bitPdfViewer.HasNotBeenSet(nameof(SpreadMode)))
+        if (SpreadMode.HasValue)
         {
-            bitPdfViewer.SpreadMode = SpreadMode.Value;
+            bitPdfViewer.TakeFromCascade(nameof(SpreadMode), SpreadMode.Value, static p => p.SpreadMode, static (p, v) => p.SpreadMode = v);
         }
 
-        if (Styles is not null && bitPdfViewer.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitPdfViewer.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitPdfViewer.Styles = Styles;
-
-            bitPdfViewer.StyleBuilder.Reset();
+            bitPdfViewer.TakeFromCascade(nameof(Styles), Styles, static p => p.Styles, static (p, v) => p.Styles = v);
         }
 
-        if (TextCoalescing.HasValue && bitPdfViewer.HasNotBeenSet(nameof(TextCoalescing)))
+        if (TextCoalescing.HasValue)
         {
-            bitPdfViewer.TextCoalescing = TextCoalescing.Value;
+            bitPdfViewer.TakeFromCascade(nameof(TextCoalescing), TextCoalescing.Value, static p => p.TextCoalescing, static (p, v) => p.TextCoalescing = v);
         }
 
-        if (Texts is not null && bitPdfViewer.HasNotBeenSet(nameof(Texts)))
+        if (Texts is not null)
         {
-            bitPdfViewer.Texts = Texts;
+            bitPdfViewer.TakeFromCascade(nameof(Texts), Texts, static p => p.Texts, static (p, v) => p.Texts = v);
         }
 
-        if (ToolbarEndTemplate is not null && bitPdfViewer.HasNotBeenSet(nameof(ToolbarEndTemplate)))
+        if (ToolbarEndTemplate is not null)
         {
-            bitPdfViewer.ToolbarEndTemplate = ToolbarEndTemplate;
+            bitPdfViewer.TakeFromCascade(nameof(ToolbarEndTemplate), ToolbarEndTemplate, static p => p.ToolbarEndTemplate, static (p, v) => p.ToolbarEndTemplate = v);
         }
 
-        if (ToolbarItems.HasValue && bitPdfViewer.HasNotBeenSet(nameof(ToolbarItems)))
+        if (ToolbarItems.HasValue)
         {
-            bitPdfViewer.ToolbarItems = ToolbarItems.Value;
+            bitPdfViewer.TakeFromCascade(nameof(ToolbarItems), ToolbarItems.Value, static p => p.ToolbarItems, static (p, v) => p.ToolbarItems = v);
         }
 
-        if (ToolbarStartTemplate is not null && bitPdfViewer.HasNotBeenSet(nameof(ToolbarStartTemplate)))
+        if (ToolbarStartTemplate is not null)
         {
-            bitPdfViewer.ToolbarStartTemplate = ToolbarStartTemplate;
+            bitPdfViewer.TakeFromCascade(nameof(ToolbarStartTemplate), ToolbarStartTemplate, static p => p.ToolbarStartTemplate, static (p, v) => p.ToolbarStartTemplate = v);
         }
 
-        if (Width is not null && bitPdfViewer.HasNotBeenSet(nameof(Width)) && bitPdfViewer.Width != Width)
+        if (Width is not null)
         {
-            bitPdfViewer.Width = Width;
-
-            bitPdfViewer.StyleBuilder.Reset();
+            bitPdfViewer.TakeFromCascade(nameof(Width), Width, static p => p.Width, static (p, v) => p.Width = v);
         }
 
-        if (ZoomPresets is not null && bitPdfViewer.HasNotBeenSet(nameof(ZoomPresets)))
+        if (ZoomPresets is not null)
         {
-            bitPdfViewer.ZoomPresets = ZoomPresets;
+            bitPdfViewer.TakeFromCascade(nameof(ZoomPresets), ZoomPresets, static p => p.ZoomPresets, static (p, v) => p.ZoomPresets = v);
         }
 
-        if (ZoomStep.HasValue && bitPdfViewer.HasNotBeenSet(nameof(ZoomStep)))
+        if (ZoomStep.HasValue)
         {
-            bitPdfViewer.ZoomStep = ZoomStep.Value;
+            bitPdfViewer.TakeFromCascade(nameof(ZoomStep), ZoomStep.Value, static p => p.ZoomStep, static (p, v) => p.ZoomStep = v);
         }
     }
 }

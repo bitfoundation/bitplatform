@@ -123,120 +123,84 @@ public class BitIconParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitIcon);
 
-        if (Animation.HasValue && bitIcon.HasNotBeenSet(nameof(Animation)) && bitIcon.Animation != Animation)
+        if (Animation.HasValue)
         {
-            bitIcon.Animation = Animation.Value;
-
-            bitIcon.ClassBuilder.Reset();
+            bitIcon.TakeFromCascade(nameof(Animation), Animation.Value, static i => i.Animation, static (i, v) => i.Animation = v);
         }
 
-        if (AnimationDuration.HasValue() && bitIcon.HasNotBeenSet(nameof(AnimationDuration)) && bitIcon.AnimationDuration != AnimationDuration)
+        if (AnimationDuration.HasValue())
         {
-            bitIcon.AnimationDuration = AnimationDuration;
-
-            bitIcon.ClassBuilder.Reset();
-            bitIcon.StyleBuilder.Reset();
+            bitIcon.TakeFromCascade(nameof(AnimationDuration), AnimationDuration, static i => i.AnimationDuration, static (i, v) => i.AnimationDuration = v);
         }
 
-        if (AnimationDelay.HasValue() && bitIcon.HasNotBeenSet(nameof(AnimationDelay)) && bitIcon.AnimationDelay != AnimationDelay)
+        if (AnimationDelay.HasValue())
         {
-            bitIcon.AnimationDelay = AnimationDelay;
-
-            bitIcon.ClassBuilder.Reset();
-            bitIcon.StyleBuilder.Reset();
+            bitIcon.TakeFromCascade(nameof(AnimationDelay), AnimationDelay, static i => i.AnimationDelay, static (i, v) => i.AnimationDelay = v);
         }
 
-        if (AnimationIterationCount.HasValue && bitIcon.HasNotBeenSet(nameof(AnimationIterationCount)) && bitIcon.AnimationIterationCount != AnimationIterationCount)
+        if (AnimationIterationCount.HasValue)
         {
-            bitIcon.AnimationIterationCount = AnimationIterationCount.Value;
-
-            bitIcon.ClassBuilder.Reset();
-            bitIcon.StyleBuilder.Reset();
+            bitIcon.TakeFromCascade(nameof(AnimationIterationCount), AnimationIterationCount.Value, static i => i.AnimationIterationCount, static (i, v) => i.AnimationIterationCount = v);
         }
 
-        if (Circular.HasValue && bitIcon.HasNotBeenSet(nameof(Circular)) && bitIcon.Circular != Circular)
+        if (Circular.HasValue)
         {
-            bitIcon.Circular = Circular.Value;
-
-            bitIcon.ClassBuilder.Reset();
+            bitIcon.TakeFromCascade(nameof(Circular), Circular.Value, static i => i.Circular, static (i, v) => i.Circular = v);
         }
 
-        if (Color.HasValue && bitIcon.HasNotBeenSet(nameof(Color)) && bitIcon.Color != Color)
+        if (Color.HasValue)
         {
-            bitIcon.Color = Color.Value;
-
-            bitIcon.ClassBuilder.Reset();
+            bitIcon.TakeFromCascade(nameof(Color), Color.Value, static i => i.Color, static (i, v) => i.Color = v);
         }
 
-        if (FixedWidth.HasValue && bitIcon.HasNotBeenSet(nameof(FixedWidth)) && bitIcon.FixedWidth != FixedWidth)
+        if (FixedWidth.HasValue)
         {
-            bitIcon.FixedWidth = FixedWidth.Value;
-
-            bitIcon.ClassBuilder.Reset();
+            bitIcon.TakeFromCascade(nameof(FixedWidth), FixedWidth.Value, static i => i.FixedWidth, static (i, v) => i.FixedWidth = v);
         }
 
-        if (Flip.HasValue && bitIcon.HasNotBeenSet(nameof(Flip)) && bitIcon.Flip != Flip)
+        if (Flip.HasValue)
         {
-            bitIcon.Flip = Flip.Value;
-
-            bitIcon.ClassBuilder.Reset();
+            bitIcon.TakeFromCascade(nameof(Flip), Flip.Value, static i => i.Flip, static (i, v) => i.Flip = v);
         }
 
-        if (FlipRtl.HasValue && bitIcon.HasNotBeenSet(nameof(FlipRtl)) && bitIcon.FlipRtl != FlipRtl)
+        if (FlipRtl.HasValue)
         {
-            bitIcon.FlipRtl = FlipRtl.Value;
-
-            bitIcon.ClassBuilder.Reset();
+            bitIcon.TakeFromCascade(nameof(FlipRtl), FlipRtl.Value, static i => i.FlipRtl, static (i, v) => i.FlipRtl = v);
         }
 
-        if (FontSize.HasValue() && bitIcon.HasNotBeenSet(nameof(FontSize)) && bitIcon.FontSize != FontSize)
+        if (FontSize.HasValue())
         {
-            bitIcon.FontSize = FontSize;
-
-            bitIcon.StyleBuilder.Reset();
+            bitIcon.TakeFromCascade(nameof(FontSize), FontSize, static i => i.FontSize, static (i, v) => i.FontSize = v);
         }
 
-        if (IconResolver is not null && bitIcon.HasNotBeenSet(nameof(IconResolver)) && ReferenceEquals(bitIcon.IconResolver, IconResolver) is false)
+        if (IconResolver is not null)
         {
-            bitIcon.IconResolver = IconResolver;
-
-            bitIcon.ClassBuilder.Reset();
+            bitIcon.TakeFromCascade(nameof(IconResolver), IconResolver, static i => i.IconResolver, static (i, v) => i.IconResolver = v);
         }
 
-        if (Inline.HasValue && bitIcon.HasNotBeenSet(nameof(Inline)) && bitIcon.Inline != Inline)
+        if (Inline.HasValue)
         {
-            bitIcon.Inline = Inline.Value;
-
-            bitIcon.ClassBuilder.Reset();
+            bitIcon.TakeFromCascade(nameof(Inline), Inline.Value, static i => i.Inline, static (i, v) => i.Inline = v);
         }
 
-        if (Rotate.HasValue && bitIcon.HasNotBeenSet(nameof(Rotate)) && bitIcon.Rotate != Rotate)
+        if (Rotate.HasValue)
         {
-            bitIcon.Rotate = Rotate.Value;
-
-            bitIcon.ClassBuilder.Reset();
+            bitIcon.TakeFromCascade(nameof(Rotate), Rotate.Value, static i => i.Rotate, static (i, v) => i.Rotate = v);
         }
 
-        if (RotateAngle.HasValue && bitIcon.HasNotBeenSet(nameof(RotateAngle)) && bitIcon.RotateAngle != RotateAngle)
+        if (RotateAngle.HasValue)
         {
-            bitIcon.RotateAngle = RotateAngle.Value;
-
-            bitIcon.ClassBuilder.Reset();
-            bitIcon.StyleBuilder.Reset();
+            bitIcon.TakeFromCascade(nameof(RotateAngle), RotateAngle.Value, static i => i.RotateAngle, static (i, v) => i.RotateAngle = v);
         }
 
-        if (Size.HasValue && bitIcon.HasNotBeenSet(nameof(Size)) && bitIcon.Size != Size)
+        if (Size.HasValue)
         {
-            bitIcon.Size = Size.Value;
-
-            bitIcon.ClassBuilder.Reset();
+            bitIcon.TakeFromCascade(nameof(Size), Size.Value, static i => i.Size, static (i, v) => i.Size = v);
         }
 
-        if (Variant.HasValue && bitIcon.HasNotBeenSet(nameof(Variant)) && bitIcon.Variant != Variant)
+        if (Variant.HasValue)
         {
-            bitIcon.Variant = Variant.Value;
-
-            bitIcon.ClassBuilder.Reset();
+            bitIcon.TakeFromCascade(nameof(Variant), Variant.Value, static i => i.Variant, static (i, v) => i.Variant = v);
         }
     }
 }

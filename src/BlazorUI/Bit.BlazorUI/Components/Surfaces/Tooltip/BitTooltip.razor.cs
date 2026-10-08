@@ -468,35 +468,9 @@ public partial class BitTooltip : BitComponentBase
 
         ClassBuilder.Register(() => NoAnimation ? "bit-ttp-nan" : string.Empty);
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-ttp-sm",
-            BitSize.Medium => "bit-ttp-md",
-            BitSize.Large => "bit-ttp-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-ttp"));
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-ttp-pri",
-            BitColor.Secondary => "bit-ttp-sec",
-            BitColor.Tertiary => "bit-ttp-ter",
-            BitColor.Info => "bit-ttp-inf",
-            BitColor.Success => "bit-ttp-suc",
-            BitColor.Warning => "bit-ttp-wrn",
-            BitColor.SevereWarning => "bit-ttp-swr",
-            BitColor.Error => "bit-ttp-err",
-            BitColor.PrimaryBackground => "bit-ttp-pbg",
-            BitColor.SecondaryBackground => "bit-ttp-sbg",
-            BitColor.TertiaryBackground => "bit-ttp-tbg",
-            BitColor.PrimaryForeground => "bit-ttp-pfg",
-            BitColor.SecondaryForeground => "bit-ttp-sfg",
-            BitColor.TertiaryForeground => "bit-ttp-tfg",
-            BitColor.PrimaryBorder => "bit-ttp-pbr",
-            BitColor.SecondaryBorder => "bit-ttp-sbr",
-            BitColor.TertiaryBorder => "bit-ttp-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-ttp"));
     }
 
     protected override void RegisterCssStyles()

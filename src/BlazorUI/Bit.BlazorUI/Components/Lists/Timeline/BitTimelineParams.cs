@@ -117,95 +117,69 @@ public class BitTimelineParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitTimeline);
 
-        if (Alternate.HasValue && bitTimeline.HasNotBeenSet(nameof(Alternate)) && bitTimeline.Alternate != Alternate)
+        if (Alternate.HasValue)
         {
-            bitTimeline.Alternate = Alternate.Value;
-
-            bitTimeline.ClassBuilder.Reset();
+            bitTimeline.TakeFromCascade(nameof(Alternate), Alternate.Value, static t => t.Alternate, static (t, v) => t.Alternate = v);
         }
 
-        if (Classes is not null && bitTimeline.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitTimeline.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitTimeline.Classes = Classes;
-
-            bitTimeline.ClassBuilder.Reset();
+            bitTimeline.TakeFromCascade(nameof(Classes), Classes, static t => t.Classes, static (t, v) => t.Classes = v);
         }
 
-        if (Color.HasValue && bitTimeline.HasNotBeenSet(nameof(Color)) && bitTimeline.Color != Color)
+        if (Color.HasValue)
         {
-            bitTimeline.Color = Color.Value;
-
-            bitTimeline.ClassBuilder.Reset();
+            bitTimeline.TakeFromCascade(nameof(Color), Color.Value, static t => t.Color, static (t, v) => t.Color = v);
         }
 
-        if (DotAlignment.HasValue && bitTimeline.HasNotBeenSet(nameof(DotAlignment)) && bitTimeline.DotAlignment != DotAlignment)
+        if (DotAlignment.HasValue)
         {
-            bitTimeline.DotAlignment = DotAlignment.Value;
-
-            bitTimeline.ClassBuilder.Reset();
+            bitTimeline.TakeFromCascade(nameof(DotAlignment), DotAlignment.Value, static t => t.DotAlignment, static (t, v) => t.DotAlignment = v);
         }
 
-        if (Horizontal.HasValue && bitTimeline.HasNotBeenSet(nameof(Horizontal)) && bitTimeline.Horizontal != Horizontal)
+        if (Horizontal.HasValue)
         {
-            bitTimeline.Horizontal = Horizontal.Value;
-
-            bitTimeline.ClassBuilder.Reset();
+            bitTimeline.TakeFromCascade(nameof(Horizontal), Horizontal.Value, static t => t.Horizontal, static (t, v) => t.Horizontal = v);
         }
 
-        if (LineStyle.HasValue && bitTimeline.HasNotBeenSet(nameof(LineStyle)) && bitTimeline.LineStyle != LineStyle)
+        if (LineStyle.HasValue)
         {
-            bitTimeline.LineStyle = LineStyle.Value;
-
-            bitTimeline.ClassBuilder.Reset();
+            bitTimeline.TakeFromCascade(nameof(LineStyle), LineStyle.Value, static t => t.LineStyle, static (t, v) => t.LineStyle = v);
         }
 
-        if (LinePlacement.HasValue && bitTimeline.HasNotBeenSet(nameof(LinePlacement)) && bitTimeline.LinePlacement != LinePlacement)
+        if (LinePlacement.HasValue)
         {
-            bitTimeline.LinePlacement = LinePlacement.Value;
-
-            bitTimeline.ClassBuilder.Reset();
+            bitTimeline.TakeFromCascade(nameof(LinePlacement), LinePlacement.Value, static t => t.LinePlacement, static (t, v) => t.LinePlacement = v);
         }
 
-        if (ReverseOrder.HasValue && bitTimeline.HasNotBeenSet(nameof(ReverseOrder)) && bitTimeline.ReverseOrder != ReverseOrder)
+        if (ReverseOrder.HasValue)
         {
-            bitTimeline.ReverseOrder = ReverseOrder.Value;
-
-            bitTimeline.ClassBuilder.Reset();
+            bitTimeline.TakeFromCascade(nameof(ReverseOrder), ReverseOrder.Value, static t => t.ReverseOrder, static (t, v) => t.ReverseOrder = v);
         }
 
-        if (Reversed.HasValue && bitTimeline.HasNotBeenSet(nameof(Reversed)) && bitTimeline.Reversed != Reversed)
+        if (Reversed.HasValue)
         {
-            bitTimeline.Reversed = Reversed.Value;
-
-            bitTimeline.ClassBuilder.Reset();
+            bitTimeline.TakeFromCascade(nameof(Reversed), Reversed.Value, static t => t.Reversed, static (t, v) => t.Reversed = v);
         }
 
-        if (Size.HasValue && bitTimeline.HasNotBeenSet(nameof(Size)) && bitTimeline.Size != Size)
+        if (Size.HasValue)
         {
-            bitTimeline.Size = Size.Value;
-
-            bitTimeline.ClassBuilder.Reset();
+            bitTimeline.TakeFromCascade(nameof(Size), Size.Value, static t => t.Size, static (t, v) => t.Size = v);
         }
 
-        if (Styles is not null && bitTimeline.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitTimeline.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitTimeline.Styles = Styles;
-
-            bitTimeline.StyleBuilder.Reset();
+            bitTimeline.TakeFromCascade(nameof(Styles), Styles, static t => t.Styles, static (t, v) => t.Styles = v);
         }
 
-        if (TruncateLine.HasValue && bitTimeline.HasNotBeenSet(nameof(TruncateLine)) && bitTimeline.TruncateLine != TruncateLine)
+        if (TruncateLine.HasValue)
         {
-            bitTimeline.TruncateLine = TruncateLine.Value;
-
-            bitTimeline.ClassBuilder.Reset();
+            bitTimeline.TakeFromCascade(nameof(TruncateLine), TruncateLine.Value, static t => t.TruncateLine, static (t, v) => t.TruncateLine = v);
         }
 
-        if (Variant.HasValue && bitTimeline.HasNotBeenSet(nameof(Variant)) && bitTimeline.Variant != Variant)
+        if (Variant.HasValue)
         {
-            bitTimeline.Variant = Variant.Value;
-
-            bitTimeline.ClassBuilder.Reset();
+            bitTimeline.TakeFromCascade(nameof(Variant), Variant.Value, static t => t.Variant, static (t, v) => t.Variant = v);
         }
     }
 }

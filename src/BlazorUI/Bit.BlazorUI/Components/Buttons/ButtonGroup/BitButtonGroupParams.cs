@@ -176,152 +176,124 @@ public class BitButtonGroupParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitButtonGroup);
 
-        if (AutoFocus.HasValue && bitButtonGroup.HasNotBeenSet(nameof(AutoFocus)))
+        if (AutoFocus.HasValue)
         {
-            bitButtonGroup.AutoFocus = AutoFocus.Value;
+            bitButtonGroup.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static b => b.AutoFocus, static (b, v) => b.AutoFocus = v);
         }
 
-        if (Classes is not null && bitButtonGroup.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitButtonGroup.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitButtonGroup.Classes = Classes;
-
-            bitButtonGroup.ClassBuilder.Reset();
+            bitButtonGroup.TakeFromCascade(nameof(Classes), Classes, static b => b.Classes, static (b, v) => b.Classes = v);
         }
 
-        if (Color.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Color)) && bitButtonGroup.Color != Color)
+        if (Color.HasValue)
         {
-            bitButtonGroup.Color = Color.Value;
-
-            bitButtonGroup.ClassBuilder.Reset();
+            bitButtonGroup.TakeFromCascade(nameof(Color), Color.Value, static b => b.Color, static (b, v) => b.Color = v);
         }
 
-        if (DefaultToggleKey.HasValue() && bitButtonGroup.HasNotBeenSet(nameof(DefaultToggleKey)))
+        if (DefaultToggleKey.HasValue())
         {
-            bitButtonGroup.DefaultToggleKey = DefaultToggleKey;
+            bitButtonGroup.TakeFromCascade(nameof(DefaultToggleKey), DefaultToggleKey, static b => b.DefaultToggleKey, static (b, v) => b.DefaultToggleKey = v);
         }
 
-        if (DefaultToggleKeys is not null && bitButtonGroup.HasNotBeenSet(nameof(DefaultToggleKeys)))
+        if (DefaultToggleKeys is not null)
         {
-            bitButtonGroup.DefaultToggleKeys = DefaultToggleKeys;
+            bitButtonGroup.TakeFromCascade(nameof(DefaultToggleKeys), DefaultToggleKeys, static b => b.DefaultToggleKeys, static (b, v) => b.DefaultToggleKeys = v);
         }
 
-        if (Detached.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Detached)) && bitButtonGroup.Detached != Detached)
+        if (Detached.HasValue)
         {
-            bitButtonGroup.Detached = Detached.Value;
-
-            bitButtonGroup.ClassBuilder.Reset();
+            bitButtonGroup.TakeFromCascade(nameof(Detached), Detached.Value, static b => b.Detached, static (b, v) => b.Detached = v);
         }
 
-        if (DisabledInteractive.HasValue && bitButtonGroup.HasNotBeenSet(nameof(DisabledInteractive)))
+        if (DisabledInteractive.HasValue)
         {
-            bitButtonGroup.DisabledInteractive = DisabledInteractive.Value;
+            bitButtonGroup.TakeFromCascade(nameof(DisabledInteractive), DisabledInteractive.Value, static b => b.DisabledInteractive, static (b, v) => b.DisabledInteractive = v);
         }
 
-        if (FixedToggle.HasValue && bitButtonGroup.HasNotBeenSet(nameof(FixedToggle)))
+        if (FixedToggle.HasValue)
         {
-            bitButtonGroup.FixedToggle = FixedToggle.Value;
+            bitButtonGroup.TakeFromCascade(nameof(FixedToggle), FixedToggle.Value, static b => b.FixedToggle, static (b, v) => b.FixedToggle = v);
         }
 
-        if (FullWidth.HasValue && bitButtonGroup.HasNotBeenSet(nameof(FullWidth)) && bitButtonGroup.FullWidth != FullWidth)
+        if (FullWidth.HasValue)
         {
-            bitButtonGroup.FullWidth = FullWidth.Value;
-
-            bitButtonGroup.ClassBuilder.Reset();
+            bitButtonGroup.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static b => b.FullWidth, static (b, v) => b.FullWidth = v);
         }
 
-        if (Gap.HasValue() && bitButtonGroup.HasNotBeenSet(nameof(Gap)) && bitButtonGroup.Gap != Gap)
+        if (Gap.HasValue())
         {
-            bitButtonGroup.Gap = Gap;
-
-            bitButtonGroup.StyleBuilder.Reset();
+            bitButtonGroup.TakeFromCascade(nameof(Gap), Gap, static b => b.Gap, static (b, v) => b.Gap = v);
         }
 
-        if (IconOnly.HasValue && bitButtonGroup.HasNotBeenSet(nameof(IconOnly)) && bitButtonGroup.IconOnly != IconOnly)
+        if (IconOnly.HasValue)
         {
-            bitButtonGroup.IconOnly = IconOnly.Value;
-
-            bitButtonGroup.ClassBuilder.Reset();
+            bitButtonGroup.TakeFromCascade(nameof(IconOnly), IconOnly.Value, static b => b.IconOnly, static (b, v) => b.IconOnly = v);
         }
 
-        if (Justified.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Justified)) && bitButtonGroup.Justified != Justified)
+        if (Justified.HasValue)
         {
-            bitButtonGroup.Justified = Justified.Value;
-
-            bitButtonGroup.ClassBuilder.Reset();
+            bitButtonGroup.TakeFromCascade(nameof(Justified), Justified.Value, static b => b.Justified, static (b, v) => b.Justified = v);
         }
 
-        if (MaxToggles.HasValue && bitButtonGroup.HasNotBeenSet(nameof(MaxToggles)))
+        if (MaxToggles.HasValue)
         {
-            bitButtonGroup.MaxToggles = MaxToggles.Value;
+            bitButtonGroup.TakeFromCascade(nameof(MaxToggles), MaxToggles.Value, static b => b.MaxToggles, static (b, v) => b.MaxToggles = v);
         }
 
-        if (Navigable.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Navigable)) && bitButtonGroup.Navigable != Navigable)
+        if (Navigable.HasValue)
         {
-            bitButtonGroup.Navigable = Navigable.Value;
-
-            bitButtonGroup.ClassBuilder.Reset();
+            bitButtonGroup.TakeFromCascade(nameof(Navigable), Navigable.Value, static b => b.Navigable, static (b, v) => b.Navigable = v);
         }
 
-        if (Overflow.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Overflow)) && bitButtonGroup.Overflow != Overflow)
+        if (Overflow.HasValue)
         {
-            bitButtonGroup.Overflow = Overflow.Value;
-
-            bitButtonGroup.ClassBuilder.Reset();
+            bitButtonGroup.TakeFromCascade(nameof(Overflow), Overflow.Value, static b => b.Overflow, static (b, v) => b.Overflow = v);
         }
 
-        if (Rounded.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Rounded)) && bitButtonGroup.Rounded != Rounded)
+        if (Rounded.HasValue)
         {
-            bitButtonGroup.Rounded = Rounded.Value;
-
-            bitButtonGroup.ClassBuilder.Reset();
+            bitButtonGroup.TakeFromCascade(nameof(Rounded), Rounded.Value, static b => b.Rounded, static (b, v) => b.Rounded = v);
         }
 
-        if (SelectOnFocus.HasValue && bitButtonGroup.HasNotBeenSet(nameof(SelectOnFocus)))
+        if (SelectOnFocus.HasValue)
         {
-            bitButtonGroup.SelectOnFocus = SelectOnFocus.Value;
+            bitButtonGroup.TakeFromCascade(nameof(SelectOnFocus), SelectOnFocus.Value, static b => b.SelectOnFocus, static (b, v) => b.SelectOnFocus = v);
         }
 
-        if (SelectionMode.HasValue && bitButtonGroup.HasNotBeenSet(nameof(SelectionMode)))
+        if (SelectionMode.HasValue)
         {
-            bitButtonGroup.SelectionMode = SelectionMode.Value;
+            bitButtonGroup.TakeFromCascade(nameof(SelectionMode), SelectionMode.Value, static b => b.SelectionMode, static (b, v) => b.SelectionMode = v);
         }
 
-        if (ShowSelectionIndicator.HasValue && bitButtonGroup.HasNotBeenSet(nameof(ShowSelectionIndicator)))
+        if (ShowSelectionIndicator.HasValue)
         {
-            bitButtonGroup.ShowSelectionIndicator = ShowSelectionIndicator.Value;
+            bitButtonGroup.TakeFromCascade(nameof(ShowSelectionIndicator), ShowSelectionIndicator.Value, static b => b.ShowSelectionIndicator, static (b, v) => b.ShowSelectionIndicator = v);
         }
 
-        if (Size.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Size)) && bitButtonGroup.Size != Size)
+        if (Size.HasValue)
         {
-            bitButtonGroup.Size = Size.Value;
-
-            bitButtonGroup.ClassBuilder.Reset();
+            bitButtonGroup.TakeFromCascade(nameof(Size), Size.Value, static b => b.Size, static (b, v) => b.Size = v);
         }
 
-        if (Styles is not null && bitButtonGroup.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitButtonGroup.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitButtonGroup.Styles = Styles;
-
-            bitButtonGroup.StyleBuilder.Reset();
+            bitButtonGroup.TakeFromCascade(nameof(Styles), Styles, static b => b.Styles, static (b, v) => b.Styles = v);
         }
 
-        if (Toggle.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Toggle)))
+        if (Toggle.HasValue)
         {
-            bitButtonGroup.Toggle = Toggle.Value;
+            bitButtonGroup.TakeFromCascade(nameof(Toggle), Toggle.Value, static b => b.Toggle, static (b, v) => b.Toggle = v);
         }
 
-        if (Variant.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Variant)) && bitButtonGroup.Variant != Variant)
+        if (Variant.HasValue)
         {
-            bitButtonGroup.Variant = Variant.Value;
-
-            bitButtonGroup.ClassBuilder.Reset();
+            bitButtonGroup.TakeFromCascade(nameof(Variant), Variant.Value, static b => b.Variant, static (b, v) => b.Variant = v);
         }
 
-        if (Vertical.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Vertical)) && bitButtonGroup.Vertical != Vertical)
+        if (Vertical.HasValue)
         {
-            bitButtonGroup.Vertical = Vertical.Value;
-
-            bitButtonGroup.ClassBuilder.Reset();
+            bitButtonGroup.TakeFromCascade(nameof(Vertical), Vertical.Value, static b => b.Vertical, static (b, v) => b.Vertical = v);
         }
     }
 }

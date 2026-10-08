@@ -83,11 +83,20 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     /// <summary>
     /// The color kind of the background of all the accordion items.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-Accordion-background</c> and the header shade variables on every item; left
+    /// unset, the items take the default fill unless those variables say otherwise.
+    /// </remarks>
     [Parameter] public BitColorKind? Background { get; set; }
 
     /// <summary>
     /// The color kind of the border of all the accordion items.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-Accordion-border-color</c> and, in a <see cref="Joined"/> list, over
+    /// <c>--bit-AccordionList-divider-color</c> as well, since the line between two items is the top border of the
+    /// lower one; left unset, the items take the default border color unless those variables say otherwise.
+    /// </remarks>
     [Parameter] public BitColorKind? Border { get; set; }
 
     /// <summary>
@@ -406,9 +415,11 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     /// <summary>
     /// Gets or sets the size of all the accordion items, which drives the padding of the headers and of the
     /// contents and the size of the titles.
-    /// <br />
-    /// The default value is <see cref="BitSize.Medium"/>.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Accordion-*</c> size variables on every item; left unset, the items are
+    /// medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter] public BitSize? Size { get; set; }
 
     /// <summary>

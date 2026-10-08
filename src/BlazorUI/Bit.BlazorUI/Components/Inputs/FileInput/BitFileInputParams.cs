@@ -257,238 +257,224 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitFileInput);
 
-        if (Accept.HasValue() && bitFileInput.HasNotBeenSet(nameof(Accept)))
+        if (Accept.HasValue())
         {
-            bitFileInput.Accept = Accept;
+            bitFileInput.TakeFromCascade(nameof(Accept), Accept, static f => f.Accept, static (f, v) => f.Accept = v);
         }
 
-        if (AllowDrop.HasValue && bitFileInput.HasNotBeenSet(nameof(AllowDrop)))
+        if (AllowDrop.HasValue)
         {
-            bitFileInput.AllowDrop = AllowDrop.Value;
+            bitFileInput.TakeFromCascade(nameof(AllowDrop), AllowDrop.Value, static f => f.AllowDrop, static (f, v) => f.AllowDrop = v);
         }
 
-        if (AllowDuplicates.HasValue && bitFileInput.HasNotBeenSet(nameof(AllowDuplicates)))
+        if (AllowDuplicates.HasValue)
         {
-            bitFileInput.AllowDuplicates = AllowDuplicates.Value;
+            bitFileInput.TakeFromCascade(nameof(AllowDuplicates), AllowDuplicates.Value, static f => f.AllowDuplicates, static (f, v) => f.AllowDuplicates = v);
         }
 
-        if (AllowedExtensions is not null && bitFileInput.HasNotBeenSet(nameof(AllowedExtensions)))
+        if (AllowedExtensions is not null)
         {
-            bitFileInput.AllowedExtensions = AllowedExtensions;
+            bitFileInput.TakeFromCascade(nameof(AllowedExtensions), AllowedExtensions, static f => f.AllowedExtensions, static (f, v) => f.AllowedExtensions = v);
         }
 
-        if (AllowPaste.HasValue && bitFileInput.HasNotBeenSet(nameof(AllowPaste)))
+        if (AllowPaste.HasValue)
         {
-            bitFileInput.AllowPaste = AllowPaste.Value;
+            bitFileInput.TakeFromCascade(nameof(AllowPaste), AllowPaste.Value, static f => f.AllowPaste, static (f, v) => f.AllowPaste = v);
         }
 
-        if (AnnouncementProvider is not null && bitFileInput.HasNotBeenSet(nameof(AnnouncementProvider)))
+        if (AnnouncementProvider is not null)
         {
-            bitFileInput.AnnouncementProvider = AnnouncementProvider;
+            bitFileInput.TakeFromCascade(nameof(AnnouncementProvider), AnnouncementProvider, static f => f.AnnouncementProvider, static (f, v) => f.AnnouncementProvider = v);
         }
 
-        if (Append.HasValue && bitFileInput.HasNotBeenSet(nameof(Append)))
+        if (Append.HasValue)
         {
-            bitFileInput.Append = Append.Value;
+            bitFileInput.TakeFromCascade(nameof(Append), Append.Value, static f => f.Append, static (f, v) => f.Append = v);
         }
 
-        if (AutoReset.HasValue && bitFileInput.HasNotBeenSet(nameof(AutoReset)))
+        if (AutoReset.HasValue)
         {
-            bitFileInput.AutoReset = AutoReset.Value;
+            bitFileInput.TakeFromCascade(nameof(AutoReset), AutoReset.Value, static f => f.AutoReset, static (f, v) => f.AutoReset = v);
         }
 
-        if (Capture.HasValue() && bitFileInput.HasNotBeenSet(nameof(Capture)))
+        if (Capture.HasValue())
         {
-            bitFileInput.Capture = Capture;
+            bitFileInput.TakeFromCascade(nameof(Capture), Capture, static f => f.Capture, static (f, v) => f.Capture = v);
         }
 
-        if (Classes is not null && bitFileInput.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitFileInput.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitFileInput.Classes = Classes;
-
-            bitFileInput.ClassBuilder.Reset();
+            bitFileInput.TakeFromCascade(nameof(Classes), Classes, static f => f.Classes, static (f, v) => f.Classes = v);
         }
 
-        if (Color.HasValue && bitFileInput.HasNotBeenSet(nameof(Color)) && bitFileInput.Color != Color)
+        if (Color.HasValue)
         {
-            bitFileInput.Color = Color.Value;
-
-            bitFileInput.ClassBuilder.Reset();
+            bitFileInput.TakeFromCascade(nameof(Color), Color.Value, static f => f.Color, static (f, v) => f.Color = v);
         }
 
-        if (Description.HasValue() && bitFileInput.HasNotBeenSet(nameof(Description)))
+        if (Description.HasValue())
         {
-            bitFileInput.Description = Description;
+            bitFileInput.TakeFromCascade(nameof(Description), Description, static f => f.Description, static (f, v) => f.Description = v);
         }
 
-        if (Directory.HasValue && bitFileInput.HasNotBeenSet(nameof(Directory)))
+        if (Directory.HasValue)
         {
-            bitFileInput.Directory = Directory.Value;
+            bitFileInput.TakeFromCascade(nameof(Directory), Directory.Value, static f => f.Directory, static (f, v) => f.Directory = v);
         }
 
-        if (DropZoneIcon is not null && bitFileInput.HasNotBeenSet(nameof(DropZoneIcon)))
+        if (DropZoneIcon is not null)
         {
-            bitFileInput.DropZoneIcon = DropZoneIcon;
+            bitFileInput.TakeFromCascade(nameof(DropZoneIcon), DropZoneIcon, static f => f.DropZoneIcon, static (f, v) => f.DropZoneIcon = v);
         }
 
-        if (DropZoneIconName.HasValue() && bitFileInput.HasNotBeenSet(nameof(DropZoneIconName)))
+        if (DropZoneIconName.HasValue())
         {
-            bitFileInput.DropZoneIconName = DropZoneIconName;
+            bitFileInput.TakeFromCascade(nameof(DropZoneIconName), DropZoneIconName, static f => f.DropZoneIconName, static (f, v) => f.DropZoneIconName = v);
         }
 
-        if (DuplicateErrorMessage.HasValue() && bitFileInput.HasNotBeenSet(nameof(DuplicateErrorMessage)))
+        if (DuplicateErrorMessage.HasValue())
         {
-            bitFileInput.DuplicateErrorMessage = DuplicateErrorMessage;
+            bitFileInput.TakeFromCascade(nameof(DuplicateErrorMessage), DuplicateErrorMessage, static f => f.DuplicateErrorMessage, static (f, v) => f.DuplicateErrorMessage = v);
         }
 
-        if (FileIconSelector is not null && bitFileInput.HasNotBeenSet(nameof(FileIconSelector)))
+        if (FileIconSelector is not null)
         {
-            bitFileInput.FileIconSelector = FileIconSelector;
+            bitFileInput.TakeFromCascade(nameof(FileIconSelector), FileIconSelector, static f => f.FileIconSelector, static (f, v) => f.FileIconSelector = v);
         }
 
-        if (FileListAriaLabel.HasValue() && bitFileInput.HasNotBeenSet(nameof(FileListAriaLabel)))
+        if (FileListAriaLabel.HasValue())
         {
-            bitFileInput.FileListAriaLabel = FileListAriaLabel;
+            bitFileInput.TakeFromCascade(nameof(FileListAriaLabel), FileListAriaLabel, static f => f.FileListAriaLabel, static (f, v) => f.FileListAriaLabel = v);
         }
 
-        if (FileSizeFormatter is not null && bitFileInput.HasNotBeenSet(nameof(FileSizeFormatter)))
+        if (FileSizeFormatter is not null)
         {
-            bitFileInput.FileSizeFormatter = FileSizeFormatter;
+            bitFileInput.TakeFromCascade(nameof(FileSizeFormatter), FileSizeFormatter, static f => f.FileSizeFormatter, static (f, v) => f.FileSizeFormatter = v);
         }
 
-        if (FileValidator is not null && bitFileInput.HasNotBeenSet(nameof(FileValidator)))
+        if (FileValidator is not null)
         {
-            bitFileInput.FileValidator = FileValidator;
+            bitFileInput.TakeFromCascade(nameof(FileValidator), FileValidator, static f => f.FileValidator, static (f, v) => f.FileValidator = v);
         }
 
-        if (HideFileList.HasValue && bitFileInput.HasNotBeenSet(nameof(HideFileList)))
+        if (HideFileList.HasValue)
         {
-            bitFileInput.HideFileList = HideFileList.Value;
+            bitFileInput.TakeFromCascade(nameof(HideFileList), HideFileList.Value, static f => f.HideFileList, static (f, v) => f.HideFileList = v);
         }
 
-        if (HideLabel.HasValue && bitFileInput.HasNotBeenSet(nameof(HideLabel)) && bitFileInput.HideLabel != HideLabel)
+        if (HideLabel.HasValue)
         {
-            bitFileInput.HideLabel = HideLabel.Value;
-
-            bitFileInput.ClassBuilder.Reset();
+            bitFileInput.TakeFromCascade(nameof(HideLabel), HideLabel.Value, static f => f.HideLabel, static (f, v) => f.HideLabel = v);
         }
 
-        if (Label.HasValue() && bitFileInput.HasNotBeenSet(nameof(Label)))
+        if (Label.HasValue())
         {
-            bitFileInput.Label = Label;
+            bitFileInput.TakeFromCascade(nameof(Label), Label, static f => f.Label, static (f, v) => f.Label = v);
         }
 
-        if (MaxCount.HasValue && bitFileInput.HasNotBeenSet(nameof(MaxCount)))
+        if (MaxCount.HasValue)
         {
-            bitFileInput.MaxCount = MaxCount.Value;
+            bitFileInput.TakeFromCascade(nameof(MaxCount), MaxCount.Value, static f => f.MaxCount, static (f, v) => f.MaxCount = v);
         }
 
-        if (MaxCountErrorMessage.HasValue() && bitFileInput.HasNotBeenSet(nameof(MaxCountErrorMessage)))
+        if (MaxCountErrorMessage.HasValue())
         {
-            bitFileInput.MaxCountErrorMessage = MaxCountErrorMessage;
+            bitFileInput.TakeFromCascade(nameof(MaxCountErrorMessage), MaxCountErrorMessage, static f => f.MaxCountErrorMessage, static (f, v) => f.MaxCountErrorMessage = v);
         }
 
-        if (MaxSize.HasValue && bitFileInput.HasNotBeenSet(nameof(MaxSize)))
+        if (MaxSize.HasValue)
         {
-            bitFileInput.MaxSize = MaxSize.Value;
+            bitFileInput.TakeFromCascade(nameof(MaxSize), MaxSize.Value, static f => f.MaxSize, static (f, v) => f.MaxSize = v);
         }
 
-        if (MaxSizeErrorMessage.HasValue() && bitFileInput.HasNotBeenSet(nameof(MaxSizeErrorMessage)))
+        if (MaxSizeErrorMessage.HasValue())
         {
-            bitFileInput.MaxSizeErrorMessage = MaxSizeErrorMessage;
+            bitFileInput.TakeFromCascade(nameof(MaxSizeErrorMessage), MaxSizeErrorMessage, static f => f.MaxSizeErrorMessage, static (f, v) => f.MaxSizeErrorMessage = v);
         }
 
-        if (MaxTotalSize.HasValue && bitFileInput.HasNotBeenSet(nameof(MaxTotalSize)))
+        if (MaxTotalSize.HasValue)
         {
-            bitFileInput.MaxTotalSize = MaxTotalSize.Value;
+            bitFileInput.TakeFromCascade(nameof(MaxTotalSize), MaxTotalSize.Value, static f => f.MaxTotalSize, static (f, v) => f.MaxTotalSize = v);
         }
 
-        if (MaxTotalSizeErrorMessage.HasValue() && bitFileInput.HasNotBeenSet(nameof(MaxTotalSizeErrorMessage)))
+        if (MaxTotalSizeErrorMessage.HasValue())
         {
-            bitFileInput.MaxTotalSizeErrorMessage = MaxTotalSizeErrorMessage;
+            bitFileInput.TakeFromCascade(nameof(MaxTotalSizeErrorMessage), MaxTotalSizeErrorMessage, static f => f.MaxTotalSizeErrorMessage, static (f, v) => f.MaxTotalSizeErrorMessage = v);
         }
 
-        if (MinSize.HasValue && bitFileInput.HasNotBeenSet(nameof(MinSize)))
+        if (MinSize.HasValue)
         {
-            bitFileInput.MinSize = MinSize.Value;
+            bitFileInput.TakeFromCascade(nameof(MinSize), MinSize.Value, static f => f.MinSize, static (f, v) => f.MinSize = v);
         }
 
-        if (MinSizeErrorMessage.HasValue() && bitFileInput.HasNotBeenSet(nameof(MinSizeErrorMessage)))
+        if (MinSizeErrorMessage.HasValue())
         {
-            bitFileInput.MinSizeErrorMessage = MinSizeErrorMessage;
+            bitFileInput.TakeFromCascade(nameof(MinSizeErrorMessage), MinSizeErrorMessage, static f => f.MinSizeErrorMessage, static (f, v) => f.MinSizeErrorMessage = v);
         }
 
-        if (Multiple.HasValue && bitFileInput.HasNotBeenSet(nameof(Multiple)))
+        if (Multiple.HasValue)
         {
-            bitFileInput.Multiple = Multiple.Value;
+            bitFileInput.TakeFromCascade(nameof(Multiple), Multiple.Value, static f => f.Multiple, static (f, v) => f.Multiple = v);
         }
 
-        if (NotAllowedExtensionErrorMessage.HasValue() && bitFileInput.HasNotBeenSet(nameof(NotAllowedExtensionErrorMessage)))
+        if (NotAllowedExtensionErrorMessage.HasValue())
         {
-            bitFileInput.NotAllowedExtensionErrorMessage = NotAllowedExtensionErrorMessage;
+            bitFileInput.TakeFromCascade(nameof(NotAllowedExtensionErrorMessage), NotAllowedExtensionErrorMessage, static f => f.NotAllowedExtensionErrorMessage, static (f, v) => f.NotAllowedExtensionErrorMessage = v);
         }
 
-        if (ReadImageDimensions.HasValue && bitFileInput.HasNotBeenSet(nameof(ReadImageDimensions)))
+        if (ReadImageDimensions.HasValue)
         {
-            bitFileInput.ReadImageDimensions = ReadImageDimensions.Value;
+            bitFileInput.TakeFromCascade(nameof(ReadImageDimensions), ReadImageDimensions.Value, static f => f.ReadImageDimensions, static (f, v) => f.ReadImageDimensions = v);
         }
 
-        if (RemoveButtonIcon is not null && bitFileInput.HasNotBeenSet(nameof(RemoveButtonIcon)))
+        if (RemoveButtonIcon is not null)
         {
-            bitFileInput.RemoveButtonIcon = RemoveButtonIcon;
+            bitFileInput.TakeFromCascade(nameof(RemoveButtonIcon), RemoveButtonIcon, static f => f.RemoveButtonIcon, static (f, v) => f.RemoveButtonIcon = v);
         }
 
-        if (RemoveButtonIconName.HasValue() && bitFileInput.HasNotBeenSet(nameof(RemoveButtonIconName)))
+        if (RemoveButtonIconName.HasValue())
         {
-            bitFileInput.RemoveButtonIconName = RemoveButtonIconName;
+            bitFileInput.TakeFromCascade(nameof(RemoveButtonIconName), RemoveButtonIconName, static f => f.RemoveButtonIconName, static (f, v) => f.RemoveButtonIconName = v);
         }
 
-        if (RemoveButtonTitle.HasValue() && bitFileInput.HasNotBeenSet(nameof(RemoveButtonTitle)))
+        if (RemoveButtonTitle.HasValue())
         {
-            bitFileInput.RemoveButtonTitle = RemoveButtonTitle;
+            bitFileInput.TakeFromCascade(nameof(RemoveButtonTitle), RemoveButtonTitle, static f => f.RemoveButtonTitle, static (f, v) => f.RemoveButtonTitle = v);
         }
 
-        if (ShowDropZone.HasValue && bitFileInput.HasNotBeenSet(nameof(ShowDropZone)) && bitFileInput.ShowDropZone != ShowDropZone)
+        if (ShowDropZone.HasValue)
         {
-            bitFileInput.ShowDropZone = ShowDropZone.Value;
-
-            bitFileInput.ClassBuilder.Reset();
+            bitFileInput.TakeFromCascade(nameof(ShowDropZone), ShowDropZone.Value, static f => f.ShowDropZone, static (f, v) => f.ShowDropZone = v);
         }
 
-        if (ShowPreview.HasValue && bitFileInput.HasNotBeenSet(nameof(ShowPreview)))
+        if (ShowPreview.HasValue)
         {
-            bitFileInput.ShowPreview = ShowPreview.Value;
+            bitFileInput.TakeFromCascade(nameof(ShowPreview), ShowPreview.Value, static f => f.ShowPreview, static (f, v) => f.ShowPreview = v);
         }
 
-        if (ShowRemoveButton.HasValue && bitFileInput.HasNotBeenSet(nameof(ShowRemoveButton)))
+        if (ShowRemoveButton.HasValue)
         {
-            bitFileInput.ShowRemoveButton = ShowRemoveButton.Value;
+            bitFileInput.TakeFromCascade(nameof(ShowRemoveButton), ShowRemoveButton.Value, static f => f.ShowRemoveButton, static (f, v) => f.ShowRemoveButton = v);
         }
 
-        if (Size.HasValue && bitFileInput.HasNotBeenSet(nameof(Size)) && bitFileInput.Size != Size)
+        if (Size.HasValue)
         {
-            bitFileInput.Size = Size.Value;
-
-            bitFileInput.ClassBuilder.Reset();
+            bitFileInput.TakeFromCascade(nameof(Size), Size.Value, static f => f.Size, static (f, v) => f.Size = v);
         }
 
-        if (Styles is not null && bitFileInput.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitFileInput.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitFileInput.Styles = Styles;
-
-            bitFileInput.StyleBuilder.Reset();
+            bitFileInput.TakeFromCascade(nameof(Styles), Styles, static f => f.Styles, static (f, v) => f.Styles = v);
         }
 
-        if (Title.HasValue() && bitFileInput.HasNotBeenSet(nameof(Title)))
+        if (Title.HasValue())
         {
-            bitFileInput.Title = Title;
+            bitFileInput.TakeFromCascade(nameof(Title), Title, static f => f.Title, static (f, v) => f.Title = v);
         }
 
-        if (Variant.HasValue && bitFileInput.HasNotBeenSet(nameof(Variant)) && bitFileInput.Variant != Variant)
+        if (Variant.HasValue)
         {
-            bitFileInput.Variant = Variant.Value;
-
-            bitFileInput.ClassBuilder.Reset();
+            bitFileInput.TakeFromCascade(nameof(Variant), Variant.Value, static f => f.Variant, static (f, v) => f.Variant = v);
         }
     }
 }

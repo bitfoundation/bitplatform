@@ -11,7 +11,7 @@ public partial class BitOtpInputDemo
             Name = "Accent",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The color of the focused input's border and focus ring, and of the loading bar. The error state wins over it.",
+            Description = "The color of the focused input's border and focus ring, and of the loading bar. The error state wins over it. An explicit value wins over --bit-OtpInput-focus-border-color, --bit-OtpInput-focus-color and --bit-OtpInput-loader-color; left unset, the accent is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -269,7 +269,7 @@ public partial class BitOtpInputDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the inputs.",
+            Description = "The size of the inputs. An explicit value wins over the --bit-OtpInput-* size variables (the box size, width and height, the font size and the description font size); left unset, the boxes are medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -413,20 +413,20 @@ public partial class BitOtpInputDemo
         new()
         {
             Name = "--bit-OtpInput-input-size",
-            DefaultValue = "--bit-siz-ctrl-sm / --bit-siz-ctrl-md / --bit-siz-ctrl-lg, per Size",
-            Description = "Width and height of every input, which is a square of the control height of its size class. FullWidth overrides the width alone.",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Width and height of every input, which is a square of the control height of its size class. FullWidth overrides the width alone. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-OtpInput-input-width",
             DefaultValue = "--bit-OtpInput-input-size",
-            Description = "Width of an input on its own, for a box wider than it is tall.",
+            Description = "Width of an input on its own, for a box wider than it is tall. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-OtpInput-input-height",
             DefaultValue = "--bit-OtpInput-input-size",
-            Description = "Height of an input on its own.",
+            Description = "Height of an input on its own. The Size parameter wins over it.",
         },
         new()
         {
@@ -437,8 +437,8 @@ public partial class BitOtpInputDemo
         new()
         {
             Name = "--bit-OtpInput-font-size",
-            DefaultValue = "--bit-tpg-fs-xs / --bit-tpg-fs-sm / --bit-tpg-fs-md, per Size",
-            Description = "Size of the code, inherited by the label and the placeholder.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Size of the code, inherited by the label and the placeholder. The Size parameter wins over it.",
         },
         new()
         {
@@ -455,8 +455,8 @@ public partial class BitOtpInputDemo
         new()
         {
             Name = "--bit-OtpInput-description-font-size",
-            DefaultValue = "--bit-tpg-fs-2xs / --bit-tpg-fs-xs / --bit-tpg-fs-sm, per Size",
-            Description = "Size of the helper text under the inputs, one step of the type ramp below the code.",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Size of the helper text under the inputs, one step of the type ramp below the code. The Size parameter wins over it.",
         },
         new()
         {
@@ -521,14 +521,14 @@ public partial class BitOtpInputDemo
         new()
         {
             Name = "--bit-OtpInput-focus-border-color",
-            DefaultValue = "The Accent role's main color",
-            Description = "Input rule while focused.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Input rule while focused. The Accent parameter wins over it.",
         },
         new()
         {
             Name = "--bit-OtpInput-focus-color",
-            DefaultValue = "The Accent role's focus color",
-            Description = "Color of the keyboard focus ring.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the keyboard focus ring. The Accent parameter wins over it.",
         },
         new()
         {
@@ -587,8 +587,8 @@ public partial class BitOtpInputDemo
         new()
         {
             Name = "--bit-OtpInput-loader-color",
-            DefaultValue = "The Accent role's main color",
-            Description = "The sweep of the bar drawn while IsLoading is on. The error and disabled states paint it with their own color instead.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "The sweep of the bar drawn while IsLoading is on. The error and disabled states paint it with their own color instead. The Accent parameter wins over it.",
         },
         new()
         {

@@ -152,106 +152,79 @@ public class BitSeparatorParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitSeparator);
 
-        if (AlignContent.HasValue && bitSeparator.HasNotBeenSet(nameof(AlignContent)) && bitSeparator.AlignContent != AlignContent)
+        if (AlignContent.HasValue)
         {
-            bitSeparator.AlignContent = AlignContent.Value;
-
-            bitSeparator.ClassBuilder.Reset();
+            bitSeparator.TakeFromCascade(nameof(AlignContent), AlignContent.Value, static s => s.AlignContent, static (s, v) => s.AlignContent = v);
         }
 
-        if (AutoSize.HasValue && bitSeparator.HasNotBeenSet(nameof(AutoSize)) && bitSeparator.AutoSize != AutoSize)
+        if (AutoSize.HasValue)
         {
-            bitSeparator.AutoSize = AutoSize.Value;
-
-            bitSeparator.StyleBuilder.Reset();
+            bitSeparator.TakeFromCascade(nameof(AutoSize), AutoSize.Value, static s => s.AutoSize, static (s, v) => s.AutoSize = v);
         }
 
-        if (Background.HasValue && bitSeparator.HasNotBeenSet(nameof(Background)) && bitSeparator.Background != Background)
+        if (Background.HasValue)
         {
-            bitSeparator.Background = Background.Value;
-
-            bitSeparator.ClassBuilder.Reset();
+            bitSeparator.TakeFromCascade(nameof(Background), Background.Value, static s => s.Background, static (s, v) => s.Background = v);
         }
 
-        if (Border.HasValue && bitSeparator.HasNotBeenSet(nameof(Border)) && bitSeparator.Border != Border)
+        if (Border.HasValue)
         {
-            bitSeparator.Border = Border.Value;
-
-            bitSeparator.ClassBuilder.Reset();
+            bitSeparator.TakeFromCascade(nameof(Border), Border.Value, static s => s.Border, static (s, v) => s.Border = v);
         }
 
-        if (Classes is not null && bitSeparator.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitSeparator.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitSeparator.Classes = Classes;
-
-            bitSeparator.ClassBuilder.Reset();
+            bitSeparator.TakeFromCascade(nameof(Classes), Classes, static s => s.Classes, static (s, v) => s.Classes = v);
         }
 
-        if (Color.HasValue && bitSeparator.HasNotBeenSet(nameof(Color)) && bitSeparator.Color != Color)
+        if (Color.HasValue)
         {
-            bitSeparator.Color = Color.Value;
-
-            bitSeparator.ClassBuilder.Reset();
+            bitSeparator.TakeFromCascade(nameof(Color), Color.Value, static s => s.Color, static (s, v) => s.Color = v);
         }
 
-        if (ContentOffset.HasValue() && bitSeparator.HasNotBeenSet(nameof(ContentOffset)) && bitSeparator.ContentOffset != ContentOffset)
+        if (ContentOffset.HasValue())
         {
-            bitSeparator.ContentOffset = ContentOffset;
-
-            bitSeparator.StyleBuilder.Reset();
+            bitSeparator.TakeFromCascade(nameof(ContentOffset), ContentOffset, static s => s.ContentOffset, static (s, v) => s.ContentOffset = v);
         }
 
-        if (Decorative.HasValue && bitSeparator.HasNotBeenSet(nameof(Decorative)))
+        if (Decorative.HasValue)
         {
-            bitSeparator.Decorative = Decorative.Value;
+            bitSeparator.TakeFromCascade(nameof(Decorative), Decorative.Value, static s => s.Decorative, static (s, v) => s.Decorative = v);
         }
 
-        if (Element.HasValue() && bitSeparator.HasNotBeenSet(nameof(Element)))
+        if (Element.HasValue())
         {
-            bitSeparator.Element = Element;
+            bitSeparator.TakeFromCascade(nameof(Element), Element, static s => s.Element, static (s, v) => s.Element = v);
         }
 
-        if (Inset.HasValue() && bitSeparator.HasNotBeenSet(nameof(Inset)) && bitSeparator.Inset != Inset)
+        if (Inset.HasValue())
         {
-            bitSeparator.Inset = Inset;
-
-            bitSeparator.StyleBuilder.Reset();
+            bitSeparator.TakeFromCascade(nameof(Inset), Inset, static s => s.Inset, static (s, v) => s.Inset = v);
         }
 
-        if (LineStyle.HasValue && bitSeparator.HasNotBeenSet(nameof(LineStyle)) && bitSeparator.LineStyle != LineStyle)
+        if (LineStyle.HasValue)
         {
-            bitSeparator.LineStyle = LineStyle.Value;
-
-            bitSeparator.ClassBuilder.Reset();
+            bitSeparator.TakeFromCascade(nameof(LineStyle), LineStyle.Value, static s => s.LineStyle, static (s, v) => s.LineStyle = v);
         }
 
-        if (Size.HasValue && bitSeparator.HasNotBeenSet(nameof(Size)) && bitSeparator.Size != Size)
+        if (Size.HasValue)
         {
-            bitSeparator.Size = Size.Value;
-
-            bitSeparator.ClassBuilder.Reset();
+            bitSeparator.TakeFromCascade(nameof(Size), Size.Value, static s => s.Size, static (s, v) => s.Size = v);
         }
 
-        if (Styles is not null && bitSeparator.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitSeparator.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitSeparator.Styles = Styles;
-
-            bitSeparator.StyleBuilder.Reset();
+            bitSeparator.TakeFromCascade(nameof(Styles), Styles, static s => s.Styles, static (s, v) => s.Styles = v);
         }
 
-        if (Thickness.HasValue() && bitSeparator.HasNotBeenSet(nameof(Thickness)) && bitSeparator.Thickness != Thickness)
+        if (Thickness.HasValue())
         {
-            bitSeparator.Thickness = Thickness;
-
-            bitSeparator.StyleBuilder.Reset();
+            bitSeparator.TakeFromCascade(nameof(Thickness), Thickness, static s => s.Thickness, static (s, v) => s.Thickness = v);
         }
 
-        if (Vertical.HasValue && bitSeparator.HasNotBeenSet(nameof(Vertical)) && bitSeparator.Vertical != Vertical)
+        if (Vertical.HasValue)
         {
-            bitSeparator.Vertical = Vertical.Value;
-
-            bitSeparator.ClassBuilder.Reset();
-            bitSeparator.StyleBuilder.Reset();
+            bitSeparator.TakeFromCascade(nameof(Vertical), Vertical.Value, static s => s.Vertical, static (s, v) => s.Vertical = v);
         }
     }
 }

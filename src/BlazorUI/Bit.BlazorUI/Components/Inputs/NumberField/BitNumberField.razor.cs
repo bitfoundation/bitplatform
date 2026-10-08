@@ -19,7 +19,8 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private TValue? _displayValueSource;
     private bool _displayValueIsTransient;
     private bool _keepDisplayValueOnNextChange;
-    private bool _lastNormalizationActive;
+    private bool _lastNormalizeDigits;
+    private Func<string?, string?>? _lastDigitsNormalizer;
     private TValue _min = default!;
     private TValue _max = default!;
     private bool _hasExplicitMin;
@@ -108,6 +109,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// The general color of the number field, used for its focus indicator and for the icon,
     /// prefix and suffix while the field is focused (Primary by default).
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-NumberField-*</c> variables it paints (the focus color, the focused
+    /// icon and affix colors, the loading and spinner colors); left unset, the accent is primary unless those
+    /// variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Accent { get; set; }
 
@@ -140,12 +146,20 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// <summary>
     /// The color kind of the number field background (Primary by default).
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-NumberField-background</c>; left unset, the background is the primary
+    /// kind unless that variable says otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColorKind? Background { get; set; }
 
     /// <summary>
     /// The color kind of the number field border (Primary by default).
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-NumberField-border-color</c> and <c>--bit-NumberField-hover-border-color</c>;
+    /// left unset, the border is the primary kind unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColorKind? Border { get; set; }
 
@@ -635,6 +649,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// scale, the size of its icons and the width of its buttons all follow it, so a field lines up with the
     /// other controls of the same size around it (Medium by default).
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-NumberField-*</c> size variables (height, font sizes, inline padding,
+    /// icon size, spinner size, button width and glyph size); left unset, the field is medium unless those
+    /// variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -774,13 +793,10 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         // that need it.
         ClassBuilder.Register(() => HasDescription || HasErrorMessage ? "bit-nfl-hds" : string.Empty);
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-nfl-sm",
-            BitSize.Medium => "bit-nfl-md",
-            BitSize.Large => "bit-nfl-lg",
-            _ => "bit-nfl-md"
-        });
+        // Size, Accent, Background and Border publish nothing while they are unset, which is what lets the stylesheet
+        // tell a default from a choice: the public --bit-NumberField-* variables restyle the default and never an
+        // explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-nfl"));
 
         // The mode is on the root so the stylesheet can reach the whole field from the layout its buttons
         // are in - which is what lets the stacked pair grow to a usable pointer target on a touch device.
@@ -796,27 +812,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
         ClassBuilder.Register(() => Underlined ? "bit-nfl-und" : string.Empty);
 
-        ClassBuilder.Register(() => Accent switch
-        {
-            BitColor.Primary => "bit-nfl-pri",
-            BitColor.Secondary => "bit-nfl-sec",
-            BitColor.Tertiary => "bit-nfl-ter",
-            BitColor.Info => "bit-nfl-inf",
-            BitColor.Success => "bit-nfl-suc",
-            BitColor.Warning => "bit-nfl-wrn",
-            BitColor.SevereWarning => "bit-nfl-swr",
-            BitColor.Error => "bit-nfl-err",
-            BitColor.PrimaryBackground => "bit-nfl-pbg",
-            BitColor.SecondaryBackground => "bit-nfl-sbg",
-            BitColor.TertiaryBackground => "bit-nfl-tbg",
-            BitColor.PrimaryForeground => "bit-nfl-pfg",
-            BitColor.SecondaryForeground => "bit-nfl-sfg",
-            BitColor.TertiaryForeground => "bit-nfl-tfg",
-            BitColor.PrimaryBorder => "bit-nfl-pbr",
-            BitColor.SecondaryBorder => "bit-nfl-sbr",
-            BitColor.TertiaryBorder => "bit-nfl-tbr",
-            _ => "bit-nfl-pri"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Accent, "bit-nfl"));
 
         ClassBuilder.Register(() => Background switch
         {
@@ -824,7 +820,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             BitColorKind.Secondary => "bit-nfl-bse",
             BitColorKind.Tertiary => "bit-nfl-btr",
             BitColorKind.Transparent => "bit-nfl-btn",
-            _ => "bit-nfl-bpr"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Border switch
@@ -833,7 +829,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             BitColorKind.Secondary => "bit-nfl-brs",
             BitColorKind.Tertiary => "bit-nfl-brt",
             BitColorKind.Transparent => "bit-nfl-brn",
-            _ => "bit-nfl-brp"
+            _ => string.Empty
         });
     }
 
@@ -860,21 +856,21 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     {
         CascadingParameters?.UpdateParameters(this);
 
-        // Whether digit normalization (built-in NormalizeDigits or a custom DigitsNormalizer) is
-        // currently active. The Min/Max/Step string parameters are parsed through this normalization,
-        // so their cached numeric values (and the derived precision) must be recomputed whenever the
-        // normalization is toggled. Re-running only on a state change - rather than on every render -
-        // avoids repeatedly invoking a potentially expensive or side-effectful custom DigitsNormalizer
-        // delegate, while still covering:
+        // The digit normalization (built-in NormalizeDigits or a custom DigitsNormalizer) the Min/Max/Step
+        // string parameters are parsed through, so their cached numeric values (and the derived precision)
+        // must be recomputed whenever it changes - toggled, or one custom normalizer swapped for another,
+        // whether by the markup or by a params object writing or putting back either input. Re-running only
+        // on a change - rather than on every render - avoids repeatedly invoking a potentially expensive or
+        // side-effectful custom DigitsNormalizer delegate, while still covering:
         //   * the first render, where the Min/Max/Step CallOnSet handlers may have executed during
         //     SetParametersAsync before NormalizeDigits/DigitsNormalizer were assigned (parameter
         //     assignment order is not guaranteed), and
         //   * toggling normalization off, where a previously parsed non-Latin Min/Max/Step no longer
         //     parses and must fall back to the type defaults instead of keeping its stale value.
-        var normalizationActive = NormalizeDigits || DigitsNormalizer is not null;
-        if (normalizationActive != _lastNormalizationActive)
+        if (NormalizeDigits != _lastNormalizeDigits || Equals(DigitsNormalizer, _lastDigitsNormalizer) is false)
         {
-            _lastNormalizationActive = normalizationActive;
+            _lastNormalizeDigits = NormalizeDigits;
+            _lastDigitsNormalizer = DigitsNormalizer;
 
             // Only re-run for parameters that were actually provided. Re-running a setter for an
             // unset parameter would reset it to its default (and is unnecessary work).

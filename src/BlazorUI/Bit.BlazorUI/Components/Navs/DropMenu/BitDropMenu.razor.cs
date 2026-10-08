@@ -93,6 +93,10 @@ public partial class BitDropMenu : BitComponentBase
     /// <summary>
     /// The color kind of the background of the callout of the drop menu.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-DropMenu-callout-background</c>; left unset, the callout is the primary
+    /// background unless that variable says otherwise.
+    /// </remarks>
     [Parameter] public BitColorKind? Background { get; set; }
 
     /// <summary>
@@ -103,6 +107,11 @@ public partial class BitDropMenu : BitComponentBase
     /// <summary>
     /// The color kind of the border of the callout of the drop menu.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-DropMenu-callout-border-color</c> (the width stays
+    /// <c>--bit-DropMenu-callout-border-width</c>'s); left unset, the callout has no border unless those variables
+    /// say otherwise.
+    /// </remarks>
     [Parameter] public BitColorKind? Border { get; set; }
 
     /// <summary>
@@ -144,6 +153,10 @@ public partial class BitDropMenu : BitComponentBase
     /// <summary>
     /// The general color of the button of the drop menu.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-DropMenu-*</c> button color variables; left unset, the button takes
+    /// the <see cref="BitColor.PrimaryBackground"/> look unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -325,6 +338,11 @@ public partial class BitDropMenu : BitComponentBase
     /// <summary>
     /// The size of the button of the drop menu.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-DropMenu-min-height</c>, <c>--bit-DropMenu-padding</c>,
+    /// <c>--bit-DropMenu-font-size</c> and <c>--bit-DropMenu-icon-size</c>; left unset, the button is medium unless
+    /// those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -493,27 +511,9 @@ public partial class BitDropMenu : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-drm-pri",
-            BitColor.Secondary => "bit-drm-sec",
-            BitColor.Tertiary => "bit-drm-ter",
-            BitColor.Info => "bit-drm-inf",
-            BitColor.Success => "bit-drm-suc",
-            BitColor.Warning => "bit-drm-wrn",
-            BitColor.SevereWarning => "bit-drm-swr",
-            BitColor.Error => "bit-drm-err",
-            BitColor.PrimaryBackground => "bit-drm-pbg",
-            BitColor.SecondaryBackground => "bit-drm-sbg",
-            BitColor.TertiaryBackground => "bit-drm-tbg",
-            BitColor.PrimaryForeground => "bit-drm-pfg",
-            BitColor.SecondaryForeground => "bit-drm-sfg",
-            BitColor.TertiaryForeground => "bit-drm-tfg",
-            BitColor.PrimaryBorder => "bit-drm-pbr",
-            BitColor.SecondaryBorder => "bit-drm-sbr",
-            BitColor.TertiaryBorder => "bit-drm-tbr",
-            _ => string.Empty
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-DropMenu-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-drm"));
 
         ClassBuilder.Register(() => Variant switch
         {
@@ -523,13 +523,7 @@ public partial class BitDropMenu : BitComponentBase
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-drm-sm",
-            BitSize.Medium => "bit-drm-md",
-            BitSize.Large => "bit-drm-lg",
-            _ => "bit-drm-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-drm"));
 
         ClassBuilder.Register(() => IsOpen ? "bit-drm-omn" : string.Empty);
 

@@ -632,8 +632,9 @@
         <br /><br /><br />
         <div>
             The calendar also reads a set of <BitLink Href="#css-variables-section">CSS variables</BitLink> off
-            its root for what no parameter covers. They inherit, so a value on <code>:root</code> or any ancestor
-            re-skins every calendar below it, and one on the <b>Style</b> of an instance re-skins that one alone.
+            its root. They inherit, so a value on <code>:root</code> or any ancestor re-skins every calendar below
+            it, and one on the <b>Style</b> of an instance re-skins that one alone. They restyle the default, not a
+            choice: an explicit <b>Color</b> or <b>Size</b> wins over the variables for what it sets.
         </div>
         <br />
         <div>CSS variables:</div>

@@ -181,147 +181,139 @@ public class BitPanelParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitPanel);
 
-        if (AbsolutePosition.HasValue && bitPanel.HasNotBeenSet(nameof(AbsolutePosition)) && bitPanel.AbsolutePosition != AbsolutePosition)
+        if (AbsolutePosition.HasValue)
         {
-            bitPanel.AbsolutePosition = AbsolutePosition.Value;
-
-            bitPanel.ClassBuilder.Reset();
+            bitPanel.TakeFromCascade(nameof(AbsolutePosition), AbsolutePosition.Value, static p => p.AbsolutePosition, static (p, v) => p.AbsolutePosition = v);
         }
 
-        if (AutoToggleScroll.HasValue && bitPanel.HasNotBeenSet(nameof(AutoToggleScroll)))
+        if (AutoToggleScroll.HasValue)
         {
-            bitPanel.AutoToggleScroll = AutoToggleScroll.Value;
+            bitPanel.TakeFromCascade(nameof(AutoToggleScroll), AutoToggleScroll.Value, static p => p.AutoToggleScroll, static (p, v) => p.AutoToggleScroll = v);
         }
 
-        if (Blocking.HasValue && bitPanel.HasNotBeenSet(nameof(Blocking)))
+        if (Blocking.HasValue)
         {
-            bitPanel.Blocking = Blocking.Value;
+            bitPanel.TakeFromCascade(nameof(Blocking), Blocking.Value, static p => p.Blocking, static (p, v) => p.Blocking = v);
         }
 
-        if (Classes is not null && bitPanel.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitPanel.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitPanel.Classes = Classes;
-
-            bitPanel.ClassBuilder.Reset();
+            bitPanel.TakeFromCascade(nameof(Classes), Classes, static p => p.Classes, static (p, v) => p.Classes = v);
         }
 
-        if (CloseButtonTitle.HasValue() && bitPanel.HasNotBeenSet(nameof(CloseButtonTitle)))
+        if (CloseButtonTitle.HasValue())
         {
-            bitPanel.CloseButtonTitle = CloseButtonTitle;
+            bitPanel.TakeFromCascade(nameof(CloseButtonTitle), CloseButtonTitle, static p => p.CloseButtonTitle, static (p, v) => p.CloseButtonTitle = v);
         }
 
-        if (CloseIcon is not null && bitPanel.HasNotBeenSet(nameof(CloseIcon)))
+        if (CloseIcon is not null)
         {
-            bitPanel.CloseIcon = CloseIcon;
+            bitPanel.TakeFromCascade(nameof(CloseIcon), CloseIcon, static p => p.CloseIcon, static (p, v) => p.CloseIcon = v);
         }
 
-        if (CloseIconName.HasValue() && bitPanel.HasNotBeenSet(nameof(CloseIconName)))
+        if (CloseIconName.HasValue())
         {
-            bitPanel.CloseIconName = CloseIconName;
+            bitPanel.TakeFromCascade(nameof(CloseIconName), CloseIconName, static p => p.CloseIconName, static (p, v) => p.CloseIconName = v);
         }
 
-        if (FullSize.HasValue && bitPanel.HasNotBeenSet(nameof(FullSize)))
+        if (FullSize.HasValue)
         {
-            bitPanel.FullSize = FullSize.Value;
+            bitPanel.TakeFromCascade(nameof(FullSize), FullSize.Value, static p => p.FullSize, static (p, v) => p.FullSize = v);
         }
 
-        if (IsAlert.HasValue && bitPanel.HasNotBeenSet(nameof(IsAlert)))
+        if (IsAlert.HasValue)
         {
-            bitPanel.IsAlert = IsAlert.Value;
+            bitPanel.TakeFromCascade(nameof(IsAlert), IsAlert.Value, static p => p.IsAlert, static (p, v) => p.IsAlert = v);
         }
 
-        if (KeepMounted.HasValue && bitPanel.HasNotBeenSet(nameof(KeepMounted)))
+        if (KeepMounted.HasValue)
         {
-            bitPanel.KeepMounted = KeepMounted.Value;
+            bitPanel.TakeFromCascade(nameof(KeepMounted), KeepMounted.Value, static p => p.KeepMounted, static (p, v) => p.KeepMounted = v);
         }
 
-        if (ModeFull.HasValue && bitPanel.HasNotBeenSet(nameof(ModeFull)))
+        if (ModeFull.HasValue)
         {
-            bitPanel.ModeFull = ModeFull.Value;
+            bitPanel.TakeFromCascade(nameof(ModeFull), ModeFull.Value, static p => p.ModeFull, static (p, v) => p.ModeFull = v);
         }
 
-        if (Modeless.HasValue && bitPanel.HasNotBeenSet(nameof(Modeless)))
+        if (Modeless.HasValue)
         {
-            bitPanel.Modeless = Modeless.Value;
+            bitPanel.TakeFromCascade(nameof(Modeless), Modeless.Value, static p => p.Modeless, static (p, v) => p.Modeless = v);
         }
 
-        if (NoAutoFocus.HasValue && bitPanel.HasNotBeenSet(nameof(NoAutoFocus)))
+        if (NoAutoFocus.HasValue)
         {
-            bitPanel.NoAutoFocus = NoAutoFocus.Value;
+            bitPanel.TakeFromCascade(nameof(NoAutoFocus), NoAutoFocus.Value, static p => p.NoAutoFocus, static (p, v) => p.NoAutoFocus = v);
         }
 
-        if (NoDismissOnEscape.HasValue && bitPanel.HasNotBeenSet(nameof(NoDismissOnEscape)))
+        if (NoDismissOnEscape.HasValue)
         {
-            bitPanel.NoDismissOnEscape = NoDismissOnEscape.Value;
+            bitPanel.TakeFromCascade(nameof(NoDismissOnEscape), NoDismissOnEscape.Value, static p => p.NoDismissOnEscape, static (p, v) => p.NoDismissOnEscape = v);
         }
 
-        if (NoFocusTrap.HasValue && bitPanel.HasNotBeenSet(nameof(NoFocusTrap)))
+        if (NoFocusTrap.HasValue)
         {
-            bitPanel.NoFocusTrap = NoFocusTrap.Value;
+            bitPanel.TakeFromCascade(nameof(NoFocusTrap), NoFocusTrap.Value, static p => p.NoFocusTrap, static (p, v) => p.NoFocusTrap = v);
         }
 
-        if (NoRestoreFocus.HasValue && bitPanel.HasNotBeenSet(nameof(NoRestoreFocus)))
+        if (NoRestoreFocus.HasValue)
         {
-            bitPanel.NoRestoreFocus = NoRestoreFocus.Value;
+            bitPanel.TakeFromCascade(nameof(NoRestoreFocus), NoRestoreFocus.Value, static p => p.NoRestoreFocus, static (p, v) => p.NoRestoreFocus = v);
         }
 
-        if (NoScrollLock.HasValue && bitPanel.HasNotBeenSet(nameof(NoScrollLock)))
+        if (NoScrollLock.HasValue)
         {
-            bitPanel.NoScrollLock = NoScrollLock.Value;
+            bitPanel.TakeFromCascade(nameof(NoScrollLock), NoScrollLock.Value, static p => p.NoScrollLock, static (p, v) => p.NoScrollLock = v);
         }
 
-        if (NoSwipe.HasValue && bitPanel.HasNotBeenSet(nameof(NoSwipe)))
+        if (NoSwipe.HasValue)
         {
-            bitPanel.NoSwipe = NoSwipe.Value;
+            bitPanel.TakeFromCascade(nameof(NoSwipe), NoSwipe.Value, static p => p.NoSwipe, static (p, v) => p.NoSwipe = v);
         }
 
-        if (Placement.HasValue && bitPanel.HasNotBeenSet(nameof(Placement)))
+        if (Placement.HasValue)
         {
-            bitPanel.Placement = Placement.Value;
+            bitPanel.TakeFromCascade(nameof(Placement), Placement.Value, static p => p.Placement, static (p, v) => p.Placement = v);
         }
 
-        if (Role.HasValue() && bitPanel.HasNotBeenSet(nameof(Role)))
+        if (Role.HasValue())
         {
-            bitPanel.Role = Role;
+            bitPanel.TakeFromCascade(nameof(Role), Role, static p => p.Role, static (p, v) => p.Role = v);
         }
 
-        if (ScrollerElement.HasValue && bitPanel.HasNotBeenSet(nameof(ScrollerElement)))
+        if (ScrollerElement.HasValue)
         {
-            bitPanel.ScrollerElement = ScrollerElement.Value;
+            bitPanel.TakeFromCascade(nameof(ScrollerElement), ScrollerElement.Value, static p => p.ScrollerElement, static (p, v) => p.ScrollerElement = v);
         }
 
-        if (ScrollerSelector.HasValue() && bitPanel.HasNotBeenSet(nameof(ScrollerSelector)))
+        if (ScrollerSelector.HasValue())
         {
-            bitPanel.ScrollerSelector = ScrollerSelector;
+            bitPanel.TakeFromCascade(nameof(ScrollerSelector), ScrollerSelector, static p => p.ScrollerSelector, static (p, v) => p.ScrollerSelector = v);
         }
 
-        if (ShowCloseButton.HasValue && bitPanel.HasNotBeenSet(nameof(ShowCloseButton)))
+        if (ShowCloseButton.HasValue)
         {
-            bitPanel.ShowCloseButton = ShowCloseButton.Value;
+            bitPanel.TakeFromCascade(nameof(ShowCloseButton), ShowCloseButton.Value, static p => p.ShowCloseButton, static (p, v) => p.ShowCloseButton = v);
         }
 
-        if (Size.HasValue && bitPanel.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue)
         {
-            bitPanel.Size = Size.Value;
+            bitPanel.TakeFromCascade(nameof(Size), Size.Value, static p => p.Size, static (p, v) => p.Size = v);
         }
 
-        if (Styles is not null && bitPanel.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitPanel.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitPanel.Styles = Styles;
-
-            bitPanel.StyleBuilder.Reset();
+            bitPanel.TakeFromCascade(nameof(Styles), Styles, static p => p.Styles, static (p, v) => p.Styles = v);
         }
 
-        if (SwipeTrigger.HasValue && bitPanel.HasNotBeenSet(nameof(SwipeTrigger)))
+        if (SwipeTrigger.HasValue)
         {
-            bitPanel.SwipeTrigger = SwipeTrigger.Value;
+            bitPanel.TakeFromCascade(nameof(SwipeTrigger), SwipeTrigger.Value, static p => p.SwipeTrigger, static (p, v) => p.SwipeTrigger = v);
         }
 
-        if (ZIndex.HasValue && bitPanel.HasNotBeenSet(nameof(ZIndex)) && bitPanel.ZIndex != ZIndex)
+        if (ZIndex.HasValue)
         {
-            bitPanel.ZIndex = ZIndex.Value;
-
-            bitPanel.StyleBuilder.Reset();
+            bitPanel.TakeFromCascade(nameof(ZIndex), ZIndex.Value, static p => p.ZIndex, static (p, v) => p.ZIndex = v);
         }
     }
 }

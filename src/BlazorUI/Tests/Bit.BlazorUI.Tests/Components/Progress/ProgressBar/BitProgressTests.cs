@@ -1930,7 +1930,6 @@ public class BitProgressTests : BunitTestContext
     // ---------------------------------------------------------------- color & size
 
     [TestMethod,
-        DataRow(null, "bit-prb-pri"),
         DataRow(BitColor.Primary, "bit-prb-pri"),
         DataRow(BitColor.Secondary, "bit-prb-sec"),
         DataRow(BitColor.Tertiary, "bit-prb-ter"),
@@ -1949,7 +1948,7 @@ public class BitProgressTests : BunitTestContext
         DataRow(BitColor.SecondaryBorder, "bit-prb-sbr"),
         DataRow(BitColor.TertiaryBorder, "bit-prb-tbr")
     ]
-    public void BitProgressColorTest(BitColor? color, string expectedClass)
+    public void BitProgressColorTest(BitColor color, string expectedClass)
     {
         var component = RenderComponent<BitProgress>(parameters =>
         {
@@ -1957,6 +1956,27 @@ public class BitProgressTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-prb").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitProgressShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitProgress>();
+
+        // An unset Color or Size publishes nothing, so the public --bit-Progress-* variables restyle the default while
+        // an explicit value - which does publish its class - wins over them.
+        var root = component.Find(".bit-prb");
+        var published = new[]
+        {
+            "bit-prb-pri", "bit-prb-sec", "bit-prb-ter", "bit-prb-inf", "bit-prb-suc", "bit-prb-wrn", "bit-prb-swr", "bit-prb-err",
+            "bit-prb-pbg", "bit-prb-sbg", "bit-prb-tbg", "bit-prb-pfg", "bit-prb-sfg", "bit-prb-tfg", "bit-prb-pbr", "bit-prb-sbr", "bit-prb-tbr",
+            "bit-prb-sm", "bit-prb-md", "bit-prb-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
     }
 
     [TestMethod]
@@ -1971,6 +1991,10 @@ public class BitProgressTests : BunitTestContext
         });
 
         Assert.Contains("--bit-prb-bar-color: tomato;", component.Find(".bit-prb").GetAttribute("style")!);
+
+        // The buffer tint is left to derive from it, so --bit-Progress-buffer-color - which no parameter paints over -
+        // still restyles the buffer.
+        Assert.DoesNotContain("--bit-prb-buf-clr", component.Find(".bit-prb").GetAttribute("style")!);
     }
 
     [TestMethod]
@@ -2055,7 +2079,7 @@ public class BitProgressTests : BunitTestContext
         DataRow(BitSize.Medium),
         DataRow(BitSize.Large)
     ]
-    public void BitProgressCircularThicknessShouldFollowTheSizeUnlessTheVariableSaysOtherwise(BitSize? size)
+    public void BitProgressCircularThicknessShouldFollowTheSizeOrTheVariable(BitSize? size)
     {
         var component = RenderComponent<BitProgress>(parameters =>
         {
@@ -2063,10 +2087,11 @@ public class BitProgressTests : BunitTestContext
             parameters.Add(p => p.Size, size);
         });
 
-        // The per-size stroke - the spinner token the stylesheet scales per size class - is only the fallback of the
-        // public variable, so a --bit-Progress-thickness set on an ancestor reaches the ring as it does the bar.
-        Assert.Contains("stroke-width: min(var(--bit-Progress-thickness, var(--bit-prb-ring-stroke)), 20%)", component.Find(".bit-prb-cbr").GetAttribute("style")!);
-        Assert.Contains("stroke-width: min(var(--bit-Progress-thickness, var(--bit-prb-ring-stroke)), 20%)", component.Find(".bit-prb-crt").GetAttribute("style")!);
+        // The ring reads the stroke the stylesheet resolves on the root: the per-size stroke an explicit Size publishes,
+        // then a --bit-Progress-thickness set on an ancestor - which reaches the ring as it does the bar while the Size
+        // is unset - then the spinner token.
+        Assert.Contains("stroke-width: min(var(--bit-prb-ring-width), 20%)", component.Find(".bit-prb-cbr").GetAttribute("style")!);
+        Assert.Contains("stroke-width: min(var(--bit-prb-ring-width), 20%)", component.Find(".bit-prb-crt").GetAttribute("style")!);
     }
 
     [TestMethod,

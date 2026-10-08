@@ -484,7 +484,7 @@ private readonly BitHeaderParams[] headerParams =
 <div class=""brand-headers"">
     <BitHeader Bordered>On an ancestor</BitHeader>
 
-    <BitHeader Bordered Size=""BitSize.Small"">Every header under it follows</BitHeader>
+    <BitHeader Bordered Size=""BitSize.Small"">Every header under it follows, but an explicit Size keeps its own padding</BitHeader>
 </div>
 
 

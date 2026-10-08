@@ -148,124 +148,104 @@ public class BitBasicListParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitBasicList);
 
-        if (AutoLoad.HasValue && bitBasicList.HasNotBeenSet(nameof(AutoLoad)))
+        if (AutoLoad.HasValue)
         {
-            bitBasicList.AutoLoad = AutoLoad.Value;
+            bitBasicList.TakeFromCascade(nameof(AutoLoad), AutoLoad.Value, static b => b.AutoLoad, static (b, v) => b.AutoLoad = v);
         }
 
-        if (AutoLoadThreshold.HasValue && bitBasicList.HasNotBeenSet(nameof(AutoLoadThreshold)))
+        if (AutoLoadThreshold.HasValue)
         {
-            bitBasicList.AutoLoadThreshold = AutoLoadThreshold.Value;
+            bitBasicList.TakeFromCascade(nameof(AutoLoadThreshold), AutoLoadThreshold.Value, static b => b.AutoLoadThreshold, static (b, v) => b.AutoLoadThreshold = v);
         }
 
-        if (Classes is not null && bitBasicList.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitBasicList.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitBasicList.Classes = Classes;
-
-            bitBasicList.ClassBuilder.Reset();
+            bitBasicList.TakeFromCascade(nameof(Classes), Classes, static b => b.Classes, static (b, v) => b.Classes = v);
         }
 
-        if (FitHeight.HasValue && bitBasicList.HasNotBeenSet(nameof(FitHeight)) && bitBasicList.FitHeight != FitHeight)
+        if (FitHeight.HasValue)
         {
-            bitBasicList.FitHeight = FitHeight.Value;
-
-            bitBasicList.StyleBuilder.Reset();
+            bitBasicList.TakeFromCascade(nameof(FitHeight), FitHeight.Value, static b => b.FitHeight, static (b, v) => b.FitHeight = v);
         }
 
-        if (FitSize.HasValue && bitBasicList.HasNotBeenSet(nameof(FitSize)) && bitBasicList.FitSize != FitSize)
+        if (FitSize.HasValue)
         {
-            bitBasicList.FitSize = FitSize.Value;
-
-            bitBasicList.StyleBuilder.Reset();
+            bitBasicList.TakeFromCascade(nameof(FitSize), FitSize.Value, static b => b.FitSize, static (b, v) => b.FitSize = v);
         }
 
-        if (FitWidth.HasValue && bitBasicList.HasNotBeenSet(nameof(FitWidth)) && bitBasicList.FitWidth != FitWidth)
+        if (FitWidth.HasValue)
         {
-            bitBasicList.FitWidth = FitWidth.Value;
-
-            bitBasicList.StyleBuilder.Reset();
+            bitBasicList.TakeFromCascade(nameof(FitWidth), FitWidth.Value, static b => b.FitWidth, static (b, v) => b.FitWidth = v);
         }
 
-        if (FullHeight.HasValue && bitBasicList.HasNotBeenSet(nameof(FullHeight)) && bitBasicList.FullHeight != FullHeight)
+        if (FullHeight.HasValue)
         {
-            bitBasicList.FullHeight = FullHeight.Value;
-
-            bitBasicList.StyleBuilder.Reset();
+            bitBasicList.TakeFromCascade(nameof(FullHeight), FullHeight.Value, static b => b.FullHeight, static (b, v) => b.FullHeight = v);
         }
 
-        if (FullSize.HasValue && bitBasicList.HasNotBeenSet(nameof(FullSize)) && bitBasicList.FullSize != FullSize)
+        if (FullSize.HasValue)
         {
-            bitBasicList.FullSize = FullSize.Value;
-
-            bitBasicList.StyleBuilder.Reset();
+            bitBasicList.TakeFromCascade(nameof(FullSize), FullSize.Value, static b => b.FullSize, static (b, v) => b.FullSize = v);
         }
 
-        if (FullWidth.HasValue && bitBasicList.HasNotBeenSet(nameof(FullWidth)) && bitBasicList.FullWidth != FullWidth)
+        if (FullWidth.HasValue)
         {
-            bitBasicList.FullWidth = FullWidth.Value;
-
-            bitBasicList.StyleBuilder.Reset();
+            bitBasicList.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static b => b.FullWidth, static (b, v) => b.FullWidth = v);
         }
 
-        if (Horizontal.HasValue && bitBasicList.HasNotBeenSet(nameof(Horizontal)) && bitBasicList.Horizontal != Horizontal)
+        if (Horizontal.HasValue)
         {
-            bitBasicList.Horizontal = Horizontal.Value;
-
-            bitBasicList.ClassBuilder.Reset();
+            bitBasicList.TakeFromCascade(nameof(Horizontal), Horizontal.Value, static b => b.Horizontal, static (b, v) => b.Horizontal = v);
         }
 
-        if (ItemSize.HasValue && bitBasicList.HasNotBeenSet(nameof(ItemSize)))
+        if (ItemSize.HasValue)
         {
-            bitBasicList.ItemSize = ItemSize.Value;
+            bitBasicList.TakeFromCascade(nameof(ItemSize), ItemSize.Value, static b => b.ItemSize, static (b, v) => b.ItemSize = v);
         }
 
-        if (ItemsProviderDelay.HasValue && bitBasicList.HasNotBeenSet(nameof(ItemsProviderDelay)))
+        if (ItemsProviderDelay.HasValue)
         {
-            bitBasicList.ItemsProviderDelay = ItemsProviderDelay.Value;
+            bitBasicList.TakeFromCascade(nameof(ItemsProviderDelay), ItemsProviderDelay.Value, static b => b.ItemsProviderDelay, static (b, v) => b.ItemsProviderDelay = v);
         }
 
-        if (LoadingLabel.HasValue() && bitBasicList.HasNotBeenSet(nameof(LoadingLabel)))
+        if (LoadingLabel.HasValue())
         {
-            bitBasicList.LoadingLabel = LoadingLabel;
+            bitBasicList.TakeFromCascade(nameof(LoadingLabel), LoadingLabel, static b => b.LoadingLabel, static (b, v) => b.LoadingLabel = v);
         }
 
-        if (LoadMore.HasValue && bitBasicList.HasNotBeenSet(nameof(LoadMore)))
+        if (LoadMore.HasValue)
         {
-            bitBasicList.LoadMore = LoadMore.Value;
+            bitBasicList.TakeFromCascade(nameof(LoadMore), LoadMore.Value, static b => b.LoadMore, static (b, v) => b.LoadMore = v);
         }
 
-        if (LoadMoreSize.HasValue && bitBasicList.HasNotBeenSet(nameof(LoadMoreSize)))
+        if (LoadMoreSize.HasValue)
         {
-            bitBasicList.LoadMoreSize = LoadMoreSize.Value;
+            bitBasicList.TakeFromCascade(nameof(LoadMoreSize), LoadMoreSize.Value, static b => b.LoadMoreSize, static (b, v) => b.LoadMoreSize = v);
         }
 
-        if (LoadMoreText.HasValue() && bitBasicList.HasNotBeenSet(nameof(LoadMoreText)))
+        if (LoadMoreText.HasValue())
         {
-            bitBasicList.LoadMoreText = LoadMoreText;
+            bitBasicList.TakeFromCascade(nameof(LoadMoreText), LoadMoreText, static b => b.LoadMoreText, static (b, v) => b.LoadMoreText = v);
         }
 
-        if (OverscanCount.HasValue && bitBasicList.HasNotBeenSet(nameof(OverscanCount)))
+        if (OverscanCount.HasValue)
         {
-            bitBasicList.OverscanCount = OverscanCount.Value;
+            bitBasicList.TakeFromCascade(nameof(OverscanCount), OverscanCount.Value, static b => b.OverscanCount, static (b, v) => b.OverscanCount = v);
         }
 
-        if (Role.HasValue() && bitBasicList.HasNotBeenSet(nameof(Role)))
+        if (Role.HasValue())
         {
-            bitBasicList.Role = Role;
+            bitBasicList.TakeFromCascade(nameof(Role), Role, static b => b.Role, static (b, v) => b.Role = v);
         }
 
-        if (Styles is not null && bitBasicList.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitBasicList.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitBasicList.Styles = Styles;
-
-            bitBasicList.StyleBuilder.Reset();
+            bitBasicList.TakeFromCascade(nameof(Styles), Styles, static b => b.Styles, static (b, v) => b.Styles = v);
         }
 
-        if (Virtualize.HasValue && bitBasicList.HasNotBeenSet(nameof(Virtualize)) && bitBasicList.Virtualize != Virtualize)
+        if (Virtualize.HasValue)
         {
-            bitBasicList.Virtualize = Virtualize.Value;
-
-            bitBasicList.ClassBuilder.Reset();
+            bitBasicList.TakeFromCascade(nameof(Virtualize), Virtualize.Value, static b => b.Virtualize, static (b, v) => b.Virtualize = v);
         }
     }
 }

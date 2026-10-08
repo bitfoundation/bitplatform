@@ -236,268 +236,199 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitCard);
 
-        if (Background.HasValue && bitCard.HasNotBeenSet(nameof(Background)) && bitCard.Background != Background)
+        if (Background.HasValue)
         {
-            bitCard.Background = Background.Value;
-
-            bitCard.ClassBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(Background), Background.Value, static c => c.Background, static (c, v) => c.Background = v);
         }
 
-        if (Border.HasValue && bitCard.HasNotBeenSet(nameof(Border)) && bitCard.Border != Border)
+        if (Border.HasValue)
         {
-            bitCard.Border = Border.Value;
-
-            bitCard.ClassBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(Border), Border.Value, static c => c.Border, static (c, v) => c.Border = v);
         }
 
-        if (Classes is not null && bitCard.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitCard.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitCard.Classes = Classes;
-
-            bitCard.ClassBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(Classes), Classes, static c => c.Classes, static (c, v) => c.Classes = v);
         }
 
-        if (Color.HasValue && bitCard.HasNotBeenSet(nameof(Color)) && bitCard.Color != Color)
+        if (Color.HasValue)
         {
-            bitCard.Color = Color.Value;
-
-            bitCard.ClassBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(Color), Color.Value, static c => c.Color, static (c, v) => c.Color = v);
         }
 
-        if (CoverOverlay.HasValue && bitCard.HasNotBeenSet(nameof(CoverOverlay)) && bitCard.CoverOverlay != CoverOverlay)
+        if (CoverOverlay.HasValue)
         {
-            bitCard.CoverOverlay = CoverOverlay.Value;
-
-            bitCard.ClassBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(CoverOverlay), CoverOverlay.Value, static c => c.CoverOverlay, static (c, v) => c.CoverOverlay = v);
         }
 
-        if (Divider.HasValue && bitCard.HasNotBeenSet(nameof(Divider)) && bitCard.Divider != Divider)
+        if (Divider.HasValue)
         {
-            bitCard.Divider = Divider.Value;
-
-            bitCard.ClassBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(Divider), Divider.Value, static c => c.Divider, static (c, v) => c.Divider = v);
         }
 
-        if (Elevation.HasValue && bitCard.HasNotBeenSet(nameof(Elevation)) && bitCard.Elevation != Elevation)
+        if (Elevation.HasValue)
         {
-            bitCard.Elevation = Elevation.Value;
-
-            bitCard.ClassBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(Elevation), Elevation.Value, static c => c.Elevation, static (c, v) => c.Elevation = v);
         }
 
-        if (FullHeight.HasValue && bitCard.HasNotBeenSet(nameof(FullHeight)) && bitCard.FullHeight != FullHeight)
+        if (FullHeight.HasValue)
         {
-            bitCard.FullHeight = FullHeight.Value;
-
-            bitCard.ClassBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(FullHeight), FullHeight.Value, static c => c.FullHeight, static (c, v) => c.FullHeight = v);
         }
 
-        if (FullSize.HasValue && bitCard.HasNotBeenSet(nameof(FullSize)) && bitCard.FullSize != FullSize)
+        if (FullSize.HasValue)
         {
-            bitCard.FullSize = FullSize.Value;
-
-            bitCard.ClassBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(FullSize), FullSize.Value, static c => c.FullSize, static (c, v) => c.FullSize = v);
         }
 
-        if (FullWidth.HasValue && bitCard.HasNotBeenSet(nameof(FullWidth)) && bitCard.FullWidth != FullWidth)
+        if (FullWidth.HasValue)
         {
-            bitCard.FullWidth = FullWidth.Value;
-
-            bitCard.ClassBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static c => c.FullWidth, static (c, v) => c.FullWidth = v);
         }
 
-        if (HeadingLevel.HasValue && bitCard.HasNotBeenSet(nameof(HeadingLevel)))
+        if (HeadingLevel.HasValue)
         {
-            bitCard.HeadingLevel = HeadingLevel.Value;
+            bitCard.TakeFromCascade(nameof(HeadingLevel), HeadingLevel.Value, static c => c.HeadingLevel, static (c, v) => c.HeadingLevel = v);
         }
 
-        if (Reversed.HasValue && bitCard.HasNotBeenSet(nameof(Reversed)) && bitCard.Reversed != Reversed)
+        if (Reversed.HasValue)
         {
-            bitCard.Reversed = Reversed.Value;
-
-            bitCard.ClassBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(Reversed), Reversed.Value, static c => c.Reversed, static (c, v) => c.Reversed = v);
         }
 
-        if (Horizontal.HasValue && bitCard.HasNotBeenSet(nameof(Horizontal)) && bitCard.Horizontal != Horizontal)
+        if (Horizontal.HasValue)
         {
-            bitCard.Horizontal = Horizontal.Value;
-
-            bitCard.ClassBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(Horizontal), Horizontal.Value, static c => c.Horizontal, static (c, v) => c.Horizontal = v);
         }
 
-        if (Hoverable.HasValue && bitCard.HasNotBeenSet(nameof(Hoverable)) && bitCard.Hoverable != Hoverable)
+        if (Hoverable.HasValue)
         {
-            bitCard.Hoverable = Hoverable.Value;
-
-            bitCard.ClassBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(Hoverable), Hoverable.Value, static c => c.Hoverable, static (c, v) => c.Hoverable = v);
         }
 
-        if (ImageLoading.HasValue && bitCard.HasNotBeenSet(nameof(ImageLoading)))
+        if (ImageLoading.HasValue)
         {
-            bitCard.ImageLoading = ImageLoading.Value;
+            bitCard.TakeFromCascade(nameof(ImageLoading), ImageLoading.Value, static c => c.ImageLoading, static (c, v) => c.ImageLoading = v);
         }
 
-        if (Download is not null && bitCard.HasNotBeenSet(nameof(Download)))
+        if (Download is not null)
         {
-            bitCard.Download = Download;
+            bitCard.TakeFromCascade(nameof(Download), Download, static c => c.Download, static (c, v) => c.Download = v);
         }
 
-        if (Loading.HasValue && bitCard.HasNotBeenSet(nameof(Loading)) && bitCard.Loading != Loading)
+        if (Loading.HasValue)
         {
-            bitCard.Loading = Loading.Value;
-
-            bitCard.ClassBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(Loading), Loading.Value, static c => c.Loading, static (c, v) => c.Loading = v);
         }
 
-        if (LoadingTemplate is not null && bitCard.HasNotBeenSet(nameof(LoadingTemplate)))
+        if (LoadingTemplate is not null)
         {
-            bitCard.LoadingTemplate = LoadingTemplate;
+            bitCard.TakeFromCascade(nameof(LoadingTemplate), LoadingTemplate, static c => c.LoadingTemplate, static (c, v) => c.LoadingTemplate = v);
         }
 
-        if (NoPadding.HasValue && bitCard.HasNotBeenSet(nameof(NoPadding)) && bitCard.NoPadding != NoPadding)
+        if (NoPadding.HasValue)
         {
-            bitCard.NoPadding = NoPadding.Value;
-
-            bitCard.ClassBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(NoPadding), NoPadding.Value, static c => c.NoPadding, static (c, v) => c.NoPadding = v);
         }
 
-        if (NoShadow.HasValue && bitCard.HasNotBeenSet(nameof(NoShadow)) && bitCard.NoShadow != NoShadow)
+        if (NoShadow.HasValue)
         {
-            bitCard.NoShadow = NoShadow.Value;
-
-            bitCard.ClassBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(NoShadow), NoShadow.Value, static c => c.NoShadow, static (c, v) => c.NoShadow = v);
         }
 
-        if (Outlined.HasValue && bitCard.HasNotBeenSet(nameof(Outlined)) && bitCard.Outlined != Outlined)
+        if (Outlined.HasValue)
         {
-            bitCard.Outlined = Outlined.Value;
-
-            bitCard.ClassBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(Outlined), Outlined.Value, static c => c.Outlined, static (c, v) => c.Outlined = v);
         }
 
-        if (Rel.HasValue && bitCard.HasNotBeenSet(nameof(Rel)))
+        if (Rel.HasValue)
         {
-            bitCard.Rel = Rel.Value;
-
-            bitCard.OnSetHrefAndRel();
+            bitCard.TakeFromCascade(nameof(Rel), Rel.Value, static c => c.Rel, static (c, v) => c.Rel = v);
         }
 
-        if (ScrollableBody.HasValue && bitCard.HasNotBeenSet(nameof(ScrollableBody)) && bitCard.ScrollableBody != ScrollableBody)
+        if (ScrollableBody.HasValue)
         {
-            bitCard.ScrollableBody = ScrollableBody.Value;
-
-            bitCard.ClassBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(ScrollableBody), ScrollableBody.Value, static c => c.ScrollableBody, static (c, v) => c.ScrollableBody = v);
         }
 
-        if (Size.HasValue && bitCard.HasNotBeenSet(nameof(Size)) && bitCard.Size != Size)
+        if (Size.HasValue)
         {
-            bitCard.Size = Size.Value;
-
-            bitCard.ClassBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(Size), Size.Value, static c => c.Size, static (c, v) => c.Size = v);
         }
 
-        if (Square.HasValue && bitCard.HasNotBeenSet(nameof(Square)) && bitCard.Square != Square)
+        if (Square.HasValue)
         {
-            bitCard.Square = Square.Value;
-
-            bitCard.ClassBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(Square), Square.Value, static c => c.Square, static (c, v) => c.Square = v);
         }
 
-        if (StopPropagation.HasValue && bitCard.HasNotBeenSet(nameof(StopPropagation)))
+        if (StopPropagation.HasValue)
         {
-            bitCard.StopPropagation = StopPropagation.Value;
+            bitCard.TakeFromCascade(nameof(StopPropagation), StopPropagation.Value, static c => c.StopPropagation, static (c, v) => c.StopPropagation = v);
         }
 
-        if (Variant.HasValue && bitCard.HasNotBeenSet(nameof(Variant)) && bitCard.Variant != Variant)
+        if (Variant.HasValue)
         {
-            bitCard.Variant = Variant.Value;
-
-            bitCard.ClassBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(Variant), Variant.Value, static c => c.Variant, static (c, v) => c.Variant = v);
         }
 
-        if (Target is not null && bitCard.HasNotBeenSet(nameof(Target)))
+        if (Target is not null)
         {
-            bitCard.Target = Target;
-
-            bitCard.OnSetHrefAndRel();
+            bitCard.TakeFromCascade(nameof(Target), Target, static c => c.Target, static (c, v) => c.Target = v);
         }
 
-        if (Height is not null && bitCard.HasNotBeenSet(nameof(Height)) && bitCard.Height != Height)
+        if (Height is not null)
         {
-            bitCard.Height = Height;
-
-            bitCard.StyleBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(Height), Height, static c => c.Height, static (c, v) => c.Height = v);
         }
 
-        if (CoverRatio is not null && bitCard.HasNotBeenSet(nameof(CoverRatio)) && bitCard.CoverRatio != CoverRatio)
+        if (CoverRatio is not null)
         {
-            bitCard.CoverRatio = CoverRatio;
-
-            bitCard.ClassBuilder.Reset();
-            bitCard.StyleBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(CoverRatio), CoverRatio, static c => c.CoverRatio, static (c, v) => c.CoverRatio = v);
         }
 
-        if (CoverWidth is not null && bitCard.HasNotBeenSet(nameof(CoverWidth)) && bitCard.CoverWidth != CoverWidth)
+        if (CoverWidth is not null)
         {
-            bitCard.CoverWidth = CoverWidth;
-
-            bitCard.StyleBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(CoverWidth), CoverWidth, static c => c.CoverWidth, static (c, v) => c.CoverWidth = v);
         }
 
-        if (ImageHeight is not null && bitCard.HasNotBeenSet(nameof(ImageHeight)) && bitCard.ImageHeight != ImageHeight)
+        if (ImageHeight is not null)
         {
-            bitCard.ImageHeight = ImageHeight;
-
-            bitCard.StyleBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(ImageHeight), ImageHeight, static c => c.ImageHeight, static (c, v) => c.ImageHeight = v);
         }
 
-        if (ImagePosition is not null && bitCard.HasNotBeenSet(nameof(ImagePosition)) && bitCard.ImagePosition != ImagePosition)
+        if (ImagePosition is not null)
         {
-            bitCard.ImagePosition = ImagePosition;
-
-            bitCard.StyleBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(ImagePosition), ImagePosition, static c => c.ImagePosition, static (c, v) => c.ImagePosition = v);
         }
 
-        if (MaxHeight is not null && bitCard.HasNotBeenSet(nameof(MaxHeight)) && bitCard.MaxHeight != MaxHeight)
+        if (MaxHeight is not null)
         {
-            bitCard.MaxHeight = MaxHeight;
-
-            bitCard.StyleBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(MaxHeight), MaxHeight, static c => c.MaxHeight, static (c, v) => c.MaxHeight = v);
         }
 
-        if (MaxWidth is not null && bitCard.HasNotBeenSet(nameof(MaxWidth)) && bitCard.MaxWidth != MaxWidth)
+        if (MaxWidth is not null)
         {
-            bitCard.MaxWidth = MaxWidth;
-
-            bitCard.StyleBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(MaxWidth), MaxWidth, static c => c.MaxWidth, static (c, v) => c.MaxWidth = v);
         }
 
-        if (MinHeight is not null && bitCard.HasNotBeenSet(nameof(MinHeight)) && bitCard.MinHeight != MinHeight)
+        if (MinHeight is not null)
         {
-            bitCard.MinHeight = MinHeight;
-
-            bitCard.StyleBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(MinHeight), MinHeight, static c => c.MinHeight, static (c, v) => c.MinHeight = v);
         }
 
-        if (MinWidth is not null && bitCard.HasNotBeenSet(nameof(MinWidth)) && bitCard.MinWidth != MinWidth)
+        if (MinWidth is not null)
         {
-            bitCard.MinWidth = MinWidth;
-
-            bitCard.StyleBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(MinWidth), MinWidth, static c => c.MinWidth, static (c, v) => c.MinWidth = v);
         }
 
-        if (Styles is not null && bitCard.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitCard.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitCard.Styles = Styles;
-
-            bitCard.StyleBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(Styles), Styles, static c => c.Styles, static (c, v) => c.Styles = v);
         }
 
-        if (Width is not null && bitCard.HasNotBeenSet(nameof(Width)) && bitCard.Width != Width)
+        if (Width is not null)
         {
-            bitCard.Width = Width;
-
-            bitCard.StyleBuilder.Reset();
+            bitCard.TakeFromCascade(nameof(Width), Width, static c => c.Width, static (c, v) => c.Width = v);
         }
     }
 }

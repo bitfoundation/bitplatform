@@ -177,158 +177,136 @@ public class BitTooltipParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitTooltip);
 
-        if (Alignment.HasValue && bitTooltip.HasNotBeenSet(nameof(Alignment)))
+        if (Alignment.HasValue)
         {
-            bitTooltip.Alignment = Alignment.Value;
+            bitTooltip.TakeFromCascade(nameof(Alignment), Alignment.Value, static t => t.Alignment, static (t, v) => t.Alignment = v);
         }
 
-        if (ArrowSize.HasValue && bitTooltip.HasNotBeenSet(nameof(ArrowSize)) && bitTooltip.ArrowSize != ArrowSize)
+        if (ArrowSize.HasValue)
         {
-            bitTooltip.ArrowSize = ArrowSize.Value;
-
-            bitTooltip.StyleBuilder.Reset();
+            bitTooltip.TakeFromCascade(nameof(ArrowSize), ArrowSize.Value, static t => t.ArrowSize, static (t, v) => t.ArrowSize = v);
         }
 
-        if (Classes is not null && bitTooltip.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitTooltip.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitTooltip.Classes = Classes;
-
-            bitTooltip.ClassBuilder.Reset();
+            bitTooltip.TakeFromCascade(nameof(Classes), Classes, static t => t.Classes, static (t, v) => t.Classes = v);
         }
 
-        if (Color.HasValue && bitTooltip.HasNotBeenSet(nameof(Color)) && bitTooltip.Color != Color)
+        if (Color.HasValue)
         {
-            bitTooltip.Color = Color.Value;
-
-            bitTooltip.ClassBuilder.Reset();
+            bitTooltip.TakeFromCascade(nameof(Color), Color.Value, static t => t.Color, static (t, v) => t.Color = v);
         }
 
-        if (FullWidth.HasValue && bitTooltip.HasNotBeenSet(nameof(FullWidth)) && bitTooltip.FullWidth != FullWidth)
+        if (FullWidth.HasValue)
         {
-            bitTooltip.FullWidth = FullWidth.Value;
-
-            bitTooltip.ClassBuilder.Reset();
+            bitTooltip.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static t => t.FullWidth, static (t, v) => t.FullWidth = v);
         }
 
-        if (HideArrow.HasValue && bitTooltip.HasNotBeenSet(nameof(HideArrow)))
+        if (HideArrow.HasValue)
         {
-            bitTooltip.HideArrow = HideArrow.Value;
+            bitTooltip.TakeFromCascade(nameof(HideArrow), HideArrow.Value, static t => t.HideArrow, static (t, v) => t.HideArrow = v);
         }
 
         // The delays are only filled in, never marked as set: a BitTooltipGroup around the tooltip reads the
         // same "has not been set" to decide whether its own delay applies, and the group is the nearer of the two.
-        if (HideDelay.HasValue && bitTooltip.HasNotBeenSet(nameof(HideDelay)))
+        if (HideDelay.HasValue)
         {
-            bitTooltip.HideDelay = HideDelay.Value;
+            bitTooltip.TakeFromCascade(nameof(HideDelay), HideDelay.Value, static t => t.HideDelay, static (t, v) => t.HideDelay = v);
         }
 
-        if (HideOnClick.HasValue && bitTooltip.HasNotBeenSet(nameof(HideOnClick)))
+        if (HideOnClick.HasValue)
         {
-            bitTooltip.HideOnClick = HideOnClick.Value;
+            bitTooltip.TakeFromCascade(nameof(HideOnClick), HideOnClick.Value, static t => t.HideOnClick, static (t, v) => t.HideOnClick = v);
         }
 
-        if (Interactive.HasValue && bitTooltip.HasNotBeenSet(nameof(Interactive)) && bitTooltip.Interactive != Interactive)
+        if (Interactive.HasValue)
         {
-            bitTooltip.Interactive = Interactive.Value;
-
-            bitTooltip.ClassBuilder.Reset();
+            bitTooltip.TakeFromCascade(nameof(Interactive), Interactive.Value, static t => t.Interactive, static (t, v) => t.Interactive = v);
         }
 
-        if (LazyRender.HasValue && bitTooltip.HasNotBeenSet(nameof(LazyRender)))
+        if (LazyRender.HasValue)
         {
-            bitTooltip.LazyRender = LazyRender.Value;
+            bitTooltip.TakeFromCascade(nameof(LazyRender), LazyRender.Value, static t => t.LazyRender, static (t, v) => t.LazyRender = v);
         }
 
-        if (MaxWidth.HasValue() && bitTooltip.HasNotBeenSet(nameof(MaxWidth)) && bitTooltip.MaxWidth != MaxWidth)
+        if (MaxWidth.HasValue())
         {
-            bitTooltip.MaxWidth = MaxWidth;
-
-            bitTooltip.StyleBuilder.Reset();
+            bitTooltip.TakeFromCascade(nameof(MaxWidth), MaxWidth, static t => t.MaxWidth, static (t, v) => t.MaxWidth = v);
         }
 
-        if (NoAnimation.HasValue && bitTooltip.HasNotBeenSet(nameof(NoAnimation)) && bitTooltip.NoAnimation != NoAnimation)
+        if (NoAnimation.HasValue)
         {
-            bitTooltip.NoAnimation = NoAnimation.Value;
-
-            bitTooltip.ClassBuilder.Reset();
+            bitTooltip.TakeFromCascade(nameof(NoAnimation), NoAnimation.Value, static t => t.NoAnimation, static (t, v) => t.NoAnimation = v);
         }
 
-        if (NoDismissOnEscape.HasValue && bitTooltip.HasNotBeenSet(nameof(NoDismissOnEscape)))
+        if (NoDismissOnEscape.HasValue)
         {
-            bitTooltip.NoDismissOnEscape = NoDismissOnEscape.Value;
+            bitTooltip.TakeFromCascade(nameof(NoDismissOnEscape), NoDismissOnEscape.Value, static t => t.NoDismissOnEscape, static (t, v) => t.NoDismissOnEscape = v);
         }
 
-        if (NoTouch.HasValue && bitTooltip.HasNotBeenSet(nameof(NoTouch)))
+        if (NoTouch.HasValue)
         {
-            bitTooltip.NoTouch = NoTouch.Value;
+            bitTooltip.TakeFromCascade(nameof(NoTouch), NoTouch.Value, static t => t.NoTouch, static (t, v) => t.NoTouch = v);
         }
 
-        if (Offset.HasValue && bitTooltip.HasNotBeenSet(nameof(Offset)) && bitTooltip.Offset != Offset)
+        if (Offset.HasValue)
         {
-            bitTooltip.Offset = Offset.Value;
-
-            bitTooltip.StyleBuilder.Reset();
+            bitTooltip.TakeFromCascade(nameof(Offset), Offset.Value, static t => t.Offset, static (t, v) => t.Offset = v);
         }
 
-        if (Placement.HasValue && bitTooltip.HasNotBeenSet(nameof(Placement)))
+        if (Placement.HasValue)
         {
-            bitTooltip.Placement = Placement.Value;
+            bitTooltip.TakeFromCascade(nameof(Placement), Placement.Value, static t => t.Placement, static (t, v) => t.Placement = v);
         }
 
-        if (Relationship.HasValue && bitTooltip.HasNotBeenSet(nameof(Relationship)))
+        if (Relationship.HasValue)
         {
-            bitTooltip.Relationship = Relationship.Value;
+            bitTooltip.TakeFromCascade(nameof(Relationship), Relationship.Value, static t => t.Relationship, static (t, v) => t.Relationship = v);
         }
 
-        if (ShowDelay.HasValue && bitTooltip.HasNotBeenSet(nameof(ShowDelay)))
+        if (ShowDelay.HasValue)
         {
-            bitTooltip.ShowDelay = ShowDelay.Value;
+            bitTooltip.TakeFromCascade(nameof(ShowDelay), ShowDelay.Value, static t => t.ShowDelay, static (t, v) => t.ShowDelay = v);
         }
 
-        if (ShowOnClick.HasValue && bitTooltip.HasNotBeenSet(nameof(ShowOnClick)))
+        if (ShowOnClick.HasValue)
         {
-            bitTooltip.ShowOnClick = ShowOnClick.Value;
+            bitTooltip.TakeFromCascade(nameof(ShowOnClick), ShowOnClick.Value, static t => t.ShowOnClick, static (t, v) => t.ShowOnClick = v);
         }
 
-        if (ShowOnFocus.HasValue && bitTooltip.HasNotBeenSet(nameof(ShowOnFocus)))
+        if (ShowOnFocus.HasValue)
         {
-            bitTooltip.ShowOnFocus = ShowOnFocus.Value;
+            bitTooltip.TakeFromCascade(nameof(ShowOnFocus), ShowOnFocus.Value, static t => t.ShowOnFocus, static (t, v) => t.ShowOnFocus = v);
         }
 
-        if (ShowOnHover.HasValue && bitTooltip.HasNotBeenSet(nameof(ShowOnHover)))
+        if (ShowOnHover.HasValue)
         {
-            bitTooltip.ShowOnHover = ShowOnHover.Value;
+            bitTooltip.TakeFromCascade(nameof(ShowOnHover), ShowOnHover.Value, static t => t.ShowOnHover, static (t, v) => t.ShowOnHover = v);
         }
 
-        if (Size.HasValue && bitTooltip.HasNotBeenSet(nameof(Size)) && bitTooltip.Size != Size)
+        if (Size.HasValue)
         {
-            bitTooltip.Size = Size.Value;
-
-            bitTooltip.ClassBuilder.Reset();
+            bitTooltip.TakeFromCascade(nameof(Size), Size.Value, static t => t.Size, static (t, v) => t.Size = v);
         }
 
-        if (Styles is not null && bitTooltip.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitTooltip.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitTooltip.Styles = Styles;
-
-            bitTooltip.StyleBuilder.Reset();
+            bitTooltip.TakeFromCascade(nameof(Styles), Styles, static t => t.Styles, static (t, v) => t.Styles = v);
         }
 
-        if (TouchHideDelay.HasValue && bitTooltip.HasNotBeenSet(nameof(TouchHideDelay)))
+        if (TouchHideDelay.HasValue)
         {
-            bitTooltip.TouchHideDelay = TouchHideDelay.Value;
+            bitTooltip.TakeFromCascade(nameof(TouchHideDelay), TouchHideDelay.Value, static t => t.TouchHideDelay, static (t, v) => t.TouchHideDelay = v);
         }
 
-        if (TouchShowDelay.HasValue && bitTooltip.HasNotBeenSet(nameof(TouchShowDelay)))
+        if (TouchShowDelay.HasValue)
         {
-            bitTooltip.TouchShowDelay = TouchShowDelay.Value;
+            bitTooltip.TakeFromCascade(nameof(TouchShowDelay), TouchShowDelay.Value, static t => t.TouchShowDelay, static (t, v) => t.TouchShowDelay = v);
         }
 
-        if (ZIndex.HasValue && bitTooltip.HasNotBeenSet(nameof(ZIndex)) && bitTooltip.ZIndex != ZIndex)
+        if (ZIndex.HasValue)
         {
-            bitTooltip.ZIndex = ZIndex.Value;
-
-            bitTooltip.StyleBuilder.Reset();
+            bitTooltip.TakeFromCascade(nameof(ZIndex), ZIndex.Value, static t => t.ZIndex, static (t, v) => t.ZIndex = v);
         }
     }
 }

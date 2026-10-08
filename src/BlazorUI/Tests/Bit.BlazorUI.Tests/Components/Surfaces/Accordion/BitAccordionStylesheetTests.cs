@@ -132,14 +132,13 @@ public class BitAccordionStylesheetTests
     }
 
     [TestMethod]
-    public void BitAccordionShouldHoldAHiddenUntilFoundPanelBackForTheWholeClose()
+    public void BitAccordionShouldNotHoldAHiddenUntilFoundPanelBackWithADiscreteTransition()
     {
-        var huf = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-acd-huf {");
+        var code = ReadStylesheet().Split('\n').Where(line => line.TrimStart().StartsWith("//", System.StringComparison.Ordinal) is false);
 
-        // The attribute is applied as the close starts; what it hides with is held back by a discrete transition of
-        // the accordion's own duration, so the close plays out whatever the theme or TransitionDuration made it.
-        StringAssert.Contains(huf, "content-visibility var(--bit-acd-dur) linear 0ms allow-discrete");
-        StringAssert.Contains(huf, "display var(--bit-acd-dur) linear 0ms allow-discrete");
+        // WebKit lays out a panel mid-way through a discrete content-visibility transition as already hidden, which
+        // snaps the row shut; the component applies hidden="until-found" once the close has played instead.
+        Assert.IsFalse(code.Any(line => line.Contains("allow-discrete")), "A discrete transition snaps a HiddenUntilFound close shut in WebKit.");
     }
 
     [TestMethod]
@@ -170,6 +169,49 @@ public class BitAccordionStylesheetTests
     public void BitAccordionShouldMarkADisabledAccordionInForcedColors()
     {
         StringAssert.Contains(ReadStylesheet(), "@media (forced-colors: active) {\n    .bit-acd.bit-dis > .bit-acd-hwr {");
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldLetAParameterWinOverItsPublicVariable()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // An explicit Size publishes these, so they are read before the variable, which only restyles the medium
+        // accordion an unset one stands for.
+        StringAssert.Contains(stylesheet, "font-size: var(--bit-acd-fontsize, var(--bit-Accordion-font-size, #{$tg-fs-sm}));");
+        StringAssert.Contains(stylesheet, "padding: var(--bit-acd-pad, var(--bit-Accordion-header-padding, #{spacing(1.5)}));");
+        StringAssert.Contains(stylesheet, "padding: var(--bit-acd-pad, var(--bit-Accordion-content-padding, #{spacing(1.5)}));");
+        StringAssert.Contains(stylesheet, "font-size: var(--bit-acd-icn-fontsize, var(--bit-Accordion-icon-size, #{$siz-icon-md}));");
+        StringAssert.Contains(stylesheet, "font-size: var(--bit-acd-ttl-fontsize, var(--bit-Accordion-title-font-size, #{$tg-fs-md}));");
+
+        // An explicit Background brings the header shades of its own fill, which the hover variables do not reach.
+        foreach (var (kind, token) in new[] { ("pbg", "pri"), ("sbg", "sec"), ("tbg", "ter") })
+        {
+            var block = SourceFiles.GetScssBlock(stylesheet, $"\n.bit-acd-{kind} {{");
+
+            StringAssert.Contains(block, $"--bit-acd-hov: #{{$clr-bg-{token}-hover}};");
+            StringAssert.Contains(block, $"--bit-acd-prs: #{{$clr-bg-{token}-active}};");
+            Assert.IsFalse(block.Contains("--bit-Accordion-"), $"A public variable wins over the {kind} Background.");
+        }
+
+        // Only an open header's own fill - a state of its own - is still read before a shade of the Background.
+        var publicFirst = Regex.Matches(stylesheet, @"var\(--bit-Accordion-([a-z-]+), var\(--bit-acd-").Select(m => m.Groups[1].Value).Distinct().ToArray();
+        CollectionAssert.AreEqual(new[] { "header-expanded-background" }, publicFirst);
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldPublishItsSizeOnlyWhereItIsSet()
+    {
+        var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-acd {");
+
+        // An accordion can sit in the panel of another one, which must not inherit the outer accordion's Size: each
+        // root starts the values the size classes publish out unset, and the classes - declared further down at the
+        // same weight - still win on the root that carries them. The fill and the outline are declared on every root
+        // already (see BitAccordionShouldLetBackgroundAndBorderWinOverAnInheritedVariable).
+        foreach (var property in new[] { "--bit-acd-pad", "--bit-acd-ttl-fontsize", "--bit-acd-fontsize", "--bit-acd-icn-fontsize" })
+        {
+            StringAssert.Contains(root, $"{property}: initial;");
+        }
     }
 
     private static string ReadStylesheet()

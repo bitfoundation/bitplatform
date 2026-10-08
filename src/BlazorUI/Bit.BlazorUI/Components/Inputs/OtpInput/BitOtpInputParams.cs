@@ -283,191 +283,169 @@ public class BitOtpInputParams : BitInputBaseParams<string?>, IBitComponentParam
 
         UpdateInputBaseParameters(bitOtpInput);
 
-        if (Accent.HasValue && bitOtpInput.HasNotBeenSet(nameof(Accent)) && bitOtpInput.Accent != Accent)
+        if (Accent.HasValue)
         {
-            bitOtpInput.Accent = Accent.Value;
-
-            bitOtpInput.ClassBuilder.Reset();
+            bitOtpInput.TakeFromCascade(nameof(Accent), Accent.Value, static o => o.Accent, static (o, v) => o.Accent = v);
         }
 
-        if (AutoFocus.HasValue && bitOtpInput.HasNotBeenSet(nameof(AutoFocus)))
+        if (AutoFocus.HasValue)
         {
-            bitOtpInput.AutoFocus = AutoFocus.Value;
+            bitOtpInput.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static o => o.AutoFocus, static (o, v) => o.AutoFocus = v);
         }
 
-        if (AutoShift.HasValue && bitOtpInput.HasNotBeenSet(nameof(AutoShift)))
+        if (AutoShift.HasValue)
         {
-            bitOtpInput.AutoShift = AutoShift.Value;
+            bitOtpInput.TakeFromCascade(nameof(AutoShift), AutoShift.Value, static o => o.AutoShift, static (o, v) => o.AutoShift = v);
         }
 
-        if (AutoSubmit.HasValue && bitOtpInput.HasNotBeenSet(nameof(AutoSubmit)))
+        if (AutoSubmit.HasValue)
         {
-            bitOtpInput.AutoSubmit = AutoSubmit.Value;
+            bitOtpInput.TakeFromCascade(nameof(AutoSubmit), AutoSubmit.Value, static o => o.AutoSubmit, static (o, v) => o.AutoSubmit = v);
         }
 
-        if (BlurOnFill.HasValue && bitOtpInput.HasNotBeenSet(nameof(BlurOnFill)))
+        if (BlurOnFill.HasValue)
         {
-            bitOtpInput.BlurOnFill = BlurOnFill.Value;
+            bitOtpInput.TakeFromCascade(nameof(BlurOnFill), BlurOnFill.Value, static o => o.BlurOnFill, static (o, v) => o.BlurOnFill = v);
         }
 
-        if (Classes is not null && bitOtpInput.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitOtpInput.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitOtpInput.Classes = Classes;
-
-            bitOtpInput.ClassBuilder.Reset();
+            bitOtpInput.TakeFromCascade(nameof(Classes), Classes, static o => o.Classes, static (o, v) => o.Classes = v);
         }
 
-        if (Description.HasValue() && bitOtpInput.HasNotBeenSet(nameof(Description)))
+        if (Description.HasValue())
         {
-            bitOtpInput.Description = Description;
+            bitOtpInput.TakeFromCascade(nameof(Description), Description, static o => o.Description, static (o, v) => o.Description = v);
         }
 
-        if (FullWidth.HasValue && bitOtpInput.HasNotBeenSet(nameof(FullWidth)) && bitOtpInput.FullWidth != FullWidth)
+        if (FullWidth.HasValue)
         {
-            bitOtpInput.FullWidth = FullWidth.Value;
-
-            bitOtpInput.ClassBuilder.Reset();
+            bitOtpInput.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static o => o.FullWidth, static (o, v) => o.FullWidth = v);
         }
 
-        if (InputAriaLabelFormat.HasValue() && bitOtpInput.HasNotBeenSet(nameof(InputAriaLabelFormat)))
+        if (InputAriaLabelFormat.HasValue())
         {
-            bitOtpInput.InputAriaLabelFormat = InputAriaLabelFormat;
+            bitOtpInput.TakeFromCascade(nameof(InputAriaLabelFormat), InputAriaLabelFormat, static o => o.InputAriaLabelFormat, static (o, v) => o.InputAriaLabelFormat = v);
         }
 
-        if (InputMode.HasValue && bitOtpInput.HasNotBeenSet(nameof(InputMode)))
+        if (InputMode.HasValue)
         {
-            bitOtpInput.InputMode = InputMode.Value;
+            bitOtpInput.TakeFromCascade(nameof(InputMode), InputMode.Value, static o => o.InputMode, static (o, v) => o.InputMode = v);
         }
 
-        if (Invalid.HasValue && bitOtpInput.HasNotBeenSet(nameof(Invalid)) && bitOtpInput.Invalid != Invalid)
+        if (Invalid.HasValue)
         {
-            bitOtpInput.Invalid = Invalid.Value;
-
-            bitOtpInput.ClassBuilder.Reset();
+            bitOtpInput.TakeFromCascade(nameof(Invalid), Invalid.Value, static o => o.Invalid, static (o, v) => o.Invalid = v);
         }
 
-        if (IsLoading.HasValue && bitOtpInput.HasNotBeenSet(nameof(IsLoading)) && bitOtpInput.IsLoading != IsLoading)
+        if (IsLoading.HasValue)
         {
-            bitOtpInput.IsLoading = IsLoading.Value;
-
-            bitOtpInput.ClassBuilder.Reset();
+            bitOtpInput.TakeFromCascade(nameof(IsLoading), IsLoading.Value, static o => o.IsLoading, static (o, v) => o.IsLoading = v);
         }
 
-        if (Label.HasValue() && bitOtpInput.HasNotBeenSet(nameof(Label)))
+        if (Label.HasValue())
         {
-            bitOtpInput.Label = Label;
+            bitOtpInput.TakeFromCascade(nameof(Label), Label, static o => o.Label, static (o, v) => o.Label = v);
         }
 
-        if (Length.HasValue && bitOtpInput.HasNotBeenSet(nameof(Length)))
+        if (Length.HasValue)
         {
-            bitOtpInput.Length = Length.Value;
+            bitOtpInput.TakeFromCascade(nameof(Length), Length.Value, static o => o.Length, static (o, v) => o.Length = v);
         }
 
-        if (Lowercase.HasValue && bitOtpInput.HasNotBeenSet(nameof(Lowercase)))
+        if (Lowercase.HasValue)
         {
-            bitOtpInput.Lowercase = Lowercase.Value;
+            bitOtpInput.TakeFromCascade(nameof(Lowercase), Lowercase.Value, static o => o.Lowercase, static (o, v) => o.Lowercase = v);
         }
 
-        if (Mask.HasValue() && bitOtpInput.HasNotBeenSet(nameof(Mask)))
+        if (Mask.HasValue())
         {
-            bitOtpInput.Mask = Mask;
+            bitOtpInput.TakeFromCascade(nameof(Mask), Mask, static o => o.Mask, static (o, v) => o.Mask = v);
         }
 
-        if (Merged.HasValue && bitOtpInput.HasNotBeenSet(nameof(Merged)) && bitOtpInput.Merged != Merged)
+        if (Merged.HasValue)
         {
-            bitOtpInput.Merged = Merged.Value;
-
-            bitOtpInput.ClassBuilder.Reset();
+            bitOtpInput.TakeFromCascade(nameof(Merged), Merged.Value, static o => o.Merged, static (o, v) => o.Merged = v);
         }
 
-        if (NormalizeDigits.HasValue && bitOtpInput.HasNotBeenSet(nameof(NormalizeDigits)))
+        if (NormalizeDigits.HasValue)
         {
-            bitOtpInput.NormalizeDigits = NormalizeDigits.Value;
+            bitOtpInput.TakeFromCascade(nameof(NormalizeDigits), NormalizeDigits.Value, static o => o.NormalizeDigits, static (o, v) => o.NormalizeDigits = v);
         }
 
-        if (NoSmsAutoFill.HasValue && bitOtpInput.HasNotBeenSet(nameof(NoSmsAutoFill)))
+        if (NoSmsAutoFill.HasValue)
         {
-            bitOtpInput.NoSmsAutoFill = NoSmsAutoFill.Value;
+            bitOtpInput.TakeFromCascade(nameof(NoSmsAutoFill), NoSmsAutoFill.Value, static o => o.NoSmsAutoFill, static (o, v) => o.NoSmsAutoFill = v);
         }
 
-        if (PasteTransformer is not null && bitOtpInput.HasNotBeenSet(nameof(PasteTransformer)))
+        if (PasteTransformer is not null)
         {
-            bitOtpInput.PasteTransformer = PasteTransformer;
+            bitOtpInput.TakeFromCascade(nameof(PasteTransformer), PasteTransformer, static o => o.PasteTransformer, static (o, v) => o.PasteTransformer = v);
         }
 
-        if (Pattern.HasValue() && bitOtpInput.HasNotBeenSet(nameof(Pattern)))
+        if (Pattern.HasValue())
         {
-            bitOtpInput.Pattern = Pattern;
+            bitOtpInput.TakeFromCascade(nameof(Pattern), Pattern, static o => o.Pattern, static (o, v) => o.Pattern = v);
         }
 
-        if (Placeholder.HasValue() && bitOtpInput.HasNotBeenSet(nameof(Placeholder)))
+        if (Placeholder.HasValue())
         {
-            bitOtpInput.Placeholder = Placeholder;
+            bitOtpInput.TakeFromCascade(nameof(Placeholder), Placeholder, static o => o.Placeholder, static (o, v) => o.Placeholder = v);
         }
 
-        if (Reversed.HasValue && bitOtpInput.HasNotBeenSet(nameof(Reversed)) && bitOtpInput.Reversed != Reversed)
+        if (Reversed.HasValue)
         {
-            bitOtpInput.Reversed = Reversed.Value;
-
-            bitOtpInput.ClassBuilder.Reset();
+            bitOtpInput.TakeFromCascade(nameof(Reversed), Reversed.Value, static o => o.Reversed, static (o, v) => o.Reversed = v);
         }
 
-        if (Separator.HasValue() && bitOtpInput.HasNotBeenSet(nameof(Separator)))
+        if (Separator.HasValue())
         {
-            bitOtpInput.Separator = Separator;
+            bitOtpInput.TakeFromCascade(nameof(Separator), Separator, static o => o.Separator, static (o, v) => o.Separator = v);
         }
 
-        if (SeparatorInterval.HasValue && bitOtpInput.HasNotBeenSet(nameof(SeparatorInterval)))
+        if (SeparatorInterval.HasValue)
         {
-            bitOtpInput.SeparatorInterval = SeparatorInterval.Value;
+            bitOtpInput.TakeFromCascade(nameof(SeparatorInterval), SeparatorInterval.Value, static o => o.SeparatorInterval, static (o, v) => o.SeparatorInterval = v);
         }
 
-        if (Sequential.HasValue && bitOtpInput.HasNotBeenSet(nameof(Sequential)))
+        if (Sequential.HasValue)
         {
-            bitOtpInput.Sequential = Sequential.Value;
+            bitOtpInput.TakeFromCascade(nameof(Sequential), Sequential.Value, static o => o.Sequential, static (o, v) => o.Sequential = v);
         }
 
-        if (SingleTabStop.HasValue && bitOtpInput.HasNotBeenSet(nameof(SingleTabStop)))
+        if (SingleTabStop.HasValue)
         {
-            bitOtpInput.SingleTabStop = SingleTabStop.Value;
+            bitOtpInput.TakeFromCascade(nameof(SingleTabStop), SingleTabStop.Value, static o => o.SingleTabStop, static (o, v) => o.SingleTabStop = v);
         }
 
-        if (Size.HasValue && bitOtpInput.HasNotBeenSet(nameof(Size)) && bitOtpInput.Size != Size)
+        if (Size.HasValue)
         {
-            bitOtpInput.Size = Size.Value;
-
-            bitOtpInput.ClassBuilder.Reset();
+            bitOtpInput.TakeFromCascade(nameof(Size), Size.Value, static o => o.Size, static (o, v) => o.Size = v);
         }
 
-        if (Styles is not null && bitOtpInput.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitOtpInput.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitOtpInput.Styles = Styles;
-
-            bitOtpInput.StyleBuilder.Reset();
+            bitOtpInput.TakeFromCascade(nameof(Styles), Styles, static o => o.Styles, static (o, v) => o.Styles = v);
         }
 
-        if (Type.HasValue && bitOtpInput.HasNotBeenSet(nameof(Type)))
+        if (Type.HasValue)
         {
-            bitOtpInput.Type = Type.Value;
+            bitOtpInput.TakeFromCascade(nameof(Type), Type.Value, static o => o.Type, static (o, v) => o.Type = v);
         }
 
-        if (Uppercase.HasValue && bitOtpInput.HasNotBeenSet(nameof(Uppercase)))
+        if (Uppercase.HasValue)
         {
-            bitOtpInput.Uppercase = Uppercase.Value;
+            bitOtpInput.TakeFromCascade(nameof(Uppercase), Uppercase.Value, static o => o.Uppercase, static (o, v) => o.Uppercase = v);
         }
 
-        if (Variant.HasValue && bitOtpInput.HasNotBeenSet(nameof(Variant)) && bitOtpInput.Variant != Variant)
+        if (Variant.HasValue)
         {
-            bitOtpInput.Variant = Variant.Value;
-
-            bitOtpInput.ClassBuilder.Reset();
+            bitOtpInput.TakeFromCascade(nameof(Variant), Variant.Value, static o => o.Variant, static (o, v) => o.Variant = v);
         }
 
-        if (Vertical.HasValue && bitOtpInput.HasNotBeenSet(nameof(Vertical)) && bitOtpInput.Vertical != Vertical)
+        if (Vertical.HasValue)
         {
-            bitOtpInput.Vertical = Vertical.Value;
-
-            bitOtpInput.ClassBuilder.Reset();
+            bitOtpInput.TakeFromCascade(nameof(Vertical), Vertical.Value, static o => o.Vertical, static (o, v) => o.Vertical = v);
         }
     }
 }

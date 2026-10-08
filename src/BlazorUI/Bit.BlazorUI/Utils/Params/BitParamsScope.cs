@@ -32,23 +32,21 @@ internal sealed class BitParamsScope
     // while it can still be told apart from what it holds later.
     private readonly List<object?> _inputs;
 
-    // How each params object of the own ones was merged: the object of the ancestors it was merged onto, and what the
-    // params objects listed for its key held. The next scope keeps the very same copy of a key for which both are the
-    // same, so that only the components reading a params object that changed see another one.
-    private readonly Dictionary<BitParamsKey, OwnMerge> _merges;
+    // How each params object the scope cascades itself was merged: from what, and the snapshots of the listed ones.
+    private readonly Dictionary<BitParamsKey, OwnEntry> _ownEntries;
 
 
 
     private BitParamsScope(BitParamsScope? parent,
                            List<object?> inputs,
-                           Dictionary<BitParamsKey, OwnMerge> merges,
+                           Dictionary<BitParamsKey, OwnEntry> ownEntries,
                            List<KeyValuePair<BitParamsKey, IBitComponentParams>> own,
                            Dictionary<BitParamsKey, IBitComponentParams> all,
                            bool isIsolated)
     {
         _parent = parent;
         _inputs = inputs;
-        _merges = merges;
+        _ownEntries = ownEntries;
         Own = own;
         All = all;
         IsIsolated = isIsolated;
@@ -74,10 +72,17 @@ internal sealed class BitParamsScope
 
 
     /// <summary>
-    /// Creates the scope of the given ancestors' scope and params objects. A params object whose key carries exactly
-    /// what it did in <paramref name="previous"/>, merged onto the very same object of the ancestors, is handed down
-    /// as the very same copy, so a change to one params object is a change only to the components reading it.
+    /// Creates the scope of the given ancestors' scope and params objects.
     /// </summary>
+    /// <param name="parent">The scope of the nearest <see cref="BitParams"/> ancestor, if any.</param>
+    /// <param name="parameters">The params objects the <see cref="BitParams"/> lists.</param>
+    /// <param name="isolated">Whether the <see cref="BitParams"/> ignores what its ancestors carry.</param>
+    /// <param name="previous">
+    /// The scope the same <see cref="BitParams"/> created before, if any. A params object merged from exactly what
+    /// one of it was merged from is taken over from it as the very same object, so that the components it cascades
+    /// to can tell it has not changed: changing one params object under a <see cref="BitParams"/> hands a new
+    /// object down to the components of that type alone, and not to every one of the others it carries.
+    /// </param>
     public static BitParamsScope Create(BitParamsScope? parent,
                                         IEnumerable<IBitComponentParams>? parameters,
                                         bool isolated,
@@ -85,7 +90,8 @@ internal sealed class BitParamsScope
     {
         var inherited = isolated ? null : parent?.All;
         var inputs = new List<object?>();
-        var listed = new List<KeyValuePair<BitParamsKey, List<(IBitComponentParams Item, object? Snapshot)>>>();
+        var keys = new List<BitParamsKey>();
+        var ownEntries = new Dictionary<BitParamsKey, OwnEntry>();
 
         foreach (var item in parameters ?? [])
         {
@@ -96,48 +102,46 @@ internal sealed class BitParamsScope
             inputs.Add(snapshot);
 
             var key = BitParamsKey.From(item);
-            var index = listed.FindIndex(o => o.Key == key);
 
-            if (index >= 0)
+            if (ownEntries.TryGetValue(key, out var entry) is false)
             {
-                listed[index].Value.Add((item, snapshot));
+                ownEntries.Add(key, entry = new(inherited?.GetValueOrDefault(key)));
+                keys.Add(key);
             }
-            else
-            {
-                listed.Add(new(key, [(item, snapshot)]));
-            }
+
+            entry.Items.Add(item);
+            entry.Snapshots.Add(snapshot);
         }
 
-        var merges = new Dictionary<BitParamsKey, OwnMerge>(listed.Count);
-        var own = new List<KeyValuePair<BitParamsKey, IBitComponentParams>>(listed.Count);
+        var own = new List<KeyValuePair<BitParamsKey, IBitComponentParams>>(keys.Count);
 
-        foreach (var (key, items) in listed)
+        foreach (var key in keys)
         {
-            var basis = inherited?.GetValueOrDefault(key);
-            var snapshots = items.ConvertAll(i => i.Snapshot);
-
-            IBitComponentParams? merged;
+            var entry = ownEntries[key];
 
             if (previous is not null
-                && previous._merges.TryGetValue(key, out var last)
-                && ReferenceEquals(last.Basis, basis)
-                && AreAllEqual(last.Inputs, snapshots))
+                && previous._ownEntries.TryGetValue(key, out var previousEntry)
+                && ReferenceEquals(previousEntry.Basis, entry.Basis)
+                && AreAllEqual(previousEntry.Snapshots, entry.Snapshots))
             {
-                merged = last.Result;
+                entry.Value = previousEntry.Value;
             }
             else
             {
-                // Of two params objects of the same type, the later one only replaces the parameters it sets.
-                merged = basis;
+                var value = entry.Basis;
 
-                foreach (var (item, _) in items)
+                foreach (var item in entry.Items)
                 {
-                    merged = Merge(merged, item);
+                    value = Merge(value, item);
                 }
+
+                entry.Value = value!;
             }
 
-            merges[key] = new(basis, snapshots, merged!);
-            own.Add(new(key, merged!));
+            // The listed objects are only needed to merge them, and are not kept beyond it.
+            entry.Items.Clear();
+
+            own.Add(new(key, entry.Value));
         }
 
         var all = inherited is null ? [] : new Dictionary<BitParamsKey, IBitComponentParams>(inherited);
@@ -147,7 +151,7 @@ internal sealed class BitParamsScope
             all[key] = value;
         }
 
-        return new(parent, inputs, merges, own, all, isolated);
+        return new(parent, inputs, ownEntries, own, all, isolated);
     }
 
     /// <summary>
@@ -323,7 +327,7 @@ internal sealed class BitParamsScope
 
     private static bool AreEqual(object? first, object? second)
     {
-        if (Equals(first, second)) return true;
+        if (BitCascadeExtensions.AreSame(first, second)) return true;
 
         switch (first, second)
         {
@@ -415,7 +419,22 @@ internal sealed class BitParamsScope
 
 
 
-    private sealed record OwnMerge(IBitComponentParams? Basis, List<object?> Inputs, IBitComponentParams Result);
+    private sealed class OwnEntry(IBitComponentParams? basis)
+    {
+        /// <summary>
+        /// The params object of the same type the ancestors carry, which the listed ones are merged over.
+        /// </summary>
+        public IBitComponentParams? Basis { get; } = basis;
+
+        public List<IBitComponentParams> Items { get; } = [];
+
+        public List<object?> Snapshots { get; } = [];
+
+        /// <summary>
+        /// The merged params object cascaded for the type.
+        /// </summary>
+        public IBitComponentParams Value { get; set; } = default!;
+    }
 
     private sealed record ObjectSnapshot(Type Type, object?[] Values);
 

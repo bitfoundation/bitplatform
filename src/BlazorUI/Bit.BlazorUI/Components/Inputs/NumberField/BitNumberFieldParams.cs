@@ -340,333 +340,295 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitNumberField);
 
-        if (Accent.HasValue && bitNumberField.HasNotBeenSet(nameof(Accent)) && bitNumberField.Accent != Accent)
+        if (Accent.HasValue)
         {
-            bitNumberField.Accent = Accent.Value;
-
-            bitNumberField.ClassBuilder.Reset();
+            bitNumberField.TakeFromCascade(nameof(Accent), Accent.Value, static n => n.Accent, static (n, v) => n.Accent = v);
         }
 
-        if (AriaDescription.HasValue() && bitNumberField.HasNotBeenSet(nameof(AriaDescription)))
+        if (AriaDescription.HasValue())
         {
-            bitNumberField.AriaDescription = AriaDescription;
+            bitNumberField.TakeFromCascade(nameof(AriaDescription), AriaDescription, static n => n.AriaDescription, static (n, v) => n.AriaDescription = v);
         }
 
-        if (AriaPositionInSet.HasValue && bitNumberField.HasNotBeenSet(nameof(AriaPositionInSet)))
+        if (AriaPositionInSet.HasValue)
         {
-            bitNumberField.AriaPositionInSet = AriaPositionInSet.Value;
+            bitNumberField.TakeFromCascade(nameof(AriaPositionInSet), AriaPositionInSet.Value, static n => n.AriaPositionInSet, static (n, v) => n.AriaPositionInSet = v);
         }
 
-        if (AriaSetSize.HasValue && bitNumberField.HasNotBeenSet(nameof(AriaSetSize)))
+        if (AriaSetSize.HasValue)
         {
-            bitNumberField.AriaSetSize = AriaSetSize.Value;
+            bitNumberField.TakeFromCascade(nameof(AriaSetSize), AriaSetSize.Value, static n => n.AriaSetSize, static (n, v) => n.AriaSetSize = v);
         }
 
-        if (AriaValueText.HasValue() && bitNumberField.HasNotBeenSet(nameof(AriaValueText)))
+        if (AriaValueText.HasValue())
         {
-            bitNumberField.AriaValueText = AriaValueText;
+            bitNumberField.TakeFromCascade(nameof(AriaValueText), AriaValueText, static n => n.AriaValueText, static (n, v) => n.AriaValueText = v);
         }
 
-        if (Background.HasValue && bitNumberField.HasNotBeenSet(nameof(Background)) && bitNumberField.Background != Background)
+        if (Background.HasValue)
         {
-            bitNumberField.Background = Background.Value;
-
-            bitNumberField.ClassBuilder.Reset();
+            bitNumberField.TakeFromCascade(nameof(Background), Background.Value, static n => n.Background, static (n, v) => n.Background = v);
         }
 
-        if (Border.HasValue && bitNumberField.HasNotBeenSet(nameof(Border)) && bitNumberField.Border != Border)
+        if (Border.HasValue)
         {
-            bitNumberField.Border = Border.Value;
-
-            bitNumberField.ClassBuilder.Reset();
+            bitNumberField.TakeFromCascade(nameof(Border), Border.Value, static n => n.Border, static (n, v) => n.Border = v);
         }
 
-        if (Classes is not null && bitNumberField.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitNumberField.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitNumberField.Classes = Classes;
-
-            bitNumberField.ClassBuilder.Reset();
+            bitNumberField.TakeFromCascade(nameof(Classes), Classes, static n => n.Classes, static (n, v) => n.Classes = v);
         }
 
-        if (ClearButtonAriaLabel.HasValue() && bitNumberField.HasNotBeenSet(nameof(ClearButtonAriaLabel)))
+        if (ClearButtonAriaLabel.HasValue())
         {
-            bitNumberField.ClearButtonAriaLabel = ClearButtonAriaLabel;
+            bitNumberField.TakeFromCascade(nameof(ClearButtonAriaLabel), ClearButtonAriaLabel, static n => n.ClearButtonAriaLabel, static (n, v) => n.ClearButtonAriaLabel = v);
         }
 
-        if (ClearButtonIcon is not null && bitNumberField.HasNotBeenSet(nameof(ClearButtonIcon)))
+        if (ClearButtonIcon is not null)
         {
-            bitNumberField.ClearButtonIcon = ClearButtonIcon;
+            bitNumberField.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static n => n.ClearButtonIcon, static (n, v) => n.ClearButtonIcon = v);
         }
 
-        if (ClearButtonIconName.HasValue() && bitNumberField.HasNotBeenSet(nameof(ClearButtonIconName)))
+        if (ClearButtonIconName.HasValue())
         {
-            bitNumberField.ClearButtonIconName = ClearButtonIconName;
+            bitNumberField.TakeFromCascade(nameof(ClearButtonIconName), ClearButtonIconName, static n => n.ClearButtonIconName, static (n, v) => n.ClearButtonIconName = v);
         }
 
-        if (ContinuousSpinDelay.HasValue && bitNumberField.HasNotBeenSet(nameof(ContinuousSpinDelay)))
+        if (ContinuousSpinDelay.HasValue)
         {
-            bitNumberField.ContinuousSpinDelay = ContinuousSpinDelay.Value;
+            bitNumberField.TakeFromCascade(nameof(ContinuousSpinDelay), ContinuousSpinDelay.Value, static n => n.ContinuousSpinDelay, static (n, v) => n.ContinuousSpinDelay = v);
         }
 
-        if (ContinuousSpinInterval.HasValue && bitNumberField.HasNotBeenSet(nameof(ContinuousSpinInterval)))
+        if (ContinuousSpinInterval.HasValue)
         {
-            bitNumberField.ContinuousSpinInterval = ContinuousSpinInterval.Value;
+            bitNumberField.TakeFromCascade(nameof(ContinuousSpinInterval), ContinuousSpinInterval.Value, static n => n.ContinuousSpinInterval, static (n, v) => n.ContinuousSpinInterval = v);
         }
 
-        if (Culture is not null && bitNumberField.HasNotBeenSet(nameof(Culture)))
+        if (Culture is not null)
         {
-            bitNumberField.Culture = Culture;
+            bitNumberField.TakeFromCascade(nameof(Culture), Culture, static n => n.Culture, static (n, v) => n.Culture = v);
         }
 
-        if (DecrementAriaLabel.HasValue() && bitNumberField.HasNotBeenSet(nameof(DecrementAriaLabel)))
+        if (DecrementAriaLabel.HasValue())
         {
-            bitNumberField.DecrementAriaLabel = DecrementAriaLabel;
+            bitNumberField.TakeFromCascade(nameof(DecrementAriaLabel), DecrementAriaLabel, static n => n.DecrementAriaLabel, static (n, v) => n.DecrementAriaLabel = v);
         }
 
-        if (DecrementIcon is not null && bitNumberField.HasNotBeenSet(nameof(DecrementIcon)))
+        if (DecrementIcon is not null)
         {
-            bitNumberField.DecrementIcon = DecrementIcon;
+            bitNumberField.TakeFromCascade(nameof(DecrementIcon), DecrementIcon, static n => n.DecrementIcon, static (n, v) => n.DecrementIcon = v);
         }
 
-        if (DecrementIconName.HasValue() && bitNumberField.HasNotBeenSet(nameof(DecrementIconName)))
+        if (DecrementIconName.HasValue())
         {
-            bitNumberField.DecrementIconName = DecrementIconName;
+            bitNumberField.TakeFromCascade(nameof(DecrementIconName), DecrementIconName, static n => n.DecrementIconName, static (n, v) => n.DecrementIconName = v);
         }
 
-        if (DecrementTitle.HasValue() && bitNumberField.HasNotBeenSet(nameof(DecrementTitle)))
+        if (DecrementTitle.HasValue())
         {
-            bitNumberField.DecrementTitle = DecrementTitle;
+            bitNumberField.TakeFromCascade(nameof(DecrementTitle), DecrementTitle, static n => n.DecrementTitle, static (n, v) => n.DecrementTitle = v);
         }
 
-        if (Description.HasValue() && bitNumberField.HasNotBeenSet(nameof(Description)) && bitNumberField.Description != Description)
+        if (Description.HasValue())
         {
-            bitNumberField.Description = Description;
-
-            bitNumberField.ClassBuilder.Reset();
+            bitNumberField.TakeFromCascade(nameof(Description), Description, static n => n.Description, static (n, v) => n.Description = v);
         }
 
         // The digit normalization is also applied to the Min/Max/Step/PageStep strings, so a normalizer
         // arriving from the cascade has to be in place before those are parsed at the end of this method.
-        if (DigitsNormalizer is not null && bitNumberField.HasNotBeenSet(nameof(DigitsNormalizer)))
+        if (DigitsNormalizer is not null)
         {
-            bitNumberField.DigitsNormalizer = DigitsNormalizer;
+            bitNumberField.TakeFromCascade(nameof(DigitsNormalizer), DigitsNormalizer, static n => n.DigitsNormalizer, static (n, v) => n.DigitsNormalizer = v);
         }
 
-        if (EnterKeyHint.HasValue() && bitNumberField.HasNotBeenSet(nameof(EnterKeyHint)))
+        if (EnterKeyHint.HasValue())
         {
-            bitNumberField.EnterKeyHint = EnterKeyHint;
+            bitNumberField.TakeFromCascade(nameof(EnterKeyHint), EnterKeyHint, static n => n.EnterKeyHint, static (n, v) => n.EnterKeyHint = v);
         }
 
-        if (FullWidth.HasValue && bitNumberField.HasNotBeenSet(nameof(FullWidth)) && bitNumberField.FullWidth != FullWidth)
+        if (FullWidth.HasValue)
         {
-            bitNumberField.FullWidth = FullWidth.Value;
-
-            bitNumberField.ClassBuilder.Reset();
+            bitNumberField.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static n => n.FullWidth, static (n, v) => n.FullWidth = v);
         }
 
-        if (HideInput.HasValue && bitNumberField.HasNotBeenSet(nameof(HideInput)) && bitNumberField.HideInput != HideInput)
+        if (HideInput.HasValue)
         {
-            bitNumberField.HideInput = HideInput.Value;
-
-            bitNumberField.ClassBuilder.Reset();
+            bitNumberField.TakeFromCascade(nameof(HideInput), HideInput.Value, static n => n.HideInput, static (n, v) => n.HideInput = v);
         }
 
-        if (Icon is not null && bitNumberField.HasNotBeenSet(nameof(Icon)))
+        if (Icon is not null)
         {
-            bitNumberField.Icon = Icon;
+            bitNumberField.TakeFromCascade(nameof(Icon), Icon, static n => n.Icon, static (n, v) => n.Icon = v);
         }
 
-        if (IconAriaLabel.HasValue() && bitNumberField.HasNotBeenSet(nameof(IconAriaLabel)))
+        if (IconAriaLabel.HasValue())
         {
-            bitNumberField.IconAriaLabel = IconAriaLabel;
+            bitNumberField.TakeFromCascade(nameof(IconAriaLabel), IconAriaLabel, static n => n.IconAriaLabel, static (n, v) => n.IconAriaLabel = v);
         }
 
-        if (IconName.HasValue() && bitNumberField.HasNotBeenSet(nameof(IconName)))
+        if (IconName.HasValue())
         {
-            bitNumberField.IconName = IconName;
+            bitNumberField.TakeFromCascade(nameof(IconName), IconName, static n => n.IconName, static (n, v) => n.IconName = v);
         }
 
-        if (IncrementAriaLabel.HasValue() && bitNumberField.HasNotBeenSet(nameof(IncrementAriaLabel)))
+        if (IncrementAriaLabel.HasValue())
         {
-            bitNumberField.IncrementAriaLabel = IncrementAriaLabel;
+            bitNumberField.TakeFromCascade(nameof(IncrementAriaLabel), IncrementAriaLabel, static n => n.IncrementAriaLabel, static (n, v) => n.IncrementAriaLabel = v);
         }
 
-        if (IncrementIcon is not null && bitNumberField.HasNotBeenSet(nameof(IncrementIcon)))
+        if (IncrementIcon is not null)
         {
-            bitNumberField.IncrementIcon = IncrementIcon;
+            bitNumberField.TakeFromCascade(nameof(IncrementIcon), IncrementIcon, static n => n.IncrementIcon, static (n, v) => n.IncrementIcon = v);
         }
 
-        if (IncrementIconName.HasValue() && bitNumberField.HasNotBeenSet(nameof(IncrementIconName)))
+        if (IncrementIconName.HasValue())
         {
-            bitNumberField.IncrementIconName = IncrementIconName;
+            bitNumberField.TakeFromCascade(nameof(IncrementIconName), IncrementIconName, static n => n.IncrementIconName, static (n, v) => n.IncrementIconName = v);
         }
 
-        if (IncrementTitle.HasValue() && bitNumberField.HasNotBeenSet(nameof(IncrementTitle)))
+        if (IncrementTitle.HasValue())
         {
-            bitNumberField.IncrementTitle = IncrementTitle;
+            bitNumberField.TakeFromCascade(nameof(IncrementTitle), IncrementTitle, static n => n.IncrementTitle, static (n, v) => n.IncrementTitle = v);
         }
 
-        if (InputMode.HasValue && bitNumberField.HasNotBeenSet(nameof(InputMode)))
+        if (InputMode.HasValue)
         {
-            bitNumberField.InputMode = InputMode.Value;
-
-            bitNumberField.OnSetInputMode();
+            bitNumberField.TakeFromCascade(nameof(InputMode), InputMode.Value, static n => n.InputMode, static (n, v) => n.InputMode = v);
         }
 
-        if (InvertMouseWheel.HasValue && bitNumberField.HasNotBeenSet(nameof(InvertMouseWheel)))
+        if (InvertMouseWheel.HasValue)
         {
-            bitNumberField.InvertMouseWheel = InvertMouseWheel.Value;
+            bitNumberField.TakeFromCascade(nameof(InvertMouseWheel), InvertMouseWheel.Value, static n => n.InvertMouseWheel, static (n, v) => n.InvertMouseWheel = v);
         }
 
-        if (IsInputReadOnly.HasValue && bitNumberField.HasNotBeenSet(nameof(IsInputReadOnly)))
+        if (IsInputReadOnly.HasValue)
         {
-            bitNumberField.IsInputReadOnly = IsInputReadOnly.Value;
+            bitNumberField.TakeFromCascade(nameof(IsInputReadOnly), IsInputReadOnly.Value, static n => n.IsInputReadOnly, static (n, v) => n.IsInputReadOnly = v);
         }
 
-        if (LabelPlacement.HasValue && bitNumberField.HasNotBeenSet(nameof(LabelPlacement)) && bitNumberField.LabelPlacement != LabelPlacement)
+        if (LabelPlacement.HasValue)
         {
-            bitNumberField.LabelPlacement = LabelPlacement.Value;
-
-            bitNumberField.ClassBuilder.Reset();
+            bitNumberField.TakeFromCascade(nameof(LabelPlacement), LabelPlacement.Value, static n => n.LabelPlacement, static (n, v) => n.LabelPlacement = v);
         }
 
-        if (LoadingAriaLabel.HasValue() && bitNumberField.HasNotBeenSet(nameof(LoadingAriaLabel)))
+        if (LoadingAriaLabel.HasValue())
         {
-            bitNumberField.LoadingAriaLabel = LoadingAriaLabel;
+            bitNumberField.TakeFromCascade(nameof(LoadingAriaLabel), LoadingAriaLabel, static n => n.LoadingAriaLabel, static (n, v) => n.LoadingAriaLabel = v);
         }
 
-        if (Mode.HasValue && bitNumberField.HasNotBeenSet(nameof(Mode)) && bitNumberField.Mode != Mode)
+        if (Mode.HasValue)
         {
-            bitNumberField.Mode = Mode.Value;
-
-            bitNumberField.ClassBuilder.Reset();
+            bitNumberField.TakeFromCascade(nameof(Mode), Mode.Value, static n => n.Mode, static (n, v) => n.Mode = v);
         }
 
-        if (NoBorder.HasValue && bitNumberField.HasNotBeenSet(nameof(NoBorder)) && bitNumberField.NoBorder != NoBorder)
+        if (NoBorder.HasValue)
         {
-            bitNumberField.NoBorder = NoBorder.Value;
-
-            bitNumberField.ClassBuilder.Reset();
+            bitNumberField.TakeFromCascade(nameof(NoBorder), NoBorder.Value, static n => n.NoBorder, static (n, v) => n.NoBorder = v);
         }
 
-        if (NoClamp.HasValue && bitNumberField.HasNotBeenSet(nameof(NoClamp)))
+        if (NoClamp.HasValue)
         {
-            bitNumberField.NoClamp = NoClamp.Value;
+            bitNumberField.TakeFromCascade(nameof(NoClamp), NoClamp.Value, static n => n.NoClamp, static (n, v) => n.NoClamp = v);
         }
 
-        if (NoMouseWheel.HasValue && bitNumberField.HasNotBeenSet(nameof(NoMouseWheel)))
+        if (NoMouseWheel.HasValue)
         {
-            bitNumberField.NoMouseWheel = NoMouseWheel.Value;
+            bitNumberField.TakeFromCascade(nameof(NoMouseWheel), NoMouseWheel.Value, static n => n.NoMouseWheel, static (n, v) => n.NoMouseWheel = v);
         }
 
-        if (NoSelectOnFocus.HasValue && bitNumberField.HasNotBeenSet(nameof(NoSelectOnFocus)))
+        if (NoSelectOnFocus.HasValue)
         {
-            bitNumberField.NoSelectOnFocus = NoSelectOnFocus.Value;
+            bitNumberField.TakeFromCascade(nameof(NoSelectOnFocus), NoSelectOnFocus.Value, static n => n.NoSelectOnFocus, static (n, v) => n.NoSelectOnFocus = v);
         }
 
-        if (NormalizeDigits.HasValue && bitNumberField.HasNotBeenSet(nameof(NormalizeDigits)))
+        if (NormalizeDigits.HasValue)
         {
-            bitNumberField.NormalizeDigits = NormalizeDigits.Value;
+            bitNumberField.TakeFromCascade(nameof(NormalizeDigits), NormalizeDigits.Value, static n => n.NormalizeDigits, static (n, v) => n.NormalizeDigits = v);
         }
 
-        if (NumberFormat.HasValue() && bitNumberField.HasNotBeenSet(nameof(NumberFormat)))
+        if (NumberFormat.HasValue())
         {
-            bitNumberField.NumberFormat = NumberFormat;
+            bitNumberField.TakeFromCascade(nameof(NumberFormat), NumberFormat, static n => n.NumberFormat, static (n, v) => n.NumberFormat = v);
         }
 
-        if (ParsingErrorMessage.HasValue() && bitNumberField.HasNotBeenSet(nameof(ParsingErrorMessage)))
+        if (ParsingErrorMessage.HasValue())
         {
-            bitNumberField.ParsingErrorMessage = ParsingErrorMessage!;
+            bitNumberField.TakeFromCascade(nameof(ParsingErrorMessage), ParsingErrorMessage!, static n => n.ParsingErrorMessage, static (n, v) => n.ParsingErrorMessage = v);
         }
 
-        if (Placeholder.HasValue() && bitNumberField.HasNotBeenSet(nameof(Placeholder)))
+        if (Placeholder.HasValue())
         {
-            bitNumberField.Placeholder = Placeholder;
+            bitNumberField.TakeFromCascade(nameof(Placeholder), Placeholder, static n => n.Placeholder, static (n, v) => n.Placeholder = v);
         }
 
-        if (Prefix.HasValue() && bitNumberField.HasNotBeenSet(nameof(Prefix)))
+        if (Prefix.HasValue())
         {
-            bitNumberField.Prefix = Prefix;
+            bitNumberField.TakeFromCascade(nameof(Prefix), Prefix, static n => n.Prefix, static (n, v) => n.Prefix = v);
         }
 
-        if (ShowClearButton.HasValue && bitNumberField.HasNotBeenSet(nameof(ShowClearButton)))
+        if (ShowClearButton.HasValue)
         {
-            bitNumberField.ShowClearButton = ShowClearButton.Value;
+            bitNumberField.TakeFromCascade(nameof(ShowClearButton), ShowClearButton.Value, static n => n.ShowClearButton, static (n, v) => n.ShowClearButton = v);
         }
 
-        if (Size.HasValue && bitNumberField.HasNotBeenSet(nameof(Size)) && bitNumberField.Size != Size)
+        if (Size.HasValue)
         {
-            bitNumberField.Size = Size.Value;
-
-            bitNumberField.ClassBuilder.Reset();
+            bitNumberField.TakeFromCascade(nameof(Size), Size.Value, static n => n.Size, static (n, v) => n.Size = v);
         }
 
-        if (SnapToStep.HasValue && bitNumberField.HasNotBeenSet(nameof(SnapToStep)))
+        if (SnapToStep.HasValue)
         {
-            bitNumberField.SnapToStep = SnapToStep.Value;
+            bitNumberField.TakeFromCascade(nameof(SnapToStep), SnapToStep.Value, static n => n.SnapToStep, static (n, v) => n.SnapToStep = v);
         }
 
-        if (Styles is not null && bitNumberField.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitNumberField.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitNumberField.Styles = Styles;
-
-            bitNumberField.StyleBuilder.Reset();
+            bitNumberField.TakeFromCascade(nameof(Styles), Styles, static n => n.Styles, static (n, v) => n.Styles = v);
         }
 
-        if (Suffix.HasValue() && bitNumberField.HasNotBeenSet(nameof(Suffix)))
+        if (Suffix.HasValue())
         {
-            bitNumberField.Suffix = Suffix;
+            bitNumberField.TakeFromCascade(nameof(Suffix), Suffix, static n => n.Suffix, static (n, v) => n.Suffix = v);
         }
 
-        if (Title.HasValue() && bitNumberField.HasNotBeenSet(nameof(Title)))
+        if (Title.HasValue())
         {
-            bitNumberField.Title = Title;
+            bitNumberField.TakeFromCascade(nameof(Title), Title, static n => n.Title, static (n, v) => n.Title = v);
         }
 
-        if (Underlined.HasValue && bitNumberField.HasNotBeenSet(nameof(Underlined)) && bitNumberField.Underlined != Underlined)
+        if (Underlined.HasValue)
         {
-            bitNumberField.Underlined = Underlined.Value;
-
-            bitNumberField.ClassBuilder.Reset();
+            bitNumberField.TakeFromCascade(nameof(Underlined), Underlined.Value, static n => n.Underlined, static (n, v) => n.Underlined = v);
         }
 
         // The numeric string parameters are turned into the typed bounds by setters of their own, which the
         // generated parameter assignment calls and a plain property write does not. They also go through the
         // digit normalization assigned above, and the precision is derived from the Step, so they are applied
         // last and in that order.
-        if (Min.HasValue() && bitNumberField.HasNotBeenSet(nameof(Min)))
+        if (Min.HasValue())
         {
-            bitNumberField.Min = Min;
-
-            bitNumberField.OnSetMin();
+            bitNumberField.TakeFromCascade(nameof(Min), Min, static n => n.Min, static (n, v) => n.Min = v);
         }
 
-        if (Max.HasValue() && bitNumberField.HasNotBeenSet(nameof(Max)))
+        if (Max.HasValue())
         {
-            bitNumberField.Max = Max;
-
-            bitNumberField.OnSetMax();
+            bitNumberField.TakeFromCascade(nameof(Max), Max, static n => n.Max, static (n, v) => n.Max = v);
         }
 
-        if (Step.HasValue() && bitNumberField.HasNotBeenSet(nameof(Step)))
+        if (Step.HasValue())
         {
-            bitNumberField.Step = Step;
-
-            bitNumberField.OnSetStep();
+            bitNumberField.TakeFromCascade(nameof(Step), Step, static n => n.Step, static (n, v) => n.Step = v);
         }
 
-        if (PageStep.HasValue() && bitNumberField.HasNotBeenSet(nameof(PageStep)))
+        if (PageStep.HasValue())
         {
-            bitNumberField.PageStep = PageStep;
-
-            bitNumberField.OnSetPageStep();
+            bitNumberField.TakeFromCascade(nameof(PageStep), PageStep, static n => n.PageStep, static (n, v) => n.PageStep = v);
         }
 
-        if (Precision.HasValue && bitNumberField.HasNotBeenSet(nameof(Precision)))
+        if (Precision.HasValue)
         {
-            bitNumberField.Precision = Precision.Value;
-
-            bitNumberField.OnSetPrecision();
+            bitNumberField.TakeFromCascade(nameof(Precision), Precision.Value, static n => n.Precision, static (n, v) => n.Precision = v);
         }
     }
 }

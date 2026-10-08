@@ -39,14 +39,45 @@ public class BitProgressStylesheetTests
     }
 
     [TestMethod]
-    public void BitProgressRoleClassesShouldLetTheBarColorVariableWin()
+    public void BitProgressShouldLetAParameterWinOverItsPublicVariable()
     {
         var stylesheet = ReadStylesheet();
+        var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb {");
 
-        // The role classes are generated, so it is their template that is pinned: a role class that declared its
-        // color bare would beat a --bit-Progress-bar-color set on an ancestor.
-        StringAssert.Contains(stylesheet, "--bit-prb-bar-color: var(--bit-Progress-bar-color, #{role($tokens, main)});");
-        StringAssert.Contains(stylesheet, "--bit-prb-bar-on-color: var(--bit-Progress-bar-text-color, #{role($tokens, on)});");
+        // An explicit Color or Size publishes these only while it is set, so they are read before the variable, which
+        // only restyles the default an unset one stands for.
+        StringAssert.Contains(root, "font-size: var(--bit-prb-fs, var(--bit-Progress-font-size, #{$tg-fs-sm}));");
+        StringAssert.Contains(root, "--bit-prb-bar-color: var(--bit-prb-clr, var(--bit-Progress-bar-color, #{$clr-pri}));");
+        StringAssert.Contains(root, "--bit-prb-bar-on-color: var(--bit-prb-clr-on, var(--bit-Progress-bar-text-color, #{$clr-pri-text}));");
+        StringAssert.Contains(root, "--bit-prb-thickness: var(--bit-prb-thk, var(--bit-Progress-thickness, #{$siz-track-sm}));");
+        StringAssert.Contains(root, "--bit-prb-ring-width: var(--bit-prb-ring-stroke, var(--bit-Progress-thickness, #{$siz-spinner-stroke}));");
+        StringAssert.Contains(root, "--bit-prb-diameter: var(--bit-prb-dia, var(--bit-Progress-diameter, #{spacing(6.25)}));");
+
+        // No parameter paints the buffer - its default is only derived from the bar color - so the variable keeps it.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb-buf {"), "background-color: var(--bit-Progress-buffer-color, ");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb-cbf {"), "stroke: var(--bit-Progress-buffer-color, ");
+        Assert.DoesNotContain("--bit-prb-buf-clr", stylesheet);
+
+        // The role classes are generated, so it is their template that is pinned: bare, so they win over the variables.
+        StringAssert.Contains(stylesheet, "--bit-prb-clr: #{role($tokens, main)};");
+        StringAssert.Contains(stylesheet, "--bit-prb-clr-on: #{role($tokens, on)};");
+
+        // The readout of a ring is the one exception: its step is worked out from the drawn size, not asked for.
+        Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Progress-[a-z-]+, var\(--bit-prb-(?!ctx-fs)"), "A public variable is read before the parameter it restyles the default of.");
+    }
+
+    [TestMethod]
+    public void BitProgressShouldPublishItsColorAndSizeOnlyWhereTheyAreSet()
+    {
+        var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-prb {");
+
+        // A progress can sit in the label of another one, which must not inherit the outer progress's Color or Size:
+        // each root starts the values those classes publish out unset, and the classes - declared further down at the
+        // same weight - still win on the root that carries them.
+        foreach (var property in new[] { "--bit-prb-fs", "--bit-prb-des-fs", "--bit-prb-clr", "--bit-prb-clr-on", "--bit-prb-thk", "--bit-prb-dia", "--bit-prb-ring-stroke" })
+        {
+            StringAssert.Contains(root, $"{property}: initial;");
+        }
     }
 
     [TestMethod]
@@ -66,7 +97,7 @@ public class BitProgressStylesheetTests
 
         foreach (var size in new[] { "sm", "md", "lg" })
         {
-            StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, $"\n.bit-prb-{size} {{"), $"--bit-prb-thickness: var(--bit-Progress-thickness, #{{$siz-track-{size}}});");
+            StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, $"\n.bit-prb-{size} {{"), $"--bit-prb-thk: #{{$siz-track-{size}}};");
         }
     }
 
@@ -77,7 +108,8 @@ public class BitProgressStylesheetTests
         // track, Fluent 2 a 2px ring over a 1px one), so the ring reads the spinner token rather than the track's.
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb {"), "--bit-prb-ring-stroke: #{$siz-spinner-stroke};");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb {"), "var(--bit-Progress-thickness, #{$siz-spinner-stroke})");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb-sm {"), "--bit-prb-ring-stroke: #{$siz-spinner-stroke};");
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb-md {"), "--bit-prb-ring-stroke: calc(#{$siz-spinner-stroke} * 2);");
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb-lg {"), "--bit-prb-ring-stroke: calc(#{$siz-spinner-stroke} * 4);");
     }
@@ -97,7 +129,9 @@ public class BitProgressStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb-des {"), "font-size: var(--bit-Progress-description-font-size, var(--bit-prb-des-fs));");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb-des {"), "font-size: var(--bit-prb-des-fs, var(--bit-Progress-description-font-size, #{$tg-fs-2xs}));");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb-sm {"), "--bit-prb-des-fs: #{$tg-fs-2xs};");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb-md {"), "--bit-prb-des-fs: #{$tg-fs-2xs};");
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-prb-lg {"), "--bit-prb-des-fs: #{$tg-fs-xs};");
     }
 

@@ -240,220 +240,194 @@ public class BitPivotParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitPivot);
 
-        if (Addable.HasValue && bitPivot.HasNotBeenSet(nameof(Addable)))
+        if (Addable.HasValue)
         {
-            bitPivot.Addable = Addable.Value;
+            bitPivot.TakeFromCascade(nameof(Addable), Addable.Value, static p => p.Addable, static (p, v) => p.Addable = v);
         }
 
-        if (AddAriaLabel.HasValue() && bitPivot.HasNotBeenSet(nameof(AddAriaLabel)))
+        if (AddAriaLabel.HasValue())
         {
-            bitPivot.AddAriaLabel = AddAriaLabel;
+            bitPivot.TakeFromCascade(nameof(AddAriaLabel), AddAriaLabel, static p => p.AddAriaLabel, static (p, v) => p.AddAriaLabel = v);
         }
 
-        if (AddIcon is not null && bitPivot.HasNotBeenSet(nameof(AddIcon)))
+        if (AddIcon is not null)
         {
-            bitPivot.AddIcon = AddIcon;
+            bitPivot.TakeFromCascade(nameof(AddIcon), AddIcon, static p => p.AddIcon, static (p, v) => p.AddIcon = v);
         }
 
-        if (AddIconName.HasValue() && bitPivot.HasNotBeenSet(nameof(AddIconName)))
+        if (AddIconName.HasValue())
         {
-            bitPivot.AddIconName = AddIconName;
+            bitPivot.TakeFromCascade(nameof(AddIconName), AddIconName, static p => p.AddIconName, static (p, v) => p.AddIconName = v);
         }
 
-        if (AddTitle.HasValue() && bitPivot.HasNotBeenSet(nameof(AddTitle)))
+        if (AddTitle.HasValue())
         {
-            bitPivot.AddTitle = AddTitle;
+            bitPivot.TakeFromCascade(nameof(AddTitle), AddTitle, static p => p.AddTitle, static (p, v) => p.AddTitle = v);
         }
 
-        if (Alignment.HasValue && bitPivot.HasNotBeenSet(nameof(Alignment)) && bitPivot.Alignment != Alignment)
+        if (Alignment.HasValue)
         {
-            bitPivot.Alignment = Alignment.Value;
-
-            bitPivot.StyleBuilder.Reset();
+            bitPivot.TakeFromCascade(nameof(Alignment), Alignment.Value, static p => p.Alignment, static (p, v) => p.Alignment = v);
         }
 
-        if (AutoHideSlideButtons.HasValue && bitPivot.HasNotBeenSet(nameof(AutoHideSlideButtons)))
+        if (AutoHideSlideButtons.HasValue)
         {
-            bitPivot.AutoHideSlideButtons = AutoHideSlideButtons.Value;
+            bitPivot.TakeFromCascade(nameof(AutoHideSlideButtons), AutoHideSlideButtons.Value, static p => p.AutoHideSlideButtons, static (p, v) => p.AutoHideSlideButtons = v);
         }
 
-        if (Classes is not null && bitPivot.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitPivot.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitPivot.Classes = Classes;
-
-            bitPivot.ClassBuilder.Reset();
+            bitPivot.TakeFromCascade(nameof(Classes), Classes, static p => p.Classes, static (p, v) => p.Classes = v);
         }
 
-        if (Color.HasValue && bitPivot.HasNotBeenSet(nameof(Color)) && bitPivot.Color != Color)
+        if (Color.HasValue)
         {
-            bitPivot.Color = Color.Value;
-
-            bitPivot.ClassBuilder.Reset();
+            bitPivot.TakeFromCascade(nameof(Color), Color.Value, static p => p.Color, static (p, v) => p.Color = v);
         }
 
-        if (Dismissible.HasValue && bitPivot.HasNotBeenSet(nameof(Dismissible)) && bitPivot.Dismissible != Dismissible)
+        if (Dismissible.HasValue)
         {
-            bitPivot.Dismissible = Dismissible.Value;
-
-            bitPivot.ClassBuilder.Reset();
+            bitPivot.TakeFromCascade(nameof(Dismissible), Dismissible.Value, static p => p.Dismissible, static (p, v) => p.Dismissible = v);
         }
 
-        if (DismissAriaLabelFormat.HasValue() && bitPivot.HasNotBeenSet(nameof(DismissAriaLabelFormat)))
+        if (DismissAriaLabelFormat.HasValue())
         {
-            bitPivot.DismissAriaLabelFormat = DismissAriaLabelFormat;
+            bitPivot.TakeFromCascade(nameof(DismissAriaLabelFormat), DismissAriaLabelFormat, static p => p.DismissAriaLabelFormat, static (p, v) => p.DismissAriaLabelFormat = v);
         }
 
-        if (DismissIcon is not null && bitPivot.HasNotBeenSet(nameof(DismissIcon)))
+        if (DismissIcon is not null)
         {
-            bitPivot.DismissIcon = DismissIcon;
+            bitPivot.TakeFromCascade(nameof(DismissIcon), DismissIcon, static p => p.DismissIcon, static (p, v) => p.DismissIcon = v);
         }
 
-        if (DismissIconName.HasValue() && bitPivot.HasNotBeenSet(nameof(DismissIconName)))
+        if (DismissIconName.HasValue())
         {
-            bitPivot.DismissIconName = DismissIconName;
+            bitPivot.TakeFromCascade(nameof(DismissIconName), DismissIconName, static p => p.DismissIconName, static (p, v) => p.DismissIconName = v);
         }
 
-        if (DismissTitle.HasValue() && bitPivot.HasNotBeenSet(nameof(DismissTitle)))
+        if (DismissTitle.HasValue())
         {
-            bitPivot.DismissTitle = DismissTitle;
+            bitPivot.TakeFromCascade(nameof(DismissTitle), DismissTitle, static p => p.DismissTitle, static (p, v) => p.DismissTitle = v);
         }
 
-        if (FullWidth.HasValue && bitPivot.HasNotBeenSet(nameof(FullWidth)) && bitPivot.FullWidth != FullWidth)
+        if (FullWidth.HasValue)
         {
-            bitPivot.FullWidth = FullWidth.Value;
-
-            bitPivot.ClassBuilder.Reset();
+            bitPivot.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static p => p.FullWidth, static (p, v) => p.FullWidth = v);
         }
 
-        if (Gap.HasValue() && bitPivot.HasNotBeenSet(nameof(Gap)) && bitPivot.Gap != Gap)
+        if (Gap.HasValue())
         {
-            bitPivot.Gap = Gap;
-
-            bitPivot.StyleBuilder.Reset();
+            bitPivot.TakeFromCascade(nameof(Gap), Gap, static p => p.Gap, static (p, v) => p.Gap = v);
         }
 
-        if (HeaderOnly.HasValue && bitPivot.HasNotBeenSet(nameof(HeaderOnly)))
+        if (HeaderOnly.HasValue)
         {
-            bitPivot.HeaderOnly = HeaderOnly.Value;
+            bitPivot.TakeFromCascade(nameof(HeaderOnly), HeaderOnly.Value, static p => p.HeaderOnly, static (p, v) => p.HeaderOnly = v);
         }
 
-        if (HeaderType.HasValue && bitPivot.HasNotBeenSet(nameof(HeaderType)) && bitPivot.HeaderType != HeaderType)
+        if (HeaderType.HasValue)
         {
-            bitPivot.HeaderType = HeaderType.Value;
-
-            bitPivot.ClassBuilder.Reset();
+            bitPivot.TakeFromCascade(nameof(HeaderType), HeaderType.Value, static p => p.HeaderType, static (p, v) => p.HeaderType = v);
         }
 
-        if (KeepMounted.HasValue && bitPivot.HasNotBeenSet(nameof(KeepMounted)))
+        if (KeepMounted.HasValue)
         {
-            bitPivot.KeepMounted = KeepMounted.Value;
+            bitPivot.TakeFromCascade(nameof(KeepMounted), KeepMounted.Value, static p => p.KeepMounted, static (p, v) => p.KeepMounted = v);
         }
 
-        if (Loop.HasValue && bitPivot.HasNotBeenSet(nameof(Loop)))
+        if (Loop.HasValue)
         {
-            bitPivot.Loop = Loop.Value;
+            bitPivot.TakeFromCascade(nameof(Loop), Loop.Value, static p => p.Loop, static (p, v) => p.Loop = v);
         }
 
-        if (MountAll.HasValue && bitPivot.HasNotBeenSet(nameof(MountAll)))
+        if (MountAll.HasValue)
         {
-            bitPivot.MountAll = MountAll.Value;
+            bitPivot.TakeFromCascade(nameof(MountAll), MountAll.Value, static p => p.MountAll, static (p, v) => p.MountAll = v);
         }
 
-        if (Navigable.HasValue && bitPivot.HasNotBeenSet(nameof(Navigable)))
+        if (Navigable.HasValue)
         {
-            bitPivot.Navigable = Navigable.Value;
+            bitPivot.TakeFromCascade(nameof(Navigable), Navigable.Value, static p => p.Navigable, static (p, v) => p.Navigable = v);
         }
 
-        if (NextAriaLabel.HasValue() && bitPivot.HasNotBeenSet(nameof(NextAriaLabel)))
+        if (NextAriaLabel.HasValue())
         {
-            bitPivot.NextAriaLabel = NextAriaLabel;
+            bitPivot.TakeFromCascade(nameof(NextAriaLabel), NextAriaLabel, static p => p.NextAriaLabel, static (p, v) => p.NextAriaLabel = v);
         }
 
-        if (NextIcon is not null && bitPivot.HasNotBeenSet(nameof(NextIcon)))
+        if (NextIcon is not null)
         {
-            bitPivot.NextIcon = NextIcon;
+            bitPivot.TakeFromCascade(nameof(NextIcon), NextIcon, static p => p.NextIcon, static (p, v) => p.NextIcon = v);
         }
 
-        if (NextIconName.HasValue() && bitPivot.HasNotBeenSet(nameof(NextIconName)))
+        if (NextIconName.HasValue())
         {
-            bitPivot.NextIconName = NextIconName;
+            bitPivot.TakeFromCascade(nameof(NextIconName), NextIconName, static p => p.NextIconName, static (p, v) => p.NextIconName = v);
         }
 
-        if (OverflowAriaLabel.HasValue() && bitPivot.HasNotBeenSet(nameof(OverflowAriaLabel)))
+        if (OverflowAriaLabel.HasValue())
         {
-            bitPivot.OverflowAriaLabel = OverflowAriaLabel;
+            bitPivot.TakeFromCascade(nameof(OverflowAriaLabel), OverflowAriaLabel, static p => p.OverflowAriaLabel, static (p, v) => p.OverflowAriaLabel = v);
         }
 
-        if (OverflowBehavior.HasValue && bitPivot.HasNotBeenSet(nameof(OverflowBehavior)) && bitPivot.OverflowBehavior != OverflowBehavior)
+        if (OverflowBehavior.HasValue)
         {
-            bitPivot.OverflowBehavior = OverflowBehavior.Value;
-
-            bitPivot.ClassBuilder.Reset();
+            bitPivot.TakeFromCascade(nameof(OverflowBehavior), OverflowBehavior.Value, static p => p.OverflowBehavior, static (p, v) => p.OverflowBehavior = v);
         }
 
-        if (OverflowIcon is not null && bitPivot.HasNotBeenSet(nameof(OverflowIcon)))
+        if (OverflowIcon is not null)
         {
-            bitPivot.OverflowIcon = OverflowIcon;
+            bitPivot.TakeFromCascade(nameof(OverflowIcon), OverflowIcon, static p => p.OverflowIcon, static (p, v) => p.OverflowIcon = v);
         }
 
-        if (OverflowIconName.HasValue() && bitPivot.HasNotBeenSet(nameof(OverflowIconName)))
+        if (OverflowIconName.HasValue())
         {
-            bitPivot.OverflowIconName = OverflowIconName;
+            bitPivot.TakeFromCascade(nameof(OverflowIconName), OverflowIconName, static p => p.OverflowIconName, static (p, v) => p.OverflowIconName = v);
         }
 
-        if (Placement.HasValue && bitPivot.HasNotBeenSet(nameof(Placement)) && bitPivot.Placement != Placement)
+        if (Placement.HasValue)
         {
-            bitPivot.Placement = Placement.Value;
-
-            bitPivot.ClassBuilder.Reset();
+            bitPivot.TakeFromCascade(nameof(Placement), Placement.Value, static p => p.Placement, static (p, v) => p.Placement = v);
         }
 
-        if (PreviousAriaLabel.HasValue() && bitPivot.HasNotBeenSet(nameof(PreviousAriaLabel)))
+        if (PreviousAriaLabel.HasValue())
         {
-            bitPivot.PreviousAriaLabel = PreviousAriaLabel;
+            bitPivot.TakeFromCascade(nameof(PreviousAriaLabel), PreviousAriaLabel, static p => p.PreviousAriaLabel, static (p, v) => p.PreviousAriaLabel = v);
         }
 
-        if (PreviousIcon is not null && bitPivot.HasNotBeenSet(nameof(PreviousIcon)))
+        if (PreviousIcon is not null)
         {
-            bitPivot.PreviousIcon = PreviousIcon;
+            bitPivot.TakeFromCascade(nameof(PreviousIcon), PreviousIcon, static p => p.PreviousIcon, static (p, v) => p.PreviousIcon = v);
         }
 
-        if (PreviousIconName.HasValue() && bitPivot.HasNotBeenSet(nameof(PreviousIconName)))
+        if (PreviousIconName.HasValue())
         {
-            bitPivot.PreviousIconName = PreviousIconName;
+            bitPivot.TakeFromCascade(nameof(PreviousIconName), PreviousIconName, static p => p.PreviousIconName, static (p, v) => p.PreviousIconName = v);
         }
 
-        if (Reorderable.HasValue && bitPivot.HasNotBeenSet(nameof(Reorderable)) && bitPivot.Reorderable != Reorderable)
+        if (Reorderable.HasValue)
         {
-            bitPivot.Reorderable = Reorderable.Value;
-
-            bitPivot.ClassBuilder.Reset();
+            bitPivot.TakeFromCascade(nameof(Reorderable), Reorderable.Value, static p => p.Reorderable, static (p, v) => p.Reorderable = v);
         }
 
-        if (SelectOnFocus.HasValue && bitPivot.HasNotBeenSet(nameof(SelectOnFocus)))
+        if (SelectOnFocus.HasValue)
         {
-            bitPivot.SelectOnFocus = SelectOnFocus.Value;
+            bitPivot.TakeFromCascade(nameof(SelectOnFocus), SelectOnFocus.Value, static p => p.SelectOnFocus, static (p, v) => p.SelectOnFocus = v);
         }
 
-        if (Size.HasValue && bitPivot.HasNotBeenSet(nameof(Size)) && bitPivot.Size != Size)
+        if (Size.HasValue)
         {
-            bitPivot.Size = Size.Value;
-
-            bitPivot.ClassBuilder.Reset();
+            bitPivot.TakeFromCascade(nameof(Size), Size.Value, static p => p.Size, static (p, v) => p.Size = v);
         }
 
-        if (Stacked.HasValue && bitPivot.HasNotBeenSet(nameof(Stacked)) && bitPivot.Stacked != Stacked)
+        if (Stacked.HasValue)
         {
-            bitPivot.Stacked = Stacked.Value;
-
-            bitPivot.ClassBuilder.Reset();
+            bitPivot.TakeFromCascade(nameof(Stacked), Stacked.Value, static p => p.Stacked, static (p, v) => p.Stacked = v);
         }
 
-        if (Styles is not null && bitPivot.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitPivot.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitPivot.Styles = Styles;
-
-            bitPivot.StyleBuilder.Reset();
+            bitPivot.TakeFromCascade(nameof(Styles), Styles, static p => p.Styles, static (p, v) => p.Styles = v);
         }
     }
 }

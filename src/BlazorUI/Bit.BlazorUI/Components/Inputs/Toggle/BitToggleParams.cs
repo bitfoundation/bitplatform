@@ -200,188 +200,154 @@ public class BitToggleParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitToggle);
 
-        if (AllowDisabledFocus.HasValue && bitToggle.HasNotBeenSet(nameof(AllowDisabledFocus)))
+        if (AllowDisabledFocus.HasValue)
         {
-            bitToggle.AllowDisabledFocus = AllowDisabledFocus.Value;
+            bitToggle.TakeFromCascade(nameof(AllowDisabledFocus), AllowDisabledFocus.Value, static t => t.AllowDisabledFocus, static (t, v) => t.AllowDisabledFocus = v);
         }
 
-        if (AriaControls.HasValue() && bitToggle.HasNotBeenSet(nameof(AriaControls)))
+        if (AriaControls.HasValue())
         {
-            bitToggle.AriaControls = AriaControls;
+            bitToggle.TakeFromCascade(nameof(AriaControls), AriaControls, static t => t.AriaControls, static (t, v) => t.AriaControls = v);
         }
 
-        if (AriaDescription.HasValue() && bitToggle.HasNotBeenSet(nameof(AriaDescription)))
+        if (AriaDescription.HasValue())
         {
-            bitToggle.AriaDescription = AriaDescription;
+            bitToggle.TakeFromCascade(nameof(AriaDescription), AriaDescription, static t => t.AriaDescription, static (t, v) => t.AriaDescription = v);
         }
 
-        if (AriaDescribedby.HasValue() && bitToggle.HasNotBeenSet(nameof(AriaDescribedby)))
+        if (AriaDescribedby.HasValue())
         {
-            bitToggle.AriaDescribedby = AriaDescribedby;
+            bitToggle.TakeFromCascade(nameof(AriaDescribedby), AriaDescribedby, static t => t.AriaDescribedby, static (t, v) => t.AriaDescribedby = v);
         }
 
-        if (AriaLabelledby.HasValue() && bitToggle.HasNotBeenSet(nameof(AriaLabelledby)))
+        if (AriaLabelledby.HasValue())
         {
-            bitToggle.AriaLabelledby = AriaLabelledby;
+            bitToggle.TakeFromCascade(nameof(AriaLabelledby), AriaLabelledby, static t => t.AriaLabelledby, static (t, v) => t.AriaLabelledby = v);
         }
 
-        if (AutoFocus.HasValue && bitToggle.HasNotBeenSet(nameof(AutoFocus)))
+        if (AutoFocus.HasValue)
         {
-            bitToggle.AutoFocus = AutoFocus.Value;
+            bitToggle.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static t => t.AutoFocus, static (t, v) => t.AutoFocus = v);
         }
 
-        if (AutoLoading.HasValue && bitToggle.HasNotBeenSet(nameof(AutoLoading)))
+        if (AutoLoading.HasValue)
         {
-            bitToggle.AutoLoading = AutoLoading.Value;
+            bitToggle.TakeFromCascade(nameof(AutoLoading), AutoLoading.Value, static t => t.AutoLoading, static (t, v) => t.AutoLoading = v);
         }
 
-        if (Classes is not null && bitToggle.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitToggle.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitToggle.Classes = Classes;
-
-            bitToggle.ClassBuilder.Reset();
+            bitToggle.TakeFromCascade(nameof(Classes), Classes, static t => t.Classes, static (t, v) => t.Classes = v);
         }
 
-        if (Color.HasValue && bitToggle.HasNotBeenSet(nameof(Color)) && bitToggle.Color != Color)
+        if (Color.HasValue)
         {
-            bitToggle.Color = Color.Value;
-
-            bitToggle.ClassBuilder.Reset();
+            bitToggle.TakeFromCascade(nameof(Color), Color.Value, static t => t.Color, static (t, v) => t.Color = v);
         }
 
-        if (Description.HasValue() && bitToggle.HasNotBeenSet(nameof(Description)) && bitToggle.Description != Description)
+        if (Description.HasValue())
         {
-            bitToggle.Description = Description;
-
-            bitToggle.ClassBuilder.Reset();
+            bitToggle.TakeFromCascade(nameof(Description), Description, static t => t.Description, static (t, v) => t.Description = v);
         }
 
-        if (ErrorMessage.HasValue() && bitToggle.HasNotBeenSet(nameof(ErrorMessage)) && bitToggle.ErrorMessage != ErrorMessage)
+        if (ErrorMessage.HasValue())
         {
-            bitToggle.ErrorMessage = ErrorMessage;
-
-            bitToggle.ClassBuilder.Reset();
+            bitToggle.TakeFromCascade(nameof(ErrorMessage), ErrorMessage, static t => t.ErrorMessage, static (t, v) => t.ErrorMessage = v);
         }
 
-        if (FullWidth.HasValue && bitToggle.HasNotBeenSet(nameof(FullWidth)) && bitToggle.FullWidth != FullWidth)
+        if (FullWidth.HasValue)
         {
-            bitToggle.FullWidth = FullWidth.Value;
-
-            bitToggle.ClassBuilder.Reset();
+            bitToggle.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static t => t.FullWidth, static (t, v) => t.FullWidth = v);
         }
 
-        if (Inline.HasValue && bitToggle.HasNotBeenSet(nameof(Inline)) && bitToggle.Inline != Inline)
+        if (Inline.HasValue)
         {
-            bitToggle.Inline = Inline.Value;
-
-            bitToggle.ClassBuilder.Reset();
+            bitToggle.TakeFromCascade(nameof(Inline), Inline.Value, static t => t.Inline, static (t, v) => t.Inline = v);
         }
 
-        if (Invalid.HasValue && bitToggle.HasNotBeenSet(nameof(Invalid)) && bitToggle.Invalid != Invalid)
+        if (Invalid.HasValue)
         {
-            bitToggle.Invalid = Invalid.Value;
-
-            bitToggle.ClassBuilder.Reset();
+            bitToggle.TakeFromCascade(nameof(Invalid), Invalid.Value, static t => t.Invalid, static (t, v) => t.Invalid = v);
         }
 
-        if (Label.HasValue() && bitToggle.HasNotBeenSet(nameof(Label)) && bitToggle.Label != Label)
+        if (Label.HasValue())
         {
-            bitToggle.Label = Label;
-
-            bitToggle.ClassBuilder.Reset();
+            bitToggle.TakeFromCascade(nameof(Label), Label, static t => t.Label, static (t, v) => t.Label = v);
         }
 
-        if (LabelPlacement.HasValue && bitToggle.HasNotBeenSet(nameof(LabelPlacement)) && bitToggle.LabelPlacement != LabelPlacement)
+        if (LabelPlacement.HasValue)
         {
-            bitToggle.LabelPlacement = LabelPlacement.Value;
-
-            bitToggle.ClassBuilder.Reset();
+            bitToggle.TakeFromCascade(nameof(LabelPlacement), LabelPlacement.Value, static t => t.LabelPlacement, static (t, v) => t.LabelPlacement = v);
         }
 
-        if (Loading.HasValue && bitToggle.HasNotBeenSet(nameof(Loading)) && bitToggle.Loading != Loading)
+        if (Loading.HasValue)
         {
-            bitToggle.Loading = Loading.Value;
-
-            bitToggle.ClassBuilder.Reset();
+            bitToggle.TakeFromCascade(nameof(Loading), Loading.Value, static t => t.Loading, static (t, v) => t.Loading = v);
         }
 
-        if (OffIcon is not null && bitToggle.HasNotBeenSet(nameof(OffIcon)) && ReferenceEquals(bitToggle.OffIcon, OffIcon) is false)
+        if (OffIcon is not null)
         {
-            bitToggle.OffIcon = OffIcon;
-
-            bitToggle.ClassBuilder.Reset();
+            bitToggle.TakeFromCascade(nameof(OffIcon), OffIcon, static t => t.OffIcon, static (t, v) => t.OffIcon = v);
         }
 
-        if (OffIconName.HasValue() && bitToggle.HasNotBeenSet(nameof(OffIconName)) && bitToggle.OffIconName != OffIconName)
+        if (OffIconName.HasValue())
         {
-            bitToggle.OffIconName = OffIconName;
-
-            bitToggle.ClassBuilder.Reset();
+            bitToggle.TakeFromCascade(nameof(OffIconName), OffIconName, static t => t.OffIconName, static (t, v) => t.OffIconName = v);
         }
 
-        if (OffText.HasValue() && bitToggle.HasNotBeenSet(nameof(OffText)))
+        if (OffText.HasValue())
         {
-            bitToggle.OffText = OffText;
+            bitToggle.TakeFromCascade(nameof(OffText), OffText, static t => t.OffText, static (t, v) => t.OffText = v);
         }
 
-        if (OnIcon is not null && bitToggle.HasNotBeenSet(nameof(OnIcon)) && ReferenceEquals(bitToggle.OnIcon, OnIcon) is false)
+        if (OnIcon is not null)
         {
-            bitToggle.OnIcon = OnIcon;
-
-            bitToggle.ClassBuilder.Reset();
+            bitToggle.TakeFromCascade(nameof(OnIcon), OnIcon, static t => t.OnIcon, static (t, v) => t.OnIcon = v);
         }
 
-        if (OnIconName.HasValue() && bitToggle.HasNotBeenSet(nameof(OnIconName)) && bitToggle.OnIconName != OnIconName)
+        if (OnIconName.HasValue())
         {
-            bitToggle.OnIconName = OnIconName;
-
-            bitToggle.ClassBuilder.Reset();
+            bitToggle.TakeFromCascade(nameof(OnIconName), OnIconName, static t => t.OnIconName, static (t, v) => t.OnIconName = v);
         }
 
-        if (OnText.HasValue() && bitToggle.HasNotBeenSet(nameof(OnText)))
+        if (OnText.HasValue())
         {
-            bitToggle.OnText = OnText;
+            bitToggle.TakeFromCascade(nameof(OnText), OnText, static t => t.OnText, static (t, v) => t.OnText = v);
         }
 
-        if (Reversed.HasValue && bitToggle.HasNotBeenSet(nameof(Reversed)) && bitToggle.Reversed != Reversed)
+        if (Reversed.HasValue)
         {
-            bitToggle.Reversed = Reversed.Value;
-
-            bitToggle.ClassBuilder.Reset();
+            bitToggle.TakeFromCascade(nameof(Reversed), Reversed.Value, static t => t.Reversed, static (t, v) => t.Reversed = v);
         }
 
-        if (Role.HasValue() && bitToggle.HasNotBeenSet(nameof(Role)))
+        if (Role.HasValue())
         {
-            bitToggle.Role = Role;
+            bitToggle.TakeFromCascade(nameof(Role), Role, static t => t.Role, static (t, v) => t.Role = v);
         }
 
-        if (Size.HasValue && bitToggle.HasNotBeenSet(nameof(Size)) && bitToggle.Size != Size)
+        if (Size.HasValue)
         {
-            bitToggle.Size = Size.Value;
-
-            bitToggle.ClassBuilder.Reset();
+            bitToggle.TakeFromCascade(nameof(Size), Size.Value, static t => t.Size, static (t, v) => t.Size = v);
         }
 
-        if (StopPropagation.HasValue && bitToggle.HasNotBeenSet(nameof(StopPropagation)))
+        if (StopPropagation.HasValue)
         {
-            bitToggle.StopPropagation = StopPropagation.Value;
+            bitToggle.TakeFromCascade(nameof(StopPropagation), StopPropagation.Value, static t => t.StopPropagation, static (t, v) => t.StopPropagation = v);
         }
 
-        if (Styles is not null && bitToggle.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitToggle.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitToggle.Styles = Styles;
-
-            bitToggle.StyleBuilder.Reset();
+            bitToggle.TakeFromCascade(nameof(Styles), Styles, static t => t.Styles, static (t, v) => t.Styles = v);
         }
 
-        if (Text.HasValue() && bitToggle.HasNotBeenSet(nameof(Text)))
+        if (Text.HasValue())
         {
-            bitToggle.Text = Text;
+            bitToggle.TakeFromCascade(nameof(Text), Text, static t => t.Text, static (t, v) => t.Text = v);
         }
 
-        if (Title.HasValue() && bitToggle.HasNotBeenSet(nameof(Title)))
+        if (Title.HasValue())
         {
-            bitToggle.Title = Title;
+            bitToggle.TakeFromCascade(nameof(Title), Title, static t => t.Title, static (t, v) => t.Title = v);
         }
     }
 }

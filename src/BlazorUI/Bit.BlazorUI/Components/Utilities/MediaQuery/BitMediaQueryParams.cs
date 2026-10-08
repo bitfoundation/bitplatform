@@ -74,19 +74,19 @@ public class BitMediaQueryParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitMediaQuery);
 
-        if (DefaultMatched.HasValue && bitMediaQuery.HasNotBeenSet(nameof(DefaultMatched)))
+        if (DefaultMatched.HasValue)
         {
-            bitMediaQuery.DefaultMatched = DefaultMatched.Value;
+            bitMediaQuery.TakeFromCascade(nameof(DefaultMatched), DefaultMatched.Value, static m => m.DefaultMatched, static (m, v) => m.DefaultMatched = v);
         }
 
-        if (Element.HasValue() && bitMediaQuery.HasNotBeenSet(nameof(Element)))
+        if (Element.HasValue())
         {
-            bitMediaQuery.Element = Element;
+            bitMediaQuery.TakeFromCascade(nameof(Element), Element, static m => m.Element, static (m, v) => m.Element = v);
         }
 
-        if (NoWrapper.HasValue && bitMediaQuery.HasNotBeenSet(nameof(NoWrapper)))
+        if (NoWrapper.HasValue)
         {
-            bitMediaQuery.NoWrapper = NoWrapper.Value;
+            bitMediaQuery.TakeFromCascade(nameof(NoWrapper), NoWrapper.Value, static m => m.NoWrapper, static (m, v) => m.NoWrapper = v);
         }
 
         if (AppliesQuery(bitMediaQuery))

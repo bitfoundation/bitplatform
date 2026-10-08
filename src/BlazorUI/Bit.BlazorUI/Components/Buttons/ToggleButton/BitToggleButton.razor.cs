@@ -129,6 +129,11 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// The general color of the toggle button.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-ToggleButton-*</c> color variables, the checked ones included; left
+    /// unset, the toggle button is primary unless those variables say otherwise. <see cref="OnColor"/> and
+    /// <see cref="OffColor"/> replace it in their own state.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -291,6 +296,10 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// The color of the toggle button when it is not checked.
     /// </summary>
+    /// <remarks>
+    /// Falls back to <see cref="Color"/>. An explicit value wins over the <c>--bit-ToggleButton-*</c> color variables
+    /// while the toggle button is unchecked.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? OffColor { get; set; }
 
@@ -361,6 +370,10 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// The color of the toggle button when it is checked.
     /// </summary>
+    /// <remarks>
+    /// Falls back to <see cref="Color"/>. An explicit value wins over the <c>--bit-ToggleButton-checked-*</c> color
+    /// variables while the toggle button is checked.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? OnColor { get; set; }
 
@@ -447,6 +460,11 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// The size of the toggle button.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-ToggleButton-*</c> size variables (min-height, padding, font size,
+    /// icon-only glyph size, spinner size, loading label font size); left unset, the toggle button is medium unless
+    /// those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -529,6 +547,9 @@ public partial class BitToggleButton : BitComponentBase
 
         ClassBuilder.Register(() => IconPlacement is BitPlacement.End ? "bit-tgb-eni" : string.Empty);
 
+        // Color (or the OnColor / OffColor of the current state) and Size publish nothing while they are unset, which
+        // is what lets the stylesheet tell a default from a choice: the public --bit-ToggleButton-* variables restyle
+        // the default and never an explicit value.
         ClassBuilder.Register(() => GetColor() switch
         {
             BitColor.Primary => "bit-tgb-pri",
@@ -548,16 +569,10 @@ public partial class BitToggleButton : BitComponentBase
             BitColor.PrimaryBorder => "bit-tgb-pbr",
             BitColor.SecondaryBorder => "bit-tgb-sbr",
             BitColor.TertiaryBorder => "bit-tgb-tbr",
-            _ => "bit-tgb-pri"
+            _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-tgb-sm",
-            BitSize.Medium => "bit-tgb-md",
-            BitSize.Large => "bit-tgb-lg",
-            _ => "bit-tgb-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-tgb"));
 
         ClassBuilder.Register(() => GetVariant() switch
         {

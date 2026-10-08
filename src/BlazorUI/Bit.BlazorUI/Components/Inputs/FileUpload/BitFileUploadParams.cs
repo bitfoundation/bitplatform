@@ -664,493 +664,473 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitFileUpload);
 
-        // the working chunk size is only worth deriving again when one of the two parameters it comes from
-        // actually moves, exactly as the generated setter of each of them decides.
-        var chunkSizeChanged = false;
+        // The working chunk size is derived from ChunkSize and AutoChunkSize. A changed ChunkSize derives it through its
+        // own [CallOnSet] hook; AutoChunkSize has none, so a change to it is followed here.
+        var autoChunkSizeChanged = false;
 
-        if (Accept.HasValue() && bitFileUpload.HasNotBeenSet(nameof(Accept)))
+        if (Accept.HasValue())
         {
-            bitFileUpload.Accept = Accept;
+            bitFileUpload.TakeFromCascade(nameof(Accept), Accept, static f => f.Accept, static (f, v) => f.Accept = v);
         }
 
-        if (AllowDrop.HasValue && bitFileUpload.HasNotBeenSet(nameof(AllowDrop)))
+        if (AllowDrop.HasValue)
         {
-            bitFileUpload.AllowDrop = AllowDrop.Value;
+            bitFileUpload.TakeFromCascade(nameof(AllowDrop), AllowDrop.Value, static f => f.AllowDrop, static (f, v) => f.AllowDrop = v);
         }
 
-        if (AllowDuplicates.HasValue && bitFileUpload.HasNotBeenSet(nameof(AllowDuplicates)))
+        if (AllowDuplicates.HasValue)
         {
-            bitFileUpload.AllowDuplicates = AllowDuplicates.Value;
+            bitFileUpload.TakeFromCascade(nameof(AllowDuplicates), AllowDuplicates.Value, static f => f.AllowDuplicates, static (f, v) => f.AllowDuplicates = v);
         }
 
-        if (AllowPaste.HasValue && bitFileUpload.HasNotBeenSet(nameof(AllowPaste)))
+        if (AllowPaste.HasValue)
         {
-            bitFileUpload.AllowPaste = AllowPaste.Value;
+            bitFileUpload.TakeFromCascade(nameof(AllowPaste), AllowPaste.Value, static f => f.AllowPaste, static (f, v) => f.AllowPaste = v);
         }
 
-        if (AllowedExtensions is not null && bitFileUpload.HasNotBeenSet(nameof(AllowedExtensions)))
+        if (AllowedExtensions is not null)
         {
-            bitFileUpload.AllowedExtensions = AllowedExtensions;
+            bitFileUpload.TakeFromCascade(nameof(AllowedExtensions), AllowedExtensions, static f => f.AllowedExtensions, static (f, v) => f.AllowedExtensions = v);
         }
 
-        if (AnnouncementProvider is not null && bitFileUpload.HasNotBeenSet(nameof(AnnouncementProvider)))
+        if (AnnouncementProvider is not null)
         {
-            bitFileUpload.AnnouncementProvider = AnnouncementProvider;
+            bitFileUpload.TakeFromCascade(nameof(AnnouncementProvider), AnnouncementProvider, static f => f.AnnouncementProvider, static (f, v) => f.AnnouncementProvider = v);
         }
 
-        if (Append.HasValue && bitFileUpload.HasNotBeenSet(nameof(Append)))
+        if (Append.HasValue)
         {
-            bitFileUpload.Append = Append.Value;
+            bitFileUpload.TakeFromCascade(nameof(Append), Append.Value, static f => f.Append, static (f, v) => f.Append = v);
         }
 
-        if (AutoChunkSize.HasValue && bitFileUpload.HasNotBeenSet(nameof(AutoChunkSize)))
+        if (AutoChunkSize.HasValue && bitFileUpload.TakeFromCascade(nameof(AutoChunkSize), AutoChunkSize.Value, static f => f.AutoChunkSize, static (f, v) => f.AutoChunkSize = v))
         {
-            chunkSizeChanged = chunkSizeChanged || bitFileUpload.AutoChunkSize != AutoChunkSize.Value;
-
-            bitFileUpload.AutoChunkSize = AutoChunkSize.Value;
+            autoChunkSizeChanged = true;
         }
 
-        if (AutoReset.HasValue && bitFileUpload.HasNotBeenSet(nameof(AutoReset)))
+        if (AutoReset.HasValue)
         {
-            bitFileUpload.AutoReset = AutoReset.Value;
+            bitFileUpload.TakeFromCascade(nameof(AutoReset), AutoReset.Value, static f => f.AutoReset, static (f, v) => f.AutoReset = v);
         }
 
-        if (AutoRetries.HasValue && bitFileUpload.HasNotBeenSet(nameof(AutoRetries)))
+        if (AutoRetries.HasValue)
         {
-            bitFileUpload.AutoRetries = AutoRetries.Value;
+            bitFileUpload.TakeFromCascade(nameof(AutoRetries), AutoRetries.Value, static f => f.AutoRetries, static (f, v) => f.AutoRetries = v);
         }
 
-        if (AutoRetryDelay.HasValue && bitFileUpload.HasNotBeenSet(nameof(AutoRetryDelay)))
+        if (AutoRetryDelay.HasValue)
         {
-            bitFileUpload.AutoRetryDelay = AutoRetryDelay.Value;
+            bitFileUpload.TakeFromCascade(nameof(AutoRetryDelay), AutoRetryDelay.Value, static f => f.AutoRetryDelay, static (f, v) => f.AutoRetryDelay = v);
         }
 
-        if (AutoRetryDelayProvider is not null && bitFileUpload.HasNotBeenSet(nameof(AutoRetryDelayProvider)))
+        if (AutoRetryDelayProvider is not null)
         {
-            bitFileUpload.AutoRetryDelayProvider = AutoRetryDelayProvider;
+            bitFileUpload.TakeFromCascade(nameof(AutoRetryDelayProvider), AutoRetryDelayProvider, static f => f.AutoRetryDelayProvider, static (f, v) => f.AutoRetryDelayProvider = v);
         }
 
-        if (AutoUpload.HasValue && bitFileUpload.HasNotBeenSet(nameof(AutoUpload)))
+        if (AutoUpload.HasValue)
         {
-            bitFileUpload.AutoUpload = AutoUpload.Value;
+            bitFileUpload.TakeFromCascade(nameof(AutoUpload), AutoUpload.Value, static f => f.AutoUpload, static (f, v) => f.AutoUpload = v);
         }
 
-        if (CancelButtonTitle.HasValue() && bitFileUpload.HasNotBeenSet(nameof(CancelButtonTitle)))
+        if (CancelButtonTitle.HasValue())
         {
-            bitFileUpload.CancelButtonTitle = CancelButtonTitle;
+            bitFileUpload.TakeFromCascade(nameof(CancelButtonTitle), CancelButtonTitle, static f => f.CancelButtonTitle, static (f, v) => f.CancelButtonTitle = v);
         }
 
-        if (CancelAllText.HasValue() && bitFileUpload.HasNotBeenSet(nameof(CancelAllText)))
+        if (CancelAllText.HasValue())
         {
-            bitFileUpload.CancelAllText = CancelAllText!;
+            bitFileUpload.TakeFromCascade(nameof(CancelAllText), CancelAllText!, static f => f.CancelAllText, static (f, v) => f.CancelAllText = v);
         }
 
-        if (CancelIcon is not null && bitFileUpload.HasNotBeenSet(nameof(CancelIcon)))
+        if (CancelIcon is not null)
         {
-            bitFileUpload.CancelIcon = CancelIcon;
+            bitFileUpload.TakeFromCascade(nameof(CancelIcon), CancelIcon, static f => f.CancelIcon, static (f, v) => f.CancelIcon = v);
         }
 
-        if (CancelIconName.HasValue() && bitFileUpload.HasNotBeenSet(nameof(CancelIconName)))
+        if (CancelIconName.HasValue())
         {
-            bitFileUpload.CancelIconName = CancelIconName;
+            bitFileUpload.TakeFromCascade(nameof(CancelIconName), CancelIconName, static f => f.CancelIconName, static (f, v) => f.CancelIconName = v);
         }
 
-        if (CanceledUploadMessage.HasValue() && bitFileUpload.HasNotBeenSet(nameof(CanceledUploadMessage)))
+        if (CanceledUploadMessage.HasValue())
         {
-            bitFileUpload.CanceledUploadMessage = CanceledUploadMessage!;
+            bitFileUpload.TakeFromCascade(nameof(CanceledUploadMessage), CanceledUploadMessage!, static f => f.CanceledUploadMessage, static (f, v) => f.CanceledUploadMessage = v);
         }
 
-        if (Capture.HasValue() && bitFileUpload.HasNotBeenSet(nameof(Capture)))
+        if (Capture.HasValue())
         {
-            bitFileUpload.Capture = Capture;
+            bitFileUpload.TakeFromCascade(nameof(Capture), Capture, static f => f.Capture, static (f, v) => f.Capture = v);
         }
 
-        if (ChunkSize.HasValue && bitFileUpload.HasNotBeenSet(nameof(ChunkSize)))
+        if (ChunkSize.HasValue)
         {
-            chunkSizeChanged = chunkSizeChanged || bitFileUpload.ChunkSize != ChunkSize.Value;
-
-            bitFileUpload.ChunkSize = ChunkSize.Value;
+            bitFileUpload.TakeFromCascade(nameof(ChunkSize), ChunkSize.Value, static f => f.ChunkSize, static (f, v) => f.ChunkSize = v);
         }
 
-        if (ChunkedUpload.HasValue && bitFileUpload.HasNotBeenSet(nameof(ChunkedUpload)))
+        if (ChunkedUpload.HasValue)
         {
-            bitFileUpload.ChunkedUpload = ChunkedUpload.Value;
+            bitFileUpload.TakeFromCascade(nameof(ChunkedUpload), ChunkedUpload.Value, static f => f.ChunkedUpload, static (f, v) => f.ChunkedUpload = v);
         }
 
-        if (Classes is not null && bitFileUpload.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitFileUpload.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitFileUpload.Classes = Classes;
-
-            bitFileUpload.ClassBuilder.Reset();
+            bitFileUpload.TakeFromCascade(nameof(Classes), Classes, static f => f.Classes, static (f, v) => f.Classes = v);
         }
 
-        if (ClearText.HasValue() && bitFileUpload.HasNotBeenSet(nameof(ClearText)))
+        if (ClearText.HasValue())
         {
-            bitFileUpload.ClearText = ClearText!;
+            bitFileUpload.TakeFromCascade(nameof(ClearText), ClearText!, static f => f.ClearText, static (f, v) => f.ClearText = v);
         }
 
-        if (Color.HasValue && bitFileUpload.HasNotBeenSet(nameof(Color)) && bitFileUpload.Color != Color)
+        if (Color.HasValue)
         {
-            bitFileUpload.Color = Color.Value;
-
-            bitFileUpload.ClassBuilder.Reset();
+            bitFileUpload.TakeFromCascade(nameof(Color), Color.Value, static f => f.Color, static (f, v) => f.Color = v);
         }
 
-        if (ConcurrentUploads.HasValue && bitFileUpload.HasNotBeenSet(nameof(ConcurrentUploads)))
+        if (ConcurrentUploads.HasValue)
         {
-            bitFileUpload.ConcurrentUploads = ConcurrentUploads.Value;
+            bitFileUpload.TakeFromCascade(nameof(ConcurrentUploads), ConcurrentUploads.Value, static f => f.ConcurrentUploads, static (f, v) => f.ConcurrentUploads = v);
         }
 
-        if (Description.HasValue() && bitFileUpload.HasNotBeenSet(nameof(Description)))
+        if (Description.HasValue())
         {
-            bitFileUpload.Description = Description;
+            bitFileUpload.TakeFromCascade(nameof(Description), Description, static f => f.Description, static (f, v) => f.Description = v);
         }
 
-        if (Directory.HasValue && bitFileUpload.HasNotBeenSet(nameof(Directory)))
+        if (Directory.HasValue)
         {
-            bitFileUpload.Directory = Directory.Value;
+            bitFileUpload.TakeFromCascade(nameof(Directory), Directory.Value, static f => f.Directory, static (f, v) => f.Directory = v);
         }
 
-        if (DropZoneSelector.HasValue() && bitFileUpload.HasNotBeenSet(nameof(DropZoneSelector)))
+        if (DropZoneSelector.HasValue())
         {
-            bitFileUpload.DropZoneSelector = DropZoneSelector;
+            bitFileUpload.TakeFromCascade(nameof(DropZoneSelector), DropZoneSelector, static f => f.DropZoneSelector, static (f, v) => f.DropZoneSelector = v);
         }
 
-        if (DuplicateErrorMessage.HasValue() && bitFileUpload.HasNotBeenSet(nameof(DuplicateErrorMessage)))
+        if (DuplicateErrorMessage.HasValue())
         {
-            bitFileUpload.DuplicateErrorMessage = DuplicateErrorMessage!;
+            bitFileUpload.TakeFromCascade(nameof(DuplicateErrorMessage), DuplicateErrorMessage!, static f => f.DuplicateErrorMessage, static (f, v) => f.DuplicateErrorMessage = v);
         }
 
-        if (FailedRemoveMessage.HasValue() && bitFileUpload.HasNotBeenSet(nameof(FailedRemoveMessage)))
+        if (FailedRemoveMessage.HasValue())
         {
-            bitFileUpload.FailedRemoveMessage = FailedRemoveMessage!;
+            bitFileUpload.TakeFromCascade(nameof(FailedRemoveMessage), FailedRemoveMessage!, static f => f.FailedRemoveMessage, static (f, v) => f.FailedRemoveMessage = v);
         }
 
-        if (FailedUploadMessage.HasValue() && bitFileUpload.HasNotBeenSet(nameof(FailedUploadMessage)))
+        if (FailedUploadMessage.HasValue())
         {
-            bitFileUpload.FailedUploadMessage = FailedUploadMessage!;
+            bitFileUpload.TakeFromCascade(nameof(FailedUploadMessage), FailedUploadMessage!, static f => f.FailedUploadMessage, static (f, v) => f.FailedUploadMessage = v);
         }
 
-        if (FileListAriaLabel.HasValue() && bitFileUpload.HasNotBeenSet(nameof(FileListAriaLabel)))
+        if (FileListAriaLabel.HasValue())
         {
-            bitFileUpload.FileListAriaLabel = FileListAriaLabel!;
+            bitFileUpload.TakeFromCascade(nameof(FileListAriaLabel), FileListAriaLabel!, static f => f.FileListAriaLabel, static (f, v) => f.FileListAriaLabel = v);
         }
 
-        if (FileSizeFormatter is not null && bitFileUpload.HasNotBeenSet(nameof(FileSizeFormatter)))
+        if (FileSizeFormatter is not null)
         {
-            bitFileUpload.FileSizeFormatter = FileSizeFormatter;
+            bitFileUpload.TakeFromCascade(nameof(FileSizeFormatter), FileSizeFormatter, static f => f.FileSizeFormatter, static (f, v) => f.FileSizeFormatter = v);
         }
 
-        if (FileValidator is not null && bitFileUpload.HasNotBeenSet(nameof(FileValidator)))
+        if (FileValidator is not null)
         {
-            bitFileUpload.FileValidator = FileValidator;
+            bitFileUpload.TakeFromCascade(nameof(FileValidator), FileValidator, static f => f.FileValidator, static (f, v) => f.FileValidator = v);
         }
 
-        if (HideFileView.HasValue && bitFileUpload.HasNotBeenSet(nameof(HideFileView)))
+        if (HideFileView.HasValue)
         {
-            bitFileUpload.HideFileView = HideFileView.Value;
+            bitFileUpload.TakeFromCascade(nameof(HideFileView), HideFileView.Value, static f => f.HideFileView, static (f, v) => f.HideFileView = v);
         }
 
-        if (HideLabel.HasValue && bitFileUpload.HasNotBeenSet(nameof(HideLabel)))
+        if (HideLabel.HasValue)
         {
-            bitFileUpload.HideLabel = HideLabel.Value;
+            bitFileUpload.TakeFromCascade(nameof(HideLabel), HideLabel.Value, static f => f.HideLabel, static (f, v) => f.HideLabel = v);
         }
 
-        if (Label.HasValue() && bitFileUpload.HasNotBeenSet(nameof(Label)))
+        if (Label.HasValue())
         {
-            bitFileUpload.Label = Label!;
+            bitFileUpload.TakeFromCascade(nameof(Label), Label!, static f => f.Label, static (f, v) => f.Label = v);
         }
 
-        if (LabelIcon is not null && bitFileUpload.HasNotBeenSet(nameof(LabelIcon)))
+        if (LabelIcon is not null)
         {
-            bitFileUpload.LabelIcon = LabelIcon;
+            bitFileUpload.TakeFromCascade(nameof(LabelIcon), LabelIcon, static f => f.LabelIcon, static (f, v) => f.LabelIcon = v);
         }
 
-        if (LabelIconName.HasValue() && bitFileUpload.HasNotBeenSet(nameof(LabelIconName)))
+        if (LabelIconName.HasValue())
         {
-            bitFileUpload.LabelIconName = LabelIconName;
+            bitFileUpload.TakeFromCascade(nameof(LabelIconName), LabelIconName, static f => f.LabelIconName, static (f, v) => f.LabelIconName = v);
         }
 
-        if (LabelIconPlacement.HasValue && bitFileUpload.HasNotBeenSet(nameof(LabelIconPlacement)) && bitFileUpload.LabelIconPlacement != LabelIconPlacement)
+        if (LabelIconPlacement.HasValue)
         {
-            bitFileUpload.LabelIconPlacement = LabelIconPlacement.Value;
-
-            bitFileUpload.ClassBuilder.Reset();
+            bitFileUpload.TakeFromCascade(nameof(LabelIconPlacement), LabelIconPlacement.Value, static f => f.LabelIconPlacement, static (f, v) => f.LabelIconPlacement = v);
         }
 
-        if (MaxCount.HasValue && bitFileUpload.HasNotBeenSet(nameof(MaxCount)))
+        if (MaxCount.HasValue)
         {
-            bitFileUpload.MaxCount = MaxCount.Value;
+            bitFileUpload.TakeFromCascade(nameof(MaxCount), MaxCount.Value, static f => f.MaxCount, static (f, v) => f.MaxCount = v);
         }
 
-        if (MaxCountErrorMessage.HasValue() && bitFileUpload.HasNotBeenSet(nameof(MaxCountErrorMessage)))
+        if (MaxCountErrorMessage.HasValue())
         {
-            bitFileUpload.MaxCountErrorMessage = MaxCountErrorMessage!;
+            bitFileUpload.TakeFromCascade(nameof(MaxCountErrorMessage), MaxCountErrorMessage!, static f => f.MaxCountErrorMessage, static (f, v) => f.MaxCountErrorMessage = v);
         }
 
-        if (MaxSize.HasValue && bitFileUpload.HasNotBeenSet(nameof(MaxSize)))
+        if (MaxSize.HasValue)
         {
-            bitFileUpload.MaxSize = MaxSize.Value;
+            bitFileUpload.TakeFromCascade(nameof(MaxSize), MaxSize.Value, static f => f.MaxSize, static (f, v) => f.MaxSize = v);
         }
 
-        if (MaxSizeErrorMessage.HasValue() && bitFileUpload.HasNotBeenSet(nameof(MaxSizeErrorMessage)))
+        if (MaxSizeErrorMessage.HasValue())
         {
-            bitFileUpload.MaxSizeErrorMessage = MaxSizeErrorMessage!;
+            bitFileUpload.TakeFromCascade(nameof(MaxSizeErrorMessage), MaxSizeErrorMessage!, static f => f.MaxSizeErrorMessage, static (f, v) => f.MaxSizeErrorMessage = v);
         }
 
-        if (MaxTotalSize.HasValue && bitFileUpload.HasNotBeenSet(nameof(MaxTotalSize)))
+        if (MaxTotalSize.HasValue)
         {
-            bitFileUpload.MaxTotalSize = MaxTotalSize.Value;
+            bitFileUpload.TakeFromCascade(nameof(MaxTotalSize), MaxTotalSize.Value, static f => f.MaxTotalSize, static (f, v) => f.MaxTotalSize = v);
         }
 
-        if (MaxTotalSizeErrorMessage.HasValue() && bitFileUpload.HasNotBeenSet(nameof(MaxTotalSizeErrorMessage)))
+        if (MaxTotalSizeErrorMessage.HasValue())
         {
-            bitFileUpload.MaxTotalSizeErrorMessage = MaxTotalSizeErrorMessage!;
+            bitFileUpload.TakeFromCascade(nameof(MaxTotalSizeErrorMessage), MaxTotalSizeErrorMessage!, static f => f.MaxTotalSizeErrorMessage, static (f, v) => f.MaxTotalSizeErrorMessage = v);
         }
 
-        if (MinSize.HasValue && bitFileUpload.HasNotBeenSet(nameof(MinSize)))
+        if (MinSize.HasValue)
         {
-            bitFileUpload.MinSize = MinSize.Value;
+            bitFileUpload.TakeFromCascade(nameof(MinSize), MinSize.Value, static f => f.MinSize, static (f, v) => f.MinSize = v);
         }
 
-        if (MinSizeErrorMessage.HasValue() && bitFileUpload.HasNotBeenSet(nameof(MinSizeErrorMessage)))
+        if (MinSizeErrorMessage.HasValue())
         {
-            bitFileUpload.MinSizeErrorMessage = MinSizeErrorMessage!;
+            bitFileUpload.TakeFromCascade(nameof(MinSizeErrorMessage), MinSizeErrorMessage!, static f => f.MinSizeErrorMessage, static (f, v) => f.MinSizeErrorMessage = v);
         }
 
-        if (Multiple.HasValue && bitFileUpload.HasNotBeenSet(nameof(Multiple)))
+        if (Multiple.HasValue)
         {
-            bitFileUpload.Multiple = Multiple.Value;
+            bitFileUpload.TakeFromCascade(nameof(Multiple), Multiple.Value, static f => f.Multiple, static (f, v) => f.Multiple = v);
         }
 
-        if (NotAllowedExtensionErrorMessage.HasValue() && bitFileUpload.HasNotBeenSet(nameof(NotAllowedExtensionErrorMessage)))
+        if (NotAllowedExtensionErrorMessage.HasValue())
         {
-            bitFileUpload.NotAllowedExtensionErrorMessage = NotAllowedExtensionErrorMessage!;
+            bitFileUpload.TakeFromCascade(nameof(NotAllowedExtensionErrorMessage), NotAllowedExtensionErrorMessage!, static f => f.NotAllowedExtensionErrorMessage, static (f, v) => f.NotAllowedExtensionErrorMessage = v);
         }
 
-        if (PauseButtonTitle.HasValue() && bitFileUpload.HasNotBeenSet(nameof(PauseButtonTitle)))
+        if (PauseButtonTitle.HasValue())
         {
-            bitFileUpload.PauseButtonTitle = PauseButtonTitle;
+            bitFileUpload.TakeFromCascade(nameof(PauseButtonTitle), PauseButtonTitle, static f => f.PauseButtonTitle, static (f, v) => f.PauseButtonTitle = v);
         }
 
-        if (PauseIcon is not null && bitFileUpload.HasNotBeenSet(nameof(PauseIcon)))
+        if (PauseIcon is not null)
         {
-            bitFileUpload.PauseIcon = PauseIcon;
+            bitFileUpload.TakeFromCascade(nameof(PauseIcon), PauseIcon, static f => f.PauseIcon, static (f, v) => f.PauseIcon = v);
         }
 
-        if (PauseIconName.HasValue() && bitFileUpload.HasNotBeenSet(nameof(PauseIconName)))
+        if (PauseIconName.HasValue())
         {
-            bitFileUpload.PauseIconName = PauseIconName;
+            bitFileUpload.TakeFromCascade(nameof(PauseIconName), PauseIconName, static f => f.PauseIconName, static (f, v) => f.PauseIconName = v);
         }
 
-        if (PreloadedFileMessage.HasValue() && bitFileUpload.HasNotBeenSet(nameof(PreloadedFileMessage)))
+        if (PreloadedFileMessage.HasValue())
         {
-            bitFileUpload.PreloadedFileMessage = PreloadedFileMessage!;
+            bitFileUpload.TakeFromCascade(nameof(PreloadedFileMessage), PreloadedFileMessage!, static f => f.PreloadedFileMessage, static (f, v) => f.PreloadedFileMessage = v);
         }
 
-        if (QueuedUploadMessage.HasValue() && bitFileUpload.HasNotBeenSet(nameof(QueuedUploadMessage)))
+        if (QueuedUploadMessage.HasValue())
         {
-            bitFileUpload.QueuedUploadMessage = QueuedUploadMessage!;
+            bitFileUpload.TakeFromCascade(nameof(QueuedUploadMessage), QueuedUploadMessage!, static f => f.QueuedUploadMessage, static (f, v) => f.QueuedUploadMessage = v);
         }
 
-        if (ReadImageDimensions.HasValue && bitFileUpload.HasNotBeenSet(nameof(ReadImageDimensions)))
+        if (ReadImageDimensions.HasValue)
         {
-            bitFileUpload.ReadImageDimensions = ReadImageDimensions.Value;
+            bitFileUpload.TakeFromCascade(nameof(ReadImageDimensions), ReadImageDimensions.Value, static f => f.ReadImageDimensions, static (f, v) => f.ReadImageDimensions = v);
         }
 
-        if (RemoveButtonTitle.HasValue() && bitFileUpload.HasNotBeenSet(nameof(RemoveButtonTitle)))
+        if (RemoveButtonTitle.HasValue())
         {
-            bitFileUpload.RemoveButtonTitle = RemoveButtonTitle;
+            bitFileUpload.TakeFromCascade(nameof(RemoveButtonTitle), RemoveButtonTitle, static f => f.RemoveButtonTitle, static (f, v) => f.RemoveButtonTitle = v);
         }
 
-        if (RemoveIcon is not null && bitFileUpload.HasNotBeenSet(nameof(RemoveIcon)))
+        if (RemoveIcon is not null)
         {
-            bitFileUpload.RemoveIcon = RemoveIcon;
+            bitFileUpload.TakeFromCascade(nameof(RemoveIcon), RemoveIcon, static f => f.RemoveIcon, static (f, v) => f.RemoveIcon = v);
         }
 
-        if (RemoveIconName.HasValue() && bitFileUpload.HasNotBeenSet(nameof(RemoveIconName)))
+        if (RemoveIconName.HasValue())
         {
-            bitFileUpload.RemoveIconName = RemoveIconName;
+            bitFileUpload.TakeFromCascade(nameof(RemoveIconName), RemoveIconName, static f => f.RemoveIconName, static (f, v) => f.RemoveIconName = v);
         }
 
-        if (RemoveRequestHttpHeaders is not null && bitFileUpload.HasNotBeenSet(nameof(RemoveRequestHttpHeaders)))
+        if (RemoveRequestHttpHeaders is not null)
         {
-            bitFileUpload.RemoveRequestHttpHeaders = RemoveRequestHttpHeaders;
+            bitFileUpload.TakeFromCascade(nameof(RemoveRequestHttpHeaders), RemoveRequestHttpHeaders, static f => f.RemoveRequestHttpHeaders, static (f, v) => f.RemoveRequestHttpHeaders = v);
         }
 
-        if (RemoveRequestHttpHeadersProvider is not null && bitFileUpload.HasNotBeenSet(nameof(RemoveRequestHttpHeadersProvider)))
+        if (RemoveRequestHttpHeadersProvider is not null)
         {
-            bitFileUpload.RemoveRequestHttpHeadersProvider = RemoveRequestHttpHeadersProvider;
+            bitFileUpload.TakeFromCascade(nameof(RemoveRequestHttpHeadersProvider), RemoveRequestHttpHeadersProvider, static f => f.RemoveRequestHttpHeadersProvider, static (f, v) => f.RemoveRequestHttpHeadersProvider = v);
         }
 
-        if (RemoveRequestHttpMethod.HasValue() && bitFileUpload.HasNotBeenSet(nameof(RemoveRequestHttpMethod)))
+        if (RemoveRequestHttpMethod.HasValue())
         {
-            bitFileUpload.RemoveRequestHttpMethod = RemoveRequestHttpMethod;
+            bitFileUpload.TakeFromCascade(nameof(RemoveRequestHttpMethod), RemoveRequestHttpMethod, static f => f.RemoveRequestHttpMethod, static (f, v) => f.RemoveRequestHttpMethod = v);
         }
 
-        if (RemoveRequestQueryStrings is not null && bitFileUpload.HasNotBeenSet(nameof(RemoveRequestQueryStrings)))
+        if (RemoveRequestQueryStrings is not null)
         {
-            bitFileUpload.RemoveRequestQueryStrings = RemoveRequestQueryStrings;
+            bitFileUpload.TakeFromCascade(nameof(RemoveRequestQueryStrings), RemoveRequestQueryStrings, static f => f.RemoveRequestQueryStrings, static (f, v) => f.RemoveRequestQueryStrings = v);
         }
 
-        if (RemoveRequestQueryStringsProvider is not null && bitFileUpload.HasNotBeenSet(nameof(RemoveRequestQueryStringsProvider)))
+        if (RemoveRequestQueryStringsProvider is not null)
         {
-            bitFileUpload.RemoveRequestQueryStringsProvider = RemoveRequestQueryStringsProvider;
+            bitFileUpload.TakeFromCascade(nameof(RemoveRequestQueryStringsProvider), RemoveRequestQueryStringsProvider, static f => f.RemoveRequestQueryStringsProvider, static (f, v) => f.RemoveRequestQueryStringsProvider = v);
         }
 
-        if (RemoveUrl.HasValue() && bitFileUpload.HasNotBeenSet(nameof(RemoveUrl)))
+        if (RemoveUrl.HasValue())
         {
-            bitFileUpload.RemoveUrl = RemoveUrl;
+            bitFileUpload.TakeFromCascade(nameof(RemoveUrl), RemoveUrl, static f => f.RemoveUrl, static (f, v) => f.RemoveUrl = v);
         }
 
-        if (RetryButtonTitle.HasValue() && bitFileUpload.HasNotBeenSet(nameof(RetryButtonTitle)))
+        if (RetryButtonTitle.HasValue())
         {
-            bitFileUpload.RetryButtonTitle = RetryButtonTitle;
+            bitFileUpload.TakeFromCascade(nameof(RetryButtonTitle), RetryButtonTitle, static f => f.RetryButtonTitle, static (f, v) => f.RetryButtonTitle = v);
         }
 
-        if (RetryIcon is not null && bitFileUpload.HasNotBeenSet(nameof(RetryIcon)))
+        if (RetryIcon is not null)
         {
-            bitFileUpload.RetryIcon = RetryIcon;
+            bitFileUpload.TakeFromCascade(nameof(RetryIcon), RetryIcon, static f => f.RetryIcon, static (f, v) => f.RetryIcon = v);
         }
 
-        if (RetryIconName.HasValue() && bitFileUpload.HasNotBeenSet(nameof(RetryIconName)))
+        if (RetryIconName.HasValue())
         {
-            bitFileUpload.RetryIconName = RetryIconName;
+            bitFileUpload.TakeFromCascade(nameof(RetryIconName), RetryIconName, static f => f.RetryIconName, static (f, v) => f.RetryIconName = v);
         }
 
-        if (ShouldAutoRetry is not null && bitFileUpload.HasNotBeenSet(nameof(ShouldAutoRetry)))
+        if (ShouldAutoRetry is not null)
         {
-            bitFileUpload.ShouldAutoRetry = ShouldAutoRetry;
+            bitFileUpload.TakeFromCascade(nameof(ShouldAutoRetry), ShouldAutoRetry, static f => f.ShouldAutoRetry, static (f, v) => f.ShouldAutoRetry = v);
         }
 
-        if (ShowBatchActions.HasValue && bitFileUpload.HasNotBeenSet(nameof(ShowBatchActions)))
+        if (ShowBatchActions.HasValue)
         {
-            bitFileUpload.ShowBatchActions = ShowBatchActions.Value;
+            bitFileUpload.TakeFromCascade(nameof(ShowBatchActions), ShowBatchActions.Value, static f => f.ShowBatchActions, static (f, v) => f.ShowBatchActions = v);
         }
 
-        if (ShowDropArea.HasValue && bitFileUpload.HasNotBeenSet(nameof(ShowDropArea)) && bitFileUpload.ShowDropArea != ShowDropArea)
+        if (ShowDropArea.HasValue)
         {
-            bitFileUpload.ShowDropArea = ShowDropArea.Value;
-
-            bitFileUpload.ClassBuilder.Reset();
+            bitFileUpload.TakeFromCascade(nameof(ShowDropArea), ShowDropArea.Value, static f => f.ShowDropArea, static (f, v) => f.ShowDropArea = v);
         }
 
-        if (ShowPreview.HasValue && bitFileUpload.HasNotBeenSet(nameof(ShowPreview)))
+        if (ShowPreview.HasValue)
         {
-            bitFileUpload.ShowPreview = ShowPreview.Value;
+            bitFileUpload.TakeFromCascade(nameof(ShowPreview), ShowPreview.Value, static f => f.ShowPreview, static (f, v) => f.ShowPreview = v);
         }
 
-        if (ShowRemoveButton.HasValue && bitFileUpload.HasNotBeenSet(nameof(ShowRemoveButton)))
+        if (ShowRemoveButton.HasValue)
         {
-            bitFileUpload.ShowRemoveButton = ShowRemoveButton.Value;
+            bitFileUpload.TakeFromCascade(nameof(ShowRemoveButton), ShowRemoveButton.Value, static f => f.ShowRemoveButton, static (f, v) => f.ShowRemoveButton = v);
         }
 
-        if (Size.HasValue && bitFileUpload.HasNotBeenSet(nameof(Size)) && bitFileUpload.Size != Size)
+        if (Size.HasValue)
         {
-            bitFileUpload.Size = Size.Value;
-
-            bitFileUpload.ClassBuilder.Reset();
+            bitFileUpload.TakeFromCascade(nameof(Size), Size.Value, static f => f.Size, static (f, v) => f.Size = v);
         }
 
-        if (Styles is not null && bitFileUpload.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitFileUpload.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitFileUpload.Styles = Styles;
-
-            bitFileUpload.StyleBuilder.Reset();
+            bitFileUpload.TakeFromCascade(nameof(Styles), Styles, static f => f.Styles, static (f, v) => f.Styles = v);
         }
 
-        if (SuccessfulUploadMessage.HasValue() && bitFileUpload.HasNotBeenSet(nameof(SuccessfulUploadMessage)))
+        if (SuccessfulUploadMessage.HasValue())
         {
-            bitFileUpload.SuccessfulUploadMessage = SuccessfulUploadMessage!;
+            bitFileUpload.TakeFromCascade(nameof(SuccessfulUploadMessage), SuccessfulUploadMessage!, static f => f.SuccessfulUploadMessage, static (f, v) => f.SuccessfulUploadMessage = v);
         }
 
-        if (UploadAllText.HasValue() && bitFileUpload.HasNotBeenSet(nameof(UploadAllText)))
+        if (UploadAllText.HasValue())
         {
-            bitFileUpload.UploadAllText = UploadAllText!;
+            bitFileUpload.TakeFromCascade(nameof(UploadAllText), UploadAllText!, static f => f.UploadAllText, static (f, v) => f.UploadAllText = v);
         }
 
-        if (UploadButtonTitle.HasValue() && bitFileUpload.HasNotBeenSet(nameof(UploadButtonTitle)))
+        if (UploadButtonTitle.HasValue())
         {
-            bitFileUpload.UploadButtonTitle = UploadButtonTitle;
+            bitFileUpload.TakeFromCascade(nameof(UploadButtonTitle), UploadButtonTitle, static f => f.UploadButtonTitle, static (f, v) => f.UploadButtonTitle = v);
         }
 
-        if (UploadFormFieldName.HasValue() && bitFileUpload.HasNotBeenSet(nameof(UploadFormFieldName)))
+        if (UploadFormFieldName.HasValue())
         {
-            bitFileUpload.UploadFormFieldName = UploadFormFieldName;
+            bitFileUpload.TakeFromCascade(nameof(UploadFormFieldName), UploadFormFieldName, static f => f.UploadFormFieldName, static (f, v) => f.UploadFormFieldName = v);
         }
 
-        if (UploadIcon is not null && bitFileUpload.HasNotBeenSet(nameof(UploadIcon)))
+        if (UploadIcon is not null)
         {
-            bitFileUpload.UploadIcon = UploadIcon;
+            bitFileUpload.TakeFromCascade(nameof(UploadIcon), UploadIcon, static f => f.UploadIcon, static (f, v) => f.UploadIcon = v);
         }
 
-        if (UploadIconName.HasValue() && bitFileUpload.HasNotBeenSet(nameof(UploadIconName)))
+        if (UploadIconName.HasValue())
         {
-            bitFileUpload.UploadIconName = UploadIconName;
+            bitFileUpload.TakeFromCascade(nameof(UploadIconName), UploadIconName, static f => f.UploadIconName, static (f, v) => f.UploadIconName = v);
         }
 
-        if (UploadRequestFormFields is not null && bitFileUpload.HasNotBeenSet(nameof(UploadRequestFormFields)))
+        if (UploadRequestFormFields is not null)
         {
-            bitFileUpload.UploadRequestFormFields = UploadRequestFormFields;
+            bitFileUpload.TakeFromCascade(nameof(UploadRequestFormFields), UploadRequestFormFields, static f => f.UploadRequestFormFields, static (f, v) => f.UploadRequestFormFields = v);
         }
 
-        if (UploadRequestHttpHeaders is not null && bitFileUpload.HasNotBeenSet(nameof(UploadRequestHttpHeaders)))
+        if (UploadRequestHttpHeaders is not null)
         {
-            bitFileUpload.UploadRequestHttpHeaders = UploadRequestHttpHeaders;
+            bitFileUpload.TakeFromCascade(nameof(UploadRequestHttpHeaders), UploadRequestHttpHeaders, static f => f.UploadRequestHttpHeaders, static (f, v) => f.UploadRequestHttpHeaders = v);
         }
 
-        if (UploadRequestHttpHeadersProvider is not null && bitFileUpload.HasNotBeenSet(nameof(UploadRequestHttpHeadersProvider)))
+        if (UploadRequestHttpHeadersProvider is not null)
         {
-            bitFileUpload.UploadRequestHttpHeadersProvider = UploadRequestHttpHeadersProvider;
+            bitFileUpload.TakeFromCascade(nameof(UploadRequestHttpHeadersProvider), UploadRequestHttpHeadersProvider, static f => f.UploadRequestHttpHeadersProvider, static (f, v) => f.UploadRequestHttpHeadersProvider = v);
         }
 
-        if (UploadRequestHttpMethod.HasValue() && bitFileUpload.HasNotBeenSet(nameof(UploadRequestHttpMethod)))
+        if (UploadRequestHttpMethod.HasValue())
         {
-            bitFileUpload.UploadRequestHttpMethod = UploadRequestHttpMethod;
+            bitFileUpload.TakeFromCascade(nameof(UploadRequestHttpMethod), UploadRequestHttpMethod, static f => f.UploadRequestHttpMethod, static (f, v) => f.UploadRequestHttpMethod = v);
         }
 
-        if (UploadRequestQueryStrings is not null && bitFileUpload.HasNotBeenSet(nameof(UploadRequestQueryStrings)))
+        if (UploadRequestQueryStrings is not null)
         {
-            bitFileUpload.UploadRequestQueryStrings = UploadRequestQueryStrings;
+            bitFileUpload.TakeFromCascade(nameof(UploadRequestQueryStrings), UploadRequestQueryStrings, static f => f.UploadRequestQueryStrings, static (f, v) => f.UploadRequestQueryStrings = v);
         }
 
-        if (UploadRequestQueryStringsProvider is not null && bitFileUpload.HasNotBeenSet(nameof(UploadRequestQueryStringsProvider)))
+        if (UploadRequestQueryStringsProvider is not null)
         {
-            bitFileUpload.UploadRequestQueryStringsProvider = UploadRequestQueryStringsProvider;
+            bitFileUpload.TakeFromCascade(nameof(UploadRequestQueryStringsProvider), UploadRequestQueryStringsProvider, static f => f.UploadRequestQueryStringsProvider, static (f, v) => f.UploadRequestQueryStringsProvider = v);
         }
 
-        if (UploadTimeout.HasValue && bitFileUpload.HasNotBeenSet(nameof(UploadTimeout)))
+        if (UploadTimeout.HasValue)
         {
-            bitFileUpload.UploadTimeout = UploadTimeout.Value;
+            bitFileUpload.TakeFromCascade(nameof(UploadTimeout), UploadTimeout.Value, static f => f.UploadTimeout, static (f, v) => f.UploadTimeout = v);
         }
 
-        if (UploadUrl.HasValue() && bitFileUpload.HasNotBeenSet(nameof(UploadUrl)))
+        if (UploadUrl.HasValue())
         {
-            bitFileUpload.UploadUrl = UploadUrl;
+            bitFileUpload.TakeFromCascade(nameof(UploadUrl), UploadUrl, static f => f.UploadUrl, static (f, v) => f.UploadUrl = v);
         }
 
-        if (UploadUrlProvider is not null && bitFileUpload.HasNotBeenSet(nameof(UploadUrlProvider)))
+        if (UploadUrlProvider is not null)
         {
-            bitFileUpload.UploadUrlProvider = UploadUrlProvider;
+            bitFileUpload.TakeFromCascade(nameof(UploadUrlProvider), UploadUrlProvider, static f => f.UploadUrlProvider, static (f, v) => f.UploadUrlProvider = v);
         }
 
-        if (Variant.HasValue && bitFileUpload.HasNotBeenSet(nameof(Variant)) && bitFileUpload.Variant != Variant)
+        if (Variant.HasValue)
         {
-            bitFileUpload.Variant = Variant.Value;
-
-            bitFileUpload.ClassBuilder.Reset();
+            bitFileUpload.TakeFromCascade(nameof(Variant), Variant.Value, static f => f.Variant, static (f, v) => f.Variant = v);
         }
 
-        if (WithCredentials.HasValue && bitFileUpload.HasNotBeenSet(nameof(WithCredentials)))
+        if (WithCredentials.HasValue)
         {
-            bitFileUpload.WithCredentials = WithCredentials.Value;
+            bitFileUpload.TakeFromCascade(nameof(WithCredentials), WithCredentials.Value, static f => f.WithCredentials, static (f, v) => f.WithCredentials = v);
         }
 
-        // The working chunk size is derived from ChunkSize and AutoChunkSize by a setter that assigning
-        // the properties here goes around, so it is derived again once both of them are in place. Deriving
-        // it on every parameter set instead would throw away the speed AutoChunkSize has measured, since
-        // this runs on each render of whatever holds the BitParams rather than only when one of them moves.
-        if (chunkSizeChanged)
+        // Only when AutoChunkSize actually moves: deriving the chunk size on every parameter set would throw away the
+        // speed AutoChunkSize has measured, since this runs on each render of whatever holds the BitParams.
+        if (autoChunkSizeChanged)
         {
             bitFileUpload.OnSetChunkSize();
         }

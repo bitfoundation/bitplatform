@@ -43,6 +43,11 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// The general color of the timeline.
     /// </summary>
+    /// <remarks>
+    /// An explicit value (or the Color of an item) wins over the <c>--bit-Timeline-*</c> dot color variables (dot
+    /// background, dot border color, icon color); left unset, the timeline is primary unless those variables say
+    /// otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -135,6 +140,10 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// The size of the timeline, which sets the size of the dots and of the text.
     /// </summary>
+    /// <remarks>
+    /// An explicit value (or the Size of an item) wins over <c>--bit-Timeline-font-size</c> and
+    /// <c>--bit-Timeline-dot-size</c>; left unset, the timeline is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -185,27 +194,9 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-tln-pri",
-            BitColor.Secondary => "bit-tln-sec",
-            BitColor.Tertiary => "bit-tln-ter",
-            BitColor.Info => "bit-tln-inf",
-            BitColor.Success => "bit-tln-suc",
-            BitColor.Warning => "bit-tln-wrn",
-            BitColor.SevereWarning => "bit-tln-swr",
-            BitColor.Error => "bit-tln-err",
-            BitColor.PrimaryBackground => "bit-tln-pbg",
-            BitColor.SecondaryBackground => "bit-tln-sbg",
-            BitColor.TertiaryBackground => "bit-tln-tbg",
-            BitColor.PrimaryForeground => "bit-tln-pfg",
-            BitColor.SecondaryForeground => "bit-tln-sfg",
-            BitColor.TertiaryForeground => "bit-tln-tfg",
-            BitColor.PrimaryBorder => "bit-tln-pbr",
-            BitColor.SecondaryBorder => "bit-tln-sbr",
-            BitColor.TertiaryBorder => "bit-tln-tbr",
-            _ => "bit-tln-pri"
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from a
+        // choice: the public --bit-Timeline-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-tln"));
 
         ClassBuilder.Register(() => Horizontal ? "bit-tln-hrz" : string.Empty);
 
@@ -252,13 +243,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-tln-sm",
-            BitSize.Medium => "bit-tln-md",
-            BitSize.Large => "bit-tln-lg",
-            _ => "bit-tln-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-tln"));
 
         ClassBuilder.Register(() => Variant switch
         {

@@ -289,234 +289,224 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitPersona);
 
-        var linkWasSet = false;
-
-        if (ActionButtonTitle.HasValue() && bitPersona.HasNotBeenSet(nameof(ActionButtonTitle)))
+        if (ActionButtonTitle.HasValue())
         {
-            bitPersona.ActionButtonTitle = ActionButtonTitle!;
+            bitPersona.TakeFromCascade(nameof(ActionButtonTitle), ActionButtonTitle!, static p => p.ActionButtonTitle, static (p, v) => p.ActionButtonTitle = v);
         }
 
-        if (ActionIcon is not null && bitPersona.HasNotBeenSet(nameof(ActionIcon)))
+        if (ActionIcon is not null)
         {
-            bitPersona.ActionIcon = ActionIcon;
+            bitPersona.TakeFromCascade(nameof(ActionIcon), ActionIcon, static p => p.ActionIcon, static (p, v) => p.ActionIcon = v);
         }
 
-        if (ActionIconName.HasValue() && bitPersona.HasNotBeenSet(nameof(ActionIconName)))
+        if (ActionIconName.HasValue())
         {
-            bitPersona.ActionIconName = ActionIconName;
+            bitPersona.TakeFromCascade(nameof(ActionIconName), ActionIconName, static p => p.ActionIconName, static (p, v) => p.ActionIconName = v);
         }
 
-        if (ActiveAppearance.HasValue && bitPersona.HasNotBeenSet(nameof(ActiveAppearance)) && bitPersona.ActiveAppearance != ActiveAppearance)
+        if (ActiveAppearance.HasValue)
         {
-            bitPersona.ActiveAppearance = ActiveAppearance.Value;
-
-            bitPersona.ClassBuilder.Reset();
+            bitPersona.TakeFromCascade(nameof(ActiveAppearance), ActiveAppearance.Value, static p => p.ActiveAppearance, static (p, v) => p.ActiveAppearance = v);
         }
 
-        if (AllowPhoneInitials.HasValue && bitPersona.HasNotBeenSet(nameof(AllowPhoneInitials)))
+        if (AllowPhoneInitials.HasValue)
         {
-            bitPersona.AllowPhoneInitials = AllowPhoneInitials.Value;
+            bitPersona.TakeFromCascade(nameof(AllowPhoneInitials), AllowPhoneInitials.Value, static p => p.AllowPhoneInitials, static (p, v) => p.AllowPhoneInitials = v);
         }
 
-        if (AutoCoinColor.HasValue && bitPersona.HasNotBeenSet(nameof(AutoCoinColor)) && bitPersona.AutoCoinColor != AutoCoinColor)
+        if (AutoCoinColor.HasValue)
         {
-            bitPersona.AutoCoinColor = AutoCoinColor.Value;
-
-            bitPersona.ClassBuilder.Reset();
+            bitPersona.TakeFromCascade(nameof(AutoCoinColor), AutoCoinColor.Value, static p => p.AutoCoinColor, static (p, v) => p.AutoCoinColor = v);
         }
 
-        if (AutoCoinColors is not null && bitPersona.HasNotBeenSet(nameof(AutoCoinColors)) && ReferenceEquals(bitPersona.AutoCoinColors, AutoCoinColors) is false)
+        if (AutoCoinColors is not null)
         {
-            bitPersona.AutoCoinColors = AutoCoinColors;
-
-            bitPersona.ClassBuilder.Reset();
+            bitPersona.TakeFromCascade(nameof(AutoCoinColors), AutoCoinColors, static p => p.AutoCoinColors, static (p, v) => p.AutoCoinColors = v);
         }
 
-        if (Classes is not null && bitPersona.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitPersona.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitPersona.Classes = Classes;
-
-            bitPersona.ClassBuilder.Reset();
+            bitPersona.TakeFromCascade(nameof(Classes), Classes, static p => p.Classes, static (p, v) => p.Classes = v);
         }
 
         // A persona that turns AutoCoinColor on itself is asking for the hashed color, which a CoinColor handed
         // down from here would otherwise win over.
-        if (CoinColor.HasValue && bitPersona.HasNotBeenSet(nameof(CoinColor))
-            && (bitPersona.HasNotBeenSet(nameof(AutoCoinColor)) || bitPersona.AutoCoinColor is false)
-            && bitPersona.CoinColor != CoinColor)
+        if (CoinColor.HasValue)
         {
-            bitPersona.CoinColor = CoinColor.Value;
-
-            bitPersona.ClassBuilder.Reset();
+            if ((bitPersona.HasNotBeenSet(nameof(AutoCoinColor)) || bitPersona.AutoCoinColor is false))
+            {
+                bitPersona.TakeFromCascade(nameof(CoinColor), CoinColor.Value, static p => p.CoinColor, static (p, v) => p.CoinColor = v);
+            }
+            else
+            {
+                bitPersona.ReleaseFromCascade(nameof(CoinColor));
+            }
         }
 
-        if (CoinIcon is not null && bitPersona.HasNotBeenSet(nameof(CoinIcon)))
+        if (CoinIcon is not null)
         {
-            bitPersona.CoinIcon = CoinIcon;
+            bitPersona.TakeFromCascade(nameof(CoinIcon), CoinIcon, static p => p.CoinIcon, static (p, v) => p.CoinIcon = v);
         }
 
-        if (CoinIconName.HasValue() && bitPersona.HasNotBeenSet(nameof(CoinIconName)))
+        if (CoinIconName.HasValue())
         {
-            bitPersona.CoinIconName = CoinIconName;
+            bitPersona.TakeFromCascade(nameof(CoinIconName), CoinIconName, static p => p.CoinIconName, static (p, v) => p.CoinIconName = v);
         }
 
         // A size class set on the persona itself is the size it asked for, and a CoinSize handed down from here
         // would otherwise override it.
-        if (CoinSize.HasValue && bitPersona.HasNotBeenSet(nameof(CoinSize)) && bitPersona.HasNotBeenSet(nameof(Size)))
+        if (CoinSize.HasValue)
         {
-            bitPersona.CoinSize = CoinSize.Value;
+            if (bitPersona.HasNotBeenSet(nameof(Size)))
+            {
+                bitPersona.TakeFromCascade(nameof(CoinSize), CoinSize.Value, static p => p.CoinSize, static (p, v) => p.CoinSize = v);
+            }
+            else
+            {
+                bitPersona.ReleaseFromCascade(nameof(CoinSize));
+            }
         }
 
-        if (CoinVariant.HasValue && bitPersona.HasNotBeenSet(nameof(CoinVariant)))
+        if (CoinVariant.HasValue)
         {
-            bitPersona.CoinVariant = CoinVariant.Value;
+            bitPersona.TakeFromCascade(nameof(CoinVariant), CoinVariant.Value, static p => p.CoinVariant, static (p, v) => p.CoinVariant = v);
         }
 
-        if (FullWidth.HasValue && bitPersona.HasNotBeenSet(nameof(FullWidth)) && bitPersona.FullWidth != FullWidth)
+        if (FullWidth.HasValue)
         {
-            bitPersona.FullWidth = FullWidth.Value;
-
-            bitPersona.ClassBuilder.Reset();
+            bitPersona.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static p => p.FullWidth, static (p, v) => p.FullWidth = v);
         }
 
-        if (HidePersonaDetails.HasValue && bitPersona.HasNotBeenSet(nameof(HidePersonaDetails)))
+        if (HidePersonaDetails.HasValue)
         {
-            bitPersona.HidePersonaDetails = HidePersonaDetails.Value;
+            bitPersona.TakeFromCascade(nameof(HidePersonaDetails), HidePersonaDetails.Value, static p => p.HidePersonaDetails, static (p, v) => p.HidePersonaDetails = v);
         }
 
-        if (ImageFadeIn.HasValue && bitPersona.HasNotBeenSet(nameof(ImageFadeIn)))
+        if (ImageFadeIn.HasValue)
         {
-            bitPersona.ImageFadeIn = ImageFadeIn.Value;
+            bitPersona.TakeFromCascade(nameof(ImageFadeIn), ImageFadeIn.Value, static p => p.ImageFadeIn, static (p, v) => p.ImageFadeIn = v);
         }
 
-        if (ImageLoading.HasValue && bitPersona.HasNotBeenSet(nameof(ImageLoading)))
+        if (ImageLoading.HasValue)
         {
-            bitPersona.ImageLoading = ImageLoading.Value;
+            bitPersona.TakeFromCascade(nameof(ImageLoading), ImageLoading.Value, static p => p.ImageLoading, static (p, v) => p.ImageLoading = v);
         }
 
-        if (ImageOverlayText.HasValue() && bitPersona.HasNotBeenSet(nameof(ImageOverlayText)))
+        if (ImageOverlayText.HasValue())
         {
-            bitPersona.ImageOverlayText = ImageOverlayText!;
+            bitPersona.TakeFromCascade(nameof(ImageOverlayText), ImageOverlayText!, static p => p.ImageOverlayText, static (p, v) => p.ImageOverlayText = v);
         }
 
         // The persona's own single-status glyph answers only where the maps have nothing to say, so a map handed
         // down from here would otherwise hide the glyph the persona set for itself.
         var hasOwnPresenceIcon = bitPersona.PresenceIcon is not null || bitPersona.PresenceIconName.HasValue();
 
-        if (PresenceIcons is not null && bitPersona.HasNotBeenSet(nameof(PresenceIcons)) && hasOwnPresenceIcon is false)
+        if (PresenceIcons is not null)
         {
-            bitPersona.PresenceIcons = PresenceIcons;
+            if (hasOwnPresenceIcon is false)
+            {
+                bitPersona.TakeFromCascade(nameof(PresenceIcons), PresenceIcons, static p => p.PresenceIcons, static (p, v) => p.PresenceIcons = v);
+            }
+            else
+            {
+                bitPersona.ReleaseFromCascade(nameof(PresenceIcons));
+            }
         }
 
-        if (PresenceIconNames is not null && bitPersona.HasNotBeenSet(nameof(PresenceIconNames)) && hasOwnPresenceIcon is false)
+        if (PresenceIconNames is not null)
         {
-            bitPersona.PresenceIconNames = PresenceIconNames;
+            if (hasOwnPresenceIcon is false)
+            {
+                bitPersona.TakeFromCascade(nameof(PresenceIconNames), PresenceIconNames, static p => p.PresenceIconNames, static (p, v) => p.PresenceIconNames = v);
+            }
+            else
+            {
+                bitPersona.ReleaseFromCascade(nameof(PresenceIconNames));
+            }
         }
 
-        if (PresenceTitles is not null && bitPersona.HasNotBeenSet(nameof(PresenceTitles)))
+        if (PresenceTitles is not null)
         {
-            bitPersona.PresenceTitles = PresenceTitles;
+            bitPersona.TakeFromCascade(nameof(PresenceTitles), PresenceTitles, static p => p.PresenceTitles, static (p, v) => p.PresenceTitles = v);
         }
 
-        if (Rel.HasValue && bitPersona.HasNotBeenSet(nameof(Rel)))
+        if (Rel.HasValue)
         {
-            bitPersona.Rel = Rel.Value;
-
-            linkWasSet = true;
+            bitPersona.TakeFromCascade(nameof(Rel), Rel.Value, static p => p.Rel, static (p, v) => p.Rel = v);
         }
 
-        if (Reversed.HasValue && bitPersona.HasNotBeenSet(nameof(Reversed)) && bitPersona.Reversed != Reversed)
+        if (Reversed.HasValue)
         {
-            bitPersona.Reversed = Reversed.Value;
-
-            bitPersona.ClassBuilder.Reset();
+            bitPersona.TakeFromCascade(nameof(Reversed), Reversed.Value, static p => p.Reversed, static (p, v) => p.Reversed = v);
         }
 
         // Shape wins over Squared, so a Shape handed down from here would otherwise override a persona that
         // squares itself.
-        if (Shape.HasValue && bitPersona.HasNotBeenSet(nameof(Shape))
-            && (bitPersona.HasNotBeenSet(nameof(Squared)) || bitPersona.Squared is false)
-            && bitPersona.Shape != Shape)
+        if (Shape.HasValue)
         {
-            bitPersona.Shape = Shape.Value;
-
-            bitPersona.ClassBuilder.Reset();
+            if ((bitPersona.HasNotBeenSet(nameof(Squared)) || bitPersona.Squared is false))
+            {
+                bitPersona.TakeFromCascade(nameof(Shape), Shape.Value, static p => p.Shape, static (p, v) => p.Shape = v);
+            }
+            else
+            {
+                bitPersona.ReleaseFromCascade(nameof(Shape));
+            }
         }
 
-        if (ShowDefaultPresenceIcons.HasValue && bitPersona.HasNotBeenSet(nameof(ShowDefaultPresenceIcons)))
+        if (ShowDefaultPresenceIcons.HasValue)
         {
-            bitPersona.ShowDefaultPresenceIcons = ShowDefaultPresenceIcons.Value;
+            bitPersona.TakeFromCascade(nameof(ShowDefaultPresenceIcons), ShowDefaultPresenceIcons.Value, static p => p.ShowDefaultPresenceIcons, static (p, v) => p.ShowDefaultPresenceIcons = v);
         }
 
-        if (ShowInitialsUntilImageLoads.HasValue && bitPersona.HasNotBeenSet(nameof(ShowInitialsUntilImageLoads)))
+        if (ShowInitialsUntilImageLoads.HasValue)
         {
-            bitPersona.ShowInitialsUntilImageLoads = ShowInitialsUntilImageLoads.Value;
+            bitPersona.TakeFromCascade(nameof(ShowInitialsUntilImageLoads), ShowInitialsUntilImageLoads.Value, static p => p.ShowInitialsUntilImageLoads, static (p, v) => p.ShowInitialsUntilImageLoads = v);
         }
 
-        if (ShowOverflowTooltip.HasValue && bitPersona.HasNotBeenSet(nameof(ShowOverflowTooltip)))
+        if (ShowOverflowTooltip.HasValue)
         {
-            bitPersona.ShowOverflowTooltip = ShowOverflowTooltip.Value;
+            bitPersona.TakeFromCascade(nameof(ShowOverflowTooltip), ShowOverflowTooltip.Value, static p => p.ShowOverflowTooltip, static (p, v) => p.ShowOverflowTooltip = v);
         }
 
-        if (ShowSecondaryText.HasValue && bitPersona.HasNotBeenSet(nameof(ShowSecondaryText)) && bitPersona.ShowSecondaryText != ShowSecondaryText)
+        if (ShowSecondaryText.HasValue)
         {
-            bitPersona.ShowSecondaryText = ShowSecondaryText.Value;
-
-            bitPersona.ClassBuilder.Reset();
+            bitPersona.TakeFromCascade(nameof(ShowSecondaryText), ShowSecondaryText.Value, static p => p.ShowSecondaryText, static (p, v) => p.ShowSecondaryText = v);
         }
 
-        if (Size.HasValue && bitPersona.HasNotBeenSet(nameof(Size)) && bitPersona.Size != Size)
+        if (Size.HasValue)
         {
-            bitPersona.Size = Size.Value;
-
-            bitPersona.ClassBuilder.Reset();
+            bitPersona.TakeFromCascade(nameof(Size), Size.Value, static p => p.Size, static (p, v) => p.Size = v);
         }
 
-        if (Squared.HasValue && bitPersona.HasNotBeenSet(nameof(Squared)) && bitPersona.Squared != Squared)
+        if (Squared.HasValue)
         {
-            bitPersona.Squared = Squared.Value;
-
-            bitPersona.ClassBuilder.Reset();
+            bitPersona.TakeFromCascade(nameof(Squared), Squared.Value, static p => p.Squared, static (p, v) => p.Squared = v);
         }
 
-        if (Styles is not null && bitPersona.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitPersona.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitPersona.Styles = Styles;
-
-            bitPersona.ClassBuilder.Reset();
-
-            bitPersona.StyleBuilder.Reset();
+            bitPersona.TakeFromCascade(nameof(Styles), Styles, static p => p.Styles, static (p, v) => p.Styles = v);
         }
 
-        if (Target.HasValue() && bitPersona.HasNotBeenSet(nameof(Target)))
+        if (Target.HasValue())
         {
-            bitPersona.Target = Target;
-
-            linkWasSet = true;
+            bitPersona.TakeFromCascade(nameof(Target), Target, static p => p.Target, static (p, v) => p.Target = v);
         }
 
-        if (UnknownIcon is not null && bitPersona.HasNotBeenSet(nameof(UnknownIcon)))
+        if (UnknownIcon is not null)
         {
-            bitPersona.UnknownIcon = UnknownIcon;
+            bitPersona.TakeFromCascade(nameof(UnknownIcon), UnknownIcon, static p => p.UnknownIcon, static (p, v) => p.UnknownIcon = v);
         }
 
-        if (UnknownIconName.HasValue() && bitPersona.HasNotBeenSet(nameof(UnknownIconName)))
+        if (UnknownIconName.HasValue())
         {
-            bitPersona.UnknownIconName = UnknownIconName;
+            bitPersona.TakeFromCascade(nameof(UnknownIconName), UnknownIconName, static p => p.UnknownIconName, static (p, v) => p.UnknownIconName = v);
         }
 
-        if (Vertical.HasValue && bitPersona.HasNotBeenSet(nameof(Vertical)) && bitPersona.Vertical != Vertical)
+        if (Vertical.HasValue)
         {
-            bitPersona.Vertical = Vertical.Value;
-
-            bitPersona.ClassBuilder.Reset();
-        }
-
-        // The rel attribute is worked out when Href, Rel or Target is set on the persona itself, which a value
-        // handed down from here does not trigger.
-        if (linkWasSet)
-        {
-            bitPersona.OnSetHrefAndRel();
+            bitPersona.TakeFromCascade(nameof(Vertical), Vertical.Value, static p => p.Vertical, static (p, v) => p.Vertical = v);
         }
     }
 }

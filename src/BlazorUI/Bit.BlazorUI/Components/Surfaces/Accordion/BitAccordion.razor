@@ -128,7 +128,8 @@
                A HiddenUntilFound panel carries its bit-acd-huf class for as long as it carries the attribute, and
                keeps the class after the browser has taken the attribute off to reveal a match: that pair is what
                lets the stylesheet open the panel around the match at once, ahead of the render that expands it. *@
-            <div id="@_ContentId"
+            <div @ref="_contentRef"
+                 id="@_ContentId"
                  role="@(NoContentRegion ? null : "region")"
                  aria-labelledby="@(NoContentRegion ? null : _PanelLabelledBy)"
                  hidden="@(_IsHiddenUntilFound ? "until-found" : null)"

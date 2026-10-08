@@ -93,44 +93,29 @@ public abstract class BitComponentBaseParams
     {
         if (bitComponentBase is null) return;
 
-        // This runs on every render of every component under the BitParams, so a value that drives the class or
-        // the style of the root only resets the builder when it differs from the one the component already holds:
-        // an unchanged one would rebuild both strings on every render for nothing. The UpdateParameters of every
-        // params object follows the same rule for its own parameters. A nested object - a ClassStyles, an icon - is
-        // compared by reference, and one changed in place is caught by BitComponentBase instead, which resets
-        // both builders whenever the cascade hands it a params object it has not seen yet.
-
-        if (AriaLabel.HasValue() && bitComponentBase.HasNotBeenSet(nameof(AriaLabel)))
+        if (AriaLabel.HasValue())
         {
-            bitComponentBase.AriaLabel = AriaLabel;
+            bitComponentBase.TakeFromCascade(nameof(AriaLabel), AriaLabel, static c => c.AriaLabel, static (c, v) => c.AriaLabel = v);
         }
 
-        if (Class.HasValue() && bitComponentBase.HasNotBeenSet(nameof(Class)) && bitComponentBase.Class != Class)
+        if (Class.HasValue())
         {
-            bitComponentBase.Class = Class;
-
-            bitComponentBase.ClassBuilder.Reset();
+            bitComponentBase.TakeFromCascade(nameof(Class), Class, static c => c.Class, static (c, v) => c.Class = v);
         }
 
-        if (Dir.HasValue && bitComponentBase.HasNotBeenSet(nameof(Dir)) && bitComponentBase.Dir != Dir)
+        if (Dir.HasValue)
         {
-            bitComponentBase.Dir = Dir.Value;
-
-            bitComponentBase.ClassBuilder.Reset();
+            bitComponentBase.TakeFromCascade(nameof(Dir), Dir.Value, static c => c.Dir, static (c, v) => c.Dir = v);
         }
 
-        if (Disabled.HasValue && bitComponentBase.HasNotBeenSet(nameof(Disabled)) && bitComponentBase.Disabled != Disabled)
+        if (Disabled.HasValue)
         {
-            bitComponentBase.Disabled = Disabled.Value;
-
-            bitComponentBase.ClassBuilder.Reset();
+            bitComponentBase.TakeFromCascade(nameof(Disabled), Disabled.Value, static c => c.Disabled, static (c, v) => c.Disabled = v);
         }
 
-        if (ForceAnimation.HasValue && bitComponentBase.HasNotBeenSet(nameof(ForceAnimation)) && bitComponentBase.ForceAnimation != ForceAnimation)
+        if (ForceAnimation.HasValue)
         {
-            bitComponentBase.ForceAnimation = ForceAnimation.Value;
-
-            bitComponentBase.ClassBuilder.Reset();
+            bitComponentBase.TakeFromCascade(nameof(ForceAnimation), ForceAnimation.Value, static c => c.ForceAnimation, static (c, v) => c.ForceAnimation = v);
         }
 
         if (HtmlAttributes is not null)
@@ -143,28 +128,24 @@ public abstract class BitComponentBaseParams
             }
         }
 
-        if (Id.HasValue() && bitComponentBase.HasNotBeenSet(nameof(Id)))
+        if (Id.HasValue())
         {
-            bitComponentBase.Id = Id;
+            bitComponentBase.TakeFromCascade(nameof(Id), Id, static c => c.Id, static (c, v) => c.Id = v);
         }
 
-        if (Style.HasValue() && bitComponentBase.HasNotBeenSet(nameof(Style)) && bitComponentBase.Style != Style)
+        if (Style.HasValue())
         {
-            bitComponentBase.Style = Style;
-
-            bitComponentBase.StyleBuilder.Reset();
+            bitComponentBase.TakeFromCascade(nameof(Style), Style, static c => c.Style, static (c, v) => c.Style = v);
         }
 
-        if (TabIndex.HasValue() && bitComponentBase.HasNotBeenSet(nameof(TabIndex)))
+        if (TabIndex.HasValue())
         {
-            bitComponentBase.TabIndex = TabIndex;
+            bitComponentBase.TakeFromCascade(nameof(TabIndex), TabIndex, static c => c.TabIndex, static (c, v) => c.TabIndex = v);
         }
 
-        if (Visibility.HasValue && bitComponentBase.HasNotBeenSet(nameof(Visibility)) && bitComponentBase.Visibility != Visibility)
+        if (Visibility.HasValue)
         {
-            bitComponentBase.Visibility = Visibility.Value;
-
-            bitComponentBase.StyleBuilder.Reset();
+            bitComponentBase.TakeFromCascade(nameof(Visibility), Visibility.Value, static c => c.Visibility, static (c, v) => c.Visibility = v);
         }
     }
 }

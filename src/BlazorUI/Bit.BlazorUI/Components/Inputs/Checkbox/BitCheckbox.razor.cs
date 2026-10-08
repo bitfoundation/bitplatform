@@ -154,6 +154,10 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// <summary>
     /// The general color of the checkbox.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Checkbox-*</c> color variables (the checked, indeterminate, focus and
+    /// disabled colors); left unset, the checkbox is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -306,6 +310,11 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// <summary>
     /// The size of the checkbox.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-Checkbox-box-size</c>, <c>--bit-Checkbox-font-size</c> and
+    /// <c>--bit-Checkbox-description-font-size</c>; left unset, the checkbox is medium unless those variables say
+    /// otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -404,35 +413,11 @@ public partial class BitCheckbox : BitInputBase<bool>
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-chb-pri",
-            BitColor.Secondary => "bit-chb-sec",
-            BitColor.Tertiary => "bit-chb-ter",
-            BitColor.Info => "bit-chb-inf",
-            BitColor.Success => "bit-chb-suc",
-            BitColor.Warning => "bit-chb-wrn",
-            BitColor.SevereWarning => "bit-chb-swr",
-            BitColor.Error => "bit-chb-err",
-            BitColor.PrimaryBackground => "bit-chb-pbg",
-            BitColor.SecondaryBackground => "bit-chb-sbg",
-            BitColor.TertiaryBackground => "bit-chb-tbg",
-            BitColor.PrimaryForeground => "bit-chb-pfg",
-            BitColor.SecondaryForeground => "bit-chb-sfg",
-            BitColor.TertiaryForeground => "bit-chb-tfg",
-            BitColor.PrimaryBorder => "bit-chb-pbr",
-            BitColor.SecondaryBorder => "bit-chb-sbr",
-            BitColor.TertiaryBorder => "bit-chb-tbr",
-            _ => "bit-chb-pri"
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-Checkbox-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-chb"));
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-chb-sm",
-            BitSize.Medium => "bit-chb-md",
-            BitSize.Large => "bit-chb-lg",
-            _ => "bit-chb-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-chb"));
 
         ClassBuilder.Register(() => CurrentValue ? $"bit-chb-ckd {Classes?.Checked}" : string.Empty);
 
@@ -582,24 +567,13 @@ public partial class BitCheckbox : BitInputBase<bool>
         await _js.BitUtilsSetProperty(InputElement, "indeterminate", Indeterminate);
     }
 
+    // Before the first render there is no element to push onto yet: the state the checkbox starts out with is pushed
+    // from OnAfterRenderAsync instead, whether the markup or a BitParams handed it down.
     private void OnSetIndeterminate()
-    {
-        _ = SetIndeterminate();
-    }
-
-    /// <summary>
-    /// Pushes a mixed state that arrived from <see cref="BitCheckboxParams"/> onto the element, the way the
-    /// setter of an <see cref="Indeterminate"/> written on the component itself does.
-    /// </summary>
-    /// <remarks>
-    /// Skipped before the first render, where there is no element to push onto yet: the state the checkbox
-    /// starts out with is pushed from <see cref="OnAfterRenderAsync(bool)"/> instead.
-    /// </remarks>
-    internal void OnSetIndeterminateFromParams()
     {
         if (IsRendered is false) return;
 
-        OnSetIndeterminate();
+        _ = SetIndeterminate();
     }
 
     private Task HandleOnBlur(FocusEventArgs e) => OnBlur.InvokeAsync(e);

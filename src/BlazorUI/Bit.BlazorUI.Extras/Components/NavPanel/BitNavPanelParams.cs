@@ -396,373 +396,364 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitNavPanel);
 
-        // This runs on every render of every panel under the BitParams, so a value that drives the class or the
-        // style of the root only resets the builder when it differs from the one the panel already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
-        if (Accent.HasValue && bitNavPanel.HasNotBeenSet(nameof(Accent)) && bitNavPanel.Accent != Accent)
+        if (Accent.HasValue)
         {
-            bitNavPanel.Accent = Accent.Value;
-
-            bitNavPanel.ClassBuilder.Reset();
+            bitNavPanel.TakeFromCascade(nameof(Accent), Accent.Value, static n => n.Accent, static (n, v) => n.Accent = v);
         }
 
-        if (AllExpanded.HasValue && bitNavPanel.HasNotBeenSet(nameof(AllExpanded)))
+        if (AllExpanded.HasValue)
         {
-            bitNavPanel.AllExpanded = AllExpanded.Value;
+            bitNavPanel.TakeFromCascade(nameof(AllExpanded), AllExpanded.Value, static n => n.AllExpanded, static (n, v) => n.AllExpanded = v);
         }
 
-        if (AutoFocus.HasValue && bitNavPanel.HasNotBeenSet(nameof(AutoFocus)))
+        if (AutoFocus.HasValue)
         {
-            bitNavPanel.AutoFocus = AutoFocus.Value;
+            bitNavPanel.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static n => n.AutoFocus, static (n, v) => n.AutoFocus = v);
         }
 
         // The icon takes precedence over the icon name, so a cascaded icon is only a default for a panel that has
         // set neither: applied over a panel's own icon name it would override it rather than default it.
-        if (ChevronDownIcon is not null &&
-            bitNavPanel.HasNotBeenSet(nameof(ChevronDownIcon)) &&
-            bitNavPanel.HasNotBeenSet(nameof(ChevronDownIconName)))
+        if (ChevronDownIcon is not null)
         {
-            bitNavPanel.ChevronDownIcon = ChevronDownIcon;
+            if (bitNavPanel.HasNotBeenSet(nameof(ChevronDownIconName)))
+            {
+                bitNavPanel.TakeFromCascade(nameof(ChevronDownIcon), ChevronDownIcon, static n => n.ChevronDownIcon, static (n, v) => n.ChevronDownIcon = v);
+            }
+            else
+            {
+                bitNavPanel.ReleaseFromCascade(nameof(ChevronDownIcon));
+            }
         }
 
-        if (ChevronDownIconName.HasValue() && bitNavPanel.HasNotBeenSet(nameof(ChevronDownIconName)))
+        if (ChevronDownIconName.HasValue())
         {
-            bitNavPanel.ChevronDownIconName = ChevronDownIconName;
+            bitNavPanel.TakeFromCascade(nameof(ChevronDownIconName), ChevronDownIconName, static n => n.ChevronDownIconName, static (n, v) => n.ChevronDownIconName = v);
         }
 
-        if (Classes is not null && bitNavPanel.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitNavPanel.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitNavPanel.Classes = Classes;
-
-            bitNavPanel.ClassBuilder.Reset();
+            bitNavPanel.TakeFromCascade(nameof(Classes), Classes, static n => n.Classes, static (n, v) => n.Classes = v);
         }
 
-        if (CloseAriaLabel.HasValue() && bitNavPanel.HasNotBeenSet(nameof(CloseAriaLabel)))
+        if (CloseAriaLabel.HasValue())
         {
-            bitNavPanel.CloseAriaLabel = CloseAriaLabel;
+            bitNavPanel.TakeFromCascade(nameof(CloseAriaLabel), CloseAriaLabel, static n => n.CloseAriaLabel, static (n, v) => n.CloseAriaLabel = v);
         }
 
-        if (CloseIcon is not null &&
-            bitNavPanel.HasNotBeenSet(nameof(CloseIcon)) &&
-            bitNavPanel.HasNotBeenSet(nameof(CloseIconName)))
+        if (CloseIcon is not null)
         {
-            bitNavPanel.CloseIcon = CloseIcon;
+            if (bitNavPanel.HasNotBeenSet(nameof(CloseIconName)))
+            {
+                bitNavPanel.TakeFromCascade(nameof(CloseIcon), CloseIcon, static n => n.CloseIcon, static (n, v) => n.CloseIcon = v);
+            }
+            else
+            {
+                bitNavPanel.ReleaseFromCascade(nameof(CloseIcon));
+            }
         }
 
-        if (CloseIconName.HasValue() && bitNavPanel.HasNotBeenSet(nameof(CloseIconName)))
+        if (CloseIconName.HasValue())
         {
-            bitNavPanel.CloseIconName = CloseIconName;
+            bitNavPanel.TakeFromCascade(nameof(CloseIconName), CloseIconName, static n => n.CloseIconName, static (n, v) => n.CloseIconName = v);
         }
 
-        if (CollapseAriaLabel.HasValue() && bitNavPanel.HasNotBeenSet(nameof(CollapseAriaLabel)))
+        if (CollapseAriaLabel.HasValue())
         {
-            bitNavPanel.CollapseAriaLabel = CollapseAriaLabel;
+            bitNavPanel.TakeFromCascade(nameof(CollapseAriaLabel), CollapseAriaLabel, static n => n.CollapseAriaLabel, static (n, v) => n.CollapseAriaLabel = v);
         }
 
-        if (Color.HasValue && bitNavPanel.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue)
         {
-            bitNavPanel.Color = Color.Value;
+            bitNavPanel.TakeFromCascade(nameof(Color), Color.Value, static n => n.Color, static (n, v) => n.Color = v);
         }
 
-        if (DrawerBreakpoint.HasValue && bitNavPanel.HasNotBeenSet(nameof(DrawerBreakpoint)) && bitNavPanel.DrawerBreakpoint != DrawerBreakpoint)
+        if (DrawerBreakpoint.HasValue)
         {
-            bitNavPanel.DrawerBreakpoint = DrawerBreakpoint.Value;
-
-            bitNavPanel.ClassBuilder.Reset();
+            bitNavPanel.TakeFromCascade(nameof(DrawerBreakpoint), DrawerBreakpoint.Value, static n => n.DrawerBreakpoint, static (n, v) => n.DrawerBreakpoint = v);
         }
 
-        if (EmptyListMessage.HasValue() && bitNavPanel.HasNotBeenSet(nameof(EmptyListMessage)))
+        if (EmptyListMessage.HasValue())
         {
-            bitNavPanel.EmptyListMessage = EmptyListMessage;
+            bitNavPanel.TakeFromCascade(nameof(EmptyListMessage), EmptyListMessage, static n => n.EmptyListMessage, static (n, v) => n.EmptyListMessage = v);
         }
 
-        if (EmptyListTemplate is not null && bitNavPanel.HasNotBeenSet(nameof(EmptyListTemplate)))
+        if (EmptyListTemplate is not null)
         {
-            bitNavPanel.EmptyListTemplate = EmptyListTemplate;
+            bitNavPanel.TakeFromCascade(nameof(EmptyListTemplate), EmptyListTemplate, static n => n.EmptyListTemplate, static (n, v) => n.EmptyListTemplate = v);
         }
 
-        if (ExpandAriaLabel.HasValue() && bitNavPanel.HasNotBeenSet(nameof(ExpandAriaLabel)))
+        if (ExpandAriaLabel.HasValue())
         {
-            bitNavPanel.ExpandAriaLabel = ExpandAriaLabel;
+            bitNavPanel.TakeFromCascade(nameof(ExpandAriaLabel), ExpandAriaLabel, static n => n.ExpandAriaLabel, static (n, v) => n.ExpandAriaLabel = v);
         }
 
-        if (ExpandOnHover.HasValue && bitNavPanel.HasNotBeenSet(nameof(ExpandOnHover)) && bitNavPanel.ExpandOnHover != ExpandOnHover.Value)
+        if (ExpandOnHover.HasValue)
         {
-            bitNavPanel.ExpandOnHover = ExpandOnHover.Value;
-
-            bitNavPanel.ClassBuilder.Reset();
+            bitNavPanel.TakeFromCascade(nameof(ExpandOnHover), ExpandOnHover.Value, static n => n.ExpandOnHover, static (n, v) => n.ExpandOnHover = v);
         }
 
-        if (FitWidth.HasValue && bitNavPanel.HasNotBeenSet(nameof(FitWidth)) && bitNavPanel.FitWidth != FitWidth.Value)
+        if (FitWidth.HasValue)
         {
-            bitNavPanel.FitWidth = FitWidth.Value;
-
-            bitNavPanel.ClassBuilder.Reset();
+            bitNavPanel.TakeFromCascade(nameof(FitWidth), FitWidth.Value, static n => n.FitWidth, static (n, v) => n.FitWidth = v);
         }
 
-        if (Footer is not null && bitNavPanel.HasNotBeenSet(nameof(Footer)))
+        if (Footer is not null)
         {
-            bitNavPanel.Footer = Footer;
+            bitNavPanel.TakeFromCascade(nameof(Footer), Footer, static n => n.Footer, static (n, v) => n.Footer = v);
         }
 
-        if (FullWidth.HasValue && bitNavPanel.HasNotBeenSet(nameof(FullWidth)) && bitNavPanel.FullWidth != FullWidth.Value)
+        if (FullWidth.HasValue)
         {
-            bitNavPanel.FullWidth = FullWidth.Value;
-
-            bitNavPanel.ClassBuilder.Reset();
+            bitNavPanel.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static n => n.FullWidth, static (n, v) => n.FullWidth = v);
         }
 
-        if (Header is not null && bitNavPanel.HasNotBeenSet(nameof(Header)))
+        if (Header is not null)
         {
-            bitNavPanel.Header = Header;
+            bitNavPanel.TakeFromCascade(nameof(Header), Header, static n => n.Header, static (n, v) => n.Header = v);
         }
 
-        if (HeaderText.HasValue() && bitNavPanel.HasNotBeenSet(nameof(HeaderText)))
+        if (HeaderText.HasValue())
         {
-            bitNavPanel.HeaderText = HeaderText;
+            bitNavPanel.TakeFromCascade(nameof(HeaderText), HeaderText, static n => n.HeaderText, static (n, v) => n.HeaderText = v);
         }
 
-        if (HeaderTemplateRenderMode.HasValue && bitNavPanel.HasNotBeenSet(nameof(HeaderTemplateRenderMode)))
+        if (HeaderTemplateRenderMode.HasValue)
         {
-            bitNavPanel.HeaderTemplateRenderMode = HeaderTemplateRenderMode.Value;
+            bitNavPanel.TakeFromCascade(nameof(HeaderTemplateRenderMode), HeaderTemplateRenderMode.Value, static n => n.HeaderTemplateRenderMode, static (n, v) => n.HeaderTemplateRenderMode = v);
         }
 
-        if (HideToggle.HasValue && bitNavPanel.HasNotBeenSet(nameof(HideToggle)))
+        if (HideToggle.HasValue)
         {
-            bitNavPanel.HideToggle = HideToggle.Value;
+            bitNavPanel.TakeFromCascade(nameof(HideToggle), HideToggle.Value, static n => n.HideToggle, static (n, v) => n.HideToggle = v);
         }
 
-        if (IconAriaLabel.HasValue() && bitNavPanel.HasNotBeenSet(nameof(IconAriaLabel)))
+        if (IconAriaLabel.HasValue())
         {
-            bitNavPanel.IconAriaLabel = IconAriaLabel;
+            bitNavPanel.TakeFromCascade(nameof(IconAriaLabel), IconAriaLabel, static n => n.IconAriaLabel, static (n, v) => n.IconAriaLabel = v);
         }
 
-        if (IconNavUrl.HasValue() && bitNavPanel.HasNotBeenSet(nameof(IconNavUrl)))
+        if (IconNavUrl.HasValue())
         {
-            bitNavPanel.IconNavUrl = IconNavUrl;
+            bitNavPanel.TakeFromCascade(nameof(IconNavUrl), IconNavUrl, static n => n.IconNavUrl, static (n, v) => n.IconNavUrl = v);
         }
 
-        if (IconUrl.HasValue() && bitNavPanel.HasNotBeenSet(nameof(IconUrl)))
+        if (IconUrl.HasValue())
         {
-            bitNavPanel.IconUrl = IconUrl;
+            bitNavPanel.TakeFromCascade(nameof(IconUrl), IconUrl, static n => n.IconUrl, static (n, v) => n.IconUrl = v);
         }
 
-        if (IndentPadding.HasValue && bitNavPanel.HasNotBeenSet(nameof(IndentPadding)))
+        if (IndentPadding.HasValue)
         {
-            bitNavPanel.IndentPadding = IndentPadding.Value;
+            bitNavPanel.TakeFromCascade(nameof(IndentPadding), IndentPadding.Value, static n => n.IndentPadding, static (n, v) => n.IndentPadding = v);
         }
 
-        if (IndentReversedPadding.HasValue && bitNavPanel.HasNotBeenSet(nameof(IndentReversedPadding)))
+        if (IndentReversedPadding.HasValue)
         {
-            bitNavPanel.IndentReversedPadding = IndentReversedPadding.Value;
+            bitNavPanel.TakeFromCascade(nameof(IndentReversedPadding), IndentReversedPadding.Value, static n => n.IndentReversedPadding, static (n, v) => n.IndentReversedPadding = v);
         }
 
-        if (IndentValue.HasValue && bitNavPanel.HasNotBeenSet(nameof(IndentValue)))
+        if (IndentValue.HasValue)
         {
-            bitNavPanel.IndentValue = IndentValue.Value;
+            bitNavPanel.TakeFromCascade(nameof(IndentValue), IndentValue.Value, static n => n.IndentValue, static (n, v) => n.IndentValue = v);
         }
 
-        if (ItemTemplateRenderMode.HasValue && bitNavPanel.HasNotBeenSet(nameof(ItemTemplateRenderMode)))
+        if (ItemTemplateRenderMode.HasValue)
         {
-            bitNavPanel.ItemTemplateRenderMode = ItemTemplateRenderMode.Value;
+            bitNavPanel.TakeFromCascade(nameof(ItemTemplateRenderMode), ItemTemplateRenderMode.Value, static n => n.ItemTemplateRenderMode, static (n, v) => n.ItemTemplateRenderMode = v);
         }
 
-        if (NavClasses is not null && bitNavPanel.HasNotBeenSet(nameof(NavClasses)))
+        if (NavClasses is not null)
         {
-            bitNavPanel.NavClasses = NavClasses;
+            bitNavPanel.TakeFromCascade(nameof(NavClasses), NavClasses, static n => n.NavClasses, static (n, v) => n.NavClasses = v);
         }
 
-        if (NavMatch.HasValue && bitNavPanel.HasNotBeenSet(nameof(NavMatch)))
+        if (NavMatch.HasValue)
         {
-            bitNavPanel.NavMatch = NavMatch.Value;
+            bitNavPanel.TakeFromCascade(nameof(NavMatch), NavMatch.Value, static n => n.NavMatch, static (n, v) => n.NavMatch = v);
         }
 
-        if (NavMode.HasValue && bitNavPanel.HasNotBeenSet(nameof(NavMode)))
+        if (NavMode.HasValue)
         {
-            bitNavPanel.NavMode = NavMode.Value;
+            bitNavPanel.TakeFromCascade(nameof(NavMode), NavMode.Value, static n => n.NavMode, static (n, v) => n.NavMode = v);
         }
 
-        if (NavStyles is not null && bitNavPanel.HasNotBeenSet(nameof(NavStyles)))
+        if (NavStyles is not null)
         {
-            bitNavPanel.NavStyles = NavStyles;
+            bitNavPanel.TakeFromCascade(nameof(NavStyles), NavStyles, static n => n.NavStyles, static (n, v) => n.NavStyles = v);
         }
 
-        if (NoAutoClose.HasValue && bitNavPanel.HasNotBeenSet(nameof(NoAutoClose)))
+        if (NoAutoClose.HasValue)
         {
-            bitNavPanel.NoAutoClose = NoAutoClose.Value;
+            bitNavPanel.TakeFromCascade(nameof(NoAutoClose), NoAutoClose.Value, static n => n.NoAutoClose, static (n, v) => n.NoAutoClose = v);
         }
 
-        if (NoCollapse.HasValue && bitNavPanel.HasNotBeenSet(nameof(NoCollapse)))
+        if (NoCollapse.HasValue)
         {
-            bitNavPanel.NoCollapse = NoCollapse.Value;
+            bitNavPanel.TakeFromCascade(nameof(NoCollapse), NoCollapse.Value, static n => n.NoCollapse, static (n, v) => n.NoCollapse = v);
         }
 
-        if (NoFocusTrap.HasValue && bitNavPanel.HasNotBeenSet(nameof(NoFocusTrap)))
+        if (NoFocusTrap.HasValue)
         {
-            bitNavPanel.NoFocusTrap = NoFocusTrap.Value;
+            bitNavPanel.TakeFromCascade(nameof(NoFocusTrap), NoFocusTrap.Value, static n => n.NoFocusTrap, static (n, v) => n.NoFocusTrap = v);
         }
 
-        if (NoOverlay.HasValue && bitNavPanel.HasNotBeenSet(nameof(NoOverlay)))
+        if (NoOverlay.HasValue)
         {
-            bitNavPanel.NoOverlay = NoOverlay.Value;
+            bitNavPanel.TakeFromCascade(nameof(NoOverlay), NoOverlay.Value, static n => n.NoOverlay, static (n, v) => n.NoOverlay = v);
         }
 
-        if (NoPad.HasValue && bitNavPanel.HasNotBeenSet(nameof(NoPad)) && bitNavPanel.NoPad != NoPad.Value)
+        if (NoPad.HasValue)
         {
-            bitNavPanel.NoPad = NoPad.Value;
-
-            bitNavPanel.ClassBuilder.Reset();
+            bitNavPanel.TakeFromCascade(nameof(NoPad), NoPad.Value, static n => n.NoPad, static (n, v) => n.NoPad = v);
         }
 
-        if (NoRestoreFocus.HasValue && bitNavPanel.HasNotBeenSet(nameof(NoRestoreFocus)))
+        if (NoRestoreFocus.HasValue)
         {
-            bitNavPanel.NoRestoreFocus = NoRestoreFocus.Value;
+            bitNavPanel.TakeFromCascade(nameof(NoRestoreFocus), NoRestoreFocus.Value, static n => n.NoRestoreFocus, static (n, v) => n.NoRestoreFocus = v);
         }
 
-        if (NoScrollLock.HasValue && bitNavPanel.HasNotBeenSet(nameof(NoScrollLock)))
+        if (NoScrollLock.HasValue)
         {
-            bitNavPanel.NoScrollLock = NoScrollLock.Value;
+            bitNavPanel.TakeFromCascade(nameof(NoScrollLock), NoScrollLock.Value, static n => n.NoScrollLock, static (n, v) => n.NoScrollLock = v);
         }
 
-        if (NoSearchBox.HasValue && bitNavPanel.HasNotBeenSet(nameof(NoSearchBox)))
+        if (NoSearchBox.HasValue)
         {
-            bitNavPanel.NoSearchBox = NoSearchBox.Value;
+            bitNavPanel.TakeFromCascade(nameof(NoSearchBox), NoSearchBox.Value, static n => n.NoSearchBox, static (n, v) => n.NoSearchBox = v);
         }
 
-        if (NoSwipe.HasValue && bitNavPanel.HasNotBeenSet(nameof(NoSwipe)))
+        if (NoSwipe.HasValue)
         {
-            bitNavPanel.NoSwipe = NoSwipe.Value;
+            bitNavPanel.TakeFromCascade(nameof(NoSwipe), NoSwipe.Value, static n => n.NoSwipe, static (n, v) => n.NoSwipe = v);
         }
 
-        if (NoToggle.HasValue && bitNavPanel.HasNotBeenSet(nameof(NoToggle)))
+        if (NoToggle.HasValue)
         {
-            bitNavPanel.NoToggle = NoToggle.Value;
+            bitNavPanel.TakeFromCascade(nameof(NoToggle), NoToggle.Value, static n => n.NoToggle, static (n, v) => n.NoToggle = v);
         }
 
-        if (Placement.HasValue && bitNavPanel.HasNotBeenSet(nameof(Placement)) && bitNavPanel.Placement != Placement.Value)
+        if (Placement.HasValue)
         {
-            bitNavPanel.Placement = Placement.Value;
-
-            bitNavPanel.ClassBuilder.Reset();
+            bitNavPanel.TakeFromCascade(nameof(Placement), Placement.Value, static n => n.Placement, static (n, v) => n.Placement = v);
         }
 
-        if (RenderType.HasValue && bitNavPanel.HasNotBeenSet(nameof(RenderType)))
+        if (RenderType.HasValue)
         {
-            bitNavPanel.RenderType = RenderType.Value;
+            bitNavPanel.TakeFromCascade(nameof(RenderType), RenderType.Value, static n => n.RenderType, static (n, v) => n.RenderType = v);
         }
 
-        if (Reselectable.HasValue && bitNavPanel.HasNotBeenSet(nameof(Reselectable)))
+        if (Reselectable.HasValue)
         {
-            bitNavPanel.Reselectable = Reselectable.Value;
+            bitNavPanel.TakeFromCascade(nameof(Reselectable), Reselectable.Value, static n => n.Reselectable, static (n, v) => n.Reselectable = v);
         }
 
-        if (ReversedChevron.HasValue && bitNavPanel.HasNotBeenSet(nameof(ReversedChevron)))
+        if (ReversedChevron.HasValue)
         {
-            bitNavPanel.ReversedChevron = ReversedChevron.Value;
+            bitNavPanel.TakeFromCascade(nameof(ReversedChevron), ReversedChevron.Value, static n => n.ReversedChevron, static (n, v) => n.ReversedChevron = v);
         }
 
-        if (SearchAnnouncementProvider is not null && bitNavPanel.HasNotBeenSet(nameof(SearchAnnouncementProvider)))
+        if (SearchAnnouncementProvider is not null)
         {
-            bitNavPanel.SearchAnnouncementProvider = SearchAnnouncementProvider;
+            bitNavPanel.TakeFromCascade(nameof(SearchAnnouncementProvider), SearchAnnouncementProvider, static n => n.SearchAnnouncementProvider, static (n, v) => n.SearchAnnouncementProvider = v);
         }
 
-        if (SearchBoxClasses is not null && bitNavPanel.HasNotBeenSet(nameof(SearchBoxClasses)))
+        if (SearchBoxClasses is not null)
         {
-            bitNavPanel.SearchBoxClasses = SearchBoxClasses;
+            bitNavPanel.TakeFromCascade(nameof(SearchBoxClasses), SearchBoxClasses, static n => n.SearchBoxClasses, static (n, v) => n.SearchBoxClasses = v);
         }
 
-        if (SearchBoxPlaceholder.HasValue() && bitNavPanel.HasNotBeenSet(nameof(SearchBoxPlaceholder)))
+        if (SearchBoxPlaceholder.HasValue())
         {
-            bitNavPanel.SearchBoxPlaceholder = SearchBoxPlaceholder;
+            bitNavPanel.TakeFromCascade(nameof(SearchBoxPlaceholder), SearchBoxPlaceholder, static n => n.SearchBoxPlaceholder, static (n, v) => n.SearchBoxPlaceholder = v);
         }
 
-        if (SearchBoxStyles is not null && bitNavPanel.HasNotBeenSet(nameof(SearchBoxStyles)))
+        if (SearchBoxStyles is not null)
         {
-            bitNavPanel.SearchBoxStyles = SearchBoxStyles;
+            bitNavPanel.TakeFromCascade(nameof(SearchBoxStyles), SearchBoxStyles, static n => n.SearchBoxStyles, static (n, v) => n.SearchBoxStyles = v);
         }
 
-        if (SearchDebounceTime.HasValue && bitNavPanel.HasNotBeenSet(nameof(SearchDebounceTime)))
+        if (SearchDebounceTime.HasValue)
         {
-            bitNavPanel.SearchDebounceTime = SearchDebounceTime.Value;
+            bitNavPanel.TakeFromCascade(nameof(SearchDebounceTime), SearchDebounceTime.Value, static n => n.SearchDebounceTime, static (n, v) => n.SearchDebounceTime = v);
         }
 
-        if (SearchIcon is not null &&
-            bitNavPanel.HasNotBeenSet(nameof(SearchIcon)) &&
-            bitNavPanel.HasNotBeenSet(nameof(SearchIconName)))
+        if (SearchIcon is not null)
         {
-            bitNavPanel.SearchIcon = SearchIcon;
+            if (bitNavPanel.HasNotBeenSet(nameof(SearchIconName)))
+            {
+                bitNavPanel.TakeFromCascade(nameof(SearchIcon), SearchIcon, static n => n.SearchIcon, static (n, v) => n.SearchIcon = v);
+            }
+            else
+            {
+                bitNavPanel.ReleaseFromCascade(nameof(SearchIcon));
+            }
         }
 
-        if (SearchIconName.HasValue() && bitNavPanel.HasNotBeenSet(nameof(SearchIconName)))
+        if (SearchIconName.HasValue())
         {
-            bitNavPanel.SearchIconName = SearchIconName;
+            bitNavPanel.TakeFromCascade(nameof(SearchIconName), SearchIconName, static n => n.SearchIconName, static (n, v) => n.SearchIconName = v);
         }
 
-        if (ShowCloseButton.HasValue && bitNavPanel.HasNotBeenSet(nameof(ShowCloseButton)))
+        if (ShowCloseButton.HasValue)
         {
-            bitNavPanel.ShowCloseButton = ShowCloseButton.Value;
+            bitNavPanel.TakeFromCascade(nameof(ShowCloseButton), ShowCloseButton.Value, static n => n.ShowCloseButton, static (n, v) => n.ShowCloseButton = v);
         }
 
-        if (SingleExpand.HasValue && bitNavPanel.HasNotBeenSet(nameof(SingleExpand)))
+        if (SingleExpand.HasValue)
         {
-            bitNavPanel.SingleExpand = SingleExpand.Value;
+            bitNavPanel.TakeFromCascade(nameof(SingleExpand), SingleExpand.Value, static n => n.SingleExpand, static (n, v) => n.SingleExpand = v);
         }
 
-        if (Size.HasValue && bitNavPanel.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue)
         {
-            bitNavPanel.Size = Size.Value;
+            bitNavPanel.TakeFromCascade(nameof(Size), Size.Value, static n => n.Size, static (n, v) => n.Size = v);
         }
 
-        if (StickyEnds.HasValue && bitNavPanel.HasNotBeenSet(nameof(StickyEnds)) && bitNavPanel.StickyEnds != StickyEnds.Value)
+        if (StickyEnds.HasValue)
         {
-            bitNavPanel.StickyEnds = StickyEnds.Value;
-
-            bitNavPanel.ClassBuilder.Reset();
+            bitNavPanel.TakeFromCascade(nameof(StickyEnds), StickyEnds.Value, static n => n.StickyEnds, static (n, v) => n.StickyEnds = v);
         }
 
-        if (Styles is not null && bitNavPanel.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitNavPanel.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitNavPanel.Styles = Styles;
-
-            bitNavPanel.StyleBuilder.Reset();
+            bitNavPanel.TakeFromCascade(nameof(Styles), Styles, static n => n.Styles, static (n, v) => n.Styles = v);
         }
 
-        if (ToggleAriaLabel.HasValue() && bitNavPanel.HasNotBeenSet(nameof(ToggleAriaLabel)))
+        if (ToggleAriaLabel.HasValue())
         {
-            bitNavPanel.ToggleAriaLabel = ToggleAriaLabel;
+            bitNavPanel.TakeFromCascade(nameof(ToggleAriaLabel), ToggleAriaLabel, static n => n.ToggleAriaLabel, static (n, v) => n.ToggleAriaLabel = v);
         }
 
-        if (ToggledWidth.HasValue && bitNavPanel.HasNotBeenSet(nameof(ToggledWidth)) && bitNavPanel.ToggledWidth != ToggledWidth.Value)
+        if (ToggledWidth.HasValue)
         {
-            bitNavPanel.ToggledWidth = ToggledWidth.Value;
-
-            bitNavPanel.StyleBuilder.Reset();
+            bitNavPanel.TakeFromCascade(nameof(ToggledWidth), ToggledWidth.Value, static n => n.ToggledWidth, static (n, v) => n.ToggledWidth = v);
         }
 
-        if (ToggleIcon is not null &&
-            bitNavPanel.HasNotBeenSet(nameof(ToggleIcon)) &&
-            bitNavPanel.HasNotBeenSet(nameof(ToggleIconName)))
+        if (ToggleIcon is not null)
         {
-            bitNavPanel.ToggleIcon = ToggleIcon;
+            if (bitNavPanel.HasNotBeenSet(nameof(ToggleIconName)))
+            {
+                bitNavPanel.TakeFromCascade(nameof(ToggleIcon), ToggleIcon, static n => n.ToggleIcon, static (n, v) => n.ToggleIcon = v);
+            }
+            else
+            {
+                bitNavPanel.ReleaseFromCascade(nameof(ToggleIcon));
+            }
         }
 
-        if (ToggleIconName.HasValue() && bitNavPanel.HasNotBeenSet(nameof(ToggleIconName)))
+        if (ToggleIconName.HasValue())
         {
-            bitNavPanel.ToggleIconName = ToggleIconName;
+            bitNavPanel.TakeFromCascade(nameof(ToggleIconName), ToggleIconName, static n => n.ToggleIconName, static (n, v) => n.ToggleIconName = v);
         }
 
-        if (Top.HasValue && bitNavPanel.HasNotBeenSet(nameof(Top)) && bitNavPanel.Top != Top.Value)
+        if (Top.HasValue)
         {
-            bitNavPanel.Top = Top.Value;
-
-            bitNavPanel.StyleBuilder.Reset();
+            bitNavPanel.TakeFromCascade(nameof(Top), Top.Value, static n => n.Top, static (n, v) => n.Top = v);
         }
 
-        if (Width.HasValue && bitNavPanel.HasNotBeenSet(nameof(Width)) && bitNavPanel.Width != Width.Value)
+        if (Width.HasValue)
         {
-            bitNavPanel.Width = Width.Value;
-
-            bitNavPanel.StyleBuilder.Reset();
+            bitNavPanel.TakeFromCascade(nameof(Width), Width.Value, static n => n.Width, static (n, v) => n.Width = v);
         }
     }
 }

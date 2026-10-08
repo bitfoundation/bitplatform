@@ -34,7 +34,7 @@ public partial class BitTimelineDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the timeline.",
+            Description = "The general color of the timeline. An explicit value (or the color of an item) wins over the --bit-Timeline-* dot color variables; left unset, the timeline is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -136,7 +136,7 @@ public partial class BitTimelineDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the timeline, which sets the size of the dots and of the text.",
+            Description = "The size of the timeline, which sets the size of the dots and of the text. An explicit value (or the size of an item) wins over --bit-Timeline-font-size and --bit-Timeline-dot-size; left unset, the timeline is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -174,26 +174,26 @@ public partial class BitTimelineDemo
         new()
         {
             Name = "--bit-Timeline-font-size",
-            DefaultValue = "Per Size",
-            Description = "Text size of the contents.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the contents. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Timeline-dot-size",
-            DefaultValue = "Per Size",
-            Description = "Diameter of the dot, and of the hidden dot's placeholder.",
+            DefaultValue = "spacing(3.75)",
+            Description = "Diameter of the dot, and of the hidden dot's placeholder. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Timeline-dot-background",
-            DefaultValue = "Per Color and Variant",
-            Description = "Fill of the dot. A disabled item keeps its disabled fill.",
+            DefaultValue = "--bit-clr-pri (Fill), transparent (Outline, Text)",
+            Description = "Fill of the dot. A disabled item keeps its disabled fill. The Color parameter wins over it in Fill; the transparent dot of Outline and Text is its alone.",
         },
         new()
         {
             Name = "--bit-Timeline-dot-border-color",
-            DefaultValue = "Per Color and Variant",
-            Description = "Border color of the dot. A disabled item keeps its disabled border.",
+            DefaultValue = "--bit-clr-pri, transparent (Text)",
+            Description = "Border color of the dot. A disabled item keeps its disabled border. The Color parameter wins over it, except over the transparent border of Text.",
         },
         new()
         {
@@ -216,8 +216,8 @@ public partial class BitTimelineDemo
         new()
         {
             Name = "--bit-Timeline-icon-color",
-            DefaultValue = "Per Color and Variant",
-            Description = "Color of the icon inside the dot. A disabled item keeps its disabled color.",
+            DefaultValue = "--bit-clr-pri-text (Fill), --bit-clr-pri (Outline, Text)",
+            Description = "Color of the icon inside the dot. A disabled item keeps its disabled color. The Color parameter wins over it.",
         },
         new()
         {
@@ -296,7 +296,7 @@ public partial class BitTimelineDemo
                    Name = "Color",
                    Type = "BitColor?",
                    DefaultValue = "null",
-                   Description = "The general color of the item, overriding the color of the timeline.",
+                   Description = "The general color of the item, overriding the color of the timeline. An explicit value wins over the Color of the timeline and over the --bit-Timeline-* dot color variables, on this item alone; left unset, the item takes the Color of the timeline, or is primary unless the variables say otherwise.",
                    LinkType = LinkType.Link,
                    Href = "#color-enum",
                },
@@ -400,7 +400,7 @@ public partial class BitTimelineDemo
                    Name = "Size",
                    Type = "BitSize?",
                    DefaultValue = "null",
-                   Description = "The size of the item, overriding the size of the timeline.",
+                   Description = "The size of the item, overriding the size of the timeline. An explicit value wins over the Size of the timeline and over --bit-Timeline-font-size and --bit-Timeline-dot-size, on this item alone; left unset, the item takes the Size of the timeline, or is medium unless the variables say otherwise.",
                    LinkType = LinkType.Link,
                    Href = "#size-enum",
                },
@@ -461,7 +461,7 @@ public partial class BitTimelineDemo
                    Name = "Color",
                    Type = "BitColor?",
                    DefaultValue = "null",
-                   Description = "The general color of the option, overriding the color of the timeline.",
+                   Description = "The general color of the option, overriding the color of the timeline. An explicit value wins over the Color of the timeline and over the --bit-Timeline-* dot color variables, on this option alone; left unset, the option takes the Color of the timeline, or is primary unless the variables say otherwise.",
                    LinkType = LinkType.Link,
                    Href = "#color-enum",
                },
@@ -565,7 +565,7 @@ public partial class BitTimelineDemo
                    Name = "Size",
                    Type = "BitSize?",
                    DefaultValue = "null",
-                   Description = "The size of the option, overriding the size of the timeline.",
+                   Description = "The size of the option, overriding the size of the timeline. An explicit value wins over the Size of the timeline and over --bit-Timeline-font-size and --bit-Timeline-dot-size, on this option alone; left unset, the option takes the Size of the timeline, or is medium unless the variables say otherwise.",
                    LinkType = LinkType.Link,
                    Href = "#size-enum",
                },
@@ -630,7 +630,7 @@ public partial class BitTimelineDemo
                     Name = "Color",
                     Type = "BitNameSelectorPair<TItem, BitColor?>",
                     DefaultValue = "new(nameof(BitTimelineItem.Color))",
-                    Description = "The Color field name and selector of the custom input class.",
+                    Description = "The Color field name and selector of the custom input class. Like the Color of an item, the value it reads wins over the Color of the timeline and over the --bit-Timeline-* dot color variables.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },
@@ -756,7 +756,7 @@ public partial class BitTimelineDemo
                     Name = "Size",
                     Type = "BitNameSelectorPair<TItem, BitSize?>",
                     DefaultValue = "new(nameof(BitTimelineItem.Size))",
-                    Description = "The Size field name and selector of the custom input class.",
+                    Description = "The Size field name and selector of the custom input class. Like the Size of an item, the value it reads wins over the Size of the timeline and over --bit-Timeline-font-size and --bit-Timeline-dot-size.",
                     Href = "#name-selector-pair",
                     LinkType = LinkType.Link,
                 },

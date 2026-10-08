@@ -3,14 +3,14 @@
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // persona and one set on the Style of an instance re-skins that one alone:
 //   --bit-Persona-surface-color            surface the persona sits on: the active ring's gap and the inside of the hollow presence dots (default: $clr-bg-pri)
-//   --bit-Persona-gap                      room between the coin and the details        (default: per size, spacing(1..2))
+//   --bit-Persona-gap                      room between the coin and the details        (default: spacing(1.5), per size)
 //   --bit-Persona-primary-color            text of the primary row                      (default: $clr-fg-pri)
 //   --bit-Persona-primary-font-weight      weight of the primary row                    (default: $tg-fw-regular)
 //   --bit-Persona-secondary-color          text of the secondary, tertiary and optional rows (default: $clr-fg-sec)
 //   --bit-Persona-disabled-color           text of every row when disabled              (default: $clr-fg-dis)
-//   --bit-Persona-coin-background          fill of the coin, and the color of its active ring (default: the CoinColor's main color)
-//   --bit-Persona-coin-color               initials and coin icon                       (default: the CoinColor's text color)
-//   --bit-Persona-coin-radius              corner radius of the coin and its overlay    (default: per Shape - 50%, $shp-radius-control, 0)
+//   --bit-Persona-coin-background          fill of the coin, and the color of its active ring (default: $clr-inf)
+//   --bit-Persona-coin-color               initials and coin icon                       (default: $clr-inf-text)
+//   --bit-Persona-coin-radius              corner radius of the coin and its overlay    (default: 50%)
 //   --bit-Persona-overlay-background       fill of the overlay a clickable coin reveals (default: the coin background)
 //   --bit-Persona-overlay-color            text of that overlay                         (default: the coin color)
 //   --bit-Persona-focus-color              focus ring of the coin and the action button (default: $clr-pri-focus)
@@ -28,12 +28,21 @@
 //   --bit-Persona-presence-offline-color   stroke of the hollow Offline dot             (default: $clr-ntr-gray110)
 //   --bit-Persona-presence-blocked-color   stroke of the hollow Blocked dot             (default: $clr-err)
 //   --bit-Persona-ring-color               ring of an Active coin                       (default: the coin background)
-//   --bit-Persona-ring-width               width of that ring                           (default: per size, 1.5px..4px)
-//   --bit-Persona-ring-gap                 gap between the coin and that ring           (default: per size, 1.5px..4px)
+//   --bit-Persona-ring-width               width of that ring                           (default: 2px, per size)
+//   --bit-Persona-ring-gap                 gap between the coin and that ring           (default: 2px, per size)
 //   --bit-Persona-ring-gap-color           color the gap is cut in                      (default: the surface color)
 //   --bit-Persona-active-shadow            shadow of an Active coin (Shadow, RingShadow) (default: $box-shadow-card)
 //   --bit-Persona-inactive-opacity         opacity of an Inactive coin                  (default: 0.8)
 //   --bit-Persona-inactive-scale           scale of an Inactive coin                    (default: 0.875)
+//
+// A parameter written on the persona wins over the variable that restyles what it sets: an explicit CoinColor -
+// or the color AutoCoinColor picks, which the persona was asked for just as explicitly - over the coin background,
+// the coin color and the ring color, and an explicit Shape (or Squared) over the coin radius. The variables restyle
+// the default, not a choice - which is why CoinColor and Shape publish nothing while they are left unset: a class
+// that always carried the default would be indistinguishable from one that was asked for. The overlay a clickable
+// coin reveals is not the coin: its two variables still win over whatever color the coin was given. An explicit
+// Size wins over the gap and the active ring's gap and width; an unset one is laid out as Size48, whose values
+// those three variables restyle (see .bit-prs-ssz).
 
 .bit-prs {
     display: flex;
@@ -67,19 +76,28 @@
     // the coin itself and hangs out of the row. One knob, retuned by the size classes that need it smaller.
     --bit-prs-action-size: #{spacing(4)};
     // The active ring: the gap between the coin and the ring, and the ring itself. Both are a proportion of
-    // the coin rather than a constant, so the size classes retune them; the public --bit-Persona-ring-gap and
-    // --bit-Persona-ring-width override every size at once.
-    --bit-prs-ring-gap: #{rem2(2px)};
-    --bit-prs-ring-width: #{rem2(2px)};
+    // the coin rather than a constant, so the size classes retune them (the -sz- values below, which every
+    // size class publishes, an unset Size being laid out as Size48).
+    --bit-prs-sz-ring-gap: #{rem2(2px)};
+    --bit-prs-sz-ring-width: #{rem2(2px)};
     // The color of whatever the persona sits on, which the active ring's gap and the hollow presence dots are cut
     // in. One public knob for a persona placed on a tinted card or a dark header, rather than one per cutout.
     --bit-prs-surface: var(--bit-Persona-surface-color, #{$clr-bg-pri});
     // The room between the coin and the details, retuned by the size classes.
-    --bit-prs-gap: #{spacing(1.5)};
-    // The corner of the coin, retuned by the shape classes.
-    --bit-prs-coin-radius: 50%;
+    --bit-prs-sz-gap: #{spacing(1.5)};
+    // The same three handed over only by an explicit Size (see .bit-prs-ssz), and unset here otherwise - rather
+    // than inherited from a persona this one sits inside - so the var() reading each falls through to the public
+    // variable and then to the size's own value: an explicit Size wins over the variables and an unset one leaves
+    // them in charge.
+    --bit-prs-gap: initial;
+    --bit-prs-ring-gap: initial;
+    --bit-prs-ring-width: initial;
+    // The corner of the coin, published only by an explicit Shape (or Squared) and unset here otherwise - rather
+    // than inherited from a persona this one sits inside - so the var() reading it falls through to the public
+    // radius and then to the circle an unset Shape stands for.
+    --bit-prs-coin-radius: initial;
     --bit-prs-flex-direction: row;
-    gap: var(--bit-Persona-gap, var(--bit-prs-gap));
+    gap: var(--bit-prs-gap, var(--bit-Persona-gap, var(--bit-prs-sz-gap)));
     flex-direction: var(--bit-prs-flex-direction);
 
     &.bit-dis {
@@ -154,7 +172,7 @@
     font-weight: $tg-fw-semibold;
     position: relative;
     place-items: center;
-    border-radius: var(--bit-Persona-coin-radius, var(--bit-prs-coin-radius));
+    border-radius: var(--bit-prs-coin-radius, var(--bit-Persona-coin-radius, 50%));
     // The declared width is the whole coin, border included - a 48px persona that measures 50px on the
     // page is one that no longer lines up with the row it sits in.
     box-sizing: border-box;
@@ -207,6 +225,11 @@
             inset-inline-end: var(--bit-prs-presence-inset);
         }
     }
+}
+
+// An explicit Pill: the circle an unset Shape is too, published so it wins over the public radius as well.
+.bit-prs-cir {
+    --bit-prs-coin-radius: 50%;
 }
 
 .bit-prs-sqr {
@@ -263,7 +286,7 @@
     background-color: var(--bit-Persona-overlay-background, var(--bit-prs-coin-bg));
     // The coin the component draws clips the overlay for it, but a coin filled by a template is not clipped
     // by anything - and a square veil over a round picture is worse than no veil at all.
-    border-radius: var(--bit-Persona-coin-radius, var(--bit-prs-coin-radius));
+    border-radius: var(--bit-prs-coin-radius, var(--bit-Persona-coin-radius, 50%));
 }
 
 .bit-prs-ini {
@@ -489,8 +512,8 @@
 // the coin reads as lifted out of whatever it sits on rather than merely outlined.
 .bit-prs-arg {
     .bit-prs-imc {
-        box-shadow: 0 0 0 var(--bit-Persona-ring-gap, var(--bit-prs-ring-gap)) var(--bit-Persona-ring-gap-color, var(--bit-prs-surface)),
-                    0 0 0 calc(var(--bit-Persona-ring-gap, var(--bit-prs-ring-gap)) + var(--bit-Persona-ring-width, var(--bit-prs-ring-width))) var(--bit-Persona-ring-color, var(--bit-prs-coin-bg));
+        box-shadow: 0 0 0 var(--bit-prs-ring-gap, var(--bit-Persona-ring-gap, var(--bit-prs-sz-ring-gap))) var(--bit-Persona-ring-gap-color, var(--bit-prs-surface)),
+                    0 0 0 calc(var(--bit-prs-ring-gap, var(--bit-Persona-ring-gap, var(--bit-prs-sz-ring-gap))) + var(--bit-prs-ring-width, var(--bit-Persona-ring-width, var(--bit-prs-sz-ring-width)))) var(--bit-prs-coin-clr-bg, var(--bit-Persona-ring-color, var(--bit-prs-coin-bg)));
     }
 }
 
@@ -502,8 +525,8 @@
 
 .bit-prs-ars {
     .bit-prs-imc {
-        box-shadow: 0 0 0 var(--bit-Persona-ring-gap, var(--bit-prs-ring-gap)) var(--bit-Persona-ring-gap-color, var(--bit-prs-surface)),
-                    0 0 0 calc(var(--bit-Persona-ring-gap, var(--bit-prs-ring-gap)) + var(--bit-Persona-ring-width, var(--bit-prs-ring-width))) var(--bit-Persona-ring-color, var(--bit-prs-coin-bg)),
+        box-shadow: 0 0 0 var(--bit-prs-ring-gap, var(--bit-Persona-ring-gap, var(--bit-prs-sz-ring-gap))) var(--bit-Persona-ring-gap-color, var(--bit-prs-surface)),
+                    0 0 0 calc(var(--bit-prs-ring-gap, var(--bit-Persona-ring-gap, var(--bit-prs-sz-ring-gap))) + var(--bit-prs-ring-width, var(--bit-Persona-ring-width, var(--bit-prs-sz-ring-width)))) var(--bit-prs-coin-clr-bg, var(--bit-Persona-ring-color, var(--bit-prs-coin-bg))),
                     var(--bit-Persona-active-shadow, #{$box-shadow-card});
     }
 }
@@ -513,7 +536,7 @@
     .bit-prs-ars {
         .bit-prs-imc {
             outline: $shp-border-width-thick $shp-border-style;
-            outline-offset: var(--bit-Persona-ring-gap, var(--bit-prs-ring-gap));
+            outline-offset: var(--bit-prs-ring-gap, var(--bit-Persona-ring-gap, var(--bit-prs-sz-ring-gap)));
         }
     }
 }
@@ -586,7 +609,7 @@
 }
 
 .bit-prs-s8 {
-    --bit-prs-gap: #{spacing(1)};
+    --bit-prs-sz-gap: #{spacing(1)};
 
     .bit-prs-pre {
         position: static;
@@ -604,12 +627,12 @@
 }
 
 .bit-prs-s24 {
-    --bit-prs-gap: #{spacing(1)};
+    --bit-prs-sz-gap: #{spacing(1)};
     --bit-prs-action-size: #{spacing(2.5)};
     // The ring is a proportion of the coin, not a constant: 2px around a 24px coin is a stripe, and 2px
     // around a 120px one is a hairline.
-    --bit-prs-ring-gap: #{rem2(1.5px)};
-    --bit-prs-ring-width: #{rem2(1.5px)};
+    --bit-prs-sz-ring-gap: #{rem2(1.5px)};
+    --bit-prs-sz-ring-width: #{rem2(1.5px)};
 
     // The smallest square coins are barely wider than the dot, so it stays where the circle put it.
     &.bit-prs-sqr {
@@ -634,10 +657,10 @@
 }
 
 .bit-prs-s32 {
-    --bit-prs-gap: #{spacing(1)};
+    --bit-prs-sz-gap: #{spacing(1)};
     --bit-prs-action-size: #{spacing(3)};
-    --bit-prs-ring-gap: #{rem2(1.5px)};
-    --bit-prs-ring-width: #{rem2(1.5px)};
+    --bit-prs-sz-ring-gap: #{rem2(1.5px)};
+    --bit-prs-sz-ring-width: #{rem2(1.5px)};
 
     &.bit-prs-sqr {
         --bit-prs-presence-inset: #{spacing(-0.25)};
@@ -661,7 +684,7 @@
 }
 
 .bit-prs-s40 {
-    --bit-prs-gap: #{spacing(1.5)};
+    --bit-prs-sz-gap: #{spacing(1.5)};
     --bit-prs-action-size: #{spacing(3.5)};
 
     .bit-prs-imc {
@@ -695,7 +718,7 @@
 }
 
 .bit-prs-s48 {
-    --bit-prs-gap: #{spacing(1.5)};
+    --bit-prs-sz-gap: #{spacing(1.5)};
 
     .bit-prs-imc {
         aspect-ratio: 1;
@@ -728,7 +751,7 @@
 }
 
 .bit-prs-s56 {
-    --bit-prs-gap: #{spacing(2)};
+    --bit-prs-sz-gap: #{spacing(2)};
 
     .bit-prs-imc {
         aspect-ratio: 1;
@@ -765,9 +788,9 @@
 }
 
 .bit-prs-s72 {
-    --bit-prs-gap: #{spacing(2)};
-    --bit-prs-ring-gap: #{rem2(3px)};
-    --bit-prs-ring-width: #{rem2(3px)};
+    --bit-prs-sz-gap: #{spacing(2)};
+    --bit-prs-sz-ring-gap: #{rem2(3px)};
+    --bit-prs-sz-ring-width: #{rem2(3px)};
 
     .bit-prs-imc {
         aspect-ratio: 1;
@@ -806,9 +829,9 @@
 }
 
 .bit-prs-s100 {
-    --bit-prs-gap: #{spacing(2)};
-    --bit-prs-ring-gap: #{rem2(4px)};
-    --bit-prs-ring-width: #{rem2(4px)};
+    --bit-prs-sz-gap: #{spacing(2)};
+    --bit-prs-sz-ring-gap: #{rem2(4px)};
+    --bit-prs-sz-ring-width: #{rem2(4px)};
 
     .bit-prs-imc {
         aspect-ratio: 1;
@@ -849,9 +872,9 @@
 }
 
 .bit-prs-s120 {
-    --bit-prs-gap: #{spacing(2)};
-    --bit-prs-ring-gap: #{rem2(4px)};
-    --bit-prs-ring-width: #{rem2(4px)};
+    --bit-prs-sz-gap: #{spacing(2)};
+    --bit-prs-sz-ring-gap: #{rem2(4px)};
+    --bit-prs-sz-ring-width: #{rem2(4px)};
 
     .bit-prs-imc {
         aspect-ratio: 1;
@@ -891,6 +914,15 @@
     }
 }
 
+// The values the size class publishes are handed over as an explicit choice only when Size was given: an unset Size
+// is laid out as Size48 - the size class is what lays out every part of the persona, so one is always rendered - but
+// leaves the gap and the active ring to the public variables, which restyle that default and never a choice.
+.bit-prs-ssz {
+    --bit-prs-gap: var(--bit-prs-sz-gap);
+    --bit-prs-ring-gap: var(--bit-prs-sz-ring-gap);
+    --bit-prs-ring-width: var(--bit-prs-sz-ring-width);
+}
+
 // The second line is normally reserved for the sizes with room for it, and ShowSecondaryText is what asks
 // for it anyway. It has to sit after every size class to outrank the display:none they set, and it restates
 // the type the small sizes never had a second line to size.
@@ -910,11 +942,16 @@
     }
 }
 
-// The coin reads its pair of colors through these two, so the public variables win over whichever CoinColor
-// (or AutoCoinColor) class declared the pair below.
+// The coin reads its pair of colors through these two: first the pair a CoinColor (or AutoCoinColor) class below
+// declared, then the public variables, then the Info pair an unset CoinColor stands for. The pair itself is unset on
+// every root - rather than inherited from a persona this one sits inside - and the classes, declared further down at
+// the same weight, still win on the root that carries them; left unset, the var() reading it falls through to the
+// variables. So an explicit color wins over them and an unset one leaves them in charge.
 .bit-prs {
-    --bit-prs-coin-bg: var(--bit-Persona-coin-background, var(--bit-prs-coin-clr-bg));
-    --bit-prs-coin-clr: var(--bit-Persona-coin-color, var(--bit-prs-coin-clr-txt));
+    --bit-prs-coin-clr-bg: initial;
+    --bit-prs-coin-clr-txt: initial;
+    --bit-prs-coin-bg: var(--bit-prs-coin-clr-bg, var(--bit-Persona-coin-background, #{$clr-inf}));
+    --bit-prs-coin-clr: var(--bit-prs-coin-clr-txt, var(--bit-Persona-coin-color, #{$clr-inf-text}));
 }
 
 .bit-prs-fil {

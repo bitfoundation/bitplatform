@@ -208,127 +208,115 @@ public class BitLinkParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitLink);
 
-        if (AllowDisabledFocus.HasValue && bitLink.HasNotBeenSet(nameof(AllowDisabledFocus)))
+        if (AllowDisabledFocus.HasValue)
         {
-            bitLink.AllowDisabledFocus = AllowDisabledFocus.Value;
+            bitLink.TakeFromCascade(nameof(AllowDisabledFocus), AllowDisabledFocus.Value, static l => l.AllowDisabledFocus, static (l, v) => l.AllowDisabledFocus = v);
         }
 
-        if (AriaCurrent.HasValue && bitLink.HasNotBeenSet(nameof(AriaCurrent)))
+        if (AriaCurrent.HasValue)
         {
-            bitLink.AriaCurrent = AriaCurrent.Value;
+            bitLink.TakeFromCascade(nameof(AriaCurrent), AriaCurrent.Value, static l => l.AriaCurrent, static (l, v) => l.AriaCurrent = v);
         }
 
-        if (AriaDescription.HasValue() && bitLink.HasNotBeenSet(nameof(AriaDescription)))
+        if (AriaDescription.HasValue())
         {
-            bitLink.AriaDescription = AriaDescription;
+            bitLink.TakeFromCascade(nameof(AriaDescription), AriaDescription, static l => l.AriaDescription, static (l, v) => l.AriaDescription = v);
         }
 
-        if (AutoFocus.HasValue && bitLink.HasNotBeenSet(nameof(AutoFocus)))
+        if (AutoFocus.HasValue)
         {
-            bitLink.AutoFocus = AutoFocus.Value;
+            bitLink.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static l => l.AutoFocus, static (l, v) => l.AutoFocus = v);
         }
 
-        if (Color.HasValue && bitLink.HasNotBeenSet(nameof(Color)) && bitLink.Color != Color)
+        if (Color.HasValue)
         {
-            bitLink.Color = Color.Value;
-
-            bitLink.ClassBuilder.Reset();
+            bitLink.TakeFromCascade(nameof(Color), Color.Value, static l => l.Color, static (l, v) => l.Color = v);
         }
 
         // An empty download is meaningful - it keeps the file name the server gives - so only a null one is unset.
-        if (Download is not null && bitLink.HasNotBeenSet(nameof(Download)))
+        if (Download is not null)
         {
-            bitLink.Download = Download;
+            bitLink.TakeFromCascade(nameof(Download), Download, static l => l.Download, static (l, v) => l.Download = v);
         }
 
-        if (Href.HasValue() && bitLink.HasNotBeenSet(nameof(Href)))
+        if (Href.HasValue())
         {
-            bitLink.Href = Href;
+            bitLink.TakeFromCascade(nameof(Href), Href, static l => l.Href, static (l, v) => l.Href = v);
         }
 
-        if (Icon is not null && bitLink.HasNotBeenSet(nameof(Icon)))
+        if (Icon is not null)
         {
-            bitLink.Icon = Icon;
+            bitLink.TakeFromCascade(nameof(Icon), Icon, static l => l.Icon, static (l, v) => l.Icon = v);
         }
 
-        if (IconName.HasValue() && bitLink.HasNotBeenSet(nameof(IconName)))
+        if (IconName.HasValue())
         {
-            bitLink.IconName = IconName;
+            bitLink.TakeFromCascade(nameof(IconName), IconName, static l => l.IconName, static (l, v) => l.IconName = v);
         }
 
-        if (IconPlacement.HasValue && bitLink.HasNotBeenSet(nameof(IconPlacement)) && bitLink.IconPlacement != IconPlacement)
+        if (IconPlacement.HasValue)
         {
-            bitLink.IconPlacement = IconPlacement.Value;
-
-            bitLink.ClassBuilder.Reset();
+            bitLink.TakeFromCascade(nameof(IconPlacement), IconPlacement.Value, static l => l.IconPlacement, static (l, v) => l.IconPlacement = v);
         }
 
-        if (Match.HasValue && bitLink.HasNotBeenSet(nameof(Match)))
+        if (Match.HasValue)
         {
-            bitLink.Match = Match.Value;
+            bitLink.TakeFromCascade(nameof(Match), Match.Value, static l => l.Match, static (l, v) => l.Match = v);
         }
 
-        if (NewTabHint is not null && bitLink.HasNotBeenSet(nameof(NewTabHint)))
+        if (NewTabHint is not null)
         {
-            bitLink.NewTabHint = NewTabHint;
+            bitLink.TakeFromCascade(nameof(NewTabHint), NewTabHint, static l => l.NewTabHint, static (l, v) => l.NewTabHint = v);
         }
 
-        if (NoColor.HasValue && bitLink.HasNotBeenSet(nameof(NoColor)) && bitLink.NoColor != NoColor)
+        if (NoColor.HasValue)
         {
-            bitLink.NoColor = NoColor.Value;
-
-            bitLink.ClassBuilder.Reset();
+            bitLink.TakeFromCascade(nameof(NoColor), NoColor.Value, static l => l.NoColor, static (l, v) => l.NoColor = v);
         }
 
-        if (NoNewTabHint.HasValue && bitLink.HasNotBeenSet(nameof(NoNewTabHint)))
+        if (NoNewTabHint.HasValue)
         {
-            bitLink.NoNewTabHint = NoNewTabHint.Value;
+            bitLink.TakeFromCascade(nameof(NoNewTabHint), NoNewTabHint.Value, static l => l.NoNewTabHint, static (l, v) => l.NoNewTabHint = v);
         }
 
-        if (NoUnderline.HasValue && bitLink.HasNotBeenSet(nameof(NoUnderline)) && bitLink.NoUnderline != NoUnderline)
+        if (NoUnderline.HasValue)
         {
-            bitLink.NoUnderline = NoUnderline.Value;
-
-            bitLink.ClassBuilder.Reset();
+            bitLink.TakeFromCascade(nameof(NoUnderline), NoUnderline.Value, static l => l.NoUnderline, static (l, v) => l.NoUnderline = v);
         }
 
-        if (PreventDefault.HasValue && bitLink.HasNotBeenSet(nameof(PreventDefault)))
+        if (PreventDefault.HasValue)
         {
-            bitLink.PreventDefault = PreventDefault.Value;
+            bitLink.TakeFromCascade(nameof(PreventDefault), PreventDefault.Value, static l => l.PreventDefault, static (l, v) => l.PreventDefault = v);
         }
 
-        if (Rel.HasValue && bitLink.HasNotBeenSet(nameof(Rel)))
+        if (Rel.HasValue)
         {
-            bitLink.Rel = Rel.Value;
+            bitLink.TakeFromCascade(nameof(Rel), Rel.Value, static l => l.Rel, static (l, v) => l.Rel = v);
         }
 
-        if (Size.HasValue && bitLink.HasNotBeenSet(nameof(Size)) && bitLink.Size != Size)
+        if (Size.HasValue)
         {
-            bitLink.Size = Size.Value;
-
-            bitLink.ClassBuilder.Reset();
+            bitLink.TakeFromCascade(nameof(Size), Size.Value, static l => l.Size, static (l, v) => l.Size = v);
         }
 
-        if (StopPropagation.HasValue && bitLink.HasNotBeenSet(nameof(StopPropagation)))
+        if (StopPropagation.HasValue)
         {
-            bitLink.StopPropagation = StopPropagation.Value;
+            bitLink.TakeFromCascade(nameof(StopPropagation), StopPropagation.Value, static l => l.StopPropagation, static (l, v) => l.StopPropagation = v);
         }
 
-        if (Target.HasValue() && bitLink.HasNotBeenSet(nameof(Target)))
+        if (Target.HasValue())
         {
-            bitLink.Target = Target;
+            bitLink.TakeFromCascade(nameof(Target), Target, static l => l.Target, static (l, v) => l.Target = v);
         }
 
-        if (Title.HasValue() && bitLink.HasNotBeenSet(nameof(Title)))
+        if (Title.HasValue())
         {
-            bitLink.Title = Title;
+            bitLink.TakeFromCascade(nameof(Title), Title, static l => l.Title, static (l, v) => l.Title = v);
         }
 
-        if (Underlined.HasValue && bitLink.HasNotBeenSet(nameof(Underlined)) && bitLink.Underlined != Underlined)
+        if (Underlined.HasValue)
         {
-            bitLink.Underlined = Underlined.Value;
-
-            bitLink.ClassBuilder.Reset();
+            bitLink.TakeFromCascade(nameof(Underlined), Underlined.Value, static l => l.Underlined, static (l, v) => l.Underlined = v);
         }
     }
 }
