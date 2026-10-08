@@ -260,28 +260,31 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitGridItem);
 
-        if (AlignSelf.HasValue && bitGridItem.HasNotBeenSet(nameof(AlignSelf)))
+        // This runs on every render of every grid item under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (AlignSelf.HasValue && bitGridItem.HasNotBeenSet(nameof(AlignSelf)) && bitGridItem.AlignSelf != AlignSelf)
         {
             bitGridItem.AlignSelf = AlignSelf.Value;
 
             bitGridItem.StyleBuilder.Reset();
         }
 
-        if (Auto.HasValue && bitGridItem.HasNotBeenSet(nameof(Auto)))
+        if (Auto.HasValue && bitGridItem.HasNotBeenSet(nameof(Auto)) && bitGridItem.Auto != Auto)
         {
             bitGridItem.Auto = Auto.Value;
 
             bitGridItem.ClassBuilder.Reset();
         }
 
-        if (AutoOffset.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffset)))
+        if (AutoOffset.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffset)) && bitGridItem.AutoOffset != AutoOffset)
         {
             bitGridItem.AutoOffset = AutoOffset.Value;
 
             bitGridItem.ClassBuilder.Reset();
         }
 
-        if (ColumnSpan.HasValue && bitGridItem.HasNotBeenSet(nameof(ColumnSpan)))
+        if (ColumnSpan.HasValue && bitGridItem.HasNotBeenSet(nameof(ColumnSpan)) && bitGridItem.ColumnSpan != ColumnSpan)
         {
             bitGridItem.ColumnSpan = ColumnSpan.Value;
 
@@ -294,7 +297,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
             bitGridItem.Element = Element;
         }
 
-        if (Grow.HasValue && bitGridItem.HasNotBeenSet(nameof(Grow)))
+        if (Grow.HasValue && bitGridItem.HasNotBeenSet(nameof(Grow)) && bitGridItem.Grow != Grow)
         {
             bitGridItem.Grow = Grow.Value;
 
@@ -314,84 +317,84 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
 
     private void UpdateSizingParameters(BitGridItem bitGridItem)
     {
-        if (AutoXs.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoXs)))
+        if (AutoXs.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoXs)) && bitGridItem.AutoXs != AutoXs)
         {
             bitGridItem.AutoXs = AutoXs.Value;
 
             bitGridItem.ClassBuilder.Reset();
         }
 
-        if (AutoSm.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoSm)))
+        if (AutoSm.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoSm)) && bitGridItem.AutoSm != AutoSm)
         {
             bitGridItem.AutoSm = AutoSm.Value;
 
             bitGridItem.ClassBuilder.Reset();
         }
 
-        if (AutoMd.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoMd)))
+        if (AutoMd.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoMd)) && bitGridItem.AutoMd != AutoMd)
         {
             bitGridItem.AutoMd = AutoMd.Value;
 
             bitGridItem.ClassBuilder.Reset();
         }
 
-        if (AutoLg.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoLg)))
+        if (AutoLg.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoLg)) && bitGridItem.AutoLg != AutoLg)
         {
             bitGridItem.AutoLg = AutoLg.Value;
 
             bitGridItem.ClassBuilder.Reset();
         }
 
-        if (AutoXl.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoXl)))
+        if (AutoXl.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoXl)) && bitGridItem.AutoXl != AutoXl)
         {
             bitGridItem.AutoXl = AutoXl.Value;
 
             bitGridItem.ClassBuilder.Reset();
         }
 
-        if (AutoXxl.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoXxl)))
+        if (AutoXxl.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoXxl)) && bitGridItem.AutoXxl != AutoXxl)
         {
             bitGridItem.AutoXxl = AutoXxl.Value;
 
             bitGridItem.ClassBuilder.Reset();
         }
 
-        if (GrowXs.HasValue && bitGridItem.HasNotBeenSet(nameof(GrowXs)))
+        if (GrowXs.HasValue && bitGridItem.HasNotBeenSet(nameof(GrowXs)) && bitGridItem.GrowXs != GrowXs)
         {
             bitGridItem.GrowXs = GrowXs.Value;
 
             bitGridItem.ClassBuilder.Reset();
         }
 
-        if (GrowSm.HasValue && bitGridItem.HasNotBeenSet(nameof(GrowSm)))
+        if (GrowSm.HasValue && bitGridItem.HasNotBeenSet(nameof(GrowSm)) && bitGridItem.GrowSm != GrowSm)
         {
             bitGridItem.GrowSm = GrowSm.Value;
 
             bitGridItem.ClassBuilder.Reset();
         }
 
-        if (GrowMd.HasValue && bitGridItem.HasNotBeenSet(nameof(GrowMd)))
+        if (GrowMd.HasValue && bitGridItem.HasNotBeenSet(nameof(GrowMd)) && bitGridItem.GrowMd != GrowMd)
         {
             bitGridItem.GrowMd = GrowMd.Value;
 
             bitGridItem.ClassBuilder.Reset();
         }
 
-        if (GrowLg.HasValue && bitGridItem.HasNotBeenSet(nameof(GrowLg)))
+        if (GrowLg.HasValue && bitGridItem.HasNotBeenSet(nameof(GrowLg)) && bitGridItem.GrowLg != GrowLg)
         {
             bitGridItem.GrowLg = GrowLg.Value;
 
             bitGridItem.ClassBuilder.Reset();
         }
 
-        if (GrowXl.HasValue && bitGridItem.HasNotBeenSet(nameof(GrowXl)))
+        if (GrowXl.HasValue && bitGridItem.HasNotBeenSet(nameof(GrowXl)) && bitGridItem.GrowXl != GrowXl)
         {
             bitGridItem.GrowXl = GrowXl.Value;
 
             bitGridItem.ClassBuilder.Reset();
         }
 
-        if (GrowXxl.HasValue && bitGridItem.HasNotBeenSet(nameof(GrowXxl)))
+        if (GrowXxl.HasValue && bitGridItem.HasNotBeenSet(nameof(GrowXxl)) && bitGridItem.GrowXxl != GrowXxl)
         {
             bitGridItem.GrowXxl = GrowXxl.Value;
 
@@ -401,49 +404,49 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
 
     private void UpdateOffsetParameters(BitGridItem bitGridItem)
     {
-        if (AutoOffsetXs.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetXs)))
+        if (AutoOffsetXs.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetXs)) && bitGridItem.AutoOffsetXs != AutoOffsetXs)
         {
             bitGridItem.AutoOffsetXs = AutoOffsetXs.Value;
 
             bitGridItem.ClassBuilder.Reset();
         }
 
-        if (AutoOffsetSm.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetSm)))
+        if (AutoOffsetSm.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetSm)) && bitGridItem.AutoOffsetSm != AutoOffsetSm)
         {
             bitGridItem.AutoOffsetSm = AutoOffsetSm.Value;
 
             bitGridItem.ClassBuilder.Reset();
         }
 
-        if (AutoOffsetMd.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetMd)))
+        if (AutoOffsetMd.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetMd)) && bitGridItem.AutoOffsetMd != AutoOffsetMd)
         {
             bitGridItem.AutoOffsetMd = AutoOffsetMd.Value;
 
             bitGridItem.ClassBuilder.Reset();
         }
 
-        if (AutoOffsetLg.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetLg)))
+        if (AutoOffsetLg.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetLg)) && bitGridItem.AutoOffsetLg != AutoOffsetLg)
         {
             bitGridItem.AutoOffsetLg = AutoOffsetLg.Value;
 
             bitGridItem.ClassBuilder.Reset();
         }
 
-        if (AutoOffsetXl.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetXl)))
+        if (AutoOffsetXl.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetXl)) && bitGridItem.AutoOffsetXl != AutoOffsetXl)
         {
             bitGridItem.AutoOffsetXl = AutoOffsetXl.Value;
 
             bitGridItem.ClassBuilder.Reset();
         }
 
-        if (AutoOffsetXxl.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetXxl)))
+        if (AutoOffsetXxl.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetXxl)) && bitGridItem.AutoOffsetXxl != AutoOffsetXxl)
         {
             bitGridItem.AutoOffsetXxl = AutoOffsetXxl.Value;
 
             bitGridItem.ClassBuilder.Reset();
         }
 
-        if (Offset.HasValue && bitGridItem.HasNotBeenSet(nameof(Offset)))
+        if (Offset.HasValue && bitGridItem.HasNotBeenSet(nameof(Offset)) && bitGridItem.Offset != Offset)
         {
             bitGridItem.Offset = Offset.Value;
 
@@ -451,7 +454,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
             bitGridItem.StyleBuilder.Reset();
         }
 
-        if (OffsetXs.HasValue && bitGridItem.HasNotBeenSet(nameof(OffsetXs)))
+        if (OffsetXs.HasValue && bitGridItem.HasNotBeenSet(nameof(OffsetXs)) && bitGridItem.OffsetXs != OffsetXs)
         {
             bitGridItem.OffsetXs = OffsetXs.Value;
 
@@ -459,7 +462,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
             bitGridItem.StyleBuilder.Reset();
         }
 
-        if (OffsetSm.HasValue && bitGridItem.HasNotBeenSet(nameof(OffsetSm)))
+        if (OffsetSm.HasValue && bitGridItem.HasNotBeenSet(nameof(OffsetSm)) && bitGridItem.OffsetSm != OffsetSm)
         {
             bitGridItem.OffsetSm = OffsetSm.Value;
 
@@ -467,7 +470,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
             bitGridItem.StyleBuilder.Reset();
         }
 
-        if (OffsetMd.HasValue && bitGridItem.HasNotBeenSet(nameof(OffsetMd)))
+        if (OffsetMd.HasValue && bitGridItem.HasNotBeenSet(nameof(OffsetMd)) && bitGridItem.OffsetMd != OffsetMd)
         {
             bitGridItem.OffsetMd = OffsetMd.Value;
 
@@ -475,7 +478,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
             bitGridItem.StyleBuilder.Reset();
         }
 
-        if (OffsetLg.HasValue && bitGridItem.HasNotBeenSet(nameof(OffsetLg)))
+        if (OffsetLg.HasValue && bitGridItem.HasNotBeenSet(nameof(OffsetLg)) && bitGridItem.OffsetLg != OffsetLg)
         {
             bitGridItem.OffsetLg = OffsetLg.Value;
 
@@ -483,7 +486,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
             bitGridItem.StyleBuilder.Reset();
         }
 
-        if (OffsetXl.HasValue && bitGridItem.HasNotBeenSet(nameof(OffsetXl)))
+        if (OffsetXl.HasValue && bitGridItem.HasNotBeenSet(nameof(OffsetXl)) && bitGridItem.OffsetXl != OffsetXl)
         {
             bitGridItem.OffsetXl = OffsetXl.Value;
 
@@ -491,7 +494,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
             bitGridItem.StyleBuilder.Reset();
         }
 
-        if (OffsetXxl.HasValue && bitGridItem.HasNotBeenSet(nameof(OffsetXxl)))
+        if (OffsetXxl.HasValue && bitGridItem.HasNotBeenSet(nameof(OffsetXxl)) && bitGridItem.OffsetXxl != OffsetXxl)
         {
             bitGridItem.OffsetXxl = OffsetXxl.Value;
 
@@ -502,7 +505,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
 
     private void UpdateOrderParameters(BitGridItem bitGridItem)
     {
-        if (Order.HasValue && bitGridItem.HasNotBeenSet(nameof(Order)))
+        if (Order.HasValue && bitGridItem.HasNotBeenSet(nameof(Order)) && bitGridItem.Order != Order)
         {
             bitGridItem.Order = Order.Value;
 
@@ -510,7 +513,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
             bitGridItem.StyleBuilder.Reset();
         }
 
-        if (OrderXs.HasValue && bitGridItem.HasNotBeenSet(nameof(OrderXs)))
+        if (OrderXs.HasValue && bitGridItem.HasNotBeenSet(nameof(OrderXs)) && bitGridItem.OrderXs != OrderXs)
         {
             bitGridItem.OrderXs = OrderXs.Value;
 
@@ -518,7 +521,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
             bitGridItem.StyleBuilder.Reset();
         }
 
-        if (OrderSm.HasValue && bitGridItem.HasNotBeenSet(nameof(OrderSm)))
+        if (OrderSm.HasValue && bitGridItem.HasNotBeenSet(nameof(OrderSm)) && bitGridItem.OrderSm != OrderSm)
         {
             bitGridItem.OrderSm = OrderSm.Value;
 
@@ -526,7 +529,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
             bitGridItem.StyleBuilder.Reset();
         }
 
-        if (OrderMd.HasValue && bitGridItem.HasNotBeenSet(nameof(OrderMd)))
+        if (OrderMd.HasValue && bitGridItem.HasNotBeenSet(nameof(OrderMd)) && bitGridItem.OrderMd != OrderMd)
         {
             bitGridItem.OrderMd = OrderMd.Value;
 
@@ -534,7 +537,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
             bitGridItem.StyleBuilder.Reset();
         }
 
-        if (OrderLg.HasValue && bitGridItem.HasNotBeenSet(nameof(OrderLg)))
+        if (OrderLg.HasValue && bitGridItem.HasNotBeenSet(nameof(OrderLg)) && bitGridItem.OrderLg != OrderLg)
         {
             bitGridItem.OrderLg = OrderLg.Value;
 
@@ -542,7 +545,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
             bitGridItem.StyleBuilder.Reset();
         }
 
-        if (OrderXl.HasValue && bitGridItem.HasNotBeenSet(nameof(OrderXl)))
+        if (OrderXl.HasValue && bitGridItem.HasNotBeenSet(nameof(OrderXl)) && bitGridItem.OrderXl != OrderXl)
         {
             bitGridItem.OrderXl = OrderXl.Value;
 
@@ -550,7 +553,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
             bitGridItem.StyleBuilder.Reset();
         }
 
-        if (OrderXxl.HasValue && bitGridItem.HasNotBeenSet(nameof(OrderXxl)))
+        if (OrderXxl.HasValue && bitGridItem.HasNotBeenSet(nameof(OrderXxl)) && bitGridItem.OrderXxl != OrderXxl)
         {
             bitGridItem.OrderXxl = OrderXxl.Value;
 
@@ -561,7 +564,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
 
     private void UpdateSpanParameters(BitGridItem bitGridItem)
     {
-        if (Xs.HasValue && bitGridItem.HasNotBeenSet(nameof(Xs)))
+        if (Xs.HasValue && bitGridItem.HasNotBeenSet(nameof(Xs)) && bitGridItem.Xs != Xs)
         {
             bitGridItem.Xs = Xs.Value;
 
@@ -569,7 +572,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
             bitGridItem.StyleBuilder.Reset();
         }
 
-        if (Sm.HasValue && bitGridItem.HasNotBeenSet(nameof(Sm)))
+        if (Sm.HasValue && bitGridItem.HasNotBeenSet(nameof(Sm)) && bitGridItem.Sm != Sm)
         {
             bitGridItem.Sm = Sm.Value;
 
@@ -577,7 +580,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
             bitGridItem.StyleBuilder.Reset();
         }
 
-        if (Md.HasValue && bitGridItem.HasNotBeenSet(nameof(Md)))
+        if (Md.HasValue && bitGridItem.HasNotBeenSet(nameof(Md)) && bitGridItem.Md != Md)
         {
             bitGridItem.Md = Md.Value;
 
@@ -585,7 +588,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
             bitGridItem.StyleBuilder.Reset();
         }
 
-        if (Lg.HasValue && bitGridItem.HasNotBeenSet(nameof(Lg)))
+        if (Lg.HasValue && bitGridItem.HasNotBeenSet(nameof(Lg)) && bitGridItem.Lg != Lg)
         {
             bitGridItem.Lg = Lg.Value;
 
@@ -593,7 +596,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
             bitGridItem.StyleBuilder.Reset();
         }
 
-        if (Xl.HasValue && bitGridItem.HasNotBeenSet(nameof(Xl)))
+        if (Xl.HasValue && bitGridItem.HasNotBeenSet(nameof(Xl)) && bitGridItem.Xl != Xl)
         {
             bitGridItem.Xl = Xl.Value;
 
@@ -601,7 +604,7 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
             bitGridItem.StyleBuilder.Reset();
         }
 
-        if (Xxl.HasValue && bitGridItem.HasNotBeenSet(nameof(Xxl)))
+        if (Xxl.HasValue && bitGridItem.HasNotBeenSet(nameof(Xxl)) && bitGridItem.Xxl != Xxl)
         {
             bitGridItem.Xxl = Xxl.Value;
 

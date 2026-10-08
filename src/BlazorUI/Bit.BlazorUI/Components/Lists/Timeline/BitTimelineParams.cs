@@ -117,91 +117,94 @@ public class BitTimelineParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitTimeline);
 
-        if (Alternate.HasValue && bitTimeline.HasNotBeenSet(nameof(Alternate)))
+        // This runs on every render of every timeline under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (Alternate.HasValue && bitTimeline.HasNotBeenSet(nameof(Alternate)) && bitTimeline.Alternate != Alternate)
         {
             bitTimeline.Alternate = Alternate.Value;
 
             bitTimeline.ClassBuilder.Reset();
         }
 
-        if (Classes is not null && bitTimeline.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitTimeline.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitTimeline.Classes, Classes) is false)
         {
             bitTimeline.Classes = Classes;
 
             bitTimeline.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitTimeline.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitTimeline.HasNotBeenSet(nameof(Color)) && bitTimeline.Color != Color)
         {
             bitTimeline.Color = Color.Value;
 
             bitTimeline.ClassBuilder.Reset();
         }
 
-        if (DotAlignment.HasValue && bitTimeline.HasNotBeenSet(nameof(DotAlignment)))
+        if (DotAlignment.HasValue && bitTimeline.HasNotBeenSet(nameof(DotAlignment)) && bitTimeline.DotAlignment != DotAlignment)
         {
             bitTimeline.DotAlignment = DotAlignment.Value;
 
             bitTimeline.ClassBuilder.Reset();
         }
 
-        if (Horizontal.HasValue && bitTimeline.HasNotBeenSet(nameof(Horizontal)))
+        if (Horizontal.HasValue && bitTimeline.HasNotBeenSet(nameof(Horizontal)) && bitTimeline.Horizontal != Horizontal)
         {
             bitTimeline.Horizontal = Horizontal.Value;
 
             bitTimeline.ClassBuilder.Reset();
         }
 
-        if (LineStyle.HasValue && bitTimeline.HasNotBeenSet(nameof(LineStyle)))
+        if (LineStyle.HasValue && bitTimeline.HasNotBeenSet(nameof(LineStyle)) && bitTimeline.LineStyle != LineStyle)
         {
             bitTimeline.LineStyle = LineStyle.Value;
 
             bitTimeline.ClassBuilder.Reset();
         }
 
-        if (LinePlacement.HasValue && bitTimeline.HasNotBeenSet(nameof(LinePlacement)))
+        if (LinePlacement.HasValue && bitTimeline.HasNotBeenSet(nameof(LinePlacement)) && bitTimeline.LinePlacement != LinePlacement)
         {
             bitTimeline.LinePlacement = LinePlacement.Value;
 
             bitTimeline.ClassBuilder.Reset();
         }
 
-        if (ReverseOrder.HasValue && bitTimeline.HasNotBeenSet(nameof(ReverseOrder)))
+        if (ReverseOrder.HasValue && bitTimeline.HasNotBeenSet(nameof(ReverseOrder)) && bitTimeline.ReverseOrder != ReverseOrder)
         {
             bitTimeline.ReverseOrder = ReverseOrder.Value;
 
             bitTimeline.ClassBuilder.Reset();
         }
 
-        if (Reversed.HasValue && bitTimeline.HasNotBeenSet(nameof(Reversed)))
+        if (Reversed.HasValue && bitTimeline.HasNotBeenSet(nameof(Reversed)) && bitTimeline.Reversed != Reversed)
         {
             bitTimeline.Reversed = Reversed.Value;
 
             bitTimeline.ClassBuilder.Reset();
         }
 
-        if (Size.HasValue && bitTimeline.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitTimeline.HasNotBeenSet(nameof(Size)) && bitTimeline.Size != Size)
         {
             bitTimeline.Size = Size.Value;
 
             bitTimeline.ClassBuilder.Reset();
         }
 
-        if (Styles is not null && bitTimeline.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitTimeline.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitTimeline.Styles, Styles) is false)
         {
             bitTimeline.Styles = Styles;
 
             bitTimeline.StyleBuilder.Reset();
         }
 
-        if (TruncateLine.HasValue && bitTimeline.HasNotBeenSet(nameof(TruncateLine)))
+        if (TruncateLine.HasValue && bitTimeline.HasNotBeenSet(nameof(TruncateLine)) && bitTimeline.TruncateLine != TruncateLine)
         {
             bitTimeline.TruncateLine = TruncateLine.Value;
 
             bitTimeline.ClassBuilder.Reset();
         }
 
-        if (Variant.HasValue && bitTimeline.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue && bitTimeline.HasNotBeenSet(nameof(Variant)) && bitTimeline.Variant != Variant)
         {
             bitTimeline.Variant = Variant.Value;
 

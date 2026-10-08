@@ -381,6 +381,37 @@ public class BitParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void AnUnchangedParamsObjectShouldNotRebuildTheStringsOfABitComponent()
+    {
+        var @params = new BitButtonParams { Size = BitSize.Small, Classes = new() { Root = "first" }, Styles = new() { Root = "color:red" } };
+
+        // A content fragment counts as a possible change, so the button renders again whenever the content does.
+        var component = RenderComponent<BitParams>(builder =>
+        {
+            builder.Add(p => p.Parameters, [@params]);
+            builder.AddChildContent(content =>
+            {
+                content.OpenComponent<BitButton>(0);
+                content.AddComponentParameter(1, nameof(BitButton.ChildContent), (RenderFragment)(text => text.AddContent(0, "Save")));
+                content.CloseComponent();
+            });
+        });
+
+        var rendered = component.FindComponent<BitButton>();
+        var renders = rendered.RenderCount;
+        var classes = rendered.Instance.ClassBuilder.Value;
+        var styles = rendered.Instance.StyleBuilder.Value;
+
+        // The host renders again with the very same params: the button renders again with it, and must not pay for
+        // its class and style strings when the cascade has nothing new to say.
+        component.Render(builder => builder.Add(p => p.Parameters, [@params]));
+
+        Assert.IsTrue(rendered.RenderCount > renders);
+        Assert.AreSame(classes, rendered.Instance.ClassBuilder.Value);
+        Assert.AreSame(styles, rendered.Instance.StyleBuilder.Value);
+    }
+
+    [TestMethod]
     public void ComponentBaseParamsShouldLeaveDisabledUnset()
     {
         Assert.IsNull(new BitButtonParams().Disabled);

@@ -283,7 +283,10 @@ public class BitOtpInputParams : BitInputBaseParams<string?>, IBitComponentParam
 
         UpdateInputBaseParameters(bitOtpInput);
 
-        if (Accent.HasValue && bitOtpInput.HasNotBeenSet(nameof(Accent)))
+        // This runs on every render of every otp input under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (Accent.HasValue && bitOtpInput.HasNotBeenSet(nameof(Accent)) && bitOtpInput.Accent != Accent)
         {
             bitOtpInput.Accent = Accent.Value;
 
@@ -310,7 +313,7 @@ public class BitOtpInputParams : BitInputBaseParams<string?>, IBitComponentParam
             bitOtpInput.BlurOnFill = BlurOnFill.Value;
         }
 
-        if (Classes is not null && bitOtpInput.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitOtpInput.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitOtpInput.Classes, Classes) is false)
         {
             bitOtpInput.Classes = Classes;
 
@@ -322,7 +325,7 @@ public class BitOtpInputParams : BitInputBaseParams<string?>, IBitComponentParam
             bitOtpInput.Description = Description;
         }
 
-        if (FullWidth.HasValue && bitOtpInput.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitOtpInput.HasNotBeenSet(nameof(FullWidth)) && bitOtpInput.FullWidth != FullWidth)
         {
             bitOtpInput.FullWidth = FullWidth.Value;
 
@@ -339,14 +342,14 @@ public class BitOtpInputParams : BitInputBaseParams<string?>, IBitComponentParam
             bitOtpInput.InputMode = InputMode.Value;
         }
 
-        if (Invalid.HasValue && bitOtpInput.HasNotBeenSet(nameof(Invalid)))
+        if (Invalid.HasValue && bitOtpInput.HasNotBeenSet(nameof(Invalid)) && bitOtpInput.Invalid != Invalid)
         {
             bitOtpInput.Invalid = Invalid.Value;
 
             bitOtpInput.ClassBuilder.Reset();
         }
 
-        if (IsLoading.HasValue && bitOtpInput.HasNotBeenSet(nameof(IsLoading)))
+        if (IsLoading.HasValue && bitOtpInput.HasNotBeenSet(nameof(IsLoading)) && bitOtpInput.IsLoading != IsLoading)
         {
             bitOtpInput.IsLoading = IsLoading.Value;
 
@@ -373,7 +376,7 @@ public class BitOtpInputParams : BitInputBaseParams<string?>, IBitComponentParam
             bitOtpInput.Mask = Mask;
         }
 
-        if (Merged.HasValue && bitOtpInput.HasNotBeenSet(nameof(Merged)))
+        if (Merged.HasValue && bitOtpInput.HasNotBeenSet(nameof(Merged)) && bitOtpInput.Merged != Merged)
         {
             bitOtpInput.Merged = Merged.Value;
 
@@ -405,7 +408,7 @@ public class BitOtpInputParams : BitInputBaseParams<string?>, IBitComponentParam
             bitOtpInput.Placeholder = Placeholder;
         }
 
-        if (Reversed.HasValue && bitOtpInput.HasNotBeenSet(nameof(Reversed)))
+        if (Reversed.HasValue && bitOtpInput.HasNotBeenSet(nameof(Reversed)) && bitOtpInput.Reversed != Reversed)
         {
             bitOtpInput.Reversed = Reversed.Value;
 
@@ -432,14 +435,14 @@ public class BitOtpInputParams : BitInputBaseParams<string?>, IBitComponentParam
             bitOtpInput.SingleTabStop = SingleTabStop.Value;
         }
 
-        if (Size.HasValue && bitOtpInput.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitOtpInput.HasNotBeenSet(nameof(Size)) && bitOtpInput.Size != Size)
         {
             bitOtpInput.Size = Size.Value;
 
             bitOtpInput.ClassBuilder.Reset();
         }
 
-        if (Styles is not null && bitOtpInput.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitOtpInput.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitOtpInput.Styles, Styles) is false)
         {
             bitOtpInput.Styles = Styles;
 
@@ -456,14 +459,14 @@ public class BitOtpInputParams : BitInputBaseParams<string?>, IBitComponentParam
             bitOtpInput.Uppercase = Uppercase.Value;
         }
 
-        if (Variant.HasValue && bitOtpInput.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue && bitOtpInput.HasNotBeenSet(nameof(Variant)) && bitOtpInput.Variant != Variant)
         {
             bitOtpInput.Variant = Variant.Value;
 
             bitOtpInput.ClassBuilder.Reset();
         }
 
-        if (Vertical.HasValue && bitOtpInput.HasNotBeenSet(nameof(Vertical)))
+        if (Vertical.HasValue && bitOtpInput.HasNotBeenSet(nameof(Vertical)) && bitOtpInput.Vertical != Vertical)
         {
             bitOtpInput.Vertical = Vertical.Value;
 

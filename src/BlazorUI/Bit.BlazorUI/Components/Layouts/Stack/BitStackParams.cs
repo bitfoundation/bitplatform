@@ -355,42 +355,45 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitStack);
 
-        if (AlignContent.HasValue && bitStack.HasNotBeenSet(nameof(AlignContent)))
+        // This runs on every render of every stack under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (AlignContent.HasValue && bitStack.HasNotBeenSet(nameof(AlignContent)) && bitStack.AlignContent != AlignContent)
         {
             bitStack.AlignContent = AlignContent.Value;
 
             bitStack.StyleBuilder.Reset();
         }
 
-        if (Alignment.HasValue && bitStack.HasNotBeenSet(nameof(Alignment)))
+        if (Alignment.HasValue && bitStack.HasNotBeenSet(nameof(Alignment)) && bitStack.Alignment != Alignment)
         {
             bitStack.Alignment = Alignment.Value;
 
             bitStack.StyleBuilder.Reset();
         }
 
-        if (AutoHeight.HasValue && bitStack.HasNotBeenSet(nameof(AutoHeight)))
+        if (AutoHeight.HasValue && bitStack.HasNotBeenSet(nameof(AutoHeight)) && bitStack.AutoHeight != AutoHeight)
         {
             bitStack.AutoHeight = AutoHeight.Value;
 
             bitStack.StyleBuilder.Reset();
         }
 
-        if (AutoSize.HasValue && bitStack.HasNotBeenSet(nameof(AutoSize)))
+        if (AutoSize.HasValue && bitStack.HasNotBeenSet(nameof(AutoSize)) && bitStack.AutoSize != AutoSize)
         {
             bitStack.AutoSize = AutoSize.Value;
 
             bitStack.StyleBuilder.Reset();
         }
 
-        if (AutoWidth.HasValue && bitStack.HasNotBeenSet(nameof(AutoWidth)))
+        if (AutoWidth.HasValue && bitStack.HasNotBeenSet(nameof(AutoWidth)) && bitStack.AutoWidth != AutoWidth)
         {
             bitStack.AutoWidth = AutoWidth.Value;
 
             bitStack.StyleBuilder.Reset();
         }
 
-        if (Basis.HasValue() && bitStack.HasNotBeenSet(nameof(Basis)))
+        if (Basis.HasValue() && bitStack.HasNotBeenSet(nameof(Basis)) && bitStack.Basis != Basis)
         {
             bitStack.Basis = Basis;
 
@@ -402,49 +405,49 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.Element = Element;
         }
 
-        if (EqualContent.HasValue && bitStack.HasNotBeenSet(nameof(EqualContent)))
+        if (EqualContent.HasValue && bitStack.HasNotBeenSet(nameof(EqualContent)) && bitStack.EqualContent != EqualContent)
         {
             bitStack.EqualContent = EqualContent.Value;
 
             bitStack.ClassBuilder.Reset();
         }
 
-        if (FillContent.HasValue && bitStack.HasNotBeenSet(nameof(FillContent)))
+        if (FillContent.HasValue && bitStack.HasNotBeenSet(nameof(FillContent)) && bitStack.FillContent != FillContent)
         {
             bitStack.FillContent = FillContent.Value;
 
             bitStack.ClassBuilder.Reset();
         }
 
-        if (FitHeight.HasValue && bitStack.HasNotBeenSet(nameof(FitHeight)))
+        if (FitHeight.HasValue && bitStack.HasNotBeenSet(nameof(FitHeight)) && bitStack.FitHeight != FitHeight)
         {
             bitStack.FitHeight = FitHeight.Value;
 
             bitStack.StyleBuilder.Reset();
         }
 
-        if (FitSize.HasValue && bitStack.HasNotBeenSet(nameof(FitSize)))
+        if (FitSize.HasValue && bitStack.HasNotBeenSet(nameof(FitSize)) && bitStack.FitSize != FitSize)
         {
             bitStack.FitSize = FitSize.Value;
 
             bitStack.StyleBuilder.Reset();
         }
 
-        if (FitWidth.HasValue && bitStack.HasNotBeenSet(nameof(FitWidth)))
+        if (FitWidth.HasValue && bitStack.HasNotBeenSet(nameof(FitWidth)) && bitStack.FitWidth != FitWidth)
         {
             bitStack.FitWidth = FitWidth.Value;
 
             bitStack.StyleBuilder.Reset();
         }
 
-        if (Gap.HasValue() && bitStack.HasNotBeenSet(nameof(Gap)))
+        if (Gap.HasValue() && bitStack.HasNotBeenSet(nameof(Gap)) && bitStack.Gap != Gap)
         {
             bitStack.Gap = Gap;
 
             bitStack.StyleBuilder.Reset();
         }
 
-        if (GapXs.HasValue() && bitStack.HasNotBeenSet(nameof(GapXs)))
+        if (GapXs.HasValue() && bitStack.HasNotBeenSet(nameof(GapXs)) && bitStack.GapXs != GapXs)
         {
             bitStack.GapXs = GapXs;
 
@@ -452,7 +455,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (GapSm.HasValue() && bitStack.HasNotBeenSet(nameof(GapSm)))
+        if (GapSm.HasValue() && bitStack.HasNotBeenSet(nameof(GapSm)) && bitStack.GapSm != GapSm)
         {
             bitStack.GapSm = GapSm;
 
@@ -460,7 +463,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (GapMd.HasValue() && bitStack.HasNotBeenSet(nameof(GapMd)))
+        if (GapMd.HasValue() && bitStack.HasNotBeenSet(nameof(GapMd)) && bitStack.GapMd != GapMd)
         {
             bitStack.GapMd = GapMd;
 
@@ -468,7 +471,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (GapLg.HasValue() && bitStack.HasNotBeenSet(nameof(GapLg)))
+        if (GapLg.HasValue() && bitStack.HasNotBeenSet(nameof(GapLg)) && bitStack.GapLg != GapLg)
         {
             bitStack.GapLg = GapLg;
 
@@ -476,7 +479,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (GapXl.HasValue() && bitStack.HasNotBeenSet(nameof(GapXl)))
+        if (GapXl.HasValue() && bitStack.HasNotBeenSet(nameof(GapXl)) && bitStack.GapXl != GapXl)
         {
             bitStack.GapXl = GapXl;
 
@@ -484,7 +487,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (GapXxl.HasValue() && bitStack.HasNotBeenSet(nameof(GapXxl)))
+        if (GapXxl.HasValue() && bitStack.HasNotBeenSet(nameof(GapXxl)) && bitStack.GapXxl != GapXxl)
         {
             bitStack.GapXxl = GapXxl;
 
@@ -492,28 +495,28 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (Grow.HasValue() && bitStack.HasNotBeenSet(nameof(Grow)))
+        if (Grow.HasValue() && bitStack.HasNotBeenSet(nameof(Grow)) && bitStack.Grow != Grow)
         {
             bitStack.Grow = Grow;
 
             bitStack.StyleBuilder.Reset();
         }
 
-        if (GrowContent.HasValue && bitStack.HasNotBeenSet(nameof(GrowContent)))
+        if (GrowContent.HasValue && bitStack.HasNotBeenSet(nameof(GrowContent)) && bitStack.GrowContent != GrowContent)
         {
             bitStack.GrowContent = GrowContent.Value;
 
             bitStack.ClassBuilder.Reset();
         }
 
-        if (Grows.HasValue && bitStack.HasNotBeenSet(nameof(Grows)))
+        if (Grows.HasValue && bitStack.HasNotBeenSet(nameof(Grows)) && bitStack.Grows != Grows)
         {
             bitStack.Grows = Grows.Value;
 
             bitStack.StyleBuilder.Reset();
         }
 
-        if (Horizontal.HasValue && bitStack.HasNotBeenSet(nameof(Horizontal)))
+        if (Horizontal.HasValue && bitStack.HasNotBeenSet(nameof(Horizontal)) && bitStack.Horizontal != Horizontal)
         {
             bitStack.Horizontal = Horizontal.Value;
 
@@ -521,21 +524,21 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (HorizontalAlign.HasValue && bitStack.HasNotBeenSet(nameof(HorizontalAlign)))
+        if (HorizontalAlign.HasValue && bitStack.HasNotBeenSet(nameof(HorizontalAlign)) && bitStack.HorizontalAlign != HorizontalAlign)
         {
             bitStack.HorizontalAlign = HorizontalAlign.Value;
 
             bitStack.StyleBuilder.Reset();
         }
 
-        if (HorizontalGap.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGap)))
+        if (HorizontalGap.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGap)) && bitStack.HorizontalGap != HorizontalGap)
         {
             bitStack.HorizontalGap = HorizontalGap;
 
             bitStack.StyleBuilder.Reset();
         }
 
-        if (HorizontalGapXs.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapXs)))
+        if (HorizontalGapXs.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapXs)) && bitStack.HorizontalGapXs != HorizontalGapXs)
         {
             bitStack.HorizontalGapXs = HorizontalGapXs;
 
@@ -543,7 +546,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (HorizontalGapSm.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapSm)))
+        if (HorizontalGapSm.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapSm)) && bitStack.HorizontalGapSm != HorizontalGapSm)
         {
             bitStack.HorizontalGapSm = HorizontalGapSm;
 
@@ -551,7 +554,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (HorizontalGapMd.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapMd)))
+        if (HorizontalGapMd.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapMd)) && bitStack.HorizontalGapMd != HorizontalGapMd)
         {
             bitStack.HorizontalGapMd = HorizontalGapMd;
 
@@ -559,7 +562,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (HorizontalGapLg.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapLg)))
+        if (HorizontalGapLg.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapLg)) && bitStack.HorizontalGapLg != HorizontalGapLg)
         {
             bitStack.HorizontalGapLg = HorizontalGapLg;
 
@@ -567,7 +570,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (HorizontalGapXl.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapXl)))
+        if (HorizontalGapXl.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapXl)) && bitStack.HorizontalGapXl != HorizontalGapXl)
         {
             bitStack.HorizontalGapXl = HorizontalGapXl;
 
@@ -575,7 +578,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (HorizontalGapXxl.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapXxl)))
+        if (HorizontalGapXxl.HasValue() && bitStack.HasNotBeenSet(nameof(HorizontalGapXxl)) && bitStack.HorizontalGapXxl != HorizontalGapXxl)
         {
             bitStack.HorizontalGapXxl = HorizontalGapXxl;
 
@@ -583,7 +586,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (HorizontalXs.HasValue && bitStack.HasNotBeenSet(nameof(HorizontalXs)))
+        if (HorizontalXs.HasValue && bitStack.HasNotBeenSet(nameof(HorizontalXs)) && bitStack.HorizontalXs != HorizontalXs)
         {
             bitStack.HorizontalXs = HorizontalXs.Value;
 
@@ -591,7 +594,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (HorizontalSm.HasValue && bitStack.HasNotBeenSet(nameof(HorizontalSm)))
+        if (HorizontalSm.HasValue && bitStack.HasNotBeenSet(nameof(HorizontalSm)) && bitStack.HorizontalSm != HorizontalSm)
         {
             bitStack.HorizontalSm = HorizontalSm.Value;
 
@@ -599,7 +602,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (HorizontalMd.HasValue && bitStack.HasNotBeenSet(nameof(HorizontalMd)))
+        if (HorizontalMd.HasValue && bitStack.HasNotBeenSet(nameof(HorizontalMd)) && bitStack.HorizontalMd != HorizontalMd)
         {
             bitStack.HorizontalMd = HorizontalMd.Value;
 
@@ -607,7 +610,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (HorizontalLg.HasValue && bitStack.HasNotBeenSet(nameof(HorizontalLg)))
+        if (HorizontalLg.HasValue && bitStack.HasNotBeenSet(nameof(HorizontalLg)) && bitStack.HorizontalLg != HorizontalLg)
         {
             bitStack.HorizontalLg = HorizontalLg.Value;
 
@@ -615,7 +618,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (HorizontalXl.HasValue && bitStack.HasNotBeenSet(nameof(HorizontalXl)))
+        if (HorizontalXl.HasValue && bitStack.HasNotBeenSet(nameof(HorizontalXl)) && bitStack.HorizontalXl != HorizontalXl)
         {
             bitStack.HorizontalXl = HorizontalXl.Value;
 
@@ -623,7 +626,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (HorizontalXxl.HasValue && bitStack.HasNotBeenSet(nameof(HorizontalXxl)))
+        if (HorizontalXxl.HasValue && bitStack.HasNotBeenSet(nameof(HorizontalXxl)) && bitStack.HorizontalXxl != HorizontalXxl)
         {
             bitStack.HorizontalXxl = HorizontalXxl.Value;
 
@@ -631,7 +634,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (Inline.HasValue && bitStack.HasNotBeenSet(nameof(Inline)))
+        if (Inline.HasValue && bitStack.HasNotBeenSet(nameof(Inline)) && bitStack.Inline != Inline)
         {
             bitStack.Inline = Inline.Value;
 
@@ -639,63 +642,63 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (NoShrink.HasValue && bitStack.HasNotBeenSet(nameof(NoShrink)))
+        if (NoShrink.HasValue && bitStack.HasNotBeenSet(nameof(NoShrink)) && bitStack.NoShrink != NoShrink)
         {
             bitStack.NoShrink = NoShrink.Value;
 
             bitStack.StyleBuilder.Reset();
         }
 
-        if (NoShrinkContent.HasValue && bitStack.HasNotBeenSet(nameof(NoShrinkContent)))
+        if (NoShrinkContent.HasValue && bitStack.HasNotBeenSet(nameof(NoShrinkContent)) && bitStack.NoShrinkContent != NoShrinkContent)
         {
             bitStack.NoShrinkContent = NoShrinkContent.Value;
 
             bitStack.ClassBuilder.Reset();
         }
 
-        if (Order.HasValue && bitStack.HasNotBeenSet(nameof(Order)))
+        if (Order.HasValue && bitStack.HasNotBeenSet(nameof(Order)) && bitStack.Order != Order)
         {
             bitStack.Order = Order.Value;
 
             bitStack.StyleBuilder.Reset();
         }
 
-        if (Padding.HasValue() && bitStack.HasNotBeenSet(nameof(Padding)))
+        if (Padding.HasValue() && bitStack.HasNotBeenSet(nameof(Padding)) && bitStack.Padding != Padding)
         {
             bitStack.Padding = Padding;
 
             bitStack.StyleBuilder.Reset();
         }
 
-        if (Reversed.HasValue && bitStack.HasNotBeenSet(nameof(Reversed)))
+        if (Reversed.HasValue && bitStack.HasNotBeenSet(nameof(Reversed)) && bitStack.Reversed != Reversed)
         {
             bitStack.Reversed = Reversed.Value;
 
             bitStack.StyleBuilder.Reset();
         }
 
-        if (Self.HasValue && bitStack.HasNotBeenSet(nameof(Self)))
+        if (Self.HasValue && bitStack.HasNotBeenSet(nameof(Self)) && bitStack.Self != Self)
         {
             bitStack.Self = Self.Value;
 
             bitStack.StyleBuilder.Reset();
         }
 
-        if (Shrink.HasValue() && bitStack.HasNotBeenSet(nameof(Shrink)))
+        if (Shrink.HasValue() && bitStack.HasNotBeenSet(nameof(Shrink)) && bitStack.Shrink != Shrink)
         {
             bitStack.Shrink = Shrink;
 
             bitStack.StyleBuilder.Reset();
         }
 
-        if (Shrinkable.HasValue && bitStack.HasNotBeenSet(nameof(Shrinkable)))
+        if (Shrinkable.HasValue && bitStack.HasNotBeenSet(nameof(Shrinkable)) && bitStack.Shrinkable != Shrinkable)
         {
             bitStack.Shrinkable = Shrinkable.Value;
 
             bitStack.StyleBuilder.Reset();
         }
 
-        if (Size.HasValue && bitStack.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitStack.HasNotBeenSet(nameof(Size)) && bitStack.Size != Size)
         {
             bitStack.Size = Size.Value;
 
@@ -703,21 +706,21 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (VerticalAlign.HasValue && bitStack.HasNotBeenSet(nameof(VerticalAlign)))
+        if (VerticalAlign.HasValue && bitStack.HasNotBeenSet(nameof(VerticalAlign)) && bitStack.VerticalAlign != VerticalAlign)
         {
             bitStack.VerticalAlign = VerticalAlign.Value;
 
             bitStack.StyleBuilder.Reset();
         }
 
-        if (VerticalGap.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGap)))
+        if (VerticalGap.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGap)) && bitStack.VerticalGap != VerticalGap)
         {
             bitStack.VerticalGap = VerticalGap;
 
             bitStack.StyleBuilder.Reset();
         }
 
-        if (VerticalGapXs.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapXs)))
+        if (VerticalGapXs.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapXs)) && bitStack.VerticalGapXs != VerticalGapXs)
         {
             bitStack.VerticalGapXs = VerticalGapXs;
 
@@ -725,7 +728,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (VerticalGapSm.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapSm)))
+        if (VerticalGapSm.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapSm)) && bitStack.VerticalGapSm != VerticalGapSm)
         {
             bitStack.VerticalGapSm = VerticalGapSm;
 
@@ -733,7 +736,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (VerticalGapMd.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapMd)))
+        if (VerticalGapMd.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapMd)) && bitStack.VerticalGapMd != VerticalGapMd)
         {
             bitStack.VerticalGapMd = VerticalGapMd;
 
@@ -741,7 +744,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (VerticalGapLg.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapLg)))
+        if (VerticalGapLg.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapLg)) && bitStack.VerticalGapLg != VerticalGapLg)
         {
             bitStack.VerticalGapLg = VerticalGapLg;
 
@@ -749,7 +752,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (VerticalGapXl.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapXl)))
+        if (VerticalGapXl.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapXl)) && bitStack.VerticalGapXl != VerticalGapXl)
         {
             bitStack.VerticalGapXl = VerticalGapXl;
 
@@ -757,7 +760,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (VerticalGapXxl.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapXxl)))
+        if (VerticalGapXxl.HasValue() && bitStack.HasNotBeenSet(nameof(VerticalGapXxl)) && bitStack.VerticalGapXxl != VerticalGapXxl)
         {
             bitStack.VerticalGapXxl = VerticalGapXxl;
 
@@ -765,7 +768,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (Wrap.HasValue && bitStack.HasNotBeenSet(nameof(Wrap)))
+        if (Wrap.HasValue && bitStack.HasNotBeenSet(nameof(Wrap)) && bitStack.Wrap != Wrap)
         {
             bitStack.Wrap = Wrap.Value;
 
@@ -773,7 +776,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (WrapXs.HasValue && bitStack.HasNotBeenSet(nameof(WrapXs)))
+        if (WrapXs.HasValue && bitStack.HasNotBeenSet(nameof(WrapXs)) && bitStack.WrapXs != WrapXs)
         {
             bitStack.WrapXs = WrapXs.Value;
 
@@ -781,7 +784,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (WrapSm.HasValue && bitStack.HasNotBeenSet(nameof(WrapSm)))
+        if (WrapSm.HasValue && bitStack.HasNotBeenSet(nameof(WrapSm)) && bitStack.WrapSm != WrapSm)
         {
             bitStack.WrapSm = WrapSm.Value;
 
@@ -789,7 +792,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (WrapMd.HasValue && bitStack.HasNotBeenSet(nameof(WrapMd)))
+        if (WrapMd.HasValue && bitStack.HasNotBeenSet(nameof(WrapMd)) && bitStack.WrapMd != WrapMd)
         {
             bitStack.WrapMd = WrapMd.Value;
 
@@ -797,7 +800,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (WrapLg.HasValue && bitStack.HasNotBeenSet(nameof(WrapLg)))
+        if (WrapLg.HasValue && bitStack.HasNotBeenSet(nameof(WrapLg)) && bitStack.WrapLg != WrapLg)
         {
             bitStack.WrapLg = WrapLg.Value;
 
@@ -805,7 +808,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (WrapXl.HasValue && bitStack.HasNotBeenSet(nameof(WrapXl)))
+        if (WrapXl.HasValue && bitStack.HasNotBeenSet(nameof(WrapXl)) && bitStack.WrapXl != WrapXl)
         {
             bitStack.WrapXl = WrapXl.Value;
 
@@ -813,7 +816,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (WrapXxl.HasValue && bitStack.HasNotBeenSet(nameof(WrapXxl)))
+        if (WrapXxl.HasValue && bitStack.HasNotBeenSet(nameof(WrapXxl)) && bitStack.WrapXxl != WrapXxl)
         {
             bitStack.WrapXxl = WrapXxl.Value;
 
@@ -821,7 +824,7 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
             bitStack.StyleBuilder.Reset();
         }
 
-        if (WrapReverse.HasValue && bitStack.HasNotBeenSet(nameof(WrapReverse)))
+        if (WrapReverse.HasValue && bitStack.HasNotBeenSet(nameof(WrapReverse)) && bitStack.WrapReverse != WrapReverse)
         {
             bitStack.WrapReverse = WrapReverse.Value;
 

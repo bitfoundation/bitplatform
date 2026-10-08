@@ -234,6 +234,9 @@ public class BitCalloutParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitCallout);
 
+        // This runs on every render of every callout under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (Alignment.HasValue && bitCallout.HasNotBeenSet(nameof(Alignment)))
         {
             bitCallout.Alignment = Alignment.Value;
@@ -274,7 +277,7 @@ public class BitCalloutParams : BitComponentBaseParams, IBitComponentParams
             bitCallout.Border = Border.Value;
         }
 
-        if (Classes is not null && bitCallout.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitCallout.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitCallout.Classes, Classes) is false)
         {
             bitCallout.Classes = Classes;
 
@@ -406,7 +409,7 @@ public class BitCalloutParams : BitComponentBaseParams, IBitComponentParams
             bitCallout.Placement = Placement.Value;
         }
 
-        if (Styles is not null && bitCallout.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitCallout.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitCallout.Styles, Styles) is false)
         {
             bitCallout.Styles = Styles;
 

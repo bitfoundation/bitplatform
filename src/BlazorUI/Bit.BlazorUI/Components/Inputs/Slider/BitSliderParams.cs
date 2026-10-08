@@ -220,6 +220,9 @@ public class BitSliderParams : BitInputBaseParams<double>, IBitComponentParams
 
         UpdateInputBaseParameters(bitSlider);
 
+        // This runs on every render of every slider under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AriaDescription.HasValue() && bitSlider.HasNotBeenSet(nameof(AriaDescription)))
         {
             bitSlider.AriaDescription = AriaDescription;
@@ -235,14 +238,14 @@ public class BitSliderParams : BitInputBaseParams<double>, IBitComponentParams
             bitSlider.AutoFocus = AutoFocus.Value;
         }
 
-        if (Classes is not null && bitSlider.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitSlider.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitSlider.Classes, Classes) is false)
         {
             bitSlider.Classes = Classes;
 
             bitSlider.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitSlider.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitSlider.HasNotBeenSet(nameof(Color)) && bitSlider.Color != Color)
         {
             bitSlider.Color = Color.Value;
 
@@ -259,7 +262,7 @@ public class BitSliderParams : BitInputBaseParams<double>, IBitComponentParams
             bitSlider.GetValueText = GetValueText;
         }
 
-        if (Inverted.HasValue && bitSlider.HasNotBeenSet(nameof(Inverted)))
+        if (Inverted.HasValue && bitSlider.HasNotBeenSet(nameof(Inverted)) && bitSlider.Inverted != Inverted)
         {
             bitSlider.Inverted = Inverted.Value;
 
@@ -271,14 +274,14 @@ public class BitSliderParams : BitInputBaseParams<double>, IBitComponentParams
             bitSlider.IsOriginFromZero = IsOriginFromZero.Value;
         }
 
-        if (IsRanged.HasValue && bitSlider.HasNotBeenSet(nameof(IsRanged)))
+        if (IsRanged.HasValue && bitSlider.HasNotBeenSet(nameof(IsRanged)) && bitSlider.IsRanged != IsRanged)
         {
             bitSlider.IsRanged = IsRanged.Value;
 
             bitSlider.ClassBuilder.Reset();
         }
 
-        if (IsVertical.HasValue && bitSlider.HasNotBeenSet(nameof(IsVertical)))
+        if (IsVertical.HasValue && bitSlider.HasNotBeenSet(nameof(IsVertical)) && bitSlider.IsVertical != IsVertical)
         {
             bitSlider.IsVertical = IsVertical.Value;
 
@@ -365,7 +368,7 @@ public class BitSliderParams : BitInputBaseParams<double>, IBitComponentParams
             bitSlider.ShowValue = ShowValue.Value;
         }
 
-        if (Size.HasValue && bitSlider.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitSlider.HasNotBeenSet(nameof(Size)) && bitSlider.Size != Size)
         {
             bitSlider.Size = Size.Value;
 
@@ -382,14 +385,14 @@ public class BitSliderParams : BitInputBaseParams<double>, IBitComponentParams
             bitSlider.Step = Step.Value;
         }
 
-        if (Styles is not null && bitSlider.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitSlider.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitSlider.Styles, Styles) is false)
         {
             bitSlider.Styles = Styles;
 
             bitSlider.StyleBuilder.Reset();
         }
 
-        if (ThumbLabel.HasValue && bitSlider.HasNotBeenSet(nameof(ThumbLabel)))
+        if (ThumbLabel.HasValue && bitSlider.HasNotBeenSet(nameof(ThumbLabel)) && bitSlider.ThumbLabel != ThumbLabel)
         {
             bitSlider.ThumbLabel = ThumbLabel.Value;
 

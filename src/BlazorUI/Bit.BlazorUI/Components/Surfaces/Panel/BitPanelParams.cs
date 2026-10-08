@@ -181,7 +181,10 @@ public class BitPanelParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitPanel);
 
-        if (AbsolutePosition.HasValue && bitPanel.HasNotBeenSet(nameof(AbsolutePosition)))
+        // This runs on every render of every panel under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (AbsolutePosition.HasValue && bitPanel.HasNotBeenSet(nameof(AbsolutePosition)) && bitPanel.AbsolutePosition != AbsolutePosition)
         {
             bitPanel.AbsolutePosition = AbsolutePosition.Value;
 
@@ -198,7 +201,7 @@ public class BitPanelParams : BitComponentBaseParams, IBitComponentParams
             bitPanel.Blocking = Blocking.Value;
         }
 
-        if (Classes is not null && bitPanel.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitPanel.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitPanel.Classes, Classes) is false)
         {
             bitPanel.Classes = Classes;
 
@@ -305,7 +308,7 @@ public class BitPanelParams : BitComponentBaseParams, IBitComponentParams
             bitPanel.Size = Size.Value;
         }
 
-        if (Styles is not null && bitPanel.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitPanel.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitPanel.Styles, Styles) is false)
         {
             bitPanel.Styles = Styles;
 
@@ -317,7 +320,7 @@ public class BitPanelParams : BitComponentBaseParams, IBitComponentParams
             bitPanel.SwipeTrigger = SwipeTrigger.Value;
         }
 
-        if (ZIndex.HasValue && bitPanel.HasNotBeenSet(nameof(ZIndex)))
+        if (ZIndex.HasValue && bitPanel.HasNotBeenSet(nameof(ZIndex)) && bitPanel.ZIndex != ZIndex)
         {
             bitPanel.ZIndex = ZIndex.Value;
 

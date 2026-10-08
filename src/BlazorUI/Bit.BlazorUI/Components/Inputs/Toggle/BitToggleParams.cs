@@ -200,6 +200,9 @@ public class BitToggleParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitToggle);
 
+        // This runs on every render of every toggle under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AllowDisabledFocus.HasValue && bitToggle.HasNotBeenSet(nameof(AllowDisabledFocus)))
         {
             bitToggle.AllowDisabledFocus = AllowDisabledFocus.Value;
@@ -235,84 +238,84 @@ public class BitToggleParams : BitComponentBaseParams, IBitComponentParams
             bitToggle.AutoLoading = AutoLoading.Value;
         }
 
-        if (Classes is not null && bitToggle.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitToggle.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitToggle.Classes, Classes) is false)
         {
             bitToggle.Classes = Classes;
 
             bitToggle.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitToggle.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitToggle.HasNotBeenSet(nameof(Color)) && bitToggle.Color != Color)
         {
             bitToggle.Color = Color.Value;
 
             bitToggle.ClassBuilder.Reset();
         }
 
-        if (Description.HasValue() && bitToggle.HasNotBeenSet(nameof(Description)))
+        if (Description.HasValue() && bitToggle.HasNotBeenSet(nameof(Description)) && bitToggle.Description != Description)
         {
             bitToggle.Description = Description;
 
             bitToggle.ClassBuilder.Reset();
         }
 
-        if (ErrorMessage.HasValue() && bitToggle.HasNotBeenSet(nameof(ErrorMessage)))
+        if (ErrorMessage.HasValue() && bitToggle.HasNotBeenSet(nameof(ErrorMessage)) && bitToggle.ErrorMessage != ErrorMessage)
         {
             bitToggle.ErrorMessage = ErrorMessage;
 
             bitToggle.ClassBuilder.Reset();
         }
 
-        if (FullWidth.HasValue && bitToggle.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitToggle.HasNotBeenSet(nameof(FullWidth)) && bitToggle.FullWidth != FullWidth)
         {
             bitToggle.FullWidth = FullWidth.Value;
 
             bitToggle.ClassBuilder.Reset();
         }
 
-        if (Inline.HasValue && bitToggle.HasNotBeenSet(nameof(Inline)))
+        if (Inline.HasValue && bitToggle.HasNotBeenSet(nameof(Inline)) && bitToggle.Inline != Inline)
         {
             bitToggle.Inline = Inline.Value;
 
             bitToggle.ClassBuilder.Reset();
         }
 
-        if (Invalid.HasValue && bitToggle.HasNotBeenSet(nameof(Invalid)))
+        if (Invalid.HasValue && bitToggle.HasNotBeenSet(nameof(Invalid)) && bitToggle.Invalid != Invalid)
         {
             bitToggle.Invalid = Invalid.Value;
 
             bitToggle.ClassBuilder.Reset();
         }
 
-        if (Label.HasValue() && bitToggle.HasNotBeenSet(nameof(Label)))
+        if (Label.HasValue() && bitToggle.HasNotBeenSet(nameof(Label)) && bitToggle.Label != Label)
         {
             bitToggle.Label = Label;
 
             bitToggle.ClassBuilder.Reset();
         }
 
-        if (LabelPlacement.HasValue && bitToggle.HasNotBeenSet(nameof(LabelPlacement)))
+        if (LabelPlacement.HasValue && bitToggle.HasNotBeenSet(nameof(LabelPlacement)) && bitToggle.LabelPlacement != LabelPlacement)
         {
             bitToggle.LabelPlacement = LabelPlacement.Value;
 
             bitToggle.ClassBuilder.Reset();
         }
 
-        if (Loading.HasValue && bitToggle.HasNotBeenSet(nameof(Loading)))
+        if (Loading.HasValue && bitToggle.HasNotBeenSet(nameof(Loading)) && bitToggle.Loading != Loading)
         {
             bitToggle.Loading = Loading.Value;
 
             bitToggle.ClassBuilder.Reset();
         }
 
-        if (OffIcon is not null && bitToggle.HasNotBeenSet(nameof(OffIcon)))
+        if (OffIcon is not null && bitToggle.HasNotBeenSet(nameof(OffIcon)) && ReferenceEquals(bitToggle.OffIcon, OffIcon) is false)
         {
             bitToggle.OffIcon = OffIcon;
 
             bitToggle.ClassBuilder.Reset();
         }
 
-        if (OffIconName.HasValue() && bitToggle.HasNotBeenSet(nameof(OffIconName)))
+        if (OffIconName.HasValue() && bitToggle.HasNotBeenSet(nameof(OffIconName)) && bitToggle.OffIconName != OffIconName)
         {
             bitToggle.OffIconName = OffIconName;
 
@@ -324,14 +327,14 @@ public class BitToggleParams : BitComponentBaseParams, IBitComponentParams
             bitToggle.OffText = OffText;
         }
 
-        if (OnIcon is not null && bitToggle.HasNotBeenSet(nameof(OnIcon)))
+        if (OnIcon is not null && bitToggle.HasNotBeenSet(nameof(OnIcon)) && ReferenceEquals(bitToggle.OnIcon, OnIcon) is false)
         {
             bitToggle.OnIcon = OnIcon;
 
             bitToggle.ClassBuilder.Reset();
         }
 
-        if (OnIconName.HasValue() && bitToggle.HasNotBeenSet(nameof(OnIconName)))
+        if (OnIconName.HasValue() && bitToggle.HasNotBeenSet(nameof(OnIconName)) && bitToggle.OnIconName != OnIconName)
         {
             bitToggle.OnIconName = OnIconName;
 
@@ -343,7 +346,7 @@ public class BitToggleParams : BitComponentBaseParams, IBitComponentParams
             bitToggle.OnText = OnText;
         }
 
-        if (Reversed.HasValue && bitToggle.HasNotBeenSet(nameof(Reversed)))
+        if (Reversed.HasValue && bitToggle.HasNotBeenSet(nameof(Reversed)) && bitToggle.Reversed != Reversed)
         {
             bitToggle.Reversed = Reversed.Value;
 
@@ -355,7 +358,7 @@ public class BitToggleParams : BitComponentBaseParams, IBitComponentParams
             bitToggle.Role = Role;
         }
 
-        if (Size.HasValue && bitToggle.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitToggle.HasNotBeenSet(nameof(Size)) && bitToggle.Size != Size)
         {
             bitToggle.Size = Size.Value;
 
@@ -367,7 +370,7 @@ public class BitToggleParams : BitComponentBaseParams, IBitComponentParams
             bitToggle.StopPropagation = StopPropagation.Value;
         }
 
-        if (Styles is not null && bitToggle.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitToggle.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitToggle.Styles, Styles) is false)
         {
             bitToggle.Styles = Styles;
 

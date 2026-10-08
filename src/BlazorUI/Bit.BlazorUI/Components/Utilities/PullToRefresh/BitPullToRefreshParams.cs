@@ -140,14 +140,17 @@ public class BitPullToRefreshParams : BitComponentBaseParams, IBitComponentParam
 
         UpdateBaseParameters(bitPullToRefresh);
 
-        if (Classes is not null && bitPullToRefresh.HasNotBeenSet(nameof(Classes)))
+        // This runs on every render of every pull to refresh under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (Classes is not null && bitPullToRefresh.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitPullToRefresh.Classes, Classes) is false)
         {
             bitPullToRefresh.Classes = Classes;
 
             bitPullToRefresh.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitPullToRefresh.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitPullToRefresh.HasNotBeenSet(nameof(Color)) && bitPullToRefresh.Color != Color)
         {
             bitPullToRefresh.Color = Color.Value;
 
@@ -169,14 +172,14 @@ public class BitPullToRefreshParams : BitComponentBaseParams, IBitComponentParam
             bitPullToRefresh.CompleteLabel = CompleteLabel;
         }
 
-        if (CustomColor.HasValue() && bitPullToRefresh.HasNotBeenSet(nameof(CustomColor)))
+        if (CustomColor.HasValue() && bitPullToRefresh.HasNotBeenSet(nameof(CustomColor)) && bitPullToRefresh.CustomColor != CustomColor)
         {
             bitPullToRefresh.CustomColor = CustomColor;
 
             bitPullToRefresh.StyleBuilder.Reset();
         }
 
-        if (Direction.HasValue && bitPullToRefresh.HasNotBeenSet(nameof(Direction)))
+        if (Direction.HasValue && bitPullToRefresh.HasNotBeenSet(nameof(Direction)) && bitPullToRefresh.Direction != Direction)
         {
             bitPullToRefresh.Direction = Direction.Value;
 
@@ -188,7 +191,7 @@ public class BitPullToRefreshParams : BitComponentBaseParams, IBitComponentParam
             bitPullToRefresh.Factor = Factor.Value;
         }
 
-        if (FullWidth.HasValue && bitPullToRefresh.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitPullToRefresh.HasNotBeenSet(nameof(FullWidth)) && bitPullToRefresh.FullWidth != FullWidth)
         {
             bitPullToRefresh.FullWidth = FullWidth.Value;
 
@@ -237,7 +240,7 @@ public class BitPullToRefreshParams : BitComponentBaseParams, IBitComponentParam
             bitPullToRefresh.ReleaseLabel = ReleaseLabel;
         }
 
-        if (Styles is not null && bitPullToRefresh.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitPullToRefresh.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitPullToRefresh.Styles, Styles) is false)
         {
             bitPullToRefresh.Styles = Styles;
 

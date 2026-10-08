@@ -337,6 +337,10 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
 
         UpdateBaseParameters(bitCircularTimePicker);
 
+        // This runs on every render of every circular time picker under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+
         // Some of the parameters below carry a [CallOnSet] hook on the component, which has already run for
         // whatever the markup set before anything cascaded here reached it. Assigning through the cascade
         // bypasses the setter, so the hooks are re-run at the end - but only when the assignment actually
@@ -416,7 +420,7 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
             }
         }
 
-        if (Classes is not null && bitCircularTimePicker.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitCircularTimePicker.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitCircularTimePicker.Classes, Classes) is false)
         {
             bitCircularTimePicker.Classes = Classes;
 
@@ -443,16 +447,16 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
             bitCircularTimePicker.CloseButtonTitle = CloseButtonTitle!;
         }
 
-        if (Color.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(Color)) && bitCircularTimePicker.Color != Color)
         {
             bitCircularTimePicker.Color = Color.Value;
 
             bitCircularTimePicker.ClassBuilder.Reset();
         }
 
-        if (Culture is not null && bitCircularTimePicker.HasNotBeenSet(nameof(Culture)))
+        if (Culture is not null && bitCircularTimePicker.HasNotBeenSet(nameof(Culture)) && ReferenceEquals(bitCircularTimePicker.Culture, Culture) is false)
         {
-            cultureChanged = ReferenceEquals(bitCircularTimePicker.Culture, Culture) is false;
+            cultureChanged = true;
 
             bitCircularTimePicker.Culture = Culture;
 
@@ -479,16 +483,16 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
             bitCircularTimePicker.DropDirection = DropDirection.Value;
         }
 
-        if (EditMode.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(EditMode)))
+        if (EditMode.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(EditMode)) && bitCircularTimePicker.EditMode != EditMode)
         {
-            editModeChanged = bitCircularTimePicker.EditMode != EditMode.Value;
+            editModeChanged = true;
 
             bitCircularTimePicker.EditMode = EditMode.Value;
 
             bitCircularTimePicker.ClassBuilder.Reset();
         }
 
-        if (HasBorder.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(HasBorder)))
+        if (HasBorder.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(HasBorder)) && bitCircularTimePicker.HasBorder != HasBorder)
         {
             bitCircularTimePicker.HasBorder = HasBorder.Value;
 
@@ -510,7 +514,7 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
             bitCircularTimePicker.Icon = Icon;
         }
 
-        if (IconPlacement.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(IconPlacement)))
+        if (IconPlacement.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(IconPlacement)) && bitCircularTimePicker.IconPlacement != IconPlacement)
         {
             bitCircularTimePicker.IconPlacement = IconPlacement.Value;
 
@@ -619,14 +623,14 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
             bitCircularTimePicker.ShowSeconds = ShowSeconds.Value;
         }
 
-        if (Size.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(Size)) && bitCircularTimePicker.Size != Size)
         {
             bitCircularTimePicker.Size = Size.Value;
 
             bitCircularTimePicker.ClassBuilder.Reset();
         }
 
-        if (Standalone.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(Standalone)))
+        if (Standalone.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(Standalone)) && bitCircularTimePicker.Standalone != Standalone)
         {
             bitCircularTimePicker.Standalone = Standalone.Value;
 
@@ -645,7 +649,7 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
             bitCircularTimePicker.StartView = StartView.Value;
         }
 
-        if (Styles is not null && bitCircularTimePicker.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitCircularTimePicker.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitCircularTimePicker.Styles, Styles) is false)
         {
             bitCircularTimePicker.Styles = Styles;
 
@@ -657,7 +661,7 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
             bitCircularTimePicker.TimeFormat = TimeFormat.Value;
         }
 
-        if (Underlined.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(Underlined)))
+        if (Underlined.HasValue && bitCircularTimePicker.HasNotBeenSet(nameof(Underlined)) && bitCircularTimePicker.Underlined != Underlined)
         {
             bitCircularTimePicker.Underlined = Underlined.Value;
 

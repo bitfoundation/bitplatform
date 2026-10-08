@@ -236,6 +236,9 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitActionButton);
 
+        // This runs on every render of every action button under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AllowDisabledFocus.HasValue && bitActionButton.HasNotBeenSet(nameof(AllowDisabledFocus)))
         {
             bitActionButton.AllowDisabledFocus = AllowDisabledFocus.Value;
@@ -266,21 +269,21 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
             bitActionButton.ButtonType = ButtonType.Value;
         }
 
-        if (Classes is not null && bitActionButton.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitActionButton.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitActionButton.Classes, Classes) is false)
         {
             bitActionButton.Classes = Classes;
 
             bitActionButton.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitActionButton.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitActionButton.HasNotBeenSet(nameof(Color)) && bitActionButton.Color != Color)
         {
             bitActionButton.Color = Color.Value;
 
             bitActionButton.ClassBuilder.Reset();
         }
 
-        if (FullWidth.HasValue && bitActionButton.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitActionButton.HasNotBeenSet(nameof(FullWidth)) && bitActionButton.FullWidth != FullWidth)
         {
             bitActionButton.FullWidth = FullWidth.Value;
 
@@ -318,14 +321,14 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
             bitActionButton.IconName = IconName;
         }
 
-        if (IconOnly.HasValue && bitActionButton.HasNotBeenSet(nameof(IconOnly)))
+        if (IconOnly.HasValue && bitActionButton.HasNotBeenSet(nameof(IconOnly)) && bitActionButton.IconOnly != IconOnly)
         {
             bitActionButton.IconOnly = IconOnly.Value;
 
             bitActionButton.ClassBuilder.Reset();
         }
 
-        if (IconPlacement.HasValue && bitActionButton.HasNotBeenSet(nameof(IconPlacement)))
+        if (IconPlacement.HasValue && bitActionButton.HasNotBeenSet(nameof(IconPlacement)) && bitActionButton.IconPlacement != IconPlacement)
         {
             bitActionButton.IconPlacement = IconPlacement.Value;
 
@@ -337,7 +340,7 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
             bitActionButton.IconUrl = IconUrl;
         }
 
-        if (IsLoading.HasValue && bitActionButton.HasNotBeenSet(nameof(IsLoading)))
+        if (IsLoading.HasValue && bitActionButton.HasNotBeenSet(nameof(IsLoading)) && bitActionButton.IsLoading != IsLoading)
         {
             bitActionButton.IsLoading = IsLoading.Value;
 
@@ -354,7 +357,7 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
             bitActionButton.LoadingLabel = LoadingLabel;
         }
 
-        if (NoWrap.HasValue && bitActionButton.HasNotBeenSet(nameof(NoWrap)))
+        if (NoWrap.HasValue && bitActionButton.HasNotBeenSet(nameof(NoWrap)) && bitActionButton.NoWrap != NoWrap)
         {
             bitActionButton.NoWrap = NoWrap.Value;
 
@@ -373,7 +376,7 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
             relWasSet = true;
         }
 
-        if (Size.HasValue && bitActionButton.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitActionButton.HasNotBeenSet(nameof(Size)) && bitActionButton.Size != Size)
         {
             bitActionButton.Size = Size.Value;
 
@@ -408,7 +411,7 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
             bitActionButton.Title = Title;
         }
 
-        if (Underlined.HasValue && bitActionButton.HasNotBeenSet(nameof(Underlined)))
+        if (Underlined.HasValue && bitActionButton.HasNotBeenSet(nameof(Underlined)) && bitActionButton.Underlined != Underlined)
         {
             bitActionButton.Underlined = Underlined.Value;
 

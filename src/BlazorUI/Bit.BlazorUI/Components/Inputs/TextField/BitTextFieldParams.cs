@@ -400,7 +400,10 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
 
         UpdateInputBaseParameters(bitTextField);
 
-        if (Accent.HasValue && bitTextField.HasNotBeenSet(nameof(Accent)))
+        // This runs on every render of every text field under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (Accent.HasValue && bitTextField.HasNotBeenSet(nameof(Accent)) && bitTextField.Accent != Accent)
         {
             bitTextField.Accent = Accent.Value;
 
@@ -427,21 +430,21 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
             bitTextField.AutoCorrect = AutoCorrect.Value;
         }
 
-        if (AutoHeight.HasValue && bitTextField.HasNotBeenSet(nameof(AutoHeight)))
+        if (AutoHeight.HasValue && bitTextField.HasNotBeenSet(nameof(AutoHeight)) && bitTextField.AutoHeight != AutoHeight)
         {
             bitTextField.AutoHeight = AutoHeight.Value;
 
             bitTextField.ClassBuilder.Reset();
         }
 
-        if (Background.HasValue && bitTextField.HasNotBeenSet(nameof(Background)))
+        if (Background.HasValue && bitTextField.HasNotBeenSet(nameof(Background)) && bitTextField.Background != Background)
         {
             bitTextField.Background = Background.Value;
 
             bitTextField.ClassBuilder.Reset();
         }
 
-        if (Border.HasValue && bitTextField.HasNotBeenSet(nameof(Border)))
+        if (Border.HasValue && bitTextField.HasNotBeenSet(nameof(Border)) && bitTextField.Border != Border)
         {
             bitTextField.Border = Border.Value;
 
@@ -450,14 +453,14 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
 
         bool elementTypeChanged = false;
 
-        if (CanRevealPassword.HasValue && bitTextField.HasNotBeenSet(nameof(CanRevealPassword)))
+        if (CanRevealPassword.HasValue && bitTextField.HasNotBeenSet(nameof(CanRevealPassword)) && bitTextField.CanRevealPassword != CanRevealPassword)
         {
             bitTextField.CanRevealPassword = CanRevealPassword.Value;
 
             elementTypeChanged = true;
         }
 
-        if (Classes is not null && bitTextField.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitTextField.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitTextField.Classes, Classes) is false)
         {
             bitTextField.Classes = Classes;
 
@@ -524,7 +527,7 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
             bitTextField.EnterKeyHint = EnterKeyHint;
         }
 
-        if (FullWidth.HasValue && bitTextField.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitTextField.HasNotBeenSet(nameof(FullWidth)) && bitTextField.FullWidth != FullWidth)
         {
             bitTextField.FullWidth = FullWidth.Value;
 
@@ -578,21 +581,21 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
             bitTextField.SetInputMode();
         }
 
-        if (Label.HasValue() && bitTextField.HasNotBeenSet(nameof(Label)))
+        if (Label.HasValue() && bitTextField.HasNotBeenSet(nameof(Label)) && bitTextField.Label != Label)
         {
             bitTextField.Label = Label;
 
             bitTextField.ClassBuilder.Reset();
         }
 
-        if (LabelPlacement.HasValue && bitTextField.HasNotBeenSet(nameof(LabelPlacement)))
+        if (LabelPlacement.HasValue && bitTextField.HasNotBeenSet(nameof(LabelPlacement)) && bitTextField.LabelPlacement != LabelPlacement)
         {
             bitTextField.LabelPlacement = LabelPlacement.Value;
 
             bitTextField.ClassBuilder.Reset();
         }
 
-        if (LabelTemplate is not null && bitTextField.HasNotBeenSet(nameof(LabelTemplate)))
+        if (LabelTemplate is not null && bitTextField.HasNotBeenSet(nameof(LabelTemplate)) && ReferenceEquals(bitTextField.LabelTemplate, LabelTemplate) is false)
         {
             bitTextField.LabelTemplate = LabelTemplate;
 
@@ -624,14 +627,14 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
             bitTextField.MinLength = MinLength.Value;
         }
 
-        if (Multiline.HasValue && bitTextField.HasNotBeenSet(nameof(Multiline)))
+        if (Multiline.HasValue && bitTextField.HasNotBeenSet(nameof(Multiline)) && bitTextField.Multiline != Multiline)
         {
             bitTextField.Multiline = Multiline.Value;
 
             bitTextField.ClassBuilder.Reset();
         }
 
-        if (NoBorder.HasValue && bitTextField.HasNotBeenSet(nameof(NoBorder)))
+        if (NoBorder.HasValue && bitTextField.HasNotBeenSet(nameof(NoBorder)) && bitTextField.NoBorder != NoBorder)
         {
             bitTextField.NoBorder = NoBorder.Value;
 
@@ -643,7 +646,7 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
             bitTextField.Pattern = Pattern;
         }
 
-        if (PermanentGhost.HasValue && bitTextField.HasNotBeenSet(nameof(PermanentGhost)))
+        if (PermanentGhost.HasValue && bitTextField.HasNotBeenSet(nameof(PermanentGhost)) && bitTextField.PermanentGhost != PermanentGhost)
         {
             bitTextField.PermanentGhost = PermanentGhost.Value;
 
@@ -670,7 +673,7 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
             bitTextField.PreventEnter = PreventEnter.Value;
         }
 
-        if (Resizable.HasValue && bitTextField.HasNotBeenSet(nameof(Resizable)))
+        if (Resizable.HasValue && bitTextField.HasNotBeenSet(nameof(Resizable)) && bitTextField.Resizable != Resizable)
         {
             bitTextField.Resizable = Resizable.Value;
 
@@ -707,7 +710,7 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
             bitTextField.SelectOnFocus = SelectOnFocus.Value;
         }
 
-        if (ShowClearButton.HasValue && bitTextField.HasNotBeenSet(nameof(ShowClearButton)))
+        if (ShowClearButton.HasValue && bitTextField.HasNotBeenSet(nameof(ShowClearButton)) && bitTextField.ShowClearButton != ShowClearButton)
         {
             bitTextField.ShowClearButton = ShowClearButton.Value;
 
@@ -719,7 +722,7 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
             bitTextField.ShowCount = ShowCount.Value;
         }
 
-        if (Size.HasValue && bitTextField.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitTextField.HasNotBeenSet(nameof(Size)) && bitTextField.Size != Size)
         {
             bitTextField.Size = Size.Value;
 
@@ -731,7 +734,7 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
             bitTextField.SpellCheck = SpellCheck.Value;
         }
 
-        if (Styles is not null && bitTextField.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitTextField.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitTextField.Styles, Styles) is false)
         {
             bitTextField.Styles = Styles;
 
@@ -763,7 +766,7 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
             bitTextField.Trim = Trim.Value;
         }
 
-        if (Type.HasValue && bitTextField.HasNotBeenSet(nameof(Type)))
+        if (Type.HasValue && bitTextField.HasNotBeenSet(nameof(Type)) && bitTextField.Type != Type)
         {
             bitTextField.Type = Type.Value;
 
@@ -779,7 +782,7 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
             bitTextField.SetElementType();
         }
 
-        if (Underlined.HasValue && bitTextField.HasNotBeenSet(nameof(Underlined)))
+        if (Underlined.HasValue && bitTextField.HasNotBeenSet(nameof(Underlined)) && bitTextField.Underlined != Underlined)
         {
             bitTextField.Underlined = Underlined.Value;
 

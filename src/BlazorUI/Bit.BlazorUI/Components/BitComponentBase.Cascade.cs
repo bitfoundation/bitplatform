@@ -9,6 +9,9 @@ public abstract partial class BitComponentBase : IBitCascadeTarget
     // What this component remembers of the params object it takes its defaults from, created with the first one.
     private BitCascadeTracker? _cascadeTracker;
 
+    // The params object the builders were last reset for.
+    private IBitComponentParams? _lastCascadedParams;
+
 
 
     /// <summary>
@@ -49,6 +52,18 @@ public abstract partial class BitComponentBase : IBitCascadeTarget
 
         // Nothing supplied now and nothing before, which is where every component outside a BitParams stays.
         if (current is null && _cascadeTracker is null) return Task.CompletedTask;
+
+        // A BitParams copies its params objects afresh whenever what they carry changes, down into a nested object
+        // changed in place - a ClassStyles, an icon - so another object here is a cascade that changed. The params
+        // objects only reset a builder for a value that differs from the one the component already holds, which a
+        // nested object changed in place is not (it is the very same object), so the builders are reset here.
+        if (ReferenceEquals(current, _lastCascadedParams) is false)
+        {
+            _lastCascadedParams = current;
+
+            ClassBuilder.Reset();
+            StyleBuilder.Reset();
+        }
 
         var map = GetCascadeMap();
 

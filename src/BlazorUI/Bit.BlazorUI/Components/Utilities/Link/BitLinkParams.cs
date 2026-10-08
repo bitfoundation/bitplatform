@@ -208,6 +208,9 @@ public class BitLinkParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitLink);
 
+        // This runs on every render of every link under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AllowDisabledFocus.HasValue && bitLink.HasNotBeenSet(nameof(AllowDisabledFocus)))
         {
             bitLink.AllowDisabledFocus = AllowDisabledFocus.Value;
@@ -228,7 +231,7 @@ public class BitLinkParams : BitComponentBaseParams, IBitComponentParams
             bitLink.AutoFocus = AutoFocus.Value;
         }
 
-        if (Color.HasValue && bitLink.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitLink.HasNotBeenSet(nameof(Color)) && bitLink.Color != Color)
         {
             bitLink.Color = Color.Value;
 
@@ -256,7 +259,7 @@ public class BitLinkParams : BitComponentBaseParams, IBitComponentParams
             bitLink.IconName = IconName;
         }
 
-        if (IconPlacement.HasValue && bitLink.HasNotBeenSet(nameof(IconPlacement)))
+        if (IconPlacement.HasValue && bitLink.HasNotBeenSet(nameof(IconPlacement)) && bitLink.IconPlacement != IconPlacement)
         {
             bitLink.IconPlacement = IconPlacement.Value;
 
@@ -273,7 +276,7 @@ public class BitLinkParams : BitComponentBaseParams, IBitComponentParams
             bitLink.NewTabHint = NewTabHint;
         }
 
-        if (NoColor.HasValue && bitLink.HasNotBeenSet(nameof(NoColor)))
+        if (NoColor.HasValue && bitLink.HasNotBeenSet(nameof(NoColor)) && bitLink.NoColor != NoColor)
         {
             bitLink.NoColor = NoColor.Value;
 
@@ -285,7 +288,7 @@ public class BitLinkParams : BitComponentBaseParams, IBitComponentParams
             bitLink.NoNewTabHint = NoNewTabHint.Value;
         }
 
-        if (NoUnderline.HasValue && bitLink.HasNotBeenSet(nameof(NoUnderline)))
+        if (NoUnderline.HasValue && bitLink.HasNotBeenSet(nameof(NoUnderline)) && bitLink.NoUnderline != NoUnderline)
         {
             bitLink.NoUnderline = NoUnderline.Value;
 
@@ -302,7 +305,7 @@ public class BitLinkParams : BitComponentBaseParams, IBitComponentParams
             bitLink.Rel = Rel.Value;
         }
 
-        if (Size.HasValue && bitLink.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitLink.HasNotBeenSet(nameof(Size)) && bitLink.Size != Size)
         {
             bitLink.Size = Size.Value;
 
@@ -324,7 +327,7 @@ public class BitLinkParams : BitComponentBaseParams, IBitComponentParams
             bitLink.Title = Title;
         }
 
-        if (Underlined.HasValue && bitLink.HasNotBeenSet(nameof(Underlined)))
+        if (Underlined.HasValue && bitLink.HasNotBeenSet(nameof(Underlined)) && bitLink.Underlined != Underlined)
         {
             bitLink.Underlined = Underlined.Value;
 

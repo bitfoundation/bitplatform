@@ -86,7 +86,10 @@ public class BitOverlayParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitOverlay);
 
-        if (AbsolutePosition.HasValue && bitOverlay.HasNotBeenSet(nameof(AbsolutePosition)))
+        // This runs on every render of every overlay under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (AbsolutePosition.HasValue && bitOverlay.HasNotBeenSet(nameof(AbsolutePosition)) && bitOverlay.AbsolutePosition != AbsolutePosition)
         {
             bitOverlay.AbsolutePosition = AbsolutePosition.Value;
 
@@ -104,7 +107,7 @@ public class BitOverlayParams : BitComponentBaseParams, IBitComponentParams
             bitOverlay.Blocking = Blocking.Value;
         }
 
-        if (ModeFull.HasValue && bitOverlay.HasNotBeenSet(nameof(ModeFull)))
+        if (ModeFull.HasValue && bitOverlay.HasNotBeenSet(nameof(ModeFull)) && bitOverlay.ModeFull != ModeFull)
         {
             bitOverlay.ModeFull = ModeFull.Value;
 
@@ -116,7 +119,7 @@ public class BitOverlayParams : BitComponentBaseParams, IBitComponentParams
             bitOverlay.NoDismissOnEscape = NoDismissOnEscape.Value;
         }
 
-        if (Position.HasValue && bitOverlay.HasNotBeenSet(nameof(Position)))
+        if (Position.HasValue && bitOverlay.HasNotBeenSet(nameof(Position)) && bitOverlay.Position != Position)
         {
             bitOverlay.Position = Position.Value;
 
@@ -128,7 +131,7 @@ public class BitOverlayParams : BitComponentBaseParams, IBitComponentParams
             bitOverlay.ScrollerSelector = ScrollerSelector;
         }
 
-        if (ZIndex.HasValue && bitOverlay.HasNotBeenSet(nameof(ZIndex)))
+        if (ZIndex.HasValue && bitOverlay.HasNotBeenSet(nameof(ZIndex)) && bitOverlay.ZIndex != ZIndex)
         {
             bitOverlay.ZIndex = ZIndex.Value;
 

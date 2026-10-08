@@ -175,10 +175,14 @@ public class BitHeaderParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitHeader);
 
+        // This runs on every render of every header under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+
         // The three positions decide whether the header is pinned to the top of the screen, which is what
         // the safe area inset added to an explicit Height keys off, so each of them resets the styles as
         // well as the classes.
-        if (Absolute.HasValue && bitHeader.HasNotBeenSet(nameof(Absolute)))
+        if (Absolute.HasValue && bitHeader.HasNotBeenSet(nameof(Absolute)) && bitHeader.Absolute != Absolute)
         {
             bitHeader.Absolute = Absolute.Value;
 
@@ -186,28 +190,28 @@ public class BitHeaderParams : BitComponentBaseParams, IBitComponentParams
             bitHeader.StyleBuilder.Reset();
         }
 
-        if (Alignment.HasValue && bitHeader.HasNotBeenSet(nameof(Alignment)))
+        if (Alignment.HasValue && bitHeader.HasNotBeenSet(nameof(Alignment)) && bitHeader.Alignment != Alignment)
         {
             bitHeader.Alignment = Alignment.Value;
 
             bitHeader.ClassBuilder.Reset();
         }
 
-        if (Bordered.HasValue && bitHeader.HasNotBeenSet(nameof(Bordered)))
+        if (Bordered.HasValue && bitHeader.HasNotBeenSet(nameof(Bordered)) && bitHeader.Bordered != Bordered)
         {
             bitHeader.Bordered = Bordered.Value;
 
             bitHeader.ClassBuilder.Reset();
         }
 
-        if (Classes is not null && bitHeader.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitHeader.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitHeader.Classes, Classes) is false)
         {
             bitHeader.Classes = Classes;
 
             bitHeader.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitHeader.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitHeader.HasNotBeenSet(nameof(Color)) && bitHeader.Color != Color)
         {
             bitHeader.Color = Color.Value;
 
@@ -219,21 +223,21 @@ public class BitHeaderParams : BitComponentBaseParams, IBitComponentParams
             bitHeader.ElevateOffset = ElevateOffset.Value;
         }
 
-        if (ElevateOnScroll.HasValue && bitHeader.HasNotBeenSet(nameof(ElevateOnScroll)))
+        if (ElevateOnScroll.HasValue && bitHeader.HasNotBeenSet(nameof(ElevateOnScroll)) && bitHeader.ElevateOnScroll != ElevateOnScroll)
         {
             bitHeader.ElevateOnScroll = ElevateOnScroll.Value;
 
             bitHeader.ClassBuilder.Reset();
         }
 
-        if (Elevated.HasValue && bitHeader.HasNotBeenSet(nameof(Elevated)))
+        if (Elevated.HasValue && bitHeader.HasNotBeenSet(nameof(Elevated)) && bitHeader.Elevated != Elevated)
         {
             bitHeader.Elevated = Elevated.Value;
 
             bitHeader.ClassBuilder.Reset();
         }
 
-        if (Fixed.HasValue && bitHeader.HasNotBeenSet(nameof(Fixed)))
+        if (Fixed.HasValue && bitHeader.HasNotBeenSet(nameof(Fixed)) && bitHeader.Fixed != Fixed)
         {
             bitHeader.Fixed = Fixed.Value;
 
@@ -241,42 +245,42 @@ public class BitHeaderParams : BitComponentBaseParams, IBitComponentParams
             bitHeader.StyleBuilder.Reset();
         }
 
-        if (Gap is not null && bitHeader.HasNotBeenSet(nameof(Gap)))
+        if (Gap is not null && bitHeader.HasNotBeenSet(nameof(Gap)) && bitHeader.Gap != Gap)
         {
             bitHeader.Gap = Gap;
 
             bitHeader.StyleBuilder.Reset();
         }
 
-        if (Height.HasValue && bitHeader.HasNotBeenSet(nameof(Height)))
+        if (Height.HasValue && bitHeader.HasNotBeenSet(nameof(Height)) && bitHeader.Height != Height)
         {
             bitHeader.Height = Height.Value;
 
             bitHeader.StyleBuilder.Reset();
         }
 
-        if (Hidden.HasValue && bitHeader.HasNotBeenSet(nameof(Hidden)))
+        if (Hidden.HasValue && bitHeader.HasNotBeenSet(nameof(Hidden)) && bitHeader.Hidden != Hidden)
         {
             bitHeader.Hidden = Hidden.Value;
 
             bitHeader.ClassBuilder.Reset();
         }
 
-        if (MaxWidth is not null && bitHeader.HasNotBeenSet(nameof(MaxWidth)))
+        if (MaxWidth is not null && bitHeader.HasNotBeenSet(nameof(MaxWidth)) && bitHeader.MaxWidth != MaxWidth)
         {
             bitHeader.MaxWidth = MaxWidth;
 
             bitHeader.StyleBuilder.Reset();
         }
 
-        if (NoGutter.HasValue && bitHeader.HasNotBeenSet(nameof(NoGutter)))
+        if (NoGutter.HasValue && bitHeader.HasNotBeenSet(nameof(NoGutter)) && bitHeader.NoGutter != NoGutter)
         {
             bitHeader.NoGutter = NoGutter.Value;
 
             bitHeader.ClassBuilder.Reset();
         }
 
-        if (Reveal.HasValue && bitHeader.HasNotBeenSet(nameof(Reveal)))
+        if (Reveal.HasValue && bitHeader.HasNotBeenSet(nameof(Reveal)) && bitHeader.Reveal != Reveal)
         {
             bitHeader.Reveal = Reveal.Value;
 
@@ -298,7 +302,7 @@ public class BitHeaderParams : BitComponentBaseParams, IBitComponentParams
             bitHeader.ScrollTarget = ScrollTarget;
         }
 
-        if (Size.HasValue && bitHeader.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitHeader.HasNotBeenSet(nameof(Size)) && bitHeader.Size != Size)
         {
             bitHeader.Size = Size.Value;
 
@@ -315,7 +319,7 @@ public class BitHeaderParams : BitComponentBaseParams, IBitComponentParams
             bitHeader.SkipLinkText = SkipLinkText;
         }
 
-        if (Sticky.HasValue && bitHeader.HasNotBeenSet(nameof(Sticky)))
+        if (Sticky.HasValue && bitHeader.HasNotBeenSet(nameof(Sticky)) && bitHeader.Sticky != Sticky)
         {
             bitHeader.Sticky = Sticky.Value;
 
@@ -323,35 +327,35 @@ public class BitHeaderParams : BitComponentBaseParams, IBitComponentParams
             bitHeader.StyleBuilder.Reset();
         }
 
-        if (Styles is not null && bitHeader.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitHeader.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitHeader.Styles, Styles) is false)
         {
             bitHeader.Styles = Styles;
 
             bitHeader.StyleBuilder.Reset();
         }
 
-        if (Translucent.HasValue && bitHeader.HasNotBeenSet(nameof(Translucent)))
+        if (Translucent.HasValue && bitHeader.HasNotBeenSet(nameof(Translucent)) && bitHeader.Translucent != Translucent)
         {
             bitHeader.Translucent = Translucent.Value;
 
             bitHeader.ClassBuilder.Reset();
         }
 
-        if (Variant.HasValue && bitHeader.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue && bitHeader.HasNotBeenSet(nameof(Variant)) && bitHeader.Variant != Variant)
         {
             bitHeader.Variant = Variant.Value;
 
             bitHeader.ClassBuilder.Reset();
         }
 
-        if (VerticalAlign.HasValue && bitHeader.HasNotBeenSet(nameof(VerticalAlign)))
+        if (VerticalAlign.HasValue && bitHeader.HasNotBeenSet(nameof(VerticalAlign)) && bitHeader.VerticalAlign != VerticalAlign)
         {
             bitHeader.VerticalAlign = VerticalAlign.Value;
 
             bitHeader.ClassBuilder.Reset();
         }
 
-        if (Wrap.HasValue && bitHeader.HasNotBeenSet(nameof(Wrap)))
+        if (Wrap.HasValue && bitHeader.HasNotBeenSet(nameof(Wrap)) && bitHeader.Wrap != Wrap)
         {
             bitHeader.Wrap = Wrap.Value;
 

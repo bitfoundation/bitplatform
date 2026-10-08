@@ -274,6 +274,10 @@ public class BitScrollablePaneParams : BitComponentBaseParams, IBitComponentPara
 
         UpdateBaseParameters(bitScrollablePane);
 
+        // This runs on every render of every scrollable pane under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+
         // The values that only the browser side reads (the JS options) need no builder reset: the options are
         // rebuilt from the properties after every render and compared with the ones last sent.
         if (AutoScroll.HasValue && bitScrollablePane.HasNotBeenSet(nameof(AutoScroll)))
@@ -286,28 +290,28 @@ public class BitScrollablePaneParams : BitComponentBaseParams, IBitComponentPara
             bitScrollablePane.AutoScrollThreshold = AutoScrollThreshold.Value;
         }
 
-        if (AutoHeight.HasValue && bitScrollablePane.HasNotBeenSet(nameof(AutoHeight)))
+        if (AutoHeight.HasValue && bitScrollablePane.HasNotBeenSet(nameof(AutoHeight)) && bitScrollablePane.AutoHeight != AutoHeight)
         {
             bitScrollablePane.AutoHeight = AutoHeight.Value;
 
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (AutoSize.HasValue && bitScrollablePane.HasNotBeenSet(nameof(AutoSize)))
+        if (AutoSize.HasValue && bitScrollablePane.HasNotBeenSet(nameof(AutoSize)) && bitScrollablePane.AutoSize != AutoSize)
         {
             bitScrollablePane.AutoSize = AutoSize.Value;
 
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (AutoWidth.HasValue && bitScrollablePane.HasNotBeenSet(nameof(AutoWidth)))
+        if (AutoWidth.HasValue && bitScrollablePane.HasNotBeenSet(nameof(AutoWidth)) && bitScrollablePane.AutoWidth != AutoWidth)
         {
             bitScrollablePane.AutoWidth = AutoWidth.Value;
 
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (AutoHideScrollbar.HasValue && bitScrollablePane.HasNotBeenSet(nameof(AutoHideScrollbar)))
+        if (AutoHideScrollbar.HasValue && bitScrollablePane.HasNotBeenSet(nameof(AutoHideScrollbar)) && bitScrollablePane.AutoHideScrollbar != AutoHideScrollbar)
         {
             bitScrollablePane.AutoHideScrollbar = AutoHideScrollbar.Value;
 
@@ -319,7 +323,7 @@ public class BitScrollablePaneParams : BitComponentBaseParams, IBitComponentPara
             bitScrollablePane.AutoHideDelay = AutoHideDelay.Value;
         }
 
-        if (DragScroll.HasValue && bitScrollablePane.HasNotBeenSet(nameof(DragScroll)))
+        if (DragScroll.HasValue && bitScrollablePane.HasNotBeenSet(nameof(DragScroll)) && bitScrollablePane.DragScroll != DragScroll)
         {
             bitScrollablePane.DragScroll = DragScroll.Value;
 
@@ -331,42 +335,42 @@ public class BitScrollablePaneParams : BitComponentBaseParams, IBitComponentPara
             bitScrollablePane.DragMomentum = DragMomentum.Value;
         }
 
-        if (ExpandOnPrint.HasValue && bitScrollablePane.HasNotBeenSet(nameof(ExpandOnPrint)))
+        if (ExpandOnPrint.HasValue && bitScrollablePane.HasNotBeenSet(nameof(ExpandOnPrint)) && bitScrollablePane.ExpandOnPrint != ExpandOnPrint)
         {
             bitScrollablePane.ExpandOnPrint = ExpandOnPrint.Value;
 
             bitScrollablePane.ClassBuilder.Reset();
         }
 
-        if (Fade.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Fade)))
+        if (Fade.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Fade)) && bitScrollablePane.Fade != Fade)
         {
             bitScrollablePane.Fade = Fade.Value;
 
             bitScrollablePane.ClassBuilder.Reset();
         }
 
-        if (FadeSize.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(FadeSize)))
+        if (FadeSize.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(FadeSize)) && bitScrollablePane.FadeSize != FadeSize)
         {
             bitScrollablePane.FadeSize = FadeSize;
 
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (FitHeight.HasValue && bitScrollablePane.HasNotBeenSet(nameof(FitHeight)))
+        if (FitHeight.HasValue && bitScrollablePane.HasNotBeenSet(nameof(FitHeight)) && bitScrollablePane.FitHeight != FitHeight)
         {
             bitScrollablePane.FitHeight = FitHeight.Value;
 
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (FitSize.HasValue && bitScrollablePane.HasNotBeenSet(nameof(FitSize)))
+        if (FitSize.HasValue && bitScrollablePane.HasNotBeenSet(nameof(FitSize)) && bitScrollablePane.FitSize != FitSize)
         {
             bitScrollablePane.FitSize = FitSize.Value;
 
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (FitWidth.HasValue && bitScrollablePane.HasNotBeenSet(nameof(FitWidth)))
+        if (FitWidth.HasValue && bitScrollablePane.HasNotBeenSet(nameof(FitWidth)) && bitScrollablePane.FitWidth != FitWidth)
         {
             bitScrollablePane.FitWidth = FitWidth.Value;
 
@@ -378,42 +382,42 @@ public class BitScrollablePaneParams : BitComponentBaseParams, IBitComponentPara
             bitScrollablePane.Focusable = Focusable.Value;
         }
 
-        if (FullHeight.HasValue && bitScrollablePane.HasNotBeenSet(nameof(FullHeight)))
+        if (FullHeight.HasValue && bitScrollablePane.HasNotBeenSet(nameof(FullHeight)) && bitScrollablePane.FullHeight != FullHeight)
         {
             bitScrollablePane.FullHeight = FullHeight.Value;
 
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (FullSize.HasValue && bitScrollablePane.HasNotBeenSet(nameof(FullSize)))
+        if (FullSize.HasValue && bitScrollablePane.HasNotBeenSet(nameof(FullSize)) && bitScrollablePane.FullSize != FullSize)
         {
             bitScrollablePane.FullSize = FullSize.Value;
 
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (FullWidth.HasValue && bitScrollablePane.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitScrollablePane.HasNotBeenSet(nameof(FullWidth)) && bitScrollablePane.FullWidth != FullWidth)
         {
             bitScrollablePane.FullWidth = FullWidth.Value;
 
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (Gutter.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Gutter)))
+        if (Gutter.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Gutter)) && bitScrollablePane.Gutter != Gutter)
         {
             bitScrollablePane.Gutter = Gutter.Value;
 
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (Height.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(Height)))
+        if (Height.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(Height)) && bitScrollablePane.Height != Height)
         {
             bitScrollablePane.Height = Height;
 
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (Horizontal.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Horizontal)))
+        if (Horizontal.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Horizontal)) && bitScrollablePane.Horizontal != Horizontal)
         {
             bitScrollablePane.Horizontal = Horizontal.Value;
 
@@ -426,42 +430,42 @@ public class BitScrollablePaneParams : BitComponentBaseParams, IBitComponentPara
             bitScrollablePane.HorizontalWheel = HorizontalWheel.Value;
         }
 
-        if (MaxHeight.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(MaxHeight)))
+        if (MaxHeight.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(MaxHeight)) && bitScrollablePane.MaxHeight != MaxHeight)
         {
             bitScrollablePane.MaxHeight = MaxHeight;
 
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (MaxWidth.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(MaxWidth)))
+        if (MaxWidth.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(MaxWidth)) && bitScrollablePane.MaxWidth != MaxWidth)
         {
             bitScrollablePane.MaxWidth = MaxWidth;
 
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (MinHeight.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(MinHeight)))
+        if (MinHeight.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(MinHeight)) && bitScrollablePane.MinHeight != MinHeight)
         {
             bitScrollablePane.MinHeight = MinHeight;
 
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (MinWidth.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(MinWidth)))
+        if (MinWidth.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(MinWidth)) && bitScrollablePane.MinWidth != MinWidth)
         {
             bitScrollablePane.MinWidth = MinWidth;
 
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (Modern.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Modern)))
+        if (Modern.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Modern)) && bitScrollablePane.Modern != Modern)
         {
             bitScrollablePane.Modern = Modern.Value;
 
             bitScrollablePane.ClassBuilder.Reset();
         }
 
-        if (NoScroll.HasValue && bitScrollablePane.HasNotBeenSet(nameof(NoScroll)))
+        if (NoScroll.HasValue && bitScrollablePane.HasNotBeenSet(nameof(NoScroll)) && bitScrollablePane.NoScroll != NoScroll)
         {
             bitScrollablePane.NoScroll = NoScroll.Value;
 
@@ -469,42 +473,42 @@ public class BitScrollablePaneParams : BitComponentBaseParams, IBitComponentPara
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (Overflow.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Overflow)))
+        if (Overflow.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Overflow)) && bitScrollablePane.Overflow != Overflow)
         {
             bitScrollablePane.Overflow = Overflow.Value;
 
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (OverflowX.HasValue && bitScrollablePane.HasNotBeenSet(nameof(OverflowX)))
+        if (OverflowX.HasValue && bitScrollablePane.HasNotBeenSet(nameof(OverflowX)) && bitScrollablePane.OverflowX != OverflowX)
         {
             bitScrollablePane.OverflowX = OverflowX.Value;
 
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (OverflowY.HasValue && bitScrollablePane.HasNotBeenSet(nameof(OverflowY)))
+        if (OverflowY.HasValue && bitScrollablePane.HasNotBeenSet(nameof(OverflowY)) && bitScrollablePane.OverflowY != OverflowY)
         {
             bitScrollablePane.OverflowY = OverflowY.Value;
 
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (Overscroll.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Overscroll)))
+        if (Overscroll.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Overscroll)) && bitScrollablePane.Overscroll != Overscroll)
         {
             bitScrollablePane.Overscroll = Overscroll.Value;
 
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (OverscrollX.HasValue && bitScrollablePane.HasNotBeenSet(nameof(OverscrollX)))
+        if (OverscrollX.HasValue && bitScrollablePane.HasNotBeenSet(nameof(OverscrollX)) && bitScrollablePane.OverscrollX != OverscrollX)
         {
             bitScrollablePane.OverscrollX = OverscrollX.Value;
 
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (OverscrollY.HasValue && bitScrollablePane.HasNotBeenSet(nameof(OverscrollY)))
+        if (OverscrollY.HasValue && bitScrollablePane.HasNotBeenSet(nameof(OverscrollY)) && bitScrollablePane.OverscrollY != OverscrollY)
         {
             bitScrollablePane.OverscrollY = OverscrollY.Value;
 
@@ -526,21 +530,21 @@ public class BitScrollablePaneParams : BitComponentBaseParams, IBitComponentPara
             bitScrollablePane.Role = Role;
         }
 
-        if (ScrollbarColor.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(ScrollbarColor)))
+        if (ScrollbarColor.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(ScrollbarColor)) && bitScrollablePane.ScrollbarColor != ScrollbarColor)
         {
             bitScrollablePane.ScrollbarColor = ScrollbarColor;
 
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (ScrollbarWidth.HasValue && bitScrollablePane.HasNotBeenSet(nameof(ScrollbarWidth)))
+        if (ScrollbarWidth.HasValue && bitScrollablePane.HasNotBeenSet(nameof(ScrollbarWidth)) && bitScrollablePane.ScrollbarWidth != ScrollbarWidth)
         {
             bitScrollablePane.ScrollbarWidth = ScrollbarWidth.Value;
 
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (ScrollPadding.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(ScrollPadding)))
+        if (ScrollPadding.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(ScrollPadding)) && bitScrollablePane.ScrollPadding != ScrollPadding)
         {
             bitScrollablePane.ScrollPadding = ScrollPadding;
 
@@ -552,35 +556,35 @@ public class BitScrollablePaneParams : BitComponentBaseParams, IBitComponentPara
             bitScrollablePane.ScrollThrottle = ScrollThrottle.Value;
         }
 
-        if (Smooth.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Smooth)))
+        if (Smooth.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Smooth)) && bitScrollablePane.Smooth != Smooth)
         {
             bitScrollablePane.Smooth = Smooth.Value;
 
             bitScrollablePane.ClassBuilder.Reset();
         }
 
-        if (Snap.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Snap)))
+        if (Snap.HasValue && bitScrollablePane.HasNotBeenSet(nameof(Snap)) && bitScrollablePane.Snap != Snap)
         {
             bitScrollablePane.Snap = Snap.Value;
 
             bitScrollablePane.StyleBuilder.Reset();
         }
 
-        if (SnapAlign.HasValue && bitScrollablePane.HasNotBeenSet(nameof(SnapAlign)))
+        if (SnapAlign.HasValue && bitScrollablePane.HasNotBeenSet(nameof(SnapAlign)) && bitScrollablePane.SnapAlign != SnapAlign)
         {
             bitScrollablePane.SnapAlign = SnapAlign.Value;
 
             bitScrollablePane.ClassBuilder.Reset();
         }
 
-        if (SnapStop.HasValue && bitScrollablePane.HasNotBeenSet(nameof(SnapStop)))
+        if (SnapStop.HasValue && bitScrollablePane.HasNotBeenSet(nameof(SnapStop)) && bitScrollablePane.SnapStop != SnapStop)
         {
             bitScrollablePane.SnapStop = SnapStop.Value;
 
             bitScrollablePane.ClassBuilder.Reset();
         }
 
-        if (Width.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(Width)))
+        if (Width.HasValue() && bitScrollablePane.HasNotBeenSet(nameof(Width)) && bitScrollablePane.Width != Width)
         {
             bitScrollablePane.Width = Width;
 

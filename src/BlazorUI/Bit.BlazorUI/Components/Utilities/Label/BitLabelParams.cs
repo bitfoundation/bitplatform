@@ -100,14 +100,17 @@ public class BitLabelParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitLabel);
 
-        if (Classes is not null && bitLabel.HasNotBeenSet(nameof(Classes)))
+        // This runs on every render of every label under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (Classes is not null && bitLabel.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitLabel.Classes, Classes) is false)
         {
             bitLabel.Classes = Classes;
 
             bitLabel.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitLabel.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitLabel.HasNotBeenSet(nameof(Color)) && bitLabel.Color != Color)
         {
             bitLabel.Color = Color.Value;
 
@@ -119,21 +122,21 @@ public class BitLabelParams : BitComponentBaseParams, IBitComponentParams
             bitLabel.Element = Element;
         }
 
-        if (NoSelect.HasValue && bitLabel.HasNotBeenSet(nameof(NoSelect)))
+        if (NoSelect.HasValue && bitLabel.HasNotBeenSet(nameof(NoSelect)) && bitLabel.NoSelect != NoSelect)
         {
             bitLabel.NoSelect = NoSelect.Value;
 
             bitLabel.ClassBuilder.Reset();
         }
 
-        if (NoWrap.HasValue && bitLabel.HasNotBeenSet(nameof(NoWrap)))
+        if (NoWrap.HasValue && bitLabel.HasNotBeenSet(nameof(NoWrap)) && bitLabel.NoWrap != NoWrap)
         {
             bitLabel.NoWrap = NoWrap.Value;
 
             bitLabel.ClassBuilder.Reset();
         }
 
-        if (Optional.HasValue && bitLabel.HasNotBeenSet(nameof(Optional)))
+        if (Optional.HasValue && bitLabel.HasNotBeenSet(nameof(Optional)) && bitLabel.Optional != Optional)
         {
             bitLabel.Optional = Optional.Value;
 
@@ -145,7 +148,7 @@ public class BitLabelParams : BitComponentBaseParams, IBitComponentParams
             bitLabel.OptionalText = OptionalText;
         }
 
-        if (Required.HasValue && bitLabel.HasNotBeenSet(nameof(Required)))
+        if (Required.HasValue && bitLabel.HasNotBeenSet(nameof(Required)) && bitLabel.Required != Required)
         {
             bitLabel.Required = Required.Value;
 
@@ -157,21 +160,21 @@ public class BitLabelParams : BitComponentBaseParams, IBitComponentParams
             bitLabel.RequiredText = RequiredText;
         }
 
-        if (Size.HasValue && bitLabel.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitLabel.HasNotBeenSet(nameof(Size)) && bitLabel.Size != Size)
         {
             bitLabel.Size = Size.Value;
 
             bitLabel.ClassBuilder.Reset();
         }
 
-        if (Styles is not null && bitLabel.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitLabel.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitLabel.Styles, Styles) is false)
         {
             bitLabel.Styles = Styles;
 
             bitLabel.StyleBuilder.Reset();
         }
 
-        if (VisuallyHidden.HasValue && bitLabel.HasNotBeenSet(nameof(VisuallyHidden)))
+        if (VisuallyHidden.HasValue && bitLabel.HasNotBeenSet(nameof(VisuallyHidden)) && bitLabel.VisuallyHidden != VisuallyHidden)
         {
             bitLabel.VisuallyHidden = VisuallyHidden.Value;
 

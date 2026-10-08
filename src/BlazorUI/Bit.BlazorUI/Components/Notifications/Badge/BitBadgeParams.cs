@@ -195,21 +195,24 @@ public class BitBadgeParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitBadge);
 
-        if (Bordered.HasValue && bitBadge.HasNotBeenSet(nameof(Bordered)))
+        // This runs on every render of every badge under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (Bordered.HasValue && bitBadge.HasNotBeenSet(nameof(Bordered)) && bitBadge.Bordered != Bordered)
         {
             bitBadge.Bordered = Bordered.Value;
 
             bitBadge.ClassBuilder.Reset();
         }
 
-        if (Classes is not null && bitBadge.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitBadge.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitBadge.Classes, Classes) is false)
         {
             bitBadge.Classes = Classes;
 
             bitBadge.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitBadge.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitBadge.HasNotBeenSet(nameof(Color)) && bitBadge.Color != Color)
         {
             bitBadge.Color = Color.Value;
 
@@ -240,7 +243,7 @@ public class BitBadgeParams : BitComponentBaseParams, IBitComponentParams
             bitBadge.Description = Description;
         }
 
-        if (Dot.HasValue && bitBadge.HasNotBeenSet(nameof(Dot)))
+        if (Dot.HasValue && bitBadge.HasNotBeenSet(nameof(Dot)) && bitBadge.Dot != Dot)
         {
             bitBadge.Dot = Dot.Value;
 
@@ -271,7 +274,7 @@ public class BitBadgeParams : BitComponentBaseParams, IBitComponentParams
             bitBadge.IconName = IconName;
         }
 
-        if (Inline.HasValue && bitBadge.HasNotBeenSet(nameof(Inline)))
+        if (Inline.HasValue && bitBadge.HasNotBeenSet(nameof(Inline)) && bitBadge.Inline != Inline)
         {
             bitBadge.Inline = Inline.Value;
 
@@ -297,35 +300,35 @@ public class BitBadgeParams : BitComponentBaseParams, IBitComponentParams
             bitBadge.OnSetContentAndMax();
         }
 
-        if (OffsetX.HasValue() && bitBadge.HasNotBeenSet(nameof(OffsetX)))
+        if (OffsetX.HasValue() && bitBadge.HasNotBeenSet(nameof(OffsetX)) && bitBadge.OffsetX != OffsetX)
         {
             bitBadge.OffsetX = OffsetX;
 
             bitBadge.StyleBuilder.Reset();
         }
 
-        if (OffsetY.HasValue() && bitBadge.HasNotBeenSet(nameof(OffsetY)))
+        if (OffsetY.HasValue() && bitBadge.HasNotBeenSet(nameof(OffsetY)) && bitBadge.OffsetY != OffsetY)
         {
             bitBadge.OffsetY = OffsetY;
 
             bitBadge.StyleBuilder.Reset();
         }
 
-        if (Overlap.HasValue && bitBadge.HasNotBeenSet(nameof(Overlap)))
+        if (Overlap.HasValue && bitBadge.HasNotBeenSet(nameof(Overlap)) && bitBadge.Overlap != Overlap)
         {
             bitBadge.Overlap = Overlap.Value;
 
             bitBadge.ClassBuilder.Reset();
         }
 
-        if (Position.HasValue && bitBadge.HasNotBeenSet(nameof(Position)))
+        if (Position.HasValue && bitBadge.HasNotBeenSet(nameof(Position)) && bitBadge.Position != Position)
         {
             bitBadge.Position = Position.Value;
 
             bitBadge.ClassBuilder.Reset();
         }
 
-        if (Pulse.HasValue && bitBadge.HasNotBeenSet(nameof(Pulse)))
+        if (Pulse.HasValue && bitBadge.HasNotBeenSet(nameof(Pulse)) && bitBadge.Pulse != Pulse)
         {
             bitBadge.Pulse = Pulse.Value;
 
@@ -339,14 +342,14 @@ public class BitBadgeParams : BitComponentBaseParams, IBitComponentParams
             linkWasSet = true;
         }
 
-        if (Reversed.HasValue && bitBadge.HasNotBeenSet(nameof(Reversed)))
+        if (Reversed.HasValue && bitBadge.HasNotBeenSet(nameof(Reversed)) && bitBadge.Reversed != Reversed)
         {
             bitBadge.Reversed = Reversed.Value;
 
             bitBadge.ClassBuilder.Reset();
         }
 
-        if (Shape.HasValue && bitBadge.HasNotBeenSet(nameof(Shape)))
+        if (Shape.HasValue && bitBadge.HasNotBeenSet(nameof(Shape)) && bitBadge.Shape != Shape)
         {
             bitBadge.Shape = Shape.Value;
 
@@ -358,14 +361,14 @@ public class BitBadgeParams : BitComponentBaseParams, IBitComponentParams
             bitBadge.ShowZero = ShowZero.Value;
         }
 
-        if (Size.HasValue && bitBadge.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitBadge.HasNotBeenSet(nameof(Size)) && bitBadge.Size != Size)
         {
             bitBadge.Size = Size.Value;
 
             bitBadge.ClassBuilder.Reset();
         }
 
-        if (Styles is not null && bitBadge.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitBadge.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitBadge.Styles, Styles) is false)
         {
             bitBadge.Styles = Styles;
 
@@ -391,7 +394,7 @@ public class BitBadgeParams : BitComponentBaseParams, IBitComponentParams
             bitBadge.Title = Title;
         }
 
-        if (Variant.HasValue && bitBadge.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue && bitBadge.HasNotBeenSet(nameof(Variant)) && bitBadge.Variant != Variant)
         {
             bitBadge.Variant = Variant.Value;
 

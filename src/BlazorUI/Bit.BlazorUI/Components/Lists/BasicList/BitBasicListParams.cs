@@ -148,6 +148,9 @@ public class BitBasicListParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitBasicList);
 
+        // This runs on every render of every basic list under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AutoLoad.HasValue && bitBasicList.HasNotBeenSet(nameof(AutoLoad)))
         {
             bitBasicList.AutoLoad = AutoLoad.Value;
@@ -158,56 +161,56 @@ public class BitBasicListParams : BitComponentBaseParams, IBitComponentParams
             bitBasicList.AutoLoadThreshold = AutoLoadThreshold.Value;
         }
 
-        if (Classes is not null && bitBasicList.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitBasicList.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitBasicList.Classes, Classes) is false)
         {
             bitBasicList.Classes = Classes;
 
             bitBasicList.ClassBuilder.Reset();
         }
 
-        if (FitHeight.HasValue && bitBasicList.HasNotBeenSet(nameof(FitHeight)))
+        if (FitHeight.HasValue && bitBasicList.HasNotBeenSet(nameof(FitHeight)) && bitBasicList.FitHeight != FitHeight)
         {
             bitBasicList.FitHeight = FitHeight.Value;
 
             bitBasicList.StyleBuilder.Reset();
         }
 
-        if (FitSize.HasValue && bitBasicList.HasNotBeenSet(nameof(FitSize)))
+        if (FitSize.HasValue && bitBasicList.HasNotBeenSet(nameof(FitSize)) && bitBasicList.FitSize != FitSize)
         {
             bitBasicList.FitSize = FitSize.Value;
 
             bitBasicList.StyleBuilder.Reset();
         }
 
-        if (FitWidth.HasValue && bitBasicList.HasNotBeenSet(nameof(FitWidth)))
+        if (FitWidth.HasValue && bitBasicList.HasNotBeenSet(nameof(FitWidth)) && bitBasicList.FitWidth != FitWidth)
         {
             bitBasicList.FitWidth = FitWidth.Value;
 
             bitBasicList.StyleBuilder.Reset();
         }
 
-        if (FullHeight.HasValue && bitBasicList.HasNotBeenSet(nameof(FullHeight)))
+        if (FullHeight.HasValue && bitBasicList.HasNotBeenSet(nameof(FullHeight)) && bitBasicList.FullHeight != FullHeight)
         {
             bitBasicList.FullHeight = FullHeight.Value;
 
             bitBasicList.StyleBuilder.Reset();
         }
 
-        if (FullSize.HasValue && bitBasicList.HasNotBeenSet(nameof(FullSize)))
+        if (FullSize.HasValue && bitBasicList.HasNotBeenSet(nameof(FullSize)) && bitBasicList.FullSize != FullSize)
         {
             bitBasicList.FullSize = FullSize.Value;
 
             bitBasicList.StyleBuilder.Reset();
         }
 
-        if (FullWidth.HasValue && bitBasicList.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitBasicList.HasNotBeenSet(nameof(FullWidth)) && bitBasicList.FullWidth != FullWidth)
         {
             bitBasicList.FullWidth = FullWidth.Value;
 
             bitBasicList.StyleBuilder.Reset();
         }
 
-        if (Horizontal.HasValue && bitBasicList.HasNotBeenSet(nameof(Horizontal)))
+        if (Horizontal.HasValue && bitBasicList.HasNotBeenSet(nameof(Horizontal)) && bitBasicList.Horizontal != Horizontal)
         {
             bitBasicList.Horizontal = Horizontal.Value;
 
@@ -254,14 +257,14 @@ public class BitBasicListParams : BitComponentBaseParams, IBitComponentParams
             bitBasicList.Role = Role;
         }
 
-        if (Styles is not null && bitBasicList.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitBasicList.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitBasicList.Styles, Styles) is false)
         {
             bitBasicList.Styles = Styles;
 
             bitBasicList.StyleBuilder.Reset();
         }
 
-        if (Virtualize.HasValue && bitBasicList.HasNotBeenSet(nameof(Virtualize)))
+        if (Virtualize.HasValue && bitBasicList.HasNotBeenSet(nameof(Virtualize)) && bitBasicList.Virtualize != Virtualize)
         {
             bitBasicList.Virtualize = Virtualize.Value;
 

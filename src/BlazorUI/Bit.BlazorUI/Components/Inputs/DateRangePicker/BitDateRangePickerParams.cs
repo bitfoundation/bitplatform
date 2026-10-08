@@ -839,6 +839,10 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
 
         UpdateBaseParameters(bitDateRangePicker);
 
+        // This runs on every render of every date range picker under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+
         // The parameters the picker rebuilds its view from are the ones carrying a [CallOnSet(OnSetParameters)]
         // on the component, and the component has already run that pass in OnInitialized - before anything
         // cascaded here reached it. So whichever of them the cascade fills in, the pass is run once more at the end.
@@ -897,7 +901,7 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.CancelButtonText = CancelButtonText!;
         }
 
-        if (Classes is not null && bitDateRangePicker.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitDateRangePicker.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitDateRangePicker.Classes, Classes) is false)
         {
             bitDateRangePicker.Classes = Classes;
 
@@ -934,7 +938,7 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.CloseButtonTitle = CloseButtonTitle!;
         }
 
-        if (Color.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(Color)) && bitDateRangePicker.Color != Color)
         {
             bitDateRangePicker.Color = Color;
 
@@ -951,9 +955,9 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.ContinuousSpinInterval = ContinuousSpinInterval.Value;
         }
 
-        if (Culture is not null && bitDateRangePicker.HasNotBeenSet(nameof(Culture)))
+        if (Culture is not null && bitDateRangePicker.HasNotBeenSet(nameof(Culture)) && ReferenceEquals(bitDateRangePicker.Culture, Culture) is false)
         {
-            rebuildView = rebuildView || ReferenceEquals(bitDateRangePicker.Culture, Culture) is false;
+            rebuildView = true;
 
             bitDateRangePicker.Culture = Culture;
 
@@ -1149,7 +1153,7 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.GoToTodayTitle = GoToTodayTitle!;
         }
 
-        if (HasBorder.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(HasBorder)))
+        if (HasBorder.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(HasBorder)) && bitDateRangePicker.HasBorder != HasBorder)
         {
             bitDateRangePicker.HasBorder = HasBorder.Value;
 
@@ -1203,7 +1207,7 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.Icon = Icon;
         }
 
-        if (IconPlacement.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(IconPlacement)))
+        if (IconPlacement.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(IconPlacement)) && bitDateRangePicker.IconPlacement != IconPlacement)
         {
             bitDateRangePicker.IconPlacement = IconPlacement.Value;
 
@@ -1456,16 +1460,16 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.ShowWeekNumbers = ShowWeekNumbers.Value;
         }
 
-        if (Size.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(Size)) && bitDateRangePicker.Size != Size)
         {
             bitDateRangePicker.Size = Size;
 
             bitDateRangePicker.ClassBuilder.Reset();
         }
 
-        if (Standalone.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(Standalone)))
+        if (Standalone.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(Standalone)) && bitDateRangePicker.Standalone != Standalone)
         {
-            rebuildView = rebuildView || bitDateRangePicker.Standalone != Standalone.Value;
+            rebuildView = true;
 
             bitDateRangePicker.Standalone = Standalone.Value;
 
@@ -1549,7 +1553,7 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.StartingValue = StartingValue;
         }
 
-        if (Styles is not null && bitDateRangePicker.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitDateRangePicker.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitDateRangePicker.Styles, Styles) is false)
         {
             bitDateRangePicker.Styles = Styles;
 
@@ -1575,7 +1579,7 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.Today = Today;
         }
 
-        if (Underlined.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(Underlined)))
+        if (Underlined.HasValue && bitDateRangePicker.HasNotBeenSet(nameof(Underlined)) && bitDateRangePicker.Underlined != Underlined)
         {
             bitDateRangePicker.Underlined = Underlined.Value;
 

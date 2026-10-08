@@ -294,14 +294,17 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitCarousel);
 
-        if (Accent.HasValue && bitCarousel.HasNotBeenSet(nameof(Accent)))
+        // This runs on every render of every carousel under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (Accent.HasValue && bitCarousel.HasNotBeenSet(nameof(Accent)) && bitCarousel.Accent != Accent)
         {
             bitCarousel.Accent = Accent.Value;
 
             bitCarousel.ClassBuilder.Reset();
         }
 
-        if (AnimationDuration.HasValue && bitCarousel.HasNotBeenSet(nameof(AnimationDuration)))
+        if (AnimationDuration.HasValue && bitCarousel.HasNotBeenSet(nameof(AnimationDuration)) && bitCarousel.AnimationDuration != AnimationDuration)
         {
             bitCarousel.AnimationDuration = AnimationDuration.Value;
 
@@ -323,14 +326,14 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
             bitCarousel.AutoPlayReverse = AutoPlayReverse.Value;
         }
 
-        if (Classes is not null && bitCarousel.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitCarousel.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitCarousel.Classes, Classes) is false)
         {
             bitCarousel.Classes = Classes;
 
             bitCarousel.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitCarousel.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitCarousel.HasNotBeenSet(nameof(Color)) && bitCarousel.Color != Color)
         {
             bitCarousel.Color = Color.Value;
 
@@ -347,7 +350,7 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
             bitCarousel.DotsAriaLabel = DotsAriaLabel!;
         }
 
-        if (DotsPlacement.HasValue && bitCarousel.HasNotBeenSet(nameof(DotsPlacement)))
+        if (DotsPlacement.HasValue && bitCarousel.HasNotBeenSet(nameof(DotsPlacement)) && bitCarousel.DotsPlacement != DotsPlacement)
         {
             bitCarousel.DotsPlacement = DotsPlacement.Value;
 
@@ -369,7 +372,7 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
             bitCarousel.Fade = Fade.Value;
         }
 
-        if (Gap.HasValue() && bitCarousel.HasNotBeenSet(nameof(Gap)))
+        if (Gap.HasValue() && bitCarousel.HasNotBeenSet(nameof(Gap)) && bitCarousel.Gap != Gap)
         {
             bitCarousel.Gap = Gap;
 
@@ -491,7 +494,7 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
             bitCarousel.ShowPlayPause = ShowPlayPause.Value;
         }
 
-        if (Size.HasValue && bitCarousel.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitCarousel.HasNotBeenSet(nameof(Size)) && bitCarousel.Size != Size)
         {
             bitCarousel.Size = Size.Value;
 
@@ -508,14 +511,14 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
             bitCarousel.StopOnLastSlide = StopOnLastSlide.Value;
         }
 
-        if (Styles is not null && bitCarousel.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitCarousel.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitCarousel.Styles, Styles) is false)
         {
             bitCarousel.Styles = Styles;
 
             bitCarousel.StyleBuilder.Reset();
         }
 
-        if (Vertical.HasValue && bitCarousel.HasNotBeenSet(nameof(Vertical)))
+        if (Vertical.HasValue && bitCarousel.HasNotBeenSet(nameof(Vertical)) && bitCarousel.Vertical != Vertical)
         {
             bitCarousel.Vertical = Vertical.Value;
 

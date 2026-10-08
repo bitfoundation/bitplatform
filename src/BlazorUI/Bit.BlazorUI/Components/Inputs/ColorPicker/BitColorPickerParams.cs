@@ -189,12 +189,15 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitColorPicker);
 
+        // This runs on every render of every color picker under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AutoFocus.HasValue && bitColorPicker.HasNotBeenSet(nameof(AutoFocus)))
         {
             bitColorPicker.AutoFocus = AutoFocus.Value;
         }
 
-        if (Classes is not null && bitColorPicker.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitColorPicker.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitColorPicker.Classes, Classes) is false)
         {
             bitColorPicker.Classes = Classes;
 
@@ -256,7 +259,7 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
             bitColorPicker.PresetsPerRow = PresetsPerRow.Value;
         }
 
-        if (ReadOnly.HasValue && bitColorPicker.HasNotBeenSet(nameof(ReadOnly)))
+        if (ReadOnly.HasValue && bitColorPicker.HasNotBeenSet(nameof(ReadOnly)) && bitColorPicker.ReadOnly != ReadOnly)
         {
             bitColorPicker.ReadOnly = ReadOnly.Value;
 
@@ -303,14 +306,14 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
             bitColorPicker.ShowSaturationArea = ShowSaturationArea.Value;
         }
 
-        if (Size.HasValue && bitColorPicker.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitColorPicker.HasNotBeenSet(nameof(Size)) && bitColorPicker.Size != Size)
         {
             bitColorPicker.Size = Size.Value;
 
             bitColorPicker.ClassBuilder.Reset();
         }
 
-        if (Styles is not null && bitColorPicker.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitColorPicker.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitColorPicker.Styles, Styles) is false)
         {
             bitColorPicker.Styles = Styles;
 

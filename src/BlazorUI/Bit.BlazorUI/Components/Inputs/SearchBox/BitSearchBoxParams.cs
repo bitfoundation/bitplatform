@@ -340,6 +340,9 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
 
         UpdateInputBaseParameters(bitSearchBox);
 
+        // This runs on every render of every search box under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AnnouncementProvider is not null && bitSearchBox.HasNotBeenSet(nameof(AnnouncementProvider)))
         {
             bitSearchBox.AnnouncementProvider = AnnouncementProvider;
@@ -380,14 +383,14 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
             bitSearchBox.AutoSelectSuggestItem = AutoSelectSuggestItem.Value;
         }
 
-        if (Background.HasValue && bitSearchBox.HasNotBeenSet(nameof(Background)))
+        if (Background.HasValue && bitSearchBox.HasNotBeenSet(nameof(Background)) && bitSearchBox.Background != Background)
         {
             bitSearchBox.Background = Background.Value;
 
             bitSearchBox.ClassBuilder.Reset();
         }
 
-        if (Classes is not null && bitSearchBox.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitSearchBox.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitSearchBox.Classes, Classes) is false)
         {
             bitSearchBox.Classes = Classes;
 
@@ -409,7 +412,7 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
             bitSearchBox.ClearButtonIconName = ClearButtonIconName;
         }
 
-        if (Color.HasValue && bitSearchBox.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitSearchBox.HasNotBeenSet(nameof(Color)) && bitSearchBox.Color != Color)
         {
             bitSearchBox.Color = Color.Value;
 
@@ -421,7 +424,7 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
             bitSearchBox.DebounceTime = DebounceTime.Value;
         }
 
-        if (DisableAnimation.HasValue && bitSearchBox.HasNotBeenSet(nameof(DisableAnimation)))
+        if (DisableAnimation.HasValue && bitSearchBox.HasNotBeenSet(nameof(DisableAnimation)) && bitSearchBox.DisableAnimation != DisableAnimation)
         {
             bitSearchBox.DisableAnimation = DisableAnimation.Value;
 
@@ -438,7 +441,7 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
             bitSearchBox.FixedCalloutWidth = FixedCalloutWidth.Value;
         }
 
-        if (FixedIcon.HasValue && bitSearchBox.HasNotBeenSet(nameof(FixedIcon)))
+        if (FixedIcon.HasValue && bitSearchBox.HasNotBeenSet(nameof(FixedIcon)) && bitSearchBox.FixedIcon != FixedIcon)
         {
             bitSearchBox.FixedIcon = FixedIcon.Value;
 
@@ -450,7 +453,7 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
             bitSearchBox.FocusShortcut = FocusShortcut;
         }
 
-        if (FullWidth.HasValue && bitSearchBox.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitSearchBox.HasNotBeenSet(nameof(FullWidth)) && bitSearchBox.FullWidth != FullWidth)
         {
             bitSearchBox.FullWidth = FullWidth.Value;
 
@@ -462,7 +465,7 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
             bitSearchBox.HideClearButton = HideClearButton.Value;
         }
 
-        if (HideIcon.HasValue && bitSearchBox.HasNotBeenSet(nameof(HideIcon)))
+        if (HideIcon.HasValue && bitSearchBox.HasNotBeenSet(nameof(HideIcon)) && bitSearchBox.HideIcon != HideIcon)
         {
             bitSearchBox.HideIcon = HideIcon.Value;
 
@@ -529,7 +532,7 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
             bitSearchBox.Modeless = Modeless.Value;
         }
 
-        if (NoBorder.HasValue && bitSearchBox.HasNotBeenSet(nameof(NoBorder)))
+        if (NoBorder.HasValue && bitSearchBox.HasNotBeenSet(nameof(NoBorder)) && bitSearchBox.NoBorder != NoBorder)
         {
             bitSearchBox.NoBorder = NoBorder.Value;
 
@@ -571,7 +574,7 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
             bitSearchBox.SearchButtonIconName = SearchButtonIconName;
         }
 
-        if (SearchButtonText.HasValue() && bitSearchBox.HasNotBeenSet(nameof(SearchButtonText)))
+        if (SearchButtonText.HasValue() && bitSearchBox.HasNotBeenSet(nameof(SearchButtonText)) && bitSearchBox.SearchButtonText != SearchButtonText)
         {
             bitSearchBox.SearchButtonText = SearchButtonText;
 
@@ -583,7 +586,7 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
             bitSearchBox.SelectTextOnFocus = SelectTextOnFocus.Value;
         }
 
-        if (ShowSearchButton.HasValue && bitSearchBox.HasNotBeenSet(nameof(ShowSearchButton)))
+        if (ShowSearchButton.HasValue && bitSearchBox.HasNotBeenSet(nameof(ShowSearchButton)) && bitSearchBox.ShowSearchButton != ShowSearchButton)
         {
             bitSearchBox.ShowSearchButton = ShowSearchButton.Value;
 
@@ -595,7 +598,7 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
             bitSearchBox.ShowSuggestItemsOnFocus = ShowSuggestItemsOnFocus.Value;
         }
 
-        if (Size.HasValue && bitSearchBox.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitSearchBox.HasNotBeenSet(nameof(Size)) && bitSearchBox.Size != Size)
         {
             bitSearchBox.Size = Size.Value;
 
@@ -607,7 +610,7 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
             bitSearchBox.SpellCheck = SpellCheck.Value;
         }
 
-        if (Styles is not null && bitSearchBox.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitSearchBox.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitSearchBox.Styles, Styles) is false)
         {
             bitSearchBox.Styles = Styles;
 
@@ -644,7 +647,7 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
             bitSearchBox.Trim = Trim.Value;
         }
 
-        if (Underlined.HasValue && bitSearchBox.HasNotBeenSet(nameof(Underlined)))
+        if (Underlined.HasValue && bitSearchBox.HasNotBeenSet(nameof(Underlined)) && bitSearchBox.Underlined != Underlined)
         {
             bitSearchBox.Underlined = Underlined.Value;
 

@@ -664,6 +664,10 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitFileUpload);
 
+        // This runs on every render of every file upload under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+
         // the working chunk size is only worth deriving again when one of the two parameters it comes from
         // actually moves, exactly as the generated setter of each of them decides.
         var chunkSizeChanged = false;
@@ -777,7 +781,7 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
             bitFileUpload.ChunkedUpload = ChunkedUpload.Value;
         }
 
-        if (Classes is not null && bitFileUpload.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitFileUpload.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitFileUpload.Classes, Classes) is false)
         {
             bitFileUpload.Classes = Classes;
 
@@ -789,7 +793,7 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
             bitFileUpload.ClearText = ClearText!;
         }
 
-        if (Color.HasValue && bitFileUpload.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitFileUpload.HasNotBeenSet(nameof(Color)) && bitFileUpload.Color != Color)
         {
             bitFileUpload.Color = Color.Value;
 
@@ -871,7 +875,7 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
             bitFileUpload.LabelIconName = LabelIconName;
         }
 
-        if (LabelIconPlacement.HasValue && bitFileUpload.HasNotBeenSet(nameof(LabelIconPlacement)))
+        if (LabelIconPlacement.HasValue && bitFileUpload.HasNotBeenSet(nameof(LabelIconPlacement)) && bitFileUpload.LabelIconPlacement != LabelIconPlacement)
         {
             bitFileUpload.LabelIconPlacement = LabelIconPlacement.Value;
 
@@ -1028,7 +1032,7 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
             bitFileUpload.ShowBatchActions = ShowBatchActions.Value;
         }
 
-        if (ShowDropArea.HasValue && bitFileUpload.HasNotBeenSet(nameof(ShowDropArea)))
+        if (ShowDropArea.HasValue && bitFileUpload.HasNotBeenSet(nameof(ShowDropArea)) && bitFileUpload.ShowDropArea != ShowDropArea)
         {
             bitFileUpload.ShowDropArea = ShowDropArea.Value;
 
@@ -1045,14 +1049,14 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
             bitFileUpload.ShowRemoveButton = ShowRemoveButton.Value;
         }
 
-        if (Size.HasValue && bitFileUpload.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitFileUpload.HasNotBeenSet(nameof(Size)) && bitFileUpload.Size != Size)
         {
             bitFileUpload.Size = Size.Value;
 
             bitFileUpload.ClassBuilder.Reset();
         }
 
-        if (Styles is not null && bitFileUpload.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitFileUpload.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitFileUpload.Styles, Styles) is false)
         {
             bitFileUpload.Styles = Styles;
 
@@ -1134,7 +1138,7 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
             bitFileUpload.UploadUrlProvider = UploadUrlProvider;
         }
 
-        if (Variant.HasValue && bitFileUpload.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue && bitFileUpload.HasNotBeenSet(nameof(Variant)) && bitFileUpload.Variant != Variant)
         {
             bitFileUpload.Variant = Variant.Value;
 

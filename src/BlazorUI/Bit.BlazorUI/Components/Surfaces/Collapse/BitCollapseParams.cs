@@ -135,28 +135,31 @@ public class BitCollapseParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitCollapse);
 
-        if (Background.HasValue && bitCollapse.HasNotBeenSet(nameof(Background)))
+        // This runs on every render of every collapse under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (Background.HasValue && bitCollapse.HasNotBeenSet(nameof(Background)) && bitCollapse.Background != Background)
         {
             bitCollapse.Background = Background.Value;
 
             bitCollapse.ClassBuilder.Reset();
         }
 
-        if (Classes is not null && bitCollapse.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitCollapse.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitCollapse.Classes, Classes) is false)
         {
             bitCollapse.Classes = Classes;
 
             bitCollapse.ClassBuilder.Reset();
         }
 
-        if (CollapseDuration.HasValue && bitCollapse.HasNotBeenSet(nameof(CollapseDuration)))
+        if (CollapseDuration.HasValue && bitCollapse.HasNotBeenSet(nameof(CollapseDuration)) && bitCollapse.CollapseDuration != CollapseDuration)
         {
             bitCollapse.CollapseDuration = CollapseDuration.Value;
 
             bitCollapse.StyleBuilder.Reset();
         }
 
-        if (CollapsedSize.HasValue() && bitCollapse.HasNotBeenSet(nameof(CollapsedSize)))
+        if (CollapsedSize.HasValue() && bitCollapse.HasNotBeenSet(nameof(CollapsedSize)) && bitCollapse.CollapsedSize != CollapsedSize)
         {
             bitCollapse.CollapsedSize = CollapsedSize;
 
@@ -164,49 +167,49 @@ public class BitCollapseParams : BitComponentBaseParams, IBitComponentParams
             bitCollapse.StyleBuilder.Reset();
         }
 
-        if (Delay.HasValue && bitCollapse.HasNotBeenSet(nameof(Delay)))
+        if (Delay.HasValue && bitCollapse.HasNotBeenSet(nameof(Delay)) && bitCollapse.Delay != Delay)
         {
             bitCollapse.Delay = Delay.Value;
 
             bitCollapse.StyleBuilder.Reset();
         }
 
-        if (Duration.HasValue && bitCollapse.HasNotBeenSet(nameof(Duration)))
+        if (Duration.HasValue && bitCollapse.HasNotBeenSet(nameof(Duration)) && bitCollapse.Duration != Duration)
         {
             bitCollapse.Duration = Duration.Value;
 
             bitCollapse.StyleBuilder.Reset();
         }
 
-        if (Easing.HasValue() && bitCollapse.HasNotBeenSet(nameof(Easing)))
+        if (Easing.HasValue() && bitCollapse.HasNotBeenSet(nameof(Easing)) && bitCollapse.Easing != Easing)
         {
             bitCollapse.Easing = Easing;
 
             bitCollapse.StyleBuilder.Reset();
         }
 
-        if (ExpandDuration.HasValue && bitCollapse.HasNotBeenSet(nameof(ExpandDuration)))
+        if (ExpandDuration.HasValue && bitCollapse.HasNotBeenSet(nameof(ExpandDuration)) && bitCollapse.ExpandDuration != ExpandDuration)
         {
             bitCollapse.ExpandDuration = ExpandDuration.Value;
 
             bitCollapse.StyleBuilder.Reset();
         }
 
-        if (ExpandOnPrint.HasValue && bitCollapse.HasNotBeenSet(nameof(ExpandOnPrint)))
+        if (ExpandOnPrint.HasValue && bitCollapse.HasNotBeenSet(nameof(ExpandOnPrint)) && bitCollapse.ExpandOnPrint != ExpandOnPrint)
         {
             bitCollapse.ExpandOnPrint = ExpandOnPrint.Value;
 
             bitCollapse.ClassBuilder.Reset();
         }
 
-        if (HiddenUntilFound.HasValue && bitCollapse.HasNotBeenSet(nameof(HiddenUntilFound)))
+        if (HiddenUntilFound.HasValue && bitCollapse.HasNotBeenSet(nameof(HiddenUntilFound)) && bitCollapse.HiddenUntilFound != HiddenUntilFound)
         {
             bitCollapse.HiddenUntilFound = HiddenUntilFound.Value;
 
             bitCollapse.ClassBuilder.Reset();
         }
 
-        if (Horizontal.HasValue && bitCollapse.HasNotBeenSet(nameof(Horizontal)))
+        if (Horizontal.HasValue && bitCollapse.HasNotBeenSet(nameof(Horizontal)) && bitCollapse.Horizontal != Horizontal)
         {
             bitCollapse.Horizontal = Horizontal.Value;
 
@@ -218,28 +221,28 @@ public class BitCollapseParams : BitComponentBaseParams, IBitComponentParams
             bitCollapse.LazyRender = LazyRender.Value;
         }
 
-        if (NoAnimation.HasValue && bitCollapse.HasNotBeenSet(nameof(NoAnimation)))
+        if (NoAnimation.HasValue && bitCollapse.HasNotBeenSet(nameof(NoAnimation)) && bitCollapse.NoAnimation != NoAnimation)
         {
             bitCollapse.NoAnimation = NoAnimation.Value;
 
             bitCollapse.ClassBuilder.Reset();
         }
 
-        if (NoClip.HasValue && bitCollapse.HasNotBeenSet(nameof(NoClip)))
+        if (NoClip.HasValue && bitCollapse.HasNotBeenSet(nameof(NoClip)) && bitCollapse.NoClip != NoClip)
         {
             bitCollapse.NoClip = NoClip.Value;
 
             bitCollapse.ClassBuilder.Reset();
         }
 
-        if (NoFade.HasValue && bitCollapse.HasNotBeenSet(nameof(NoFade)))
+        if (NoFade.HasValue && bitCollapse.HasNotBeenSet(nameof(NoFade)) && bitCollapse.NoFade != NoFade)
         {
             bitCollapse.NoFade = NoFade.Value;
 
             bitCollapse.ClassBuilder.Reset();
         }
 
-        if (NoPadding.HasValue && bitCollapse.HasNotBeenSet(nameof(NoPadding)))
+        if (NoPadding.HasValue && bitCollapse.HasNotBeenSet(nameof(NoPadding)) && bitCollapse.NoPadding != NoPadding)
         {
             bitCollapse.NoPadding = NoPadding.Value;
 
@@ -251,7 +254,7 @@ public class BitCollapseParams : BitComponentBaseParams, IBitComponentParams
             bitCollapse.Role = Role;
         }
 
-        if (Styles is not null && bitCollapse.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitCollapse.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitCollapse.Styles, Styles) is false)
         {
             bitCollapse.Styles = Styles;
 

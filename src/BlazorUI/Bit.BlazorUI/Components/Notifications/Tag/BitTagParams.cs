@@ -219,6 +219,9 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitTag);
 
+        // This runs on every render of every tag under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AllowDisabledFocus.HasValue && bitTag.HasNotBeenSet(nameof(AllowDisabledFocus)))
         {
             bitTag.AllowDisabledFocus = AllowDisabledFocus.Value;
@@ -234,14 +237,14 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
             bitTag.AriaDescription = AriaDescription;
         }
 
-        if (Classes is not null && bitTag.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitTag.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitTag.Classes, Classes) is false)
         {
             bitTag.Classes = Classes;
 
             bitTag.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitTag.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitTag.HasNotBeenSet(nameof(Color)) && bitTag.Color != Color)
         {
             bitTag.Color = Color.Value;
 
@@ -273,7 +276,7 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
             bitTag.Download = Download;
         }
 
-        if (FullWidth.HasValue && bitTag.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitTag.HasNotBeenSet(nameof(FullWidth)) && bitTag.FullWidth != FullWidth)
         {
             bitTag.FullWidth = FullWidth.Value;
 
@@ -317,7 +320,7 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
             bitTag.NoNewTabHint = NoNewTabHint.Value;
         }
 
-        if (NoWrap.HasValue && bitTag.HasNotBeenSet(nameof(NoWrap)))
+        if (NoWrap.HasValue && bitTag.HasNotBeenSet(nameof(NoWrap)) && bitTag.NoWrap != NoWrap)
         {
             bitTag.NoWrap = NoWrap.Value;
 
@@ -334,7 +337,7 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
             relWasSet = true;
         }
 
-        if (Reversed.HasValue && bitTag.HasNotBeenSet(nameof(Reversed)))
+        if (Reversed.HasValue && bitTag.HasNotBeenSet(nameof(Reversed)) && bitTag.Reversed != Reversed)
         {
             bitTag.Reversed = Reversed.Value;
 
@@ -366,14 +369,14 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
             bitTag.SelectedIconName = SelectedIconName;
         }
 
-        if (Shape.HasValue && bitTag.HasNotBeenSet(nameof(Shape)))
+        if (Shape.HasValue && bitTag.HasNotBeenSet(nameof(Shape)) && bitTag.Shape != Shape)
         {
             bitTag.Shape = Shape.Value;
 
             bitTag.ClassBuilder.Reset();
         }
 
-        if (Size.HasValue && bitTag.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitTag.HasNotBeenSet(nameof(Size)) && bitTag.Size != Size)
         {
             bitTag.Size = Size.Value;
 
@@ -385,7 +388,7 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
             bitTag.StopPropagation = StopPropagation.Value;
         }
 
-        if (Styles is not null && bitTag.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitTag.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitTag.Styles, Styles) is false)
         {
             bitTag.Styles = Styles;
 
@@ -416,7 +419,7 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
             bitTag.Title = Title;
         }
 
-        if (Variant.HasValue && bitTag.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue && bitTag.HasNotBeenSet(nameof(Variant)) && bitTag.Variant != Variant)
         {
             bitTag.Variant = Variant.Value;
 

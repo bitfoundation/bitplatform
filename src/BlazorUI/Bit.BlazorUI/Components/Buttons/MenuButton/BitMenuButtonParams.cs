@@ -289,6 +289,9 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitMenuButton);
 
+        // This runs on every render of every menu button under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AriaDescription.HasValue() && bitMenuButton.HasNotBeenSet(nameof(AriaDescription)))
         {
             bitMenuButton.AriaDescription = AriaDescription;
@@ -309,7 +312,7 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
             bitMenuButton.AutoLoading = AutoLoading.Value;
         }
 
-        if (Background.HasValue && bitMenuButton.HasNotBeenSet(nameof(Background)))
+        if (Background.HasValue && bitMenuButton.HasNotBeenSet(nameof(Background)) && bitMenuButton.Background != Background)
         {
             bitMenuButton.Background = Background.Value;
 
@@ -351,7 +354,7 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
             bitMenuButton.ChevronDownTitle = ChevronDownTitle;
         }
 
-        if (Classes is not null && bitMenuButton.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitMenuButton.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitMenuButton.Classes, Classes) is false)
         {
             bitMenuButton.Classes = Classes;
 
@@ -363,7 +366,7 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
             bitMenuButton.CloseOnItemClick = CloseOnItemClick.Value;
         }
 
-        if (Color.HasValue && bitMenuButton.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitMenuButton.HasNotBeenSet(nameof(Color)) && bitMenuButton.Color != Color)
         {
             bitMenuButton.Color = Color.Value;
 
@@ -390,7 +393,7 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
             bitMenuButton.FormId = FormId;
         }
 
-        if (FullWidth.HasValue && bitMenuButton.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitMenuButton.HasNotBeenSet(nameof(FullWidth)) && bitMenuButton.FullWidth != FullWidth)
         {
             bitMenuButton.FullWidth = FullWidth.Value;
 
@@ -407,14 +410,14 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
             bitMenuButton.IconName = IconName;
         }
 
-        if (IconOnly.HasValue && bitMenuButton.HasNotBeenSet(nameof(IconOnly)))
+        if (IconOnly.HasValue && bitMenuButton.HasNotBeenSet(nameof(IconOnly)) && bitMenuButton.IconOnly != IconOnly)
         {
             bitMenuButton.IconOnly = IconOnly.Value;
 
             bitMenuButton.ClassBuilder.Reset();
         }
 
-        if (IsLoading.HasValue && bitMenuButton.HasNotBeenSet(nameof(IsLoading)))
+        if (IsLoading.HasValue && bitMenuButton.HasNotBeenSet(nameof(IsLoading)) && bitMenuButton.IsLoading != IsLoading)
         {
             bitMenuButton.IsLoading = IsLoading.Value;
 
@@ -463,28 +466,28 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
             bitMenuButton.RadioIconName = RadioIconName;
         }
 
-        if (Reclickable.HasValue && bitMenuButton.HasNotBeenSet(nameof(Reclickable)))
+        if (Reclickable.HasValue && bitMenuButton.HasNotBeenSet(nameof(Reclickable)) && bitMenuButton.Reclickable != Reclickable)
         {
             bitMenuButton.Reclickable = Reclickable.Value;
 
             bitMenuButton.ClassBuilder.Reset();
         }
 
-        if (Size.HasValue && bitMenuButton.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitMenuButton.HasNotBeenSet(nameof(Size)) && bitMenuButton.Size != Size)
         {
             bitMenuButton.Size = Size.Value;
 
             bitMenuButton.ClassBuilder.Reset();
         }
 
-        if (Split.HasValue && bitMenuButton.HasNotBeenSet(nameof(Split)))
+        if (Split.HasValue && bitMenuButton.HasNotBeenSet(nameof(Split)) && bitMenuButton.Split != Split)
         {
             bitMenuButton.Split = Split.Value;
 
             bitMenuButton.ClassBuilder.Reset();
         }
 
-        if (Sticky.HasValue && bitMenuButton.HasNotBeenSet(nameof(Sticky)))
+        if (Sticky.HasValue && bitMenuButton.HasNotBeenSet(nameof(Sticky)) && bitMenuButton.Sticky != Sticky)
         {
             bitMenuButton.Sticky = Sticky.Value;
 
@@ -497,7 +500,7 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
             bitMenuButton.StopPropagation = StopPropagation.Value;
         }
 
-        if (Styles is not null && bitMenuButton.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitMenuButton.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitMenuButton.Styles, Styles) is false)
         {
             bitMenuButton.Styles = Styles;
 
@@ -524,7 +527,7 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
             bitMenuButton.Title = Title;
         }
 
-        if (Toggle.HasValue && bitMenuButton.HasNotBeenSet(nameof(Toggle)))
+        if (Toggle.HasValue && bitMenuButton.HasNotBeenSet(nameof(Toggle)) && bitMenuButton.Toggle != Toggle)
         {
             bitMenuButton.Toggle = Toggle.Value;
 
@@ -532,7 +535,7 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
             bitMenuButton.StyleBuilder.Reset();
         }
 
-        if (Variant.HasValue && bitMenuButton.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue && bitMenuButton.HasNotBeenSet(nameof(Variant)) && bitMenuButton.Variant != Variant)
         {
             bitMenuButton.Variant = Variant.Value;
 

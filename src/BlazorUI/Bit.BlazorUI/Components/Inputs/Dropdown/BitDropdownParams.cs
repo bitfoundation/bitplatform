@@ -667,6 +667,9 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
 
         UpdateBaseParameters(bitDropdown);
 
+        // This runs on every render of every dropdown under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AriaDescription.HasValue() && bitDropdown.HasNotBeenSet(nameof(AriaDescription)))
         {
             bitDropdown.AriaDescription = AriaDescription;
@@ -702,7 +705,7 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
             bitDropdown.CaretDownIconName = CaretDownIconName;
         }
 
-        if (Chips.HasValue && bitDropdown.HasNotBeenSet(nameof(Chips)))
+        if (Chips.HasValue && bitDropdown.HasNotBeenSet(nameof(Chips)) && bitDropdown.Chips != Chips)
         {
             bitDropdown.Chips = Chips.Value;
 
@@ -724,7 +727,7 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
             bitDropdown.ChipsRemoveIconName = ChipsRemoveIconName;
         }
 
-        if (Classes is not null && bitDropdown.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitDropdown.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitDropdown.Classes, Classes) is false)
         {
             bitDropdown.Classes = Classes;
 
@@ -756,7 +759,7 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
             bitDropdown.CloseOnSelect = CloseOnSelect.Value;
         }
 
-        if (Color.HasValue && bitDropdown.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitDropdown.HasNotBeenSet(nameof(Color)) && bitDropdown.Color != Color)
         {
             bitDropdown.Color = Color.Value;
 
@@ -828,7 +831,7 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
             bitDropdown.FindItemFunction = FindItemFunction;
         }
 
-        if (FitWidth.HasValue && bitDropdown.HasNotBeenSet(nameof(FitWidth)))
+        if (FitWidth.HasValue && bitDropdown.HasNotBeenSet(nameof(FitWidth)) && bitDropdown.FitWidth != FitWidth)
         {
             bitDropdown.FitWidth = FitWidth.Value;
 
@@ -940,7 +943,7 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
             bitDropdown.NameSelectors = NameSelectors;
         }
 
-        if (NoBorder.HasValue && bitDropdown.HasNotBeenSet(nameof(NoBorder)))
+        if (NoBorder.HasValue && bitDropdown.HasNotBeenSet(nameof(NoBorder)) && bitDropdown.NoBorder != NoBorder)
         {
             bitDropdown.NoBorder = NoBorder.Value;
 
@@ -1097,7 +1100,7 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
             bitDropdown.ShowSelectAll = ShowSelectAll.Value;
         }
 
-        if (Size.HasValue && bitDropdown.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitDropdown.HasNotBeenSet(nameof(Size)) && bitDropdown.Size != Size)
         {
             bitDropdown.Size = Size.Value;
 
@@ -1109,7 +1112,7 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
             bitDropdown.StickyHeaders = StickyHeaders.Value;
         }
 
-        if (Styles is not null && bitDropdown.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitDropdown.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitDropdown.Styles, Styles) is false)
         {
             bitDropdown.Styles = Styles;
 
@@ -1136,14 +1139,14 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
             bitDropdown.TokenSeparators = TokenSeparators;
         }
 
-        if (Transparent.HasValue && bitDropdown.HasNotBeenSet(nameof(Transparent)))
+        if (Transparent.HasValue && bitDropdown.HasNotBeenSet(nameof(Transparent)) && bitDropdown.Transparent != Transparent)
         {
             bitDropdown.Transparent = Transparent.Value;
 
             bitDropdown.ClassBuilder.Reset();
         }
 
-        if (Underlined.HasValue && bitDropdown.HasNotBeenSet(nameof(Underlined)))
+        if (Underlined.HasValue && bitDropdown.HasNotBeenSet(nameof(Underlined)) && bitDropdown.Underlined != Underlined)
         {
             bitDropdown.Underlined = Underlined.Value;
 

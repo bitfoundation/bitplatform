@@ -313,6 +313,9 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitTimePicker);
 
+        // This runs on every render of every time picker under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AllowTextInput.HasValue && bitTimePicker.HasNotBeenSet(nameof(AllowTextInput)))
         {
             bitTimePicker.AllowTextInput = AllowTextInput.Value;
@@ -378,7 +381,7 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
             }
         }
 
-        if (Classes is not null && bitTimePicker.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitTimePicker.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitTimePicker.Classes, Classes) is false)
         {
             bitTimePicker.Classes = Classes;
 
@@ -420,7 +423,7 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
             bitTimePicker.CloseButtonTitle = CloseButtonTitle!;
         }
 
-        if (Color.HasValue && bitTimePicker.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitTimePicker.HasNotBeenSet(nameof(Color)) && bitTimePicker.Color != Color)
         {
             bitTimePicker.Color = Color.Value;
 
@@ -442,7 +445,7 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
         // time this cascade reaches it - so the hook is run once more below.
         var recomputeCulture = false;
 
-        if (Culture is not null && bitTimePicker.HasNotBeenSet(nameof(Culture)))
+        if (Culture is not null && bitTimePicker.HasNotBeenSet(nameof(Culture)) && Equals(bitTimePicker.Culture, Culture) is false)
         {
             bitTimePicker.Culture = Culture;
 
@@ -524,7 +527,7 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
             bitTimePicker.DropDirection = DropDirection.Value;
         }
 
-        if (HasBorder.HasValue && bitTimePicker.HasNotBeenSet(nameof(HasBorder)))
+        if (HasBorder.HasValue && bitTimePicker.HasNotBeenSet(nameof(HasBorder)) && bitTimePicker.HasBorder != HasBorder)
         {
             bitTimePicker.HasBorder = HasBorder.Value;
 
@@ -551,7 +554,7 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
             bitTimePicker.IconName = IconName;
         }
 
-        if (IconPlacement.HasValue && bitTimePicker.HasNotBeenSet(nameof(IconPlacement)))
+        if (IconPlacement.HasValue && bitTimePicker.HasNotBeenSet(nameof(IconPlacement)) && bitTimePicker.IconPlacement != IconPlacement)
         {
             bitTimePicker.IconPlacement = IconPlacement.Value;
 
@@ -723,14 +726,14 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
             bitTimePicker.ShowSeconds = ShowSeconds.Value;
         }
 
-        if (Size.HasValue && bitTimePicker.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitTimePicker.HasNotBeenSet(nameof(Size)) && bitTimePicker.Size != Size)
         {
             bitTimePicker.Size = Size.Value;
 
             bitTimePicker.ClassBuilder.Reset();
         }
 
-        if (Standalone.HasValue && bitTimePicker.HasNotBeenSet(nameof(Standalone)))
+        if (Standalone.HasValue && bitTimePicker.HasNotBeenSet(nameof(Standalone)) && bitTimePicker.Standalone != Standalone)
         {
             bitTimePicker.Standalone = Standalone.Value;
 
@@ -742,7 +745,7 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
             bitTimePicker.StartingValue = StartingValue.Value;
         }
 
-        if (Styles is not null && bitTimePicker.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitTimePicker.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitTimePicker.Styles, Styles) is false)
         {
             bitTimePicker.Styles = Styles;
 
@@ -769,7 +772,7 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
             bitTimePicker.TimeZone = TimeZone;
         }
 
-        if (Underlined.HasValue && bitTimePicker.HasNotBeenSet(nameof(Underlined)))
+        if (Underlined.HasValue && bitTimePicker.HasNotBeenSet(nameof(Underlined)) && bitTimePicker.Underlined != Underlined)
         {
             bitTimePicker.Underlined = Underlined.Value;
 

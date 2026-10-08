@@ -160,98 +160,101 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitFooter);
 
-        if (Absolute.HasValue && bitFooter.HasNotBeenSet(nameof(Absolute)))
+        // This runs on every render of every footer under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (Absolute.HasValue && bitFooter.HasNotBeenSet(nameof(Absolute)) && bitFooter.Absolute != Absolute)
         {
             bitFooter.Absolute = Absolute.Value;
 
             bitFooter.ClassBuilder.Reset();
         }
 
-        if (Alignment.HasValue && bitFooter.HasNotBeenSet(nameof(Alignment)))
+        if (Alignment.HasValue && bitFooter.HasNotBeenSet(nameof(Alignment)) && bitFooter.Alignment != Alignment)
         {
             bitFooter.Alignment = Alignment.Value;
 
             bitFooter.ClassBuilder.Reset();
         }
 
-        if (Bordered.HasValue && bitFooter.HasNotBeenSet(nameof(Bordered)))
+        if (Bordered.HasValue && bitFooter.HasNotBeenSet(nameof(Bordered)) && bitFooter.Bordered != Bordered)
         {
             bitFooter.Bordered = Bordered.Value;
 
             bitFooter.ClassBuilder.Reset();
         }
 
-        if (Classes is not null && bitFooter.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitFooter.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitFooter.Classes, Classes) is false)
         {
             bitFooter.Classes = Classes;
 
             bitFooter.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitFooter.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitFooter.HasNotBeenSet(nameof(Color)) && bitFooter.Color != Color)
         {
             bitFooter.Color = Color.Value;
 
             bitFooter.ClassBuilder.Reset();
         }
 
-        if (ElevateOnScroll.HasValue && bitFooter.HasNotBeenSet(nameof(ElevateOnScroll)))
+        if (ElevateOnScroll.HasValue && bitFooter.HasNotBeenSet(nameof(ElevateOnScroll)) && bitFooter.ElevateOnScroll != ElevateOnScroll)
         {
             bitFooter.ElevateOnScroll = ElevateOnScroll.Value;
 
             bitFooter.ClassBuilder.Reset();
         }
 
-        if (Elevated.HasValue && bitFooter.HasNotBeenSet(nameof(Elevated)))
+        if (Elevated.HasValue && bitFooter.HasNotBeenSet(nameof(Elevated)) && bitFooter.Elevated != Elevated)
         {
             bitFooter.Elevated = Elevated.Value;
 
             bitFooter.ClassBuilder.Reset();
         }
 
-        if (Fixed.HasValue && bitFooter.HasNotBeenSet(nameof(Fixed)))
+        if (Fixed.HasValue && bitFooter.HasNotBeenSet(nameof(Fixed)) && bitFooter.Fixed != Fixed)
         {
             bitFooter.Fixed = Fixed.Value;
 
             bitFooter.ClassBuilder.Reset();
         }
 
-        if (Gap is not null && bitFooter.HasNotBeenSet(nameof(Gap)))
+        if (Gap is not null && bitFooter.HasNotBeenSet(nameof(Gap)) && bitFooter.Gap != Gap)
         {
             bitFooter.Gap = Gap;
 
             bitFooter.StyleBuilder.Reset();
         }
 
-        if (Height.HasValue && bitFooter.HasNotBeenSet(nameof(Height)))
+        if (Height.HasValue && bitFooter.HasNotBeenSet(nameof(Height)) && bitFooter.Height != Height)
         {
             bitFooter.Height = Height.Value;
 
             bitFooter.StyleBuilder.Reset();
         }
 
-        if (Hidden.HasValue && bitFooter.HasNotBeenSet(nameof(Hidden)))
+        if (Hidden.HasValue && bitFooter.HasNotBeenSet(nameof(Hidden)) && bitFooter.Hidden != Hidden)
         {
             bitFooter.Hidden = Hidden.Value;
 
             bitFooter.ClassBuilder.Reset();
         }
 
-        if (MaxWidth is not null && bitFooter.HasNotBeenSet(nameof(MaxWidth)))
+        if (MaxWidth is not null && bitFooter.HasNotBeenSet(nameof(MaxWidth)) && bitFooter.MaxWidth != MaxWidth)
         {
             bitFooter.MaxWidth = MaxWidth;
 
             bitFooter.StyleBuilder.Reset();
         }
 
-        if (NoGutter.HasValue && bitFooter.HasNotBeenSet(nameof(NoGutter)))
+        if (NoGutter.HasValue && bitFooter.HasNotBeenSet(nameof(NoGutter)) && bitFooter.NoGutter != NoGutter)
         {
             bitFooter.NoGutter = NoGutter.Value;
 
             bitFooter.ClassBuilder.Reset();
         }
 
-        if (Reveal.HasValue && bitFooter.HasNotBeenSet(nameof(Reveal)))
+        if (Reveal.HasValue && bitFooter.HasNotBeenSet(nameof(Reveal)) && bitFooter.Reveal != Reveal)
         {
             bitFooter.Reveal = Reveal.Value;
 
@@ -273,49 +276,49 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
             bitFooter.ScrollTarget = ScrollTarget;
         }
 
-        if (Size.HasValue && bitFooter.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitFooter.HasNotBeenSet(nameof(Size)) && bitFooter.Size != Size)
         {
             bitFooter.Size = Size.Value;
 
             bitFooter.ClassBuilder.Reset();
         }
 
-        if (Sticky.HasValue && bitFooter.HasNotBeenSet(nameof(Sticky)))
+        if (Sticky.HasValue && bitFooter.HasNotBeenSet(nameof(Sticky)) && bitFooter.Sticky != Sticky)
         {
             bitFooter.Sticky = Sticky.Value;
 
             bitFooter.ClassBuilder.Reset();
         }
 
-        if (Styles is not null && bitFooter.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitFooter.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitFooter.Styles, Styles) is false)
         {
             bitFooter.Styles = Styles;
 
             bitFooter.StyleBuilder.Reset();
         }
 
-        if (Translucent.HasValue && bitFooter.HasNotBeenSet(nameof(Translucent)))
+        if (Translucent.HasValue && bitFooter.HasNotBeenSet(nameof(Translucent)) && bitFooter.Translucent != Translucent)
         {
             bitFooter.Translucent = Translucent.Value;
 
             bitFooter.ClassBuilder.Reset();
         }
 
-        if (Variant.HasValue && bitFooter.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue && bitFooter.HasNotBeenSet(nameof(Variant)) && bitFooter.Variant != Variant)
         {
             bitFooter.Variant = Variant.Value;
 
             bitFooter.ClassBuilder.Reset();
         }
 
-        if (VerticalAlign.HasValue && bitFooter.HasNotBeenSet(nameof(VerticalAlign)))
+        if (VerticalAlign.HasValue && bitFooter.HasNotBeenSet(nameof(VerticalAlign)) && bitFooter.VerticalAlign != VerticalAlign)
         {
             bitFooter.VerticalAlign = VerticalAlign.Value;
 
             bitFooter.ClassBuilder.Reset();
         }
 
-        if (Wrap.HasValue && bitFooter.HasNotBeenSet(nameof(Wrap)))
+        if (Wrap.HasValue && bitFooter.HasNotBeenSet(nameof(Wrap)) && bitFooter.Wrap != Wrap)
         {
             bitFooter.Wrap = Wrap.Value;
 

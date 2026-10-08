@@ -236,70 +236,73 @@ public class BitGridParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitGrid);
 
-        if (AlignContent.HasValue && bitGrid.HasNotBeenSet(nameof(AlignContent)))
+        // This runs on every render of every grid under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (AlignContent.HasValue && bitGrid.HasNotBeenSet(nameof(AlignContent)) && bitGrid.AlignContent != AlignContent)
         {
             bitGrid.AlignContent = AlignContent.Value;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (Alignment.HasValue && bitGrid.HasNotBeenSet(nameof(Alignment)))
+        if (Alignment.HasValue && bitGrid.HasNotBeenSet(nameof(Alignment)) && bitGrid.Alignment != Alignment)
         {
             bitGrid.Alignment = Alignment.Value;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (Columns.HasValue && bitGrid.HasNotBeenSet(nameof(Columns)))
+        if (Columns.HasValue && bitGrid.HasNotBeenSet(nameof(Columns)) && bitGrid.Columns != Columns)
         {
             bitGrid.Columns = Columns.Value;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (ColumnsXs.HasValue && bitGrid.HasNotBeenSet(nameof(ColumnsXs)))
+        if (ColumnsXs.HasValue && bitGrid.HasNotBeenSet(nameof(ColumnsXs)) && bitGrid.ColumnsXs != ColumnsXs)
         {
             bitGrid.ColumnsXs = ColumnsXs.Value;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (ColumnsSm.HasValue && bitGrid.HasNotBeenSet(nameof(ColumnsSm)))
+        if (ColumnsSm.HasValue && bitGrid.HasNotBeenSet(nameof(ColumnsSm)) && bitGrid.ColumnsSm != ColumnsSm)
         {
             bitGrid.ColumnsSm = ColumnsSm.Value;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (ColumnsMd.HasValue && bitGrid.HasNotBeenSet(nameof(ColumnsMd)))
+        if (ColumnsMd.HasValue && bitGrid.HasNotBeenSet(nameof(ColumnsMd)) && bitGrid.ColumnsMd != ColumnsMd)
         {
             bitGrid.ColumnsMd = ColumnsMd.Value;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (ColumnsLg.HasValue && bitGrid.HasNotBeenSet(nameof(ColumnsLg)))
+        if (ColumnsLg.HasValue && bitGrid.HasNotBeenSet(nameof(ColumnsLg)) && bitGrid.ColumnsLg != ColumnsLg)
         {
             bitGrid.ColumnsLg = ColumnsLg.Value;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (ColumnsXl.HasValue && bitGrid.HasNotBeenSet(nameof(ColumnsXl)))
+        if (ColumnsXl.HasValue && bitGrid.HasNotBeenSet(nameof(ColumnsXl)) && bitGrid.ColumnsXl != ColumnsXl)
         {
             bitGrid.ColumnsXl = ColumnsXl.Value;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (ColumnsXxl.HasValue && bitGrid.HasNotBeenSet(nameof(ColumnsXxl)))
+        if (ColumnsXxl.HasValue && bitGrid.HasNotBeenSet(nameof(ColumnsXxl)) && bitGrid.ColumnsXxl != ColumnsXxl)
         {
             bitGrid.ColumnsXxl = ColumnsXxl.Value;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (Container.HasValue && bitGrid.HasNotBeenSet(nameof(Container)))
+        if (Container.HasValue && bitGrid.HasNotBeenSet(nameof(Container)) && bitGrid.Container != Container)
         {
             bitGrid.Container = Container.Value;
 
@@ -311,28 +314,28 @@ public class BitGridParams : BitComponentBaseParams, IBitComponentParams
             bitGrid.Element = Element;
         }
 
-        if (Grow.HasValue && bitGrid.HasNotBeenSet(nameof(Grow)))
+        if (Grow.HasValue && bitGrid.HasNotBeenSet(nameof(Grow)) && bitGrid.Grow != Grow)
         {
             bitGrid.Grow = Grow.Value;
 
             bitGrid.ClassBuilder.Reset();
         }
 
-        if (HorizontalAlign.HasValue && bitGrid.HasNotBeenSet(nameof(HorizontalAlign)))
+        if (HorizontalAlign.HasValue && bitGrid.HasNotBeenSet(nameof(HorizontalAlign)) && bitGrid.HorizontalAlign != HorizontalAlign)
         {
             bitGrid.HorizontalAlign = HorizontalAlign.Value;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (HorizontalSpacing.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacing)))
+        if (HorizontalSpacing.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacing)) && bitGrid.HorizontalSpacing != HorizontalSpacing)
         {
             bitGrid.HorizontalSpacing = HorizontalSpacing;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (MinItemWidth.HasValue() && bitGrid.HasNotBeenSet(nameof(MinItemWidth)))
+        if (MinItemWidth.HasValue() && bitGrid.HasNotBeenSet(nameof(MinItemWidth)) && bitGrid.MinItemWidth != MinItemWidth)
         {
             bitGrid.MinItemWidth = MinItemWidth;
 
@@ -340,42 +343,42 @@ public class BitGridParams : BitComponentBaseParams, IBitComponentParams
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (NoWrap.HasValue && bitGrid.HasNotBeenSet(nameof(NoWrap)))
+        if (NoWrap.HasValue && bitGrid.HasNotBeenSet(nameof(NoWrap)) && bitGrid.NoWrap != NoWrap)
         {
             bitGrid.NoWrap = NoWrap.Value;
 
             bitGrid.ClassBuilder.Reset();
         }
 
-        if (Reversed.HasValue && bitGrid.HasNotBeenSet(nameof(Reversed)))
+        if (Reversed.HasValue && bitGrid.HasNotBeenSet(nameof(Reversed)) && bitGrid.Reversed != Reversed)
         {
             bitGrid.Reversed = Reversed.Value;
 
             bitGrid.ClassBuilder.Reset();
         }
 
-        if (Spacing.HasValue() && bitGrid.HasNotBeenSet(nameof(Spacing)))
+        if (Spacing.HasValue() && bitGrid.HasNotBeenSet(nameof(Spacing)) && bitGrid.Spacing != Spacing)
         {
             bitGrid.Spacing = Spacing;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (Span.HasValue && bitGrid.HasNotBeenSet(nameof(Span)))
+        if (Span.HasValue && bitGrid.HasNotBeenSet(nameof(Span)) && bitGrid.Span != Span)
         {
             bitGrid.Span = Span.Value;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (VerticalAlign.HasValue && bitGrid.HasNotBeenSet(nameof(VerticalAlign)))
+        if (VerticalAlign.HasValue && bitGrid.HasNotBeenSet(nameof(VerticalAlign)) && bitGrid.VerticalAlign != VerticalAlign)
         {
             bitGrid.VerticalAlign = VerticalAlign.Value;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (VerticalSpacing.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacing)))
+        if (VerticalSpacing.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacing)) && bitGrid.VerticalSpacing != VerticalSpacing)
         {
             bitGrid.VerticalSpacing = VerticalSpacing;
 
@@ -389,126 +392,126 @@ public class BitGridParams : BitComponentBaseParams, IBitComponentParams
 
     private void UpdateResponsiveSpacingParameters(BitGrid bitGrid)
     {
-        if (SpacingXs.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingXs)))
+        if (SpacingXs.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingXs)) && bitGrid.SpacingXs != SpacingXs)
         {
             bitGrid.SpacingXs = SpacingXs;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (SpacingSm.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingSm)))
+        if (SpacingSm.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingSm)) && bitGrid.SpacingSm != SpacingSm)
         {
             bitGrid.SpacingSm = SpacingSm;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (SpacingMd.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingMd)))
+        if (SpacingMd.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingMd)) && bitGrid.SpacingMd != SpacingMd)
         {
             bitGrid.SpacingMd = SpacingMd;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (SpacingLg.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingLg)))
+        if (SpacingLg.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingLg)) && bitGrid.SpacingLg != SpacingLg)
         {
             bitGrid.SpacingLg = SpacingLg;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (SpacingXl.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingXl)))
+        if (SpacingXl.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingXl)) && bitGrid.SpacingXl != SpacingXl)
         {
             bitGrid.SpacingXl = SpacingXl;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (SpacingXxl.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingXxl)))
+        if (SpacingXxl.HasValue() && bitGrid.HasNotBeenSet(nameof(SpacingXxl)) && bitGrid.SpacingXxl != SpacingXxl)
         {
             bitGrid.SpacingXxl = SpacingXxl;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (HorizontalSpacingXs.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingXs)))
+        if (HorizontalSpacingXs.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingXs)) && bitGrid.HorizontalSpacingXs != HorizontalSpacingXs)
         {
             bitGrid.HorizontalSpacingXs = HorizontalSpacingXs;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (HorizontalSpacingSm.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingSm)))
+        if (HorizontalSpacingSm.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingSm)) && bitGrid.HorizontalSpacingSm != HorizontalSpacingSm)
         {
             bitGrid.HorizontalSpacingSm = HorizontalSpacingSm;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (HorizontalSpacingMd.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingMd)))
+        if (HorizontalSpacingMd.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingMd)) && bitGrid.HorizontalSpacingMd != HorizontalSpacingMd)
         {
             bitGrid.HorizontalSpacingMd = HorizontalSpacingMd;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (HorizontalSpacingLg.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingLg)))
+        if (HorizontalSpacingLg.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingLg)) && bitGrid.HorizontalSpacingLg != HorizontalSpacingLg)
         {
             bitGrid.HorizontalSpacingLg = HorizontalSpacingLg;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (HorizontalSpacingXl.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingXl)))
+        if (HorizontalSpacingXl.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingXl)) && bitGrid.HorizontalSpacingXl != HorizontalSpacingXl)
         {
             bitGrid.HorizontalSpacingXl = HorizontalSpacingXl;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (HorizontalSpacingXxl.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingXxl)))
+        if (HorizontalSpacingXxl.HasValue() && bitGrid.HasNotBeenSet(nameof(HorizontalSpacingXxl)) && bitGrid.HorizontalSpacingXxl != HorizontalSpacingXxl)
         {
             bitGrid.HorizontalSpacingXxl = HorizontalSpacingXxl;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (VerticalSpacingXs.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingXs)))
+        if (VerticalSpacingXs.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingXs)) && bitGrid.VerticalSpacingXs != VerticalSpacingXs)
         {
             bitGrid.VerticalSpacingXs = VerticalSpacingXs;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (VerticalSpacingSm.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingSm)))
+        if (VerticalSpacingSm.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingSm)) && bitGrid.VerticalSpacingSm != VerticalSpacingSm)
         {
             bitGrid.VerticalSpacingSm = VerticalSpacingSm;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (VerticalSpacingMd.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingMd)))
+        if (VerticalSpacingMd.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingMd)) && bitGrid.VerticalSpacingMd != VerticalSpacingMd)
         {
             bitGrid.VerticalSpacingMd = VerticalSpacingMd;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (VerticalSpacingLg.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingLg)))
+        if (VerticalSpacingLg.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingLg)) && bitGrid.VerticalSpacingLg != VerticalSpacingLg)
         {
             bitGrid.VerticalSpacingLg = VerticalSpacingLg;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (VerticalSpacingXl.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingXl)))
+        if (VerticalSpacingXl.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingXl)) && bitGrid.VerticalSpacingXl != VerticalSpacingXl)
         {
             bitGrid.VerticalSpacingXl = VerticalSpacingXl;
 
             bitGrid.StyleBuilder.Reset();
         }
 
-        if (VerticalSpacingXxl.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingXxl)))
+        if (VerticalSpacingXxl.HasValue() && bitGrid.HasNotBeenSet(nameof(VerticalSpacingXxl)) && bitGrid.VerticalSpacingXxl != VerticalSpacingXxl)
         {
             bitGrid.VerticalSpacingXxl = VerticalSpacingXxl;
 

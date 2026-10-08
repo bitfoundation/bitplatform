@@ -212,6 +212,9 @@ public class BitCheckboxParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitCheckbox);
 
+        // This runs on every render of every checkbox under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AllowDisabledFocus.HasValue && bitCheckbox.HasNotBeenSet(nameof(AllowDisabledFocus)))
         {
             bitCheckbox.AllowDisabledFocus = AllowDisabledFocus.Value;
@@ -272,14 +275,14 @@ public class BitCheckboxParams : BitComponentBaseParams, IBitComponentParams
             bitCheckbox.CheckIconName = CheckIconName;
         }
 
-        if (Classes is not null && bitCheckbox.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitCheckbox.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitCheckbox.Classes, Classes) is false)
         {
             bitCheckbox.Classes = Classes;
 
             bitCheckbox.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitCheckbox.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitCheckbox.HasNotBeenSet(nameof(Color)) && bitCheckbox.Color != Color)
         {
             bitCheckbox.Color = Color.Value;
 
@@ -291,24 +294,22 @@ public class BitCheckboxParams : BitComponentBaseParams, IBitComponentParams
             bitCheckbox.DefaultIndeterminate = DefaultIndeterminate.Value;
         }
 
-        if (Description.HasValue() && bitCheckbox.HasNotBeenSet(nameof(Description)))
+        if (Description.HasValue() && bitCheckbox.HasNotBeenSet(nameof(Description)) && bitCheckbox.Description != Description)
         {
             bitCheckbox.Description = Description;
 
             bitCheckbox.ClassBuilder.Reset();
         }
 
-        if (FullWidth.HasValue && bitCheckbox.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitCheckbox.HasNotBeenSet(nameof(FullWidth)) && bitCheckbox.FullWidth != FullWidth)
         {
             bitCheckbox.FullWidth = FullWidth.Value;
 
             bitCheckbox.ClassBuilder.Reset();
         }
 
-        if (Indeterminate.HasValue && bitCheckbox.HasNotBeenSet(nameof(Indeterminate)))
+        if (Indeterminate.HasValue && bitCheckbox.HasNotBeenSet(nameof(Indeterminate)) && bitCheckbox.Indeterminate != Indeterminate)
         {
-            var indeterminateChanged = bitCheckbox.Indeterminate != Indeterminate.Value;
-
             bitCheckbox.Indeterminate = Indeterminate.Value;
 
             bitCheckbox.ClassBuilder.Reset();
@@ -316,59 +317,59 @@ public class BitCheckboxParams : BitComponentBaseParams, IBitComponentParams
             // The mixed state lives in a DOM property rather than an attribute, so it has to be pushed onto the
             // element the way the setter of a parameter written on the component itself does. Only once there is
             // an element to push it onto: the state the checkbox starts out with is pushed on its first render.
-            if (indeterminateChanged) bitCheckbox.OnSetIndeterminateFromParams();
+            bitCheckbox.OnSetIndeterminateFromParams();
         }
 
-        if (IndeterminateIcon is not null && bitCheckbox.HasNotBeenSet(nameof(IndeterminateIcon)))
+        if (IndeterminateIcon is not null && bitCheckbox.HasNotBeenSet(nameof(IndeterminateIcon)) && ReferenceEquals(bitCheckbox.IndeterminateIcon, IndeterminateIcon) is false)
         {
             bitCheckbox.IndeterminateIcon = IndeterminateIcon;
 
             bitCheckbox.ClassBuilder.Reset();
         }
 
-        if (IndeterminateIconName.HasValue() && bitCheckbox.HasNotBeenSet(nameof(IndeterminateIconName)))
+        if (IndeterminateIconName.HasValue() && bitCheckbox.HasNotBeenSet(nameof(IndeterminateIconName)) && bitCheckbox.IndeterminateIconName != IndeterminateIconName)
         {
             bitCheckbox.IndeterminateIconName = IndeterminateIconName;
 
             bitCheckbox.ClassBuilder.Reset();
         }
 
-        if (Label.HasValue() && bitCheckbox.HasNotBeenSet(nameof(Label)))
+        if (Label.HasValue() && bitCheckbox.HasNotBeenSet(nameof(Label)) && bitCheckbox.Label != Label)
         {
             bitCheckbox.Label = Label;
 
             bitCheckbox.ClassBuilder.Reset();
         }
 
-        if (LabelPlacement.HasValue && bitCheckbox.HasNotBeenSet(nameof(LabelPlacement)))
+        if (LabelPlacement.HasValue && bitCheckbox.HasNotBeenSet(nameof(LabelPlacement)) && bitCheckbox.LabelPlacement != LabelPlacement)
         {
             bitCheckbox.LabelPlacement = LabelPlacement.Value;
 
             bitCheckbox.ClassBuilder.Reset();
         }
 
-        if (Loading.HasValue && bitCheckbox.HasNotBeenSet(nameof(Loading)))
+        if (Loading.HasValue && bitCheckbox.HasNotBeenSet(nameof(Loading)) && bitCheckbox.Loading != Loading)
         {
             bitCheckbox.Loading = Loading.Value;
 
             bitCheckbox.ClassBuilder.Reset();
         }
 
-        if (NoWrap.HasValue && bitCheckbox.HasNotBeenSet(nameof(NoWrap)))
+        if (NoWrap.HasValue && bitCheckbox.HasNotBeenSet(nameof(NoWrap)) && bitCheckbox.NoWrap != NoWrap)
         {
             bitCheckbox.NoWrap = NoWrap.Value;
 
             bitCheckbox.ClassBuilder.Reset();
         }
 
-        if (Reversed.HasValue && bitCheckbox.HasNotBeenSet(nameof(Reversed)))
+        if (Reversed.HasValue && bitCheckbox.HasNotBeenSet(nameof(Reversed)) && bitCheckbox.Reversed != Reversed)
         {
             bitCheckbox.Reversed = Reversed.Value;
 
             bitCheckbox.ClassBuilder.Reset();
         }
 
-        if (Size.HasValue && bitCheckbox.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitCheckbox.HasNotBeenSet(nameof(Size)) && bitCheckbox.Size != Size)
         {
             bitCheckbox.Size = Size.Value;
 
@@ -380,7 +381,7 @@ public class BitCheckboxParams : BitComponentBaseParams, IBitComponentParams
             bitCheckbox.StopPropagation = StopPropagation.Value;
         }
 
-        if (Styles is not null && bitCheckbox.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitCheckbox.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitCheckbox.Styles, Styles) is false)
         {
             bitCheckbox.Styles = Styles;
 
@@ -397,14 +398,14 @@ public class BitCheckboxParams : BitComponentBaseParams, IBitComponentParams
             bitCheckbox.Title = Title;
         }
 
-        if (UncheckedIcon is not null && bitCheckbox.HasNotBeenSet(nameof(UncheckedIcon)))
+        if (UncheckedIcon is not null && bitCheckbox.HasNotBeenSet(nameof(UncheckedIcon)) && ReferenceEquals(bitCheckbox.UncheckedIcon, UncheckedIcon) is false)
         {
             bitCheckbox.UncheckedIcon = UncheckedIcon;
 
             bitCheckbox.ClassBuilder.Reset();
         }
 
-        if (UncheckedIconName.HasValue() && bitCheckbox.HasNotBeenSet(nameof(UncheckedIconName)))
+        if (UncheckedIconName.HasValue() && bitCheckbox.HasNotBeenSet(nameof(UncheckedIconName)) && bitCheckbox.UncheckedIconName != UncheckedIconName)
         {
             bitCheckbox.UncheckedIconName = UncheckedIconName;
 

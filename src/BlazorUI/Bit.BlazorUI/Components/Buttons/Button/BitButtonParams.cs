@@ -250,6 +250,9 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitButton);
 
+        // This runs on every render of every button under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AllowDisabledFocus.HasValue && bitButton.HasNotBeenSet(nameof(AllowDisabledFocus)))
         {
             bitButton.AllowDisabledFocus = AllowDisabledFocus.Value;
@@ -280,14 +283,14 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
             bitButton.ButtonType = ButtonType.Value;
         }
 
-        if (Classes is not null && bitButton.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitButton.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitButton.Classes, Classes) is false)
         {
             bitButton.Classes = Classes;
 
             bitButton.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitButton.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitButton.HasNotBeenSet(nameof(Color)) && bitButton.Color != Color)
         {
             bitButton.Color = Color.Value;
 
@@ -299,42 +302,42 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
             bitButton.Download = Download;
         }
 
-        if (Draggable.HasValue && bitButton.HasNotBeenSet(nameof(Draggable)))
+        if (Draggable.HasValue && bitButton.HasNotBeenSet(nameof(Draggable)) && bitButton.Draggable != Draggable)
         {
             bitButton.Draggable = Draggable.Value;
 
             bitButton.ClassBuilder.Reset();
         }
 
-        if (FixedColor.HasValue && bitButton.HasNotBeenSet(nameof(FixedColor)))
+        if (FixedColor.HasValue && bitButton.HasNotBeenSet(nameof(FixedColor)) && bitButton.FixedColor != FixedColor)
         {
             bitButton.FixedColor = FixedColor.Value;
 
             bitButton.ClassBuilder.Reset();
         }
 
-        if (Float.HasValue && bitButton.HasNotBeenSet(nameof(Float)))
+        if (Float.HasValue && bitButton.HasNotBeenSet(nameof(Float)) && bitButton.Float != Float)
         {
             bitButton.Float = Float.Value;
 
             bitButton.ClassBuilder.Reset();
         }
 
-        if (FloatAbsolute.HasValue && bitButton.HasNotBeenSet(nameof(FloatAbsolute)))
+        if (FloatAbsolute.HasValue && bitButton.HasNotBeenSet(nameof(FloatAbsolute)) && bitButton.FloatAbsolute != FloatAbsolute)
         {
             bitButton.FloatAbsolute = FloatAbsolute.Value;
 
             bitButton.ClassBuilder.Reset();
         }
 
-        if (FloatOffset.HasValue() && bitButton.HasNotBeenSet(nameof(FloatOffset)))
+        if (FloatOffset.HasValue() && bitButton.HasNotBeenSet(nameof(FloatOffset)) && bitButton.FloatOffset != FloatOffset)
         {
             bitButton.FloatOffset = FloatOffset;
 
             bitButton.StyleBuilder.Reset();
         }
 
-        if (FloatPosition.HasValue && bitButton.HasNotBeenSet(nameof(FloatPosition)))
+        if (FloatPosition.HasValue && bitButton.HasNotBeenSet(nameof(FloatPosition)) && bitButton.FloatPosition != FloatPosition)
         {
             bitButton.FloatPosition = FloatPosition.Value;
 
@@ -346,7 +349,7 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
             bitButton.FormId = FormId;
         }
 
-        if (FullWidth.HasValue && bitButton.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitButton.HasNotBeenSet(nameof(FullWidth)) && bitButton.FullWidth != FullWidth)
         {
             bitButton.FullWidth = FullWidth.Value;
 
@@ -374,14 +377,14 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
             bitButton.IconName = IconName;
         }
 
-        if (IconOnly.HasValue && bitButton.HasNotBeenSet(nameof(IconOnly)))
+        if (IconOnly.HasValue && bitButton.HasNotBeenSet(nameof(IconOnly)) && bitButton.IconOnly != IconOnly)
         {
             bitButton.IconOnly = IconOnly.Value;
 
             bitButton.ClassBuilder.Reset();
         }
 
-        if (IconPlacement.HasValue && bitButton.HasNotBeenSet(nameof(IconPlacement)))
+        if (IconPlacement.HasValue && bitButton.HasNotBeenSet(nameof(IconPlacement)) && bitButton.IconPlacement != IconPlacement)
         {
             bitButton.IconPlacement = IconPlacement.Value;
 
@@ -393,7 +396,7 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
             bitButton.IconUrl = IconUrl;
         }
 
-        if (IsLoading.HasValue && bitButton.HasNotBeenSet(nameof(IsLoading)))
+        if (IsLoading.HasValue && bitButton.HasNotBeenSet(nameof(IsLoading)) && bitButton.IsLoading != IsLoading)
         {
             bitButton.IsLoading = IsLoading.Value;
 
@@ -415,14 +418,14 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
             bitButton.LoadingLabelPlacement = LoadingLabelPlacement.Value;
         }
 
-        if (NoWrap.HasValue && bitButton.HasNotBeenSet(nameof(NoWrap)))
+        if (NoWrap.HasValue && bitButton.HasNotBeenSet(nameof(NoWrap)) && bitButton.NoWrap != NoWrap)
         {
             bitButton.NoWrap = NoWrap.Value;
 
             bitButton.ClassBuilder.Reset();
         }
 
-        if (Reclickable.HasValue && bitButton.HasNotBeenSet(nameof(Reclickable)))
+        if (Reclickable.HasValue && bitButton.HasNotBeenSet(nameof(Reclickable)) && bitButton.Reclickable != Reclickable)
         {
             bitButton.Reclickable = Reclickable.Value;
 
@@ -436,21 +439,21 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
             relWasSet = true;
         }
 
-        if (Rounded.HasValue && bitButton.HasNotBeenSet(nameof(Rounded)))
+        if (Rounded.HasValue && bitButton.HasNotBeenSet(nameof(Rounded)) && bitButton.Rounded != Rounded)
         {
             bitButton.Rounded = Rounded.Value;
 
             bitButton.ClassBuilder.Reset();
         }
 
-        if (SecondaryText.HasValue() && bitButton.HasNotBeenSet(nameof(SecondaryText)))
+        if (SecondaryText.HasValue() && bitButton.HasNotBeenSet(nameof(SecondaryText)) && bitButton.SecondaryText != SecondaryText)
         {
             bitButton.SecondaryText = SecondaryText;
 
             bitButton.ClassBuilder.Reset();
         }
 
-        if (Size.HasValue && bitButton.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitButton.HasNotBeenSet(nameof(Size)) && bitButton.Size != Size)
         {
             bitButton.Size = Size.Value;
 
@@ -462,7 +465,7 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
             bitButton.StopPropagation = StopPropagation.Value;
         }
 
-        if (Styles is not null && bitButton.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitButton.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitButton.Styles, Styles) is false)
         {
             bitButton.Styles = Styles;
 
@@ -487,7 +490,7 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
             bitButton.Title = Title;
         }
 
-        if (Variant.HasValue && bitButton.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue && bitButton.HasNotBeenSet(nameof(Variant)) && bitButton.Variant != Variant)
         {
             bitButton.Variant = Variant.Value;
 

@@ -215,6 +215,9 @@ public class BitSnackBarParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitSnackBar);
 
+        // This runs on every render of every snack bar under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AutoDismiss.HasValue && bitSnackBar.HasNotBeenSet(nameof(AutoDismiss)))
         {
             bitSnackBar.AutoDismiss = AutoDismiss.Value;
@@ -225,7 +228,7 @@ public class BitSnackBarParams : BitComponentBaseParams, IBitComponentParams
             bitSnackBar.AutoDismissTime = AutoDismissTime.Value;
         }
 
-        if (Classes is not null && bitSnackBar.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitSnackBar.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitSnackBar.Classes, Classes) is false)
         {
             bitSnackBar.Classes = Classes;
 
@@ -287,7 +290,7 @@ public class BitSnackBarParams : BitComponentBaseParams, IBitComponentParams
             bitSnackBar.MaxItems = MaxItems.Value;
         }
 
-        if (MaxWidth.HasValue() && bitSnackBar.HasNotBeenSet(nameof(MaxWidth)))
+        if (MaxWidth.HasValue() && bitSnackBar.HasNotBeenSet(nameof(MaxWidth)) && bitSnackBar.MaxWidth != MaxWidth)
         {
             bitSnackBar.MaxWidth = MaxWidth;
 
@@ -304,7 +307,7 @@ public class BitSnackBarParams : BitComponentBaseParams, IBitComponentParams
             bitSnackBar.NewestOnTop = NewestOnTop.Value;
         }
 
-        if (Offset.HasValue() && bitSnackBar.HasNotBeenSet(nameof(Offset)))
+        if (Offset.HasValue() && bitSnackBar.HasNotBeenSet(nameof(Offset)) && bitSnackBar.Offset != Offset)
         {
             bitSnackBar.Offset = Offset;
 
@@ -336,7 +339,7 @@ public class BitSnackBarParams : BitComponentBaseParams, IBitComponentParams
             bitSnackBar.Persistent = Persistent.Value;
         }
 
-        if (Position.HasValue && bitSnackBar.HasNotBeenSet(nameof(Position)))
+        if (Position.HasValue && bitSnackBar.HasNotBeenSet(nameof(Position)) && bitSnackBar.Position != Position)
         {
             bitSnackBar.Position = Position.Value;
 
@@ -368,7 +371,7 @@ public class BitSnackBarParams : BitComponentBaseParams, IBitComponentParams
             bitSnackBar.Size = Size.Value;
         }
 
-        if (Styles is not null && bitSnackBar.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitSnackBar.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitSnackBar.Styles, Styles) is false)
         {
             bitSnackBar.Styles = Styles;
 
@@ -385,7 +388,7 @@ public class BitSnackBarParams : BitComponentBaseParams, IBitComponentParams
             bitSnackBar.SwipeThreshold = SwipeThreshold.Value;
         }
 
-        if (TransitionDuration.HasValue && bitSnackBar.HasNotBeenSet(nameof(TransitionDuration)))
+        if (TransitionDuration.HasValue && bitSnackBar.HasNotBeenSet(nameof(TransitionDuration)) && bitSnackBar.TransitionDuration != TransitionDuration)
         {
             bitSnackBar.TransitionDuration = TransitionDuration.Value;
 

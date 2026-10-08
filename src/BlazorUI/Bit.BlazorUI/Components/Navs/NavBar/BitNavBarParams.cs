@@ -184,12 +184,16 @@ public class BitNavBarParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitNavBar);
 
+        // This runs on every render of every nav bar under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+
         // Mode and Match decide which item the current URL points at, so a change to either re-runs the match.
         // Only an actual change does: the cascade is re-applied on every parameter set, and a re-match on each
         // one would re-fire OnSelectItem on a Reselectable navbar.
         var urlMatchingChanged = false;
 
-        if (Alignment.HasValue && bitNavBar.HasNotBeenSet(nameof(Alignment)))
+        if (Alignment.HasValue && bitNavBar.HasNotBeenSet(nameof(Alignment)) && bitNavBar.Alignment != Alignment)
         {
             bitNavBar.Alignment = Alignment.Value;
 
@@ -201,70 +205,70 @@ public class BitNavBarParams : BitComponentBaseParams, IBitComponentParams
             bitNavBar.AutoReorderOptions = AutoReorderOptions.Value;
         }
 
-        if (Classes is not null && bitNavBar.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitNavBar.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitNavBar.Classes, Classes) is false)
         {
             bitNavBar.Classes = Classes;
 
             bitNavBar.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitNavBar.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitNavBar.HasNotBeenSet(nameof(Color)) && bitNavBar.Color != Color)
         {
             bitNavBar.Color = Color.Value;
 
             bitNavBar.ClassBuilder.Reset();
         }
 
-        if (Filled.HasValue && bitNavBar.HasNotBeenSet(nameof(Filled)))
+        if (Filled.HasValue && bitNavBar.HasNotBeenSet(nameof(Filled)) && bitNavBar.Filled != Filled)
         {
             bitNavBar.Filled = Filled.Value;
 
             bitNavBar.ClassBuilder.Reset();
         }
 
-        if (FitWidth.HasValue && bitNavBar.HasNotBeenSet(nameof(FitWidth)))
+        if (FitWidth.HasValue && bitNavBar.HasNotBeenSet(nameof(FitWidth)) && bitNavBar.FitWidth != FitWidth)
         {
             bitNavBar.FitWidth = FitWidth.Value;
 
             bitNavBar.ClassBuilder.Reset();
         }
 
-        if (FlipIndicator.HasValue && bitNavBar.HasNotBeenSet(nameof(FlipIndicator)))
+        if (FlipIndicator.HasValue && bitNavBar.HasNotBeenSet(nameof(FlipIndicator)) && bitNavBar.FlipIndicator != FlipIndicator)
         {
             bitNavBar.FlipIndicator = FlipIndicator.Value;
 
             bitNavBar.ClassBuilder.Reset();
         }
 
-        if (FullWidth.HasValue && bitNavBar.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitNavBar.HasNotBeenSet(nameof(FullWidth)) && bitNavBar.FullWidth != FullWidth)
         {
             bitNavBar.FullWidth = FullWidth.Value;
 
             bitNavBar.ClassBuilder.Reset();
         }
 
-        if (HideUnselectedText.HasValue && bitNavBar.HasNotBeenSet(nameof(HideUnselectedText)))
+        if (HideUnselectedText.HasValue && bitNavBar.HasNotBeenSet(nameof(HideUnselectedText)) && bitNavBar.HideUnselectedText != HideUnselectedText)
         {
             bitNavBar.HideUnselectedText = HideUnselectedText.Value;
 
             bitNavBar.ClassBuilder.Reset();
         }
 
-        if (IconOnly.HasValue && bitNavBar.HasNotBeenSet(nameof(IconOnly)))
+        if (IconOnly.HasValue && bitNavBar.HasNotBeenSet(nameof(IconOnly)) && bitNavBar.IconOnly != IconOnly)
         {
             bitNavBar.IconOnly = IconOnly.Value;
 
             bitNavBar.ClassBuilder.Reset();
         }
 
-        if (Indicator.HasValue && bitNavBar.HasNotBeenSet(nameof(Indicator)))
+        if (Indicator.HasValue && bitNavBar.HasNotBeenSet(nameof(Indicator)) && bitNavBar.Indicator != Indicator)
         {
             bitNavBar.Indicator = Indicator.Value;
 
             bitNavBar.ClassBuilder.Reset();
         }
 
-        if (InlineText.HasValue && bitNavBar.HasNotBeenSet(nameof(InlineText)))
+        if (InlineText.HasValue && bitNavBar.HasNotBeenSet(nameof(InlineText)) && bitNavBar.InlineText != InlineText)
         {
             bitNavBar.InlineText = InlineText.Value;
 
@@ -276,7 +280,7 @@ public class BitNavBarParams : BitComponentBaseParams, IBitComponentParams
             bitNavBar.ItemTemplateRenderMode = ItemTemplateRenderMode.Value;
         }
 
-        if (Justified.HasValue && bitNavBar.HasNotBeenSet(nameof(Justified)))
+        if (Justified.HasValue && bitNavBar.HasNotBeenSet(nameof(Justified)) && bitNavBar.Justified != Justified)
         {
             bitNavBar.Justified = Justified.Value;
 
@@ -314,14 +318,14 @@ public class BitNavBarParams : BitComponentBaseParams, IBitComponentParams
             bitNavBar.Reselectable = Reselectable.Value;
         }
 
-        if (SafeArea.HasValue && bitNavBar.HasNotBeenSet(nameof(SafeArea)))
+        if (SafeArea.HasValue && bitNavBar.HasNotBeenSet(nameof(SafeArea)) && bitNavBar.SafeArea != SafeArea)
         {
             bitNavBar.SafeArea = SafeArea.Value;
 
             bitNavBar.ClassBuilder.Reset();
         }
 
-        if (Scrollable.HasValue && bitNavBar.HasNotBeenSet(nameof(Scrollable)))
+        if (Scrollable.HasValue && bitNavBar.HasNotBeenSet(nameof(Scrollable)) && bitNavBar.Scrollable != Scrollable)
         {
             bitNavBar.Scrollable = Scrollable.Value;
 
@@ -338,21 +342,21 @@ public class BitNavBarParams : BitComponentBaseParams, IBitComponentParams
             bitNavBar.SingleTabStop = SingleTabStop.Value;
         }
 
-        if (Size.HasValue && bitNavBar.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitNavBar.HasNotBeenSet(nameof(Size)) && bitNavBar.Size != Size)
         {
             bitNavBar.Size = Size.Value;
 
             bitNavBar.ClassBuilder.Reset();
         }
 
-        if (Styles is not null && bitNavBar.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitNavBar.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitNavBar.Styles, Styles) is false)
         {
             bitNavBar.Styles = Styles;
 
             bitNavBar.StyleBuilder.Reset();
         }
 
-        if (Vertical.HasValue && bitNavBar.HasNotBeenSet(nameof(Vertical)))
+        if (Vertical.HasValue && bitNavBar.HasNotBeenSet(nameof(Vertical)) && bitNavBar.Vertical != Vertical)
         {
             bitNavBar.Vertical = Vertical.Value;
 

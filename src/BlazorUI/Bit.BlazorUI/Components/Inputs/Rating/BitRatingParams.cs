@@ -197,6 +197,9 @@ public class BitRatingParams : BitInputBaseParams<double>, IBitComponentParams
 
         UpdateInputBaseParameters(bitRating);
 
+        // This runs on every render of every rating under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AllowClear.HasValue && bitRating.HasNotBeenSet(nameof(AllowClear)))
         {
             bitRating.AllowClear = AllowClear.Value;
@@ -222,14 +225,14 @@ public class BitRatingParams : BitInputBaseParams<double>, IBitComponentParams
             bitRating.AutoFocus = AutoFocus.Value;
         }
 
-        if (Classes is not null && bitRating.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitRating.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitRating.Classes, Classes) is false)
         {
             bitRating.Classes = Classes;
 
             bitRating.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitRating.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitRating.HasNotBeenSet(nameof(Color)) && bitRating.Color != Color)
         {
             bitRating.Color = Color.Value;
 
@@ -271,7 +274,7 @@ public class BitRatingParams : BitInputBaseParams<double>, IBitComponentParams
             bitRating.Label = Label;
         }
 
-        if (LabelPlacement.HasValue && bitRating.HasNotBeenSet(nameof(LabelPlacement)))
+        if (LabelPlacement.HasValue && bitRating.HasNotBeenSet(nameof(LabelPlacement)) && bitRating.LabelPlacement != LabelPlacement)
         {
             bitRating.LabelPlacement = LabelPlacement.Value;
 
@@ -283,7 +286,7 @@ public class BitRatingParams : BitInputBaseParams<double>, IBitComponentParams
             bitRating.Max = Max.Value;
         }
 
-        if (NoHoverPreview.HasValue && bitRating.HasNotBeenSet(nameof(NoHoverPreview)))
+        if (NoHoverPreview.HasValue && bitRating.HasNotBeenSet(nameof(NoHoverPreview)) && bitRating.NoHoverPreview != NoHoverPreview)
         {
             bitRating.NoHoverPreview = NoHoverPreview.Value;
 
@@ -305,14 +308,14 @@ public class BitRatingParams : BitInputBaseParams<double>, IBitComponentParams
             bitRating.SelectedIconName = SelectedIconName;
         }
 
-        if (Size.HasValue && bitRating.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitRating.HasNotBeenSet(nameof(Size)) && bitRating.Size != Size)
         {
             bitRating.Size = Size.Value;
 
             bitRating.ClassBuilder.Reset();
         }
 
-        if (Styles is not null && bitRating.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitRating.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitRating.Styles, Styles) is false)
         {
             bitRating.Styles = Styles;
 
@@ -334,7 +337,7 @@ public class BitRatingParams : BitInputBaseParams<double>, IBitComponentParams
             bitRating.ValueTextFormat = ValueTextFormat;
         }
 
-        if (Vertical.HasValue && bitRating.HasNotBeenSet(nameof(Vertical)))
+        if (Vertical.HasValue && bitRating.HasNotBeenSet(nameof(Vertical)) && bitRating.Vertical != Vertical)
         {
             bitRating.Vertical = Vertical.Value;
 

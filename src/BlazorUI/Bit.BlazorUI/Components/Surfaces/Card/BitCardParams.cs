@@ -236,70 +236,73 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitCard);
 
-        if (Background.HasValue && bitCard.HasNotBeenSet(nameof(Background)))
+        // This runs on every render of every card under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (Background.HasValue && bitCard.HasNotBeenSet(nameof(Background)) && bitCard.Background != Background)
         {
             bitCard.Background = Background.Value;
 
             bitCard.ClassBuilder.Reset();
         }
 
-        if (Border.HasValue && bitCard.HasNotBeenSet(nameof(Border)))
+        if (Border.HasValue && bitCard.HasNotBeenSet(nameof(Border)) && bitCard.Border != Border)
         {
             bitCard.Border = Border.Value;
 
             bitCard.ClassBuilder.Reset();
         }
 
-        if (Classes is not null && bitCard.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitCard.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitCard.Classes, Classes) is false)
         {
             bitCard.Classes = Classes;
 
             bitCard.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitCard.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitCard.HasNotBeenSet(nameof(Color)) && bitCard.Color != Color)
         {
             bitCard.Color = Color.Value;
 
             bitCard.ClassBuilder.Reset();
         }
 
-        if (CoverOverlay.HasValue && bitCard.HasNotBeenSet(nameof(CoverOverlay)))
+        if (CoverOverlay.HasValue && bitCard.HasNotBeenSet(nameof(CoverOverlay)) && bitCard.CoverOverlay != CoverOverlay)
         {
             bitCard.CoverOverlay = CoverOverlay.Value;
 
             bitCard.ClassBuilder.Reset();
         }
 
-        if (Divider.HasValue && bitCard.HasNotBeenSet(nameof(Divider)))
+        if (Divider.HasValue && bitCard.HasNotBeenSet(nameof(Divider)) && bitCard.Divider != Divider)
         {
             bitCard.Divider = Divider.Value;
 
             bitCard.ClassBuilder.Reset();
         }
 
-        if (Elevation.HasValue && bitCard.HasNotBeenSet(nameof(Elevation)))
+        if (Elevation.HasValue && bitCard.HasNotBeenSet(nameof(Elevation)) && bitCard.Elevation != Elevation)
         {
             bitCard.Elevation = Elevation.Value;
 
             bitCard.ClassBuilder.Reset();
         }
 
-        if (FullHeight.HasValue && bitCard.HasNotBeenSet(nameof(FullHeight)))
+        if (FullHeight.HasValue && bitCard.HasNotBeenSet(nameof(FullHeight)) && bitCard.FullHeight != FullHeight)
         {
             bitCard.FullHeight = FullHeight.Value;
 
             bitCard.ClassBuilder.Reset();
         }
 
-        if (FullSize.HasValue && bitCard.HasNotBeenSet(nameof(FullSize)))
+        if (FullSize.HasValue && bitCard.HasNotBeenSet(nameof(FullSize)) && bitCard.FullSize != FullSize)
         {
             bitCard.FullSize = FullSize.Value;
 
             bitCard.ClassBuilder.Reset();
         }
 
-        if (FullWidth.HasValue && bitCard.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitCard.HasNotBeenSet(nameof(FullWidth)) && bitCard.FullWidth != FullWidth)
         {
             bitCard.FullWidth = FullWidth.Value;
 
@@ -311,21 +314,21 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
             bitCard.HeadingLevel = HeadingLevel.Value;
         }
 
-        if (Reversed.HasValue && bitCard.HasNotBeenSet(nameof(Reversed)))
+        if (Reversed.HasValue && bitCard.HasNotBeenSet(nameof(Reversed)) && bitCard.Reversed != Reversed)
         {
             bitCard.Reversed = Reversed.Value;
 
             bitCard.ClassBuilder.Reset();
         }
 
-        if (Horizontal.HasValue && bitCard.HasNotBeenSet(nameof(Horizontal)))
+        if (Horizontal.HasValue && bitCard.HasNotBeenSet(nameof(Horizontal)) && bitCard.Horizontal != Horizontal)
         {
             bitCard.Horizontal = Horizontal.Value;
 
             bitCard.ClassBuilder.Reset();
         }
 
-        if (Hoverable.HasValue && bitCard.HasNotBeenSet(nameof(Hoverable)))
+        if (Hoverable.HasValue && bitCard.HasNotBeenSet(nameof(Hoverable)) && bitCard.Hoverable != Hoverable)
         {
             bitCard.Hoverable = Hoverable.Value;
 
@@ -342,7 +345,7 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
             bitCard.Download = Download;
         }
 
-        if (Loading.HasValue && bitCard.HasNotBeenSet(nameof(Loading)))
+        if (Loading.HasValue && bitCard.HasNotBeenSet(nameof(Loading)) && bitCard.Loading != Loading)
         {
             bitCard.Loading = Loading.Value;
 
@@ -354,21 +357,21 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
             bitCard.LoadingTemplate = LoadingTemplate;
         }
 
-        if (NoPadding.HasValue && bitCard.HasNotBeenSet(nameof(NoPadding)))
+        if (NoPadding.HasValue && bitCard.HasNotBeenSet(nameof(NoPadding)) && bitCard.NoPadding != NoPadding)
         {
             bitCard.NoPadding = NoPadding.Value;
 
             bitCard.ClassBuilder.Reset();
         }
 
-        if (NoShadow.HasValue && bitCard.HasNotBeenSet(nameof(NoShadow)))
+        if (NoShadow.HasValue && bitCard.HasNotBeenSet(nameof(NoShadow)) && bitCard.NoShadow != NoShadow)
         {
             bitCard.NoShadow = NoShadow.Value;
 
             bitCard.ClassBuilder.Reset();
         }
 
-        if (Outlined.HasValue && bitCard.HasNotBeenSet(nameof(Outlined)))
+        if (Outlined.HasValue && bitCard.HasNotBeenSet(nameof(Outlined)) && bitCard.Outlined != Outlined)
         {
             bitCard.Outlined = Outlined.Value;
 
@@ -382,21 +385,21 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
             bitCard.OnSetHrefAndRel();
         }
 
-        if (ScrollableBody.HasValue && bitCard.HasNotBeenSet(nameof(ScrollableBody)))
+        if (ScrollableBody.HasValue && bitCard.HasNotBeenSet(nameof(ScrollableBody)) && bitCard.ScrollableBody != ScrollableBody)
         {
             bitCard.ScrollableBody = ScrollableBody.Value;
 
             bitCard.ClassBuilder.Reset();
         }
 
-        if (Size.HasValue && bitCard.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitCard.HasNotBeenSet(nameof(Size)) && bitCard.Size != Size)
         {
             bitCard.Size = Size.Value;
 
             bitCard.ClassBuilder.Reset();
         }
 
-        if (Square.HasValue && bitCard.HasNotBeenSet(nameof(Square)))
+        if (Square.HasValue && bitCard.HasNotBeenSet(nameof(Square)) && bitCard.Square != Square)
         {
             bitCard.Square = Square.Value;
 
@@ -408,7 +411,7 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
             bitCard.StopPropagation = StopPropagation.Value;
         }
 
-        if (Variant.HasValue && bitCard.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue && bitCard.HasNotBeenSet(nameof(Variant)) && bitCard.Variant != Variant)
         {
             bitCard.Variant = Variant.Value;
 
@@ -422,14 +425,14 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
             bitCard.OnSetHrefAndRel();
         }
 
-        if (Height is not null && bitCard.HasNotBeenSet(nameof(Height)))
+        if (Height is not null && bitCard.HasNotBeenSet(nameof(Height)) && bitCard.Height != Height)
         {
             bitCard.Height = Height;
 
             bitCard.StyleBuilder.Reset();
         }
 
-        if (CoverRatio is not null && bitCard.HasNotBeenSet(nameof(CoverRatio)))
+        if (CoverRatio is not null && bitCard.HasNotBeenSet(nameof(CoverRatio)) && bitCard.CoverRatio != CoverRatio)
         {
             bitCard.CoverRatio = CoverRatio;
 
@@ -437,63 +440,63 @@ public class BitCardParams : BitComponentBaseParams, IBitComponentParams
             bitCard.StyleBuilder.Reset();
         }
 
-        if (CoverWidth is not null && bitCard.HasNotBeenSet(nameof(CoverWidth)))
+        if (CoverWidth is not null && bitCard.HasNotBeenSet(nameof(CoverWidth)) && bitCard.CoverWidth != CoverWidth)
         {
             bitCard.CoverWidth = CoverWidth;
 
             bitCard.StyleBuilder.Reset();
         }
 
-        if (ImageHeight is not null && bitCard.HasNotBeenSet(nameof(ImageHeight)))
+        if (ImageHeight is not null && bitCard.HasNotBeenSet(nameof(ImageHeight)) && bitCard.ImageHeight != ImageHeight)
         {
             bitCard.ImageHeight = ImageHeight;
 
             bitCard.StyleBuilder.Reset();
         }
 
-        if (ImagePosition is not null && bitCard.HasNotBeenSet(nameof(ImagePosition)))
+        if (ImagePosition is not null && bitCard.HasNotBeenSet(nameof(ImagePosition)) && bitCard.ImagePosition != ImagePosition)
         {
             bitCard.ImagePosition = ImagePosition;
 
             bitCard.StyleBuilder.Reset();
         }
 
-        if (MaxHeight is not null && bitCard.HasNotBeenSet(nameof(MaxHeight)))
+        if (MaxHeight is not null && bitCard.HasNotBeenSet(nameof(MaxHeight)) && bitCard.MaxHeight != MaxHeight)
         {
             bitCard.MaxHeight = MaxHeight;
 
             bitCard.StyleBuilder.Reset();
         }
 
-        if (MaxWidth is not null && bitCard.HasNotBeenSet(nameof(MaxWidth)))
+        if (MaxWidth is not null && bitCard.HasNotBeenSet(nameof(MaxWidth)) && bitCard.MaxWidth != MaxWidth)
         {
             bitCard.MaxWidth = MaxWidth;
 
             bitCard.StyleBuilder.Reset();
         }
 
-        if (MinHeight is not null && bitCard.HasNotBeenSet(nameof(MinHeight)))
+        if (MinHeight is not null && bitCard.HasNotBeenSet(nameof(MinHeight)) && bitCard.MinHeight != MinHeight)
         {
             bitCard.MinHeight = MinHeight;
 
             bitCard.StyleBuilder.Reset();
         }
 
-        if (MinWidth is not null && bitCard.HasNotBeenSet(nameof(MinWidth)))
+        if (MinWidth is not null && bitCard.HasNotBeenSet(nameof(MinWidth)) && bitCard.MinWidth != MinWidth)
         {
             bitCard.MinWidth = MinWidth;
 
             bitCard.StyleBuilder.Reset();
         }
 
-        if (Styles is not null && bitCard.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitCard.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitCard.Styles, Styles) is false)
         {
             bitCard.Styles = Styles;
 
             bitCard.StyleBuilder.Reset();
         }
 
-        if (Width is not null && bitCard.HasNotBeenSet(nameof(Width)))
+        if (Width is not null && bitCard.HasNotBeenSet(nameof(Width)) && bitCard.Width != Width)
         {
             bitCard.Width = Width;
 

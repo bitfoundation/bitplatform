@@ -97,7 +97,10 @@ public class BitStickyParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitSticky);
 
-        if (Bottom.HasValue() && bitSticky.HasNotBeenSet(nameof(Bottom)))
+        // This runs on every render of every sticky under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (Bottom.HasValue() && bitSticky.HasNotBeenSet(nameof(Bottom)) && bitSticky.Bottom != Bottom)
         {
             bitSticky.Bottom = Bottom;
 
@@ -110,14 +113,14 @@ public class BitStickyParams : BitComponentBaseParams, IBitComponentParams
             bitSticky.Element = Element;
         }
 
-        if (ElevateOnStuck.HasValue && bitSticky.HasNotBeenSet(nameof(ElevateOnStuck)))
+        if (ElevateOnStuck.HasValue && bitSticky.HasNotBeenSet(nameof(ElevateOnStuck)) && bitSticky.ElevateOnStuck != ElevateOnStuck)
         {
             bitSticky.ElevateOnStuck = ElevateOnStuck.Value;
 
             bitSticky.ClassBuilder.Reset();
         }
 
-        if (Left.HasValue() && bitSticky.HasNotBeenSet(nameof(Left)))
+        if (Left.HasValue() && bitSticky.HasNotBeenSet(nameof(Left)) && bitSticky.Left != Left)
         {
             bitSticky.Left = Left;
 
@@ -125,14 +128,14 @@ public class BitStickyParams : BitComponentBaseParams, IBitComponentParams
             bitSticky.StyleBuilder.Reset();
         }
 
-        if (Placement.HasValue && bitSticky.HasNotBeenSet(nameof(Placement)))
+        if (Placement.HasValue && bitSticky.HasNotBeenSet(nameof(Placement)) && bitSticky.Placement != Placement)
         {
             bitSticky.Placement = Placement.Value;
 
             bitSticky.ClassBuilder.Reset();
         }
 
-        if (Right.HasValue() && bitSticky.HasNotBeenSet(nameof(Right)))
+        if (Right.HasValue() && bitSticky.HasNotBeenSet(nameof(Right)) && bitSticky.Right != Right)
         {
             bitSticky.Right = Right;
 
@@ -145,7 +148,7 @@ public class BitStickyParams : BitComponentBaseParams, IBitComponentParams
             bitSticky.ScrollPadding = ScrollPadding.Value;
         }
 
-        if (StuckClass.HasValue() && bitSticky.HasNotBeenSet(nameof(StuckClass)))
+        if (StuckClass.HasValue() && bitSticky.HasNotBeenSet(nameof(StuckClass)) && bitSticky.StuckClass != StuckClass)
         {
             bitSticky.StuckClass = StuckClass;
 
@@ -157,7 +160,7 @@ public class BitStickyParams : BitComponentBaseParams, IBitComponentParams
             bitSticky.StuckStyle = StuckStyle;
         }
 
-        if (Top.HasValue() && bitSticky.HasNotBeenSet(nameof(Top)))
+        if (Top.HasValue() && bitSticky.HasNotBeenSet(nameof(Top)) && bitSticky.Top != Top)
         {
             bitSticky.Top = Top;
 
@@ -165,7 +168,7 @@ public class BitStickyParams : BitComponentBaseParams, IBitComponentParams
             bitSticky.StyleBuilder.Reset();
         }
 
-        if (ZIndex.HasValue && bitSticky.HasNotBeenSet(nameof(ZIndex)))
+        if (ZIndex.HasValue && bitSticky.HasNotBeenSet(nameof(ZIndex)) && bitSticky.ZIndex != ZIndex)
         {
             bitSticky.ZIndex = ZIndex.Value;
 

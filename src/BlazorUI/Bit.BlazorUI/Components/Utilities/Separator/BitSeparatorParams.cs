@@ -152,49 +152,52 @@ public class BitSeparatorParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitSeparator);
 
-        if (AlignContent.HasValue && bitSeparator.HasNotBeenSet(nameof(AlignContent)))
+        // This runs on every render of every separator under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (AlignContent.HasValue && bitSeparator.HasNotBeenSet(nameof(AlignContent)) && bitSeparator.AlignContent != AlignContent)
         {
             bitSeparator.AlignContent = AlignContent.Value;
 
             bitSeparator.ClassBuilder.Reset();
         }
 
-        if (AutoSize.HasValue && bitSeparator.HasNotBeenSet(nameof(AutoSize)))
+        if (AutoSize.HasValue && bitSeparator.HasNotBeenSet(nameof(AutoSize)) && bitSeparator.AutoSize != AutoSize)
         {
             bitSeparator.AutoSize = AutoSize.Value;
 
             bitSeparator.StyleBuilder.Reset();
         }
 
-        if (Background.HasValue && bitSeparator.HasNotBeenSet(nameof(Background)))
+        if (Background.HasValue && bitSeparator.HasNotBeenSet(nameof(Background)) && bitSeparator.Background != Background)
         {
             bitSeparator.Background = Background.Value;
 
             bitSeparator.ClassBuilder.Reset();
         }
 
-        if (Border.HasValue && bitSeparator.HasNotBeenSet(nameof(Border)))
+        if (Border.HasValue && bitSeparator.HasNotBeenSet(nameof(Border)) && bitSeparator.Border != Border)
         {
             bitSeparator.Border = Border.Value;
 
             bitSeparator.ClassBuilder.Reset();
         }
 
-        if (Classes is not null && bitSeparator.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitSeparator.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitSeparator.Classes, Classes) is false)
         {
             bitSeparator.Classes = Classes;
 
             bitSeparator.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitSeparator.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitSeparator.HasNotBeenSet(nameof(Color)) && bitSeparator.Color != Color)
         {
             bitSeparator.Color = Color.Value;
 
             bitSeparator.ClassBuilder.Reset();
         }
 
-        if (ContentOffset.HasValue() && bitSeparator.HasNotBeenSet(nameof(ContentOffset)))
+        if (ContentOffset.HasValue() && bitSeparator.HasNotBeenSet(nameof(ContentOffset)) && bitSeparator.ContentOffset != ContentOffset)
         {
             bitSeparator.ContentOffset = ContentOffset;
 
@@ -211,42 +214,42 @@ public class BitSeparatorParams : BitComponentBaseParams, IBitComponentParams
             bitSeparator.Element = Element;
         }
 
-        if (Inset.HasValue() && bitSeparator.HasNotBeenSet(nameof(Inset)))
+        if (Inset.HasValue() && bitSeparator.HasNotBeenSet(nameof(Inset)) && bitSeparator.Inset != Inset)
         {
             bitSeparator.Inset = Inset;
 
             bitSeparator.StyleBuilder.Reset();
         }
 
-        if (LineStyle.HasValue && bitSeparator.HasNotBeenSet(nameof(LineStyle)))
+        if (LineStyle.HasValue && bitSeparator.HasNotBeenSet(nameof(LineStyle)) && bitSeparator.LineStyle != LineStyle)
         {
             bitSeparator.LineStyle = LineStyle.Value;
 
             bitSeparator.ClassBuilder.Reset();
         }
 
-        if (Size.HasValue && bitSeparator.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitSeparator.HasNotBeenSet(nameof(Size)) && bitSeparator.Size != Size)
         {
             bitSeparator.Size = Size.Value;
 
             bitSeparator.ClassBuilder.Reset();
         }
 
-        if (Styles is not null && bitSeparator.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitSeparator.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitSeparator.Styles, Styles) is false)
         {
             bitSeparator.Styles = Styles;
 
             bitSeparator.StyleBuilder.Reset();
         }
 
-        if (Thickness.HasValue() && bitSeparator.HasNotBeenSet(nameof(Thickness)))
+        if (Thickness.HasValue() && bitSeparator.HasNotBeenSet(nameof(Thickness)) && bitSeparator.Thickness != Thickness)
         {
             bitSeparator.Thickness = Thickness;
 
             bitSeparator.StyleBuilder.Reset();
         }
 
-        if (Vertical.HasValue && bitSeparator.HasNotBeenSet(nameof(Vertical)))
+        if (Vertical.HasValue && bitSeparator.HasNotBeenSet(nameof(Vertical)) && bitSeparator.Vertical != Vertical)
         {
             bitSeparator.Vertical = Vertical.Value;
 

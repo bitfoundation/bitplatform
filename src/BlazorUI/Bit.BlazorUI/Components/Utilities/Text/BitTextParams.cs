@@ -175,7 +175,10 @@ public class BitTextParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitText);
 
-        if (Align.HasValue && bitText.HasNotBeenSet(nameof(Align)))
+        // This runs on every render of every text under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (Align.HasValue && bitText.HasNotBeenSet(nameof(Align)) && bitText.Align != Align)
         {
             bitText.Align = Align.Value;
 
@@ -187,21 +190,21 @@ public class BitTextParams : BitComponentBaseParams, IBitComponentParams
             bitText.AriaLevel = AriaLevel.Value;
         }
 
-        if (Block.HasValue && bitText.HasNotBeenSet(nameof(Block)))
+        if (Block.HasValue && bitText.HasNotBeenSet(nameof(Block)) && bitText.Block != Block)
         {
             bitText.Block = Block.Value;
 
             bitText.ClassBuilder.Reset();
         }
 
-        if (BreakWord.HasValue && bitText.HasNotBeenSet(nameof(BreakWord)))
+        if (BreakWord.HasValue && bitText.HasNotBeenSet(nameof(BreakWord)) && bitText.BreakWord != BreakWord)
         {
             bitText.BreakWord = BreakWord.Value;
 
             bitText.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitText.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitText.HasNotBeenSet(nameof(Color)) && bitText.Color != Color)
         {
             bitText.Color = Color.Value;
 
@@ -213,21 +216,21 @@ public class BitTextParams : BitComponentBaseParams, IBitComponentParams
             bitText.Element = Element;
         }
 
-        if (ForceBreak.HasValue && bitText.HasNotBeenSet(nameof(ForceBreak)))
+        if (ForceBreak.HasValue && bitText.HasNotBeenSet(nameof(ForceBreak)) && bitText.ForceBreak != ForceBreak)
         {
             bitText.ForceBreak = ForceBreak.Value;
 
             bitText.ClassBuilder.Reset();
         }
 
-        if (Foreground.HasValue && bitText.HasNotBeenSet(nameof(Foreground)))
+        if (Foreground.HasValue && bitText.HasNotBeenSet(nameof(Foreground)) && bitText.Foreground != Foreground)
         {
             bitText.Foreground = Foreground.Value;
 
             bitText.ClassBuilder.Reset();
         }
 
-        if (Gradient.HasValue() && bitText.HasNotBeenSet(nameof(Gradient)))
+        if (Gradient.HasValue() && bitText.HasNotBeenSet(nameof(Gradient)) && bitText.Gradient != Gradient)
         {
             bitText.Gradient = Gradient;
 
@@ -235,21 +238,21 @@ public class BitTextParams : BitComponentBaseParams, IBitComponentParams
             bitText.StyleBuilder.Reset();
         }
 
-        if (Gutter.HasValue && bitText.HasNotBeenSet(nameof(Gutter)))
+        if (Gutter.HasValue && bitText.HasNotBeenSet(nameof(Gutter)) && bitText.Gutter != Gutter)
         {
             bitText.Gutter = Gutter.Value;
 
             bitText.ClassBuilder.Reset();
         }
 
-        if (Hyphenate.HasValue && bitText.HasNotBeenSet(nameof(Hyphenate)))
+        if (Hyphenate.HasValue && bitText.HasNotBeenSet(nameof(Hyphenate)) && bitText.Hyphenate != Hyphenate)
         {
             bitText.Hyphenate = Hyphenate.Value;
 
             bitText.ClassBuilder.Reset();
         }
 
-        if (Italic.HasValue && bitText.HasNotBeenSet(nameof(Italic)))
+        if (Italic.HasValue && bitText.HasNotBeenSet(nameof(Italic)) && bitText.Italic != Italic)
         {
             bitText.Italic = Italic.Value;
 
@@ -261,7 +264,7 @@ public class BitTextParams : BitComponentBaseParams, IBitComponentParams
             bitText.Lang = Lang;
         }
 
-        if (LineClamp.HasValue && bitText.HasNotBeenSet(nameof(LineClamp)))
+        if (LineClamp.HasValue && bitText.HasNotBeenSet(nameof(LineClamp)) && bitText.LineClamp != LineClamp)
         {
             bitText.LineClamp = LineClamp.Value;
 
@@ -269,91 +272,91 @@ public class BitTextParams : BitComponentBaseParams, IBitComponentParams
             bitText.StyleBuilder.Reset();
         }
 
-        if (Monospace.HasValue && bitText.HasNotBeenSet(nameof(Monospace)))
+        if (Monospace.HasValue && bitText.HasNotBeenSet(nameof(Monospace)) && bitText.Monospace != Monospace)
         {
             bitText.Monospace = Monospace.Value;
 
             bitText.ClassBuilder.Reset();
         }
 
-        if (NoSelect.HasValue && bitText.HasNotBeenSet(nameof(NoSelect)))
+        if (NoSelect.HasValue && bitText.HasNotBeenSet(nameof(NoSelect)) && bitText.NoSelect != NoSelect)
         {
             bitText.NoSelect = NoSelect.Value;
 
             bitText.ClassBuilder.Reset();
         }
 
-        if (NoWrap.HasValue && bitText.HasNotBeenSet(nameof(NoWrap)))
+        if (NoWrap.HasValue && bitText.HasNotBeenSet(nameof(NoWrap)) && bitText.NoWrap != NoWrap)
         {
             bitText.NoWrap = NoWrap.Value;
 
             bitText.ClassBuilder.Reset();
         }
 
-        if (Numeric.HasValue && bitText.HasNotBeenSet(nameof(Numeric)))
+        if (Numeric.HasValue && bitText.HasNotBeenSet(nameof(Numeric)) && bitText.Numeric != Numeric)
         {
             bitText.Numeric = Numeric.Value;
 
             bitText.ClassBuilder.Reset();
         }
 
-        if (PreserveWhitespace.HasValue && bitText.HasNotBeenSet(nameof(PreserveWhitespace)))
+        if (PreserveWhitespace.HasValue && bitText.HasNotBeenSet(nameof(PreserveWhitespace)) && bitText.PreserveWhitespace != PreserveWhitespace)
         {
             bitText.PreserveWhitespace = PreserveWhitespace.Value;
 
             bitText.ClassBuilder.Reset();
         }
 
-        if (Strikethrough.HasValue && bitText.HasNotBeenSet(nameof(Strikethrough)))
+        if (Strikethrough.HasValue && bitText.HasNotBeenSet(nameof(Strikethrough)) && bitText.Strikethrough != Strikethrough)
         {
             bitText.Strikethrough = Strikethrough.Value;
 
             bitText.ClassBuilder.Reset();
         }
 
-        if (Transform.HasValue && bitText.HasNotBeenSet(nameof(Transform)))
+        if (Transform.HasValue && bitText.HasNotBeenSet(nameof(Transform)) && bitText.Transform != Transform)
         {
             bitText.Transform = Transform.Value;
 
             bitText.ClassBuilder.Reset();
         }
 
-        if (Trim.HasValue && bitText.HasNotBeenSet(nameof(Trim)))
+        if (Trim.HasValue && bitText.HasNotBeenSet(nameof(Trim)) && bitText.Trim != Trim)
         {
             bitText.Trim = Trim.Value;
 
             bitText.ClassBuilder.Reset();
         }
 
-        if (Typography.HasValue && bitText.HasNotBeenSet(nameof(Typography)))
+        if (Typography.HasValue && bitText.HasNotBeenSet(nameof(Typography)) && bitText.Typography != Typography)
         {
             bitText.Typography = Typography.Value;
 
             bitText.ClassBuilder.Reset();
         }
 
-        if (Underline.HasValue && bitText.HasNotBeenSet(nameof(Underline)))
+        if (Underline.HasValue && bitText.HasNotBeenSet(nameof(Underline)) && bitText.Underline != Underline)
         {
             bitText.Underline = Underline.Value;
 
             bitText.ClassBuilder.Reset();
         }
 
-        if (VisuallyHidden.HasValue && bitText.HasNotBeenSet(nameof(VisuallyHidden)))
+        if (VisuallyHidden.HasValue && bitText.HasNotBeenSet(nameof(VisuallyHidden)) && bitText.VisuallyHidden != VisuallyHidden)
         {
             bitText.VisuallyHidden = VisuallyHidden.Value;
 
             bitText.ClassBuilder.Reset();
         }
 
-        if (Wrap.HasValue && bitText.HasNotBeenSet(nameof(Wrap)))
+        if (Wrap.HasValue && bitText.HasNotBeenSet(nameof(Wrap)) && bitText.Wrap != Wrap)
         {
             bitText.Wrap = Wrap.Value;
 
             bitText.ClassBuilder.Reset();
         }
 
-        if (Weight.HasValue && bitText.HasNotBeenSet(nameof(Weight)))
+        if (Weight.HasValue && bitText.HasNotBeenSet(nameof(Weight)) && bitText.Weight != Weight)
         {
             bitText.Weight = Weight.Value;
 

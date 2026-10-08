@@ -484,6 +484,9 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitTagsInput);
 
+        // This runs on every render of every tags input under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AddedAnnouncementFormat is not null && bitTagsInput.HasNotBeenSet(nameof(AddedAnnouncementFormat)))
         {
             bitTagsInput.AddedAnnouncementFormat = AddedAnnouncementFormat;
@@ -524,7 +527,7 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
             bitTagsInput.CanRemoveTag = CanRemoveTag;
         }
 
-        if (Classes is not null && bitTagsInput.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitTagsInput.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitTagsInput.Classes, Classes) is false)
         {
             bitTagsInput.Classes = Classes;
 
@@ -561,7 +564,7 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
             bitTagsInput.ClearOnBlur = ClearOnBlur.Value;
         }
 
-        if (Color.HasValue && bitTagsInput.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitTagsInput.HasNotBeenSet(nameof(Color)) && bitTagsInput.Color != Color)
         {
             bitTagsInput.Color = Color.Value;
 
@@ -672,7 +675,7 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
             bitTagsInput.IsLoading = IsLoading.Value;
         }
 
-        if (Label.HasValue() && bitTagsInput.HasNotBeenSet(nameof(Label)))
+        if (Label.HasValue() && bitTagsInput.HasNotBeenSet(nameof(Label)) && bitTagsInput.Label != Label)
         {
             bitTagsInput.Label = Label;
 
@@ -744,7 +747,7 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
             bitTagsInput.NoBackspaceRemove = NoBackspaceRemove.Value;
         }
 
-        if (NoBorder.HasValue && bitTagsInput.HasNotBeenSet(nameof(NoBorder)))
+        if (NoBorder.HasValue && bitTagsInput.HasNotBeenSet(nameof(NoBorder)) && bitTagsInput.NoBorder != NoBorder)
         {
             bitTagsInput.NoBorder = NoBorder.Value;
 
@@ -850,7 +853,7 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
             bitTagsInput.ShowInvalidMessage = ShowInvalidMessage.Value;
         }
 
-        if (Size.HasValue && bitTagsInput.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitTagsInput.HasNotBeenSet(nameof(Size)) && bitTagsInput.Size != Size)
         {
             bitTagsInput.Size = Size.Value;
 
@@ -862,7 +865,7 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
             bitTagsInput.SpellCheck = SpellCheck.Value;
         }
 
-        if (Styles is not null && bitTagsInput.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitTagsInput.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitTagsInput.Styles, Styles) is false)
         {
             bitTagsInput.Styles = Styles;
 
@@ -899,7 +902,7 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
             bitTagsInput.TagsPlaceholder = TagsPlaceholder;
         }
 
-        if (TagVariant.HasValue && bitTagsInput.HasNotBeenSet(nameof(TagVariant)))
+        if (TagVariant.HasValue && bitTagsInput.HasNotBeenSet(nameof(TagVariant)) && bitTagsInput.TagVariant != TagVariant)
         {
             bitTagsInput.TagVariant = TagVariant.Value;
 
@@ -921,7 +924,7 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
             bitTagsInput.Validator = Validator;
         }
 
-        if (Variant.HasValue && bitTagsInput.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue && bitTagsInput.HasNotBeenSet(nameof(Variant)) && bitTagsInput.Variant != Variant)
         {
             bitTagsInput.Variant = Variant.Value;
 

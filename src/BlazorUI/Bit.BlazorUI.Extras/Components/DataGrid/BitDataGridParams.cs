@@ -257,12 +257,15 @@ public class BitDataGridParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitDataGrid);
 
+        // This runs on every render of every data grid under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AllowUnsorted.HasValue && bitDataGrid.HasNotBeenSet(nameof(AllowUnsorted)))
         {
             bitDataGrid.AllowUnsorted = AllowUnsorted.Value;
         }
 
-        if (Bordered.HasValue && bitDataGrid.HasNotBeenSet(nameof(Bordered)))
+        if (Bordered.HasValue && bitDataGrid.HasNotBeenSet(nameof(Bordered)) && bitDataGrid.Bordered != Bordered)
         {
             bitDataGrid.Bordered = Bordered.Value;
 
@@ -274,7 +277,7 @@ public class BitDataGridParams : BitComponentBaseParams, IBitComponentParams
             bitDataGrid.CellNavigation = CellNavigation.Value;
         }
 
-        if (Classes is not null && bitDataGrid.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitDataGrid.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitDataGrid.Classes, Classes) is false)
         {
             bitDataGrid.Classes = Classes;
 
@@ -331,7 +334,7 @@ public class BitDataGridParams : BitComponentBaseParams, IBitComponentParams
             bitDataGrid.Height = Height;
         }
 
-        if (Hoverable.HasValue && bitDataGrid.HasNotBeenSet(nameof(Hoverable)))
+        if (Hoverable.HasValue && bitDataGrid.HasNotBeenSet(nameof(Hoverable)) && bitDataGrid.Hoverable != Hoverable)
         {
             bitDataGrid.Hoverable = Hoverable.Value;
 
@@ -453,14 +456,14 @@ public class BitDataGridParams : BitComponentBaseParams, IBitComponentParams
             bitDataGrid.Strings = Strings;
         }
 
-        if (Striped.HasValue && bitDataGrid.HasNotBeenSet(nameof(Striped)))
+        if (Striped.HasValue && bitDataGrid.HasNotBeenSet(nameof(Striped)) && bitDataGrid.Striped != Striped)
         {
             bitDataGrid.Striped = Striped.Value;
 
             bitDataGrid.ClassBuilder.Reset();
         }
 
-        if (Styles is not null && bitDataGrid.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitDataGrid.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitDataGrid.Styles, Styles) is false)
         {
             bitDataGrid.Styles = Styles;
 

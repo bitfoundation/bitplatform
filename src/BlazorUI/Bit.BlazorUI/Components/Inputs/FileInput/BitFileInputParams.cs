@@ -257,6 +257,9 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitFileInput);
 
+        // This runs on every render of every file input under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (Accept.HasValue() && bitFileInput.HasNotBeenSet(nameof(Accept)))
         {
             bitFileInput.Accept = Accept;
@@ -302,14 +305,14 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
             bitFileInput.Capture = Capture;
         }
 
-        if (Classes is not null && bitFileInput.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitFileInput.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitFileInput.Classes, Classes) is false)
         {
             bitFileInput.Classes = Classes;
 
             bitFileInput.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitFileInput.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitFileInput.HasNotBeenSet(nameof(Color)) && bitFileInput.Color != Color)
         {
             bitFileInput.Color = Color.Value;
 
@@ -366,7 +369,7 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
             bitFileInput.HideFileList = HideFileList.Value;
         }
 
-        if (HideLabel.HasValue && bitFileInput.HasNotBeenSet(nameof(HideLabel)))
+        if (HideLabel.HasValue && bitFileInput.HasNotBeenSet(nameof(HideLabel)) && bitFileInput.HideLabel != HideLabel)
         {
             bitFileInput.HideLabel = HideLabel.Value;
 
@@ -448,7 +451,7 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
             bitFileInput.RemoveButtonTitle = RemoveButtonTitle;
         }
 
-        if (ShowDropZone.HasValue && bitFileInput.HasNotBeenSet(nameof(ShowDropZone)))
+        if (ShowDropZone.HasValue && bitFileInput.HasNotBeenSet(nameof(ShowDropZone)) && bitFileInput.ShowDropZone != ShowDropZone)
         {
             bitFileInput.ShowDropZone = ShowDropZone.Value;
 
@@ -465,14 +468,14 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
             bitFileInput.ShowRemoveButton = ShowRemoveButton.Value;
         }
 
-        if (Size.HasValue && bitFileInput.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitFileInput.HasNotBeenSet(nameof(Size)) && bitFileInput.Size != Size)
         {
             bitFileInput.Size = Size.Value;
 
             bitFileInput.ClassBuilder.Reset();
         }
 
-        if (Styles is not null && bitFileInput.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitFileInput.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitFileInput.Styles, Styles) is false)
         {
             bitFileInput.Styles = Styles;
 
@@ -484,7 +487,7 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
             bitFileInput.Title = Title;
         }
 
-        if (Variant.HasValue && bitFileInput.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue && bitFileInput.HasNotBeenSet(nameof(Variant)) && bitFileInput.Variant != Variant)
         {
             bitFileInput.Variant = Variant.Value;
 

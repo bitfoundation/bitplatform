@@ -229,7 +229,10 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitMessage);
 
-        if (Alignment.HasValue && bitMessage.HasNotBeenSet(nameof(Alignment)))
+        // This runs on every render of every message under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (Alignment.HasValue && bitMessage.HasNotBeenSet(nameof(Alignment)) && bitMessage.Alignment != Alignment)
         {
             bitMessage.Alignment = Alignment.Value;
 
@@ -246,7 +249,7 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
             bitMessage.AutoMultiline = AutoMultiline.Value;
         }
 
-        if (Classes is not null && bitMessage.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitMessage.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitMessage.Classes, Classes) is false)
         {
             bitMessage.Classes = Classes;
 
@@ -268,7 +271,7 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
             bitMessage.CollapseIconName = CollapseIconName;
         }
 
-        if (Color.HasValue && bitMessage.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitMessage.HasNotBeenSet(nameof(Color)) && bitMessage.Color != Color)
         {
             bitMessage.Color = Color.Value;
 
@@ -305,7 +308,7 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
             bitMessage.DismissOnEscape = DismissOnEscape.Value;
         }
 
-        if (Elevation.HasValue && bitMessage.HasNotBeenSet(nameof(Elevation)))
+        if (Elevation.HasValue && bitMessage.HasNotBeenSet(nameof(Elevation)) && bitMessage.Elevation != Elevation)
         {
             bitMessage.Elevation = Elevation.Value;
 
@@ -342,14 +345,14 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
             bitMessage.IconName = IconName;
         }
 
-        if (MaxLines.HasValue && bitMessage.HasNotBeenSet(nameof(MaxLines)))
+        if (MaxLines.HasValue && bitMessage.HasNotBeenSet(nameof(MaxLines)) && bitMessage.MaxLines != MaxLines)
         {
             bitMessage.MaxLines = MaxLines.Value;
 
             bitMessage.StyleBuilder.Reset();
         }
 
-        if (Multiline.HasValue && bitMessage.HasNotBeenSet(nameof(Multiline)))
+        if (Multiline.HasValue && bitMessage.HasNotBeenSet(nameof(Multiline)) && bitMessage.Multiline != Multiline)
         {
             bitMessage.Multiline = Multiline.Value;
 
@@ -371,28 +374,28 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
             bitMessage.ShowAutoDismissProgress = ShowAutoDismissProgress.Value;
         }
 
-        if (Size.HasValue && bitMessage.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitMessage.HasNotBeenSet(nameof(Size)) && bitMessage.Size != Size)
         {
             bitMessage.Size = Size.Value;
 
             bitMessage.ClassBuilder.Reset();
         }
 
-        if (Square.HasValue && bitMessage.HasNotBeenSet(nameof(Square)))
+        if (Square.HasValue && bitMessage.HasNotBeenSet(nameof(Square)) && bitMessage.Square != Square)
         {
             bitMessage.Square = Square.Value;
 
             bitMessage.ClassBuilder.Reset();
         }
 
-        if (Styles is not null && bitMessage.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitMessage.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitMessage.Styles, Styles) is false)
         {
             bitMessage.Styles = Styles;
 
             bitMessage.StyleBuilder.Reset();
         }
 
-        if (Tinted.HasValue && bitMessage.HasNotBeenSet(nameof(Tinted)))
+        if (Tinted.HasValue && bitMessage.HasNotBeenSet(nameof(Tinted)) && bitMessage.Tinted != Tinted)
         {
             bitMessage.Tinted = Tinted.Value;
 
@@ -409,7 +412,7 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
             bitMessage.Truncate = Truncate.Value;
         }
 
-        if (Variant.HasValue && bitMessage.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue && bitMessage.HasNotBeenSet(nameof(Variant)) && bitMessage.Variant != Variant)
         {
             bitMessage.Variant = Variant.Value;
 

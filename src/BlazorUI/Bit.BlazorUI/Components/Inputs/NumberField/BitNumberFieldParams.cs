@@ -340,7 +340,10 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitNumberField);
 
-        if (Accent.HasValue && bitNumberField.HasNotBeenSet(nameof(Accent)))
+        // This runs on every render of every number field under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (Accent.HasValue && bitNumberField.HasNotBeenSet(nameof(Accent)) && bitNumberField.Accent != Accent)
         {
             bitNumberField.Accent = Accent.Value;
 
@@ -367,21 +370,21 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
             bitNumberField.AriaValueText = AriaValueText;
         }
 
-        if (Background.HasValue && bitNumberField.HasNotBeenSet(nameof(Background)))
+        if (Background.HasValue && bitNumberField.HasNotBeenSet(nameof(Background)) && bitNumberField.Background != Background)
         {
             bitNumberField.Background = Background.Value;
 
             bitNumberField.ClassBuilder.Reset();
         }
 
-        if (Border.HasValue && bitNumberField.HasNotBeenSet(nameof(Border)))
+        if (Border.HasValue && bitNumberField.HasNotBeenSet(nameof(Border)) && bitNumberField.Border != Border)
         {
             bitNumberField.Border = Border.Value;
 
             bitNumberField.ClassBuilder.Reset();
         }
 
-        if (Classes is not null && bitNumberField.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitNumberField.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitNumberField.Classes, Classes) is false)
         {
             bitNumberField.Classes = Classes;
 
@@ -438,7 +441,7 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
             bitNumberField.DecrementTitle = DecrementTitle;
         }
 
-        if (Description.HasValue() && bitNumberField.HasNotBeenSet(nameof(Description)))
+        if (Description.HasValue() && bitNumberField.HasNotBeenSet(nameof(Description)) && bitNumberField.Description != Description)
         {
             bitNumberField.Description = Description;
 
@@ -457,14 +460,14 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
             bitNumberField.EnterKeyHint = EnterKeyHint;
         }
 
-        if (FullWidth.HasValue && bitNumberField.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitNumberField.HasNotBeenSet(nameof(FullWidth)) && bitNumberField.FullWidth != FullWidth)
         {
             bitNumberField.FullWidth = FullWidth.Value;
 
             bitNumberField.ClassBuilder.Reset();
         }
 
-        if (HideInput.HasValue && bitNumberField.HasNotBeenSet(nameof(HideInput)))
+        if (HideInput.HasValue && bitNumberField.HasNotBeenSet(nameof(HideInput)) && bitNumberField.HideInput != HideInput)
         {
             bitNumberField.HideInput = HideInput.Value;
 
@@ -523,7 +526,7 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
             bitNumberField.IsInputReadOnly = IsInputReadOnly.Value;
         }
 
-        if (LabelPlacement.HasValue && bitNumberField.HasNotBeenSet(nameof(LabelPlacement)))
+        if (LabelPlacement.HasValue && bitNumberField.HasNotBeenSet(nameof(LabelPlacement)) && bitNumberField.LabelPlacement != LabelPlacement)
         {
             bitNumberField.LabelPlacement = LabelPlacement.Value;
 
@@ -535,14 +538,14 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
             bitNumberField.LoadingAriaLabel = LoadingAriaLabel;
         }
 
-        if (Mode.HasValue && bitNumberField.HasNotBeenSet(nameof(Mode)))
+        if (Mode.HasValue && bitNumberField.HasNotBeenSet(nameof(Mode)) && bitNumberField.Mode != Mode)
         {
             bitNumberField.Mode = Mode.Value;
 
             bitNumberField.ClassBuilder.Reset();
         }
 
-        if (NoBorder.HasValue && bitNumberField.HasNotBeenSet(nameof(NoBorder)))
+        if (NoBorder.HasValue && bitNumberField.HasNotBeenSet(nameof(NoBorder)) && bitNumberField.NoBorder != NoBorder)
         {
             bitNumberField.NoBorder = NoBorder.Value;
 
@@ -594,7 +597,7 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
             bitNumberField.ShowClearButton = ShowClearButton.Value;
         }
 
-        if (Size.HasValue && bitNumberField.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitNumberField.HasNotBeenSet(nameof(Size)) && bitNumberField.Size != Size)
         {
             bitNumberField.Size = Size.Value;
 
@@ -606,7 +609,7 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
             bitNumberField.SnapToStep = SnapToStep.Value;
         }
 
-        if (Styles is not null && bitNumberField.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitNumberField.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitNumberField.Styles, Styles) is false)
         {
             bitNumberField.Styles = Styles;
 
@@ -623,7 +626,7 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
             bitNumberField.Title = Title;
         }
 
-        if (Underlined.HasValue && bitNumberField.HasNotBeenSet(nameof(Underlined)))
+        if (Underlined.HasValue && bitNumberField.HasNotBeenSet(nameof(Underlined)) && bitNumberField.Underlined != Underlined)
         {
             bitNumberField.Underlined = Underlined.Value;
 

@@ -218,6 +218,9 @@ public class BitMapParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitMap);
 
+        // This runs on every render of every map under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AnnounceViewChanges.HasValue && bitMap.HasNotBeenSet(nameof(AnnounceViewChanges)))
         {
             bitMap.AnnounceViewChanges = AnnounceViewChanges.Value;
@@ -228,7 +231,7 @@ public class BitMapParams : BitComponentBaseParams, IBitComponentParams
             bitMap.AutoResize = AutoResize.Value;
         }
 
-        if (Classes is not null && bitMap.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitMap.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitMap.Classes, Classes) is false)
         {
             bitMap.Classes = Classes;
 
@@ -360,7 +363,7 @@ public class BitMapParams : BitComponentBaseParams, IBitComponentParams
             bitMap.ShowLoading = ShowLoading.Value;
         }
 
-        if (Styles is not null && bitMap.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitMap.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitMap.Styles, Styles) is false)
         {
             bitMap.Styles = Styles;
 

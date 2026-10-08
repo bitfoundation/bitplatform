@@ -573,7 +573,10 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
 
         // The parameters the calendar rebuilds its view from are the ones carrying a [CallOnSet(OnSetParameters)] on
         // the component, and the component has already run that pass in OnInitialized - before anything cascaded
-        // here reached it. So whichever of them the cascade fills in, the pass is run once more at the end.
+        // here reached it. So whichever of them the cascade CHANGES, the pass is run once more at the end. Only a
+        // change: this runs on every render of the ancestor holding the BitParams, and cascading the same value a
+        // second time must not fling the calendar back off the month the user navigated it to - nor rebuild the
+        // class and style strings of the root for nothing.
         var rebuildView = false;
 
         if (AllowDeselect.HasValue && bitCalendar.HasNotBeenSet(nameof(AllowDeselect)))
@@ -581,14 +584,14 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.AllowDeselect = AllowDeselect.Value;
         }
 
-        if (Classes is not null && bitCalendar.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitCalendar.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitCalendar.Classes, Classes) is false)
         {
             bitCalendar.Classes = Classes;
 
             bitCalendar.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitCalendar.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitCalendar.HasNotBeenSet(nameof(Color)) && bitCalendar.Color != Color)
         {
             bitCalendar.Color = Color.Value;
 
@@ -605,7 +608,7 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.ContinuousSpinInterval = ContinuousSpinInterval.Value;
         }
 
-        if (Culture is not null && bitCalendar.HasNotBeenSet(nameof(Culture)))
+        if (Culture is not null && bitCalendar.HasNotBeenSet(nameof(Culture)) && Equals(bitCalendar.Culture, Culture) is false)
         {
             bitCalendar.Culture = Culture;
 
@@ -624,14 +627,14 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.DayCellTemplate = DayCellTemplate;
         }
 
-        if (DisableFuture.HasValue && bitCalendar.HasNotBeenSet(nameof(DisableFuture)))
+        if (DisableFuture.HasValue && bitCalendar.HasNotBeenSet(nameof(DisableFuture)) && bitCalendar.DisableFuture != DisableFuture)
         {
             bitCalendar.DisableFuture = DisableFuture.Value;
 
             rebuildView = true;
         }
 
-        if (DisablePast.HasValue && bitCalendar.HasNotBeenSet(nameof(DisablePast)))
+        if (DisablePast.HasValue && bitCalendar.HasNotBeenSet(nameof(DisablePast)) && bitCalendar.DisablePast != DisablePast)
         {
             bitCalendar.DisablePast = DisablePast.Value;
 
@@ -678,14 +681,14 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.FooterTemplate = FooterTemplate;
         }
 
-        if (FirstDayOfWeek.HasValue && bitCalendar.HasNotBeenSet(nameof(FirstDayOfWeek)))
+        if (FirstDayOfWeek.HasValue && bitCalendar.HasNotBeenSet(nameof(FirstDayOfWeek)) && bitCalendar.FirstDayOfWeek != FirstDayOfWeek)
         {
             bitCalendar.FirstDayOfWeek = FirstDayOfWeek.Value;
 
             rebuildView = true;
         }
 
-        if (FixedWeeks.HasValue && bitCalendar.HasNotBeenSet(nameof(FixedWeeks)))
+        if (FixedWeeks.HasValue && bitCalendar.HasNotBeenSet(nameof(FixedWeeks)) && bitCalendar.FixedWeeks != FixedWeeks)
         {
             bitCalendar.FixedWeeks = FixedWeeks.Value;
 
@@ -812,14 +815,14 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.IsDateDisabled = IsDateDisabled;
         }
 
-        if (MaxDate.HasValue && bitCalendar.HasNotBeenSet(nameof(MaxDate)))
+        if (MaxDate.HasValue && bitCalendar.HasNotBeenSet(nameof(MaxDate)) && bitCalendar.MaxDate != MaxDate)
         {
             bitCalendar.MaxDate = MaxDate.Value;
 
             rebuildView = true;
         }
 
-        if (MinDate.HasValue && bitCalendar.HasNotBeenSet(nameof(MinDate)))
+        if (MinDate.HasValue && bitCalendar.HasNotBeenSet(nameof(MinDate)) && bitCalendar.MinDate != MinDate)
         {
             bitCalendar.MinDate = MinDate.Value;
 
@@ -831,7 +834,7 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.MinuteStep = MinuteStep.Value;
         }
 
-        if (MonthCount.HasValue && bitCalendar.HasNotBeenSet(nameof(MonthCount)))
+        if (MonthCount.HasValue && bitCalendar.HasNotBeenSet(nameof(MonthCount)) && bitCalendar.MonthCount != MonthCount)
         {
             bitCalendar.MonthCount = MonthCount.Value;
 
@@ -935,14 +938,14 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.ShowEventDetails = ShowEventDetails.Value;
         }
 
-        if (ShowMonthPicker.HasValue && bitCalendar.HasNotBeenSet(nameof(ShowMonthPicker)))
+        if (ShowMonthPicker.HasValue && bitCalendar.HasNotBeenSet(nameof(ShowMonthPicker)) && bitCalendar.ShowMonthPicker != ShowMonthPicker)
         {
             bitCalendar.ShowMonthPicker = ShowMonthPicker.Value;
 
             rebuildView = true;
         }
 
-        if (ShowMonthPickerAsOverlay.HasValue && bitCalendar.HasNotBeenSet(nameof(ShowMonthPickerAsOverlay)))
+        if (ShowMonthPickerAsOverlay.HasValue && bitCalendar.HasNotBeenSet(nameof(ShowMonthPickerAsOverlay)) && bitCalendar.ShowMonthPickerAsOverlay != ShowMonthPickerAsOverlay)
         {
             bitCalendar.ShowMonthPickerAsOverlay = ShowMonthPickerAsOverlay.Value;
 
@@ -954,14 +957,14 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.ShowOutsideDays = ShowOutsideDays.Value;
         }
 
-        if (ShowTimePicker.HasValue && bitCalendar.HasNotBeenSet(nameof(ShowTimePicker)))
+        if (ShowTimePicker.HasValue && bitCalendar.HasNotBeenSet(nameof(ShowTimePicker)) && bitCalendar.ShowTimePicker != ShowTimePicker)
         {
             bitCalendar.ShowTimePicker = ShowTimePicker.Value;
 
             rebuildView = true;
         }
 
-        if (ShowTimePickerAsOverlay.HasValue && bitCalendar.HasNotBeenSet(nameof(ShowTimePickerAsOverlay)))
+        if (ShowTimePickerAsOverlay.HasValue && bitCalendar.HasNotBeenSet(nameof(ShowTimePickerAsOverlay)) && bitCalendar.ShowTimePickerAsOverlay != ShowTimePickerAsOverlay)
         {
             bitCalendar.ShowTimePickerAsOverlay = ShowTimePickerAsOverlay.Value;
 
@@ -988,21 +991,21 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.ShowWeekNumbers = ShowWeekNumbers.Value;
         }
 
-        if (Size.HasValue && bitCalendar.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitCalendar.HasNotBeenSet(nameof(Size)) && bitCalendar.Size != Size)
         {
             bitCalendar.Size = Size.Value;
 
             bitCalendar.ClassBuilder.Reset();
         }
 
-        if (StartingValue.HasValue && bitCalendar.HasNotBeenSet(nameof(StartingValue)))
+        if (StartingValue.HasValue && bitCalendar.HasNotBeenSet(nameof(StartingValue)) && bitCalendar.StartingValue != StartingValue)
         {
             bitCalendar.StartingValue = StartingValue.Value;
 
             rebuildView = true;
         }
 
-        if (Styles is not null && bitCalendar.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitCalendar.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitCalendar.Styles, Styles) is false)
         {
             bitCalendar.Styles = Styles;
 
@@ -1084,7 +1087,7 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.TimePickerIncreaseMinuteTitle = TimePickerIncreaseMinuteTitle!;
         }
 
-        if (TimeZone is not null && bitCalendar.HasNotBeenSet(nameof(TimeZone)))
+        if (TimeZone is not null && bitCalendar.HasNotBeenSet(nameof(TimeZone)) && Equals(bitCalendar.TimeZone, TimeZone) is false)
         {
             bitCalendar.TimeZone = TimeZone;
 

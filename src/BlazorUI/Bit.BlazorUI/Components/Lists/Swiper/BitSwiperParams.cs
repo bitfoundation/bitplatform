@@ -296,7 +296,10 @@ public class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitSwiper);
 
-        if (Accent.HasValue && bitSwiper.HasNotBeenSet(nameof(Accent)))
+        // This runs on every render of every swiper under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (Accent.HasValue && bitSwiper.HasNotBeenSet(nameof(Accent)) && bitSwiper.Accent != Accent)
         {
             bitSwiper.Accent = Accent.Value;
 
@@ -323,14 +326,14 @@ public class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
             bitSwiper.AutoPlayReverse = AutoPlayReverse.Value;
         }
 
-        if (Classes is not null && bitSwiper.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitSwiper.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitSwiper.Classes, Classes) is false)
         {
             bitSwiper.Classes = Classes;
 
             bitSwiper.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitSwiper.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitSwiper.HasNotBeenSet(nameof(Color)) && bitSwiper.Color != Color)
         {
             bitSwiper.Color = Color.Value;
 
@@ -357,7 +360,7 @@ public class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
             bitSwiper.DragThreshold = DragThreshold.Value;
         }
 
-        if (Gap.HasValue() && bitSwiper.HasNotBeenSet(nameof(Gap)))
+        if (Gap.HasValue() && bitSwiper.HasNotBeenSet(nameof(Gap)) && bitSwiper.Gap != Gap)
         {
             bitSwiper.Gap = Gap;
 
@@ -389,7 +392,7 @@ public class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
             bitSwiper.NextIconName = NextIconName;
         }
 
-        if (NoDrag.HasValue && bitSwiper.HasNotBeenSet(nameof(NoDrag)))
+        if (NoDrag.HasValue && bitSwiper.HasNotBeenSet(nameof(NoDrag)) && bitSwiper.NoDrag != NoDrag)
         {
             bitSwiper.NoDrag = NoDrag.Value;
 
@@ -406,7 +409,7 @@ public class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
             bitSwiper.PauseButtonAriaLabel = PauseButtonAriaLabel;
         }
 
-        if (Peek.HasValue() && bitSwiper.HasNotBeenSet(nameof(Peek)))
+        if (Peek.HasValue() && bitSwiper.HasNotBeenSet(nameof(Peek)) && bitSwiper.Peek != Peek)
         {
             bitSwiper.Peek = Peek;
 
@@ -483,21 +486,21 @@ public class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
             bitSwiper.ShowPlayPause = ShowPlayPause.Value;
         }
 
-        if (ShowScrollbar.HasValue && bitSwiper.HasNotBeenSet(nameof(ShowScrollbar)))
+        if (ShowScrollbar.HasValue && bitSwiper.HasNotBeenSet(nameof(ShowScrollbar)) && bitSwiper.ShowScrollbar != ShowScrollbar)
         {
             bitSwiper.ShowScrollbar = ShowScrollbar.Value;
 
             bitSwiper.ClassBuilder.Reset();
         }
 
-        if (Size.HasValue && bitSwiper.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitSwiper.HasNotBeenSet(nameof(Size)) && bitSwiper.Size != Size)
         {
             bitSwiper.Size = Size.Value;
 
             bitSwiper.ClassBuilder.Reset();
         }
 
-        if (SnapAlign.HasValue && bitSwiper.HasNotBeenSet(nameof(SnapAlign)))
+        if (SnapAlign.HasValue && bitSwiper.HasNotBeenSet(nameof(SnapAlign)) && bitSwiper.SnapAlign != SnapAlign)
         {
             bitSwiper.SnapAlign = SnapAlign.Value;
 
@@ -514,63 +517,63 @@ public class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
             bitSwiper.StopOnLastSlide = StopOnLastSlide.Value;
         }
 
-        if (Styles is not null && bitSwiper.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitSwiper.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitSwiper.Styles, Styles) is false)
         {
             bitSwiper.Styles = Styles;
 
             bitSwiper.StyleBuilder.Reset();
         }
 
-        if (Vertical.HasValue && bitSwiper.HasNotBeenSet(nameof(Vertical)))
+        if (Vertical.HasValue && bitSwiper.HasNotBeenSet(nameof(Vertical)) && bitSwiper.Vertical != Vertical)
         {
             bitSwiper.Vertical = Vertical.Value;
 
             bitSwiper.ClassBuilder.Reset();
         }
 
-        if (VisibleItemsCount.HasValue && bitSwiper.HasNotBeenSet(nameof(VisibleItemsCount)))
+        if (VisibleItemsCount.HasValue && bitSwiper.HasNotBeenSet(nameof(VisibleItemsCount)) && bitSwiper.VisibleItemsCount != VisibleItemsCount)
         {
             bitSwiper.VisibleItemsCount = VisibleItemsCount.Value;
 
             bitSwiper.StyleBuilder.Reset();
         }
 
-        if (VisibleItemsCountXs.HasValue && bitSwiper.HasNotBeenSet(nameof(VisibleItemsCountXs)))
+        if (VisibleItemsCountXs.HasValue && bitSwiper.HasNotBeenSet(nameof(VisibleItemsCountXs)) && bitSwiper.VisibleItemsCountXs != VisibleItemsCountXs)
         {
             bitSwiper.VisibleItemsCountXs = VisibleItemsCountXs.Value;
 
             bitSwiper.StyleBuilder.Reset();
         }
 
-        if (VisibleItemsCountSm.HasValue && bitSwiper.HasNotBeenSet(nameof(VisibleItemsCountSm)))
+        if (VisibleItemsCountSm.HasValue && bitSwiper.HasNotBeenSet(nameof(VisibleItemsCountSm)) && bitSwiper.VisibleItemsCountSm != VisibleItemsCountSm)
         {
             bitSwiper.VisibleItemsCountSm = VisibleItemsCountSm.Value;
 
             bitSwiper.StyleBuilder.Reset();
         }
 
-        if (VisibleItemsCountMd.HasValue && bitSwiper.HasNotBeenSet(nameof(VisibleItemsCountMd)))
+        if (VisibleItemsCountMd.HasValue && bitSwiper.HasNotBeenSet(nameof(VisibleItemsCountMd)) && bitSwiper.VisibleItemsCountMd != VisibleItemsCountMd)
         {
             bitSwiper.VisibleItemsCountMd = VisibleItemsCountMd.Value;
 
             bitSwiper.StyleBuilder.Reset();
         }
 
-        if (VisibleItemsCountLg.HasValue && bitSwiper.HasNotBeenSet(nameof(VisibleItemsCountLg)))
+        if (VisibleItemsCountLg.HasValue && bitSwiper.HasNotBeenSet(nameof(VisibleItemsCountLg)) && bitSwiper.VisibleItemsCountLg != VisibleItemsCountLg)
         {
             bitSwiper.VisibleItemsCountLg = VisibleItemsCountLg.Value;
 
             bitSwiper.StyleBuilder.Reset();
         }
 
-        if (VisibleItemsCountXl.HasValue && bitSwiper.HasNotBeenSet(nameof(VisibleItemsCountXl)))
+        if (VisibleItemsCountXl.HasValue && bitSwiper.HasNotBeenSet(nameof(VisibleItemsCountXl)) && bitSwiper.VisibleItemsCountXl != VisibleItemsCountXl)
         {
             bitSwiper.VisibleItemsCountXl = VisibleItemsCountXl.Value;
 
             bitSwiper.StyleBuilder.Reset();
         }
 
-        if (VisibleItemsCountXxl.HasValue && bitSwiper.HasNotBeenSet(nameof(VisibleItemsCountXxl)))
+        if (VisibleItemsCountXxl.HasValue && bitSwiper.HasNotBeenSet(nameof(VisibleItemsCountXxl)) && bitSwiper.VisibleItemsCountXxl != VisibleItemsCountXxl)
         {
             bitSwiper.VisibleItemsCountXxl = VisibleItemsCountXxl.Value;
 

@@ -177,33 +177,36 @@ public class BitTooltipParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitTooltip);
 
+        // This runs on every render of every tooltip under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (Alignment.HasValue && bitTooltip.HasNotBeenSet(nameof(Alignment)))
         {
             bitTooltip.Alignment = Alignment.Value;
         }
 
-        if (ArrowSize.HasValue && bitTooltip.HasNotBeenSet(nameof(ArrowSize)))
+        if (ArrowSize.HasValue && bitTooltip.HasNotBeenSet(nameof(ArrowSize)) && bitTooltip.ArrowSize != ArrowSize)
         {
             bitTooltip.ArrowSize = ArrowSize.Value;
 
             bitTooltip.StyleBuilder.Reset();
         }
 
-        if (Classes is not null && bitTooltip.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitTooltip.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitTooltip.Classes, Classes) is false)
         {
             bitTooltip.Classes = Classes;
 
             bitTooltip.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitTooltip.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitTooltip.HasNotBeenSet(nameof(Color)) && bitTooltip.Color != Color)
         {
             bitTooltip.Color = Color.Value;
 
             bitTooltip.ClassBuilder.Reset();
         }
 
-        if (FullWidth.HasValue && bitTooltip.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitTooltip.HasNotBeenSet(nameof(FullWidth)) && bitTooltip.FullWidth != FullWidth)
         {
             bitTooltip.FullWidth = FullWidth.Value;
 
@@ -227,7 +230,7 @@ public class BitTooltipParams : BitComponentBaseParams, IBitComponentParams
             bitTooltip.HideOnClick = HideOnClick.Value;
         }
 
-        if (Interactive.HasValue && bitTooltip.HasNotBeenSet(nameof(Interactive)))
+        if (Interactive.HasValue && bitTooltip.HasNotBeenSet(nameof(Interactive)) && bitTooltip.Interactive != Interactive)
         {
             bitTooltip.Interactive = Interactive.Value;
 
@@ -239,14 +242,14 @@ public class BitTooltipParams : BitComponentBaseParams, IBitComponentParams
             bitTooltip.LazyRender = LazyRender.Value;
         }
 
-        if (MaxWidth.HasValue() && bitTooltip.HasNotBeenSet(nameof(MaxWidth)))
+        if (MaxWidth.HasValue() && bitTooltip.HasNotBeenSet(nameof(MaxWidth)) && bitTooltip.MaxWidth != MaxWidth)
         {
             bitTooltip.MaxWidth = MaxWidth;
 
             bitTooltip.StyleBuilder.Reset();
         }
 
-        if (NoAnimation.HasValue && bitTooltip.HasNotBeenSet(nameof(NoAnimation)))
+        if (NoAnimation.HasValue && bitTooltip.HasNotBeenSet(nameof(NoAnimation)) && bitTooltip.NoAnimation != NoAnimation)
         {
             bitTooltip.NoAnimation = NoAnimation.Value;
 
@@ -263,7 +266,7 @@ public class BitTooltipParams : BitComponentBaseParams, IBitComponentParams
             bitTooltip.NoTouch = NoTouch.Value;
         }
 
-        if (Offset.HasValue && bitTooltip.HasNotBeenSet(nameof(Offset)))
+        if (Offset.HasValue && bitTooltip.HasNotBeenSet(nameof(Offset)) && bitTooltip.Offset != Offset)
         {
             bitTooltip.Offset = Offset.Value;
 
@@ -300,14 +303,14 @@ public class BitTooltipParams : BitComponentBaseParams, IBitComponentParams
             bitTooltip.ShowOnHover = ShowOnHover.Value;
         }
 
-        if (Size.HasValue && bitTooltip.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitTooltip.HasNotBeenSet(nameof(Size)) && bitTooltip.Size != Size)
         {
             bitTooltip.Size = Size.Value;
 
             bitTooltip.ClassBuilder.Reset();
         }
 
-        if (Styles is not null && bitTooltip.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitTooltip.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitTooltip.Styles, Styles) is false)
         {
             bitTooltip.Styles = Styles;
 
@@ -324,7 +327,7 @@ public class BitTooltipParams : BitComponentBaseParams, IBitComponentParams
             bitTooltip.TouchShowDelay = TouchShowDelay.Value;
         }
 
-        if (ZIndex.HasValue && bitTooltip.HasNotBeenSet(nameof(ZIndex)))
+        if (ZIndex.HasValue && bitTooltip.HasNotBeenSet(nameof(ZIndex)) && bitTooltip.ZIndex != ZIndex)
         {
             bitTooltip.ZIndex = ZIndex.Value;
 

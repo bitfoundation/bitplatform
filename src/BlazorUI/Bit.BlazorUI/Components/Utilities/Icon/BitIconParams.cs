@@ -123,14 +123,17 @@ public class BitIconParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitIcon);
 
-        if (Animation.HasValue && bitIcon.HasNotBeenSet(nameof(Animation)))
+        // This runs on every render of every icon under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (Animation.HasValue && bitIcon.HasNotBeenSet(nameof(Animation)) && bitIcon.Animation != Animation)
         {
             bitIcon.Animation = Animation.Value;
 
             bitIcon.ClassBuilder.Reset();
         }
 
-        if (AnimationDuration.HasValue() && bitIcon.HasNotBeenSet(nameof(AnimationDuration)))
+        if (AnimationDuration.HasValue() && bitIcon.HasNotBeenSet(nameof(AnimationDuration)) && bitIcon.AnimationDuration != AnimationDuration)
         {
             bitIcon.AnimationDuration = AnimationDuration;
 
@@ -138,7 +141,7 @@ public class BitIconParams : BitComponentBaseParams, IBitComponentParams
             bitIcon.StyleBuilder.Reset();
         }
 
-        if (AnimationDelay.HasValue() && bitIcon.HasNotBeenSet(nameof(AnimationDelay)))
+        if (AnimationDelay.HasValue() && bitIcon.HasNotBeenSet(nameof(AnimationDelay)) && bitIcon.AnimationDelay != AnimationDelay)
         {
             bitIcon.AnimationDelay = AnimationDelay;
 
@@ -146,7 +149,7 @@ public class BitIconParams : BitComponentBaseParams, IBitComponentParams
             bitIcon.StyleBuilder.Reset();
         }
 
-        if (AnimationIterationCount.HasValue && bitIcon.HasNotBeenSet(nameof(AnimationIterationCount)))
+        if (AnimationIterationCount.HasValue && bitIcon.HasNotBeenSet(nameof(AnimationIterationCount)) && bitIcon.AnimationIterationCount != AnimationIterationCount)
         {
             bitIcon.AnimationIterationCount = AnimationIterationCount.Value;
 
@@ -154,70 +157,70 @@ public class BitIconParams : BitComponentBaseParams, IBitComponentParams
             bitIcon.StyleBuilder.Reset();
         }
 
-        if (Circular.HasValue && bitIcon.HasNotBeenSet(nameof(Circular)))
+        if (Circular.HasValue && bitIcon.HasNotBeenSet(nameof(Circular)) && bitIcon.Circular != Circular)
         {
             bitIcon.Circular = Circular.Value;
 
             bitIcon.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitIcon.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitIcon.HasNotBeenSet(nameof(Color)) && bitIcon.Color != Color)
         {
             bitIcon.Color = Color.Value;
 
             bitIcon.ClassBuilder.Reset();
         }
 
-        if (FixedWidth.HasValue && bitIcon.HasNotBeenSet(nameof(FixedWidth)))
+        if (FixedWidth.HasValue && bitIcon.HasNotBeenSet(nameof(FixedWidth)) && bitIcon.FixedWidth != FixedWidth)
         {
             bitIcon.FixedWidth = FixedWidth.Value;
 
             bitIcon.ClassBuilder.Reset();
         }
 
-        if (Flip.HasValue && bitIcon.HasNotBeenSet(nameof(Flip)))
+        if (Flip.HasValue && bitIcon.HasNotBeenSet(nameof(Flip)) && bitIcon.Flip != Flip)
         {
             bitIcon.Flip = Flip.Value;
 
             bitIcon.ClassBuilder.Reset();
         }
 
-        if (FlipRtl.HasValue && bitIcon.HasNotBeenSet(nameof(FlipRtl)))
+        if (FlipRtl.HasValue && bitIcon.HasNotBeenSet(nameof(FlipRtl)) && bitIcon.FlipRtl != FlipRtl)
         {
             bitIcon.FlipRtl = FlipRtl.Value;
 
             bitIcon.ClassBuilder.Reset();
         }
 
-        if (FontSize.HasValue() && bitIcon.HasNotBeenSet(nameof(FontSize)))
+        if (FontSize.HasValue() && bitIcon.HasNotBeenSet(nameof(FontSize)) && bitIcon.FontSize != FontSize)
         {
             bitIcon.FontSize = FontSize;
 
             bitIcon.StyleBuilder.Reset();
         }
 
-        if (IconResolver is not null && bitIcon.HasNotBeenSet(nameof(IconResolver)))
+        if (IconResolver is not null && bitIcon.HasNotBeenSet(nameof(IconResolver)) && ReferenceEquals(bitIcon.IconResolver, IconResolver) is false)
         {
             bitIcon.IconResolver = IconResolver;
 
             bitIcon.ClassBuilder.Reset();
         }
 
-        if (Inline.HasValue && bitIcon.HasNotBeenSet(nameof(Inline)))
+        if (Inline.HasValue && bitIcon.HasNotBeenSet(nameof(Inline)) && bitIcon.Inline != Inline)
         {
             bitIcon.Inline = Inline.Value;
 
             bitIcon.ClassBuilder.Reset();
         }
 
-        if (Rotate.HasValue && bitIcon.HasNotBeenSet(nameof(Rotate)))
+        if (Rotate.HasValue && bitIcon.HasNotBeenSet(nameof(Rotate)) && bitIcon.Rotate != Rotate)
         {
             bitIcon.Rotate = Rotate.Value;
 
             bitIcon.ClassBuilder.Reset();
         }
 
-        if (RotateAngle.HasValue && bitIcon.HasNotBeenSet(nameof(RotateAngle)))
+        if (RotateAngle.HasValue && bitIcon.HasNotBeenSet(nameof(RotateAngle)) && bitIcon.RotateAngle != RotateAngle)
         {
             bitIcon.RotateAngle = RotateAngle.Value;
 
@@ -225,14 +228,14 @@ public class BitIconParams : BitComponentBaseParams, IBitComponentParams
             bitIcon.StyleBuilder.Reset();
         }
 
-        if (Size.HasValue && bitIcon.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitIcon.HasNotBeenSet(nameof(Size)) && bitIcon.Size != Size)
         {
             bitIcon.Size = Size.Value;
 
             bitIcon.ClassBuilder.Reset();
         }
 
-        if (Variant.HasValue && bitIcon.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue && bitIcon.HasNotBeenSet(nameof(Variant)) && bitIcon.Variant != Variant)
         {
             bitIcon.Variant = Variant.Value;
 

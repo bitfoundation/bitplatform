@@ -350,6 +350,9 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
 
         UpdateInputBaseParameters(bitPhoneInput);
 
+        // This runs on every render of every phone input under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AutoComplete.HasValue() && bitPhoneInput.HasNotBeenSet(nameof(AutoComplete)))
         {
             bitPhoneInput.AutoComplete = AutoComplete;
@@ -360,21 +363,21 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
             bitPhoneInput.AutoPlaceholder = AutoPlaceholder.Value;
         }
 
-        if (Background.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Background)))
+        if (Background.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Background)) && bitPhoneInput.Background != Background)
         {
             bitPhoneInput.Background = Background.Value;
 
             bitPhoneInput.ClassBuilder.Reset();
         }
 
-        if (Border.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Border)))
+        if (Border.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Border)) && bitPhoneInput.Border != Border)
         {
             bitPhoneInput.Border = Border.Value;
 
             bitPhoneInput.ClassBuilder.Reset();
         }
 
-        if (Classes is not null && bitPhoneInput.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitPhoneInput.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitPhoneInput.Classes, Classes) is false)
         {
             bitPhoneInput.Classes = Classes;
 
@@ -407,7 +410,7 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
             bitPhoneInput.ClearedAnnouncement = ClearedAnnouncement;
         }
 
-        if (Color.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Color)) && bitPhoneInput.Color != Color)
         {
             bitPhoneInput.Color = Color.Value;
 
@@ -474,7 +477,7 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
             bitPhoneInput.FlagUrlSelector = FlagUrlSelector;
         }
 
-        if (FullWidth.HasValue && bitPhoneInput.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitPhoneInput.HasNotBeenSet(nameof(FullWidth)) && bitPhoneInput.FullWidth != FullWidth)
         {
             bitPhoneInput.FullWidth = FullWidth.Value;
 
@@ -531,7 +534,7 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
             bitPhoneInput.MaxLength = MaxLength.Value;
         }
 
-        if (NoBorder.HasValue && bitPhoneInput.HasNotBeenSet(nameof(NoBorder)))
+        if (NoBorder.HasValue && bitPhoneInput.HasNotBeenSet(nameof(NoBorder)) && bitPhoneInput.NoBorder != NoBorder)
         {
             bitPhoneInput.NoBorder = NoBorder.Value;
 
@@ -543,7 +546,7 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
             bitPhoneInput.NoDialCode = NoDialCode.Value;
         }
 
-        if (NoDropdown.HasValue && bitPhoneInput.HasNotBeenSet(nameof(NoDropdown)))
+        if (NoDropdown.HasValue && bitPhoneInput.HasNotBeenSet(nameof(NoDropdown)) && bitPhoneInput.NoDropdown != NoDropdown)
         {
             bitPhoneInput.NoDropdown = NoDropdown.Value;
 
@@ -590,7 +593,7 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
             bitPhoneInput.PreferredCountries = PreferredCountries;
         }
 
-        if (Responsive.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Responsive)))
+        if (Responsive.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Responsive)) && bitPhoneInput.Responsive != Responsive)
         {
             bitPhoneInput.Responsive = Responsive.Value;
 
@@ -632,7 +635,7 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
             bitPhoneInput.ShowClearButton = ShowClearButton.Value;
         }
 
-        if (Size.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Size)) && bitPhoneInput.Size != Size)
         {
             bitPhoneInput.Size = Size.Value;
 
@@ -644,7 +647,7 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
             bitPhoneInput.Strict = Strict.Value;
         }
 
-        if (Styles is not null && bitPhoneInput.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitPhoneInput.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitPhoneInput.Styles, Styles) is false)
         {
             bitPhoneInput.Styles = Styles;
 
@@ -661,7 +664,7 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
             bitPhoneInput.Title = Title;
         }
 
-        if (Underlined.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Underlined)))
+        if (Underlined.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Underlined)) && bitPhoneInput.Underlined != Underlined)
         {
             bitPhoneInput.Underlined = Underlined.Value;
 

@@ -175,6 +175,9 @@ public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitBreadcrumb);
 
+        // This runs on every render of every breadcrumb under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AutoCollapse.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(AutoCollapse)))
         {
             bitBreadcrumb.AutoCollapse = AutoCollapse.Value;
@@ -185,14 +188,14 @@ public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
             bitBreadcrumb.AutoReorderOptions = AutoReorderOptions.Value;
         }
 
-        if (Classes is not null && bitBreadcrumb.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitBreadcrumb.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitBreadcrumb.Classes, Classes) is false)
         {
             bitBreadcrumb.Classes = Classes;
 
             bitBreadcrumb.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(Color)) && bitBreadcrumb.Color != Color)
         {
             bitBreadcrumb.Color = Color.Value;
 
@@ -234,7 +237,7 @@ public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
             bitBreadcrumb.MaxDisplayedItems = MaxDisplayedItems.Value;
         }
 
-        if (MaxItemWidth.HasValue() && bitBreadcrumb.HasNotBeenSet(nameof(MaxItemWidth)))
+        if (MaxItemWidth.HasValue() && bitBreadcrumb.HasNotBeenSet(nameof(MaxItemWidth)) && bitBreadcrumb.MaxItemWidth != MaxItemWidth)
         {
             bitBreadcrumb.MaxItemWidth = MaxItemWidth;
 
@@ -278,7 +281,7 @@ public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
             bitBreadcrumb.OverflowIndex = OverflowIndex.Value;
         }
 
-        if (Scrollable.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(Scrollable)))
+        if (Scrollable.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(Scrollable)) && bitBreadcrumb.Scrollable != Scrollable)
         {
             bitBreadcrumb.Scrollable = Scrollable.Value;
 
@@ -290,7 +293,7 @@ public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
             bitBreadcrumb.SelectedItemAsText = SelectedItemAsText.Value;
         }
 
-        if (Size.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(Size)) && bitBreadcrumb.Size != Size)
         {
             bitBreadcrumb.Size = Size.Value;
 
@@ -302,14 +305,14 @@ public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
             bitBreadcrumb.StructuredData = StructuredData.Value;
         }
 
-        if (Styles is not null && bitBreadcrumb.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitBreadcrumb.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitBreadcrumb.Styles, Styles) is false)
         {
             bitBreadcrumb.Styles = Styles;
 
             bitBreadcrumb.StyleBuilder.Reset();
         }
 
-        if (Wrap.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(Wrap)))
+        if (Wrap.HasValue && bitBreadcrumb.HasNotBeenSet(nameof(Wrap)) && bitBreadcrumb.Wrap != Wrap)
         {
             bitBreadcrumb.Wrap = Wrap.Value;
 

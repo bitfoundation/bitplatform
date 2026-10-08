@@ -232,6 +232,9 @@ public class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitDropMenu);
 
+        // This runs on every render of every drop menu under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (Alignment.HasValue && bitDropMenu.HasNotBeenSet(nameof(Alignment)))
         {
             bitDropMenu.Alignment = Alignment.Value;
@@ -277,14 +280,14 @@ public class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
             bitDropMenu.ChevronDownIconName = ChevronDownIconName;
         }
 
-        if (Classes is not null && bitDropMenu.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitDropMenu.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitDropMenu.Classes, Classes) is false)
         {
             bitDropMenu.Classes = Classes;
 
             bitDropMenu.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitDropMenu.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitDropMenu.HasNotBeenSet(nameof(Color)) && bitDropMenu.Color != Color)
         {
             bitDropMenu.Color = Color.Value;
 
@@ -296,7 +299,7 @@ public class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
             bitDropMenu.DropDirection = DropDirection.Value;
         }
 
-        if (FullWidth.HasValue && bitDropMenu.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitDropMenu.HasNotBeenSet(nameof(FullWidth)) && bitDropMenu.FullWidth != FullWidth)
         {
             bitDropMenu.FullWidth = FullWidth.Value;
 
@@ -328,7 +331,7 @@ public class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
             bitDropMenu.IconName = IconName;
         }
 
-        if (IsLoading.HasValue && bitDropMenu.HasNotBeenSet(nameof(IsLoading)))
+        if (IsLoading.HasValue && bitDropMenu.HasNotBeenSet(nameof(IsLoading)) && bitDropMenu.IsLoading != IsLoading)
         {
             bitDropMenu.IsLoading = IsLoading.Value;
 
@@ -390,14 +393,14 @@ public class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
             bitDropMenu.Placement = Placement.Value;
         }
 
-        if (Size.HasValue && bitDropMenu.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitDropMenu.HasNotBeenSet(nameof(Size)) && bitDropMenu.Size != Size)
         {
             bitDropMenu.Size = Size.Value;
 
             bitDropMenu.ClassBuilder.Reset();
         }
 
-        if (Styles is not null && bitDropMenu.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitDropMenu.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitDropMenu.Styles, Styles) is false)
         {
             bitDropMenu.Styles = Styles;
 
@@ -409,7 +412,7 @@ public class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
             bitDropMenu.Title = Title;
         }
 
-        if (Transparent.HasValue && bitDropMenu.HasNotBeenSet(nameof(Transparent)))
+        if (Transparent.HasValue && bitDropMenu.HasNotBeenSet(nameof(Transparent)) && bitDropMenu.Transparent != Transparent)
         {
             bitDropMenu.Transparent = Transparent.Value;
 
@@ -421,7 +424,7 @@ public class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
             bitDropMenu.TrapFocus = TrapFocus.Value;
         }
 
-        if (Variant.HasValue && bitDropMenu.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue && bitDropMenu.HasNotBeenSet(nameof(Variant)) && bitDropMenu.Variant != Variant)
         {
             bitDropMenu.Variant = Variant.Value;
 

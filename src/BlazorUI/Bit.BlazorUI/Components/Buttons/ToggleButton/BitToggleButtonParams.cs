@@ -301,6 +301,9 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitToggleButton);
 
+        // This runs on every render of every toggle button under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AllowDisabledFocus.HasValue && bitToggleButton.HasNotBeenSet(nameof(AllowDisabledFocus)))
         {
             bitToggleButton.AllowDisabledFocus = AllowDisabledFocus.Value;
@@ -351,14 +354,14 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
             bitToggleButton.CheckMarkIconName = CheckMarkIconName;
         }
 
-        if (Classes is not null && bitToggleButton.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitToggleButton.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitToggleButton.Classes, Classes) is false)
         {
             bitToggleButton.Classes = Classes;
 
             bitToggleButton.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitToggleButton.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitToggleButton.HasNotBeenSet(nameof(Color)) && bitToggleButton.Color != Color)
         {
             bitToggleButton.Color = Color.Value;
 
@@ -370,21 +373,21 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
             bitToggleButton.DefaultIsChecked = DefaultIsChecked.Value;
         }
 
-        if (FixedCheckMark.HasValue && bitToggleButton.HasNotBeenSet(nameof(FixedCheckMark)))
+        if (FixedCheckMark.HasValue && bitToggleButton.HasNotBeenSet(nameof(FixedCheckMark)) && bitToggleButton.FixedCheckMark != FixedCheckMark)
         {
             bitToggleButton.FixedCheckMark = FixedCheckMark.Value;
 
             bitToggleButton.ClassBuilder.Reset();
         }
 
-        if (FixedColor.HasValue && bitToggleButton.HasNotBeenSet(nameof(FixedColor)))
+        if (FixedColor.HasValue && bitToggleButton.HasNotBeenSet(nameof(FixedColor)) && bitToggleButton.FixedColor != FixedColor)
         {
             bitToggleButton.FixedColor = FixedColor.Value;
 
             bitToggleButton.ClassBuilder.Reset();
         }
 
-        if (FullWidth.HasValue && bitToggleButton.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitToggleButton.HasNotBeenSet(nameof(FullWidth)) && bitToggleButton.FullWidth != FullWidth)
         {
             bitToggleButton.FullWidth = FullWidth.Value;
 
@@ -401,21 +404,21 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
             bitToggleButton.IconName = IconName;
         }
 
-        if (IconOnly.HasValue && bitToggleButton.HasNotBeenSet(nameof(IconOnly)))
+        if (IconOnly.HasValue && bitToggleButton.HasNotBeenSet(nameof(IconOnly)) && bitToggleButton.IconOnly != IconOnly)
         {
             bitToggleButton.IconOnly = IconOnly.Value;
 
             bitToggleButton.ClassBuilder.Reset();
         }
 
-        if (IconPlacement.HasValue && bitToggleButton.HasNotBeenSet(nameof(IconPlacement)))
+        if (IconPlacement.HasValue && bitToggleButton.HasNotBeenSet(nameof(IconPlacement)) && bitToggleButton.IconPlacement != IconPlacement)
         {
             bitToggleButton.IconPlacement = IconPlacement.Value;
 
             bitToggleButton.ClassBuilder.Reset();
         }
 
-        if (IsLoading.HasValue && bitToggleButton.HasNotBeenSet(nameof(IsLoading)))
+        if (IsLoading.HasValue && bitToggleButton.HasNotBeenSet(nameof(IsLoading)) && bitToggleButton.IsLoading != IsLoading)
         {
             bitToggleButton.IsLoading = IsLoading.Value;
 
@@ -437,7 +440,7 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
             bitToggleButton.LoadingLabelPlacement = LoadingLabelPlacement.Value;
         }
 
-        if (NoWrap.HasValue && bitToggleButton.HasNotBeenSet(nameof(NoWrap)))
+        if (NoWrap.HasValue && bitToggleButton.HasNotBeenSet(nameof(NoWrap)) && bitToggleButton.NoWrap != NoWrap)
         {
             bitToggleButton.NoWrap = NoWrap.Value;
 
@@ -449,7 +452,7 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
             bitToggleButton.OffAriaLabel = OffAriaLabel;
         }
 
-        if (OffColor.HasValue && bitToggleButton.HasNotBeenSet(nameof(OffColor)))
+        if (OffColor.HasValue && bitToggleButton.HasNotBeenSet(nameof(OffColor)) && bitToggleButton.OffColor != OffColor)
         {
             bitToggleButton.OffColor = OffColor.Value;
 
@@ -466,7 +469,7 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
             bitToggleButton.OffIconName = OffIconName;
         }
 
-        if (OffText.HasValue() && bitToggleButton.HasNotBeenSet(nameof(OffText)))
+        if (OffText.HasValue() && bitToggleButton.HasNotBeenSet(nameof(OffText)) && bitToggleButton.OffText != OffText)
         {
             bitToggleButton.OffText = OffText;
 
@@ -478,7 +481,7 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
             bitToggleButton.OffTitle = OffTitle;
         }
 
-        if (OffVariant.HasValue && bitToggleButton.HasNotBeenSet(nameof(OffVariant)))
+        if (OffVariant.HasValue && bitToggleButton.HasNotBeenSet(nameof(OffVariant)) && bitToggleButton.OffVariant != OffVariant)
         {
             bitToggleButton.OffVariant = OffVariant.Value;
 
@@ -490,7 +493,7 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
             bitToggleButton.OnAriaLabel = OnAriaLabel;
         }
 
-        if (OnColor.HasValue && bitToggleButton.HasNotBeenSet(nameof(OnColor)))
+        if (OnColor.HasValue && bitToggleButton.HasNotBeenSet(nameof(OnColor)) && bitToggleButton.OnColor != OnColor)
         {
             bitToggleButton.OnColor = OnColor.Value;
 
@@ -507,7 +510,7 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
             bitToggleButton.OnIconName = OnIconName;
         }
 
-        if (OnText.HasValue() && bitToggleButton.HasNotBeenSet(nameof(OnText)))
+        if (OnText.HasValue() && bitToggleButton.HasNotBeenSet(nameof(OnText)) && bitToggleButton.OnText != OnText)
         {
             bitToggleButton.OnText = OnText;
 
@@ -519,28 +522,28 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
             bitToggleButton.OnTitle = OnTitle;
         }
 
-        if (OnVariant.HasValue && bitToggleButton.HasNotBeenSet(nameof(OnVariant)))
+        if (OnVariant.HasValue && bitToggleButton.HasNotBeenSet(nameof(OnVariant)) && bitToggleButton.OnVariant != OnVariant)
         {
             bitToggleButton.OnVariant = OnVariant.Value;
 
             bitToggleButton.ClassBuilder.Reset();
         }
 
-        if (Reclickable.HasValue && bitToggleButton.HasNotBeenSet(nameof(Reclickable)))
+        if (Reclickable.HasValue && bitToggleButton.HasNotBeenSet(nameof(Reclickable)) && bitToggleButton.Reclickable != Reclickable)
         {
             bitToggleButton.Reclickable = Reclickable.Value;
 
             bitToggleButton.ClassBuilder.Reset();
         }
 
-        if (ShowCheckMark.HasValue && bitToggleButton.HasNotBeenSet(nameof(ShowCheckMark)))
+        if (ShowCheckMark.HasValue && bitToggleButton.HasNotBeenSet(nameof(ShowCheckMark)) && bitToggleButton.ShowCheckMark != ShowCheckMark)
         {
             bitToggleButton.ShowCheckMark = ShowCheckMark.Value;
 
             bitToggleButton.ClassBuilder.Reset();
         }
 
-        if (Size.HasValue && bitToggleButton.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitToggleButton.HasNotBeenSet(nameof(Size)) && bitToggleButton.Size != Size)
         {
             bitToggleButton.Size = Size.Value;
 
@@ -552,14 +555,14 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
             bitToggleButton.StopPropagation = StopPropagation.Value;
         }
 
-        if (Styles is not null && bitToggleButton.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitToggleButton.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitToggleButton.Styles, Styles) is false)
         {
             bitToggleButton.Styles = Styles;
 
             bitToggleButton.StyleBuilder.Reset();
         }
 
-        if (Text.HasValue() && bitToggleButton.HasNotBeenSet(nameof(Text)))
+        if (Text.HasValue() && bitToggleButton.HasNotBeenSet(nameof(Text)) && bitToggleButton.Text != Text)
         {
             bitToggleButton.Text = Text;
 
@@ -571,7 +574,7 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
             bitToggleButton.Title = Title;
         }
 
-        if (Variant.HasValue && bitToggleButton.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue && bitToggleButton.HasNotBeenSet(nameof(Variant)) && bitToggleButton.Variant != Variant)
         {
             bitToggleButton.Variant = Variant.Value;
 

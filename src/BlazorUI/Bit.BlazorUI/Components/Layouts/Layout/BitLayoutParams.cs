@@ -175,6 +175,9 @@ public class BitLayoutParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitLayout);
 
+        // This runs on every render of every layout under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AsideAriaLabel.HasValue() && bitLayout.HasNotBeenSet(nameof(AsideAriaLabel)))
         {
             bitLayout.AsideAriaLabel = AsideAriaLabel;
@@ -185,49 +188,49 @@ public class BitLayoutParams : BitComponentBaseParams, IBitComponentParams
             bitLayout.AsideWidth = AsideWidth.Value;
         }
 
-        if (Bordered.HasValue && bitLayout.HasNotBeenSet(nameof(Bordered)))
+        if (Bordered.HasValue && bitLayout.HasNotBeenSet(nameof(Bordered)) && bitLayout.Bordered != Bordered)
         {
             bitLayout.Bordered = Bordered.Value;
 
             bitLayout.ClassBuilder.Reset();
         }
 
-        if (Classes is not null && bitLayout.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitLayout.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitLayout.Classes, Classes) is false)
         {
             bitLayout.Classes = Classes;
 
             bitLayout.ClassBuilder.Reset();
         }
 
-        if (FooterHeight.HasValue && bitLayout.HasNotBeenSet(nameof(FooterHeight)))
+        if (FooterHeight.HasValue && bitLayout.HasNotBeenSet(nameof(FooterHeight)) && bitLayout.FooterHeight != FooterHeight)
         {
             bitLayout.FooterHeight = FooterHeight.Value;
 
             bitLayout.StyleBuilder.Reset();
         }
 
-        if (FullHeight.HasValue && bitLayout.HasNotBeenSet(nameof(FullHeight)))
+        if (FullHeight.HasValue && bitLayout.HasNotBeenSet(nameof(FullHeight)) && bitLayout.FullHeight != FullHeight)
         {
             bitLayout.FullHeight = FullHeight.Value;
 
             bitLayout.ClassBuilder.Reset();
         }
 
-        if (FullHeightPanels.HasValue && bitLayout.HasNotBeenSet(nameof(FullHeightPanels)))
+        if (FullHeightPanels.HasValue && bitLayout.HasNotBeenSet(nameof(FullHeightPanels)) && bitLayout.FullHeightPanels != FullHeightPanels)
         {
             bitLayout.FullHeightPanels = FullHeightPanels.Value;
 
             bitLayout.ClassBuilder.Reset();
         }
 
-        if (Gap.HasValue() && bitLayout.HasNotBeenSet(nameof(Gap)))
+        if (Gap.HasValue() && bitLayout.HasNotBeenSet(nameof(Gap)) && bitLayout.Gap != Gap)
         {
             bitLayout.Gap = Gap;
 
             bitLayout.StyleBuilder.Reset();
         }
 
-        if (HeaderHeight.HasValue && bitLayout.HasNotBeenSet(nameof(HeaderHeight)))
+        if (HeaderHeight.HasValue && bitLayout.HasNotBeenSet(nameof(HeaderHeight)) && bitLayout.HeaderHeight != HeaderHeight)
         {
             bitLayout.HeaderHeight = HeaderHeight.Value;
 
@@ -269,28 +272,28 @@ public class BitLayoutParams : BitComponentBaseParams, IBitComponentParams
             bitLayout.Nested = Nested.Value;
         }
 
-        if (Padding.HasValue() && bitLayout.HasNotBeenSet(nameof(Padding)))
+        if (Padding.HasValue() && bitLayout.HasNotBeenSet(nameof(Padding)) && bitLayout.Padding != Padding)
         {
             bitLayout.Padding = Padding;
 
             bitLayout.StyleBuilder.Reset();
         }
 
-        if (ReverseNavPanel.HasValue && bitLayout.HasNotBeenSet(nameof(ReverseNavPanel)))
+        if (ReverseNavPanel.HasValue && bitLayout.HasNotBeenSet(nameof(ReverseNavPanel)) && bitLayout.ReverseNavPanel != ReverseNavPanel)
         {
             bitLayout.ReverseNavPanel = ReverseNavPanel.Value;
 
             bitLayout.ClassBuilder.Reset();
         }
 
-        if (ScrollableMain.HasValue && bitLayout.HasNotBeenSet(nameof(ScrollableMain)))
+        if (ScrollableMain.HasValue && bitLayout.HasNotBeenSet(nameof(ScrollableMain)) && bitLayout.ScrollableMain != ScrollableMain)
         {
             bitLayout.ScrollableMain = ScrollableMain.Value;
 
             bitLayout.ClassBuilder.Reset();
         }
 
-        if (SkipLink.HasValue && bitLayout.HasNotBeenSet(nameof(SkipLink)))
+        if (SkipLink.HasValue && bitLayout.HasNotBeenSet(nameof(SkipLink)) && bitLayout.SkipLink != SkipLink)
         {
             bitLayout.SkipLink = SkipLink.Value;
 
@@ -302,42 +305,42 @@ public class BitLayoutParams : BitComponentBaseParams, IBitComponentParams
             bitLayout.SkipLinkText = SkipLinkText;
         }
 
-        if (StickyAside.HasValue && bitLayout.HasNotBeenSet(nameof(StickyAside)))
+        if (StickyAside.HasValue && bitLayout.HasNotBeenSet(nameof(StickyAside)) && bitLayout.StickyAside != StickyAside)
         {
             bitLayout.StickyAside = StickyAside.Value;
 
             bitLayout.ClassBuilder.Reset();
         }
 
-        if (StickyFooter.HasValue && bitLayout.HasNotBeenSet(nameof(StickyFooter)))
+        if (StickyFooter.HasValue && bitLayout.HasNotBeenSet(nameof(StickyFooter)) && bitLayout.StickyFooter != StickyFooter)
         {
             bitLayout.StickyFooter = StickyFooter.Value;
 
             bitLayout.ClassBuilder.Reset();
         }
 
-        if (StickyHeader.HasValue && bitLayout.HasNotBeenSet(nameof(StickyHeader)))
+        if (StickyHeader.HasValue && bitLayout.HasNotBeenSet(nameof(StickyHeader)) && bitLayout.StickyHeader != StickyHeader)
         {
             bitLayout.StickyHeader = StickyHeader.Value;
 
             bitLayout.ClassBuilder.Reset();
         }
 
-        if (StickyNavPanel.HasValue && bitLayout.HasNotBeenSet(nameof(StickyNavPanel)))
+        if (StickyNavPanel.HasValue && bitLayout.HasNotBeenSet(nameof(StickyNavPanel)) && bitLayout.StickyNavPanel != StickyNavPanel)
         {
             bitLayout.StickyNavPanel = StickyNavPanel.Value;
 
             bitLayout.ClassBuilder.Reset();
         }
 
-        if (Styles is not null && bitLayout.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitLayout.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitLayout.Styles, Styles) is false)
         {
             bitLayout.Styles = Styles;
 
             bitLayout.StyleBuilder.Reset();
         }
 
-        if (ZIndex.HasValue && bitLayout.HasNotBeenSet(nameof(ZIndex)))
+        if (ZIndex.HasValue && bitLayout.HasNotBeenSet(nameof(ZIndex)) && bitLayout.ZIndex != ZIndex)
         {
             bitLayout.ZIndex = ZIndex.Value;
 

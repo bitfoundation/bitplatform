@@ -185,7 +185,10 @@ public class BitNavParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitNav);
 
-        if (Accent.HasValue && bitNav.HasNotBeenSet(nameof(Accent)))
+        // This runs on every render of every nav under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (Accent.HasValue && bitNav.HasNotBeenSet(nameof(Accent)) && bitNav.Accent != Accent)
         {
             bitNav.Accent = Accent.Value;
 
@@ -211,7 +214,7 @@ public class BitNavParams : BitComponentBaseParams, IBitComponentParams
             bitNav.ChevronDownIconName = ChevronDownIconName;
         }
 
-        if (Classes is not null && bitNav.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitNav.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitNav.Classes, Classes) is false)
         {
             bitNav.Classes = Classes;
 
@@ -223,7 +226,7 @@ public class BitNavParams : BitComponentBaseParams, IBitComponentParams
             bitNav.CollapseAriaLabel = CollapseAriaLabel;
         }
 
-        if (Color.HasValue && bitNav.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitNav.HasNotBeenSet(nameof(Color)) && bitNav.Color != Color)
         {
             bitNav.Color = Color.Value;
 
@@ -235,14 +238,14 @@ public class BitNavParams : BitComponentBaseParams, IBitComponentParams
             bitNav.ExpandAriaLabel = ExpandAriaLabel;
         }
 
-        if (FitWidth.HasValue && bitNav.HasNotBeenSet(nameof(FitWidth)))
+        if (FitWidth.HasValue && bitNav.HasNotBeenSet(nameof(FitWidth)) && bitNav.FitWidth != FitWidth)
         {
             bitNav.FitWidth = FitWidth.Value;
 
             bitNav.ClassBuilder.Reset();
         }
 
-        if (FullWidth.HasValue && bitNav.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitNav.HasNotBeenSet(nameof(FullWidth)) && bitNav.FullWidth != FullWidth)
         {
             bitNav.FullWidth = FullWidth.Value;
 
@@ -254,7 +257,7 @@ public class BitNavParams : BitComponentBaseParams, IBitComponentParams
             bitNav.HeaderTemplateRenderMode = HeaderTemplateRenderMode.Value;
         }
 
-        if (IconOnly.HasValue && bitNav.HasNotBeenSet(nameof(IconOnly)))
+        if (IconOnly.HasValue && bitNav.HasNotBeenSet(nameof(IconOnly)) && bitNav.IconOnly != IconOnly)
         {
             bitNav.IconOnly = IconOnly.Value;
 
@@ -342,14 +345,14 @@ public class BitNavParams : BitComponentBaseParams, IBitComponentParams
             bitNav.SingleExpand = SingleExpand.Value;
         }
 
-        if (Size.HasValue && bitNav.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitNav.HasNotBeenSet(nameof(Size)) && bitNav.Size != Size)
         {
             bitNav.Size = Size.Value;
 
             bitNav.ClassBuilder.Reset();
         }
 
-        if (Styles is not null && bitNav.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitNav.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitNav.Styles, Styles) is false)
         {
             bitNav.Styles = Styles;
 

@@ -153,6 +153,9 @@ public class BitChoiceGroupParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitChoiceGroup);
 
+        // This runs on every render of every choice group under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AriaLabelledBy.HasValue() && bitChoiceGroup.HasNotBeenSet(nameof(AriaLabelledBy)))
         {
             bitChoiceGroup.AriaLabelledBy = AriaLabelledBy;
@@ -168,14 +171,14 @@ public class BitChoiceGroupParams : BitComponentBaseParams, IBitComponentParams
             bitChoiceGroup.AutoReorderOptions = AutoReorderOptions.Value;
         }
 
-        if (Classes is not null && bitChoiceGroup.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitChoiceGroup.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitChoiceGroup.Classes, Classes) is false)
         {
             bitChoiceGroup.Classes = Classes;
 
             bitChoiceGroup.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(Color)) && bitChoiceGroup.Color != Color)
         {
             bitChoiceGroup.Color = Color.Value;
 
@@ -192,28 +195,28 @@ public class BitChoiceGroupParams : BitComponentBaseParams, IBitComponentParams
             bitChoiceGroup.DescriptionTemplate = DescriptionTemplate;
         }
 
-        if (FullWidth.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(FullWidth)) && bitChoiceGroup.FullWidth != FullWidth)
         {
             bitChoiceGroup.FullWidth = FullWidth.Value;
 
             bitChoiceGroup.ClassBuilder.Reset();
         }
 
-        if (Gap.HasValue() && bitChoiceGroup.HasNotBeenSet(nameof(Gap)))
+        if (Gap.HasValue() && bitChoiceGroup.HasNotBeenSet(nameof(Gap)) && bitChoiceGroup.Gap != Gap)
         {
             bitChoiceGroup.Gap = Gap;
 
             bitChoiceGroup.StyleBuilder.Reset();
         }
 
-        if (Horizontal.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(Horizontal)))
+        if (Horizontal.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(Horizontal)) && bitChoiceGroup.Horizontal != Horizontal)
         {
             bitChoiceGroup.Horizontal = Horizontal.Value;
 
             bitChoiceGroup.ClassBuilder.Reset();
         }
 
-        if (Inline.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(Inline)))
+        if (Inline.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(Inline)) && bitChoiceGroup.Inline != Inline)
         {
             bitChoiceGroup.Inline = Inline.Value;
 
@@ -225,7 +228,7 @@ public class BitChoiceGroupParams : BitComponentBaseParams, IBitComponentParams
             bitChoiceGroup.Label = Label;
         }
 
-        if (LabelPlacement.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(LabelPlacement)))
+        if (LabelPlacement.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(LabelPlacement)) && bitChoiceGroup.LabelPlacement != LabelPlacement)
         {
             bitChoiceGroup.LabelPlacement = LabelPlacement.Value;
 
@@ -237,35 +240,35 @@ public class BitChoiceGroupParams : BitComponentBaseParams, IBitComponentParams
             bitChoiceGroup.LabelTemplate = LabelTemplate;
         }
 
-        if (NoCircle.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(NoCircle)))
+        if (NoCircle.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(NoCircle)) && bitChoiceGroup.NoCircle != NoCircle)
         {
             bitChoiceGroup.NoCircle = NoCircle.Value;
 
             bitChoiceGroup.ClassBuilder.Reset();
         }
 
-        if (Size.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(Size)) && bitChoiceGroup.Size != Size)
         {
             bitChoiceGroup.Size = Size.Value;
 
             bitChoiceGroup.ClassBuilder.Reset();
         }
 
-        if (StretchItemLabel.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(StretchItemLabel)))
+        if (StretchItemLabel.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(StretchItemLabel)) && bitChoiceGroup.StretchItemLabel != StretchItemLabel)
         {
             bitChoiceGroup.StretchItemLabel = StretchItemLabel.Value;
 
             bitChoiceGroup.ClassBuilder.Reset();
         }
 
-        if (Styles is not null && bitChoiceGroup.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitChoiceGroup.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitChoiceGroup.Styles, Styles) is false)
         {
             bitChoiceGroup.Styles = Styles;
 
             bitChoiceGroup.StyleBuilder.Reset();
         }
 
-        if (Variant.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue && bitChoiceGroup.HasNotBeenSet(nameof(Variant)) && bitChoiceGroup.Variant != Variant)
         {
             bitChoiceGroup.Variant = Variant.Value;
 

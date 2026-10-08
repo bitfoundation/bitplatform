@@ -47,14 +47,17 @@ public abstract class BitInputBaseParams<TValue> : BitComponentBaseParams
 
         UpdateBaseParameters(bitInputBase);
 
-        if (ReadOnly.HasValue && bitInputBase.HasNotBeenSet(nameof(ReadOnly)))
+        // This runs on every render of every input under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (ReadOnly.HasValue && bitInputBase.HasNotBeenSet(nameof(ReadOnly)) && bitInputBase.ReadOnly != ReadOnly)
         {
             bitInputBase.ReadOnly = ReadOnly.Value;
 
             bitInputBase.ClassBuilder.Reset();
         }
 
-        if (Required.HasValue && bitInputBase.HasNotBeenSet(nameof(Required)))
+        if (Required.HasValue && bitInputBase.HasNotBeenSet(nameof(Required)) && bitInputBase.Required != Required)
         {
             bitInputBase.Required = Required.Value;
 

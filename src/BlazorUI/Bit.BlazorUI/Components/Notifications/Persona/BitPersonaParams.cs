@@ -289,6 +289,9 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitPersona);
 
+        // This runs on every render of every persona under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         var linkWasSet = false;
 
         if (ActionButtonTitle.HasValue() && bitPersona.HasNotBeenSet(nameof(ActionButtonTitle)))
@@ -306,7 +309,7 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
             bitPersona.ActionIconName = ActionIconName;
         }
 
-        if (ActiveAppearance.HasValue && bitPersona.HasNotBeenSet(nameof(ActiveAppearance)))
+        if (ActiveAppearance.HasValue && bitPersona.HasNotBeenSet(nameof(ActiveAppearance)) && bitPersona.ActiveAppearance != ActiveAppearance)
         {
             bitPersona.ActiveAppearance = ActiveAppearance.Value;
 
@@ -318,21 +321,21 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
             bitPersona.AllowPhoneInitials = AllowPhoneInitials.Value;
         }
 
-        if (AutoCoinColor.HasValue && bitPersona.HasNotBeenSet(nameof(AutoCoinColor)))
+        if (AutoCoinColor.HasValue && bitPersona.HasNotBeenSet(nameof(AutoCoinColor)) && bitPersona.AutoCoinColor != AutoCoinColor)
         {
             bitPersona.AutoCoinColor = AutoCoinColor.Value;
 
             bitPersona.ClassBuilder.Reset();
         }
 
-        if (AutoCoinColors is not null && bitPersona.HasNotBeenSet(nameof(AutoCoinColors)))
+        if (AutoCoinColors is not null && bitPersona.HasNotBeenSet(nameof(AutoCoinColors)) && ReferenceEquals(bitPersona.AutoCoinColors, AutoCoinColors) is false)
         {
             bitPersona.AutoCoinColors = AutoCoinColors;
 
             bitPersona.ClassBuilder.Reset();
         }
 
-        if (Classes is not null && bitPersona.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitPersona.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitPersona.Classes, Classes) is false)
         {
             bitPersona.Classes = Classes;
 
@@ -342,7 +345,8 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
         // A persona that turns AutoCoinColor on itself is asking for the hashed color, which a CoinColor handed
         // down from here would otherwise win over.
         if (CoinColor.HasValue && bitPersona.HasNotBeenSet(nameof(CoinColor))
-            && (bitPersona.HasNotBeenSet(nameof(AutoCoinColor)) || bitPersona.AutoCoinColor is false))
+            && (bitPersona.HasNotBeenSet(nameof(AutoCoinColor)) || bitPersona.AutoCoinColor is false)
+            && bitPersona.CoinColor != CoinColor)
         {
             bitPersona.CoinColor = CoinColor.Value;
 
@@ -371,7 +375,7 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
             bitPersona.CoinVariant = CoinVariant.Value;
         }
 
-        if (FullWidth.HasValue && bitPersona.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitPersona.HasNotBeenSet(nameof(FullWidth)) && bitPersona.FullWidth != FullWidth)
         {
             bitPersona.FullWidth = FullWidth.Value;
 
@@ -424,7 +428,7 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
             linkWasSet = true;
         }
 
-        if (Reversed.HasValue && bitPersona.HasNotBeenSet(nameof(Reversed)))
+        if (Reversed.HasValue && bitPersona.HasNotBeenSet(nameof(Reversed)) && bitPersona.Reversed != Reversed)
         {
             bitPersona.Reversed = Reversed.Value;
 
@@ -434,7 +438,8 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
         // Shape wins over Squared, so a Shape handed down from here would otherwise override a persona that
         // squares itself.
         if (Shape.HasValue && bitPersona.HasNotBeenSet(nameof(Shape))
-            && (bitPersona.HasNotBeenSet(nameof(Squared)) || bitPersona.Squared is false))
+            && (bitPersona.HasNotBeenSet(nameof(Squared)) || bitPersona.Squared is false)
+            && bitPersona.Shape != Shape)
         {
             bitPersona.Shape = Shape.Value;
 
@@ -456,28 +461,28 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
             bitPersona.ShowOverflowTooltip = ShowOverflowTooltip.Value;
         }
 
-        if (ShowSecondaryText.HasValue && bitPersona.HasNotBeenSet(nameof(ShowSecondaryText)))
+        if (ShowSecondaryText.HasValue && bitPersona.HasNotBeenSet(nameof(ShowSecondaryText)) && bitPersona.ShowSecondaryText != ShowSecondaryText)
         {
             bitPersona.ShowSecondaryText = ShowSecondaryText.Value;
 
             bitPersona.ClassBuilder.Reset();
         }
 
-        if (Size.HasValue && bitPersona.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitPersona.HasNotBeenSet(nameof(Size)) && bitPersona.Size != Size)
         {
             bitPersona.Size = Size.Value;
 
             bitPersona.ClassBuilder.Reset();
         }
 
-        if (Squared.HasValue && bitPersona.HasNotBeenSet(nameof(Squared)))
+        if (Squared.HasValue && bitPersona.HasNotBeenSet(nameof(Squared)) && bitPersona.Squared != Squared)
         {
             bitPersona.Squared = Squared.Value;
 
             bitPersona.ClassBuilder.Reset();
         }
 
-        if (Styles is not null && bitPersona.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitPersona.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitPersona.Styles, Styles) is false)
         {
             bitPersona.Styles = Styles;
 
@@ -503,7 +508,7 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
             bitPersona.UnknownIconName = UnknownIconName;
         }
 
-        if (Vertical.HasValue && bitPersona.HasNotBeenSet(nameof(Vertical)))
+        if (Vertical.HasValue && bitPersona.HasNotBeenSet(nameof(Vertical)) && bitPersona.Vertical != Vertical)
         {
             bitPersona.Vertical = Vertical.Value;
 

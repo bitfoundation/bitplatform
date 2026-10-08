@@ -80,40 +80,43 @@ public class BitSpacerParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitSpacer);
 
+        // This runs on every render of every spacer under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (Element.HasValue() && bitSpacer.HasNotBeenSet(nameof(Element)))
         {
             bitSpacer.Element = Element;
         }
 
-        if (Gap.HasValue() && bitSpacer.HasNotBeenSet(nameof(Gap)))
+        if (Gap.HasValue() && bitSpacer.HasNotBeenSet(nameof(Gap)) && bitSpacer.Gap != Gap)
         {
             bitSpacer.Gap = Gap;
 
             bitSpacer.StyleBuilder.Reset();
         }
 
-        if (Grow.HasValue() && bitSpacer.HasNotBeenSet(nameof(Grow)))
+        if (Grow.HasValue() && bitSpacer.HasNotBeenSet(nameof(Grow)) && bitSpacer.Grow != Grow)
         {
             bitSpacer.Grow = Grow;
 
             bitSpacer.StyleBuilder.Reset();
         }
 
-        if (Height.HasValue && bitSpacer.HasNotBeenSet(nameof(Height)))
+        if (Height.HasValue && bitSpacer.HasNotBeenSet(nameof(Height)) && bitSpacer.Height != Height)
         {
             bitSpacer.Height = Height.Value;
 
             bitSpacer.StyleBuilder.Reset();
         }
 
-        if (MinGap.HasValue() && bitSpacer.HasNotBeenSet(nameof(MinGap)))
+        if (MinGap.HasValue() && bitSpacer.HasNotBeenSet(nameof(MinGap)) && bitSpacer.MinGap != MinGap)
         {
             bitSpacer.MinGap = MinGap;
 
             bitSpacer.StyleBuilder.Reset();
         }
 
-        if (Size.HasValue && bitSpacer.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitSpacer.HasNotBeenSet(nameof(Size)) && bitSpacer.Size != Size)
         {
             bitSpacer.Size = Size.Value;
 
@@ -121,14 +124,14 @@ public class BitSpacerParams : BitComponentBaseParams, IBitComponentParams
             bitSpacer.StyleBuilder.Reset();
         }
 
-        if (Vertical.HasValue && bitSpacer.HasNotBeenSet(nameof(Vertical)))
+        if (Vertical.HasValue && bitSpacer.HasNotBeenSet(nameof(Vertical)) && bitSpacer.Vertical != Vertical)
         {
             bitSpacer.Vertical = Vertical.Value;
 
             bitSpacer.StyleBuilder.Reset();
         }
 
-        if (Width.HasValue && bitSpacer.HasNotBeenSet(nameof(Width)))
+        if (Width.HasValue && bitSpacer.HasNotBeenSet(nameof(Width)) && bitSpacer.Width != Width)
         {
             bitSpacer.Width = Width.Value;
 

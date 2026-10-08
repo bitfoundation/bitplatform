@@ -167,7 +167,10 @@ public class BitShimmerParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitShimmer);
 
-        if (Animation.HasValue && bitShimmer.HasNotBeenSet(nameof(Animation)))
+        // This runs on every render of every shimmer under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (Animation.HasValue && bitShimmer.HasNotBeenSet(nameof(Animation)) && bitShimmer.Animation != Animation)
         {
             bitShimmer.Animation = Animation.Value;
 
@@ -179,21 +182,21 @@ public class BitShimmerParams : BitComponentBaseParams, IBitComponentParams
             bitShimmer.Background = Background.Value;
         }
 
-        if (Circle.HasValue && bitShimmer.HasNotBeenSet(nameof(Circle)))
+        if (Circle.HasValue && bitShimmer.HasNotBeenSet(nameof(Circle)) && bitShimmer.Circle != Circle)
         {
             bitShimmer.Circle = Circle.Value;
 
             bitShimmer.ClassBuilder.Reset();
         }
 
-        if (Classes is not null && bitShimmer.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitShimmer.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitShimmer.Classes, Classes) is false)
         {
             bitShimmer.Classes = Classes;
 
             bitShimmer.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitShimmer.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitShimmer.HasNotBeenSet(nameof(Color)) && bitShimmer.Color != Color)
         {
             bitShimmer.Color = Color.Value;
 
@@ -210,35 +213,35 @@ public class BitShimmerParams : BitComponentBaseParams, IBitComponentParams
             bitShimmer.Duration = Duration.Value;
         }
 
-        if (Gap.HasValue() && bitShimmer.HasNotBeenSet(nameof(Gap)))
+        if (Gap.HasValue() && bitShimmer.HasNotBeenSet(nameof(Gap)) && bitShimmer.Gap != Gap)
         {
             bitShimmer.Gap = Gap;
 
             bitShimmer.StyleBuilder.Reset();
         }
 
-        if (Height.HasValue() && bitShimmer.HasNotBeenSet(nameof(Height)))
+        if (Height.HasValue() && bitShimmer.HasNotBeenSet(nameof(Height)) && bitShimmer.Height != Height)
         {
             bitShimmer.Height = Height;
 
             bitShimmer.StyleBuilder.Reset();
         }
 
-        if (Inline.HasValue && bitShimmer.HasNotBeenSet(nameof(Inline)))
+        if (Inline.HasValue && bitShimmer.HasNotBeenSet(nameof(Inline)) && bitShimmer.Inline != Inline)
         {
             bitShimmer.Inline = Inline.Value;
 
             bitShimmer.ClassBuilder.Reset();
         }
 
-        if (LastLineWidth.HasValue() && bitShimmer.HasNotBeenSet(nameof(LastLineWidth)))
+        if (LastLineWidth.HasValue() && bitShimmer.HasNotBeenSet(nameof(LastLineWidth)) && bitShimmer.LastLineWidth != LastLineWidth)
         {
             bitShimmer.LastLineWidth = LastLineWidth;
 
             bitShimmer.StyleBuilder.Reset();
         }
 
-        if (Lines.HasValue && bitShimmer.HasNotBeenSet(nameof(Lines)))
+        if (Lines.HasValue && bitShimmer.HasNotBeenSet(nameof(Lines)) && bitShimmer.Lines != Lines)
         {
             bitShimmer.Lines = Lines.Value;
 
@@ -255,7 +258,7 @@ public class BitShimmerParams : BitComponentBaseParams, IBitComponentParams
             bitShimmer.MinShowTime = MinShowTime.Value;
         }
 
-        if (Overlay.HasValue && bitShimmer.HasNotBeenSet(nameof(Overlay)))
+        if (Overlay.HasValue && bitShimmer.HasNotBeenSet(nameof(Overlay)) && bitShimmer.Overlay != Overlay)
         {
             bitShimmer.Overlay = Overlay.Value;
 
@@ -267,35 +270,35 @@ public class BitShimmerParams : BitComponentBaseParams, IBitComponentParams
             bitShimmer.Politeness = Politeness.Value;
         }
 
-        if (Pulse.HasValue && bitShimmer.HasNotBeenSet(nameof(Pulse)))
+        if (Pulse.HasValue && bitShimmer.HasNotBeenSet(nameof(Pulse)) && bitShimmer.Pulse != Pulse)
         {
             bitShimmer.Pulse = Pulse.Value;
 
             bitShimmer.ClassBuilder.Reset();
         }
 
-        if (Radius.HasValue() && bitShimmer.HasNotBeenSet(nameof(Radius)))
+        if (Radius.HasValue() && bitShimmer.HasNotBeenSet(nameof(Radius)) && bitShimmer.Radius != Radius)
         {
             bitShimmer.Radius = Radius;
 
             bitShimmer.StyleBuilder.Reset();
         }
 
-        if (Shape.HasValue && bitShimmer.HasNotBeenSet(nameof(Shape)))
+        if (Shape.HasValue && bitShimmer.HasNotBeenSet(nameof(Shape)) && bitShimmer.Shape != Shape)
         {
             bitShimmer.Shape = Shape.Value;
 
             bitShimmer.ClassBuilder.Reset();
         }
 
-        if (ShowDelay.HasValue && bitShimmer.HasNotBeenSet(nameof(ShowDelay)))
+        if (ShowDelay.HasValue && bitShimmer.HasNotBeenSet(nameof(ShowDelay)) && bitShimmer.ShowDelay != ShowDelay)
         {
             bitShimmer.ShowDelay = ShowDelay.Value;
 
             bitShimmer.StyleBuilder.Reset();
         }
 
-        if (Size.HasValue && bitShimmer.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitShimmer.HasNotBeenSet(nameof(Size)) && bitShimmer.Size != Size)
         {
             bitShimmer.Size = Size.Value;
 
@@ -307,14 +310,14 @@ public class BitShimmerParams : BitComponentBaseParams, IBitComponentParams
             bitShimmer.Stagger = Stagger.Value;
         }
 
-        if (Styles is not null && bitShimmer.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitShimmer.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitShimmer.Styles, Styles) is false)
         {
             bitShimmer.Styles = Styles;
 
             bitShimmer.StyleBuilder.Reset();
         }
 
-        if (Width.HasValue() && bitShimmer.HasNotBeenSet(nameof(Width)))
+        if (Width.HasValue() && bitShimmer.HasNotBeenSet(nameof(Width)) && bitShimmer.Width != Width)
         {
             bitShimmer.Width = Width;
 

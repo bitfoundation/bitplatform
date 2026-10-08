@@ -228,7 +228,10 @@ public class BitDialogParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitDialog);
 
-        if (AbsolutePosition.HasValue && bitDialog.HasNotBeenSet(nameof(AbsolutePosition)))
+        // This runs on every render of every dialog under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (AbsolutePosition.HasValue && bitDialog.HasNotBeenSet(nameof(AbsolutePosition)) && bitDialog.AbsolutePosition != AbsolutePosition)
         {
             bitDialog.AbsolutePosition = AbsolutePosition.Value;
 
@@ -255,7 +258,7 @@ public class BitDialogParams : BitComponentBaseParams, IBitComponentParams
             bitDialog.CancelText = CancelText;
         }
 
-        if (Classes is not null && bitDialog.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitDialog.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitDialog.Classes, Classes) is false)
         {
             bitDialog.Classes = Classes;
 
@@ -293,28 +296,28 @@ public class BitDialogParams : BitComponentBaseParams, IBitComponentParams
             bitDialog.CloseOnOverlayClick = CloseOnOverlayClick.Value;
         }
 
-        if (Color.HasValue && bitDialog.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitDialog.HasNotBeenSet(nameof(Color)) && bitDialog.Color != Color)
         {
             bitDialog.Color = Color.Value;
 
             bitDialog.ClassBuilder.Reset();
         }
 
-        if (FullHeight.HasValue && bitDialog.HasNotBeenSet(nameof(FullHeight)))
+        if (FullHeight.HasValue && bitDialog.HasNotBeenSet(nameof(FullHeight)) && bitDialog.FullHeight != FullHeight)
         {
             bitDialog.FullHeight = FullHeight.Value;
 
             bitDialog.ClassBuilder.Reset();
         }
 
-        if (FullSize.HasValue && bitDialog.HasNotBeenSet(nameof(FullSize)))
+        if (FullSize.HasValue && bitDialog.HasNotBeenSet(nameof(FullSize)) && bitDialog.FullSize != FullSize)
         {
             bitDialog.FullSize = FullSize.Value;
 
             bitDialog.ClassBuilder.Reset();
         }
 
-        if (FullWidth.HasValue && bitDialog.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitDialog.HasNotBeenSet(nameof(FullWidth)) && bitDialog.FullWidth != FullWidth)
         {
             bitDialog.FullWidth = FullWidth.Value;
 
@@ -336,7 +339,7 @@ public class BitDialogParams : BitComponentBaseParams, IBitComponentParams
             bitDialog.IsDraggable = IsDraggable.Value;
         }
 
-        if (Modeless.HasValue && bitDialog.HasNotBeenSet(nameof(Modeless)))
+        if (Modeless.HasValue && bitDialog.HasNotBeenSet(nameof(Modeless)) && bitDialog.Modeless != Modeless)
         {
             bitDialog.Modeless = Modeless.Value;
 
@@ -408,7 +411,7 @@ public class BitDialogParams : BitComponentBaseParams, IBitComponentParams
             bitDialog.ShowOkButton = ShowOkButton.Value;
         }
 
-        if (Styles is not null && bitDialog.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitDialog.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitDialog.Styles, Styles) is false)
         {
             bitDialog.Styles = Styles;
 

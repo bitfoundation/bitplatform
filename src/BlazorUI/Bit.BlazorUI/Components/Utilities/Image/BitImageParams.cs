@@ -168,28 +168,31 @@ public class BitImageParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitImage);
 
-        if (AspectRatio.HasValue() && bitImage.HasNotBeenSet(nameof(AspectRatio)))
+        // This runs on every render of every image under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (AspectRatio.HasValue() && bitImage.HasNotBeenSet(nameof(AspectRatio)) && bitImage.AspectRatio != AspectRatio)
         {
             bitImage.AspectRatio = AspectRatio;
 
             bitImage.StyleBuilder.Reset();
         }
 
-        if (Bordered.HasValue && bitImage.HasNotBeenSet(nameof(Bordered)))
+        if (Bordered.HasValue && bitImage.HasNotBeenSet(nameof(Bordered)) && bitImage.Bordered != Bordered)
         {
             bitImage.Bordered = Bordered.Value;
 
             bitImage.ClassBuilder.Reset();
         }
 
-        if (Circular.HasValue && bitImage.HasNotBeenSet(nameof(Circular)))
+        if (Circular.HasValue && bitImage.HasNotBeenSet(nameof(Circular)) && bitImage.Circular != Circular)
         {
             bitImage.Circular = Circular.Value;
 
             bitImage.ClassBuilder.Reset();
         }
 
-        if (Classes is not null && bitImage.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitImage.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitImage.Classes, Classes) is false)
         {
             bitImage.Classes = Classes;
 
@@ -216,7 +219,7 @@ public class BitImageParams : BitComponentBaseParams, IBitComponentParams
             bitImage.Draggable = Draggable.Value;
         }
 
-        if (FadeIn.HasValue && bitImage.HasNotBeenSet(nameof(FadeIn)))
+        if (FadeIn.HasValue && bitImage.HasNotBeenSet(nameof(FadeIn)) && bitImage.FadeIn != FadeIn)
         {
             bitImage.FadeIn = FadeIn.Value;
 
@@ -233,14 +236,14 @@ public class BitImageParams : BitComponentBaseParams, IBitComponentParams
             bitImage.FetchPriority = FetchPriority.Value;
         }
 
-        if (Fluid.HasValue && bitImage.HasNotBeenSet(nameof(Fluid)))
+        if (Fluid.HasValue && bitImage.HasNotBeenSet(nameof(Fluid)) && bitImage.Fluid != Fluid)
         {
             bitImage.Fluid = Fluid.Value;
 
             bitImage.ClassBuilder.Reset();
         }
 
-        if (Height.HasValue() && bitImage.HasNotBeenSet(nameof(Height)))
+        if (Height.HasValue() && bitImage.HasNotBeenSet(nameof(Height)) && bitImage.Height != Height)
         {
             bitImage.Height = Height;
 
@@ -283,7 +286,7 @@ public class BitImageParams : BitComponentBaseParams, IBitComponentParams
             bitImage.Loading = Loading.Value;
         }
 
-        if (MaximizeFrame.HasValue && bitImage.HasNotBeenSet(nameof(MaximizeFrame)))
+        if (MaximizeFrame.HasValue && bitImage.HasNotBeenSet(nameof(MaximizeFrame)) && bitImage.MaximizeFrame != MaximizeFrame)
         {
             bitImage.MaximizeFrame = MaximizeFrame.Value;
 
@@ -295,14 +298,14 @@ public class BitImageParams : BitComponentBaseParams, IBitComponentParams
             bitImage.ReferrerPolicy = ReferrerPolicy.Value;
         }
 
-        if (Rounded.HasValue && bitImage.HasNotBeenSet(nameof(Rounded)))
+        if (Rounded.HasValue && bitImage.HasNotBeenSet(nameof(Rounded)) && bitImage.Rounded != Rounded)
         {
             bitImage.Rounded = Rounded.Value;
 
             bitImage.ClassBuilder.Reset();
         }
 
-        if (Shadow.HasValue && bitImage.HasNotBeenSet(nameof(Shadow)))
+        if (Shadow.HasValue && bitImage.HasNotBeenSet(nameof(Shadow)) && bitImage.Shadow != Shadow)
         {
             bitImage.Shadow = Shadow.Value;
 
@@ -314,14 +317,14 @@ public class BitImageParams : BitComponentBaseParams, IBitComponentParams
             bitImage.StartVisible = StartVisible.Value;
         }
 
-        if (Styles is not null && bitImage.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitImage.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitImage.Styles, Styles) is false)
         {
             bitImage.Styles = Styles;
 
             bitImage.StyleBuilder.Reset();
         }
 
-        if (Width.HasValue() && bitImage.HasNotBeenSet(nameof(Width)))
+        if (Width.HasValue() && bitImage.HasNotBeenSet(nameof(Width)) && bitImage.Width != Width)
         {
             bitImage.Width = Width;
 

@@ -240,6 +240,9 @@ public class BitPivotParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitPivot);
 
+        // This runs on every render of every pivot under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (Addable.HasValue && bitPivot.HasNotBeenSet(nameof(Addable)))
         {
             bitPivot.Addable = Addable.Value;
@@ -265,7 +268,7 @@ public class BitPivotParams : BitComponentBaseParams, IBitComponentParams
             bitPivot.AddTitle = AddTitle;
         }
 
-        if (Alignment.HasValue && bitPivot.HasNotBeenSet(nameof(Alignment)))
+        if (Alignment.HasValue && bitPivot.HasNotBeenSet(nameof(Alignment)) && bitPivot.Alignment != Alignment)
         {
             bitPivot.Alignment = Alignment.Value;
 
@@ -277,21 +280,21 @@ public class BitPivotParams : BitComponentBaseParams, IBitComponentParams
             bitPivot.AutoHideSlideButtons = AutoHideSlideButtons.Value;
         }
 
-        if (Classes is not null && bitPivot.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitPivot.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitPivot.Classes, Classes) is false)
         {
             bitPivot.Classes = Classes;
 
             bitPivot.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitPivot.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitPivot.HasNotBeenSet(nameof(Color)) && bitPivot.Color != Color)
         {
             bitPivot.Color = Color.Value;
 
             bitPivot.ClassBuilder.Reset();
         }
 
-        if (Dismissible.HasValue && bitPivot.HasNotBeenSet(nameof(Dismissible)))
+        if (Dismissible.HasValue && bitPivot.HasNotBeenSet(nameof(Dismissible)) && bitPivot.Dismissible != Dismissible)
         {
             bitPivot.Dismissible = Dismissible.Value;
 
@@ -318,14 +321,14 @@ public class BitPivotParams : BitComponentBaseParams, IBitComponentParams
             bitPivot.DismissTitle = DismissTitle;
         }
 
-        if (FullWidth.HasValue && bitPivot.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitPivot.HasNotBeenSet(nameof(FullWidth)) && bitPivot.FullWidth != FullWidth)
         {
             bitPivot.FullWidth = FullWidth.Value;
 
             bitPivot.ClassBuilder.Reset();
         }
 
-        if (Gap.HasValue() && bitPivot.HasNotBeenSet(nameof(Gap)))
+        if (Gap.HasValue() && bitPivot.HasNotBeenSet(nameof(Gap)) && bitPivot.Gap != Gap)
         {
             bitPivot.Gap = Gap;
 
@@ -337,7 +340,7 @@ public class BitPivotParams : BitComponentBaseParams, IBitComponentParams
             bitPivot.HeaderOnly = HeaderOnly.Value;
         }
 
-        if (HeaderType.HasValue && bitPivot.HasNotBeenSet(nameof(HeaderType)))
+        if (HeaderType.HasValue && bitPivot.HasNotBeenSet(nameof(HeaderType)) && bitPivot.HeaderType != HeaderType)
         {
             bitPivot.HeaderType = HeaderType.Value;
 
@@ -384,7 +387,7 @@ public class BitPivotParams : BitComponentBaseParams, IBitComponentParams
             bitPivot.OverflowAriaLabel = OverflowAriaLabel;
         }
 
-        if (OverflowBehavior.HasValue && bitPivot.HasNotBeenSet(nameof(OverflowBehavior)))
+        if (OverflowBehavior.HasValue && bitPivot.HasNotBeenSet(nameof(OverflowBehavior)) && bitPivot.OverflowBehavior != OverflowBehavior)
         {
             bitPivot.OverflowBehavior = OverflowBehavior.Value;
 
@@ -401,7 +404,7 @@ public class BitPivotParams : BitComponentBaseParams, IBitComponentParams
             bitPivot.OverflowIconName = OverflowIconName;
         }
 
-        if (Placement.HasValue && bitPivot.HasNotBeenSet(nameof(Placement)))
+        if (Placement.HasValue && bitPivot.HasNotBeenSet(nameof(Placement)) && bitPivot.Placement != Placement)
         {
             bitPivot.Placement = Placement.Value;
 
@@ -423,7 +426,7 @@ public class BitPivotParams : BitComponentBaseParams, IBitComponentParams
             bitPivot.PreviousIconName = PreviousIconName;
         }
 
-        if (Reorderable.HasValue && bitPivot.HasNotBeenSet(nameof(Reorderable)))
+        if (Reorderable.HasValue && bitPivot.HasNotBeenSet(nameof(Reorderable)) && bitPivot.Reorderable != Reorderable)
         {
             bitPivot.Reorderable = Reorderable.Value;
 
@@ -435,21 +438,21 @@ public class BitPivotParams : BitComponentBaseParams, IBitComponentParams
             bitPivot.SelectOnFocus = SelectOnFocus.Value;
         }
 
-        if (Size.HasValue && bitPivot.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitPivot.HasNotBeenSet(nameof(Size)) && bitPivot.Size != Size)
         {
             bitPivot.Size = Size.Value;
 
             bitPivot.ClassBuilder.Reset();
         }
 
-        if (Stacked.HasValue && bitPivot.HasNotBeenSet(nameof(Stacked)))
+        if (Stacked.HasValue && bitPivot.HasNotBeenSet(nameof(Stacked)) && bitPivot.Stacked != Stacked)
         {
             bitPivot.Stacked = Stacked.Value;
 
             bitPivot.ClassBuilder.Reset();
         }
 
-        if (Styles is not null && bitPivot.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitPivot.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitPivot.Styles, Styles) is false)
         {
             bitPivot.Styles = Styles;
 

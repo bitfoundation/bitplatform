@@ -176,19 +176,22 @@ public class BitButtonGroupParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitButtonGroup);
 
+        // This runs on every render of every button group under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
         if (AutoFocus.HasValue && bitButtonGroup.HasNotBeenSet(nameof(AutoFocus)))
         {
             bitButtonGroup.AutoFocus = AutoFocus.Value;
         }
 
-        if (Classes is not null && bitButtonGroup.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null && bitButtonGroup.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitButtonGroup.Classes, Classes) is false)
         {
             bitButtonGroup.Classes = Classes;
 
             bitButtonGroup.ClassBuilder.Reset();
         }
 
-        if (Color.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Color)) && bitButtonGroup.Color != Color)
         {
             bitButtonGroup.Color = Color.Value;
 
@@ -205,7 +208,7 @@ public class BitButtonGroupParams : BitComponentBaseParams, IBitComponentParams
             bitButtonGroup.DefaultToggleKeys = DefaultToggleKeys;
         }
 
-        if (Detached.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Detached)))
+        if (Detached.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Detached)) && bitButtonGroup.Detached != Detached)
         {
             bitButtonGroup.Detached = Detached.Value;
 
@@ -222,28 +225,28 @@ public class BitButtonGroupParams : BitComponentBaseParams, IBitComponentParams
             bitButtonGroup.FixedToggle = FixedToggle.Value;
         }
 
-        if (FullWidth.HasValue && bitButtonGroup.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue && bitButtonGroup.HasNotBeenSet(nameof(FullWidth)) && bitButtonGroup.FullWidth != FullWidth)
         {
             bitButtonGroup.FullWidth = FullWidth.Value;
 
             bitButtonGroup.ClassBuilder.Reset();
         }
 
-        if (Gap.HasValue() && bitButtonGroup.HasNotBeenSet(nameof(Gap)))
+        if (Gap.HasValue() && bitButtonGroup.HasNotBeenSet(nameof(Gap)) && bitButtonGroup.Gap != Gap)
         {
             bitButtonGroup.Gap = Gap;
 
             bitButtonGroup.StyleBuilder.Reset();
         }
 
-        if (IconOnly.HasValue && bitButtonGroup.HasNotBeenSet(nameof(IconOnly)))
+        if (IconOnly.HasValue && bitButtonGroup.HasNotBeenSet(nameof(IconOnly)) && bitButtonGroup.IconOnly != IconOnly)
         {
             bitButtonGroup.IconOnly = IconOnly.Value;
 
             bitButtonGroup.ClassBuilder.Reset();
         }
 
-        if (Justified.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Justified)))
+        if (Justified.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Justified)) && bitButtonGroup.Justified != Justified)
         {
             bitButtonGroup.Justified = Justified.Value;
 
@@ -255,21 +258,21 @@ public class BitButtonGroupParams : BitComponentBaseParams, IBitComponentParams
             bitButtonGroup.MaxToggles = MaxToggles.Value;
         }
 
-        if (Navigable.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Navigable)))
+        if (Navigable.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Navigable)) && bitButtonGroup.Navigable != Navigable)
         {
             bitButtonGroup.Navigable = Navigable.Value;
 
             bitButtonGroup.ClassBuilder.Reset();
         }
 
-        if (Overflow.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Overflow)))
+        if (Overflow.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Overflow)) && bitButtonGroup.Overflow != Overflow)
         {
             bitButtonGroup.Overflow = Overflow.Value;
 
             bitButtonGroup.ClassBuilder.Reset();
         }
 
-        if (Rounded.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Rounded)))
+        if (Rounded.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Rounded)) && bitButtonGroup.Rounded != Rounded)
         {
             bitButtonGroup.Rounded = Rounded.Value;
 
@@ -291,14 +294,14 @@ public class BitButtonGroupParams : BitComponentBaseParams, IBitComponentParams
             bitButtonGroup.ShowSelectionIndicator = ShowSelectionIndicator.Value;
         }
 
-        if (Size.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Size)) && bitButtonGroup.Size != Size)
         {
             bitButtonGroup.Size = Size.Value;
 
             bitButtonGroup.ClassBuilder.Reset();
         }
 
-        if (Styles is not null && bitButtonGroup.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitButtonGroup.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitButtonGroup.Styles, Styles) is false)
         {
             bitButtonGroup.Styles = Styles;
 
@@ -310,14 +313,14 @@ public class BitButtonGroupParams : BitComponentBaseParams, IBitComponentParams
             bitButtonGroup.Toggle = Toggle.Value;
         }
 
-        if (Variant.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Variant)))
+        if (Variant.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Variant)) && bitButtonGroup.Variant != Variant)
         {
             bitButtonGroup.Variant = Variant.Value;
 
             bitButtonGroup.ClassBuilder.Reset();
         }
 
-        if (Vertical.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Vertical)))
+        if (Vertical.HasValue && bitButtonGroup.HasNotBeenSet(nameof(Vertical)) && bitButtonGroup.Vertical != Vertical)
         {
             bitButtonGroup.Vertical = Vertical.Value;
 

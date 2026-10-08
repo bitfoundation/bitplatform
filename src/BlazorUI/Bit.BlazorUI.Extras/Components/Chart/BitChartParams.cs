@@ -127,7 +127,10 @@ public class BitChartParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitChart);
 
-        if (Classes is not null && bitChart.HasNotBeenSet(nameof(Classes)))
+        // This runs on every render of every chart under the BitParams, so a value that drives the class or
+        // the style of its root only resets the builder when it differs from the one it already holds: an
+        // unchanged one would rebuild both strings on every render for nothing.
+        if (Classes is not null && bitChart.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitChart.Classes, Classes) is false)
         {
             bitChart.Classes = Classes;
 
@@ -139,7 +142,7 @@ public class BitChartParams : BitComponentBaseParams, IBitComponentParams
             bitChart.GenerateTable = GenerateTable.Value;
         }
 
-        if (Height.HasValue() && bitChart.HasNotBeenSet(nameof(Height)))
+        if (Height.HasValue() && bitChart.HasNotBeenSet(nameof(Height)) && bitChart.Height != Height)
         {
             bitChart.Height = Height;
 
@@ -186,7 +189,7 @@ public class BitChartParams : BitComponentBaseParams, IBitComponentParams
             bitChart.Options = Options;
         }
 
-        if (Styles is not null && bitChart.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null && bitChart.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitChart.Styles, Styles) is false)
         {
             bitChart.Styles = Styles;
 
@@ -208,7 +211,7 @@ public class BitChartParams : BitComponentBaseParams, IBitComponentParams
             bitChart.Type = Type.Value;
         }
 
-        if (Width.HasValue() && bitChart.HasNotBeenSet(nameof(Width)))
+        if (Width.HasValue() && bitChart.HasNotBeenSet(nameof(Width)) && bitChart.Width != Width)
         {
             bitChart.Width = Width!;
 
