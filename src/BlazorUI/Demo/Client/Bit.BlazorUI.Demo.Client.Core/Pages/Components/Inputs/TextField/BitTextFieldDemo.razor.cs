@@ -587,7 +587,7 @@ public partial class BitTextFieldDemo : IDisposable
             Name = "Underlined",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether or not the text field is underlined.",
+            Description = "Whether or not the text field is underlined. The label then sits on the row of the input, takes at most half of it and is cut short with an ellipsis when it is longer, with the whole text offered as its tooltip; a LabelPlacement of Top, Bottom, Start or End moves it off that row and lets it wrap again.",
         },
         new()
         {

@@ -422,6 +422,7 @@ public class BitParamsTests : BunitTestContext
             {
                 AriaLabel = "Shared",
                 ForceAnimation = true,
+                HtmlAttributes = new() { ["data-shared"] = "1" },
                 Id = "shared-id",
                 Style = "margin:1px",
                 TabIndex = "3",
@@ -438,13 +439,22 @@ public class BitParamsTests : BunitTestContext
         Assert.AreEqual("margin:1px", button.Style);
         Assert.AreEqual("3", button.TabIndex);
         Assert.AreEqual(BitVisibility.Hidden, button.Visibility);
-        Assert.IsTrue(component.Find("button").ClassList.Contains("bit-fam"));
-        Assert.AreEqual("shared-id", component.Find("button").Id);
+
+        var cascaded = component.Find("button");
+
+        Assert.AreEqual("Shared", cascaded.GetAttribute("aria-label"));
+        Assert.IsTrue(cascaded.ClassList.Contains("bit-fam"));
+        Assert.AreEqual("1", cascaded.GetAttribute("data-shared"));
+        Assert.AreEqual("shared-id", cascaded.Id);
+        Assert.AreEqual("3", cascaded.GetAttribute("tabindex"));
+        Assert.Contains("margin:1px", cascaded.GetAttribute("style") ?? "");
+        Assert.Contains("visibility:hidden", cascaded.GetAttribute("style") ?? "");
 
         component.Render(builder => builder.Add(p => p.Parameters, [new BitButtonParams()]));
 
         Assert.IsNull(button.AriaLabel);
         Assert.IsFalse(button.ForceAnimation);
+        Assert.IsFalse(button.HtmlAttributes.ContainsKey("data-shared"));
         Assert.IsNull(button.Id);
         Assert.IsNull(button.Style);
         Assert.IsNull(button.TabIndex);
@@ -454,65 +464,54 @@ public class BitParamsTests : BunitTestContext
 
         Assert.IsFalse(element.HasAttribute("aria-label"), "a cascaded name no longer announced");
         Assert.IsFalse(element.ClassList.Contains("bit-fam"));
+        Assert.IsFalse(element.HasAttribute("data-shared"));
         Assert.AreNotEqual("shared-id", element.Id);
         Assert.IsFalse(element.HasAttribute("tabindex"));
-        Assert.IsFalse(element.GetAttribute("style")?.Contains("margin:1px") is true);
-        Assert.IsFalse(element.GetAttribute("style")?.Contains("visibility:hidden") is true, "a cascaded Hidden no longer hides it");
+        Assert.DoesNotContain("margin:1px", element.GetAttribute("style") ?? "");
+        Assert.DoesNotContain("visibility:hidden", element.GetAttribute("style") ?? "", "a cascaded Hidden no longer hides it");
     }
 
     [TestMethod]
-    public void AnInheritedInputParameterTheParamsObjectStopsSupplyingShouldGoBack()
+    [DataRow(nameof(BitTextField.ReadOnly), "bit-tfl-rdl", "bit-rtg-rdl")]
+    [DataRow(nameof(BitTextField.Required), "bit-tfl-req", "bit-rtg-req")]
+    public void AnInheritedInputParameterTheParamsObjectStopsSupplyingShouldGoBack(string parameter, string textFieldClass, string ratingClass)
     {
+        // One parameter at a time: a rating draws no -req class while it is read-only.
+        IBitComponentParams[] parameters = parameter == nameof(BitTextField.ReadOnly)
+            ? [new BitTextFieldParams { ReadOnly = true }, new BitRatingParams { ReadOnly = true }]
+            : [new BitTextFieldParams { Required = true }, new BitRatingParams { Required = true }];
+        var attribute = parameter.ToLowerInvariant();
+
         var component = RenderComponent<BitParams>(builder =>
         {
-            builder.Add(p => p.Parameters, [new BitTextFieldParams { ReadOnly = true, Required = true }]);
-            builder.AddChildContent<StaticTextFieldHost>();
+            builder.Add(p => p.Parameters, parameters);
+            builder.AddChildContent<StaticInputsParameterHost>(host => host.Add(p => p.Parameter, parameter));
         });
 
         var textField = component.FindComponent<BitTextField>().Instance;
-
-        Assert.IsTrue(textField.ReadOnly);
-        Assert.IsTrue(textField.Required);
-        Assert.IsTrue(component.Find("input").HasAttribute("readonly"));
-        Assert.IsTrue(component.Find("input").HasAttribute("required"));
-
-        component.Render(builder => builder.Add(p => p.Parameters, [new BitTextFieldParams()]));
-
-        Assert.IsFalse(textField.ReadOnly);
-        Assert.IsFalse(textField.Required);
-        Assert.IsFalse(component.Find("input").HasAttribute("readonly"));
-        Assert.IsFalse(component.Find("input").HasAttribute("required"));
-        Assert.IsFalse(component.Find(".bit-tfl").ClassList.Contains("bit-tfl-rdl"));
-        Assert.IsFalse(component.Find(".bit-tfl").ClassList.Contains("bit-tfl-req"));
-    }
-
-    [TestMethod]
-    public void AnInheritedInputParameterOfANonTextInputTheParamsObjectStopsSupplyingShouldGoBack()
-    {
-        var component = RenderComponent<BitParams>(builder =>
-        {
-            builder.Add(p => p.Parameters, [new BitRatingParams { ReadOnly = true, Required = true }]);
-            builder.AddChildContent<StaticRatingsHost>();
-        });
-
         var ratings = component.FindComponents<BitRating>();
         var cascaded = ratings[0].Instance;
         var ownChoice = ratings[1].Instance;
 
-        Assert.IsTrue(cascaded.ReadOnly);
-        Assert.IsTrue(cascaded.Required);
-        Assert.IsTrue(ownChoice.ReadOnly);
-        Assert.IsTrue(ownChoice.Required);
+        bool IsSet<TValue>(BitInputBase<TValue> input) => parameter == nameof(BitTextField.ReadOnly) ? input.ReadOnly : input.Required;
 
-        component.Render(builder => builder.Add(p => p.Parameters, [new BitRatingParams()]));
+        Assert.IsTrue(IsSet(textField));
+        Assert.IsTrue(component.Find("input").HasAttribute(attribute));
+        Assert.IsTrue(component.Find(".bit-tfl").ClassList.Contains(textFieldClass));
+        Assert.IsTrue(IsSet(cascaded));
+        Assert.IsTrue(ratings[0].Find(".bit-rtg").ClassList.Contains(ratingClass));
+        Assert.IsTrue(IsSet(ownChoice));
+        Assert.IsTrue(ratings[1].Find(".bit-rtg").ClassList.Contains(ratingClass));
 
-        Assert.IsFalse(cascaded.ReadOnly);
-        Assert.IsFalse(cascaded.Required);
-        Assert.IsFalse(ratings[0].Find(".bit-rtg").ClassList.Contains("bit-rtg-rdl"));
-        Assert.IsFalse(ratings[0].Find(".bit-rtg").ClassList.Contains("bit-rtg-req"));
-        Assert.IsTrue(ownChoice.ReadOnly, "a value the markup sets stays");
-        Assert.IsTrue(ownChoice.Required);
-        Assert.IsTrue(ratings[1].Find(".bit-rtg").ClassList.Contains("bit-rtg-rdl"));
+        component.Render(builder => builder.Add(p => p.Parameters, [new BitTextFieldParams(), new BitRatingParams()]));
+
+        Assert.IsFalse(IsSet(textField));
+        Assert.IsFalse(component.Find("input").HasAttribute(attribute));
+        Assert.IsFalse(component.Find(".bit-tfl").ClassList.Contains(textFieldClass));
+        Assert.IsFalse(IsSet(cascaded));
+        Assert.IsFalse(ratings[0].Find(".bit-rtg").ClassList.Contains(ratingClass));
+        Assert.IsTrue(IsSet(ownChoice), "a value the markup sets stays");
+        Assert.IsTrue(ratings[1].Find(".bit-rtg").ClassList.Contains(ratingClass));
     }
 
     [TestMethod]
@@ -1139,26 +1138,21 @@ public class BitParamsTests : BunitTestContext
         }
     }
 
-    private sealed class StaticTextFieldHost : ComponentBase
+    private sealed class StaticInputsParameterHost : ComponentBase
     {
+        [Parameter] public string Parameter { get; set; } = default!;
+
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
             builder.OpenComponent<BitTextField>(0);
             builder.AddComponentParameter(1, nameof(BitTextField.Label), "Name");
             builder.CloseComponent();
-        }
-    }
 
-    private sealed class StaticRatingsHost : ComponentBase
-    {
-        protected override void BuildRenderTree(RenderTreeBuilder builder)
-        {
-            builder.OpenComponent<BitRating>(0);
+            builder.OpenComponent<BitRating>(2);
             builder.CloseComponent();
 
-            builder.OpenComponent<BitRating>(1);
-            builder.AddComponentParameter(2, nameof(BitRating.ReadOnly), true);
-            builder.AddComponentParameter(3, nameof(BitRating.Required), true);
+            builder.OpenComponent<BitRating>(3);
+            builder.AddComponentParameter(4, Parameter, true);
             builder.CloseComponent();
         }
     }
