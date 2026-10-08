@@ -3167,6 +3167,22 @@ public class BitCircularTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCircularTimePickerStandaloneShouldKeepASemicolonInsideAValueWhenItCopiesTheVariables()
+    {
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Style, "--bit-CircularTimePicker-color:url(data:image/png;base64,AAA);color:blue;--bit-CircularTimePicker-text-color:'a;b'");
+            parameters.Add(p => p.Styles, new BitCircularTimePickerClassStyles { Callout = "padding:2px" });
+        });
+
+        // A semicolon inside brackets or quotes is part of the value: cut there, the copy would leave an unclosed url(
+        // or quote that swallows everything written after it on the dial, its own style included.
+        Assert.AreEqual("--bit-CircularTimePicker-color:url(data:image/png;base64,AAA);--bit-CircularTimePicker-text-color:'a;b';padding:2px",
+                        component.Find(".bit-ctp-cal").GetAttribute("style"));
+    }
+
+    [TestMethod]
     public void BitCircularTimePickerShouldCopyNothingOntoTheDialUnlessItIsStandalone()
     {
         var component = RenderComponent<BitCircularTimePicker>(parameters =>
