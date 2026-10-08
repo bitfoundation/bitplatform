@@ -215,7 +215,7 @@ public partial class BitShimmer : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the BitShimmer.
     /// </summary>
-    [Parameter] public BitShimmerClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitShimmerClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The color of the animated part of the shimmer.
@@ -532,7 +532,7 @@ public partial class BitShimmer : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the BitShimmer.
     /// </summary>
-    [Parameter] public BitShimmerClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitShimmerClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The custom template to replace the default shimmer container and animation.

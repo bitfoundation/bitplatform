@@ -152,7 +152,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Custom CSS classes for different parts of the BitCalendar component.
     /// </summary>
-    [Parameter] public BitCalendarClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitCalendarClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the calendar that applies to the today day button, the highlighted current month,
@@ -644,7 +644,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Custom CSS styles for different parts of the BitCalendar component.
     /// </summary>
-    [Parameter] public BitCalendarClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitCalendarClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The time format of the time-picker, 24H or 12H.

@@ -162,7 +162,7 @@ public partial class BitTooltip : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the BitTooltip.
     /// </summary>
-    [Parameter] public BitTooltipClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitTooltipClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the tooltip, which colors its surface and the arrow along with it.
@@ -368,7 +368,7 @@ public partial class BitTooltip : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the BitTooltip.
     /// </summary>
-    [Parameter] public BitTooltipClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitTooltipClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The content you want inside the tooltip.

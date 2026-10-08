@@ -179,7 +179,7 @@ public partial class BitCallout : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the callout.
     /// </summary>
-    [Parameter] public BitCalloutClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitCalloutClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The distance in pixels the callout keeps from the edges of the screen when it is placed and when it
@@ -468,7 +468,7 @@ public partial class BitCallout : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the callout.
     /// </summary>
-    [Parameter] public BitCalloutClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitCalloutClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Keeps the keyboard inside the callout while it is open: the focus moves into it as it opens, Tab and

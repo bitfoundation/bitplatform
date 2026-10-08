@@ -107,7 +107,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     /// <summary>
     /// Custom CSS classes for different parts of the AccordionList.
     /// </summary>
-    [Parameter] public BitAccordionListClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitAccordionListClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Allows the expanded item to be collapsed again from its own header.
@@ -425,7 +425,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     /// <summary>
     /// Custom CSS styles for different parts of the AccordionList.
     /// </summary>
-    [Parameter] public BitAccordionListClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitAccordionListClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The custom template to render in place of the title of each item, leaving the rest of the header as it is.

@@ -70,6 +70,15 @@ public partial class BitSwiperItem : BitComponentBase
         StateHasChanged();
     }
 
+    // The item and current item parts of the swiper's Classes and Styles are part of this item's own strings.
+    internal void RefreshClassStyles()
+    {
+        ClassBuilder.Reset();
+        StyleBuilder.Reset();
+
+        StateHasChanged();
+    }
+
 
 
     protected override string RootElementClass => "bit-swpi";

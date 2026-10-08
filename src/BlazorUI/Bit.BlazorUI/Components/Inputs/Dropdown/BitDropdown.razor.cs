@@ -233,7 +233,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// <summary>
     /// Custom CSS classes for different parts of the BitDropdown.
     /// </summary>
-    [Parameter] public BitDropdownClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitDropdownClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Determines whether picking an item in the callout closes it. It defaults to the behavior each
@@ -884,7 +884,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// <summary>
     /// Custom CSS styles for different parts of the BitDropdown.
     /// </summary>
-    [Parameter] public BitDropdownClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitDropdownClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Suffix displayed after the BitDropdown contents. This is not included in the value. 

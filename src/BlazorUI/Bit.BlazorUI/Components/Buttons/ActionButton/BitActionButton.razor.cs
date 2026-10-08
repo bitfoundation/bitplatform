@@ -84,7 +84,7 @@ public partial class BitActionButton : BitComponentBase
     /// <summary>
     /// Custom CSS classes for the root, icon, and content sections of the action button.
     /// </summary>
-    [Parameter] public BitActionButtonClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitActionButtonClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The color role of the action button. At rest it paints the icon and the spinner while the text keeps the neutral
@@ -277,7 +277,7 @@ public partial class BitActionButton : BitComponentBase
     /// If not set, the component uses its built-in styling.
     /// This property is typically used to provide additional visual customization.
     /// </remarks>
-    [Parameter] public BitActionButtonClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitActionButtonClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the target frame or window for the navigation action when the action button renders as an anchor (by providing the Href parameter).

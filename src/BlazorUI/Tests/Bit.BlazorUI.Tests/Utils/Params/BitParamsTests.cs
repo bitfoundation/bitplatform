@@ -382,6 +382,119 @@ public class BitParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void AnUnchangedParamsObjectShouldNotRebuildTheStringsOfABitComponent()
+    {
+        var @params = new BitButtonParams { Size = BitSize.Small, Classes = new() { Root = "first" }, Styles = new() { Root = "color:red" } };
+
+        // A content fragment counts as a possible change, so the button renders again whenever the content does.
+        var component = RenderComponent<BitParams>(builder =>
+        {
+            builder.Add(p => p.Parameters, [@params]);
+            builder.AddChildContent(content =>
+            {
+                content.OpenComponent<BitButton>(0);
+                content.AddComponentParameter(1, nameof(BitButton.ChildContent), (RenderFragment)(text => text.AddContent(0, "Save")));
+                content.CloseComponent();
+            });
+        });
+
+        var rendered = component.FindComponent<BitButton>();
+        var renders = rendered.RenderCount;
+        var classes = rendered.Instance.ClassBuilder.Value;
+        var styles = rendered.Instance.StyleBuilder.Value;
+
+        // The host renders again with the very same params: the button renders again with it, and must not pay for
+        // its class and style strings when the cascade has nothing new to say.
+        component.Render(builder => builder.Add(p => p.Parameters, [@params]));
+
+        Assert.IsTrue(rendered.RenderCount > renders);
+        Assert.AreSame(classes, rendered.Instance.ClassBuilder.Value);
+        Assert.AreSame(styles, rendered.Instance.StyleBuilder.Value);
+    }
+
+    [TestMethod]
+    public void ANestedObjectChangedInPlaceShouldReachABitComponentUnderAPlainCascadingValue()
+    {
+        var @params = new BitButtonParams { Classes = new() { Root = "first" }, Styles = new() { Root = "color:red" } };
+
+        var component = RenderComponent<CascadingValue<BitButtonParams>>(builder =>
+        {
+            builder.Add(p => p.Name, BitButtonParams.ParamName);
+            builder.Add(p => p.Value, @params);
+            builder.AddChildContent<StaticButtonHost>();
+        });
+
+        Assert.IsTrue(component.Find("button").ClassList.Contains("first"));
+
+        // The very same params object is cascaded again, so nothing but the button can tell that what its nested
+        // objects carry has changed.
+        @params.Classes.Root = "second";
+        @params.Styles.Root = "color:blue";
+        component.Render(builder =>
+        {
+            builder.Add(p => p.Name, BitButtonParams.ParamName);
+            builder.Add(p => p.Value, @params);
+            builder.AddChildContent<StaticButtonHost>();
+        });
+
+        var button = component.Find("button");
+
+        Assert.IsTrue(button.ClassList.Contains("second"));
+        Assert.IsFalse(button.ClassList.Contains("first"));
+        Assert.Contains("color:blue", button.GetAttribute("style") ?? "");
+    }
+
+    [TestMethod]
+    public void AChangeToOneParamsObjectShouldNotRebuildTheStringsOfTheComponentsReadingAnother()
+    {
+        var textFieldParams = new BitTextFieldParams { Classes = new() { Root = "field" }, Styles = new() { Root = "color:red" } };
+
+        var component = RenderComponent<BitParams>(builder =>
+        {
+            builder.Add(p => p.Parameters, [new BitButtonParams { Size = BitSize.Small }, textFieldParams]);
+            builder.AddChildContent<StaticButtonAndTextFieldHost>();
+        });
+
+        var textField = component.FindComponent<BitTextField>();
+        var renders = textField.RenderCount;
+        var classes = textField.Instance.ClassBuilder.Value;
+        var styles = textField.Instance.StyleBuilder.Value;
+
+        // Only the button's params object changes: the text field is handed the very same copy of its own again.
+        component.Render(builder => builder.Add(p => p.Parameters, [new BitButtonParams { Size = BitSize.Large }, textFieldParams]));
+
+        Assert.IsTrue(component.Find("button").ClassList.Contains("bit-btn-lg"));
+        Assert.IsTrue(textField.RenderCount > renders);
+        Assert.AreSame(classes, textField.Instance.ClassBuilder.Value);
+        Assert.AreSame(styles, textField.Instance.StyleBuilder.Value);
+    }
+
+    [TestMethod]
+    public void AnEqualCultureInAnotherInstanceShouldNotMoveTheCalendarOffTheMonthItWasNavigatedTo()
+    {
+        var component = RenderComponent<BitParams>(builder =>
+        {
+            builder.Add(p => p.Parameters, [new BitCalendarParams { Culture = new CultureInfo("de-DE"), Class = "first" }]);
+            builder.AddChildContent<StaticCalendarHost>();
+        });
+
+        var opened = component.Find(".bit-cal-grd").GetAttribute("aria-label");
+
+        component.Find(".bit-cal-nbt").Click();
+
+        var navigated = component.Find(".bit-cal-grd").GetAttribute("aria-label");
+
+        Assert.AreNotEqual(opened, navigated);
+
+        // Another params object, so another copy of it, carrying an equal culture created afresh: the culture
+        // changes nothing, and the calendar stays where the user took it.
+        component.Render(builder => builder.Add(p => p.Parameters, [new BitCalendarParams { Culture = new CultureInfo("de-DE"), Class = "second" }]));
+
+        Assert.IsTrue(component.Find(".bit-cal").ClassList.Contains("second"));
+        Assert.AreEqual(navigated, component.Find(".bit-cal-grd").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
     public void ComponentBaseParamsShouldLeaveDisabledUnset()
     {
         Assert.IsNull(new BitButtonParams().Disabled);
@@ -1023,6 +1136,28 @@ public class BitParamsTests : BunitTestContext
         {
             builder.OpenComponent<BitButton>(0);
             builder.AddComponentParameter(1, nameof(BitButton.Title), "Save");
+            builder.CloseComponent();
+        }
+    }
+
+    private sealed class StaticButtonAndTextFieldHost : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<BitButton>(0);
+            builder.AddComponentParameter(1, nameof(BitButton.Title), "Save");
+            builder.CloseComponent();
+
+            builder.OpenComponent<BitTextField>(2);
+            builder.CloseComponent();
+        }
+    }
+
+    private sealed class StaticCalendarHost : ComponentBase
+    {
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<BitCalendar>(0);
             builder.CloseComponent();
         }
     }

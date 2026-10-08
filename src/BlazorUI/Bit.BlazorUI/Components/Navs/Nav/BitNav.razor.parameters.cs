@@ -42,7 +42,7 @@ public partial class BitNav<TItem>
     /// <summary>
     /// Custom CSS classes for different parts of the nav.
     /// </summary>
-    [Parameter] public BitNavClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitNavClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The default aria-label of the expand/collapse button of an expanded item: the chevron of a parent that
@@ -245,5 +245,5 @@ public partial class BitNav<TItem>
     /// <summary>
     /// Custom CSS styles for different parts of the BitNav component.
     /// </summary>
-    [Parameter] public BitNavClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitNavClassStyles? Styles { get; set; }
 }

@@ -155,7 +155,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// Custom CSS classes for different parts of the menu button.
     /// </summary>
-    [Parameter] public BitMenuButtonClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitMenuButtonClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Closes the callout when an item is clicked, which is what a menu of one-off commands wants.
@@ -437,7 +437,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// Custom CSS styles for different parts of the menu button.
     /// </summary>
-    [Parameter] public BitMenuButtonClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitMenuButtonClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The text to show inside the header of menu button.

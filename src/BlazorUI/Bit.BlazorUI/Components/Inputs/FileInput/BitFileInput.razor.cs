@@ -109,7 +109,7 @@ public partial class BitFileInput : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the BitFileInput.
     /// </summary>
-    [Parameter] public BitFileInputClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitFileInputClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the file input, applied to the browse button and the drag-and-drop indicator.
@@ -359,7 +359,7 @@ public partial class BitFileInput : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the BitFileInput.
     /// </summary>
-    [Parameter] public BitFileInputClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitFileInputClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The tooltip of the browse button, rendered as its title attribute.

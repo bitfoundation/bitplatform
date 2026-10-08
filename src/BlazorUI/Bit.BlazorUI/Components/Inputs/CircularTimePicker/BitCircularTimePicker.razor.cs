@@ -165,7 +165,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// Custom CSS classes for different parts of the TimePicker component.
     /// </summary>
-    [Parameter] public BitCircularTimePickerClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitCircularTimePickerClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The text of the button that clears the value of the TimePicker.
@@ -549,7 +549,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// Custom CSS styles for different parts of the TimePicker component.
     /// </summary>
-    [Parameter] public BitCircularTimePickerClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitCircularTimePickerClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Whether the TimePicker is rendered standalone or with the input component and callout.

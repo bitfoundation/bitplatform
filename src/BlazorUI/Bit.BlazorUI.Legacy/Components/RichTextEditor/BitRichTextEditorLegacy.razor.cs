@@ -19,7 +19,7 @@ public partial class BitRichTextEditorLegacy : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the rich text editor.
     /// </summary>
-    [Parameter] public BitRichTextEditorLegacyClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitRichTextEditorLegacyClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Custom template for the editor content.
@@ -70,7 +70,7 @@ public partial class BitRichTextEditorLegacy : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the rich text editor.
     /// </summary>
-    [Parameter] public BitRichTextEditorLegacyClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitRichTextEditorLegacyClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The theme of the editor.

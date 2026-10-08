@@ -91,7 +91,7 @@ public partial class BitColorPicker : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the BitColorPicker.
     /// </summary>
-    [Parameter] public BitColorPickerClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitColorPickerClassStyles? Classes { get; set; }
 
     /// <summary>
     /// CSS-compatible string to describe the color.
@@ -304,7 +304,7 @@ public partial class BitColorPicker : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the BitColorPicker.
     /// </summary>
-    [Parameter] public BitColorPickerClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitColorPickerClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Every piece of text the picker writes for itself: the accessible names of its controls, the captions

@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Bit.BlazorUI;
 
@@ -17,6 +18,11 @@ internal sealed class BitParamsScope
 
     private static readonly ConcurrentDictionary<Type, PropertyInfo[]?> _copyablePropertiesCache = new();
     private static readonly ConcurrentDictionary<Type, PropertyInfo[]?> _snapshotPropertiesCache = new();
+
+    // Every merged copy a scope has made. Nothing but a scope ever holds one to change it, so the same copy always
+    // carries the same values - down into its nested objects, since a change made to one of those in place makes
+    // the next scope take a new copy. A component that is handed one can tell a change by the reference alone.
+    private static readonly ConditionalWeakTable<IBitComponentParams, object> _copies = new();
 
     private readonly BitParamsScope? _parent;
 
@@ -149,6 +155,13 @@ internal sealed class BitParamsScope
     }
 
     /// <summary>
+    /// Whether the params object is a copy a scope merged, which only ever changes by being replaced with another
+    /// one, rather than one cascaded as it was given - by a CascadingValue of the app's own, or by a BitParams for a
+    /// type that cannot be copied - which can change in place without anything telling the components reading it.
+    /// </summary>
+    public static bool IsCopy(IBitComponentParams parameters) => _copies.TryGetValue(parameters, out _);
+
+    /// <summary>
     /// Whether a scope created from the given ancestors' scope and params objects would carry exactly what this one
     /// does, parameter by parameter and down into every nested object, so that nothing would change for the
     /// components under it. Only the params objects listed are taken apart for it, and nothing is merged: the
@@ -242,6 +255,8 @@ internal sealed class BitParamsScope
 
             property.SetValue(result, value);
         }
+
+        _copies.Add(result, result);
 
         return result;
     }

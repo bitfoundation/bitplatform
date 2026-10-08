@@ -310,7 +310,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// <summary>
     /// Custom CSS classes for different parts of the BitDateRangePicker component.
     /// </summary>
-    [Parameter] public BitDateRangePickerClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitDateRangePickerClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The icon to display inside the clear button.
@@ -1108,7 +1108,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// <summary>
     /// Custom CSS styles for different parts of the BitDateRangePicker component.
     /// </summary>
-    [Parameter] public BitDateRangePickerClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitDateRangePickerClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Time format of the time-pickers, 24H or 12H.

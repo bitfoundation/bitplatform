@@ -129,7 +129,7 @@ public partial class BitSlider : BitInputBase<double>
     /// <summary>
     /// Custom CSS classes for different parts of the BitSlider.
     /// </summary>
-    [Parameter] public BitSliderClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitSliderClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Lets the filled band between the two thumbs of a ranged Slider be dragged bodily, so the whole range
@@ -428,7 +428,7 @@ public partial class BitSlider : BitInputBase<double>
     /// <summary>
     /// Custom CSS styles for different parts of the BitSlider.
     /// </summary>
-    [Parameter] public BitSliderClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitSliderClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Decides when the floating label that rides along with the thumb is shown: never (the default),

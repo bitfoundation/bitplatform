@@ -115,6 +115,15 @@ public abstract partial class BitComponentBase : IBitCascadeTarget
         // component as the very object it already holds.
         _isCascadeRenewed = paramsChanged;
 
+        // A params object cascaded as it was given - through a CascadingValue of the app's own - is not handed down
+        // anew when what it carries changes, so a nested object changed in place - a ClassStyles, an icon - cannot be
+        // told apart from one left as it was. The strings are rebuilt on every render under it, as they always were.
+        if (current is not null && BitParamsScope.IsCopy(current) is false)
+        {
+            ClassBuilder.Reset();
+            StyleBuilder.Reset();
+        }
+
         if (restored is null) return Task.CompletedTask;
 
         foreach (var parameter in restored)

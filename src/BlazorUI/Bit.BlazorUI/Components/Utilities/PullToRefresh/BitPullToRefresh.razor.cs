@@ -51,7 +51,7 @@ public partial class BitPullToRefresh : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the BitPullToRefresh.
     /// </summary>
-    [Parameter] public BitPullToRefreshClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitPullToRefreshClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the pull indicator.
@@ -274,7 +274,7 @@ public partial class BitPullToRefresh : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the BitPullToRefresh.
     /// </summary>
-    [Parameter] public BitPullToRefreshClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitPullToRefreshClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The dead-zone distance in pixel that the pull-down must travel before the pull to refresh process starts and the indicator appears.

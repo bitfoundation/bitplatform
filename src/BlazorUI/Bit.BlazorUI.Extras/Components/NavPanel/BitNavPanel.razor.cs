@@ -117,7 +117,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// Custom CSS classes for different parts of the nav panel.
     /// </summary>
-    [Parameter] public BitNavPanelClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitNavPanelClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The default aria-label of the expand/collapse button of an expanded item of the nav.
@@ -513,7 +513,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// Custom CSS styles for different parts of the nav panel.
     /// </summary>
-    [Parameter] public BitNavPanelClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitNavPanelClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The aria-label of the toggle button of the nav panel.

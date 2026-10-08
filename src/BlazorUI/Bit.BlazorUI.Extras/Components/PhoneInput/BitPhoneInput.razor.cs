@@ -154,7 +154,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     /// <summary>
     /// Custom CSS classes for different parts of the BitPhoneInput.
     /// </summary>
-    [Parameter] public BitPhoneInputClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitPhoneInputClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The aria-label of the clear button of the number input.
@@ -579,7 +579,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     /// <summary>
     /// Custom CSS styles for different parts of the BitPhoneInput.
     /// </summary>
-    [Parameter] public BitPhoneInputClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitPhoneInputClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The tooltip (title attribute) of the phone input.

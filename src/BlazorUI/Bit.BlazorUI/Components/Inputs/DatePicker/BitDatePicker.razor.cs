@@ -294,7 +294,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Custom CSS classes for different parts of the BitDatePicker component.
     /// </summary>
-    [Parameter] public BitDatePickerClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitDatePickerClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The icon to display inside the clear button.
@@ -1035,7 +1035,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Custom CSS styles for different parts of the BitDatePicker component.
     /// </summary>
-    [Parameter] public BitDatePickerClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitDatePickerClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The time format of the time-picker, 24H or 12H.

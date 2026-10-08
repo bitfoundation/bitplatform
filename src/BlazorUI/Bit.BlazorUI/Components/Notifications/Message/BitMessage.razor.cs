@@ -163,7 +163,7 @@ public partial class BitMessage : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the BitMessage.
     /// </summary>
-    [Parameter] public BitMessageClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitMessageClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The aria-label and the tooltip of the expander button of the message in Truncate mode while it is expanded.
@@ -519,7 +519,7 @@ public partial class BitMessage : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the BitMessage.
     /// </summary>
-    [Parameter] public BitMessageClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitMessageClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Washes the surface an Outline or a Text message leaves to the page with a faint tint of its color.

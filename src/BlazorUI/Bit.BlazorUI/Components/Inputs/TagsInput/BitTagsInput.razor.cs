@@ -191,7 +191,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// <summary>
     /// Custom CSS classes for different parts of the component.
     /// </summary>
-    [Parameter] public BitTagsInputClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitTagsInputClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The format of the message announced by screen readers when every tag is removed at once, where
@@ -800,7 +800,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// <summary>
     /// Custom CSS styles for different parts of the component.
     /// </summary>
-    [Parameter] public BitTagsInputClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitTagsInputClassStyles? Styles { get; set; }
 
     /// <summary>
     /// A short text drawn at the end of the field, after everything else, which is not part of the value:

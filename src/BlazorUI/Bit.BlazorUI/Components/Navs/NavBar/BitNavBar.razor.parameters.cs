@@ -32,7 +32,7 @@ public partial class BitNavBar<TItem>
     /// <summary>
     /// Custom CSS classes for different parts of the navbar.
     /// </summary>
-    [Parameter] public BitNavBarClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitNavBarClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the navbar, used for the icon, the text and the indicator of the selected item.
@@ -290,7 +290,7 @@ public partial class BitNavBar<TItem>
     /// <summary>
     /// Custom CSS styles for different parts of the navbar.
     /// </summary>
-    [Parameter] public BitNavBarClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitNavBarClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Stacks the items of the navbar in a column, which turns it into a vertical navigation rail.

@@ -115,7 +115,7 @@ public partial class BitPersona : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the BitPersona component.
     /// </summary>
-    [Parameter] public BitPersonaClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitPersonaClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The background color when the user's initials are displayed.
@@ -560,7 +560,7 @@ public partial class BitPersona : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the BitPersona component.
     /// </summary>
-    [Parameter] public BitPersonaClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitPersonaClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The browsing context the <see cref="Href"/> link opens in (maps to the anchor's target attribute).

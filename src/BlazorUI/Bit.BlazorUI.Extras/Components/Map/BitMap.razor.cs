@@ -135,12 +135,12 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the map.
     /// </summary>
-    [Parameter] public BitMapClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitMapClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Custom CSS styles for different parts of the map.
     /// </summary>
-    [Parameter] public BitMapClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitMapClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The provider configuration (basemap, tokens, options). When null on first render, a

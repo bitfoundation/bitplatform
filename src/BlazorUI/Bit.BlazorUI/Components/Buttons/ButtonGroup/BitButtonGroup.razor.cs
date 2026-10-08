@@ -68,7 +68,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// <summary>
     /// Custom CSS classes for different parts of the ButtonGroup.
     /// </summary>
-    [Parameter] public BitButtonGroupClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitButtonGroupClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Defines the general colors available in the bit BlazorUI.
@@ -280,7 +280,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     /// <summary>
     /// Custom CSS styles for different parts of the ButtonGroup.
     /// </summary>
-    [Parameter] public BitButtonGroupClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitButtonGroupClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Display ButtonGroup with toggle mode enabled for each button.

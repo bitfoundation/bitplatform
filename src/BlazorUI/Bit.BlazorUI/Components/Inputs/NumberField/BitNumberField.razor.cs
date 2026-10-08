@@ -166,7 +166,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// <summary>
     /// Custom CSS classes for different parts of the BitNumberField.
     /// </summary>
-    [Parameter] public BitNumberFieldClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitNumberFieldClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The delay in milliseconds before the value starts changing continuously while an
@@ -679,7 +679,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// <summary>
     /// Custom CSS styles for different parts of the BitNumberField.
     /// </summary>
-    [Parameter] public BitNumberFieldClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitNumberFieldClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Suffix displayed after the numeric field contents. This is not included in the value. 

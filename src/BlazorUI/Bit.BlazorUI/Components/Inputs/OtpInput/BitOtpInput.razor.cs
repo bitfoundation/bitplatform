@@ -94,7 +94,7 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// <summary>
     /// Custom CSS classes for different parts of the BitOtpInput.
     /// </summary>
-    [Parameter] public BitOtpInputClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitOtpInputClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The description (helper text) rendered under the inputs, which the group of the inputs references
@@ -355,7 +355,7 @@ public partial class BitOtpInput : BitInputBase<string?>
     /// <summary>
     /// Custom CSS styles for different parts of the BitOtpInput.
     /// </summary>
-    [Parameter] public BitOtpInputClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitOtpInputClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Type of the inputs.

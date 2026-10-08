@@ -148,7 +148,7 @@ public partial class BitDropMenu : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the drop menu.
     /// </summary>
-    [Parameter] public BitDropMenuClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitDropMenuClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the button of the drop menu.
@@ -349,7 +349,7 @@ public partial class BitDropMenu : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the drop menu.
     /// </summary>
-    [Parameter] public BitDropMenuClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitDropMenuClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The custom content to render inside the header of the drop menu.

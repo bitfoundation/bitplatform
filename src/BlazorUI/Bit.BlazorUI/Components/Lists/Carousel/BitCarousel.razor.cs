@@ -55,6 +55,9 @@ public partial class BitCarousel : BitComponentBase
     private string _goLeftButtonStyle = string.Empty;
     private string _goRightButtonStyle = string.Empty;
     private readonly List<BitCarouselItem> _allItems = [];
+
+    // What the items read off Classes and Styles for their own class and style strings, when they last built them.
+    private (string?, string?, string?, string?) _lastItemClassStyles;
     private ElementReference _carouselContainer = default!;
     private ElementReference _goLeftButtonRef = default!;
     private ElementReference _goRightButtonRef = default!;
@@ -835,6 +838,20 @@ public partial class BitCarousel : BitComponentBase
     protected override void OnParametersSet()
     {
         CascadingParameters?.UpdateParameters(this);
+
+        // The items are rendered under a fixed cascade, so a render of the carousel does not render them again,
+        // and they build their strings out of these: compared by value, so a ClassStyles changed in place counts.
+        var itemClassStyles = (Classes?.Item, Classes?.CurrentItem, Styles?.Item, Styles?.CurrentItem);
+
+        if (_lastItemClassStyles != itemClassStyles)
+        {
+            _lastItemClassStyles = itemClassStyles;
+
+            foreach (var item in _allItems)
+            {
+                item.RefreshClassStyles();
+            }
+        }
 
         _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : string.Empty;
 
