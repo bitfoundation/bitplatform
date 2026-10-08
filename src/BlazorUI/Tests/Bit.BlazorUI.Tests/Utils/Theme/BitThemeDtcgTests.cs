@@ -22,6 +22,7 @@ public sealed class BitThemeDtcgTests
             Error = "#C50F1F",
         });
         theme.Shape.BorderRadius = "0.5rem";
+        theme.Shape.Radius.Progress = "9999px";
         theme.Motion.Duration = "200ms";
         theme.ZIndex.Modal = "1300";
         theme.Color.Semantic.SurfaceElevated = "var(--bit-clr-bg-sec)";

@@ -83,6 +83,14 @@ public class BitThemeShapeRadii
     /// </summary>
     public string? TabIndicatorBase { get; set; }
 
+    /// <summary>
+    /// The corners of a linear progress track and its bar (<c>BitProgress</c>, the progress of a
+    /// <c>BitFileUpload</c> item): square under Fluent, 4px under Fluent 2, full under Material and Cupertino.
+    /// A progress with an explicit <c>Shape</c> (or <c>Rounded</c>) takes that instead, and a segmented one
+    /// stays square unless it has one.
+    /// </summary>
+    public string? Progress { get; set; }
+
     /// <summary>Cards, accordions, messages, images, list rows.</summary>
     public string? Surface { get; set; }
 

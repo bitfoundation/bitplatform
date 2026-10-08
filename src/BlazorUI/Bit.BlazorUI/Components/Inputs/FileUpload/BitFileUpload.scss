@@ -66,7 +66,7 @@
 //   --bit-FileUpload-progress-color             filled part of the progress bar                (default: $clr-pri)
 //   --bit-FileUpload-progress-track-color       unfilled part of the progress bar              (default: $clr-bg-sec)
 //   --bit-FileUpload-progress-height            progress bar thickness                         (default: $siz-track-sm)
-//   --bit-FileUpload-progress-radius            progress bar corner radius                     (default: $shp-radius-full)
+//   --bit-FileUpload-progress-radius            progress bar corner radius                     (default: $shp-radius-progress)
 //
 //   --bit-FileUpload-action-color               upload/pause/cancel/remove glyph at rest       (default: $clr-fg-pri)
 //   --bit-FileUpload-action-hover-color         the same glyph on hover                        (default: $clr-pri)
@@ -543,7 +543,7 @@
     margin-top: spacing(1);
     margin-bottom: spacing(0.5);
     height: var(--bit-FileUpload-progress-height, #{$siz-track-sm});
-    border-radius: var(--bit-FileUpload-progress-radius, #{$shp-radius-full});
+    border-radius: var(--bit-FileUpload-progress-radius, #{$shp-radius-progress});
     background-color: var(--bit-FileUpload-progress-track-color, #{$clr-bg-sec});
 }
 
@@ -551,7 +551,7 @@
 .bit-upl-pgb {
     height: 100%;
     transition: width $mot-duration $mot-easing 0s;
-    border-radius: var(--bit-FileUpload-progress-radius, #{$shp-radius-full});
+    border-radius: var(--bit-FileUpload-progress-radius, #{$shp-radius-progress});
     background-color: var(--bit-upl-clr, var(--bit-FileUpload-progress-color, #{$clr-pri}));
 }
 

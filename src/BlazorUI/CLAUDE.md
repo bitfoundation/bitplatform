@@ -272,7 +272,9 @@ the whole library from one `:root[bit-theme="..."]` block.
   `$shp-radius-chip` (tags, in-field chips) and `$shp-radius-selection` (the checkbox box);
   `$shp-radius-surface` (cards, accordions, messages); `$shp-radius-popup` (callouts, menus, tooltips,
   snackbars); `$shp-radius-dialog` (dialogs, modals); `$shp-radius-sheet` (the inner corners of panels,
-  square unless a preset rounds them). Sub-elements use the scale
+  square unless a preset rounds them). Two parts design systems shape apart have a primitive of their own:
+  the tab-strip selection indicator `$shp-radius-tab-indicator` / `-base` and the linear progress track
+  and bar `$shp-radius-progress` (square under Fluent, rounded under the Extras presets). Sub-elements use the scale
   `$shp-radius-none/xs/sm/md/lg/xl/2xl/full`. Heavier strokes (underline focus, selection indicators,
   thumb rings) use `$shp-border-width-thick`; inline spinners `$siz-spinner-stroke`.
 - **Size**: control heights per size class `$siz-ctrl-sm/md/lg` (also 32px icon-button squares),

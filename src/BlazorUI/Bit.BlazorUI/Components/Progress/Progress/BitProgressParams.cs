@@ -138,6 +138,11 @@ public class BitProgressParams : BitComponentBaseParams, IBitComponentParams
     public int? Segments { get; set; }
 
     /// <summary>
+    /// The corners of the linear track and bar, and the stroke cap of the ring.
+    /// </summary>
+    public BitShape? Shape { get; set; }
+
+    /// <summary>
     /// Writes the percentage beside the bar, or in the middle of the ring.
     /// </summary>
     public bool? ShowPercentNumber { get; set; }
@@ -305,6 +310,11 @@ public class BitProgressParams : BitComponentBaseParams, IBitComponentParams
         if (Segments.HasValue)
         {
             bitProgress.TakeFromCascade(nameof(Segments), Segments, static p => p.Segments, static (p, v) => p.Segments = v);
+        }
+
+        if (Shape.HasValue)
+        {
+            bitProgress.TakeFromCascade(nameof(Shape), Shape, static p => p.Shape, static (p, v) => p.Shape = v);
         }
 
         if (ShowPercentNumber.HasValue)

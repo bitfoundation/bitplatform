@@ -580,6 +580,7 @@ public static partial class BitCss
                 public const string Selection = "--bit-shp-radius-selection";
                 public const string TabIndicator = "--bit-shp-radius-tab-indicator";
                 public const string TabIndicatorBase = "--bit-shp-radius-tab-indicator-base";
+                public const string Progress = "--bit-shp-radius-progress";
             }
         }
 

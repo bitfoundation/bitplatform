@@ -470,6 +470,12 @@ $shp-radius-selection: var(--bit-shp-radius-selection);
 $shp-radius-tab-indicator: var(--bit-shp-radius-tab-indicator);
 $shp-radius-tab-indicator-base: var(--bit-shp-radius-tab-indicator-base, var(--bit-shp-radius-tab-indicator));
 
+//shape - the corners of a linear progress track and its bar (BitProgress, the progress of a BitFileUpload
+//item): square under Fluent, 4px under Fluent 2, full under Material and Cupertino. A token of its own
+//rather than a point on the scale, since a preset that rounded --bit-shp-radius-none would round
+//everything else that means "square".
+$shp-radius-progress: var(--bit-shp-radius-progress);
+
 /*---- Size ----*/
 //The dimensions every design system decides once and every component repeats: control heights,
 //icon glyph sizes, selection-indicator (checkbox box / radio ring) sizes, the spinner stroke and
