@@ -67,6 +67,11 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// <summary>
     /// The general color of the text field used when focused.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-TextField-*</c> accent and focus color variables (and over
+    /// <c>--bit-TextField-button-color</c> for the reveal password glyph and <c>--bit-TextField-spinner-color</c> for
+    /// the busy spinner); left unset, the accent is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Accent { get; set; }
 
@@ -99,12 +104,22 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// <summary>
     /// The color kind of the text field background.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-TextField-background</c>; left unset, the background is the primary kind
+    /// unless that variable says otherwise. <c>--bit-TextField-hover-background</c> still paints the hovered fill,
+    /// since no kind has a hover fill of its own.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColorKind? Background { get; set; }
 
     /// <summary>
     /// The color kind of the text field border.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-TextField-border-color</c> and <c>--bit-TextField-hover-border-color</c>;
+    /// left unset, the border is the primary kind unless those variables say otherwise.
+    /// <c>--bit-TextField-focus-border-color</c> still paints the focused frame, since no kind has a focus color of its own.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColorKind? Border { get; set; }
 
@@ -582,6 +597,10 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// <summary>
     /// The size of the text field.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-TextField-*</c> size variables (minimum height, font sizes, line height,
+    /// icon size, spinner size, button width); left unset, the field is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -763,35 +782,11 @@ public partial class BitTextField : BitTextInputBase<string?>
 
         ClassBuilder.Register(() => PermanentGhost ? "bit-tfl-pgt" : string.Empty);
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-tfl-sm",
-            BitSize.Medium => "bit-tfl-md",
-            BitSize.Large => "bit-tfl-lg",
-            _ => string.Empty
-        });
+        // Size, Accent, Background and Border publish nothing while they are unset, which is what lets the stylesheet
+        // tell a default from a choice: the public --bit-TextField-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-tfl"));
 
-        ClassBuilder.Register(() => Accent switch
-        {
-            BitColor.Primary => "bit-tfl-pri",
-            BitColor.Secondary => "bit-tfl-sec",
-            BitColor.Tertiary => "bit-tfl-ter",
-            BitColor.Info => "bit-tfl-inf",
-            BitColor.Success => "bit-tfl-suc",
-            BitColor.Warning => "bit-tfl-wrn",
-            BitColor.SevereWarning => "bit-tfl-swr",
-            BitColor.Error => "bit-tfl-err",
-            BitColor.PrimaryBackground => "bit-tfl-pbg",
-            BitColor.SecondaryBackground => "bit-tfl-sbg",
-            BitColor.TertiaryBackground => "bit-tfl-tbg",
-            BitColor.PrimaryForeground => "bit-tfl-pfg",
-            BitColor.SecondaryForeground => "bit-tfl-sfg",
-            BitColor.TertiaryForeground => "bit-tfl-tfg",
-            BitColor.PrimaryBorder => "bit-tfl-pbr",
-            BitColor.SecondaryBorder => "bit-tfl-sbr",
-            BitColor.TertiaryBorder => "bit-tfl-tbr",
-            _ => "bit-tfl-pri"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Accent, "bit-tfl"));
 
         ClassBuilder.Register(() => Background switch
         {
@@ -799,7 +794,7 @@ public partial class BitTextField : BitTextInputBase<string?>
             BitColorKind.Secondary => "bit-tfl-bse",
             BitColorKind.Tertiary => "bit-tfl-btr",
             BitColorKind.Transparent => "bit-tfl-btn",
-            _ => "bit-tfl-bpr"
+            _ => string.Empty
         });
 
         ClassBuilder.Register(() => Border switch
@@ -808,7 +803,7 @@ public partial class BitTextField : BitTextInputBase<string?>
             BitColorKind.Secondary => "bit-tfl-brs",
             BitColorKind.Tertiary => "bit-tfl-brt",
             BitColorKind.Transparent => "bit-tfl-brn",
-            _ => "bit-tfl-brp"
+            _ => string.Empty
         });
     }
 

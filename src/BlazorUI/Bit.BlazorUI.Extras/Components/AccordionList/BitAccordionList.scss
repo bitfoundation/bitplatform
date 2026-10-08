@@ -3,7 +3,12 @@
 // Public CSS variables (read here with a fallback and never declared, so they inherit: set one on :root, on any
 // ancestor, or on the Style of a single list):
 //   --bit-AccordionList-gap            space between the items                        (default: spacing(1); Gap wins)
-//   --bit-AccordionList-divider-color  line between two items of a Joined list        (default: the items' border color, $clr-brd-pri with NoBorder)
+//   --bit-AccordionList-divider-color  line between two items of a Joined list        (default: the items' border color, $clr-brd-pri with NoBorder;
+//                                                                                    an explicit Border wins)
+//
+// A parameter written on the list wins over the variable that restyles what it sets: the line between two items of a
+// Joined list is the top border of the lower one, so an explicit Border paints it as it paints the rest of the
+// outline. The variable restyles the default line, not a chosen one.
 //
 // Every item is a BitAccordion, so the --bit-Accordion-* variables (colors, radius, padding, type, ...) restyle
 // the items of a list just as well when they are set on the list itself.
@@ -62,10 +67,16 @@
         border-end-end-radius: var(--bit-Accordion-radius, #{$shp-radius-surface});
     }
 
-    // That shared line takes the divider color. A borderless item has no top border to lend it, so it is given
-    // one of its own to keep the items apart, as thick as the outline would have been.
+    // That shared line takes the divider color - unless the list was given a Border, whose class on the item has
+    // already put the color it asked for into --bit-acd-brd, and which wins over the variable here as it does over
+    // --bit-Accordion-border-color on the rest of the outline. A borderless item has no top border to lend it, so it is
+    // given one of its own to keep the items apart, as thick as the outline would have been.
     > .bit-acl-itm ~ .bit-acl-itm > .bit-acd {
         border-block-start-color: var(--bit-AccordionList-divider-color, var(--bit-acd-brd));
+
+        &:is(.bit-acd-pbr, .bit-acd-sbr, .bit-acd-tbr, .bit-acd-rbr) {
+            border-block-start-color: var(--bit-acd-brd);
+        }
 
         &.bit-acd-nbd {
             border-block-start: var(--bit-Accordion-border-width, #{$shp-border-width}) $shp-border-style var(--bit-AccordionList-divider-color, #{$clr-brd-pri});

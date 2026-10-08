@@ -50,10 +50,11 @@ public class BitMessageTests : BunitTestContext
         var root = component.Find(".bit-msg");
 
         Assert.AreEqual("DIV", root.TagName);
-        // The defaults: the Fill variant, the Info color and the Medium size.
+        // The defaults: the Fill variant, and no Color or Size class - the stylesheet draws the Info color and the
+        // Medium size an unset one stands for, after the public variables.
         Assert.IsTrue(root.ClassList.Contains("bit-msg-fil"));
-        Assert.IsTrue(root.ClassList.Contains("bit-msg-inf"));
-        Assert.IsTrue(root.ClassList.Contains("bit-msg-md"));
+        Assert.IsFalse(root.ClassList.Contains("bit-msg-inf"));
+        Assert.IsFalse(root.ClassList.Contains("bit-msg-md"));
 
         Assert.HasCount(1, component.FindAll(".bit-msg-rct"));
         Assert.HasCount(1, component.FindAll(".bit-msg-con"));
@@ -167,8 +168,28 @@ public class BitMessageTests : BunitTestContext
         Assert.IsFalse(component.Find(".bit-msg").ClassList.Contains("bit-msg-tnt"));
     }
 
+    [TestMethod]
+    public void BitMessageShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitMessage>();
+
+        // An unset Color or Size publishes nothing, so the public --bit-Message-* variables restyle the default
+        // while an explicit value - which does publish its class - wins over them.
+        var root = component.Find(".bit-msg");
+        var published = new[]
+        {
+            "bit-msg-pri", "bit-msg-sec", "bit-msg-ter", "bit-msg-inf", "bit-msg-suc", "bit-msg-wrn", "bit-msg-swr", "bit-msg-err",
+            "bit-msg-pbg", "bit-msg-sbg", "bit-msg-tbg", "bit-msg-pfg", "bit-msg-sfg", "bit-msg-tfg", "bit-msg-pbr", "bit-msg-sbr", "bit-msg-tbr",
+            "bit-msg-sm", "bit-msg-md", "bit-msg-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
+    }
+
     [TestMethod,
-        DataRow(null, "bit-msg-md"),
         DataRow(BitSize.Small, "bit-msg-sm"),
         DataRow(BitSize.Medium, "bit-msg-md"),
         DataRow(BitSize.Large, "bit-msg-lg")

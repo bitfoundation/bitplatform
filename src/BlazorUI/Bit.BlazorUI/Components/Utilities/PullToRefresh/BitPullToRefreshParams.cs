@@ -140,118 +140,106 @@ public class BitPullToRefreshParams : BitComponentBaseParams, IBitComponentParam
 
         UpdateBaseParameters(bitPullToRefresh);
 
-        if (Classes is not null && bitPullToRefresh.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitPullToRefresh.Classes = Classes;
-
-            bitPullToRefresh.ClassBuilder.Reset();
+            bitPullToRefresh.TakeFromCascade(nameof(Classes), Classes, static p => p.Classes, static (p, v) => p.Classes = v);
         }
 
-        if (Color.HasValue && bitPullToRefresh.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue)
         {
-            bitPullToRefresh.Color = Color.Value;
-
-            bitPullToRefresh.StyleBuilder.Reset();
+            bitPullToRefresh.TakeFromCascade(nameof(Color), Color.Value, static p => p.Color, static (p, v) => p.Color = v);
         }
 
-        if (Complete is not null && bitPullToRefresh.HasNotBeenSet(nameof(Complete)))
+        if (Complete is not null)
         {
-            bitPullToRefresh.Complete = Complete;
+            bitPullToRefresh.TakeFromCascade(nameof(Complete), Complete, static p => p.Complete, static (p, v) => p.Complete = v);
         }
 
-        if (CompleteDelay.HasValue && bitPullToRefresh.HasNotBeenSet(nameof(CompleteDelay)))
+        if (CompleteDelay.HasValue)
         {
-            bitPullToRefresh.CompleteDelay = CompleteDelay.Value;
+            bitPullToRefresh.TakeFromCascade(nameof(CompleteDelay), CompleteDelay.Value, static p => p.CompleteDelay, static (p, v) => p.CompleteDelay = v);
         }
 
-        if (CompleteLabel is not null && bitPullToRefresh.HasNotBeenSet(nameof(CompleteLabel)))
+        if (CompleteLabel is not null)
         {
-            bitPullToRefresh.CompleteLabel = CompleteLabel;
+            bitPullToRefresh.TakeFromCascade(nameof(CompleteLabel), CompleteLabel, static p => p.CompleteLabel, static (p, v) => p.CompleteLabel = v);
         }
 
-        if (CustomColor.HasValue() && bitPullToRefresh.HasNotBeenSet(nameof(CustomColor)))
+        if (CustomColor.HasValue())
         {
-            bitPullToRefresh.CustomColor = CustomColor;
-
-            bitPullToRefresh.StyleBuilder.Reset();
+            bitPullToRefresh.TakeFromCascade(nameof(CustomColor), CustomColor, static p => p.CustomColor, static (p, v) => p.CustomColor = v);
         }
 
-        if (Direction.HasValue && bitPullToRefresh.HasNotBeenSet(nameof(Direction)))
+        if (Direction.HasValue)
         {
-            bitPullToRefresh.Direction = Direction.Value;
-
-            bitPullToRefresh.ClassBuilder.Reset();
+            bitPullToRefresh.TakeFromCascade(nameof(Direction), Direction.Value, static p => p.Direction, static (p, v) => p.Direction = v);
         }
 
-        if (Factor.HasValue && bitPullToRefresh.HasNotBeenSet(nameof(Factor)))
+        if (Factor.HasValue)
         {
-            bitPullToRefresh.Factor = Factor.Value;
+            bitPullToRefresh.TakeFromCascade(nameof(Factor), Factor.Value, static p => p.Factor, static (p, v) => p.Factor = v);
         }
 
-        if (FullWidth.HasValue && bitPullToRefresh.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue)
         {
-            bitPullToRefresh.FullWidth = FullWidth.Value;
-
-            bitPullToRefresh.ClassBuilder.Reset();
+            bitPullToRefresh.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static p => p.FullWidth, static (p, v) => p.FullWidth = v);
         }
 
-        if (IndicatorTemplate is not null && bitPullToRefresh.HasNotBeenSet(nameof(IndicatorTemplate)))
+        if (IndicatorTemplate is not null)
         {
-            bitPullToRefresh.IndicatorTemplate = IndicatorTemplate;
+            bitPullToRefresh.TakeFromCascade(nameof(IndicatorTemplate), IndicatorTemplate, static p => p.IndicatorTemplate, static (p, v) => p.IndicatorTemplate = v);
         }
 
-        if (Loading is not null && bitPullToRefresh.HasNotBeenSet(nameof(Loading)))
+        if (Loading is not null)
         {
-            bitPullToRefresh.Loading = Loading;
+            bitPullToRefresh.TakeFromCascade(nameof(Loading), Loading, static p => p.Loading, static (p, v) => p.Loading = v);
         }
 
-        if (Margin.HasValue && bitPullToRefresh.HasNotBeenSet(nameof(Margin)))
+        if (Margin.HasValue)
         {
-            bitPullToRefresh.Margin = Margin.Value;
+            bitPullToRefresh.TakeFromCascade(nameof(Margin), Margin.Value, static p => p.Margin, static (p, v) => p.Margin = v);
         }
 
-        if (MaxPull.HasValue && bitPullToRefresh.HasNotBeenSet(nameof(MaxPull)))
+        if (MaxPull.HasValue)
         {
-            bitPullToRefresh.MaxPull = MaxPull.Value;
+            bitPullToRefresh.TakeFromCascade(nameof(MaxPull), MaxPull.Value, static p => p.MaxPull, static (p, v) => p.MaxPull = v);
         }
 
-        if (NoMouse.HasValue && bitPullToRefresh.HasNotBeenSet(nameof(NoMouse)))
+        if (NoMouse.HasValue)
         {
-            bitPullToRefresh.NoMouse = NoMouse.Value;
+            bitPullToRefresh.TakeFromCascade(nameof(NoMouse), NoMouse.Value, static p => p.NoMouse, static (p, v) => p.NoMouse = v);
         }
 
-        if (RefreshingLabel is not null && bitPullToRefresh.HasNotBeenSet(nameof(RefreshingLabel)))
+        if (RefreshingLabel is not null)
         {
-            bitPullToRefresh.RefreshingLabel = RefreshingLabel;
+            bitPullToRefresh.TakeFromCascade(nameof(RefreshingLabel), RefreshingLabel, static p => p.RefreshingLabel, static (p, v) => p.RefreshingLabel = v);
         }
 
-        if (Release is not null && bitPullToRefresh.HasNotBeenSet(nameof(Release)))
+        if (Release is not null)
         {
-            bitPullToRefresh.Release = Release;
+            bitPullToRefresh.TakeFromCascade(nameof(Release), Release, static p => p.Release, static (p, v) => p.Release = v);
         }
 
         // An empty label is a value of its own here - it is what leaves the release state unannounced - so only a
         // label left unset on the params object stands down.
-        if (ReleaseLabel is not null && bitPullToRefresh.HasNotBeenSet(nameof(ReleaseLabel)))
+        if (ReleaseLabel is not null)
         {
-            bitPullToRefresh.ReleaseLabel = ReleaseLabel;
+            bitPullToRefresh.TakeFromCascade(nameof(ReleaseLabel), ReleaseLabel, static p => p.ReleaseLabel, static (p, v) => p.ReleaseLabel = v);
         }
 
-        if (Styles is not null && bitPullToRefresh.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitPullToRefresh.Styles = Styles;
-
-            bitPullToRefresh.StyleBuilder.Reset();
+            bitPullToRefresh.TakeFromCascade(nameof(Styles), Styles, static p => p.Styles, static (p, v) => p.Styles = v);
         }
 
-        if (Threshold.HasValue && bitPullToRefresh.HasNotBeenSet(nameof(Threshold)))
+        if (Threshold.HasValue)
         {
-            bitPullToRefresh.Threshold = Threshold.Value;
+            bitPullToRefresh.TakeFromCascade(nameof(Threshold), Threshold.Value, static p => p.Threshold, static (p, v) => p.Threshold = v);
         }
 
-        if (Trigger.HasValue && bitPullToRefresh.HasNotBeenSet(nameof(Trigger)))
+        if (Trigger.HasValue)
         {
-            bitPullToRefresh.Trigger = Trigger.Value;
+            bitPullToRefresh.TakeFromCascade(nameof(Trigger), Trigger.Value, static p => p.Trigger, static (p, v) => p.Trigger = v);
         }
     }
 }

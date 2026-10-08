@@ -1515,13 +1515,12 @@ public class BitFileUploadTests : BunitTestContext
     }
 
     [TestMethod,
-       DataRow(null, "bit-upl-pri"),
        DataRow(BitColor.Primary, "bit-upl-pri"),
        DataRow(BitColor.Success, "bit-upl-suc"),
        DataRow(BitColor.Error, "bit-upl-err"),
        DataRow(BitColor.PrimaryBorder, "bit-upl-pbr")
     ]
-    public void BitFileUploadShouldApplyTheColorClass(BitColor? color, string expectedClass)
+    public void BitFileUploadShouldApplyTheColorClass(BitColor color, string expectedClass)
     {
         var com = RenderComponent<BitFileUpload>(parameters =>
         {
@@ -1532,12 +1531,11 @@ public class BitFileUploadTests : BunitTestContext
     }
 
     [TestMethod,
-       DataRow(null, "bit-upl-md"),
        DataRow(BitSize.Small, "bit-upl-sm"),
        DataRow(BitSize.Medium, "bit-upl-md"),
        DataRow(BitSize.Large, "bit-upl-lg")
     ]
-    public void BitFileUploadShouldApplyTheSizeClass(BitSize? size, string expectedClass)
+    public void BitFileUploadShouldApplyTheSizeClass(BitSize size, string expectedClass)
     {
         var com = RenderComponent<BitFileUpload>(parameters =>
         {
@@ -1545,6 +1543,27 @@ public class BitFileUploadTests : BunitTestContext
         });
 
         Assert.IsTrue(com.Find(".bit-upl").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var com = RenderComponent<BitFileUpload>();
+
+        // An unset Color or Size publishes nothing, so the public --bit-FileUpload-* variables restyle the default
+        // while an explicit value - which does publish its class - wins over them.
+        var root = com.Find(".bit-upl");
+        var published = new[]
+        {
+            "bit-upl-pri", "bit-upl-sec", "bit-upl-ter", "bit-upl-inf", "bit-upl-suc", "bit-upl-wrn", "bit-upl-swr", "bit-upl-err",
+            "bit-upl-pbg", "bit-upl-sbg", "bit-upl-tbg", "bit-upl-pfg", "bit-upl-sfg", "bit-upl-tfg", "bit-upl-pbr", "bit-upl-sbr", "bit-upl-tbr",
+            "bit-upl-sm", "bit-upl-md", "bit-upl-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
     }
 
     [TestMethod]

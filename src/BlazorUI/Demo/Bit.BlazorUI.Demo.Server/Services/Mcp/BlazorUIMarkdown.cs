@@ -565,7 +565,7 @@ public static class BlazorUIMarkdown
         if (component.CssVariables.Count == 0) return;
 
         builder.AppendLine("## CSS variables").AppendLine();
-        builder.AppendLine("Read off the root with a fallback and never declared by the component, so they inherit: set one on `:root` (or a `[bit-theme]` block) to restyle every instance, on an ancestor to restyle the ones inside it, or on the `Style` of one instance to restyle it alone.").AppendLine();
+        builder.AppendLine("Read off the root with a fallback and never declared by the component, so they inherit: set one on `:root` (or a `[bit-theme]` block) to restyle every instance, on an ancestor to restyle the ones inside it, or on the `Style` of one instance to restyle it alone. They restyle the default, never a choice: a parameter set on the instance (its `Color`, `Size`, `Shape`, ...) wins over the variable restyling what it sets, so a variable only shows on the instances that leave that parameter unset.").AppendLine();
         builder.AppendLine("| Variable | Default | Description |");
         builder.AppendLine("| --- | --- | --- |");
 

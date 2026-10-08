@@ -513,8 +513,7 @@ public class BitAccordionTests : BunitTestContext
     [TestMethod,
         DataRow(BitSize.Small, "bit-acd-sm"),
         DataRow(BitSize.Medium, "bit-acd-md"),
-        DataRow(BitSize.Large, "bit-acd-lg"),
-        DataRow(null, "bit-acd-md")
+        DataRow(BitSize.Large, "bit-acd-lg")
     ]
     public void BitAccordionShouldRenderTheSizeClass(BitSize? size, string expectedClass)
     {
@@ -524,6 +523,27 @@ public class BitAccordionTests : BunitTestContext
         });
 
         Assert.IsTrue(com.Find(".bit-acd").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitAccordionShouldPublishNoSizeBackgroundOrBorderWhileTheyAreUnset()
+    {
+        var com = RenderComponent<BitAccordion>();
+
+        // An unset Size, Background or Border publishes nothing, so the public --bit-Accordion-* variables restyle the
+        // default while an explicit value - which does publish its class - wins over them.
+        var root = com.Find(".bit-acd");
+        var published = new[]
+        {
+            "bit-acd-sm", "bit-acd-md", "bit-acd-lg",
+            "bit-acd-pbg", "bit-acd-sbg", "bit-acd-tbg", "bit-acd-rbg",
+            "bit-acd-pbr", "bit-acd-sbr", "bit-acd-tbr", "bit-acd-rbr",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
     }
 
     [TestMethod,

@@ -384,7 +384,8 @@ public class BitProgressParamsTests : BunitTestContext
 
         var root = component.Find(".bit-prb");
 
-        Assert.IsTrue(root.ClassList.Contains("bit-prb-pri"));
+        // An unset Color publishes no role class at all, so nothing of the cascade's shows up either.
+        Assert.IsFalse(root.ClassList.Contains("bit-prb-pri"));
         Assert.IsFalse(root.ClassList.Contains("bit-prb-lg"));
     }
 }

@@ -1020,17 +1020,13 @@ public class BitFileInputTests : BunitTestContext
         DataRow(BitColor.TertiaryForeground, "bit-fin-tfg"),
         DataRow(BitColor.PrimaryBorder, "bit-fin-pbr"),
         DataRow(BitColor.SecondaryBorder, "bit-fin-sbr"),
-        DataRow(BitColor.TertiaryBorder, "bit-fin-tbr"),
-        DataRow(null, "bit-fin-pri")
+        DataRow(BitColor.TertiaryBorder, "bit-fin-tbr")
     ]
-    public void BitFileInputShouldRespectColor(BitColor? color, string expectedClass)
+    public void BitFileInputShouldRespectColor(BitColor color, string expectedClass)
     {
         var component = RenderComponent<BitFileInput>(parameters =>
         {
-            if (color.HasValue)
-            {
-                parameters.Add(p => p.Color, color.Value);
-            }
+            parameters.Add(p => p.Color, color);
         });
 
         var container = component.Find(".bit-fin");
@@ -1062,22 +1058,39 @@ public class BitFileInputTests : BunitTestContext
     [TestMethod,
         DataRow(BitSize.Small, "bit-fin-sm"),
         DataRow(BitSize.Medium, "bit-fin-md"),
-        DataRow(BitSize.Large, "bit-fin-lg"),
-        DataRow(null, "bit-fin-md")
+        DataRow(BitSize.Large, "bit-fin-lg")
     ]
-    public void BitFileInputShouldRespectSize(BitSize? size, string expectedClass)
+    public void BitFileInputShouldRespectSize(BitSize size, string expectedClass)
     {
         var component = RenderComponent<BitFileInput>(parameters =>
         {
-            if (size.HasValue)
-            {
-                parameters.Add(p => p.Size, size.Value);
-            }
+            parameters.Add(p => p.Size, size);
         });
 
         var container = component.Find(".bit-fin");
 
         Assert.IsTrue(container.ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitFileInput>();
+
+        // An unset Color or Size publishes nothing, so the public --bit-FileInput-* variables restyle the default
+        // while an explicit value - which does publish its class - wins over them.
+        var container = component.Find(".bit-fin");
+        var published = new[]
+        {
+            "bit-fin-pri", "bit-fin-sec", "bit-fin-ter", "bit-fin-inf", "bit-fin-suc", "bit-fin-wrn", "bit-fin-swr", "bit-fin-err",
+            "bit-fin-pbg", "bit-fin-sbg", "bit-fin-tbg", "bit-fin-pfg", "bit-fin-sfg", "bit-fin-tfg", "bit-fin-pbr", "bit-fin-sbr", "bit-fin-tbr",
+            "bit-fin-sm", "bit-fin-md", "bit-fin-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(container.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
     }
 
     [TestMethod]

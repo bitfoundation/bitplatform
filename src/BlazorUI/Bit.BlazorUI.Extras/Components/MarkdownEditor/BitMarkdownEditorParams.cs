@@ -223,198 +223,179 @@ public class BitMarkdownEditorParams : BitInputBaseParams<string?>, IBitComponen
 
         UpdateInputBaseParameters(bitMarkdownEditor);
 
-        if (AcceptedImageTypes is not null && bitMarkdownEditor.HasNotBeenSet(nameof(AcceptedImageTypes)))
+        if (AcceptedImageTypes is not null)
         {
-            bitMarkdownEditor.AcceptedImageTypes = AcceptedImageTypes;
+            bitMarkdownEditor.TakeFromCascade(nameof(AcceptedImageTypes), AcceptedImageTypes, static m => m.AcceptedImageTypes, static (m, v) => m.AcceptedImageTypes = v);
         }
 
-        if (AutoHeight.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(AutoHeight)) && bitMarkdownEditor.AutoHeight != AutoHeight.Value)
+        if (AutoHeight.HasValue)
         {
-            bitMarkdownEditor.AutoHeight = AutoHeight.Value;
-
-            bitMarkdownEditor.ClassBuilder.Reset();
+            bitMarkdownEditor.TakeFromCascade(nameof(AutoHeight), AutoHeight.Value, static m => m.AutoHeight, static (m, v) => m.AutoHeight = v);
         }
 
-        if (AutoClosePairs.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(AutoClosePairs)))
+        if (AutoClosePairs.HasValue)
         {
-            bitMarkdownEditor.AutoClosePairs = AutoClosePairs.Value;
+            bitMarkdownEditor.TakeFromCascade(nameof(AutoClosePairs), AutoClosePairs.Value, static m => m.AutoClosePairs, static (m, v) => m.AutoClosePairs = v);
         }
 
-        if (AutoPair.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(AutoPair)))
+        if (AutoPair.HasValue)
         {
-            bitMarkdownEditor.AutoPair = AutoPair.Value;
+            bitMarkdownEditor.TakeFromCascade(nameof(AutoPair), AutoPair.Value, static m => m.AutoPair, static (m, v) => m.AutoPair = v);
         }
 
-        if (BoldStyle.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(BoldStyle)))
+        if (BoldStyle.HasValue)
         {
-            bitMarkdownEditor.BoldStyle = BoldStyle.Value;
+            bitMarkdownEditor.TakeFromCascade(nameof(BoldStyle), BoldStyle.Value, static m => m.BoldStyle, static (m, v) => m.BoldStyle = v);
         }
 
-        if (BulletStyle.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(BulletStyle)))
+        if (BulletStyle.HasValue)
         {
-            bitMarkdownEditor.BulletStyle = BulletStyle.Value;
+            bitMarkdownEditor.TakeFromCascade(nameof(BulletStyle), BulletStyle.Value, static m => m.BulletStyle, static (m, v) => m.BulletStyle = v);
         }
 
-        if (ChangeDebounceTime.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(ChangeDebounceTime)))
+        if (ChangeDebounceTime.HasValue)
         {
-            bitMarkdownEditor.ChangeDebounceTime = ChangeDebounceTime.Value;
+            bitMarkdownEditor.TakeFromCascade(nameof(ChangeDebounceTime), ChangeDebounceTime.Value, static m => m.ChangeDebounceTime, static (m, v) => m.ChangeDebounceTime = v);
         }
 
-        // This runs on every render of every editor under the BitParams, so the values that drive the class or
-        // the style of the root are only assigned - and the builder only reset - when they differ from the ones
-        // the editor already holds: an unchanged one would rebuild both strings on every render for nothing.
-        if (Classes is not null && bitMarkdownEditor.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitMarkdownEditor.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitMarkdownEditor.Classes = Classes;
-
-            bitMarkdownEditor.ClassBuilder.Reset();
+            bitMarkdownEditor.TakeFromCascade(nameof(Classes), Classes, static m => m.Classes, static (m, v) => m.Classes = v);
         }
 
-        if (DebounceTime.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(DebounceTime)))
+        if (DebounceTime.HasValue)
         {
-            bitMarkdownEditor.DebounceTime = DebounceTime.Value;
+            bitMarkdownEditor.TakeFromCascade(nameof(DebounceTime), DebounceTime.Value, static m => m.DebounceTime, static (m, v) => m.DebounceTime = v);
         }
 
-        if (Height is not null && bitMarkdownEditor.HasNotBeenSet(nameof(Height)) && bitMarkdownEditor.Height != Height)
+        if (Height is not null)
         {
-            bitMarkdownEditor.Height = Height;
-
-            bitMarkdownEditor.StyleBuilder.Reset();
+            bitMarkdownEditor.TakeFromCascade(nameof(Height), Height, static m => m.Height, static (m, v) => m.Height = v);
         }
 
-        if (IndentUnit is not null && bitMarkdownEditor.HasNotBeenSet(nameof(IndentUnit)))
+        if (IndentUnit is not null)
         {
-            bitMarkdownEditor.IndentUnit = IndentUnit;
+            bitMarkdownEditor.TakeFromCascade(nameof(IndentUnit), IndentUnit, static m => m.IndentUnit, static (m, v) => m.IndentUnit = v);
         }
 
-        if (ItalicStyle.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(ItalicStyle)))
+        if (ItalicStyle.HasValue)
         {
-            bitMarkdownEditor.ItalicStyle = ItalicStyle.Value;
+            bitMarkdownEditor.TakeFromCascade(nameof(ItalicStyle), ItalicStyle.Value, static m => m.ItalicStyle, static (m, v) => m.ItalicStyle = v);
         }
 
-        if (MaxHeight is not null && bitMarkdownEditor.HasNotBeenSet(nameof(MaxHeight)) && bitMarkdownEditor.MaxHeight != MaxHeight)
+        if (MaxHeight is not null)
         {
-            bitMarkdownEditor.MaxHeight = MaxHeight;
-
-            bitMarkdownEditor.StyleBuilder.Reset();
+            bitMarkdownEditor.TakeFromCascade(nameof(MaxHeight), MaxHeight, static m => m.MaxHeight, static (m, v) => m.MaxHeight = v);
         }
 
-        if (MaxImageSize.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(MaxImageSize)))
+        if (MaxImageSize.HasValue)
         {
-            bitMarkdownEditor.MaxImageSize = MaxImageSize.Value;
+            bitMarkdownEditor.TakeFromCascade(nameof(MaxImageSize), MaxImageSize.Value, static m => m.MaxImageSize, static (m, v) => m.MaxImageSize = v);
         }
 
-        if (MaxLength.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(MaxLength)))
+        if (MaxLength.HasValue)
         {
-            bitMarkdownEditor.MaxLength = MaxLength.Value;
+            bitMarkdownEditor.TakeFromCascade(nameof(MaxLength), MaxLength.Value, static m => m.MaxLength, static (m, v) => m.MaxLength = v);
         }
 
-        if (MinHeight is not null && bitMarkdownEditor.HasNotBeenSet(nameof(MinHeight)) && bitMarkdownEditor.MinHeight != MinHeight)
+        if (MinHeight is not null)
         {
-            bitMarkdownEditor.MinHeight = MinHeight;
-
-            bitMarkdownEditor.StyleBuilder.Reset();
+            bitMarkdownEditor.TakeFromCascade(nameof(MinHeight), MinHeight, static m => m.MinHeight, static (m, v) => m.MinHeight = v);
         }
 
-        if (OnImageUpload is not null && bitMarkdownEditor.HasNotBeenSet(nameof(OnImageUpload)))
+        if (OnImageUpload is not null)
         {
-            bitMarkdownEditor.OnImageUpload = OnImageUpload;
+            bitMarkdownEditor.TakeFromCascade(nameof(OnImageUpload), OnImageUpload, static m => m.OnImageUpload, static (m, v) => m.OnImageUpload = v);
         }
 
-        if (Placeholder is not null && bitMarkdownEditor.HasNotBeenSet(nameof(Placeholder)))
+        if (Placeholder is not null)
         {
-            bitMarkdownEditor.Placeholder = Placeholder;
+            bitMarkdownEditor.TakeFromCascade(nameof(Placeholder), Placeholder, static m => m.Placeholder, static (m, v) => m.Placeholder = v);
         }
 
-        if (PreviewPipeline is not null && bitMarkdownEditor.HasNotBeenSet(nameof(PreviewPipeline)))
+        if (PreviewPipeline is not null)
         {
-            bitMarkdownEditor.PreviewPipeline = PreviewPipeline;
+            bitMarkdownEditor.TakeFromCascade(nameof(PreviewPipeline), PreviewPipeline, static m => m.PreviewPipeline, static (m, v) => m.PreviewPipeline = v);
         }
 
-        if (PreviewTemplate is not null && bitMarkdownEditor.HasNotBeenSet(nameof(PreviewTemplate)))
+        if (PreviewTemplate is not null)
         {
-            bitMarkdownEditor.PreviewTemplate = PreviewTemplate;
+            bitMarkdownEditor.TakeFromCascade(nameof(PreviewTemplate), PreviewTemplate, static m => m.PreviewTemplate, static (m, v) => m.PreviewTemplate = v);
         }
 
-        if (Resizable.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(Resizable)) && bitMarkdownEditor.Resizable != Resizable.Value)
+        if (Resizable.HasValue)
         {
-            bitMarkdownEditor.Resizable = Resizable.Value;
-
-            bitMarkdownEditor.ClassBuilder.Reset();
+            bitMarkdownEditor.TakeFromCascade(nameof(Resizable), Resizable.Value, static m => m.Resizable, static (m, v) => m.Resizable = v);
         }
 
-        if (ShowCursorPosition.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(ShowCursorPosition)))
+        if (ShowCursorPosition.HasValue)
         {
-            bitMarkdownEditor.ShowCursorPosition = ShowCursorPosition.Value;
+            bitMarkdownEditor.TakeFromCascade(nameof(ShowCursorPosition), ShowCursorPosition.Value, static m => m.ShowCursorPosition, static (m, v) => m.ShowCursorPosition = v);
         }
 
-        if (ShowReadingTime.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(ShowReadingTime)))
+        if (ShowReadingTime.HasValue)
         {
-            bitMarkdownEditor.ShowReadingTime = ShowReadingTime.Value;
+            bitMarkdownEditor.TakeFromCascade(nameof(ShowReadingTime), ShowReadingTime.Value, static m => m.ShowReadingTime, static (m, v) => m.ShowReadingTime = v);
         }
 
-        if (ShowStatusBar.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(ShowStatusBar)))
+        if (ShowStatusBar.HasValue)
         {
-            bitMarkdownEditor.ShowStatusBar = ShowStatusBar.Value;
+            bitMarkdownEditor.TakeFromCascade(nameof(ShowStatusBar), ShowStatusBar.Value, static m => m.ShowStatusBar, static (m, v) => m.ShowStatusBar = v);
         }
 
-        if (ShowToolbar.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(ShowToolbar)))
+        if (ShowToolbar.HasValue)
         {
-            bitMarkdownEditor.ShowToolbar = ShowToolbar.Value;
+            bitMarkdownEditor.TakeFromCascade(nameof(ShowToolbar), ShowToolbar.Value, static m => m.ShowToolbar, static (m, v) => m.ShowToolbar = v);
         }
 
-        if (SpellCheck.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(SpellCheck)))
+        if (SpellCheck.HasValue)
         {
-            bitMarkdownEditor.SpellCheck = SpellCheck.Value;
+            bitMarkdownEditor.TakeFromCascade(nameof(SpellCheck), SpellCheck.Value, static m => m.SpellCheck, static (m, v) => m.SpellCheck = v);
         }
 
-        if (StickyToolbar.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(StickyToolbar)) && bitMarkdownEditor.StickyToolbar != StickyToolbar.Value)
+        if (StickyToolbar.HasValue)
         {
-            bitMarkdownEditor.StickyToolbar = StickyToolbar.Value;
-
-            bitMarkdownEditor.ClassBuilder.Reset();
+            bitMarkdownEditor.TakeFromCascade(nameof(StickyToolbar), StickyToolbar.Value, static m => m.StickyToolbar, static (m, v) => m.StickyToolbar = v);
         }
 
-        if (Styles is not null && bitMarkdownEditor.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitMarkdownEditor.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitMarkdownEditor.Styles = Styles;
-
-            bitMarkdownEditor.StyleBuilder.Reset();
+            bitMarkdownEditor.TakeFromCascade(nameof(Styles), Styles, static m => m.Styles, static (m, v) => m.Styles = v);
         }
 
-        if (SyncScroll.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(SyncScroll)))
+        if (SyncScroll.HasValue)
         {
-            bitMarkdownEditor.SyncScroll = SyncScroll.Value;
+            bitMarkdownEditor.TakeFromCascade(nameof(SyncScroll), SyncScroll.Value, static m => m.SyncScroll, static (m, v) => m.SyncScroll = v);
         }
 
-        if (TabIndents.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(TabIndents)))
+        if (TabIndents.HasValue)
         {
-            bitMarkdownEditor.TabIndents = TabIndents.Value;
+            bitMarkdownEditor.TakeFromCascade(nameof(TabIndents), TabIndents.Value, static m => m.TabIndents, static (m, v) => m.TabIndents = v);
         }
 
-        if (TableColumns.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(TableColumns)))
+        if (TableColumns.HasValue)
         {
-            bitMarkdownEditor.TableColumns = TableColumns.Value;
+            bitMarkdownEditor.TakeFromCascade(nameof(TableColumns), TableColumns.Value, static m => m.TableColumns, static (m, v) => m.TableColumns = v);
         }
 
-        if (TableRows.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(TableRows)))
+        if (TableRows.HasValue)
         {
-            bitMarkdownEditor.TableRows = TableRows.Value;
+            bitMarkdownEditor.TakeFromCascade(nameof(TableRows), TableRows.Value, static m => m.TableRows, static (m, v) => m.TableRows = v);
         }
 
-        if (Texts is not null && bitMarkdownEditor.HasNotBeenSet(nameof(Texts)))
+        if (Texts is not null)
         {
-            bitMarkdownEditor.Texts = Texts;
+            bitMarkdownEditor.TakeFromCascade(nameof(Texts), Texts, static m => m.Texts, static (m, v) => m.Texts = v);
         }
 
-        if (Toolbar is not null && bitMarkdownEditor.HasNotBeenSet(nameof(Toolbar)))
+        if (Toolbar is not null)
         {
-            bitMarkdownEditor.Toolbar = Toolbar;
+            bitMarkdownEditor.TakeFromCascade(nameof(Toolbar), Toolbar, static m => m.Toolbar, static (m, v) => m.Toolbar = v);
         }
 
-        if (WordsPerMinute.HasValue && bitMarkdownEditor.HasNotBeenSet(nameof(WordsPerMinute)))
+        if (WordsPerMinute.HasValue)
         {
-            bitMarkdownEditor.WordsPerMinute = WordsPerMinute.Value;
+            bitMarkdownEditor.TakeFromCascade(nameof(WordsPerMinute), WordsPerMinute.Value, static m => m.WordsPerMinute, static (m, v) => m.WordsPerMinute = v);
         }
     }
 }

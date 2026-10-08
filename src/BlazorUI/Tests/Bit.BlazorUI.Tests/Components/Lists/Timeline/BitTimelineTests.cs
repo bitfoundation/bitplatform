@@ -334,8 +334,15 @@ public class BitTimelineTests : BunitTestContext
 
         var root = component.Find(".bit-tln");
 
-        Assert.IsTrue(root.ClassList.Contains("bit-tln-pri"));
-        Assert.IsTrue(root.ClassList.Contains("bit-tln-md"));
+        // An unset Color or Size publishes no class, so the public --bit-Timeline-* variables restyle the primary,
+        // medium timeline they stand for while an explicit value - which does publish its class - wins over them.
+        foreach (var cssClass in new[] { "bit-tln-pri", "bit-tln-sec", "bit-tln-ter", "bit-tln-inf", "bit-tln-suc", "bit-tln-wrn", "bit-tln-swr", "bit-tln-err",
+                                         "bit-tln-pbg", "bit-tln-sbg", "bit-tln-tbg", "bit-tln-pfg", "bit-tln-sfg", "bit-tln-tfg", "bit-tln-pbr", "bit-tln-sbr", "bit-tln-tbr",
+                                         "bit-tln-sm", "bit-tln-md", "bit-tln-lg" })
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
+
         Assert.IsTrue(root.ClassList.Contains("bit-tln-fil"));
         Assert.IsFalse(root.ClassList.Contains("bit-tln-hrz"));
         Assert.IsFalse(root.ClassList.Contains("bit-tln-rvs"));

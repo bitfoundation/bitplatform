@@ -55,7 +55,7 @@ public partial class BitLoadingDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The theme color of the drawing.",
+            Description = "The theme color of the drawing. An explicit value wins over --bit-Loading-color; left unset (and with no CustomColor), the loader is primary unless it says otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -64,14 +64,14 @@ public partial class BitLoadingDemo
             Name = "CustomColor",
             Type = "string?",
             DefaultValue = "null",
-            Description = "Any CSS color for the drawing, currentColor included. Only applies while Color is unset.",
+            Description = "Any CSS color for the drawing, currentColor included. Only applies while Color is unset. Like Color, it wins over --bit-Loading-color.",
         },
         new()
         {
             Name = "CustomSize",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The size of the drawing in px; the label scales along within a readable range. Only applies while Size is unset. Zero and negative values are ignored.",
+            Description = "The size of the drawing in px; the label scales along within a readable range. Only applies while Size is unset. Zero and negative values are ignored. Like Size, it wins over --bit-Loading-size and --bit-Loading-label-font-size.",
         },
         new()
         {
@@ -129,7 +129,7 @@ public partial class BitLoadingDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the loader: 40px, 64px or 88px, with the label on the matching step of the type ramp.",
+            Description = "The size of the loader: 40px, 64px or 88px, with the label on the matching step of the type ramp. An explicit value wins over --bit-Loading-size and --bit-Loading-label-font-size; left unset (and with no CustomSize), the loader is 64px - 1em when Inline - unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -138,7 +138,7 @@ public partial class BitLoadingDemo
             Name = "Speed",
             Type = "double?",
             DefaultValue = "null",
-            Description = "A multiplier of the animation speed: 2 is twice as fast. Composes with reduced motion. Zero and negative values are ignored.",
+            Description = "A multiplier of the animation speed: 2 is twice as fast. Composes with reduced motion. Zero and negative values are ignored. An explicit value wins over --bit-Loading-speed; left unset, the loader runs at its normal speed unless it says otherwise.",
         },
         new()
         {
@@ -154,7 +154,7 @@ public partial class BitLoadingDemo
             Name = "Thickness",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The stroke width in px of the Ring, DualRing, Ripple, Xbox and Spinner loaders. Does not scale with the size. Zero and negative values are ignored.",
+            Description = "The stroke width in px of the Ring, DualRing, Ripple, Xbox and Spinner loaders. Does not scale with the size. Zero and negative values are ignored. An explicit value wins over --bit-Loading-thickness; left unset, the stroke keeps its authored width unless it says otherwise.",
         }
     ];
 
@@ -243,8 +243,8 @@ public partial class BitLoadingDemo
         new()
         {
             Name = "--bit-Loading-color",
-            DefaultValue = "Color / CustomColor, or the primary color",
-            Description = "Color of the drawing.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Color of the drawing. The Color and CustomColor parameters win over it.",
         },
         new()
         {
@@ -255,20 +255,20 @@ public partial class BitLoadingDemo
         new()
         {
             Name = "--bit-Loading-size",
-            DefaultValue = "Size / CustomSize, or 64px (1em when Inline)",
-            Description = "Width and height of the drawing, which is laid out from it. Any CSS length, em and rem included.",
+            DefaultValue = "64px (1em when Inline)",
+            Description = "Width and height of the drawing, which is laid out from it. Any CSS length, em and rem included. The Size and CustomSize parameters win over it.",
         },
         new()
         {
             Name = "--bit-Loading-thickness",
-            DefaultValue = "Thickness, or the width each drawing was made with",
-            Description = "Stroke width of the Ring, DualRing, Ripple, Xbox and Spinner loaders.",
+            DefaultValue = "The width each drawing was made with",
+            Description = "Stroke width of the Ring, DualRing, Ripple, Xbox and Spinner loaders. The Thickness parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Loading-speed",
-            DefaultValue = "Speed, or 1",
-            Description = "Multiplier of the animation speed; a positive number.",
+            DefaultValue = "1",
+            Description = "Multiplier of the animation speed; a positive number. The Speed parameter wins over it.",
         },
         new()
         {
@@ -285,8 +285,8 @@ public partial class BitLoadingDemo
         new()
         {
             Name = "--bit-Loading-label-font-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Text size of the label.",
+            DefaultValue = "--bit-tpg-fs-sm (1em when Inline)",
+            Description = "Text size of the label. The Size and CustomSize parameters win over it.",
         },
         new()
         {

@@ -642,7 +642,8 @@
     <DemoExample Title="Style & Class" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" CodeFiles="@example25CodeFiles" Id="example25">
         <div>
             Reach for the <b>--bit-NumberField-*</b> CSS variables first (listed in the API section): they inherit, so set them
-            on <b>:root</b>, an ancestor or an instance's <b>Style</b>. <b>Style</b>/<b>Class</b> and
+            on <b>:root</b>, an ancestor or an instance's <b>Style</b>. They restyle the default, not a choice: an explicit
+            <b>Accent</b>, <b>Background</b>, <b>Border</b> or <b>Size</b> wins over the variables for what it sets. <b>Style</b>/<b>Class</b> and
             <b>Styles</b>/<b>Classes</b> (per part, plus <b>Focused</b>) cover the rest.
         </div>
         <br />

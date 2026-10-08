@@ -95,6 +95,9 @@ public partial class BitFooter : BitComponentBase
     /// and as the text and border color in the Outline and Text variants.
     /// <br />
     /// When not set, the footer keeps the primary background and foreground colors of the current theme.
+    /// <br />
+    /// An explicit value wins over the <c>--bit-Footer-*</c> color variables; left unset, the footer keeps those theme
+    /// colors unless the variables say otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
@@ -277,6 +280,10 @@ public partial class BitFooter : BitComponentBase
     /// <summary>
     /// The size of the BitFooter, which determines the paddings around its content.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-Footer-padding</c>; left unset, the footer is medium unless that variable
+    /// says otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -424,27 +431,9 @@ public partial class BitFooter : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-ftr-pri",
-            BitColor.Secondary => "bit-ftr-sec",
-            BitColor.Tertiary => "bit-ftr-ter",
-            BitColor.Info => "bit-ftr-inf",
-            BitColor.Success => "bit-ftr-suc",
-            BitColor.Warning => "bit-ftr-wrn",
-            BitColor.SevereWarning => "bit-ftr-swr",
-            BitColor.Error => "bit-ftr-err",
-            BitColor.PrimaryBackground => "bit-ftr-pbg",
-            BitColor.SecondaryBackground => "bit-ftr-sbg",
-            BitColor.TertiaryBackground => "bit-ftr-tbg",
-            BitColor.PrimaryForeground => "bit-ftr-pfg",
-            BitColor.SecondaryForeground => "bit-ftr-sfg",
-            BitColor.TertiaryForeground => "bit-ftr-tfg",
-            BitColor.PrimaryBorder => "bit-ftr-pbr",
-            BitColor.SecondaryBorder => "bit-ftr-sbr",
-            BitColor.TertiaryBorder => "bit-ftr-tbr",
-            _ => string.Empty
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from a
+        // choice: the public --bit-Footer-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-ftr"));
 
         ClassBuilder.Register(() => Variant switch
         {
@@ -454,13 +443,7 @@ public partial class BitFooter : BitComponentBase
             _ => "bit-ftr-fil"
         });
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-ftr-sm",
-            BitSize.Medium => "bit-ftr-md",
-            BitSize.Large => "bit-ftr-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-ftr"));
 
         ClassBuilder.Register(() => Alignment switch
         {

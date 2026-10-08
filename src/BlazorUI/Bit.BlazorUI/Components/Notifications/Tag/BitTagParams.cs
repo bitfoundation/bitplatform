@@ -219,208 +219,176 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitTag);
 
-        if (AllowDisabledFocus.HasValue && bitTag.HasNotBeenSet(nameof(AllowDisabledFocus)))
+        if (AllowDisabledFocus.HasValue)
         {
-            bitTag.AllowDisabledFocus = AllowDisabledFocus.Value;
+            bitTag.TakeFromCascade(nameof(AllowDisabledFocus), AllowDisabledFocus.Value, static t => t.AllowDisabledFocus, static (t, v) => t.AllowDisabledFocus = v);
         }
 
-        if (AriaCurrent.HasValue && bitTag.HasNotBeenSet(nameof(AriaCurrent)))
+        if (AriaCurrent.HasValue)
         {
-            bitTag.AriaCurrent = AriaCurrent.Value;
+            bitTag.TakeFromCascade(nameof(AriaCurrent), AriaCurrent.Value, static t => t.AriaCurrent, static (t, v) => t.AriaCurrent = v);
         }
 
-        if (AriaDescription.HasValue() && bitTag.HasNotBeenSet(nameof(AriaDescription)))
+        if (AriaDescription.HasValue())
         {
-            bitTag.AriaDescription = AriaDescription;
+            bitTag.TakeFromCascade(nameof(AriaDescription), AriaDescription, static t => t.AriaDescription, static (t, v) => t.AriaDescription = v);
         }
 
-        if (Classes is not null && bitTag.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitTag.Classes = Classes;
-
-            bitTag.ClassBuilder.Reset();
+            bitTag.TakeFromCascade(nameof(Classes), Classes, static t => t.Classes, static (t, v) => t.Classes = v);
         }
 
-        if (Color.HasValue && bitTag.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue)
         {
-            bitTag.Color = Color.Value;
-
-            bitTag.ClassBuilder.Reset();
+            bitTag.TakeFromCascade(nameof(Color), Color.Value, static t => t.Color, static (t, v) => t.Color = v);
         }
 
-        if (DismissIcon is not null && bitTag.HasNotBeenSet(nameof(DismissIcon)))
+        if (DismissIcon is not null)
         {
-            bitTag.DismissIcon = DismissIcon;
+            bitTag.TakeFromCascade(nameof(DismissIcon), DismissIcon, static t => t.DismissIcon, static (t, v) => t.DismissIcon = v);
         }
 
-        if (DismissIconName.HasValue() && bitTag.HasNotBeenSet(nameof(DismissIconName)))
+        if (DismissIconName.HasValue())
         {
-            bitTag.DismissIconName = DismissIconName;
+            bitTag.TakeFromCascade(nameof(DismissIconName), DismissIconName, static t => t.DismissIconName, static (t, v) => t.DismissIconName = v);
         }
 
-        if (DismissLabel.HasValue() && bitTag.HasNotBeenSet(nameof(DismissLabel)))
+        if (DismissLabel.HasValue())
         {
-            bitTag.DismissLabel = DismissLabel;
+            bitTag.TakeFromCascade(nameof(DismissLabel), DismissLabel, static t => t.DismissLabel, static (t, v) => t.DismissLabel = v);
         }
 
-        if (DismissLabelFormat.HasValue() && bitTag.HasNotBeenSet(nameof(DismissLabelFormat)))
+        if (DismissLabelFormat.HasValue())
         {
-            bitTag.DismissLabelFormat = DismissLabelFormat;
+            bitTag.TakeFromCascade(nameof(DismissLabelFormat), DismissLabelFormat, static t => t.DismissLabelFormat, static (t, v) => t.DismissLabelFormat = v);
         }
 
-        if (Download is not null && bitTag.HasNotBeenSet(nameof(Download)))
+        if (Download is not null)
         {
-            bitTag.Download = Download;
+            bitTag.TakeFromCascade(nameof(Download), Download, static t => t.Download, static (t, v) => t.Download = v);
         }
 
-        if (FullWidth.HasValue && bitTag.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue)
         {
-            bitTag.FullWidth = FullWidth.Value;
-
-            bitTag.ClassBuilder.Reset();
+            bitTag.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static t => t.FullWidth, static (t, v) => t.FullWidth = v);
         }
 
-        if (HideSelectedIcon.HasValue && bitTag.HasNotBeenSet(nameof(HideSelectedIcon)))
+        if (HideSelectedIcon.HasValue)
         {
-            bitTag.HideSelectedIcon = HideSelectedIcon.Value;
+            bitTag.TakeFromCascade(nameof(HideSelectedIcon), HideSelectedIcon.Value, static t => t.HideSelectedIcon, static (t, v) => t.HideSelectedIcon = v);
         }
 
-        if (Icon is not null && bitTag.HasNotBeenSet(nameof(Icon)))
+        if (Icon is not null)
         {
-            bitTag.Icon = Icon;
+            bitTag.TakeFromCascade(nameof(Icon), Icon, static t => t.Icon, static (t, v) => t.Icon = v);
         }
 
-        if (IconAlt.HasValue() && bitTag.HasNotBeenSet(nameof(IconAlt)))
+        if (IconAlt.HasValue())
         {
-            bitTag.IconAlt = IconAlt;
+            bitTag.TakeFromCascade(nameof(IconAlt), IconAlt, static t => t.IconAlt, static (t, v) => t.IconAlt = v);
         }
 
-        if (IconName.HasValue() && bitTag.HasNotBeenSet(nameof(IconName)))
+        if (IconName.HasValue())
         {
-            bitTag.IconName = IconName;
+            bitTag.TakeFromCascade(nameof(IconName), IconName, static t => t.IconName, static (t, v) => t.IconName = v);
         }
 
-        if (IconUrl.HasValue() && bitTag.HasNotBeenSet(nameof(IconUrl)))
+        if (IconUrl.HasValue())
         {
-            bitTag.IconUrl = IconUrl;
+            bitTag.TakeFromCascade(nameof(IconUrl), IconUrl, static t => t.IconUrl, static (t, v) => t.IconUrl = v);
         }
 
         // an empty hint is a value of its own - the one that takes the announcement off - so only null is
         // what leaves the tag to its default.
-        if (NewTabHint is not null && bitTag.HasNotBeenSet(nameof(NewTabHint)))
+        if (NewTabHint is not null)
         {
-            bitTag.NewTabHint = NewTabHint;
+            bitTag.TakeFromCascade(nameof(NewTabHint), NewTabHint, static t => t.NewTabHint, static (t, v) => t.NewTabHint = v);
         }
 
-        if (NoNewTabHint.HasValue && bitTag.HasNotBeenSet(nameof(NoNewTabHint)))
+        if (NoNewTabHint.HasValue)
         {
-            bitTag.NoNewTabHint = NoNewTabHint.Value;
+            bitTag.TakeFromCascade(nameof(NoNewTabHint), NoNewTabHint.Value, static t => t.NoNewTabHint, static (t, v) => t.NoNewTabHint = v);
         }
 
-        if (NoWrap.HasValue && bitTag.HasNotBeenSet(nameof(NoWrap)))
+        if (NoWrap.HasValue)
         {
-            bitTag.NoWrap = NoWrap.Value;
-
-            bitTag.ClassBuilder.Reset();
+            bitTag.TakeFromCascade(nameof(NoWrap), NoWrap.Value, static t => t.NoWrap, static (t, v) => t.NoWrap = v);
         }
 
-        var relWasSet = false;
-        var targetWasSet = false;
-
-        if (Rel.HasValue && bitTag.HasNotBeenSet(nameof(Rel)))
+        if (Rel.HasValue)
         {
-            bitTag.Rel = Rel.Value;
-
-            relWasSet = true;
+            bitTag.TakeFromCascade(nameof(Rel), Rel.Value, static t => t.Rel, static (t, v) => t.Rel = v);
         }
 
-        if (Reversed.HasValue && bitTag.HasNotBeenSet(nameof(Reversed)))
+        if (Reversed.HasValue)
         {
-            bitTag.Reversed = Reversed.Value;
-
-            bitTag.ClassBuilder.Reset();
+            bitTag.TakeFromCascade(nameof(Reversed), Reversed.Value, static t => t.Reversed, static (t, v) => t.Reversed = v);
         }
 
-        if (SecondaryIcon is not null && bitTag.HasNotBeenSet(nameof(SecondaryIcon)))
+        if (SecondaryIcon is not null)
         {
-            bitTag.SecondaryIcon = SecondaryIcon;
+            bitTag.TakeFromCascade(nameof(SecondaryIcon), SecondaryIcon, static t => t.SecondaryIcon, static (t, v) => t.SecondaryIcon = v);
         }
 
-        if (SecondaryIconName.HasValue() && bitTag.HasNotBeenSet(nameof(SecondaryIconName)))
+        if (SecondaryIconName.HasValue())
         {
-            bitTag.SecondaryIconName = SecondaryIconName;
+            bitTag.TakeFromCascade(nameof(SecondaryIconName), SecondaryIconName, static t => t.SecondaryIconName, static (t, v) => t.SecondaryIconName = v);
         }
 
-        if (SecondaryText.HasValue() && bitTag.HasNotBeenSet(nameof(SecondaryText)))
+        if (SecondaryText.HasValue())
         {
-            bitTag.SecondaryText = SecondaryText;
+            bitTag.TakeFromCascade(nameof(SecondaryText), SecondaryText, static t => t.SecondaryText, static (t, v) => t.SecondaryText = v);
         }
 
-        if (SelectedIcon is not null && bitTag.HasNotBeenSet(nameof(SelectedIcon)))
+        if (SelectedIcon is not null)
         {
-            bitTag.SelectedIcon = SelectedIcon;
+            bitTag.TakeFromCascade(nameof(SelectedIcon), SelectedIcon, static t => t.SelectedIcon, static (t, v) => t.SelectedIcon = v);
         }
 
-        if (SelectedIconName.HasValue() && bitTag.HasNotBeenSet(nameof(SelectedIconName)))
+        if (SelectedIconName.HasValue())
         {
-            bitTag.SelectedIconName = SelectedIconName;
+            bitTag.TakeFromCascade(nameof(SelectedIconName), SelectedIconName, static t => t.SelectedIconName, static (t, v) => t.SelectedIconName = v);
         }
 
-        if (Shape.HasValue && bitTag.HasNotBeenSet(nameof(Shape)))
+        if (Shape.HasValue)
         {
-            bitTag.Shape = Shape.Value;
-
-            bitTag.ClassBuilder.Reset();
+            bitTag.TakeFromCascade(nameof(Shape), Shape.Value, static t => t.Shape, static (t, v) => t.Shape = v);
         }
 
-        if (Size.HasValue && bitTag.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue)
         {
-            bitTag.Size = Size.Value;
-
-            bitTag.ClassBuilder.Reset();
+            bitTag.TakeFromCascade(nameof(Size), Size.Value, static t => t.Size, static (t, v) => t.Size = v);
         }
 
-        if (StopPropagation.HasValue && bitTag.HasNotBeenSet(nameof(StopPropagation)))
+        if (StopPropagation.HasValue)
         {
-            bitTag.StopPropagation = StopPropagation.Value;
+            bitTag.TakeFromCascade(nameof(StopPropagation), StopPropagation.Value, static t => t.StopPropagation, static (t, v) => t.StopPropagation = v);
         }
 
-        if (Styles is not null && bitTag.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitTag.Styles = Styles;
-
-            bitTag.StyleBuilder.Reset();
+            bitTag.TakeFromCascade(nameof(Styles), Styles, static t => t.Styles, static (t, v) => t.Styles = v);
         }
 
-        if (Target.HasValue() && bitTag.HasNotBeenSet(nameof(Target)))
+        if (Target.HasValue())
         {
-            bitTag.Target = Target;
-
-            targetWasSet = true;
+            bitTag.TakeFromCascade(nameof(Target), Target, static t => t.Target, static (t, v) => t.Target = v);
         }
 
-        // the rel attribute is derived from Href, Rel and Target together, so it is recalculated
-        // whenever one of the two that can be cascaded has just been filled in from here.
-        if (relWasSet || targetWasSet)
+        if (Text.HasValue())
         {
-            bitTag.OnSetHrefAndRel();
+            bitTag.TakeFromCascade(nameof(Text), Text, static t => t.Text, static (t, v) => t.Text = v);
         }
 
-        if (Text.HasValue() && bitTag.HasNotBeenSet(nameof(Text)))
+        if (Title.HasValue())
         {
-            bitTag.Text = Text;
+            bitTag.TakeFromCascade(nameof(Title), Title, static t => t.Title, static (t, v) => t.Title = v);
         }
 
-        if (Title.HasValue() && bitTag.HasNotBeenSet(nameof(Title)))
+        if (Variant.HasValue)
         {
-            bitTag.Title = Title;
-        }
-
-        if (Variant.HasValue && bitTag.HasNotBeenSet(nameof(Variant)))
-        {
-            bitTag.Variant = Variant.Value;
-
-            bitTag.ClassBuilder.Reset();
+            bitTag.TakeFromCascade(nameof(Variant), Variant.Value, static t => t.Variant, static (t, v) => t.Variant = v);
         }
     }
 }

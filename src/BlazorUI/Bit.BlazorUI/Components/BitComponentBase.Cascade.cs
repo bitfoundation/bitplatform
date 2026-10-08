@@ -9,6 +9,18 @@ public abstract partial class BitComponentBase : IBitCascadeTarget
     // What this component remembers of the params object it takes its defaults from, created with the first one.
     private BitCascadeTracker? _cascadeTracker;
 
+    // Whether the params object cascaded on the last render is another one than the one before it.
+    private bool _isCascadeRenewed;
+
+
+
+    /// <summary>
+    /// Whether the params object cascaded on the last render is another one than the one cascaded before it, which
+    /// BitParams only hands down when something that params object carries has changed - possibly in place, inside
+    /// an object the component already holds.
+    /// </summary>
+    internal bool IsCascadeRenewed => _isCascadeRenewed;
+
 
 
     /// <summary>
@@ -43,8 +55,49 @@ public abstract partial class BitComponentBase : IBitCascadeTarget
     /// <returns>
     /// The setup hooks of the restored parameters that run asynchronously, or a completed task when there are none.
     /// </returns>
+    /// <summary>
+    /// Brings up to date what the component derives from a parameter the params object has just written: rebuilds
+    /// the strings its [ResetClassBuilder] and [ResetStyleBuilder] name and runs its [CallOnSet] hook, exactly as
+    /// the generated code does when the markup changes it, so that no params object has to remember to.
+    /// </summary>
+    internal void OnTakenFromCascade(string name)
+    {
+        var parameter = GetCascadeMap()?.Parameters.GetValueOrDefault(name);
+
+        // A parameter the map does not know is one nothing is known about, so both strings are rebuilt.
+        if (parameter?.ResetsClass ?? true) ClassBuilder.Reset();
+        if (parameter?.ResetsStyle ?? true) StyleBuilder.Reset();
+
+        parameter?.RunSetupHook(this);
+    }
+
+    /// <summary>
+    /// Puts back the value the named parameter held before the params object wrote it, while the params object
+    /// still supplies it but the component has set something that outranks it. The value stays recorded, so the
+    /// parameter is restored again once the params object stops supplying it.
+    /// </summary>
+    internal void ReleaseCascadeParameter(string name)
+    {
+        if (HasNotBeenSet(name) is false) return;
+
+        if (_cascadeTracker is null || _cascadeTracker.TryGetOriginal(name, out var original) is false) return;
+
+        var parameter = GetCascadeMap()?.Parameters.GetValueOrDefault(name);
+
+        if (parameter is null || parameter.SetOnComponent(this, original) is false) return;
+
+        if (parameter.ResetsClass) ClassBuilder.Reset();
+        if (parameter.ResetsStyle) StyleBuilder.Reset();
+
+        parameter.RunSetupHook(this);
+    }
+
+
+
     private Task RestoreDroppedCascadeParameters()
     {
+        _isCascadeRenewed = false;
+
         var current = CascadedParams;
 
         // Nothing supplied now and nothing before, which is where every component outside a BitParams stays.
@@ -54,12 +107,21 @@ public abstract partial class BitComponentBase : IBitCascadeTarget
 
         if (map is null) return Task.CompletedTask;
 
-        var restored = (_cascadeTracker ??= new()).RestoreDropped(this, map, current);
+        var restored = (_cascadeTracker ??= new()).RestoreDropped(this, map, current, out var paramsChanged);
+
+        // A params object supplied again unchanged writes nothing (TakeFromCascade compares every value), so neither
+        // does it rebuild anything. A new one - which BitParams only hands down when something that params object
+        // carries has changed - writes every object it supplies again, since one changed in place reaches the
+        // component as the very object it already holds.
+        _isCascadeRenewed = paramsChanged;
 
         if (restored is null) return Task.CompletedTask;
 
-        ClassBuilder.Reset();
-        StyleBuilder.Reset();
+        foreach (var parameter in restored)
+        {
+            if (parameter.ResetsClass) ClassBuilder.Reset();
+            if (parameter.ResetsStyle) StyleBuilder.Reset();
+        }
 
         return BitCascadeTracker.RunSetupHooks(this, restored);
     }

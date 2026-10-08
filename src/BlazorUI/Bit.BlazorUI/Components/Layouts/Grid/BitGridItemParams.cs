@@ -260,45 +260,34 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitGridItem);
 
-        if (AlignSelf.HasValue && bitGridItem.HasNotBeenSet(nameof(AlignSelf)))
+        if (AlignSelf.HasValue)
         {
-            bitGridItem.AlignSelf = AlignSelf.Value;
-
-            bitGridItem.StyleBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(AlignSelf), AlignSelf.Value, static g => g.AlignSelf, static (g, v) => g.AlignSelf = v);
         }
 
-        if (Auto.HasValue && bitGridItem.HasNotBeenSet(nameof(Auto)))
+        if (Auto.HasValue)
         {
-            bitGridItem.Auto = Auto.Value;
-
-            bitGridItem.ClassBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(Auto), Auto.Value, static g => g.Auto, static (g, v) => g.Auto = v);
         }
 
-        if (AutoOffset.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffset)))
+        if (AutoOffset.HasValue)
         {
-            bitGridItem.AutoOffset = AutoOffset.Value;
-
-            bitGridItem.ClassBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(AutoOffset), AutoOffset.Value, static g => g.AutoOffset, static (g, v) => g.AutoOffset = v);
         }
 
-        if (ColumnSpan.HasValue && bitGridItem.HasNotBeenSet(nameof(ColumnSpan)))
+        if (ColumnSpan.HasValue)
         {
-            bitGridItem.ColumnSpan = ColumnSpan.Value;
-
-            bitGridItem.ClassBuilder.Reset();
-            bitGridItem.StyleBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(ColumnSpan), ColumnSpan.Value, static g => g.ColumnSpan, static (g, v) => g.ColumnSpan = v);
         }
 
-        if (Element.HasValue() && bitGridItem.HasNotBeenSet(nameof(Element)))
+        if (Element.HasValue())
         {
-            bitGridItem.Element = Element;
+            bitGridItem.TakeFromCascade(nameof(Element), Element, static g => g.Element, static (g, v) => g.Element = v);
         }
 
-        if (Grow.HasValue && bitGridItem.HasNotBeenSet(nameof(Grow)))
+        if (Grow.HasValue)
         {
-            bitGridItem.Grow = Grow.Value;
-
-            bitGridItem.ClassBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(Grow), Grow.Value, static g => g.Grow, static (g, v) => g.Grow = v);
         }
 
         UpdateSizingParameters(bitGridItem);
@@ -314,299 +303,203 @@ public class BitGridItemParams : BitComponentBaseParams, IBitComponentParams
 
     private void UpdateSizingParameters(BitGridItem bitGridItem)
     {
-        if (AutoXs.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoXs)))
+        if (AutoXs.HasValue)
         {
-            bitGridItem.AutoXs = AutoXs.Value;
-
-            bitGridItem.ClassBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(AutoXs), AutoXs.Value, static g => g.AutoXs, static (g, v) => g.AutoXs = v);
         }
 
-        if (AutoSm.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoSm)))
+        if (AutoSm.HasValue)
         {
-            bitGridItem.AutoSm = AutoSm.Value;
-
-            bitGridItem.ClassBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(AutoSm), AutoSm.Value, static g => g.AutoSm, static (g, v) => g.AutoSm = v);
         }
 
-        if (AutoMd.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoMd)))
+        if (AutoMd.HasValue)
         {
-            bitGridItem.AutoMd = AutoMd.Value;
-
-            bitGridItem.ClassBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(AutoMd), AutoMd.Value, static g => g.AutoMd, static (g, v) => g.AutoMd = v);
         }
 
-        if (AutoLg.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoLg)))
+        if (AutoLg.HasValue)
         {
-            bitGridItem.AutoLg = AutoLg.Value;
-
-            bitGridItem.ClassBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(AutoLg), AutoLg.Value, static g => g.AutoLg, static (g, v) => g.AutoLg = v);
         }
 
-        if (AutoXl.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoXl)))
+        if (AutoXl.HasValue)
         {
-            bitGridItem.AutoXl = AutoXl.Value;
-
-            bitGridItem.ClassBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(AutoXl), AutoXl.Value, static g => g.AutoXl, static (g, v) => g.AutoXl = v);
         }
 
-        if (AutoXxl.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoXxl)))
+        if (AutoXxl.HasValue)
         {
-            bitGridItem.AutoXxl = AutoXxl.Value;
-
-            bitGridItem.ClassBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(AutoXxl), AutoXxl.Value, static g => g.AutoXxl, static (g, v) => g.AutoXxl = v);
         }
 
-        if (GrowXs.HasValue && bitGridItem.HasNotBeenSet(nameof(GrowXs)))
+        if (GrowXs.HasValue)
         {
-            bitGridItem.GrowXs = GrowXs.Value;
-
-            bitGridItem.ClassBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(GrowXs), GrowXs.Value, static g => g.GrowXs, static (g, v) => g.GrowXs = v);
         }
 
-        if (GrowSm.HasValue && bitGridItem.HasNotBeenSet(nameof(GrowSm)))
+        if (GrowSm.HasValue)
         {
-            bitGridItem.GrowSm = GrowSm.Value;
-
-            bitGridItem.ClassBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(GrowSm), GrowSm.Value, static g => g.GrowSm, static (g, v) => g.GrowSm = v);
         }
 
-        if (GrowMd.HasValue && bitGridItem.HasNotBeenSet(nameof(GrowMd)))
+        if (GrowMd.HasValue)
         {
-            bitGridItem.GrowMd = GrowMd.Value;
-
-            bitGridItem.ClassBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(GrowMd), GrowMd.Value, static g => g.GrowMd, static (g, v) => g.GrowMd = v);
         }
 
-        if (GrowLg.HasValue && bitGridItem.HasNotBeenSet(nameof(GrowLg)))
+        if (GrowLg.HasValue)
         {
-            bitGridItem.GrowLg = GrowLg.Value;
-
-            bitGridItem.ClassBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(GrowLg), GrowLg.Value, static g => g.GrowLg, static (g, v) => g.GrowLg = v);
         }
 
-        if (GrowXl.HasValue && bitGridItem.HasNotBeenSet(nameof(GrowXl)))
+        if (GrowXl.HasValue)
         {
-            bitGridItem.GrowXl = GrowXl.Value;
-
-            bitGridItem.ClassBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(GrowXl), GrowXl.Value, static g => g.GrowXl, static (g, v) => g.GrowXl = v);
         }
 
-        if (GrowXxl.HasValue && bitGridItem.HasNotBeenSet(nameof(GrowXxl)))
+        if (GrowXxl.HasValue)
         {
-            bitGridItem.GrowXxl = GrowXxl.Value;
-
-            bitGridItem.ClassBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(GrowXxl), GrowXxl.Value, static g => g.GrowXxl, static (g, v) => g.GrowXxl = v);
         }
     }
 
     private void UpdateOffsetParameters(BitGridItem bitGridItem)
     {
-        if (AutoOffsetXs.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetXs)))
+        if (AutoOffsetXs.HasValue)
         {
-            bitGridItem.AutoOffsetXs = AutoOffsetXs.Value;
-
-            bitGridItem.ClassBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(AutoOffsetXs), AutoOffsetXs.Value, static g => g.AutoOffsetXs, static (g, v) => g.AutoOffsetXs = v);
         }
 
-        if (AutoOffsetSm.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetSm)))
+        if (AutoOffsetSm.HasValue)
         {
-            bitGridItem.AutoOffsetSm = AutoOffsetSm.Value;
-
-            bitGridItem.ClassBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(AutoOffsetSm), AutoOffsetSm.Value, static g => g.AutoOffsetSm, static (g, v) => g.AutoOffsetSm = v);
         }
 
-        if (AutoOffsetMd.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetMd)))
+        if (AutoOffsetMd.HasValue)
         {
-            bitGridItem.AutoOffsetMd = AutoOffsetMd.Value;
-
-            bitGridItem.ClassBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(AutoOffsetMd), AutoOffsetMd.Value, static g => g.AutoOffsetMd, static (g, v) => g.AutoOffsetMd = v);
         }
 
-        if (AutoOffsetLg.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetLg)))
+        if (AutoOffsetLg.HasValue)
         {
-            bitGridItem.AutoOffsetLg = AutoOffsetLg.Value;
-
-            bitGridItem.ClassBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(AutoOffsetLg), AutoOffsetLg.Value, static g => g.AutoOffsetLg, static (g, v) => g.AutoOffsetLg = v);
         }
 
-        if (AutoOffsetXl.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetXl)))
+        if (AutoOffsetXl.HasValue)
         {
-            bitGridItem.AutoOffsetXl = AutoOffsetXl.Value;
-
-            bitGridItem.ClassBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(AutoOffsetXl), AutoOffsetXl.Value, static g => g.AutoOffsetXl, static (g, v) => g.AutoOffsetXl = v);
         }
 
-        if (AutoOffsetXxl.HasValue && bitGridItem.HasNotBeenSet(nameof(AutoOffsetXxl)))
+        if (AutoOffsetXxl.HasValue)
         {
-            bitGridItem.AutoOffsetXxl = AutoOffsetXxl.Value;
-
-            bitGridItem.ClassBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(AutoOffsetXxl), AutoOffsetXxl.Value, static g => g.AutoOffsetXxl, static (g, v) => g.AutoOffsetXxl = v);
         }
 
-        if (Offset.HasValue && bitGridItem.HasNotBeenSet(nameof(Offset)))
+        if (Offset.HasValue)
         {
-            bitGridItem.Offset = Offset.Value;
-
-            bitGridItem.ClassBuilder.Reset();
-            bitGridItem.StyleBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(Offset), Offset.Value, static g => g.Offset, static (g, v) => g.Offset = v);
         }
 
-        if (OffsetXs.HasValue && bitGridItem.HasNotBeenSet(nameof(OffsetXs)))
+        if (OffsetXs.HasValue)
         {
-            bitGridItem.OffsetXs = OffsetXs.Value;
-
-            bitGridItem.ClassBuilder.Reset();
-            bitGridItem.StyleBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(OffsetXs), OffsetXs.Value, static g => g.OffsetXs, static (g, v) => g.OffsetXs = v);
         }
 
-        if (OffsetSm.HasValue && bitGridItem.HasNotBeenSet(nameof(OffsetSm)))
+        if (OffsetSm.HasValue)
         {
-            bitGridItem.OffsetSm = OffsetSm.Value;
-
-            bitGridItem.ClassBuilder.Reset();
-            bitGridItem.StyleBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(OffsetSm), OffsetSm.Value, static g => g.OffsetSm, static (g, v) => g.OffsetSm = v);
         }
 
-        if (OffsetMd.HasValue && bitGridItem.HasNotBeenSet(nameof(OffsetMd)))
+        if (OffsetMd.HasValue)
         {
-            bitGridItem.OffsetMd = OffsetMd.Value;
-
-            bitGridItem.ClassBuilder.Reset();
-            bitGridItem.StyleBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(OffsetMd), OffsetMd.Value, static g => g.OffsetMd, static (g, v) => g.OffsetMd = v);
         }
 
-        if (OffsetLg.HasValue && bitGridItem.HasNotBeenSet(nameof(OffsetLg)))
+        if (OffsetLg.HasValue)
         {
-            bitGridItem.OffsetLg = OffsetLg.Value;
-
-            bitGridItem.ClassBuilder.Reset();
-            bitGridItem.StyleBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(OffsetLg), OffsetLg.Value, static g => g.OffsetLg, static (g, v) => g.OffsetLg = v);
         }
 
-        if (OffsetXl.HasValue && bitGridItem.HasNotBeenSet(nameof(OffsetXl)))
+        if (OffsetXl.HasValue)
         {
-            bitGridItem.OffsetXl = OffsetXl.Value;
-
-            bitGridItem.ClassBuilder.Reset();
-            bitGridItem.StyleBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(OffsetXl), OffsetXl.Value, static g => g.OffsetXl, static (g, v) => g.OffsetXl = v);
         }
 
-        if (OffsetXxl.HasValue && bitGridItem.HasNotBeenSet(nameof(OffsetXxl)))
+        if (OffsetXxl.HasValue)
         {
-            bitGridItem.OffsetXxl = OffsetXxl.Value;
-
-            bitGridItem.ClassBuilder.Reset();
-            bitGridItem.StyleBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(OffsetXxl), OffsetXxl.Value, static g => g.OffsetXxl, static (g, v) => g.OffsetXxl = v);
         }
     }
 
     private void UpdateOrderParameters(BitGridItem bitGridItem)
     {
-        if (Order.HasValue && bitGridItem.HasNotBeenSet(nameof(Order)))
+        if (Order.HasValue)
         {
-            bitGridItem.Order = Order.Value;
-
-            bitGridItem.ClassBuilder.Reset();
-            bitGridItem.StyleBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(Order), Order.Value, static g => g.Order, static (g, v) => g.Order = v);
         }
 
-        if (OrderXs.HasValue && bitGridItem.HasNotBeenSet(nameof(OrderXs)))
+        if (OrderXs.HasValue)
         {
-            bitGridItem.OrderXs = OrderXs.Value;
-
-            bitGridItem.ClassBuilder.Reset();
-            bitGridItem.StyleBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(OrderXs), OrderXs.Value, static g => g.OrderXs, static (g, v) => g.OrderXs = v);
         }
 
-        if (OrderSm.HasValue && bitGridItem.HasNotBeenSet(nameof(OrderSm)))
+        if (OrderSm.HasValue)
         {
-            bitGridItem.OrderSm = OrderSm.Value;
-
-            bitGridItem.ClassBuilder.Reset();
-            bitGridItem.StyleBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(OrderSm), OrderSm.Value, static g => g.OrderSm, static (g, v) => g.OrderSm = v);
         }
 
-        if (OrderMd.HasValue && bitGridItem.HasNotBeenSet(nameof(OrderMd)))
+        if (OrderMd.HasValue)
         {
-            bitGridItem.OrderMd = OrderMd.Value;
-
-            bitGridItem.ClassBuilder.Reset();
-            bitGridItem.StyleBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(OrderMd), OrderMd.Value, static g => g.OrderMd, static (g, v) => g.OrderMd = v);
         }
 
-        if (OrderLg.HasValue && bitGridItem.HasNotBeenSet(nameof(OrderLg)))
+        if (OrderLg.HasValue)
         {
-            bitGridItem.OrderLg = OrderLg.Value;
-
-            bitGridItem.ClassBuilder.Reset();
-            bitGridItem.StyleBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(OrderLg), OrderLg.Value, static g => g.OrderLg, static (g, v) => g.OrderLg = v);
         }
 
-        if (OrderXl.HasValue && bitGridItem.HasNotBeenSet(nameof(OrderXl)))
+        if (OrderXl.HasValue)
         {
-            bitGridItem.OrderXl = OrderXl.Value;
-
-            bitGridItem.ClassBuilder.Reset();
-            bitGridItem.StyleBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(OrderXl), OrderXl.Value, static g => g.OrderXl, static (g, v) => g.OrderXl = v);
         }
 
-        if (OrderXxl.HasValue && bitGridItem.HasNotBeenSet(nameof(OrderXxl)))
+        if (OrderXxl.HasValue)
         {
-            bitGridItem.OrderXxl = OrderXxl.Value;
-
-            bitGridItem.ClassBuilder.Reset();
-            bitGridItem.StyleBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(OrderXxl), OrderXxl.Value, static g => g.OrderXxl, static (g, v) => g.OrderXxl = v);
         }
     }
 
     private void UpdateSpanParameters(BitGridItem bitGridItem)
     {
-        if (Xs.HasValue && bitGridItem.HasNotBeenSet(nameof(Xs)))
+        if (Xs.HasValue)
         {
-            bitGridItem.Xs = Xs.Value;
-
-            bitGridItem.ClassBuilder.Reset();
-            bitGridItem.StyleBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(Xs), Xs.Value, static g => g.Xs, static (g, v) => g.Xs = v);
         }
 
-        if (Sm.HasValue && bitGridItem.HasNotBeenSet(nameof(Sm)))
+        if (Sm.HasValue)
         {
-            bitGridItem.Sm = Sm.Value;
-
-            bitGridItem.ClassBuilder.Reset();
-            bitGridItem.StyleBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(Sm), Sm.Value, static g => g.Sm, static (g, v) => g.Sm = v);
         }
 
-        if (Md.HasValue && bitGridItem.HasNotBeenSet(nameof(Md)))
+        if (Md.HasValue)
         {
-            bitGridItem.Md = Md.Value;
-
-            bitGridItem.ClassBuilder.Reset();
-            bitGridItem.StyleBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(Md), Md.Value, static g => g.Md, static (g, v) => g.Md = v);
         }
 
-        if (Lg.HasValue && bitGridItem.HasNotBeenSet(nameof(Lg)))
+        if (Lg.HasValue)
         {
-            bitGridItem.Lg = Lg.Value;
-
-            bitGridItem.ClassBuilder.Reset();
-            bitGridItem.StyleBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(Lg), Lg.Value, static g => g.Lg, static (g, v) => g.Lg = v);
         }
 
-        if (Xl.HasValue && bitGridItem.HasNotBeenSet(nameof(Xl)))
+        if (Xl.HasValue)
         {
-            bitGridItem.Xl = Xl.Value;
-
-            bitGridItem.ClassBuilder.Reset();
-            bitGridItem.StyleBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(Xl), Xl.Value, static g => g.Xl, static (g, v) => g.Xl = v);
         }
 
-        if (Xxl.HasValue && bitGridItem.HasNotBeenSet(nameof(Xxl)))
+        if (Xxl.HasValue)
         {
-            bitGridItem.Xxl = Xxl.Value;
-
-            bitGridItem.ClassBuilder.Reset();
-            bitGridItem.StyleBuilder.Reset();
+            bitGridItem.TakeFromCascade(nameof(Xxl), Xxl.Value, static g => g.Xxl, static (g, v) => g.Xxl = v);
         }
     }
 }

@@ -236,183 +236,149 @@ public class BitActionButtonParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitActionButton);
 
-        if (AllowDisabledFocus.HasValue && bitActionButton.HasNotBeenSet(nameof(AllowDisabledFocus)))
+        if (AllowDisabledFocus.HasValue)
         {
-            bitActionButton.AllowDisabledFocus = AllowDisabledFocus.Value;
+            bitActionButton.TakeFromCascade(nameof(AllowDisabledFocus), AllowDisabledFocus.Value, static a => a.AllowDisabledFocus, static (a, v) => a.AllowDisabledFocus = v);
         }
 
-        if (AriaDescription.HasValue() && bitActionButton.HasNotBeenSet(nameof(AriaDescription)))
+        if (AriaDescription.HasValue())
         {
-            bitActionButton.AriaDescription = AriaDescription;
+            bitActionButton.TakeFromCascade(nameof(AriaDescription), AriaDescription, static a => a.AriaDescription, static (a, v) => a.AriaDescription = v);
         }
 
-        if (AriaHidden.HasValue && bitActionButton.HasNotBeenSet(nameof(AriaHidden)))
+        if (AriaHidden.HasValue)
         {
-            bitActionButton.AriaHidden = AriaHidden.Value;
+            bitActionButton.TakeFromCascade(nameof(AriaHidden), AriaHidden.Value, static a => a.AriaHidden, static (a, v) => a.AriaHidden = v);
         }
 
-        if (AutoFocus.HasValue && bitActionButton.HasNotBeenSet(nameof(AutoFocus)))
+        if (AutoFocus.HasValue)
         {
-            bitActionButton.AutoFocus = AutoFocus.Value;
+            bitActionButton.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static a => a.AutoFocus, static (a, v) => a.AutoFocus = v);
         }
 
-        if (AutoLoading.HasValue && bitActionButton.HasNotBeenSet(nameof(AutoLoading)))
+        if (AutoLoading.HasValue)
         {
-            bitActionButton.AutoLoading = AutoLoading.Value;
+            bitActionButton.TakeFromCascade(nameof(AutoLoading), AutoLoading.Value, static a => a.AutoLoading, static (a, v) => a.AutoLoading = v);
         }
 
-        if (ButtonType.HasValue && bitActionButton.HasNotBeenSet(nameof(ButtonType)))
+        if (ButtonType.HasValue)
         {
-            bitActionButton.ButtonType = ButtonType.Value;
+            bitActionButton.TakeFromCascade(nameof(ButtonType), ButtonType.Value, static a => a.ButtonType, static (a, v) => a.ButtonType = v);
         }
 
-        if (Classes is not null && bitActionButton.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitActionButton.Classes = Classes;
-
-            bitActionButton.ClassBuilder.Reset();
+            bitActionButton.TakeFromCascade(nameof(Classes), Classes, static a => a.Classes, static (a, v) => a.Classes = v);
         }
 
-        if (Color.HasValue && bitActionButton.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue)
         {
-            bitActionButton.Color = Color.Value;
-
-            bitActionButton.ClassBuilder.Reset();
+            bitActionButton.TakeFromCascade(nameof(Color), Color.Value, static a => a.Color, static (a, v) => a.Color = v);
         }
 
-        if (FullWidth.HasValue && bitActionButton.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue)
         {
-            bitActionButton.FullWidth = FullWidth.Value;
-
-            bitActionButton.ClassBuilder.Reset();
+            bitActionButton.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static a => a.FullWidth, static (a, v) => a.FullWidth = v);
         }
 
-        if (Download.HasValue() && bitActionButton.HasNotBeenSet(nameof(Download)))
+        if (Download.HasValue())
         {
-            bitActionButton.Download = Download;
+            bitActionButton.TakeFromCascade(nameof(Download), Download, static a => a.Download, static (a, v) => a.Download = v);
         }
 
-        if (FormId.HasValue() && bitActionButton.HasNotBeenSet(nameof(FormId)))
+        if (FormId.HasValue())
         {
-            bitActionButton.FormId = FormId;
+            bitActionButton.TakeFromCascade(nameof(FormId), FormId, static a => a.FormId, static (a, v) => a.FormId = v);
         }
 
-        bool hrefWasSet = false;
-        bool relWasSet = false;
-        bool targetWasSet = false;
-
-        if (Href.HasValue() && bitActionButton.HasNotBeenSet(nameof(Href)))
+        if (Href.HasValue())
         {
-            bitActionButton.Href = Href;
-
-            hrefWasSet = true;
+            bitActionButton.TakeFromCascade(nameof(Href), Href, static a => a.Href, static (a, v) => a.Href = v);
         }
 
-        if (Icon is not null && bitActionButton.HasNotBeenSet(nameof(Icon)))
+        if (Icon is not null)
         {
-            bitActionButton.Icon = Icon;
+            bitActionButton.TakeFromCascade(nameof(Icon), Icon, static a => a.Icon, static (a, v) => a.Icon = v);
         }
 
-        if (IconName.HasValue() && bitActionButton.HasNotBeenSet(nameof(IconName)))
+        if (IconName.HasValue())
         {
-            bitActionButton.IconName = IconName;
+            bitActionButton.TakeFromCascade(nameof(IconName), IconName, static a => a.IconName, static (a, v) => a.IconName = v);
         }
 
-        if (IconOnly.HasValue && bitActionButton.HasNotBeenSet(nameof(IconOnly)))
+        if (IconOnly.HasValue)
         {
-            bitActionButton.IconOnly = IconOnly.Value;
-
-            bitActionButton.ClassBuilder.Reset();
+            bitActionButton.TakeFromCascade(nameof(IconOnly), IconOnly.Value, static a => a.IconOnly, static (a, v) => a.IconOnly = v);
         }
 
-        if (IconPlacement.HasValue && bitActionButton.HasNotBeenSet(nameof(IconPlacement)))
+        if (IconPlacement.HasValue)
         {
-            bitActionButton.IconPlacement = IconPlacement.Value;
-
-            bitActionButton.ClassBuilder.Reset();
+            bitActionButton.TakeFromCascade(nameof(IconPlacement), IconPlacement.Value, static a => a.IconPlacement, static (a, v) => a.IconPlacement = v);
         }
 
-        if (IconUrl.HasValue() && bitActionButton.HasNotBeenSet(nameof(IconUrl)))
+        if (IconUrl.HasValue())
         {
-            bitActionButton.IconUrl = IconUrl;
+            bitActionButton.TakeFromCascade(nameof(IconUrl), IconUrl, static a => a.IconUrl, static (a, v) => a.IconUrl = v);
         }
 
-        if (IsLoading.HasValue && bitActionButton.HasNotBeenSet(nameof(IsLoading)))
+        if (IsLoading.HasValue)
         {
-            bitActionButton.IsLoading = IsLoading.Value;
-
-            bitActionButton.ClassBuilder.Reset();
+            bitActionButton.TakeFromCascade(nameof(IsLoading), IsLoading.Value, static a => a.IsLoading, static (a, v) => a.IsLoading = v);
         }
 
-        if (LoadingDelay.HasValue && bitActionButton.HasNotBeenSet(nameof(LoadingDelay)))
+        if (LoadingDelay.HasValue)
         {
-            bitActionButton.LoadingDelay = LoadingDelay.Value;
+            bitActionButton.TakeFromCascade(nameof(LoadingDelay), LoadingDelay.Value, static a => a.LoadingDelay, static (a, v) => a.LoadingDelay = v);
         }
 
-        if (LoadingLabel.HasValue() && bitActionButton.HasNotBeenSet(nameof(LoadingLabel)))
+        if (LoadingLabel.HasValue())
         {
-            bitActionButton.LoadingLabel = LoadingLabel;
+            bitActionButton.TakeFromCascade(nameof(LoadingLabel), LoadingLabel, static a => a.LoadingLabel, static (a, v) => a.LoadingLabel = v);
         }
 
-        if (NoWrap.HasValue && bitActionButton.HasNotBeenSet(nameof(NoWrap)))
+        if (NoWrap.HasValue)
         {
-            bitActionButton.NoWrap = NoWrap.Value;
-
-            bitActionButton.ClassBuilder.Reset();
+            bitActionButton.TakeFromCascade(nameof(NoWrap), NoWrap.Value, static a => a.NoWrap, static (a, v) => a.NoWrap = v);
         }
 
-        if (Reclickable.HasValue && bitActionButton.HasNotBeenSet(nameof(Reclickable)))
+        if (Reclickable.HasValue)
         {
-            bitActionButton.Reclickable = Reclickable.Value;
+            bitActionButton.TakeFromCascade(nameof(Reclickable), Reclickable.Value, static a => a.Reclickable, static (a, v) => a.Reclickable = v);
         }
 
-        if (Rel.HasValue && bitActionButton.HasNotBeenSet(nameof(Rel)))
+        if (Rel.HasValue)
         {
-            bitActionButton.Rel = Rel.Value;
-
-            relWasSet = true;
+            bitActionButton.TakeFromCascade(nameof(Rel), Rel.Value, static a => a.Rel, static (a, v) => a.Rel = v);
         }
 
-        if (Size.HasValue && bitActionButton.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue)
         {
-            bitActionButton.Size = Size.Value;
-
-            bitActionButton.ClassBuilder.Reset();
+            bitActionButton.TakeFromCascade(nameof(Size), Size.Value, static a => a.Size, static (a, v) => a.Size = v);
         }
 
-        if (StopPropagation.HasValue && bitActionButton.HasNotBeenSet(nameof(StopPropagation)))
+        if (StopPropagation.HasValue)
         {
-            bitActionButton.StopPropagation = StopPropagation.Value;
+            bitActionButton.TakeFromCascade(nameof(StopPropagation), StopPropagation.Value, static a => a.StopPropagation, static (a, v) => a.StopPropagation = v);
         }
 
-        if (Styles is not null && bitActionButton.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitActionButton.Styles = Styles;
+            bitActionButton.TakeFromCascade(nameof(Styles), Styles, static a => a.Styles, static (a, v) => a.Styles = v);
         }
 
-        if (Target.HasValue() && bitActionButton.HasNotBeenSet(nameof(Target)))
+        if (Target.HasValue())
         {
-            bitActionButton.Target = Target;
-
-            targetWasSet = true;
+            bitActionButton.TakeFromCascade(nameof(Target), Target, static a => a.Target, static (a, v) => a.Target = v);
         }
 
-        // Call OnSetHrefRelAndTarget if any of Href, Rel or Target was set, to update the rel attribute value
-        if (hrefWasSet || relWasSet || targetWasSet)
+        if (Title.HasValue())
         {
-            bitActionButton.OnSetHrefRelAndTarget();
+            bitActionButton.TakeFromCascade(nameof(Title), Title, static a => a.Title, static (a, v) => a.Title = v);
         }
 
-        if (Title.HasValue() && bitActionButton.HasNotBeenSet(nameof(Title)))
+        if (Underlined.HasValue)
         {
-            bitActionButton.Title = Title;
-        }
-
-        if (Underlined.HasValue && bitActionButton.HasNotBeenSet(nameof(Underlined)))
-        {
-            bitActionButton.Underlined = Underlined.Value;
-
-            bitActionButton.ClassBuilder.Reset();
+            bitActionButton.TakeFromCascade(nameof(Underlined), Underlined.Value, static a => a.Underlined, static (a, v) => a.Underlined = v);
         }
     }
 }

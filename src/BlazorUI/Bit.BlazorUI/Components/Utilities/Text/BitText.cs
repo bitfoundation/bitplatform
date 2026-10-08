@@ -478,27 +478,7 @@ public partial class BitText : BitComponentBase
                     .Register(() => NoWrap ? "bit-txt-nowrap" : string.Empty)
                     .Register(() => Gutter ? "bit-txt-gutter" : string.Empty);
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-txt-pri",
-            BitColor.Secondary => "bit-txt-sec",
-            BitColor.Tertiary => "bit-txt-ter",
-            BitColor.Info => "bit-txt-inf",
-            BitColor.Success => "bit-txt-suc",
-            BitColor.Warning => "bit-txt-wrn",
-            BitColor.SevereWarning => "bit-txt-swr",
-            BitColor.Error => "bit-txt-err",
-            BitColor.PrimaryBackground => "bit-txt-pbg",
-            BitColor.SecondaryBackground => "bit-txt-sbg",
-            BitColor.TertiaryBackground => "bit-txt-tbg",
-            BitColor.PrimaryForeground => "bit-txt-pfg",
-            BitColor.SecondaryForeground => "bit-txt-sfg",
-            BitColor.TertiaryForeground => "bit-txt-tfg",
-            BitColor.PrimaryBorder => "bit-txt-pbr",
-            BitColor.SecondaryBorder => "bit-txt-sbr",
-            BitColor.TertiaryBorder => "bit-txt-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-txt"));
 
         ClassBuilder.Register(() => Foreground switch
         {

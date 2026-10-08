@@ -178,7 +178,7 @@ public partial class BitFileUploadDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the file upload, applied to the browse button, the drag-and-drop indicator, the progress bars and the hovered action buttons.",
+            Description = "The general color of the file upload, applied to the browse button, the drag-and-drop indicator, the progress bars and the hovered action buttons. An explicit value wins over the --bit-FileUpload-* color variables; left unset, the file upload is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum"
         },
@@ -658,7 +658,7 @@ public partial class BitFileUploadDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the file upload, applied to the browse button and the file list items.",
+            Description = "The size of the file upload, applied to the browse button and the file list items. An explicit value wins over the --bit-FileUpload-* size variables; left unset, the file upload is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum"
         },
@@ -1399,38 +1399,38 @@ public partial class BitFileUploadDemo
         new()
         {
             Name = "--bit-FileUpload-label-color",
-            DefaultValue = "Per Variant, from the Color role",
-            Description = "Browse button text at rest: the role's on-color in the Fill variant, the role's main color in Outline and Text.",
+            DefaultValue = "Per Variant, from the primary role",
+            Description = "Browse button text at rest: the role's on-color in the Fill variant, the role's main color in Outline and Text. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileUpload-label-background",
-            DefaultValue = "Per Variant, from the Color role",
-            Description = "Browse button fill at rest: the role's main color in the Fill variant, transparent in Outline and Text.",
+            DefaultValue = "Per Variant, from the primary role",
+            Description = "Browse button fill at rest: the role's main color in the Fill variant, transparent in Outline and Text. The Color parameter wins over it in Fill; the transparent fill of Outline and Text is its alone.",
         },
         new()
         {
             Name = "--bit-FileUpload-label-border-color",
-            DefaultValue = "Per Variant, from the Color role",
-            Description = "Browse button rule at rest. In the Fill variant it follows the background unless it is set on its own.",
+            DefaultValue = "Per Variant, from the primary role",
+            Description = "Browse button rule at rest. In the Fill variant it follows the background unless it is set on its own. The Color parameter wins over it, except over the transparent rule of Text.",
         },
         new()
         {
             Name = "--bit-FileUpload-label-hover-color",
-            DefaultValue = "The Color role's on-color",
-            Description = "Browse button text while hovered or pressed (pointer devices only).",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "Browse button text while hovered or pressed (pointer devices only). The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileUpload-label-hover-background",
-            DefaultValue = "The Color role's hover color",
-            Description = "Browse button fill on hover, and its rule too in the Fill variant.",
+            DefaultValue = "--bit-clr-pri-hover",
+            Description = "Browse button fill on hover, and its rule too in the Fill variant. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileUpload-label-active-background",
-            DefaultValue = "The Color role's active color",
-            Description = "Browse button fill while pressed, and its rule too in the Fill variant.",
+            DefaultValue = "--bit-clr-pri-active",
+            Description = "Browse button fill while pressed, and its rule too in the Fill variant. The Color parameter wins over it.",
         },
         new()
         {
@@ -1441,20 +1441,20 @@ public partial class BitFileUploadDemo
         new()
         {
             Name = "--bit-FileUpload-label-min-height",
-            DefaultValue = "The Size class's control height (--bit-siz-ctrl-sm/md/lg)",
-            Description = "Height floor of the browse button, which is what lines it up with the other controls of its size.",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Height floor of the browse button, which is what lines it up with the other controls of its size. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileUpload-label-padding",
-            DefaultValue = "The Size class's control padding",
-            Description = "Padding of the browse button.",
+            DefaultValue = "--bit-siz-ctrl-pad-y-md --bit-siz-ctrl-pad-x-md",
+            Description = "Padding of the browse button. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileUpload-label-font-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Text size of the browse button.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the browse button. The Size parameter wins over it.",
         },
         new()
         {
@@ -1471,8 +1471,8 @@ public partial class BitFileUploadDemo
         new()
         {
             Name = "--bit-FileUpload-label-icon-size",
-            DefaultValue = "The Size class's icon size (--bit-siz-icon-sm/md/lg)",
-            Description = "Size of the browse button's icon (LabelIcon / LabelIconName).",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Size of the browse button's icon (LabelIcon / LabelIconName). The Size parameter wins over it.",
         },
         new()
         {
@@ -1519,20 +1519,20 @@ public partial class BitFileUploadDemo
         new()
         {
             Name = "--bit-FileUpload-drop-area-hover-border-color",
-            DefaultValue = "The Color role's main color",
-            Description = "Rule of the ShowDropArea panel on hover and while pressed.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Rule of the ShowDropArea panel on hover and while pressed. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileUpload-drop-area-hover-background",
-            DefaultValue = "The Color role's main color at 8% opacity",
-            Description = "Surface of the ShowDropArea panel on hover and while files are dragged over it.",
+            DefaultValue = "--bit-clr-pri at 8% opacity",
+            Description = "Surface of the ShowDropArea panel on hover and while files are dragged over it. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileUpload-drop-area-icon-color",
-            DefaultValue = "The Color role's main color",
-            Description = "Color of the ShowDropArea panel's large icon.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Color of the ShowDropArea panel's large icon. The Color parameter wins over it.",
         },
         new()
         {
@@ -1543,8 +1543,8 @@ public partial class BitFileUploadDemo
         new()
         {
             Name = "--bit-FileUpload-focus-color",
-            DefaultValue = "The Color role's focus color",
-            Description = "Color of the keyboard focus ring, on the browse button and on every file action button.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the keyboard focus ring, on the browse button and on every file action button. The Color parameter wins over it.",
         },
         new()
         {
@@ -1555,8 +1555,8 @@ public partial class BitFileUploadDemo
         new()
         {
             Name = "--bit-FileUpload-description-font-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Text size of the hint under the browse button.",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Text size of the hint under the browse button. The Size parameter wins over it.",
         },
         new()
         {
@@ -1597,8 +1597,8 @@ public partial class BitFileUploadDemo
         new()
         {
             Name = "--bit-FileUpload-item-font-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Text size of a file item's name.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of a file item's name. The Size parameter wins over it.",
         },
         new()
         {
@@ -1609,8 +1609,8 @@ public partial class BitFileUploadDemo
         new()
         {
             Name = "--bit-FileUpload-item-meta-font-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Text size of the size and percentage line under a file item's name.",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Text size of the size and percentage line under a file item's name. The Size parameter wins over it.",
         },
         new()
         {
@@ -1633,8 +1633,8 @@ public partial class BitFileUploadDemo
         new()
         {
             Name = "--bit-FileUpload-paused-color",
-            DefaultValue = "The Color role's main color",
-            Description = "Status line of a paused or canceled file.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Status line of a paused or canceled file. The Color parameter wins over it.",
         },
         new()
         {
@@ -1645,8 +1645,8 @@ public partial class BitFileUploadDemo
         new()
         {
             Name = "--bit-FileUpload-preview-size",
-            DefaultValue = "Per Size (2rem / 2.5rem / 3.25rem)",
-            Description = "Side of the image preview thumbnail.",
+            DefaultValue = "2.5rem",
+            Description = "Side of the image preview thumbnail. The Size parameter wins over it.",
         },
         new()
         {
@@ -1669,14 +1669,14 @@ public partial class BitFileUploadDemo
         new()
         {
             Name = "--bit-FileUpload-preview-icon-size",
-            DefaultValue = "Per Size (--bit-siz-icon-sm / -md / -lg)",
-            Description = "Size of that glyph.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Size of that glyph. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileUpload-progress-color",
-            DefaultValue = "The Color role's main color",
-            Description = "Filled part of a file's progress bar.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Filled part of a file's progress bar. The Color parameter wins over it.",
         },
         new()
         {
@@ -1705,50 +1705,50 @@ public partial class BitFileUploadDemo
         new()
         {
             Name = "--bit-FileUpload-action-hover-color",
-            DefaultValue = "The Color role's main color",
-            Description = "The same glyph while hovered (pointer devices only).",
+            DefaultValue = "--bit-clr-pri",
+            Description = "The same glyph while hovered (pointer devices only). The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileUpload-action-hover-background",
-            DefaultValue = "The Color role's main color at 10% opacity",
-            Description = "Tint behind a hovered action button.",
+            DefaultValue = "--bit-clr-pri at 10% opacity",
+            Description = "Tint behind a hovered action button. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileUpload-action-size",
-            DefaultValue = "The Size class's control height (--bit-siz-ctrl-sm/md/lg)",
-            Description = "Width of an action button, which is also the width of the removal spinner's slot.",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Width of an action button, which is also the width of the removal spinner's slot. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileUpload-action-icon-size",
-            DefaultValue = "The Size class's icon size (--bit-siz-icon-sm/md/lg)",
-            Description = "Size of an action button's glyph, and of the removal spinner.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Size of an action button's glyph, and of the removal spinner. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileUpload-spinner-color",
-            DefaultValue = "The Color role's main color",
-            Description = "Arc of the spinner shown while a file is being removed from the server.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Arc of the spinner shown while a file is being removed from the server. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileUpload-drop-color",
-            DefaultValue = "The Color role's on-color",
-            Description = "Browse button text while files are dragged over the component.",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "Browse button text while files are dragged over the component. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileUpload-drop-background",
-            DefaultValue = "The Color role's hover color",
-            Description = "Browse button fill in the same state.",
+            DefaultValue = "--bit-clr-pri-hover",
+            Description = "Browse button fill in the same state. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileUpload-drop-border-color",
-            DefaultValue = "The Color role's on-color",
-            Description = "Browse button rule in the same state.",
+            DefaultValue = "--bit-clr-pri-text (--bit-clr-pri on the ShowDropArea panel)",
+            Description = "Browse button rule in the same state. The Color parameter wins over it.",
         },
         new()
         {
@@ -1777,14 +1777,14 @@ public partial class BitFileUploadDemo
         new()
         {
             Name = "--bit-FileUpload-batch-action-color",
-            DefaultValue = "The Color role's main color",
-            Description = "Text of the Upload all, Cancel all and Clear buttons.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Text of the Upload all, Cancel all and Clear buttons. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-FileUpload-batch-action-hover-background",
-            DefaultValue = "The Color role's main color at 10% opacity",
-            Description = "Tint behind a hovered batch action button.",
+            DefaultValue = "--bit-clr-pri at 10% opacity",
+            Description = "Tint behind a hovered batch action button. The Color parameter wins over it.",
         },
         new()
         {

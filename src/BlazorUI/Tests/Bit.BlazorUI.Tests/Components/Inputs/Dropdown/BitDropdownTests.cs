@@ -1362,17 +1362,13 @@ public class BitDropdownTests : BunitTestContext
     [DataRow(BitColor.PrimaryBorder, "bit-drp-pbr")]
     [DataRow(BitColor.SecondaryBorder, "bit-drp-sbr")]
     [DataRow(BitColor.TertiaryBorder, "bit-drp-tbr")]
-    [DataRow(null, "bit-drp-pri")]
-    public void BitDropdownColorTest(BitColor? color, string expectedClass)
+    public void BitDropdownColorTest(BitColor color, string expectedClass)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
-            if (color.HasValue)
-            {
-                parameters.Add(p => p.Color, color.Value);
-            }
+            parameters.Add(p => p.Color, color);
         });
 
         var bitDrp = component.Find(".bit-drp");
@@ -1398,22 +1394,64 @@ public class BitDropdownTests : BunitTestContext
     [DataRow(BitColor.PrimaryBorder, "bit-drp-pbr")]
     [DataRow(BitColor.SecondaryBorder, "bit-drp-sbr")]
     [DataRow(BitColor.TertiaryBorder, "bit-drp-tbr")]
-    [DataRow(null, "bit-drp-pri")]
-    public void BitDropdownColorCalloutTest(BitColor? color, string expectedClass)
+    public void BitDropdownColorCalloutTest(BitColor color, string expectedClass)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
-            if (color.HasValue)
-            {
-                parameters.Add(p => p.Color, color.Value);
-            }
+            parameters.Add(p => p.Color, color);
         });
 
         var callout = component.Find(".bit-drp-cal");
 
         Assert.IsTrue(callout.ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitDropdownShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>();
+
+        // An unset Color or Size publishes nothing - on the root or on the callout, which carries the classes of its
+        // dropdown - so the public --bit-Dropdown-* variables restyle the default while an explicit value, which
+        // does publish its class, wins over them.
+        var published = new[]
+        {
+            "bit-drp-pri", "bit-drp-sec", "bit-drp-ter", "bit-drp-inf", "bit-drp-suc", "bit-drp-wrn", "bit-drp-swr", "bit-drp-err",
+            "bit-drp-pbg", "bit-drp-sbg", "bit-drp-tbg", "bit-drp-pfg", "bit-drp-sfg", "bit-drp-tfg", "bit-drp-pbr", "bit-drp-sbr", "bit-drp-tbr",
+            "bit-drp-sm", "bit-drp-md", "bit-drp-lg",
+        };
+
+        foreach (var element in new[] { component.Find(".bit-drp"), component.Find(".bit-drp-cal") })
+        {
+            foreach (var cssClass in published)
+            {
+                Assert.IsFalse(element.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+            }
+        }
+
+        // An empty class is left out of the callout's class list rather than joined into it.
+        Assert.IsFalse(component.Find(".bit-drp-cal").GetAttribute("class")!.Contains("  "));
+    }
+
+    [TestMethod]
+    [DataRow(BitSize.Small, "bit-drp-sm")]
+    [DataRow(BitSize.Medium, "bit-drp-md")]
+    [DataRow(BitSize.Large, "bit-drp-lg")]
+    public void BitDropdownShouldPublishAnExplicitSizeOnTheRootAndTheCallout(BitSize size, string expectedClass)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Size, size);
+        });
+
+        Assert.IsTrue(component.Find(".bit-drp").ClassList.Contains(expectedClass));
+        Assert.IsTrue(component.Find(".bit-drp-cal").ClassList.Contains(expectedClass));
     }
 
     [TestMethod]

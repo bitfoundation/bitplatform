@@ -340,315 +340,289 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
 
         UpdateInputBaseParameters(bitSearchBox);
 
-        if (AnnouncementProvider is not null && bitSearchBox.HasNotBeenSet(nameof(AnnouncementProvider)))
+        if (AnnouncementProvider is not null)
         {
-            bitSearchBox.AnnouncementProvider = AnnouncementProvider;
+            bitSearchBox.TakeFromCascade(nameof(AnnouncementProvider), AnnouncementProvider, static s => s.AnnouncementProvider, static (s, v) => s.AnnouncementProvider = v);
         }
 
-        if (AriaDescription.HasValue() && bitSearchBox.HasNotBeenSet(nameof(AriaDescription)))
+        if (AriaDescription.HasValue())
         {
-            bitSearchBox.AriaDescription = AriaDescription;
+            bitSearchBox.TakeFromCascade(nameof(AriaDescription), AriaDescription, static s => s.AriaDescription, static (s, v) => s.AriaDescription = v);
         }
 
-        if (AutoCapitalize.HasValue() && bitSearchBox.HasNotBeenSet(nameof(AutoCapitalize)))
+        if (AutoCapitalize.HasValue())
         {
-            bitSearchBox.AutoCapitalize = AutoCapitalize;
+            bitSearchBox.TakeFromCascade(nameof(AutoCapitalize), AutoCapitalize, static s => s.AutoCapitalize, static (s, v) => s.AutoCapitalize = v);
         }
 
-        if (AutoComplete.HasValue() && bitSearchBox.HasNotBeenSet(nameof(AutoComplete)))
+        if (AutoComplete.HasValue())
         {
-            bitSearchBox.AutoComplete = AutoComplete;
+            bitSearchBox.TakeFromCascade(nameof(AutoComplete), AutoComplete, static s => s.AutoComplete, static (s, v) => s.AutoComplete = v);
         }
 
-        if (AutoCorrect.HasValue && bitSearchBox.HasNotBeenSet(nameof(AutoCorrect)))
+        if (AutoCorrect.HasValue)
         {
-            bitSearchBox.AutoCorrect = AutoCorrect.Value;
+            bitSearchBox.TakeFromCascade(nameof(AutoCorrect), AutoCorrect.Value, static s => s.AutoCorrect, static (s, v) => s.AutoCorrect = v);
         }
 
-        if (AutoFocus.HasValue && bitSearchBox.HasNotBeenSet(nameof(AutoFocus)))
+        if (AutoFocus.HasValue)
         {
-            bitSearchBox.AutoFocus = AutoFocus.Value;
+            bitSearchBox.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static s => s.AutoFocus, static (s, v) => s.AutoFocus = v);
         }
 
-        if (AutoFillSuggestItem.HasValue && bitSearchBox.HasNotBeenSet(nameof(AutoFillSuggestItem)))
+        if (AutoFillSuggestItem.HasValue)
         {
-            bitSearchBox.AutoFillSuggestItem = AutoFillSuggestItem.Value;
+            bitSearchBox.TakeFromCascade(nameof(AutoFillSuggestItem), AutoFillSuggestItem.Value, static s => s.AutoFillSuggestItem, static (s, v) => s.AutoFillSuggestItem = v);
         }
 
-        if (AutoSelectSuggestItem.HasValue && bitSearchBox.HasNotBeenSet(nameof(AutoSelectSuggestItem)))
+        if (AutoSelectSuggestItem.HasValue)
         {
-            bitSearchBox.AutoSelectSuggestItem = AutoSelectSuggestItem.Value;
+            bitSearchBox.TakeFromCascade(nameof(AutoSelectSuggestItem), AutoSelectSuggestItem.Value, static s => s.AutoSelectSuggestItem, static (s, v) => s.AutoSelectSuggestItem = v);
         }
 
-        if (Background.HasValue && bitSearchBox.HasNotBeenSet(nameof(Background)))
+        if (Background.HasValue)
         {
-            bitSearchBox.Background = Background.Value;
-
-            bitSearchBox.ClassBuilder.Reset();
+            bitSearchBox.TakeFromCascade(nameof(Background), Background.Value, static s => s.Background, static (s, v) => s.Background = v);
         }
 
-        if (Classes is not null && bitSearchBox.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitSearchBox.Classes = Classes;
-
-            bitSearchBox.ClassBuilder.Reset();
+            bitSearchBox.TakeFromCascade(nameof(Classes), Classes, static s => s.Classes, static (s, v) => s.Classes = v);
         }
 
-        if (ClearButtonAriaLabel.HasValue() && bitSearchBox.HasNotBeenSet(nameof(ClearButtonAriaLabel)))
+        if (ClearButtonAriaLabel.HasValue())
         {
-            bitSearchBox.ClearButtonAriaLabel = ClearButtonAriaLabel!;
+            bitSearchBox.TakeFromCascade(nameof(ClearButtonAriaLabel), ClearButtonAriaLabel!, static s => s.ClearButtonAriaLabel, static (s, v) => s.ClearButtonAriaLabel = v);
         }
 
-        if (ClearButtonIcon is not null && bitSearchBox.HasNotBeenSet(nameof(ClearButtonIcon)))
+        if (ClearButtonIcon is not null)
         {
-            bitSearchBox.ClearButtonIcon = ClearButtonIcon;
+            bitSearchBox.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static s => s.ClearButtonIcon, static (s, v) => s.ClearButtonIcon = v);
         }
 
-        if (ClearButtonIconName.HasValue() && bitSearchBox.HasNotBeenSet(nameof(ClearButtonIconName)))
+        if (ClearButtonIconName.HasValue())
         {
-            bitSearchBox.ClearButtonIconName = ClearButtonIconName;
+            bitSearchBox.TakeFromCascade(nameof(ClearButtonIconName), ClearButtonIconName, static s => s.ClearButtonIconName, static (s, v) => s.ClearButtonIconName = v);
         }
 
-        if (Color.HasValue && bitSearchBox.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue)
         {
-            bitSearchBox.Color = Color.Value;
-
-            bitSearchBox.ClassBuilder.Reset();
+            bitSearchBox.TakeFromCascade(nameof(Color), Color.Value, static s => s.Color, static (s, v) => s.Color = v);
         }
 
-        if (DebounceTime.HasValue && bitSearchBox.HasNotBeenSet(nameof(DebounceTime)))
+        if (DebounceTime.HasValue)
         {
-            bitSearchBox.DebounceTime = DebounceTime.Value;
+            bitSearchBox.TakeFromCascade(nameof(DebounceTime), DebounceTime.Value, static s => s.DebounceTime, static (s, v) => s.DebounceTime = v);
         }
 
-        if (DisableAnimation.HasValue && bitSearchBox.HasNotBeenSet(nameof(DisableAnimation)))
+        if (DisableAnimation.HasValue)
         {
-            bitSearchBox.DisableAnimation = DisableAnimation.Value;
-
-            bitSearchBox.ClassBuilder.Reset();
+            bitSearchBox.TakeFromCascade(nameof(DisableAnimation), DisableAnimation.Value, static s => s.DisableAnimation, static (s, v) => s.DisableAnimation = v);
         }
 
-        if (EnterKeyHint.HasValue && bitSearchBox.HasNotBeenSet(nameof(EnterKeyHint)))
+        if (EnterKeyHint.HasValue)
         {
-            bitSearchBox.EnterKeyHint = EnterKeyHint.Value;
+            bitSearchBox.TakeFromCascade(nameof(EnterKeyHint), EnterKeyHint.Value, static s => s.EnterKeyHint, static (s, v) => s.EnterKeyHint = v);
         }
 
-        if (FixedCalloutWidth.HasValue && bitSearchBox.HasNotBeenSet(nameof(FixedCalloutWidth)))
+        if (FixedCalloutWidth.HasValue)
         {
-            bitSearchBox.FixedCalloutWidth = FixedCalloutWidth.Value;
+            bitSearchBox.TakeFromCascade(nameof(FixedCalloutWidth), FixedCalloutWidth.Value, static s => s.FixedCalloutWidth, static (s, v) => s.FixedCalloutWidth = v);
         }
 
-        if (FixedIcon.HasValue && bitSearchBox.HasNotBeenSet(nameof(FixedIcon)))
+        if (FixedIcon.HasValue)
         {
-            bitSearchBox.FixedIcon = FixedIcon.Value;
-
-            bitSearchBox.ClassBuilder.Reset();
+            bitSearchBox.TakeFromCascade(nameof(FixedIcon), FixedIcon.Value, static s => s.FixedIcon, static (s, v) => s.FixedIcon = v);
         }
 
-        if (FocusShortcut is not null && bitSearchBox.HasNotBeenSet(nameof(FocusShortcut)))
+        if (FocusShortcut is not null)
         {
-            bitSearchBox.FocusShortcut = FocusShortcut;
+            bitSearchBox.TakeFromCascade(nameof(FocusShortcut), FocusShortcut, static s => s.FocusShortcut, static (s, v) => s.FocusShortcut = v);
         }
 
-        if (FullWidth.HasValue && bitSearchBox.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue)
         {
-            bitSearchBox.FullWidth = FullWidth.Value;
-
-            bitSearchBox.ClassBuilder.Reset();
+            bitSearchBox.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static s => s.FullWidth, static (s, v) => s.FullWidth = v);
         }
 
-        if (HideClearButton.HasValue && bitSearchBox.HasNotBeenSet(nameof(HideClearButton)))
+        if (HideClearButton.HasValue)
         {
-            bitSearchBox.HideClearButton = HideClearButton.Value;
+            bitSearchBox.TakeFromCascade(nameof(HideClearButton), HideClearButton.Value, static s => s.HideClearButton, static (s, v) => s.HideClearButton = v);
         }
 
-        if (HideIcon.HasValue && bitSearchBox.HasNotBeenSet(nameof(HideIcon)))
+        if (HideIcon.HasValue)
         {
-            bitSearchBox.HideIcon = HideIcon.Value;
-
-            bitSearchBox.ClassBuilder.Reset();
+            bitSearchBox.TakeFromCascade(nameof(HideIcon), HideIcon.Value, static s => s.HideIcon, static (s, v) => s.HideIcon = v);
         }
 
-        if (HighlightSuggestItems.HasValue && bitSearchBox.HasNotBeenSet(nameof(HighlightSuggestItems)))
+        if (HighlightSuggestItems.HasValue)
         {
-            bitSearchBox.HighlightSuggestItems = HighlightSuggestItems.Value;
+            bitSearchBox.TakeFromCascade(nameof(HighlightSuggestItems), HighlightSuggestItems.Value, static s => s.HighlightSuggestItems, static (s, v) => s.HighlightSuggestItems = v);
         }
 
-        if (Icon is not null && bitSearchBox.HasNotBeenSet(nameof(Icon)))
+        if (Icon is not null)
         {
-            bitSearchBox.Icon = Icon;
+            bitSearchBox.TakeFromCascade(nameof(Icon), Icon, static s => s.Icon, static (s, v) => s.Icon = v);
         }
 
-        if (IconName.HasValue() && bitSearchBox.HasNotBeenSet(nameof(IconName)))
+        if (IconName.HasValue())
         {
-            bitSearchBox.IconName = IconName;
+            bitSearchBox.TakeFromCascade(nameof(IconName), IconName, static s => s.IconName, static (s, v) => s.IconName = v);
         }
 
-        if (Immediate.HasValue && bitSearchBox.HasNotBeenSet(nameof(Immediate)))
+        if (Immediate.HasValue)
         {
-            bitSearchBox.Immediate = Immediate.Value;
+            bitSearchBox.TakeFromCascade(nameof(Immediate), Immediate.Value, static s => s.Immediate, static (s, v) => s.Immediate = v);
         }
 
-        if (InputMode.HasValue && bitSearchBox.HasNotBeenSet(nameof(InputMode)))
+        if (InputMode.HasValue)
         {
-            bitSearchBox.InputMode = InputMode.Value;
+            bitSearchBox.TakeFromCascade(nameof(InputMode), InputMode.Value, static s => s.InputMode, static (s, v) => s.InputMode = v);
         }
 
-        if (LoadingAriaLabel.HasValue() && bitSearchBox.HasNotBeenSet(nameof(LoadingAriaLabel)))
+        if (LoadingAriaLabel.HasValue())
         {
-            bitSearchBox.LoadingAriaLabel = LoadingAriaLabel!;
+            bitSearchBox.TakeFromCascade(nameof(LoadingAriaLabel), LoadingAriaLabel!, static s => s.LoadingAriaLabel, static (s, v) => s.LoadingAriaLabel = v);
         }
 
-        if (LoadingText.HasValue() && bitSearchBox.HasNotBeenSet(nameof(LoadingText)))
+        if (LoadingText.HasValue())
         {
-            bitSearchBox.LoadingText = LoadingText;
+            bitSearchBox.TakeFromCascade(nameof(LoadingText), LoadingText, static s => s.LoadingText, static (s, v) => s.LoadingText = v);
         }
 
-        if (MaxLength.HasValue && bitSearchBox.HasNotBeenSet(nameof(MaxLength)))
+        if (MaxLength.HasValue)
         {
-            bitSearchBox.MaxLength = MaxLength.Value;
+            bitSearchBox.TakeFromCascade(nameof(MaxLength), MaxLength.Value, static s => s.MaxLength, static (s, v) => s.MaxLength = v);
         }
 
-        if (MaxSuggestCount.HasValue && bitSearchBox.HasNotBeenSet(nameof(MaxSuggestCount)))
+        if (MaxSuggestCount.HasValue)
         {
-            bitSearchBox.MaxSuggestCount = MaxSuggestCount.Value;
+            bitSearchBox.TakeFromCascade(nameof(MaxSuggestCount), MaxSuggestCount.Value, static s => s.MaxSuggestCount, static (s, v) => s.MaxSuggestCount = v);
         }
 
-        if (MinSuggestTriggerChars.HasValue && bitSearchBox.HasNotBeenSet(nameof(MinSuggestTriggerChars)))
+        if (MinSuggestTriggerChars.HasValue)
         {
-            bitSearchBox.MinSuggestTriggerChars = MinSuggestTriggerChars.Value;
+            bitSearchBox.TakeFromCascade(nameof(MinSuggestTriggerChars), MinSuggestTriggerChars.Value, static s => s.MinSuggestTriggerChars, static (s, v) => s.MinSuggestTriggerChars = v);
         }
 
-        if (MinSuggestTriggerCharsText.HasValue() && bitSearchBox.HasNotBeenSet(nameof(MinSuggestTriggerCharsText)))
+        if (MinSuggestTriggerCharsText.HasValue())
         {
-            bitSearchBox.MinSuggestTriggerCharsText = MinSuggestTriggerCharsText;
+            bitSearchBox.TakeFromCascade(nameof(MinSuggestTriggerCharsText), MinSuggestTriggerCharsText, static s => s.MinSuggestTriggerCharsText, static (s, v) => s.MinSuggestTriggerCharsText = v);
         }
 
-        if (Modeless.HasValue && bitSearchBox.HasNotBeenSet(nameof(Modeless)))
+        if (Modeless.HasValue)
         {
-            bitSearchBox.Modeless = Modeless.Value;
+            bitSearchBox.TakeFromCascade(nameof(Modeless), Modeless.Value, static s => s.Modeless, static (s, v) => s.Modeless = v);
         }
 
-        if (NoBorder.HasValue && bitSearchBox.HasNotBeenSet(nameof(NoBorder)))
+        if (NoBorder.HasValue)
         {
-            bitSearchBox.NoBorder = NoBorder.Value;
-
-            bitSearchBox.ClassBuilder.Reset();
+            bitSearchBox.TakeFromCascade(nameof(NoBorder), NoBorder.Value, static s => s.NoBorder, static (s, v) => s.NoBorder = v);
         }
 
-        if (NoClearOnEscape.HasValue && bitSearchBox.HasNotBeenSet(nameof(NoClearOnEscape)))
+        if (NoClearOnEscape.HasValue)
         {
-            bitSearchBox.NoClearOnEscape = NoClearOnEscape.Value;
+            bitSearchBox.TakeFromCascade(nameof(NoClearOnEscape), NoClearOnEscape.Value, static s => s.NoClearOnEscape, static (s, v) => s.NoClearOnEscape = v);
         }
 
-        if (NoResultsText.HasValue() && bitSearchBox.HasNotBeenSet(nameof(NoResultsText)))
+        if (NoResultsText.HasValue())
         {
-            bitSearchBox.NoResultsText = NoResultsText;
+            bitSearchBox.TakeFromCascade(nameof(NoResultsText), NoResultsText, static s => s.NoResultsText, static (s, v) => s.NoResultsText = v);
         }
 
-        if (NoWrapNavigation.HasValue && bitSearchBox.HasNotBeenSet(nameof(NoWrapNavigation)))
+        if (NoWrapNavigation.HasValue)
         {
-            bitSearchBox.NoWrapNavigation = NoWrapNavigation.Value;
+            bitSearchBox.TakeFromCascade(nameof(NoWrapNavigation), NoWrapNavigation.Value, static s => s.NoWrapNavigation, static (s, v) => s.NoWrapNavigation = v);
         }
 
-        if (Placeholder.HasValue() && bitSearchBox.HasNotBeenSet(nameof(Placeholder)))
+        if (Placeholder.HasValue())
         {
-            bitSearchBox.Placeholder = Placeholder;
+            bitSearchBox.TakeFromCascade(nameof(Placeholder), Placeholder, static s => s.Placeholder, static (s, v) => s.Placeholder = v);
         }
 
-        if (SearchButtonAriaLabel.HasValue() && bitSearchBox.HasNotBeenSet(nameof(SearchButtonAriaLabel)))
+        if (SearchButtonAriaLabel.HasValue())
         {
-            bitSearchBox.SearchButtonAriaLabel = SearchButtonAriaLabel!;
+            bitSearchBox.TakeFromCascade(nameof(SearchButtonAriaLabel), SearchButtonAriaLabel!, static s => s.SearchButtonAriaLabel, static (s, v) => s.SearchButtonAriaLabel = v);
         }
 
-        if (SearchButtonIcon is not null && bitSearchBox.HasNotBeenSet(nameof(SearchButtonIcon)))
+        if (SearchButtonIcon is not null)
         {
-            bitSearchBox.SearchButtonIcon = SearchButtonIcon;
+            bitSearchBox.TakeFromCascade(nameof(SearchButtonIcon), SearchButtonIcon, static s => s.SearchButtonIcon, static (s, v) => s.SearchButtonIcon = v);
         }
 
-        if (SearchButtonIconName.HasValue() && bitSearchBox.HasNotBeenSet(nameof(SearchButtonIconName)))
+        if (SearchButtonIconName.HasValue())
         {
-            bitSearchBox.SearchButtonIconName = SearchButtonIconName;
+            bitSearchBox.TakeFromCascade(nameof(SearchButtonIconName), SearchButtonIconName, static s => s.SearchButtonIconName, static (s, v) => s.SearchButtonIconName = v);
         }
 
-        if (SearchButtonText.HasValue() && bitSearchBox.HasNotBeenSet(nameof(SearchButtonText)))
+        if (SearchButtonText.HasValue())
         {
-            bitSearchBox.SearchButtonText = SearchButtonText;
-
-            bitSearchBox.ClassBuilder.Reset();
+            bitSearchBox.TakeFromCascade(nameof(SearchButtonText), SearchButtonText, static s => s.SearchButtonText, static (s, v) => s.SearchButtonText = v);
         }
 
-        if (SelectTextOnFocus.HasValue && bitSearchBox.HasNotBeenSet(nameof(SelectTextOnFocus)))
+        if (SelectTextOnFocus.HasValue)
         {
-            bitSearchBox.SelectTextOnFocus = SelectTextOnFocus.Value;
+            bitSearchBox.TakeFromCascade(nameof(SelectTextOnFocus), SelectTextOnFocus.Value, static s => s.SelectTextOnFocus, static (s, v) => s.SelectTextOnFocus = v);
         }
 
-        if (ShowSearchButton.HasValue && bitSearchBox.HasNotBeenSet(nameof(ShowSearchButton)))
+        if (ShowSearchButton.HasValue)
         {
-            bitSearchBox.ShowSearchButton = ShowSearchButton.Value;
-
-            bitSearchBox.ClassBuilder.Reset();
+            bitSearchBox.TakeFromCascade(nameof(ShowSearchButton), ShowSearchButton.Value, static s => s.ShowSearchButton, static (s, v) => s.ShowSearchButton = v);
         }
 
-        if (ShowSuggestItemsOnFocus.HasValue && bitSearchBox.HasNotBeenSet(nameof(ShowSuggestItemsOnFocus)))
+        if (ShowSuggestItemsOnFocus.HasValue)
         {
-            bitSearchBox.ShowSuggestItemsOnFocus = ShowSuggestItemsOnFocus.Value;
+            bitSearchBox.TakeFromCascade(nameof(ShowSuggestItemsOnFocus), ShowSuggestItemsOnFocus.Value, static s => s.ShowSuggestItemsOnFocus, static (s, v) => s.ShowSuggestItemsOnFocus = v);
         }
 
-        if (Size.HasValue && bitSearchBox.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue)
         {
-            bitSearchBox.Size = Size.Value;
-
-            bitSearchBox.ClassBuilder.Reset();
+            bitSearchBox.TakeFromCascade(nameof(Size), Size.Value, static s => s.Size, static (s, v) => s.Size = v);
         }
 
-        if (SpellCheck.HasValue && bitSearchBox.HasNotBeenSet(nameof(SpellCheck)))
+        if (SpellCheck.HasValue)
         {
-            bitSearchBox.SpellCheck = SpellCheck.Value;
+            bitSearchBox.TakeFromCascade(nameof(SpellCheck), SpellCheck.Value, static s => s.SpellCheck, static (s, v) => s.SpellCheck = v);
         }
 
-        if (Styles is not null && bitSearchBox.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitSearchBox.Styles = Styles;
-
-            bitSearchBox.StyleBuilder.Reset();
+            bitSearchBox.TakeFromCascade(nameof(Styles), Styles, static s => s.Styles, static (s, v) => s.Styles = v);
         }
 
-        if (SuggestFailedText is not null && bitSearchBox.HasNotBeenSet(nameof(SuggestFailedText)))
+        if (SuggestFailedText is not null)
         {
-            bitSearchBox.SuggestFailedText = SuggestFailedText;
+            bitSearchBox.TakeFromCascade(nameof(SuggestFailedText), SuggestFailedText, static s => s.SuggestFailedText, static (s, v) => s.SuggestFailedText = v);
         }
 
-        if (SuggestIgnoreDiacritics.HasValue && bitSearchBox.HasNotBeenSet(nameof(SuggestIgnoreDiacritics)))
+        if (SuggestIgnoreDiacritics.HasValue)
         {
-            bitSearchBox.SuggestIgnoreDiacritics = SuggestIgnoreDiacritics.Value;
+            bitSearchBox.TakeFromCascade(nameof(SuggestIgnoreDiacritics), SuggestIgnoreDiacritics.Value, static s => s.SuggestIgnoreDiacritics, static (s, v) => s.SuggestIgnoreDiacritics = v);
         }
 
-        if (SuggestFilterFunction is not null && bitSearchBox.HasNotBeenSet(nameof(SuggestFilterFunction)))
+        if (SuggestFilterFunction is not null)
         {
-            bitSearchBox.SuggestFilterFunction = SuggestFilterFunction;
+            bitSearchBox.TakeFromCascade(nameof(SuggestFilterFunction), SuggestFilterFunction, static s => s.SuggestFilterFunction, static (s, v) => s.SuggestFilterFunction = v);
         }
 
-        if (SuggestItemsAriaLabel.HasValue() && bitSearchBox.HasNotBeenSet(nameof(SuggestItemsAriaLabel)))
+        if (SuggestItemsAriaLabel.HasValue())
         {
-            bitSearchBox.SuggestItemsAriaLabel = SuggestItemsAriaLabel!;
+            bitSearchBox.TakeFromCascade(nameof(SuggestItemsAriaLabel), SuggestItemsAriaLabel!, static s => s.SuggestItemsAriaLabel, static (s, v) => s.SuggestItemsAriaLabel = v);
         }
 
-        if (ThrottleTime.HasValue && bitSearchBox.HasNotBeenSet(nameof(ThrottleTime)))
+        if (ThrottleTime.HasValue)
         {
-            bitSearchBox.ThrottleTime = ThrottleTime.Value;
+            bitSearchBox.TakeFromCascade(nameof(ThrottleTime), ThrottleTime.Value, static s => s.ThrottleTime, static (s, v) => s.ThrottleTime = v);
         }
 
-        if (Trim.HasValue && bitSearchBox.HasNotBeenSet(nameof(Trim)))
+        if (Trim.HasValue)
         {
-            bitSearchBox.Trim = Trim.Value;
+            bitSearchBox.TakeFromCascade(nameof(Trim), Trim.Value, static s => s.Trim, static (s, v) => s.Trim = v);
         }
 
-        if (Underlined.HasValue && bitSearchBox.HasNotBeenSet(nameof(Underlined)))
+        if (Underlined.HasValue)
         {
-            bitSearchBox.Underlined = Underlined.Value;
-
-            bitSearchBox.ClassBuilder.Reset();
+            bitSearchBox.TakeFromCascade(nameof(Underlined), Underlined.Value, static s => s.Underlined, static (s, v) => s.Underlined = v);
         }
     }
 }

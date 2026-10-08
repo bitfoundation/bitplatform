@@ -32,7 +32,7 @@ public partial class BitBadgeDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the badge.",
+            Description = "The general color of the badge. An explicit value wins over the --bit-Badge-* color variables; left unset, the badge is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum"
         },
@@ -189,7 +189,7 @@ public partial class BitBadgeDemo
             Name = "Shape",
             Type = "BitShape?",
             DefaultValue = "null",
-            Description = "The corner shape of the badge. Only Pill, Rounded and Square are honoured: a badge takes its box from its own content, so Circle has no proportions to impose and falls back to the default.",
+            Description = "The corner shape of the badge. Only Pill, Rounded and Square are honoured: a badge takes its box from its own content, so Circle has no proportions to impose and falls back to the default. An explicit value wins over --bit-Badge-radius; left unset, the badge is a pill unless it says otherwise.",
             LinkType = LinkType.Link,
             Href = "#shape-enum"
         },
@@ -205,7 +205,7 @@ public partial class BitBadgeDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the badge: its height, type size and padding, and the diameter of a dot.",
+            Description = "The size of the badge: its height, type size and padding, and the diameter of a dot. An explicit value wins over the --bit-Badge-* size variables; left unset, the badge is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -350,38 +350,38 @@ public partial class BitBadgeDemo
         new()
         {
             Name = "--bit-Badge-color",
-            DefaultValue = "Per variant, from the Color role",
-            Description = "Text and icon color. In the Outline variant it is also the border color.",
+            DefaultValue = "Per variant, from the primary role",
+            Description = "Text and icon color. In the Outline variant it is also the border color. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Badge-background",
-            DefaultValue = "Per variant, from the Color role",
-            Description = "Background. In the Fill variant it is also the border color.",
+            DefaultValue = "Per variant, from the primary role",
+            Description = "Background. In the Fill variant it is also the border color. The Color parameter wins over it in Fill; the transparent background of Outline and Text is its alone.",
         },
         new()
         {
             Name = "--bit-Badge-border-color",
             DefaultValue = "The background (Fill), the text color (Outline), transparent (Text)",
-            Description = "Border color, in every state.",
+            Description = "Border color, in every state. The Color parameter wins over it, except over the transparent border of Text.",
         },
         new()
         {
             Name = "--bit-Badge-hover-background",
-            DefaultValue = "Per variant, from the Color role",
-            Description = "Background of a clickable (OnClick or Href) badge on hover. Set it together with --bit-Badge-background.",
+            DefaultValue = "Per variant, from the primary role",
+            Description = "Background of a clickable (OnClick or Href) badge on hover. Set it together with --bit-Badge-background. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Badge-active-background",
-            DefaultValue = "Per variant, from the Color role",
-            Description = "Background of a clickable badge while pressed.",
+            DefaultValue = "Per variant, from the primary role",
+            Description = "Background of a clickable badge while pressed. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Badge-focus-color",
-            DefaultValue = "The Color role's focus color",
-            Description = "Keyboard focus ring color of a clickable badge.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Keyboard focus ring color of a clickable badge. The Color parameter wins over it.",
         },
         new()
         {
@@ -392,26 +392,26 @@ public partial class BitBadgeDemo
         new()
         {
             Name = "--bit-Badge-radius",
-            DefaultValue = "Per Shape",
-            Description = "Corner radius. A dot is always a circle.",
+            DefaultValue = "--bit-shp-radius-full",
+            Description = "Corner radius. A dot is always a circle. The Shape parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Badge-height",
-            DefaultValue = "--bit-siz-badge-{sm,md,lg}, per Size",
-            Description = "Height, and the smallest width, which keeps a single digit a circle.",
+            DefaultValue = "--bit-siz-badge-md",
+            Description = "Height, and the smallest width, which keeps a single digit a circle. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Badge-padding",
-            DefaultValue = "Per Size",
-            Description = "Padding.",
+            DefaultValue = "0 spacing(0.75)",
+            Description = "Padding. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Badge-font-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Text size.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size. The Size parameter wins over it.",
         },
         new()
         {
@@ -428,8 +428,8 @@ public partial class BitBadgeDemo
         new()
         {
             Name = "--bit-Badge-dot-size",
-            DefaultValue = "--bit-siz-badge-dot-{sm,md,lg}, per Size",
-            Description = "Diameter of a Dot badge.",
+            DefaultValue = "--bit-siz-badge-dot-md",
+            Description = "Diameter of a Dot badge. The Size parameter wins over it.",
         },
         new()
         {
@@ -470,8 +470,8 @@ public partial class BitBadgeDemo
         new()
         {
             Name = "--bit-Badge-pulse-color",
-            DefaultValue = "The Color role's main color",
-            Description = "Color of the Pulse ring.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Color of the Pulse ring. The Color parameter wins over it.",
         },
     ];
 

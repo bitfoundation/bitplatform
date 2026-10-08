@@ -350,322 +350,300 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
 
         UpdateInputBaseParameters(bitPhoneInput);
 
-        if (AutoComplete.HasValue() && bitPhoneInput.HasNotBeenSet(nameof(AutoComplete)))
+        if (AutoComplete.HasValue())
         {
-            bitPhoneInput.AutoComplete = AutoComplete;
+            bitPhoneInput.TakeFromCascade(nameof(AutoComplete), AutoComplete, static p => p.AutoComplete, static (p, v) => p.AutoComplete = v);
         }
 
-        if (AutoPlaceholder.HasValue && bitPhoneInput.HasNotBeenSet(nameof(AutoPlaceholder)))
+        if (AutoPlaceholder.HasValue)
         {
-            bitPhoneInput.AutoPlaceholder = AutoPlaceholder.Value;
+            bitPhoneInput.TakeFromCascade(nameof(AutoPlaceholder), AutoPlaceholder.Value, static p => p.AutoPlaceholder, static (p, v) => p.AutoPlaceholder = v);
         }
 
-        if (Background.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Background)))
+        if (Background.HasValue)
         {
-            bitPhoneInput.Background = Background.Value;
-
-            bitPhoneInput.ClassBuilder.Reset();
+            bitPhoneInput.TakeFromCascade(nameof(Background), Background.Value, static p => p.Background, static (p, v) => p.Background = v);
         }
 
-        if (Border.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Border)))
+        if (Border.HasValue)
         {
-            bitPhoneInput.Border = Border.Value;
-
-            bitPhoneInput.ClassBuilder.Reset();
+            bitPhoneInput.TakeFromCascade(nameof(Border), Border.Value, static p => p.Border, static (p, v) => p.Border = v);
         }
 
-        if (Classes is not null && bitPhoneInput.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitPhoneInput.Classes = Classes;
-
-            bitPhoneInput.ClassBuilder.Reset();
+            bitPhoneInput.TakeFromCascade(nameof(Classes), Classes, static p => p.Classes, static (p, v) => p.Classes = v);
         }
 
-        if (ClearButtonAriaLabel.HasValue() && bitPhoneInput.HasNotBeenSet(nameof(ClearButtonAriaLabel)))
+        if (ClearButtonAriaLabel.HasValue())
         {
-            bitPhoneInput.ClearButtonAriaLabel = ClearButtonAriaLabel;
+            bitPhoneInput.TakeFromCascade(nameof(ClearButtonAriaLabel), ClearButtonAriaLabel, static p => p.ClearButtonAriaLabel, static (p, v) => p.ClearButtonAriaLabel = v);
         }
 
-        if (ClearButtonIcon is not null && bitPhoneInput.HasNotBeenSet(nameof(ClearButtonIcon)))
+        if (ClearButtonIcon is not null)
         {
-            bitPhoneInput.ClearButtonIcon = ClearButtonIcon;
+            bitPhoneInput.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static p => p.ClearButtonIcon, static (p, v) => p.ClearButtonIcon = v);
         }
 
-        if (ClearButtonIconName.HasValue() && bitPhoneInput.HasNotBeenSet(nameof(ClearButtonIconName)))
+        if (ClearButtonIconName.HasValue())
         {
-            bitPhoneInput.ClearButtonIconName = ClearButtonIconName;
+            bitPhoneInput.TakeFromCascade(nameof(ClearButtonIconName), ClearButtonIconName, static p => p.ClearButtonIconName, static (p, v) => p.ClearButtonIconName = v);
         }
 
-        if (ClearButtonTemplate is not null && bitPhoneInput.HasNotBeenSet(nameof(ClearButtonTemplate)))
+        if (ClearButtonTemplate is not null)
         {
-            bitPhoneInput.ClearButtonTemplate = ClearButtonTemplate;
+            bitPhoneInput.TakeFromCascade(nameof(ClearButtonTemplate), ClearButtonTemplate, static p => p.ClearButtonTemplate, static (p, v) => p.ClearButtonTemplate = v);
         }
 
         // Null rather than empty is what leaves the field alone: an empty announcement is how silence is asked for.
-        if (ClearedAnnouncement is not null && bitPhoneInput.HasNotBeenSet(nameof(ClearedAnnouncement)))
+        if (ClearedAnnouncement is not null)
         {
-            bitPhoneInput.ClearedAnnouncement = ClearedAnnouncement;
+            bitPhoneInput.TakeFromCascade(nameof(ClearedAnnouncement), ClearedAnnouncement, static p => p.ClearedAnnouncement, static (p, v) => p.ClearedAnnouncement = v);
         }
 
-        if (Color.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue)
         {
-            bitPhoneInput.Color = Color.Value;
-
-            bitPhoneInput.ClassBuilder.Reset();
+            bitPhoneInput.TakeFromCascade(nameof(Color), Color.Value, static p => p.Color, static (p, v) => p.Color = v);
         }
 
-        if (Countries is not null && bitPhoneInput.HasNotBeenSet(nameof(Countries)))
+        if (Countries is not null)
         {
-            bitPhoneInput.Countries = Countries;
+            bitPhoneInput.TakeFromCascade(nameof(Countries), Countries, static p => p.Countries, static (p, v) => p.Countries = v);
         }
 
-        if (DebounceTime.HasValue && bitPhoneInput.HasNotBeenSet(nameof(DebounceTime)))
+        if (DebounceTime.HasValue)
         {
-            bitPhoneInput.DebounceTime = DebounceTime.Value;
+            bitPhoneInput.TakeFromCascade(nameof(DebounceTime), DebounceTime.Value, static p => p.DebounceTime, static (p, v) => p.DebounceTime = v);
         }
 
-        if (DefaultCountry is not null && bitPhoneInput.HasNotBeenSet(nameof(DefaultCountry)))
+        if (DefaultCountry is not null)
         {
-            bitPhoneInput.DefaultCountry = DefaultCountry;
+            bitPhoneInput.TakeFromCascade(nameof(DefaultCountry), DefaultCountry, static p => p.DefaultCountry, static (p, v) => p.DefaultCountry = v);
         }
 
-        if (Description.HasValue() && bitPhoneInput.HasNotBeenSet(nameof(Description)))
+        if (Description.HasValue())
         {
-            bitPhoneInput.Description = Description;
+            bitPhoneInput.TakeFromCascade(nameof(Description), Description, static p => p.Description, static (p, v) => p.Description = v);
         }
 
-        if (DescriptionTemplate is not null && bitPhoneInput.HasNotBeenSet(nameof(DescriptionTemplate)))
+        if (DescriptionTemplate is not null)
         {
-            bitPhoneInput.DescriptionTemplate = DescriptionTemplate;
+            bitPhoneInput.TakeFromCascade(nameof(DescriptionTemplate), DescriptionTemplate, static p => p.DescriptionTemplate, static (p, v) => p.DescriptionTemplate = v);
         }
 
-        if (DropDirection.HasValue && bitPhoneInput.HasNotBeenSet(nameof(DropDirection)))
+        if (DropDirection.HasValue)
         {
-            bitPhoneInput.DropDirection = DropDirection.Value;
+            bitPhoneInput.TakeFromCascade(nameof(DropDirection), DropDirection.Value, static p => p.DropDirection, static (p, v) => p.DropDirection = v);
         }
 
-        if (DropdownAriaLabel.HasValue() && bitPhoneInput.HasNotBeenSet(nameof(DropdownAriaLabel)))
+        if (DropdownAriaLabel.HasValue())
         {
-            bitPhoneInput.DropdownAriaLabel = DropdownAriaLabel;
+            bitPhoneInput.TakeFromCascade(nameof(DropdownAriaLabel), DropdownAriaLabel, static p => p.DropdownAriaLabel, static (p, v) => p.DropdownAriaLabel = v);
         }
 
-        if (DropdownPlaceholder.HasValue() && bitPhoneInput.HasNotBeenSet(nameof(DropdownPlaceholder)))
+        if (DropdownPlaceholder.HasValue())
         {
-            bitPhoneInput.DropdownPlaceholder = DropdownPlaceholder;
+            bitPhoneInput.TakeFromCascade(nameof(DropdownPlaceholder), DropdownPlaceholder, static p => p.DropdownPlaceholder, static (p, v) => p.DropdownPlaceholder = v);
         }
 
-        if (DropdownTemplate is not null && bitPhoneInput.HasNotBeenSet(nameof(DropdownTemplate)))
+        if (DropdownTemplate is not null)
         {
-            bitPhoneInput.DropdownTemplate = DropdownTemplate;
+            bitPhoneInput.TakeFromCascade(nameof(DropdownTemplate), DropdownTemplate, static p => p.DropdownTemplate, static (p, v) => p.DropdownTemplate = v);
         }
 
-        if (EnterKeyHint.HasValue() && bitPhoneInput.HasNotBeenSet(nameof(EnterKeyHint)))
+        if (EnterKeyHint.HasValue())
         {
-            bitPhoneInput.EnterKeyHint = EnterKeyHint;
+            bitPhoneInput.TakeFromCascade(nameof(EnterKeyHint), EnterKeyHint, static p => p.EnterKeyHint, static (p, v) => p.EnterKeyHint = v);
         }
 
-        if (ExcludeCountries is not null && bitPhoneInput.HasNotBeenSet(nameof(ExcludeCountries)))
+        if (ExcludeCountries is not null)
         {
-            bitPhoneInput.ExcludeCountries = ExcludeCountries;
+            bitPhoneInput.TakeFromCascade(nameof(ExcludeCountries), ExcludeCountries, static p => p.ExcludeCountries, static (p, v) => p.ExcludeCountries = v);
         }
 
-        if (FlagUrlSelector is not null && bitPhoneInput.HasNotBeenSet(nameof(FlagUrlSelector)))
+        if (FlagUrlSelector is not null)
         {
-            bitPhoneInput.FlagUrlSelector = FlagUrlSelector;
+            bitPhoneInput.TakeFromCascade(nameof(FlagUrlSelector), FlagUrlSelector, static p => p.FlagUrlSelector, static (p, v) => p.FlagUrlSelector = v);
         }
 
-        if (FullWidth.HasValue && bitPhoneInput.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue)
         {
-            bitPhoneInput.FullWidth = FullWidth.Value;
-
-            bitPhoneInput.ClassBuilder.Reset();
+            bitPhoneInput.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static p => p.FullWidth, static (p, v) => p.FullWidth = v);
         }
 
-        if (Immediate.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Immediate)))
+        if (Immediate.HasValue)
         {
-            bitPhoneInput.Immediate = Immediate.Value;
+            bitPhoneInput.TakeFromCascade(nameof(Immediate), Immediate.Value, static p => p.Immediate, static (p, v) => p.Immediate = v);
         }
 
-        if (InputMode.HasValue && bitPhoneInput.HasNotBeenSet(nameof(InputMode)))
+        if (InputMode.HasValue)
         {
-            bitPhoneInput.InputMode = InputMode.Value;
+            bitPhoneInput.TakeFromCascade(nameof(InputMode), InputMode.Value, static p => p.InputMode, static (p, v) => p.InputMode = v);
         }
 
-        if (ItemTemplate is not null && bitPhoneInput.HasNotBeenSet(nameof(ItemTemplate)))
+        if (ItemTemplate is not null)
         {
-            bitPhoneInput.ItemTemplate = ItemTemplate;
+            bitPhoneInput.TakeFromCascade(nameof(ItemTemplate), ItemTemplate, static p => p.ItemTemplate, static (p, v) => p.ItemTemplate = v);
         }
 
-        if (KeepNationalPrefix.HasValue && bitPhoneInput.HasNotBeenSet(nameof(KeepNationalPrefix)))
+        if (KeepNationalPrefix.HasValue)
         {
-            bitPhoneInput.KeepNationalPrefix = KeepNationalPrefix.Value;
+            bitPhoneInput.TakeFromCascade(nameof(KeepNationalPrefix), KeepNationalPrefix.Value, static p => p.KeepNationalPrefix, static (p, v) => p.KeepNationalPrefix = v);
         }
 
-        if (Label.HasValue() && bitPhoneInput.HasNotBeenSet(nameof(Label)))
+        if (Label.HasValue())
         {
-            bitPhoneInput.Label = Label;
+            bitPhoneInput.TakeFromCascade(nameof(Label), Label, static p => p.Label, static (p, v) => p.Label = v);
         }
 
-        if (LabelTemplate is not null && bitPhoneInput.HasNotBeenSet(nameof(LabelTemplate)))
+        if (LabelTemplate is not null)
         {
-            bitPhoneInput.LabelTemplate = LabelTemplate;
+            bitPhoneInput.TakeFromCascade(nameof(LabelTemplate), LabelTemplate, static p => p.LabelTemplate, static (p, v) => p.LabelTemplate = v);
         }
 
-        if (Mask.HasValue() && bitPhoneInput.HasNotBeenSet(nameof(Mask)))
+        if (Mask.HasValue())
         {
-            bitPhoneInput.Mask = Mask;
+            bitPhoneInput.TakeFromCascade(nameof(Mask), Mask, static p => p.Mask, static (p, v) => p.Mask = v);
         }
 
-        if (MaskSelector is not null && bitPhoneInput.HasNotBeenSet(nameof(MaskSelector)))
+        if (MaskSelector is not null)
         {
-            bitPhoneInput.MaskSelector = MaskSelector;
+            bitPhoneInput.TakeFromCascade(nameof(MaskSelector), MaskSelector, static p => p.MaskSelector, static (p, v) => p.MaskSelector = v);
         }
 
-        if (MaxHeight.HasValue && bitPhoneInput.HasNotBeenSet(nameof(MaxHeight)))
+        if (MaxHeight.HasValue)
         {
-            bitPhoneInput.MaxHeight = MaxHeight.Value;
+            bitPhoneInput.TakeFromCascade(nameof(MaxHeight), MaxHeight.Value, static p => p.MaxHeight, static (p, v) => p.MaxHeight = v);
         }
 
-        if (MaxLength.HasValue && bitPhoneInput.HasNotBeenSet(nameof(MaxLength)))
+        if (MaxLength.HasValue)
         {
-            bitPhoneInput.MaxLength = MaxLength.Value;
+            bitPhoneInput.TakeFromCascade(nameof(MaxLength), MaxLength.Value, static p => p.MaxLength, static (p, v) => p.MaxLength = v);
         }
 
-        if (NoBorder.HasValue && bitPhoneInput.HasNotBeenSet(nameof(NoBorder)))
+        if (NoBorder.HasValue)
         {
-            bitPhoneInput.NoBorder = NoBorder.Value;
-
-            bitPhoneInput.ClassBuilder.Reset();
+            bitPhoneInput.TakeFromCascade(nameof(NoBorder), NoBorder.Value, static p => p.NoBorder, static (p, v) => p.NoBorder = v);
         }
 
-        if (NoDialCode.HasValue && bitPhoneInput.HasNotBeenSet(nameof(NoDialCode)))
+        if (NoDialCode.HasValue)
         {
-            bitPhoneInput.NoDialCode = NoDialCode.Value;
+            bitPhoneInput.TakeFromCascade(nameof(NoDialCode), NoDialCode.Value, static p => p.NoDialCode, static (p, v) => p.NoDialCode = v);
         }
 
-        if (NoDropdown.HasValue && bitPhoneInput.HasNotBeenSet(nameof(NoDropdown)))
+        if (NoDropdown.HasValue)
         {
-            bitPhoneInput.NoDropdown = NoDropdown.Value;
-
-            bitPhoneInput.ClassBuilder.Reset();
+            bitPhoneInput.TakeFromCascade(nameof(NoDropdown), NoDropdown.Value, static p => p.NoDropdown, static (p, v) => p.NoDropdown = v);
         }
 
-        if (NoFlags.HasValue && bitPhoneInput.HasNotBeenSet(nameof(NoFlags)))
+        if (NoFlags.HasValue)
         {
-            bitPhoneInput.NoFlags = NoFlags.Value;
+            bitPhoneInput.TakeFromCascade(nameof(NoFlags), NoFlags.Value, static p => p.NoFlags, static (p, v) => p.NoFlags = v);
         }
 
-        if (NoFocusOnSelect.HasValue && bitPhoneInput.HasNotBeenSet(nameof(NoFocusOnSelect)))
+        if (NoFocusOnSelect.HasValue)
         {
-            bitPhoneInput.NoFocusOnSelect = NoFocusOnSelect.Value;
+            bitPhoneInput.TakeFromCascade(nameof(NoFocusOnSelect), NoFocusOnSelect.Value, static p => p.NoFocusOnSelect, static (p, v) => p.NoFocusOnSelect = v);
         }
 
-        if (NoResultsMessage.HasValue() && bitPhoneInput.HasNotBeenSet(nameof(NoResultsMessage)))
+        if (NoResultsMessage.HasValue())
         {
-            bitPhoneInput.NoResultsMessage = NoResultsMessage;
+            bitPhoneInput.TakeFromCascade(nameof(NoResultsMessage), NoResultsMessage, static p => p.NoResultsMessage, static (p, v) => p.NoResultsMessage = v);
         }
 
-        if (NoResultsTemplate is not null && bitPhoneInput.HasNotBeenSet(nameof(NoResultsTemplate)))
+        if (NoResultsTemplate is not null)
         {
-            bitPhoneInput.NoResultsTemplate = NoResultsTemplate;
+            bitPhoneInput.TakeFromCascade(nameof(NoResultsTemplate), NoResultsTemplate, static p => p.NoResultsTemplate, static (p, v) => p.NoResultsTemplate = v);
         }
 
-        if (NoSearchBox.HasValue && bitPhoneInput.HasNotBeenSet(nameof(NoSearchBox)))
+        if (NoSearchBox.HasValue)
         {
-            bitPhoneInput.NoSearchBox = NoSearchBox.Value;
+            bitPhoneInput.TakeFromCascade(nameof(NoSearchBox), NoSearchBox.Value, static p => p.NoSearchBox, static (p, v) => p.NoSearchBox = v);
         }
 
-        if (NoWrapNavigation.HasValue && bitPhoneInput.HasNotBeenSet(nameof(NoWrapNavigation)))
+        if (NoWrapNavigation.HasValue)
         {
-            bitPhoneInput.NoWrapNavigation = NoWrapNavigation.Value;
+            bitPhoneInput.TakeFromCascade(nameof(NoWrapNavigation), NoWrapNavigation.Value, static p => p.NoWrapNavigation, static (p, v) => p.NoWrapNavigation = v);
         }
 
-        if (Placeholder.HasValue() && bitPhoneInput.HasNotBeenSet(nameof(Placeholder)))
+        if (Placeholder.HasValue())
         {
-            bitPhoneInput.Placeholder = Placeholder;
+            bitPhoneInput.TakeFromCascade(nameof(Placeholder), Placeholder, static p => p.Placeholder, static (p, v) => p.Placeholder = v);
         }
 
-        if (PreferredCountries is not null && bitPhoneInput.HasNotBeenSet(nameof(PreferredCountries)))
+        if (PreferredCountries is not null)
         {
-            bitPhoneInput.PreferredCountries = PreferredCountries;
+            bitPhoneInput.TakeFromCascade(nameof(PreferredCountries), PreferredCountries, static p => p.PreferredCountries, static (p, v) => p.PreferredCountries = v);
         }
 
-        if (Responsive.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Responsive)))
+        if (Responsive.HasValue)
         {
-            bitPhoneInput.Responsive = Responsive.Value;
-
-            bitPhoneInput.ClassBuilder.Reset();
+            bitPhoneInput.TakeFromCascade(nameof(Responsive), Responsive.Value, static p => p.Responsive, static (p, v) => p.Responsive = v);
         }
 
-        if (ResponsiveCloseButtonAriaLabel.HasValue() && bitPhoneInput.HasNotBeenSet(nameof(ResponsiveCloseButtonAriaLabel)))
+        if (ResponsiveCloseButtonAriaLabel.HasValue())
         {
-            bitPhoneInput.ResponsiveCloseButtonAriaLabel = ResponsiveCloseButtonAriaLabel;
+            bitPhoneInput.TakeFromCascade(nameof(ResponsiveCloseButtonAriaLabel), ResponsiveCloseButtonAriaLabel, static p => p.ResponsiveCloseButtonAriaLabel, static (p, v) => p.ResponsiveCloseButtonAriaLabel = v);
         }
 
-        if (ResponsiveCloseIcon is not null && bitPhoneInput.HasNotBeenSet(nameof(ResponsiveCloseIcon)))
+        if (ResponsiveCloseIcon is not null)
         {
-            bitPhoneInput.ResponsiveCloseIcon = ResponsiveCloseIcon;
+            bitPhoneInput.TakeFromCascade(nameof(ResponsiveCloseIcon), ResponsiveCloseIcon, static p => p.ResponsiveCloseIcon, static (p, v) => p.ResponsiveCloseIcon = v);
         }
 
-        if (ResponsiveCloseIconName.HasValue() && bitPhoneInput.HasNotBeenSet(nameof(ResponsiveCloseIconName)))
+        if (ResponsiveCloseIconName.HasValue())
         {
-            bitPhoneInput.ResponsiveCloseIconName = ResponsiveCloseIconName;
+            bitPhoneInput.TakeFromCascade(nameof(ResponsiveCloseIconName), ResponsiveCloseIconName, static p => p.ResponsiveCloseIconName, static (p, v) => p.ResponsiveCloseIconName = v);
         }
 
-        if (SearchBoxAriaLabel.HasValue() && bitPhoneInput.HasNotBeenSet(nameof(SearchBoxAriaLabel)))
+        if (SearchBoxAriaLabel.HasValue())
         {
-            bitPhoneInput.SearchBoxAriaLabel = SearchBoxAriaLabel;
+            bitPhoneInput.TakeFromCascade(nameof(SearchBoxAriaLabel), SearchBoxAriaLabel, static p => p.SearchBoxAriaLabel, static (p, v) => p.SearchBoxAriaLabel = v);
         }
 
-        if (SearchBoxPlaceholder.HasValue() && bitPhoneInput.HasNotBeenSet(nameof(SearchBoxPlaceholder)))
+        if (SearchBoxPlaceholder.HasValue())
         {
-            bitPhoneInput.SearchBoxPlaceholder = SearchBoxPlaceholder;
+            bitPhoneInput.TakeFromCascade(nameof(SearchBoxPlaceholder), SearchBoxPlaceholder, static p => p.SearchBoxPlaceholder, static (p, v) => p.SearchBoxPlaceholder = v);
         }
 
-        if (SearchResultsAnnouncement is not null && bitPhoneInput.HasNotBeenSet(nameof(SearchResultsAnnouncement)))
+        if (SearchResultsAnnouncement is not null)
         {
-            bitPhoneInput.SearchResultsAnnouncement = SearchResultsAnnouncement;
+            bitPhoneInput.TakeFromCascade(nameof(SearchResultsAnnouncement), SearchResultsAnnouncement, static p => p.SearchResultsAnnouncement, static (p, v) => p.SearchResultsAnnouncement = v);
         }
 
-        if (ShowClearButton.HasValue && bitPhoneInput.HasNotBeenSet(nameof(ShowClearButton)))
+        if (ShowClearButton.HasValue)
         {
-            bitPhoneInput.ShowClearButton = ShowClearButton.Value;
+            bitPhoneInput.TakeFromCascade(nameof(ShowClearButton), ShowClearButton.Value, static p => p.ShowClearButton, static (p, v) => p.ShowClearButton = v);
         }
 
-        if (Size.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue)
         {
-            bitPhoneInput.Size = Size.Value;
-
-            bitPhoneInput.ClassBuilder.Reset();
+            bitPhoneInput.TakeFromCascade(nameof(Size), Size.Value, static p => p.Size, static (p, v) => p.Size = v);
         }
 
-        if (Strict.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Strict)))
+        if (Strict.HasValue)
         {
-            bitPhoneInput.Strict = Strict.Value;
+            bitPhoneInput.TakeFromCascade(nameof(Strict), Strict.Value, static p => p.Strict, static (p, v) => p.Strict = v);
         }
 
-        if (Styles is not null && bitPhoneInput.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitPhoneInput.Styles = Styles;
-
-            bitPhoneInput.StyleBuilder.Reset();
+            bitPhoneInput.TakeFromCascade(nameof(Styles), Styles, static p => p.Styles, static (p, v) => p.Styles = v);
         }
 
-        if (ThrottleTime.HasValue && bitPhoneInput.HasNotBeenSet(nameof(ThrottleTime)))
+        if (ThrottleTime.HasValue)
         {
-            bitPhoneInput.ThrottleTime = ThrottleTime.Value;
+            bitPhoneInput.TakeFromCascade(nameof(ThrottleTime), ThrottleTime.Value, static p => p.ThrottleTime, static (p, v) => p.ThrottleTime = v);
         }
 
-        if (Title.HasValue() && bitPhoneInput.HasNotBeenSet(nameof(Title)))
+        if (Title.HasValue())
         {
-            bitPhoneInput.Title = Title;
+            bitPhoneInput.TakeFromCascade(nameof(Title), Title, static p => p.Title, static (p, v) => p.Title = v);
         }
 
-        if (Underlined.HasValue && bitPhoneInput.HasNotBeenSet(nameof(Underlined)))
+        if (Underlined.HasValue)
         {
-            bitPhoneInput.Underlined = Underlined.Value;
-
-            bitPhoneInput.ClassBuilder.Reset();
+            bitPhoneInput.TakeFromCascade(nameof(Underlined), Underlined.Value, static p => p.Underlined, static (p, v) => p.Underlined = v);
         }
     }
 }

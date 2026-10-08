@@ -109,7 +109,7 @@ public partial class BitCheckboxDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the checkbox.",
+            Description = "The general color of the checkbox. An explicit value wins over the --bit-Checkbox-* color variables (checked, indeterminate, focus and disabled colors); left unset, the checkbox is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -283,7 +283,7 @@ public partial class BitCheckboxDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the checkbox.",
+            Description = "The size of the checkbox. An explicit value wins over --bit-Checkbox-box-size, --bit-Checkbox-font-size and --bit-Checkbox-description-font-size; left unset, the checkbox is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -455,20 +455,20 @@ public partial class BitCheckboxDemo
         new()
         {
             Name = "--bit-Checkbox-disabled-color",
-            DefaultValue = "The Color role's disabled color",
-            Description = "Stroke and fill of the box when Disabled is true; also the focus ring color of a disabled checkbox kept focusable with AllowDisabledFocus.",
+            DefaultValue = "--bit-clr-pri-dis",
+            Description = "Stroke and fill of the box when Disabled is true; also the focus ring color of a disabled checkbox kept focusable with AllowDisabledFocus. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Checkbox-disabled-text-color",
-            DefaultValue = "The Color role's disabled text color",
-            Description = "Color of the label, the description and the glyph when Disabled is true.",
+            DefaultValue = "--bit-clr-pri-dis-text",
+            Description = "Color of the label, the description and the glyph when Disabled is true. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Checkbox-focus-color",
-            DefaultValue = "The Color role's focus color",
-            Description = "Color of the keyboard focus ring, drawn around the box - or around the whole face of a checkbox given a ChildContent.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the keyboard focus ring, drawn around the box - or around the whole face of a checkbox given a ChildContent. The Color parameter wins over it.",
         },
         new()
         {
@@ -503,32 +503,32 @@ public partial class BitCheckboxDemo
         new()
         {
             Name = "--bit-Checkbox-checked-background",
-            DefaultValue = "The Color role's main color",
-            Description = "Fill of the box while checked.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Fill of the box while checked. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Checkbox-checked-hover-background",
-            DefaultValue = "The Color role's hover color",
-            Description = "Fill of the box while checked and hovered (pointer devices only).",
+            DefaultValue = "--bit-clr-pri-hover",
+            Description = "Fill of the box while checked and hovered (pointer devices only). The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Checkbox-checked-border-color",
             DefaultValue = "--bit-Checkbox-checked-background",
-            Description = "Stroke of the box while checked. Set it apart from the fill for the Material-style outlined box.",
+            Description = "Stroke of the box while checked. Set it apart from the fill for the Material-style outlined box. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Checkbox-check-color",
-            DefaultValue = "The Color role's on-color",
-            Description = "Color of the glyph drawn on the checked box.",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "Color of the glyph drawn on the checked box. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Checkbox-indeterminate-color",
-            DefaultValue = "The Color role's main color",
-            Description = "Color of the mark of the mixed state - the filled square or a custom IndeterminateIcon - and of the box stroke around it.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Color of the mark of the mixed state - the filled square or a custom IndeterminateIcon - and of the box stroke around it. The Color parameter wins over it.",
         },
         new()
         {
@@ -539,8 +539,8 @@ public partial class BitCheckboxDemo
         new()
         {
             Name = "--bit-Checkbox-box-size",
-            DefaultValue = "Per Size: --bit-siz-sel-sm / -md / -lg",
-            Description = "Side of the box, and the one number the rest of the face follows: the glyph, the filled square of the mixed state and the indent that keeps the description lined up with the label all scale with it.",
+            DefaultValue = "--bit-siz-sel-md",
+            Description = "Side of the box, and the one number the rest of the face follows: the glyph, the filled square of the mixed state and the indent that keeps the description lined up with the label all scale with it. The Size parameter wins over it.",
         },
         new()
         {
@@ -569,8 +569,8 @@ public partial class BitCheckboxDemo
         new()
         {
             Name = "--bit-Checkbox-font-size",
-            DefaultValue = "Per Size: --bit-tpg-fs-xs / -sm / -md",
-            Description = "Font size of the label.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Font size of the label. The Size parameter wins over it.",
         },
         new()
         {
@@ -581,8 +581,8 @@ public partial class BitCheckboxDemo
         new()
         {
             Name = "--bit-Checkbox-description-font-size",
-            DefaultValue = "Per Size: --bit-tpg-fs-2xs / -xs / -sm",
-            Description = "Font size of the description, one step below the label on the type ramp.",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Font size of the description, one step below the label on the type ramp. The Size parameter wins over it.",
         },
         new()
         {

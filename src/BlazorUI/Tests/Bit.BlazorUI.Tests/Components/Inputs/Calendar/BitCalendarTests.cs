@@ -1744,6 +1744,41 @@ public class BitCalendarTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCalendarShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitCalendar>();
+
+        // An unset Color or Size publishes nothing, so the public --bit-Calendar-* variables restyle the default
+        // while an explicit value - which does publish its class - wins over them.
+        var root = component.Find(".bit-cal");
+        var published = new[]
+        {
+            "bit-cal-pri", "bit-cal-sec", "bit-cal-ter", "bit-cal-inf", "bit-cal-suc", "bit-cal-wrn", "bit-cal-swr", "bit-cal-err",
+            "bit-cal-pbg", "bit-cal-sbg", "bit-cal-tbg", "bit-cal-pfg", "bit-cal-sfg", "bit-cal-tfg", "bit-cal-pbr", "bit-cal-sbr", "bit-cal-tbr",
+            "bit-cal-sm", "bit-cal-md", "bit-cal-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
+    }
+
+    [TestMethod,
+        DataRow(BitColor.Primary, "bit-cal-pri"),
+        DataRow(BitColor.Error, "bit-cal-err"),
+        DataRow(BitColor.TertiaryBorder, "bit-cal-tbr")]
+    public void BitCalendarShouldRespectColor(BitColor color, string expectedClass)
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Color, color);
+        });
+
+        Assert.IsTrue(component.Find(".bit-cal").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
     public void BitCalendarShouldRenderHeaderAndFooterTemplates()
     {
         var component = RenderComponent<BitCalendar>(parameters =>

@@ -234,193 +234,189 @@ public class BitCalloutParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitCallout);
 
-        if (Alignment.HasValue && bitCallout.HasNotBeenSet(nameof(Alignment)))
+        if (Alignment.HasValue)
         {
-            bitCallout.Alignment = Alignment.Value;
+            bitCallout.TakeFromCascade(nameof(Alignment), Alignment.Value, static c => c.Alignment, static (c, v) => c.Alignment = v);
         }
 
-        if (AlignmentOffset.HasValue && bitCallout.HasNotBeenSet(nameof(AlignmentOffset)))
+        if (AlignmentOffset.HasValue)
         {
-            bitCallout.AlignmentOffset = AlignmentOffset.Value;
+            bitCallout.TakeFromCascade(nameof(AlignmentOffset), AlignmentOffset.Value, static c => c.AlignmentOffset, static (c, v) => c.AlignmentOffset = v);
         }
 
-        if (ArrowPadding.HasValue && bitCallout.HasNotBeenSet(nameof(ArrowPadding)))
+        if (ArrowPadding.HasValue)
         {
-            bitCallout.ArrowPadding = ArrowPadding.Value;
+            bitCallout.TakeFromCascade(nameof(ArrowPadding), ArrowPadding.Value, static c => c.ArrowPadding, static (c, v) => c.ArrowPadding = v);
         }
 
-        if (ArrowSize.HasValue && bitCallout.HasNotBeenSet(nameof(ArrowSize)))
+        if (ArrowSize.HasValue)
         {
-            bitCallout.ArrowSize = ArrowSize.Value;
+            bitCallout.TakeFromCascade(nameof(ArrowSize), ArrowSize.Value, static c => c.ArrowSize, static (c, v) => c.ArrowSize = v);
         }
 
-        if (AutoClose.HasValue && bitCallout.HasNotBeenSet(nameof(AutoClose)))
+        if (AutoClose.HasValue)
         {
-            bitCallout.AutoClose = AutoClose.Value;
+            bitCallout.TakeFromCascade(nameof(AutoClose), AutoClose.Value, static c => c.AutoClose, static (c, v) => c.AutoClose = v);
         }
 
-        if (AutoFocus.HasValue && bitCallout.HasNotBeenSet(nameof(AutoFocus)))
+        if (AutoFocus.HasValue)
         {
-            bitCallout.AutoFocus = AutoFocus.Value;
+            bitCallout.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static c => c.AutoFocus, static (c, v) => c.AutoFocus = v);
         }
 
-        if (Background.HasValue && bitCallout.HasNotBeenSet(nameof(Background)))
+        if (Background.HasValue)
         {
-            bitCallout.Background = Background.Value;
+            bitCallout.TakeFromCascade(nameof(Background), Background.Value, static c => c.Background, static (c, v) => c.Background = v);
         }
 
-        if (Border.HasValue && bitCallout.HasNotBeenSet(nameof(Border)))
+        if (Border.HasValue)
         {
-            bitCallout.Border = Border.Value;
+            bitCallout.TakeFromCascade(nameof(Border), Border.Value, static c => c.Border, static (c, v) => c.Border = v);
         }
 
-        if (Classes is not null && bitCallout.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitCallout.Classes = Classes;
-
-            bitCallout.ClassBuilder.Reset();
+            bitCallout.TakeFromCascade(nameof(Classes), Classes, static c => c.Classes, static (c, v) => c.Classes = v);
         }
 
-        if (CollisionPadding.HasValue && bitCallout.HasNotBeenSet(nameof(CollisionPadding)))
+        if (CollisionPadding.HasValue)
         {
-            bitCallout.CollisionPadding = CollisionPadding.Value;
+            bitCallout.TakeFromCascade(nameof(CollisionPadding), CollisionPadding.Value, static c => c.CollisionPadding, static (c, v) => c.CollisionPadding = v);
         }
 
-        if (Direction.HasValue && bitCallout.HasNotBeenSet(nameof(Direction)))
+        if (Direction.HasValue)
         {
-            bitCallout.Direction = Direction.Value;
+            bitCallout.TakeFromCascade(nameof(Direction), Direction.Value, static c => c.Direction, static (c, v) => c.Direction = v);
         }
 
-        if (FixedCalloutWidth.HasValue && bitCallout.HasNotBeenSet(nameof(FixedCalloutWidth)))
+        if (FixedCalloutWidth.HasValue)
         {
-            bitCallout.FixedCalloutWidth = FixedCalloutWidth.Value;
+            bitCallout.TakeFromCascade(nameof(FixedCalloutWidth), FixedCalloutWidth.Value, static c => c.FixedCalloutWidth, static (c, v) => c.FixedCalloutWidth = v);
         }
 
-        if (Gap.HasValue && bitCallout.HasNotBeenSet(nameof(Gap)))
+        if (Gap.HasValue)
         {
-            bitCallout.Gap = Gap.Value;
+            bitCallout.TakeFromCascade(nameof(Gap), Gap.Value, static c => c.Gap, static (c, v) => c.Gap = v);
         }
 
-        if (HoverCloseDelay.HasValue && bitCallout.HasNotBeenSet(nameof(HoverCloseDelay)))
+        if (HoverCloseDelay.HasValue)
         {
-            bitCallout.HoverCloseDelay = HoverCloseDelay.Value;
+            bitCallout.TakeFromCascade(nameof(HoverCloseDelay), HoverCloseDelay.Value, static c => c.HoverCloseDelay, static (c, v) => c.HoverCloseDelay = v);
         }
 
-        if (HoverOpenDelay.HasValue && bitCallout.HasNotBeenSet(nameof(HoverOpenDelay)))
+        if (HoverOpenDelay.HasValue)
         {
-            bitCallout.HoverOpenDelay = HoverOpenDelay.Value;
+            bitCallout.TakeFromCascade(nameof(HoverOpenDelay), HoverOpenDelay.Value, static c => c.HoverOpenDelay, static (c, v) => c.HoverOpenDelay = v);
         }
 
-        if (LazyRender.HasValue && bitCallout.HasNotBeenSet(nameof(LazyRender)))
+        if (LazyRender.HasValue)
         {
-            bitCallout.LazyRender = LazyRender.Value;
+            bitCallout.TakeFromCascade(nameof(LazyRender), LazyRender.Value, static c => c.LazyRender, static (c, v) => c.LazyRender = v);
         }
 
-        if (MaxHeight.HasValue() && bitCallout.HasNotBeenSet(nameof(MaxHeight)))
+        if (MaxHeight.HasValue())
         {
-            bitCallout.MaxHeight = MaxHeight;
+            bitCallout.TakeFromCascade(nameof(MaxHeight), MaxHeight, static c => c.MaxHeight, static (c, v) => c.MaxHeight = v);
         }
 
-        if (MaxWidth.HasValue() && bitCallout.HasNotBeenSet(nameof(MaxWidth)))
+        if (MaxWidth.HasValue())
         {
-            bitCallout.MaxWidth = MaxWidth;
+            bitCallout.TakeFromCascade(nameof(MaxWidth), MaxWidth, static c => c.MaxWidth, static (c, v) => c.MaxWidth = v);
         }
 
-        if (MaxWindowWidth.HasValue && bitCallout.HasNotBeenSet(nameof(MaxWindowWidth)))
+        if (MaxWindowWidth.HasValue)
         {
-            bitCallout.MaxWindowWidth = MaxWindowWidth.Value;
+            bitCallout.TakeFromCascade(nameof(MaxWindowWidth), MaxWindowWidth.Value, static c => c.MaxWindowWidth, static (c, v) => c.MaxWindowWidth = v);
         }
 
-        if (MinWidth.HasValue() && bitCallout.HasNotBeenSet(nameof(MinWidth)))
+        if (MinWidth.HasValue())
         {
-            bitCallout.MinWidth = MinWidth;
+            bitCallout.TakeFromCascade(nameof(MinWidth), MinWidth, static c => c.MinWidth, static (c, v) => c.MinWidth = v);
         }
 
-        if (Modal.HasValue && bitCallout.HasNotBeenSet(nameof(Modal)))
+        if (Modal.HasValue)
         {
-            bitCallout.Modal = Modal.Value;
+            bitCallout.TakeFromCascade(nameof(Modal), Modal.Value, static c => c.Modal, static (c, v) => c.Modal = v);
         }
 
-        if (NoDismissOnEscape.HasValue && bitCallout.HasNotBeenSet(nameof(NoDismissOnEscape)))
+        if (NoDismissOnEscape.HasValue)
         {
-            bitCallout.NoDismissOnEscape = NoDismissOnEscape.Value;
+            bitCallout.TakeFromCascade(nameof(NoDismissOnEscape), NoDismissOnEscape.Value, static c => c.NoDismissOnEscape, static (c, v) => c.NoDismissOnEscape = v);
         }
 
-        if (NoDismissOnOutsideClick.HasValue && bitCallout.HasNotBeenSet(nameof(NoDismissOnOutsideClick)))
+        if (NoDismissOnOutsideClick.HasValue)
         {
-            bitCallout.NoDismissOnOutsideClick = NoDismissOnOutsideClick.Value;
+            bitCallout.TakeFromCascade(nameof(NoDismissOnOutsideClick), NoDismissOnOutsideClick.Value, static c => c.NoDismissOnOutsideClick, static (c, v) => c.NoDismissOnOutsideClick = v);
         }
 
-        if (NoDismissOnScroll.HasValue && bitCallout.HasNotBeenSet(nameof(NoDismissOnScroll)))
+        if (NoDismissOnScroll.HasValue)
         {
-            bitCallout.NoDismissOnScroll = NoDismissOnScroll.Value;
+            bitCallout.TakeFromCascade(nameof(NoDismissOnScroll), NoDismissOnScroll.Value, static c => c.NoDismissOnScroll, static (c, v) => c.NoDismissOnScroll = v);
         }
 
-        if (NoFlip.HasValue && bitCallout.HasNotBeenSet(nameof(NoFlip)))
+        if (NoFlip.HasValue)
         {
-            bitCallout.NoFlip = NoFlip.Value;
+            bitCallout.TakeFromCascade(nameof(NoFlip), NoFlip.Value, static c => c.NoFlip, static (c, v) => c.NoFlip = v);
         }
 
-        if (NoOverlay.HasValue && bitCallout.HasNotBeenSet(nameof(NoOverlay)))
+        if (NoOverlay.HasValue)
         {
-            bitCallout.NoOverlay = NoOverlay.Value;
+            bitCallout.TakeFromCascade(nameof(NoOverlay), NoOverlay.Value, static c => c.NoOverlay, static (c, v) => c.NoOverlay = v);
         }
 
-        if (NoShadow.HasValue && bitCallout.HasNotBeenSet(nameof(NoShadow)))
+        if (NoShadow.HasValue)
         {
-            bitCallout.NoShadow = NoShadow.Value;
+            bitCallout.TakeFromCascade(nameof(NoShadow), NoShadow.Value, static c => c.NoShadow, static (c, v) => c.NoShadow = v);
         }
 
-        if (OpenOnHover.HasValue && bitCallout.HasNotBeenSet(nameof(OpenOnHover)))
+        if (OpenOnHover.HasValue)
         {
-            bitCallout.OpenOnHover = OpenOnHover.Value;
+            bitCallout.TakeFromCascade(nameof(OpenOnHover), OpenOnHover.Value, static c => c.OpenOnHover, static (c, v) => c.OpenOnHover = v);
         }
 
-        if (PanelPlacement.HasValue && bitCallout.HasNotBeenSet(nameof(PanelPlacement)))
+        if (PanelPlacement.HasValue)
         {
-            bitCallout.PanelPlacement = PanelPlacement.Value;
+            bitCallout.TakeFromCascade(nameof(PanelPlacement), PanelPlacement.Value, static c => c.PanelPlacement, static (c, v) => c.PanelPlacement = v);
         }
 
-        if (ResponsiveMode.HasValue && bitCallout.HasNotBeenSet(nameof(ResponsiveMode)))
+        if (ResponsiveMode.HasValue)
         {
-            bitCallout.ResponsiveMode = ResponsiveMode.Value;
+            bitCallout.TakeFromCascade(nameof(ResponsiveMode), ResponsiveMode.Value, static c => c.ResponsiveMode, static (c, v) => c.ResponsiveMode = v);
         }
 
-        if (ScrollOffset.HasValue && bitCallout.HasNotBeenSet(nameof(ScrollOffset)))
+        if (ScrollOffset.HasValue)
         {
-            bitCallout.ScrollOffset = ScrollOffset.Value;
+            bitCallout.TakeFromCascade(nameof(ScrollOffset), ScrollOffset.Value, static c => c.ScrollOffset, static (c, v) => c.ScrollOffset = v);
         }
 
-        if (SetCalloutWidth.HasValue && bitCallout.HasNotBeenSet(nameof(SetCalloutWidth)))
+        if (SetCalloutWidth.HasValue)
         {
-            bitCallout.SetCalloutWidth = SetCalloutWidth.Value;
+            bitCallout.TakeFromCascade(nameof(SetCalloutWidth), SetCalloutWidth.Value, static c => c.SetCalloutWidth, static (c, v) => c.SetCalloutWidth = v);
         }
 
-        if (ShowArrow.HasValue && bitCallout.HasNotBeenSet(nameof(ShowArrow)))
+        if (ShowArrow.HasValue)
         {
-            bitCallout.ShowArrow = ShowArrow.Value;
+            bitCallout.TakeFromCascade(nameof(ShowArrow), ShowArrow.Value, static c => c.ShowArrow, static (c, v) => c.ShowArrow = v);
         }
 
-        if (Placement.HasValue && bitCallout.HasNotBeenSet(nameof(Placement)))
+        if (Placement.HasValue)
         {
-            bitCallout.Placement = Placement.Value;
+            bitCallout.TakeFromCascade(nameof(Placement), Placement.Value, static c => c.Placement, static (c, v) => c.Placement = v);
         }
 
-        if (Styles is not null && bitCallout.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitCallout.Styles = Styles;
-
-            bitCallout.StyleBuilder.Reset();
+            bitCallout.TakeFromCascade(nameof(Styles), Styles, static c => c.Styles, static (c, v) => c.Styles = v);
         }
 
-        if (TrapFocus.HasValue && bitCallout.HasNotBeenSet(nameof(TrapFocus)))
+        if (TrapFocus.HasValue)
         {
-            bitCallout.TrapFocus = TrapFocus.Value;
+            bitCallout.TakeFromCascade(nameof(TrapFocus), TrapFocus.Value, static c => c.TrapFocus, static (c, v) => c.TrapFocus = v);
         }
 
-        if (Width.HasValue() && bitCallout.HasNotBeenSet(nameof(Width)))
+        if (Width.HasValue())
         {
-            bitCallout.Width = Width;
+            bitCallout.TakeFromCascade(nameof(Width), Width, static c => c.Width, static (c, v) => c.Width = v);
         }
     }
 }

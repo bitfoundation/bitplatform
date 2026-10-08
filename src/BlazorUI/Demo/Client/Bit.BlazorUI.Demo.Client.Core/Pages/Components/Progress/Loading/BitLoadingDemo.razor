@@ -440,9 +440,11 @@
             </div>
             <br /><br />
             <div>
-                For what no parameter covers, loaders read the <BitLink Href="#css-variables-section">CSS variables</BitLink>
-                listed below. Set on <code>:root</code> they restyle every loader, on an ancestor the loaders inside it,
-                and on a loader's <b>Style</b> that loader alone. The whole drawing is laid out from
+                Loaders also read the <BitLink Href="#css-variables-section">CSS variables</BitLink> listed below. Set on
+                <code>:root</code> they restyle every loader, on an ancestor the loaders inside it, and on a loader's
+                <b>Style</b> that loader alone. They restyle the default, not a choice: an explicit <b>Color</b>,
+                <b>CustomColor</b>, <b>Size</b>, <b>CustomSize</b>, <b>Thickness</b> or <b>Speed</b> wins over the variable for
+                what it sets. The whole drawing is laid out from
                 <code>--bit-Loading-size</code>, so it resizes in CSS with any length, <code>em</code> and
                 <code>rem</code> included.
             </div>

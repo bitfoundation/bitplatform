@@ -14,6 +14,9 @@ $bit-stc-breakpoints: ( 'xs': 0, 'sm': $mq-sm-min, 'md': $mq-md-min, 'lg': $mq-l
     // Redeclared on every stack, so each one resolves the public default against its own ancestors and a nested
     // stack is never handed the resolved value of its parent.
     --bit-stc-dgap: var(--bit-Stack-gap, #{spacing(2)});
+    // The step a size class publishes starts out unset, so a sized stack never hands it to one nested in it; the
+    // size classes, declared further down at the same weight, still win on the stack that carries them.
+    --bit-stc-size: initial;
     width: 100%;
     height: 100%;
     box-sizing: border-box;

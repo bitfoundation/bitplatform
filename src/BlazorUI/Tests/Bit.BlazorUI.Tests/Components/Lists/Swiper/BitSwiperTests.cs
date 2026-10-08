@@ -408,6 +408,28 @@ public class BitSwiperTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitSwiperShouldPublishNoColorAccentOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitSwiperTest>();
+
+        // An unset Color, Accent or Size publishes nothing, so the public --bit-Swiper-* variables restyle the default
+        // while an explicit value - which does publish its class - wins over them.
+        var root = component.Find(".bit-swp");
+        var published = new[]
+        {
+            "bit-swp-pri", "bit-swp-sec", "bit-swp-ter", "bit-swp-inf", "bit-swp-suc", "bit-swp-wrn", "bit-swp-swr", "bit-swp-err",
+            "bit-swp-pbg", "bit-swp-sbg", "bit-swp-tbg", "bit-swp-pfg", "bit-swp-sfg", "bit-swp-tfg", "bit-swp-pbr", "bit-swp-sbr", "bit-swp-tbr",
+            "bit-swp-apri", "bit-swp-asec", "bit-swp-ater", "bit-swp-atra",
+            "bit-swp-sm", "bit-swp-md", "bit-swp-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
+    }
+
+    [TestMethod]
     public void BitSwiperShouldRespectShowScrollbar()
     {
         var component = RenderComponent<BitSwiperTest>();

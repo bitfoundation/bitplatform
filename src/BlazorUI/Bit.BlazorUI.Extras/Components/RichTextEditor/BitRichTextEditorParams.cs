@@ -191,161 +191,149 @@ public class BitRichTextEditorParams : BitComponentBaseParams, IBitComponentPara
 
         UpdateBaseParameters(bitRichTextEditor);
 
-        if (AutoLink.HasValue && bitRichTextEditor.HasNotBeenSet(nameof(AutoLink)))
+        if (AutoLink.HasValue)
         {
-            bitRichTextEditor.AutoLink = AutoLink.Value;
+            bitRichTextEditor.TakeFromCascade(nameof(AutoLink), AutoLink.Value, static r => r.AutoLink, static (r, v) => r.AutoLink = v);
         }
 
-        if (Classes is not null && bitRichTextEditor.HasNotBeenSet(nameof(Classes)) && bitRichTextEditor.Classes != Classes)
+        if (Classes is not null)
         {
-            bitRichTextEditor.Classes = Classes;
-
-            bitRichTextEditor.ClassBuilder.Reset();
+            bitRichTextEditor.TakeFromCascade(nameof(Classes), Classes, static r => r.Classes, static (r, v) => r.Classes = v);
         }
 
-        if (ColorPalette is not null && bitRichTextEditor.HasNotBeenSet(nameof(ColorPalette)))
+        if (ColorPalette is not null)
         {
-            bitRichTextEditor.ColorPalette = ColorPalette;
+            bitRichTextEditor.TakeFromCascade(nameof(ColorPalette), ColorPalette, static r => r.ColorPalette, static (r, v) => r.ColorPalette = v);
         }
 
-        if (DebounceMs.HasValue && bitRichTextEditor.HasNotBeenSet(nameof(DebounceMs)))
+        if (DebounceMs.HasValue)
         {
-            bitRichTextEditor.DebounceMs = DebounceMs.Value;
+            bitRichTextEditor.TakeFromCascade(nameof(DebounceMs), DebounceMs.Value, static r => r.DebounceMs, static (r, v) => r.DebounceMs = v);
         }
 
-        if (FontFamilies is not null && bitRichTextEditor.HasNotBeenSet(nameof(FontFamilies)))
+        if (FontFamilies is not null)
         {
-            bitRichTextEditor.FontFamilies = FontFamilies;
+            bitRichTextEditor.TakeFromCascade(nameof(FontFamilies), FontFamilies, static r => r.FontFamilies, static (r, v) => r.FontFamilies = v);
         }
 
-        if (FontSizes is not null && bitRichTextEditor.HasNotBeenSet(nameof(FontSizes)))
+        if (FontSizes is not null)
         {
-            bitRichTextEditor.FontSizes = FontSizes;
+            bitRichTextEditor.TakeFromCascade(nameof(FontSizes), FontSizes, static r => r.FontSizes, static (r, v) => r.FontSizes = v);
         }
 
-        if (Height.HasValue() && bitRichTextEditor.HasNotBeenSet(nameof(Height)) && bitRichTextEditor.Height != Height)
+        if (Height.HasValue())
         {
-            bitRichTextEditor.Height = Height;
-
-            bitRichTextEditor.StyleBuilder.Reset();
+            bitRichTextEditor.TakeFromCascade(nameof(Height), Height, static r => r.Height, static (r, v) => r.Height = v);
         }
 
-        if (KeyboardShortcuts is not null && bitRichTextEditor.HasNotBeenSet(nameof(KeyboardShortcuts)))
+        if (KeyboardShortcuts is not null)
         {
-            bitRichTextEditor.KeyboardShortcuts = KeyboardShortcuts;
+            bitRichTextEditor.TakeFromCascade(nameof(KeyboardShortcuts), KeyboardShortcuts, static r => r.KeyboardShortcuts, static (r, v) => r.KeyboardShortcuts = v);
         }
 
-        if (Localizer is not null && bitRichTextEditor.HasNotBeenSet(nameof(Localizer)))
+        if (Localizer is not null)
         {
-            bitRichTextEditor.Localizer = Localizer;
+            bitRichTextEditor.TakeFromCascade(nameof(Localizer), Localizer, static r => r.Localizer, static (r, v) => r.Localizer = v);
         }
 
-        if (MaxHeight.HasValue() && bitRichTextEditor.HasNotBeenSet(nameof(MaxHeight)) && bitRichTextEditor.MaxHeight != MaxHeight)
+        if (MaxHeight.HasValue())
         {
-            bitRichTextEditor.MaxHeight = MaxHeight;
-
-            bitRichTextEditor.StyleBuilder.Reset();
+            bitRichTextEditor.TakeFromCascade(nameof(MaxHeight), MaxHeight, static r => r.MaxHeight, static (r, v) => r.MaxHeight = v);
         }
 
-        if (MaxImageSize.HasValue && bitRichTextEditor.HasNotBeenSet(nameof(MaxImageSize)))
+        if (MaxImageSize.HasValue)
         {
-            bitRichTextEditor.MaxImageSize = MaxImageSize.Value;
+            bitRichTextEditor.TakeFromCascade(nameof(MaxImageSize), MaxImageSize.Value, static r => r.MaxImageSize, static (r, v) => r.MaxImageSize = v);
         }
 
-        if (MaxLength.HasValue && bitRichTextEditor.HasNotBeenSet(nameof(MaxLength)))
+        if (MaxLength.HasValue)
         {
-            bitRichTextEditor.MaxLength = MaxLength.Value;
+            bitRichTextEditor.TakeFromCascade(nameof(MaxLength), MaxLength.Value, static r => r.MaxLength, static (r, v) => r.MaxLength = v);
         }
 
-        if (OnImageUpload is not null && bitRichTextEditor.HasNotBeenSet(nameof(OnImageUpload)))
+        if (OnImageUpload is not null)
         {
-            bitRichTextEditor.OnImageUpload = OnImageUpload;
+            bitRichTextEditor.TakeFromCascade(nameof(OnImageUpload), OnImageUpload, static r => r.OnImageUpload, static (r, v) => r.OnImageUpload = v);
         }
 
-        if (OnMentionSearch is not null && bitRichTextEditor.HasNotBeenSet(nameof(OnMentionSearch)))
+        if (OnMentionSearch is not null)
         {
-            bitRichTextEditor.OnMentionSearch = OnMentionSearch;
+            bitRichTextEditor.TakeFromCascade(nameof(OnMentionSearch), OnMentionSearch, static r => r.OnMentionSearch, static (r, v) => r.OnMentionSearch = v);
         }
 
-        if (PasteAsPlainText.HasValue && bitRichTextEditor.HasNotBeenSet(nameof(PasteAsPlainText)))
+        if (PasteAsPlainText.HasValue)
         {
-            bitRichTextEditor.PasteAsPlainText = PasteAsPlainText.Value;
+            bitRichTextEditor.TakeFromCascade(nameof(PasteAsPlainText), PasteAsPlainText.Value, static r => r.PasteAsPlainText, static (r, v) => r.PasteAsPlainText = v);
         }
 
-        if (Placeholder.HasValue() && bitRichTextEditor.HasNotBeenSet(nameof(Placeholder)))
+        if (Placeholder.HasValue())
         {
-            bitRichTextEditor.Placeholder = Placeholder;
+            bitRichTextEditor.TakeFromCascade(nameof(Placeholder), Placeholder, static r => r.Placeholder, static (r, v) => r.Placeholder = v);
         }
 
-        if (ReadOnly.HasValue && bitRichTextEditor.HasNotBeenSet(nameof(ReadOnly)) && bitRichTextEditor.ReadOnly != ReadOnly)
+        if (ReadOnly.HasValue)
         {
-            bitRichTextEditor.ReadOnly = ReadOnly.Value;
-
-            bitRichTextEditor.ClassBuilder.Reset();
+            bitRichTextEditor.TakeFromCascade(nameof(ReadOnly), ReadOnly.Value, static r => r.ReadOnly, static (r, v) => r.ReadOnly = v);
         }
 
-        if (Required.HasValue && bitRichTextEditor.HasNotBeenSet(nameof(Required)))
+        if (Required.HasValue)
         {
-            bitRichTextEditor.Required = Required.Value;
+            bitRichTextEditor.TakeFromCascade(nameof(Required), Required.Value, static r => r.Required, static (r, v) => r.Required = v);
         }
 
-        if (Resizable.HasValue && bitRichTextEditor.HasNotBeenSet(nameof(Resizable)))
+        if (Resizable.HasValue)
         {
-            bitRichTextEditor.Resizable = Resizable.Value;
+            bitRichTextEditor.TakeFromCascade(nameof(Resizable), Resizable.Value, static r => r.Resizable, static (r, v) => r.Resizable = v);
         }
 
-        if (SanitizationPolicy is not null && bitRichTextEditor.HasNotBeenSet(nameof(SanitizationPolicy)))
+        if (SanitizationPolicy is not null)
         {
-            bitRichTextEditor.SanitizationPolicy = SanitizationPolicy;
+            bitRichTextEditor.TakeFromCascade(nameof(SanitizationPolicy), SanitizationPolicy, static r => r.SanitizationPolicy, static (r, v) => r.SanitizationPolicy = v);
         }
 
-        if (ShowCount.HasValue && bitRichTextEditor.HasNotBeenSet(nameof(ShowCount)))
+        if (ShowCount.HasValue)
         {
-            bitRichTextEditor.ShowCount = ShowCount.Value;
+            bitRichTextEditor.TakeFromCascade(nameof(ShowCount), ShowCount.Value, static r => r.ShowCount, static (r, v) => r.ShowCount = v);
         }
 
-        if (ShowQuickToolbar.HasValue && bitRichTextEditor.HasNotBeenSet(nameof(ShowQuickToolbar)))
+        if (ShowQuickToolbar.HasValue)
         {
-            bitRichTextEditor.ShowQuickToolbar = ShowQuickToolbar.Value;
+            bitRichTextEditor.TakeFromCascade(nameof(ShowQuickToolbar), ShowQuickToolbar.Value, static r => r.ShowQuickToolbar, static (r, v) => r.ShowQuickToolbar = v);
         }
 
-        if (ShowToolbar.HasValue && bitRichTextEditor.HasNotBeenSet(nameof(ShowToolbar)))
+        if (ShowToolbar.HasValue)
         {
-            bitRichTextEditor.ShowToolbar = ShowToolbar.Value;
+            bitRichTextEditor.TakeFromCascade(nameof(ShowToolbar), ShowToolbar.Value, static r => r.ShowToolbar, static (r, v) => r.ShowToolbar = v);
         }
 
-        if (SmartTypography.HasValue && bitRichTextEditor.HasNotBeenSet(nameof(SmartTypography)))
+        if (SmartTypography.HasValue)
         {
-            bitRichTextEditor.SmartTypography = SmartTypography.Value;
+            bitRichTextEditor.TakeFromCascade(nameof(SmartTypography), SmartTypography.Value, static r => r.SmartTypography, static (r, v) => r.SmartTypography = v);
         }
 
-        if (SpellCheck.HasValue && bitRichTextEditor.HasNotBeenSet(nameof(SpellCheck)))
+        if (SpellCheck.HasValue)
         {
-            bitRichTextEditor.SpellCheck = SpellCheck.Value;
+            bitRichTextEditor.TakeFromCascade(nameof(SpellCheck), SpellCheck.Value, static r => r.SpellCheck, static (r, v) => r.SpellCheck = v);
         }
 
-        if (StickyToolbar.HasValue && bitRichTextEditor.HasNotBeenSet(nameof(StickyToolbar)) && bitRichTextEditor.StickyToolbar != StickyToolbar)
+        if (StickyToolbar.HasValue)
         {
-            bitRichTextEditor.StickyToolbar = StickyToolbar.Value;
-
-            bitRichTextEditor.ClassBuilder.Reset();
+            bitRichTextEditor.TakeFromCascade(nameof(StickyToolbar), StickyToolbar.Value, static r => r.StickyToolbar, static (r, v) => r.StickyToolbar = v);
         }
 
-        if (Styles is not null && bitRichTextEditor.HasNotBeenSet(nameof(Styles)) && bitRichTextEditor.Styles != Styles)
+        if (Styles is not null)
         {
-            bitRichTextEditor.Styles = Styles;
-
-            bitRichTextEditor.StyleBuilder.Reset();
+            bitRichTextEditor.TakeFromCascade(nameof(Styles), Styles, static r => r.Styles, static (r, v) => r.Styles = v);
         }
 
-        if (Toolbar.HasValue && bitRichTextEditor.HasNotBeenSet(nameof(Toolbar)))
+        if (Toolbar.HasValue)
         {
-            bitRichTextEditor.Toolbar = Toolbar.Value;
+            bitRichTextEditor.TakeFromCascade(nameof(Toolbar), Toolbar.Value, static r => r.Toolbar, static (r, v) => r.Toolbar = v);
         }
 
-        if (ToolbarConfig is not null && bitRichTextEditor.HasNotBeenSet(nameof(ToolbarConfig)))
+        if (ToolbarConfig is not null)
         {
-            bitRichTextEditor.ToolbarConfig = ToolbarConfig;
+            bitRichTextEditor.TakeFromCascade(nameof(ToolbarConfig), ToolbarConfig, static r => r.ToolbarConfig, static (r, v) => r.ToolbarConfig = v);
         }
     }
 }

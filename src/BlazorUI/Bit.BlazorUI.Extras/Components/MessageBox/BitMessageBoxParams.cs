@@ -148,107 +148,99 @@ public class BitMessageBoxParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitMessageBox);
 
-        if (AutoFocus.HasValue && bitMessageBox.HasNotBeenSet(nameof(AutoFocus)))
+        if (AutoFocus.HasValue)
         {
-            bitMessageBox.AutoFocus = AutoFocus.Value;
+            bitMessageBox.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static m => m.AutoFocus, static (m, v) => m.AutoFocus = v);
         }
 
-        if (AutoLoading.HasValue && bitMessageBox.HasNotBeenSet(nameof(AutoLoading)))
+        if (AutoLoading.HasValue)
         {
-            bitMessageBox.AutoLoading = AutoLoading.Value;
+            bitMessageBox.TakeFromCascade(nameof(AutoLoading), AutoLoading.Value, static m => m.AutoLoading, static (m, v) => m.AutoLoading = v);
         }
 
-        if (ButtonColor.HasValue && bitMessageBox.HasNotBeenSet(nameof(ButtonColor)))
+        if (ButtonColor.HasValue)
         {
-            bitMessageBox.ButtonColor = ButtonColor.Value;
+            bitMessageBox.TakeFromCascade(nameof(ButtonColor), ButtonColor.Value, static m => m.ButtonColor, static (m, v) => m.ButtonColor = v);
         }
 
-        if (CancelText.HasValue() && bitMessageBox.HasNotBeenSet(nameof(CancelText)))
+        if (CancelText.HasValue())
         {
-            bitMessageBox.CancelText = CancelText;
+            bitMessageBox.TakeFromCascade(nameof(CancelText), CancelText, static m => m.CancelText, static (m, v) => m.CancelText = v);
         }
 
-        // This runs on every render of every message box under the BitParams, so a value that drives the class or
-        // the style of the root only resets the builders when it differs from the one the message box already holds.
-        if (Classes is not null && bitMessageBox.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitMessageBox.Classes, Classes) is false)
+        if (Classes is not null)
         {
-            bitMessageBox.Classes = Classes;
-
-            bitMessageBox.ClassBuilder.Reset();
+            bitMessageBox.TakeFromCascade(nameof(Classes), Classes, static m => m.Classes, static (m, v) => m.Classes = v);
         }
 
-        if (CloseButtonTitle.HasValue() && bitMessageBox.HasNotBeenSet(nameof(CloseButtonTitle)))
+        if (CloseButtonTitle.HasValue())
         {
-            bitMessageBox.CloseButtonTitle = CloseButtonTitle;
+            bitMessageBox.TakeFromCascade(nameof(CloseButtonTitle), CloseButtonTitle, static m => m.CloseButtonTitle, static (m, v) => m.CloseButtonTitle = v);
         }
 
-        if (CloseIcon is not null && bitMessageBox.HasNotBeenSet(nameof(CloseIcon)))
+        if (CloseIcon is not null)
         {
-            bitMessageBox.CloseIcon = CloseIcon;
+            bitMessageBox.TakeFromCascade(nameof(CloseIcon), CloseIcon, static m => m.CloseIcon, static (m, v) => m.CloseIcon = v);
         }
 
-        if (CloseIconName.HasValue() && bitMessageBox.HasNotBeenSet(nameof(CloseIconName)))
+        if (CloseIconName.HasValue())
         {
-            bitMessageBox.CloseIconName = CloseIconName;
+            bitMessageBox.TakeFromCascade(nameof(CloseIconName), CloseIconName, static m => m.CloseIconName, static (m, v) => m.CloseIconName = v);
         }
 
-        if (DefaultButton.HasValue && bitMessageBox.HasNotBeenSet(nameof(DefaultButton)))
+        if (DefaultButton.HasValue)
         {
-            bitMessageBox.DefaultButton = DefaultButton.Value;
+            bitMessageBox.TakeFromCascade(nameof(DefaultButton), DefaultButton.Value, static m => m.DefaultButton, static (m, v) => m.DefaultButton = v);
         }
 
-        if (HideIcon.HasValue && bitMessageBox.HasNotBeenSet(nameof(HideIcon)))
+        if (HideIcon.HasValue)
         {
-            bitMessageBox.HideIcon = HideIcon.Value;
+            bitMessageBox.TakeFromCascade(nameof(HideIcon), HideIcon.Value, static m => m.HideIcon, static (m, v) => m.HideIcon = v);
         }
 
-        if (NoText.HasValue() && bitMessageBox.HasNotBeenSet(nameof(NoText)))
+        if (NoText.HasValue())
         {
-            bitMessageBox.NoText = NoText;
+            bitMessageBox.TakeFromCascade(nameof(NoText), NoText, static m => m.NoText, static (m, v) => m.NoText = v);
         }
 
-        if (OkText.HasValue() && bitMessageBox.HasNotBeenSet(nameof(OkText)))
+        if (OkText.HasValue())
         {
-            bitMessageBox.OkText = OkText;
+            bitMessageBox.TakeFromCascade(nameof(OkText), OkText, static m => m.OkText, static (m, v) => m.OkText = v);
         }
 
-        if (PrimaryButtonColor.HasValue && bitMessageBox.HasNotBeenSet(nameof(PrimaryButtonColor)))
+        if (PrimaryButtonColor.HasValue)
         {
-            bitMessageBox.PrimaryButtonColor = PrimaryButtonColor.Value;
+            bitMessageBox.TakeFromCascade(nameof(PrimaryButtonColor), PrimaryButtonColor.Value, static m => m.PrimaryButtonColor, static (m, v) => m.PrimaryButtonColor = v);
         }
 
-        if (Reversed.HasValue && bitMessageBox.HasNotBeenSet(nameof(Reversed)))
+        if (Reversed.HasValue)
         {
-            bitMessageBox.Reversed = Reversed.Value;
+            bitMessageBox.TakeFromCascade(nameof(Reversed), Reversed.Value, static m => m.Reversed, static (m, v) => m.Reversed = v);
         }
 
-        if (ShowCloseButton.HasValue && bitMessageBox.HasNotBeenSet(nameof(ShowCloseButton)))
+        if (ShowCloseButton.HasValue)
         {
-            bitMessageBox.ShowCloseButton = ShowCloseButton.Value;
+            bitMessageBox.TakeFromCascade(nameof(ShowCloseButton), ShowCloseButton.Value, static m => m.ShowCloseButton, static (m, v) => m.ShowCloseButton = v);
         }
 
-        if (Size.HasValue && bitMessageBox.HasNotBeenSet(nameof(Size)) && bitMessageBox.Size != Size.Value)
+        if (Size.HasValue)
         {
-            bitMessageBox.Size = Size.Value;
-
-            bitMessageBox.ClassBuilder.Reset();
+            bitMessageBox.TakeFromCascade(nameof(Size), Size.Value, static m => m.Size, static (m, v) => m.Size = v);
         }
 
-        if (Styles is not null && bitMessageBox.HasNotBeenSet(nameof(Styles)) && ReferenceEquals(bitMessageBox.Styles, Styles) is false)
+        if (Styles is not null)
         {
-            bitMessageBox.Styles = Styles;
-
-            bitMessageBox.StyleBuilder.Reset();
+            bitMessageBox.TakeFromCascade(nameof(Styles), Styles, static m => m.Styles, static (m, v) => m.Styles = v);
         }
 
-        if (TitleElement.HasValue() && bitMessageBox.HasNotBeenSet(nameof(TitleElement)))
+        if (TitleElement.HasValue())
         {
-            bitMessageBox.TitleElement = TitleElement;
+            bitMessageBox.TakeFromCascade(nameof(TitleElement), TitleElement, static m => m.TitleElement, static (m, v) => m.TitleElement = v);
         }
 
-        if (YesText.HasValue() && bitMessageBox.HasNotBeenSet(nameof(YesText)))
+        if (YesText.HasValue())
         {
-            bitMessageBox.YesText = YesText;
+            bitMessageBox.TakeFromCascade(nameof(YesText), YesText, static m => m.YesText, static (m, v) => m.YesText = v);
         }
     }
 }

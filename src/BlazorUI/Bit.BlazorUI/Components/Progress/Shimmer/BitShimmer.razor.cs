@@ -729,34 +729,8 @@ public partial class BitShimmer : BitComponentBase
 
         ClassBuilder.Register(() => Inline ? "bit-smr-inl" : string.Empty);
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-smr-sm",
-            BitSize.Medium => "bit-smr-md",
-            BitSize.Large => "bit-smr-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-smr"));
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-smr-pri",
-            BitColor.Secondary => "bit-smr-sec",
-            BitColor.Tertiary => "bit-smr-ter",
-            BitColor.Info => "bit-smr-inf",
-            BitColor.Success => "bit-smr-suc",
-            BitColor.Warning => "bit-smr-wrn",
-            BitColor.SevereWarning => "bit-smr-swr",
-            BitColor.Error => "bit-smr-err",
-            BitColor.PrimaryBackground => "bit-smr-pbg",
-            BitColor.SecondaryBackground => "bit-smr-sbg",
-            BitColor.TertiaryBackground => "bit-smr-tbg",
-            BitColor.PrimaryForeground => "bit-smr-pfg",
-            BitColor.SecondaryForeground => "bit-smr-sfg",
-            BitColor.TertiaryForeground => "bit-smr-tfg",
-            BitColor.PrimaryBorder => "bit-smr-pbr",
-            BitColor.SecondaryBorder => "bit-smr-sbr",
-            BitColor.TertiaryBorder => "bit-smr-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-smr"));
     }
 }
