@@ -268,8 +268,8 @@ This is the **core deployment workflow** that handles building and deploying all
    ```yaml
    - Checkout source code
    - Setup .NET SDK (from global.json)
-   - bit setup: Node.js when the runner lacks it, the wasm-tools workload, and a Release build
-     with the job's Version, which also generates the CSS/JS from TypeScript and SCSS
+   - bit setup --no-build: Node.js when the runner lacks it and the wasm-tools workload; the publish
+     that follows generates the CSS/JS from TypeScript and SCSS in its own build
    ```
 
 2. **Localization with `bit translate`**
@@ -341,8 +341,7 @@ This is the **core deployment workflow** that handles building and deploying all
 
 1. **Environment Setup & Configuration**
    ```yaml
-   - Setup .NET SDK, then bit setup for Node.js when the runner lacks it, and a build that
-     generates the CSS/JS files
+   - Setup .NET SDK, then bit setup --no-build for Node.js when the runner lacks it
    - Translate resource files (`bit translate`)
    - Update appsettings.json:
      - ServerAddress: Environment-specific API URL
@@ -416,9 +415,9 @@ Each signed file counts against the account's monthly quota. To sign only the ex
 2. **Build Android App Bundle (AAB)**
 ```bash
 # Install the bit CLI once, then let it install Node.js when missing, the MAUI Android workload
-# and what the Android SDK lacks, then build, which generates the CSS/JS files
+# and what the Android SDK lacks; the publish below generates the CSS/JS files in its own build
 dotnet tool install --global Bit.Cli --prerelease
-bit setup --platforms android --no-browsers --yes
+bit setup --platforms android --no-build --yes
    
 # Publish signed AAB (Or APK if needed)
 dotnet publish -c Release \
@@ -460,8 +459,7 @@ dotnet publish -c Release \
    ```yaml
    - Setup .NET SDK
    - Setup Xcode 26.6 (latest)
-   - bit setup: Node.js when the runner lacks it, the MAUI workload, and a build that
-     generates the CSS/JS files
+   - bit setup --no-build: Node.js when the runner lacks it and the MAUI workload
    - Translate resources (`bit translate`)
    - Update appsettings.json with ServerAddress
    ```
@@ -573,7 +571,7 @@ build_api_blazor:
     - uses: actions/checkout@v7
     - uses: actions/setup-dotnet@v6
     - run: dotnet tool install --global Bit.Cli --prerelease
-    - run: bit setup --no-browsers --yes
+    - run: bit setup --no-build --yes
     - run: dotnet publish ...
     - uses: actions/upload-artifact@v7  # Save artifact
 

@@ -54,10 +54,6 @@ jobs:
     - name: dotnet workload restore
       run:  cd src/BlazorUI && dotnet workload restore
 
-    - name: InstallNodejsDependencies
-      continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.slnx -t:InstallNodejsDependencies -m:1 -f net11.0
-
     # BuildAllTfms=true opts back into net9.0 and net8.0, which the Debug configuration skips so that local
     # inner-loop builds only compile the TFM the demo and the tests actually run on.
     - name: dotnet build

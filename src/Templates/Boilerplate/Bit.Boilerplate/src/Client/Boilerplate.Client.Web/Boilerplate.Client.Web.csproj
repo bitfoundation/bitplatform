@@ -13,10 +13,6 @@
         <WasmStripILAfterAOT Condition=" '$(offlineDb)' == 'false'">true</WasmStripILAfterAOT>
         <WasmBuildNative Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''">true</WasmBuildNative>
         <!--/-:msbuild-conditional:noEmit -->
-        <ResolveStaticWebAssetsInputsDependsOn>
-            BeforeBuildTasks;
-            $(ResolveStaticWebAssetsInputsDependsOn)
-        </ResolveStaticWebAssetsInputsDependsOn>
 
         <WasmApplicationEnvironmentName>$(Environment)</WasmApplicationEnvironmentName>
         <WasmEnableWebcil Condition="'$(Environment)' == 'Development'">false</WasmEnableWebcil>
@@ -53,8 +49,11 @@
     </ItemGroup>
     <!--/-:msbuild-conditional:noEmit -->
 
-    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
+    <Target Name="BeforeBuildTasks" BeforeTargets="ResolveScopedCssInputs" Condition=" '$(DesignTimeBuild)' != 'true' ">
         <CallTarget Targets="BuildCssFiles" />
+        <ItemGroup>
+            <Content Include="**\*.razor.css" Exclude="@(Content);@(None);bin\**;obj\**" />
+        </ItemGroup>
     </Target>
 
     <Target Name="BuildCssFiles">

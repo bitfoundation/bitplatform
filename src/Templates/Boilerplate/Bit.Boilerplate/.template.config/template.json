@@ -837,6 +837,7 @@
                         "src/Tests/Features/ServerWeb/**",
                         "src/Tests/Features/DevMcp/**",
                         "src/Tests/Features/Versioning/**",
+                        "src/Tests/Features/Build/**",
                         "src/Tests/Features/Identity/OAuth/**",
                         "src/Tests/Features/Identity/AuthManagerRefreshCoordinationTests.cs",
                         "src/Tests/Features/Identity/AuthManagerTokenPersistenceTests.cs",

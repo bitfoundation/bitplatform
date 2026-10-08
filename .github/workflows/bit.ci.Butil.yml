@@ -61,10 +61,6 @@ jobs:
     - name: dotnet workload restore
       run:  cd src/Butil && dotnet workload restore
 
-    - name: InstallNodejsDependencies
-      continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
-      run: dotnet build src/Butil/Bit.Butil.slnx -t:InstallNodejsDependencies -m:1 -f net11.0
-
     - name: dotnet build
       run: dotnet build src/Butil/Bit.Butil.slnx
 
