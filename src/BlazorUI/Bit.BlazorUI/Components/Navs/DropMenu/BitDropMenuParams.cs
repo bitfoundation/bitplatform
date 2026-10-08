@@ -232,9 +232,6 @@ public class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitDropMenu);
 
-        // This runs on every render of every drop menu under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (Alignment.HasValue && bitDropMenu.HasNotBeenSet(nameof(Alignment)))
         {
             bitDropMenu.Alignment = Alignment.Value;

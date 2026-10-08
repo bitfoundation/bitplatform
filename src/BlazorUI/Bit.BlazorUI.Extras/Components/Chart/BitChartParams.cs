@@ -127,9 +127,6 @@ public class BitChartParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitChart);
 
-        // This runs on every render of every chart under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (Classes is not null && bitChart.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitChart.Classes, Classes) is false)
         {
             bitChart.Classes = Classes;

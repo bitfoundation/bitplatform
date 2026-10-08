@@ -340,9 +340,6 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
 
         UpdateInputBaseParameters(bitSearchBox);
 
-        // This runs on every render of every search box under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (AnnouncementProvider is not null && bitSearchBox.HasNotBeenSet(nameof(AnnouncementProvider)))
         {
             bitSearchBox.AnnouncementProvider = AnnouncementProvider;

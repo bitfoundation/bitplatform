@@ -608,13 +608,20 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.ContinuousSpinInterval = ContinuousSpinInterval.Value;
         }
 
+        // An equal culture in another instance - one created inline, carried by a new copy of the params object - is
+        // taken but changes nothing, exactly as the markup treats it.
         if (Culture is not null && bitCalendar.HasNotBeenSet(nameof(Culture)) && ReferenceEquals(bitCalendar.Culture, Culture) is false)
         {
+            var cultureChanged = Equals(bitCalendar.Culture, Culture) is false;
+
             bitCalendar.Culture = Culture;
 
-            bitCalendar.ClassBuilder.Reset();
+            if (cultureChanged)
+            {
+                bitCalendar.ClassBuilder.Reset();
 
-            rebuildView = true;
+                rebuildView = true;
+            }
         }
 
         if (DateFormat.HasValue() && bitCalendar.HasNotBeenSet(nameof(DateFormat)))

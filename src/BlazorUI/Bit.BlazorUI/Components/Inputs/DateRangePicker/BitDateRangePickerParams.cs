@@ -839,10 +839,6 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
 
         UpdateBaseParameters(bitDateRangePicker);
 
-        // This runs on every render of every date range picker under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
-
         // The parameters the picker rebuilds its view from are the ones carrying a [CallOnSet(OnSetParameters)]
         // on the component, and the component has already run that pass in OnInitialized - before anything
         // cascaded here reached it. So whichever of them the cascade fills in, the pass is run once more at the end.
@@ -955,13 +951,20 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
             bitDateRangePicker.ContinuousSpinInterval = ContinuousSpinInterval.Value;
         }
 
+        // An equal culture in another instance - one created inline, carried by a new copy of the params object - is
+        // taken but changes nothing, exactly as the markup treats it.
         if (Culture is not null && bitDateRangePicker.HasNotBeenSet(nameof(Culture)) && ReferenceEquals(bitDateRangePicker.Culture, Culture) is false)
         {
-            rebuildView = true;
+            var cultureChanged = Equals(bitDateRangePicker.Culture, Culture) is false;
 
             bitDateRangePicker.Culture = Culture;
 
-            bitDateRangePicker.ClassBuilder.Reset();
+            if (cultureChanged)
+            {
+                rebuildView = true;
+
+                bitDateRangePicker.ClassBuilder.Reset();
+            }
         }
 
         if (DateFormat.HasValue() && bitDateRangePicker.HasNotBeenSet(nameof(DateFormat)))
@@ -1567,7 +1570,7 @@ public class BitDateRangePickerParams : BitComponentBaseParams, IBitComponentPar
 
         if (TimeZone is not null && bitDateRangePicker.HasNotBeenSet(nameof(TimeZone)))
         {
-            rebuildView = rebuildView || ReferenceEquals(bitDateRangePicker.TimeZone, TimeZone) is false;
+            rebuildView |= Equals(bitDateRangePicker.TimeZone, TimeZone) is false;
 
             bitDateRangePicker.TimeZone = TimeZone;
         }

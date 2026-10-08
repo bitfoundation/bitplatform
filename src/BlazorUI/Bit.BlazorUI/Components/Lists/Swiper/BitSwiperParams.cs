@@ -296,9 +296,6 @@ public class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitSwiper);
 
-        // This runs on every render of every swiper under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (Accent.HasValue && bitSwiper.HasNotBeenSet(nameof(Accent)) && bitSwiper.Accent != Accent)
         {
             bitSwiper.Accent = Accent.Value;

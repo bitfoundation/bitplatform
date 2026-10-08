@@ -664,10 +664,6 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitFileUpload);
 
-        // This runs on every render of every file upload under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
-
         // the working chunk size is only worth deriving again when one of the two parameters it comes from
         // actually moves, exactly as the generated setter of each of them decides.
         var chunkSizeChanged = false;

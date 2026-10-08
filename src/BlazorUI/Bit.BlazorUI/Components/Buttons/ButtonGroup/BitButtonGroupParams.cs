@@ -176,9 +176,6 @@ public class BitButtonGroupParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitButtonGroup);
 
-        // This runs on every render of every button group under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (AutoFocus.HasValue && bitButtonGroup.HasNotBeenSet(nameof(AutoFocus)))
         {
             bitButtonGroup.AutoFocus = AutoFocus.Value;

@@ -236,9 +236,6 @@ public class BitGridParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitGrid);
 
-        // This runs on every render of every grid under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (AlignContent.HasValue && bitGrid.HasNotBeenSet(nameof(AlignContent)) && bitGrid.AlignContent != AlignContent)
         {
             bitGrid.AlignContent = AlignContent.Value;

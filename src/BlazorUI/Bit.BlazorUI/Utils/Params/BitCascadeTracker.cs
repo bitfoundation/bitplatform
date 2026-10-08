@@ -27,8 +27,12 @@ internal sealed class BitCascadeTracker
     /// which is when a parameter still holds the value it had before the cascade.
     /// </summary>
     /// <returns>The parameters put back, or null when there were none.</returns>
-    public List<BitCascadeMap.BitCascadeParameter>? RestoreDropped(IBitCascadeTarget component, BitCascadeMap map, IBitComponentParams? current)
+    public List<BitCascadeMap.BitCascadeParameter>? RestoreDropped(IBitCascadeTarget component, BitCascadeMap map, IBitComponentParams? current, out bool isAnotherParams)
     {
+        // Reported whether or not anything is put back: a params object other than the one before can carry other
+        // values down in a nested object it shares with that one, which only the component can act on.
+        isAnotherParams = ReferenceEquals(current, _cascadedParams) is false;
+
         // Nothing supplied now and nothing before, which is where a component stays once a params object has gone.
         if (current is null && _cascadedParams is null) return null;
 
@@ -36,7 +40,7 @@ internal sealed class BitCascadeTracker
 
         // BitParams hands down a new object whenever what it carries changes, so the same object supplies the same
         // parameters, and only what the markup took over or let go of since is left to keep track of.
-        if (ReferenceEquals(current, _cascadedParams) is false)
+        if (isAnotherParams)
         {
             _cascadedParams = current;
 

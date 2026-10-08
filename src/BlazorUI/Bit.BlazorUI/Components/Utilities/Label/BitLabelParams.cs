@@ -100,9 +100,6 @@ public class BitLabelParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitLabel);
 
-        // This runs on every render of every label under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (Classes is not null && bitLabel.HasNotBeenSet(nameof(Classes)) && ReferenceEquals(bitLabel.Classes, Classes) is false)
         {
             bitLabel.Classes = Classes;

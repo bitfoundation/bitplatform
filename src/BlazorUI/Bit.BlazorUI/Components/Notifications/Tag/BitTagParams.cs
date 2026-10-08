@@ -219,9 +219,6 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitTag);
 
-        // This runs on every render of every tag under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (AllowDisabledFocus.HasValue && bitTag.HasNotBeenSet(nameof(AllowDisabledFocus)))
         {
             bitTag.AllowDisabledFocus = AllowDisabledFocus.Value;

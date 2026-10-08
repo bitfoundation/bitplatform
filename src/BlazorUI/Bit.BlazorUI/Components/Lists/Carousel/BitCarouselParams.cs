@@ -294,9 +294,6 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitCarousel);
 
-        // This runs on every render of every carousel under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (Accent.HasValue && bitCarousel.HasNotBeenSet(nameof(Accent)) && bitCarousel.Accent != Accent)
         {
             bitCarousel.Accent = Accent.Value;

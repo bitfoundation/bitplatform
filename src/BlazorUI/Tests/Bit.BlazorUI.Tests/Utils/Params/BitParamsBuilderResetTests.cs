@@ -107,6 +107,69 @@ public class BitParamsBuilderResetTests
 
 
 
+    [TestMethod]
+    public void AnEqualCultureInAnotherInstanceShouldNotResetTheBuilders()
+    {
+        var failures = new List<string>();
+        var tested = 0;
+
+        foreach (var (paramsType, update, componentType) in DiscoverUpdateMethods())
+        {
+            var culture = paramsType.GetProperty("Culture");
+            if (culture?.PropertyType != typeof(CultureInfo)) continue;
+
+            var component = (BitComponentBase)Activator.CreateInstance(componentType)!;
+            var classBuilds = 0;
+            component.ClassBuilder.Register(() => { classBuilds++; return null; });
+
+            var first = Activator.CreateInstance(paramsType)!;
+            culture.SetValue(first, new CultureInfo("de-DE"));
+            update.Invoke(first, [component]);
+            _ = component.ClassBuilder.Value;
+
+            var builds = classBuilds;
+
+            // A new copy of the params object, carrying a culture created afresh that is equal to the first one.
+            var second = Activator.CreateInstance(paramsType)!;
+            culture.SetValue(second, new CultureInfo("de-DE"));
+            update.Invoke(second, [component]);
+            _ = component.ClassBuilder.Value;
+
+            if (classBuilds != builds)
+            {
+                failures.Add($"{paramsType.Name} rebuilt the classes of {componentType.Name} for an equal culture.");
+            }
+
+            // A culture that is really another one still reaches the component, and rebuilds the classes of one whose
+            // classes depend on it.
+            var third = Activator.CreateInstance(paramsType)!;
+            culture.SetValue(third, new CultureInfo("fa-IR"));
+            update.Invoke(third, [component]);
+            _ = component.ClassBuilder.Value;
+
+            var target = componentType.GetProperty("Culture")!;
+
+            if (Equals(target.GetValue(component), new CultureInfo("fa-IR")) is false)
+            {
+                failures.Add($"{paramsType.Name} did not hand another culture to {componentType.Name}.");
+            }
+
+            var drivesClasses = target.GetCustomAttributes().Any(a => a.GetType().Name == "ResetClassBuilderAttribute");
+
+            if (drivesClasses && classBuilds == builds)
+            {
+                failures.Add($"{paramsType.Name} did not rebuild the classes of {componentType.Name} for another culture.");
+            }
+
+            tested++;
+        }
+
+        Assert.IsTrue(tested >= 5, $"Only {tested} params types with a culture were discovered.");
+        Assert.AreEqual(0, failures.Count, string.Join(Environment.NewLine, failures));
+    }
+
+
+
     private static IEnumerable<(Type ParamsType, MethodInfo Update, Type ComponentType)> DiscoverUpdateMethods()
     {
         var assemblies = new[] { typeof(BitButtonParams).Assembly, typeof(BitAppShellParams).Assembly };

@@ -337,10 +337,6 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
 
         UpdateBaseParameters(bitCircularTimePicker);
 
-        // This runs on every render of every circular time picker under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
-
         // Some of the parameters below carry a [CallOnSet] hook on the component, which has already run for
         // whatever the markup set before anything cascaded here reached it. Assigning through the cascade
         // bypasses the setter, so the hooks are re-run at the end - but only when the assignment actually
@@ -454,13 +450,18 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
             bitCircularTimePicker.ClassBuilder.Reset();
         }
 
+        // An equal culture in another instance - one created inline, carried by a new copy of the params object - is
+        // taken but changes nothing, exactly as the markup treats it.
         if (Culture is not null && bitCircularTimePicker.HasNotBeenSet(nameof(Culture)) && ReferenceEquals(bitCircularTimePicker.Culture, Culture) is false)
         {
-            cultureChanged = true;
+            cultureChanged = Equals(bitCircularTimePicker.Culture, Culture) is false;
 
             bitCircularTimePicker.Culture = Culture;
 
-            bitCircularTimePicker.ClassBuilder.Reset();
+            if (cultureChanged)
+            {
+                bitCircularTimePicker.ClassBuilder.Reset();
+            }
         }
 
         if (DisallowedTimeErrorMessage.HasValue() && bitCircularTimePicker.HasNotBeenSet(nameof(DisallowedTimeErrorMessage)))

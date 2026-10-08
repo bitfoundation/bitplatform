@@ -152,9 +152,6 @@ public class BitSeparatorParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitSeparator);
 
-        // This runs on every render of every separator under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (AlignContent.HasValue && bitSeparator.HasNotBeenSet(nameof(AlignContent)) && bitSeparator.AlignContent != AlignContent)
         {
             bitSeparator.AlignContent = AlignContent.Value;

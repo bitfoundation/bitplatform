@@ -175,10 +175,6 @@ public class BitHeaderParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitHeader);
 
-        // This runs on every render of every header under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
-
         // The three positions decide whether the header is pinned to the top of the screen, which is what
         // the safe area inset added to an explicit Height keys off, so each of them resets the styles as
         // well as the classes.

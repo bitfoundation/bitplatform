@@ -195,9 +195,6 @@ public class BitBadgeParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitBadge);
 
-        // This runs on every render of every badge under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (Bordered.HasValue && bitBadge.HasNotBeenSet(nameof(Bordered)) && bitBadge.Bordered != Bordered)
         {
             bitBadge.Bordered = Bordered.Value;

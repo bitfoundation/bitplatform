@@ -189,9 +189,6 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitColorPicker);
 
-        // This runs on every render of every color picker under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (AutoFocus.HasValue && bitColorPicker.HasNotBeenSet(nameof(AutoFocus)))
         {
             bitColorPicker.AutoFocus = AutoFocus.Value;

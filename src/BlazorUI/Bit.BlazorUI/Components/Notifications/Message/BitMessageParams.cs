@@ -229,9 +229,6 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitMessage);
 
-        // This runs on every render of every message under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (Alignment.HasValue && bitMessage.HasNotBeenSet(nameof(Alignment)) && bitMessage.Alignment != Alignment)
         {
             bitMessage.Alignment = Alignment.Value;

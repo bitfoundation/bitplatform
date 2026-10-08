@@ -175,9 +175,6 @@ public class BitLayoutParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitLayout);
 
-        // This runs on every render of every layout under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (AsideAriaLabel.HasValue() && bitLayout.HasNotBeenSet(nameof(AsideAriaLabel)))
         {
             bitLayout.AsideAriaLabel = AsideAriaLabel;

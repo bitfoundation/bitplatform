@@ -215,9 +215,6 @@ public class BitSnackBarParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitSnackBar);
 
-        // This runs on every render of every snack bar under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (AutoDismiss.HasValue && bitSnackBar.HasNotBeenSet(nameof(AutoDismiss)))
         {
             bitSnackBar.AutoDismiss = AutoDismiss.Value;

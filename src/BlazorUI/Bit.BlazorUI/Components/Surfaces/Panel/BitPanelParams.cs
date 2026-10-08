@@ -181,9 +181,6 @@ public class BitPanelParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitPanel);
 
-        // This runs on every render of every panel under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (AbsolutePosition.HasValue && bitPanel.HasNotBeenSet(nameof(AbsolutePosition)) && bitPanel.AbsolutePosition != AbsolutePosition)
         {
             bitPanel.AbsolutePosition = AbsolutePosition.Value;

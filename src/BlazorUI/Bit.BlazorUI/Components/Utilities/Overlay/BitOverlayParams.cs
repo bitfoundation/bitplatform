@@ -86,9 +86,6 @@ public class BitOverlayParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitOverlay);
 
-        // This runs on every render of every overlay under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (AbsolutePosition.HasValue && bitOverlay.HasNotBeenSet(nameof(AbsolutePosition)) && bitOverlay.AbsolutePosition != AbsolutePosition)
         {
             bitOverlay.AbsolutePosition = AbsolutePosition.Value;

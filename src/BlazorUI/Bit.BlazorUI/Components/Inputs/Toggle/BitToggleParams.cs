@@ -200,9 +200,6 @@ public class BitToggleParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitToggle);
 
-        // This runs on every render of every toggle under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (AllowDisabledFocus.HasValue && bitToggle.HasNotBeenSet(nameof(AllowDisabledFocus)))
         {
             bitToggle.AllowDisabledFocus = AllowDisabledFocus.Value;

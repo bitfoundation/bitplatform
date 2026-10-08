@@ -153,9 +153,6 @@ public class BitChoiceGroupParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitChoiceGroup);
 
-        // This runs on every render of every choice group under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (AriaLabelledBy.HasValue() && bitChoiceGroup.HasNotBeenSet(nameof(AriaLabelledBy)))
         {
             bitChoiceGroup.AriaLabelledBy = AriaLabelledBy;

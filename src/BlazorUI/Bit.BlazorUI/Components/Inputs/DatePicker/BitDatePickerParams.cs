@@ -841,10 +841,6 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitDatePicker);
 
-        // This runs on every render of every date picker under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
-
         // The parameters the picker rebuilds its view from are the ones carrying a [CallOnSet(OnSetParameters)] on
         // the component, and the component has already run that pass in OnInitialized - before anything cascaded
         // here reached it. So whichever of them the cascade CHANGES, the pass is run once more at the end. Only a
@@ -966,13 +962,20 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.ContinuousSpinInterval = ContinuousSpinInterval.Value;
         }
 
+        // An equal culture in another instance - one created inline, carried by a new copy of the params object - is
+        // taken but changes nothing, exactly as the markup treats it.
         if (Culture is not null && bitDatePicker.HasNotBeenSet(nameof(Culture)) && ReferenceEquals(bitDatePicker.Culture, Culture) is false)
         {
-            rebuildView = true;
+            var cultureChanged = Equals(bitDatePicker.Culture, Culture) is false;
 
             bitDatePicker.Culture = Culture;
 
-            bitDatePicker.ClassBuilder.Reset();
+            if (cultureChanged)
+            {
+                rebuildView = true;
+
+                bitDatePicker.ClassBuilder.Reset();
+            }
         }
 
         if (DateFormat.HasValue() && bitDatePicker.HasNotBeenSet(nameof(DateFormat)))

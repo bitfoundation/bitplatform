@@ -167,9 +167,6 @@ public class BitShimmerParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitShimmer);
 
-        // This runs on every render of every shimmer under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (Animation.HasValue && bitShimmer.HasNotBeenSet(nameof(Animation)) && bitShimmer.Animation != Animation)
         {
             bitShimmer.Animation = Animation.Value;

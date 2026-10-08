@@ -350,9 +350,6 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
 
         UpdateInputBaseParameters(bitPhoneInput);
 
-        // This runs on every render of every phone input under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (AutoComplete.HasValue() && bitPhoneInput.HasNotBeenSet(nameof(AutoComplete)))
         {
             bitPhoneInput.AutoComplete = AutoComplete;

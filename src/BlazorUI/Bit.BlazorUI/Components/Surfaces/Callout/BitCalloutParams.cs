@@ -234,9 +234,6 @@ public class BitCalloutParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitCallout);
 
-        // This runs on every render of every callout under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (Alignment.HasValue && bitCallout.HasNotBeenSet(nameof(Alignment)))
         {
             bitCallout.Alignment = Alignment.Value;

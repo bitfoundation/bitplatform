@@ -313,9 +313,6 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitTimePicker);
 
-        // This runs on every render of every time picker under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (AllowTextInput.HasValue && bitTimePicker.HasNotBeenSet(nameof(AllowTextInput)))
         {
             bitTimePicker.AllowTextInput = AllowTextInput.Value;
@@ -445,11 +442,13 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
         // time this cascade reaches it - so the hook is run once more below.
         var recomputeCulture = false;
 
+        // An equal culture in another instance - one created inline, carried by a new copy of the params object - is
+        // taken but changes nothing, exactly as the markup treats it.
         if (Culture is not null && bitTimePicker.HasNotBeenSet(nameof(Culture)) && ReferenceEquals(bitTimePicker.Culture, Culture) is false)
         {
-            bitTimePicker.Culture = Culture;
+            recomputeCulture = Equals(bitTimePicker.Culture, Culture) is false;
 
-            recomputeCulture = true;
+            bitTimePicker.Culture = Culture;
         }
 
         if (DecreaseHourIcon is not null && bitTimePicker.HasNotBeenSet(nameof(DecreaseHourIcon)))

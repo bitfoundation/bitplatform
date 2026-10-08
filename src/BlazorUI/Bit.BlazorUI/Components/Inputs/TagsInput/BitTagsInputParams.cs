@@ -484,9 +484,6 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitTagsInput);
 
-        // This runs on every render of every tags input under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (AddedAnnouncementFormat is not null && bitTagsInput.HasNotBeenSet(nameof(AddedAnnouncementFormat)))
         {
             bitTagsInput.AddedAnnouncementFormat = AddedAnnouncementFormat;

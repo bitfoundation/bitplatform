@@ -95,7 +95,10 @@ public abstract class BitComponentBaseParams
 
         // This runs on every render of every component under the BitParams, so a value that drives the class or
         // the style of the root only resets the builder when it differs from the one the component already holds:
-        // an unchanged one would rebuild both strings on every render for nothing.
+        // an unchanged one would rebuild both strings on every render for nothing. The UpdateParameters of every
+        // params object follows the same rule for its own parameters. A nested object - a ClassStyles, an icon - is
+        // compared by reference, and one changed in place is caught by BitComponentBase instead, which resets
+        // both builders whenever the cascade hands it a params object it has not seen yet.
 
         if (AriaLabel.HasValue() && bitComponentBase.HasNotBeenSet(nameof(AriaLabel)))
         {

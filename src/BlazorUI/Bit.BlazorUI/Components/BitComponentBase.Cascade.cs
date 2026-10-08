@@ -9,9 +9,6 @@ public abstract partial class BitComponentBase : IBitCascadeTarget
     // What this component remembers of the params object it takes its defaults from, created with the first one.
     private BitCascadeTracker? _cascadeTracker;
 
-    // The params object the builders were last reset for.
-    private IBitComponentParams? _lastCascadedParams;
-
 
 
     /// <summary>
@@ -53,28 +50,29 @@ public abstract partial class BitComponentBase : IBitCascadeTarget
         // Nothing supplied now and nothing before, which is where every component outside a BitParams stays.
         if (current is null && _cascadeTracker is null) return Task.CompletedTask;
 
-        // A BitParams copies its params objects afresh whenever what they carry changes, down into a nested object
-        // changed in place - a ClassStyles, an icon - so another object here is a cascade that changed. The params
-        // objects only reset a builder for a value that differs from the one the component already holds, which a
-        // nested object changed in place is not (it is the very same object), so the builders are reset here.
-        if (ReferenceEquals(current, _lastCascadedParams) is false)
-        {
-            _lastCascadedParams = current;
+        var map = GetCascadeMap();
 
+        List<BitCascadeMap.BitCascadeParameter>? restored = null;
+        var isAnotherParams = true;
+
+        if (map is not null)
+        {
+            restored = (_cascadeTracker ??= new()).RestoreDropped(this, map, current, out isAnotherParams);
+        }
+
+        // The params objects only reset a builder for a value that differs from the one the component already holds,
+        // which a nested object changed in place - a ClassStyles, an icon - is not: it is the very same object. A
+        // BitParams hands down another copy of a params object whenever what it carries changes, down into such a
+        // nested object, and the very same copy otherwise, so a copy not seen before is the one thing that tells it
+        // here. A params object cascaded as it was given - through a CascadingValue of the app's own - has no such
+        // copy to tell a change by, so the builders are reset on every render under it, as they always were.
+        if (isAnotherParams || restored is not null || (current is not null && BitParamsScope.IsCopy(current) is false))
+        {
             ClassBuilder.Reset();
             StyleBuilder.Reset();
         }
 
-        var map = GetCascadeMap();
-
-        if (map is null) return Task.CompletedTask;
-
-        var restored = (_cascadeTracker ??= new()).RestoreDropped(this, map, current);
-
         if (restored is null) return Task.CompletedTask;
-
-        ClassBuilder.Reset();
-        StyleBuilder.Reset();
 
         return BitCascadeTracker.RunSetupHooks(this, restored);
     }

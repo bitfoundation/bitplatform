@@ -184,10 +184,6 @@ public class BitNavBarParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitNavBar);
 
-        // This runs on every render of every nav bar under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
-
         // Mode and Match decide which item the current URL points at, so a change to either re-runs the match.
         // Only an actual change does: the cascade is re-applied on every parameter set, and a re-match on each
         // one would re-fire OnSelectItem on a Reselectable navbar.

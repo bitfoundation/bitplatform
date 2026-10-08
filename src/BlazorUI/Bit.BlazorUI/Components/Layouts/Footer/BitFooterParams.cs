@@ -160,9 +160,6 @@ public class BitFooterParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitFooter);
 
-        // This runs on every render of every footer under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (Absolute.HasValue && bitFooter.HasNotBeenSet(nameof(Absolute)) && bitFooter.Absolute != Absolute)
         {
             bitFooter.Absolute = Absolute.Value;

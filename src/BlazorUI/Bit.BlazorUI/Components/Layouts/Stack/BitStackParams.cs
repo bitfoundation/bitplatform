@@ -355,9 +355,6 @@ public class BitStackParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitStack);
 
-        // This runs on every render of every stack under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (AlignContent.HasValue && bitStack.HasNotBeenSet(nameof(AlignContent)) && bitStack.AlignContent != AlignContent)
         {
             bitStack.AlignContent = AlignContent.Value;

@@ -289,9 +289,6 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitMenuButton);
 
-        // This runs on every render of every menu button under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (AriaDescription.HasValue() && bitMenuButton.HasNotBeenSet(nameof(AriaDescription)))
         {
             bitMenuButton.AriaDescription = AriaDescription;

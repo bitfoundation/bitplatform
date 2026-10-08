@@ -274,10 +274,6 @@ public class BitScrollablePaneParams : BitComponentBaseParams, IBitComponentPara
 
         UpdateBaseParameters(bitScrollablePane);
 
-        // This runs on every render of every scrollable pane under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
-
         // The values that only the browser side reads (the JS options) need no builder reset: the options are
         // rebuilt from the properties after every render and compared with the ones last sent.
         if (AutoScroll.HasValue && bitScrollablePane.HasNotBeenSet(nameof(AutoScroll)))

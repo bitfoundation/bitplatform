@@ -220,9 +220,6 @@ public class BitSliderParams : BitInputBaseParams<double>, IBitComponentParams
 
         UpdateInputBaseParameters(bitSlider);
 
-        // This runs on every render of every slider under the BitParams, so a value that drives the class or
-        // the style of its root only resets the builder when it differs from the one it already holds: an
-        // unchanged one would rebuild both strings on every render for nothing.
         if (AriaDescription.HasValue() && bitSlider.HasNotBeenSet(nameof(AriaDescription)))
         {
             bitSlider.AriaDescription = AriaDescription;
