@@ -199,6 +199,10 @@
 // renders at the end of the close, and that attribute is the only thing allowed to hide it: text the
 // stylesheet has hidden with visibility is text find-in-page skips, which is the whole of what the
 // parameter is for.
+// The attribute is not put on as the close starts with a discrete transition (allow-discrete) on
+// content-visibility and display holding back what it hides with: WebKit lays out content mid-way through such a
+// transition as already hidden, so the track would snap shut at once, and a browser without transition-behavior
+// drops the whole transition and hides it at once as well.
 // inherit rather than visible, so a collapse the Visibility parameter has hidden stays hidden.
 .bit-col-huf > .bit-col-cco {
     visibility: inherit;

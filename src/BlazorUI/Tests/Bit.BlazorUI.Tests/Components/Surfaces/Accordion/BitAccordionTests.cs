@@ -2484,8 +2484,12 @@ public class BitAccordionTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitAccordionHiddenUntilFoundShouldHandTheCloseToTheStylesheet()
+    public void BitAccordionHiddenUntilFoundShouldHideThePanelOnceTheCloseHasPlayed()
     {
+        // The browser says when the transitions of the close are over - however long the theme made them - and the
+        // answer is held back here, so the close is observed while it plays.
+        var wait = Context.JSInterop.SetupVoid("BitBlazorUI.Accordion.waitForTransitions", _ => true);
+
         var com = RenderComponent<BitAccordion>(parameters =>
         {
             parameters.Add(p => p.HiddenUntilFound, true);
@@ -2494,13 +2498,51 @@ public class BitAccordionTests : BunitTestContext
 
         com.Find(".bit-acd-hdr").Click();
 
-        // The attribute arrives as the close starts, and the stylesheet keeps the panel drawn until the transition
-        // is over - however long the theme made it - so no timer on this side has to guess at its duration.
+        // Meanwhile the panel closes like any other: hidden="until-found" would stop it from being drawn at all.
         var content = com.Find(".bit-acd-con");
 
-        Assert.AreEqual("until-found", content.GetAttribute("hidden"));
-        Assert.IsTrue(content.ClassList.Contains("bit-acd-huf"));
+        Assert.AreEqual(1, wait.Invocations.Count);
+        Assert.IsFalse(content.HasAttribute("hidden"));
+        Assert.IsFalse(content.ClassList.Contains("bit-acd-huf"));
         Assert.IsTrue(content.ClassList.Contains("bit-acd-cco"));
+
+        wait.SetVoidResult();
+
+        com.WaitForAssertion(() => Assert.AreEqual("until-found", com.Find(".bit-acd-con").GetAttribute("hidden")));
+        Assert.IsTrue(com.Find(".bit-acd-con").ClassList.Contains("bit-acd-huf"));
+    }
+
+    [TestMethod]
+    public void BitAccordionHiddenUntilFoundShouldWaitForEachCloseOfAPanelReopenedMidClose()
+    {
+        // The first close is still waiting when the panel opens and closes again, and the second close waits for its
+        // own transitions rather than being hidden on the strength of the first one.
+        var wait = Context.JSInterop.SetupVoid("BitBlazorUI.Accordion.waitForTransitions", _ => true);
+
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.DefaultIsExpanded, true);
+        });
+
+        com.Find(".bit-acd-hdr").Click();
+        com.Find(".bit-acd-hdr").Click();
+        com.Find(".bit-acd-hdr").Click();
+
+        Assert.AreEqual(2, wait.Invocations.Count);
+        Assert.IsFalse(com.Find(".bit-acd-con").HasAttribute("hidden"));
+    }
+
+    [TestMethod]
+    public void BitAccordionHiddenUntilFoundShouldHideAPanelThatStartsCollapsedAtOnce()
+    {
+        var wait = Context.JSInterop.SetupVoid("BitBlazorUI.Accordion.waitForTransitions", _ => true);
+
+        var com = RenderComponent<BitAccordion>(parameters => parameters.Add(p => p.HiddenUntilFound, true));
+
+        // Nothing was played to get there, so nothing is waited for.
+        Assert.AreEqual(0, wait.Invocations.Count);
+        Assert.AreEqual("until-found", com.Find(".bit-acd-con").GetAttribute("hidden"));
     }
 
     [TestMethod]

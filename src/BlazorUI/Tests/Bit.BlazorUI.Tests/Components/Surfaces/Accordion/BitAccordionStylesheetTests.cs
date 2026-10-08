@@ -132,14 +132,13 @@ public class BitAccordionStylesheetTests
     }
 
     [TestMethod]
-    public void BitAccordionShouldHoldAHiddenUntilFoundPanelBackForTheWholeClose()
+    public void BitAccordionShouldNotHoldAHiddenUntilFoundPanelBackWithADiscreteTransition()
     {
-        var huf = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-acd-huf {");
+        var code = ReadStylesheet().Split('\n').Where(line => line.TrimStart().StartsWith("//", System.StringComparison.Ordinal) is false);
 
-        // The attribute is applied as the close starts; what it hides with is held back by a discrete transition of
-        // the accordion's own duration, so the close plays out whatever the theme or TransitionDuration made it.
-        StringAssert.Contains(huf, "content-visibility var(--bit-acd-dur) linear 0ms allow-discrete");
-        StringAssert.Contains(huf, "display var(--bit-acd-dur) linear 0ms allow-discrete");
+        // WebKit lays out a panel mid-way through a discrete content-visibility transition as already hidden, which
+        // snaps the row shut; the component applies hidden="until-found" once the close has played instead.
+        Assert.IsFalse(code.Any(line => line.Contains("allow-discrete")), "A discrete transition snaps a HiddenUntilFound close shut in WebKit.");
     }
 
     [TestMethod]
