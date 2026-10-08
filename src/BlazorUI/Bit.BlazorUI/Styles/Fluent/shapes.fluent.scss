@@ -72,6 +72,9 @@
     //the edge it stands on (--bit-shp-radius-tab-indicator-base) follow these unless a preset sets them.
     --bit-shp-radius-tab-indicator: 0;
 
+    //shape - the corners of a linear progress track and its bar, which Fluent draws square.
+    --bit-shp-radius-progress: 0;
+
     //focus ring (a11y) - width is the visible thickness, offset is the gap between the element and the ring.
     --bit-shp-focus-ring-width: 0.125rem; //2px
     --bit-shp-focus-ring-offset: 0.125rem; //2px

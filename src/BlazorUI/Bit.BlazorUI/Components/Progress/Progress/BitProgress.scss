@@ -10,7 +10,7 @@
 //   --bit-Progress-stripe-color         the stripes of a Striped bar                 (default: $clr-bg-pri at 25%)
 //   --bit-Progress-stripe-size          pitch of the stripes                         (default: spacing(2))
 //   --bit-Progress-thickness            bar height, vertical bar width, ring stroke  (default: per Size, $siz-track-* for a bar, 1/2/4 x $siz-spinner-stroke for a ring)
-//   --bit-Progress-radius               corner radius of a linear bar not Rounded    (default: $shp-radius-none)
+//   --bit-Progress-radius               corner radius of a linear bar not Rounded    (default: $shp-radius-progress)
 //   --bit-Progress-diameter             smallest diameter of the ring                (default: per Size)
 //   --bit-Progress-length               length of a Vertical bar                     (default: spacing(20))
 //   --bit-Progress-transition-duration  how long the fill takes to follow the value  (default: $mot-duration)
@@ -35,7 +35,7 @@
     // The unfilled part of every shape reads one token, so a custom track color reaches the linear track,
     // the ring behind the stroke and the two ends the indeterminate sweep fades into at once.
     --bit-prb-track-color: var(--bit-Progress-track-color, #{$clr-bg-sec});
-    --bit-prb-radius: var(--bit-Progress-radius, #{$shp-radius-none});
+    --bit-prb-radius: var(--bit-Progress-radius, #{$shp-radius-progress});
     // Where the circular stroke starts, and which way round it goes. A <circle> path starts at three
     // o'clock and runs clockwise, so the default turn of a quarter puts the start at twelve; the mirror
     // is a plain factor rather than a conditional transform, which is what lets the two compose.

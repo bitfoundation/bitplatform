@@ -83,6 +83,12 @@ public class BitThemeShapeRadii
     /// </summary>
     public string? TabIndicatorBase { get; set; }
 
+    /// <summary>
+    /// The corners of a linear progress track and its bar (<c>BitProgress</c>): square under Fluent, rounded
+    /// ends under Fluent 2, Material and Cupertino. A <c>Rounded</c> progress is a pill regardless.
+    /// </summary>
+    public string? Progress { get; set; }
+
     /// <summary>Cards, accordions, messages, images, list rows.</summary>
     public string? Surface { get; set; }
 

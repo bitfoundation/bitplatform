@@ -40,6 +40,8 @@
     --bit-shp-radius-chip: var(--bit-shp-radius-full);
     // A checkbox is not an iOS control; it takes the corner iOS gives a small box, not a button's.
     --bit-shp-radius-selection: 0.3125rem; //5px
+    // UIProgressView draws a capsule track with a capsule fill.
+    --bit-shp-radius-progress: var(--bit-shp-radius-full);
     // The platform look is hairline separators and mostly borderless controls.
     --bit-shp-brd-width: 0.5px;
     // macOS/iPadOS keyboard focus ring is a thick halo drawn tight against the control, rather than

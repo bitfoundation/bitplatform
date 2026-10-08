@@ -114,8 +114,10 @@ public class BitProgressStylesheetTests
     [TestMethod]
     public void BitProgressRadiusShouldFallBackToAShapeToken()
     {
-        // A literal corner is a design-system decision no preset can reach; the scale token is one it can.
-        StringAssert.Contains(SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-prb {"), "--bit-prb-radius: var(--bit-Progress-radius, #{$shp-radius-none});");
+        // A literal corner is a design-system decision no preset can reach, and so is a point on the scale:
+        // rounding --bit-shp-radius-none would round everything else that means "square". The progress
+        // token is one a preset can set on its own.
+        StringAssert.Contains(SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-prb {"), "--bit-prb-radius: var(--bit-Progress-radius, #{$shp-radius-progress});");
     }
 
     [TestMethod]

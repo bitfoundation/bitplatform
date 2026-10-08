@@ -338,7 +338,7 @@ public partial class BitProgressDemo
         new()
         {
             Name = "--bit-Progress-radius",
-            DefaultValue = "--bit-shp-radius-none",
+            DefaultValue = "--bit-shp-radius-progress",
             Description = "Corner radius of the track and the bar. Rounded wins over it with a full radius.",
         },
         new()
