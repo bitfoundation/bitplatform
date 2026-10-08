@@ -196,8 +196,9 @@ public class BitProgressParams : BitComponentBaseParams, IBitComponentParams
         if (bitProgress is null) return;
 
         // The inherited parameters go through the same bookkeeping as the progress's own rather than through
-        // UpdateBaseParameters, which cannot take a value back: an AriaLabel or a Class the cascade stops giving
-        // would otherwise stay on the progress for good.
+        // UpdateBaseParameters, so that whatever the cascade changes - inherited or not - rebuilds the class and
+        // style strings once, after all of it is applied. Putting back what the cascade stops giving is not part
+        // of it: BitComponentBase does that for every parameter, before this runs.
         if (AriaLabel.HasValue())
         {
             bitProgress.TakeFromCascade(nameof(AriaLabel), AriaLabel, static p => p.AriaLabel, static (p, v) => p.AriaLabel = v);

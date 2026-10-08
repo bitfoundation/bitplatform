@@ -204,8 +204,9 @@ public class BitSplitterParams : BitComponentBaseParams, IBitComponentParams
         if (bitSplitter is null) return;
 
         // The inherited parameters go through the same bookkeeping as the splitter's own rather than through
-        // UpdateBaseParameters, which cannot take a value back: an AriaLabel or a Class the cascade stops giving
-        // would otherwise stay on the splitter for good.
+        // UpdateBaseParameters, so that whatever the cascade changes - inherited or not - rebuilds the class and
+        // style strings once, after all of it is applied. Putting back what the cascade stops giving is not part
+        // of it: BitComponentBase does that for every parameter, before this runs.
         if (AriaLabel.HasValue())
         {
             bitSplitter.TakeFromCascade(nameof(AriaLabel), AriaLabel, static s => s.AriaLabel, static (s, v) => s.AriaLabel = v);
