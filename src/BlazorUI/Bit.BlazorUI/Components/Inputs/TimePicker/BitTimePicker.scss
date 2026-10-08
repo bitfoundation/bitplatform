@@ -2,9 +2,10 @@
 @import "../../../Styles/media-queries.scss";
 @import "../../../Styles/color-role-maps.scss";
 
-// Public CSS variables, read off the root (and off the callout, which the component copies them onto by
-// hand because the callout is reparented to the body while it is open) and never declared here, so a value
-// set on :root re-skins every time picker and one set on the Style of an instance re-skins that one alone:
+// Public CSS variables, read off the root (and off the callout, which is rendered inside the root and, while
+// it is open, relocated into a copy of the chain of ancestors it leaves - the root among them - so they reach
+// it like any inherited value) and never declared here, so a value set on :root re-skins every time picker and one set
+// on the Style of an instance re-skins that one alone:
 //   --bit-TimePicker-color                    accent: the selected AM/PM button and the text of the
 //                                             now/clear buttons                    (default: the Color role's main color)
 //   --bit-TimePicker-on-color                 text over that accent                (default: the Color role's on-color)
@@ -67,8 +68,9 @@
 //   --bit-TimePicker-meridiem-font-size       text size of the AM/PM buttons       (default: per Size)
 //   --bit-TimePicker-action-font-size         text size of the now/clear buttons   (default: per Size)
 
-// The default size, declared as a mixin so both the root element and the callout - which is moved out to
-// the body while it is open and therefore inherits nothing from the root - can fall back to it. The public
+// The default size, declared as a mixin so both the root element and the callout - which carries the size
+// classes itself, as the copy of the root it is relocated into leaves the root's bit-tpc-* classes behind - can
+// fall back to it. The public
 // override is resolved here rather than beside each use, so one name is read once per size class.
 @mixin tpc-size-medium {
     --bit-tpc-inp-h: var(--bit-TimePicker-height, #{$siz-ctrl-md});
@@ -777,9 +779,10 @@
 
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
-// They are applied to the root element and to the callout alike, since the callout is moved out of
-// the root while it is open and inherits nothing from it. The public override is resolved here, so the
-// accent of one instance can be set without knowing which role class it happens to carry.
+// They are applied to the root element and to the callout alike, since the copy of the root the callout is
+// relocated into while it is open leaves the root's bit-tpc-* classes behind. The public override is resolved
+// here, so the accent of one
+// instance can be set without knowing which role class it happens to carry.
 @each $role, $tokens in $bit-color-roles {
     .bit-tpc-#{$role} {
         --bit-tpc-clr: var(--bit-TimePicker-color, #{role($tokens, main)});

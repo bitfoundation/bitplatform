@@ -308,7 +308,9 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     [Parameter] public int OverscanCount { get; set; } = 3;
 
     /// <summary>
-    /// The custom template to render an item whose data has not been loaded yet in provider mode.
+    /// The custom template to render an item whose data has not been loaded yet in provider mode, the first window too:
+    /// before the provider tells the count of the items (and so in a prerendered or statically rendered page) the window it
+    /// is first asked for is rendered as placeholders, unless a LoadingTemplate is provided.
     /// </summary>
     [Parameter] public RenderFragment<BitVirtualizePlaceholderContext>? PlaceholderTemplate { get; set; }
 
@@ -886,6 +888,16 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
     private bool ShowsEmpty() => _itemCount == 0 && _loading is false && (Items is not null || _initialized);
 
+    // The count of a provider is unknown until its first window arrives, which a prerender or a static SSR page (where
+    // the provider is not called) never sees, and an interactive list waits a round trip for. Meanwhile the window the
+    // provider is first asked for (see LoadProviderWindowAsync) is laid out as placeholders: the list keeps the room its
+    // items are going to take, and they land in the very slots (and the keys) the placeholders held.
+    private bool AwaitsFirstWindow() => _itemCount == 0 && ItemsProvider is not null && PlaceholderTemplate is not null
+                                        && _loadedItems is null && (_initialized is false || _loading);
+
+    // An unknown size of the set is -1 for assistive technologies.
+    private int GetSetSize() => AwaitsFirstWindow() ? -1 : _itemCount;
+
     private float FixedSize => ItemSize >= 1 ? ItemSize : 1f;
 
     private float EstimatedSize => EstimatedItemSize >= 1 ? EstimatedItemSize : 1f;
@@ -1433,8 +1445,8 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     private int EstimateInitialCount()
     {
         var size = (Dynamic ? EstimatedSize : FixedSize) + _gap;
-        var viewport = _viewportSize > 0 ? _viewportSize : 600;
-        return ((int)Math.Ceiling(viewport / size) + (Overscan * 2) + 1) * _lanes;
+        var viewport = _viewportSize > 0 ? _viewportSize : BitVirtualizeWindow.AssumedViewportSize;
+        return BitVirtualizeWindow.Estimate(size, Overscan, viewport) * _lanes;
     }
 
     private bool TryGetItem(int index, out TItem item)
@@ -1545,11 +1557,19 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
     private int TrackCount(int count) => (count + _lanes - 1) / _lanes;
 
-    private double GetTrackOffset(int track) => _tree is not null ? _tree.PrefixSum(track) : track * (FixedSize + _gap);
+    // A track past the ones the size tree holds (the placeholders of a provider whose count is not known yet) takes the
+    // estimate, like every track that has not been measured.
+    private double GetTrackOffset(int track) =>
+        _tree is null ? track * (FixedSize + _gap)
+        : track <= _tree.Count ? _tree.PrefixSum(track)
+        : _tree.Total + (track - _tree.Count) * (EstimatedSize + _gap);
 
     private double GetItemOffset(int index) => GetTrackOffset(TrackOf(index));
 
-    private double GetItemSize(int index) => _tree is not null ? _tree.GetSize(TrackOf(index)) - _gap : FixedSize;
+    private double GetItemSize(int index) =>
+        _tree is null ? FixedSize
+        : TrackOf(index) < _tree.Count ? _tree.GetSize(TrackOf(index)) - _gap
+        : EstimatedSize;
 
     private double GetTotalSize()
     {
@@ -1629,7 +1649,17 @@ public partial class BitVirtualize<TItem> : BitComponentBase
             _visibleEnd = _renderEnd = Math.Min(_itemCount, _initialized ? 0 : EstimateInitialCount());
             _renderStartOffset = 0;
             _blockOffset = 0;
-            _stickyActiveIndex = -1;
+            // The first window, rendered before anything has been measured (and so all a prerendered or a static page
+            // shows), pins the header of its first group the way the measured list does at the top, so the hand-over
+            // moves nothing. A list that renders no item has no header to pin.
+            if (_visibleEnd > 0)
+            {
+                UpdateSticky();
+            }
+            else
+            {
+                _stickyActiveIndex = -1;
+            }
             NotifyEdgeStates();
             if (prevStart != _visibleStart || prevEnd != _visibleEnd)
             {
@@ -1884,7 +1914,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
 
     private string GetSpacerStyle()
     {
-        var total = FormatCssValue(_realTotal);
+        var total = FormatCssValue(AwaitsFirstWindow() ? GetTrackOffset(TrackCount(EstimateInitialCount())) - _gap : _realTotal);
         return Horizontal ? $"width:{total}px" : $"height:{total}px";
     }
 
@@ -1941,6 +1971,17 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     // start rather than at the item the user left. Kept in index order, so the keyed diff never has to move it.
     private IEnumerable<int> GetRenderedIndices()
     {
+        if (AwaitsFirstWindow())
+        {
+            var count = EstimateInitialCount();
+            for (var i = 0; i < count; i++)
+            {
+                yield return i;
+            }
+
+            yield break;
+        }
+
         var kept = _activeIndex >= 0 && _activeIndex < _itemCount && (_activeIndex < _renderStart || _activeIndex >= _renderEnd) && TryGetItem(_activeIndex, out _)
             ? _activeIndex
             : -1;

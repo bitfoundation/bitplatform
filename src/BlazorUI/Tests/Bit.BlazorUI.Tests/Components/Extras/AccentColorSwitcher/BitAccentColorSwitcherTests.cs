@@ -130,6 +130,10 @@ public class BitAccentColorSwitcherTests : BunitTestContext
     {
         RegisterServices();
 
+        // The restore never answers, so the switcher stays where prerendered markup is: rendered,
+        // but not yet handed the accent state.
+        Context.JSInterop.Setup<string?>("BitBlazorUI.AccentColor.getPersisted", _ => true);
+
         var component = RenderComponent<BitAccentColorSwitcher>(parameters =>
         {
             parameters.Add(p => p.Config, new BitAccentColorConfig
@@ -201,6 +205,61 @@ public class BitAccentColorSwitcherTests : BunitTestContext
         Assert.AreEqual(1, active.Count);
         Assert.AreEqual("Default", active[0].GetAttribute("title"),
             "Nothing is persisted here, so the packaged primary is the active accent.");
+
+        // The hand-off is whole: the marker CSS's selectors outrank a single class, so a token left
+        // on a swatch would keep painting the built-in ring over an app's Classes.ActiveSwatch.
+        Assert.IsFalse(component.FindAll(".bit-acs-swt").Any(s => s.HasAttribute(BitAccentColorNames.SwatchAttribute)),
+            "Once the class marks the swatch, no swatch may still carry the token the marker CSS keys on.");
+    }
+
+    [TestMethod]
+    public void BitAccentColorSwitcherWithACssStrategyShouldDropTheTokensWhenTheRestoreLands()
+    {
+        RegisterServices();
+
+        var getPersisted = Context.JSInterop.Setup<string?>("BitBlazorUI.AccentColor.getPersisted", _ => true);
+
+        var component = RenderComponent<BitAccentColorSwitcher>(parameters =>
+        {
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StaticCss,
+                Persistence = BitAccentColorPersistence.All,
+            });
+        });
+
+        Assert.IsTrue(component.FindAll(".bit-acs-swt").All(s => s.HasAttribute(BitAccentColorNames.SwatchAttribute)));
+        Assert.AreEqual(0, component.FindAll(".bit-acs-act").Count,
+            "Before the restore lands the C# state may be another visitor's, so the class marks nothing.");
+
+        getPersisted.SetResult(null);
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(1, component.FindAll(".bit-acs-act").Count);
+            Assert.IsFalse(component.FindAll(".bit-acs-swt").Any(s => s.HasAttribute(BitAccentColorNames.SwatchAttribute)));
+        });
+    }
+
+    [TestMethod]
+    public void BitAccentColorSwitcherActiveSwatchClassShouldNotBeOutrankedByTheMarkerCssOnceInteractive()
+    {
+        RegisterServices();
+
+        var component = RenderComponent<BitAccentColorSwitcher>(parameters =>
+        {
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StaticCss,
+                Persistence = BitAccentColorPersistence.All,
+            });
+            parameters.Add(p => p.Classes, new BitAccentColorSwitcherClassStyles { ActiveSwatch = "custom-active" });
+        });
+
+        var active = component.Find(".bit-acs-act");
+        Assert.IsTrue(active.ClassList.Contains("custom-active"));
+        Assert.IsFalse(active.HasAttribute(BitAccentColorNames.SwatchAttribute),
+            "A token left on the active swatch keeps the marker CSS - :root[bit-accent] [bit-accent-swatch] - matching it, and that outranks the app's one class.");
     }
 
     [TestMethod]
@@ -235,10 +294,13 @@ public class BitAccentColorSwitcherTests : BunitTestContext
             config.Persistence = BitAccentColorPersistence.All;
         });
 
+        // Held before the restore lands, while the swatches still carry their tokens.
+        Context.JSInterop.Setup<string?>("BitBlazorUI.AccentColor.getPersisted", _ => true);
+
         var component = RenderComponent<BitAccentColorSwitcher>();
 
         // The swatch tokens (which only a CSS strategy renders, for the head's marker rules to key
-        // on) are the observable proof that the strategy reached the switcher without any Config
+        // on until the switcher is interactive) are the observable proof that the strategy reached the switcher without any Config
         // parameter - the whole point of registering the configuration once in DI.
         Assert.IsTrue(component.FindAll(".bit-acs-swt").All(s => s.HasAttribute(BitAccentColorNames.SwatchAttribute)),
             "The DI-registered CSS strategy must reach a parameterless switcher.");

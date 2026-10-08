@@ -386,6 +386,23 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     }
 
     /// <summary>
+    /// The style the root has without the style of a passing state of it (Styles.Focused, Styles.Toggled) while
+    /// that state is applied, and null otherwise: the steady part of the root's style, followed by Style.
+    /// </summary>
+    /// <remarks>
+    /// A component with a popup renders it as the data-bit-popup-style of its root, which Callouts.ts copies onto
+    /// the chain the popup is relocated into in place of the style attribute, so the popup never takes on a look
+    /// that comes and goes as the focus moves between the field and the popup itself. An empty string, rather than
+    /// null, is what says the root has no steady style to hand the popup at all.
+    /// </remarks>
+    private protected string? GetPopupStyle(bool inPassingState, string? passingStyle, string? steadyStyle)
+    {
+        if (inPassingState is false || passingStyle.HasNoValue()) return null;
+
+        return JoinStyles(steadyStyle, Style) ?? string.Empty;
+    }
+
+    /// <summary>
     /// Splices two class lists into the single list a class attribute holds.
     /// </summary>
     /// <remarks>

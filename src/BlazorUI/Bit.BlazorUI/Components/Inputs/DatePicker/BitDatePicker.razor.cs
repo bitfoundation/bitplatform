@@ -23,7 +23,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private const int MAX_MONTH_COUNT = 3;
     private const int DEFAULT_WEEK_COUNT = 6;
     private const int DEFAULT_DAY_COUNT_PER_WEEK = 7;
-    private const string PUBLIC_CSS_VARIABLE_PREFIX = "--bit-DatePicker-";
     private const string YEAR_PATTERN = "yyyy";
 
     // The parts of the time of day the time picker edits. Everything that moves the time - the spin buttons,
@@ -74,11 +73,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private string _headerId = string.Empty;
     private string _footerId = string.Empty;
     private string _datePickerId = string.Empty;
-    private string? _publicCssVariables;
-    private string? _lastRootStyle;
-    private string? _lastStylesRoot;
     private string _errorId = string.Empty;
     private string _descriptionId = string.Empty;
+    private readonly BitPublicCssVariables _standaloneCssVariables = new("--bit-DatePicker-");
     private string _ariaDescriptionId = string.Empty;
     private ElementReference _inputTimeHourRef = default!;
     private ElementReference _inputTimeMinuteRef = default!;
@@ -1375,7 +1372,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                 // is meant to land on, so it has nothing to focus.
                 if (AutoFocus && Disabled is false && Standalone is false)
                 {
-                    await InputElement.FocusAsync();
+                    await InputElement.FocusSafelyAsync();
                 }
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
@@ -1397,11 +1394,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         {
             _focusTimePickerAfterRender = false;
 
-            try
-            {
-                await _inputTimeHourRef.FocusAsync();
-            }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
+            await _inputTimeHourRef.FocusSafelyAsync();
         }
     }
 
@@ -1822,11 +1815,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         // A refused close (a one-way bound IsOpen) leaves the callout open, so the focus stays in it.
         if (IsOpen) return;
 
-        try
-        {
-            await InputElement.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        await InputElement.FocusSafelyAsync();
     }
 
     private async Task HandleOnFocusIn()
@@ -1898,11 +1887,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         _second = 0;
         _focusedDate = null;
 
-        try
-        {
-            await InputElement.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        await InputElement.FocusSafelyAsync();
 
         await OnClear.InvokeAsync();
     }
@@ -2035,11 +2020,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             // handed back to the input - otherwise a keyboard selection drops the focus onto the body.
             if (IsOpen is false)
             {
-                try
-                {
-                    await InputElement.FocusAsync();
-                }
-                catch (JSDisconnectedException) { } // we can ignore this exception here
+                await InputElement.FocusSafelyAsync();
             }
         }
 
@@ -4151,7 +4132,8 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             footerId: CalloutFooterTemplate is not null ? _footerId : "",
             setCalloutWidth: false,
             fixedCalloutWidth: false,
-            maxWindowWidth: GetMaxWidth());
+            maxWindowWidth: GetMaxWidth(),
+            rootId: _Id);
     }
 
     // Every extra month widens the callout, so the threshold that decides whether the pickers have to
@@ -4175,73 +4157,28 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         return ShowTimePicker && ShowSeconds ? width + SECONDS_WIDTH : width;
     }
 
-    // The callout and the overlay are rendered outside the root element - and reparented to the body while the
-    // callout is open - so they inherit nothing an author sets on the picker: neither its Style nor a custom
-    // property declared on an ancestor of it. The public --bit-DatePicker-* declarations are therefore carried
-    // across by hand, so ONE Style on the component restyles the field and the calendar it opens together.
-    private string? GetPublicCssVariables()
+    // The callout and the overlay are rendered outside the root element and relocated to the body while the
+    // callout is open; Callouts.ts carries what the root and its ancestors declare into them (a public
+    // --bit-DatePicker-* variable set on an ancestor or through its class, in Style or in Styles.Root), so it reaches
+    // them like any inherited value. The display is written here since it is what the component toggles the
+    // overlay with.
+    private string GetOverlayStyles() => $"display:{(IsOpen ? "block" : "none")};{Styles?.Overlay}";
+
+    // A standalone calendar is never opened as a callout, so it is never relocated either, and the chain Callouts.ts
+    // carries the root's declarations through is never built for it: it stays where it is rendered, a sibling of
+    // the root. What an ancestor declares still reaches it, as it shares the root's ancestors, but what the Style of
+    // the instance and Styles.Root declare does not, so their public --bit-DatePicker-* declarations are copied onto
+    // the calendar and the messages that follow it by hand - ahead of the part's own style, which therefore still wins.
+    private string? GetStandaloneStyles(string? style)
     {
-        var style = Style;
-        var stylesRoot = Styles?.Root;
-
-        // Rebuilt only when one of the two strings it is made of has changed: the callout re-renders on every
-        // keystroke of the arrow keys, and the result almost never changes.
-        if (string.Equals(style, _lastRootStyle, StringComparison.Ordinal) &&
-            string.Equals(stylesRoot, _lastStylesRoot, StringComparison.Ordinal))
-        {
-            return _publicCssVariables;
-        }
-
-        _lastRootStyle = style;
-        _lastStylesRoot = stylesRoot;
-
-        StringBuilder? builder = null;
-
-        AppendPublicCssVariables(ref builder, style);
-        AppendPublicCssVariables(ref builder, stylesRoot);
-
-        _publicCssVariables = builder?.ToString();
-
-        return _publicCssVariables;
-    }
-
-    private static void AppendPublicCssVariables(ref StringBuilder? builder, string? style)
-    {
-        if (style.HasNoValue()) return;
-
-        foreach (var declaration in style!.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-        {
-            if (declaration.StartsWith(PUBLIC_CSS_VARIABLE_PREFIX, StringComparison.Ordinal) is false) continue;
-
-            (builder ??= new StringBuilder()).Append(declaration).Append(';');
-        }
-    }
-
-    // Styles.Callout is appended last, so a value written for the callout still wins over the copy.
-    private string? GetCalloutStyles() => AppendAfterPublicCssVariables(Styles?.Callout);
-
-    // Styles.Overlay is appended last for the same reason. The display is written here since it is what the
-    // component toggles the layer with.
-    private string GetOverlayStyles() => $"display:{(IsOpen ? "block" : "none")};{GetPublicCssVariables()}{Styles?.Overlay}";
-
-    // The same for the parts that live outside the root: the messages of a standalone picker follow its calendar.
-    private string? GetOutsideRootStyles(string? style) => Standalone ? AppendAfterPublicCssVariables(style) : style;
-
-    private string? AppendAfterPublicCssVariables(string? style)
-    {
-        var variables = GetPublicCssVariables();
-
-        if (variables.HasNoValue()) return style;
-        if (style.HasNoValue()) return variables;
-
-        return variables + style;
+        return Standalone ? _standaloneCssVariables.Prepend(Style, Styles?.Root, style) : style;
     }
 
     private string GetCalloutCssClasses()
     {
-        // The callout is rendered outside of the root element (and is reparented to the body while it is
+        // The callout is rendered outside of the root element (and is relocated to the body while it is
         // open), so the custom properties of the color and the size have to be declared on it as well -
-        // nothing of the root cascades down to it.
+        // nothing the root's own bit-dtp-* classes declare cascades down to it.
         List<string> classes = ["bit-dtp-cal", GetColorClass()];
 
         var sizeClass = GetSizeClass();

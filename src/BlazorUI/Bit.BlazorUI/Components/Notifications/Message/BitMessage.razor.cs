@@ -219,6 +219,8 @@ public partial class BitMessage : BitComponentBase
     /// fills it on the very next render, which is what makes the announcement reliable for a message that appears
     /// in answer to something the reader just did. It costs the message one frame, so leave it off where the
     /// message is part of the page from the start and there is nothing to announce anyway.
+    /// <br />
+    /// A statically rendered page has no next render to fill the region in, so there the text is rendered right away.
     /// </remarks>
     [Parameter] public bool DelayedAnnouncement { get; set; }
 
@@ -750,6 +752,16 @@ public partial class BitMessage : BitComponentBase
         // Before the first render the timer is armed by OnAfterRenderAsync instead, so that a message that
         // never makes it to the DOM never starts counting down.
         if (IsRendered) ArmAutoDismiss();
+
+        // A statically rendered page has no render after this one to hand the held-back text over in, so a delayed
+        // announcement would leave the message empty for good - and a page that arrives is read rather than
+        // announced, so there is nothing to hold the text back for. A prerender is followed by the interactive
+        // render that replaces it, so it holds the text back as usual: that render then puts it in once, rather than
+        // taking a prerendered text away and putting it back.
+        if (DelayedAnnouncement && _isAnnounced is false && IsRenderedStatically())
+        {
+            _isAnnounced = true;
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -786,7 +798,7 @@ public partial class BitMessage : BitComponentBase
 
         _autoFocusDone = true;
 
-        await RootElement.FocusAsync();
+        await RootElement.FocusSafelyAsync();
     }
 
     // Whether the single line is clipped is something only the browser can tell, so a message that can fold or
@@ -885,6 +897,22 @@ public partial class BitMessage : BitComponentBase
         _isAnnounced = true;
 
         StateHasChanged();
+    }
+
+    // A render with no JS runtime behind it is not an interactive one. Only from net9.0 on does the framework say
+    // which of the two others it is - a static render has no render mode, a prerender has the one of the
+    // interactive render that follows it - and before it the two cannot be told apart, so both count as static:
+    // a prerendered message then shows its text before the page is interactive, at the cost of the interactive
+    // render holding it back for one render, rather than a static one never showing it at all.
+    private bool IsRenderedStatically()
+    {
+        if (_js.IsRuntimeInvalid() is false) return false;
+
+#if NET9_0_OR_GREATER
+        return AssignedRenderMode is null;
+#else
+        return true;
+#endif
     }
 
 

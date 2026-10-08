@@ -129,7 +129,7 @@ public partial class BitRichTextEditor
         _focusSlashPending = false;
         try
         {
-            await _slashInputRef.FocusAsync();
+            await _slashInputRef.FocusSafelyAsync();
             // Suppress native browser handling of the menu's navigation keys (Arrow/Enter/Escape)
             // on this input while leaving normal typing intact.
             await _js.BitRichTextEditorBindSlashKeys(_slashInputRef);

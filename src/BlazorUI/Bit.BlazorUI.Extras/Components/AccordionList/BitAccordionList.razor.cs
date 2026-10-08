@@ -20,6 +20,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     private bool _isToggling;
     private bool _oldMultiple;
     private bool _hasRendered;
+    private bool _optionsReached;
     private bool _pendingBoundKeysPush;
     private bool _preventKeysRegistered;
     private bool _collectingOptionOrder;
@@ -852,17 +853,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // A list of options only knows it is empty once its options have had their turn to register, and the
-        // first render is where that is learned - so the empty content it was given needs a render of its own
-        // to appear in. Nothing else would ask for one: an empty list has no option to report anything.
-        var showEmptyContent = _ShowEmptyContent;
-
         _hasRendered = true;
-
-        if (showEmptyContent is false && _ShowEmptyContent)
-        {
-            StateHasChanged();
-        }
 
         await ReorderOptions();
 
@@ -1568,6 +1559,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
             await itemRef.FocusAsync();
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
     }
 
     private TItem? FindItem(string? key)
@@ -1668,10 +1660,31 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     }
 
     // A list built from options only knows it is empty once its options have had their turn to register, so
-    // the empty content of one waits for the render after the first rather than flashing on the first.
+    // the empty content of one waits for the marker rendered behind them rather than flashing on the first
+    // render, before any of them has registered.
     private bool _ShowEmptyContent => EmptyContent is not null
                                    && _items.Count == 0
-                                   && ((Options ?? ChildContent) is null || _hasRendered);
+                                   && ((Options ?? ChildContent) is null || _optionsReached);
+
+    // The options of the first render have all registered by the time the marker behind them is reached, so the
+    // list knows from here on whether it is empty - and the empty content it was given needs a render of its own
+    // to appear in, since an empty list has no option to ask for one. It is learned within the first render
+    // rather than after it, so the HTML a prerender (or a static SSR page) sends, which never gets to an
+    // after-render pass, carries the empty content as well. An option nested in a component of the page's own
+    // registers later still, and takes the empty content away again within the same batch.
+    private void OnOptionsReached()
+    {
+        if (_optionsReached) return;
+
+        var showEmptyContent = _ShowEmptyContent;
+
+        _optionsReached = true;
+
+        if (showEmptyContent is false && _ShowEmptyContent)
+        {
+            StateHasChanged();
+        }
+    }
 
     // A label on a plain container is dropped by a screen reader, so the list that carries one - an AriaLabel, or an
     // aria-labelledby the page splats on - says what it is. It is rendered before the splatted attributes, so a

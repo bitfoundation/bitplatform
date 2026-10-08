@@ -1,11 +1,15 @@
 @namespace Bit.BlazorUI.Demo.Client.Core.Pages
 @inherits AppComponentBase
 
-<BitText Element="h2" Typography="BitTypography.H3">Why bit BlazorUI?</BitText>
-<BitText Element="p" Typography="BitTypography.Body1" Color="BitColor.SecondaryForeground" Class="benefits-lead">
-    Six things that are difficult to retrofit into a component library, and are therefore worth
-    checking before you commit to one.
-</BitText>
+@* The heading pair sits in a plain div so the lead, a BitText, has an ancestor carrying this file's
+   scope attribute for its ::deep rule to reach it through. *@
+<div>
+    <BitText Element="h2" Typography="BitTypography.H3">Why bit BlazorUI?</BitText>
+    <BitText Element="p" Typography="BitTypography.Body1" Color="BitColor.SecondaryForeground" Class="benefits-lead">
+        Six things that are difficult to retrofit into a component library, and are therefore worth
+        checking before you commit to one.
+    </BitText>
+</div>
 
 <div class="benefit-grid">
     <div class="benefit">

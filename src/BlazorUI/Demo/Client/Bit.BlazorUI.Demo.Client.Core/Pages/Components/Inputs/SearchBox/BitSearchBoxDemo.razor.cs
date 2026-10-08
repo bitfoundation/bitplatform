@@ -833,25 +833,25 @@ public partial class BitSearchBoxDemo
         {
             Name = "--bit-SearchBox-callout-background",
             DefaultValue = "$clr-bg-pri",
-            Description = "Background of the suggest callout. Set through the Callout key of Styles.",
+            Description = "Background of the suggest callout.",
         },
         new()
         {
             Name = "--bit-SearchBox-callout-radius",
             DefaultValue = "$shp-radius-popup",
-            Description = "Corner radius of the callout, on the two corners away from the field. Set through the Callout key of Styles.",
+            Description = "Corner radius of the callout, on the two corners away from the field.",
         },
         new()
         {
             Name = "--bit-SearchBox-callout-shadow",
             DefaultValue = "$box-shadow-popup",
-            Description = "Elevation of the callout. Set through the Callout key of Styles.",
+            Description = "Elevation of the callout.",
         },
         new()
         {
             Name = "--bit-SearchBox-callout-max-height",
             DefaultValue = "$siz-popup-max-height",
-            Description = "Tallest the suggest list grows before it scrolls. Set through the Callout key of Styles.",
+            Description = "Tallest the suggest list grows before it scrolls.",
         },
         new()
         {

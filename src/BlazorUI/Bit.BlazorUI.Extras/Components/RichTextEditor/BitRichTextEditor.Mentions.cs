@@ -150,7 +150,7 @@ public partial class BitRichTextEditor
         _focusMentionPending = false;
         try
         {
-            await _mentionInputRef.FocusAsync();
+            await _mentionInputRef.FocusSafelyAsync();
             // Suppress the browser's own handling of the menu's navigation keys on this input while
             // leaving normal typing intact.
             await _js.BitRichTextEditorBindSlashKeys(_mentionInputRef);

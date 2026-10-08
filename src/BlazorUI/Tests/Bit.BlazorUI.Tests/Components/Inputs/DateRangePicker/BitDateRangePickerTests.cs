@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -3249,6 +3250,55 @@ public class BitDateRangePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDateRangePickerStandaloneShouldCarryThePublicCssVariablesOfTheStyleOntoTheCalendar()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Style, "margin:1rem;--bit-DateRangePicker-accent-color:red");
+            parameters.Add(p => p.Styles, new BitDateRangePickerClassStyles { Callout = "padding:2px" });
+        });
+
+        // A standalone calendar is never relocated, so the chain Callouts.ts carries the root's declarations through
+        // is never built for it: the public variables of the Style are copied onto it ahead of its own style.
+        Assert.AreEqual("--bit-DateRangePicker-accent-color:red;padding:2px", component.Find(".bit-dtrp-cal").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldCopyNothingOntoTheCalendarUnlessItIsStandalone()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Style, "--bit-DateRangePicker-accent-color:red");
+            parameters.Add(p => p.Styles, new BitDateRangePickerClassStyles { Callout = "padding:2px" });
+        });
+
+        Assert.AreEqual("padding:2px", component.Find(".bit-dtrp-cal").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerStandaloneShouldKeepASemicolonInsideAValueWhenItCopiesTheVariables()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Style, "--bit-DateRangePicker-accent-color:url('data:image/svg+xml;utf8,<svg></svg>');color:blue");
+            parameters.Add(p => p.Styles, new BitDateRangePickerClassStyles { Root = "--bit-DateRangePicker-x:[a;b]", Callout = "padding:2px" });
+        });
+
+        // A semicolon inside quotes or brackets is part of the value: cut there, the copy would leave a quote or a
+        // bracket open that swallows everything written after it on the calendar, its own style included.
+        Assert.AreEqual("--bit-DateRangePicker-accent-color:url('data:image/svg+xml;utf8,<svg></svg>');--bit-DateRangePicker-x:[a;b];padding:2px",
+                        component.Find(".bit-dtrp-cal").GetAttribute("style"));
+    }
+
+    [TestMethod]
     public void BitDateRangePickerMonthNavigationButtonsShouldBeLabelled()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
@@ -3664,6 +3714,34 @@ public class BitDateRangePickerTests : BunitTestContext
 
         Assert.IsNull(value);
         Assert.AreEqual(1, cleared);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldStillReportTheClearButtonWhenFocusingTheInputFailsOnTheJsSide()
+    {
+        // An input taken out of the document before the focus call reaches it fails in the browser, which
+        // reaches .NET as a JSException: the value is still cleared, OnClear still fires, nothing is thrown.
+        Context.JSInterop.SetupVoid("Blazor._internal.domWrapper.focus", _ => true).SetException(new JSException("Unable to focus an invalid element."));
+
+        var cleared = 0;
+        BitDateRangePickerValue? value = new()
+        {
+            StartDate = new DateTimeOffset(2024, 3, 1, 0, 0, 0, TimeSpan.Zero),
+            EndDate = new DateTimeOffset(2024, 3, 5, 0, 0, 0, TimeSpan.Zero)
+        };
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.OnClear, () => cleared++);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-dtrp-clr").Click();
+
+        Assert.IsNull(value);
+        Assert.AreEqual(1, cleared);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
     }
 
     [TestMethod]
@@ -4260,7 +4338,7 @@ public class BitDateRangePickerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDateRangePickerShouldCarryItsPublicCssVariablesOntoTheCallout()
+    public void BitDateRangePickerCalloutAndOverlayShouldCarryOnlyTheirOwnStyleWhileTheRootKeepsTheWholeStyle()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
@@ -4277,10 +4355,39 @@ public class BitDateRangePickerTests : BunitTestContext
         var calloutStyle = component.Find(".bit-dtrp-cal").GetAttribute("style");
         var overlayStyle = component.Find(".bit-dtrp-ovl").GetAttribute("style");
 
-        // Only the public variables are copied - the rest of the root's style belongs to the root - and
-        // Styles.Callout comes last, so a value written for the callout still wins over the copy.
-        Assert.AreEqual("--bit-DateRangePicker-color: red;--bit-DateRangePicker-day-size:3rem;--bit-DateRangePicker-range-radius: 0;--bit-DateRangePicker-color: blue;", calloutStyle);
-        Assert.AreEqual("display:none;--bit-DateRangePicker-color: red;--bit-DateRangePicker-day-size:3rem;--bit-DateRangePicker-range-radius: 0;", overlayStyle);
+        // Nothing of the root's style is written onto the popup any more: Callouts.ts carries it into the chain
+        // the callout and the overlay are relocated into, so they hold exactly what the component composes.
+        Assert.AreEqual("--bit-DateRangePicker-color: blue;", calloutStyle);
+        Assert.AreEqual("display:none;", overlayStyle);
+
+        // ... and the root keeps everything it was given.
+        var root = component.Find(".bit-dtrp").GetAttribute("style");
+        Assert.IsNotNull(root);
+        StringAssert.Contains(root, "margin: 1rem");
+        StringAssert.Contains(root, "--bit-DateRangePicker-color: red");
+        StringAssert.Contains(root, "--bit-DateRangePicker-day-size:3rem");
+        StringAssert.Contains(root, "--bit-DateRangePicker-range-radius: 0");
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldNameItsRootWhenItTogglesTheCallout()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Style, "--bit-DateRangePicker-color: red;");
+        });
+
+        component.Find(".bit-dtrp-wrp").Click();
+
+        // The root is what Callouts.ts copies into the chain it relocates the callout and the overlay into,
+        // which is how the public variables of the instance still reach them once they sit under the body.
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+        var rootId = component.Find(".bit-dtrp").Id;
+
+        Assert.IsFalse(string.IsNullOrEmpty(rootId));
+        Assert.AreEqual(rootId, toggle.Arguments[^1]);
     }
 
     [TestMethod]

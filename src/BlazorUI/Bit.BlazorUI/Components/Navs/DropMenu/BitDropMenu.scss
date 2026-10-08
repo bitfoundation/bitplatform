@@ -3,8 +3,9 @@
 
 // Public CSS variables, read off the elements and never declared here, so a value set on :root re-skins every
 // drop menu and one set on the Style of an instance re-skins that one alone. The callout and the overlay are
-// rendered outside the root element, so the component copies the --bit-DropMenu-* declarations of Style,
-// Styles.Root (and Styles.Opened while open) onto them; Styles.Callout is applied after that copy.
+// rendered outside the root element and relocated to the body while open, and Callouts.ts carries what the root
+// and its ancestors declare (a variable set on an ancestor or through its class, in Style, Styles.Root or
+// Styles.Opened) into them, so they reach them like any inherited value; Styles.Callout still wins on the callout.
 //   --bit-DropMenu-color                     text and icon color of the button at rest   (default: per variant, from the role)
 //   --bit-DropMenu-background                background of the button at rest           (default: per variant, from the role)
 //   --bit-DropMenu-border-color              border color of the button, in every state  (default: per variant)
@@ -238,9 +239,10 @@
     height: 100%;
     display: none;
     position: fixed;
-    // How deep the callout is in the stack of open ones is set on the wrapper both are moved into. A drop menu
-    // opened from inside another callout has to lift its overlay above that callout, or the click meant to
-    // dismiss it would land on the callout underneath instead.
+    // How deep the callout is in the stack of open ones is set on the innermost element the relocated parts
+    // share (the holder Callouts.ts moves them into). A drop menu opened from inside another callout has to
+    // lift its overlay above that callout, or the click meant to dismiss it would land on the callout
+    // underneath instead.
     z-index: calc(#{$zindex-overlay} + var(--bit-clo-lvl, 0) * (#{$zindex-callout} - #{$zindex-overlay} + 1));
     background-color: var(--bit-DropMenu-overlay-background, transparent);
 }

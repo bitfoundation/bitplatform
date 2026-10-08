@@ -225,9 +225,11 @@
                         Style="background: linear-gradient(135deg, rgba(78, 0, 142, 0.55), rgba(255, 0, 96, 0.35));">
                 <BitProgress Circular Indeterminate Thickness="10" AriaLabel="Loading" />
             </BitOverlay>
-            <BitOverlay @bind-IsOpen="classIsOpen" Position="BitPosition.Center" Class="custom-overlay">
-                <BitProgress Circular Indeterminate Thickness="10" AriaLabel="Loading" />
-            </BitOverlay>
+            <div>
+                <BitOverlay @bind-IsOpen="classIsOpen" Position="BitPosition.Center" Class="custom-overlay">
+                    <BitProgress Circular Indeterminate Thickness="10" AriaLabel="Loading" />
+                </BitOverlay>
+            </div>
             <BitOverlay @bind-IsOpen="cssVarsIsOpen"
                         ModeFull
                         Position="BitPosition.BottomCenter"

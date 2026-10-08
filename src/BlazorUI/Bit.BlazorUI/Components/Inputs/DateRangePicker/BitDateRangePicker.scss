@@ -4,9 +4,10 @@
 
 // Public custom properties of the DateRangePicker. Every one of them inherits, so it can be set on
 // :root for the whole application, on any ancestor for a region, or through the Style parameter for a
-// single picker. The calendar is rendered in a callout that is reparented to the body while it is open,
-// so an ancestor reaches the field alone; the component copies the ones written in Style (and
-// Styles.Root) onto the callout itself, and Styles.Callout still has the last word there.
+// single picker. The calendar is rendered in a callout that is relocated to the body while it is open;
+// Callouts.ts carries what the root and its ancestors declare into it (a variable set on an ancestor or
+// through its class, in Style or in Styles.Root), so it reaches the calendar like any inherited value, and
+// Styles.Callout, declared on the callout itself, still has the last word there.
 //
 //   --bit-DateRangePicker-color                    accent: the range ends, today, the selected preset,
 //                                                  the active AM/PM button and the open field
@@ -370,8 +371,8 @@
     animation-name: bit-fade-show, bit-slide-down;
     animation-timing-function: $mot-easing-decelerate;
 
-    // Nothing of the root cascades into the callout, which is reparented to the body while it is open,
-    // so the default size has to be declared here as well.
+    // Nothing the root's own classes declare cascades into the callout, which is rendered outside of it
+    // and relocated to the body while it is open, so the default size has to be declared here as well.
     @include dtrp-size-medium;
 }
 
@@ -1326,7 +1327,7 @@
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
 // They are applied to the root element and to the callout alike, since the callout is rendered
-// outside of the root and inherits nothing from it. Each slot passes through the public custom
+// outside of the root and inherits nothing its classes declare. Each slot passes through the public custom
 // property first, so one declaration re-skins every role at once.
 @each $role, $tokens in $bit-color-roles {
     .bit-dtrp-#{$role} {

@@ -1,5 +1,4 @@
-﻿using System.Text;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
@@ -1070,7 +1069,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             // first part that is actually on the screen - takes the focus in its place.
             if (AutoFocus && Disabled is false)
             {
-                await (Standalone ? _inputHourRef.FocusAsync() : InputElement.FocusAsync());
+                await (Standalone ? _inputHourRef : InputElement).FocusSafelyAsync();
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
@@ -1216,6 +1215,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             footerId: CalloutFooterTemplate is not null ? _footerId : string.Empty,
             setCalloutWidth: true,
             fixedCalloutWidth: false,
+            // No rootId: the callout is rendered inside the root, so the root is one of the ancestors the chain
+            // Callouts.ts relocates it into copies anyway.
             maxWindowWidth: 0);
     }
 
@@ -1495,11 +1496,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     {
         if (Standalone || IsRendered is false || IsDisposed) return;
 
-        try
-        {
-            await InputElement.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        await InputElement.FocusSafelyAsync();
     }
 
     // The time inputs are the part of an opened picker the keyboard acts on, so the first of them takes the
@@ -1508,11 +1505,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     {
         if (AllowTextInput || IsRendered is false || IsDisposed) return;
 
-        try
-        {
-            await _inputHourRef.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        await _inputHourRef.FocusSafelyAsync();
     }
 
     private async Task UpdateCurrentValue()
@@ -1732,11 +1725,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     {
         if (IsRendered is false || IsDisposed) return;
 
-        try
-        {
-            await input.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        await input.FocusSafelyAsync();
     }
 
     private async Task HandleOnTimeInputWheel(WheelEventArgs e, TimeUnit unit)
@@ -2245,82 +2234,22 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         return true;
     }
 
-    // The public custom properties of the component, which are what its stylesheet reads off the root with a
-    // fallback (see BitTimePicker.scss). Nothing else in a style string is copied to the callout.
-    private const string PUBLIC_CSS_VARIABLE_PREFIX = "--bit-TimePicker-";
-
-    private string? _publicCssVariables;
-    private string? _lastRootStyle;
-    private string? _lastStylesRoot;
-
-    // The callout and the overlay are rendered outside the root element - and reparented to the body while
-    // the callout is open - so they inherit nothing an author sets on the picker: neither the Style of the
-    // instance nor a custom property declared on an ancestor of it (only :root and body stay ancestors of
-    // them once they have moved). The public --bit-TimePicker-* declarations are therefore carried across by
-    // hand, so ONE Style on the component restyles the field and the popup it opens together, the way it
-    // reads as if it would.
-    private string? GetPublicCssVariables()
-    {
-        var style = Style;
-        var stylesRoot = Styles?.Root;
-
-        // Rebuilt only when one of the two strings it is made of has actually changed: the callout is
-        // re-rendered on every tick of a held spin button, and parsing two style strings per render for a
-        // result that almost never changes is work no one asked for.
-        if (string.Equals(style, _lastRootStyle, StringComparison.Ordinal) &&
-            string.Equals(stylesRoot, _lastStylesRoot, StringComparison.Ordinal))
-        {
-            return _publicCssVariables;
-        }
-
-        _lastRootStyle = style;
-        _lastStylesRoot = stylesRoot;
-
-        StringBuilder? builder = null;
-
-        AppendPublicCssVariables(ref builder, style);
-        AppendPublicCssVariables(ref builder, stylesRoot);
-
-        _publicCssVariables = builder?.ToString();
-
-        return _publicCssVariables;
-    }
-
-    private static void AppendPublicCssVariables(ref StringBuilder? builder, string? style)
-    {
-        if (style.HasNoValue()) return;
-
-        foreach (var declaration in style!.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-        {
-            if (declaration.StartsWith(PUBLIC_CSS_VARIABLE_PREFIX, StringComparison.Ordinal) is false) continue;
-
-            (builder ??= new StringBuilder()).Append(declaration).Append(';');
-        }
-    }
-
-    // Styles.Callout is appended last, so a value written for the callout still wins over the copy.
-    private string? GetCalloutStyles()
-    {
-        var variables = GetPublicCssVariables();
-        var stylesCallout = Styles?.Callout;
-
-        if (variables.HasNoValue()) return stylesCallout;
-        if (stylesCallout.HasNoValue()) return variables;
-
-        return variables + stylesCallout;
-    }
-
-    // Styles.Overlay is appended last for the same reason Styles.Callout is. The display is written here
-    // rather than in the stylesheet because it is what the component toggles the layer with.
+    // The callout and the overlay are rendered inside the root and relocated to the body while the callout is
+    // open; Callouts.ts moves them into a copy of the chain of ancestors they leave, the root among them, so a
+    // public --bit-TimePicker-* variable set on an ancestor or through its class, in Style or in Styles.Root reaches
+    // them like any inherited value. The display is written here rather than in the stylesheet because it is
+    // what the component toggles the layer with.
     private string GetOverlayStyles()
     {
-        return $"display:{(IsOpen ? "block" : "none")};{GetPublicCssVariables()}{Styles?.Overlay}";
+        return $"display:{(IsOpen ? "block" : "none")};{Styles?.Overlay}";
     }
 
     private string GetCalloutCssClasses()
     {
-        // The callout is moved out to the body while it is open, so the custom properties of the color and
-        // the size have to be declared on it as well - nothing of the root cascades down to it there.
+        // The callout is rendered inside the root, but while it is open it is relocated into a copy of the root
+        // that leaves the library's own classes behind (see mirroredClasses in Callouts.ts), so the root's color
+        // and size classes never reach it there. They are declared on the callout itself, which is what gives it
+        // the custom properties of its color and size wherever it is.
         List<string> classes = ["bit-tpc-cal", GetColorClass()];
 
         var sizeClass = GetSizeClass();

@@ -19,8 +19,8 @@
 }
 
 ::deep {
-    // The callouts are relocated to the body while they are open, so the rules that reach their content
-    // have to sit in the ::deep block, which the scope attribute the relocation carries over still matches.
+    // The callouts are moved to the end of the body while they are open, inside copies of their ancestors
+    // that carry this page's scope attribute, so a rule in the ::deep block still reaches their content there.
     .callout-content {
         padding: 1rem;
     }

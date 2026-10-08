@@ -64,6 +64,19 @@ internal static class BitNavUrlMatcher
 
 
 
+    /// <summary>
+    /// Whether an item points at the page the app currently sits on, through its own URL or one of its additional
+    /// ones, matched the way the item asks for.
+    /// </summary>
+    internal static bool IsMatch(string? itemUrl, IEnumerable<string>? additionalUrls, BitNavMatch match, string currentUrl, string currentPath, string baseUri)
+    {
+        if (IsMatch(itemUrl, match, currentUrl, currentPath, baseUri)) return true;
+
+        return additionalUrls?.Any(url => IsMatch(url, match, currentUrl, currentPath, baseUri)) is true;
+    }
+
+
+
     private static string WildcardToRegex(string pattern)
     {
         pattern = Regex.Escape(pattern);
@@ -142,5 +155,36 @@ internal static class BitNavUrlMatcher
         }
         catch (RegexMatchTimeoutException) { return false; }
         catch (ArgumentException) { return false; }
+    }
+}
+
+/// <summary>
+/// Tells the items of a navigation component (<see cref="BitNav&lt;TItem&gt;"/>, <see cref="BitNavBar&lt;TItem&gt;"/>)
+/// that point at the page the app currently sits on, the one rule both of them pick their selected item with in the
+/// automatic mode. The current URL is read and reduced once per navigation rather than once per item asked about,
+/// so the options of a first render, which are asked about one by one as they register, share a single read.
+/// </summary>
+internal sealed class BitNavCurrentUrlMatcher<TItem>(NavigationManager navigationManager,
+                                                     Func<TItem, string?> getUrl,
+                                                     Func<TItem, IEnumerable<string>?> getAdditionalUrls,
+                                                     Func<TItem, BitNavMatch> getMatch)
+{
+    private string? _uri;
+    private string _currentUrl = string.Empty;
+    private string _currentPath = string.Empty;
+
+
+
+    internal bool IsCurrent(TItem item)
+    {
+        var uri = navigationManager.Uri;
+
+        if (string.Equals(_uri, uri, StringComparison.Ordinal) is false)
+        {
+            (_currentUrl, _currentPath) = BitNavUrlMatcher.GetCurrentUrl(navigationManager);
+            _uri = uri;
+        }
+
+        return BitNavUrlMatcher.IsMatch(getUrl(item), getAdditionalUrls(item), getMatch(item), _currentUrl, _currentPath, navigationManager.BaseUri);
     }
 }
