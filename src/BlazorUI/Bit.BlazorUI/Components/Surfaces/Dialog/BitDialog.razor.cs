@@ -185,7 +185,7 @@ public partial class BitDialog : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the BitDialog component.
     /// </summary>
-    [Parameter] public BitDialogClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitDialogClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The title (and aria-label) of the close button, for accessibility and localization.
@@ -583,7 +583,7 @@ public partial class BitDialog : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the BitDialog component.
     /// </summary>
-    [Parameter] public BitDialogClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitDialogClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The secondary line of the header, under the title.

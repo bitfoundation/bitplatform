@@ -269,7 +269,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// Custom CSS classes for different parts of the BitTimePicker component.
     /// </summary>
-    [Parameter] public BitTimePickerClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitTimePickerClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Gets or sets the icon of the clear button of the input, shown when <see cref="ShowInputClearButton"/>
@@ -770,7 +770,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// Custom CSS styles for different parts of the BitTimePicker component.
     /// </summary>
-    [Parameter] public BitTimePickerClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitTimePickerClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Whether the BitTimePicker is rendered standalone or with the input component and callout.

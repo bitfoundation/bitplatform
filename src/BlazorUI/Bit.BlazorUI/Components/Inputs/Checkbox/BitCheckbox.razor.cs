@@ -149,7 +149,7 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// <summary>
     /// Custom CSS classes for different parts of the BitCheckbox.
     /// </summary>
-    [Parameter] public BitCheckboxClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitCheckboxClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the checkbox.
@@ -317,7 +317,7 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// <summary>
     /// Custom CSS styles for different parts of the BitCheckbox.
     /// </summary>
-    [Parameter] public BitCheckboxClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitCheckboxClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Enables cycling through the unchecked, checked and indeterminate states on each click,

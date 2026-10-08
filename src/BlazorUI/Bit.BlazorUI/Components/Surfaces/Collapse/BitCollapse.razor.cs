@@ -186,7 +186,7 @@ public partial class BitCollapse : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the collapse.
     /// </summary>
-    [Parameter] public BitCollapseClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitCollapseClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The duration of the collapse transition in ms, for a section that closes at a different pace than it
@@ -505,7 +505,7 @@ public partial class BitCollapse : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the collapse.
     /// </summary>
-    [Parameter] public BitCollapseClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitCollapseClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Takes the content back out of the DOM once the collapse has closed.

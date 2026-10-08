@@ -139,7 +139,7 @@ public partial class BitPanel : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the panel.
     /// </summary>
-    [Parameter] public BitPanelClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitPanelClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The accessible name of the close button, which is what a screen reader reads out for it and what the
@@ -501,7 +501,7 @@ public partial class BitPanel : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the panel component.
     /// </summary>
-    [Parameter] public BitPanelClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitPanelClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The ARIA id of the element that describes the panel, which is what a screen reader reads out after

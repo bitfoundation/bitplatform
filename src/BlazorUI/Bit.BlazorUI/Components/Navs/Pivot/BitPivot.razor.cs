@@ -40,6 +40,9 @@ public partial class BitPivot : BitComponentBase
     private Dictionary<BitPivotItem, int> _itemPositions = [];
     private BitPivotOverflowBehavior? _setupBehavior;
     private (bool, bool, bool, bool, bool, bool, bool, bool, bool, bool, string?, string?, string?, string?) _lastItemsState;
+
+    // What the tabs read off Classes and Styles for their own class and style strings, when they last built them.
+    private (string?, string?, string?, string?) _lastItemClassStyles;
     private DotNetObjectReference<BitPivot>? _dotnetObj;
 
     // The default behavior (scrolling the page) of the keys the overflow menu and the button that
@@ -128,7 +131,7 @@ public partial class BitPivot : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the pivot.
     /// </summary>
-    [Parameter] public BitPivotClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitPivotClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the pivot.
@@ -366,7 +369,7 @@ public partial class BitPivot : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the pivot.
     /// </summary>
-    [Parameter] public BitPivotClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitPivotClassStyles? Styles { get; set; }
 
 
 
@@ -539,6 +542,20 @@ public partial class BitPivot : BitComponentBase
             _lastItemsState = itemsState;
 
             RefreshAllItems();
+        }
+
+        // The tabs build their own class and style strings out of these, compared by value so that a ClassStyles
+        // changed in place counts too.
+        var itemClassStyles = (Classes?.HeaderItem, Classes?.SelectedItem, Styles?.HeaderItem, Styles?.SelectedItem);
+
+        if (_lastItemClassStyles != itemClassStyles)
+        {
+            _lastItemClassStyles = itemClassStyles;
+
+            foreach (var item in _allItems)
+            {
+                item.RefreshClassStyles();
+            }
         }
 
         base.OnParametersSet();

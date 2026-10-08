@@ -90,7 +90,7 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the button.
     /// </summary>
-    [Parameter] public BitButtonClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitButtonClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the button.
@@ -349,7 +349,7 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Custom inline styles for different parts of the button.
     /// </summary>
-    [Parameter] public BitButtonClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitButtonClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Specifies target attribute of the link when the button renders as an anchor (by providing the Href parameter).

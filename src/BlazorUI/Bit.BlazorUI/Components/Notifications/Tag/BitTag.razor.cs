@@ -113,7 +113,7 @@ public partial class BitTag : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the tag.
     /// </summary>
-    [Parameter] public BitTagClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitTagClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the tag.
@@ -523,7 +523,7 @@ public partial class BitTag : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the tag.
     /// </summary>
-    [Parameter] public BitTagClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitTagClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The browsing context the <see cref="Href"/> of the tag is opened in, for example <c>_blank</c>.

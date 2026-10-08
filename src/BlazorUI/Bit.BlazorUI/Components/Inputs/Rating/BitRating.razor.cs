@@ -89,7 +89,7 @@ public partial class BitRating : BitInputBase<double>
     /// <summary>
     /// Custom CSS classes for different parts of the BitRating.
     /// </summary>
-    [Parameter] public BitRatingClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitRatingClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The hint shown under the items and pointed at by <c>aria-describedby</c>, for the instruction a row
@@ -292,7 +292,7 @@ public partial class BitRating : BitInputBase<double>
     /// <summary>
     /// Custom CSS styles for different parts of the BitRating.
     /// </summary>
-    [Parameter] public BitRatingClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitRatingClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Gets or sets the icon to display for unselected rating elements using custom CSS classes for external icon libraries.

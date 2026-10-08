@@ -86,7 +86,7 @@ public partial class BitProgress : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the BitProgress.
     /// </summary>
-    [Parameter] public BitProgressClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitProgressClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the BitProgress.
@@ -285,7 +285,7 @@ public partial class BitProgress : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the BitProgress.
     /// </summary>
-    [Parameter] public BitProgressClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitProgressClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The color of the unfilled part of the indicator, as any CSS color: the track behind the bar, the ring

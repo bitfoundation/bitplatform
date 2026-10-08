@@ -135,7 +135,7 @@ public partial class BitBadge : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the BitBadge.
     /// </summary>
-    [Parameter] public BitBadgeClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitBadgeClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the badge.
@@ -447,7 +447,7 @@ public partial class BitBadge : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the BitBadge.
     /// </summary>
-    [Parameter] public BitBadgeClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitBadgeClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The browsing context the <see cref="Href"/> of the badge is opened in, for example <c>_blank</c>.

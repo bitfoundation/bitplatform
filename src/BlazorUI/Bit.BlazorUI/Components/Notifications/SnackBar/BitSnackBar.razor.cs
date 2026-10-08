@@ -114,7 +114,7 @@ public partial class BitSnackBar : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the snack bar.
     /// </summary>
-    [Parameter] public BitSnackBarClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitSnackBarClassStyles? Classes { get; set; }
 
     /// <summary>
     /// Closes every snack bar item as soon as the app navigates somewhere else.
@@ -431,7 +431,7 @@ public partial class BitSnackBar : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the snack bar.
     /// </summary>
-    [Parameter] public BitSnackBarClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitSnackBarClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Lets a snack bar item be dragged out of the way with the pointer, in either inline direction.

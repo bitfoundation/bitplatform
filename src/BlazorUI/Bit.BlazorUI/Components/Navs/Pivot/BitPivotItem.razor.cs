@@ -120,6 +120,17 @@ public partial class BitPivotItem : BitComponentBase
         StateHasChanged();
     }
 
+    // The header item and selected item parts of the pivot's Classes and Styles are part of this tab's own strings.
+    internal void RefreshClassStyles()
+    {
+        if (IsDisposed) return;
+
+        ClassBuilder.Reset();
+        StyleBuilder.Reset();
+
+        StateHasChanged();
+    }
+
 
 
     protected override string RootElementClass => "bit-pvti";

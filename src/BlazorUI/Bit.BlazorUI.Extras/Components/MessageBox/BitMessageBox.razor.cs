@@ -106,7 +106,7 @@ public partial class BitMessageBox : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the message box.
     /// </summary>
-    [Parameter] public BitMessageBoxClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitMessageBoxClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The title (and aria-label) of the close button, for accessibility and localization.
@@ -281,7 +281,7 @@ public partial class BitMessageBox : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the message box.
     /// </summary>
-    [Parameter] public BitMessageBoxClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitMessageBoxClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The title of the message box.

@@ -133,7 +133,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// <summary>
     /// Custom CSS classes for different parts of the search box.
     /// </summary>
-    [Parameter] public BitSearchBoxClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitSearchBoxClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The accessible label (aria-label) of the clear button.
@@ -562,7 +562,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     /// <summary>
     /// Custom CSS styles for different parts of the search box.
     /// </summary>
-    [Parameter] public BitSearchBoxClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitSearchBoxClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Suffix text displayed after the search box input. This is not included in the value.

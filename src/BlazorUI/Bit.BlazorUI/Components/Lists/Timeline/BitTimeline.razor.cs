@@ -38,7 +38,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// Custom CSS classes for different parts of the BitTimeline.
     /// </summary>
-    [Parameter] public BitTimelineClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitTimelineClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the timeline.
@@ -141,7 +141,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// Custom CSS styles for different parts of the BitTimeline.
     /// </summary>
-    [Parameter] public BitTimelineClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitTimelineClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Truncates the connecting line of the timeline at the first dot, the last dot, or both of them.

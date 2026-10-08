@@ -124,7 +124,7 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the toggle button.
     /// </summary>
-    [Parameter] public BitToggleButtonClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitToggleButtonClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the toggle button.
@@ -458,7 +458,7 @@ public partial class BitToggleButton : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the toggle button.
     /// </summary>
-    [Parameter] public BitToggleButtonClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitToggleButtonClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The text of the toggle button.

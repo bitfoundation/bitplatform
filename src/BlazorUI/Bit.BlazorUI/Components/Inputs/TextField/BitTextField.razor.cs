@@ -118,7 +118,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// <summary>
     /// Custom CSS classes for different parts of the BitTextField.
     /// </summary>
-    [Parameter] public BitTextFieldClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitTextFieldClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The aria-label of the clear button, which is what a screen reader announces for it since the button
@@ -594,7 +594,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// <summary>
     /// Custom CSS styles for different parts of the BitTextField.
     /// </summary>
-    [Parameter] public BitTextFieldClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitTextFieldClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Suffix displayed after the text field contents. This is not included in the value.

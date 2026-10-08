@@ -111,7 +111,7 @@ public partial class BitToggle : BitInputBase<bool>
     /// <summary>
     /// Custom CSS classes for different parts of the toggle.
     /// </summary>
-    [Parameter] public BitToggleClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitToggleClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the toggle, applied to the track of the checked state.
@@ -356,7 +356,7 @@ public partial class BitToggle : BitInputBase<bool>
     /// <summary>
     /// Custom CSS styles for different parts of the toggle.
     /// </summary>
-    [Parameter] public BitToggleClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitToggleClassStyles? Styles { get; set; }
 
     /// <summary>
     /// Arbitrary content rendered inside the knob, receiving the current state of the toggle, in place of

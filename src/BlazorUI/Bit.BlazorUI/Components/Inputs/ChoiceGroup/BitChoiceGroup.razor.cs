@@ -68,7 +68,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// <summary>
     /// Custom CSS classes for different parts of the BitChoiceGroup.
     /// </summary>
-    [Parameter] public BitChoiceGroupClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitChoiceGroupClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The general color of the BitChoiceGroup.
@@ -226,7 +226,7 @@ public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where 
     /// <summary>
     /// Custom CSS styles for different parts of the BitChoiceGroup.
     /// </summary>
-    [Parameter] public BitChoiceGroupClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitChoiceGroupClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The visual style of the items of the ChoiceGroup. The default is <see cref="BitVariant.Text"/>, which

@@ -240,7 +240,7 @@ public partial class BitFileUpload : BitComponentBase
     /// <summary>
     /// Custom CSS classes for different parts of the BitFileUpload.
     /// </summary>
-    [Parameter] public BitFileUploadClassStyles? Classes { get; set; }
+    [Parameter, ResetClassBuilder] public BitFileUploadClassStyles? Classes { get; set; }
 
     /// <summary>
     /// The text of the "Clear" button of the batch actions (see <see cref="ShowBatchActions"/>), which resets
@@ -713,7 +713,7 @@ public partial class BitFileUpload : BitComponentBase
     /// <summary>
     /// Custom CSS styles for different parts of the BitFileUpload.
     /// </summary>
-    [Parameter] public BitFileUploadClassStyles? Styles { get; set; }
+    [Parameter, ResetStyleBuilder] public BitFileUploadClassStyles? Styles { get; set; }
 
     /// <summary>
     /// The message shown for successful file uploads.
