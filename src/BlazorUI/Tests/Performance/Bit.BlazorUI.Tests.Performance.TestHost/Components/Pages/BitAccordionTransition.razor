@@ -1,0 +1,48 @@
+@page "/regression/accordion-transition"
+
+<PageTitle>BitAccordion Transition Regression</PageTitle>
+
+@* A HiddenUntilFound panel is handed to hidden="until-found" once its close has played, which WebKit needs: it lays
+   out a panel whose content-visibility is mid-way through a transition as already hidden, so a panel the attribute
+   lands on as the close starts snaps shut. Each accordion below closes at a pace of its own. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>BitAccordion Transition Regression</h3>
+    <p>Status: <span id="status">@_status</span></p>
+</div>
+
+@* Paced by the TransitionDuration parameter. *@
+<BitAccordion Id="acd-param" Title="Paced by the parameter" DefaultIsExpanded="true" HiddenUntilFound TransitionDuration="1500">
+    <p>Searchable text <span id="param-target">needle</span></p>
+    <div style="height: 200px;"></div>
+</BitAccordion>
+
+@* Paced by the motion token a slower theme preset would set, which the component cannot read. *@
+<BitAccordion Id="acd-theme" Title="Paced by the theme" DefaultIsExpanded="true" HiddenUntilFound Style="--bit-mot-duration-long-full: 1500ms;">
+    <p>Searchable text <span id="theme-target">haystack</span></p>
+    <div style="height: 200px;"></div>
+</BitAccordion>
+
+@* A list owns the expansion of its items, so the close of an item comes from the list. *@
+<div id="list">
+    <BitAccordionList Items="_items" DefaultExpandedKey="a" HiddenUntilFound TransitionDuration="1500" />
+</div>
+
+@code {
+    private readonly List<BitAccordionListItem> _items =
+    [
+        new() { Key = "a", Title = "Item A", Body = _ => builder => builder.AddMarkupContent(0, "<p>Item <span id=\"list-target\">pin</span></p><div style=\"height: 200px;\"></div>") },
+        new() { Key = "b", Title = "Item B", Body = _ => builder => builder.AddMarkupContent(0, "<p>Item B</p>") },
+    ];
+
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
+    // interactive render moves it on, which is what the test waits for before it drives the page.
+    private string _status = "Loading";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+}

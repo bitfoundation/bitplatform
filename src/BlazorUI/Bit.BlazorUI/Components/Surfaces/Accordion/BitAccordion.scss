@@ -456,17 +456,14 @@
 // stays until the next render, so the pair opens the panel around the match at once - before the render that
 // expands the accordion for real, and even with no interactivity at all on a statically rendered page.
 // inherit rather than visible, so an accordion the Visibility parameter has hidden stays hidden.
-// The attribute arrives with the class as the close starts, and what it hides with - content-visibility, or display
-// in a browser that does not know the value and treats it as a plain hidden - is held back until the transition is
-// over: a discrete transition to a hiding value keeps the showing one for its whole duration. So the close plays at
-// whatever duration the theme, a TransitionDuration or a reduced-motion preference gives it. Opening, the showing
-// value takes over at once.
+// The attribute arrives with the class once the close has played - the component waits for the transitions the
+// browser reports - so the close itself is the ordinary collapsed state's. What the attribute hides with is not held
+// back here with a discrete transition (allow-discrete) instead: WebKit lays out a panel whose content-visibility is
+// being transitioned or animated as already hidden, which snaps the row shut the moment the attribute lands.
 .bit-acd-huf {
     visibility: inherit;
     transition: opacity var(--bit-acd-dur) $mot-easing 0ms,
-                padding-block var(--bit-acd-dur) $mot-easing 0ms,
-                content-visibility var(--bit-acd-dur) linear 0ms allow-discrete,
-                display var(--bit-acd-dur) linear 0ms allow-discrete;
+                padding-block var(--bit-acd-dur) $mot-easing 0ms;
 
     &:not([hidden]) {
         opacity: 1;

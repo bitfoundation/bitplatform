@@ -1414,10 +1414,13 @@ public class BitCollapseTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCollapseShouldHideASearchableSectionAsTheCloseStarts()
+    public void BitCollapseShouldHideASearchableSectionOnlyOnceTheCloseTheBrowserPlaysHasFinished()
     {
-        // The stylesheet holds back what hidden="until-found" hides with until the close has played, at whatever
-        // pace the browser resolved, so the attribute goes on with the state rather than after a timer.
+        // hidden="until-found" stops the content from being drawn, so it goes on at the end of the close the browser
+        // plays - whatever set its pace - and the content is inert meanwhile, out of reach of a Tab, a click and a
+        // screen reader. The browser's answer is held back here, so nothing depends on the speed of the machine.
+        var invocation = Context.JSInterop.Setup<double?>("BitBlazorUI.Collapse.getRemainingTransitionTime", _ => true);
+
         var component = RenderComponent<BitCollapse>(parameters =>
         {
             parameters.Add(p => p.HiddenUntilFound, true);
@@ -1427,9 +1430,18 @@ public class BitCollapseTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.Expanded, false));
 
-        Assert.AreEqual("until-found", component.Find(".bit-col-con").GetAttribute("hidden"));
+        Assert.AreEqual(1, invocation.Invocations.Count);
 
-        Assert.IsFalse(component.Find(".bit-col-con").HasAttribute("inert"));
+        Assert.IsFalse(component.Find(".bit-col-con").HasAttribute("hidden"));
+
+        Assert.IsTrue(component.Find(".bit-col-con").HasAttribute("inert"));
+
+        invocation.SetResult(0);
+
+        component.WaitForAssertion(() => Assert.IsFalse(component.Find(".bit-col-con").HasAttribute("inert")),
+                                   TimeSpan.FromSeconds(3));
+
+        Assert.AreEqual("until-found", component.Find(".bit-col-con").GetAttribute("hidden"));
     }
 
     [TestMethod]
@@ -1738,49 +1750,48 @@ public class BitCollapseTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.Expanded, false));
 
-        // OnExpanded waits for the end of an open, not of a close, and HiddenUntilFound for nothing: the stylesheet
-        // times the hiding of a searchable section itself.
-        Assert.AreEqual((unmountOnCollapse || onCollapsed) ? 1 : 0, invocation.Invocations.Count);
+        // OnExpanded waits for the end of an open, not of a close.
+        Assert.AreEqual(onExpanded ? 0 : 1, invocation.Invocations.Count);
     }
 
     [TestMethod]
     public void BitCollapseShouldAskTheBrowserWhenSomethingStartsWaitingPartWayThroughTheTransition()
     {
-        // Nothing waited for the close when it started, so it was timed off the 5s estimate; an OnCollapsed handed
-        // down mid-close has the browser asked what is left instead - here nothing - rather than inheriting the guess.
+        // Nothing waited for the close when it started, so it was timed off the estimate; an OnCollapsed handed
+        // down mid-close has the browser asked what is left of it once the estimate runs out, and the callback
+        // waits for that answer rather than trusting the guess. The answer is held back here, so nothing about
+        // the order depends on how fast the machine running the test is.
         var invocation = Context.JSInterop.Setup<double?>("BitBlazorUI.Collapse.getRemainingTransitionTime", _ => true);
-        invocation.SetResult(0);
 
         var collapsedCount = 0;
 
         var component = RenderComponent<BitCollapse>(parameters =>
         {
-            parameters.Add(p => p.Duration, 5000);
+            parameters.Add(p => p.Duration, 1000);
             parameters.Add(p => p.Expanded, true);
         });
 
         component.Render(parameters => parameters.Add(p => p.Expanded, false));
+        component.Render(parameters => parameters.Add(p => p.OnCollapsed, () => collapsedCount++));
 
         Assert.AreEqual(0, invocation.Invocations.Count);
 
-        component.Render(parameters => parameters.Add(p => p.OnCollapsed, () => collapsedCount++));
+        WaitUntil(() => invocation.Invocations.Count == 1, 5000);
 
-        Assert.AreEqual(1, invocation.Invocations.Count);
+        Assert.AreEqual(0, collapsedCount);
 
-        WaitUntil(() => collapsedCount == 1, 2000);
+        invocation.SetResult(0);
+
+        WaitUntil(() => collapsedCount == 1, 5000);
 
         Assert.AreEqual(1, collapsedCount);
-
-        // The transition has been timed by the browser now, so a later render asks nothing more.
-        component.Render(parameters => parameters.Add(p => p.NoPadding, true));
-
         Assert.AreEqual(1, invocation.Invocations.Count);
     }
 
     [TestMethod]
-    public void BitCollapseShouldWaitOutTheEstimateWhenTheBrowserCannotRetimeTheTransition()
+    public void BitCollapseShouldEndATransitionTheBrowserCannotTimeAtTheEstimate()
     {
-        // The browser has nothing to say (null), so what is left of the estimate still holds back the callback.
+        // The browser has nothing to say (null), so the estimate the end was timed off stands.
         var invocation = Context.JSInterop.Setup<double?>("BitBlazorUI.Collapse.getRemainingTransitionTime", _ => true);
         invocation.SetResult(null);
 
@@ -1788,20 +1799,40 @@ public class BitCollapseTests : BunitTestContext
 
         var component = RenderComponent<BitCollapse>(parameters =>
         {
-            parameters.Add(p => p.Duration, 800);
+            parameters.Add(p => p.Duration, 1000);
             parameters.Add(p => p.Expanded, true);
         });
 
         component.Render(parameters => parameters.Add(p => p.Expanded, false));
         component.Render(parameters => parameters.Add(p => p.OnCollapsed, () => collapsedCount++));
 
-        Thread.Sleep(300);
-
         Assert.AreEqual(0, collapsedCount);
 
-        WaitUntil(() => collapsedCount == 1, 3000);
+        WaitUntil(() => collapsedCount == 1, 5000);
 
         Assert.AreEqual(1, collapsedCount);
+        Assert.AreEqual(1, invocation.Invocations.Count);
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldNotAskTheBrowserAgainForATransitionItHasTimed()
+    {
+        var invocation = Context.JSInterop.Setup<double?>("BitBlazorUI.Collapse.getRemainingTransitionTime", _ => true);
+        invocation.SetResult(0);
+
+        var collapsedCount = 0;
+
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.OnCollapsed, () => collapsedCount++);
+            parameters.Add(p => p.Expanded, true);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Expanded, false));
+
+        WaitUntil(() => collapsedCount == 1, 5000);
+
+        Assert.AreEqual(1, invocation.Invocations.Count);
     }
 
     [TestMethod]

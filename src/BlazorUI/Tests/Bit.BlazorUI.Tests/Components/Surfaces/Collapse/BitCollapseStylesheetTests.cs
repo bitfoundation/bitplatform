@@ -168,21 +168,13 @@ public partial class BitCollapseStylesheetTests
     }
 
     [TestMethod]
-    public void BitCollapseShouldHoldBackTheHidingOfASearchableSectionUntilTheCloseHasPlayed()
+    public void BitCollapseShouldNotHoldBackTheHidingOfASearchableSectionWithADiscreteTransition()
     {
-        var stylesheet = ReadStylesheet();
+        var code = ReadStylesheet().Split('\n').Where(line => line.TrimStart().StartsWith("//", System.StringComparison.Ordinal) is false);
 
-        // hidden="until-found" is applied as the close starts, so what it hides with - content-visibility, or the
-        // display:none of a browser that treats it as a plain hidden - is a discrete transition timed like the track.
-        var block = SourceFiles.GetScssBlock(stylesheet, "\n.bit-col-huf > .bit-col-con {");
-
-        StringAssert.Contains(block, "content-visibility var(--bit-col-duration) linear var(--bit-col-delay) allow-discrete");
-        StringAssert.Contains(block, "display var(--bit-col-duration) linear var(--bit-col-delay) allow-discrete");
-
-        // NoAnimation takes the transitions off at the same specificity, so it has to come later to win.
-        Assert.IsTrue(stylesheet.IndexOf("\n.bit-col-huf > .bit-col-con {", System.StringComparison.Ordinal)
-                      < stylesheet.IndexOf("\n.bit-col-nan,", System.StringComparison.Ordinal),
-                      "The NoAnimation rule has to follow the searchable transition to override it.");
+        // WebKit lays out content mid-way through a discrete content-visibility transition as already hidden, which
+        // snaps the track shut; the component applies hidden="until-found" at the end of the close instead.
+        Assert.IsFalse(code.Any(line => line.Contains("allow-discrete")), "A discrete transition snaps a searchable close shut in WebKit.");
     }
 
     private static string[] DocumentedVariables(string stylesheet)

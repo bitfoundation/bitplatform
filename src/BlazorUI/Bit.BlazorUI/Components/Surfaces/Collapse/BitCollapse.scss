@@ -196,21 +196,13 @@
 
 
 // A searchable collapse hides its closed content with the hidden="until-found" attribute the component
-// renders as the close starts, and that attribute is the only thing allowed to hide it: text the
+// renders at the end of the close, and that attribute is the only thing allowed to hide it: text the
 // stylesheet has hidden with visibility is text find-in-page skips, which is the whole of what the
 // parameter is for.
-// What the attribute hides with - content-visibility, or display in a browser that does not know the value
-// and treats it as a plain hidden - is held back until the close has played: a discrete transition to a
-// hiding value keeps the showing one for its whole duration and delay, so the close plays at whatever pace
-// the browser resolved, from a parameter, the public variable, the theme preset or the reduced motion
-// preference. Opening, the showing value takes over at once. The visibility transition of the content region
-// is left out, since visibility is not what hides a searchable section.
-.bit-col-huf > .bit-col-con {
-    transition: opacity var(--bit-col-duration) var(--bit-col-easing) var(--bit-col-delay),
-                content-visibility var(--bit-col-duration) linear var(--bit-col-delay) allow-discrete,
-                display var(--bit-col-duration) linear var(--bit-col-delay) allow-discrete;
-}
-
+// The attribute is not put on as the close starts with a discrete transition (allow-discrete) on
+// content-visibility and display holding back what it hides with: WebKit lays out content mid-way through such a
+// transition as already hidden, so the track would snap shut at once, and a browser without transition-behavior
+// drops the whole transition and hides it at once as well.
 // inherit rather than visible, so a collapse the Visibility parameter has hidden stays hidden.
 .bit-col-huf > .bit-col-cco {
     visibility: inherit;
