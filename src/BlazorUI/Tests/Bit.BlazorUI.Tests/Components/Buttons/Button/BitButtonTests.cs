@@ -221,16 +221,12 @@ public class BitButtonTests : BunitTestContext
          DataRow(BitColor.Warning),
          DataRow(BitColor.SevereWarning),
          DataRow(BitColor.Error),
-         DataRow(null),
     ]
-    public void BitColorOfButtonTest(BitColor? color)
+    public void BitColorOfButtonTest(BitColor color)
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            if (color.HasValue)
-            {
-                parameters.Add(p => p.Color, color.Value);
-            }
+            parameters.Add(p => p.Color, color);
         });
 
         var bitButton = com.Find(".bit-btn");
@@ -242,33 +238,22 @@ public class BitButtonTests : BunitTestContext
             BitColor.Warning => "bit-btn-wrn",
             BitColor.SevereWarning => "bit-btn-swr",
             BitColor.Error => "bit-btn-err",
-            _ => "bit-btn-pri"
+            _ => throw new ArgumentOutOfRangeException(nameof(color))
         };
 
-        if (color.HasValue)
-        {
-            Assert.IsTrue(bitButton.ClassList.Contains(colorClassName));
-        }
-        else
-        {
-            Assert.AreEqual(5, bitButton.ClassList.Length);
-        }
+        Assert.IsTrue(bitButton.ClassList.Contains(colorClassName));
     }
 
     [TestMethod,
          DataRow(BitSize.Small),
          DataRow(BitSize.Medium),
          DataRow(BitSize.Large),
-         DataRow(null)
     ]
-    public void BitSizeOfButtonTest(BitSize? size)
+    public void BitSizeOfButtonTest(BitSize size)
     {
         var com = RenderComponent<BitButton>(parameters =>
         {
-            if (size.HasValue)
-            {
-                parameters.Add(p => p.Size, size.Value);
-            }
+            parameters.Add(p => p.Size, size);
         });
 
         var bitButton = com.Find(".bit-btn");
@@ -278,17 +263,35 @@ public class BitButtonTests : BunitTestContext
             BitSize.Small => "bit-btn-sm",
             BitSize.Medium => "bit-btn-md",
             BitSize.Large => "bit-btn-lg",
-            _ => "bit-btn-md"
+            _ => throw new ArgumentOutOfRangeException(nameof(size))
         };
 
-        if (size.HasValue)
+        Assert.IsTrue(bitButton.ClassList.Contains(sizeClassName));
+    }
+
+    [TestMethod]
+    public void BitButtonShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var com = RenderComponent<BitButton>();
+
+        // An unset Color or Size publishes nothing, so the public --bit-Button-* variables restyle the default while
+        // an explicit value - which does publish its class - wins over them.
+        var bitButton = com.Find(".bit-btn");
+        var published = new[]
         {
-            Assert.IsTrue(bitButton.ClassList.Contains(sizeClassName));
-        }
-        else
+            "bit-btn-pri", "bit-btn-sec", "bit-btn-ter", "bit-btn-inf", "bit-btn-suc", "bit-btn-wrn", "bit-btn-swr", "bit-btn-err",
+            "bit-btn-pbg", "bit-btn-sbg", "bit-btn-tbg", "bit-btn-pfg", "bit-btn-sfg", "bit-btn-tfg", "bit-btn-pbr", "bit-btn-sbr", "bit-btn-tbr",
+            "bit-btn-sm", "bit-btn-md", "bit-btn-lg",
+            "bit-btn-rnd",
+        };
+
+        foreach (var cssClass in published)
         {
-            Assert.AreEqual(5, bitButton.ClassList.Length);
+            Assert.IsFalse(bitButton.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
         }
+
+        // What is left is the root, the variant and the icon-only box a button with no content is.
+        Assert.AreEqual(3, bitButton.ClassList.Length);
     }
 
     [TestMethod,

@@ -96,12 +96,51 @@ public class BitLoadingStylesheetTests
     {
         var @base = ReadStylesheets().Single(s => s.Name == "BitLoading.scss").Content;
 
-        var unsized = @base.IndexOf("\n.bit-ldn-em {\n    --bit-ldn-sz: 1em;\n    --bit-ldn-lfs: 1em;\n}", StringComparison.Ordinal);
+        var unsized = @base.IndexOf("\n.bit-ldn-em {\n    --bit-ldn-sz-def: 1em;\n    --bit-ldn-lfs-def: 1em;\n}", StringComparison.Ordinal);
 
-        // At equal specificity the later rule wins, so the 1em has to come after the root's own label size. It
-        // is a class of its own, which a sized inline loader does not carry, so bit-ldn-inl must not set either.
+        // At equal specificity the later rule wins, so the 1em has to come after the root's own resets. It is a class
+        // of its own, which a sized inline loader does not carry, so bit-ldn-inl must not set either. It is the default
+        // of an unsized loader rather than a size it was given, so it is read after the public variables.
         Assert.IsGreaterThan(@base.IndexOf("\n.bit-ldn {", StringComparison.Ordinal), unsized);
         StringAssert.DoesNotMatch(@base, new Regex(@"\.bit-ldn-inl \{[^}]*--bit-ldn-(sz|lfs)"));
+        StringAssert.Contains(@base, "--bit-ldn-size: var(--bit-ldn-sz, var(--bit-Loading-size, var(--bit-ldn-sz-def, 64px)));");
+        StringAssert.Contains(@base, "font-size: var(--bit-ldn-lfs, var(--bit-Loading-label-font-size, var(--bit-ldn-lfs-def, #{$tg-fs-sm})));");
+    }
+
+    [TestMethod]
+    public void BitLoadingShouldLetAParameterWinOverItsPublicVariable()
+    {
+        var @base = ReadStylesheets().Single(s => s.Name == "BitLoading.scss").Content;
+
+        // Color/CustomColor, Size/CustomSize, Thickness and Speed publish these only while they are set (inline, or
+        // through a size class), so they are read before the variable, which only restyles the default.
+        StringAssert.Contains(@base, "--bit-ldn-color: var(--bit-ldn-clr, var(--bit-Loading-color, #{$clr-pri}));");
+        StringAssert.Contains(@base, "--bit-ldn-size: var(--bit-ldn-sz, var(--bit-Loading-size, ");
+        StringAssert.Contains(@base, "--bit-ldn-thickness: var(--bit-ldn-stroke, var(--bit-Loading-thickness, var(--bit-ldn-stroke-authored)));");
+        StringAssert.Contains(@base, "calc(#{$mot-loop-factor} / var(--bit-ldn-spd, var(--bit-Loading-speed, 1)))");
+        StringAssert.Contains(@base, "font-size: var(--bit-ldn-lfs, var(--bit-Loading-label-font-size, ");
+
+        // A custom size scales the label from the size it was given, which is a choice as well.
+        StringAssert.Contains(@base, "\n.bit-ldn-csz {\n    --bit-ldn-lfs: clamp(");
+
+        foreach (var (name, stylesheet) in ReadStylesheets())
+        {
+            Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Loading-[a-z-]+, var\(--bit-ldn-(?!sz-def|lfs-def|stroke-authored)"), $"{name}: a public variable is read before the parameter it restyles the default of.");
+        }
+    }
+
+    [TestMethod]
+    public void BitLoadingShouldPublishItsParametersOnlyWhereTheyAreSet()
+    {
+        var root = SourceFiles.GetScssBlock(ReadStylesheets().Single(s => s.Name == "BitLoading.scss").Content, "\n.bit-ldn {");
+
+        // A loader can sit in the label of another one, which must not inherit the outer loader's color, size, stroke
+        // or speed: each root starts the values the parameters publish out unset, and the classes - declared further
+        // down at the same weight - and the style attribute still win on the root that carries them.
+        foreach (var property in new[] { "--bit-ldn-clr", "--bit-ldn-sz", "--bit-ldn-lfs", "--bit-ldn-stroke", "--bit-ldn-spd", "--bit-ldn-sz-def", "--bit-ldn-lfs-def" })
+        {
+            StringAssert.Contains(root, $"{property}: initial;");
+        }
     }
 
     [TestMethod]

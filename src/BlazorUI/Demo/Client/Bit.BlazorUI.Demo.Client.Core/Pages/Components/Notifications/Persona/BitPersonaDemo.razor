@@ -711,6 +711,7 @@
         <div>
             <b>Style</b> and <b>Class</b> reach the root; <b>Styles</b> and <b>Classes</b> reach each part by name. The public
             <b>--bit-Persona-*</b> CSS variables re-skin the coin, texts, rings, presence colors and focus - on <code>:root</code>, an ancestor or one persona's <b>Style</b>.
+            They restyle the default, not a choice: an explicit <b>CoinColor</b> (or the color <b>AutoCoinColor</b> picks) and an explicit <b>Shape</b> (or <b>Squared</b>) win over the variables for what they set.
         </div>
         <br />
         <div>
@@ -737,7 +738,7 @@
                                            PrimaryTextContainer = "custom-primary-text" })" />
         </div>
         <br /><br /><br />
-        <div>CSS variables, set once on an ancestor:</div>
+        <div>CSS variables, set once on an ancestor - they restyle what the personas leave unset (no Size here, so the gap is the variable's):</div>
         <br />
         <div style="--bit-Persona-coin-background: #7a2e8e;
                     --bit-Persona-coin-color: #fff;
@@ -749,11 +750,10 @@
                     --bit-Persona-presence-icon-color: #fff;">
             <BitPersona PrimaryText="Saleh Khafan"
                         SecondaryText="Out of office"
-                        Size="BitPersonaSize.Size56"
                         Presence="BitPersonaPresence.OutOfOffice"
                         PresenceIconName="@BitIconName.Airplane" />
             <br />
-            <BitPersona Active PrimaryText="Ted Randall" SecondaryText="Designer" Size="BitPersonaSize.Size56" />
+            <BitPersona Active PrimaryText="Ted Randall" SecondaryText="Designer" />
         </div>
         <br /><br />
         <div>On a tinted surface, <b>--bit-Persona-surface-color</b> cuts the ring's gap and the hollow dots in it:</div>

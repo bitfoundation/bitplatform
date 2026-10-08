@@ -41,7 +41,7 @@ public partial class BitSliderDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the slider, applied to the filled part of the track and to the thumbs.",
+            Description = "The general color of the slider, applied to the filled part of the track and to the thumbs. An explicit value wins over the --bit-Slider-* accent variables (color, hover, active and focus colors, the active mark and the thumb label colors); left unset, the slider is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -325,7 +325,7 @@ public partial class BitSliderDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "Size of the Slider, which scales its track, thumbs and labels together.",
+            Description = "Size of the Slider, which scales its track, thumbs and labels together. An explicit value wins over the --bit-Slider-* size variables (thumb size, rail size, length, font sizes); left unset, the slider is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -403,26 +403,26 @@ public partial class BitSliderDemo
         new()
         {
             Name = "--bit-Slider-color",
-            DefaultValue = "The Color role's main color",
-            Description = "The accent: the filled part of the track and the ring around every thumb.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "The accent: the filled part of the track and the ring around every thumb. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Slider-hover-color",
-            DefaultValue = "--bit-Slider-color when set, otherwise the Color role's hover color",
-            Description = "The accent while the slider is hovered (pointer devices only).",
+            DefaultValue = "--bit-Slider-color when set, otherwise --bit-clr-pri-hover",
+            Description = "The accent while the slider is hovered (pointer devices only). The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Slider-active-color",
-            DefaultValue = "--bit-Slider-color when set, otherwise the Color role's active color",
-            Description = "The accent while a thumb - or the draggable band - is held down, which is the feedback a pointer drag gets in place of the focus ring a keyboard gets.",
+            DefaultValue = "--bit-Slider-color when set, otherwise --bit-clr-pri-active",
+            Description = "The accent while a thumb - or the draggable band - is held down, which is the feedback a pointer drag gets in place of the focus ring a keyboard gets. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Slider-focus-color",
-            DefaultValue = "--bit-Slider-color when set, otherwise the Color role's focus color",
-            Description = "The ring around the thumb that holds the keyboard focus. A slider whose value is invalid ignores it and takes --bit-Slider-invalid-color (the error focus color by default) instead.",
+            DefaultValue = "--bit-Slider-color when set, otherwise --bit-clr-pri-focus",
+            Description = "The ring around the thumb that holds the keyboard focus. A slider whose value is invalid ignores it and takes --bit-Slider-invalid-color (the error focus color by default) instead. The Color parameter wins over it.",
         },
         new()
         {
@@ -445,8 +445,8 @@ public partial class BitSliderDemo
         new()
         {
             Name = "--bit-Slider-rail-size",
-            DefaultValue = "--bit-siz-track-sm / -md / -lg, per Size",
-            Description = "Thickness of the rail and of the fill.",
+            DefaultValue = "--bit-siz-track-md",
+            Description = "Thickness of the rail and of the fill. The Size parameter wins over it.",
         },
         new()
         {
@@ -457,8 +457,8 @@ public partial class BitSliderDemo
         new()
         {
             Name = "--bit-Slider-thumb-size",
-            DefaultValue = "--bit-siz-slider-thumb-sm / -md / -lg, per Size",
-            Description = "Diameter of a thumb. It is also the width a vertical slider lays its track inside, and the room kept clear at each end of the track for the thumb to travel into.",
+            DefaultValue = "--bit-siz-slider-thumb-md",
+            Description = "Diameter of a thumb. It is also the width a vertical slider lays its track inside, and the room kept clear at each end of the track for the thumb to travel into. The Size parameter wins over it.",
         },
         new()
         {
@@ -487,8 +487,8 @@ public partial class BitSliderDemo
         new()
         {
             Name = "--bit-Slider-length",
-            DefaultValue = "9rem / 12rem / 15rem, per Size",
-            Description = "Length of a vertical slider, which has none of its own to inherit from the line it sits on. It has no effect on a horizontal one, which fills its container.",
+            DefaultValue = "12rem",
+            Description = "Length of a vertical slider, which has none of its own to inherit from the line it sits on. It has no effect on a horizontal one, which fills its container. The Size parameter wins over it.",
         },
         new()
         {
@@ -499,8 +499,8 @@ public partial class BitSliderDemo
         new()
         {
             Name = "--bit-Slider-font-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Size of the caption and of the value labels.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Size of the caption and of the value labels. The Size parameter wins over it.",
         },
         new()
         {
@@ -547,8 +547,8 @@ public partial class BitSliderDemo
         new()
         {
             Name = "--bit-Slider-mark-active-color",
-            DefaultValue = "The Color role's on-color",
-            Description = "A mark the fill has reached, drawn on top of it in the contrasting color so it stays legible there.",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "A mark the fill has reached, drawn on top of it in the contrasting color so it stays legible there. The Color parameter wins over it.",
         },
         new()
         {
@@ -559,8 +559,8 @@ public partial class BitSliderDemo
         new()
         {
             Name = "--bit-Slider-mark-label-font-size",
-            DefaultValue = "Per Size, one ramp step below the value labels",
-            Description = "Size of that text.",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Size of that text. The Size parameter wins over it.",
         },
         new()
         {
@@ -571,14 +571,14 @@ public partial class BitSliderDemo
         new()
         {
             Name = "--bit-Slider-thumb-label-color",
-            DefaultValue = "The Color role's on-color",
-            Description = "Text of the floating label that rides along with a thumb.",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "Text of the floating label that rides along with a thumb. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Slider-thumb-label-background",
             DefaultValue = "The accent color",
-            Description = "Background of that label.",
+            Description = "Background of that label. The Color parameter wins over it.",
         },
         new()
         {
@@ -595,8 +595,8 @@ public partial class BitSliderDemo
         new()
         {
             Name = "--bit-Slider-thumb-label-font-size",
-            DefaultValue = "As the mark labels",
-            Description = "Its font size.",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Its font size. The Size parameter wins over it.",
         },
         new()
         {

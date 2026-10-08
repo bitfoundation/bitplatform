@@ -835,8 +835,9 @@
         <br /><br />
         <div>
             The component also reads a set of <BitLink Href="#css-variables-section">CSS variables</BitLink> off its
-            elements for what no parameter covers. They inherit, so a value on <code>:root</code> or any ancestor
-            re-skins every tags input below it, and one on the <b>Style</b> of an instance re-skins that one alone.
+            elements. They inherit, so a value on <code>:root</code> or any ancestor re-skins every tags input below
+            it, and one on the <b>Style</b> of an instance re-skins that one alone. They restyle the default, not a
+            choice: an explicit <b>Color</b> or <b>Size</b> wins over the variables for what it sets.
         </div>
         <br />
         <div>CSS variables:</div>

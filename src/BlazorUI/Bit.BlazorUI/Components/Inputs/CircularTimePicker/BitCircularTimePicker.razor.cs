@@ -198,6 +198,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// The general color of the TimePicker, applied to the toolbar, the dial pointer and the selected numbers.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-CircularTimePicker-*</c> accent, text and focus color variables and
+    /// over every color variable that defaults to them (toolbar, selected number and meridiem, pointer, actions);
+    /// left unset, the picker is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -513,6 +518,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// The size of the TimePicker.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-CircularTimePicker-*</c> size variables (label, field, read-out,
+    /// meridiem and number text sizes, field height, clock, number and thumb sizes); left unset, the picker is
+    /// medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -748,6 +758,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from
+        // a choice: the public --bit-CircularTimePicker-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => ColorClass);
 
         ClassBuilder.Register(() => SizeClass);
@@ -2185,15 +2197,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         List<string> classes = ["bit-ctp-cal"];
 
-        if (ColorClass.HasValue())
-        {
-            classes.Add(ColorClass);
-        }
-
-        if (SizeClass.HasValue())
-        {
-            classes.Add(SizeClass);
-        }
+        classes.AddIfHasValue(ColorClass);
+        classes.AddIfHasValue(SizeClass);
 
         if (Classes?.Callout is not null)
         {
@@ -2344,12 +2349,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
     private string ColorClass => BitCssClasses.Color(Color, "bit-ctp");
 
-    private string SizeClass => Size switch
-    {
-        BitSize.Small => "bit-ctp-sm",
-        BitSize.Large => "bit-ctp-lg",
-        _ => "bit-ctp-md"
-    };
+    private string SizeClass => BitCssClasses.Size(Size, "bit-ctp");
 
     // Where the 24-hour dial stops reading the pointer as the outer ring and starts reading it as the inner
     // one: halfway between the two radii the numbers are laid out on, as a fraction of the radius of the dial.

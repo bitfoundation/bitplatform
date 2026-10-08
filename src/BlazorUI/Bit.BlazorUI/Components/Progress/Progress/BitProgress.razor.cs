@@ -60,6 +60,10 @@ public partial class BitProgress : BitComponentBase
     /// would have given, and everything derived from it follows: the stroke of the ring, the faint tint of
     /// the <see cref="Buffer"/> and the fill of a <see cref="Striped"/> bar.
     /// </summary>
+    /// <remarks>
+    /// It wins over the --bit-Progress-bar-color CSS variable. The buffer tint follows it only while
+    /// --bit-Progress-buffer-color is unset: no parameter paints the buffer, so that variable keeps it.
+    /// </remarks>
     [Parameter] public string? BarColor { get; set; }
 
     /// <summary>
@@ -91,6 +95,11 @@ public partial class BitProgress : BitComponentBase
     /// <summary>
     /// The general color of the BitProgress.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the --bit-Progress-bar-color and --bit-Progress-bar-text-color CSS variables; left
+    /// unset, the progress is primary unless those variables say otherwise. The buffer tint follows it only while
+    /// --bit-Progress-buffer-color is unset, since no parameter paints the buffer.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -267,6 +276,11 @@ public partial class BitProgress : BitComponentBase
     /// <summary>
     /// The size of the BitProgress.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the --bit-Progress-font-size, --bit-Progress-description-font-size,
+    /// --bit-Progress-thickness and --bit-Progress-diameter CSS variables; left unset, the progress keeps its own
+    /// defaults - the thinnest track and ring stroke, the medium type - unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -315,35 +329,11 @@ public partial class BitProgress : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-prb-pri",
-            BitColor.Secondary => "bit-prb-sec",
-            BitColor.Tertiary => "bit-prb-ter",
-            BitColor.Info => "bit-prb-inf",
-            BitColor.Success => "bit-prb-suc",
-            BitColor.Warning => "bit-prb-wrn",
-            BitColor.SevereWarning => "bit-prb-swr",
-            BitColor.Error => "bit-prb-err",
-            BitColor.PrimaryBackground => "bit-prb-pbg",
-            BitColor.SecondaryBackground => "bit-prb-sbg",
-            BitColor.TertiaryBackground => "bit-prb-tbg",
-            BitColor.PrimaryForeground => "bit-prb-pfg",
-            BitColor.SecondaryForeground => "bit-prb-sfg",
-            BitColor.TertiaryForeground => "bit-prb-tfg",
-            BitColor.PrimaryBorder => "bit-prb-pbr",
-            BitColor.SecondaryBorder => "bit-prb-sbr",
-            BitColor.TertiaryBorder => "bit-prb-tbr",
-            _ => "bit-prb-pri"
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from a
+        // choice: the public --bit-Progress-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-prb"));
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-prb-sm",
-            BitSize.Medium => "bit-prb-md",
-            BitSize.Large => "bit-prb-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-prb"));
 
         ClassBuilder.Register(() => Rounded ? "bit-prb-rnd" : string.Empty);
 
@@ -828,12 +818,13 @@ public partial class BitProgress : BitComponentBase
     // of a ring, and - for a vertical one - the width, which the container already carries for all
     // three of its children. A ring is not drawn from the track tokens: a design system sizes its spinner
     // stroke apart from its bar track (Material has 4px tracks and 4px spinners, Fluent 2 1px tracks), so an
-    // unset Thickness falls back to the per-size multiple of the spinner stroke token the stylesheet declares.
+    // unset Thickness falls back to the stroke the stylesheet resolves on the root: the per-size multiple of the spinner
+    // stroke token an explicit Size publishes, then --bit-Progress-thickness, then the spinner stroke token itself.
     // The circle is drawn at 40% of the diameter, so a stroke wider than 20% of it would spill past the edge of the
     // svg and be cut off; a percentage stroke is read against the size the ring is actually drawn at, which is what
     // keeps a thick stroke on a small ring (or a ring floored by the diameter token) whole.
     private string _ThicknessDeclaration => Circular
-        ? (Thickness is null ? "stroke-width: min(var(--bit-Progress-thickness, var(--bit-prb-ring-stroke)), 20%);" : $"stroke-width: min({GetThickness()}px, 20%);")
+        ? (Thickness is null ? "stroke-width: min(var(--bit-prb-ring-width), 20%);" : $"stroke-width: min({GetThickness()}px, 20%);")
         : _IsVertical ? string.Empty : $"height: {GetThicknessStyleValue()};";
 
     // ... and so does the axis the value is drawn along.

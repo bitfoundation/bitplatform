@@ -3,47 +3,60 @@
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // toggle button and one set on the Style of an instance re-skins that one alone. The unchecked and the
 // checked state carry their own sets, so restyling the resting look never silently repaints the state:
-//   --bit-ToggleButton-color                          foreground at rest                      (default: per variant, the role's on or main color)
-//   --bit-ToggleButton-background                     background at rest                      (default: per variant, the role's main color or transparent)
-//   --bit-ToggleButton-border-color                   border color at rest                    (default: per variant, the role's main color or transparent)
-//   --bit-ToggleButton-hover-color                    foreground on hover                     (default: per variant)
-//   --bit-ToggleButton-hover-background               background on hover                     (default: the role's hover color)
+//   --bit-ToggleButton-color                          foreground at rest                      (default: per variant, $clr-pri-text or $clr-pri)
+//   --bit-ToggleButton-background                     background at rest                      (default: per variant, $clr-pri or transparent)
+//   --bit-ToggleButton-border-color                   border color at rest                    (default: per variant, $clr-pri or transparent)
+//   --bit-ToggleButton-hover-color                    foreground on hover                     (default: per variant, the resting foreground
+//                                                                                             or $clr-pri-text)
+//   --bit-ToggleButton-hover-background               background on hover                     (default: $clr-pri-hover)
 //   --bit-ToggleButton-hover-border-color             border color on hover                   (default: the hover background)
 //   --bit-ToggleButton-active-color                   foreground while pressed                (default: the hover foreground)
-//   --bit-ToggleButton-active-background              background while pressed                (default: the role's active color)
+//   --bit-ToggleButton-active-background              background while pressed                (default: $clr-pri-active)
 //   --bit-ToggleButton-active-border-color            border color while pressed              (default: the active background)
-//   --bit-ToggleButton-checked-color                  foreground while checked                (default: the role's on color)
+//   --bit-ToggleButton-checked-color                  foreground while checked                (default: $clr-pri-text)
 //   --bit-ToggleButton-checked-hover-color            foreground while checked and hovered    (default: the checked foreground)
 //   --bit-ToggleButton-checked-active-color           foreground while checked and pressed    (default: the checked hover foreground)
-//   --bit-ToggleButton-checked-background             background while checked                (default: the role's dark color)
+//   --bit-ToggleButton-checked-background             background while checked                (default: $clr-pri-dark)
 //   --bit-ToggleButton-checked-border-color           border color while checked              (default: the checked background)
-//   --bit-ToggleButton-checked-hover-background       background while checked and hovered    (default: the role's dark hover color)
+//   --bit-ToggleButton-checked-hover-background       background while checked and hovered    (default: $clr-pri-dark-hover)
 //   --bit-ToggleButton-checked-hover-border-color     border color while checked and hovered  (default: the checked hover background)
-//   --bit-ToggleButton-checked-active-background      background while checked and pressed    (default: the role's dark active color)
+//   --bit-ToggleButton-checked-active-background      background while checked and pressed    (default: $clr-pri-dark-active)
 //   --bit-ToggleButton-checked-active-border-color    border color while checked and pressed  (default: the checked active background)
-//   --bit-ToggleButton-disabled-color                 foreground when disabled                (default: the role's disabled text color)
-//   --bit-ToggleButton-disabled-background            background when disabled                (default: per variant, the role's disabled color or transparent)
+//   --bit-ToggleButton-disabled-color                 foreground when disabled                (default: $clr-pri-dis-text)
+//   --bit-ToggleButton-disabled-background            background when disabled                (default: per variant, $clr-pri-dis or transparent)
 //   --bit-ToggleButton-disabled-border-color          border color when disabled              (default: the disabled background)
 //   --bit-ToggleButton-checked-disabled-opacity       dimming of a disabled checked toggle
 //                                                     button, which keeps its own colors so
 //                                                     the state survives being disabled       (default: $opa-dis)
-//   --bit-ToggleButton-focus-color                    focus ring color                        (default: the role's focus color)
+//   --bit-ToggleButton-focus-color                    focus ring color                        (default: $clr-pri-focus)
 //   --bit-ToggleButton-radius                         corner radius of the box and its ring   (default: $shp-radius-button)
 //   --bit-ToggleButton-border-width                   thickness of the border                 (default: $shp-border-width)
 //   --bit-ToggleButton-min-width                      smallest width of the box, falling back to
 //                                                     the min-height when icon-only, dropped
 //                                                     altogether when full width              (default: $siz-ctrl-min-width)
 //   --bit-ToggleButton-min-height                     smallest height of the box, and the
-//                                                     smallest width of an icon-only one      (default: per size, $siz-ctrl-*)
-//   --bit-ToggleButton-padding                        padding of the box                      (default: per size)
+//                                                     smallest width of an icon-only one      (default: $siz-ctrl-md)
+//   --bit-ToggleButton-padding                        padding of the box                      (default: $siz-ctrl-pad-y-md $siz-ctrl-pad-x-md,
+//                                                                                             $siz-ctrl-pad-y-md when icon-only)
 //   --bit-ToggleButton-gap                            room between the check mark, the icon
 //                                                     and the text                            (default: spacing(0.5), 0 without text)
-//   --bit-ToggleButton-font-size                      text size                               (default: per size, from the type ramp)
+//   --bit-ToggleButton-font-size                      text size                               (default: $tg-fs-sm)
 //   --bit-ToggleButton-font-weight                    text weight                             (default: $tg-font-weight)
-//   --bit-ToggleButton-icon-size                      icon and check mark size                (default: the text size, the glyph size when icon-only)
-//   --bit-ToggleButton-spinner-size                   spinner diameter in the loading state   (default: per size)
-//   --bit-ToggleButton-loading-label-font-size        size of the label beside the spinner    (default: per size, one ramp step
+//   --bit-ToggleButton-icon-size                      icon and check mark size                (default: the text size, spacing(2.35)
+//                                                                                             when icon-only)
+//   --bit-ToggleButton-spinner-size                   spinner diameter in the loading state   (default: spacing(2.35))
+//   --bit-ToggleButton-loading-label-font-size        size of the label beside the spinner    (default: $tg-fs-xs, one ramp step
 //                                                                                             below the text)
+//
+// A parameter written on the toggle button wins over the variable that restyles what it sets: an explicit Color
+// (or the OnColor / OffColor of the state it is in) over every color above that the role paints - the resting,
+// hovered, pressed, checked, disabled and focus colors - and an explicit Size over the min-height, padding, font
+// size, the glyph size of an icon-only button, the spinner size and the loading label size. The variables keep
+// what a Color leaves alone: the transparent background of the Outline and Text variants and the transparent
+// border of Text. The variables restyle the default, not a choice - which is why Color and Size publish nothing
+// while they are left unset: a class that always carried the default would be indistinguishable from one that
+// was asked for. The checked and the disabled states are still read before both, so a re-tinted toggle button
+// keeps showing which state it is in.
 
 .bit-tgb {
     cursor: pointer;
@@ -59,17 +72,41 @@
     letter-spacing: $tg-ctrl-letter-spacing;
     text-transform: $tg-ctrl-text-transform;
     -webkit-tap-highlight-color: transparent;
-    font-size: var(--bit-ToggleButton-font-size, var(--bit-tgb-fontsize));
+    // The values the Color and Size classes publish start out unset on every root, so a toggle button in the
+    // content of another one never inherits the outer one's choice; those classes - declared further down at the
+    // same weight - still win on the root that carries them. Left unset, each sends the var() reading it on to
+    // the public variable and then to the default, which is what lets an explicit parameter outrank the variable
+    // while an unset one leaves the variable in charge.
+    --bit-tgb-clr-txt: initial;
+    --bit-tgb-clr: initial;
+    --bit-tgb-clr-hover: initial;
+    --bit-tgb-clr-active: initial;
+    --bit-tgb-clr-focus: initial;
+    --bit-tgb-clr-dark: initial;
+    --bit-tgb-clr-dark-hover: initial;
+    --bit-tgb-clr-dark-active: initial;
+    --bit-tgb-clr-dis: initial;
+    --bit-tgb-clr-dis-text: initial;
+    --bit-tgb-min-height: initial;
+    --bit-tgb-padding: initial;
+    --bit-tgb-fontsize: initial;
+    --bit-tgb-ntx-pad: initial;
+    --bit-tgb-ntx-icn-size: initial;
+    --bit-tgb-spn-size: initial;
+    --bit-tgb-lbl-fontsize: initial;
+    // Each read below ranks the value an explicit Size publishes, then the public variable, then the medium
+    // size an unset one stands for.
+    font-size: var(--bit-tgb-fontsize, var(--bit-ToggleButton-font-size, #{$tg-fs-sm}));
     font-weight: var(--bit-ToggleButton-font-weight, #{$tg-font-weight});
     min-width: var(--bit-ToggleButton-min-width, #{$siz-ctrl-min-width});
     border-width: var(--bit-ToggleButton-border-width, #{$shp-border-width});
     border-radius: var(--bit-ToggleButton-radius, #{$shp-radius-button});
-    padding: var(--bit-ToggleButton-padding, var(--bit-tgb-padding));
+    padding: var(--bit-tgb-padding, var(--bit-ToggleButton-padding, #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-md}));
     // The control height of the size class, as a floor rather than a height: the box still grows with a
     // wrapped label or a taller icon. It is what lines a toggle button up with the other controls of its
     // size in a toolbar, and what keeps the smallest one above the 24px minimum pointer target of
     // WCAG 2.2 (SC 2.5.8).
-    min-height: var(--bit-ToggleButton-min-height, var(--bit-tgb-min-height));
+    min-height: var(--bit-tgb-min-height, var(--bit-ToggleButton-min-height, #{$siz-ctrl-md}));
 
     // a gap rather than a margin on the icon, so reversing the icon position keeps the spacing on the right side
     gap: var(--bit-ToggleButton-gap, var(--bit-tgb-icn-margin));
@@ -78,8 +115,9 @@
     // The foreground FixedColor pins: the role's contrasting color, which every variant and every state is
     // readable against, rather than the resting color of the Outline and Text variants, which on a background
     // role is the background itself. The checked state retargets it below, and the pin at the end of the file
-    // reads it off the element, so the value is written twice rather than once per variant and state.
-    --bit-tgb-fg: var(--bit-ToggleButton-color, var(--bit-tgb-clr-txt));
+    // reads it off the element, so the value is written twice rather than once per variant and state. An
+    // explicit Color is read first, then the public variable, then the primary role an unset Color stands for.
+    --bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-color, #{$clr-pri-text}));
 
     // The one size the icon and the check mark read. An icon-only button retargets it below to the glyph
     // size of its size class; with a label beside it the glyph rides the text, which is what keeps the two
@@ -91,7 +129,7 @@
     transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     &:focus-visible {
-        @include focus-ring(var(--bit-ToggleButton-focus-color, var(--bit-tgb-clr-focus)));
+        @include focus-ring(var(--bit-tgb-clr-focus, var(--bit-ToggleButton-focus-color, #{$clr-pri-focus})));
     }
 
     // Left able to receive the pointer, unlike most inert things: the title is what a toggle button has to say
@@ -107,7 +145,7 @@
         // visible - but drawn in the disabled color, since the vivid role ring of the enabled state
         // contradicts the inert look and reads as actionable.
         &:focus-visible {
-            @include focus-ring(var(--bit-ToggleButton-disabled-color, var(--bit-tgb-clr-dis-text)));
+            @include focus-ring(var(--bit-tgb-clr-dis-text, var(--bit-ToggleButton-disabled-color, #{$clr-pri-dis-text})));
         }
     }
 }
@@ -225,13 +263,13 @@
 
 // The arc is the button's own foreground, which already contrasts with its background in every variant and state.
 .bit-tgb-spn {
-    @include spinner-ring(var(--bit-ToggleButton-spinner-size, var(--bit-tgb-spn-size)), currentcolor, $clr-brd-sec, $box-sizing: null);
+    @include spinner-ring(var(--bit-tgb-spn-size, var(--bit-ToggleButton-spinner-size, #{spacing(2.35)})), currentcolor, $clr-brd-sec, $box-sizing: null);
 }
 
 .bit-tgb-lbl {
     color: inherit;
     text-align: center;
-    font-size: var(--bit-ToggleButton-loading-label-font-size, var(--bit-tgb-lbl-fontsize));
+    font-size: var(--bit-tgb-lbl-fontsize, var(--bit-ToggleButton-loading-label-font-size, #{$tg-fs-xs}));
 }
 
 // The two pieces of text the button carries for a screen reader and for nobody else: the live region that
@@ -250,79 +288,83 @@
     clip-path: inset(50%);
 }
 
+// Every color the Color role paints is read from the role first - published only by an explicit Color (see
+// .bit-tgb) - then from the public variables, then from the primary role an unset Color stands for. A color the
+// role leaves alone (the transparent background of Outline and Text, the transparent border of Text) is the
+// variables' alone.
 .bit-tgb-fil {
     color: var(--bit-tgb-fg);
-    border-color: var(--bit-ToggleButton-border-color, var(--bit-ToggleButton-background, var(--bit-tgb-clr)));
-    background-color: var(--bit-ToggleButton-background, var(--bit-tgb-clr));
+    border-color: var(--bit-tgb-clr, var(--bit-ToggleButton-border-color, var(--bit-ToggleButton-background, #{$clr-pri})));
+    background-color: var(--bit-tgb-clr, var(--bit-ToggleButton-background, #{$clr-pri}));
 
     @media (hover: hover) {
         &:not(.bit-dis):not(.bit-tgb-lod):hover {
-            color: var(--bit-ToggleButton-hover-color, var(--bit-tgb-fg));
-            border-color: var(--bit-ToggleButton-hover-border-color, var(--bit-ToggleButton-hover-background, var(--bit-tgb-clr-hover)));
-            background-color: var(--bit-ToggleButton-hover-background, var(--bit-tgb-clr-hover));
+            color: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-hover-color, var(--bit-ToggleButton-color, #{$clr-pri-text})));
+            border-color: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-border-color, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover})));
+            background-color: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover}));
         }
     }
 
     &:not(.bit-dis):not(.bit-tgb-lod):active {
-        color: var(--bit-ToggleButton-active-color, var(--bit-ToggleButton-hover-color, var(--bit-tgb-fg)));
-        border-color: var(--bit-ToggleButton-active-border-color, var(--bit-ToggleButton-active-background, var(--bit-tgb-clr-active)));
-        background-color: var(--bit-ToggleButton-active-background, var(--bit-tgb-clr-active));
+        color: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-active-color, var(--bit-ToggleButton-hover-color, var(--bit-ToggleButton-color, #{$clr-pri-text}))));
+        border-color: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-border-color, var(--bit-ToggleButton-active-background, #{$clr-pri-active})));
+        background-color: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-background, #{$clr-pri-active}));
     }
 
     &.bit-dis {
-        color: var(--bit-ToggleButton-disabled-color, var(--bit-tgb-clr-dis-text));
-        border-color: var(--bit-ToggleButton-disabled-border-color, var(--bit-ToggleButton-disabled-background, var(--bit-tgb-clr-dis)));
-        background-color: var(--bit-ToggleButton-disabled-background, var(--bit-tgb-clr-dis));
+        color: var(--bit-tgb-clr-dis-text, var(--bit-ToggleButton-disabled-color, #{$clr-pri-dis-text}));
+        border-color: var(--bit-tgb-clr-dis, var(--bit-ToggleButton-disabled-border-color, var(--bit-ToggleButton-disabled-background, #{$clr-pri-dis})));
+        background-color: var(--bit-tgb-clr-dis, var(--bit-ToggleButton-disabled-background, #{$clr-pri-dis}));
     }
 }
 
 .bit-tgb-otl {
-    color: var(--bit-ToggleButton-color, var(--bit-tgb-clr));
-    border-color: var(--bit-ToggleButton-border-color, var(--bit-tgb-clr));
+    color: var(--bit-tgb-clr, var(--bit-ToggleButton-color, #{$clr-pri}));
+    border-color: var(--bit-tgb-clr, var(--bit-ToggleButton-border-color, #{$clr-pri}));
     background-color: var(--bit-ToggleButton-background, transparent);
 
     @media (hover: hover) {
         &:not(.bit-dis):not(.bit-tgb-lod):hover {
-            color: var(--bit-ToggleButton-hover-color, var(--bit-tgb-clr-txt));
-            border-color: var(--bit-ToggleButton-hover-border-color, var(--bit-ToggleButton-hover-background, var(--bit-tgb-clr-hover)));
-            background-color: var(--bit-ToggleButton-hover-background, var(--bit-tgb-clr-hover));
+            color: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-hover-color, #{$clr-pri-text}));
+            border-color: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-border-color, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover})));
+            background-color: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover}));
         }
     }
 
     &:not(.bit-dis):not(.bit-tgb-lod):active {
-        color: var(--bit-ToggleButton-active-color, var(--bit-ToggleButton-hover-color, var(--bit-tgb-clr-txt)));
-        border-color: var(--bit-ToggleButton-active-border-color, var(--bit-ToggleButton-active-background, var(--bit-tgb-clr-active)));
-        background-color: var(--bit-ToggleButton-active-background, var(--bit-tgb-clr-active));
+        color: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-active-color, var(--bit-ToggleButton-hover-color, #{$clr-pri-text})));
+        border-color: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-border-color, var(--bit-ToggleButton-active-background, #{$clr-pri-active})));
+        background-color: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-background, #{$clr-pri-active}));
     }
 
     &.bit-dis {
-        color: var(--bit-ToggleButton-disabled-color, var(--bit-tgb-clr-dis-text));
-        border-color: var(--bit-ToggleButton-disabled-border-color, var(--bit-tgb-clr-dis));
+        color: var(--bit-tgb-clr-dis-text, var(--bit-ToggleButton-disabled-color, #{$clr-pri-dis-text}));
+        border-color: var(--bit-tgb-clr-dis, var(--bit-ToggleButton-disabled-border-color, #{$clr-pri-dis}));
         background-color: var(--bit-ToggleButton-disabled-background, transparent);
     }
 }
 
 .bit-tgb-txt {
-    color: var(--bit-ToggleButton-color, var(--bit-tgb-clr));
+    color: var(--bit-tgb-clr, var(--bit-ToggleButton-color, #{$clr-pri}));
     border-color: var(--bit-ToggleButton-border-color, transparent);
     background-color: var(--bit-ToggleButton-background, transparent);
 
     @media (hover: hover) {
         &:not(.bit-dis):not(.bit-tgb-lod):hover {
-            color: var(--bit-ToggleButton-hover-color, var(--bit-tgb-clr-txt));
-            border-color: var(--bit-ToggleButton-hover-border-color, var(--bit-ToggleButton-hover-background, var(--bit-tgb-clr-hover)));
-            background-color: var(--bit-ToggleButton-hover-background, var(--bit-tgb-clr-hover));
+            color: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-hover-color, #{$clr-pri-text}));
+            border-color: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-border-color, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover})));
+            background-color: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover}));
         }
     }
 
     &:not(.bit-dis):not(.bit-tgb-lod):active {
-        color: var(--bit-ToggleButton-active-color, var(--bit-ToggleButton-hover-color, var(--bit-tgb-clr-txt)));
-        border-color: var(--bit-ToggleButton-active-border-color, var(--bit-ToggleButton-active-background, var(--bit-tgb-clr-active)));
-        background-color: var(--bit-ToggleButton-active-background, var(--bit-tgb-clr-active));
+        color: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-active-color, var(--bit-ToggleButton-hover-color, #{$clr-pri-text})));
+        border-color: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-border-color, var(--bit-ToggleButton-active-background, #{$clr-pri-active})));
+        background-color: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-background, #{$clr-pri-active}));
     }
 
     &.bit-dis {
-        color: var(--bit-ToggleButton-disabled-color, var(--bit-tgb-clr-dis-text));
+        color: var(--bit-tgb-clr-dis-text, var(--bit-ToggleButton-disabled-color, #{$clr-pri-dis-text}));
         border-color: var(--bit-ToggleButton-disabled-border-color, transparent);
         background-color: var(--bit-ToggleButton-disabled-background, transparent);
     }
@@ -331,27 +373,29 @@
 // The checked state is one appearance across all three variants - the darker shade of the same role - so a
 // checked and an unchecked toggle button read as one control in two states rather than as two unrelated
 // buttons. It carries its own variables for the same reason: restyling the resting look of a toggle button
-// must not quietly take the state indication with it.
+// must not quietly take the state indication with it. The state is the rule's, but the colors it shows are
+// still the role's, so an explicit Color (or OnColor) outranks the checked variables here just as it outranks
+// the resting ones above, and an unset one falls back to them and then to the primary role.
 .bit-tgb-chk {
     // Retargeted here rather than on the root, so FixedColor pins the checked foreground on a checked toggle
     // button and the resting one on an unchecked one, without the pin having to name either state.
-    --bit-tgb-fg: var(--bit-ToggleButton-checked-color, var(--bit-tgb-clr-txt));
+    --bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-checked-color, #{$clr-pri-text}));
     color: var(--bit-tgb-fg);
-    border-color: var(--bit-ToggleButton-checked-border-color, var(--bit-ToggleButton-checked-background, var(--bit-tgb-clr-dark)));
-    background-color: var(--bit-ToggleButton-checked-background, var(--bit-tgb-clr-dark));
+    border-color: var(--bit-tgb-clr-dark, var(--bit-ToggleButton-checked-border-color, var(--bit-ToggleButton-checked-background, #{$clr-pri-dark})));
+    background-color: var(--bit-tgb-clr-dark, var(--bit-ToggleButton-checked-background, #{$clr-pri-dark}));
 
     @media (hover: hover) {
         &:not(.bit-dis):not(.bit-tgb-lod):hover {
-            color: var(--bit-ToggleButton-checked-hover-color, var(--bit-tgb-fg));
-            border-color: var(--bit-ToggleButton-checked-hover-border-color, var(--bit-ToggleButton-checked-hover-background, var(--bit-tgb-clr-dark-hover)));
-            background-color: var(--bit-ToggleButton-checked-hover-background, var(--bit-tgb-clr-dark-hover));
+            color: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-checked-hover-color, var(--bit-ToggleButton-checked-color, #{$clr-pri-text})));
+            border-color: var(--bit-tgb-clr-dark-hover, var(--bit-ToggleButton-checked-hover-border-color, var(--bit-ToggleButton-checked-hover-background, #{$clr-pri-dark-hover})));
+            background-color: var(--bit-tgb-clr-dark-hover, var(--bit-ToggleButton-checked-hover-background, #{$clr-pri-dark-hover}));
         }
     }
 
     &:not(.bit-dis):not(.bit-tgb-lod):active {
-        color: var(--bit-ToggleButton-checked-active-color, var(--bit-ToggleButton-checked-hover-color, var(--bit-tgb-fg)));
-        border-color: var(--bit-ToggleButton-checked-active-border-color, var(--bit-ToggleButton-checked-active-background, var(--bit-tgb-clr-dark-active)));
-        background-color: var(--bit-ToggleButton-checked-active-background, var(--bit-tgb-clr-dark-active));
+        color: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-checked-active-color, var(--bit-ToggleButton-checked-hover-color, var(--bit-ToggleButton-checked-color, #{$clr-pri-text}))));
+        border-color: var(--bit-tgb-clr-dark-active, var(--bit-ToggleButton-checked-active-border-color, var(--bit-ToggleButton-checked-active-background, #{$clr-pri-dark-active})));
+        background-color: var(--bit-tgb-clr-dark-active, var(--bit-ToggleButton-checked-active-background, #{$clr-pri-dark-active}));
     }
 }
 
@@ -365,11 +409,13 @@
 .bit-tgb-chk.bit-dis {
     opacity: var(--bit-ToggleButton-checked-disabled-opacity, #{$opa-dis});
     color: var(--bit-tgb-fg);
-    border-color: var(--bit-ToggleButton-checked-border-color, var(--bit-ToggleButton-checked-background, var(--bit-tgb-clr-dark)));
-    background-color: var(--bit-ToggleButton-checked-background, var(--bit-tgb-clr-dark));
+    border-color: var(--bit-tgb-clr-dark, var(--bit-ToggleButton-checked-border-color, var(--bit-ToggleButton-checked-background, #{$clr-pri-dark})));
+    background-color: var(--bit-tgb-clr-dark, var(--bit-ToggleButton-checked-background, #{$clr-pri-dark}));
 }
 
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only
+// by an explicit Color (or the OnColor / OffColor of the current state); an unset one is the primary role, which
+// the fallbacks above spell out after the public variables.
 @each $role, $tokens in $bit-color-roles {
     .bit-tgb-#{$role} {
         --bit-tgb-clr-txt: #{role($tokens, on)};
@@ -386,6 +432,8 @@
 }
 
 
+// Published only by an explicit Size; an unset one is the medium toggle button, which the fallbacks above and in
+// .bit-tgb-ntx spell out after the public variables.
 .bit-tgb-sm {
     --bit-tgb-min-height: #{$siz-ctrl-sm};
     --bit-tgb-padding: #{$siz-ctrl-pad-y-sm} #{$siz-ctrl-pad-x-sm};
@@ -517,9 +565,11 @@
     // what lines a row of them up with the icon buttons beside them, and what clears the 24px minimum
     // pointer target of WCAG 2.2 (SC 2.5.8) on the narrow axis too.
     --bit-tgb-icn-margin: 0;
-    --bit-tgb-ico: var(--bit-ToggleButton-icon-size, var(--bit-tgb-ntx-icn-size));
-    padding: var(--bit-ToggleButton-padding, var(--bit-tgb-ntx-pad));
-    min-width: var(--bit-ToggleButton-min-width, var(--bit-ToggleButton-min-height, var(--bit-tgb-min-height)));
+    --bit-tgb-ico: var(--bit-tgb-ntx-icn-size, var(--bit-ToggleButton-icon-size, #{spacing(2.35)}));
+    padding: var(--bit-tgb-ntx-pad, var(--bit-ToggleButton-padding, #{$siz-ctrl-pad-y-md}));
+    // The minimum width is not one Size sets - a labelled toggle button takes the control minimum whatever its
+    // size - so a minimum width set by hand still comes first, and only then the minimum height it falls back to.
+    min-width: var(--bit-ToggleButton-min-width, var(--bit-tgb-min-height, var(--bit-ToggleButton-min-height, #{$siz-ctrl-md})));
 
     // The gap above is dropped because a toggle button with no text has one glyph in it and nothing to
     // separate it from. A check mark makes two, and they would otherwise touch. FixedCheckMark reserves the

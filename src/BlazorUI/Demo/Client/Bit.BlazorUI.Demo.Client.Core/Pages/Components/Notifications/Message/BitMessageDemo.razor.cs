@@ -87,7 +87,7 @@ public partial class BitMessageDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the message.",
+            Description = "The general color of the message. An explicit value wins over the --bit-Message-* color variables; left unset, the message is Info unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -313,7 +313,7 @@ public partial class BitMessageDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the message: it scales the type, the icon, the insets, the buttons and the countdown track together.",
+            Description = "The size of the message: it scales the type, the icon, the insets, the buttons and the countdown track together. An explicit value wins over the --bit-Message-* size variables; left unset, the message is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -472,20 +472,20 @@ public partial class BitMessageDemo
         new()
         {
             Name = "--bit-Message-color",
-            DefaultValue = "The role's on-color (Fill); its main color shaded toward the foreground for 4.5:1 contrast (Outline, Text)",
-            Description = "Color of the text, the icon and the buttons.",
+            DefaultValue = "--bit-clr-inf-text (Fill); --bit-clr-inf-fg (Outline, Text)",
+            Description = "Color of the text, the icon and the buttons. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Message-background",
-            DefaultValue = "The role's main color (Fill), its tint (Outline and Text with Tinted), transparent (Outline, Text)",
-            Description = "Background of the surface.",
+            DefaultValue = "--bit-clr-inf (Fill), --bit-clr-inf-tint (Outline and Text with Tinted), transparent (Outline, Text)",
+            Description = "Background of the surface. The Color parameter wins over it in Fill and Tinted; the transparent background of Outline and Text is its alone.",
         },
         new()
         {
             Name = "--bit-Message-border-color",
-            DefaultValue = "The role's main color (Fill, Outline), transparent (Text)",
-            Description = "Color of the border.",
+            DefaultValue = "--bit-clr-inf (Fill, Outline), transparent (Text)",
+            Description = "Color of the border. The Color parameter wins over it, except over the transparent border of Text.",
         },
         new()
         {
@@ -508,14 +508,14 @@ public partial class BitMessageDemo
         new()
         {
             Name = "--bit-Message-focus-color",
-            DefaultValue = "The role's focus color",
-            Description = "Focus ring of the message itself and of its buttons.",
+            DefaultValue = "--bit-clr-inf-focus",
+            Description = "Focus ring of the message itself and of its buttons. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Message-font-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Size of the title and the content.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Size of the title and the content. The Size parameter wins over it.",
         },
         new()
         {
@@ -544,8 +544,8 @@ public partial class BitMessageDemo
         new()
         {
             Name = "--bit-Message-icon-size",
-            DefaultValue = "Per Size, --bit-siz-icon-*",
-            Description = "Size of the severity icon.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Size of the severity icon. The Size parameter wins over it.",
         },
         new()
         {
@@ -556,8 +556,8 @@ public partial class BitMessageDemo
         new()
         {
             Name = "--bit-Message-progress-height",
-            DefaultValue = "Per Size, --bit-siz-track-*",
-            Description = "Thickness of the auto-dismiss countdown track.",
+            DefaultValue = "--bit-siz-track-md",
+            Description = "Thickness of the auto-dismiss countdown track. The Size parameter wins over it.",
         },
     ];
 

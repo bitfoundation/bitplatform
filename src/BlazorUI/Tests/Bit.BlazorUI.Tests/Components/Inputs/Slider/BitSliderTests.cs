@@ -183,7 +183,6 @@ public class BitSliderTests : BunitTestContext
     #region Color, size and thumb label classes
 
     [TestMethod,
-        DataRow(null, "bit-sld-pri"),
         DataRow(BitColor.Primary, "bit-sld-pri"),
         DataRow(BitColor.Secondary, "bit-sld-sec"),
         DataRow(BitColor.Tertiary, "bit-sld-ter"),
@@ -202,7 +201,7 @@ public class BitSliderTests : BunitTestContext
         DataRow(BitColor.SecondaryBorder, "bit-sld-sbr"),
         DataRow(BitColor.TertiaryBorder, "bit-sld-tbr")
     ]
-    public void BitSliderShouldRespectColor(BitColor? color, string expectedClass)
+    public void BitSliderShouldRespectColor(BitColor color, string expectedClass)
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
@@ -213,12 +212,11 @@ public class BitSliderTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(null, "bit-sld-md"),
         DataRow(BitSize.Small, "bit-sld-sm"),
         DataRow(BitSize.Medium, "bit-sld-md"),
         DataRow(BitSize.Large, "bit-sld-lg")
     ]
-    public void BitSliderShouldRespectSize(BitSize? size, string expectedClass)
+    public void BitSliderShouldRespectSize(BitSize size, string expectedClass)
     {
         var com = RenderComponent<BitSlider>(parameters =>
         {
@@ -226,6 +224,27 @@ public class BitSliderTests : BunitTestContext
         });
 
         Assert.IsTrue(com.Find(".bit-sld").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitSliderShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var com = RenderComponent<BitSlider>();
+
+        // An unset Color or Size publishes nothing, so the public --bit-Slider-* variables restyle the default while
+        // an explicit value - which does publish its class - wins over them.
+        var root = com.Find(".bit-sld");
+        var published = new[]
+        {
+            "bit-sld-pri", "bit-sld-sec", "bit-sld-ter", "bit-sld-inf", "bit-sld-suc", "bit-sld-wrn", "bit-sld-swr", "bit-sld-err",
+            "bit-sld-pbg", "bit-sld-sbg", "bit-sld-tbg", "bit-sld-pfg", "bit-sld-sfg", "bit-sld-tfg", "bit-sld-pbr", "bit-sld-sbr", "bit-sld-tbr",
+            "bit-sld-sm", "bit-sld-md", "bit-sld-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
     }
 
     [TestMethod,

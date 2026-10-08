@@ -62,7 +62,7 @@ public partial class BitPersonaDemo
             Name = "AutoCoinColor",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, automatically generates a stable coin background color derived from CoinColorSeed, ImageInitials or PrimaryText. Only takes effect when CoinColor is not explicitly set.",
+            Description = "If true, automatically generates a stable coin background color derived from CoinColorSeed, ImageInitials or PrimaryText. Only takes effect when CoinColor is not explicitly set. The picked color counts as a choice, like an explicit CoinColor: it wins over the --bit-Persona-coin-background, --bit-Persona-coin-color and --bit-Persona-ring-color variables.",
         },
         new()
         {
@@ -87,7 +87,7 @@ public partial class BitPersonaDemo
             Name = "CoinColor",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The background color when the user's initials are displayed.",
+            Description = "The background color when the user's initials are displayed. An explicit value wins over the --bit-Persona-coin-background, --bit-Persona-coin-color and --bit-Persona-ring-color variables; left unset (and with AutoCoinColor off), the coin is Info unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -381,7 +381,7 @@ public partial class BitPersonaDemo
             Name = "Shape",
             Type = "BitShape?",
             DefaultValue = "null",
-            Description = "The outline of the coin: a circle (Pill, the default), a rounded square (Rounded) or a sharp one (Square). Circle is not honoured, since the coin already has the proportions it would ask for, and falls back to the default. Supersedes Squared, and wins over it when both are set.",
+            Description = "The outline of the coin: a circle (Pill, the default), a rounded square (Rounded) or a sharp one (Square). Circle is not honoured, since the coin already has the proportions it would ask for, and falls back to the default. Supersedes Squared, and wins over it when both are set. An explicit value wins over --bit-Persona-coin-radius; left unset (and with Squared off), the coin is a circle unless it says otherwise.",
             LinkType = LinkType.Link,
             Href = "#shape-enum",
         },
@@ -443,14 +443,14 @@ public partial class BitPersonaDemo
             DefaultValue = "BitPersonaSize.Size48",
             LinkType = LinkType.Link,
             Href = "#persona-size-enum",
-            Description = "Decides the size of the control.",
+            Description = "Decides the size of the control. A value given in the markup or by a BitPersonaParams ancestor (Size48 included) wins over --bit-Persona-gap, --bit-Persona-ring-gap and --bit-Persona-ring-width; left unset, those variables restyle it.",
         },
         new()
         {
             Name = "Squared",
             Type = "bool",
             DefaultValue = "false",
-            Description = "If true, renders the coin with a rounded square shape instead of the default circular shape. This is the shorthand for Shape=Rounded; a Shape of its own takes precedence over it.",
+            Description = "If true, renders the coin with a rounded square shape instead of the default circular shape. This is the shorthand for Shape=Rounded; a Shape of its own takes precedence over it. Like an explicit Shape, it wins over --bit-Persona-coin-radius.",
         },
         new()
         {
@@ -502,8 +502,8 @@ public partial class BitPersonaDemo
         new()
         {
             Name = "--bit-Persona-gap",
-            DefaultValue = "Per size, spacing(1) to spacing(2)",
-            Description = "Room between the coin and the details.",
+            DefaultValue = "spacing(1.5) (Size48's)",
+            Description = "Room between the coin and the details. The Size parameter wins over it.",
         },
         new()
         {
@@ -532,20 +532,20 @@ public partial class BitPersonaDemo
         new()
         {
             Name = "--bit-Persona-coin-background",
-            DefaultValue = "The CoinColor's main color",
-            Description = "Fill of the coin (the ring and the text of the Outline and Text variants), and the color of the Active ring.",
+            DefaultValue = "--bit-clr-inf",
+            Description = "Fill of the coin (the ring and the text of the Outline and Text variants), and the color of the Active ring. The CoinColor and AutoCoinColor parameters win over it.",
         },
         new()
         {
             Name = "--bit-Persona-coin-color",
-            DefaultValue = "The CoinColor's text color",
-            Description = "Initials and coin icon of a Fill coin.",
+            DefaultValue = "--bit-clr-inf-text",
+            Description = "Initials and coin icon of a Fill coin. The CoinColor and AutoCoinColor parameters win over it.",
         },
         new()
         {
             Name = "--bit-Persona-coin-radius",
-            DefaultValue = "Per Shape: 50%, --bit-shp-radius-control, 0",
-            Description = "Corner radius of the coin and of its overlay.",
+            DefaultValue = "50%",
+            Description = "Corner radius of the coin and of its overlay. The Shape and Squared parameters win over it.",
         },
         new()
         {
@@ -647,19 +647,19 @@ public partial class BitPersonaDemo
         {
             Name = "--bit-Persona-ring-color",
             DefaultValue = "The coin background",
-            Description = "Ring of an Active coin (Ring and RingShadow).",
+            Description = "Ring of an Active coin (Ring and RingShadow). The CoinColor and AutoCoinColor parameters win over it.",
         },
         new()
         {
             Name = "--bit-Persona-ring-width",
-            DefaultValue = "Per size, 1.5px to 4px",
-            Description = "Width of that ring.",
+            DefaultValue = "2px (Size48's)",
+            Description = "Width of that ring. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Persona-ring-gap",
-            DefaultValue = "Per size, 1.5px to 4px",
-            Description = "Gap between the coin and that ring.",
+            DefaultValue = "2px (Size48's)",
+            Description = "Gap between the coin and that ring. The Size parameter wins over it.",
         },
         new()
         {

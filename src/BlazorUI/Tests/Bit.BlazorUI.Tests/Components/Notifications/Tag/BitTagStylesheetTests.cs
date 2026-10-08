@@ -160,9 +160,59 @@ public class BitTagStylesheetTests
 
         // calc() cannot add a unitless 0 or a keyword border width to a length, so the height never adds the
         // rule back in: it is the min-height of the content, which sits inside the rule
-        StringAssert.Contains(content, "min-height: var(--bit-Tag-min-height, var(--bit-tag-sz-min-height));");
+        StringAssert.Contains(content, "min-height: var(--bit-tag-sz-min-height, var(--bit-Tag-min-height, #{$siz-chip-md}));");
         Assert.AreEqual(1, Regex.Matches(stylesheet, @"^\s*min-height:", RegexOptions.Multiline).Count);
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"calc\([^)]*border-width|brd-w"), "the rule width must not enter a calc()");
+    }
+
+    [TestMethod]
+    public void BitTagShouldLetAParameterWinOverItsPublicVariable()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // An explicit Size or Shape publishes these, so they are read before the variable, which only restyles the
+        // default an unset one stands for.
+        StringAssert.Contains(stylesheet, "--bit-tag-pad-x: var(--bit-tag-sz-pad-x, var(--bit-Tag-padding-x, calc(#{$siz-ctrl-pad-x-md} / 2)));");
+        StringAssert.Contains(stylesheet, "--bit-tag-pad-y: var(--bit-tag-sz-pad-y, var(--bit-Tag-padding-y, ");
+        StringAssert.Contains(stylesheet, "--bit-tag-gap: var(--bit-tag-sz-gap, var(--bit-Tag-gap, ");
+        StringAssert.Contains(stylesheet, "--bit-tag-fs: var(--bit-tag-sz-fs, var(--bit-Tag-font-size, #{$tg-fs-sm}));");
+        StringAssert.Contains(stylesheet, "var(--bit-tag-sz-stx-fs, var(--bit-Tag-secondary-font-size, #{$tg-fs-xs}))");
+        StringAssert.Contains(stylesheet, "var(--bit-tag-sz-img, var(--bit-Tag-image-size, ");
+        StringAssert.Contains(stylesheet, "border-radius: var(--bit-tag-radius, var(--bit-Tag-radius, #{$shp-radius-chip}));");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-tag-rnd {"), "--bit-tag-radius: #{$shp-radius-chip};");
+
+        // So does an explicit Color, for every color its role paints - at rest, selected, hovered and disabled.
+        var fill = SourceFiles.GetScssBlock(stylesheet, "\n.bit-tag-fil {");
+        StringAssert.Contains(fill, "--bit-tag-v-fg: var(--bit-tag-clr-txt, var(--bit-Tag-color, #{$clr-pri-text}));");
+        StringAssert.Contains(fill, "--bit-tag-v-bg: var(--bit-tag-clr, var(--bit-Tag-background, #{$clr-pri}));");
+        StringAssert.Contains(fill, "--bit-tag-v-sel-bg: var(--bit-tag-clr-active, var(--bit-Tag-selected-background, #{$clr-pri-active}));");
+        StringAssert.Contains(fill, "--bit-tag-v-dis-bg: var(--bit-tag-clr-dis, var(--bit-Tag-disabled-background, #{$clr-pri-dis}));");
+        var outline = SourceFiles.GetScssBlock(stylesheet, "\n.bit-tag-otl {");
+        StringAssert.Contains(outline, "--bit-tag-v-hover-bg: var(--bit-tag-clr-light, var(--bit-Tag-hover-background, #{$clr-pri-light}));");
+        StringAssert.Contains(stylesheet, "--bit-tag-fg: var(--bit-tag-clr-dis-text, var(--bit-Tag-disabled-color, #{$clr-pri-dis-text}));");
+
+        // What the role leaves alone stays the variable's: the transparent background of Outline and Text.
+        StringAssert.Contains(outline, "--bit-tag-v-bg: var(--bit-Tag-background, transparent);");
+
+        Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Tag-[a-z-]+, var\(--bit-tag-(clr|sz|radius|v-)"), "A public variable is read before the parameter it restyles the default of.");
+    }
+
+    [TestMethod]
+    public void BitTagShouldPublishItsColorSizeAndShapeOnlyWhereTheyAreSet()
+    {
+        var stylesheet = ReadStylesheet();
+        var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-tag {");
+
+        // A tag can sit in the template of another one, which must not inherit the outer tag's Color, Size or Shape:
+        // each root starts the values those classes publish out unset, and the classes - declared further down at the
+        // same weight - still win on the root that carries them.
+        foreach (var property in new[] { "--bit-tag-clr", "--bit-tag-clr-txt", "--bit-tag-clr-dis", "--bit-tag-clr-dis-text", "--bit-tag-clr-active",
+                                         "--bit-tag-clr-light", "--bit-tag-clr-light-hover", "--bit-tag-clr-light-active",
+                                         "--bit-tag-sz-gap", "--bit-tag-sz-lbl-gap", "--bit-tag-sz-fs", "--bit-tag-sz-stx-fs", "--bit-tag-sz-img",
+                                         "--bit-tag-sz-pad-y", "--bit-tag-sz-pad-x", "--bit-tag-sz-min-height", "--bit-tag-radius" })
+        {
+            StringAssert.Contains(root, $"{property}: initial;");
+        }
     }
 
     // The header documents the variables in comments; only the rules are what the browser reads.

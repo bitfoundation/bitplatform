@@ -31,10 +31,13 @@ public class BitCardTests : BunitTestContext
 
         var card = component.Find(".bit-crd");
 
-        // A plain card is the medium size and nothing else: its surface is left to --bit-Card-background, or to the
-        // secondary background of the theme, rather than pinned by a class that would win over the variable.
+        // A plain card carries no class of a parameter it was not given: its surface is left to --bit-Card-background,
+        // or to the secondary background of the theme, and its size to the --bit-Card-* size variables, or to the
+        // medium card, rather than pinned by a class that would win over the variable.
         Assert.IsFalse(card.ClassList.Contains("bit-crd-bsg"));
-        Assert.IsTrue(card.ClassList.Contains("bit-crd-md"));
+        Assert.IsFalse(card.ClassList.Contains("bit-crd-sm"));
+        Assert.IsFalse(card.ClassList.Contains("bit-crd-md"));
+        Assert.IsFalse(card.ClassList.Contains("bit-crd-lg"));
         Assert.IsFalse(card.ClassList.Contains("bit-crd-sct"));
         Assert.IsFalse(card.ClassList.Contains("bit-crd-int"));
     }
@@ -202,7 +205,6 @@ public class BitCardTests : BunitTestContext
     [DataRow(BitSize.Small, "bit-crd-sm")]
     [DataRow(BitSize.Medium, "bit-crd-md")]
     [DataRow(BitSize.Large, "bit-crd-lg")]
-    [DataRow(null, "bit-crd-md")]
     public void BitCardSizeClassTest(BitSize? size, string expected)
     {
         var component = RenderComponent<BitCard>(parameters =>

@@ -48,7 +48,7 @@ public partial class BitTagDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the tag.",
+            Description = "The general color of the tag. An explicit value wins over the --bit-Tag-* color variables for every color its role paints; left unset, the tag is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum"
         },
@@ -287,7 +287,7 @@ public partial class BitTagDemo
             Name = "Shape",
             Type = "BitShape?",
             DefaultValue = "null",
-            Description = "The corner shape of the tag. A tag takes its box from its own content, so Circle has no proportions to impose and rounds the ends fully, the same as Pill.",
+            Description = "The corner shape of the tag. A tag takes its box from its own content, so Circle has no proportions to impose and rounds the ends fully, the same as Pill. An explicit value wins over --bit-Tag-radius; left unset, the tag takes the chip corner unless it says otherwise.",
             LinkType = LinkType.Link,
             Href = "#shape-enum"
         },
@@ -296,7 +296,7 @@ public partial class BitTagDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the tag.",
+            Description = "The size of the tag. An explicit value wins over the --bit-Tag-* size variables; left unset, the tag is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -528,20 +528,20 @@ public partial class BitTagDemo
         new()
         {
             Name = "--bit-Tag-color",
-            DefaultValue = "Per Variant, from the Color role",
-            Description = "Text and glyphs at rest.",
+            DefaultValue = "Per Variant, from the primary role",
+            Description = "Text and glyphs at rest. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Tag-background",
-            DefaultValue = "Per Variant, from the Color role",
-            Description = "Background at rest.",
+            DefaultValue = "Per Variant, from the primary role",
+            Description = "Background at rest. The Color parameter wins over it in Fill; the transparent background of Outline and Text is its alone.",
         },
         new()
         {
             Name = "--bit-Tag-border-color",
-            DefaultValue = "Per Variant, from the Color role",
-            Description = "Rule at rest.",
+            DefaultValue = "Per Variant, from the primary role",
+            Description = "Rule at rest. The Color parameter wins over it, except over the transparent rule of Text.",
         },
         new()
         {
@@ -553,49 +553,49 @@ public partial class BitTagDemo
         {
             Name = "--bit-Tag-hover-background",
             DefaultValue = "Per Variant, a step deeper while selected",
-            Description = "Background of a hovered clickable content or dismiss button.",
+            Description = "Background of a hovered clickable content or dismiss button. The Color parameter wins over it in Outline and Text; the overlay a Fill tag hovers with is its alone.",
         },
         new()
         {
             Name = "--bit-Tag-active-background",
             DefaultValue = "Per Variant, a step deeper while selected",
-            Description = "Background of a pressed clickable content or dismiss button.",
+            Description = "Background of a pressed clickable content or dismiss button. The Color parameter wins over it in Outline and Text; the overlay a Fill tag is pressed with is its alone.",
         },
         new()
         {
             Name = "--bit-Tag-selected-color",
             DefaultValue = "--bit-Tag-color",
-            Description = "Text and glyphs of a selected tag.",
+            Description = "Text and glyphs of a selected tag. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Tag-selected-background",
-            DefaultValue = "Per Variant, from the Color role",
-            Description = "Background of a selected tag.",
+            DefaultValue = "Per Variant, from the primary role",
+            Description = "Background of a selected tag. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Tag-selected-border-color",
-            DefaultValue = "Per Variant, from the Color role",
-            Description = "Rule of a selected tag.",
+            DefaultValue = "Per Variant, from the primary role",
+            Description = "Rule of a selected tag. The Color parameter wins over it, except over the transparent rule of Text.",
         },
         new()
         {
             Name = "--bit-Tag-disabled-color",
-            DefaultValue = "The Color role's disabled text color",
-            Description = "Text and glyphs of a disabled tag.",
+            DefaultValue = "--bit-clr-pri-dis-text",
+            Description = "Text and glyphs of a disabled tag. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Tag-disabled-background",
-            DefaultValue = "Per Variant, from the Color role",
-            Description = "Background of a disabled tag.",
+            DefaultValue = "Per Variant, from the primary role",
+            Description = "Background of a disabled tag. The Color parameter wins over it in Fill; the transparent background of Outline and Text is its alone.",
         },
         new()
         {
             Name = "--bit-Tag-disabled-border-color",
-            DefaultValue = "Per Variant, from the Color role",
-            Description = "Rule of a disabled tag.",
+            DefaultValue = "Per Variant, from the primary role",
+            Description = "Rule of a disabled tag. The Color parameter wins over it, except over the transparent rule of Text.",
         },
         new()
         {
@@ -607,7 +607,7 @@ public partial class BitTagDemo
         {
             Name = "--bit-Tag-radius",
             DefaultValue = "--bit-shp-radius-chip",
-            Description = "Corner of a Rounded (default Shape) tag; Circular and Square keep their own.",
+            Description = "Corner of the tag. The Shape parameter wins over it.",
         },
         new()
         {
@@ -624,8 +624,8 @@ public partial class BitTagDemo
         new()
         {
             Name = "--bit-Tag-min-height",
-            DefaultValue = "--bit-siz-chip-{sm,md,lg}",
-            Description = "Smallest height inside the rule; the tag still grows with wrapped text.",
+            DefaultValue = "--bit-siz-chip-md",
+            Description = "Smallest height inside the rule; the tag still grows with wrapped text. The Size parameter wins over it.",
         },
         new()
         {
@@ -636,26 +636,26 @@ public partial class BitTagDemo
         new()
         {
             Name = "--bit-Tag-padding-x",
-            DefaultValue = "Per Size (half of --bit-siz-ctrl-pad-x-*)",
-            Description = "Inline inset of the content and the outer inset of the dismiss button.",
+            DefaultValue = "Half of --bit-siz-ctrl-pad-x-md",
+            Description = "Inline inset of the content and the outer inset of the dismiss button. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Tag-padding-y",
-            DefaultValue = "Per Size",
-            Description = "Block inset of the content.",
+            DefaultValue = "spacing(0.375)",
+            Description = "Block inset of the content. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Tag-gap",
-            DefaultValue = "Per Size",
-            Description = "Room between the icon, the label and the other parts of the content.",
+            DefaultValue = "spacing(1)",
+            Description = "Room between the icon, the label and the other parts of the content. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Tag-font-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Text size.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size. The Size parameter wins over it.",
         },
         new()
         {
@@ -666,8 +666,8 @@ public partial class BitTagDemo
         new()
         {
             Name = "--bit-Tag-secondary-font-size",
-            DefaultValue = "Per Size, one step under the text",
-            Description = "Size of the SecondaryText line.",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Size of the SecondaryText line. The Size parameter wins over it.",
         },
         new()
         {
@@ -678,8 +678,8 @@ public partial class BitTagDemo
         new()
         {
             Name = "--bit-Tag-image-size",
-            DefaultValue = "Per Size",
-            Description = "Size of the IconUrl picture.",
+            DefaultValue = "spacing(2)",
+            Description = "Size of the IconUrl picture. The Size parameter wins over it.",
         },
     ];
 

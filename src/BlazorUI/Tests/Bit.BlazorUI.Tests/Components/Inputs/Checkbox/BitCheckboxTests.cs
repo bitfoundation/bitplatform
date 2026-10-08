@@ -1352,6 +1352,57 @@ public class BitCheckboxTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCheckboxShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitCheckbox>();
+
+        // An unset Color or Size publishes nothing, so the public --bit-Checkbox-* variables restyle the default
+        // while an explicit value - which does publish its class - wins over them.
+        var root = component.Find(".bit-chb");
+        var published = new[]
+        {
+            "bit-chb-pri", "bit-chb-sec", "bit-chb-ter", "bit-chb-inf", "bit-chb-suc", "bit-chb-wrn", "bit-chb-swr", "bit-chb-err",
+            "bit-chb-pbg", "bit-chb-sbg", "bit-chb-tbg", "bit-chb-pfg", "bit-chb-sfg", "bit-chb-tfg", "bit-chb-pbr", "bit-chb-sbr", "bit-chb-tbr",
+            "bit-chb-sm", "bit-chb-md", "bit-chb-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
+    }
+
+    [TestMethod,
+        DataRow(BitColor.Primary, "bit-chb-pri"),
+        DataRow(BitColor.Error, "bit-chb-err"),
+        DataRow(BitColor.TertiaryBorder, "bit-chb-tbr")
+    ]
+    public void BitCheckboxShouldPublishAnExplicitColor(BitColor color, string expectedClass)
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Color, color);
+        });
+
+        Assert.IsTrue(component.Find(".bit-chb").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod,
+        DataRow(BitSize.Small, "bit-chb-sm"),
+        DataRow(BitSize.Medium, "bit-chb-md"),
+        DataRow(BitSize.Large, "bit-chb-lg")
+    ]
+    public void BitCheckboxShouldPublishAnExplicitSize(BitSize size, string expectedClass)
+    {
+        var component = RenderComponent<BitCheckbox>(parameters =>
+        {
+            parameters.Add(p => p.Size, size);
+        });
+
+        Assert.IsTrue(component.Find(".bit-chb").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
     public void BitCheckboxShouldApplyCascadingParametersFromBitParams()
     {
         var paramsList = new List<IBitComponentParams>

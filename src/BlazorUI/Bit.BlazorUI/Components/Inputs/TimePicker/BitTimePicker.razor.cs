@@ -314,6 +314,10 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// The general color of the TimePicker, which applies to the selected AM/PM button, the now and clear
     /// action buttons, and the focus indicator of the input.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-TimePicker-*</c> accent, on-color, hover, active and focus color
+    /// variables; left unset, the TimePicker is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -764,6 +768,11 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// <summary>
     /// The size of the TimePicker, which scales the input, the label, the time inputs and the spin buttons.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-TimePicker-*</c> size variables (height, font size, icon size, label
+    /// and description font sizes, cell size, and the cell, separator, spin, meridiem and action font sizes); left
+    /// unset, the TimePicker is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -947,6 +956,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         // that was given no explicit Dir still lays itself out the way its culture reads.
         ClassBuilder.Register(() => BitCssClasses.CultureRtl(Dir, _culture));
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from
+        // a choice: the public --bit-TimePicker-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(GetColorClass);
 
         ClassBuilder.Register(GetSizeClass);
@@ -2248,15 +2259,12 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     {
         // The callout is rendered inside the root, but while it is open it is relocated into a copy of the root
         // that leaves the library's own classes behind (see mirroredClasses in Callouts.ts), so the root's color
-        // and size classes never reach it there. They are declared on the callout itself, which is what gives it
-        // the custom properties of its color and size wherever it is.
-        List<string> classes = ["bit-tpc-cal", GetColorClass()];
+        // and size classes never reach it there. An explicit color and size are declared on the callout itself,
+        // which is what gives it the custom properties of its color and size wherever it is.
+        List<string> classes = ["bit-tpc-cal"];
 
-        var sizeClass = GetSizeClass();
-        if (sizeClass.HasValue())
-        {
-            classes.Add(sizeClass);
-        }
+        classes.AddIfHasValue(GetColorClass());
+        classes.AddIfHasValue(GetSizeClass());
 
         if (Classes?.Callout is not null)
         {

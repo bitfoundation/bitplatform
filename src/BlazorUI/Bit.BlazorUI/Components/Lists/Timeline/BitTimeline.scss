@@ -2,14 +2,14 @@
 
 // Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
 // ancestor, on the Style of a timeline or on the Style of a single item inherits down to whatever reads it:
-//   --bit-Timeline-font-size              text size of the contents                    (default: per Size)
-//   --bit-Timeline-dot-size               diameter of the dot                          (default: per Size)
-//   --bit-Timeline-dot-background         fill of the dot                              (default: per Color and Variant)
-//   --bit-Timeline-dot-border-color       border color of the dot                      (default: per Color and Variant)
+//   --bit-Timeline-font-size              text size of the contents                    (default: $tg-fs-sm)
+//   --bit-Timeline-dot-size               diameter of the dot                          (default: spacing(3.75))
+//   --bit-Timeline-dot-background         fill of the dot                              (default: $clr-pri filled, transparent otherwise)
+//   --bit-Timeline-dot-border-color       border color of the dot                      (default: $clr-pri, transparent on Text)
 //   --bit-Timeline-dot-border-width       border width of the dot                      (default: $shp-border-width)
 //   --bit-Timeline-dot-radius             corner radius of the dot                     (default: $shp-radius-full)
 //   --bit-Timeline-dot-shadow             shadow of the dot                            (default: none)
-//   --bit-Timeline-icon-color             color of the icon inside the dot             (default: per Color and Variant)
+//   --bit-Timeline-icon-color             color of the icon inside the dot             (default: $clr-pri-text filled, $clr-pri otherwise)
 //   --bit-Timeline-icon-size              size of the icon inside the dot              (default: the font size)
 //   --bit-Timeline-line-color             color of the connecting line                 (default: $clr-brd-sec)
 //   --bit-Timeline-line-width             thickness of the connecting line             (default: $shp-border-width-thick)
@@ -19,17 +19,29 @@
 //   --bit-Timeline-item-hover-background  hover plate of a clickable item              (default: $clr-bg-pri-hover)
 //   --bit-Timeline-item-active-background pressed plate of a clickable item            (default: $clr-bg-pri-active)
 // The dot colors never override a disabled item, which keeps its disabled palette.
+//
+// A parameter wins over the variable that restyles what it sets: an explicit Color - of the timeline or of an item -
+// over the dot background, the dot border color and the icon color its role paints (the variables keep what a Color
+// leaves alone: the transparent dot of the Outline and Text variants and the transparent border of Text), and an
+// explicit Size - of the timeline or of an item - over the font size and the dot size. The variables restyle the
+// default, not a choice - which is why the timeline's Color and Size publish nothing while they are left unset: a
+// class that always carried the default would be indistinguishable from one that was asked for.
 
 /*
  * The dot colors are resolved on the item, never on the root: a custom property whose value contains
  * a var() is substituted on the element that declares it, so declaring the dot colors on the root
  * would freeze them to the root color and an item-level color or variant class could never win.
  */
+/*
+ * Each color the Color role paints is read from the role first - published only by an explicit Color, of the
+ * timeline or of the item - then from the public variables, then from the primary role an unset Color stands for;
+ * a color the role leaves alone (the transparent dot of Outline and Text) is the variables' alone.
+ */
 @mixin timeline-variant-fill {
-    --bit-tln-dot-clr: var(--bit-tln-clr-fg);
-    --bit-tln-dot-clr-bg: var(--bit-tln-clr);
-    --bit-tln-dot-clr-brd: var(--bit-tln-clr);
-    --bit-tln-dot-ico-clr: var(--bit-tln-clr-fg);
+    --bit-tln-dot-clr: var(--bit-tln-clr-fg, #{$clr-pri-text});
+    --bit-tln-dot-clr-bg: var(--bit-tln-clr, var(--bit-Timeline-dot-background, #{$clr-pri}));
+    --bit-tln-dot-clr-brd: var(--bit-tln-clr, var(--bit-Timeline-dot-border-color, #{$clr-pri}));
+    --bit-tln-dot-ico-clr: var(--bit-tln-clr-fg, var(--bit-Timeline-icon-color, #{$clr-pri-text}));
     --bit-tln-dot-ico-clr-bg: transparent;
     --bit-tln-dot-ico-width: auto;
     --bit-tln-dot-ico-height: auto;
@@ -42,10 +54,10 @@
 }
 
 @mixin timeline-variant-outline {
-    --bit-tln-dot-clr: var(--bit-tln-clr-fg);
-    --bit-tln-dot-clr-bg: transparent;
-    --bit-tln-dot-clr-brd: var(--bit-tln-clr);
-    --bit-tln-dot-ico-clr: var(--bit-tln-clr);
+    --bit-tln-dot-clr: var(--bit-tln-clr-fg, #{$clr-pri-text});
+    --bit-tln-dot-clr-bg: var(--bit-Timeline-dot-background, transparent);
+    --bit-tln-dot-clr-brd: var(--bit-tln-clr, var(--bit-Timeline-dot-border-color, #{$clr-pri}));
+    --bit-tln-dot-ico-clr: var(--bit-tln-clr, var(--bit-Timeline-icon-color, #{$clr-pri}));
     --bit-tln-dot-ico-clr-bg: transparent;
     --bit-tln-dot-ico-width: auto;
     --bit-tln-dot-ico-height: auto;
@@ -58,10 +70,10 @@
 }
 
 @mixin timeline-variant-text {
-    --bit-tln-dot-clr: var(--bit-tln-clr-fg);
-    --bit-tln-dot-clr-bg: transparent;
-    --bit-tln-dot-clr-brd: transparent;
-    --bit-tln-dot-ico-clr: var(--bit-tln-clr);
+    --bit-tln-dot-clr: var(--bit-tln-clr-fg, #{$clr-pri-text});
+    --bit-tln-dot-clr-bg: var(--bit-Timeline-dot-background, transparent);
+    --bit-tln-dot-clr-brd: var(--bit-Timeline-dot-border-color, transparent);
+    --bit-tln-dot-ico-clr: var(--bit-tln-clr, var(--bit-Timeline-icon-color, #{$clr-pri}));
     --bit-tln-dot-ico-clr-bg: transparent;
     --bit-tln-dot-ico-width: var(--bit-tln-dot-size);
     --bit-tln-dot-ico-height: var(--bit-tln-dot-size);
@@ -120,7 +132,19 @@
     position: relative;
     height: max-content;
     flex-direction: var(--bit-tln-flexdir);
-    font-size: var(--bit-Timeline-font-size, var(--bit-tln-fs));
+    font-size: var(--bit-tln-fs, var(--bit-Timeline-font-size, #{$tg-fs-sm}));
+    // The values the Color and Size classes publish, unset here - rather than inherited from a timeline this one sits
+    // in an item of - and won back by those classes, declared further down at the same weight, on the root that
+    // carries them; the items inherit what the root ends up with and may publish their own. Left unset, each sends
+    // the var() reading it on to the public variable and then to the default, which is what lets an explicit
+    // parameter outrank the variable while an unset one leaves the variable in charge.
+    --bit-tln-clr: initial;
+    --bit-tln-clr-fg: initial;
+    --bit-tln-clr-focus: initial;
+    --bit-tln-clr-dis-bg: initial;
+    --bit-tln-clr-dis-text: initial;
+    --bit-tln-dot-sz: initial;
+    --bit-tln-fs: initial;
     --bit-tln-flexdir: column;
     --bit-tln-itm-flexdir: row;
     --bit-tln-pcn-flexdir: row-reverse;
@@ -134,7 +158,7 @@
     --bit-tln-dvd-vis-e: visible;
     --bit-tln-dvd-dir-s: to top;
     --bit-tln-dvd-dir-e: to bottom;
-    --bit-tln-clr-dis: var(--bit-tln-clr-dis-text, #{$clr-fg-dis});
+    --bit-tln-clr-dis: var(--bit-tln-clr-dis-text, #{$clr-pri-dis-text});
 
     &.bit-dis {
         cursor: default;
@@ -154,13 +178,15 @@
     flex-direction: var(--bit-tln-itm-flexdir);
 
     // Resolved per item so that an item-level size class, or a --bit-Timeline-dot-size set on the Style of the item
-    // itself, also drives the dot, the paddings around it and the halves of the line of that item alone.
-    --bit-tln-dot-size: var(--bit-Timeline-dot-size, var(--bit-tln-dot-sz));
+    // itself, also drives the dot, the paddings around it and the halves of the line of that item alone. An explicit
+    // Size (the item's, else the timeline's) is read first, then the public variable, then the medium dot.
+    --bit-tln-dot-size: var(--bit-tln-dot-sz, var(--bit-Timeline-dot-size, #{spacing(3.75)}));
     // The room kept along the line, by the contents and by the divider alike, so the dot stays level with them.
     --bit-tln-pad: var(--bit-Timeline-item-spacing, calc(var(--bit-tln-dot-size) / 2));
-    --bit-tln-clr-dis: var(--bit-tln-clr-dis-text, #{$clr-fg-dis});
-    --bit-tln-clr-bg-dis: var(--bit-tln-clr-dis-bg, #{$clr-bg-dis});
-    --bit-tln-clr-brd-dis: var(--bit-tln-clr-dis-bg, #{$clr-bg-dis});
+    // The disabled colors of the Color role, the primary one while no Color was given.
+    --bit-tln-clr-dis: var(--bit-tln-clr-dis-text, #{$clr-pri-dis-text});
+    --bit-tln-clr-bg-dis: var(--bit-tln-clr-dis-bg, #{$clr-pri-dis});
+    --bit-tln-clr-brd-dis: var(--bit-tln-clr-dis-bg, #{$clr-pri-dis});
 
     &.bit-tln-ids {
         cursor: default;
@@ -196,7 +222,7 @@
 
     &:focus-visible {
         outline: none;
-        @include focus-ring(var(--bit-tln-clr-focus));
+        @include focus-ring(var(--bit-tln-clr-focus, #{$clr-pri-focus}));
     }
 }
 
@@ -213,7 +239,7 @@
     overflow: var(--bit-tln-cn-overflow);
     min-width: calc(50% - var(--bit-tln-dot-size));
     min-height: calc(50% - var(--bit-tln-dot-size));
-    font-size: var(--bit-Timeline-font-size, var(--bit-tln-fs));
+    font-size: var(--bit-tln-fs, var(--bit-Timeline-font-size, #{$tg-fs-sm}));
     padding: var(--bit-tln-pad) 0;
 }
 
@@ -309,8 +335,10 @@
     box-shadow: var(--bit-Timeline-dot-shadow, none);
     border-radius: var(--bit-Timeline-dot-radius, #{$shp-radius-full});
     border-width: var(--bit-Timeline-dot-border-width, #{$shp-border-width});
-    border-color: var(--bit-Timeline-dot-border-color, var(--bit-tln-dot-clr-brd));
-    background-color: var(--bit-Timeline-dot-background, var(--bit-tln-dot-clr-bg));
+    // The colors are resolved per variant on the item (see timeline-variant-fill), where the Color and the public
+    // variables are ranked against each other.
+    border-color: var(--bit-tln-dot-clr-brd);
+    background-color: var(--bit-tln-dot-clr-bg);
 }
 
 // A hidden dot leaves no gap in the line: both halves reach on to the middle of its placeholder, which measures a dot.
@@ -332,7 +360,7 @@
 
 .bit-tln-ico {
     font-size: var(--bit-Timeline-icon-size, 1em);
-    color: var(--bit-Timeline-icon-color, var(--bit-tln-dot-ico-clr));
+    color: var(--bit-tln-dot-ico-clr);
 }
 
 // A disabled item keeps its disabled palette whatever dot colors were set through the public variables.
@@ -721,7 +749,8 @@
     background-color: var(--bit-Timeline-dot-background, var(--bit-tln-dot-ico-clr-bg));
 }
 
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Each role also gets
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss), published only by an
+// explicit Color of the timeline or of an item; an unset one is the primary role. Each role also gets
 // an item-level alias class: "i" + the first two letters of a semantic role (pri > ipr), whose classes predate the
 // surface roles, or "i" + the whole name of a surface role (pbg > ipbg), whose first two letters are not unique.
 @each $role, $tokens in $bit-color-roles {
@@ -740,7 +769,8 @@
     }
 }
 
-// The size classes only hold the defaults, which the root and every item read through the public variables.
+// The size classes, published only by an explicit Size, of the timeline or of an item; an unset one is the medium
+// timeline, which the reads of these spell out after the public variables.
 .bit-tln-sm, .bit-tln-ism {
     --bit-tln-dot-sz: #{spacing(2.5)};
     --bit-tln-fs: #{$tg-fs-xs};

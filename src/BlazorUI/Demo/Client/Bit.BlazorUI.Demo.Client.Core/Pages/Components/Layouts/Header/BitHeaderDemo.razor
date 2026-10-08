@@ -526,7 +526,8 @@
     <DemoExample Title="Style & Class" RazorCode="@example18RazorCode" CodeFiles="@example18CodeFiles" Id="example18">
         <div>
             Reach for the <b>--bit-Header-*</b> CSS variables first (listed in the API section): they inherit, so set them on
-            <b>:root</b>, an ancestor or an instance's <b>Style</b>. <b>Style</b>/<b>Class</b> reach the root, and
+            <b>:root</b>, an ancestor or an instance's <b>Style</b>. They restyle the default, not a choice: an explicit
+            <b>Color</b> or <b>Size</b> wins over the variables for what it sets. <b>Style</b>/<b>Class</b> reach the root, and
             <b>Styles</b>/<b>Classes</b> each part (root, container, extension, skip link).
         </div>
         <br />
@@ -545,7 +546,7 @@
             </div>
             <br />
             <div class="container">
-                <BitHeader Bordered Size="BitSize.Small">Every header under it follows</BitHeader>
+                <BitHeader Bordered Size="BitSize.Small">Every header under it follows, but an explicit Size keeps its own padding</BitHeader>
             </div>
         </div>
         <br />

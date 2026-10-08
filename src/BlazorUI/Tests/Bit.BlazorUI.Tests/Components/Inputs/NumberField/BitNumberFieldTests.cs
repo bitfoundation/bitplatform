@@ -1639,7 +1639,7 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [TestMethod,
-         DataRow(null, "bit-nfl-pri"),
+         DataRow(BitColor.Primary, "bit-nfl-pri"),
          DataRow(BitColor.Secondary, "bit-nfl-sec"),
          DataRow(BitColor.Tertiary, "bit-nfl-ter"),
          DataRow(BitColor.Info, "bit-nfl-inf"),
@@ -1668,7 +1668,7 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [TestMethod,
-         DataRow(null, "bit-nfl-bpr"),
+         DataRow(BitColorKind.Primary, "bit-nfl-bpr"),
          DataRow(BitColorKind.Secondary, "bit-nfl-bse"),
          DataRow(BitColorKind.Tertiary, "bit-nfl-btr"),
          DataRow(BitColorKind.Transparent, "bit-nfl-btn")
@@ -1684,7 +1684,7 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [TestMethod,
-         DataRow(null, "bit-nfl-brp"),
+         DataRow(BitColorKind.Primary, "bit-nfl-brp"),
          DataRow(BitColorKind.Secondary, "bit-nfl-brs"),
          DataRow(BitColorKind.Tertiary, "bit-nfl-brt"),
          DataRow(BitColorKind.Transparent, "bit-nfl-brn")
@@ -1700,9 +1700,32 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitNumberFieldShouldReflectTheAccentChangeOnRerender()
+    public void BitNumberFieldShouldPublishNoAccentBackgroundBorderOrSizeWhileTheyAreUnset()
     {
         var component = RenderComponent<BitNumberField<int>>();
+
+        // An unset Accent, Background, Border or Size publishes nothing, so the public --bit-NumberField-* variables
+        // restyle the default while an explicit value - which does publish its class - wins over them.
+        var root = component.Find(".bit-nfl");
+        var published = new[]
+        {
+            "bit-nfl-pri", "bit-nfl-sec", "bit-nfl-ter", "bit-nfl-inf", "bit-nfl-suc", "bit-nfl-wrn", "bit-nfl-swr", "bit-nfl-err",
+            "bit-nfl-pbg", "bit-nfl-sbg", "bit-nfl-tbg", "bit-nfl-pfg", "bit-nfl-sfg", "bit-nfl-tfg", "bit-nfl-pbr", "bit-nfl-sbr", "bit-nfl-tbr",
+            "bit-nfl-bpr", "bit-nfl-bse", "bit-nfl-btr", "bit-nfl-btn",
+            "bit-nfl-brp", "bit-nfl-brs", "bit-nfl-brt", "bit-nfl-brn",
+            "bit-nfl-sm", "bit-nfl-md", "bit-nfl-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldReflectTheAccentChangeOnRerender()
+    {
+        var component = RenderComponent<BitNumberField<int>>(parameters => parameters.Add(p => p.Accent, BitColor.Primary));
 
         Assert.IsTrue(component.Find(".bit-nfl").ClassList.Contains("bit-nfl-pri"));
 
@@ -2638,7 +2661,6 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [TestMethod,
-         DataRow(null, "bit-nfl-md"),
          DataRow(BitSize.Small, "bit-nfl-sm"),
          DataRow(BitSize.Medium, "bit-nfl-md"),
          DataRow(BitSize.Large, "bit-nfl-lg")

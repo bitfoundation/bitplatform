@@ -2,41 +2,41 @@
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // color picker and one set on the Style of an instance re-skins that one alone:
-//   --bit-ColorPicker-width                     width of the whole panel                       (default: per Size)
+//   --bit-ColorPicker-width                     width of the whole panel                       (default: spacing(33.5))
 //   --bit-ColorPicker-background                background behind the panel                    (default: transparent)
 //   --bit-ColorPicker-padding                   padding around the panel                       (default: 0)
 //   --bit-ColorPicker-radius                    corner radius of the panel                     (default: 0)
 //   --bit-ColorPicker-gap                       vertical rhythm between the rows of the panel  (default: spacing(1))
-//   --bit-ColorPicker-font-size                 text size of the panel                         (default: per Size, from the type ramp)
+//   --bit-ColorPicker-font-size                 text size of the panel                         (default: $tg-fs-sm)
 //   --bit-ColorPicker-caption-font-size         text size of the field captions and of the
-//                                               contrast readout                               (default: one step below the panel)
+//                                               contrast readout                               (default: $tg-fs-xs)
 //   --bit-ColorPicker-border-color              color of every border the panel draws          (default: $clr-brd-pri)
 //   --bit-ColorPicker-focus-color               color of the keyboard focus ring               (default: $clr-pri-focus)
 //   --bit-ColorPicker-label-color               color of the label text                        (default: $clr-fg-pri)
-//   --bit-ColorPicker-saturation-height         height of the saturation-brightness area       (default: per Size)
+//   --bit-ColorPicker-saturation-height         height of the saturation-brightness area       (default: spacing(29.5))
 //   --bit-ColorPicker-saturation-radius         corner radius of that area                     (default: $shp-radius-control)
 //   --bit-ColorPicker-thumb-size                diameter of the saturation thumb and of the
-//                                               thumbs of both sliders                         (default: per Size)
+//                                               thumbs of both sliders                         (default: spacing(2.5))
 //   --bit-ColorPicker-thumb-color               fill of the slider thumbs                      (default: $clr-ntr-white)
 //   --bit-ColorPicker-thumb-ring-color          inner ring that keeps the saturation thumb
 //                                               readable over a dark area of the gradient      (default: $clr-ntr-white)
 //   --bit-ColorPicker-thumb-shadow              elevation under the saturation thumb           (default: $box-shadow-nm)
-//   --bit-ColorPicker-track-height              height of the hue and alpha tracks             (default: per Size)
+//   --bit-ColorPicker-track-height              height of the hue and alpha tracks             (default: spacing(2.5))
 //   --bit-ColorPicker-track-radius              corner radius of both tracks                   (default: $shp-radius-control)
-//   --bit-ColorPicker-preview-size              width and height of the preview box            (default: per Size)
+//   --bit-ColorPicker-preview-size              width and height of the preview box            (default: spacing(6))
 //   --bit-ColorPicker-preview-radius            corner radius of the preview box               (default: $shp-radius-control)
 //   --bit-ColorPicker-button-size               square of the eye dropper and inputs-mode
-//                                               buttons, never below the 24px WCAG target      (default: per Size)
+//                                               buttons, never below the 24px WCAG target      (default: spacing(3))
 //   --bit-ColorPicker-button-color              glyph color of those buttons                   (default: $clr-fg-pri)
 //   --bit-ColorPicker-button-radius             corner radius of those buttons                 (default: $shp-radius-button)
 //   --bit-ColorPicker-button-hover-background   background of those buttons on hover           (default: $clr-bg-sec-hover)
 //   --bit-ColorPicker-button-active-background  background of those buttons while pressed      (default: $clr-bg-sec-active)
-//   --bit-ColorPicker-icon-size                 glyph size inside those buttons                (default: per Size, $siz-icon-*)
+//   --bit-ColorPicker-icon-size                 glyph size inside those buttons                (default: $siz-icon-md)
 //   --bit-ColorPicker-field-color               text color of the hex and channel fields       (default: $clr-fg-pri)
 //   --bit-ColorPicker-field-background          background of those fields                     (default: $clr-bg-pri)
 //   --bit-ColorPicker-field-radius              corner radius of those fields                  (default: $shp-radius-control)
 //   --bit-ColorPicker-field-label-color         color of the caption under a field             (default: $clr-fg-sec)
-//   --bit-ColorPicker-swatch-size               square of a preset swatch                      (default: per Size)
+//   --bit-ColorPicker-swatch-size               square of a preset swatch                      (default: spacing(3))
 //   --bit-ColorPicker-swatch-radius             corner radius of a preset swatch               (default: $shp-radius-sm)
 //   --bit-ColorPicker-swatch-gap                space between preset swatches                  (default: spacing(0.5))
 //   --bit-ColorPicker-swatch-ring-color         inner ring marking the selected swatch         (default: $clr-ntr-white)
@@ -48,6 +48,12 @@
 //   --bit-ColorPicker-contrast-color            color of the contrast ratio                    (default: $clr-fg-pri)
 //   --bit-ColorPicker-contrast-pass-color       color of a badge that clears the WCAG bar      (default: $clr-suc)
 //   --bit-ColorPicker-contrast-fail-color       color of a badge that does not                 (default: $clr-err)
+//
+// A parameter written on the picker wins over the variable that restyles what it sets: an explicit Size over
+// the width, the font and caption sizes, the saturation height, the thumb, track, button, icon, preview and
+// swatch sizes. The variables restyle the default, not a choice - which is why Size publishes nothing while
+// it is left unset: a class that always carried the default would be indistinguishable from one that was
+// asked for.
 
 /*
  * checkerboard($size)
@@ -69,24 +75,23 @@
     background-position: 0 0, #{$size} #{$size};
 }
 
-// The default size, declared as a mixin so the root can fall back to it without a size class. Every value a
-// size class sets is named apart from the public variable it feeds, so a size class and a CSS variable never
-// fight over the same property: the public name wins whichever size the picker happens to be in.
-@mixin clp-size-medium {
-    --bit-clp-width-def: #{spacing(33.5)};
-    --bit-clp-sat-height-def: #{spacing(29.5)};
-    --bit-clp-track-height-def: #{spacing(2.5)};
-    --bit-clp-thumb-size-def: #{spacing(2.5)};
-    --bit-clp-button-size-def: #{spacing(3)};
-    --bit-clp-swatch-size-def: #{spacing(3)};
-    --bit-clp-preview-size-def: #{spacing(6)};
-    --bit-clp-fs-def: #{$tg-fs-sm};
-    --bit-clp-fs-sub-def: #{$tg-fs-xs};
-    --bit-clp-icon-size-def: #{$siz-icon-md};
-}
-
 .bit-clp {
-    @include clp-size-medium;
+    // A picker can sit in the content of something holding another one, which must not inherit the outer
+    // picker's Size: each root starts the values the size classes publish out unset, and the classes -
+    // declared further down at the same weight - still win on the root that carries them. Every value a size
+    // class sets is named apart from the public variable it feeds and read ahead of it, then the medium size
+    // an unset Size stands for, which is what lets an explicit Size outrank the variable while an unset one
+    // leaves the variable in charge.
+    --bit-clp-width-sz: initial;
+    --bit-clp-sat-height-sz: initial;
+    --bit-clp-track-height-sz: initial;
+    --bit-clp-thumb-size-sz: initial;
+    --bit-clp-button-size-sz: initial;
+    --bit-clp-swatch-size-sz: initial;
+    --bit-clp-preview-size-sz: initial;
+    --bit-clp-fs-sz: initial;
+    --bit-clp-fs-sub-sz: initial;
+    --bit-clp-icon-size-sz: initial;
 
     display: flex;
     user-select: none;
@@ -95,11 +100,11 @@
     flex-direction: column;
     font-weight: $tg-fw-regular;
     font-family: $tg-font-family;
-    width: var(--bit-ColorPicker-width, var(--bit-clp-width-def));
+    width: var(--bit-clp-width-sz, var(--bit-ColorPicker-width, #{spacing(33.5)}));
     padding: var(--bit-ColorPicker-padding, 0);
     border-radius: var(--bit-ColorPicker-radius, 0);
     background-color: var(--bit-ColorPicker-background, transparent);
-    font-size: var(--bit-ColorPicker-font-size, var(--bit-clp-fs-def));
+    font-size: var(--bit-clp-fs-sz, var(--bit-ColorPicker-font-size, #{$tg-fs-sm}));
 
     // The two values every part of the panel resolves its own override through, computed once here so that a
     // border color or a focus color set on :root reaches the sliders, the fields and the swatches alike.
@@ -133,34 +138,45 @@
     }
 }
 
+// Published only by an explicit Size; an unset one is the medium picker, which every read spells out after
+// the public variable.
 .bit-clp-sm {
-    --bit-clp-width-def: #{spacing(25)};
-    --bit-clp-sat-height-def: #{spacing(20)};
-    --bit-clp-track-height-def: #{spacing(2)};
-    --bit-clp-thumb-size-def: #{spacing(2)};
-    --bit-clp-button-size-def: #{spacing(3)};
-    --bit-clp-swatch-size-def: #{spacing(3)};
-    --bit-clp-preview-size-def: #{spacing(4.5)};
-    --bit-clp-fs-def: #{$tg-fs-xs};
-    --bit-clp-fs-sub-def: #{$tg-fs-2xs};
-    --bit-clp-icon-size-def: #{$siz-icon-sm};
+    --bit-clp-width-sz: #{spacing(25)};
+    --bit-clp-sat-height-sz: #{spacing(20)};
+    --bit-clp-track-height-sz: #{spacing(2)};
+    --bit-clp-thumb-size-sz: #{spacing(2)};
+    --bit-clp-button-size-sz: #{spacing(3)};
+    --bit-clp-swatch-size-sz: #{spacing(3)};
+    --bit-clp-preview-size-sz: #{spacing(4.5)};
+    --bit-clp-fs-sz: #{$tg-fs-xs};
+    --bit-clp-fs-sub-sz: #{$tg-fs-2xs};
+    --bit-clp-icon-size-sz: #{$siz-icon-sm};
 }
 
 .bit-clp-md {
-    @include clp-size-medium;
+    --bit-clp-width-sz: #{spacing(33.5)};
+    --bit-clp-sat-height-sz: #{spacing(29.5)};
+    --bit-clp-track-height-sz: #{spacing(2.5)};
+    --bit-clp-thumb-size-sz: #{spacing(2.5)};
+    --bit-clp-button-size-sz: #{spacing(3)};
+    --bit-clp-swatch-size-sz: #{spacing(3)};
+    --bit-clp-preview-size-sz: #{spacing(6)};
+    --bit-clp-fs-sz: #{$tg-fs-sm};
+    --bit-clp-fs-sub-sz: #{$tg-fs-xs};
+    --bit-clp-icon-size-sz: #{$siz-icon-md};
 }
 
 .bit-clp-lg {
-    --bit-clp-width-def: #{spacing(42)};
-    --bit-clp-sat-height-def: #{spacing(37)};
-    --bit-clp-track-height-def: #{spacing(3)};
-    --bit-clp-thumb-size-def: #{spacing(3)};
-    --bit-clp-button-size-def: #{spacing(3.5)};
-    --bit-clp-swatch-size-def: #{spacing(3.5)};
-    --bit-clp-preview-size-def: #{spacing(7.5)};
-    --bit-clp-fs-def: #{$tg-fs-md};
-    --bit-clp-fs-sub-def: #{$tg-fs-sm};
-    --bit-clp-icon-size-def: #{$siz-icon-lg};
+    --bit-clp-width-sz: #{spacing(42)};
+    --bit-clp-sat-height-sz: #{spacing(37)};
+    --bit-clp-track-height-sz: #{spacing(3)};
+    --bit-clp-thumb-size-sz: #{spacing(3)};
+    --bit-clp-button-size-sz: #{spacing(3.5)};
+    --bit-clp-swatch-size-sz: #{spacing(3.5)};
+    --bit-clp-preview-size-sz: #{spacing(7.5)};
+    --bit-clp-fs-sz: #{$tg-fs-md};
+    --bit-clp-fs-sub-sz: #{$tg-fs-sm};
+    --bit-clp-icon-size-sz: #{$siz-icon-lg};
 }
 
 .bit-clp-lbc {
@@ -183,7 +199,7 @@
     flex-shrink: 0;
     gap: spacing(0.5);
     align-items: center;
-    font-size: var(--bit-ColorPicker-caption-font-size, var(--bit-clp-fs-sub-def));
+    font-size: var(--bit-clp-fs-sub-sz, var(--bit-ColorPicker-caption-font-size, #{$tg-fs-xs}));
     margin-top: var(--bit-ColorPicker-gap, #{spacing(1)});
 }
 
@@ -234,7 +250,7 @@
     box-sizing: border-box;
     min-height: spacing(6);
     margin-bottom: var(--bit-ColorPicker-gap, #{spacing(1)});
-    height: var(--bit-ColorPicker-saturation-height, var(--bit-clp-sat-height-def));
+    height: var(--bit-clp-sat-height-sz, var(--bit-ColorPicker-saturation-height, #{spacing(29.5)}));
     border-radius: var(--bit-ColorPicker-saturation-radius, #{$shp-radius-control});
     border: $shp-border-width $shp-border-style var(--bit-clp-brd);
 
@@ -269,8 +285,8 @@
     border-radius: 50%;
     transform: translate(-50%, -50%);
     background: $clr-bg-sec;
-    width: var(--bit-ColorPicker-thumb-size, var(--bit-clp-thumb-size-def));
-    height: var(--bit-ColorPicker-thumb-size, var(--bit-clp-thumb-size-def));
+    width: var(--bit-clp-thumb-size-sz, var(--bit-ColorPicker-thumb-size, #{spacing(2.5)}));
+    height: var(--bit-clp-thumb-size-sz, var(--bit-ColorPicker-thumb-size, #{spacing(2.5)}));
     box-shadow: var(--bit-ColorPicker-thumb-shadow, #{$box-shadow-nm});
     border: $shp-border-width $shp-border-style var(--bit-clp-brd);
 
@@ -308,7 +324,7 @@
     box-sizing: border-box;
     forced-color-adjust: none;
     margin-bottom: var(--bit-ColorPicker-gap, #{spacing(1)});
-    height: var(--bit-ColorPicker-track-height, var(--bit-clp-track-height-def));
+    height: var(--bit-clp-track-height-sz, var(--bit-ColorPicker-track-height, #{spacing(2.5)}));
     border-radius: var(--bit-ColorPicker-track-radius, #{$shp-radius-control});
     border: $shp-border-width $shp-border-style var(--bit-clp-brd);
 
@@ -344,16 +360,16 @@
     position: absolute;
     -webkit-appearance: none;
     transform: translateY(-50%);
-    inset-inline-start: calc(var(--bit-ColorPicker-thumb-size, var(--bit-clp-thumb-size-def)) / -2);
-    width: calc(100% + var(--bit-ColorPicker-thumb-size, var(--bit-clp-thumb-size-def)));
+    inset-inline-start: calc(var(--bit-clp-thumb-size-sz, var(--bit-ColorPicker-thumb-size, #{spacing(2.5)})) / -2);
+    width: calc(100% + var(--bit-clp-thumb-size-sz, var(--bit-ColorPicker-thumb-size, #{spacing(2.5)})));
     // The hit area rather than the rail. A range whose box is only as tall as the rail it draws is a 16px
     // target at the small size, under the 24 CSS pixels WCAG 2.2 asks a pointer target for (SC 2.5.8), and
     // a thumb that is easy to see is still awkward to catch with a finger. The box is grown to that floor -
     // or to the thumb, wherever the thumb is the larger of the two - and centred on the rail, so the target
     // grows without the rail moving or anything around it giving way. The gap between the rows is wider
     // than the overhang, so the two sliders never reach into one another.
-    height: max(var(--bit-ColorPicker-track-height, var(--bit-clp-track-height-def)),
-                var(--bit-ColorPicker-thumb-size, var(--bit-clp-thumb-size-def)),
+    height: max(var(--bit-clp-track-height-sz, var(--bit-ColorPicker-track-height, #{spacing(2.5)})),
+                var(--bit-clp-thumb-size-sz, var(--bit-ColorPicker-thumb-size, #{spacing(2.5)})),
                 #{spacing(3)});
 
     // The ring belongs to the rail, which is what the user is looking at - see .bit-clp-sld. The native
@@ -367,8 +383,8 @@
         appearance: none;
         border-radius: 50%;
         -webkit-appearance: none;
-        width: var(--bit-ColorPicker-thumb-size, var(--bit-clp-thumb-size-def));
-        height: var(--bit-ColorPicker-thumb-size, var(--bit-clp-thumb-size-def));
+        width: var(--bit-clp-thumb-size-sz, var(--bit-ColorPicker-thumb-size, #{spacing(2.5)}));
+        height: var(--bit-clp-thumb-size-sz, var(--bit-ColorPicker-thumb-size, #{spacing(2.5)}));
         background-color: var(--bit-ColorPicker-thumb-color, #{$clr-ntr-white});
         border: $shp-border-width $shp-border-style var(--bit-clp-brd);
     }
@@ -377,8 +393,8 @@
         cursor: pointer;
         border-radius: 50%;
         box-sizing: border-box;
-        width: var(--bit-ColorPicker-thumb-size, var(--bit-clp-thumb-size-def));
-        height: var(--bit-ColorPicker-thumb-size, var(--bit-clp-thumb-size-def));
+        width: var(--bit-clp-thumb-size-sz, var(--bit-ColorPicker-thumb-size, #{spacing(2.5)}));
+        height: var(--bit-clp-thumb-size-sz, var(--bit-ColorPicker-thumb-size, #{spacing(2.5)}));
         background-color: var(--bit-ColorPicker-thumb-color, #{$clr-ntr-white});
         border: $shp-border-width $shp-border-style var(--bit-clp-brd);
     }
@@ -416,8 +432,8 @@
     box-sizing: border-box;
     background-color: transparent;
     color: var(--bit-ColorPicker-button-color, #{$clr-fg-pri});
-    width: var(--bit-ColorPicker-button-size, var(--bit-clp-button-size-def));
-    height: var(--bit-ColorPicker-button-size, var(--bit-clp-button-size-def));
+    width: var(--bit-clp-button-size-sz, var(--bit-ColorPicker-button-size, #{spacing(3)}));
+    height: var(--bit-clp-button-size-sz, var(--bit-ColorPicker-button-size, #{spacing(3)}));
     border-radius: var(--bit-ColorPicker-button-radius, #{$shp-radius-button});
     border: $shp-border-width $shp-border-style var(--bit-clp-brd);
     transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
@@ -458,7 +474,7 @@
 
 .bit-clp-eyi, .bit-clp-swi {
     line-height: 1;
-    font-size: var(--bit-ColorPicker-icon-size, var(--bit-clp-icon-size-def));
+    font-size: var(--bit-clp-icon-size-sz, var(--bit-ColorPicker-icon-size, #{$siz-icon-md}));
 }
 
 .bit-clp-pre {
@@ -466,8 +482,8 @@
     flex-shrink: 0;
     position: relative;
     box-sizing: border-box;
-    width: var(--bit-ColorPicker-preview-size, var(--bit-clp-preview-size-def));
-    height: var(--bit-ColorPicker-preview-size, var(--bit-clp-preview-size-def));
+    width: var(--bit-clp-preview-size-sz, var(--bit-ColorPicker-preview-size, #{spacing(6)}));
+    height: var(--bit-clp-preview-size-sz, var(--bit-ColorPicker-preview-size, #{spacing(6)}));
     border-radius: var(--bit-ColorPicker-preview-radius, #{$shp-radius-control});
     border: $shp-border-width $shp-border-style var(--bit-clp-brd);
 }
@@ -551,7 +567,7 @@
     padding-top: spacing(0.25);
     letter-spacing: $tg-ctrl-letter-spacing;
     color: var(--bit-ColorPicker-field-label-color, #{$clr-fg-sec});
-    font-size: var(--bit-ColorPicker-caption-font-size, var(--bit-clp-fs-sub-def));
+    font-size: var(--bit-clp-fs-sub-sz, var(--bit-ColorPicker-caption-font-size, #{$tg-fs-xs}));
 }
 
 .bit-clp-prs {
@@ -568,7 +584,7 @@
 .bit-clp-prg {
     display: grid;
     justify-content: start;
-    grid-template-columns: repeat(var(--bit-clp-prs-cols, 1), var(--bit-ColorPicker-swatch-size, var(--bit-clp-swatch-size-def)));
+    grid-template-columns: repeat(var(--bit-clp-prs-cols, 1), var(--bit-clp-swatch-size-sz, var(--bit-ColorPicker-swatch-size, #{spacing(3)})));
 }
 
 .bit-clp-prt {
@@ -578,8 +594,8 @@
     cursor: pointer;
     position: relative;
     box-sizing: border-box;
-    width: var(--bit-ColorPicker-swatch-size, var(--bit-clp-swatch-size-def));
-    height: var(--bit-ColorPicker-swatch-size, var(--bit-clp-swatch-size-def));
+    width: var(--bit-clp-swatch-size-sz, var(--bit-ColorPicker-swatch-size, #{spacing(3)}));
+    height: var(--bit-clp-swatch-size-sz, var(--bit-ColorPicker-swatch-size, #{spacing(3)}));
     border-radius: var(--bit-ColorPicker-swatch-radius, #{$shp-radius-sm});
     border: $shp-border-width $shp-border-style var(--bit-clp-brd);
     transition: transform $mot-duration-short $mot-easing;

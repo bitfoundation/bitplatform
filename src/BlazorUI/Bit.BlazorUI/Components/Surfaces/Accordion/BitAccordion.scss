@@ -8,25 +8,33 @@
 //   --bit-Accordion-border-width              thickness of the outline                      (default: $shp-border-width)
 //   --bit-Accordion-radius                    corner radius of the accordion                (default: $shp-radius-surface)
 //   --bit-Accordion-shadow                    elevation of the accordion                    (default: none)
-//   --bit-Accordion-font-size                 text size of the panel and the description    (default: per Size, $tg-fs-*)
-//   --bit-Accordion-header-padding            padding of the header                         (default: per Size)
-//   --bit-Accordion-header-hover-background   fill of the header under the pointer          (default: per Background, its hover shade)
-//   --bit-Accordion-header-active-background  fill of the header while pressed              (default: the hover fill, then the active shade)
+//   --bit-Accordion-font-size                 text size of the panel and the description    (default: $tg-fs-sm)
+//   --bit-Accordion-header-padding            padding of the header                         (default: spacing(1.5))
+//   --bit-Accordion-header-hover-background   fill of the header under the pointer          (default: $clr-bg-pri-hover; $clr-bg-sec-hover with NoBorder; Background wins)
+//   --bit-Accordion-header-active-background  fill of the header while pressed              (default: the hover fill, then $clr-bg-pri-active; Background wins)
 //   --bit-Accordion-header-expanded-background fill of the header while expanded, hovered too (default: transparent)
 //   --bit-Accordion-header-expanded-color     text of the header while expanded             (default: inherited; title/icon/expander colors win)
 //   --bit-Accordion-title-color               color of the title                            (default: inherited)
-//   --bit-Accordion-title-font-size           size of the title                             (default: per Size, $tg-fs-*)
+//   --bit-Accordion-title-font-size           size of the title                             (default: $tg-fs-md)
 //   --bit-Accordion-title-font-weight         weight of the title                           (default: $tg-fw-semibold)
 //   --bit-Accordion-description-color         color of the description                      (default: $clr-fg-sec)
-//   --bit-Accordion-icon-size                 size of the icon, the expander and the spinner (default: per Size, $siz-icon-*)
+//   --bit-Accordion-icon-size                 size of the icon, the expander and the spinner (default: $siz-icon-md)
 //   --bit-Accordion-icon-color                color of the icon at the start of the header  (default: inherited)
 //   --bit-Accordion-expander-color            color of the expander and of the spinner      (default: inherited)
-//   --bit-Accordion-content-padding           padding of the panel                          (default: per Size)
+//   --bit-Accordion-content-padding           padding of the panel                          (default: spacing(1.5))
 //   --bit-Accordion-content-background        fill of the panel                             (default: transparent, the accordion's fill)
 //   --bit-Accordion-divider-color             rule between the header and the open panel    (default: transparent)
 //   --bit-Accordion-focus-color               keyboard focus ring                           (default: $clr-pri-focus)
 //   --bit-Accordion-disabled-color            text of a disabled accordion                  (default: $clr-fg-dis)
 //   --bit-Accordion-disabled-background       fill of a disabled accordion                  (default: $clr-bg-dis)
+//
+// A parameter written on the accordion wins over the variable that restyles what it sets: an explicit Background
+// over the background and the two header shades that travel with it, an explicit Border over the border color, and
+// an explicit Size over the font sizes, the paddings and the icon size. The variables restyle the default, not a
+// choice - which is why Background, Border and Size publish nothing while they are left unset: a class that always
+// carried the default would be indistinguishable from one that was asked for. NoBorder asks for no fill in
+// particular, so the variables still win over the secondary fill it falls back to; an open header's own fill
+// (--bit-Accordion-header-expanded-background) is a state of its own and wins over the shades of any Background.
 .bit-acd {
     width: 100%;
     display: flex;
@@ -37,9 +45,9 @@
     color: var(--bit-Accordion-color, #{$clr-fg-pri});
 
     // The panel follows the size class of the accordion the way the header does, so that a Size means the size
-    // of the whole component and not only of its header. The fallback is what the medium size resolves to, for
-    // an accordion whose class list a consumer has taken apart.
-    font-size: var(--bit-Accordion-font-size, var(--bit-acd-fontsize, #{$tg-fs-sm}));
+    // of the whole component and not only of its header. An explicit Size is read first, then the public
+    // variable, then the medium size an unset one stands for.
+    font-size: var(--bit-acd-fontsize, var(--bit-Accordion-font-size, #{$tg-fs-sm}));
     background-color: var(--bit-acd-bg);
     box-shadow: var(--bit-Accordion-shadow, none);
     border-radius: var(--bit-Accordion-radius, #{$shp-radius-surface});
@@ -47,13 +55,21 @@
 
     // The fill, the outline and the two header shades are resolved into private variables here, so that the
     // Background, Border and NoBorder classes below - which the instance asks for itself - can replace them on
-    // the same element and win over a public variable inherited from an ancestor.
+    // the same element and win over a public variable, inherited from an ancestor or set on the instance itself.
     // The shade that reads as "a little darker" depends on the fill the accordion carries, which is why the
-    // header shades travel with it; a public hover variable is still read first by every one of them.
+    // header shades travel with it: an explicit Background brings its own, and the public hover variables only
+    // restyle the shades of the default fill (and of the one NoBorder falls back to).
     --bit-acd-bg: var(--bit-Accordion-background, #{$clr-bg-pri});
     --bit-acd-brd: var(--bit-Accordion-border-color, #{$clr-brd-pri});
     --bit-acd-hov: var(--bit-Accordion-header-hover-background, #{$clr-bg-pri-hover});
     --bit-acd-prs: var(--bit-Accordion-header-active-background, var(--bit-Accordion-header-hover-background, #{$clr-bg-pri-active}));
+    // The values the Size classes publish, unset here - rather than inherited from an accordion this one sits in the
+    // panel of - and won back by those classes, declared further down at the same weight, on the root that carries
+    // them. Left unset, each sends the var() reading it on to the public variable and then to the medium size.
+    --bit-acd-pad: initial;
+    --bit-acd-ttl-fontsize: initial;
+    --bit-acd-fontsize: initial;
+    --bit-acd-icn-fontsize: initial;
 
     // The duration of the expand/collapse transition. TransitionDuration arrives inline as the -full token and
     // everything below reads this derived one, following the -full pattern of motion.fluent.scss, so the
@@ -137,6 +153,8 @@
 }
 
 
+// Published only by an explicit Size; an unset one is the medium accordion, which the reads of these spell out after
+// the public variables.
 .bit-acd-sm {
     --bit-acd-pad: #{spacing(1)};
     --bit-acd-ttl-fontsize: #{$tg-fs-sm};
@@ -174,30 +192,32 @@
 }
 
 
+// An explicit Background replaces the fill and the two header shades that travel with it on the root itself, so it
+// wins over the public background and header shade variables - inherited or set on the instance alike.
 .bit-acd-pbg {
     --bit-acd-bg: #{$clr-bg-pri};
-    --bit-acd-hov: var(--bit-Accordion-header-hover-background, #{$clr-bg-pri-hover});
-    --bit-acd-prs: var(--bit-Accordion-header-active-background, var(--bit-Accordion-header-hover-background, #{$clr-bg-pri-active}));
+    --bit-acd-hov: #{$clr-bg-pri-hover};
+    --bit-acd-prs: #{$clr-bg-pri-active};
 }
 
 .bit-acd-sbg {
     --bit-acd-bg: #{$clr-bg-sec};
-    --bit-acd-hov: var(--bit-Accordion-header-hover-background, #{$clr-bg-sec-hover});
-    --bit-acd-prs: var(--bit-Accordion-header-active-background, var(--bit-Accordion-header-hover-background, #{$clr-bg-sec-active}));
+    --bit-acd-hov: #{$clr-bg-sec-hover};
+    --bit-acd-prs: #{$clr-bg-sec-active};
 }
 
 .bit-acd-tbg {
     --bit-acd-bg: #{$clr-bg-ter};
-    --bit-acd-hov: var(--bit-Accordion-header-hover-background, #{$clr-bg-ter-hover});
-    --bit-acd-prs: var(--bit-Accordion-header-active-background, var(--bit-Accordion-header-hover-background, #{$clr-bg-ter-active}));
+    --bit-acd-hov: #{$clr-bg-ter-hover};
+    --bit-acd-prs: #{$clr-bg-ter-active};
 }
 
 // A transparent accordion is there to let whatever is underneath it show through, so its header is not painted
 // over on hover either; what is left to report the pointer is the cursor and the focus ring.
 .bit-acd-rbg {
     --bit-acd-bg: transparent;
-    --bit-acd-hov: var(--bit-Accordion-header-hover-background, transparent);
-    --bit-acd-prs: var(--bit-Accordion-header-active-background, var(--bit-Accordion-header-hover-background, transparent));
+    --bit-acd-hov: transparent;
+    --bit-acd-prs: transparent;
 }
 
 
@@ -246,7 +266,7 @@
     font-weight: $tg-fw-regular;
     font-family: $tg-font-family;
     background-color: transparent;
-    padding: var(--bit-Accordion-header-padding, var(--bit-acd-pad));
+    padding: var(--bit-acd-pad, var(--bit-Accordion-header-padding, #{spacing(1.5)}));
     transition: background-color $mot-duration-short $mot-easing 0ms;
 
     // Full-bleed inside the accordion's rounded border, so an inset outline is used instead of the focus-ring
@@ -309,7 +329,7 @@
     display: flex;
     flex-shrink: 0;
     align-items: center;
-    padding-inline-end: var(--bit-acd-pad);
+    padding-inline-end: var(--bit-acd-pad, #{spacing(1.5)});
 }
 
 .bit-acd-ico {
@@ -318,7 +338,7 @@
     align-items: center;
     margin-inline-end: spacing(1);
     color: var(--bit-Accordion-icon-color, inherit);
-    font-size: var(--bit-Accordion-icon-size, var(--bit-acd-icn-fontsize));
+    font-size: var(--bit-acd-icn-fontsize, var(--bit-Accordion-icon-size, #{$siz-icon-md}));
 }
 
 .bit-acd-eiw {
@@ -341,14 +361,14 @@
     display: flex;
     align-items: center;
     margin: 0 spacing(0.625);
-    font-size: var(--bit-Accordion-icon-size, var(--bit-acd-icn-fontsize));
+    font-size: var(--bit-acd-icn-fontsize, var(--bit-Accordion-icon-size, #{$siz-icon-md}));
 }
 
 // The spinner of a busy header takes the expander's slot and its size, and is drawn in the expander's color, so
 // the wait reads the same wherever the expander sits and whatever color a theme gives it.
 .bit-acd-spn {
     margin: 0 spacing(0.625);
-    @include spinner-ring(var(--bit-Accordion-icon-size, var(--bit-acd-icn-fontsize)), currentcolor, $clr-brd-sec);
+    @include spinner-ring(var(--bit-acd-icn-fontsize, var(--bit-Accordion-icon-size, #{$siz-icon-md})), currentcolor, $clr-brd-sec);
 }
 
 .bit-acd-wrp {
@@ -369,7 +389,7 @@
     overflow-wrap: break-word;
     color: var(--bit-Accordion-title-color, inherit);
     font-weight: var(--bit-Accordion-title-font-weight, #{$tg-fw-semibold});
-    font-size: var(--bit-Accordion-title-font-size, var(--bit-acd-ttl-fontsize));
+    font-size: var(--bit-acd-ttl-fontsize, var(--bit-Accordion-title-font-size, #{$tg-fs-md}));
 }
 
 .bit-acd-des {
@@ -403,7 +423,7 @@
 }
 
 .bit-acd-con {
-    padding: var(--bit-Accordion-content-padding, var(--bit-acd-pad));
+    padding: var(--bit-acd-pad, var(--bit-Accordion-content-padding, #{spacing(1.5)}));
 
     // The divider is an inset shadow rather than a border: a border would add to the height of every panel, the
     // collapsed ones included, while the shadow takes no room, is clipped and faded along with the panel as it
@@ -467,7 +487,7 @@
 
     &:not([hidden]) {
         opacity: 1;
-        padding: var(--bit-Accordion-content-padding, var(--bit-acd-pad));
+        padding: var(--bit-acd-pad, var(--bit-Accordion-content-padding, #{spacing(1.5)}));
     }
 }
 
@@ -514,7 +534,7 @@
             overflow-y: visible;
             visibility: visible;
             content-visibility: visible;
-            padding: var(--bit-Accordion-content-padding, var(--bit-acd-pad));
+            padding: var(--bit-acd-pad, var(--bit-Accordion-content-padding, #{spacing(1.5)}));
         }
     }
 }

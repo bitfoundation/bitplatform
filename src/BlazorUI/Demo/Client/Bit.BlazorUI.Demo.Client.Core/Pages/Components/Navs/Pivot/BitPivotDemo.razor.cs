@@ -85,7 +85,7 @@ public partial class BitPivotDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the pivot (default: Primary).",
+            Description = "The general color of the pivot (default: Primary). An explicit value wins over the --bit-Pivot-* accent, focus, disabled and indicator color variables and the hover and selected colors of a Tab item; left unset, the pivot is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -364,7 +364,7 @@ public partial class BitPivotDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the pivot header items (default: Medium).",
+            Description = "The size of the pivot header items (default: Medium). An explicit value wins over --bit-Pivot-font-size and --bit-Pivot-item-height; left unset, the pivot is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -420,32 +420,32 @@ public partial class BitPivotDemo
         new()
         {
             Name = "--bit-Pivot-color",
-            DefaultValue = "the Color's main color",
-            Description = "Accent: the Link indicator, the fill of the selected Tab, the outer edge of the selected Outline tab, the drop marker and the More button that holds the selection.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Accent: the Link indicator, the fill of the selected Tab, the outer edge of the selected Outline tab, the drop marker and the More button that holds the selection. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Pivot-focus-color",
-            DefaultValue = "the Color's focus color",
-            Description = "Focus ring of the items, the panel and the header buttons.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Focus ring of the items, the panel and the header buttons. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Pivot-disabled-color",
-            DefaultValue = "the Color's disabled color",
-            Description = "Indicator and Tab fill of a disabled selection.",
+            DefaultValue = "--bit-clr-pri-dis",
+            Description = "Indicator and Tab fill of a disabled selection. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Pivot-disabled-text-color",
-            DefaultValue = "the Color's disabled text color",
-            Description = "Text of a disabled item or pivot.",
+            DefaultValue = "--bit-clr-pri-dis-text",
+            Description = "Text of a disabled item or pivot. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Pivot-indicator-color",
             DefaultValue = "--bit-Pivot-color",
-            Description = "Selection indicator of a Link pivot and the outer edge of the selected Outline tab (transparent hides it).",
+            Description = "Selection indicator of a Link pivot and the outer edge of the selected Outline tab (transparent hides it). The Color parameter wins over it.",
         },
         new()
         {
@@ -474,26 +474,26 @@ public partial class BitPivotDemo
         new()
         {
             Name = "--bit-Pivot-item-hover-color",
-            DefaultValue = "--bit-clr-fg-pri-hover (Tab: the Color's on-color)",
-            Description = "Text of a hovered item.",
+            DefaultValue = "--bit-clr-fg-pri-hover (Tab: --bit-clr-pri-text)",
+            Description = "Text of a hovered item. The Color parameter wins over it on a Tab pivot.",
         },
         new()
         {
             Name = "--bit-Pivot-item-hover-background",
-            DefaultValue = "--bit-clr-bg-pri-hover (Tab: the Color's hover color)",
-            Description = "Background of a hovered item.",
+            DefaultValue = "--bit-clr-bg-pri-hover (Tab: --bit-clr-pri-hover)",
+            Description = "Background of a hovered item. The Color parameter wins over it on a Tab pivot.",
         },
         new()
         {
             Name = "--bit-Pivot-item-selected-color",
-            DefaultValue = "--bit-clr-fg-pri (Tab: the Color's on-color)",
-            Description = "Text of the selected item.",
+            DefaultValue = "--bit-clr-fg-pri (Tab: --bit-clr-pri-text)",
+            Description = "Text of the selected item. The Color parameter wins over it on a Tab pivot.",
         },
         new()
         {
             Name = "--bit-Pivot-item-selected-background",
             DefaultValue = "transparent (Tab: --bit-Pivot-color; Outline: --bit-clr-bg-pri)",
-            Description = "Background of the selected item.",
+            Description = "Background of the selected item. The Color parameter wins over it on a Tab pivot.",
         },
         new()
         {
@@ -510,8 +510,8 @@ public partial class BitPivotDemo
         new()
         {
             Name = "--bit-Pivot-item-height",
-            DefaultValue = "--bit-siz-tab (x0.75 Small, x1.25 Large)",
-            Description = "Height of an item and of the slide and add buttons, for every Size.",
+            DefaultValue = "--bit-siz-tab",
+            Description = "Height of an item and of the slide and add buttons. The Size parameter wins over it.",
         },
         new()
         {
@@ -540,8 +540,8 @@ public partial class BitPivotDemo
         new()
         {
             Name = "--bit-Pivot-font-size",
-            DefaultValue = "per Size, from the type ramp",
-            Description = "Text size of the items and the overflow menu.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the items and the overflow menu. The Size parameter wins over it.",
         },
         new()
         {

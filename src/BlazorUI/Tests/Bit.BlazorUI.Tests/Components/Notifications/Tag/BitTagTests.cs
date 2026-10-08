@@ -278,12 +278,11 @@ public class BitTagTests : BunitTestContext
     [DataRow(BitColor.PrimaryBorder, "bit-tag-pbr")]
     [DataRow(BitColor.SecondaryBorder, "bit-tag-sbr")]
     [DataRow(BitColor.TertiaryBorder, "bit-tag-tbr")]
-    [DataRow(null, "bit-tag-pri")]
-    public void BitTagShouldRespectColor(BitColor? color, string expectedClass)
+    public void BitTagShouldRespectColor(BitColor color, string expectedClass)
     {
         var component = RenderComponent<BitTag>(parameters =>
         {
-            if (color.HasValue) parameters.Add(p => p.Color, color.Value);
+            parameters.Add(p => p.Color, color);
         });
 
         var root = component.Find(".bit-tag");
@@ -291,15 +290,36 @@ public class BitTagTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitTagShouldPublishNoColorSizeOrShapeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitTag>();
+
+        // An unset Color, Size or Shape publishes nothing, so the public --bit-Tag-* variables restyle the
+        // default while an explicit value - which does publish its class - wins over them.
+        var root = component.Find(".bit-tag");
+        var published = new[]
+        {
+            "bit-tag-pri", "bit-tag-sec", "bit-tag-ter", "bit-tag-inf", "bit-tag-suc", "bit-tag-wrn", "bit-tag-swr", "bit-tag-err",
+            "bit-tag-pbg", "bit-tag-sbg", "bit-tag-tbg", "bit-tag-pfg", "bit-tag-sfg", "bit-tag-tfg", "bit-tag-pbr", "bit-tag-sbr", "bit-tag-tbr",
+            "bit-tag-sm", "bit-tag-md", "bit-tag-lg",
+            "bit-tag-rnd", "bit-tag-cir", "bit-tag-sqr",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
+    }
+
+    [TestMethod]
     [DataRow(BitSize.Small, "bit-tag-sm")]
     [DataRow(BitSize.Medium, "bit-tag-md")]
     [DataRow(BitSize.Large, "bit-tag-lg")]
-    [DataRow(null, "bit-tag-md")]
-    public void BitTagShouldRespectSize(BitSize? size, string expectedClass)
+    public void BitTagShouldRespectSize(BitSize size, string expectedClass)
     {
         var component = RenderComponent<BitTag>(parameters =>
         {
-            if (size.HasValue) parameters.Add(p => p.Size, size.Value);
+            parameters.Add(p => p.Size, size);
         });
 
         var root = component.Find(".bit-tag");
@@ -327,12 +347,11 @@ public class BitTagTests : BunitTestContext
     [DataRow(BitShape.Pill, "bit-tag-cir")]
     [DataRow(BitShape.Circle, "bit-tag-cir")]
     [DataRow(BitShape.Square, "bit-tag-sqr")]
-    [DataRow(null, "bit-tag-rnd")]
-    public void BitTagShouldRespectShape(BitShape? shape, string expectedClass)
+    public void BitTagShouldRespectShape(BitShape shape, string expectedClass)
     {
         var component = RenderComponent<BitTag>(parameters =>
         {
-            if (shape.HasValue) parameters.Add(p => p.Shape, shape.Value);
+            parameters.Add(p => p.Shape, shape);
         });
 
         var root = component.Find(".bit-tag");

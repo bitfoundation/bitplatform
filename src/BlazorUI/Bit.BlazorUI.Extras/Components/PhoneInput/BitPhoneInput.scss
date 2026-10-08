@@ -8,21 +8,19 @@
 // ancestor or through its class, in Style or in Styles.Root reaches them like any inherited value.
 //
 //   FIELD
-//   --bit-PhoneInput-background              fill of the field                        (default: the Background kind, $clr-bg-pri)
+//   --bit-PhoneInput-background              fill of the field                        (default: $clr-bg-pri)
 //   --bit-PhoneInput-color                   text of the number                       (default: $clr-fg-pri)
 //   --bit-PhoneInput-placeholder-color       placeholder of the number input, of the
 //                                            selector and of the search box           (default: $clr-fg-ter)
-//   --bit-PhoneInput-border-color            frame at rest                            (default: the Border kind, the Color role,
-//                                                                                     $clr-brd-pri)
-//   --bit-PhoneInput-hover-border-color      frame under a pointer                    (default: the Border kind, the Color role,
-//                                                                                     $clr-brd-pri-hover)
+//   --bit-PhoneInput-border-color            frame at rest                            (default: $clr-brd-pri)
+//   --bit-PhoneInput-hover-border-color      frame under a pointer                    (default: $clr-brd-pri-hover)
 //   --bit-PhoneInput-border-width            thickness of the frame                   (default: $shp-border-width)
 //   --bit-PhoneInput-radius                  corner radius of the frame               (default: $shp-radius-control)
-//   --bit-PhoneInput-min-height              smallest height of the frame             (default: per Size, $siz-ctrl-*)
-//   --bit-PhoneInput-font-size               text size of the field and of the list   (default: per Size, from the type ramp)
-//   --bit-PhoneInput-padding                 padding of the number input              (default: 0 per Size, $siz-ctrl-pad-x-*)
+//   --bit-PhoneInput-min-height              smallest height of the frame             (default: $siz-ctrl-md)
+//   --bit-PhoneInput-font-size               text size of the field and of the list   (default: $tg-fs-sm)
+//   --bit-PhoneInput-padding                 padding of the number input              (default: 0 $siz-ctrl-pad-x-md)
 //   --bit-PhoneInput-focus-color             focused frame, focus ring and the
-//                                            keyboard cues inside the field and list  (default: the Color role's focus color)
+//                                            keyboard cues inside the field and list  (default: $clr-pri-focus)
 //   --bit-PhoneInput-invalid-color           frame, ring and message of a rejected
 //                                            value                                    (default: $clr-err / $clr-err-focus)
 //   --bit-PhoneInput-disabled-color          text and glyphs when disabled            (default: $clr-fg-dis)
@@ -33,10 +31,10 @@
 //   --bit-PhoneInput-dropdown-background     fill of the selector                     (default: transparent)
 //   --bit-PhoneInput-dropdown-hover-background  fill of the selector under a pointer  (default: $clr-bg-pri-hover)
 //   --bit-PhoneInput-dropdown-color          the dialing code                         (default: $clr-fg-pri)
-//   --bit-PhoneInput-dropdown-padding        padding of the selector                  (default: 0 per Size, $siz-ctrl-pad-x-*)
+//   --bit-PhoneInput-dropdown-padding        padding of the selector                  (default: 0 $siz-ctrl-pad-x-md)
 //   --bit-PhoneInput-separator-color         rule between the selector and the number (default: $clr-brd-pri)
 //   --bit-PhoneInput-caret-color             the caret of the selector                (default: $clr-fg-sec)
-//   --bit-PhoneInput-flag-size               the flags of the selector and the list   (default: per Size, $siz-icon-*)
+//   --bit-PhoneInput-flag-size               the flags of the selector and the list   (default: $siz-icon-md)
 //   --bit-PhoneInput-flag-radius             corner radius of a flag                  (default: $shp-radius-none)
 //
 //   CLEAR BUTTON
@@ -65,44 +63,72 @@
 //                                            it a color for a modal-style scrim       (default: transparent)
 //
 //   ITEMS
-//   --bit-PhoneInput-item-height             smallest height of a row                 (default: per Size, $siz-item-*)
+//   --bit-PhoneInput-item-height             smallest height of a row                 (default: $siz-item-md)
 //   --bit-PhoneInput-item-color              name of a row, and the search text       (default: $clr-fg-pri)
 //   --bit-PhoneInput-item-code-color         dialing code of a row                    (default: $clr-fg-sec)
 //   --bit-PhoneInput-item-hover-background   row under the pointer or the keyboard    (default: $clr-bg-pri-hover)
 //   --bit-PhoneInput-item-selected-background  the selected row                       (default: $clr-bg-sec)
 //   --bit-PhoneInput-item-selected-color     text of the selected row                 (default: --bit-PhoneInput-item-color)
+//
+// A parameter written on the field wins over the variable that restyles what it sets: an explicit Background over
+// the fill, an explicit Border - and, below it, an explicit Color - over the rest and hover frame colors, an explicit
+// Color over the focus color, and an explicit Size over the minimum height, the font sizes (the label's included),
+// the padding of the number input and of the selector, the flag size and the row height. The variables restyle the
+// default, not a choice - which is why Size, Color, Background and Border publish nothing while they are left
+// unset, on the root and on the callout alike: a class that always carried the default would be indistinguishable
+// from one that was asked for. A state the field is in - disabled, rejected - is still read first.
 
 
 // The size of the control and of its callout is driven by these variables, so a single size class applied
-// to the root and repeated on the callout resizes every part consistently.
+// to the root and repeated on the callout resizes every part consistently. Published only by an explicit Size;
+// an unset one is the medium field, which phi-vars spells out after the public variables.
 @mixin phi-size($fs, $h, $pad-x, $icon, $itm-h) {
     --bit-phi-sz-fs: #{$fs};
     --bit-phi-sz-h: #{$h};
-    --bit-phi-sz-pad-x: #{$pad-x};
+    --bit-phi-sz-pad: 0 #{$pad-x};
     --bit-phi-sz-icon: #{$icon};
     --bit-phi-sz-itm-h: #{$itm-h};
 }
 
-@mixin phi-size-medium {
-    @include phi-size($tg-fs-sm, $siz-ctrl-md, $siz-ctrl-pad-x-md, $siz-icon-md, $siz-item-md);
+// The values the Size, Color, Background and Border classes publish start out unset on the root and on the
+// callout, so a field rendered inside another one's template never inherits the outer field's choice; the
+// classes - declared further down at the same weight - still win on the element that carries them. Left
+// unset, each sends the var() reading it in phi-vars on to the public variable and then to the default (the
+// medium size, the primary role, the primary background and border), which is what lets an explicit parameter
+// outrank the variable while an unset one leaves the variable in charge.
+@mixin phi-resets {
+    --bit-phi-sz-fs: initial;
+    --bit-phi-sz-h: initial;
+    --bit-phi-sz-pad: initial;
+    --bit-phi-sz-icon: initial;
+    --bit-phi-sz-itm-h: initial;
+    --bit-phi-role-main: initial;
+    --bit-phi-role-focus: initial;
+    --bit-phi-kind-bg: initial;
+    --bit-phi-kind-brd: initial;
+    --bit-phi-kind-brd-hover: initial;
 }
 
-// The one place the public variables meet the per-size and per-role defaults. Every rule below reads the
-// private variables this leaves behind, so no use site repeats the fallback chain - and the block is included
-// on the callout as well, which is a sibling of the root and inherits nothing its classes declare.
+// The one place the public variables meet the parameters and the defaults: the value an explicit parameter
+// publishes first, then the public variable, then the default an unset parameter stands for. Every rule below
+// reads the private variables this leaves behind, so no use site repeats the fallback chain - and the block is
+// included on the callout as well, which is a sibling of the root and inherits nothing its classes declare. An
+// explicit Border kind is read before the main color of an explicit Color, which keeps the focus ring.
 @mixin phi-vars {
-    --bit-phi-fs: var(--bit-PhoneInput-font-size, var(--bit-phi-sz-fs));
-    --bit-phi-h: var(--bit-PhoneInput-min-height, var(--bit-phi-sz-h));
-    --bit-phi-pad-x: var(--bit-phi-sz-pad-x);
-    --bit-phi-icon: var(--bit-phi-sz-icon);
-    --bit-phi-flg: var(--bit-PhoneInput-flag-size, var(--bit-phi-sz-icon));
-    --bit-phi-itm-h: var(--bit-PhoneInput-item-height, var(--bit-phi-sz-itm-h));
+    --bit-phi-fs: var(--bit-phi-sz-fs, var(--bit-PhoneInput-font-size, #{$tg-fs-sm}));
+    --bit-phi-lbl-fs: var(--bit-phi-sz-fs, var(--bit-PhoneInput-label-font-size, var(--bit-PhoneInput-font-size, #{$tg-fs-sm})));
+    --bit-phi-h: var(--bit-phi-sz-h, var(--bit-PhoneInput-min-height, #{$siz-ctrl-md}));
+    --bit-phi-inp-pad: var(--bit-phi-sz-pad, var(--bit-PhoneInput-padding, 0 #{$siz-ctrl-pad-x-md}));
+    --bit-phi-drp-pad: var(--bit-phi-sz-pad, var(--bit-PhoneInput-dropdown-padding, 0 #{$siz-ctrl-pad-x-md}));
+    --bit-phi-icon: var(--bit-phi-sz-icon, #{$siz-icon-md});
+    --bit-phi-flg: var(--bit-phi-sz-icon, var(--bit-PhoneInput-flag-size, #{$siz-icon-md}));
+    --bit-phi-itm-h: var(--bit-phi-sz-itm-h, var(--bit-PhoneInput-item-height, #{$siz-item-md}));
     --bit-phi-radius: var(--bit-PhoneInput-radius, #{$shp-radius-control});
     --bit-phi-brd-w: var(--bit-PhoneInput-border-width, #{$shp-border-width});
-    --bit-phi-bg: var(--bit-PhoneInput-background, var(--bit-phi-kind-bg, #{$clr-bg-pri}));
-    --bit-phi-brd: var(--bit-PhoneInput-border-color, var(--bit-phi-kind-brd, var(--bit-phi-role-main, #{$clr-brd-pri})));
-    --bit-phi-brd-hover: var(--bit-PhoneInput-hover-border-color, var(--bit-phi-kind-brd-hover, var(--bit-phi-role-main, #{$clr-brd-pri-hover})));
-    --bit-phi-focus: var(--bit-PhoneInput-focus-color, var(--bit-phi-role-focus, #{$clr-pri-focus}));
+    --bit-phi-bg: var(--bit-phi-kind-bg, var(--bit-PhoneInput-background, #{$clr-bg-pri}));
+    --bit-phi-brd: var(--bit-phi-kind-brd, var(--bit-phi-role-main, var(--bit-PhoneInput-border-color, #{$clr-brd-pri})));
+    --bit-phi-brd-hover: var(--bit-phi-kind-brd-hover, var(--bit-phi-role-main, var(--bit-PhoneInput-hover-border-color, #{$clr-brd-pri-hover})));
+    --bit-phi-focus: var(--bit-phi-role-focus, var(--bit-PhoneInput-focus-color, #{$clr-pri-focus}));
     --bit-phi-plc: var(--bit-PhoneInput-placeholder-color, #{$clr-fg-ter});
     --bit-phi-itm-clr: var(--bit-PhoneInput-item-color, #{$clr-fg-pri});
     --bit-phi-itm-hover-bg: var(--bit-PhoneInput-item-hover-background, #{$clr-bg-pri-hover});
@@ -133,7 +159,7 @@
 }
 
 .bit-phi {
-    @include phi-size-medium;
+    @include phi-resets;
     @include phi-vars;
 
     margin: 0;
@@ -158,7 +184,7 @@
     padding: spacing(0.625) 0;
     letter-spacing: $tg-ctrl-letter-spacing;
     color: var(--bit-PhoneInput-label-color, #{$clr-fg-pri});
-    font-size: var(--bit-PhoneInput-label-font-size, var(--bit-phi-fs));
+    font-size: var(--bit-phi-lbl-fs);
     font-weight: var(--bit-PhoneInput-label-font-weight, #{$tg-field-label-font-weight});
 }
 
@@ -203,7 +229,7 @@
     font-family: $tg-font-family;
     letter-spacing: $tg-ctrl-letter-spacing;
     color: var(--bit-PhoneInput-dropdown-color, #{$clr-fg-pri});
-    padding: var(--bit-PhoneInput-dropdown-padding, 0 var(--bit-phi-pad-x));
+    padding: var(--bit-phi-drp-pad);
     background-color: var(--bit-PhoneInput-dropdown-background, transparent);
     border-block: none;
     border-inline-start: none;
@@ -287,7 +313,7 @@
     font-family: $tg-font-family;
     letter-spacing: $tg-ctrl-letter-spacing;
     color: var(--bit-PhoneInput-color, #{$clr-fg-pri});
-    padding: var(--bit-PhoneInput-padding, 0 var(--bit-phi-pad-x));
+    padding: var(--bit-phi-inp-pad);
     border-start-end-radius: var(--bit-phi-radius);
     border-end-end-radius: var(--bit-phi-radius);
 
@@ -404,7 +430,7 @@
 }
 
 .bit-phi-cal {
-    @include phi-size-medium;
+    @include phi-resets;
     @include phi-vars;
 
     display: none;
@@ -706,7 +732,7 @@
 }
 
 .bit-phi-md {
-    @include phi-size-medium;
+    @include phi-size($tg-fs-sm, $siz-ctrl-md, $siz-ctrl-pad-x-md, $siz-icon-md, $siz-item-md);
 }
 
 .bit-phi-lg {
@@ -715,8 +741,9 @@
 
 
 // The general color of the field: the frame takes the main color of the role at rest and under a pointer,
-// and the ring and the keyboard cues take its focus color. Both stay below the public variables and below the
-// Border kind. The role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// and the ring and the keyboard cues take its focus color. Published only by an explicit Color, and read before
+// the public variables but after the Border kind. The role classes are generated from the shared
+// $bit-color-roles map (see color-role-maps.scss).
 @each $role, $tokens in $bit-color-roles {
     .bit-phi-#{$role} {
         --bit-phi-role-main: #{role($tokens, main)};
@@ -725,7 +752,8 @@
 }
 
 
-// The surface the field sits on. Below the public --bit-PhoneInput-background variable.
+// The surface the field sits on. Published only by an explicit Background, and read before the public
+// --bit-PhoneInput-background variable.
 .bit-phi-bpr {
     --bit-phi-kind-bg: #{$clr-bg-pri};
 }
@@ -745,7 +773,8 @@
 
 // Each border kind carries the hover step of its own family, so a frame that is deliberately invisible
 // (Transparent) stays invisible under the pointer instead of appearing out of nowhere. It wins over the main
-// color of the Color role, which keeps the focus ring.
+// color of the Color role, which keeps the focus ring, and over the public border colors. Published only by an
+// explicit Border.
 .bit-phi-brp {
     --bit-phi-kind-brd: #{$clr-brd-pri};
     --bit-phi-kind-brd-hover: #{$clr-brd-pri-hover};
