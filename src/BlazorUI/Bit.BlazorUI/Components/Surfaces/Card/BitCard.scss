@@ -8,6 +8,10 @@ $crd-bg-hover: var(--bit-crd-bg-hov, var(--bit-Card-hover-background, color-mix(
 $crd-bg-active: var(--bit-crd-bg-act, var(--bit-Card-active-background, color-mix(in srgb, currentcolor 10%, #{$crd-bg})));
 $crd-shd: var(--bit-crd-shd, var(--bit-Card-shadow, #{$box-shadow-card}));
 $crd-shd-active: var(--bit-crd-shd-act, var(--bit-Card-active-shadow, var(--bit-Card-shadow, #{$box-shadow-card})));
+// The inset and the gap the Size classes (and NoPadding) publish, ahead of the public variables, ahead of the medium
+// card an unset Size stands for - the root and every part read these same two.
+$crd-pad: var(--bit-crd-pad, var(--bit-Card-padding, #{$spa-card-md}));
+$crd-gap: var(--bit-crd-gap, var(--bit-Card-gap, #{spacing(1.5)}));
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // card and one set on the Style of an instance re-skins that one alone:
@@ -28,13 +32,13 @@ $crd-shd-active: var(--bit-crd-shd-act, var(--bit-Card-active-shadow, var(--bit-
 //   --bit-Card-active-background     background of a clickable or linked card
 //                                    while pressed                                  (default: the resting background
 //                                                                                   washed 10% with the text color)
-//   --bit-Card-padding               inset of the card and of each of its parts    (default: $spa-card-sm/md/lg)
-//   --bit-Card-gap                   room between the parts and inside the header  (default: per Size)
-//   --bit-Card-title-font-size       title text size                                (default: per Size, from the type ramp)
+//   --bit-Card-padding               inset of the card and of each of its parts    (default: $spa-card-md)
+//   --bit-Card-gap                   room between the parts and inside the header  (default: spacing(1.5))
+//   --bit-Card-title-font-size       title text size                                (default: $tg-fs-md)
 //   --bit-Card-title-font-weight     title text weight                              (default: $tg-fw-semibold)
-//   --bit-Card-subtitle-font-size    subtitle text size                             (default: per Size, from the type ramp)
+//   --bit-Card-subtitle-font-size    subtitle text size                             (default: $tg-fs-sm)
 //   --bit-Card-subtitle-color        subtitle text color                            (default: $clr-fg-sec)
-//   --bit-Card-icon-size             size of the header glyph                       (default: $siz-icon-sm/md/lg)
+//   --bit-Card-icon-size             size of the header glyph                       (default: $siz-icon-md)
 //   --bit-Card-divider-color         color of the Divider hairlines                 (default: $clr-brd-sec)
 //   --bit-Card-selected-color        color of the Selected ring                     (default: $clr-pri)
 //   --bit-Card-focus-color           color of the keyboard focus ring               (default: the text color)
@@ -45,7 +49,7 @@ $crd-shd-active: var(--bit-crd-shd-act, var(--bit-Card-active-shadow, var(--bit-
 //   --bit-Card-skeleton-color        the wave that sweeps across those bars         (default: the text color at 20%)
 //
 // A parameter set on the card itself wins over them - Background, Border, Color, Elevation, NoShadow, Outlined,
-// Square, NoPadding, CoverWidth - since it is the more specific ask (a Fill card also keeps the hover and pressed
+// Square, Size, NoPadding, CoverWidth - since it is the more specific ask (a Fill card also keeps the hover and pressed
 // shades of its role rather than the two background variables); the variables re-skin what the theme would
 // otherwise decide. A disabled card ignores the colors above and keeps the disabled colors of the theme, so it
 // never reads as an enabled one.
@@ -54,6 +58,14 @@ $crd-shd-active: var(--bit-crd-shd-act, var(--bit-Card-active-shadow, var(--bit-
 // properties inherit, which would hand an outer card's paint, rule, corner or shadow to every card nested in it,
 // so each root starts them out unset - which leaves every var() reading them to its fallback.
 .bit-crd {
+    --bit-crd-clr: initial;
+    --bit-crd-clr-txt: initial;
+    --bit-crd-clr-fg: initial;
+    --bit-crd-clr-tint: initial;
+    --bit-crd-clr-hover: initial;
+    --bit-crd-clr-active: initial;
+    --bit-crd-clr-dis: initial;
+    --bit-crd-clr-dis-text: initial;
     --bit-crd-fg: initial;
     --bit-crd-bg: initial;
     --bit-crd-bg-hov: initial;
@@ -74,10 +86,18 @@ $crd-shd-active: var(--bit-crd-shd-act, var(--bit-Card-active-shadow, var(--bit-
     --bit-crd-img-position: initial;
     --bit-crd-cvr-width: initial;
     --bit-crd-cvr-ratio: initial;
+    // The ones the Size classes publish; Size publishes nothing while it is unset, which leaves the public variables
+    // and then the medium card.
+    --bit-crd-pad: initial;
+    --bit-crd-gap: initial;
+    --bit-crd-htx-gap: initial;
+    --bit-crd-ttl-fontsize: initial;
+    --bit-crd-sub-fontsize: initial;
+    --bit-crd-icn-fontsize: initial;
     position: relative;
     box-sizing: border-box;
     width: fit-content;
-    padding: var(--bit-crd-pad, #{$spa-card-md});
+    padding: #{$crd-pad};
     border-style: $shp-border-style;
     // The disabled colors come first in each chain, then what a parameter asked for, then the public variable,
     // then the theme - so this stays the one rule painting the card, and a class passed through Classes.Root
@@ -140,8 +160,8 @@ $crd-shd-active: var(--bit-crd-shd-act, var(--bit-Card-active-shadow, var(--bit-
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
-    gap: var(--bit-crd-gap);
-    padding-block: var(--bit-crd-pad);
+    gap: #{$crd-gap};
+    padding-block: #{$crd-pad};
     box-sizing: border-box;
 }
 
@@ -219,8 +239,8 @@ $crd-shd-active: var(--bit-crd-shd-act, var(--bit-Card-active-shadow, var(--bit-
 .bit-crd-hdr {
     display: flex;
     align-items: center;
-    gap: var(--bit-crd-gap);
-    padding-inline: var(--bit-crd-pad);
+    gap: #{$crd-gap};
+    padding-inline: #{$crd-pad};
 }
 
 .bit-crd-hic {
@@ -232,7 +252,7 @@ $crd-shd-active: var(--bit-crd-shd-act, var(--bit-Card-active-shadow, var(--bit-
 // into a div rather than an i, and keeps whatever scale the avatar or the logo in it brought with it.
 i.bit-crd-hic {
     line-height: 1;
-    font-size: var(--bit-Card-icon-size, var(--bit-crd-icn-fontsize));
+    font-size: var(--bit-crd-icn-fontsize, var(--bit-Card-icon-size, #{$siz-icon-md}));
 }
 
 .bit-crd-htx {
@@ -240,13 +260,13 @@ i.bit-crd-hic {
     display: flex;
     flex: 1 1 auto;
     flex-direction: column;
-    gap: var(--bit-crd-htx-gap);
+    gap: var(--bit-crd-htx-gap, #{spacing(0.5)});
 }
 
 .bit-crd-ttl {
     overflow-wrap: break-word;
     font-weight: var(--bit-Card-title-font-weight, #{$tg-fw-semibold});
-    font-size: var(--bit-Card-title-font-size, var(--bit-crd-ttl-fontsize));
+    font-size: var(--bit-crd-ttl-fontsize, var(--bit-Card-title-font-size, #{$tg-fs-md}));
 }
 
 // The second line answers the first: one step smaller, at the regular weight and in the secondary foreground,
@@ -255,7 +275,7 @@ i.bit-crd-hic {
     overflow-wrap: break-word;
     font-weight: $tg-fw-regular;
     color: var(--bit-Card-subtitle-color, #{$clr-fg-sec});
-    font-size: var(--bit-Card-subtitle-font-size, var(--bit-crd-sub-fontsize));
+    font-size: var(--bit-crd-sub-fontsize, var(--bit-Card-subtitle-font-size, #{$tg-fs-sm}));
 }
 
 // The two slots that hold controls inside the column of parts. Both are raised over the stretched link of a linked
@@ -275,9 +295,9 @@ i.bit-crd-hic {
     position: absolute;
     display: flex;
     align-items: center;
-    gap: var(--bit-crd-gap);
-    inset-block-start: var(--bit-crd-gap);
-    inset-inline-end: var(--bit-crd-gap);
+    gap: #{$crd-gap};
+    inset-block-start: #{$crd-gap};
+    inset-inline-end: #{$crd-gap};
 }
 
 .bit-crd-act {
@@ -285,13 +305,13 @@ i.bit-crd-hic {
     flex: 0 0 auto;
     align-items: center;
     margin-inline-start: auto;
-    gap: var(--bit-crd-gap);
+    gap: #{$crd-gap};
 }
 
 .bit-crd-bdy {
     min-width: 0;
     flex: 1 1 auto;
-    padding-inline: var(--bit-crd-pad);
+    padding-inline: #{$crd-pad};
 }
 
 // A card whose height is bounded and whose content is not: the body between the header and the footer takes the
@@ -320,7 +340,7 @@ i.bit-crd-hic {
 .bit-crd-skl {
     display: flex;
     flex-direction: column;
-    gap: var(--bit-crd-htx-gap);
+    gap: var(--bit-crd-htx-gap, #{spacing(0.5)});
 }
 
 // A bar is a wash of the card's own text color, so it reads against whatever surface the card was given - the
@@ -386,8 +406,8 @@ i.bit-crd-hic {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: var(--bit-crd-gap);
-    padding-inline: var(--bit-crd-pad);
+    gap: #{$crd-gap};
+    padding-inline: #{$crd-pad};
 }
 
 
@@ -552,10 +572,11 @@ button.bit-crd-lnk {
 
 // The three sizes set the inset, the gap between the parts and the type of the header together, so a card
 // stays in proportion at every one of them. The inset is the design system's (a Fluent 2 card is tighter than a
-// Material one), the gaps are rhythm.
+// Material one), the gaps are rhythm. Published only by an explicit Size, which wins over the public variables;
+// an unset one is the medium card, which the reads of these spell out after them.
 .bit-crd-sm {
-    --bit-crd-pad: var(--bit-Card-padding, #{$spa-card-sm});
-    --bit-crd-gap: var(--bit-Card-gap, #{spacing(1)});
+    --bit-crd-pad: #{$spa-card-sm};
+    --bit-crd-gap: #{spacing(1)};
     --bit-crd-htx-gap: #{spacing(0.25)};
     --bit-crd-ttl-fontsize: #{$tg-fs-sm};
     --bit-crd-sub-fontsize: #{$tg-fs-xs};
@@ -563,8 +584,8 @@ button.bit-crd-lnk {
 }
 
 .bit-crd-md {
-    --bit-crd-pad: var(--bit-Card-padding, #{$spa-card-md});
-    --bit-crd-gap: var(--bit-Card-gap, #{spacing(1.5)});
+    --bit-crd-pad: #{$spa-card-md};
+    --bit-crd-gap: #{spacing(1.5)};
     --bit-crd-htx-gap: #{spacing(0.5)};
     --bit-crd-ttl-fontsize: #{$tg-fs-md};
     --bit-crd-sub-fontsize: #{$tg-fs-sm};
@@ -572,8 +593,8 @@ button.bit-crd-lnk {
 }
 
 .bit-crd-lg {
-    --bit-crd-pad: var(--bit-Card-padding, #{$spa-card-lg});
-    --bit-crd-gap: var(--bit-Card-gap, #{spacing(2)});
+    --bit-crd-pad: #{$spa-card-lg};
+    --bit-crd-gap: #{spacing(2)};
     --bit-crd-htx-gap: #{spacing(0.5)};
     --bit-crd-ttl-fontsize: #{$tg-fs-lg};
     --bit-crd-sub-fontsize: #{$tg-fs-md};
@@ -662,7 +683,7 @@ button.bit-crd-lnk {
 // part that has one before it: exactly one rule lands between any two neighbours, and none on the outer edge of
 // the stack, where it would read as a stray line rather than as a separation.
 .bit-crd-dvd > .bit-crd-mai > :not(:first-child) {
-    padding-block-start: var(--bit-crd-gap);
+    padding-block-start: #{$crd-gap};
     border-block-start: $siz-divider $shp-border-style var(--bit-crd-dvd-clr, var(--bit-Card-divider-color, #{$clr-brd-sec}));
 }
 

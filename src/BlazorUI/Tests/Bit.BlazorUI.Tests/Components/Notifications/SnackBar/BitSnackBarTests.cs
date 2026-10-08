@@ -234,25 +234,47 @@ public class BitSnackBarTests : BunitTestContext
          DataRow("title", BitColor.TertiaryForeground, "bit-snb-tfg"),
          DataRow("title", BitColor.PrimaryBorder, "bit-snb-pbr"),
          DataRow("title", BitColor.SecondaryBorder, "bit-snb-sbr"),
-         DataRow("title", BitColor.TertiaryBorder, "bit-snb-tbr"),
-         DataRow("title", null, "bit-snb-inf")
+         DataRow("title", BitColor.TertiaryBorder, "bit-snb-tbr")
     ]
-    public async Task BitColorTest(string title, BitColor? color, string colorClass)
+    public async Task BitColorTest(string title, BitColor color, string colorClass)
     {
         var com = RenderComponent<BitSnackBar>();
 
-        if (color.HasValue)
-        {
-            await com.Instance.Show(title, color: color.Value);
-        }
-        else
-        {
-            await com.Instance.Show(new BitSnackBarItem { Title = title });
-        }
+        await com.Instance.Show(title, color: color);
 
         var element = com.Find(".bit-snb-itm");
 
         Assert.IsTrue(element.ClassList.Contains(colorClass));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var com = RenderComponent<BitSnackBar>();
+
+        // An item shown without a color - through the plain Show overload or an item of its own - and a snack bar
+        // without a Size publish nothing, so the public --bit-SnackBar-* variables restyle the default while an
+        // explicit value - which does publish its class - wins over them.
+        await com.Instance.Show("title");
+        await com.Instance.Show(new BitSnackBarItem { Title = "item" });
+
+        var published = new[]
+        {
+            "bit-snb-pri", "bit-snb-sec", "bit-snb-ter", "bit-snb-inf", "bit-snb-suc", "bit-snb-wrn", "bit-snb-swr", "bit-snb-err",
+            "bit-snb-pbg", "bit-snb-sbg", "bit-snb-tbg", "bit-snb-pfg", "bit-snb-sfg", "bit-snb-tfg", "bit-snb-pbr", "bit-snb-sbr", "bit-snb-tbr",
+            "bit-snb-sm", "bit-snb-md", "bit-snb-lg",
+        };
+
+        var items = com.FindAll(".bit-snb-itm");
+        Assert.AreEqual(2, items.Count);
+
+        foreach (var item in items)
+        {
+            foreach (var cssClass in published)
+            {
+                Assert.IsFalse(item.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+            }
+        }
     }
 
     [TestMethod,
@@ -276,14 +298,13 @@ public class BitSnackBarTests : BunitTestContext
     [TestMethod,
          DataRow(BitSize.Small, "bit-snb-sm"),
          DataRow(BitSize.Medium, "bit-snb-md"),
-         DataRow(BitSize.Large, "bit-snb-lg"),
-         DataRow(null, "bit-snb-md")
+         DataRow(BitSize.Large, "bit-snb-lg")
     ]
-    public async Task BitSnackBarSizeTest(BitSize? size, string sizeClass)
+    public async Task BitSnackBarSizeTest(BitSize size, string sizeClass)
     {
         var com = RenderComponent<BitSnackBar>(parameters =>
         {
-            if (size.HasValue) parameters.Add(p => p.Size, size.Value);
+            parameters.Add(p => p.Size, size);
         });
 
         await com.Instance.Show("title");

@@ -53,7 +53,7 @@ public partial class BitRatingDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the rating, applied to the filled part of the items. The unfilled part stays neutral so it reads as \"not rated yet\" whichever color is picked.",
+            Description = "The general color of the rating, applied to the filled part of the items. The unfilled part stays neutral so it reads as \"not rated yet\" whichever color is picked. An explicit value wins over the --bit-Rating-* color variables (the fill and its hover, active and focus colors); left unset, the rating is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -210,7 +210,7 @@ public partial class BitRatingDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "Size of the rating, which scales the item glyphs, the label and the description together.",
+            Description = "Size of the rating, which scales the item glyphs, the label and the description together. An explicit value wins over --bit-Rating-size, --bit-Rating-label-font-size and --bit-Rating-description-font-size; left unset, the rating is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -458,8 +458,8 @@ public partial class BitRatingDemo
         new()
         {
             Name = "--bit-Rating-color",
-            DefaultValue = "The Color role's main color",
-            Description = "Color of the filled part of the items.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Color of the filled part of the items. The Color parameter wins over it.",
         },
         new()
         {
@@ -470,20 +470,20 @@ public partial class BitRatingDemo
         new()
         {
             Name = "--bit-Rating-hover-color",
-            DefaultValue = "The Color role's hover color",
-            Description = "Color of the filled part while the pointer is previewing a value over the items (pointer devices only).",
+            DefaultValue = "--bit-clr-pri-hover",
+            Description = "Color of the filled part while the pointer is previewing a value over the items (pointer devices only). The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Rating-active-color",
-            DefaultValue = "The Color role's active color",
-            Description = "Color of the filled part while an item is being pressed, which on a touch device - where there is no hover - is the only feedback a tap gets before the new value lands.",
+            DefaultValue = "--bit-clr-pri-active",
+            Description = "Color of the filled part while an item is being pressed, which on a touch device - where there is no hover - is the only feedback a tap gets before the new value lands. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Rating-focus-color",
-            DefaultValue = "The Color role's focus color",
-            Description = "Color of the keyboard focus ring of an item.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the keyboard focus ring of an item. The Color parameter wins over it.",
         },
         new()
         {
@@ -500,8 +500,8 @@ public partial class BitRatingDemo
         new()
         {
             Name = "--bit-Rating-size",
-            DefaultValue = "Per size: --bit-siz-icon-sm / -md / -lg",
-            Description = "Size of the item glyphs, which the Size parameter otherwise picks. It does not move the label or the description, which have text sizes of their own.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Size of the item glyphs. It does not move the label or the description, which have text sizes of their own. The Size parameter wins over it.",
         },
         new()
         {
@@ -548,8 +548,8 @@ public partial class BitRatingDemo
         new()
         {
             Name = "--bit-Rating-label-font-size",
-            DefaultValue = "Per size: --bit-tpg-fs-xs / -sm / -md",
-            Description = "Text size of the label, which the Size parameter otherwise picks.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the label. The Size parameter wins over it.",
         },
         new()
         {
@@ -572,8 +572,8 @@ public partial class BitRatingDemo
         new()
         {
             Name = "--bit-Rating-description-font-size",
-            DefaultValue = "Per size: --bit-tpg-fs-2xs / -xs / -sm",
-            Description = "Text size of the description, which the Size parameter otherwise picks.",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Text size of the description. The Size parameter wins over it.",
         }
     ];
 

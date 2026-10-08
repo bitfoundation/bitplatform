@@ -422,11 +422,10 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
     }
 
     [TestMethod,
-        DataRow(null, "bit-ldn-md"),
         DataRow(BitSize.Small, "bit-ldn-sm"),
         DataRow(BitSize.Medium, "bit-ldn-md"),
         DataRow(BitSize.Large, "bit-ldn-lg")]
-    public void ShouldSizeTheLoadingWithAClass(BitSize? size, string expectedClass)
+    public void ShouldSizeTheLoadingWithAClass(BitSize size, string expectedClass)
     {
         var component = RenderComponent<TLoading>(parameters =>
         {
@@ -437,9 +436,21 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         Assert.IsTrue(root.ClassList.Contains(expectedClass));
         Assert.AreEqual(1, root.ClassList.Count(c => c is "bit-ldn-sm" or "bit-ldn-md" or "bit-ldn-lg"));
 
-        // The size lives in the stylesheet, behind --bit-Loading-size, and the whole drawing is laid out in
+        // The size lives in the stylesheet, ahead of --bit-Loading-size, and the whole drawing is laid out in
         // CSS from it - nothing about the geometry is written into the style attribute.
         StringAssert.DoesNotMatch(StyleOf(component), new Regex("--bit-ldn-sz|--bit-ldn-size|px"));
+    }
+
+    [TestMethod]
+    public void ShouldPublishNoSizeWhileItIsUnset()
+    {
+        var component = RenderComponent<TLoading>();
+
+        // An unset Size publishes nothing - neither a class nor a style - so the public --bit-Loading-* variables
+        // restyle the 64px default while an explicit value, which does publish its class, wins over them.
+        var root = component.Find(".bit-ldn");
+        Assert.IsFalse(root.ClassList.Any(c => c is "bit-ldn-sm" or "bit-ldn-md" or "bit-ldn-lg" or "bit-ldn-em" or "bit-ldn-csz"));
+        StringAssert.DoesNotMatch(StyleOf(component), new Regex("--bit-ldn-"));
     }
 
     [TestMethod,
@@ -456,8 +467,10 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         var root = component.Find(".bit-ldn");
         StringAssert.Contains(StyleOf(component), $"--bit-ldn-sz:{customSize}px");
 
-        // No size class, so the label scales from the custom size instead of taking a step of the ramp.
+        // No size class, so the label scales from the custom size instead of taking a step of the ramp - through a
+        // class of its own, which makes that label size a choice the public variable no longer wins over.
         Assert.IsFalse(root.ClassList.Any(c => c is "bit-ldn-sm" or "bit-ldn-md" or "bit-ldn-lg"));
+        Assert.IsTrue(root.ClassList.Contains("bit-ldn-csz"));
     }
 
     [TestMethod,
@@ -470,7 +483,8 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.CustomSize, customSize);
         });
 
-        Assert.IsTrue(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-md"));
+        // Left as unset as if it had never been given: no size class, no custom size class, no inline size.
+        Assert.IsFalse(component.Find(".bit-ldn").ClassList.Any(c => c is "bit-ldn-sm" or "bit-ldn-md" or "bit-ldn-lg" or "bit-ldn-csz"));
         StringAssert.DoesNotMatch(StyleOf(component), new Regex("--bit-ldn-sz"));
     }
 
@@ -484,6 +498,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         });
 
         Assert.IsTrue(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-lg"));
+        Assert.IsFalse(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-csz"));
         StringAssert.DoesNotMatch(StyleOf(component), new Regex("--bit-ldn-sz"));
     }
 
@@ -608,7 +623,8 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.Inline, true);
         });
 
-        // The bit-ldn-em class draws it at 1em rather than the 64px of the medium default.
+        // The bit-ldn-em class draws it at 1em rather than the 64px of the medium default - a default of its own,
+        // which the public variables still restyle.
         var root = component.Find(".bit-ldn");
         Assert.IsTrue(root.ClassList.Contains("bit-ldn-em"));
         Assert.IsFalse(root.ClassList.Contains("bit-ldn-md"));
@@ -632,6 +648,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
         // Without the 1em class, so the label follows the custom size the way it does on any other loader.
         StringAssert.Contains(StyleOf(component), "--bit-ldn-sz:20px");
         Assert.IsFalse(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-em"));
+        Assert.IsTrue(component.Find(".bit-ldn").ClassList.Contains("bit-ldn-csz"));
     }
 
     [TestMethod]
@@ -1150,10 +1167,9 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.ChildContent, Loader("third"));
         });
 
-        // And so does everything once the cascade is gone altogether.
+        // And so does everything once the cascade is gone altogether - back to an unset Size, which publishes no class.
         root = component.Find(".bit-ldn");
-        Assert.IsFalse(root.ClassList.Contains("bit-ldn-sm"));
-        Assert.IsTrue(root.ClassList.Contains("bit-ldn-md"));
+        Assert.IsFalse(root.ClassList.Any(c => c is "bit-ldn-sm" or "bit-ldn-md" or "bit-ldn-lg"));
     }
 
     [TestMethod]

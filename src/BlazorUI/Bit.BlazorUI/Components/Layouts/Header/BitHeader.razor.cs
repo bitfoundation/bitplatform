@@ -101,6 +101,9 @@ public partial class BitHeader : BitComponentBase
     /// and as the text and border color in the Outline and Text variants.
     /// <br />
     /// When not set, the header keeps the primary background and foreground colors of the current theme.
+    /// <br />
+    /// An explicit value wins over the <c>--bit-Header-*</c> color variables; left unset, the header keeps those theme
+    /// colors unless the variables say otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
@@ -314,6 +317,10 @@ public partial class BitHeader : BitComponentBase
     /// <summary>
     /// The size of the BitHeader, which determines the paddings around its content.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-Header-padding-block</c> and <c>--bit-Header-padding-inline</c>; left unset,
+    /// the header is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -485,27 +492,9 @@ public partial class BitHeader : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-hdr-pri",
-            BitColor.Secondary => "bit-hdr-sec",
-            BitColor.Tertiary => "bit-hdr-ter",
-            BitColor.Info => "bit-hdr-inf",
-            BitColor.Success => "bit-hdr-suc",
-            BitColor.Warning => "bit-hdr-wrn",
-            BitColor.SevereWarning => "bit-hdr-swr",
-            BitColor.Error => "bit-hdr-err",
-            BitColor.PrimaryBackground => "bit-hdr-pbg",
-            BitColor.SecondaryBackground => "bit-hdr-sbg",
-            BitColor.TertiaryBackground => "bit-hdr-tbg",
-            BitColor.PrimaryForeground => "bit-hdr-pfg",
-            BitColor.SecondaryForeground => "bit-hdr-sfg",
-            BitColor.TertiaryForeground => "bit-hdr-tfg",
-            BitColor.PrimaryBorder => "bit-hdr-pbr",
-            BitColor.SecondaryBorder => "bit-hdr-sbr",
-            BitColor.TertiaryBorder => "bit-hdr-tbr",
-            _ => string.Empty
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default from a
+        // choice: the public --bit-Header-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-hdr"));
 
         ClassBuilder.Register(() => Variant switch
         {
@@ -515,13 +504,7 @@ public partial class BitHeader : BitComponentBase
             _ => "bit-hdr-fil"
         });
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-hdr-sm",
-            BitSize.Medium => "bit-hdr-md",
-            BitSize.Large => "bit-hdr-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-hdr"));
 
         ClassBuilder.Register(() => Alignment switch
         {

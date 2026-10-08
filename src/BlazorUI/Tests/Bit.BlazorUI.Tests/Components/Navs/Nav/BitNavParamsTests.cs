@@ -262,7 +262,11 @@ public class BitNavParamsTests : BunitTestContext
     {
         var component = RenderComponent<BitNav<BitNavItem>>(parameters => parameters.Add(p => p.Items, GetItems()));
 
-        Assert.IsTrue(component.Find(".bit-nav").ClassList.Contains("bit-nav-md"));
+        // Outside the cascade the size is left unset, which publishes no size class at all.
+        var root = component.Find(".bit-nav");
+        Assert.IsFalse(root.ClassList.Contains("bit-nav-sm"));
+        Assert.IsFalse(root.ClassList.Contains("bit-nav-md"));
+        Assert.IsFalse(root.ClassList.Contains("bit-nav-lg"));
     }
 
     [TestMethod]

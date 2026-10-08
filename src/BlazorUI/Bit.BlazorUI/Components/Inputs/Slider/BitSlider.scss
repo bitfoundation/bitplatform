@@ -11,28 +11,28 @@
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // slider, one set on an ancestor re-skins the sliders inside it, and one set on the Style of an instance
 // re-skins that one alone:
-//   --bit-Slider-color                   the accent: the fill and the ring around a thumb    (default: the Color role's main color)
-//   --bit-Slider-hover-color             the accent while the slider is hovered              (default: --bit-Slider-color when set, else the role's hover color)
-//   --bit-Slider-active-color            the accent while a thumb or the band is held down   (default: --bit-Slider-color when set, else the role's active color)
-//   --bit-Slider-focus-color             the ring around the thumb that holds the focus      (default: --bit-Slider-color when set, else the role's focus color;
+//   --bit-Slider-color                   the accent: the fill and the ring around a thumb    (default: $clr-pri)
+//   --bit-Slider-hover-color             the accent while the slider is hovered              (default: --bit-Slider-color when set, else $clr-pri-hover)
+//   --bit-Slider-active-color            the accent while a thumb or the band is held down   (default: --bit-Slider-color when set, else $clr-pri-active)
+//   --bit-Slider-focus-color             the ring around the thumb that holds the focus      (default: --bit-Slider-color when set, else $clr-pri-focus;
 //                                                                                              never used while the value is invalid - see below)
 //   --bit-Slider-disabled-color          the fill, the thumb ring, the marks and the origin
 //                                        tick while Disabled is true                       (default: $clr-bg-dis)
 //   --bit-Slider-invalid-color           the fill, the thumb ring and the focus ring while
 //                                        the value is invalid                                (default: $clr-err, and $clr-err-focus for the focus ring)
 //   --bit-Slider-rail-color              the part of the track the fill has not reached      (default: $clr-bg-sec)
-//   --bit-Slider-rail-size               thickness of the rail and of the fill               (default: per size, $siz-track-*)
+//   --bit-Slider-rail-size               thickness of the rail and of the fill               (default: $siz-track-md)
 //   --bit-Slider-rail-radius             corner radius of the rail and of the fill           (default: the rail thickness, which draws a pill)
 //   --bit-Slider-thumb-size              diameter of a thumb, and the width a vertical
-//                                        slider lays its track inside                        (default: per size, $siz-slider-thumb-*)
+//                                        slider lays its track inside                        (default: $siz-slider-thumb-md)
 //   --bit-Slider-thumb-radius            corner radius of a thumb                            (default: $shp-radius-full)
 //   --bit-Slider-thumb-border-width      thickness of the accent ring around a thumb         (default: $shp-border-width-thick)
 //   --bit-Slider-thumb-background        the face of a thumb, inside its ring                (default: $clr-bg-pri)
 //   --bit-Slider-thumb-shadow            elevation of a thumb                                (default: none)
 //   --bit-Slider-length                  length of a vertical slider, which has none of its
-//                                        own to inherit                                      (default: per size, 9rem / 12rem / 15rem)
+//                                        own to inherit                                      (default: spacing(24))
 //   --bit-Slider-gap                     room between the track and the labels beside it     (default: spacing(1))
-//   --bit-Slider-font-size               size of the caption and the value labels            (default: per size, from the type ramp)
+//   --bit-Slider-font-size               size of the caption and the value labels            (default: $tg-fs-sm)
 //   --bit-Slider-font-weight             weight of the caption and the value labels          (default: caption $tg-field-label-font-weight,
 //                                                                                                      value labels $tg-fw-semibold)
 //   --bit-Slider-letter-spacing          tracking of the caption and the value labels        (default: $tg-ctrl-letter-spacing)
@@ -41,34 +41,56 @@
 //   --bit-Slider-required-color          the asterisk after the caption of a required slider (default: $clr-req)
 //   --bit-Slider-mark-size               diameter of a mark tick                             (default: the rail thickness, floored at 2px so a hairline rail still shows its marks)
 //   --bit-Slider-mark-color              a mark the fill has not reached                     (default: $clr-fg-ter)
-//   --bit-Slider-mark-active-color       a mark the fill has reached, drawn on top of it     (default: the role's on-color)
+//   --bit-Slider-mark-active-color       a mark the fill has reached, drawn on top of it     (default: $clr-pri-text)
 //   --bit-Slider-mark-label-color        the text under a mark                               (default: $clr-fg-sec)
-//   --bit-Slider-mark-label-font-size    size of that text                                   (default: per size, one ramp step below the value labels)
+//   --bit-Slider-mark-label-font-size    size of that text                                   (default: $tg-fs-xs)
 //   --bit-Slider-mark-label-height       height of the row the mark labels stand in under a
 //                                        horizontal track, which is the room a taller label -
 //                                        an icon, a second line - has to be given            (default: 1.5em of that text; an upright slider measures its own row instead)
-//   --bit-Slider-thumb-label-color       text of the floating label that rides on a thumb    (default: the role's on-color)
+//   --bit-Slider-thumb-label-color       text of the floating label that rides on a thumb    (default: $clr-pri-text)
 //   --bit-Slider-thumb-label-background  background of that label                            (default: the accent color)
 //   --bit-Slider-thumb-label-radius      its corner radius                                   (default: $shp-radius-popup)
 //   --bit-Slider-thumb-label-padding     its padding                                         (default: spacing(0.25) spacing(0.75))
-//   --bit-Slider-thumb-label-font-size   its font size                                       (default: as the mark labels)
+//   --bit-Slider-thumb-label-font-size   its font size                                       (default: $tg-fs-xs)
 //   --bit-Slider-thumb-label-room        room held open above a horizontal slider for that
 //                                        label to rise into                                  (default: 2.75x its font size; set it to 0 to let the label overlap what is above)
 //   --bit-Slider-origin-color            the tick marking where the fill grows out of        (default: $clr-fg-sec)
 //   --bit-Slider-origin-width            thickness of that tick                              (default: $shp-border-width-thick)
 //   --bit-Slider-transition-duration     how long the fill and the thumbs take to follow a
 //                                        value that arrives in one jump                      (default: $mot-duration-short; a thumb under the pointer never eases)
+//
+// A parameter written on the slider wins over the variable that restyles what it sets: an explicit Color over the
+// accent and its hover, press and focus colors, the active marks and the floating thumb label, and an explicit
+// Size over the thumb, the rail, the length and the font sizes. The variables restyle the default, not a choice
+// - which is why Color and Size publish nothing while they are left unset: a class that always carried the
+// default would be indistinguishable from one that was asked for. What a Color or a Size leaves alone - the
+// rail color, the thumb face, the unreached marks, the labels' colors, the gap - stays the variables'. A state
+// the slider is in (disabled, invalid) still paints over all of them, as before.
 
 .bit-sld {
+    // The values the Color and Size classes publish start out unset on every root, which those classes -
+    // declared further down at the same weight - still win over on the root that carries them. That keeps a
+    // slider placed in a label template of another one from inheriting the outer one's choice, and it is what
+    // lets each read below rank an explicit parameter first, then the public variable, then the primary,
+    // medium slider an unset parameter stands for.
+    --bit-sld-clr: initial;
+    --bit-sld-clr-on: initial;
+    --bit-sld-clr-hover: initial;
+    --bit-sld-clr-active: initial;
+    --bit-sld-clr-focus: initial;
+    --bit-sld-sz-thumb: initial;
+    --bit-sld-sz-rail: initial;
+    --bit-sld-sz-length: initial;
+    --bit-sld-sz-font-size: initial;
+    --bit-sld-sz-font-size-sub: initial;
+
     // The thumb and the rail follow the theme (Material's 20dp handle on a 4dp track, the 28pt
     // UISlider knob on a 2pt one); the length stays this component's own knob. The size classes
-    // below step all of them, so these are the medium ones a slider carrying no size class draws.
-    --bit-sld-thumb: var(--bit-Slider-thumb-size, #{$siz-slider-thumb-md});
-    --bit-sld-rail: var(--bit-Slider-rail-size, #{$siz-track-md});
-    --bit-sld-length: var(--bit-Slider-length, #{spacing(24)});
-    --bit-sld-font-size: var(--bit-Slider-font-size, #{$tg-fs-sm});
-    // The mark labels and the floating thumb label sit one ramp step below the value labels.
-    --bit-sld-font-size-sub: #{$tg-fs-xs};
+    // below step all of them, so these fall back to the medium ones a slider carrying no size class draws.
+    --bit-sld-thumb: var(--bit-sld-sz-thumb, var(--bit-Slider-thumb-size, #{$siz-slider-thumb-md}));
+    --bit-sld-rail: var(--bit-sld-sz-rail, var(--bit-Slider-rail-size, #{$siz-track-md}));
+    --bit-sld-length: var(--bit-sld-sz-length, var(--bit-Slider-length, #{spacing(24)}));
+    --bit-sld-font-size: var(--bit-sld-sz-font-size, var(--bit-Slider-font-size, #{$tg-fs-sm}));
     --bit-sld-clr-rail: var(--bit-Slider-rail-color, #{$clr-bg-sec});
 
     // The smallest pointer target a thumb is given, whatever its drawn size: the native input is laid out
@@ -80,8 +102,9 @@
     // than by a second, more specific copy of that rule - one that would have outweighed the rule that takes
     // the ring back off the thumb the focus is not on, and left an invalid range ringed at both ends. An
     // accent set on its own carries into the ring, as it does into the hover and press colors, so a slider
-    // re-skinned with --bit-Slider-color alone never flashes the theme's color in any state.
-    --bit-sld-clr-ring: var(--bit-Slider-focus-color, var(--bit-Slider-color, var(--bit-sld-clr-focus)));
+    // re-skinned with --bit-Slider-color alone never flashes the theme's color in any state - and an explicit
+    // Color carries into all of them ahead of either.
+    --bit-sld-clr-ring: var(--bit-sld-clr-focus, var(--bit-Slider-focus-color, var(--bit-Slider-color, #{$clr-pri-focus})));
 
     width: 100%;
     font-family: $tg-font-family;
@@ -209,7 +232,7 @@
     position: absolute;
     height: var(--bit-sld-rail);
     border-radius: var(--bit-Slider-rail-radius, var(--bit-sld-rail));
-    background-color: var(--bit-sld-clr);
+    background-color: var(--bit-sld-clr, var(--bit-Slider-color, #{$clr-pri}));
     transform: translateY(calc(var(--bit-sld-rail) / -2));
     transition: background-color var(--bit-Slider-transition-duration, #{$mot-duration-short}) $mot-easing,
                 inset-inline-start var(--bit-Slider-transition-duration, #{$mot-duration-short}) $mot-easing,
@@ -233,7 +256,7 @@
     margin-top: calc(var(--bit-sld-thumb) / -2);
     margin-inline-start: calc(var(--bit-sld-thumb) / -2);
     border-style: $shp-border-style;
-    border-color: var(--bit-sld-clr);
+    border-color: var(--bit-sld-clr, var(--bit-Slider-color, #{$clr-pri}));
     border-width: var(--bit-Slider-thumb-border-width, #{$shp-border-width-thick});
     transition: border-color var(--bit-Slider-transition-duration, #{$mot-duration-short}) $mot-easing,
                 box-shadow var(--bit-Slider-transition-duration, #{$mot-duration-short}) $mot-easing,
@@ -255,18 +278,18 @@
     .bit-sld:not(.bit-dis):not(.bit-sld-rdl):not(.bit-inv) {
         .bit-sld-box:hover {
             .bit-sld-fil {
-                background-color: var(--bit-sld-clr-hover);
+                background-color: var(--bit-sld-clr-hover, var(--bit-Slider-hover-color, var(--bit-Slider-color, #{$clr-pri-hover})));
             }
 
             .bit-sld-thb {
-                border-color: var(--bit-sld-clr-hover);
+                border-color: var(--bit-sld-clr-hover, var(--bit-Slider-hover-color, var(--bit-Slider-color, #{$clr-pri-hover})));
             }
 
             // The floating label is a chip of the accent, so it moves with it rather than being left as the
-            // one part of the slider still wearing the resting color. A background named outright still wins,
-            // since it is the first term of the same fallback chain.
+            // one part of the slider still wearing the resting color. A background named outright still wins
+            // over the public accents, though not over an explicit Color.
             .bit-sld-tlb {
-                background-color: var(--bit-Slider-thumb-label-background, var(--bit-sld-clr-hover));
+                background-color: var(--bit-sld-clr-hover, var(--bit-Slider-thumb-label-background, var(--bit-Slider-hover-color, var(--bit-Slider-color, #{$clr-pri-hover}))));
             }
         }
     }
@@ -279,15 +302,15 @@
 .bit-sld:not(.bit-dis):not(.bit-sld-rdl):not(.bit-inv) {
     .bit-sld-box:has(> .bit-sld-inp:active) {
         .bit-sld-fil {
-            background-color: var(--bit-sld-clr-active);
+            background-color: var(--bit-sld-clr-active, var(--bit-Slider-active-color, var(--bit-Slider-color, #{$clr-pri-active})));
         }
 
         .bit-sld-thb {
-            border-color: var(--bit-sld-clr-active);
+            border-color: var(--bit-sld-clr-active, var(--bit-Slider-active-color, var(--bit-Slider-color, #{$clr-pri-active})));
         }
 
         .bit-sld-tlb {
-            background-color: var(--bit-Slider-thumb-label-background, var(--bit-sld-clr-active));
+            background-color: var(--bit-sld-clr-active, var(--bit-Slider-thumb-label-background, var(--bit-Slider-active-color, var(--bit-Slider-color, #{$clr-pri-active}))));
         }
     }
 }
@@ -516,7 +539,7 @@
 }
 
 .bit-sld-mrk-act {
-    background-color: var(--bit-Slider-mark-active-color, var(--bit-sld-clr-on));
+    background-color: var(--bit-sld-clr-on, var(--bit-Slider-mark-active-color, #{$clr-pri-text}));
 }
 
 // A zero-width flex box centres whatever overflows it on its own position, in either direction, which is
@@ -530,7 +553,8 @@
     // The row and the offset of the labels inside it are measured in em, so the font size of the labels is set
     // here rather than on each of them: without it the row would be sized by whatever the page happens to be in
     // and would not follow the size class the way the labels standing in it do.
-    font-size: var(--bit-Slider-mark-label-font-size, var(--bit-sld-font-size-sub));
+    // The mark labels and the floating thumb label sit one ramp step below the value labels.
+    font-size: var(--bit-sld-sz-font-size-sub, var(--bit-Slider-mark-label-font-size, #{$tg-fs-xs}));
 }
 
 .bit-sld-mlb {
@@ -555,11 +579,11 @@
     white-space: nowrap;
     pointer-events: none;
     justify-content: center;
-    color: var(--bit-Slider-thumb-label-color, var(--bit-sld-clr-on));
-    background-color: var(--bit-Slider-thumb-label-background, var(--bit-sld-clr));
+    color: var(--bit-sld-clr-on, var(--bit-Slider-thumb-label-color, #{$clr-pri-text}));
+    background-color: var(--bit-sld-clr, var(--bit-Slider-thumb-label-background, var(--bit-Slider-color, #{$clr-pri})));
     border-radius: var(--bit-Slider-thumb-label-radius, #{$shp-radius-popup});
     padding: var(--bit-Slider-thumb-label-padding, #{spacing(0.25)} #{spacing(0.75)});
-    font-size: var(--bit-Slider-thumb-label-font-size, var(--bit-sld-font-size-sub));
+    font-size: var(--bit-sld-sz-font-size-sub, var(--bit-Slider-thumb-label-font-size, #{$tg-fs-xs}));
     transition: opacity var(--bit-Slider-transition-duration, #{$mot-duration-short}) $mot-easing;
 
     // Centred over the thumb and lifted clear of it.
@@ -576,7 +600,7 @@
 .bit-sld-tlo:not(.bit-sld-vrt) > .bit-sld-cnt,
 .bit-sld-tla:not(.bit-sld-vrt) > .bit-sld-cnt {
     margin-block-start: var(--bit-Slider-thumb-label-room,
-                            calc(var(--bit-Slider-thumb-label-font-size, var(--bit-sld-font-size-sub)) * 2.75));
+                            calc(var(--bit-sld-sz-font-size-sub, var(--bit-Slider-thumb-label-font-size, #{$tg-fs-xs})) * 2.75));
 }
 
 .bit-sld-tlo .bit-sld-tlb {
@@ -765,41 +789,46 @@
  * The thumb and the rail are read off the global tokens rather than written here, which is what lets a
  * preset re-skin every slider by stepping those - Material's 20dp handle on a 4dp track, Cupertino's 28pt
  * knob on a 2pt one - without ever naming this component.
+ *
+ * A size class is published only by an explicit Size, which therefore wins over the public variables of the
+ * same metrics; an unset Size is the medium slider, which the root spells out after those variables.
  */
 .bit-sld-sm {
-    --bit-sld-thumb: var(--bit-Slider-thumb-size, #{$siz-slider-thumb-sm});
-    --bit-sld-rail: var(--bit-Slider-rail-size, #{$siz-track-sm});
-    --bit-sld-length: var(--bit-Slider-length, #{spacing(18)});
-    --bit-sld-font-size: var(--bit-Slider-font-size, #{$tg-fs-xs});
-    --bit-sld-font-size-sub: #{$tg-fs-2xs};
+    --bit-sld-sz-thumb: #{$siz-slider-thumb-sm};
+    --bit-sld-sz-rail: #{$siz-track-sm};
+    --bit-sld-sz-length: #{spacing(18)};
+    --bit-sld-sz-font-size: #{$tg-fs-xs};
+    --bit-sld-sz-font-size-sub: #{$tg-fs-2xs};
 }
 
 .bit-sld-md {
-    --bit-sld-thumb: var(--bit-Slider-thumb-size, #{$siz-slider-thumb-md});
-    --bit-sld-rail: var(--bit-Slider-rail-size, #{$siz-track-md});
-    --bit-sld-length: var(--bit-Slider-length, #{spacing(24)});
-    --bit-sld-font-size: var(--bit-Slider-font-size, #{$tg-fs-sm});
-    --bit-sld-font-size-sub: #{$tg-fs-xs};
+    --bit-sld-sz-thumb: #{$siz-slider-thumb-md};
+    --bit-sld-sz-rail: #{$siz-track-md};
+    --bit-sld-sz-length: #{spacing(24)};
+    --bit-sld-sz-font-size: #{$tg-fs-sm};
+    --bit-sld-sz-font-size-sub: #{$tg-fs-xs};
 }
 
 .bit-sld-lg {
-    --bit-sld-thumb: var(--bit-Slider-thumb-size, #{$siz-slider-thumb-lg});
-    --bit-sld-rail: var(--bit-Slider-rail-size, #{$siz-track-lg});
-    --bit-sld-length: var(--bit-Slider-length, #{spacing(30)});
-    --bit-sld-font-size: var(--bit-Slider-font-size, #{$tg-fs-md});
-    --bit-sld-font-size-sub: #{$tg-fs-sm};
+    --bit-sld-sz-thumb: #{$siz-slider-thumb-lg};
+    --bit-sld-sz-rail: #{$siz-track-lg};
+    --bit-sld-sz-length: #{spacing(30)};
+    --bit-sld-sz-font-size: #{$tg-fs-md};
+    --bit-sld-sz-font-size-sub: #{$tg-fs-sm};
 }
 
 
 /* ---------------------------------------------------------------------------------------------------
- * Colors - generated from the shared $bit-color-roles map (see color-role-maps.scss).
+ * Colors - generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only by an
+ * explicit Color, and with the role's own tokens alone, which is what lets the Color win over the public
+ * accents; an unset one is the primary role, which every read spells out after them.
  * --------------------------------------------------------------------------------------------------- */
 @each $role, $tokens in $bit-color-roles {
     .bit-sld-#{$role} {
-        --bit-sld-clr: var(--bit-Slider-color, #{role($tokens, main)});
+        --bit-sld-clr: #{role($tokens, main)};
         --bit-sld-clr-on: #{role($tokens, on)};
-        --bit-sld-clr-hover: var(--bit-Slider-hover-color, var(--bit-Slider-color, #{role($tokens, hover)}));
-        --bit-sld-clr-active: var(--bit-Slider-active-color, var(--bit-Slider-color, #{role($tokens, active)}));
+        --bit-sld-clr-hover: #{role($tokens, hover)};
+        --bit-sld-clr-active: #{role($tokens, active)};
         --bit-sld-clr-focus: #{role($tokens, focus)};
     }
 }

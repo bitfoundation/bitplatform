@@ -796,8 +796,9 @@
         <br /><br /><br />
         <div>
             The checkbox also reads a set of <BitLink Href="#css-variables-section">CSS variables</BitLink> off its
-            root for what no parameter covers. They inherit, so a value on <code>:root</code> or any ancestor re-skins
-            every checkbox below it, and one on the <b>Style</b> of an instance re-skins that one alone.
+            root. They inherit, so a value on <code>:root</code> or any ancestor re-skins every checkbox below it, and
+            one on the <b>Style</b> of an instance re-skins that one alone. They restyle the default, not a choice: an
+            explicit <b>Color</b> or <b>Size</b> wins over the variables for what it sets.
             <b>--bit-Checkbox-box-size</b> is the one to reach for first: the glyph and the filled square of the
             mixed state are proportions of the box, so resizing the box carries the whole face with it.
         </div>

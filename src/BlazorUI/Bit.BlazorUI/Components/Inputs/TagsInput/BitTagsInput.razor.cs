@@ -239,6 +239,11 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// the component follows the color of the form it sits in rather than only lighting up while it is
     /// focused. How much of it the tags are painted with is decided by the <see cref="TagVariant"/>.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-TagsInput-*</c> color variables it paints (the chip colors of the
+    /// tag variant, the focus ring and rule of the field, the spinner); left unset, the tags input is primary unless
+    /// those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -767,6 +772,10 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     /// <summary>
     /// The size of the tags input.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-TagsInput-*</c> size variables (font sizes, min heights, paddings,
+    /// gap, icon size); left unset, the tags input is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -1102,35 +1111,11 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             _ => "bit-tgi-tgf"
         });
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-tgi-pri",
-            BitColor.Secondary => "bit-tgi-sec",
-            BitColor.Tertiary => "bit-tgi-ter",
-            BitColor.Info => "bit-tgi-inf",
-            BitColor.Success => "bit-tgi-suc",
-            BitColor.Warning => "bit-tgi-wrn",
-            BitColor.SevereWarning => "bit-tgi-swr",
-            BitColor.Error => "bit-tgi-err",
-            BitColor.PrimaryBackground => "bit-tgi-pbg",
-            BitColor.SecondaryBackground => "bit-tgi-sbg",
-            BitColor.TertiaryBackground => "bit-tgi-tbg",
-            BitColor.PrimaryForeground => "bit-tgi-pfg",
-            BitColor.SecondaryForeground => "bit-tgi-sfg",
-            BitColor.TertiaryForeground => "bit-tgi-tfg",
-            BitColor.PrimaryBorder => "bit-tgi-pbr",
-            BitColor.SecondaryBorder => "bit-tgi-sbr",
-            BitColor.TertiaryBorder => "bit-tgi-tbr",
-            _ => "bit-tgi-pri"
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-TagsInput-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-tgi"));
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-tgi-sm",
-            BitSize.Medium => "bit-tgi-md",
-            BitSize.Large => "bit-tgi-lg",
-            _ => "bit-tgi-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-tgi"));
 
         ClassBuilder.Register(() => NoBorder ? "bit-tgi-nbd" : string.Empty);
 

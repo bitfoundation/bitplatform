@@ -4,29 +4,36 @@
 // on :root re-skins every nav, one set on an ancestor every nav below it, and one on the Style of an instance
 // that nav alone:
 //   --bit-Nav-color                  item text and chevron color                    (default: $clr-fg-pri)
-//   --bit-Nav-icon-color             item icon color                                (default: the Color role's main color)
+//   --bit-Nav-icon-color             item icon color                                (default: $clr-pri)
 //   --bit-Nav-description-color      item description color                         (default: $clr-fg-ter)
 //   --bit-Nav-disabled-color         everything a disabled item draws               (default: $clr-fg-dis)
-//   --bit-Nav-hover-background       background of a hovered item                   (default: the Accent role's hover color)
-//   --bit-Nav-hover-color            text and chevron color of a hovered item       (default: the Accent role's on color)
-//   --bit-Nav-pressed-background     background of a pressed item                   (default: the Accent role's active color)
-//   --bit-Nav-selected-background    background of the selected item                (default: the Accent role's active color)
-//   --bit-Nav-selected-color         text and chevron color of the selected item    (default: the Accent role's on color)
-//   --bit-Nav-indicator-color        leading bar of the selected item               (default: the Color role's main color)
+//   --bit-Nav-hover-background       background of a hovered item                   (default: $clr-bg-pri-hover)
+//   --bit-Nav-hover-color            text and chevron color of a hovered item       (default: $clr-fg-pri)
+//   --bit-Nav-pressed-background     background of a pressed item                   (default: $clr-bg-pri-active)
+//   --bit-Nav-selected-background    background of the selected item                (default: $clr-bg-pri-active)
+//   --bit-Nav-selected-color         text and chevron color of the selected item    (default: $clr-fg-pri)
+//   --bit-Nav-indicator-color        leading bar of the selected item               (default: $clr-pri)
 //   --bit-Nav-indicator-width        thickness of that bar                          (default: $shp-border-width-thick)
 //   --bit-Nav-item-radius            corner radius of an item                       (default: $shp-radius-control)
-//   --bit-Nav-item-min-height        smallest height of an item                     (default: per size)
+//   --bit-Nav-item-min-height        smallest height of an item                     (default: spacing(6))
 //   --bit-Nav-item-padding           padding of an item                             (default: spacing(0.5))
 //   --bit-Nav-item-gap               room between two items                         (default: 0)
-//   --bit-Nav-font-size              item text size                                 (default: per size, from the type ramp)
-//   --bit-Nav-icon-size              item icon size                                 (default: per size, $siz-icon-*)
-//   --bit-Nav-description-font-size  item description size                          (default: per size, from the type ramp)
+//   --bit-Nav-font-size              item text size                                 (default: $tg-fs-sm)
+//   --bit-Nav-icon-size              item icon size                                 (default: $siz-icon-md)
+//   --bit-Nav-description-font-size  item description size                          (default: $tg-fs-xs)
 //   --bit-Nav-header-color           group header text color                        (default: $clr-fg-pri)
-//   --bit-Nav-header-font-size       group header text size                         (default: per size, from the type ramp)
-//   --bit-Nav-header-min-height      smallest height of a group header              (default: per size)
+//   --bit-Nav-header-font-size       group header text size                         (default: $tg-fs-lg)
+//   --bit-Nav-header-min-height      smallest height of a group header              (default: spacing(5.5))
 //   --bit-Nav-header-border-color    rule under a group header                      (default: $clr-brd-pri)
 //   --bit-Nav-header-hover-background background of a hovered group header          (default: $clr-bg-pri-hover)
 //   --bit-Nav-separator-color        separator color                                (default: $clr-brd-sec)
+//
+// A parameter written on the nav wins over the variable that restyles what it sets: an explicit Color over the
+// icon and indicator colors, an explicit Accent over the hover, pressed and selected backgrounds and the colors
+// drawn on them (a semantic Accent over the icon and description colors of an accented item too), and an explicit
+// Size over the font, icon, description and header sizes and the item and header heights. The variables restyle
+// the default, not a choice - which is why Color, Accent and Size publish nothing while they are left unset: a
+// class that always carried the default would be indistinguishable from one that was asked for.
 
 // The accent fills the whole hovered or selected item, so everything drawn on top of it moves to the
 // accent's own colors at once. Each part had been given a color that reads on the page background
@@ -38,12 +45,14 @@
         color: $color;
     }
 
+    // A semantic Accent publishes these; any other leaves the icon and the description in the colors they have
+    // at rest, ranked the same way as they are there.
     .bit-nav-iic {
-        color: var(--bit-nav-clr-icon);
+        color: var(--bit-nav-clr-icon, var(--bit-nav-clr, var(--bit-Nav-icon-color, #{$clr-pri})));
     }
 
     .bit-nav-des {
-        color: var(--bit-nav-clr-des);
+        color: var(--bit-nav-clr-des, var(--bit-Nav-description-color, #{$clr-fg-ter}));
     }
 }
 
@@ -60,14 +69,25 @@
     font-family: $tg-font-family;
     color: var(--bit-Nav-color, #{$clr-fg-pri});
 
-    // The size tokens live on the root so a single class swaps the metrics of every part at once.
-    --bit-nav-item-font-size: #{$tg-fs-sm};
-    --bit-nav-item-min-height: #{spacing(6)};
-    --bit-nav-icon-size: #{$siz-icon-md};
-    --bit-nav-des-font-size: #{$tg-fs-xs};
-    --bit-nav-header-font-size: #{$tg-fs-lg};
-    --bit-nav-header-min-height: #{spacing(5.5)};
-    --bit-nav-chevron-size: #{$tg-fs-xs};
+    // The size tokens live on the root so a single class swaps the metrics of every part at once. They, and the
+    // colors the Color and Accent classes publish, start out unset on every root, so a nav never inherits another
+    // one's choice from an ancestor carrying those classes; the classes - declared further down at the same
+    // weight - still win on the root that carries them. Left unset, each sends the var() reading it on to the
+    // public variable and then to the default (the medium size, the primary Color, the PrimaryBackground Accent),
+    // which is what lets an explicit parameter outrank the variable while an unset one leaves the variable in charge.
+    --bit-nav-item-font-size: initial;
+    --bit-nav-item-min-height: initial;
+    --bit-nav-icon-size: initial;
+    --bit-nav-des-font-size: initial;
+    --bit-nav-header-font-size: initial;
+    --bit-nav-header-min-height: initial;
+    --bit-nav-chevron-size: initial;
+    --bit-nav-clr: initial;
+    --bit-nav-clr-text: initial;
+    --bit-nav-clr-hover: initial;
+    --bit-nav-clr-active: initial;
+    --bit-nav-clr-icon: initial;
+    --bit-nav-clr-des: initial;
 
     // Only the nav's own lists (.bit-nav-lst) are laid out here: a template can render a list of its own
     // inside an item, and a descendant selector would force it into the nav's column and gaps.
@@ -116,7 +136,7 @@
 .bit-nav-cbt {
     cursor: pointer;
     user-select: none;
-    font-size: var(--bit-nav-chevron-size);
+    font-size: var(--bit-nav-chevron-size, #{$tg-fs-xs});
     min-width: spacing(3.375);
     background-color: transparent;
 
@@ -144,7 +164,7 @@
     // A button does not inherit the font of the page, so the header would be set in the browser's own.
     font-family: inherit;
     color: var(--bit-Nav-header-color, #{$clr-fg-pri});
-    min-height: var(--bit-Nav-header-min-height, var(--bit-nav-header-min-height));
+    min-height: var(--bit-nav-header-min-height, var(--bit-Nav-header-min-height, #{spacing(5.5)}));
     border-bottom: $siz-divider $shp-border-style var(--bit-Nav-header-border-color, #{$clr-brd-pri});
     transition: background-color $mot-duration-short $mot-easing;
 
@@ -206,7 +226,7 @@
     flex-grow: 1;
     display: flex;
     font-weight: $tg-fw-medium;
-    font-size: var(--bit-Nav-header-font-size, var(--bit-nav-header-font-size));
+    font-size: var(--bit-nav-header-font-size, var(--bit-Nav-header-font-size, #{$tg-fs-lg}));
 }
 
 .bit-nav-itg {
@@ -233,7 +253,7 @@
     border-inline-start-style: $shp-border-style;
     padding: var(--bit-Nav-item-padding, #{spacing(0.5)});
     border-radius: var(--bit-Nav-item-radius, #{$shp-radius-control});
-    min-height: var(--bit-Nav-item-min-height, var(--bit-nav-item-min-height));
+    min-height: var(--bit-nav-item-min-height, var(--bit-Nav-item-min-height, #{spacing(6)}));
     border-inline-start-width: var(--bit-Nav-indicator-width, #{$shp-border-width-thick});
     transition: background-color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing;
 
@@ -245,18 +265,18 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-Nav-hover-background, var(--bit-nav-clr-hover));
+            background-color: var(--bit-nav-clr-hover, var(--bit-Nav-hover-background, #{$clr-bg-pri-hover}));
 
-            @include accented-item-content(var(--bit-Nav-hover-color, var(--bit-nav-clr-text)));
+            @include accented-item-content(var(--bit-nav-clr-text, var(--bit-Nav-hover-color, #{$clr-fg-pri})));
         }
     }
 
     // Unlike the hover, the pressed state is not kept to the pointers that can hover: on a touch screen it is
     // the one feedback a tap gets before the page changes.
     &:active {
-        background-color: var(--bit-Nav-pressed-background, var(--bit-nav-clr-active));
+        background-color: var(--bit-nav-clr-active, var(--bit-Nav-pressed-background, #{$clr-bg-pri-active}));
 
-        @include accented-item-content(var(--bit-Nav-hover-color, var(--bit-nav-clr-text)));
+        @include accented-item-content(var(--bit-nav-clr-text, var(--bit-Nav-hover-color, #{$clr-fg-pri})));
     }
 }
 
@@ -282,7 +302,7 @@
     text-overflow: ellipsis;
     color: var(--bit-Nav-color, #{$clr-fg-pri});
     letter-spacing: $tg-ctrl-letter-spacing;
-    font-size: var(--bit-Nav-font-size, var(--bit-nav-item-font-size));
+    font-size: var(--bit-nav-item-font-size, var(--bit-Nav-font-size, #{$tg-fs-sm}));
     transition: color $mot-duration-short $mot-easing;
 }
 
@@ -306,7 +326,7 @@
     text-overflow: ellipsis;
     padding-inline-start: spacing(2.75);
     color: var(--bit-Nav-description-color, #{$clr-fg-ter});
-    font-size: var(--bit-Nav-description-font-size, var(--bit-nav-des-font-size));
+    font-size: var(--bit-nav-des-font-size, var(--bit-Nav-description-font-size, #{$tg-fs-xs}));
     transition: color $mot-duration-short $mot-easing;
 }
 
@@ -331,8 +351,8 @@
 .bit-nav-iic {
     line-height: 1;
     flex-shrink: 0;
-    color: var(--bit-Nav-icon-color, var(--bit-nav-clr));
-    font-size: var(--bit-Nav-icon-size, var(--bit-nav-icon-size));
+    color: var(--bit-nav-clr, var(--bit-Nav-icon-color, #{$clr-pri}));
+    font-size: var(--bit-nav-icon-size, var(--bit-Nav-icon-size, #{$siz-icon-md}));
     transition: color $mot-duration-short $mot-easing;
 }
 
@@ -367,10 +387,10 @@
 // look that is borrowed: aria-current stays on the selected item alone.
 .bit-nav-sel,
 .bit-nav-sca {
-    border-color: var(--bit-Nav-indicator-color, var(--bit-nav-clr));
-    background-color: var(--bit-Nav-selected-background, var(--bit-nav-clr-active));
+    border-color: var(--bit-nav-clr, var(--bit-Nav-indicator-color, #{$clr-pri}));
+    background-color: var(--bit-nav-clr-active, var(--bit-Nav-selected-background, #{$clr-bg-pri-active}));
 
-    @include accented-item-content(var(--bit-Nav-selected-color, var(--bit-nav-clr-text)));
+    @include accented-item-content(var(--bit-nav-clr-text, var(--bit-Nav-selected-color, #{$clr-fg-pri})));
 
     .bit-nav-itm {
         font-weight: $tg-fw-semibold;
@@ -380,7 +400,7 @@
 // A collapsed group header that holds the selected item takes the same cue: the selected background, the
 // indicator color on the rule under it, and the selected text color for its text and chevron.
 .bit-nav-gcb.bit-nav-sca {
-    color: var(--bit-Nav-selected-color, var(--bit-nav-clr-text));
+    color: var(--bit-nav-clr-text, var(--bit-Nav-selected-color, #{$clr-fg-pri}));
 }
 
 .bit-nav-dis {
@@ -403,6 +423,8 @@
 }
 
 
+// Published only by an explicit Size; an unset one is the medium nav, which the reads spell out after the public
+// variables.
 .bit-nav-sm {
     --bit-nav-item-font-size: #{$tg-fs-xs};
     --bit-nav-item-min-height: #{spacing(4.5)};
@@ -434,7 +456,9 @@
 }
 
 
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only by
+// an explicit Accent; an unset one is the PrimaryBackground accent, which the reads spell out after the public
+// variables.
 @each $role, $tokens in $bit-color-roles {
     .bit-nav-a#{$role} {
         --bit-nav-clr-text: #{role($tokens, on)};
@@ -447,17 +471,15 @@
             --bit-nav-clr-icon: #{role($tokens, on)};
             --bit-nav-clr-des: #{role($tokens, on)};
         }
-        @else {
-            // A surface accent only tints the item's background, so the icon and the description keep the
-            // colors they have at rest, the public variables of those two included.
-            --bit-nav-clr-icon: var(--bit-Nav-icon-color, var(--bit-nav-clr));
-            --bit-nav-clr-des: var(--bit-Nav-description-color, #{$clr-fg-ter});
-        }
+        // A surface accent only tints the item's background, so it publishes no icon and description colors:
+        // left unset, they keep the colors they have at rest, the public variables of those two included (see
+        // accented-item-content).
     }
 }
 
 
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only by
+// an explicit Color; an unset one is the primary role, which the reads spell out after the public variables.
 @each $role, $tokens in $bit-color-roles {
     .bit-nav-#{$role} {
         --bit-nav-clr: #{role($tokens, main)};

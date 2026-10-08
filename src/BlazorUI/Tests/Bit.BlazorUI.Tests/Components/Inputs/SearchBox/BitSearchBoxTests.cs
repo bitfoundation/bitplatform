@@ -477,13 +477,37 @@ public class BitSearchBoxTests : BunitTestContext
         DataRow(BitColor.Primary, "bit-srb-pri"),
         DataRow(BitColor.Secondary, "bit-srb-sec"),
         DataRow(BitColor.Error, "bit-srb-err"),
-        DataRow(BitColor.Success, "bit-srb-suc"),
-        DataRow(null, "bit-srb-pri")]
-    public void BitSearchBoxColorShouldHaveCorrectClassName(BitColor? color, string expectedClass)
+        DataRow(BitColor.Success, "bit-srb-suc")]
+    public void BitSearchBoxColorShouldHaveCorrectClassName(BitColor color, string expectedClass)
     {
         var component = RenderComponent<BitSearchBox>(parameters => parameters.Add(p => p.Color, color));
 
         Assert.IsTrue(component.Find(".bit-srb").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldPublishNoColorBackgroundOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters => parameters.Add(p => p.SuggestItems, Fruits));
+
+        // An unset Color, Background or Size publishes nothing - on the root, nor on the callout that is given the
+        // same classes - so the public --bit-SearchBox-* variables restyle the default while an explicit value, which
+        // does publish its class, wins over them.
+        var published = new[]
+        {
+            "bit-srb-pri", "bit-srb-sec", "bit-srb-ter", "bit-srb-inf", "bit-srb-suc", "bit-srb-wrn", "bit-srb-swr", "bit-srb-err",
+            "bit-srb-pbg", "bit-srb-sbg", "bit-srb-tbg", "bit-srb-pfg", "bit-srb-sfg", "bit-srb-tfg", "bit-srb-pbr", "bit-srb-sbr", "bit-srb-tbr",
+            "bit-srb-bpr", "bit-srb-bse", "bit-srb-btr", "bit-srb-btn",
+            "bit-srb-sm", "bit-srb-md", "bit-srb-lg",
+        };
+
+        foreach (var element in new[] { component.Find(".bit-srb"), component.Find(".bit-srb-cal") })
+        {
+            foreach (var cssClass in published)
+            {
+                Assert.IsFalse(element.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+            }
+        }
     }
 
     [TestMethod]
@@ -1945,7 +1969,12 @@ public class BitSearchBoxTests : BunitTestContext
         var callout = component.Find(".bit-srb-cal");
 
         Assert.IsTrue(callout.ClassList.Contains("bit-srb-suc"));
-        Assert.IsTrue(callout.ClassList.Contains("bit-srb-md"));
+
+        // The Size is left unset, so the callout carries no size class either: its rows are the medium ones unless
+        // the public --bit-SearchBox-* variables say otherwise.
+        Assert.IsFalse(callout.ClassList.Contains("bit-srb-sm"));
+        Assert.IsFalse(callout.ClassList.Contains("bit-srb-md"));
+        Assert.IsFalse(callout.ClassList.Contains("bit-srb-lg"));
     }
 
     [TestMethod]

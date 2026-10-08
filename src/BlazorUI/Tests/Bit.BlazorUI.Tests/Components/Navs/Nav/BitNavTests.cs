@@ -150,9 +150,11 @@ public class BitNavTests : BunitTestContext
         var root = component.Find(".bit-nav");
 
         Assert.IsTrue(root.ClassList.Contains("bit-nav"));
-        Assert.IsTrue(root.ClassList.Contains("bit-nav-md"), "the default size");
-        Assert.IsTrue(root.ClassList.Contains("bit-nav-pri"), "the default color");
-        Assert.IsTrue(root.ClassList.Contains("bit-nav-apbg"), "the default accent");
+        // An unset Size, Color or Accent publishes nothing, so the public --bit-Nav-* variables restyle the default
+        // while an explicit value - which does publish its class - wins over them.
+        Assert.IsFalse(root.ClassList.Contains("bit-nav-md"), "an unset size published its class");
+        Assert.IsFalse(root.ClassList.Contains("bit-nav-pri"), "an unset color published its class");
+        Assert.IsFalse(root.ClassList.Contains("bit-nav-apbg"), "an unset accent published its class");
         Assert.IsFalse(root.ClassList.Contains("bit-nav-ftw"));
         Assert.IsFalse(root.ClassList.Contains("bit-nav-flw"));
         Assert.IsFalse(root.ClassList.Contains("bit-nav-ion"));
@@ -270,8 +272,8 @@ public class BitNavTests : BunitTestContext
         DataRow(BitSize.Small, "bit-nav-sm"),
         DataRow(BitSize.Medium, "bit-nav-md"),
         DataRow(BitSize.Large, "bit-nav-lg"),
-        DataRow(null, "bit-nav-md")]
-    public void BitNavShouldApplyTheSizeClass(BitSize? size, string expectedClass)
+        DataRow(null, null)]
+    public void BitNavShouldApplyTheSizeClass(BitSize? size, string? expectedClass)
     {
         var component = RenderNav(BasicItems(), p => p.Add(c => c.Size, size));
 
@@ -300,9 +302,8 @@ public class BitNavTests : BunitTestContext
         DataRow(BitColor.TertiaryForeground, "bit-nav-tfg"),
         DataRow(BitColor.PrimaryBorder, "bit-nav-pbr"),
         DataRow(BitColor.SecondaryBorder, "bit-nav-sbr"),
-        DataRow(BitColor.TertiaryBorder, "bit-nav-tbr"),
-        DataRow(null, "bit-nav-pri")]
-    public void BitNavShouldApplyTheColorClass(BitColor? color, string expectedClass)
+        DataRow(BitColor.TertiaryBorder, "bit-nav-tbr")]
+    public void BitNavShouldApplyTheColorClass(BitColor color, string expectedClass)
     {
         var component = RenderNav(BasicItems(), p => p.Add(c => c.Color, color));
 
@@ -326,13 +327,28 @@ public class BitNavTests : BunitTestContext
         DataRow(BitColor.TertiaryForeground, "bit-nav-atfg"),
         DataRow(BitColor.PrimaryBorder, "bit-nav-apbr"),
         DataRow(BitColor.SecondaryBorder, "bit-nav-asbr"),
-        DataRow(BitColor.TertiaryBorder, "bit-nav-atbr"),
-        DataRow(null, "bit-nav-apbg")]
-    public void BitNavShouldApplyTheAccentClass(BitColor? accent, string expectedClass)
+        DataRow(BitColor.TertiaryBorder, "bit-nav-atbr")]
+    public void BitNavShouldApplyTheAccentClass(BitColor accent, string expectedClass)
     {
         var component = RenderNav(BasicItems(), p => p.Add(c => c.Accent, accent));
 
         Assert.IsTrue(component.Find(".bit-nav").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitNavShouldPublishNoColorAccentOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderNav(BasicItems());
+
+        // An unset Color, Accent or Size publishes nothing, so the public --bit-Nav-* variables restyle the default
+        // while an explicit value - which does publish its class - wins over them.
+        var root = component.Find(".bit-nav");
+        string[] roles = ["pri", "sec", "ter", "inf", "suc", "wrn", "swr", "err", "pbg", "sbg", "tbg", "pfg", "sfg", "tfg", "pbr", "sbr", "tbr"];
+
+        foreach (var cssClass in roles.Select(r => $"bit-nav-{r}").Concat(roles.Select(r => $"bit-nav-a{r}")).Concat(["bit-nav-sm", "bit-nav-md", "bit-nav-lg"]))
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
     }
 
     [TestMethod]

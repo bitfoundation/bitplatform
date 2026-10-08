@@ -55,8 +55,8 @@ public partial class BitMessageBoxStylesheetTests
     {
         var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-msb {");
 
-        StringAssert.Contains(root, "--bit-msb-pad: #{$spa-dialog};");
-        StringAssert.Contains(root, "--bit-msb-ttl-fontsize: #{$tg-dialog-title-font-size};");
+        StringAssert.Contains(root, "var(--bit-msb-pad, var(--bit-MessageBox-padding, #{$spa-dialog}))");
+        StringAssert.Contains(root, "var(--bit-msb-ttl-fontsize, var(--bit-MessageBox-title-font-size, #{$tg-dialog-title-font-size}))");
         StringAssert.Contains(root, "var(--bit-MessageBox-text-align, #{$layout-dialog-text-align})");
 
         // The dialog's ceiling is the default only in a modal; inline, the box fills its container as it always has.
@@ -101,7 +101,7 @@ public partial class BitMessageBoxStylesheetTests
         var query = SourceFiles.GetScssBlock(ReadStylesheet(), "\n@container style(--bit-msb-text-align: center) {");
 
         StringAssert.Contains(query, ".bit-msb-hdr:has(> .bit-btn) > .bit-msb-ttl:first-child {");
-        StringAssert.Contains(query, "padding-inline-start: calc(var(--bit-msb-cls-size) + #{spacing(2)});");
+        StringAssert.Contains(query, "padding-inline-start: calc(var(--bit-msb-cls-size, #{$siz-ctrl-md}) + #{spacing(2)});");
 
         // The spacer is collapsed where a title fills the header, or a centered title would share the room with it.
         StringAssert.Contains(ReadStylesheet(), ".bit-msb-ttl ~ .bit-msb-spc {");
@@ -125,6 +125,37 @@ public partial class BitMessageBoxStylesheetTests
 
         StringAssert.Contains(print, "max-height: none !important;");
         StringAssert.Contains(print, "overflow: visible !important;");
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldLetAParameterWinOverItsPublicVariable()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // An explicit Size or Color publishes these, so they are read before the variable, which only restyles the
+        // medium message box (and the text-colored icon) an unset one stands for.
+        StringAssert.Contains(stylesheet, "padding: var(--bit-msb-pad, var(--bit-MessageBox-padding, #{$spa-dialog}));");
+        StringAssert.Contains(stylesheet, "min-width: min(var(--bit-msb-min-width, var(--bit-MessageBox-min-width, #{spacing(40)})), var(--bit-msb-max-width));");
+        StringAssert.Contains(stylesheet, "font-size: var(--bit-msb-ico-fontsize, var(--bit-MessageBox-icon-size, #{$siz-icon-md}));");
+        StringAssert.Contains(stylesheet, "font-size: var(--bit-msb-fontsize, var(--bit-MessageBox-body-font-size, #{$tg-fs-md}));");
+        StringAssert.Contains(stylesheet, "color: var(--bit-msb-clr, var(--bit-MessageBox-icon-color, currentcolor));");
+
+        Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-MessageBox-[a-z-]+, var\(--bit-msb-"), "A public variable is read before the parameter it restyles the default of.");
+    }
+
+    [TestMethod]
+    public void BitMessageBoxShouldPublishItsColorAndSizeOnlyWhereTheyAreSet()
+    {
+        var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-msb {");
+
+        // A message box can sit in the body of another one, which must not inherit the outer box's Color or Size: each
+        // root starts the values those classes publish out unset, and the classes - declared further down at the same
+        // weight - still win on the root that carries them.
+        foreach (var property in new[] { "--bit-msb-pad", "--bit-msb-min-width", "--bit-msb-fontsize", "--bit-msb-ttl-fontsize",
+                                         "--bit-msb-ico-fontsize", "--bit-msb-cls-size", "--bit-msb-clr" })
+        {
+            StringAssert.Contains(root, $"{property}: initial;");
+        }
     }
 
     [TestMethod]

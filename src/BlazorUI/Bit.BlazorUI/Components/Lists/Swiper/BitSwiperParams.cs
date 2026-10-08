@@ -296,290 +296,254 @@ public class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitSwiper);
 
-        if (Accent.HasValue && bitSwiper.HasNotBeenSet(nameof(Accent)))
+        if (Accent.HasValue)
         {
-            bitSwiper.Accent = Accent.Value;
-
-            bitSwiper.ClassBuilder.Reset();
+            bitSwiper.TakeFromCascade(nameof(Accent), Accent.Value, static s => s.Accent, static (s, v) => s.Accent = v);
         }
 
-        if (AnimationDuration.HasValue && bitSwiper.HasNotBeenSet(nameof(AnimationDuration)))
+        if (AnimationDuration.HasValue)
         {
-            bitSwiper.AnimationDuration = AnimationDuration.Value;
+            bitSwiper.TakeFromCascade(nameof(AnimationDuration), AnimationDuration.Value, static s => s.AnimationDuration, static (s, v) => s.AnimationDuration = v);
         }
 
-        if (AutoPlay.HasValue && bitSwiper.HasNotBeenSet(nameof(AutoPlay)))
+        if (AutoPlay.HasValue)
         {
-            bitSwiper.AutoPlay = AutoPlay.Value;
+            bitSwiper.TakeFromCascade(nameof(AutoPlay), AutoPlay.Value, static s => s.AutoPlay, static (s, v) => s.AutoPlay = v);
         }
 
-        if (AutoPlayInterval.HasValue && bitSwiper.HasNotBeenSet(nameof(AutoPlayInterval)))
+        if (AutoPlayInterval.HasValue)
         {
-            bitSwiper.AutoPlayInterval = AutoPlayInterval.Value;
+            bitSwiper.TakeFromCascade(nameof(AutoPlayInterval), AutoPlayInterval.Value, static s => s.AutoPlayInterval, static (s, v) => s.AutoPlayInterval = v);
         }
 
-        if (AutoPlayReverse.HasValue && bitSwiper.HasNotBeenSet(nameof(AutoPlayReverse)))
+        if (AutoPlayReverse.HasValue)
         {
-            bitSwiper.AutoPlayReverse = AutoPlayReverse.Value;
+            bitSwiper.TakeFromCascade(nameof(AutoPlayReverse), AutoPlayReverse.Value, static s => s.AutoPlayReverse, static (s, v) => s.AutoPlayReverse = v);
         }
 
-        if (Classes is not null && bitSwiper.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitSwiper.Classes = Classes;
-
-            bitSwiper.ClassBuilder.Reset();
+            bitSwiper.TakeFromCascade(nameof(Classes), Classes, static s => s.Classes, static (s, v) => s.Classes = v);
         }
 
-        if (Color.HasValue && bitSwiper.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue)
         {
-            bitSwiper.Color = Color.Value;
-
-            bitSwiper.ClassBuilder.Reset();
+            bitSwiper.TakeFromCascade(nameof(Color), Color.Value, static s => s.Color, static (s, v) => s.Color = v);
         }
 
-        if (DotAriaLabel.HasValue() && bitSwiper.HasNotBeenSet(nameof(DotAriaLabel)))
+        if (DotAriaLabel.HasValue())
         {
-            bitSwiper.DotAriaLabel = DotAriaLabel;
+            bitSwiper.TakeFromCascade(nameof(DotAriaLabel), DotAriaLabel!, static s => s.DotAriaLabel, static (s, v) => s.DotAriaLabel = v);
         }
 
-        if (DotsAriaLabel.HasValue() && bitSwiper.HasNotBeenSet(nameof(DotsAriaLabel)))
+        if (DotsAriaLabel.HasValue())
         {
-            bitSwiper.DotsAriaLabel = DotsAriaLabel;
+            bitSwiper.TakeFromCascade(nameof(DotsAriaLabel), DotsAriaLabel!, static s => s.DotsAriaLabel, static (s, v) => s.DotsAriaLabel = v);
         }
 
-        if (DotTemplate is not null && bitSwiper.HasNotBeenSet(nameof(DotTemplate)))
+        if (DotTemplate is not null)
         {
-            bitSwiper.DotTemplate = DotTemplate;
+            bitSwiper.TakeFromCascade(nameof(DotTemplate), DotTemplate, static s => s.DotTemplate, static (s, v) => s.DotTemplate = v);
         }
 
-        if (DragThreshold.HasValue && bitSwiper.HasNotBeenSet(nameof(DragThreshold)))
+        if (DragThreshold.HasValue)
         {
-            bitSwiper.DragThreshold = DragThreshold.Value;
+            bitSwiper.TakeFromCascade(nameof(DragThreshold), DragThreshold.Value, static s => s.DragThreshold, static (s, v) => s.DragThreshold = v);
         }
 
-        if (Gap.HasValue() && bitSwiper.HasNotBeenSet(nameof(Gap)))
+        if (Gap.HasValue())
         {
-            bitSwiper.Gap = Gap;
-
-            bitSwiper.StyleBuilder.Reset();
+            bitSwiper.TakeFromCascade(nameof(Gap), Gap, static s => s.Gap, static (s, v) => s.Gap = v);
         }
 
-        if (HideNextPrev.HasValue && bitSwiper.HasNotBeenSet(nameof(HideNextPrev)))
+        if (HideNextPrev.HasValue)
         {
-            bitSwiper.HideNextPrev = HideNextPrev.Value;
+            bitSwiper.TakeFromCascade(nameof(HideNextPrev), HideNextPrev.Value, static s => s.HideNextPrev, static (s, v) => s.HideNextPrev = v);
         }
 
-        if (ItemAriaLabelFormat.HasValue() && bitSwiper.HasNotBeenSet(nameof(ItemAriaLabelFormat)))
+        if (ItemAriaLabelFormat.HasValue())
         {
-            bitSwiper.ItemAriaLabelFormat = ItemAriaLabelFormat;
+            bitSwiper.TakeFromCascade(nameof(ItemAriaLabelFormat), ItemAriaLabelFormat, static s => s.ItemAriaLabelFormat, static (s, v) => s.ItemAriaLabelFormat = v);
         }
 
-        if (NextAriaLabel.HasValue() && bitSwiper.HasNotBeenSet(nameof(NextAriaLabel)))
+        if (NextAriaLabel.HasValue())
         {
-            bitSwiper.NextAriaLabel = NextAriaLabel;
+            bitSwiper.TakeFromCascade(nameof(NextAriaLabel), NextAriaLabel, static s => s.NextAriaLabel, static (s, v) => s.NextAriaLabel = v);
         }
 
-        if (NextIcon is not null && bitSwiper.HasNotBeenSet(nameof(NextIcon)))
+        if (NextIcon is not null)
         {
-            bitSwiper.NextIcon = NextIcon;
+            bitSwiper.TakeFromCascade(nameof(NextIcon), NextIcon, static s => s.NextIcon, static (s, v) => s.NextIcon = v);
         }
 
-        if (NextIconName.HasValue() && bitSwiper.HasNotBeenSet(nameof(NextIconName)))
+        if (NextIconName.HasValue())
         {
-            bitSwiper.NextIconName = NextIconName;
+            bitSwiper.TakeFromCascade(nameof(NextIconName), NextIconName, static s => s.NextIconName, static (s, v) => s.NextIconName = v);
         }
 
-        if (NoDrag.HasValue && bitSwiper.HasNotBeenSet(nameof(NoDrag)))
+        if (NoDrag.HasValue)
         {
-            bitSwiper.NoDrag = NoDrag.Value;
-
-            bitSwiper.ClassBuilder.Reset();
+            bitSwiper.TakeFromCascade(nameof(NoDrag), NoDrag.Value, static s => s.NoDrag, static (s, v) => s.NoDrag = v);
         }
 
-        if (NoKeyboard.HasValue && bitSwiper.HasNotBeenSet(nameof(NoKeyboard)))
+        if (NoKeyboard.HasValue)
         {
-            bitSwiper.NoKeyboard = NoKeyboard.Value;
+            bitSwiper.TakeFromCascade(nameof(NoKeyboard), NoKeyboard.Value, static s => s.NoKeyboard, static (s, v) => s.NoKeyboard = v);
         }
 
-        if (PauseButtonAriaLabel.HasValue() && bitSwiper.HasNotBeenSet(nameof(PauseButtonAriaLabel)))
+        if (PauseButtonAriaLabel.HasValue())
         {
-            bitSwiper.PauseButtonAriaLabel = PauseButtonAriaLabel;
+            bitSwiper.TakeFromCascade(nameof(PauseButtonAriaLabel), PauseButtonAriaLabel!, static s => s.PauseButtonAriaLabel, static (s, v) => s.PauseButtonAriaLabel = v);
         }
 
-        if (Peek.HasValue() && bitSwiper.HasNotBeenSet(nameof(Peek)))
+        if (Peek.HasValue())
         {
-            bitSwiper.Peek = Peek;
-
-            bitSwiper.StyleBuilder.Reset();
+            bitSwiper.TakeFromCascade(nameof(Peek), Peek, static s => s.Peek, static (s, v) => s.Peek = v);
         }
 
-        if (PauseIcon is not null && bitSwiper.HasNotBeenSet(nameof(PauseIcon)))
+        if (PauseIcon is not null)
         {
-            bitSwiper.PauseIcon = PauseIcon;
+            bitSwiper.TakeFromCascade(nameof(PauseIcon), PauseIcon, static s => s.PauseIcon, static (s, v) => s.PauseIcon = v);
         }
 
-        if (PauseIconName.HasValue() && bitSwiper.HasNotBeenSet(nameof(PauseIconName)))
+        if (PauseIconName.HasValue())
         {
-            bitSwiper.PauseIconName = PauseIconName;
+            bitSwiper.TakeFromCascade(nameof(PauseIconName), PauseIconName, static s => s.PauseIconName, static (s, v) => s.PauseIconName = v);
         }
 
-        if (PauseOnFocus.HasValue && bitSwiper.HasNotBeenSet(nameof(PauseOnFocus)))
+        if (PauseOnFocus.HasValue)
         {
-            bitSwiper.PauseOnFocus = PauseOnFocus.Value;
+            bitSwiper.TakeFromCascade(nameof(PauseOnFocus), PauseOnFocus.Value, static s => s.PauseOnFocus, static (s, v) => s.PauseOnFocus = v);
         }
 
-        if (PauseOnHover.HasValue && bitSwiper.HasNotBeenSet(nameof(PauseOnHover)))
+        if (PauseOnHover.HasValue)
         {
-            bitSwiper.PauseOnHover = PauseOnHover.Value;
+            bitSwiper.TakeFromCascade(nameof(PauseOnHover), PauseOnHover.Value, static s => s.PauseOnHover, static (s, v) => s.PauseOnHover = v);
         }
 
-        if (PlayButtonAriaLabel.HasValue() && bitSwiper.HasNotBeenSet(nameof(PlayButtonAriaLabel)))
+        if (PlayButtonAriaLabel.HasValue())
         {
-            bitSwiper.PlayButtonAriaLabel = PlayButtonAriaLabel;
+            bitSwiper.TakeFromCascade(nameof(PlayButtonAriaLabel), PlayButtonAriaLabel!, static s => s.PlayButtonAriaLabel, static (s, v) => s.PlayButtonAriaLabel = v);
         }
 
-        if (PlayIcon is not null && bitSwiper.HasNotBeenSet(nameof(PlayIcon)))
+        if (PlayIcon is not null)
         {
-            bitSwiper.PlayIcon = PlayIcon;
+            bitSwiper.TakeFromCascade(nameof(PlayIcon), PlayIcon, static s => s.PlayIcon, static (s, v) => s.PlayIcon = v);
         }
 
-        if (PlayIconName.HasValue() && bitSwiper.HasNotBeenSet(nameof(PlayIconName)))
+        if (PlayIconName.HasValue())
         {
-            bitSwiper.PlayIconName = PlayIconName;
+            bitSwiper.TakeFromCascade(nameof(PlayIconName), PlayIconName, static s => s.PlayIconName, static (s, v) => s.PlayIconName = v);
         }
 
-        if (PrevAriaLabel.HasValue() && bitSwiper.HasNotBeenSet(nameof(PrevAriaLabel)))
+        if (PrevAriaLabel.HasValue())
         {
-            bitSwiper.PrevAriaLabel = PrevAriaLabel;
+            bitSwiper.TakeFromCascade(nameof(PrevAriaLabel), PrevAriaLabel, static s => s.PrevAriaLabel, static (s, v) => s.PrevAriaLabel = v);
         }
 
-        if (PrevIcon is not null && bitSwiper.HasNotBeenSet(nameof(PrevIcon)))
+        if (PrevIcon is not null)
         {
-            bitSwiper.PrevIcon = PrevIcon;
+            bitSwiper.TakeFromCascade(nameof(PrevIcon), PrevIcon, static s => s.PrevIcon, static (s, v) => s.PrevIcon = v);
         }
 
-        if (PrevIconName.HasValue() && bitSwiper.HasNotBeenSet(nameof(PrevIconName)))
+        if (PrevIconName.HasValue())
         {
-            bitSwiper.PrevIconName = PrevIconName;
+            bitSwiper.TakeFromCascade(nameof(PrevIconName), PrevIconName, static s => s.PrevIconName, static (s, v) => s.PrevIconName = v);
         }
 
-        if (Rewind.HasValue && bitSwiper.HasNotBeenSet(nameof(Rewind)))
+        if (Rewind.HasValue)
         {
-            bitSwiper.Rewind = Rewind.Value;
+            bitSwiper.TakeFromCascade(nameof(Rewind), Rewind.Value, static s => s.Rewind, static (s, v) => s.Rewind = v);
         }
 
-        if (ScrollItemsCount.HasValue && bitSwiper.HasNotBeenSet(nameof(ScrollItemsCount)))
+        if (ScrollItemsCount.HasValue)
         {
-            bitSwiper.ScrollItemsCount = ScrollItemsCount.Value;
+            bitSwiper.TakeFromCascade(nameof(ScrollItemsCount), ScrollItemsCount.Value, static s => s.ScrollItemsCount, static (s, v) => s.ScrollItemsCount = v);
         }
 
-        if (ShowDots.HasValue && bitSwiper.HasNotBeenSet(nameof(ShowDots)))
+        if (ShowDots.HasValue)
         {
-            bitSwiper.ShowDots = ShowDots.Value;
+            bitSwiper.TakeFromCascade(nameof(ShowDots), ShowDots.Value, static s => s.ShowDots, static (s, v) => s.ShowDots = v);
         }
 
-        if (ShowPlayPause.HasValue && bitSwiper.HasNotBeenSet(nameof(ShowPlayPause)))
+        if (ShowPlayPause.HasValue)
         {
-            bitSwiper.ShowPlayPause = ShowPlayPause.Value;
+            bitSwiper.TakeFromCascade(nameof(ShowPlayPause), ShowPlayPause.Value, static s => s.ShowPlayPause, static (s, v) => s.ShowPlayPause = v);
         }
 
-        if (ShowScrollbar.HasValue && bitSwiper.HasNotBeenSet(nameof(ShowScrollbar)))
+        if (ShowScrollbar.HasValue)
         {
-            bitSwiper.ShowScrollbar = ShowScrollbar.Value;
-
-            bitSwiper.ClassBuilder.Reset();
+            bitSwiper.TakeFromCascade(nameof(ShowScrollbar), ShowScrollbar.Value, static s => s.ShowScrollbar, static (s, v) => s.ShowScrollbar = v);
         }
 
-        if (Size.HasValue && bitSwiper.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue)
         {
-            bitSwiper.Size = Size.Value;
-
-            bitSwiper.ClassBuilder.Reset();
+            bitSwiper.TakeFromCascade(nameof(Size), Size.Value, static s => s.Size, static (s, v) => s.Size = v);
         }
 
-        if (SnapAlign.HasValue && bitSwiper.HasNotBeenSet(nameof(SnapAlign)))
+        if (SnapAlign.HasValue)
         {
-            bitSwiper.SnapAlign = SnapAlign.Value;
-
-            bitSwiper.ClassBuilder.Reset();
+            bitSwiper.TakeFromCascade(nameof(SnapAlign), SnapAlign.Value, static s => s.SnapAlign, static (s, v) => s.SnapAlign = v);
         }
 
-        if (StopOnInteraction.HasValue && bitSwiper.HasNotBeenSet(nameof(StopOnInteraction)))
+        if (StopOnInteraction.HasValue)
         {
-            bitSwiper.StopOnInteraction = StopOnInteraction.Value;
+            bitSwiper.TakeFromCascade(nameof(StopOnInteraction), StopOnInteraction.Value, static s => s.StopOnInteraction, static (s, v) => s.StopOnInteraction = v);
         }
 
-        if (StopOnLastSlide.HasValue && bitSwiper.HasNotBeenSet(nameof(StopOnLastSlide)))
+        if (StopOnLastSlide.HasValue)
         {
-            bitSwiper.StopOnLastSlide = StopOnLastSlide.Value;
+            bitSwiper.TakeFromCascade(nameof(StopOnLastSlide), StopOnLastSlide.Value, static s => s.StopOnLastSlide, static (s, v) => s.StopOnLastSlide = v);
         }
 
-        if (Styles is not null && bitSwiper.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitSwiper.Styles = Styles;
-
-            bitSwiper.StyleBuilder.Reset();
+            bitSwiper.TakeFromCascade(nameof(Styles), Styles, static s => s.Styles, static (s, v) => s.Styles = v);
         }
 
-        if (Vertical.HasValue && bitSwiper.HasNotBeenSet(nameof(Vertical)))
+        if (Vertical.HasValue)
         {
-            bitSwiper.Vertical = Vertical.Value;
-
-            bitSwiper.ClassBuilder.Reset();
+            bitSwiper.TakeFromCascade(nameof(Vertical), Vertical.Value, static s => s.Vertical, static (s, v) => s.Vertical = v);
         }
 
-        if (VisibleItemsCount.HasValue && bitSwiper.HasNotBeenSet(nameof(VisibleItemsCount)))
+        if (VisibleItemsCount.HasValue)
         {
-            bitSwiper.VisibleItemsCount = VisibleItemsCount.Value;
-
-            bitSwiper.StyleBuilder.Reset();
+            bitSwiper.TakeFromCascade(nameof(VisibleItemsCount), VisibleItemsCount.Value, static s => s.VisibleItemsCount, static (s, v) => s.VisibleItemsCount = v);
         }
 
-        if (VisibleItemsCountXs.HasValue && bitSwiper.HasNotBeenSet(nameof(VisibleItemsCountXs)))
+        if (VisibleItemsCountXs.HasValue)
         {
-            bitSwiper.VisibleItemsCountXs = VisibleItemsCountXs.Value;
-
-            bitSwiper.StyleBuilder.Reset();
+            bitSwiper.TakeFromCascade(nameof(VisibleItemsCountXs), VisibleItemsCountXs.Value, static s => s.VisibleItemsCountXs, static (s, v) => s.VisibleItemsCountXs = v);
         }
 
-        if (VisibleItemsCountSm.HasValue && bitSwiper.HasNotBeenSet(nameof(VisibleItemsCountSm)))
+        if (VisibleItemsCountSm.HasValue)
         {
-            bitSwiper.VisibleItemsCountSm = VisibleItemsCountSm.Value;
-
-            bitSwiper.StyleBuilder.Reset();
+            bitSwiper.TakeFromCascade(nameof(VisibleItemsCountSm), VisibleItemsCountSm.Value, static s => s.VisibleItemsCountSm, static (s, v) => s.VisibleItemsCountSm = v);
         }
 
-        if (VisibleItemsCountMd.HasValue && bitSwiper.HasNotBeenSet(nameof(VisibleItemsCountMd)))
+        if (VisibleItemsCountMd.HasValue)
         {
-            bitSwiper.VisibleItemsCountMd = VisibleItemsCountMd.Value;
-
-            bitSwiper.StyleBuilder.Reset();
+            bitSwiper.TakeFromCascade(nameof(VisibleItemsCountMd), VisibleItemsCountMd.Value, static s => s.VisibleItemsCountMd, static (s, v) => s.VisibleItemsCountMd = v);
         }
 
-        if (VisibleItemsCountLg.HasValue && bitSwiper.HasNotBeenSet(nameof(VisibleItemsCountLg)))
+        if (VisibleItemsCountLg.HasValue)
         {
-            bitSwiper.VisibleItemsCountLg = VisibleItemsCountLg.Value;
-
-            bitSwiper.StyleBuilder.Reset();
+            bitSwiper.TakeFromCascade(nameof(VisibleItemsCountLg), VisibleItemsCountLg.Value, static s => s.VisibleItemsCountLg, static (s, v) => s.VisibleItemsCountLg = v);
         }
 
-        if (VisibleItemsCountXl.HasValue && bitSwiper.HasNotBeenSet(nameof(VisibleItemsCountXl)))
+        if (VisibleItemsCountXl.HasValue)
         {
-            bitSwiper.VisibleItemsCountXl = VisibleItemsCountXl.Value;
-
-            bitSwiper.StyleBuilder.Reset();
+            bitSwiper.TakeFromCascade(nameof(VisibleItemsCountXl), VisibleItemsCountXl.Value, static s => s.VisibleItemsCountXl, static (s, v) => s.VisibleItemsCountXl = v);
         }
 
-        if (VisibleItemsCountXxl.HasValue && bitSwiper.HasNotBeenSet(nameof(VisibleItemsCountXxl)))
+        if (VisibleItemsCountXxl.HasValue)
         {
-            bitSwiper.VisibleItemsCountXxl = VisibleItemsCountXxl.Value;
-
-            bitSwiper.StyleBuilder.Reset();
+            bitSwiper.TakeFromCascade(nameof(VisibleItemsCountXxl), VisibleItemsCountXxl.Value, static s => s.VisibleItemsCountXxl, static (s, v) => s.VisibleItemsCountXxl = v);
         }
 
-        if (Wheel.HasValue && bitSwiper.HasNotBeenSet(nameof(Wheel)))
+        if (Wheel.HasValue)
         {
-            bitSwiper.Wheel = Wheel.Value;
+            bitSwiper.TakeFromCascade(nameof(Wheel), Wheel.Value, static s => s.Wheel, static (s, v) => s.Wheel = v);
         }
     }
 }

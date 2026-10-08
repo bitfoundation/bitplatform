@@ -11,7 +11,7 @@ public partial class BitNumberFieldDemo
             Name = "Accent",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the number field, used for its focus indicator and for the icon, prefix and suffix while the field is focused (Primary by default).",
+            Description = "The general color of the number field, used for its focus indicator and for the icon, prefix and suffix while the field is focused (Primary by default). An explicit value wins over the --bit-NumberField-* variables it paints (the focus color, the focused icon and affix colors, the loading and spinner colors); left unset, the accent is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -55,7 +55,7 @@ public partial class BitNumberFieldDemo
             Name = "Background",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The color kind of the number field background (Primary by default).",
+            Description = "The color kind of the number field background (Primary by default). An explicit value wins over --bit-NumberField-background; left unset, the background is the primary kind unless it says otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
         },
@@ -64,7 +64,7 @@ public partial class BitNumberFieldDemo
             Name = "Border",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The color kind of the number field border (Primary by default).",
+            Description = "The color kind of the number field border (Primary by default). An explicit value wins over --bit-NumberField-border-color and --bit-NumberField-hover-border-color; left unset, the border is the primary kind unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
         },
@@ -552,7 +552,7 @@ public partial class BitNumberFieldDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "Sets the preset size (Small, Medium, Large) of the number field: the height of the control, its type scale, the size of its icons and the width of its buttons all follow it, so a field lines up with the other controls of the same size around it (Medium by default).",
+            Description = "Sets the preset size (Small, Medium, Large) of the number field: the height of the control, its type scale, the size of its icons and the width of its buttons all follow it, so a field lines up with the other controls of the same size around it (Medium by default). An explicit value wins over the --bit-NumberField-* size variables (height, font sizes, inline padding, icon size, spinner size, button width and glyph size); left unset, the field is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -918,20 +918,20 @@ public partial class BitNumberFieldDemo
         new()
         {
             Name = "--bit-NumberField-background",
-            DefaultValue = "The Background color kind",
-            Description = "Fill of the field.",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Fill of the field. The Background parameter wins over it.",
         },
         new()
         {
             Name = "--bit-NumberField-border-color",
-            DefaultValue = "The Border color kind",
-            Description = "Border color at rest. An invalid field takes the error color instead.",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "Border color at rest. An invalid field takes the error color instead. The Border parameter wins over it.",
         },
         new()
         {
             Name = "--bit-NumberField-hover-border-color",
-            DefaultValue = "The hover color of the Border color kind",
-            Description = "Border color under a hovering pointer, on an editable field that is neither focused nor invalid.",
+            DefaultValue = "--bit-clr-brd-pri-hover",
+            Description = "Border color under a hovering pointer, on an editable field that is neither focused nor invalid. The Border parameter wins over it.",
         },
         new()
         {
@@ -948,26 +948,26 @@ public partial class BitNumberFieldDemo
         new()
         {
             Name = "--bit-NumberField-focus-color",
-            DefaultValue = "The Accent role's focus color",
-            Description = "Color of the keyboard focus indicator - the ring, or the thicker bottom rule of the Underlined variant.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the keyboard focus indicator - the ring, or the thicker bottom rule of the Underlined variant. The Accent parameter wins over it.",
         },
         new()
         {
             Name = "--bit-NumberField-height",
-            DefaultValue = "Per Size, --bit-siz-ctrl-sm/md/lg",
-            Description = "Height of the field. On a coarse pointer the Compact mode grows past it so each of its stacked buttons clears the 24px minimum pointer target.",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Height of the field. On a coarse pointer the Compact mode grows past it so each of its stacked buttons clears the 24px minimum pointer target. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-NumberField-padding-inline",
-            DefaultValue = "Per Size, in step with BitTextField",
-            Description = "Room between the border and the value.",
+            DefaultValue = "spacing(1), in step with BitTextField",
+            Description = "Room between the border and the value. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-NumberField-font-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Size of the value text, and of the prefix and suffix beside it.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Size of the value text, and of the prefix and suffix beside it. The Size parameter wins over it.",
         },
         new()
         {
@@ -978,8 +978,8 @@ public partial class BitNumberFieldDemo
         new()
         {
             Name = "--bit-NumberField-label-font-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Size of the label.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Size of the label. The Size parameter wins over it.",
         },
         new()
         {
@@ -1014,20 +1014,20 @@ public partial class BitNumberFieldDemo
         new()
         {
             Name = "--bit-NumberField-icon-color",
-            DefaultValue = "--bit-clr-fg-pri, the Accent while focused",
-            Description = "Color of the field's own icon.",
+            DefaultValue = "--bit-clr-fg-pri, --bit-clr-pri while focused",
+            Description = "Color of the field's own icon. The Accent parameter wins over it while the field is focused.",
         },
         new()
         {
             Name = "--bit-NumberField-icon-size",
-            DefaultValue = "Per Size, --bit-siz-icon-sm/md/lg",
-            Description = "Size of that icon.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Size of that icon. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-NumberField-affix-color",
-            DefaultValue = "--bit-clr-fg-pri, the Accent while focused",
-            Description = "Color of the prefix and the suffix.",
+            DefaultValue = "--bit-clr-fg-pri, --bit-clr-pri while focused",
+            Description = "Color of the prefix and the suffix. The Accent parameter wins over it while the field is focused.",
         },
         new()
         {
@@ -1074,32 +1074,32 @@ public partial class BitNumberFieldDemo
         new()
         {
             Name = "--bit-NumberField-button-width",
-            DefaultValue = "Per Size and Mode",
-            Description = "Width of a spin button and of the clear button. The stacked pair of the Compact mode is narrower than the single button of the other modes by default.",
+            DefaultValue = "--bit-siz-ctrl-md, and spacing(3) for the stacked pair of the Compact mode",
+            Description = "Width of a spin button and of the clear button. The stacked pair of the Compact mode is narrower than the single button of the other modes by default. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-NumberField-button-icon-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Size of the glyph inside those buttons.",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Size of the glyph inside those buttons. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-NumberField-loading-color",
-            DefaultValue = "the Accent",
-            Description = "Color of the busy indicator.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Color of the busy indicator. The Accent parameter wins over it.",
         },
         new()
         {
             Name = "--bit-NumberField-spinner-size",
-            DefaultValue = "the icon size plus the spinner stroke on each side (16 / 20 / 24px per Size)",
-            Description = "Diameter of the default busy spinner.",
+            DefaultValue = "the icon size plus the spinner stroke on each side (--bit-siz-icon-md plus two strokes)",
+            Description = "Diameter of the default busy spinner. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-NumberField-spinner-color",
             DefaultValue = "the busy indicator's color",
-            Description = "Color of the moving arc of the default busy spinner.",
+            Description = "Color of the moving arc of the default busy spinner. The Accent parameter wins over it, and a disabled field greys it regardless.",
         },
         new()
         {

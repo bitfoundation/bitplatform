@@ -99,7 +99,7 @@ public partial class BitMessageBoxDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the message box, which paints its leading icon and - unless IconName says otherwise - picks the glyph.",
+            Description = "The general color of the message box, which paints its leading icon and - unless IconName says otherwise - picks the glyph. An explicit value wins over --bit-MessageBox-icon-color; left unset, the icon takes the text color unless that variable says otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -256,7 +256,7 @@ public partial class BitMessageBoxDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the message box, which scales its inset, its title, its body text and its leading icon together.",
+            Description = "The size of the message box, which scales its inset, its title, its body text and its leading icon together. An explicit value wins over the --bit-MessageBox-* size variables; left unset, the message box is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -321,19 +321,19 @@ public partial class BitMessageBoxDemo
 
     private readonly List<ComponentCssVariable> componentCssVariables =
     [
-        new() { Name = "--bit-MessageBox-padding", DefaultValue = "var(--bit-spa-dialog)", Description = "Inset of the message box (scaled by Size)." },
+        new() { Name = "--bit-MessageBox-padding", DefaultValue = "var(--bit-spa-dialog)", Description = "Inset of the message box. The Size parameter wins over it." },
         new() { Name = "--bit-MessageBox-gap", DefaultValue = "spacing(2)", Description = "Room between the header, the body and the footer." },
-        new() { Name = "--bit-MessageBox-min-width", DefaultValue = "spacing(40)", Description = "Width the message box does not shrink below (scaled by Size, never past the max width, unset on small screens)." },
+        new() { Name = "--bit-MessageBox-min-width", DefaultValue = "spacing(40)", Description = "Width the message box does not shrink below (never past the max width, unset on small screens). The Size parameter wins over it." },
         new() { Name = "--bit-MessageBox-max-width", DefaultValue = "var(--bit-siz-dialog-max-width) in a modal, 100% inline", Description = "Width the message box stops growing at: the theme's dialog width where it is the content of a modal, its container's width where it is rendered inline." },
         new() { Name = "--bit-MessageBox-max-height", DefaultValue = "the screen height a modal leaves", Description = "Height past which the body scrolls (header and footer stay put)." },
         new() { Name = "--bit-MessageBox-text-align", DefaultValue = "var(--bit-layout-dialog-text-align)", Description = "Alignment of the title and the body." },
-        new() { Name = "--bit-MessageBox-icon-color", DefaultValue = "the main color of Color", Description = "Color of the leading icon." },
-        new() { Name = "--bit-MessageBox-icon-size", DefaultValue = "var(--bit-siz-icon-md)", Description = "Size of the leading icon (scaled by Size)." },
+        new() { Name = "--bit-MessageBox-icon-color", DefaultValue = "the text color", Description = "Color of the leading icon. The Color parameter wins over it." },
+        new() { Name = "--bit-MessageBox-icon-size", DefaultValue = "var(--bit-siz-icon-md)", Description = "Size of the leading icon. The Size parameter wins over it." },
         new() { Name = "--bit-MessageBox-title-color", DefaultValue = "var(--bit-clr-fg-pri)", Description = "Color of the title." },
-        new() { Name = "--bit-MessageBox-title-font-size", DefaultValue = "var(--bit-tpg-dialog-title-font-size)", Description = "Size of the title (scaled by Size)." },
+        new() { Name = "--bit-MessageBox-title-font-size", DefaultValue = "var(--bit-tpg-dialog-title-font-size)", Description = "Size of the title. The Size parameter wins over it." },
         new() { Name = "--bit-MessageBox-title-font-weight", DefaultValue = "var(--bit-tpg-dialog-title-font-weight)", Description = "Weight of the title." },
         new() { Name = "--bit-MessageBox-body-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Color of the body." },
-        new() { Name = "--bit-MessageBox-body-font-size", DefaultValue = "var(--bit-tpg-fs-md)", Description = "Size of the body (scaled by Size)." },
+        new() { Name = "--bit-MessageBox-body-font-size", DefaultValue = "var(--bit-tpg-fs-md)", Description = "Size of the body. The Size parameter wins over it." },
         new() { Name = "--bit-MessageBox-actions-gap", DefaultValue = "spacing(2)", Description = "Room between the action buttons." },
         new() { Name = "--bit-MessageBox-actions-justify", DefaultValue = "var(--bit-layout-dialog-actions-justify)", Description = "How the action buttons sit along the footer." },
     ];
@@ -590,7 +590,7 @@ public partial class BitMessageBoxDemo
                     Name = "Color",
                     Type = "BitColor?",
                     DefaultValue = "null",
-                    Description = "The general color of the message box, which is the severity of its message. Warning, SevereWarning and Error are announced as alerts."
+                    Description = "The general color of the message box, which is the severity of its message. Warning, SevereWarning and Error are announced as alerts. An explicit value wins over --bit-MessageBox-icon-color."
                 },
                 new()
                 {
@@ -729,7 +729,7 @@ public partial class BitMessageBoxDemo
                     Name = "Size",
                     Type = "BitSize?",
                     DefaultValue = "null",
-                    Description = "The size of the message box.",
+                    Description = "The size of the message box. An explicit value wins over the --bit-MessageBox-* size variables.",
                     LinkType = LinkType.Link,
                     Href = "#size-enum"
                 },

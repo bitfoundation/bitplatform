@@ -212,203 +212,164 @@ public class BitCheckboxParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitCheckbox);
 
-        if (AllowDisabledFocus.HasValue && bitCheckbox.HasNotBeenSet(nameof(AllowDisabledFocus)))
+        if (AllowDisabledFocus.HasValue)
         {
-            bitCheckbox.AllowDisabledFocus = AllowDisabledFocus.Value;
+            bitCheckbox.TakeFromCascade(nameof(AllowDisabledFocus), AllowDisabledFocus.Value, static c => c.AllowDisabledFocus, static (c, v) => c.AllowDisabledFocus = v);
         }
 
-        if (AriaControls.HasValue() && bitCheckbox.HasNotBeenSet(nameof(AriaControls)))
+        if (AriaControls.HasValue())
         {
-            bitCheckbox.AriaControls = AriaControls;
+            bitCheckbox.TakeFromCascade(nameof(AriaControls), AriaControls, static c => c.AriaControls, static (c, v) => c.AriaControls = v);
         }
 
-        if (AriaDescribedby.HasValue() && bitCheckbox.HasNotBeenSet(nameof(AriaDescribedby)))
+        if (AriaDescribedby.HasValue())
         {
-            bitCheckbox.AriaDescribedby = AriaDescribedby;
+            bitCheckbox.TakeFromCascade(nameof(AriaDescribedby), AriaDescribedby, static c => c.AriaDescribedby, static (c, v) => c.AriaDescribedby = v);
         }
 
-        if (AriaDescription.HasValue() && bitCheckbox.HasNotBeenSet(nameof(AriaDescription)))
+        if (AriaDescription.HasValue())
         {
-            bitCheckbox.AriaDescription = AriaDescription;
+            bitCheckbox.TakeFromCascade(nameof(AriaDescription), AriaDescription, static c => c.AriaDescription, static (c, v) => c.AriaDescription = v);
         }
 
-        if (AriaLabelledby.HasValue() && bitCheckbox.HasNotBeenSet(nameof(AriaLabelledby)))
+        if (AriaLabelledby.HasValue())
         {
-            bitCheckbox.AriaLabelledby = AriaLabelledby;
+            bitCheckbox.TakeFromCascade(nameof(AriaLabelledby), AriaLabelledby, static c => c.AriaLabelledby, static (c, v) => c.AriaLabelledby = v);
         }
 
-        if (AriaPositionInSet.HasValue && bitCheckbox.HasNotBeenSet(nameof(AriaPositionInSet)))
+        if (AriaPositionInSet.HasValue)
         {
-            bitCheckbox.AriaPositionInSet = AriaPositionInSet.Value;
+            bitCheckbox.TakeFromCascade(nameof(AriaPositionInSet), AriaPositionInSet.Value, static c => c.AriaPositionInSet, static (c, v) => c.AriaPositionInSet = v);
         }
 
-        if (AriaSetSize.HasValue && bitCheckbox.HasNotBeenSet(nameof(AriaSetSize)))
+        if (AriaSetSize.HasValue)
         {
-            bitCheckbox.AriaSetSize = AriaSetSize.Value;
+            bitCheckbox.TakeFromCascade(nameof(AriaSetSize), AriaSetSize.Value, static c => c.AriaSetSize, static (c, v) => c.AriaSetSize = v);
         }
 
-        if (AutoFocus.HasValue && bitCheckbox.HasNotBeenSet(nameof(AutoFocus)))
+        if (AutoFocus.HasValue)
         {
-            bitCheckbox.AutoFocus = AutoFocus.Value;
+            bitCheckbox.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static c => c.AutoFocus, static (c, v) => c.AutoFocus = v);
         }
 
-        if (AutoLoading.HasValue && bitCheckbox.HasNotBeenSet(nameof(AutoLoading)))
+        if (AutoLoading.HasValue)
         {
-            bitCheckbox.AutoLoading = AutoLoading.Value;
+            bitCheckbox.TakeFromCascade(nameof(AutoLoading), AutoLoading.Value, static c => c.AutoLoading, static (c, v) => c.AutoLoading = v);
         }
 
-        if (CheckIcon is not null && bitCheckbox.HasNotBeenSet(nameof(CheckIcon)))
+        if (CheckIcon is not null)
         {
-            bitCheckbox.CheckIcon = CheckIcon;
+            bitCheckbox.TakeFromCascade(nameof(CheckIcon), CheckIcon, static c => c.CheckIcon, static (c, v) => c.CheckIcon = v);
         }
 
-        if (CheckIconAriaLabel.HasValue() && bitCheckbox.HasNotBeenSet(nameof(CheckIconAriaLabel)))
+        if (CheckIconAriaLabel.HasValue())
         {
-            bitCheckbox.CheckIconAriaLabel = CheckIconAriaLabel;
+            bitCheckbox.TakeFromCascade(nameof(CheckIconAriaLabel), CheckIconAriaLabel, static c => c.CheckIconAriaLabel, static (c, v) => c.CheckIconAriaLabel = v);
         }
 
-        if (CheckIconName.HasValue() && bitCheckbox.HasNotBeenSet(nameof(CheckIconName)))
+        if (CheckIconName.HasValue())
         {
-            bitCheckbox.CheckIconName = CheckIconName;
+            bitCheckbox.TakeFromCascade(nameof(CheckIconName), CheckIconName, static c => c.CheckIconName, static (c, v) => c.CheckIconName = v);
         }
 
-        if (Classes is not null && bitCheckbox.HasNotBeenSet(nameof(Classes)))
+        if (Classes is not null)
         {
-            bitCheckbox.Classes = Classes;
-
-            bitCheckbox.ClassBuilder.Reset();
+            bitCheckbox.TakeFromCascade(nameof(Classes), Classes, static c => c.Classes, static (c, v) => c.Classes = v);
         }
 
-        if (Color.HasValue && bitCheckbox.HasNotBeenSet(nameof(Color)))
+        if (Color.HasValue)
         {
-            bitCheckbox.Color = Color.Value;
-
-            bitCheckbox.ClassBuilder.Reset();
+            bitCheckbox.TakeFromCascade(nameof(Color), Color.Value, static c => c.Color, static (c, v) => c.Color = v);
         }
 
-        if (DefaultIndeterminate.HasValue && bitCheckbox.HasNotBeenSet(nameof(DefaultIndeterminate)))
+        if (DefaultIndeterminate.HasValue)
         {
-            bitCheckbox.DefaultIndeterminate = DefaultIndeterminate.Value;
+            bitCheckbox.TakeFromCascade(nameof(DefaultIndeterminate), DefaultIndeterminate.Value, static c => c.DefaultIndeterminate, static (c, v) => c.DefaultIndeterminate = v);
         }
 
-        if (Description.HasValue() && bitCheckbox.HasNotBeenSet(nameof(Description)))
+        if (Description.HasValue())
         {
-            bitCheckbox.Description = Description;
-
-            bitCheckbox.ClassBuilder.Reset();
+            bitCheckbox.TakeFromCascade(nameof(Description), Description, static c => c.Description, static (c, v) => c.Description = v);
         }
 
-        if (FullWidth.HasValue && bitCheckbox.HasNotBeenSet(nameof(FullWidth)))
+        if (FullWidth.HasValue)
         {
-            bitCheckbox.FullWidth = FullWidth.Value;
-
-            bitCheckbox.ClassBuilder.Reset();
+            bitCheckbox.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static c => c.FullWidth, static (c, v) => c.FullWidth = v);
         }
 
-        if (Indeterminate.HasValue && bitCheckbox.HasNotBeenSet(nameof(Indeterminate)))
+        if (Indeterminate.HasValue)
         {
-            var indeterminateChanged = bitCheckbox.Indeterminate != Indeterminate.Value;
-
-            bitCheckbox.Indeterminate = Indeterminate.Value;
-
-            bitCheckbox.ClassBuilder.Reset();
-
-            // The mixed state lives in a DOM property rather than an attribute, so it has to be pushed onto the
-            // element the way the setter of a parameter written on the component itself does. Only once there is
-            // an element to push it onto: the state the checkbox starts out with is pushed on its first render.
-            if (indeterminateChanged) bitCheckbox.OnSetIndeterminateFromParams();
+            bitCheckbox.TakeFromCascade(nameof(Indeterminate), Indeterminate.Value, static c => c.Indeterminate, static (c, v) => c.Indeterminate = v);
         }
 
-        if (IndeterminateIcon is not null && bitCheckbox.HasNotBeenSet(nameof(IndeterminateIcon)))
+        if (IndeterminateIcon is not null)
         {
-            bitCheckbox.IndeterminateIcon = IndeterminateIcon;
-
-            bitCheckbox.ClassBuilder.Reset();
+            bitCheckbox.TakeFromCascade(nameof(IndeterminateIcon), IndeterminateIcon, static c => c.IndeterminateIcon, static (c, v) => c.IndeterminateIcon = v);
         }
 
-        if (IndeterminateIconName.HasValue() && bitCheckbox.HasNotBeenSet(nameof(IndeterminateIconName)))
+        if (IndeterminateIconName.HasValue())
         {
-            bitCheckbox.IndeterminateIconName = IndeterminateIconName;
-
-            bitCheckbox.ClassBuilder.Reset();
+            bitCheckbox.TakeFromCascade(nameof(IndeterminateIconName), IndeterminateIconName, static c => c.IndeterminateIconName, static (c, v) => c.IndeterminateIconName = v);
         }
 
-        if (Label.HasValue() && bitCheckbox.HasNotBeenSet(nameof(Label)))
+        if (Label.HasValue())
         {
-            bitCheckbox.Label = Label;
-
-            bitCheckbox.ClassBuilder.Reset();
+            bitCheckbox.TakeFromCascade(nameof(Label), Label, static c => c.Label, static (c, v) => c.Label = v);
         }
 
-        if (LabelPlacement.HasValue && bitCheckbox.HasNotBeenSet(nameof(LabelPlacement)))
+        if (LabelPlacement.HasValue)
         {
-            bitCheckbox.LabelPlacement = LabelPlacement.Value;
-
-            bitCheckbox.ClassBuilder.Reset();
+            bitCheckbox.TakeFromCascade(nameof(LabelPlacement), LabelPlacement.Value, static c => c.LabelPlacement, static (c, v) => c.LabelPlacement = v);
         }
 
-        if (Loading.HasValue && bitCheckbox.HasNotBeenSet(nameof(Loading)))
+        if (Loading.HasValue)
         {
-            bitCheckbox.Loading = Loading.Value;
-
-            bitCheckbox.ClassBuilder.Reset();
+            bitCheckbox.TakeFromCascade(nameof(Loading), Loading.Value, static c => c.Loading, static (c, v) => c.Loading = v);
         }
 
-        if (NoWrap.HasValue && bitCheckbox.HasNotBeenSet(nameof(NoWrap)))
+        if (NoWrap.HasValue)
         {
-            bitCheckbox.NoWrap = NoWrap.Value;
-
-            bitCheckbox.ClassBuilder.Reset();
+            bitCheckbox.TakeFromCascade(nameof(NoWrap), NoWrap.Value, static c => c.NoWrap, static (c, v) => c.NoWrap = v);
         }
 
-        if (Reversed.HasValue && bitCheckbox.HasNotBeenSet(nameof(Reversed)))
+        if (Reversed.HasValue)
         {
-            bitCheckbox.Reversed = Reversed.Value;
-
-            bitCheckbox.ClassBuilder.Reset();
+            bitCheckbox.TakeFromCascade(nameof(Reversed), Reversed.Value, static c => c.Reversed, static (c, v) => c.Reversed = v);
         }
 
-        if (Size.HasValue && bitCheckbox.HasNotBeenSet(nameof(Size)))
+        if (Size.HasValue)
         {
-            bitCheckbox.Size = Size.Value;
-
-            bitCheckbox.ClassBuilder.Reset();
+            bitCheckbox.TakeFromCascade(nameof(Size), Size.Value, static c => c.Size, static (c, v) => c.Size = v);
         }
 
-        if (StopPropagation.HasValue && bitCheckbox.HasNotBeenSet(nameof(StopPropagation)))
+        if (StopPropagation.HasValue)
         {
-            bitCheckbox.StopPropagation = StopPropagation.Value;
+            bitCheckbox.TakeFromCascade(nameof(StopPropagation), StopPropagation.Value, static c => c.StopPropagation, static (c, v) => c.StopPropagation = v);
         }
 
-        if (Styles is not null && bitCheckbox.HasNotBeenSet(nameof(Styles)))
+        if (Styles is not null)
         {
-            bitCheckbox.Styles = Styles;
-
-            bitCheckbox.StyleBuilder.Reset();
+            bitCheckbox.TakeFromCascade(nameof(Styles), Styles, static c => c.Styles, static (c, v) => c.Styles = v);
         }
 
-        if (ThreeState.HasValue && bitCheckbox.HasNotBeenSet(nameof(ThreeState)))
+        if (ThreeState.HasValue)
         {
-            bitCheckbox.ThreeState = ThreeState.Value;
+            bitCheckbox.TakeFromCascade(nameof(ThreeState), ThreeState.Value, static c => c.ThreeState, static (c, v) => c.ThreeState = v);
         }
 
-        if (Title.HasValue() && bitCheckbox.HasNotBeenSet(nameof(Title)))
+        if (Title.HasValue())
         {
-            bitCheckbox.Title = Title;
+            bitCheckbox.TakeFromCascade(nameof(Title), Title, static c => c.Title, static (c, v) => c.Title = v);
         }
 
-        if (UncheckedIcon is not null && bitCheckbox.HasNotBeenSet(nameof(UncheckedIcon)))
+        if (UncheckedIcon is not null)
         {
-            bitCheckbox.UncheckedIcon = UncheckedIcon;
-
-            bitCheckbox.ClassBuilder.Reset();
+            bitCheckbox.TakeFromCascade(nameof(UncheckedIcon), UncheckedIcon, static c => c.UncheckedIcon, static (c, v) => c.UncheckedIcon = v);
         }
 
-        if (UncheckedIconName.HasValue() && bitCheckbox.HasNotBeenSet(nameof(UncheckedIconName)))
+        if (UncheckedIconName.HasValue())
         {
-            bitCheckbox.UncheckedIconName = UncheckedIconName;
-
-            bitCheckbox.ClassBuilder.Reset();
+            bitCheckbox.TakeFromCascade(nameof(UncheckedIconName), UncheckedIconName, static c => c.UncheckedIconName, static (c, v) => c.UncheckedIconName = v);
         }
     }
 }

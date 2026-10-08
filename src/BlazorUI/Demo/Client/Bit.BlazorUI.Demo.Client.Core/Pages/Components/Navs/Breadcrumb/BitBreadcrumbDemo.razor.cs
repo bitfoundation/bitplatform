@@ -41,7 +41,7 @@ public partial class BitBreadcrumbDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the items and the divider of the breadcrumb.",
+            Description = "The general color of the items and the divider of the breadcrumb. An explicit value wins over the --bit-Breadcrumb-* color variables; left unset, the trail keeps the theme's foreground colors unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -220,7 +220,7 @@ public partial class BitBreadcrumbDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the items of the breadcrumb.",
+            Description = "The size of the items of the breadcrumb. An explicit value wins over the --bit-Breadcrumb-* size variables; left unset, the breadcrumb is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -254,14 +254,14 @@ public partial class BitBreadcrumbDemo
         new()
         {
             Name = "--bit-Breadcrumb-color",
-            DefaultValue = "The Color role's main color (--bit-clr-fg-pri without a Color)",
-            Description = "Text of the items, in the trail and in the overflow menu.",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Text of the items, in the trail and in the overflow menu. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Breadcrumb-selected-color",
             DefaultValue = "--bit-Breadcrumb-color",
-            Description = "Text of the current (selected) item.",
+            Description = "Text of the current (selected) item. The Color parameter wins over it.",
         },
         new()
         {
@@ -279,7 +279,7 @@ public partial class BitBreadcrumbDemo
         {
             Name = "--bit-Breadcrumb-hover-color",
             DefaultValue = "The color at rest",
-            Description = "Text of a hovered item or menu item, and the glyph of a hovered overflow button.",
+            Description = "Text of a hovered item or menu item, and the glyph of a hovered overflow button. The Color parameter wins over it.",
         },
         new()
         {
@@ -296,20 +296,20 @@ public partial class BitBreadcrumbDemo
         new()
         {
             Name = "--bit-Breadcrumb-focus-color",
-            DefaultValue = "The Color role's focus color (--bit-clr-pri-focus without a Color)",
-            Description = "Focus indicator color.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Focus indicator color. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Breadcrumb-font-size",
-            DefaultValue = "Per Size",
-            Description = "Text size of the items.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the items. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Breadcrumb-item-height",
-            DefaultValue = "Per Size (--bit-siz-ctrl-*)",
-            Description = "Line height of the items, which sets the height of the trail.",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Line height of the items, which sets the height of the trail. The Size parameter wins over it.",
         },
         new()
         {
@@ -338,14 +338,14 @@ public partial class BitBreadcrumbDemo
         new()
         {
             Name = "--bit-Breadcrumb-divider-color",
-            DefaultValue = "The Color role's main color (--bit-clr-fg-sec without a Color)",
-            Description = "Color of the dividers and of the overflow button glyph.",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the dividers and of the overflow button glyph. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Breadcrumb-divider-size",
-            DefaultValue = "Per Size",
-            Description = "Size of the divider icons.",
+            DefaultValue = "--bit-tpg-fs-md",
+            Description = "Size of the divider icons. The Size parameter wins over it.",
         },
         new()
         {
@@ -380,14 +380,14 @@ public partial class BitBreadcrumbDemo
         new()
         {
             Name = "--bit-Breadcrumb-overflow-item-height",
-            DefaultValue = "Per Size (--bit-siz-item-*)",
-            Description = "Height of a row of the overflow menu.",
+            DefaultValue = "--bit-siz-item-md",
+            Description = "Height of a row of the overflow menu. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Breadcrumb-overflow-font-size",
-            DefaultValue = "Per Size",
-            Description = "Text size of a row of the overflow menu.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of a row of the overflow menu. The Size parameter wins over it.",
         },
     ];
 

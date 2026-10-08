@@ -18,7 +18,7 @@ public partial class BitAccordionListDemo
             Name = "Background",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The color kind of the background of all the accordion items.",
+            Description = "The color kind of the background of all the accordion items. An explicit value wins over --bit-Accordion-background and the header shade variables; left unset, the items take the default fill unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
         },
@@ -27,7 +27,7 @@ public partial class BitAccordionListDemo
             Name = "Border",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The color kind of the border of all the accordion items.",
+            Description = "The color kind of the border of all the accordion items. An explicit value wins over --bit-Accordion-border-color and, in a Joined list, over --bit-AccordionList-divider-color; left unset, the items take the default border color unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
         },
@@ -328,7 +328,7 @@ public partial class BitAccordionListDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of all the accordion items, which drives the padding of the headers and of the contents and the size of the titles. The default value is Medium.",
+            Description = "The size of all the accordion items, which drives the padding of the headers and of the contents and the size of the titles. An explicit value wins over the --bit-Accordion-* size variables; left unset, the items are medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -582,7 +582,7 @@ public partial class BitAccordionListDemo
         {
             Name = "--bit-AccordionList-divider-color",
             DefaultValue = "The items' border color (--bit-clr-brd-pri with NoBorder)",
-            Description = "Line between two items of a Joined list.",
+            Description = "Line between two items of a Joined list. The Border parameter wins over it.",
         },
     ];
 

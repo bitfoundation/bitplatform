@@ -195,64 +195,7 @@ public class BitProgressParams : BitComponentBaseParams, IBitComponentParams
     {
         if (bitProgress is null) return;
 
-        // The inherited parameters go through the same bookkeeping as the progress's own rather than through
-        // UpdateBaseParameters, so that whatever the cascade changes - inherited or not - rebuilds the class and
-        // style strings once, after all of it is applied. Putting back what the cascade stops giving is not part
-        // of it: BitComponentBase does that for every parameter, before this runs.
-        if (AriaLabel.HasValue())
-        {
-            bitProgress.TakeFromCascade(nameof(AriaLabel), AriaLabel, static p => p.AriaLabel, static (p, v) => p.AriaLabel = v);
-        }
-
-        if (Class.HasValue())
-        {
-            bitProgress.TakeFromCascade(nameof(Class), Class, static p => p.Class, static (p, v) => p.Class = v);
-        }
-
-        if (Dir.HasValue)
-        {
-            bitProgress.TakeFromCascade(nameof(Dir), Dir, static p => p.Dir, static (p, v) => p.Dir = v);
-        }
-
-        if (ForceAnimation.HasValue)
-        {
-            bitProgress.TakeFromCascade(nameof(ForceAnimation), ForceAnimation.Value, static p => p.ForceAnimation, static (p, v) => p.ForceAnimation = v);
-        }
-
-        // The attributes are gathered again from the markup on every render, so what the cascade adds to them is
-        // gone the moment it stops adding it; there is nothing to take back.
-        if (HtmlAttributes is not null)
-        {
-            foreach (var attr in HtmlAttributes)
-            {
-                bitProgress.HtmlAttributes.TryAdd(attr.Key, attr.Value);
-            }
-        }
-
-        if (Id.HasValue())
-        {
-            bitProgress.TakeFromCascade(nameof(Id), Id, static p => p.Id, static (p, v) => p.Id = v);
-        }
-
-        if (Disabled.HasValue)
-        {
-            bitProgress.TakeFromCascade(nameof(Disabled), Disabled.Value, static p => p.Disabled, static (p, v) => p.Disabled = v);
-        }
-
-        if (Style.HasValue())
-        {
-            bitProgress.TakeFromCascade(nameof(Style), Style, static p => p.Style, static (p, v) => p.Style = v);
-        }
-
-        if (TabIndex.HasValue())
-        {
-            bitProgress.TakeFromCascade(nameof(TabIndex), TabIndex, static p => p.TabIndex, static (p, v) => p.TabIndex = v);
-        }
-
-        if (Visibility.HasValue)
-        {
-            bitProgress.TakeFromCascade(nameof(Visibility), Visibility.Value, static p => p.Visibility, static (p, v) => p.Visibility = v);
-        }
+        UpdateBaseParameters(bitProgress);
 
         if (AnnounceProgress.HasValue)
         {

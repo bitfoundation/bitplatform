@@ -127,120 +127,84 @@ public class BitTextShimmerParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitTextShimmer);
 
-        // Every value below drives the class or the style of the root, and this runs on every render of every
-        // shimmer under the BitParams - so a builder is only reset when the value differs from the one the
-        // shimmer already holds.
-
-        if (Alternate.HasValue && bitTextShimmer.HasNotBeenSet(nameof(Alternate)) && bitTextShimmer.Alternate != Alternate.Value)
+        if (Alternate.HasValue)
         {
-            bitTextShimmer.Alternate = Alternate.Value;
-
-            bitTextShimmer.ClassBuilder.Reset();
+            bitTextShimmer.TakeFromCascade(nameof(Alternate), Alternate.Value, static t => t.Alternate, static (t, v) => t.Alternate = v);
         }
 
-        // Nullable.Equals rather than != for the two doubles, since a NaN is never != to itself and would reset the
-        // builder on every render.
-        if (Angle.HasValue && bitTextShimmer.HasNotBeenSet(nameof(Angle)) && Nullable.Equals(bitTextShimmer.Angle, Angle) is false)
+        if (Angle.HasValue)
         {
-            bitTextShimmer.Angle = Angle.Value;
-
-            bitTextShimmer.StyleBuilder.Reset();
+            bitTextShimmer.TakeFromCascade(nameof(Angle), Angle.Value, static t => t.Angle, static (t, v) => t.Angle = v);
         }
 
-        if (BaseColor.HasValue() && bitTextShimmer.HasNotBeenSet(nameof(BaseColor)) && bitTextShimmer.BaseColor != BaseColor)
+        if (BaseColor.HasValue())
         {
-            bitTextShimmer.BaseColor = BaseColor;
-
-            bitTextShimmer.StyleBuilder.Reset();
+            bitTextShimmer.TakeFromCascade(nameof(BaseColor), BaseColor, static t => t.BaseColor, static (t, v) => t.BaseColor = v);
         }
 
-        if (Color.HasValue && bitTextShimmer.HasNotBeenSet(nameof(Color)) && bitTextShimmer.Color != Color)
+        if (Color.HasValue)
         {
-            bitTextShimmer.Color = Color.Value;
-
-            bitTextShimmer.ClassBuilder.Reset();
+            bitTextShimmer.TakeFromCascade(nameof(Color), Color.Value, static t => t.Color, static (t, v) => t.Color = v);
         }
 
-        if (Delay.HasValue && bitTextShimmer.HasNotBeenSet(nameof(Delay)) && bitTextShimmer.Delay != Delay)
+        if (Delay.HasValue)
         {
-            bitTextShimmer.Delay = Delay.Value;
-
-            bitTextShimmer.StyleBuilder.Reset();
+            bitTextShimmer.TakeFromCascade(nameof(Delay), Delay.Value, static t => t.Delay, static (t, v) => t.Delay = v);
         }
 
-        if (Duration.HasValue && bitTextShimmer.HasNotBeenSet(nameof(Duration)) && bitTextShimmer.Duration != Duration)
+        if (Duration.HasValue)
         {
-            bitTextShimmer.Duration = Duration.Value;
-
-            bitTextShimmer.StyleBuilder.Reset();
+            bitTextShimmer.TakeFromCascade(nameof(Duration), Duration.Value, static t => t.Duration, static (t, v) => t.Duration = v);
         }
 
-        if (Element.HasValue() && bitTextShimmer.HasNotBeenSet(nameof(Element)))
+        if (Element.HasValue())
         {
-            bitTextShimmer.Element = Element;
+            bitTextShimmer.TakeFromCascade(nameof(Element), Element, static t => t.Element, static (t, v) => t.Element = v);
         }
 
-        if (GradientColor.HasValue() && bitTextShimmer.HasNotBeenSet(nameof(GradientColor)) && bitTextShimmer.GradientColor != GradientColor)
+        if (GradientColor.HasValue())
         {
-            bitTextShimmer.GradientColor = GradientColor;
-
-            bitTextShimmer.StyleBuilder.Reset();
+            bitTextShimmer.TakeFromCascade(nameof(GradientColor), GradientColor, static t => t.GradientColor, static (t, v) => t.GradientColor = v);
         }
 
-        if (Iterations.HasValue && bitTextShimmer.HasNotBeenSet(nameof(Iterations)) && bitTextShimmer.Iterations != Iterations)
+        if (Iterations.HasValue)
         {
-            bitTextShimmer.Iterations = Iterations.Value;
-
-            bitTextShimmer.StyleBuilder.Reset();
+            bitTextShimmer.TakeFromCascade(nameof(Iterations), Iterations.Value, static t => t.Iterations, static (t, v) => t.Iterations = v);
         }
 
-        if (Paused.HasValue && bitTextShimmer.HasNotBeenSet(nameof(Paused)) && bitTextShimmer.Paused != Paused.Value)
+        if (Paused.HasValue)
         {
-            bitTextShimmer.Paused = Paused.Value;
-
-            bitTextShimmer.ClassBuilder.Reset();
+            bitTextShimmer.TakeFromCascade(nameof(Paused), Paused.Value, static t => t.Paused, static (t, v) => t.Paused = v);
         }
 
-        if (PauseOnHover.HasValue && bitTextShimmer.HasNotBeenSet(nameof(PauseOnHover)) && bitTextShimmer.PauseOnHover != PauseOnHover.Value)
+        if (PauseOnHover.HasValue)
         {
-            bitTextShimmer.PauseOnHover = PauseOnHover.Value;
-
-            bitTextShimmer.ClassBuilder.Reset();
+            bitTextShimmer.TakeFromCascade(nameof(PauseOnHover), PauseOnHover.Value, static t => t.PauseOnHover, static (t, v) => t.PauseOnHover = v);
         }
 
-        if (RepeatDelay.HasValue && bitTextShimmer.HasNotBeenSet(nameof(RepeatDelay)) && bitTextShimmer.RepeatDelay != RepeatDelay)
+        if (RepeatDelay.HasValue)
         {
-            bitTextShimmer.RepeatDelay = RepeatDelay.Value;
-
-            bitTextShimmer.StyleBuilder.Reset();
+            bitTextShimmer.TakeFromCascade(nameof(RepeatDelay), RepeatDelay.Value, static t => t.RepeatDelay, static (t, v) => t.RepeatDelay = v);
         }
 
-        if (Reversed.HasValue && bitTextShimmer.HasNotBeenSet(nameof(Reversed)) && bitTextShimmer.Reversed != Reversed.Value)
+        if (Reversed.HasValue)
         {
-            bitTextShimmer.Reversed = Reversed.Value;
-
-            bitTextShimmer.ClassBuilder.Reset();
+            bitTextShimmer.TakeFromCascade(nameof(Reversed), Reversed.Value, static t => t.Reversed, static (t, v) => t.Reversed = v);
         }
 
-        if (Spread.HasValue && bitTextShimmer.HasNotBeenSet(nameof(Spread)) && Nullable.Equals(bitTextShimmer.Spread, Spread) is false)
+        if (Spread.HasValue)
         {
-            bitTextShimmer.Spread = Spread;
-
-            bitTextShimmer.StyleBuilder.Reset();
+            bitTextShimmer.TakeFromCascade(nameof(Spread), Spread, static t => t.Spread, static (t, v) => t.Spread = v);
         }
 
-        if (SpreadLength.HasValue() && bitTextShimmer.HasNotBeenSet(nameof(SpreadLength)) && bitTextShimmer.SpreadLength != SpreadLength)
+        if (SpreadLength.HasValue())
         {
-            bitTextShimmer.SpreadLength = SpreadLength;
-
-            bitTextShimmer.StyleBuilder.Reset();
+            bitTextShimmer.TakeFromCascade(nameof(SpreadLength), SpreadLength, static t => t.SpreadLength, static (t, v) => t.SpreadLength = v);
         }
 
-        if (Static.HasValue && bitTextShimmer.HasNotBeenSet(nameof(Static)) && bitTextShimmer.Static != Static.Value)
+        if (Static.HasValue)
         {
-            bitTextShimmer.Static = Static.Value;
-
-            bitTextShimmer.ClassBuilder.Reset();
+            bitTextShimmer.TakeFromCascade(nameof(Static), Static.Value, static t => t.Static, static (t, v) => t.Static = v);
         }
     }
 }

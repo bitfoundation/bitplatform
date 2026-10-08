@@ -12,7 +12,7 @@ public partial class BitTextFieldDemo : IDisposable
             Name = "Accent",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the text field used when focused.",
+            Description = "The general color of the text field used when focused. An explicit value wins over the --bit-TextField-* accent and focus color variables (and over --bit-TextField-button-color for the reveal password glyph and --bit-TextField-spinner-color for the busy spinner); left unset, the accent is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -49,7 +49,7 @@ public partial class BitTextFieldDemo : IDisposable
             Name = "Background",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The color kind of the text field background.",
+            Description = "The color kind of the text field background. An explicit value wins over --bit-TextField-background; left unset, the background is the primary kind unless it says otherwise. --bit-TextField-hover-background still paints the hovered fill, since no kind has one of its own.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
         },
@@ -58,7 +58,7 @@ public partial class BitTextFieldDemo : IDisposable
             Name = "Border",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The color kind of the text field border.",
+            Description = "The color kind of the text field border. An explicit value wins over --bit-TextField-border-color and --bit-TextField-hover-border-color; left unset, the border is the primary kind unless they say otherwise. --bit-TextField-focus-border-color still paints the focused frame, since no kind has a focus color of its own.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
         },
@@ -525,7 +525,7 @@ public partial class BitTextFieldDemo : IDisposable
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the text field.",
+            Description = "The size of the text field. An explicit value wins over the --bit-TextField-* size variables (minimum height, font sizes, line height, icon size, spinner size, button width); left unset, the field is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -884,32 +884,32 @@ public partial class BitTextFieldDemo : IDisposable
         new()
         {
             Name = "--bit-TextField-background",
-            DefaultValue = "--bit-clr-bg-pri, or the Background kind",
-            Description = "Fill of the frame at rest. It is also what is painted over the background Chrome forces onto an autofilled field.",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Fill of the frame at rest. It is also what is painted over the background Chrome forces onto an autofilled field. The Background parameter wins over it.",
         },
         new()
         {
             Name = "--bit-TextField-hover-background",
-            DefaultValue = "--bit-TextField-background",
-            Description = "Fill of the frame while the pointer is over it. Unchanged from the rest fill by default, since the frame color is what moves on hover.",
+            DefaultValue = "The rest fill",
+            Description = "Fill of the frame while the pointer is over it. Unchanged from the rest fill by default, since the frame color is what moves on hover. No Background kind has a hover fill of its own, so it applies under an explicit Background too.",
         },
         new()
         {
             Name = "--bit-TextField-border-color",
-            DefaultValue = "--bit-clr-brd-pri, or the Border kind",
-            Description = "Color of the frame, and of the bottom rule of the Underlined variant, at rest.",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "Color of the frame, and of the bottom rule of the Underlined variant, at rest. The Border parameter wins over it.",
         },
         new()
         {
             Name = "--bit-TextField-hover-border-color",
-            DefaultValue = "The Border kind's hover step (transparent for the Transparent kind)",
-            Description = "Color of the frame while the pointer is over it. Drawn on pointer devices only, and never over the focused or the rejected frame.",
+            DefaultValue = "--bit-clr-brd-pri-hover",
+            Description = "Color of the frame while the pointer is over it. Drawn on pointer devices only, and never over the focused or the rejected frame. The Border parameter wins over it with its kind's own hover step (transparent for the Transparent kind).",
         },
         new()
         {
             Name = "--bit-TextField-focus-border-color",
-            DefaultValue = "--bit-TextField-border-color",
-            Description = "Color of the frame while the field has focus. Unset by default - the focus ring is the indicator this design system draws - and there for a design system whose fields color their border instead. A rejected value keeps its own frame color regardless.",
+            DefaultValue = "The rest frame color",
+            Description = "Color of the frame while the field has focus. Unset by default - the focus ring is the indicator this design system draws - and there for a design system whose fields color their border instead. A rejected value keeps its own frame color regardless. No Border kind has a focus color of its own, so it applies under an explicit Border too.",
         },
         new()
         {
@@ -920,8 +920,8 @@ public partial class BitTextFieldDemo : IDisposable
         new()
         {
             Name = "--bit-TextField-focus-color",
-            DefaultValue = "The Accent role's focus color",
-            Description = "Color of the keyboard focus ring, of the underline of a focused Underlined field, and of the rings of the clear, reveal and icon buttons.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the keyboard focus ring, of the underline of a focused Underlined field, and of the rings of the clear, reveal and icon buttons. The Accent parameter wins over it.",
         },
         new()
         {
@@ -932,8 +932,8 @@ public partial class BitTextFieldDemo : IDisposable
         new()
         {
             Name = "--bit-TextField-accent-color",
-            DefaultValue = "The Accent role's main color",
-            Description = "Color the trailing icon, the prefix, the suffix and the busy indicator take while the field has focus, and the resting color of the reveal password glyph.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Color the trailing icon, the prefix, the suffix and the busy indicator take while the field has focus, and the resting color of the reveal password glyph. The Accent parameter wins over it.",
         },
         new()
         {
@@ -956,8 +956,8 @@ public partial class BitTextFieldDemo : IDisposable
         new()
         {
             Name = "--bit-TextField-min-height",
-            DefaultValue = "Per Size: --bit-siz-ctrl-sm / -md / -lg",
-            Description = "Smallest height of the frame, which is what lines a field up with the other controls of its size. It is a floor, not a height: a multiline field still grows with its content.",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Smallest height of the frame, which is what lines a field up with the other controls of its size. It is a floor, not a height: a multiline field still grows with its content. The Size parameter wins over it.",
         },
         new()
         {
@@ -992,8 +992,8 @@ public partial class BitTextFieldDemo : IDisposable
         new()
         {
             Name = "--bit-TextField-font-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Size of the typed text, the affixes, and the label when it has no size of its own.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Size of the typed text, the affixes, and the label when it has no size of its own. The Size parameter wins over it.",
         },
         new()
         {
@@ -1004,8 +1004,8 @@ public partial class BitTextFieldDemo : IDisposable
         new()
         {
             Name = "--bit-TextField-line-height",
-            DefaultValue = "Per Size",
-            Description = "Leading of the multiline text and of the ghost overlay behind it. It is also what AutoHeight measures the rows against, so changing it changes how tall Rows and MaxRows make the field.",
+            DefaultValue = "spacing(2.125)",
+            Description = "Leading of the multiline text and of the ghost overlay behind it. It is also what AutoHeight measures the rows against, so changing it changes how tall Rows and MaxRows make the field. The Size parameter wins over it.",
         },
         new()
         {
@@ -1029,7 +1029,7 @@ public partial class BitTextFieldDemo : IDisposable
         {
             Name = "--bit-TextField-label-font-size",
             DefaultValue = "--bit-TextField-font-size",
-            Description = "Size of the label.",
+            Description = "Size of the label. The Size parameter wins over it.",
         },
         new()
         {
@@ -1064,20 +1064,20 @@ public partial class BitTextFieldDemo : IDisposable
         new()
         {
             Name = "--bit-TextField-icon-size",
-            DefaultValue = "Per Size: --bit-siz-icon-sm / -md / -lg",
-            Description = "Size of the icon and of the glyphs of the clear and reveal password buttons.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Size of the icon and of the glyphs of the clear and reveal password buttons. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-TextField-spinner-size",
-            DefaultValue = "The icon size plus the spinner stroke on each side (16 / 20 / 24px per Size)",
-            Description = "Diameter of the default busy spinner.",
+            DefaultValue = "--bit-siz-icon-md plus the spinner stroke on each side",
+            Description = "Diameter of the default busy spinner. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-TextField-spinner-color",
             DefaultValue = "The busy indicator's color (see --bit-TextField-accent-color)",
-            Description = "Color of the moving arc of the default busy spinner.",
+            Description = "Color of the moving arc of the default busy spinner. The Accent parameter wins over it, and a disabled field greys it regardless.",
         },
         new()
         {
@@ -1088,14 +1088,14 @@ public partial class BitTextFieldDemo : IDisposable
         new()
         {
             Name = "--bit-TextField-button-width",
-            DefaultValue = "Per Size: --bit-siz-ctrl-sm / -md / -lg",
-            Description = "Width of the clear, reveal password and clickable icon buttons, which is what keeps them above the 24px minimum pointer target of WCAG 2.2.",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Width of the clear, reveal password and clickable icon buttons, which is what keeps them above the 24px minimum pointer target of WCAG 2.2. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-TextField-button-color",
             DefaultValue = "--bit-clr-fg-sec for the clear button, the accent color for the reveal one",
-            Description = "Glyph color of the clear and reveal password buttons at rest.",
+            Description = "Glyph color of the clear and reveal password buttons at rest. The Accent parameter wins over it for the reveal glyph.",
         },
         new()
         {

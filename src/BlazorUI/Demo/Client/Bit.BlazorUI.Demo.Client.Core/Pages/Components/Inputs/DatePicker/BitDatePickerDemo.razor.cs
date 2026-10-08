@@ -164,7 +164,7 @@ public partial class BitDatePickerDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the DatePicker that applies to the today day button, the highlighted current month, and the selected AM/PM button.",
+            Description = "The general color of the DatePicker that applies to the today day button, the highlighted current month, and the selected AM/PM button. An explicit value wins over the --bit-DatePicker-* today and focus color variables; left unset, the DatePicker is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum"
         },
@@ -906,7 +906,7 @@ public partial class BitDatePickerDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the DatePicker.",
+            Description = "The size of the DatePicker. An explicit value wins over the --bit-DatePicker-* size variables (label, input, icon, day, header and time sizes); left unset, the DatePicker is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum"
         },
@@ -1928,8 +1928,8 @@ public partial class BitDatePickerDemo
         new()
         {
             Name = "--bit-DatePicker-label-font-size",
-            DefaultValue = "per Size",
-            Description = "Text size of the label.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the label. The Size parameter wins over it.",
         },
         new()
         {
@@ -1940,14 +1940,14 @@ public partial class BitDatePickerDemo
         new()
         {
             Name = "--bit-DatePicker-input-height",
-            DefaultValue = "per Size",
-            Description = "Height of the field.",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Height of the field. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-DatePicker-input-font-size",
-            DefaultValue = "per Size",
-            Description = "Text size of the field.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the field. The Size parameter wins over it.",
         },
         new()
         {
@@ -1965,7 +1965,7 @@ public partial class BitDatePickerDemo
         {
             Name = "--bit-DatePicker-input-border-color",
             DefaultValue = "--bit-clr-brd-pri",
-            Description = "Border color of the field at rest, which the open state (the Color role) and the invalid state override.",
+            Description = "Border color of the field at rest, which the open state (the Color, primary while it is unset) and the invalid state override.",
         },
         new()
         {
@@ -1988,14 +1988,14 @@ public partial class BitDatePickerDemo
         new()
         {
             Name = "--bit-DatePicker-icon-size",
-            DefaultValue = "per Size (--bit-siz-icon-sm/md/lg)",
-            Description = "Size of the calendar icon in the field.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Size of the calendar icon in the field. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-DatePicker-focus-color",
-            DefaultValue = "the Color role's focus color",
-            Description = "Color of every focus ring the component draws - on the field and on the cells and buttons inside the callout.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of every focus ring the component draws - on the field and on the cells and buttons inside the callout. The Color parameter wins over it, and so does an invalid value, which draws the field's ring in --bit-clr-err-focus.",
         },
         new()
         {
@@ -2072,14 +2072,14 @@ public partial class BitDatePickerDemo
         new()
         {
             Name = "--bit-DatePicker-day-size",
-            DefaultValue = "per Size",
-            Description = "Width and height of a day cell, which the week numbers, the weekday headers and the navigation buttons line up with.",
+            DefaultValue = "8px * 3.5 (the spacing unit)",
+            Description = "Width and height of a day cell, which the week numbers, the weekday headers and the navigation buttons line up with. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-DatePicker-day-font-size",
-            DefaultValue = "per Size",
-            Description = "Text size of the day cells and of the headers that line up with them.",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Text size of the day cells and of the headers that line up with them. The Size parameter wins over it.",
         },
         new()
         {
@@ -2114,26 +2114,26 @@ public partial class BitDatePickerDemo
         new()
         {
             Name = "--bit-DatePicker-today-background",
-            DefaultValue = "the Color role's main color",
-            Description = "Background of today, of the highlighted current month and of the selected AM/PM button.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Background of today, of the highlighted current month and of the selected AM/PM button. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-DatePicker-today-color",
-            DefaultValue = "the Color role's on-color",
-            Description = "Text color of today, of the highlighted current month and of the selected AM/PM button.",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "Text color of today, of the highlighted current month and of the selected AM/PM button. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-DatePicker-today-hover-background",
-            DefaultValue = "the Color role's hover color",
-            Description = "Background of those same three on hover.",
+            DefaultValue = "--bit-clr-pri-hover",
+            Description = "Background of those same three on hover. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-DatePicker-today-active-background",
-            DefaultValue = "the Color role's active color",
-            Description = "Background of today and of the selected AM/PM button while pressed.",
+            DefaultValue = "--bit-clr-pri-active",
+            Description = "Background of today and of the selected AM/PM button while pressed. The Color parameter wins over it.",
         },
         new()
         {
@@ -2162,14 +2162,14 @@ public partial class BitDatePickerDemo
         new()
         {
             Name = "--bit-DatePicker-header-font-size",
-            DefaultValue = "per Size",
-            Description = "Text size of the month, year and year-range titles above the grids.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the month, year and year-range titles above the grids. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-DatePicker-time-font-size",
-            DefaultValue = "per Size",
-            Description = "Text size of the hour, minute and second fields and of the colons between them.",
+            DefaultValue = "--bit-tpg-fs-lg",
+            Description = "Text size of the hour, minute and second fields and of the colons between them. The Size parameter wins over it.",
         },
     ];
 

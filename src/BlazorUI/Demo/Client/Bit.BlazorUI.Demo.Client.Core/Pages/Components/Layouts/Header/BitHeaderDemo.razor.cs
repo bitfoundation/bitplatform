@@ -48,7 +48,7 @@ public partial class BitHeaderDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the BitHeader. It is applied through the Variant: as the background color in the Fill variant, and as the text and border color in the Outline and Text variants.",
+            Description = "The general color of the BitHeader. It is applied through the Variant: as the background color in the Fill variant, and as the text and border color in the Outline and Text variants. An explicit value wins over the --bit-Header-* color variables; left unset, the header keeps the primary background and foreground colors of the theme unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -169,7 +169,7 @@ public partial class BitHeaderDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the BitHeader, which determines the paddings around its content.",
+            Description = "The size of the BitHeader, which determines the paddings around its content. An explicit value wins over the --bit-Header-padding-* variables; left unset, the header is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -326,20 +326,20 @@ public partial class BitHeaderDemo
         new()
         {
             Name = "--bit-Header-background",
-            DefaultValue = "The Color kind (--bit-clr-bg-pri)",
-            Description = "Fill of the Fill variant.",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Fill of the Fill variant. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Header-color",
-            DefaultValue = "The Color kind (--bit-clr-fg-pri)",
-            Description = "Color of the content.",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Color of the content. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Header-border-color",
-            DefaultValue = "The Color kind (--bit-clr-brd-pri)",
-            Description = "Border of the Outline variant, and the divider of a Bordered header.",
+            DefaultValue = "--bit-clr-brd-pri",
+            Description = "Border of the Outline variant, and the divider of a Bordered header. The Color parameter wins over it.",
         },
         new()
         {
@@ -356,14 +356,14 @@ public partial class BitHeaderDemo
         new()
         {
             Name = "--bit-Header-padding-block",
-            DefaultValue = "The Size",
-            Description = "Room above and below the main row. NoGutter outranks it.",
+            DefaultValue = "spacing(1)",
+            Description = "Room above and below the main row. The Size parameter wins over it, and NoGutter over both.",
         },
         new()
         {
             Name = "--bit-Header-padding-inline",
-            DefaultValue = "The Size",
-            Description = "Room on the two sides of both rows. NoGutter outranks it.",
+            DefaultValue = "spacing(3)",
+            Description = "Room on the two sides of both rows. The Size parameter wins over it, and NoGutter over both.",
         },
         new()
         {
@@ -410,14 +410,14 @@ public partial class BitHeaderDemo
         new()
         {
             Name = "--bit-Header-disabled-color",
-            DefaultValue = "The Color kind (--bit-clr-fg-dis)",
-            Description = "Content color of a disabled header, and the border of a disabled Outline one.",
+            DefaultValue = "--bit-clr-fg-dis",
+            Description = "Content color of a disabled header, and the border of a disabled Outline one. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Header-disabled-background",
-            DefaultValue = "The Color kind (--bit-clr-bg-pri)",
-            Description = "Fill of a disabled Fill header.",
+            DefaultValue = "--bit-clr-bg-pri",
+            Description = "Fill of a disabled Fill header. The Color parameter wins over it.",
         },
         new()
         {

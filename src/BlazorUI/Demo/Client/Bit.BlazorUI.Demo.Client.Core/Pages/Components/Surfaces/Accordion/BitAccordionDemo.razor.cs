@@ -16,7 +16,7 @@ public partial class BitAccordionDemo
             Name = "Background",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The color kind of the background of the accordion. Wins over an inherited --bit-Accordion-background.",
+            Description = "The color kind of the background of the accordion. An explicit value wins over --bit-Accordion-background and the two header shade variables, inherited or set on the instance; left unset, the accordion takes the primary background (the secondary one with NoBorder) unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
         },
@@ -25,7 +25,7 @@ public partial class BitAccordionDemo
             Name = "Border",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The color kind of the border of the accordion. Wins over an inherited --bit-Accordion-border-color.",
+            Description = "The color kind of the border of the accordion. An explicit value wins over --bit-Accordion-border-color, inherited or set on the instance; left unset, the outline takes the primary border color unless it says otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
         },
@@ -259,7 +259,7 @@ public partial class BitAccordionDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "Gets or sets the size of the accordion, which drives the padding of the header and of the panel and the type scale of the whole component. The default value is Medium.",
+            Description = "Gets or sets the size of the accordion, which drives the padding of the header and of the panel and the type scale of the whole component. An explicit value wins over the --bit-Accordion-* size variables; left unset, the accordion is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -537,13 +537,13 @@ public partial class BitAccordionDemo
         new()
         {
             Name = "--bit-Accordion-background",
-            DefaultValue = "Per Background, --bit-clr-bg-pri (--bit-clr-bg-sec with NoBorder)",
+            DefaultValue = "--bit-clr-bg-pri (--bit-clr-bg-sec with NoBorder)",
             Description = "Fill of the accordion. The Background parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Accordion-border-color",
-            DefaultValue = "Per Border, --bit-clr-brd-pri",
+            DefaultValue = "--bit-clr-brd-pri",
             Description = "Color of the outline. The Border parameter wins over it.",
         },
         new()
@@ -567,26 +567,26 @@ public partial class BitAccordionDemo
         new()
         {
             Name = "--bit-Accordion-font-size",
-            DefaultValue = "Per Size, --bit-tpg-fs-xs/sm/md",
-            Description = "Text size of the panel and the description.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the panel and the description. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Accordion-header-padding",
-            DefaultValue = "Per Size",
-            Description = "Padding of the header (any padding shorthand).",
+            DefaultValue = "spacing(1.5)",
+            Description = "Padding of the header (any padding shorthand). The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Accordion-header-hover-background",
-            DefaultValue = "Per Background, its hover shade",
-            Description = "Fill of the header under the pointer.",
+            DefaultValue = "--bit-clr-bg-pri-hover (--bit-clr-bg-sec-hover with NoBorder)",
+            Description = "Fill of the header under the pointer. The Background parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Accordion-header-active-background",
-            DefaultValue = "The hover fill, then the Background's active shade",
-            Description = "Fill of the header while pressed.",
+            DefaultValue = "The hover fill, then --bit-clr-bg-pri-active (--bit-clr-bg-sec-active with NoBorder)",
+            Description = "Fill of the header while pressed. The Background parameter wins over it.",
         },
         new()
         {
@@ -609,8 +609,8 @@ public partial class BitAccordionDemo
         new()
         {
             Name = "--bit-Accordion-title-font-size",
-            DefaultValue = "Per Size, --bit-tpg-fs-sm/md/lg",
-            Description = "Size of the title.",
+            DefaultValue = "--bit-tpg-fs-md",
+            Description = "Size of the title. The Size parameter wins over it.",
         },
         new()
         {
@@ -627,8 +627,8 @@ public partial class BitAccordionDemo
         new()
         {
             Name = "--bit-Accordion-icon-size",
-            DefaultValue = "Per Size, --bit-siz-icon-sm/md/lg",
-            Description = "Size of the icon, of the expander icon and of the busy spinner.",
+            DefaultValue = "--bit-siz-icon-md",
+            Description = "Size of the icon, of the expander icon and of the busy spinner. The Size parameter wins over it.",
         },
         new()
         {
@@ -645,8 +645,8 @@ public partial class BitAccordionDemo
         new()
         {
             Name = "--bit-Accordion-content-padding",
-            DefaultValue = "Per Size",
-            Description = "Padding of the open panel (any padding shorthand); its block padding animates from 0.",
+            DefaultValue = "spacing(1.5)",
+            Description = "Padding of the open panel (any padding shorthand); its block padding animates from 0. The Size parameter wins over it.",
         },
         new()
         {

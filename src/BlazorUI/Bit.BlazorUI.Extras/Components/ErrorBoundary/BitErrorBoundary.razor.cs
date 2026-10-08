@@ -785,7 +785,7 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IBitCascadeTarget, ID
 
         // What the engine hands back is for running the setup hooks of the parameters it put back, and the
         // boundary's parameters have none: the render this OnParametersSet leads to is all a restored value needs.
-        (_cascadeTracker ??= new()).RestoreDropped(this, map, current);
+        (_cascadeTracker ??= new()).RestoreDropped(this, map, current, out _);
     }
 
     /// <summary>

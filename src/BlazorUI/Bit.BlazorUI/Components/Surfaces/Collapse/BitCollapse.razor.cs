@@ -31,6 +31,10 @@ public partial class BitCollapse : BitComponentBase
     // Whether the collapse transition has finished, which is the only moment at which it is safe to hand the
     // closed content to hidden="until-found": the attribute stops the content from being drawn at all, so
     // applying it while the track is still shrinking would take the close off the screen instead of playing it.
+    // The end is the one the browser plays (AwaitsTransitionEnd), so a slower theme preset is waited out too.
+    // The stylesheet cannot hold the hiding back on its own instead: WebKit lays out content whose
+    // content-visibility is mid-way through a discrete transition (allow-discrete) as already hidden, so the
+    // track snaps shut the moment the attribute lands, and a browser without transition-behavior hides it at once.
     private bool _exited = true;
 
     private ElementReference _contentElement;
@@ -320,9 +324,10 @@ public partial class BitCollapse : BitComponentBase
     /// <remarks>
     /// This is what a page of collapsed documentation, a FAQ or a long form wants: text the reader cannot see
     /// is still text they can search for, and the section holding the match opens itself around it. The
-    /// attribute is applied at the end of the collapse transition, so the close still animates, and the
-    /// browser takes it off again when it reveals the content - which the component answers by expanding for
-    /// real, reporting the change through <c>ExpandedChanged</c> and <see cref="OnChange"/>.
+    /// attribute is applied at the end of the collapse transition the browser plays, whatever set its pace, so
+    /// the close still animates, out of reach of the keyboard and of assistive technology from its first frame,
+    /// and the browser takes it off again when it reveals the content - which the component answers by expanding
+    /// for real, reporting the change through <c>ExpandedChanged</c> and <see cref="OnChange"/>.
     /// <br />
     /// The content of such a collapse has to stay in the DOM to be found at all, so it ignores
     /// <see cref="LazyRender"/> and <see cref="UnmountOnCollapse"/>. A collapse that keeps a
@@ -649,37 +654,30 @@ public partial class BitCollapse : BitComponentBase
 
         _pendingTransition = null;
 
+        // The render that just finished is the one that put the new state and its pace on the root, so this is
+        // the moment the browser started playing the transition.
+        var started = Stopwatch.GetTimestamp();
+
         var wait = pending.Wait;
+
+        var timed = false;
 
         // A transition nothing is waiting for is not worth a round trip to the browser: its end only has the
         // bookkeeping of the closed state to do, which the estimate is good enough for.
         if (AwaitsTransitionEnd(pending.Expanded))
         {
-            try
+            var remaining = await GetRemainingTransitionTimeAsync(started);
+
+            if (remaining.HasValue)
             {
-                // The render that just finished put the new state and its pace on the root, so the browser now
-                // knows how much of the transition it is playing is left - whatever set its pace - and not an
-                // estimate. The answer is that time as it stood when the browser was asked, and half the round
-                // trip has passed since then, which is taken off so the end lands when the transition does.
-                var started = Stopwatch.GetTimestamp();
-
-                var remaining = await _js.BitCollapseGetRemainingTransitionTime(RootElement);
-
-                if (remaining.HasValue)
-                {
-                    var returnTrip = Stopwatch.GetElapsedTime(started).TotalMilliseconds / 2;
-
-                    wait = (int)Math.Ceiling(Math.Max(0, remaining.Value - returnTrip));
-                }
+                wait = remaining.Value;
+                timed = true;
             }
-            catch (JSDisconnectedException) { }
-            catch (JSException) { }
-            catch (TaskCanceledException) { }
         }
 
         if (pending.Cts.IsCancellationRequested || IsDisposed) return;
 
-        _ = CompleteTransitionAsync(wait, pending.Expanded, pending.Cts);
+        _ = CompleteTransitionAsync(wait, pending.Expanded, started, timed, pending.Cts);
     }
 
     protected override async Task OnInitializedAsync()
@@ -760,14 +758,16 @@ public partial class BitCollapse : BitComponentBase
         }
 
         // The clipping goes back on the moment either transition starts, since the content is the wrong size
-        // for the whole of both of them, and the closed content is taken back out of hidden-until-found so
-        // the expand has something to draw.
+        // for the whole of both of them.
         SetEntered(false);
-        _exited = false;
 
         // A collapse that was closed to begin with never played a close, so there is nothing to report and
         // nothing to take out of the DOM that was ever put in it.
         if (Expanded is false && _everExpanded is false) return;
+
+        // The closed content of a searchable section is only handed to hidden-until-found once the close that
+        // starts here has played, and is taken back out of it as an open starts so the expand has something to draw.
+        _exited = false;
 
         var starting = Expanded ? OnExpanding : OnCollapsing;
 
@@ -777,10 +777,11 @@ public partial class BitCollapse : BitComponentBase
         }
 
         // The end is scheduled for every transition that is played rather than only for the options that are
-        // set at the moment it starts: NoClip, UnmountOnCollapse, HiddenUntilFound, OnExpanded and
-        // OnCollapsed can all be set while the transition is still running, and what they do belongs at the
-        // end of it. Which of them apply is read by CompleteTransitionAsync when it gets there, so a
-        // transition that ends up needing none of them costs one timer and does nothing when it fires.
+        // set at the moment it starts: NoClip, UnmountOnCollapse, HiddenUntilFound, OnExpanded and OnCollapsed
+        // can all be set while the transition is still running, and what they do belongs at the end of it.
+        // Which of them apply is read by CompleteTransitionAsync when it gets there, so a transition that ends
+        // up needing none of them costs one timer and does nothing when it fires, and one that has come to need
+        // one part-way through asks the browser what is left of it before acting rather than trusting the estimate.
 
         // The end of the transition is reached by the clock rather than by an event from the browser, so that
         // it is still reached when there is no transition to end - with NoAnimation, or while the collapse is
@@ -793,7 +794,8 @@ public partial class BitCollapse : BitComponentBase
 
         if (NoAnimation)
         {
-            _ = CompleteTransitionAsync(0, Expanded, cts);
+            // There is no transition to ask the browser about, so its end is as timed as it will ever be.
+            _ = CompleteTransitionAsync(0, Expanded, Stopwatch.GetTimestamp(), true, cts);
             return;
         }
 
@@ -802,7 +804,9 @@ public partial class BitCollapse : BitComponentBase
         _pendingTransition = (Expanded, estimate, cts);
     }
 
-    private async Task CompleteTransitionAsync(int wait, bool expanded, CancellationTokenSource cts)
+    // started is when the transition started playing, and timed whether wait is what the browser said was left
+    // of it rather than the estimate.
+    private async Task CompleteTransitionAsync(int wait, bool expanded, long started, bool timed, CancellationTokenSource cts)
     {
         try
         {
@@ -814,6 +818,25 @@ public partial class BitCollapse : BitComponentBase
             }
 
             if (token.IsCancellationRequested || IsDisposed || Expanded != expanded) return;
+
+            // Nothing waited for this end when the transition started, so it was timed off the estimate, and
+            // something has started waiting for it since - an OnCollapsed handed down mid-close, an
+            // UnmountOnCollapse switched on, a refused reveal that made the section unsearchable. What it does
+            // is not done on a guess: the browser is asked what is left of the transition, which is nothing
+            // unless a slower theme preset is still playing it.
+            if (timed is false && AwaitsTransitionEnd(expanded))
+            {
+                int? remaining = null;
+
+                await InvokeAsync(async () => remaining = await GetRemainingTransitionTimeAsync(started));
+
+                if (remaining > 0)
+                {
+                    await Task.Delay(remaining.Value, token);
+                }
+
+                if (token.IsCancellationRequested || IsDisposed || Expanded != expanded) return;
+            }
 
             var render = false;
 
@@ -894,6 +917,32 @@ public partial class BitCollapse : BitComponentBase
         _entered = value;
 
         ClassBuilder.Reset();
+    }
+
+    // What the browser says is left of the transition it is playing, in ms - whatever set its pace, and not an
+    // estimate - or null when it cannot say. The answer is that time as it stood when the browser read it, and the
+    // time the reply took to get back is not taken off: how a round trip splits between its two directions is not
+    // known - a browser busy with its first call can sit on the request for most of it - and an end that lands a
+    // little late acts on content the close has already taken off the screen, while one that lands early cuts the
+    // close short. started is when the transition started playing, which is all a browser that cannot list what
+    // it is playing leaves to work out what is left of it.
+    private async Task<int?> GetRemainingTransitionTimeAsync(long started)
+    {
+        try
+        {
+            var elapsed = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+
+            var remaining = await _js.BitCollapseGetRemainingTransitionTime(RootElement, elapsed);
+
+            if (remaining.HasValue is false) return null;
+
+            return (int)Math.Ceiling(Math.Max(0, remaining.Value));
+        }
+        catch (JSDisconnectedException) { }
+        catch (JSException) { }
+        catch (TaskCanceledException) { }
+
+        return null;
     }
 
     private void CancelPendingTransition()

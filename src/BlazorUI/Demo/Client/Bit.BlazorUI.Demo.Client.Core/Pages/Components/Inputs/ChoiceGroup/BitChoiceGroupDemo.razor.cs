@@ -48,7 +48,7 @@ public partial class BitChoiceGroupDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the ChoiceGroup.",
+            Description = "The general color of the ChoiceGroup. An explicit value wins over the --bit-ChoiceGroup-* color variables (accent, hover, focus and disabled colors, the checked card's border and tint, the tile background); left unset, the group is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -85,7 +85,7 @@ public partial class BitChoiceGroupDemo
             Name = "Gap",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The gap between the items of the ChoiceGroup."
+            Description = "The gap between the items of the ChoiceGroup. An explicit value wins over --bit-ChoiceGroup-gap and over the gap of the Size."
         },
         new()
         {
@@ -232,7 +232,7 @@ public partial class BitChoiceGroupDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the BitChoiceGroup.",
+            Description = "The size of the BitChoiceGroup. An explicit value wins over the --bit-ChoiceGroup-* size variables (gap, font sizes, circle, dot and icon sizes, card padding); left unset, the group is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -268,32 +268,32 @@ public partial class BitChoiceGroupDemo
         new()
         {
             Name = "--bit-ChoiceGroup-color",
-            DefaultValue = "The Color role's main color",
-            Description = "Accent of the checked state: the ring and the dot of the checked circle, and the border of a checked card.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Accent of the checked state: the ring and the dot of the checked circle, and the border of a checked card. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-ChoiceGroup-hover-color",
-            DefaultValue = "The Color role's hover color",
-            Description = "Accent while an item is hovered (pointer devices only).",
+            DefaultValue = "--bit-clr-pri-hover",
+            Description = "Accent while an item is hovered (pointer devices only). The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-ChoiceGroup-disabled-color",
-            DefaultValue = "The Color role's disabled color",
-            Description = "Ring and dot of the circle of a disabled item.",
+            DefaultValue = "--bit-clr-pri-dis",
+            Description = "Ring and dot of the circle of a disabled item. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-ChoiceGroup-disabled-text-color",
-            DefaultValue = "The Color role's disabled text color",
-            Description = "Text, description and icon of a disabled item.",
+            DefaultValue = "--bit-clr-pri-dis-text",
+            Description = "Text, description and icon of a disabled item. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-ChoiceGroup-focus-color",
-            DefaultValue = "The Color role's focus color",
-            Description = "Color of the focus ring drawn around the focused item.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the focus ring drawn around the focused item. The Color parameter wins over it.",
         },
         new()
         {
@@ -310,14 +310,14 @@ public partial class BitChoiceGroupDemo
         new()
         {
             Name = "--bit-ChoiceGroup-gap",
-            DefaultValue = "Per size and orientation",
-            Description = "Space between the items. The Gap parameter sets the same value on one instance and wins over this.",
+            DefaultValue = "spacing(1), spacing(2) when Horizontal",
+            Description = "Space between the items. The Gap and Size parameters win over it.",
         },
         new()
         {
             Name = "--bit-ChoiceGroup-font-size",
-            DefaultValue = "Per size, from the type ramp",
-            Description = "Text size of the items.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the items. The Size parameter wins over it.",
         },
         new()
         {
@@ -352,14 +352,14 @@ public partial class BitChoiceGroupDemo
         new()
         {
             Name = "--bit-ChoiceGroup-description-font-size",
-            DefaultValue = "Per size, from the type ramp",
-            Description = "Text size of the helper text of the group.",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Text size of the helper text of the group. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-ChoiceGroup-circle-size",
-            DefaultValue = "Per size, --bit-siz-sel-*",
-            Description = "Diameter of the radio circle.",
+            DefaultValue = "--bit-siz-sel-md",
+            Description = "Diameter of the radio circle. The Size parameter wins over it.",
         },
         new()
         {
@@ -382,8 +382,8 @@ public partial class BitChoiceGroupDemo
         new()
         {
             Name = "--bit-ChoiceGroup-dot-size",
-            DefaultValue = "Per size",
-            Description = "Diameter of the dot inside a checked circle.",
+            DefaultValue = "spacing(1.25)",
+            Description = "Diameter of the dot inside a checked circle. The Size parameter wins over it.",
         },
         new()
         {
@@ -394,8 +394,8 @@ public partial class BitChoiceGroupDemo
         new()
         {
             Name = "--bit-ChoiceGroup-icon-size",
-            DefaultValue = "Per size",
-            Description = "Size of the icon of an item, both as a tile and inline.",
+            DefaultValue = "spacing(4), --bit-siz-icon-md inline",
+            Description = "Size of the icon of an item, both as a tile and inline. The Size parameter wins over it.",
         },
         new()
         {
@@ -418,8 +418,8 @@ public partial class BitChoiceGroupDemo
         new()
         {
             Name = "--bit-ChoiceGroup-item-padding",
-            DefaultValue = "0, and per size in the card variants",
-            Description = "Padding inside an item.",
+            DefaultValue = "0, and spacing(1.5) in the card variants",
+            Description = "Padding inside an item. The Size parameter wins over it in the card variants.",
         },
         new()
         {
@@ -442,8 +442,8 @@ public partial class BitChoiceGroupDemo
         new()
         {
             Name = "--bit-ChoiceGroup-item-background",
-            DefaultValue = "Per Color for an icon or image tile, and per variant for a card",
-            Description = "Background of the surface an item draws at rest: the icon or image tile, and the card of the Outline and Fill variants. A plain text item draws no surface of its own, and the Inline mode drops the tile.",
+            DefaultValue = "--bit-clr-bg-sec for an icon or image tile, and per variant for a card",
+            Description = "Background of the surface an item draws at rest: the icon or image tile, and the card of the Outline and Fill variants. A plain text item draws no surface of its own, and the Inline mode drops the tile. The Color parameter wins over it for a tile; the card is its alone.",
         },
         new()
         {
@@ -454,8 +454,8 @@ public partial class BitChoiceGroupDemo
         new()
         {
             Name = "--bit-ChoiceGroup-item-checked-background",
-            DefaultValue = "Per variant",
-            Description = "Background of the checked card.",
+            DefaultValue = "Per variant, a tint of --bit-ChoiceGroup-color",
+            Description = "Background of the checked card. The Color parameter wins over it.",
         },
         new()
         {
@@ -466,14 +466,14 @@ public partial class BitChoiceGroupDemo
         new()
         {
             Name = "--bit-ChoiceGroup-item-hover-border-color",
-            DefaultValue = "The Color role's hover color",
-            Description = "Border of a hovered card.",
+            DefaultValue = "--bit-ChoiceGroup-hover-color",
+            Description = "Border of a hovered card. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-ChoiceGroup-item-checked-border-color",
-            DefaultValue = "The Color role's main color",
-            Description = "Border of the checked card.",
+            DefaultValue = "--bit-ChoiceGroup-color",
+            Description = "Border of the checked card. The Color parameter wins over it.",
         },
         new()
         {
@@ -496,8 +496,8 @@ public partial class BitChoiceGroupDemo
         new()
         {
             Name = "--bit-ChoiceGroup-item-description-font-size",
-            DefaultValue = "Per size, from the type ramp",
-            Description = "Text size of the description of an item.",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Text size of the description of an item. The Size parameter wins over it.",
         },
     ];
 

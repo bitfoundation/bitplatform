@@ -6,26 +6,40 @@
 //   --bit-Swiper-peek                        room at both ends the neighboring items peek
 //                                            into                                           (default: 0, the Peek parameter wins)
 //   --bit-Swiper-vertical-height             height of a vertical swiper                    (default: spacing(25))
-//   --bit-Swiper-focus-color                 color of every keyboard focus indicator        (default: $clr-pri-focus / the role's focus color)
+//   --bit-Swiper-focus-color                 color of every keyboard focus indicator        (default: $clr-pri-focus)
 //   --bit-Swiper-button-color                glyph color of the next/prev and play/pause
-//                                            buttons                                        (default: $clr-fg-pri / the role's main color)
-//   --bit-Swiper-button-hover-color          glyph color of those buttons on hover          (default: $clr-fg-pri-hover / the role's hover color)
+//                                            buttons                                        (default: $clr-fg-pri)
+//   --bit-Swiper-button-hover-color          glyph color of those buttons on hover          (default: $clr-fg-pri-hover)
 //   --bit-Swiper-button-background           background of the next/prev buttons            (default: transparent)
 //   --bit-Swiper-button-hover-background     background of the next/prev buttons on hover   (default: the rest background)
 //   --bit-Swiper-button-opacity              opacity of the buttons at rest                 (default: .7)
 //   --bit-Swiper-button-width                width of the next/prev strips (their height on
 //                                            a vertical swiper, never below 24px)           (default: 10%)
-//   --bit-Swiper-button-size                 glyph size of the next/prev buttons            (default: per Size)
-//   --bit-Swiper-dot-size                    diameter of a dot                              (default: per Size)
+//   --bit-Swiper-button-size                 glyph size of the next/prev buttons            (default: spacing(3))
+//   --bit-Swiper-dot-size                    diameter of a dot                              (default: spacing(1.25))
 //   --bit-Swiper-dot-current-width           width of the current dot, for a pill-shaped
 //                                            marker                                         (default: the dot size)
 //   --bit-Swiper-dot-radius                  corner radius of a dot                         (default: $shp-radius-full)
 //   --bit-Swiper-dot-gap                     space between the dots                         (default: whatever keeps a 24px target per dot)
 //   --bit-Swiper-dot-color                   fill of a dot                                  (default: $clr-brd-pri)
 //   --bit-Swiper-dot-hover-color             fill of a dot on hover                         (default: $clr-brd-pri-hover)
-//   --bit-Swiper-dot-current-color           fill of the current dot                        (default: the accent / the role's main color)
-//   --bit-Swiper-dot-current-hover-color     fill of the current dot on hover               (default: the accent / the role's hover color)
+//   --bit-Swiper-dot-current-color           fill of the current dot                        (default: $clr-pri)
+//   --bit-Swiper-dot-current-hover-color     fill of the current dot on hover               (default: $clr-pri-hover)
 //   --bit-Swiper-dots-margin                 space between the items and the row of dots    (default: spacing(1.25))
+//
+// A parameter written on the swiper wins over the variable that restyles what it sets: an explicit Color over the
+// focus, button and current-dot colors, an explicit Accent over the current-dot colors, an explicit Size over the
+// button and dot sizes, and Gap and Peek over theirs. The variables restyle the default, not a choice - which is why
+// Color, Accent and Size publish nothing while they are left unset: a class that always carried the default would be
+// indistinguishable from one that was asked for.
+
+// Each of these reads the value an explicit Color, Accent or Size publishes first, then the public variable, then the
+// default an unset one stands for: the primary accent on the current dot, the neutral foreground on the buttons so
+// they stay legible over whatever the items hold, and the medium size.
+$swp-clr: var(--bit-swp-clr, var(--bit-Swiper-dot-current-color, #{$clr-pri}));
+$swp-clr-hover: var(--bit-swp-clr-hover, var(--bit-Swiper-dot-current-hover-color, #{$clr-pri-hover}));
+$swp-btn: var(--bit-swp-btn, var(--bit-Swiper-button-color, #{$clr-fg-pri}));
+$swp-btn-hover: var(--bit-swp-btn-hover, var(--bit-Swiper-button-hover-color, #{$clr-fg-pri-hover}));
 
 // The smallest pointer target of WCAG 2.2 (SC 2.5.8). The dots are drawn smaller than that, so their hit area
 // is grown around them and the row spaces them at least this far apart.
@@ -38,24 +52,25 @@ $swp-target: 24px;
     position: relative;
     flex-direction: column;
 
-    // The size classes write the -def values and the public variables read them as their fallback, so a size
-    // class and a variable set on :root never fight over the same property: the public name always wins.
-    --bit-swp-dot-size-def: #{spacing(1.25)};
-    --bit-swp-btn-size-def: #{spacing(3)};
+    // The values the Size, Accent and Color classes publish start out unset on every root, so a swiper nested in
+    // the items of another one never inherits the outer one's choice; the classes - declared further down at the
+    // same weight - still win on the root that carries them. Left unset, each var() reading them moves on to the
+    // public variable and then to the default (see $swp-clr and the rest at the top).
+    --bit-swp-dotsz: initial;
+    --bit-swp-btnsz: initial;
+    --bit-swp-clr: initial;
+    --bit-swp-clr-hover: initial;
+    --bit-swp-btn: initial;
+    --bit-swp-btn-hover: initial;
+    --bit-swp-fcs: initial;
 
-    // The accent (or the Color) colors the current dot, and the buttons take the neutral foreground so they
-    // stay legible over whatever the items hold. A role class replaces these internal values; the public
-    // variables stay on top of both.
-    --bit-swp-clr-def: #{$clr-pri};
-    --bit-swp-clr-hover-def: #{$clr-pri-hover};
-    --bit-swp-btn-def: #{$clr-fg-pri};
-    --bit-swp-btn-hover-def: #{$clr-fg-pri-hover};
-    --bit-swp-focus-def: #{$clr-pri-focus};
-
+    // Declared here rather than read with a fallback where they are used, so a swiper nested in another does not
+    // inherit the gap and the peek of the outer one, while the Gap and Peek parameters, which arrive inline on this
+    // same element, still win over the public variables.
     --bit-swp-gap: var(--bit-Swiper-gap, 0px);
     --bit-swp-peek: var(--bit-Swiper-peek, 0px);
-    --bit-swp-focus: var(--bit-Swiper-focus-color, var(--bit-swp-focus-def));
-    --bit-swp-dot-size: var(--bit-Swiper-dot-size, var(--bit-swp-dot-size-def));
+    --bit-swp-focus: var(--bit-swp-fcs, var(--bit-Swiper-focus-color, #{$clr-pri-focus}));
+    --bit-swp-dot-size: var(--bit-swp-dotsz, var(--bit-Swiper-dot-size, #{spacing(1.25)}));
 
     // The axis the swiper scrolls on, which the snapping below is written in terms of so a single class
     // covers both orientations.
@@ -216,7 +231,7 @@ $swp-target: 24px;
     text-align: center;
     align-items: center;
     justify-content: center;
-    color: var(--bit-Swiper-button-color, var(--bit-swp-btn-def));
+    color: $swp-btn;
 
     // The resting glyph stays opaque enough to keep the 3:1 contrast of a control (WCAG 1.4.11) against the
     // background it sits on; the hover brings it to full strength.
@@ -227,7 +242,7 @@ $swp-target: 24px;
         &:hover {
             opacity: 1;
             text-decoration: none;
-            color: var(--bit-Swiper-button-hover-color, var(--bit-swp-btn-hover-def));
+            color: $swp-btn-hover;
         }
     }
 
@@ -256,7 +271,7 @@ $swp-target: 24px;
     width: var(--bit-Swiper-button-width, 10%);
     // A percentage of a narrow swiper is less than a pointer target, so the strip never gets narrower than one.
     min-width: $swp-target;
-    font-size: var(--bit-Swiper-button-size, var(--bit-swp-btn-size-def));
+    font-size: var(--bit-swp-btnsz, var(--bit-Swiper-button-size, #{spacing(3)}));
     background-color: var(--bit-Swiper-button-background, transparent);
 
     @media (hover: hover) {
@@ -395,7 +410,7 @@ $swp-target: 24px;
     justify-content: center;
     border-radius: $shp-radius-button;
     background-color: transparent;
-    color: var(--bit-Swiper-button-color, var(--bit-swp-btn-def));
+    color: $swp-btn;
     transition: color $mot-duration-long $mot-easing;
 
     &::after {
@@ -405,7 +420,7 @@ $swp-target: 24px;
     @media (hover: hover) {
         &:hover {
             background-color: transparent;
-            color: var(--bit-Swiper-button-hover-color, var(--bit-swp-btn-hover-def));
+            color: $swp-btn-hover;
         }
     }
 
@@ -417,11 +432,11 @@ $swp-target: 24px;
 
 .bit-swp-cud {
     width: var(--bit-Swiper-dot-current-width, var(--bit-swp-dot-size));
-    background-color: var(--bit-Swiper-dot-current-color, var(--bit-swp-clr-def));
+    background-color: $swp-clr;
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-Swiper-dot-current-hover-color, var(--bit-swp-clr-hover-def));
+            background-color: $swp-clr-hover;
         }
     }
 }
@@ -429,51 +444,54 @@ $swp-target: 24px;
 .bit-swp-dtt.bit-swp-cud {
     width: auto;
     background-color: transparent;
-    color: var(--bit-Swiper-dot-current-color, var(--bit-swp-clr-def));
+    color: $swp-clr;
 
     @media (hover: hover) {
         &:hover {
             background-color: transparent;
-            color: var(--bit-Swiper-dot-current-hover-color, var(--bit-swp-clr-hover-def));
+            color: $swp-clr-hover;
         }
     }
 }
 
 
+// Published only by an explicit Size, so it wins over the public dot and button sizes; an unset one is the medium
+// swiper, which the root and .bit-swp-rbt spell out after those variables.
 .bit-swp-sm {
-    --bit-swp-dot-size-def: #{spacing(1)};
-    --bit-swp-btn-size-def: #{spacing(2)};
+    --bit-swp-dotsz: #{spacing(1)};
+    --bit-swp-btnsz: #{spacing(2)};
 }
 
 .bit-swp-md {
-    --bit-swp-dot-size-def: #{spacing(1.25)};
-    --bit-swp-btn-size-def: #{spacing(3)};
+    --bit-swp-dotsz: #{spacing(1.25)};
+    --bit-swp-btnsz: #{spacing(3)};
 }
 
 .bit-swp-lg {
-    --bit-swp-dot-size-def: #{spacing(1.75)};
-    --bit-swp-btn-size-def: #{spacing(4)};
+    --bit-swp-dotsz: #{spacing(1.75)};
+    --bit-swp-btnsz: #{spacing(4)};
 }
 
 
+// Published only by an explicit Accent; an unset one is the primary accent, after the public current-dot colors.
 .bit-swp-apri {
-    --bit-swp-clr-def: #{$clr-pri};
-    --bit-swp-clr-hover-def: #{$clr-pri-hover};
+    --bit-swp-clr: #{$clr-pri};
+    --bit-swp-clr-hover: #{$clr-pri-hover};
 }
 
 .bit-swp-asec {
-    --bit-swp-clr-def: #{$clr-sec};
-    --bit-swp-clr-hover-def: #{$clr-sec-hover};
+    --bit-swp-clr: #{$clr-sec};
+    --bit-swp-clr-hover: #{$clr-sec-hover};
 }
 
 .bit-swp-ater {
-    --bit-swp-clr-def: #{$clr-ter};
-    --bit-swp-clr-hover-def: #{$clr-ter-hover};
+    --bit-swp-clr: #{$clr-ter};
+    --bit-swp-clr-hover: #{$clr-ter-hover};
 }
 
 .bit-swp-atra {
-    --bit-swp-clr-def: transparent;
-    --bit-swp-clr-hover-def: transparent;
+    --bit-swp-clr: transparent;
+    --bit-swp-clr-hover: transparent;
 }
 
 
@@ -483,11 +501,11 @@ $swp-target: 24px;
 // that role.
 @each $role, $tokens in $bit-color-roles {
     .bit-swp-#{$role} {
-        --bit-swp-clr-def: #{role($tokens, main)};
-        --bit-swp-clr-hover-def: #{role($tokens, hover)};
-        --bit-swp-btn-def: #{role($tokens, main)};
-        --bit-swp-btn-hover-def: #{role($tokens, hover)};
-        --bit-swp-focus-def: #{role($tokens, focus)};
+        --bit-swp-clr: #{role($tokens, main)};
+        --bit-swp-clr-hover: #{role($tokens, hover)};
+        --bit-swp-btn: #{role($tokens, main)};
+        --bit-swp-btn-hover: #{role($tokens, hover)};
+        --bit-swp-fcs: #{role($tokens, focus)};
     }
 }
 

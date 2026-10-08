@@ -86,53 +86,44 @@ public class BitOverlayParams : BitComponentBaseParams, IBitComponentParams
 
         UpdateBaseParameters(bitOverlay);
 
-        if (AbsolutePosition.HasValue && bitOverlay.HasNotBeenSet(nameof(AbsolutePosition)))
+        if (AbsolutePosition.HasValue)
         {
-            bitOverlay.AbsolutePosition = AbsolutePosition.Value;
-
-            bitOverlay.ClassBuilder.Reset();
-            bitOverlay.StyleBuilder.Reset();
+            bitOverlay.TakeFromCascade(nameof(AbsolutePosition), AbsolutePosition.Value, static o => o.AbsolutePosition, static (o, v) => o.AbsolutePosition = v);
         }
 
-        if (AutoToggleScroll.HasValue && bitOverlay.HasNotBeenSet(nameof(AutoToggleScroll)))
+        if (AutoToggleScroll.HasValue)
         {
-            bitOverlay.AutoToggleScroll = AutoToggleScroll.Value;
+            bitOverlay.TakeFromCascade(nameof(AutoToggleScroll), AutoToggleScroll.Value, static o => o.AutoToggleScroll, static (o, v) => o.AutoToggleScroll = v);
         }
 
-        if (Blocking.HasValue && bitOverlay.HasNotBeenSet(nameof(Blocking)))
+        if (Blocking.HasValue)
         {
-            bitOverlay.Blocking = Blocking.Value;
+            bitOverlay.TakeFromCascade(nameof(Blocking), Blocking.Value, static o => o.Blocking, static (o, v) => o.Blocking = v);
         }
 
-        if (ModeFull.HasValue && bitOverlay.HasNotBeenSet(nameof(ModeFull)))
+        if (ModeFull.HasValue)
         {
-            bitOverlay.ModeFull = ModeFull.Value;
-
-            bitOverlay.ClassBuilder.Reset();
+            bitOverlay.TakeFromCascade(nameof(ModeFull), ModeFull.Value, static o => o.ModeFull, static (o, v) => o.ModeFull = v);
         }
 
-        if (NoDismissOnEscape.HasValue && bitOverlay.HasNotBeenSet(nameof(NoDismissOnEscape)))
+        if (NoDismissOnEscape.HasValue)
         {
-            bitOverlay.NoDismissOnEscape = NoDismissOnEscape.Value;
+            bitOverlay.TakeFromCascade(nameof(NoDismissOnEscape), NoDismissOnEscape.Value, static o => o.NoDismissOnEscape, static (o, v) => o.NoDismissOnEscape = v);
         }
 
-        if (Position.HasValue && bitOverlay.HasNotBeenSet(nameof(Position)))
+        if (Position.HasValue)
         {
-            bitOverlay.Position = Position.Value;
-
-            bitOverlay.ClassBuilder.Reset();
+            bitOverlay.TakeFromCascade(nameof(Position), Position.Value, static o => o.Position, static (o, v) => o.Position = v);
         }
 
-        if (ScrollerSelector.HasValue() && bitOverlay.HasNotBeenSet(nameof(ScrollerSelector)))
+        if (ScrollerSelector.HasValue())
         {
-            bitOverlay.ScrollerSelector = ScrollerSelector;
+            bitOverlay.TakeFromCascade(nameof(ScrollerSelector), ScrollerSelector, static o => o.ScrollerSelector, static (o, v) => o.ScrollerSelector = v);
         }
 
-        if (ZIndex.HasValue && bitOverlay.HasNotBeenSet(nameof(ZIndex)))
+        if (ZIndex.HasValue)
         {
-            bitOverlay.ZIndex = ZIndex.Value;
-
-            bitOverlay.StyleBuilder.Reset();
+            bitOverlay.TakeFromCascade(nameof(ZIndex), ZIndex.Value, static o => o.ZIndex, static (o, v) => o.ZIndex = v);
         }
     }
 }

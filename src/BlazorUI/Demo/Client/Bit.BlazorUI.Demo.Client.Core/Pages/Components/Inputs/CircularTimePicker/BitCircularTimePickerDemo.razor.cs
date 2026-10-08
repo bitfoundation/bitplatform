@@ -132,7 +132,7 @@ public partial class BitCircularTimePickerDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the TimePicker, applied to the toolbar, the dial pointer and the selected numbers.",
+            Description = "The general color of the TimePicker, applied to the toolbar, the dial pointer and the selected numbers. An explicit value wins over the --bit-CircularTimePicker-* accent, text and focus color variables and every color variable that defaults to them; left unset, the picker is primary unless they say otherwise.",
             Href = "#color-enum",
             LinkType = LinkType.Link
         },
@@ -441,7 +441,7 @@ public partial class BitCircularTimePickerDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the TimePicker.",
+            Description = "The size of the TimePicker. An explicit value wins over the --bit-CircularTimePicker-* size variables (label, field, read-out, meridiem and number text sizes, field height, clock, number and thumb sizes); left unset, the picker is medium unless they say otherwise.",
             Href = "#size-enum",
             LinkType = LinkType.Link
         },
@@ -892,20 +892,20 @@ public partial class BitCircularTimePickerDemo
         new()
         {
             Name = "--bit-CircularTimePicker-color",
-            DefaultValue = "The Color role's main color",
-            Description = "The accent of the picker: the toolbar, the hand, the pin, the selected number and the action buttons. Every part that follows it can also be re-pointed on its own."
+            DefaultValue = "--bit-clr-pri",
+            Description = "The accent of the picker: the toolbar, the hand, the pin, the selected number and the action buttons. Every part that follows it can also be re-pointed on its own. The Color parameter wins over it."
         },
         new()
         {
             Name = "--bit-CircularTimePicker-text-color",
-            DefaultValue = "The Color role's on color",
-            Description = "The foreground drawn on top of the accent - the read-out in the toolbar, the selected number and the selected meridiem."
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "The foreground drawn on top of the accent - the read-out in the toolbar, the selected number and the selected meridiem. The Color parameter wins over it."
         },
         new()
         {
             Name = "--bit-CircularTimePicker-focus-color",
-            DefaultValue = "The Color role's focus color",
-            Description = "The focus ring of the field, the dial, the action buttons and the close button."
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "The focus ring of the field, the dial, the action buttons and the close button. The Color parameter wins over it."
         },
         new()
         {
@@ -916,8 +916,8 @@ public partial class BitCircularTimePickerDemo
         new()
         {
             Name = "--bit-CircularTimePicker-label-font-size",
-            DefaultValue = "per Size",
-            Description = "The text size of that label. Small, medium and large map to --bit-tpg-fs-xs, --bit-tpg-fs-sm and --bit-tpg-fs-md."
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "The text size of that label. Small, medium and large map to --bit-tpg-fs-xs, --bit-tpg-fs-sm and --bit-tpg-fs-md. The Size parameter wins over it."
         },
         new()
         {
@@ -934,14 +934,14 @@ public partial class BitCircularTimePickerDemo
         new()
         {
             Name = "--bit-CircularTimePicker-input-font-size",
-            DefaultValue = "per Size",
-            Description = "The size of that text. Small, medium and large map to --bit-tpg-fs-xs, --bit-tpg-fs-sm and --bit-tpg-fs-md."
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "The size of that text. Small, medium and large map to --bit-tpg-fs-xs, --bit-tpg-fs-sm and --bit-tpg-fs-md. The Size parameter wins over it."
         },
         new()
         {
             Name = "--bit-CircularTimePicker-input-height",
-            DefaultValue = "per Size",
-            Description = "The height of the field, which is what lines it up with the other controls of a form. Small, medium and large map to --bit-siz-ctrl-sm, --bit-siz-ctrl-md and --bit-siz-ctrl-lg."
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "The height of the field, which is what lines it up with the other controls of a form. Small, medium and large map to --bit-siz-ctrl-sm, --bit-siz-ctrl-md and --bit-siz-ctrl-lg. The Size parameter wins over it."
         },
         new()
         {
@@ -995,13 +995,13 @@ public partial class BitCircularTimePickerDemo
         {
             Name = "--bit-CircularTimePicker-toolbar-background",
             DefaultValue = "--bit-CircularTimePicker-color",
-            Description = "The bar carrying the read-out. Set it on its own for a toolbar that does not follow the accent of the dial."
+            Description = "The bar carrying the read-out. Set it on its own for a toolbar that does not follow the accent of the dial. The Color parameter wins over it."
         },
         new()
         {
             Name = "--bit-CircularTimePicker-toolbar-color",
             DefaultValue = "--bit-CircularTimePicker-text-color",
-            Description = "The foreground of that bar, which the parts of the time and the meridiem pair inside it inherit."
+            Description = "The foreground of that bar, which the parts of the time and the meridiem pair inside it inherit. The Color parameter wins over it."
         },
         new()
         {
@@ -1012,8 +1012,8 @@ public partial class BitCircularTimePickerDemo
         new()
         {
             Name = "--bit-CircularTimePicker-time-font-size",
-            DefaultValue = "Per Size",
-            Description = "The size of the read-out in the toolbar."
+            DefaultValue = "--bit-tpg-fs-4xl * 1.375",
+            Description = "The size of the read-out in the toolbar. The Size parameter wins over it."
         },
         new()
         {
@@ -1024,8 +1024,8 @@ public partial class BitCircularTimePickerDemo
         new()
         {
             Name = "--bit-CircularTimePicker-clock-size",
-            DefaultValue = "Per Size",
-            Description = "The diameter of the dial. Both rings, the length of the hand and the hit test are derived from it, so overriding it re-lays the whole clock out."
+            DefaultValue = "spacing(32.5)",
+            Description = "The diameter of the dial. Both rings, the length of the hand and the hit test are derived from it, so overriding it re-lays the whole clock out. The Size parameter wins over it."
         },
         new()
         {
@@ -1042,14 +1042,14 @@ public partial class BitCircularTimePickerDemo
         new()
         {
             Name = "--bit-CircularTimePicker-number-size",
-            DefaultValue = "Per Size",
-            Description = "The diameter of one number on the dial, which is also its pointer target and the size of its selected disc. The two rings of the 24-hour dial are laid out from what it leaves of the clock, and the pointer tells them apart at a fixed fraction of the radius - so a much larger number wants a larger --bit-CircularTimePicker-clock-size with it."
+            DefaultValue = "spacing(4)",
+            Description = "The diameter of one number on the dial, which is also its pointer target and the size of its selected disc. The two rings of the 24-hour dial are laid out from what it leaves of the clock, and the pointer tells them apart at a fixed fraction of the radius - so a much larger number wants a larger --bit-CircularTimePicker-clock-size with it. The Size parameter wins over it."
         },
         new()
         {
             Name = "--bit-CircularTimePicker-number-font-size",
-            DefaultValue = "Per Size",
-            Description = "The text size of those numbers."
+            DefaultValue = "1em (the callout's --bit-tpg-fs-sm)",
+            Description = "The text size of those numbers. The Size parameter wins over it."
         },
         new()
         {
@@ -1073,13 +1073,13 @@ public partial class BitCircularTimePickerDemo
         {
             Name = "--bit-CircularTimePicker-selected-number-color",
             DefaultValue = "--bit-CircularTimePicker-text-color",
-            Description = "The number the hand rests on."
+            Description = "The number the hand rests on. The Color parameter wins over it."
         },
         new()
         {
             Name = "--bit-CircularTimePicker-selected-number-background",
             DefaultValue = "--bit-CircularTimePicker-color",
-            Description = "The disc behind it."
+            Description = "The disc behind it. The Color parameter wins over it."
         },
         new()
         {
@@ -1091,7 +1091,7 @@ public partial class BitCircularTimePickerDemo
         {
             Name = "--bit-CircularTimePicker-pointer-color",
             DefaultValue = "--bit-CircularTimePicker-color",
-            Description = "The hand, the pin at the center and the ring of the thumb, which are one object drawn in three pieces."
+            Description = "The hand, the pin at the center and the ring of the thumb, which are one object drawn in three pieces. The Color parameter wins over it."
         },
         new()
         {
@@ -1108,44 +1108,44 @@ public partial class BitCircularTimePickerDemo
         new()
         {
             Name = "--bit-CircularTimePicker-thumb-size",
-            DefaultValue = "Per Size",
-            Description = "The disc at the end of the hand where it rests on a number."
+            DefaultValue = "spacing(3.5)",
+            Description = "The disc at the end of the hand where it rests on a number. The Size parameter wins over it."
         },
         new()
         {
             Name = "--bit-CircularTimePicker-minor-thumb-size",
-            DefaultValue = "Per Size",
-            Description = "The ring the thumb shrinks to between two marks, or on a part of the time that has not been set yet."
+            DefaultValue = "spacing(1.75)",
+            Description = "The ring the thumb shrinks to between two marks, or on a part of the time that has not been set yet. The Size parameter wins over it."
         },
         new()
         {
             Name = "--bit-CircularTimePicker-ampm-font-size",
-            DefaultValue = "Per Size",
-            Description = "The meridiem pair beside the time in the toolbar."
+            DefaultValue = "--bit-tpg-fs-xl",
+            Description = "The meridiem pair beside the time in the toolbar. The Size parameter wins over it."
         },
         new()
         {
             Name = "--bit-CircularTimePicker-clock-ampm-font-size",
-            DefaultValue = "Per Size",
-            Description = "The meridiem pair under the clock, which AmPmInClock moves it to."
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "The meridiem pair under the clock, which AmPmInClock moves it to. The Size parameter wins over it."
         },
         new()
         {
             Name = "--bit-CircularTimePicker-selected-ampm-color",
             DefaultValue = "--bit-CircularTimePicker-text-color",
-            Description = "The foreground of the selected half of that pair."
+            Description = "The foreground of the selected half of that pair. The Color parameter wins over it."
         },
         new()
         {
             Name = "--bit-CircularTimePicker-selected-ampm-background",
             DefaultValue = "--bit-CircularTimePicker-color",
-            Description = "Its background and border."
+            Description = "Its background and border. The Color parameter wins over it."
         },
         new()
         {
             Name = "--bit-CircularTimePicker-action-color",
             DefaultValue = "--bit-CircularTimePicker-color",
-            Description = "The \"now\" and \"clear\" buttons under the clock."
+            Description = "The \"now\" and \"clear\" buttons under the clock. The Color parameter wins over it."
         },
         new()
         {
@@ -1157,7 +1157,7 @@ public partial class BitCircularTimePickerDemo
         {
             Name = "--bit-CircularTimePicker-close-button-color",
             DefaultValue = "--bit-CircularTimePicker-toolbar-color",
-            Description = "The close button. It is laid over the corner of the toolbar, so it is painted for the accent there; under a CalloutHeaderTemplate it takes that corner instead and falls back to --bit-clr-fg-pri."
+            Description = "The close button. It is laid over the corner of the toolbar, so it is painted for the accent there; under a CalloutHeaderTemplate it takes that corner instead and falls back to --bit-clr-fg-pri. Over the toolbar the Color parameter wins over it; under a header it is the variable's alone."
         },
         new()
         {
