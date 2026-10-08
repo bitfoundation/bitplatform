@@ -18,9 +18,10 @@
     var describedBy = _AriaDescribedBy;
     // A null written over a splatted attribute removes it, so the states of an interactive rating are resolved against
     // what the page wrote by hand (see BitComponentBase.GetSplattedAttribute). A read-only one writes none of them,
-    // the page's included: the img role it takes supports none of them.
+    // the page's included: the img role it takes supports none of them. Nor does a disabled one write the page's
+    // aria-required: a disabled field asks for nothing, which is why _IsRequired drops it in the first place.
     var ariaInvalid = ReadOnly ? null : (ValueInvalid is true ? "true" : GetSplattedAttribute("aria-invalid"));
-    var ariaRequired = ReadOnly ? null : (_IsRequired ? "true" : GetSplattedAttribute("aria-required"));
+    var ariaRequired = ReadOnly || Disabled ? null : (_IsRequired ? "true" : GetSplattedAttribute("aria-required"));
     var ariaDisabled = ReadOnly ? null : (Disabled ? "true" : GetSplattedAttribute("aria-disabled"));
     var ariaOrientation = ReadOnly ? null : (Vertical ? "vertical" : GetSplattedAttribute("aria-orientation"));
 }

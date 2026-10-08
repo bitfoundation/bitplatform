@@ -1691,9 +1691,7 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
     // attributes, so a role the page sets itself still wins over it.
     private string? _Role => _AriaLabel.HasValue() || GetSplattedAttribute("aria-labelledby").HasValue() ? "group" : null;
 
-    // A null written over a splatted attribute removes it, so the label is resolved against what the page wrote by hand
-    // (see BitComponentBase.GetSplattedAttribute) rather than overwritten with the parameter's null.
-    private string? _AriaLabel => AriaLabel ?? GetSplattedAttribute("aria-label");
+    private string? _AriaLabel => ResolveAriaLabel();
 
     // The header of the one panel that has to stay open reports itself as aria-disabled, the way the WAI-ARIA
     // authoring practices ask a header whose panel cannot be collapsed to.

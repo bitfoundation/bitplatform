@@ -1,9 +1,6 @@
 @namespace Bit.BlazorUI
 @inherits BitTextInputBase<string?>
 
-@{
-    var ariaOwns = string.Join(' ', new[] { GetSplattedAttribute("aria-owns"), IsOpen ? _calloutId : null }.Where(id => id.HasValue()));
-}
 @* aria-owns is a list of ids, so one the page splatted on is kept beside the popup's rather than replaced by it or
    removed by the null written while the popup is closed (see BitComponentBase.GetSplattedAttribute). *@
 <div @ref="RootElement"
@@ -13,7 +10,7 @@
      class="@ClassBuilder.Value"
      title="@Title"
      dir="@Dir?.ToString().ToLower()"
-     aria-owns="@(ariaOwns.HasValue() ? ariaOwns : null)">
+     aria-owns="@JoinTokenLists(GetSplattedAttribute("aria-owns"), IsOpen ? _calloutId : null)">
 
     @if (LabelTemplate is not null)
     {

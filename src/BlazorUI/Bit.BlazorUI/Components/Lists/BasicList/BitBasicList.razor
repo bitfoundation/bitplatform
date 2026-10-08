@@ -6,9 +6,9 @@
    the page passes itself is kept, rather than replaced by this one or dropped along with its null. The label is
    written after them and only replaces the page's own while the list itself is named by the AriaLabel; otherwise
    the one the page splatted on is written back (see BitComponentBase.GetSplattedAttribute), since a null written
-   over it would remove it. *@
+   over it would remove it. A root named either way is a named group, since a generic div drops its name. *@
 <div @ref="RootElement"
-     role="@(_LabelOnRoot ? "group" : null)"
+     role="@(_RootNamed ? "group" : null)"
      @attributes="HtmlAttributes"
      id="@_Id"
      aria-label="@(_LabelOnRoot ? AriaLabel : GetSplattedAttribute("aria-label"))"

@@ -1531,4 +1531,22 @@ public class BitBasicListTests : BunitTestContext
         Assert.AreEqual("region", root.GetAttribute("role"));
         Assert.AreEqual("Results", root.GetAttribute("aria-label"));
     }
+
+    [TestMethod]
+    public void BitBasicListShouldMakeTheRootANamedGroupForASplattedAriaLabel()
+    {
+        // A name on a generic div is dropped by a screen reader, so a root the page names takes the group role.
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitBasicList<string>>(0);
+            builder.AddAttribute(1, nameof(BitBasicList<string>.Items), new[] { "One", "Two" });
+            builder.AddAttribute(2, "aria-label", "Results");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-bsl");
+
+        Assert.AreEqual("group", root.GetAttribute("role"));
+        Assert.AreEqual("Results", root.GetAttribute("aria-label"));
+    }
 }

@@ -2,9 +2,7 @@
 @inherits BitComponentBase
 
 @{
-    // A null written over a splatted attribute removes it, so the label is resolved against what the page wrote by hand
-    // (see BitComponentBase.GetSplattedAttribute) rather than overwritten with the parameter's null.
-    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
+    var ariaLabel = ResolveAriaLabel();
 }
 @* A name on a plain div names nothing (the generic role cannot be named), so a label makes the root a named group -
    the way a screen reader tells two accordions on a page apart. The role comes ahead of the splatted attributes,

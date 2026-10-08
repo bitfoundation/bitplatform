@@ -2252,4 +2252,26 @@ public class BitPivotTests : BunitTestContext
         Assert.AreEqual("Alt+1", tab.GetAttribute("aria-keyshortcuts"));
         Assert.AreEqual("false", tab.GetAttribute("draggable"));
     }
+
+    [TestMethod]
+    public void BitPivotItemShouldLetASplattedAriaKeyShortcutsReplaceItsOwn()
+    {
+        // The way it does on a BitButton: the page's shortcuts are the ones written, never joined to the tab's own.
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitPivot>(0);
+            builder.AddAttribute(1, nameof(BitPivot.OnItemDismiss), EventCallback.Factory.Create<BitPivotItem>(this, _ => { }));
+            builder.AddAttribute(2, nameof(BitPivot.ChildContent), (RenderFragment)(items =>
+            {
+                items.OpenComponent<BitPivotItem>(0);
+                items.AddAttribute(1, nameof(BitPivotItem.HeaderText), "Files");
+                items.AddAttribute(2, nameof(BitPivotItem.Dismissible), true);
+                items.AddAttribute(3, "aria-keyshortcuts", "Delete");
+                items.CloseComponent();
+            }));
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("Delete", component.Find(".bit-pvti").GetAttribute("aria-keyshortcuts"));
+    }
 }

@@ -6,9 +6,10 @@
 @{
     // A null written over a splatted attribute removes it, so every attribute a page can also write by hand is resolved
     // against what it wrote (see BitComponentBase.GetSplattedAttribute) instead of being overwritten with the null of the
-    // parameter or of a state the group is not in. The radiogroup role and the orientation are the pattern's own.
-    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
-    var ariaRequired = IsRequired ? "true" : GetSplattedAttribute("aria-required");
+    // parameter or of a state the group is not in. The radiogroup role and the orientation are the pattern's own. A
+    // disabled group writes no aria-required at all, the page's included, for the reason IsRequired drops it.
+    var ariaLabel = ResolveAriaLabel();
+    var ariaRequired = Disabled ? null : (IsRequired ? "true" : GetSplattedAttribute("aria-required"));
     var ariaInvalid = ValueInvalid is true ? "true" : GetSplattedAttribute("aria-invalid");
     var ariaReadOnly = ReadOnly ? "true" : GetSplattedAttribute("aria-readonly");
     var ariaDisabled = Disabled ? "true" : GetSplattedAttribute("aria-disabled");

@@ -1,18 +1,13 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
-@{
-    // A null written over a splatted attribute removes it, so the label is resolved against what the page wrote by hand
-    // (see BitComponentBase.GetSplattedAttribute) rather than overwritten with the parameter's null.
-    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
-}
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
      role="group"
-     aria-label="@ariaLabel">
+     aria-label="@ResolveAriaLabel()">
 
     @(Anchor ?? ChildContent)
 

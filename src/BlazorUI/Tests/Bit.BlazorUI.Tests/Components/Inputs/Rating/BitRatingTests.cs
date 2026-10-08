@@ -2344,4 +2344,19 @@ public class BitRatingTests : BunitTestContext
         Assert.AreEqual(expected, root.GetAttribute("aria-disabled"));
         Assert.AreEqual(readOnly ? null : "horizontal", root.GetAttribute("aria-orientation"));
     }
+
+    [TestMethod]
+    public void BitRatingShouldNotAnnounceADisabledRatingAsRequired()
+    {
+        // A disabled field is neither submitted nor validated, so a splatted aria-required goes with it.
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitRating>(0);
+            builder.AddAttribute(1, nameof(BitRating.Disabled), true);
+            builder.AddAttribute(2, "aria-required", "true");
+            builder.CloseComponent();
+        });
+
+        Assert.IsFalse(component.Find(".bit-rtg").HasAttribute("aria-required"));
+    }
 }

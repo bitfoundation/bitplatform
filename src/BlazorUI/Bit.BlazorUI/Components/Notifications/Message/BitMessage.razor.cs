@@ -1027,15 +1027,14 @@ public partial class BitMessage : BitComponentBase
     // add a boundary to walk in and out of, so the root stays a plain div.
     private bool _HasRootName => _AriaLabel.HasValue() || _HasTitle;
 
-    // A null written over a splatted attribute removes it, so the label is resolved against what the page wrote by hand
-    // (see BitComponentBase.GetSplattedAttribute) rather than overwritten with the parameter's null.
-    private string? _AriaLabel => AriaLabel ?? GetSplattedAttribute("aria-label");
+    private string? _AriaLabel => ResolveAriaLabel();
 
     // Everything the message writes on its root is written after the splatted attributes, and an attribute
     // written after the splat replaces what the splat put there, null included - which would quietly wipe an
     // aria attribute a consumer had put on the component. So what was written on the component itself is handed
-    // back out where there was one, however it was cased: it was put there on purpose, and it wins.
-    private string? RootAttribute(string name, string? value) => GetSplattedAttribute(name) ?? value;
+    // back out where there was one, however it was cased: it was put there on purpose, and it wins - a null or a false
+    // included, which is how a page opts out of one of them.
+    private string? RootAttribute(string name, string? value) => TryGetSplattedAttribute(name, out var written) ? written : value;
 
     private string? _RootRole => RootAttribute("role", _HasRootName ? "group" : null);
 

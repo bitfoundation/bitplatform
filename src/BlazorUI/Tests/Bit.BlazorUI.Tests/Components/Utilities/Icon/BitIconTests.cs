@@ -1589,4 +1589,33 @@ public class BitIconTests : BunitTestContext
 
         Context.JSInterop.VerifyFocusAsyncInvoke();
     }
+
+    [TestMethod]
+    public void BitIconShouldFindTheSplattedAriaHiddenAndAriaLabelledByWhateverTheyAreCased()
+    {
+        // Attribute names are case insensitive, so a differently cased aria-hidden or aria-labelledby is still the
+        // page's own: the icon neither hides an icon the page kept visible nor leaves a named one unnamed.
+        var visible = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitIcon>(0);
+            builder.AddAttribute(1, nameof(BitIcon.IconName), "Add");
+            builder.AddAttribute(2, "Aria-Hidden", "false");
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("false", visible.Find(".bit-ico").GetAttribute("aria-hidden"));
+
+        var named = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitIcon>(0);
+            builder.AddAttribute(1, nameof(BitIcon.IconName), "Add");
+            builder.AddAttribute(2, "Aria-Labelledby", "add-caption");
+            builder.CloseComponent();
+        });
+
+        var root = named.Find(".bit-ico");
+
+        Assert.AreEqual("img", root.GetAttribute("role"));
+        Assert.IsFalse(root.HasAttribute("aria-hidden"));
+    }
 }

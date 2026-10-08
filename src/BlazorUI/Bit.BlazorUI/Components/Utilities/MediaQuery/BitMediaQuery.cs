@@ -414,7 +414,7 @@ public partial class BitMediaQuery : BitComponentBase
 
     // A splatted aria-label is resolved here rather than written over: the null a markup attribute
     // written after the splat carries would otherwise remove it, since it binds no parameter.
-    private string? _AriaLabel => AriaLabel ?? GetSplattedAttribute("aria-label");
+    private string? _AriaLabel => ResolveAriaLabel();
 
     // ARIA prohibits naming an element with no role, so a named div or span - the two generic
     // wrappers - is a group, the generic container a name can be given to, unless the page gives it a

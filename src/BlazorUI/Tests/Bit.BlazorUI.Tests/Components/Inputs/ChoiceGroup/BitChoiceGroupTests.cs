@@ -407,4 +407,20 @@ public class BitChoiceGroupTests : BunitTestContext
         Assert.AreEqual("true", root.GetAttribute("aria-readonly"));
         Assert.AreEqual("true", root.GetAttribute("aria-disabled"));
     }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldNotAnnounceADisabledGroupAsRequired()
+    {
+        // A disabled field is neither submitted nor validated, so a splatted aria-required goes with it.
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(0);
+            builder.AddAttribute(1, nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.Items), GetChoiceGroupItems());
+            builder.AddAttribute(2, nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.Disabled), true);
+            builder.AddAttribute(3, "aria-required", "true");
+            builder.CloseComponent();
+        });
+
+        Assert.IsFalse(component.Find(".bit-chg").HasAttribute("aria-required"));
+    }
 }

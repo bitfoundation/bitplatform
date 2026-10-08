@@ -2,11 +2,9 @@
 @inherits BitComponentBase
 
 @{
-    // A null written over a splatted attribute removes it, so the label is resolved against what the page wrote by hand
-    // (see BitComponentBase.GetSplattedAttribute) rather than overwritten with the parameter's null. The region role and
-    // its "carousel" description are the pattern's own and stay after the splatted attributes, as does the tab index,
-    // which NoKeyboard and Disabled take off the root on purpose.
-    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
+    // The region role and its "carousel" description are the pattern's own and stay after the splatted attributes, as
+    // does the tab index, which NoKeyboard and Disabled take off the root on purpose.
+    var ariaLabel = ResolveAriaLabel();
 }
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"

@@ -668,25 +668,18 @@ public partial class BitColorPicker : BitComponentBase
     private string _TabIndex => Disabled ? "-1" : (TabIndex ?? "0");
 
     /// <summary>
-    /// The accessible name of the picker as a whole. An explicit AriaLabel wins, then an aria-label the page
-    /// splatted on; otherwise the color itself is spelled out, since a gradient carries no text a screen reader
-    /// could read instead.
+    /// The accessible name of a picker that is named by nothing else (see <see cref="GetRootName"/>): the color
+    /// itself spelled out, since a gradient carries no text a screen reader could read instead.
     /// </summary>
     /// <remarks>
     /// The color is both named and spelled out in channels. The name is what actually tells someone which
     /// color the picker has landed on - "Red 77 Green 127 Blue 179" is three numbers nobody can picture -
     /// while the channels are what they need once they are adjusting it rather than reading it.
     /// </remarks>
-    private string _AriaLabel
+    private string _ColorAriaLabel
     {
         get
         {
-            if (AriaLabel.HasValue()) return AriaLabel!;
-
-            var splattedAriaLabel = GetSplattedAttribute("aria-label");
-
-            if (splattedAriaLabel.HasValue()) return splattedAriaLabel!;
-
             var texts = _Texts;
 
             return ShowAlphaSlider
@@ -875,19 +868,23 @@ public partial class BitColorPicker : BitComponentBase
     private string _ContrastId => $"{_Id}-contrast";
 
     /// <summary>
-    /// An explicit AriaLabel (or one the page splatted on) still wins, and a Label names the panel through the
-    /// element it is rendered into; without one, an aria-labelledby the page splatted on is written back, since a
-    /// null written after the splat would remove it. Only a picker with none of them falls back to spelling the
-    /// color out on the group itself.
+    /// The aria-label and the aria-labelledby of the group, of which at most one is written. An explicit AriaLabel
+    /// (or one the page splatted on) still wins, and a Label names the panel through the element it is rendered
+    /// into; without one, an aria-labelledby the page splatted on is written back, since a null written after the
+    /// splat would remove it. Only a picker with none of them falls back to spelling the color out on the group
+    /// itself. Both are worked out in one pass, so each splatted attribute is looked up once per render.
     /// </summary>
-    private string? _AriaLabelledBy
+    private (string? Label, string? LabelledBy) GetRootName()
     {
-        get
-        {
-            if (AriaLabel.HasValue() || GetSplattedAttribute("aria-label").HasValue()) return null;
+        var label = AriaLabel.HasValue() ? AriaLabel : GetSplattedAttribute("aria-label");
 
-            return _HasLabel ? _LabelId : GetSplattedAttribute("aria-labelledby");
-        }
+        if (label.HasValue()) return (label, null);
+
+        if (_HasLabel) return (null, _LabelId);
+
+        var labelledBy = GetSplattedAttribute("aria-labelledby");
+
+        return labelledBy is not null ? (null, labelledBy) : (_ColorAriaLabel, null);
     }
 
     /// <summary>

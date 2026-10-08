@@ -6,7 +6,7 @@
     // A null written over a splatted attribute removes it, so the label and the busy state are resolved against what
     // the page wrote by hand (see BitComponentBase.GetSplattedAttribute) rather than overwritten with the null of the
     // parameter or of an idle list.
-    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
+    var ariaLabel = ResolveAriaLabel();
     var ariaBusy = _fetching ? "true" : GetSplattedAttribute("aria-busy");
 }
 <div @ref="RootElement" @attributes="HtmlAttributes"

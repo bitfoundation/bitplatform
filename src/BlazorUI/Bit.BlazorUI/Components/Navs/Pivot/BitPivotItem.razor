@@ -11,10 +11,11 @@
     // A null written over a splatted attribute removes it, so what a page can also write by hand is resolved against
     // what it wrote (see BitComponentBase.GetSplattedAttribute) rather than overwritten with the component's null. The
     // role, the roving tab index, aria-selected and the position in the set belong to the tablist and stay its own.
-    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
+    // An aria-keyshortcuts the page wrote replaces the tab's own, the way it does on a BitButton.
+    var ariaLabel = ResolveAriaLabel();
     var ariaDisabled = _IsDisabled ? "true" : GetSplattedAttribute("aria-disabled");
     var draggable = _IsReorderable ? "true" : GetSplattedAttribute("draggable");
-    var keyShortcuts = string.Join(' ', new[] { GetSplattedAttribute("aria-keyshortcuts"), Parent?.GetItemKeyShortcuts(this) }.Where(keys => keys.HasValue()));
+    var keyShortcuts = GetSplattedAttribute("aria-keyshortcuts") ?? Parent?.GetItemKeyShortcuts(this);
 }
 <div @ref="RootElement" @attributes="HtmlAttributes"
      @onclick="HandleOnClick"
@@ -36,7 +37,7 @@
      aria-controls="@Parent?.GetItemPanelId(this)"
      aria-posinset="@Parent?.GetItemPosInSet(this)"
      aria-setsize="@Parent?.GetItemSetSize(this)"
-     aria-keyshortcuts="@(keyShortcuts.HasValue() ? keyShortcuts : null)"
+     aria-keyshortcuts="@keyShortcuts"
      aria-disabled="@ariaDisabled"
      aria-selected="@(IsSelected ? "true": "false")">
     <span style="@Parent?.Styles?.HeaderItemContent" class="bit-pvti-cnt @Parent?.Classes?.HeaderItemContent">

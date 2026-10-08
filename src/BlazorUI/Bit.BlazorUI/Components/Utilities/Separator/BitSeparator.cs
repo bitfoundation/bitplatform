@@ -382,7 +382,7 @@ public partial class BitSeparator : BitComponentBase
     {
         if (Decorative) return null;
 
-        return AriaLabel ?? GetSplattedAttribute("aria-label");
+        return ResolveAriaLabel();
     }
 
     // The children of a separator are presentational to assistive technologies, so the content names the

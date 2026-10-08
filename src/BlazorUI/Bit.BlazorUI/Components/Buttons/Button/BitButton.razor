@@ -17,7 +17,7 @@
     var dir = Dir?.ToString().ToLower() ?? GetSplattedAttribute("dir");
     var target = Target ?? GetSplattedAttribute("target");
     var download = Download ?? GetSplattedAttribute("download");
-    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
+    var ariaLabel = ResolveAriaLabel();
     var ariaHidden = AriaHidden || GetSplattedAttribute("aria-hidden") is "true";
     var ariaBusy = IsLoading ? "true" : GetSplattedAttribute("aria-busy");
     // A loading button that refuses the second click is unavailable as well as busy, and aria-busy does not say

@@ -91,7 +91,7 @@ public partial class BitShimmer : BitComponentBase
     // page wrote by hand (see BitComponentBase.GetSplattedAttribute) - a role of its own wins outright.
     private string? _role => GetSplattedAttribute("role") ?? (_loaded is false && _ariaLabel.HasValue() ? "progressbar" : null);
 
-    private string? _ariaLabel => AriaLabel ?? GetSplattedAttribute("aria-label");
+    private string? _ariaLabel => ResolveAriaLabel();
 
     private string? _ariaBusy => _loaded ? GetSplattedAttribute("aria-busy") : "true";
 

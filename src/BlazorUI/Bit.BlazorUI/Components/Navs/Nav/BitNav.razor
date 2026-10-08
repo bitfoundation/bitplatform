@@ -2,14 +2,9 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-@{
-    // A null written over a splatted attribute removes it, so the label is resolved against what the page wrote by hand
-    // (see BitComponentBase.GetSplattedAttribute) rather than overwritten with the parameter's null.
-    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
-}
 <nav @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
-     aria-label="@ariaLabel"
+     aria-label="@ResolveAriaLabel()"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()">
