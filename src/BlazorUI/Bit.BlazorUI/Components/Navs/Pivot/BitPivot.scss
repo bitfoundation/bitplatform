@@ -7,10 +7,10 @@
 //   --bit-Pivot-color                        accent: the Link indicator, the fill of the selected
 //                                            Tab, the outer edge of the selected Outline tab,
 //                                            the drop marker and the More button holding
-//                                            the selection                                   (default: the Color role's main color)
-//   --bit-Pivot-focus-color                  focus ring color                                (default: the Color role's focus color)
-//   --bit-Pivot-disabled-color               indicator and Tab fill of a disabled selection  (default: the Color role's disabled color)
-//   --bit-Pivot-disabled-text-color          text of a disabled item                         (default: the Color role's disabled text color)
+//                                            the selection                                   (default: $clr-pri)
+//   --bit-Pivot-focus-color                  focus ring color                                (default: $clr-pri-focus)
+//   --bit-Pivot-disabled-color               indicator and Tab fill of a disabled selection  (default: $clr-pri-dis)
+//   --bit-Pivot-disabled-text-color          text of a disabled item                         (default: $clr-pri-dis-text)
 //   --bit-Pivot-indicator-color              selection indicator, and the outer edge of the
 //                                            selected Outline tab                            (default: --bit-Pivot-color)
 //   --bit-Pivot-indicator-thickness          stroke of the selection indicator               (default: $siz-tab-indicator)
@@ -19,14 +19,14 @@
 //                                            every corner                                    (default: $shp-radius-tab-indicator facing the
 //                                                                                             label, $shp-radius-tab-indicator-base elsewhere)
 //   --bit-Pivot-item-color                   text of an item at rest                         (default: $clr-fg-pri)
-//   --bit-Pivot-item-hover-color             text of a hovered item                          (default: $clr-fg-pri-hover, the role's on-color for Tab)
-//   --bit-Pivot-item-hover-background        background of a hovered item                    (default: $clr-bg-pri-hover, the role's hover color for Tab)
-//   --bit-Pivot-item-selected-color          text of the selected item                       (default: $clr-fg-pri, the role's on-color for Tab)
+//   --bit-Pivot-item-hover-color             text of a hovered item                          (default: $clr-fg-pri-hover, $clr-pri-text for Tab)
+//   --bit-Pivot-item-hover-background        background of a hovered item                    (default: $clr-bg-pri-hover, $clr-pri-hover for Tab)
+//   --bit-Pivot-item-selected-color          text of the selected item                       (default: $clr-fg-pri, $clr-pri-text for Tab)
 //   --bit-Pivot-item-selected-background     background of the selected item                 (default: transparent, --bit-Pivot-color for Tab,
 //                                                                                             $clr-bg-pri for Outline)
 //   --bit-Pivot-item-font-weight             weight of an item's text at rest                (default: $tg-fw-regular)
 //   --bit-Pivot-item-selected-font-weight    weight of the selected item's text              (default: $tg-fw-semibold)
-//   --bit-Pivot-item-height                  height of an item, the slide and add buttons    (default: $siz-tab; x0.75 Small, x1.25 Large)
+//   --bit-Pivot-item-height                  height of an item, the slide and add buttons    (default: $siz-tab)
 //   --bit-Pivot-item-padding-inline          inline padding of an item                       (default: spacing(1))
 //   --bit-Pivot-item-radius                  corner radius of an item, its focus ring and the
 //                                            header's own buttons (slide, add)               (default: 0, $shp-radius-control for Tab and
@@ -34,7 +34,7 @@
 //   --bit-Pivot-item-min-width               narrowest an item gets                          (default: auto)
 //   --bit-Pivot-item-max-width               widest an item gets; a longer header text ends
 //                                            in an ellipsis                                  (default: none)
-//   --bit-Pivot-font-size                    text size of the items and the overflow menu    (default: per size, from the type ramp)
+//   --bit-Pivot-font-size                    text size of the items and the overflow menu    (default: $tg-fs-sm)
 //   --bit-Pivot-gap                          room between the items; the Gap parameter
 //                                            overrides it                                    (default: spacing(1), spacing(0.5) vertical and wrapped, 0 FullWidth)
 //   --bit-Pivot-icon-size                    size of an item's icon                          (default: inherited)
@@ -48,6 +48,13 @@
 //   --bit-Pivot-callout-background           background of the overflow menu                 (default: $clr-bg-pri)
 //   --bit-Pivot-callout-shadow               elevation of the overflow menu                  (default: $box-shadow-popup)
 //   --bit-Pivot-callout-radius               corner radius of the overflow menu              (default: $shp-radius-popup)
+//
+// A parameter written on the pivot wins over the variable that restyles what it sets: an explicit Color over the
+// accent, focus and disabled colors and over the indicator and the colors of a hovered and a selected Tab item
+// (the neutral Link and Outline item colors are the variables' alone), an explicit Size over the font size and
+// the item height, and Gap over the gap. The variables restyle the default, not a choice - which is why Color and
+// Size publish nothing while they are left unset: a class that always carried the default would be
+// indistinguishable from one that was asked for.
 
 // Whatever depends on how a pivot is configured reaches its parts from its own root through child combinators
 // only. A pivot nested in the panel of another one - a vertical settings pivot holding a horizontal one - would
@@ -81,6 +88,26 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
     // The Gap parameter writes this on the root inline; a nested pivot resets it so it never inherits the
     // gap of the pivot around it.
     --bit-pvt-gap: initial;
+    // So do the values the Color and Size classes publish, which those classes - declared further down at the
+    // same weight - still win over on the root that carries them. Left unset, each sends the var() reading it
+    // on to the public variable and then to the default, which is what lets an explicit parameter outrank the
+    // variable while an unset one leaves the variable in charge.
+    --bit-pvt-role-main: initial;
+    --bit-pvt-role-hover: initial;
+    --bit-pvt-role-focus: initial;
+    --bit-pvt-role-text: initial;
+    --bit-pvt-role-dis: initial;
+    --bit-pvt-role-dis-text: initial;
+    --bit-pvt-fs: initial;
+    --bit-pvt-ih: initial;
+    --bit-pvt-is: initial;
+    --bit-pvt-mh: initial;
+    // The accent is resolved here, once per pivot, so every rule below reads the same one: the role an explicit
+    // Color picks, then the public variable, then the primary role an unset Color stands for.
+    --bit-pvt-clr: var(--bit-pvt-role-main, var(--bit-Pivot-color, #{$clr-pri}));
+    --bit-pvt-clr-focus: var(--bit-pvt-role-focus, var(--bit-Pivot-focus-color, #{$clr-pri-focus}));
+    --bit-pvt-clr-dis: var(--bit-pvt-role-dis, var(--bit-Pivot-disabled-color, #{$clr-pri-dis}));
+    --bit-pvt-clr-dis-text: var(--bit-pvt-role-dis-text, var(--bit-Pivot-disabled-text-color, #{$clr-pri-dis-text}));
 
     &.bit-dis {
         #{$pnl} {
@@ -351,7 +378,7 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
     // stays painted while its indicator scales away. Unselected items are collapsed to a zero scale (see
     // .bit-pvti::before), so this paints nothing until an item is selected.
     #{$tab}::before {
-        background-color: var(--bit-Pivot-indicator-color, var(--bit-pvt-clr));
+        background-color: var(--bit-pvt-role-main, var(--bit-Pivot-indicator-color, var(--bit-Pivot-color, #{$clr-pri})));
     }
 
     #{$sel} {
@@ -379,15 +406,15 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
 
         @media(hover:hover) {
             &:hover {
-                color: var(--bit-Pivot-item-hover-color, var(--bit-pvt-clr-text));
-                background-color: var(--bit-Pivot-item-hover-background, var(--bit-pvt-clr-hover));
+                color: var(--bit-pvt-role-text, var(--bit-Pivot-item-hover-color, #{$clr-pri-text}));
+                background-color: var(--bit-pvt-role-hover, var(--bit-Pivot-item-hover-background, #{$clr-pri-hover}));
             }
         }
     }
 
     #{$sel} {
-        color: var(--bit-Pivot-item-selected-color, var(--bit-pvt-clr-text));
-        background-color: var(--bit-Pivot-item-selected-background, var(--bit-pvt-clr));
+        color: var(--bit-pvt-role-text, var(--bit-Pivot-item-selected-color, #{$clr-pri-text}));
+        background-color: var(--bit-pvt-role-main, var(--bit-Pivot-item-selected-background, var(--bit-Pivot-color, #{$clr-pri})));
     }
 
     // A disabled selection keeps its fill, in the muted pair of the role, so the text on it stays legible
@@ -415,7 +442,7 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
 
     #{$sel} {
         border-#{$near}-color: transparent;
-        border-#{$far}-color: var(--bit-Pivot-indicator-color, var(--bit-pvt-clr));
+        border-#{$far}-color: var(--bit-pvt-role-main, var(--bit-Pivot-indicator-color, var(--bit-Pivot-color, #{$clr-pri})));
     }
 
     &.bit-dis #{$sel},
@@ -554,7 +581,9 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
 // design system decides (density included), the glyphs of the slide and add buttons along the icon scale and
 // the rows of the overflow menu along the popup row heights. Each of the three lands on a step of its own - a Medium
 // header that reads the same as a Large one is not a size at all. The steps are declared on the root and
-// read by the items, so a pivot nested in the panel of another one keeps its own size.
+// read by the items, so a pivot nested in the panel of another one keeps its own size. Published only by an
+// explicit Size, which wins over --bit-Pivot-font-size and --bit-Pivot-item-height; an unset one is the medium
+// pivot the reads spell out after them.
 .bit-pvt-sm {
     --bit-pvt-fs: #{$tg-fs-xs};
     --bit-pvt-ih: calc(#{$siz-tab} * 0.75);
@@ -596,7 +625,7 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
         height: auto;
         line-height: normal;
         padding-block: spacing(0.75);
-        min-height: calc(var(--bit-Pivot-item-height, var(--bit-pvt-ih, #{$siz-tab})) * 1.6);
+        min-height: calc(var(--bit-pvt-ih, var(--bit-Pivot-item-height, #{$siz-tab})) * 1.6);
     }
 
     // Only the icon goes on a line of its own: the count stays beside the label it counts.
@@ -625,15 +654,15 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
     box-sizing: border-box;
     scroll-margin: spacing(1);
     background-color: transparent;
-    height: var(--bit-Pivot-item-height, var(--bit-pvt-ih, #{$siz-tab}));
-    line-height: var(--bit-Pivot-item-height, var(--bit-pvt-ih, #{$siz-tab}));
+    height: var(--bit-pvt-ih, var(--bit-Pivot-item-height, #{$siz-tab}));
+    line-height: var(--bit-pvt-ih, var(--bit-Pivot-item-height, #{$siz-tab}));
     padding: 0 var(--bit-Pivot-item-padding-inline, #{spacing(1)});
     margin-inline-end: var(--bit-pvt-gap, var(--bit-Pivot-gap, #{spacing(1)}));
     border-radius: var(--bit-Pivot-item-radius, 0);
     min-width: var(--bit-Pivot-item-min-width, auto);
     max-width: var(--bit-Pivot-item-max-width, none);
     color: var(--bit-Pivot-item-color, #{$clr-fg-pri});
-    font-size: var(--bit-Pivot-font-size, var(--bit-pvt-fs, #{$tg-fs-sm}));
+    font-size: var(--bit-pvt-fs, var(--bit-Pivot-font-size, #{$tg-fs-sm}));
     // Set rather than inherited, so a pivot placed inside bold text does not draw every tab as the selected one.
     font-weight: var(--bit-Pivot-item-font-weight, #{$tg-fw-regular});
     letter-spacing: $tg-ctrl-letter-spacing;
@@ -837,7 +866,7 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
     justify-content: center;
     background-color: transparent;
     font-size: var(--bit-pvt-is, #{$siz-icon-md});
-    height: var(--bit-Pivot-item-height, var(--bit-pvt-ih, #{$siz-tab}));
+    height: var(--bit-pvt-ih, var(--bit-Pivot-item-height, #{$siz-tab}));
 
     @media (hover: hover) {
         &:hover {
@@ -857,16 +886,17 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
     }
 }
 
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). The public
-// variables are resolved here, once per pivot, so every rule below reads the same accent.
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only by
+// an explicit Color, and ranked against the public variables on the root (see .bit-pvt), where an unset Color
+// falls back to the variables and then to the primary role.
 @each $role, $tokens in $bit-color-roles {
     .bit-pvt-#{$role} {
-        --bit-pvt-clr: var(--bit-Pivot-color, #{role($tokens, main)});
-        --bit-pvt-clr-hover: #{role($tokens, hover)};
-        --bit-pvt-clr-focus: var(--bit-Pivot-focus-color, #{role($tokens, focus)});
-        --bit-pvt-clr-text: #{role($tokens, on)};
-        --bit-pvt-clr-dis: var(--bit-Pivot-disabled-color, #{role($tokens, dis)});
-        --bit-pvt-clr-dis-text: var(--bit-Pivot-disabled-text-color, #{role($tokens, dis-text)});
+        --bit-pvt-role-main: #{role($tokens, main)};
+        --bit-pvt-role-hover: #{role($tokens, hover)};
+        --bit-pvt-role-focus: #{role($tokens, focus)};
+        --bit-pvt-role-text: #{role($tokens, on)};
+        --bit-pvt-role-dis: #{role($tokens, dis)};
+        --bit-pvt-role-dis-text: #{role($tokens, dis-text)};
     }
 }
 
@@ -912,7 +942,7 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
     justify-content: center;
     background-color: transparent;
     font-size: var(--bit-pvt-is, #{$siz-icon-md});
-    height: var(--bit-Pivot-item-height, var(--bit-pvt-ih, #{$siz-tab}));
+    height: var(--bit-pvt-ih, var(--bit-Pivot-item-height, #{$siz-tab}));
 
     @media (hover: hover) {
         &:hover {
@@ -1015,7 +1045,7 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
     font-weight: var(--bit-Pivot-item-font-weight, #{$tg-fw-regular});
     padding: spacing(0.5) spacing(2);
     min-height: var(--bit-pvt-mh, #{$siz-item-md});
-    font-size: var(--bit-Pivot-font-size, var(--bit-pvt-fs, #{$tg-fs-sm}));
+    font-size: var(--bit-pvt-fs, var(--bit-Pivot-font-size, #{$tg-fs-sm}));
     letter-spacing: $tg-ctrl-letter-spacing;
     text-transform: $tg-ctrl-text-transform;
 

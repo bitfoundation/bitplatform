@@ -338,14 +338,77 @@ global token tier: add the token, let the component read it, and keep the preset
 
 A component's own `--bit-<Component>-*` properties (the public surface its demo page documents as
 `componentCssVariables`) are read off its root **with a fallback and never declared**, so they
-inherit. A component whose popup is rendered outside that root - a callout, a menu, a panel, which the
-callout JS then reparents to the body - therefore hands it nothing: inside its own markup the popup is
-a SIBLING of the root, and once it has moved only `:root` and `body` are still its ancestors. Such a
-component resolves its variables in one mixin that both the root and the popup include, and carries
-the public declarations across by hand (BitDropdown's `GetCalloutStyles` copies the
-`--bit-Dropdown-*` entries of `Style` and `Styles.Root` onto the callout, appending `Styles.Callout`
-last so a value written for the popup still wins). One `Style` on the component then restyles the
-field and the list it opens together, which is what an author setting a variable expects.
+inherit. A component whose popup is rendered outside that root - a callout, a menu, a panel - renders
+it as a SIBLING of the root, and the callout JS reparents it to the body while it is open. So
+`Callouts.moveCalloutToBody` never moves the popup on its own: it moves it into a chain of
+`display: contents` copies of every ancestor it is leaving (same tag for plain structural elements,
+the consumer's classes plus `bit-fam` and `bit-css-*`, inline style, CSS-isolation scopes, `bit-*` and
+theme-scoping `data-*theme` / `-scheme` / `-mode` attributes, `dir`, `lang`; kept in step by a
+`MutationObserver` while it is open), plus one link for the root, named by the `rootId` argument of
+`BitCalloutToggleCallout`, that carries only what the consumer meant for the popup too: the custom
+properties of its inline style, `bit-fam`, `bit-theme`, the theme-scoping `data-*` attributes,
+CSS-isolation scopes, `dir`, `lang`. That link is built even when the popup is rendered straight into
+the body. A variable set on `:root`, on an ancestor's `Style` or class, or on the `Style` /
+`Styles.Root` of one instance - and a `BitThemeProvider` or `[bit-theme]` scope around it - therefore
+reaches the popup the way it reaches the root, and still follows the theme while it is open. A style
+of a passing state of the root (`Styles.Focused`, `Styles.Toggled`) does not: while it is applied the
+root renders the style it has without it as `data-bit-popup-style` (`GetPopupStyle`), and a link copies
+that instead, so the popup never flips as the focus moves between the field and the popup. What
+identifies an element or makes it act is never copied (id, role, aria-*, other `data-*`, the state
+`:hover` / `:focus-within` match), so a variable set through such a selector does not reach the popup.
+Nor are the library's component classes, which its scripts find elements by with `closest()` (so a
+popup that needs its own color and size classes, like the TimePicker's, declares them itself), nor any
+class of the root: the root is not an ancestor of the popup, and a link carrying its `Class` would let
+the consumer's rules for the field's subtree match the popup (use `Classes.Callout`). Another callout's
+relocated popup, when an inner one is opened from it, is copied for its classes alone - never its inline
+style, which holds that callout's own placement and the sizing its parameters write (a DropMenu's `Width`
+as `--bit-DropMenu-callout-width`), and which an inner popup of the same kind would read as its own; a
+component that writes private sizing variables onto its popup still resets them in that popup's own rule
+(`.bit-clo-cal`), since a closed inner popup sits under the outer one in the page too. The flip side of
+copying an ancestor's classes is deliberate, as the same classes are what carry a class-declared
+variable, an inherited text style or a `::deep` rule into the popup: a page's descendant selectors
+(`.card div`) match the popup again, as they would in place, so `general.scss` pins only the relocated
+parts' `position: fixed`; and an app's `closest('.its-class')` from inside the popup finds the inert copy
+rather than nothing. A responsive panel stays in its chain until its exit transition has run. Such a
+component resolves its variables in one mixin that both the root and the popup include, and copies
+nothing in C#: a popup's open call passes `rootId: _Id`, except one opened from inside another popup,
+which inherits through that one's chain, and the TimePicker's, which is rendered INSIDE its root and so
+inherits it as an ancestor. The exceptions are parts that sit beside the root but are never relocated -
+the calendar of a `Standalone` date picker or date range picker, the dial of a `Standalone` circular time
+picker - which get no chain, so they still have the public declarations of `Style` / `Styles.Root`
+copied onto them (`BitPublicCssVariables`, `GetStandaloneStyles` / `GetCalloutStyle`).
+
+**A parameter written on the component wins over the public variable that restyles what it sets** -
+the variables restyle the default, never a choice, so `:root { --bit-Badge-background: gray }` leaves
+`<BitBadge Color="BitColor.Error">` red. Three things make that hold:
+
+- **An unset parameter publishes nothing.** The `_ =>` arm of a `Color` / `Size` / `Shape` switch is
+  `string.Empty`, and a value parameter (`Height`, `Gap`) writes no inline property while it is null: a
+  class that always carried the default would be indistinguishable from one that was asked for. A value
+  from a `BitParams` ancestor counts as set.
+- **The root rule resets what those classes publish** (`--bit-bdg-clr: initial;`), so an instance nested
+  in another one's content never inherits the outer one's choice; the classes come later in the file
+  at the same weight and still win on the root that carries them.
+- **Every read ranks private, then public, then default**:
+  `var(--bit-bdg-clr, var(--bit-Badge-background, #{$clr-pri}))`, never
+  `var(--bit-Badge-background, var(--bit-bdg-clr))` - the last fallback being the token the unset
+  parameter stands for (the primary role, the medium size). A state the component is in (disabled, a
+  dot) is read before all three, as before.
+
+What a parameter does not paint stays the variable's: the transparent background of an Outline badge is
+the Variant's recipe rather than the Color's, so `--bit-Badge-background` still fills it under an
+explicit `Color`. The demo page's `componentCssVariables` row says which parameter wins over each
+variable ("The Color parameter wins over it."), and the stylesheet test pins the order - no
+`var(--bit-<Component>-..., var(--bit-<prefix>-` left where the private one is a parameter's, plus the
+resets on the root. `BitBadge` and `BitShimmer` are the reference implementations. Every private property a
+role or size class publishes has to be declared again by the component's own rules (`initial`, or the default
+the unset parameter stands for); `BitComponentPrivatePropertyResetTests` fails on one that is not, for every
+stylesheet at once.
+
+A component that renders a core one and wants a default other than the core one's (BitMessageBox's neutral
+buttons) never passes it as the parameter, which would make it a choice that outranks an app's variables. It
+leaves the parameter unset and adds the core component's host-default class instead (`bit-btn-dft-<role>`),
+read after the public variables as the last fallback.
 
 Adding a preset means touching all of: its `Styles/<Name>/` folder and bundle entry point,
 `Bit.BlazorUI.Extras/compilerconfig.json` and the csproj `BuildCss` target, `BitExtraThemePresets`,

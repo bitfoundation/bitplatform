@@ -163,13 +163,7 @@ public partial class BitSpacer : BitComponentBase
 
     protected override void RegisterCssClasses()
     {
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-spc-sm",
-            BitSize.Medium => "bit-spc-md",
-            BitSize.Large => "bit-spc-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-spc"));
     }
 
     protected override void RegisterCssStyles()

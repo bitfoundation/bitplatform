@@ -6,7 +6,7 @@
 
 <DemoPage Name="Toggle"
           SecondaryNames="@(["Switch"])"
-          Description="BitToggle is a physical switch turned into a control: flip it to choose between two mutually exclusive options - “On/Off”, “Show/Hide” - and the choice takes effect right away, with no Save button in between. That immediacy is what separates it from a checkbox, which states an intention a later submit carries out, so a switch inside a form that ends in a Submit button is the one place not to use it. It is built on a real focusable button carrying the switch role: Tab reaches it, Space and Enter flip it, and screen readers announce it as a switch with its state. The knob carries that state by position as much as by color, and its slide collapses to a jump wherever reduced motion is asked for. Beyond the two plain states it can name each of them with a state text, carry content inside its track or its knob, explain itself in a description line, say why a state was rejected in an error line, show a spinner while a change is still in flight, refuse a change before it lands, be flipped from code, and place its label on any side. A BitParams ancestor sets the defaults of every toggle in a subtree, and a tier of public --bit-Toggle-* CSS variables covers the geometry, the palette and the motion that no parameter names."
+          Description="BitToggle is a physical switch turned into a control: flip it to choose between two mutually exclusive options - “On/Off”, “Show/Hide” - and the choice takes effect right away, with no Save button in between. That immediacy is what separates it from a checkbox, which states an intention a later submit carries out, so a switch inside a form that ends in a Submit button is the one place not to use it. It is built on a real focusable button carrying the switch role: Tab reaches it, Space and Enter flip it, and screen readers announce it as a switch with its state. The knob carries that state by position as much as by color, and its slide collapses to a jump wherever reduced motion is asked for. Beyond the two plain states it can name each of them with a state text, carry content inside its track or its knob, explain itself in a description line, say why a state was rejected in an error line, show a spinner while a change is still in flight, refuse a change before it lands, be flipped from code, and place its label on any side. A BitParams ancestor sets the defaults of every toggle in a subtree, and a tier of public --bit-Toggle-* CSS variables restyles the default geometry, palette and motion, which an explicit Color or Size still wins over."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"
           SubEnums="componentSubEnums"
@@ -658,35 +658,37 @@
         </div>
         <br /><br />
         <div><b>Component's style &amp; class</b>:</div><br />
-        <BitToggle Label="Styled toggle" Style="background-color:#ff6a00b3;padding:0.5rem;border-radius:0.25rem" />
-        <br />
-        <BitToggle Label="Classed toggle" Class="custom-class" />
-        <br /><br /><br />
-        <div><b>Styles &amp; Classes</b>:</div><br />
-        <BitToggle Label="Styles"
-                   Styles="@(new() { Root = "--bit-Toggle-track-background: lightgray; --bit-Toggle-track-border-color: transparent;",
-                                     Checked = "--bit-Toggle-checked-background: #2ecc71;",
-                                     Thumb = "background: whitesmoke;" } )" />
-        <br />
-        <BitToggle Label="Classes"
-                   Classes="@(new() { Thumb = "custom-thumb",
-                                      Button = "custom-button",
-                                      Checked = "custom-check" } )" />
-        <br />
-        <BitToggle Label="Each side of the track content"
-                   Classes="@(new() { OnContent = "custom-on-content",
-                                      OffContent = "custom-off-content" } )">
-            <OnContent>ON</OnContent>
-            <OffContent>OFF</OffContent>
-        </BitToggle>
+        <div>
+            <BitToggle Label="Styled toggle" Style="background-color:#ff6a00b3;padding:0.5rem;border-radius:0.25rem" />
+            <br />
+            <BitToggle Label="Classed toggle" Class="custom-class" />
+            <br /><br /><br />
+            <div><b>Styles &amp; Classes</b>:</div><br />
+            <BitToggle Label="Styles"
+                       Styles="@(new() { Root = "--bit-Toggle-track-background: lightgray; --bit-Toggle-track-border-color: transparent;",
+                                         Checked = "--bit-Toggle-checked-background: #2ecc71;",
+                                         Thumb = "background: whitesmoke;" } )" />
+            <br />
+            <BitToggle Label="Classes"
+                       Classes="@(new() { Thumb = "custom-thumb",
+                                          Button = "custom-button",
+                                          Checked = "custom-check" } )" />
+            <br />
+            <BitToggle Label="Each side of the track content"
+                       Classes="@(new() { OnContent = "custom-on-content",
+                                          OffContent = "custom-off-content" } )">
+                <OnContent>ON</OnContent>
+                <OffContent>OFF</OffContent>
+            </BitToggle>
+        </div>
         <br /><br /><br />
         <div>
-            For what no parameter covers, the BitToggle reads a set of
-            <BitLink Href="#css-variables-section">CSS variables</BitLink> off its root. They inherit, so a value on
-            <code>:root</code> or on any ancestor re-skins every toggle below it, and one on the <b>Style</b> of an
-            instance re-skins that one alone. The geometry ones belong on the root - the knob and the lane held open
-            for it are measured there - which is what the <b>Root</b> slot above and the <b>Style</b> parameter below
-            both are.
+            The BitToggle also reads a set of <BitLink Href="#css-variables-section">CSS variables</BitLink> off its
+            root. They inherit, so a value on <code>:root</code> or on any ancestor re-skins every toggle below it, and
+            one on the <b>Style</b> of an instance re-skins that one alone. They restyle the default, not a choice: an
+            explicit <b>Color</b> or <b>Size</b> wins over the variables for what it sets. The geometry ones belong on
+            the root - the knob and the lane held open for it are measured there - which is what the <b>Root</b> slot
+            above and the <b>Style</b> parameter below both are.
         </div>
         <br />
         <div class="example-box">

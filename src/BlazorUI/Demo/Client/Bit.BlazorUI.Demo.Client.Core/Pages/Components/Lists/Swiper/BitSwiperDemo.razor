@@ -337,27 +337,29 @@
             are not cascaded.
         </div>
         <br />
-        <BitParams Parameters="@swiperParams">
-            <div>Takes its dots, step, rewinding, snapping and sizing from the cascade:</div>
-            <br />
-            <BitSwiper>
-                @for (int i = 1; i <= 12; i++)
-                {
-                    var index = i;
-                    <BitSwiperItem><div class="card-item">@index</div></BitSwiperItem>
-                }
-            </BitSwiper>
-            <br /><br />
-            <div>Its own VisibleItemsCount and no dots, the cascaded rest:</div>
-            <br />
-            <BitSwiper VisibleItemsCount="2" ShowDots="false">
-                @for (int i = 1; i <= 12; i++)
-                {
-                    var index = i;
-                    <BitSwiperItem><div class="card-item">@index</div></BitSwiperItem>
-                }
-            </BitSwiper>
-        </BitParams>
+        <div>
+            <BitParams Parameters="@swiperParams">
+                <div>Takes its dots, step, rewinding, snapping and sizing from the cascade:</div>
+                <br />
+                <BitSwiper>
+                    @for (int i = 1; i <= 12; i++)
+                    {
+                        var index = i;
+                        <BitSwiperItem><div class="card-item">@index</div></BitSwiperItem>
+                    }
+                </BitSwiper>
+                <br /><br />
+                <div>Its own VisibleItemsCount and no dots, the cascaded rest:</div>
+                <br />
+                <BitSwiper VisibleItemsCount="2" ShowDots="false">
+                    @for (int i = 1; i <= 12; i++)
+                    {
+                        var index = i;
+                        <BitSwiperItem><div class="card-item">@index</div></BitSwiperItem>
+                    }
+                </BitSwiper>
+            </BitParams>
+        </div>
     </DemoExample>
 
     <DemoExample Title="Color" RazorCode="@example13RazorCode" Id="example13">
@@ -516,7 +518,8 @@
             <b>Style</b> and <b>Class</b> reach the root; <b>Styles</b> and <b>Classes</b> address each part by name
             (see <a href="#class-styles">BitSwiperClassStyles</a>). The public <b>--bit-Swiper-*</b> variables
             (see <a href="#css-variables-section">CSS variables</a>) inherit, so set them on <b>:root</b>, an
-            ancestor, or one swiper's <b>Style</b>; they win over <b>Size</b> and <b>Color</b>.
+            ancestor, or one swiper's <b>Style</b>. They restyle the default, not a choice: an explicit <b>Size</b>,
+            <b>Color</b> or <b>Accent</b> wins over the variables for what it sets.
         </div>
         <br />
         <div>Styles & Classes:</div>

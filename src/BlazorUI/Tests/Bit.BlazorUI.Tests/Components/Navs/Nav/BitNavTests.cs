@@ -6,6 +6,7 @@ using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Navs.Nav;
@@ -149,9 +150,11 @@ public class BitNavTests : BunitTestContext
         var root = component.Find(".bit-nav");
 
         Assert.IsTrue(root.ClassList.Contains("bit-nav"));
-        Assert.IsTrue(root.ClassList.Contains("bit-nav-md"), "the default size");
-        Assert.IsTrue(root.ClassList.Contains("bit-nav-pri"), "the default color");
-        Assert.IsTrue(root.ClassList.Contains("bit-nav-apbg"), "the default accent");
+        // An unset Size, Color or Accent publishes nothing, so the public --bit-Nav-* variables restyle the default
+        // while an explicit value - which does publish its class - wins over them.
+        Assert.IsFalse(root.ClassList.Contains("bit-nav-md"), "an unset size published its class");
+        Assert.IsFalse(root.ClassList.Contains("bit-nav-pri"), "an unset color published its class");
+        Assert.IsFalse(root.ClassList.Contains("bit-nav-apbg"), "an unset accent published its class");
         Assert.IsFalse(root.ClassList.Contains("bit-nav-ftw"));
         Assert.IsFalse(root.ClassList.Contains("bit-nav-flw"));
         Assert.IsFalse(root.ClassList.Contains("bit-nav-ion"));
@@ -269,8 +272,8 @@ public class BitNavTests : BunitTestContext
         DataRow(BitSize.Small, "bit-nav-sm"),
         DataRow(BitSize.Medium, "bit-nav-md"),
         DataRow(BitSize.Large, "bit-nav-lg"),
-        DataRow(null, "bit-nav-md")]
-    public void BitNavShouldApplyTheSizeClass(BitSize? size, string expectedClass)
+        DataRow(null, null)]
+    public void BitNavShouldApplyTheSizeClass(BitSize? size, string? expectedClass)
     {
         var component = RenderNav(BasicItems(), p => p.Add(c => c.Size, size));
 
@@ -299,9 +302,8 @@ public class BitNavTests : BunitTestContext
         DataRow(BitColor.TertiaryForeground, "bit-nav-tfg"),
         DataRow(BitColor.PrimaryBorder, "bit-nav-pbr"),
         DataRow(BitColor.SecondaryBorder, "bit-nav-sbr"),
-        DataRow(BitColor.TertiaryBorder, "bit-nav-tbr"),
-        DataRow(null, "bit-nav-pri")]
-    public void BitNavShouldApplyTheColorClass(BitColor? color, string expectedClass)
+        DataRow(BitColor.TertiaryBorder, "bit-nav-tbr")]
+    public void BitNavShouldApplyTheColorClass(BitColor color, string expectedClass)
     {
         var component = RenderNav(BasicItems(), p => p.Add(c => c.Color, color));
 
@@ -325,13 +327,28 @@ public class BitNavTests : BunitTestContext
         DataRow(BitColor.TertiaryForeground, "bit-nav-atfg"),
         DataRow(BitColor.PrimaryBorder, "bit-nav-apbr"),
         DataRow(BitColor.SecondaryBorder, "bit-nav-asbr"),
-        DataRow(BitColor.TertiaryBorder, "bit-nav-atbr"),
-        DataRow(null, "bit-nav-apbg")]
-    public void BitNavShouldApplyTheAccentClass(BitColor? accent, string expectedClass)
+        DataRow(BitColor.TertiaryBorder, "bit-nav-atbr")]
+    public void BitNavShouldApplyTheAccentClass(BitColor accent, string expectedClass)
     {
         var component = RenderNav(BasicItems(), p => p.Add(c => c.Accent, accent));
 
         Assert.IsTrue(component.Find(".bit-nav").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitNavShouldPublishNoColorAccentOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderNav(BasicItems());
+
+        // An unset Color, Accent or Size publishes nothing, so the public --bit-Nav-* variables restyle the default
+        // while an explicit value - which does publish its class - wins over them.
+        var root = component.Find(".bit-nav");
+        string[] roles = ["pri", "sec", "ter", "inf", "suc", "wrn", "swr", "err", "pbg", "sbg", "tbg", "pfg", "sfg", "tfg", "pbr", "sbr", "tbr"];
+
+        foreach (var cssClass in roles.Select(r => $"bit-nav-{r}").Concat(roles.Select(r => $"bit-nav-a{r}")).Concat(["bit-nav-sm", "bit-nav-md", "bit-nav-lg"]))
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
     }
 
     [TestMethod]
@@ -1174,6 +1191,21 @@ public class BitNavTests : BunitTestContext
 
         Assert.AreEqual(1, focused.Count);
         focused[0].Arguments[0].ShouldBeElementReferenceTo(component.FindAll(".bit-nav-ict")[1]);
+    }
+
+    [TestMethod]
+    public void BitNavShouldIgnoreAFocusThatFailsOnTheJsSide()
+    {
+        // An item taken out of the document between the key press and the focus call fails in the browser,
+        // which reaches .NET as a JSException - nothing to tear the nav (or a Server circuit) down for.
+        Context.JSInterop.SetupVoid("Blazor._internal.domWrapper.focus", _ => true).SetException(new JSException("Unable to focus an invalid element."));
+
+        var component = RenderNav(TreeItems(), p => p.Add(c => c.NoCollapse, true));
+
+        component.FindAll(".bit-nav-ict")[0].FocusIn();
+        PressKey(component, "ArrowRight");
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
     }
 
     [TestMethod]
@@ -3020,6 +3052,33 @@ public class BitNavTests : BunitTestContext
         });
 
         Assert.IsFalse(IsHidden(component.Find(".bit-nav-ict").ParentElement!.QuerySelector("ul")!.GetAttribute("style")));
+    }
+
+    [TestMethod]
+    public void BitNavShouldReportTheUrlSelectionOfTheOptionsOnce()
+    {
+        Navigate("/products");
+
+        var selections = new List<BitNavOption?>();
+
+        // The option that matches the URL is selected as it registers, and the pass after the render finds the
+        // very same option: a Reselectable nav must not report that re-check as a second selection.
+        var component = RenderComponent<BitNav<BitNavOption>>(parameters =>
+        {
+            parameters.Add(p => p.Reselectable, true);
+            parameters.Add(p => p.OnSelectItem, (BitNavOption? option) => selections.Add(option));
+            parameters.AddChildContent<BitNavOption>(o => o.Add(p => p.Text, "Home").Add(p => p.Url, "/"));
+            parameters.AddChildContent<BitNavOption>(o => o.Add(p => p.Text, "Products").Add(p => p.Url, "/products"));
+        });
+
+        Assert.AreEqual(1, selections.Count);
+        Assert.AreEqual("Products", selections[0]!.Text);
+        Assert.AreEqual("Products", component.Find(".bit-nav-sel .bit-nav-itx").TextContent);
+
+        // A navigation back to the same page is something the reader did, so that one is reported again.
+        Navigate("/products");
+
+        Assert.AreEqual(2, selections.Count);
     }
 
     // The children of an option stay in the DOM while collapsed and are hidden through the style attribute,

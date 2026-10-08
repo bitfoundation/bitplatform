@@ -634,8 +634,10 @@
     <DemoExample Title="CSS variables" RazorCode="@example22RazorCode" Id="example22">
         <div>
             Every visual value reads a <code>--bit-DatePicker-*</code> variable: set one on <code>:root</code> to
-            re-skin every picker, or on <b>Style</b> to re-skin one - the picker copies them onto its callout, so the
-            field and the calendar change together. <b>Styles.Callout</b> targets the calendar alone.
+            re-skin every picker, on an ancestor to re-skin the pickers inside it, or on <b>Style</b> to re-skin one.
+            The callout keeps inheriting from the picker while it is open, so the field and the calendar change
+            together. <b>Styles.Callout</b> targets the calendar alone. The variables restyle the default, not a
+            choice: an explicit <b>Color</b> or <b>Size</b> wins over them for what it sets.
         </div>
         <br />
         <div class="example-content">

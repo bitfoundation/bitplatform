@@ -99,6 +99,18 @@ document.addEventListener('pointerdown', (e: PointerEvent) => {
     BitBlazorUI.Callouts.dismissOnOutsideInteraction(e.target as Node);
 }, true);
 
+// A click on the overlay of a callout opened from inside another one, outside the callouts under it as well,
+// dismisses them all (see Callouts.dismissOnOverlayClick). On the window in the capture phase, ahead of Blazor's
+// own delegation, so that the overlay's handler does not dismiss the innermost callout a second time.
+window.addEventListener('click', (e: MouseEvent) => {
+    if (e.button !== 0) return;
+
+    if (BitBlazorUI.Callouts.dismissOnOverlayClick(e.target, e.clientX, e.clientY)) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+    }
+}, true);
+
 // A right-click dismisses the same callouts, except where the page took the click for itself - a handler
 // that opens a context menu of its own calls preventDefault on it - since that is the page moving its own
 // menu to the new point rather than the user leaving it. Whether the click was taken is only known once

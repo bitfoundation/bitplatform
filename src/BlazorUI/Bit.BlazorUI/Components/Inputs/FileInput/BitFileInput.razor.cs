@@ -114,6 +114,10 @@ public partial class BitFileInput : BitComponentBase
     /// <summary>
     /// The general color of the file input, applied to the browse button and the drag-and-drop indicator.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-FileInput-*</c> color variables; left unset, the file input is
+    /// primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -343,6 +347,12 @@ public partial class BitFileInput : BitComponentBase
     /// <summary>
     /// The size of the file input, applied to the browse button and the file list items.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-FileInput-*</c> size variables (the browse button's height,
+    /// padding and text size, the drop zone's height, padding and glyph, the description, file name and file size
+    /// text, the preview side and the remove button); left unset, the file input is medium unless those variables
+    /// say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -566,35 +576,11 @@ public partial class BitFileInput : BitComponentBase
             _ => ShowDropZone ? "bit-fin-otl" : "bit-fin-fil"
         });
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-fin-pri",
-            BitColor.Secondary => "bit-fin-sec",
-            BitColor.Tertiary => "bit-fin-ter",
-            BitColor.Info => "bit-fin-inf",
-            BitColor.Success => "bit-fin-suc",
-            BitColor.Warning => "bit-fin-wrn",
-            BitColor.SevereWarning => "bit-fin-swr",
-            BitColor.Error => "bit-fin-err",
-            BitColor.PrimaryBackground => "bit-fin-pbg",
-            BitColor.SecondaryBackground => "bit-fin-sbg",
-            BitColor.TertiaryBackground => "bit-fin-tbg",
-            BitColor.PrimaryForeground => "bit-fin-pfg",
-            BitColor.SecondaryForeground => "bit-fin-sfg",
-            BitColor.TertiaryForeground => "bit-fin-tfg",
-            BitColor.PrimaryBorder => "bit-fin-pbr",
-            BitColor.SecondaryBorder => "bit-fin-sbr",
-            BitColor.TertiaryBorder => "bit-fin-tbr",
-            _ => "bit-fin-pri"
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-FileInput-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-fin"));
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-fin-sm",
-            BitSize.Medium => "bit-fin-md",
-            BitSize.Large => "bit-fin-lg",
-            _ => "bit-fin-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-fin"));
 
         // the browse button is what carries the drop indicator, so a component rendered without one - hidden
         // or replaced by a LabelTemplate - needs the indicator drawn around itself instead of silently

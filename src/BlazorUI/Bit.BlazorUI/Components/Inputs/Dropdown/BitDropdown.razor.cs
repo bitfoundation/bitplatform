@@ -247,6 +247,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// <summary>
     /// The general color of the dropdown.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Dropdown-*</c> accent, focus and header color variables, in the
+    /// field and in the callout alike; left unset, the dropdown is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -862,6 +866,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// <summary>
     /// The size of the dropdown.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Dropdown-*</c> size variables (min height, font size, label font
+    /// size, icon size, item height and item font size), in the field and in the callout alike; left unset, the
+    /// dropdown is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -917,6 +926,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     /// <summary>
     /// Removes the default background color from the root element.
     /// </summary>
+    /// <remarks>
+    /// When true, it wins over <c>--bit-Dropdown-background</c>, which only restyles the background of a
+    /// dropdown that is not transparent.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Transparent { get; set; }
 
@@ -1755,6 +1768,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-Dropdown-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => GetColorClass());
 
         ClassBuilder.Register(() => GetSizeClass());
@@ -2282,6 +2297,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // letting OpenOnFocus read that move as the user coming in. The flag is consumed by the focusin the
     // move produces; a move that never happens (a disconnected circuit, an element that is no longer on
     // the page) clears it here instead, so it cannot go on to swallow the next focus the user gives.
+    // Failing to move the focus is not fatal, so it is not thrown out of the dismissal that asked for it.
     private async Task RestoreFocusToTrigger()
     {
         _suppressOpenOnFocus = true;
@@ -2293,8 +2309,6 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         catch
         {
             _suppressOpenOnFocus = false;
-
-            throw;
         }
     }
 
@@ -2706,7 +2720,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             await _js.BitUtilsSelectText(element.Value);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (InvalidOperationException) { } // an input that is not on the page has no text to select
+        catch (InvalidOperationException) { } // the input has not been rendered yet, so there is no text to select
+        catch (JSException) { } // the input is no longer in the document, failing to select its text is not fatal
     }
 
     private void HandleComboInputFocusOut()
@@ -2720,7 +2735,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         // The clear button only renders while there is a text, so activating it removes it from under
         // the focus; the focus moves to the input it emptied instead of dropping to the document body.
-        await _searchInputRef.FocusAsync();
+        await _searchInputRef.FocusSafelyAsync();
     }
 
     private async Task HandleOnSearchBoxInput(ChangeEventArgs e)
@@ -2865,12 +2880,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         // that went away in between has to end here rather than throw out of a discarded task.
         if (IsRendered is false || IsDisposed) return;
 
-        try
-        {
-            await _searchInputRef.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (InvalidOperationException) { } // an input that is not on the page cannot take the focus
+        await _searchInputRef.FocusSafelyAsync();
     }
 
     private async Task ClearComboBoxInput()
@@ -2919,7 +2929,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
-        catch (InvalidOperationException) { } // an input that is not on the page has no value to clear
+        catch (InvalidOperationException) { } // the input has not been rendered yet, so there is no value to clear
+        catch (JSException) { } // the input is no longer in the document, failing to clear it is not fatal
     }
 
     private async ValueTask FocusOnComboBoxInput()
@@ -2929,7 +2940,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (Combo is false) return;
         if (_isResponsiveMode) return;
 
-        await _comboBoxInputRef.FocusAsync();
+        await _comboBoxInputRef.FocusSafelyAsync();
     }
 
     // The term the items are actually filtered by. It is null until the typed text is long enough for
@@ -3468,7 +3479,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         if (_isResponsiveMode && MultiSelect)
         {
-            await _comboBoxInputResponsiveRef.FocusAsync();
+            await _comboBoxInputResponsiveRef.FocusSafelyAsync();
 
             return;
         }
@@ -3537,7 +3548,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             setCalloutWidth: PreserveCalloutWidth is false,
             fixedCalloutWidth: false,
             maxWindowWidth: 0,
-            maxHeight: MaxHeight is > 0 ? MaxHeight.Value : 0);
+            maxHeight: MaxHeight is > 0 ? MaxHeight.Value : 0,
+            rootId: _Id);
     }
 
     private async ValueTask<ItemsProviderResult<TItem>> InternalItemsProvider(ItemsProviderRequest request)
@@ -4142,76 +4154,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
     }
 
-    // The public custom properties of the component, which are what its stylesheet reads off the root with a
-    // fallback (see BitDropdown.scss). Nothing else in a style string is copied to the callout.
-    private const string PUBLIC_CSS_VARIABLE_PREFIX = "--bit-Dropdown-";
-
-    private string? _publicCssVariables;
-    private string? _lastRootStyle;
-    private string? _lastStylesRoot;
-
-    // The callout and the overlay are rendered outside the root element - and reparented to the body while the
-    // callout is open - so they inherit nothing an author sets on the dropdown: neither the Style of the
-    // instance nor a custom property declared on an ancestor of it (only :root and body stay ancestors of them
-    // once they have moved). The public --bit-Dropdown-* declarations are therefore carried across by hand, so
-    // ONE Style on the component restyles the field, the list it opens and the layer behind it together, the
-    // way it reads as if it would.
-    private string? GetPublicCssVariables()
-    {
-        var style = Style;
-        var stylesRoot = Styles?.Root;
-
-        // Rebuilt only when one of the two strings it is made of has actually changed: the callout is
-        // re-rendered on every keystroke typed into the search box, and parsing two style strings per
-        // render for a result that almost never changes is work no one asked for.
-        if (string.Equals(style, _lastRootStyle, StringComparison.Ordinal) &&
-            string.Equals(stylesRoot, _lastStylesRoot, StringComparison.Ordinal))
-        {
-            return _publicCssVariables;
-        }
-
-        _lastRootStyle = style;
-        _lastStylesRoot = stylesRoot;
-
-        StringBuilder? builder = null;
-
-        AppendPublicCssVariables(ref builder, style);
-        AppendPublicCssVariables(ref builder, stylesRoot);
-
-        _publicCssVariables = builder?.ToString();
-
-        return _publicCssVariables;
-    }
-
-    // Styles.Callout is appended last, so a value written for the callout still wins over the copy.
-    private string? GetCalloutStyles()
-    {
-        var variables = GetPublicCssVariables();
-        var stylesCallout = Styles?.Callout;
-
-        if (variables.HasNoValue()) return stylesCallout;
-        if (stylesCallout.HasNoValue()) return variables;
-
-        return variables + stylesCallout;
-    }
-
-    // Styles.Overlay is appended last for the same reason Styles.Callout is. The display is written here
-    // rather than in the stylesheet because it is what the component toggles the layer with.
+    // The display is written here rather than in the stylesheet because it is what the component toggles the
+    // layer with; Styles.Overlay is appended after it, so a value written for the overlay still wins.
     private string GetOverlayStyles()
     {
-        return $"display:{(IsOpen ? "block" : "none")};{GetPublicCssVariables()}{Styles?.Overlay}";
-    }
-
-    private static void AppendPublicCssVariables(ref StringBuilder? builder, string? style)
-    {
-        if (style.HasNoValue()) return;
-
-        foreach (var declaration in style!.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-        {
-            if (declaration.StartsWith(PUBLIC_CSS_VARIABLE_PREFIX, StringComparison.Ordinal) is false) continue;
-
-            (builder ??= new StringBuilder()).Append(declaration).Append(';');
-        }
+        return $"display:{(IsOpen ? "block" : "none")};{Styles?.Overlay}";
     }
 
     private string GetCalloutCssClasses()
@@ -4245,11 +4192,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             classes.Add("bit-drp-rtl");
         }
 
-        classes.Add(GetColorClass());
-
-        // The callout renders outside the root element, so the size class has to be repeated on it for
-        // the items to follow the size of the dropdown they belong to.
-        classes.Add(GetSizeClass());
+        // The callout renders outside the root element, so the color and the size classes have to be repeated
+        // on it for the items to follow the dropdown they belong to. Each is empty while its parameter is unset,
+        // and is left out rather than joined in as an empty entry.
+        classes.AddIfHasValue(GetColorClass());
+        classes.AddIfHasValue(GetSizeClass());
 
         return string.Join(' ', classes).Trim();
     }

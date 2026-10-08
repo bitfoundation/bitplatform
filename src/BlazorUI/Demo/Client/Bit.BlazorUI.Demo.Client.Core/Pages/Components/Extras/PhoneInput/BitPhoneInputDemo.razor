@@ -569,9 +569,10 @@
                 The public <b>--bit-PhoneInput-*</b> custom properties (see the
                 <BitLink Href="#css-variables-section">CSS variables</BitLink> table) re-skin the field without a selector:
                 on <code>:root</code> for the whole app, on an ancestor for the fields inside it, or in one field's
-                <b>Style</b>. The country list is rendered in the body, outside the field, so a variable set on an
-                ancestor styles the field but never reaches its list: set the list's variables on <code>:root</code>,
-                or in the field's <b>Style</b>, whose <b>--bit-PhoneInput-*</b> entries are copied onto the list.
+                <b>Style</b>. The country list is moved to the end of the body while it is open, yet it keeps inheriting
+                from the field and every ancestor of it, so a variable set in any of those places re-skins the list as well.
+                They restyle the default, not a choice: an explicit <b>Color</b>, <b>Background</b>, <b>Border</b> or
+                <b>Size</b> wins over the variables for what it sets.
                 <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> every part by name.
             </div>
             <br />
@@ -581,7 +582,7 @@
                                Placeholder="Enter your number"
                                Style="--bit-PhoneInput-radius: 1.5rem; --bit-PhoneInput-focus-color: #7c4dff; --bit-PhoneInput-item-selected-background: #ede7f6; --bit-PhoneInput-item-selected-color: #311b92; --bit-PhoneInput-callout-radius: 1rem;" />
                 <br />
-                <div>CSS variables on an ancestor:</div>
+                <div>CSS variables on an ancestor (open its list too):</div>
                 <div class="phi-brand-scope">
                     <BitPhoneInput DefaultCountry="BitCountries.Netherlands" Placeholder="Enter your number" />
                 </div>

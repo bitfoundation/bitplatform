@@ -105,6 +105,9 @@ public partial class BitSwiper : BitComponentBase
     /// </summary>
     /// <remarks>
     /// It colors the dot of the current page. <see cref="Color"/> takes precedence over it when both are set.
+    /// <br />
+    /// An explicit value wins over <c>--bit-Swiper-dot-current-color</c> and <c>--bit-Swiper-dot-current-hover-color</c>;
+    /// left unset, the current dot is primary unless those variables say otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColorKind? Accent { get; set; }
@@ -171,6 +174,9 @@ public partial class BitSwiper : BitComponentBase
     /// <br />
     /// When not set, the swiper falls back to <see cref="Accent"/>, and to the primary color of the theme
     /// when that is not set either.
+    /// <br />
+    /// An explicit value wins over the <c>--bit-Swiper-*</c> focus, button and current-dot color variables; left
+    /// unset, the swiper keeps those defaults unless the variables say otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
@@ -464,6 +470,10 @@ public partial class BitSwiper : BitComponentBase
     /// <summary>
     /// The size of the dots and of the next/prev buttons of the swiper.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-Swiper-dot-size</c> and <c>--bit-Swiper-button-size</c>; left unset, the
+    /// swiper is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -896,13 +906,9 @@ public partial class BitSwiper : BitComponentBase
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-swp-sm",
-            BitSize.Medium => "bit-swp-md",
-            BitSize.Large => "bit-swp-lg",
-            _ => string.Empty
-        });
+        // Size, Accent and Color publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-Swiper-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-swp"));
 
         ClassBuilder.Register(() => Accent switch
         {
@@ -910,32 +916,12 @@ public partial class BitSwiper : BitComponentBase
             BitColorKind.Secondary => "bit-swp-asec",
             BitColorKind.Tertiary => "bit-swp-ater",
             BitColorKind.Transparent => "bit-swp-atra",
-            _ => "bit-swp-apri"
+            _ => string.Empty
         });
 
         // The color classes come after the accent ones in the stylesheet, so a swiper that sets both ends
         // up with the color it was given rather than with the accent it fell back to.
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-swp-pri",
-            BitColor.Secondary => "bit-swp-sec",
-            BitColor.Tertiary => "bit-swp-ter",
-            BitColor.Info => "bit-swp-inf",
-            BitColor.Success => "bit-swp-suc",
-            BitColor.Warning => "bit-swp-wrn",
-            BitColor.SevereWarning => "bit-swp-swr",
-            BitColor.Error => "bit-swp-err",
-            BitColor.PrimaryBackground => "bit-swp-pbg",
-            BitColor.SecondaryBackground => "bit-swp-sbg",
-            BitColor.TertiaryBackground => "bit-swp-tbg",
-            BitColor.PrimaryForeground => "bit-swp-pfg",
-            BitColor.SecondaryForeground => "bit-swp-sfg",
-            BitColor.TertiaryForeground => "bit-swp-tfg",
-            BitColor.PrimaryBorder => "bit-swp-pbr",
-            BitColor.SecondaryBorder => "bit-swp-sbr",
-            BitColor.TertiaryBorder => "bit-swp-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-swp"));
     }
 
     protected override void RegisterCssStyles()

@@ -76,7 +76,7 @@ public class BitSnackBarStylesheetTests
 
         // A role's main color is picked to be a fill; on the page surface the text takes the shade meant to be read.
         StringAssert.Contains(rules, "--bit-snb-clr-txt: #{role($tokens, fg)};");
-        StringAssert.Contains(GetRule(rules, variant), "--bit-snb-clr: var(--bit-snb-clr-txt);");
+        StringAssert.Contains(GetRule(rules, variant), "--bit-snb-clr: var(--bit-snb-clr-txt, var(--bit-SnackBar-color, #{$clr-inf-fg}));");
     }
 
     [TestMethod]
@@ -148,6 +148,47 @@ public class BitSnackBarStylesheetTests
 
         StringAssert.Contains(rules, "@include xs {\n    .bit-snb {\n        --bit-snb-min-w: 100%;");
         StringAssert.Contains(GetRule(rules, "itm"), "min-width: min(100%, var(--bit-SnackBar-min-width, var(--bit-snb-min-w, 0px)));");
+    }
+
+    [TestMethod]
+    public void BitSnackBarShouldLetAParameterWinOverItsPublicVariable()
+    {
+        var rules = GetRules(ReadStylesheet());
+
+        // An explicit Size publishes these, so they are read before the variable, which only restyles the medium item
+        // an unset one stands for.
+        StringAssert.Contains(rules, "padding: var(--bit-snb-pad, var(--bit-SnackBar-padding, #{spacing(1.25)}));");
+        StringAssert.Contains(rules, "font-size: var(--bit-snb-ico-fs, var(--bit-SnackBar-icon-size, #{$siz-icon-md}));");
+        StringAssert.Contains(rules, "font-size: var(--bit-snb-ttl-fs, var(--bit-SnackBar-title-font-size, #{$tg-fs-md}));");
+        StringAssert.Contains(rules, "font-size: var(--bit-snb-bdy-fs, var(--bit-SnackBar-body-font-size, #{$tg-fs-sm}));");
+
+        // So does the explicit Color of an item, for every color its role paints; the page surface the unfilled
+        // variants float on is the variable's alone.
+        var fill = GetRule(rules, "fil");
+        StringAssert.Contains(fill, "--bit-snb-clr: var(--bit-snb-fg, var(--bit-SnackBar-color, #{$clr-inf-text}));");
+        StringAssert.Contains(fill, "--bit-snb-clr-bg: var(--bit-snb-bg, var(--bit-SnackBar-background, #{$clr-inf}));");
+        StringAssert.Contains(fill, "--bit-snb-clr-brd: var(--bit-snb-bg, var(--bit-SnackBar-border-color, #{$clr-inf}));");
+        StringAssert.Contains(GetRule(rules, "otl"), "--bit-snb-clr-bg: var(--bit-SnackBar-background, #{$clr-bg-pri});");
+
+        // The two left in front are fed by no parameter of these: the phone-width floor comes from a media query, and
+        // the border width from the Variant, which always publishes a class.
+        var publicFirst = Regex.Matches(rules, @"var\(--bit-SnackBar-[a-z-]+, var\(--bit-snb-([a-z-]+)").Select(m => m.Groups[1].Value).Order().ToArray();
+        CollectionAssert.AreEqual(new[] { "brd-w", "min-w" }, publicFirst);
+    }
+
+    [TestMethod]
+    public void BitSnackBarShouldPublishItsColorAndSizeOnlyWhereTheyAreSet()
+    {
+        var item = GetRule(GetRules(ReadStylesheet()), "itm");
+
+        // A snack bar can be rendered in the template of an item of another one, whose items must not inherit the outer
+        // item's Color or Size: each item starts the values those classes publish out unset, and the classes - declared
+        // further down at the same weight - still win on the item that carries them.
+        foreach (var property in new[] { "--bit-snb-bg", "--bit-snb-fg", "--bit-snb-clr-txt", "--bit-snb-gap", "--bit-snb-pad", "--bit-snb-hdr-gap",
+                                         "--bit-snb-ttl-fs", "--bit-snb-bdy-fs", "--bit-snb-ico-fs", "--bit-snb-cbt-size" })
+        {
+            StringAssert.Contains(item, $"{property}: initial;");
+        }
     }
 
     [TestMethod]

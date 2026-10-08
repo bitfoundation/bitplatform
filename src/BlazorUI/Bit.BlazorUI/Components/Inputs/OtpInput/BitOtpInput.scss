@@ -3,14 +3,14 @@
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // otp input and one set on the Style of an instance re-skins that one alone:
 //   --bit-OtpInput-gap                     room between the boxes                        (default: spacing(1.25))
-//   --bit-OtpInput-input-size              width and height of every box                 (default: per size, $siz-ctrl-*)
+//   --bit-OtpInput-input-size              width and height of every box                 (default: $siz-ctrl-md)
 //   --bit-OtpInput-input-width             width alone, for a box wider than it is tall  (default: --bit-OtpInput-input-size)
 //   --bit-OtpInput-input-height            height alone                                  (default: --bit-OtpInput-input-size)
 //   --bit-OtpInput-font-family             typeface of the whole component               (default: $tg-font-family)
-//   --bit-OtpInput-font-size               size of the code, the label and the hint      (default: per size, from the type ramp)
+//   --bit-OtpInput-font-size               size of the code, the label and the hint      (default: $tg-fs-sm)
 //   --bit-OtpInput-label-font-size         size of the label above the inputs            (default: the size of the code)
 //   --bit-OtpInput-label-font-weight       weight of the label above the inputs          (default: $tg-field-label-font-weight)
-//   --bit-OtpInput-description-font-size   size of the helper text under the inputs      (default: the ramp step below the code)
+//   --bit-OtpInput-description-font-size   size of the helper text under the inputs      (default: $tg-fs-xs, the ramp step below the code)
 //   --bit-OtpInput-font-weight             weight of the character inside a box          (default: $tg-fw-regular)
 //   --bit-OtpInput-radius                  corner radius of a box, and of the two ends
 //                                          of every merged group                         (default: $shp-radius-control)
@@ -22,8 +22,8 @@
 //   --bit-OtpInput-hover-border-color      box rule on hover                             (default: per variant)
 //   --bit-OtpInput-filled-background       background of a box that holds a character    (default: the rest background)
 //   --bit-OtpInput-filled-border-color     rule of a box that holds a character          (default: the rest rule)
-//   --bit-OtpInput-focus-border-color      box rule while focused                        (default: the Accent role's main color)
-//   --bit-OtpInput-focus-color             focus ring color                              (default: the Accent role's focus color)
+//   --bit-OtpInput-focus-border-color      box rule while focused                        (default: $clr-pri)
+//   --bit-OtpInput-focus-color             focus ring color                              (default: $clr-pri-focus)
 //   --bit-OtpInput-placeholder-color       hint character of an empty box                (default: $clr-fg-ter)
 //   --bit-OtpInput-label-color             label above the boxes                         (default: $clr-fg-pri)
 //   --bit-OtpInput-description-color       helper text under the boxes                   (default: $clr-fg-sec)
@@ -34,9 +34,18 @@
 //                                          when disabled                                 (default: $clr-fg-dis)
 //   --bit-OtpInput-disabled-background     box background when disabled                  (default: $clr-bg-dis)
 //   --bit-OtpInput-disabled-border-color   box rule when disabled                        (default: $clr-brd-dis)
-//   --bit-OtpInput-loader-color            the sweep of the IsLoading bar                (default: the Accent role's main color)
+//   --bit-OtpInput-loader-color            the sweep of the IsLoading bar                (default: $clr-pri)
 //   --bit-OtpInput-loader-background       the track of the IsLoading bar                (default: $clr-bg-sec)
 //   --bit-OtpInput-loader-height           thickness of the IsLoading bar                (default: $siz-track-sm)
+//
+// A parameter written on the component wins over the variable that restyles what it sets: an explicit Accent over
+// the focused box rule, the focus ring and the loader sweep, and an explicit Size over the box size (the width and
+// the height alone included), the font size and the description font size. The variables restyle the default,
+// not a choice - which is why Accent and Size publish nothing while they are left unset: a class that always
+// carried the default would be indistinguishable from one that was asked for. The colors of the boxes are the
+// Variant's recipe rather than a parameter's value, so the background and border variables re-skin every variant,
+// and a state - disabled, invalid - is still read before everything. The label follows the size of the code by
+// inheritance, so --bit-OtpInput-label-font-size, which is there to set it apart from the code, keeps the label.
 
 .bit-otp {
     display: flex;
@@ -47,7 +56,17 @@
     //setting it in a tabular or a monospaced face - where a zero cannot be mistaken for an O - is a design
     //decision worth making once for a whole application rather than per instance.
     font-family: var(--bit-OtpInput-font-family, #{$tg-font-family});
-    font-size: var(--bit-OtpInput-font-size, var(--bit-otp-fontsize));
+    font-size: var(--bit-otp-fontsize, var(--bit-OtpInput-font-size, #{$tg-fs-sm}));
+
+    //the values the Size and Accent classes publish start out unset on every root, and the classes - declared
+    //further down at the same weight - still win on the root that carries them. Left unset, each sends the var()
+    //reading it on to the public variable and then to the default (the medium size, the primary role), which is
+    //what lets an explicit parameter outrank the variable while an unset one leaves the variable in charge.
+    --bit-otp-size: initial;
+    --bit-otp-fontsize: initial;
+    --bit-otp-dsc-fontsize: initial;
+    --bit-otp-clr: initial;
+    --bit-otp-clr-focus: initial;
 }
 
 //the label follows the size of the code by default, and carries a variable of its own so that a code drawn
@@ -76,7 +95,7 @@
     overflow-wrap: break-word;
     padding: spacing(0.625) 0 0;
     color: var(--bit-OtpInput-description-color, #{$clr-fg-sec});
-    font-size: var(--bit-OtpInput-description-font-size, var(--bit-otp-dsc-fontsize));
+    font-size: var(--bit-otp-dsc-fontsize, var(--bit-OtpInput-description-font-size, #{$tg-fs-xs}));
 }
 
 .bit-otp-iwr {
@@ -115,7 +134,7 @@
         position: absolute;
         border-radius: inherit;
         inset-inline-start: -33%;
-        background-color: var(--bit-OtpInput-loader-color, var(--bit-otp-clr));
+        background-color: var(--bit-otp-clr, var(--bit-OtpInput-loader-color, #{$clr-pri}));
         //the sweep is not a spinner, so it scales its own duration by the shared loop factor instead of
         //taking the spinner tokens: stretched under reduced motion, restored inside a ForceAnimation subtree.
         animation: calc(1.5s * #{$mot-loop-factor}) $mot-easing 0s infinite normal none running bit-otp-ldr-anm;
@@ -173,8 +192,8 @@
     font-weight: var(--bit-OtpInput-font-weight, #{$tg-fw-regular});
     border-radius: var(--bit-OtpInput-radius, #{$shp-radius-control});
     border-width: var(--bit-OtpInput-border-width, #{$shp-border-width});
-    width: var(--bit-OtpInput-input-width, var(--bit-OtpInput-input-size, var(--bit-otp-size)));
-    height: var(--bit-OtpInput-input-height, var(--bit-OtpInput-input-size, var(--bit-otp-size)));
+    width: var(--bit-otp-size, var(--bit-OtpInput-input-width, var(--bit-OtpInput-input-size, #{$siz-ctrl-md})));
+    height: var(--bit-otp-size, var(--bit-OtpInput-input-height, var(--bit-OtpInput-input-size, #{$siz-ctrl-md})));
     //the two colors of a box are read from a single pair of variables here, and every variant declares what
     //that pair holds, so a consumer overriding one of the public variables below re-skins every variant
     //instead of having to repeat the override once per variant class.
@@ -205,7 +224,7 @@
     //the rule is taken over: a filled background is a part of the box rather than of its rest state, so it
     //stays underneath the accent while the box is being typed in.
     &:focus-visible {
-        border-color: var(--bit-OtpInput-focus-border-color, var(--bit-otp-clr));
+        border-color: var(--bit-otp-clr, var(--bit-OtpInput-focus-border-color, #{$clr-pri}));
     }
 
     //the spin buttons of a number typed input would not fit in a single character wide box, and the
@@ -421,13 +440,13 @@
 //the ring only to take its shadow away again would still leave its forced-colors outline behind.
 .bit-otp:not(.bit-otp-txt) .bit-otp-inp {
     &:focus-visible {
-        @include focus-ring(var(--bit-OtpInput-focus-color, var(--bit-otp-clr-focus)));
+        @include focus-ring(var(--bit-otp-clr-focus, var(--bit-OtpInput-focus-color, #{$clr-pri-focus})));
     }
 }
 
 .bit-otp.bit-otp-txt .bit-otp-inp {
     &:focus-visible {
-        @include focus-underline-ring(var(--bit-OtpInput-focus-color, var(--bit-otp-clr-focus)));
+        @include focus-underline-ring(var(--bit-otp-clr-focus, var(--bit-OtpInput-focus-color, #{$clr-pri-focus})));
     }
 }
 
@@ -540,7 +559,8 @@
 }
 
 
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only by
+// an explicit Accent; an unset one is the primary role, after the public variables.
 @each $role, $tokens in $bit-color-roles {
     .bit-otp-#{$role} {
         --bit-otp-clr: #{role($tokens, main)};
@@ -551,7 +571,8 @@
 
 //the box is a square of the control height of its size class, so a row of code boxes lines up with the
 //other controls of the form it sits in, and the smallest one still clears the 24px minimum pointer target
-//of WCAG 2.2 (SC 2.5.8).
+//of WCAG 2.2 (SC 2.5.8). Published only by an explicit Size; an unset one is the medium box, which the reads
+//spell out after the public variables.
 .bit-otp-sm {
     --bit-otp-size: #{$siz-ctrl-sm};
     --bit-otp-fontsize: #{$tg-fs-xs};

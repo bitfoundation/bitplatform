@@ -1,62 +1,93 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read with a fallback and never declared here, so they inherit: set one on :root, on
-// any ancestor, or on the Style of a single tag. They are all resolved in one place - the root rule below -
-// into the private variables every other rule reads, which is also where the per-variant, per-state and
-// per-size defaults meet them.
+// any ancestor, or on the Style of a single tag. They are resolved into the private variables every other rule
+// reads - the colors by the variant classes, the sizes and the corner by the root rule below - which is also where
+// the per-variant, per-state and per-size defaults meet them.
 //
 //   COLORS
-//   --bit-Tag-color                    text and glyphs at rest                    (default: per Variant, from the Color role)
-//   --bit-Tag-background               background at rest                         (default: per Variant, from the Color role)
-//   --bit-Tag-border-color             rule at rest                               (default: per Variant, from the Color role)
+//   --bit-Tag-color                    text and glyphs at rest                    (default: per Variant, from the primary role)
+//   --bit-Tag-background               background at rest                         (default: per Variant, from the primary role)
+//   --bit-Tag-border-color             rule at rest                               (default: per Variant, from the primary role)
 //   --bit-Tag-icon-color               leading, trailing and selected glyphs      (default: the text color)
 //   --bit-Tag-hover-background         hovered content or dismiss button          (default: per Variant, a step deeper while selected)
 //   --bit-Tag-active-background        pressed content or dismiss button          (default: per Variant, a step deeper while selected)
 //   --bit-Tag-selected-color           text and glyphs of a selected tag          (default: --bit-Tag-color)
-//   --bit-Tag-selected-background      background of a selected tag               (default: per Variant, from the Color role)
-//   --bit-Tag-selected-border-color    rule of a selected tag                     (default: per Variant, from the Color role)
-//   --bit-Tag-disabled-color           text and glyphs of a disabled tag          (default: the Color role's disabled text)
-//   --bit-Tag-disabled-background      background of a disabled tag              (default: per Variant, from the Color role)
-//   --bit-Tag-disabled-border-color    rule of a disabled tag                     (default: per Variant, from the Color role)
+//   --bit-Tag-selected-background      background of a selected tag               (default: per Variant, from the primary role)
+//   --bit-Tag-selected-border-color    rule of a selected tag                     (default: per Variant, from the primary role)
+//   --bit-Tag-disabled-color           text and glyphs of a disabled tag          (default: $clr-pri-dis-text)
+//   --bit-Tag-disabled-background      background of a disabled tag              (default: per Variant, from the primary role)
+//   --bit-Tag-disabled-border-color    rule of a disabled tag                     (default: per Variant, from the primary role)
 //   --bit-Tag-focus-color              focus indicator                            (default: the text color)
 //
 //   SHAPE
-//   --bit-Tag-radius                   corner of a Rounded tag                    (default: $shp-radius-chip; Circular and Square pin their own)
+//   --bit-Tag-radius                   corner                                     (default: $shp-radius-chip)
 //   --bit-Tag-border-width             width of the rule                          (default: $shp-border-width)
 //   --bit-Tag-shadow                   elevation                                  (default: none)
 //
 //   SIZE
-//   --bit-Tag-min-height               smallest height inside the rule            (default: per Size, $siz-chip-*)
+//   --bit-Tag-min-height               smallest height inside the rule            (default: $siz-chip-md)
 //   --bit-Tag-max-width                widest the tag gets before it wraps or,
 //                                      with NoWrap, ellipsizes                    (default: 100%)
 //   --bit-Tag-padding-x                inline inset of the content and the
-//                                      outer inset of the dismiss button          (default: per Size, half of $siz-ctrl-pad-x-*)
-//   --bit-Tag-padding-y                block inset of the content                 (default: per Size)
-//   --bit-Tag-gap                      room between the parts of the content      (default: per Size)
-//   --bit-Tag-font-size                text size                                  (default: per Size, from the type ramp)
+//                                      outer inset of the dismiss button          (default: half of $siz-ctrl-pad-x-md)
+//   --bit-Tag-padding-y                block inset of the content                 (default: spacing(0.375))
+//   --bit-Tag-gap                      room between the parts of the content      (default: spacing(1))
+//   --bit-Tag-font-size                text size                                  (default: $tg-fs-sm)
 //   --bit-Tag-font-weight              text weight                                (default: $tg-font-weight)
-//   --bit-Tag-secondary-font-size      size of the SecondaryText line             (default: per Size, one step under the text)
+//   --bit-Tag-secondary-font-size      size of the SecondaryText line             (default: $tg-fs-xs)
 //   --bit-Tag-icon-size                size of every glyph, the dismiss one too   (default: 1em, the size of the text)
-//   --bit-Tag-image-size               size of the IconUrl picture                (default: per Size)
+//   --bit-Tag-image-size               size of the IconUrl picture                (default: spacing(2))
+//
+// A parameter written on the tag wins over the variable that restyles what it sets: an explicit Color over every
+// color above that its role paints - at rest, selected, hovered in Outline and Text, and disabled - an explicit Size
+// over the min height, the paddings, the gap, the two font sizes and the image size, and an explicit Shape over the
+// radius. The variables keep what a Color leaves alone: the transparent background (and, in Text, rule) of the
+// Outline and Text variants, the hover and pressed overlay a Fill tag composites from its own text color, the icon
+// and focus colors. The variables restyle the default, not a choice - which is why Color, Size and Shape publish
+// nothing while they are left unset: a class that always carried the default would be indistinguishable from one
+// that was asked for.
 
 // The root of the tag is only the shape and the paint: the rule, the corner, the colors and the height. What
 // is inside it is laid out by .bit-tag-cnt, which is the element that becomes an anchor or a button when the
 // tag is one - the padding lives there so that the whole chip, edge to edge, is what the pointer activates
 // rather than only the words in the middle of it.
+// The values the Color, Size and Shape classes publish are unset on every root - rather than inherited from a tag this
+// one sits inside - and those classes, declared further down at the same weight, still win on the root that carries
+// them. Left unset, each sends the var() reading it on to the public variable and then to the default, which is what
+// lets an explicit parameter outrank the variable while an unset one leaves the variable in charge.
 .bit-tag {
-    // The one place the public variables meet the defaults: the --bit-tag-v-* the variant classes leave
-    // behind, and the --bit-tag-sz-* of the size classes. Every rule below reads what this leaves behind.
-    --bit-tag-fg: var(--bit-Tag-color, var(--bit-tag-v-fg));
-    --bit-tag-bg: var(--bit-Tag-background, var(--bit-tag-v-bg));
-    --bit-tag-brd: var(--bit-Tag-border-color, var(--bit-tag-v-brd));
+    --bit-tag-clr: initial;
+    --bit-tag-clr-txt: initial;
+    --bit-tag-clr-dis: initial;
+    --bit-tag-clr-dis-text: initial;
+    --bit-tag-clr-active: initial;
+    --bit-tag-clr-light: initial;
+    --bit-tag-clr-light-hover: initial;
+    --bit-tag-clr-light-active: initial;
+    --bit-tag-sz-gap: initial;
+    --bit-tag-sz-lbl-gap: initial;
+    --bit-tag-sz-fs: initial;
+    --bit-tag-sz-stx-fs: initial;
+    --bit-tag-sz-img: initial;
+    --bit-tag-sz-pad-y: initial;
+    --bit-tag-sz-pad-x: initial;
+    --bit-tag-sz-min-height: initial;
+    --bit-tag-radius: initial;
+    // The colors are what the variant classes resolved out of the Color and the public variables (see .bit-tag-fil);
+    // the sizes are resolved here - the --bit-tag-sz-* an explicit Size publishes first, then the public variables,
+    // then the medium tag an unset one stands for. Every rule below reads what this leaves behind.
+    --bit-tag-fg: var(--bit-tag-v-fg);
+    --bit-tag-bg: var(--bit-tag-v-bg);
+    --bit-tag-brd: var(--bit-tag-v-brd);
     --bit-tag-icn-clr: var(--bit-Tag-icon-color, currentcolor);
-    --bit-tag-hover-bg: var(--bit-Tag-hover-background, var(--bit-tag-v-hover-bg));
-    --bit-tag-active-bg: var(--bit-Tag-active-background, var(--bit-tag-v-active-bg));
+    --bit-tag-hover-bg: var(--bit-tag-v-hover-bg);
+    --bit-tag-active-bg: var(--bit-tag-v-active-bg);
     --bit-tag-fcs-clr: var(--bit-Tag-focus-color, currentcolor);
-    --bit-tag-pad-x: var(--bit-Tag-padding-x, var(--bit-tag-sz-pad-x));
-    --bit-tag-pad-y: var(--bit-Tag-padding-y, var(--bit-tag-sz-pad-y));
-    --bit-tag-gap: var(--bit-Tag-gap, var(--bit-tag-sz-gap));
-    --bit-tag-fs: var(--bit-Tag-font-size, var(--bit-tag-sz-fs));
+    --bit-tag-pad-x: var(--bit-tag-sz-pad-x, var(--bit-Tag-padding-x, calc(#{$siz-ctrl-pad-x-md} / 2)));
+    --bit-tag-pad-y: var(--bit-tag-sz-pad-y, var(--bit-Tag-padding-y, #{spacing(0.375)}));
+    --bit-tag-gap: var(--bit-tag-sz-gap, var(--bit-Tag-gap, #{spacing(1)}));
+    --bit-tag-fs: var(--bit-tag-sz-fs, var(--bit-Tag-font-size, #{$tg-fs-sm}));
     --bit-tag-icn-sz: var(--bit-Tag-icon-size, 1em);
     // Only Outline and Text step a selected tag further; unset here, rather than inherited from a tag this one
     // sits inside, so Fill falls back to its resting pair.
@@ -73,7 +104,7 @@
     border-style: $shp-border-style;
     border-color: var(--bit-tag-brd);
     background-color: var(--bit-tag-bg);
-    border-radius: var(--bit-tag-radius);
+    border-radius: var(--bit-tag-radius, var(--bit-Tag-radius, #{$shp-radius-chip}));
     box-shadow: var(--bit-Tag-shadow, none);
     letter-spacing: $tg-ctrl-letter-spacing;
     text-transform: $tg-ctrl-text-transform;
@@ -87,16 +118,16 @@
     // with no deeper step of its own (Fill, whose overlay already deepens whatever it sits on) leaves the two
     // selected slots unset and keeps its resting pair.
     &.bit-tag-sel {
-        --bit-tag-fg: var(--bit-Tag-selected-color, var(--bit-Tag-color, var(--bit-tag-v-fg)));
-        --bit-tag-bg: var(--bit-Tag-selected-background, var(--bit-tag-v-sel-bg));
-        --bit-tag-brd: var(--bit-Tag-selected-border-color, var(--bit-tag-v-sel-brd));
-        --bit-tag-hover-bg: var(--bit-Tag-hover-background, var(--bit-tag-v-sel-hover-bg, var(--bit-tag-v-hover-bg)));
-        --bit-tag-active-bg: var(--bit-Tag-active-background, var(--bit-tag-v-sel-active-bg, var(--bit-tag-v-active-bg)));
+        --bit-tag-fg: var(--bit-tag-v-sel-fg);
+        --bit-tag-bg: var(--bit-tag-v-sel-bg);
+        --bit-tag-brd: var(--bit-tag-v-sel-brd);
+        --bit-tag-hover-bg: var(--bit-tag-v-sel-hover-bg, var(--bit-tag-v-hover-bg));
+        --bit-tag-active-bg: var(--bit-tag-v-sel-active-bg, var(--bit-tag-v-active-bg));
     }
 
     // Comes after the selected state and so takes its paint off with it. The glyphs follow the disabled text
     // rather than a color of their own, which would leave them looking enabled, and every variant dims its
-    // text to the same disabled text of the Color role.
+    // text to the same disabled text of the Color role (the primary one while Color is unset).
     //
     // A disabled tag is inert to the pointer as a whole - the content, whatever a template put in it, and a
     // handler the app attached to the root - with one exception: a root carrying a title keeps answering the
@@ -106,9 +137,9 @@
         cursor: default;
         user-select: none;
         --bit-tag-icn-clr: currentcolor;
-        --bit-tag-fg: var(--bit-Tag-disabled-color, var(--bit-tag-clr-dis-text));
-        --bit-tag-bg: var(--bit-Tag-disabled-background, var(--bit-tag-v-dis-bg));
-        --bit-tag-brd: var(--bit-Tag-disabled-border-color, var(--bit-tag-v-dis-brd));
+        --bit-tag-fg: var(--bit-tag-clr-dis-text, var(--bit-Tag-disabled-color, #{$clr-pri-dis-text}));
+        --bit-tag-bg: var(--bit-tag-v-dis-bg);
+        --bit-tag-brd: var(--bit-tag-v-dis-brd);
 
         &:not([title]),
         &[title=""] {
@@ -143,7 +174,7 @@
     gap: var(--bit-tag-gap);
     background-color: transparent;
     padding: var(--bit-tag-pad-y) var(--bit-tag-pad-x);
-    min-height: var(--bit-Tag-min-height, var(--bit-tag-sz-min-height));
+    min-height: var(--bit-tag-sz-min-height, var(--bit-Tag-min-height, #{$siz-chip-md}));
 }
 
 // A tag that is a link or a button answers the pointer, the keyboard and the focus like every other control
@@ -200,7 +231,7 @@
     display: flex;
     text-align: start;
     flex-direction: column;
-    gap: var(--bit-tag-sz-lbl-gap);
+    gap: var(--bit-tag-sz-lbl-gap, #{spacing(0.125)});
     justify-content: center;
 }
 
@@ -213,7 +244,7 @@
 
 .bit-tag-stx {
     font-weight: $tg-fw-regular;
-    font-size: var(--bit-Tag-secondary-font-size, var(--bit-tag-sz-stx-fs));
+    font-size: var(--bit-tag-sz-stx-fs, var(--bit-Tag-secondary-font-size, #{$tg-fs-xs}));
 }
 
 // An icon from an external library brings a type size of its own; inside a tag it is the tag that sets the
@@ -239,8 +270,8 @@
     flex-shrink: 0;
     object-fit: cover;
     border-radius: $shp-radius-full;
-    width: var(--bit-Tag-image-size, var(--bit-tag-sz-img));
-    height: var(--bit-Tag-image-size, var(--bit-tag-sz-img));
+    width: var(--bit-tag-sz-img, var(--bit-Tag-image-size, #{spacing(2)}));
+    height: var(--bit-tag-sz-img, var(--bit-Tag-image-size, #{spacing(2)}));
 }
 
 // The name and the description a screen reader is given where the tag itself has no words to carry them:
@@ -352,53 +383,61 @@
 }
 
 
-// The variants only say what the defaults are; the root rule above is what paints them, after the public
-// variables have had their say.
+// The variants resolve the colors on the root, where the public ones arrive by inheritance, and the root rule above
+// paints what they leave behind. Each color the Color role paints is read from the role first - published only by
+// an explicit Color (see .bit-tag) - then from the public variables, then from the primary role an unset Color
+// stands for; a color the role leaves alone (the transparent background of Outline and Text, the rule of Text, the
+// overlay Fill hovers with) is the variables' alone.
 .bit-tag-fil {
-    --bit-tag-v-fg: var(--bit-tag-clr-txt);
-    --bit-tag-v-bg: var(--bit-tag-clr);
-    --bit-tag-v-brd: var(--bit-tag-clr);
-    --bit-tag-v-sel-bg: var(--bit-tag-clr-active);
-    --bit-tag-v-sel-brd: var(--bit-tag-clr-active);
-    --bit-tag-v-dis-bg: var(--bit-tag-clr-dis);
-    --bit-tag-v-dis-brd: var(--bit-tag-clr-dis);
+    --bit-tag-v-fg: var(--bit-tag-clr-txt, var(--bit-Tag-color, #{$clr-pri-text}));
+    --bit-tag-v-bg: var(--bit-tag-clr, var(--bit-Tag-background, #{$clr-pri}));
+    --bit-tag-v-brd: var(--bit-tag-clr, var(--bit-Tag-border-color, #{$clr-pri}));
+    --bit-tag-v-sel-fg: var(--bit-tag-clr-txt, var(--bit-Tag-selected-color, var(--bit-Tag-color, #{$clr-pri-text})));
+    --bit-tag-v-sel-bg: var(--bit-tag-clr-active, var(--bit-Tag-selected-background, #{$clr-pri-active}));
+    --bit-tag-v-sel-brd: var(--bit-tag-clr-active, var(--bit-Tag-selected-border-color, #{$clr-pri-active}));
+    --bit-tag-v-dis-bg: var(--bit-tag-clr-dis, var(--bit-Tag-disabled-background, #{$clr-pri-dis}));
+    --bit-tag-v-dis-brd: var(--bit-tag-clr-dis, var(--bit-Tag-disabled-border-color, #{$clr-pri-dis}));
     // A filled tag is already wearing the role color, so it answers the pointer by deepening it. The overlay
     // is composited from the text color so that it works over every role, including the neutral ones whose
     // hover slot is not a deeper version of themselves - and over a background a --bit-Tag-* variable set.
-    // It deepens a selected tag the same way, so the selected pair is left to fall back to this one.
-    --bit-tag-v-hover-bg: #{translucent(var(--bit-tag-fg), 12%)};
-    --bit-tag-v-active-bg: #{translucent(var(--bit-tag-fg), 20%)};
+    // It deepens a selected tag the same way, so the selected pair is left to fall back to this one. The role
+    // publishes no shade of its own for it, so the hover and pressed variables still replace it under a Color.
+    --bit-tag-v-hover-bg: var(--bit-Tag-hover-background, #{translucent(var(--bit-tag-fg), 12%)});
+    --bit-tag-v-active-bg: var(--bit-Tag-active-background, #{translucent(var(--bit-tag-fg), 20%)});
 }
 
 .bit-tag-otl {
-    --bit-tag-v-fg: var(--bit-tag-clr);
-    --bit-tag-v-bg: transparent;
-    --bit-tag-v-brd: var(--bit-tag-clr);
-    --bit-tag-v-sel-bg: var(--bit-tag-clr-light);
-    --bit-tag-v-sel-brd: var(--bit-tag-clr);
-    --bit-tag-v-dis-bg: transparent;
-    --bit-tag-v-dis-brd: var(--bit-tag-clr-dis);
-    --bit-tag-v-hover-bg: var(--bit-tag-clr-light);
-    --bit-tag-v-active-bg: var(--bit-tag-clr-light-hover);
-    --bit-tag-v-sel-hover-bg: var(--bit-tag-clr-light-hover);
-    --bit-tag-v-sel-active-bg: var(--bit-tag-clr-light-active);
+    --bit-tag-v-fg: var(--bit-tag-clr, var(--bit-Tag-color, #{$clr-pri}));
+    --bit-tag-v-bg: var(--bit-Tag-background, transparent);
+    --bit-tag-v-brd: var(--bit-tag-clr, var(--bit-Tag-border-color, #{$clr-pri}));
+    --bit-tag-v-sel-fg: var(--bit-tag-clr, var(--bit-Tag-selected-color, var(--bit-Tag-color, #{$clr-pri})));
+    --bit-tag-v-sel-bg: var(--bit-tag-clr-light, var(--bit-Tag-selected-background, #{$clr-pri-light}));
+    --bit-tag-v-sel-brd: var(--bit-tag-clr, var(--bit-Tag-selected-border-color, #{$clr-pri}));
+    --bit-tag-v-dis-bg: var(--bit-Tag-disabled-background, transparent);
+    --bit-tag-v-dis-brd: var(--bit-tag-clr-dis, var(--bit-Tag-disabled-border-color, #{$clr-pri-dis}));
+    --bit-tag-v-hover-bg: var(--bit-tag-clr-light, var(--bit-Tag-hover-background, #{$clr-pri-light}));
+    --bit-tag-v-active-bg: var(--bit-tag-clr-light-hover, var(--bit-Tag-active-background, #{$clr-pri-light-hover}));
+    --bit-tag-v-sel-hover-bg: var(--bit-tag-clr-light-hover, var(--bit-Tag-hover-background, #{$clr-pri-light-hover}));
+    --bit-tag-v-sel-active-bg: var(--bit-tag-clr-light-active, var(--bit-Tag-active-background, #{$clr-pri-light-active}));
 }
 
 .bit-tag-txt {
-    --bit-tag-v-fg: var(--bit-tag-clr);
-    --bit-tag-v-bg: transparent;
-    --bit-tag-v-brd: transparent;
-    --bit-tag-v-sel-bg: var(--bit-tag-clr-light);
-    --bit-tag-v-sel-brd: transparent;
-    --bit-tag-v-dis-bg: transparent;
-    --bit-tag-v-dis-brd: transparent;
-    --bit-tag-v-hover-bg: var(--bit-tag-clr-light);
-    --bit-tag-v-active-bg: var(--bit-tag-clr-light-hover);
-    --bit-tag-v-sel-hover-bg: var(--bit-tag-clr-light-hover);
-    --bit-tag-v-sel-active-bg: var(--bit-tag-clr-light-active);
+    --bit-tag-v-fg: var(--bit-tag-clr, var(--bit-Tag-color, #{$clr-pri}));
+    --bit-tag-v-bg: var(--bit-Tag-background, transparent);
+    --bit-tag-v-brd: var(--bit-Tag-border-color, transparent);
+    --bit-tag-v-sel-fg: var(--bit-tag-clr, var(--bit-Tag-selected-color, var(--bit-Tag-color, #{$clr-pri})));
+    --bit-tag-v-sel-bg: var(--bit-tag-clr-light, var(--bit-Tag-selected-background, #{$clr-pri-light}));
+    --bit-tag-v-sel-brd: var(--bit-Tag-selected-border-color, transparent);
+    --bit-tag-v-dis-bg: var(--bit-Tag-disabled-background, transparent);
+    --bit-tag-v-dis-brd: var(--bit-Tag-disabled-border-color, transparent);
+    --bit-tag-v-hover-bg: var(--bit-tag-clr-light, var(--bit-Tag-hover-background, #{$clr-pri-light}));
+    --bit-tag-v-active-bg: var(--bit-tag-clr-light-hover, var(--bit-Tag-active-background, #{$clr-pri-light-hover}));
+    --bit-tag-v-sel-hover-bg: var(--bit-tag-clr-light-hover, var(--bit-Tag-hover-background, #{$clr-pri-light-hover}));
+    --bit-tag-v-sel-active-bg: var(--bit-tag-clr-light-active, var(--bit-Tag-active-background, #{$clr-pri-light-active}));
 }
 
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only by an
+// explicit Color; an unset one is the primary role, which the variant classes spell out after the public variables.
 @each $role, $tokens in $bit-color-roles {
     .bit-tag-#{$role} {
         --bit-tag-clr: #{role($tokens, main)};
@@ -420,7 +459,8 @@
 // the chip's share of it: a tag is a label, not a button. The heights come from the chip tokens of the theme,
 // measured inside the rule - 20, 24 and 32 pixels by default, the tag scale of Fluent 2, and Material's 32dp
 // chip at Medium - since that is the height the dismiss button gets, which puts the Medium default on the 24px
-// pointer target of WCAG 2.2 whatever the width of the rule.
+// pointer target of WCAG 2.2 whatever the width of the rule. Published only by an explicit Size; an unset one is the
+// medium tag, which the reads of these spell out after the public variables.
 .bit-tag-sm {
     --bit-tag-sz-gap: #{spacing(0.750)};
     --bit-tag-sz-lbl-gap: #{spacing(0.125)};
@@ -456,10 +496,11 @@
 
 
 // The corner of the tag. Rounded takes the chip corner of the theme, which is what keeps a tag in the same
-// visual language as the chips a TagsInput or a multi-select Dropdown draws, and it is the one shape the
-// --bit-Tag-radius variable re-skins; Circular pins it to a pill and Square drops it, whatever either says.
+// visual language as the chips a TagsInput or a multi-select Dropdown draws; Circular pins it to a pill and Square
+// drops it. Published only by an explicit Shape, which wins over --bit-Tag-radius; an unset one is the chip corner,
+// after that variable.
 .bit-tag-rnd {
-    --bit-tag-radius: var(--bit-Tag-radius, #{$shp-radius-chip});
+    --bit-tag-radius: #{$shp-radius-chip};
 }
 
 .bit-tag-cir {

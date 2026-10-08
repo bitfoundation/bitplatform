@@ -521,25 +521,25 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
             <DocSection Level="3" Id="component-variables" Title="Per-component variables">
 
                 <BitText>
-                    Below the theme tokens sits a third tier: every component exposes its own themable knobs as <code>--bit-&lt;cmp&gt;-*</code> custom properties (for example <code>--bit-btn-clr</code>, <code>--bit-btn-padding</code>, <code>--bit-chb-box-size</code>), assigned on the component root by its role/variant classes and consumed by its internal selectors. These names are <b>stable public API</b>.
+                    Below the theme tokens sits a third tier: every component exposes its own themable knobs as <code>--bit-&lt;Component&gt;-*</code> custom properties, read by its internal selectors. Behind them sit the component's private <code>--bit-&lt;cmp&gt;-*</code> ones (for example <code>--bit-btn-clr</code>, <code>--bit-chb-box-size</code>), which its <code>Color</code>, <code>Size</code> and other parameters publish on the root - only while those parameters are set - and which are an implementation detail rather than API.
                 </BitText>
 
                 <BitText>
-                    The components that document theirs carry a <b>CSS variables</b> table on their own page - <BitLink Href="/components/actionbutton#css-variables-section">ActionButton</BitLink>, <BitLink Href="/components/checkbox#css-variables-section">Checkbox</BitLink> and <BitLink Href="/components/toggle#css-variables-section">Toggle</BitLink> among them - naming each variable in full (<code>--bit-ActionButton-hover-background</code>, <code>--bit-Checkbox-checked-background</code>, <code>--bit-Toggle-checked-background</code>), with its default and what it changes. Those are read off the root with a fallback and never declared by the component, so they inherit: set one on <code>:root</code>, on any ancestor, or on a single instance. For the rest, inspect a component in the browser dev tools or read its SCSS source.
+                    The components that document theirs carry a <b>CSS variables</b> table on their own page - <BitLink Href="/components/actionbutton#css-variables-section">ActionButton</BitLink>, <BitLink Href="/components/checkbox#css-variables-section">Checkbox</BitLink> and <BitLink Href="/components/toggle#css-variables-section">Toggle</BitLink> among them - naming each variable in full (<code>--bit-ActionButton-hover-background</code>, <code>--bit-Checkbox-checked-background</code>, <code>--bit-Toggle-checked-background</code>), with its default and what it changes. Those are read off the root with a fallback and never declared by the component, so they inherit: set one on <code>:root</code>, on any ancestor, or on a single instance. They restyle the default, never a choice: a parameter set on the instance (its <code>Color</code>, <code>Size</code>, ...) wins over the variable restyling what it sets. For the rest, inspect a component in the browser dev tools or read its SCSS source.
                 </BitText>
 
                 <BitText>
                     Override them app-wide from your CSS, or per instance via the component's <code>Style</code> / <code>Class</code> parameters - a surgical alternative to a full <code>BitTheme</code> when you only need to retune one component:
                 </BitText>
 
-                <CodeBox Language="css">/* app-wide: every primary button gets a custom fill and padding */
-.bit-btn-pri {
-    --bit-btn-clr: #6C2BD9;
-    --bit-btn-padding: 0.75rem 1.5rem;
+                <CodeBox Language="css">/* app-wide: every button that leaves Color and Size unset gets a custom fill and padding */
+:root {
+    --bit-Button-background: #6C2BD9;
+    --bit-Button-padding: 0.75rem 1.5rem;
 }</CodeBox>
 
                 <CodeBox Language="cshtml">&lt;!-- one instance: no theme, no stylesheet, just the knob --&gt;
-&lt;BitButton Style="--bit-btn-clr: #6C2BD9"&gt;Brandy&lt;/BitButton&gt;</CodeBox>
+&lt;BitButton Style="--bit-Button-background: #6C2BD9"&gt;Brandy&lt;/BitButton&gt;</CodeBox>
             </DocSection>
         </DocSection>
 
@@ -715,7 +715,7 @@ await _bitThemeManager.SetThemeAsync(corporate);</CodeBox>
 &lt;/section&gt;</CodeBox>
 
                 <BitText>
-                    Scoped presets and <code>BitThemeProvider</code> are complementary: the attribute swaps a subtree to a <i>named palette</i> from CSS, the provider overlays <i>individual token values</i> from a C# <code>BitTheme</code> object - and they can nest. One caveat applies to both: components that render at the document level (modals, callouts with <code>AbsolutePosition</code> disabled, snackbars) escape the subtree in the DOM, so they inherit the document palette rather than the scoped one.
+                    Scoped presets and <code>BitThemeProvider</code> are complementary: the attribute swaps a subtree to a <i>named palette</i> from CSS, the provider overlays <i>individual token values</i> from a C# <code>BitTheme</code> object - and they can nest. Both reach the popups inside the subtree too: the callout of a dropdown, a picker, a menu or a <code>BitCallout</code> is moved to the end of the body while it is open, yet it keeps inheriting from where it is declared, so it follows the scoped palette. One caveat applies to both: a modal opened through <code>BitModalService</code> renders inside the <code>BitModalContainer</code>, and a snackbar inside its <code>BitSnackBar</code>, so each follows the theme around that container, wherever the app placed it, rather than around the code that opened it.
                 </BitText>
 
                 <BitText>

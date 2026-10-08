@@ -2319,12 +2319,30 @@ public class BitTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitTimePickerShouldFallBackToThePrimaryColor()
+    public void BitTimePickerShouldPublishNoColorOrSizeWhileTheyAreUnset()
     {
         var component = RenderComponent<BitTimePicker>();
 
-        Assert.IsTrue(component.Find(".bit-tpc").ClassList.Contains("bit-tpc-pri"));
-        Assert.IsTrue(component.Find(".bit-tpc-cal").ClassList.Contains("bit-tpc-pri"));
+        // An unset Color or Size publishes nothing - on the root or on the callout rendered outside it - so the public
+        // --bit-TimePicker-* variables restyle the default (the primary, medium TimePicker) while an explicit value,
+        // which does publish its class, wins over them.
+        var published = new[]
+        {
+            "bit-tpc-pri", "bit-tpc-sec", "bit-tpc-ter", "bit-tpc-inf", "bit-tpc-suc", "bit-tpc-wrn", "bit-tpc-swr", "bit-tpc-err",
+            "bit-tpc-pbg", "bit-tpc-sbg", "bit-tpc-tbg", "bit-tpc-pfg", "bit-tpc-sfg", "bit-tpc-tfg", "bit-tpc-pbr", "bit-tpc-sbr", "bit-tpc-tbr",
+            "bit-tpc-sm", "bit-tpc-md", "bit-tpc-lg",
+        };
+
+        foreach (var element in new[] { component.Find(".bit-tpc"), component.Find(".bit-tpc-cal") })
+        {
+            foreach (var cssClass in published)
+            {
+                Assert.IsFalse(element.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+            }
+        }
+
+        // The callout's class list is joined from parts, so an unset one must leave no empty entry behind.
+        Assert.IsFalse(component.Find(".bit-tpc-cal").GetAttribute("class")!.Contains("  "), "An unset parameter left a gap in the callout's class list.");
     }
 
     [TestMethod,
@@ -2664,38 +2682,52 @@ public class BitTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitTimePickerShouldCarryThePublicCssVariablesOverToTheCalloutAndTheOverlay()
+    public void BitTimePickerCalloutAndOverlayShouldCarryOnlyTheirOwnStyleWhileTheRootKeepsTheWholeStyle()
     {
         var component = RenderComponent<BitTimePicker>(parameters =>
         {
             parameters.Add(p => p.Style, "margin:1rem;--bit-TimePicker-color:teal;");
-            parameters.Add(p => p.Styles, new BitTimePickerClassStyles { Root = "--bit-TimePicker-radius:2rem;" });
+            parameters.Add(p => p.Styles, new BitTimePickerClassStyles
+            {
+                Root = "--bit-TimePicker-radius:2rem;",
+                Callout = "--bit-TimePicker-color:tomato;"
+            });
         });
 
-        var callout = component.Find(".bit-tpc-cal").GetAttribute("style");
-        var overlay = component.Find(".bit-tpc-ovl").GetAttribute("style");
+        // Nothing of the root's style is written onto the popup any more: Callouts.ts carries it into the chain
+        // the callout and the overlay are relocated into, so they hold exactly what the component composes.
+        Assert.AreEqual("--bit-TimePicker-color:tomato;", component.Find(".bit-tpc-cal").GetAttribute("style"));
+        Assert.AreEqual("display:none;", component.Find(".bit-tpc-ovl").GetAttribute("style"));
 
-        StringAssert.Contains(callout, "--bit-TimePicker-color:teal");
-        StringAssert.Contains(callout, "--bit-TimePicker-radius:2rem");
-        StringAssert.Contains(overlay, "--bit-TimePicker-color:teal");
-        StringAssert.Contains(overlay, "--bit-TimePicker-radius:2rem");
-
-        // Only the public custom properties are copied; nothing else of the root style is.
-        Assert.IsFalse(callout.Contains("margin:1rem"));
+        // ... and the root keeps everything it was given.
+        var root = component.Find(".bit-tpc").GetAttribute("style");
+        Assert.IsNotNull(root);
+        StringAssert.Contains(root, "margin:1rem");
+        StringAssert.Contains(root, "--bit-TimePicker-color:teal");
+        StringAssert.Contains(root, "--bit-TimePicker-radius:2rem");
     }
 
     [TestMethod]
-    public void BitTimePickerCalloutStylesShouldWinOverTheCopiedVariables()
+    public void BitTimePickerShouldRenderTheCalloutInsideItsRootAndNameNoRootWhenItTogglesIt()
     {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
         var component = RenderComponent<BitTimePicker>(parameters =>
         {
             parameters.Add(p => p.Style, "--bit-TimePicker-color:teal;");
-            parameters.Add(p => p.Styles, new BitTimePickerClassStyles { Callout = "--bit-TimePicker-color:tomato;" });
         });
 
-        var callout = component.Find(".bit-tpc-cal").GetAttribute("style");
+        component.Find(".bit-tpc-wrp").Click();
 
-        StringAssert.EndsWith(callout, "--bit-TimePicker-color:tomato;");
+        // The callout and the overlay are rendered inside the root, so the root is one of the ancestors whose
+        // copies Callouts.ts relocates them into, and the public variables of the instance reach them from there.
+        // No root is named for a second copy of it.
+        Assert.IsNotNull(component.Find(".bit-tpc").QuerySelector(".bit-tpc-cal"));
+        Assert.IsNotNull(component.Find(".bit-tpc").QuerySelector(".bit-tpc-ovl"));
+
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        Assert.AreEqual(string.Empty, toggle.Arguments[^1]);
     }
 
     #endregion

@@ -5,36 +5,45 @@
 // Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every
 // message box - the ones the BitMessageBoxService shows included - one set on an ancestor the message boxes
 // inside it, and one set on the Style of an instance that one alone:
-//   --bit-MessageBox-padding            inset of the message box                       (default: per size, $spa-dialog for medium)
+//   --bit-MessageBox-padding            inset of the message box                       (default: $spa-dialog)
 //   --bit-MessageBox-gap                room between the header, body and footer       (default: spacing(2))
-//   --bit-MessageBox-min-width          width the message box does not shrink below    (default: per size, never past the max width)
+//   --bit-MessageBox-min-width          width the message box does not shrink below    (default: spacing(40), never past the max width)
 //   --bit-MessageBox-max-width          width the message box stops growing at         (default: $siz-dialog-max-width in a modal, 100% inline)
 //   --bit-MessageBox-max-height         height past which the body scrolls             (default: the height of the screen a modal leaves it)
 //   --bit-MessageBox-text-align         alignment of the title and the body            (default: $layout-dialog-text-align)
-//   --bit-MessageBox-icon-color         color of the leading icon                      (default: the main color of Color, else the text color)
-//   --bit-MessageBox-icon-size          size of the leading icon                       (default: per size, $siz-icon-*)
+//   --bit-MessageBox-icon-color         color of the leading icon                      (default: the text color)
+//   --bit-MessageBox-icon-size          size of the leading icon                       (default: $siz-icon-md)
 //   --bit-MessageBox-title-color        color of the title                             (default: $clr-fg-pri)
-//   --bit-MessageBox-title-font-size    size of the title                              (default: per size, $tg-dialog-title-font-size for medium)
+//   --bit-MessageBox-title-font-size    size of the title                              (default: $tg-dialog-title-font-size)
 //   --bit-MessageBox-title-font-weight  weight of the title                            (default: $tg-dialog-title-font-weight)
 //   --bit-MessageBox-body-color         color of the body                              (default: $clr-fg-sec)
-//   --bit-MessageBox-body-font-size     size of the body                               (default: per size, $tg-fs-md for medium)
+//   --bit-MessageBox-body-font-size     size of the body                               (default: $tg-fs-md)
 //   --bit-MessageBox-actions-gap        room between the action buttons                (default: spacing(2))
 //   --bit-MessageBox-actions-justify    how the action buttons sit along the footer    (default: $layout-dialog-actions-justify)
+//
+// A parameter written on the message box wins over the variable that restyles what it sets: an explicit Color over
+// the icon color, and an explicit Size over the padding, the min width, the title and body font sizes and the icon
+// size. The variables restyle the default, not a choice - which is why Color and Size publish nothing while they are
+// left unset: a class that always carried the default would be indistinguishable from one that was asked for.
 
 // The line the title is set on, which the leading glyph beside it is centered against.
 $msb-ttl-line-height: 1.4;
 
 .bit-msb {
-    // The values the size classes scale, declared here so an unsized message box is the medium one and
-    // nothing has to repeat the defaults. They are private: the public variables above win over them.
-    --bit-msb-pad: #{$spa-dialog};
-    --bit-msb-min-width: #{spacing(40)};
-    --bit-msb-fontsize: #{$tg-fs-md};
-    --bit-msb-ttl-fontsize: #{$tg-dialog-title-font-size};
-    --bit-msb-ico-fontsize: #{$siz-icon-md};
-    --bit-msb-cls-size: #{$siz-ctrl-md};
+    // The values the Size and Color classes publish, unset on every root - rather than inherited from a message box
+    // this one sits inside - and won back by those classes, declared further down at the same weight, on the root
+    // that carries them. Left unset, each sends the var() reading it on to the public variable and then to the medium
+    // message box an unset Size stands for (or the text color an unset Color leaves the icon in), which is what lets
+    // an explicit parameter outrank the variable while an unset one leaves the variable in charge.
+    --bit-msb-pad: initial;
+    --bit-msb-min-width: initial;
+    --bit-msb-fontsize: initial;
+    --bit-msb-ttl-fontsize: initial;
+    --bit-msb-ico-fontsize: initial;
+    --bit-msb-cls-size: initial;
+    --bit-msb-clr: initial;
     // Resolved once here so the title, the glyph beside it and the body all read the same value.
-    --bit-msb-ttl-size: var(--bit-MessageBox-title-font-size, var(--bit-msb-ttl-fontsize));
+    --bit-msb-ttl-size: var(--bit-msb-ttl-fontsize, var(--bit-MessageBox-title-font-size, #{$tg-dialog-title-font-size}));
     --bit-msb-text-align: var(--bit-MessageBox-text-align, #{$layout-dialog-text-align});
     // Inline, a message box fills the container it was written into, as it always has; the ceiling of a dialog is
     // only its default where it is one - the content of a modal, below.
@@ -49,11 +58,11 @@ $msb-ttl-line-height: 1.4;
     flex-direction: column;
     box-sizing: border-box;
     max-height: var(--bit-msb-max-height);
-    padding: var(--bit-MessageBox-padding, var(--bit-msb-pad));
+    padding: var(--bit-msb-pad, var(--bit-MessageBox-padding, #{$spa-dialog}));
     max-width: var(--bit-msb-max-width);
     // A min-width larger than the max-width would win over it, so the floor never passes the ceiling - a
     // preset whose dialogs are narrow (Cupertino's 270px alert) keeps a message box that narrow too.
-    min-width: min(var(--bit-MessageBox-min-width, var(--bit-msb-min-width)), var(--bit-msb-max-width));
+    min-width: min(var(--bit-msb-min-width, var(--bit-MessageBox-min-width, #{spacing(40)})), var(--bit-msb-max-width));
 
     @include lt-md {
         min-width: unset;
@@ -99,8 +108,8 @@ $msb-ttl-line-height: 1.4;
 
 .bit-msb-ico {
     line-height: 1;
-    font-size: var(--bit-MessageBox-icon-size, var(--bit-msb-ico-fontsize));
-    color: var(--bit-MessageBox-icon-color, var(--bit-msb-clr, currentcolor));
+    font-size: var(--bit-msb-ico-fontsize, var(--bit-MessageBox-icon-size, #{$siz-icon-md}));
+    color: var(--bit-msb-clr, var(--bit-MessageBox-icon-color, currentcolor));
 }
 
 // The title is a heading, but its type is the theme's dialog title rather than any of its heading levels:
@@ -132,7 +141,7 @@ $msb-ttl-line-height: 1.4;
 // A leading icon balances the button well enough on its own, so only a title that opens the header is padded.
 @container style(--bit-msb-text-align: center) {
     .bit-msb-hdr:has(> .bit-btn) > .bit-msb-ttl:first-child {
-        padding-inline-start: calc(var(--bit-msb-cls-size) + #{spacing(2)});
+        padding-inline-start: calc(var(--bit-msb-cls-size, #{$siz-ctrl-md}) + #{spacing(2)});
     }
 }
 
@@ -148,7 +157,7 @@ $msb-ttl-line-height: 1.4;
     font-weight: $tg-fw-regular;
     text-align: var(--bit-msb-text-align);
     color: var(--bit-MessageBox-body-color, #{$clr-fg-sec});
-    font-size: var(--bit-MessageBox-body-font-size, var(--bit-msb-fontsize));
+    font-size: var(--bit-msb-fontsize, var(--bit-MessageBox-body-font-size, #{$tg-fs-md}));
 }
 
 // Only a body written as text is laid out by its own whitespace: the line breaks in it are kept, while a
@@ -181,7 +190,8 @@ $msb-ttl-line-height: 1.4;
 }
 
 // The size classes scale the inset, the title, the body type and the leading glyph together, so a small
-// message box is not left carrying a medium-sized title or icon.
+// message box is not left carrying a medium-sized title or icon. Published only by an explicit Size; an unset one
+// is the medium message box, which the reads of these spell out after the public variables.
 .bit-msb-sm {
     --bit-msb-pad: calc(#{$spa-dialog} * 0.667);
     --bit-msb-min-width: #{spacing(30)};
@@ -211,7 +221,8 @@ $msb-ttl-line-height: 1.4;
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Only the
 // leading glyph is painted: the color of a message box is the severity of its message, and repainting
-// the surface behind the text is a decision the theme makes for dialogs, not this component.
+// the surface behind the text is a decision the theme makes for dialogs, not this component. Published only
+// by an explicit Color, which wins over --bit-MessageBox-icon-color; an unset one leaves the glyph that variable's.
 @each $role, $tokens in $bit-color-roles {
     .bit-msb-#{$role} {
         --bit-msb-clr: #{role($tokens, main)};

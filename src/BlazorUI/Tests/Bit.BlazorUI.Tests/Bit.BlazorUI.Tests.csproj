@@ -35,6 +35,9 @@
       <Compile Include="..\..\Bit.BlazorUI\Utils\BitNewTabUtils.cs" Link="Utils\BitNewTabUtils.cs" />
       <!-- What BitNewTabUtils turns a set of BitLinkRels flags into a rel with. -->
       <Compile Include="..\..\Bit.BlazorUI\Utils\Enums\BitLinkRelUtils.cs" Link="Utils\Enums\BitLinkRelUtils.cs" />
+      <!-- Compile-linked so BitPublicCssVariablesTests can pin how a style string is cut into declarations
+           (quotes, brackets, escapes) without InternalsVisibleTo. -->
+      <Compile Include="..\..\Bit.BlazorUI\Utils\BitPublicCssVariables.cs" Link="Utils\BitPublicCssVariables.cs" />
       <!-- Compile-linked so BitPdfOpCodeTests can pin the internal enum's contiguous
            blocks without InternalsVisibleTo (same source the Extras assembly builds). -->
       <Compile Include="..\..\Bit.BlazorUI.Extras\Components\PdfViewer\Core\Content\BitPdfOpCode.cs" Link="Components\Extras\PdfViewer\BitPdfOpCode.cs" />

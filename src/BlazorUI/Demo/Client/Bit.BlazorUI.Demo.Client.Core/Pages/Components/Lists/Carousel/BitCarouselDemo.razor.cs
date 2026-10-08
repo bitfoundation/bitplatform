@@ -9,7 +9,7 @@ public partial class BitCarouselDemo
             Name = "Accent",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "Specifies the accent color kind of the component, which colors the dot of the current page. Color takes precedence over it when both are set.",
+            Description = "Specifies the accent color kind of the component, which colors the dot of the current page. Color takes precedence over it when both are set. An explicit value wins over the --bit-Carousel-dot-current-* variables; left unset, the current dot is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
         },
@@ -62,7 +62,7 @@ public partial class BitCarouselDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the carousel, applied to the dot of the current page, the next/prev and play/pause buttons, and the focus ring.",
+            Description = "The general color of the carousel, applied to the dot of the current page, the next/prev and play/pause buttons, and the focus ring. An explicit value wins over the --bit-Carousel-* focus, button and current-dot color variables; left unset, the carousel keeps its defaults unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -321,7 +321,7 @@ public partial class BitCarouselDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the dots and of the next/prev buttons of the carousel.",
+            Description = "The size of the dots and of the next/prev buttons of the carousel. An explicit value wins over --bit-Carousel-dot-size and --bit-Carousel-button-size; left unset, the carousel is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -722,20 +722,20 @@ public partial class BitCarouselDemo
         new()
         {
             Name = "--bit-Carousel-focus-color",
-            DefaultValue = "--bit-clr-pri-focus (the Color role's focus color)",
-            Description = "Focus ring color of the carousel and of its buttons and dots.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Focus ring color of the carousel and of its buttons and dots. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Carousel-button-color",
-            DefaultValue = "--bit-clr-fg-pri (the Color role's main color)",
-            Description = "Glyph color of the next/prev and play/pause buttons, and the color of templated dots.",
+            DefaultValue = "--bit-clr-fg-pri",
+            Description = "Glyph color of the next/prev and play/pause buttons, and the color of templated dots. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Carousel-button-hover-color",
-            DefaultValue = "--bit-clr-fg-pri-hover (the Color role's hover color)",
-            Description = "The same glyphs while hovered (pointer devices only).",
+            DefaultValue = "--bit-clr-fg-pri-hover",
+            Description = "The same glyphs while hovered (pointer devices only). The Color parameter wins over it.",
         },
         new()
         {
@@ -764,8 +764,8 @@ public partial class BitCarouselDemo
         new()
         {
             Name = "--bit-Carousel-button-size",
-            DefaultValue = "Per Size, 1.5 times the icon size (--bit-siz-icon-sm / -md / -lg)",
-            Description = "Glyph size of the next/prev buttons.",
+            DefaultValue = "1.5 times --bit-siz-icon-md",
+            Description = "Glyph size of the next/prev buttons. The Size parameter wins over it.",
         },
         new()
         {
@@ -788,20 +788,20 @@ public partial class BitCarouselDemo
         new()
         {
             Name = "--bit-Carousel-dot-current-color",
-            DefaultValue = "The Accent / Color role's main color",
-            Description = "Color of the dot of the current page (the text color of a templated one).",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Color of the dot of the current page (the text color of a templated one). The Color and Accent parameters win over it.",
         },
         new()
         {
             Name = "--bit-Carousel-dot-current-hover-color",
-            DefaultValue = "The Accent / Color role's hover color",
-            Description = "Color of the current dot while hovered.",
+            DefaultValue = "--bit-clr-pri-hover",
+            Description = "Color of the current dot while hovered. The Color and Accent parameters win over it.",
         },
         new()
         {
             Name = "--bit-Carousel-dot-size",
-            DefaultValue = "Per Size (8px / 10px / 14px)",
-            Description = "Diameter of the dots.",
+            DefaultValue = "spacing(1.25)",
+            Description = "Diameter of the dots. The Size parameter wins over it.",
         },
         new()
         {

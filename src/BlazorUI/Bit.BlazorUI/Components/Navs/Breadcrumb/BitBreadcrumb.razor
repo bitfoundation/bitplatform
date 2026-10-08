@@ -245,8 +245,9 @@
      id="@_overlayId"
      class="bit-brc-ovl @Classes?.Overlay"></div>
 
-@* The callout is moved to the body by the JS positioning, so it repeats the direction and the
-   look-and-feel classes of the root element instead of inheriting them. *@
+@* The callout is rendered beside the root element and moved to the body while it is open. What the
+   consumer declared on the root is carried into it there, but the component's own look-and-feel
+   classes are not, so it repeats them, along with the direction. *@
 <div @ref="_calloutRef"
      @onkeydown="HandleOnCalloutKeyDown"
      id="@_calloutId"

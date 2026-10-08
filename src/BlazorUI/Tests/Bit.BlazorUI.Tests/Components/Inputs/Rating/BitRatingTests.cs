@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -170,38 +171,49 @@ public class BitRatingTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(null),
-        DataRow(BitSize.Small),
-        DataRow(BitSize.Medium),
-        DataRow(BitSize.Large)
+        DataRow(BitSize.Small, "bit-rtg-sm"),
+        DataRow(BitSize.Medium, "bit-rtg-md"),
+        DataRow(BitSize.Large, "bit-rtg-lg")
     ]
-    public void BitRatingShouldRespectSize(BitSize size)
+    public void BitRatingShouldRespectSize(BitSize size, string expectedClass)
     {
         var component = RenderComponent<BitRating>(parameters =>
         {
             parameters.Add(p => p.Size, size);
         });
-        var bitRating = component.Find(".bit-rtg");
 
-        var sizeClass = size switch
+        Assert.IsTrue(component.Find(".bit-rtg").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitRatingShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitRating>();
+
+        // An unset Color or Size publishes nothing, so the public --bit-Rating-* variables restyle the default while
+        // an explicit value - which does publish its class - wins over them.
+        var root = component.Find(".bit-rtg");
+        var published = new[]
         {
-            BitSize.Small => "bit-rtg-sm",
-            BitSize.Large => "bit-rtg-lg",
-            _ => "bit-rtg-md"
+            "bit-rtg-pri", "bit-rtg-sec", "bit-rtg-ter", "bit-rtg-inf", "bit-rtg-suc", "bit-rtg-wrn", "bit-rtg-swr", "bit-rtg-err",
+            "bit-rtg-pbg", "bit-rtg-sbg", "bit-rtg-tbg", "bit-rtg-pfg", "bit-rtg-sfg", "bit-rtg-tfg", "bit-rtg-pbr", "bit-rtg-sbr", "bit-rtg-tbr",
+            "bit-rtg-sm", "bit-rtg-md", "bit-rtg-lg",
         };
 
-        Assert.IsTrue(bitRating.ClassList.Contains(sizeClass));
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
     }
 
     [TestMethod,
-        DataRow(null, "bit-rtg-pri"),
         DataRow(BitColor.Primary, "bit-rtg-pri"),
         DataRow(BitColor.Secondary, "bit-rtg-sec"),
         DataRow(BitColor.Success, "bit-rtg-suc"),
         DataRow(BitColor.Error, "bit-rtg-err"),
         DataRow(BitColor.TertiaryBorder, "bit-rtg-tbr")
     ]
-    public void BitRatingShouldRespectColor(BitColor? color, string expectedClass)
+    public void BitRatingShouldRespectColor(BitColor color, string expectedClass)
     {
         var component = RenderComponent<BitRating>(parameters =>
         {
@@ -712,6 +724,25 @@ public class BitRatingTests : BunitTestContext
         component.Find(".bit-rtg").KeyDown(key);
 
         Assert.AreEqual(expected, value);
+    }
+
+    [TestMethod]
+    public void BitRatingKeyboardShouldKeepTheValueWhenTheFocusFailsOnTheJsSide()
+    {
+        // An item taken out of the document before the focus follows the value fails in the browser, which
+        // reaches .NET as a JSException: the value still changes, and nothing is thrown.
+        Context.JSInterop.SetupVoid("Blazor._internal.domWrapper.focus", _ => true).SetException(new JSException("Unable to focus an invalid element."));
+
+        double value = 3;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-rtg").KeyDown("ArrowRight");
+
+        Assert.AreEqual(4, value);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
     }
 
     [TestMethod]

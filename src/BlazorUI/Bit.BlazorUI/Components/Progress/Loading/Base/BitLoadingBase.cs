@@ -78,7 +78,8 @@ public abstract class BitLoadingBase : BitComponentBase
     /// The general color of the loading component.
     /// </summary>
     /// <remarks>
-    /// The --bit-Loading-color CSS variable, where one is set, wins over it.
+    /// An explicit value wins over the --bit-Loading-color CSS variable; left unset (and with no
+    /// <see cref="CustomColor"/>), the loader is primary unless that variable says otherwise.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public BitColor? Color { get; set; }
@@ -89,7 +90,7 @@ public abstract class BitLoadingBase : BitComponentBase
     /// <remarks>
     /// Any valid CSS color works here, <c>currentColor</c> included, which is what lets a loader take the color
     /// of the text around it. It only applies while <see cref="Color"/> is left unset - a theme role always
-    /// wins over a literal color.
+    /// wins over a literal color. Like Color, it wins over the --bit-Loading-color CSS variable.
     /// </remarks>
     [Parameter, ResetStyleBuilder] public string? CustomColor { get; set; }
 
@@ -98,8 +99,8 @@ public abstract class BitLoadingBase : BitComponentBase
     /// </summary>
     /// <remarks>
     /// The whole drawing scales with it, and the label follows within the readable range of the type ramp. It
-    /// only applies while <see cref="Size"/> is left unset. Zero and negative values are ignored. The
-    /// --bit-Loading-size CSS variable, where one is set, wins over it.
+    /// only applies while <see cref="Size"/> is left unset. Zero and negative values are ignored. Like Size, it
+    /// wins over the --bit-Loading-size and --bit-Loading-label-font-size CSS variables.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder] public int? CustomSize { get; set; }
 
@@ -209,7 +210,9 @@ public abstract class BitLoadingBase : BitComponentBase
     /// The Size of the loading component: 40px, 64px or 88px, with the label on the matching step of the type ramp.
     /// </summary>
     /// <remarks>
-    /// The --bit-Loading-size CSS variable, where one is set, wins over it.
+    /// An explicit value wins over the --bit-Loading-size and --bit-Loading-label-font-size CSS variables; left unset
+    /// (and with no <see cref="CustomSize"/>), the loader is the 64px medium one - 1em when <see cref="Inline"/> -
+    /// unless those variables say otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder, ResetStyleBuilder]
     public BitSize? Size { get; set; }
@@ -225,8 +228,8 @@ public abstract class BitLoadingBase : BitComponentBase
     /// <br />
     /// The multiplier composes with the reduced-motion preference rather than overriding it: a loader in a
     /// reduced-motion environment still turns at the calmer speed the theme picks for it, only scaled by this
-    /// value. Zero and negative values are ignored. The --bit-Loading-speed CSS variable, where one is set,
-    /// wins over it.
+    /// value. Zero and negative values are ignored. An explicit value wins over the --bit-Loading-speed CSS
+    /// variable; left unset, the loader runs at its normal speed unless that variable says otherwise.
     /// </remarks>
     [Parameter, ResetStyleBuilder] public double? Speed { get; set; }
 
@@ -249,7 +252,8 @@ public abstract class BitLoadingBase : BitComponentBase
     /// <br />
     /// It is a literal number of pixels rather than a ratio, so it does not scale with <see cref="Size"/> or
     /// <see cref="CustomSize"/> - a hairline stays a hairline whatever the loader is sized at. Zero and
-    /// negative values are ignored. The --bit-Loading-thickness CSS variable, where one is set, wins over it.
+    /// negative values are ignored. An explicit value wins over the --bit-Loading-thickness CSS variable; left
+    /// unset, the stroke keeps its authored width unless that variable says otherwise.
     /// </remarks>
     [Parameter, ResetStyleBuilder] public int? Thickness { get; set; }
 
@@ -518,14 +522,17 @@ public abstract class BitLoadingBase : BitComponentBase
 
         ClassBuilder.Register(() => Paused ? "bit-ldn-pau" : string.Empty);
 
-        // A custom size takes no class: the drawing is sized by the inline variable, and the label scales from it.
-        // An unsized inline loader is drawn at the size of the text around it rather than the medium default.
+        // An unset Size publishes nothing, which is what lets the stylesheet tell a default from a choice: the public
+        // --bit-Loading-* variables restyle the default and never an explicit value. A custom size takes a class of
+        // its own that only scales the label from the inline variable sizing the drawing. An unsized inline loader is
+        // drawn at the size of the text around it rather than the medium default - a default as well, which the
+        // stylesheet still reads after the variables.
         ClassBuilder.Register(() => Size switch
         {
             BitSize.Small => "bit-ldn-sm",
             BitSize.Medium => "bit-ldn-md",
             BitSize.Large => "bit-ldn-lg",
-            _ => CustomSize > 0 ? string.Empty : Inline ? "bit-ldn-em" : "bit-ldn-md"
+            _ => CustomSize > 0 ? "bit-ldn-csz" : Inline ? "bit-ldn-em" : string.Empty
         });
 
         ClassBuilder.Register(() => LabelPlacement switch
@@ -544,8 +551,8 @@ public abstract class BitLoadingBase : BitComponentBase
     protected override void RegisterCssStyles()
     {
         // Each of these is written only when its parameter asks for something, and under a name of its own that
-        // the stylesheet resolves behind the matching --bit-Loading-* variable: a declaration in the style
-        // attribute would outrank the stylesheet, and so the public variable, however it was set.
+        // the stylesheet resolves ahead of the matching --bit-Loading-* variable: an explicit value wins over the
+        // variable, while one left unset leaves the variable in charge of the default.
         StyleBuilder.Register(() =>
         {
             var color = Color switch

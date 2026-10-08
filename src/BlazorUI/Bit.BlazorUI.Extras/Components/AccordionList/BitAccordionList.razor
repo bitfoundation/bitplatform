@@ -16,6 +16,8 @@
             @* The options report the order they are rendered in from here on, which is their markup order. *@
             @{ BeginOptionsOrder(); }
             @(Options ?? ChildContent)
+            @* Reached once the options above have registered, which is where the list learns whether it is empty. *@
+            <_BitAccordionListOptionsEnd OnReached="OnOptionsReached" />
         </CascadingValue>
     }
     else

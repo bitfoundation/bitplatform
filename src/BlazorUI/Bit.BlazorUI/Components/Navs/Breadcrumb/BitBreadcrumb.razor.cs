@@ -9,8 +9,6 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 {
-    private const string PUBLIC_CSS_VARIABLE_PREFIX = "--bit-Breadcrumb-";
-
     private bool _isCalloutOpen;
     private bool _optionsOrderDirty;
     private bool _focusFirstItemOnOpen;
@@ -125,6 +123,11 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     /// <br />
     /// The default value is <strong>null</strong>, which keeps the default foreground color of the theme.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Breadcrumb-*</c> color variables of the trail (text, selected, hover,
+    /// divider and focus colors); left unset, the trail keeps the theme's foreground colors unless those variables
+    /// say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -289,6 +292,11 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// The size of the items of the breadcrumb.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Breadcrumb-*</c> size variables (font size, item height, divider
+    /// size, overflow row height and font size); left unset, the breadcrumb is medium unless those variables say
+    /// otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -408,6 +416,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-Breadcrumb-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(GetColorClass);
 
         ClassBuilder.Register(GetSizeClass);
@@ -682,7 +692,19 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             return;
         }
 
+        // A key that activated the button has asked for the focus to move onto the first item of the menu.
+        var focusFirstItem = _focusFirstItemOnOpen;
+
         await OpenCallout();
+
+        // Not every engine focuses a button it has just dispatched a click for - WebKit leaves the focus where
+        // it was - and a menu whose button never took the focus is a menu without its Escape key, since the key
+        // is answered on the button. Doing it here is what the engines that focus it have already done, so
+        // nothing moves for them.
+        if (focusFirstItem is false && _isCalloutOpen)
+        {
+            await FocusOverflowButton();
+        }
     }
 
     // The current page is a step to read rather than one to follow, so it renders as plain text when the
@@ -902,32 +924,24 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         return MaxItemWidth.HasValue() ? $"--bit-brc-itm-max-width:{MaxItemWidth}" : null;
     }
 
-    // The callout is moved to the body by the JS positioning, so it is not a descendant of the root
-    // element and cannot inherit anything from it: the class and style hooks that drive the look of
-    // the items have to be repeated on it.
+    // The callout is rendered beside the root element rather than inside it, and while it is open it is
+    // relocated to the body. Callouts.ts carries what the consumer declared on the root into it, but never
+    // the component's own bit-brc-* classes, so the color and size classes that drive the look of the
+    // items are repeated on it.
     private string GetCalloutClasses()
     {
         return string.Join(' ', new[] { "bit-brc-cal", GetColorClass(), GetSizeClass(), Classes?.Callout }
                                     .Where(c => c.HasValue()));
     }
 
-    // Neither the Style of the instance nor a custom property declared on an ancestor of the root reaches the
-    // callout once it has moved (only :root and body stay ancestors of it), so the public --bit-Breadcrumb-*
-    // declarations of Style and Styles.Root are carried across by hand: ONE Style on the component restyles the
-    // trail and the menu it opens together. Styles.Callout is appended last, so a value written for the callout
-    // still wins over the copy.
+    // The public --bit-Breadcrumb-* variables need nothing here: whether they are set on an ancestor, through
+    // a class, in Style or in Styles.Root, Callouts.ts carries them into the relocated callout, so they reach
+    // it like any inherited value and ONE Style on the component restyles the trail and the menu it opens
+    // together. The callout only writes the max item width of its rows, then Styles.Callout.
     private string GetCalloutStyles()
     {
-        return string.Join(';', new[] { GetMaxItemWidthStyle(), GetPublicCssVariables(Style), GetPublicCssVariables(Styles?.Root), Styles?.Callout }
+        return string.Join(';', new[] { GetMaxItemWidthStyle(), Styles?.Callout }
                                     .Where(s => s.HasValue()).Select(s => s!.Trim(';')));
-    }
-
-    private static string? GetPublicCssVariables(string? style)
-    {
-        if (style.HasNoValue() || style!.Contains(PUBLIC_CSS_VARIABLE_PREFIX, StringComparison.Ordinal) is false) return null;
-
-        return string.Join(';', style.Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                                     .Where(d => d.StartsWith(PUBLIC_CSS_VARIABLE_PREFIX, StringComparison.Ordinal)));
     }
 
     private string? GetKey(TItem item)
@@ -1457,7 +1471,10 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
                 footerId: "",
                 setCalloutWidth: false,
                 fixedCalloutWidth: false,
-                maxWindowWidth: 0);
+                maxWindowWidth: 0,
+                // The anchor of the callout is the overflow button, but what the consumer declared is on the
+                // nav, which is the element carried into the callout while it is relocated.
+                rootId: _Id);
         }
         catch (JSDisconnectedException) { } // the circuit is gone, there is no callout left to move
         catch (JSException) { } // a JS-side failure must not escape into the render lifecycle
@@ -1554,12 +1571,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
     private async Task FocusOverflowButton()
     {
-        try
-        {
-            await _overflowButtonRef.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // the circuit is gone, nothing to focus
-        catch (JSException) { } // the button may already be gone with the items it collapsed
+        await _overflowButtonRef.FocusSafelyAsync();
     }
 
     private string GetItemKey(TItem item, string defaultKey)

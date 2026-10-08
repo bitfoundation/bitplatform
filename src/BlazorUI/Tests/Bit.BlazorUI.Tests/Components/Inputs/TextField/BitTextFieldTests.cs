@@ -978,6 +978,28 @@ public class BitTextFieldTests : BunitTestContext
         Assert.IsFalse(bitTextField.ClassList.Contains("bit-tfl-lg"));
     }
 
+    [TestMethod]
+    public void BitTextFieldShouldPublishNoAccentBackgroundOrBorderWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitTextField>();
+
+        // An unset Accent, Background or Border publishes nothing, so the public --bit-TextField-* variables restyle
+        // the default while an explicit value - which does publish its class - wins over them.
+        var bitTextField = component.Find(".bit-tfl");
+        var published = new[]
+        {
+            "bit-tfl-pri", "bit-tfl-sec", "bit-tfl-ter", "bit-tfl-inf", "bit-tfl-suc", "bit-tfl-wrn", "bit-tfl-swr", "bit-tfl-err",
+            "bit-tfl-pbg", "bit-tfl-sbg", "bit-tfl-tbg", "bit-tfl-pfg", "bit-tfl-sfg", "bit-tfl-tfg", "bit-tfl-pbr", "bit-tfl-sbr", "bit-tfl-tbr",
+            "bit-tfl-bpr", "bit-tfl-bse", "bit-tfl-btr", "bit-tfl-btn",
+            "bit-tfl-brp", "bit-tfl-brs", "bit-tfl-brt", "bit-tfl-brn",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(bitTextField.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
+    }
+
     [TestMethod,
         DataRow(BitColor.Primary, "bit-tfl-pri"),
         DataRow(BitColor.Success, "bit-tfl-suc"),

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -415,6 +416,10 @@ public partial class BitSnackBar : BitComponentBase
     /// <summary>
     /// The size of the snack bar items.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-SnackBar-*</c> size variables (padding, title and body font sizes,
+    /// icon size); left unset, the items are medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter] public BitSize? Size { get; set; }
 
     /// <summary>
@@ -511,6 +516,11 @@ public partial class BitSnackBar : BitComponentBase
     /// <summary>
     /// Shows a new snackbar with Info color.
     /// </summary>
+    /// <remarks>
+    /// Info is named here, so it counts as a choice and wins over the <c>--bit-SnackBar-*</c> color variables, the
+    /// same as any other color passed in. The variables restyle only an item that leaves its color out, which
+    /// <c>Show</c> without a color does.
+    /// </remarks>
     public Task<BitSnackBarItem> Info(string title, string? body = "", bool persistent = false, TimeSpan? autoDismissTime = null) => Show(title, body, BitColor.Info, persistent: persistent, autoDismissTime: autoDismissTime);
 
     /// <summary>
@@ -536,10 +546,14 @@ public partial class BitSnackBar : BitComponentBase
     /// <summary>
     /// Shows a new snackbar.
     /// </summary>
+    /// <remarks>
+    /// A <paramref name="color"/> left out is no color at all rather than Info: the item is drawn in Info unless the
+    /// <c>--bit-SnackBar-*</c> color variables say otherwise, while one passed in wins over them.
+    /// </remarks>
     public Task<BitSnackBarItem> Show(
         string title,
         string? body = "",
-        BitColor color = BitColor.Info,
+        BitColor? color = null,
         string? cssClass = null,
         string? cssStyle = null,
         bool persistent = false,
@@ -558,6 +572,24 @@ public partial class BitSnackBar : BitComponentBase
 
         return Show(item);
     }
+
+    /// <summary>
+    /// Shows a new snackbar.
+    /// </summary>
+    /// <remarks>
+    /// Kept only for assemblies compiled against the earlier version of this method, whose color was a plain
+    /// <see cref="BitColor"/> defaulting to Info. Every parameter is required, so no call written today binds to it;
+    /// a call that does pass every one of them is handed over to the overload above unchanged.
+    /// </remarks>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public Task<BitSnackBarItem> Show(
+        string title,
+        string? body,
+        BitColor color,
+        string? cssClass,
+        string? cssStyle,
+        bool persistent,
+        TimeSpan? autoDismissTime) => Show(title, body, (BitColor?)color, cssClass, cssStyle, persistent, autoDismissTime);
 
     /// <summary>
     /// Shows a new snackbar.
@@ -672,7 +704,9 @@ public partial class BitSnackBar : BitComponentBase
         ArgumentNullException.ThrowIfNull(successTitle);
         ArgumentNullException.ThrowIfNull(errorTitle);
 
-        var item = new BitSnackBarItem { Title = loadingTitle, Body = body, Color = BitColor.Info, IsLoading = true, _tracked = true };
+        // The loading item is left without a color: it is drawn in Info, the default the --bit-SnackBar-* color
+        // variables restyle, while the outcome it settles into is an explicit Success or Error.
+        var item = new BitSnackBarItem { Title = loadingTitle, Body = body, IsLoading = true, _tracked = true };
 
         await Show(item);
 
@@ -1257,14 +1291,15 @@ public partial class BitSnackBar : BitComponentBase
 
     // An item whose exit animation is playing is on its way out, so a new notification identical to it is news
     // rather than a repeat - matching it would drop the new one and leave nothing on screen. The loading item of a
-    // Track call still belongs to that call, so a new notification is not handed it either.
+    // Track call still belongs to that call, so a new notification is not handed it either. Colors are compared as
+    // drawn: an item that leaves its color out is shown in Info, so it repeats one that asks for Info.
     private static bool IsDuplicate(BitSnackBarItem left, BitSnackBarItem right)
     {
         return left._dismissing is false
             && left._tracked is false
             && left.Title == right.Title
             && left.Body == right.Body
-            && left.Color == right.Color;
+            && (left.Color ?? BitColor.Info) == (right.Color ?? BitColor.Info);
     }
 
     private bool IsFull() => MaxItems is int max && max > 0 && _items.Count(i => i._dismissing is false) >= max;
@@ -1424,44 +1459,22 @@ public partial class BitSnackBar : BitComponentBase
 
     private string GetItemClasses(BitSnackBarItem item)
     {
+        // The Color of the item and the Size publish nothing while they are unset, which is what lets the stylesheet
+        // tell a default from a choice: the public --bit-SnackBar-* variables restyle the default and never an
+        // explicit value.
         var classes = new List<string>(6)
         {
-            item.Color switch
-            {
-                BitColor.Primary => "bit-snb-pri",
-                BitColor.Secondary => "bit-snb-sec",
-                BitColor.Tertiary => "bit-snb-ter",
-                BitColor.Info => "bit-snb-inf",
-                BitColor.Success => "bit-snb-suc",
-                BitColor.Warning => "bit-snb-wrn",
-                BitColor.SevereWarning => "bit-snb-swr",
-                BitColor.Error => "bit-snb-err",
-                BitColor.PrimaryBackground => "bit-snb-pbg",
-                BitColor.SecondaryBackground => "bit-snb-sbg",
-                BitColor.TertiaryBackground => "bit-snb-tbg",
-                BitColor.PrimaryForeground => "bit-snb-pfg",
-                BitColor.SecondaryForeground => "bit-snb-sfg",
-                BitColor.TertiaryForeground => "bit-snb-tfg",
-                BitColor.PrimaryBorder => "bit-snb-pbr",
-                BitColor.SecondaryBorder => "bit-snb-sbr",
-                BitColor.TertiaryBorder => "bit-snb-tbr",
-                _ => "bit-snb-inf"
-            },
             Variant switch
             {
                 BitVariant.Fill => "bit-snb-fil",
                 BitVariant.Outline => "bit-snb-otl",
                 BitVariant.Text => "bit-snb-txt",
                 _ => "bit-snb-fil"
-            },
-            Size switch
-            {
-                BitSize.Small => "bit-snb-sm",
-                BitSize.Medium => "bit-snb-md",
-                BitSize.Large => "bit-snb-lg",
-                _ => "bit-snb-md"
             }
         };
+
+        classes.AddIfHasValue(BitCssClasses.Color(item.Color, "bit-snb"));
+        classes.AddIfHasValue(BitCssClasses.Size(Size, "bit-snb"));
 
         if (item._dismissing) classes.Add("bit-snb-dsm");
         if (item._paused) classes.Add("bit-snb-pau");

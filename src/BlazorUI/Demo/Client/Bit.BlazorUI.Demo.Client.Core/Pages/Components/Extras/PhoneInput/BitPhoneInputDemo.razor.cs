@@ -23,7 +23,7 @@ public partial class BitPhoneInputDemo
             Name = "Background",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The color kind of the fill of the phone input. The --bit-PhoneInput-background variable wins over it.",
+            Description = "The color kind of the fill of the phone input. An explicit value wins over --bit-PhoneInput-background; left unset, the fill is the primary kind unless it says otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
         },
@@ -32,7 +32,7 @@ public partial class BitPhoneInputDemo
             Name = "Border",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The color kind of the frame of the phone input, winning over the main color of Color (which keeps the focus ring). The --bit-PhoneInput-border-color variable wins over it.",
+            Description = "The color kind of the frame of the phone input, winning over the main color of Color (which keeps the focus ring). An explicit value wins over --bit-PhoneInput-border-color and --bit-PhoneInput-hover-border-color; left unset, the frame is the primary border unless an explicit Color or those variables say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
         },
@@ -85,7 +85,7 @@ public partial class BitPhoneInputDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the phone input: the frame takes its main color and the focus ring its focus color.",
+            Description = "The general color of the phone input: the frame takes its main color and the focus ring its focus color. An explicit value wins over --bit-PhoneInput-focus-color and the --bit-PhoneInput-* border colors (an explicit Border still wins the frame); left unset, the field is primary unless those variables say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -544,7 +544,7 @@ public partial class BitPhoneInputDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the phone input.",
+            Description = "The size of the phone input. An explicit value wins over the --bit-PhoneInput-* size variables (minimum height, font sizes, paddings, flag size, row height); left unset, the field is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -705,17 +705,17 @@ public partial class BitPhoneInputDemo
 
     private readonly List<ComponentCssVariable> componentCssVariables =
     [
-        new() { Name = "--bit-PhoneInput-background", DefaultValue = "The Background kind, --bit-clr-bg-pri", Description = "Fill of the field." },
+        new() { Name = "--bit-PhoneInput-background", DefaultValue = "--bit-clr-bg-pri", Description = "Fill of the field. The Background parameter wins over it." },
         new() { Name = "--bit-PhoneInput-color", DefaultValue = "--bit-clr-fg-pri", Description = "Text of the number." },
         new() { Name = "--bit-PhoneInput-placeholder-color", DefaultValue = "--bit-clr-fg-ter", Description = "Placeholder of the number input, of the country selector and of the search box." },
-        new() { Name = "--bit-PhoneInput-border-color", DefaultValue = "The Border kind, the Color role, --bit-clr-brd-pri", Description = "Frame at rest." },
-        new() { Name = "--bit-PhoneInput-hover-border-color", DefaultValue = "The Border kind, the Color role, --bit-clr-brd-pri-hover", Description = "Frame under a pointer, on devices that can hover." },
+        new() { Name = "--bit-PhoneInput-border-color", DefaultValue = "--bit-clr-brd-pri", Description = "Frame at rest. The Border and Color parameters win over it." },
+        new() { Name = "--bit-PhoneInput-hover-border-color", DefaultValue = "--bit-clr-brd-pri-hover", Description = "Frame under a pointer, on devices that can hover. The Border and Color parameters win over it." },
         new() { Name = "--bit-PhoneInput-border-width", DefaultValue = "--bit-shp-brd-width", Description = "Thickness of the frame and of the rule between the selector and the number." },
         new() { Name = "--bit-PhoneInput-radius", DefaultValue = "--bit-shp-radius-control", Description = "Corner radius of the frame." },
-        new() { Name = "--bit-PhoneInput-min-height", DefaultValue = "Per Size, --bit-siz-ctrl-*", Description = "Smallest height of the frame." },
-        new() { Name = "--bit-PhoneInput-font-size", DefaultValue = "Per Size, from the type ramp", Description = "Text size of the field and of the country list." },
-        new() { Name = "--bit-PhoneInput-padding", DefaultValue = "0 per Size, --bit-siz-ctrl-pad-x-*", Description = "Padding of the number input." },
-        new() { Name = "--bit-PhoneInput-focus-color", DefaultValue = "The Color role's focus color, --bit-clr-pri-focus", Description = "Focused frame and focus ring, and the keyboard cues of the selector, the clear button and the active row of the list." },
+        new() { Name = "--bit-PhoneInput-min-height", DefaultValue = "--bit-siz-ctrl-md", Description = "Smallest height of the frame. The Size parameter wins over it." },
+        new() { Name = "--bit-PhoneInput-font-size", DefaultValue = "--bit-tpg-fs-sm", Description = "Text size of the field and of the country list. The Size parameter wins over it." },
+        new() { Name = "--bit-PhoneInput-padding", DefaultValue = "0 --bit-siz-ctrl-pad-x-md", Description = "Padding of the number input. The Size parameter wins over it." },
+        new() { Name = "--bit-PhoneInput-focus-color", DefaultValue = "--bit-clr-pri-focus", Description = "Focused frame and focus ring, and the keyboard cues of the selector, the clear button and the active row of the list. The Color parameter wins over it." },
         new() { Name = "--bit-PhoneInput-invalid-color", DefaultValue = "--bit-clr-err / --bit-clr-err-focus", Description = "Frame, focus ring and error message of a rejected value." },
         new() { Name = "--bit-PhoneInput-disabled-color", DefaultValue = "--bit-clr-fg-dis", Description = "Text and glyphs when disabled." },
         new() { Name = "--bit-PhoneInput-disabled-background", DefaultValue = "--bit-clr-bg-dis", Description = "Fill when disabled." },
@@ -723,15 +723,15 @@ public partial class BitPhoneInputDemo
         new() { Name = "--bit-PhoneInput-dropdown-background", DefaultValue = "transparent", Description = "Fill of the country selector." },
         new() { Name = "--bit-PhoneInput-dropdown-hover-background", DefaultValue = "--bit-clr-bg-pri-hover", Description = "Fill of the country selector under a pointer." },
         new() { Name = "--bit-PhoneInput-dropdown-color", DefaultValue = "--bit-clr-fg-pri", Description = "The dialing code in the country selector." },
-        new() { Name = "--bit-PhoneInput-dropdown-padding", DefaultValue = "0 per Size, --bit-siz-ctrl-pad-x-*", Description = "Padding of the country selector." },
+        new() { Name = "--bit-PhoneInput-dropdown-padding", DefaultValue = "0 --bit-siz-ctrl-pad-x-md", Description = "Padding of the country selector. The Size parameter wins over it." },
         new() { Name = "--bit-PhoneInput-separator-color", DefaultValue = "--bit-clr-brd-pri", Description = "Rule between the country selector and the number." },
         new() { Name = "--bit-PhoneInput-caret-color", DefaultValue = "--bit-clr-fg-sec", Description = "The caret of the country selector." },
-        new() { Name = "--bit-PhoneInput-flag-size", DefaultValue = "Per Size, --bit-siz-icon-*", Description = "Flags of the selector and of the list." },
+        new() { Name = "--bit-PhoneInput-flag-size", DefaultValue = "--bit-siz-icon-md", Description = "Flags of the selector and of the list. The Size parameter wins over it." },
         new() { Name = "--bit-PhoneInput-flag-radius", DefaultValue = "--bit-shp-radius-none", Description = "Corner radius of a flag." },
         new() { Name = "--bit-PhoneInput-button-color", DefaultValue = "--bit-clr-fg-sec", Description = "Glyph of the clear button." },
         new() { Name = "--bit-PhoneInput-button-hover-background", DefaultValue = "--bit-clr-bg-pri-hover", Description = "Fill of the clear button under a pointer." },
         new() { Name = "--bit-PhoneInput-label-color", DefaultValue = "--bit-clr-fg-pri", Description = "Label text." },
-        new() { Name = "--bit-PhoneInput-label-font-size", DefaultValue = "--bit-PhoneInput-font-size", Description = "Label text size." },
+        new() { Name = "--bit-PhoneInput-label-font-size", DefaultValue = "--bit-PhoneInput-font-size", Description = "Label text size. The Size parameter wins over it." },
         new() { Name = "--bit-PhoneInput-label-font-weight", DefaultValue = "--bit-tpg-field-label-font-weight", Description = "Label weight." },
         new() { Name = "--bit-PhoneInput-required-color", DefaultValue = "--bit-clr-req", Description = "The asterisk of a Required field." },
         new() { Name = "--bit-PhoneInput-description-color", DefaultValue = "--bit-clr-fg-sec", Description = "Description text." },
@@ -743,7 +743,7 @@ public partial class BitPhoneInputDemo
         new() { Name = "--bit-PhoneInput-callout-max-height", DefaultValue = "--bit-siz-popup-max-height", Description = "Tallest the scrolling list grows. The MaxHeight parameter wins over it." },
         new() { Name = "--bit-PhoneInput-responsive-width", DefaultValue = "spacing(34)", Description = "Width of the side panel a Responsive field opens on a small screen." },
         new() { Name = "--bit-PhoneInput-overlay-background", DefaultValue = "transparent", Description = "The layer behind an open list; give it a color for a modal-style scrim." },
-        new() { Name = "--bit-PhoneInput-item-height", DefaultValue = "Per Size, --bit-siz-item-*", Description = "Smallest height of a row of the list." },
+        new() { Name = "--bit-PhoneInput-item-height", DefaultValue = "--bit-siz-item-md", Description = "Smallest height of a row of the list. The Size parameter wins over it." },
         new() { Name = "--bit-PhoneInput-item-color", DefaultValue = "--bit-clr-fg-pri", Description = "Country name of a row, and the text of the search box." },
         new() { Name = "--bit-PhoneInput-item-code-color", DefaultValue = "--bit-clr-fg-sec", Description = "Dialing code of a row." },
         new() { Name = "--bit-PhoneInput-item-hover-background", DefaultValue = "--bit-clr-bg-pri-hover", Description = "Row under the pointer, and the row the arrow keys are on." },
@@ -1240,8 +1240,8 @@ private readonly BitPhoneInputParams[] phoneInputParams =
                Styles=""@(new() { FieldGroup = ""border-color: blueviolet;"", ItemCode = ""color: blueviolet;"" })""
                Classes=""@(new() { Input = ""custom-input"" })"" />";
     private const string example27ScssCode = @"
-// The public custom properties are inherited, so one scope re-skins every field inside it
-// without a rule naming a part of the component.
+// The public custom properties are inherited, so one scope re-skins every field inside it, and the
+// country list each one opens, without a rule naming a part of the component.
 .phi-brand-scope {
     --bit-PhoneInput-radius: 0;
     --bit-PhoneInput-border-width: 2px;
@@ -1251,6 +1251,9 @@ private readonly BitPhoneInputParams[] phoneInputParams =
     --bit-PhoneInput-dropdown-background: #e0f2f1;
     --bit-PhoneInput-dropdown-color: #004d40;
     --bit-PhoneInput-separator-color: #00796b;
+    --bit-PhoneInput-callout-radius: 0;
+    --bit-PhoneInput-item-selected-background: #e0f2f1;
+    --bit-PhoneInput-item-selected-color: #004d40;
 }
 
 ::deep .custom-class {

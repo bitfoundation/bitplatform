@@ -741,27 +741,7 @@ public partial class BitDialog : BitComponentBase
 
         // The color of the Dialog is carried on the root so the tokens it sets reach the buttons at the
         // bottom of the surface, wherever a template has put them.
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-dlg-pri",
-            BitColor.Secondary => "bit-dlg-sec",
-            BitColor.Tertiary => "bit-dlg-ter",
-            BitColor.Info => "bit-dlg-inf",
-            BitColor.Success => "bit-dlg-suc",
-            BitColor.Warning => "bit-dlg-wrn",
-            BitColor.SevereWarning => "bit-dlg-swr",
-            BitColor.Error => "bit-dlg-err",
-            BitColor.PrimaryBackground => "bit-dlg-pbg",
-            BitColor.SecondaryBackground => "bit-dlg-sbg",
-            BitColor.TertiaryBackground => "bit-dlg-tbg",
-            BitColor.PrimaryForeground => "bit-dlg-pfg",
-            BitColor.SecondaryForeground => "bit-dlg-sfg",
-            BitColor.TertiaryForeground => "bit-dlg-tfg",
-            BitColor.PrimaryBorder => "bit-dlg-pbr",
-            BitColor.SecondaryBorder => "bit-dlg-sbr",
-            BitColor.TertiaryBorder => "bit-dlg-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-dlg"));
 
         ClassBuilder.Register(() => AbsolutePosition ? "bit-dlg-abs" : string.Empty);
         ClassBuilder.Register(() => Modeless ? "bit-dlg-mls" : string.Empty);
@@ -1031,6 +1011,7 @@ public partial class BitDialog : BitComponentBase
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
     }
 
     private async Task SetupFocusTrap()

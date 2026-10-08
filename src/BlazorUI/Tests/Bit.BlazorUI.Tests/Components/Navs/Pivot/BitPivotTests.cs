@@ -6,6 +6,7 @@ using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.JSInterop;
 
 namespace Bit.BlazorUI.Tests.Components.Navs.Pivot;
 
@@ -86,6 +87,27 @@ public class BitPivotTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-pvt").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitPivotShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitPivot>();
+
+        // An unset Color or Size publishes nothing, so the public --bit-Pivot-* variables restyle the default while
+        // an explicit value - which does publish its class - wins over them.
+        var root = component.Find(".bit-pvt");
+        var published = new[]
+        {
+            "bit-pvt-pri", "bit-pvt-sec", "bit-pvt-ter", "bit-pvt-inf", "bit-pvt-suc", "bit-pvt-wrn", "bit-pvt-swr", "bit-pvt-err",
+            "bit-pvt-pbg", "bit-pvt-sbg", "bit-pvt-tbg", "bit-pvt-pfg", "bit-pvt-sfg", "bit-pvt-tfg", "bit-pvt-pbr", "bit-pvt-sbr", "bit-pvt-tbr",
+            "bit-pvt-sm", "bit-pvt-md", "bit-pvt-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
     }
 
     [TestMethod]
@@ -472,6 +494,21 @@ public class BitPivotTests : BunitTestContext
         Assert.AreEqual("0", tabs[0].GetAttribute("tabindex"));
         Assert.AreEqual("0", tabs[1].GetAttribute("tabindex"));
         Assert.AreEqual("-1", tabs[2].GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitPivotShouldKeepNavigatingWhenTheFocusFailsOnTheJsSide()
+    {
+        // A tab taken out of the document before the focus call reaches it fails in the browser, which
+        // reaches .NET as a JSException: the roving tabindex still moves, and nothing is thrown.
+        Context.JSInterop.SetupVoid("Blazor._internal.domWrapper.focus", _ => true).SetException(new JSException("Unable to focus an invalid element."));
+
+        var component = RenderPivot(3);
+
+        component.Find(".bit-pvt-hct").KeyDown("ArrowRight");
+
+        Assert.AreEqual("0", component.FindAll("[role=tab]")[1].GetAttribute("tabindex"));
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
     }
 
     [TestMethod]

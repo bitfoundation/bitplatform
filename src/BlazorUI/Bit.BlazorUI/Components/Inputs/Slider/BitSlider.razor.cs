@@ -163,6 +163,11 @@ public partial class BitSlider : BitInputBase<double>
     /// The general color of the slider, applied to the filled part of the track and to the thumbs.
     /// The unfilled part of the track stays neutral whichever color is picked.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Slider-*</c> accent variables (the color and its hover, active and
+    /// focus colors, the active mark color and the thumb label colors); left unset, the slider is primary unless
+    /// those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -403,6 +408,10 @@ public partial class BitSlider : BitInputBase<double>
     /// <summary>
     /// Size of the Slider, which scales its track, thumbs and labels together.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Slider-*</c> size variables (thumb size, rail size, length and the
+    /// font sizes); left unset, the slider is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -532,35 +541,11 @@ public partial class BitSlider : BitInputBase<double>
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-sld-pri",
-            BitColor.Secondary => "bit-sld-sec",
-            BitColor.Tertiary => "bit-sld-ter",
-            BitColor.Info => "bit-sld-inf",
-            BitColor.Success => "bit-sld-suc",
-            BitColor.Warning => "bit-sld-wrn",
-            BitColor.SevereWarning => "bit-sld-swr",
-            BitColor.Error => "bit-sld-err",
-            BitColor.PrimaryBackground => "bit-sld-pbg",
-            BitColor.SecondaryBackground => "bit-sld-sbg",
-            BitColor.TertiaryBackground => "bit-sld-tbg",
-            BitColor.PrimaryForeground => "bit-sld-pfg",
-            BitColor.SecondaryForeground => "bit-sld-sfg",
-            BitColor.TertiaryForeground => "bit-sld-tfg",
-            BitColor.PrimaryBorder => "bit-sld-pbr",
-            BitColor.SecondaryBorder => "bit-sld-sbr",
-            BitColor.TertiaryBorder => "bit-sld-tbr",
-            _ => "bit-sld-pri"
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-Slider-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-sld"));
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-sld-sm",
-            BitSize.Medium => "bit-sld-md",
-            BitSize.Large => "bit-sld-lg",
-            _ => "bit-sld-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-sld"));
     }
 
     protected override void RegisterCssStyles()
@@ -1633,7 +1618,7 @@ public partial class BitSlider : BitInputBase<double>
 
         // The thumb is already on the screen - the pointer was just on it - so there is nothing to scroll to,
         // and scrolling to it would move the page out from under the gesture that has only now finished.
-        await _lowerInputRef.FocusAsync(true);
+        await _lowerInputRef.FocusSafelyAsync(true);
     }
 
     /// <summary>

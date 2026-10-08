@@ -682,8 +682,7 @@ public class BitPaginationTests : BunitTestContext
     [DataRow(BitColor.Warning, "bit-pgn-wrn")]
     [DataRow(BitColor.SevereWarning, "bit-pgn-swr")]
     [DataRow(BitColor.Error, "bit-pgn-err")]
-    [DataRow(null, "bit-pgn-pri")]
-    public void BitPaginationShouldRespectColor(BitColor? color, string cssClass)
+    public void BitPaginationShouldRespectColor(BitColor color, string cssClass)
     {
         var comp = RenderComponent<BitPagination>(parameters =>
         {
@@ -698,8 +697,7 @@ public class BitPaginationTests : BunitTestContext
     [DataRow(BitSize.Small, "bit-pgn-sm")]
     [DataRow(BitSize.Medium, "bit-pgn-md")]
     [DataRow(BitSize.Large, "bit-pgn-lg")]
-    [DataRow(null, "bit-pgn-md")]
-    public void BitPaginationShouldRespectSize(BitSize? size, string cssClass)
+    public void BitPaginationShouldRespectSize(BitSize size, string cssClass)
     {
         var comp = RenderComponent<BitPagination>(parameters =>
         {
@@ -708,6 +706,29 @@ public class BitPaginationTests : BunitTestContext
         });
 
         Assert.IsTrue(comp.Find(".bit-pgn").ClassList.Contains(cssClass));
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var comp = RenderComponent<BitPagination>(parameters =>
+        {
+            parameters.Add(p => p.Count, 5);
+        });
+
+        // An unset Color or Size publishes nothing, so the public --bit-Pagination-* variables restyle the default
+        // while an explicit value - which does publish its class - wins over them.
+        var root = comp.Find(".bit-pgn");
+        var published = new[]
+        {
+            "bit-pgn-pri", "bit-pgn-sec", "bit-pgn-ter", "bit-pgn-inf", "bit-pgn-suc", "bit-pgn-wrn", "bit-pgn-swr", "bit-pgn-err",
+            "bit-pgn-sm", "bit-pgn-md", "bit-pgn-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
     }
 
     [TestMethod]

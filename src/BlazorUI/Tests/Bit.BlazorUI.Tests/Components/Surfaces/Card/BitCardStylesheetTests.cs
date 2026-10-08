@@ -78,9 +78,6 @@ public partial class BitCardStylesheetTests
         var setByAClass = PrivateDeclaration().Matches(SourceFiles.StripScssComments(stylesheet))
                                               .Select(m => m.Groups[1].Value)
                                               .Distinct()
-                                              .Where(name => name is not ("--bit-crd-pad" or "--bit-crd-gap" or "--bit-crd-htx-gap"
-                                                                      or "--bit-crd-ttl-fontsize" or "--bit-crd-sub-fontsize"
-                                                                      or "--bit-crd-icn-fontsize")) // set by the size class every card wears
                                               .Where(name => name.StartsWith("--bit-crd-clr") is false) // only read where the same class sets them
                                               .ToArray();
 
@@ -122,7 +119,40 @@ public partial class BitCardStylesheetTests
         var block = SourceFiles.GetScssBlock(stylesheet, $"\n.bit-crd-{size} {{");
 
         // The inset is a design-system decision (Fluent 2 8/12/16px), so a preset re-pads every card through the theme.
-        StringAssert.Contains(block, $"--bit-crd-pad: var(--bit-Card-padding, #{{$spa-card-{size}}});");
+        // The class publishes the plain token, so an explicit Size wins over --bit-Card-padding.
+        StringAssert.Contains(block, $"--bit-crd-pad: #{{$spa-card-{size}}};");
+        Assert.IsFalse(block.Contains("--bit-Card-"), $"A public variable wins over the {size} Size.");
+    }
+
+    [TestMethod]
+    public void BitCardShouldLetAParameterWinOverItsPublicVariable()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // An explicit Size (or NoPadding) publishes these, so they are read before the variable, which only restyles the
+        // medium card an unset one stands for.
+        StringAssert.Contains(stylesheet, "$crd-pad: var(--bit-crd-pad, var(--bit-Card-padding, #{$spa-card-md}));");
+        StringAssert.Contains(stylesheet, "$crd-gap: var(--bit-crd-gap, var(--bit-Card-gap, #{spacing(1.5)}));");
+        StringAssert.Contains(stylesheet, "font-size: var(--bit-crd-ttl-fontsize, var(--bit-Card-title-font-size, #{$tg-fs-md}));");
+        StringAssert.Contains(stylesheet, "font-size: var(--bit-crd-sub-fontsize, var(--bit-Card-subtitle-font-size, #{$tg-fs-sm}));");
+        StringAssert.Contains(stylesheet, "font-size: var(--bit-crd-icn-fontsize, var(--bit-Card-icon-size, #{$siz-icon-md}));");
+        Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-crd-(pad|gap)\)"), "A part reads the inset or the gap without the public variable and the default behind it.");
+
+        Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Card-[a-z-]+, var\(--bit-crd-"), "A public variable is read before the parameter it restyles the default of.");
+    }
+
+    [TestMethod]
+    public void BitCardShouldPublishItsSizeOnlyWhereItIsSet()
+    {
+        var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-crd {");
+
+        // A card can sit in another one, which must not inherit the outer card's Size: each root starts the values the
+        // size classes publish out unset, and the classes - declared further down at the same weight - still win on the
+        // root that carries them.
+        foreach (var property in new[] { "--bit-crd-pad", "--bit-crd-gap", "--bit-crd-htx-gap", "--bit-crd-ttl-fontsize", "--bit-crd-sub-fontsize", "--bit-crd-icn-fontsize" })
+        {
+            StringAssert.Contains(root, $"{property}: initial;");
+        }
     }
 
     [TestMethod]

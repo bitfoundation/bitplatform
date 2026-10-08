@@ -465,8 +465,7 @@ public class BitOtpInputTests : BunitTestContext
     [TestMethod,
         DataRow(BitColor.Primary, "bit-otp-pri"),
         DataRow(BitColor.Success, "bit-otp-suc"),
-        DataRow(BitColor.Error, "bit-otp-err"),
-        DataRow(null, "bit-otp-pri")
+        DataRow(BitColor.Error, "bit-otp-err")
     ]
     public void BitOtpInputShouldRespectAccent(BitColor? accent, string accentClass)
     {
@@ -481,8 +480,7 @@ public class BitOtpInputTests : BunitTestContext
     [TestMethod,
         DataRow(BitSize.Small, "bit-otp-sm"),
         DataRow(BitSize.Medium, "bit-otp-md"),
-        DataRow(BitSize.Large, "bit-otp-lg"),
-        DataRow(null, "bit-otp-md")
+        DataRow(BitSize.Large, "bit-otp-lg")
     ]
     public void BitOtpInputShouldRespectSize(BitSize? size, string sizeClass)
     {
@@ -492,6 +490,27 @@ public class BitOtpInputTests : BunitTestContext
         });
 
         Assert.IsTrue(com.Find(".bit-otp").ClassList.Contains(sizeClass));
+    }
+
+    [TestMethod]
+    public void BitOtpInputShouldPublishNoAccentOrSizeWhileTheyAreUnset()
+    {
+        var com = RenderComponent<BitOtpInput>();
+
+        // An unset Accent or Size publishes nothing, so the public --bit-OtpInput-* variables restyle the default
+        // while an explicit value - which does publish its class - wins over them.
+        var root = com.Find(".bit-otp");
+        var published = new[]
+        {
+            "bit-otp-pri", "bit-otp-sec", "bit-otp-ter", "bit-otp-inf", "bit-otp-suc", "bit-otp-wrn", "bit-otp-swr", "bit-otp-err",
+            "bit-otp-pbg", "bit-otp-sbg", "bit-otp-tbg", "bit-otp-pfg", "bit-otp-sfg", "bit-otp-tfg", "bit-otp-pbr", "bit-otp-sbr", "bit-otp-tbr",
+            "bit-otp-sm", "bit-otp-md", "bit-otp-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
     }
 
     [TestMethod]

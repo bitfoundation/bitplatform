@@ -9,20 +9,27 @@
 //   --bit-SnackBar-gap               room between two stacked items               (default: 10px)
 //   --bit-SnackBar-min-width         minimum width of an item                     (default: none; the stack's width on a phone)
 //   --bit-SnackBar-max-width         maximum width of an item                     (default: none; the MaxWidth parameter wins)
-//   --bit-SnackBar-background        fill of an item                              (default: per Color and Variant)
-//   --bit-SnackBar-color             text color of an item                        (default: per Color and Variant)
-//   --bit-SnackBar-border-color      border color of an item                      (default: per Color and Variant)
+//   --bit-SnackBar-background        fill of an item                              (default: $clr-inf filled, $clr-bg-pri otherwise)
+//   --bit-SnackBar-color             text color of an item                        (default: $clr-inf-text filled, $clr-inf-fg otherwise)
+//   --bit-SnackBar-border-color      border color of an item                      (default: $clr-inf, transparent on Text)
 //   --bit-SnackBar-border-width      border width of an item                      (default: $shp-border-width on Outline, 0 otherwise)
 //   --bit-SnackBar-radius            corner radius of an item                     (default: $shp-radius-popup)
 //   --bit-SnackBar-shadow            elevation of an item                         (default: $box-shadow-snackbar)
-//   --bit-SnackBar-padding           inner padding of an item                     (default: per Size)
-//   --bit-SnackBar-title-font-size   text size of the title                       (default: per Size)
+//   --bit-SnackBar-padding           inner padding of an item                     (default: spacing(1.25))
+//   --bit-SnackBar-title-font-size   text size of the title                       (default: $tg-fs-md)
 //   --bit-SnackBar-title-font-weight weight of the title                          (default: $tg-fw-medium)
-//   --bit-SnackBar-body-font-size    text size of the body                        (default: per Size)
+//   --bit-SnackBar-body-font-size    text size of the body                        (default: $tg-fs-sm)
 //   --bit-SnackBar-icon-color        color of the leading icon and the spinner    (default: the text color)
-//   --bit-SnackBar-icon-size         size of the leading icon and the spinner     (default: per Size)
+//   --bit-SnackBar-icon-size         size of the leading icon and the spinner     (default: $siz-icon-md)
 //   --bit-SnackBar-progress-color    color of the countdown bar                   (default: the text color)
 //   --bit-SnackBar-progress-height   thickness of the countdown bar               (default: $siz-track-md)
+//
+// A parameter wins over the variable that restyles what it sets: the explicit Color of an item over the color, the
+// background and the border color its role paints (the variables keep what a Color leaves alone - the page surface
+// the Outline and Text variants float on, and the transparent border of Text), and an explicit Size over the
+// padding, the two font sizes and the icon size. The variables restyle the default, not a choice - which is why
+// Color and Size publish nothing while they are left unset: a class that always carried the default would be
+// indistinguishable from one that was asked for.
 
 .bit-snb {
     width: 100%;
@@ -99,18 +106,36 @@
     pointer-events: all;
     box-sizing: border-box;
     flex-flow: column nowrap;
-    gap: var(--bit-snb-gap);
+    gap: var(--bit-snb-gap, #{spacing(1)});
     font-family: $tg-font-family;
     justify-content: space-between;
     border-style: $shp-border-style;
-    color: var(--bit-SnackBar-color, var(--bit-snb-clr));
-    padding: var(--bit-SnackBar-padding, var(--bit-snb-pad));
+    // The colors are resolved per variant (see .bit-snb-fil), where the Color of the item and the public variables are
+    // ranked against each other.
+    color: var(--bit-snb-clr);
+    padding: var(--bit-snb-pad, var(--bit-SnackBar-padding, #{spacing(1.25)}));
     box-shadow: var(--bit-SnackBar-shadow, #{$box-shadow-snackbar});
     border-radius: var(--bit-SnackBar-radius, #{$shp-radius-popup});
     border-width: var(--bit-SnackBar-border-width, var(--bit-snb-brd-w));
-    border-color: var(--bit-SnackBar-border-color, var(--bit-snb-clr-brd));
-    background-color: var(--bit-SnackBar-background, var(--bit-snb-clr-bg));
+    border-color: var(--bit-snb-clr-brd);
+    background-color: var(--bit-snb-clr-bg);
     animation: var(--bit-snb-ent) var(--bit-snb-dur) $mot-easing-decelerate;
+
+    // The values the Color and Size classes publish start out unset on every item - rather than inherited from an item
+    // of a snack bar this one sits inside - and those classes, declared further down at the same weight, still win on
+    // the item that carries them. Left unset, each sends the var() reading it on to the public variable and then to
+    // the default, which is what lets an explicit parameter outrank the variable while an unset one leaves the
+    // variable in charge.
+    --bit-snb-bg: initial;
+    --bit-snb-fg: initial;
+    --bit-snb-clr-txt: initial;
+    --bit-snb-gap: initial;
+    --bit-snb-pad: initial;
+    --bit-snb-hdr-gap: initial;
+    --bit-snb-ttl-fs: initial;
+    --bit-snb-bdy-fs: initial;
+    --bit-snb-ico-fs: initial;
+    --bit-snb-cbt-size: initial;
 
     // The horizontal half of the gesture belongs to the swipe (SwipeToDismiss) rather than to the browser, while
     // a vertical drag stays the page's scroll. Declared unconditionally so the item never changes behaviour
@@ -287,7 +312,7 @@
     display: flex;
     flex-direction: row;
     align-items: flex-start;
-    gap: var(--bit-snb-hdr-gap);
+    gap: var(--bit-snb-hdr-gap, #{spacing(1.25)});
     justify-content: space-between;
 }
 
@@ -298,7 +323,7 @@
 
 .bit-snb-ico {
     color: var(--bit-SnackBar-icon-color, currentcolor);
-    font-size: var(--bit-SnackBar-icon-size, var(--bit-snb-ico-fs));
+    font-size: var(--bit-snb-ico-fs, var(--bit-SnackBar-icon-size, #{$siz-icon-md}));
 }
 
 // The spinner of a loading item stands where the icon would, at the size of the icon, so an item keeps its shape
@@ -306,26 +331,26 @@
 .bit-snb-spn {
     display: block;
     color: var(--bit-SnackBar-icon-color, currentcolor);
-    @include spinner-ring(var(--bit-SnackBar-icon-size, var(--bit-snb-ico-fs)), currentcolor, translucent(currentcolor, 30%));
+    @include spinner-ring(var(--bit-snb-ico-fs, var(--bit-SnackBar-icon-size, #{$siz-icon-md})), currentcolor, translucent(currentcolor, 30%));
 }
 
 .bit-snb-ttl {
     min-width: 0;
     flex-grow: 1;
     overflow-wrap: anywhere;
-    font-size: var(--bit-SnackBar-title-font-size, var(--bit-snb-ttl-fs));
+    font-size: var(--bit-snb-ttl-fs, var(--bit-SnackBar-title-font-size, #{$tg-fs-md}));
     font-weight: var(--bit-SnackBar-title-font-weight, #{$tg-fw-medium});
 }
 
 .bit-snb-bdy {
     overflow-wrap: anywhere;
-    font-size: var(--bit-SnackBar-body-font-size, var(--bit-snb-bdy-fs));
+    font-size: var(--bit-snb-bdy-fs, var(--bit-SnackBar-body-font-size, #{$tg-fs-sm}));
 }
 
 .bit-snb-act {
     display: flex;
     flex-flow: row wrap;
-    gap: var(--bit-snb-gap);
+    gap: var(--bit-snb-gap, #{spacing(1)});
     justify-content: flex-end;
 }
 
@@ -349,11 +374,11 @@
 
     // The glyph alone is a target of about 16px, well under what a finger can be expected to hit; the button is
     // given the height of a control of the same size class so the whole of it is the target (WCAG 2.5.8).
-    min-width: var(--bit-snb-cbt-size);
-    min-height: var(--bit-snb-cbt-size);
+    min-width: var(--bit-snb-cbt-size, #{$siz-ctrl-md});
+    min-height: var(--bit-snb-cbt-size, #{$siz-ctrl-md});
 
     > i {
-        font-size: var(--bit-snb-ico-fs);
+        font-size: var(--bit-snb-ico-fs, #{$siz-icon-md});
     }
 
     // The button sits on the item's own fill, so the states are tinted from the color already on it rather than
@@ -377,7 +402,9 @@
     }
 }
 
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only by the
+// explicit Color of an item; an unset one is the Info role, which the variant classes spell out after the public
+// variables.
 // (The hand-written run this replaces declared .bit-snb-pbg twice; the byte-identical duplicate
 // rule was dropped - identical declarations twice have no cascade effect.)
 @each $role, $tokens in $bit-color-roles {
@@ -393,30 +420,32 @@
     }
 }
 
-// The variants only resolve the slots the item paints with, so a public variable read on the item wins over every
-// one of them alike.
+// The variants resolve the slots the item paints with. Each color the Color role paints is read from the role first -
+// published only by an explicit Color (see .bit-snb-itm) - then from the public variables, then from the Info role
+// an unset Color stands for; a color the role leaves alone (the page surface of Outline and Text, the transparent
+// border of Text) is the variables' alone.
 .bit-snb-fil {
     --bit-snb-brd-w: 0px;
-    --bit-snb-clr: var(--bit-snb-fg);
-    --bit-snb-clr-bg: var(--bit-snb-bg);
-    --bit-snb-clr-brd: var(--bit-snb-bg);
+    --bit-snb-clr: var(--bit-snb-fg, var(--bit-SnackBar-color, #{$clr-inf-text}));
+    --bit-snb-clr-bg: var(--bit-snb-bg, var(--bit-SnackBar-background, #{$clr-inf}));
+    --bit-snb-clr-brd: var(--bit-snb-bg, var(--bit-SnackBar-border-color, #{$clr-inf}));
 }
 
 // A snack bar floats over whatever the page is showing, so the two variants that give up the filled
 // background take the neutral surface rather than transparency - the text of a notification has to stay
 // readable over the content it covers.
 .bit-snb-otl {
-    --bit-snb-clr: var(--bit-snb-clr-txt);
-    --bit-snb-clr-bg: #{$clr-bg-pri};
-    --bit-snb-clr-brd: var(--bit-snb-bg);
+    --bit-snb-clr: var(--bit-snb-clr-txt, var(--bit-SnackBar-color, #{$clr-inf-fg}));
+    --bit-snb-clr-bg: var(--bit-SnackBar-background, #{$clr-bg-pri});
+    --bit-snb-clr-brd: var(--bit-snb-bg, var(--bit-SnackBar-border-color, #{$clr-inf}));
     --bit-snb-brd-w: #{$shp-border-width};
 }
 
 .bit-snb-txt {
     --bit-snb-brd-w: 0px;
-    --bit-snb-clr: var(--bit-snb-clr-txt);
-    --bit-snb-clr-bg: #{$clr-bg-pri};
-    --bit-snb-clr-brd: transparent;
+    --bit-snb-clr: var(--bit-snb-clr-txt, var(--bit-SnackBar-color, #{$clr-inf-fg}));
+    --bit-snb-clr-bg: var(--bit-SnackBar-background, #{$clr-bg-pri});
+    --bit-snb-clr-brd: var(--bit-SnackBar-border-color, transparent);
 }
 
 // forced-colors: the fill that tells a snack bar apart from the page it floats over is stripped in High Contrast
@@ -447,7 +476,8 @@
 }
 
 // The body follows the type ramp of the size classes (sm -> xs, md -> sm, lg -> md) and the title sits one step
-// above it, so the two read as a heading and its text at every size.
+// above it, so the two read as a heading and its text at every size. Published only by an explicit Size; an unset
+// one is the medium item, which the reads of these spell out (after the public variables, where there is one).
 .bit-snb-sm {
     --bit-snb-gap: #{spacing(0.75)};
     --bit-snb-pad: #{spacing(1)};

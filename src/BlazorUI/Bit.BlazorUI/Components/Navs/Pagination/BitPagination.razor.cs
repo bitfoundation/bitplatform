@@ -197,6 +197,10 @@ public partial class BitPagination : BitComponentBase
     /// <summary>
     /// The general color of the pagination.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Pagination-*</c> button, selected and focus color variables; left
+    /// unset, the pagination is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -693,6 +697,10 @@ public partial class BitPagination : BitComponentBase
     /// <summary>
     /// The size of the buttons.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-Pagination-font-size</c> and <c>--bit-Pagination-button-size</c>; left
+    /// unset, the pagination is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -773,6 +781,8 @@ public partial class BitPagination : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-Pagination-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => Color switch
         {
             BitColor.Primary => "bit-pgn-pri",
@@ -783,16 +793,10 @@ public partial class BitPagination : BitComponentBase
             BitColor.Warning => "bit-pgn-wrn",
             BitColor.SevereWarning => "bit-pgn-swr",
             BitColor.Error => "bit-pgn-err",
-            _ => "bit-pgn-pri"
+            _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-pgn-sm",
-            BitSize.Medium => "bit-pgn-md",
-            BitSize.Large => "bit-pgn-lg",
-            _ => "bit-pgn-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-pgn"));
 
         ClassBuilder.Register(() => Rounded ? "bit-pgn-rnd" : string.Empty);
 
@@ -925,7 +929,7 @@ public partial class BitPagination : BitComponentBase
 
             if (_IsHidden is false && ShowPageSizeSelector)
             {
-                await Focus(_pageSizeSelectRef);
+                await _pageSizeSelectRef.FocusSafelyAsync();
             }
         }
 
@@ -967,13 +971,13 @@ public partial class BitPagination : BitComponentBase
                 case FocusTarget.SelectedPage:
                     if (_pageRefs.TryGetValue(_SelectedPage, out var pageRef))
                     {
-                        await Focus(pageRef);
+                        await pageRef.FocusSafelyAsync();
                     }
                     break;
-                case FocusTarget.First: await Focus(_firstButtonRef); break;
-                case FocusTarget.Previous: await Focus(_previousButtonRef); break;
-                case FocusTarget.Next: await Focus(_nextButtonRef); break;
-                case FocusTarget.Last: await Focus(_lastButtonRef); break;
+                case FocusTarget.First: await _firstButtonRef.FocusSafelyAsync(); break;
+                case FocusTarget.Previous: await _previousButtonRef.FocusSafelyAsync(); break;
+                case FocusTarget.Next: await _nextButtonRef.FocusSafelyAsync(); break;
+                case FocusTarget.Last: await _lastButtonRef.FocusSafelyAsync(); break;
             }
         }
 

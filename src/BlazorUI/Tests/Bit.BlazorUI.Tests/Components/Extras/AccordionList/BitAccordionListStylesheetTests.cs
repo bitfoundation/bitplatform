@@ -108,6 +108,23 @@ public class BitAccordionListStylesheetTests : BunitTestContext
         StringAssert.Contains(root.GetAttribute("style"), "gap:16px");
     }
 
+    [TestMethod]
+    public void BitAccordionListShouldLetAParameterWinOverItsPublicVariable()
+    {
+        var stylesheet = SourceFiles.StripScssComments(ReadStylesheet());
+        var divider = SourceFiles.GetScssBlock(stylesheet, "> .bit-acl-itm ~ .bit-acl-itm > .bit-acd {");
+
+        // The shared line is the top border of the lower item, so an explicit Border - whose class on the item has put
+        // its color in --bit-acd-brd - paints it, while the divider variable restyles the line of an unset one.
+        StringAssert.Contains(divider, "border-block-start-color: var(--bit-AccordionList-divider-color, var(--bit-acd-brd));");
+        var bordered = SourceFiles.GetScssBlock(divider, "&:is(.bit-acd-pbr, .bit-acd-sbr, .bit-acd-tbr, .bit-acd-rbr) {");
+        StringAssert.Contains(bordered, "border-block-start-color: var(--bit-acd-brd);");
+        Assert.IsFalse(bordered.Contains("--bit-AccordionList-divider-color"), "The divider variable wins over an explicit Border.");
+
+        // The borderless rule comes after it at the same weight, so NoBorder keeps drawing a divider of its own.
+        Assert.IsTrue(divider.IndexOf("&:is(", System.StringComparison.Ordinal) < divider.IndexOf("&.bit-acd-nbd {", System.StringComparison.Ordinal));
+    }
+
     private static string ReadStylesheet()
     {
         return SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "AccordionList", "BitAccordionList.scss");

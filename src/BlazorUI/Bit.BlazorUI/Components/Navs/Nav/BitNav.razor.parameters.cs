@@ -6,6 +6,11 @@ public partial class BitNav<TItem>
     /// The accent color of the nav: the background of the hovered and the selected item. A background,
     /// foreground or border role tints the item, while a semantic role fills it and recolors its content.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Nav-*</c> hover, pressed and selected variables (and, for a semantic
+    /// role, over the icon and description colors of an accented item); left unset, the nav takes the
+    /// <see cref="BitColor.PrimaryBackground"/> accent unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Accent { get; set; }
 
@@ -51,6 +56,10 @@ public partial class BitNav<TItem>
     /// <summary>
     /// The general color of the nav that is only used for colored parts like icons.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-Nav-icon-color</c> and <c>--bit-Nav-indicator-color</c>; left unset, the
+    /// nav is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -221,6 +230,10 @@ public partial class BitNav<TItem>
     /// <summary>
     /// The size of the nav items.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Nav-*</c> size variables (font, icon, description and header sizes,
+    /// item and header heights); left unset, the nav is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 

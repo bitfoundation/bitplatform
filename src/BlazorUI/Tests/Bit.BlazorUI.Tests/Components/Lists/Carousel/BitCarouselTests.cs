@@ -171,6 +171,28 @@ public partial class BitCarouselTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCarouselShouldPublishNoColorAccentOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitCarousel>();
+
+        // An unset Color, Accent or Size publishes nothing, so the public --bit-Carousel-* variables restyle the
+        // default while an explicit value - which does publish its class - wins over them.
+        var root = component.Find(".bit-csl");
+        var published = new[]
+        {
+            "bit-csl-pri", "bit-csl-sec", "bit-csl-ter", "bit-csl-inf", "bit-csl-suc", "bit-csl-wrn", "bit-csl-swr", "bit-csl-err",
+            "bit-csl-pbg", "bit-csl-sbg", "bit-csl-tbg", "bit-csl-pfg", "bit-csl-sfg", "bit-csl-tfg", "bit-csl-pbr", "bit-csl-sbr", "bit-csl-tbr",
+            "bit-csl-apri", "bit-csl-asec", "bit-csl-ater", "bit-csl-atra",
+            "bit-csl-sm", "bit-csl-md", "bit-csl-lg",
+        };
+
+        foreach (var cssClass in published)
+        {
+            Assert.IsFalse(root.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+        }
+    }
+
+    [TestMethod]
     [DataRow(BitColor.Primary, "bit-csl-pri")]
     [DataRow(BitColor.Secondary, "bit-csl-sec")]
     [DataRow(BitColor.Tertiary, "bit-csl-ter")]

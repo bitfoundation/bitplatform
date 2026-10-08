@@ -194,6 +194,55 @@ public class BitPersonaStylesheetTests
         Assert.IsTrue(ZIndex(GetRule(rules, "pre")) > ZIndex(GetRule(rules, "abt")), "The opaque action button would hide the presence dot where the two overlap.");
     }
 
+    [TestMethod]
+    public void BitPersonaShouldLetAParameterWinOverItsPublicVariable()
+    {
+        var rules = GetRules(ReadStylesheet());
+
+        // An explicit CoinColor (or the one AutoCoinColor picks) publishes the pair, so it is read before the variables,
+        // which only restyle the Info coin an unset one stands for - the Active ring included, which is the coin's color.
+        StringAssert.Contains(rules, "--bit-prs-coin-bg: var(--bit-prs-coin-clr-bg, var(--bit-Persona-coin-background, #{$clr-inf}));");
+        StringAssert.Contains(rules, "--bit-prs-coin-clr: var(--bit-prs-coin-clr-txt, var(--bit-Persona-coin-color, #{$clr-inf-text}));");
+        Assert.AreEqual(2, Regex.Matches(rules, Regex.Escape("var(--bit-prs-coin-clr-bg, var(--bit-Persona-ring-color, var(--bit-prs-coin-bg)))")).Count);
+
+        // So does an explicit Shape (or Squared), and an explicit Pill has a class of its own to say so.
+        Assert.AreEqual(2, Regex.Matches(rules, Regex.Escape("border-radius: var(--bit-prs-coin-radius, var(--bit-Persona-coin-radius, 50%));")).Count);
+        StringAssert.Contains(GetRule(rules, "cir"), "--bit-prs-coin-radius: 50%;");
+
+        // So does an explicit Size, which alone hands over what its size class publishes for the gap and the active
+        // ring; an unset one is laid out as Size48, whose values come after the variables.
+        StringAssert.Contains(rules, "gap: var(--bit-prs-gap, var(--bit-Persona-gap, var(--bit-prs-sz-gap)));");
+        Assert.AreEqual(5, Regex.Matches(rules, Regex.Escape("var(--bit-prs-ring-gap, var(--bit-Persona-ring-gap, var(--bit-prs-sz-ring-gap)))")).Count);
+        Assert.AreEqual(2, Regex.Matches(rules, Regex.Escape("var(--bit-prs-ring-width, var(--bit-Persona-ring-width, var(--bit-prs-sz-ring-width)))")).Count);
+        var explicitSize = GetRule(rules, "ssz");
+        StringAssert.Contains(explicitSize, "--bit-prs-gap: var(--bit-prs-sz-gap);");
+        StringAssert.Contains(explicitSize, "--bit-prs-ring-gap: var(--bit-prs-sz-ring-gap);");
+        StringAssert.Contains(explicitSize, "--bit-prs-ring-width: var(--bit-prs-sz-ring-width);");
+        Assert.IsFalse(Regex.IsMatch(GetRule(rules, "s48"), @"--bit-prs-(gap|ring-gap|ring-width):"), "A size class hands its gap over as a choice.");
+
+        Assert.IsFalse(Regex.IsMatch(rules, @"var\(--bit-Persona-[a-z-]+, var\(--bit-prs-(coin-clr-bg|coin-clr-txt|coin-radius|gap|ring-gap|ring-width)\)"), "A public variable is read before the parameter it restyles the default of.");
+    }
+
+    [TestMethod]
+    public void BitPersonaShouldPublishItsCoinColorAndShapeOnlyWhereTheyAreSet()
+    {
+        var rules = GetRules(ReadStylesheet());
+
+        // A persona can sit in the template of another one, which must not inherit the outer persona's coin color or
+        // shape: each root starts the values those classes publish out unset, and the classes - declared further down
+        // at the same weight - still win on the root that carries them.
+        StringAssert.Contains(SourceFiles.GetScssBlock(rules, "\n.bit-prs {"), "--bit-prs-coin-radius: initial;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(rules, "\n.bit-prs {"), "--bit-prs-gap: initial;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(rules, "\n.bit-prs {"), "--bit-prs-ring-gap: initial;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(rules, "\n.bit-prs {"), "--bit-prs-ring-width: initial;");
+        Assert.IsTrue(rules.IndexOf("\n.bit-prs-s120 {") < rules.IndexOf("\n.bit-prs-ssz {"), "The explicit size comes before a size class it reads.");
+
+        var colors = rules[rules.IndexOf("\n.bit-prs {\n    --bit-prs-coin-clr-bg: initial;")..];
+        StringAssert.Contains(colors, "--bit-prs-coin-clr-txt: initial;");
+        Assert.IsTrue(colors.IndexOf("--bit-prs-coin-clr-bg: initial;") < colors.IndexOf("\n.bit-prs-pri {"), "A color class comes before the reset it has to win over.");
+        Assert.IsTrue(rules.IndexOf("\n.bit-prs {") < rules.IndexOf("\n.bit-prs-cir {"), "A shape class comes before the reset it has to win over.");
+    }
+
     /// <summary>
     /// The stylesheet with its leading comment block cut off, so a name documented there is not mistaken for one read.
     /// </summary>

@@ -1419,20 +1419,16 @@ public class BitDatePickerTests : BunitTestContext
     // ── Color & Size ──────────────────────────────────────────────────────────
 
     [TestMethod,
-        DataRow(null, "bit-dtp-pri"),
         DataRow(BitColor.Primary, "bit-dtp-pri"),
         DataRow(BitColor.Secondary, "bit-dtp-sec"),
         DataRow(BitColor.Success, "bit-dtp-suc"),
         DataRow(BitColor.Error, "bit-dtp-err"),
         DataRow(BitColor.TertiaryBorder, "bit-dtp-tbr")]
-    public void BitDatePickerShouldRespectColor(BitColor? color, string expectedClass)
+    public void BitDatePickerShouldRespectColor(BitColor color, string expectedClass)
     {
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
-            if (color.HasValue)
-            {
-                parameters.Add(p => p.Color, color.Value);
-            }
+            parameters.Add(p => p.Color, color);
         });
 
         Assert.IsTrue(component.Find(".bit-dtp").ClassList.Contains(expectedClass));
@@ -1465,6 +1461,30 @@ public class BitDatePickerTests : BunitTestContext
         Assert.IsFalse(classList.Contains("bit-dtp-sm"));
         Assert.IsFalse(classList.Contains("bit-dtp-md"));
         Assert.IsFalse(classList.Contains("bit-dtp-lg"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitDatePicker>();
+
+        // An unset Color or Size publishes nothing - on the root or on the callout rendered outside it - so the public
+        // --bit-DatePicker-* variables restyle the default while an explicit value, which does publish its class, wins
+        // over them.
+        var published = new[]
+        {
+            "bit-dtp-pri", "bit-dtp-sec", "bit-dtp-ter", "bit-dtp-inf", "bit-dtp-suc", "bit-dtp-wrn", "bit-dtp-swr", "bit-dtp-err",
+            "bit-dtp-pbg", "bit-dtp-sbg", "bit-dtp-tbg", "bit-dtp-pfg", "bit-dtp-sfg", "bit-dtp-tfg", "bit-dtp-pbr", "bit-dtp-sbr", "bit-dtp-tbr",
+            "bit-dtp-sm", "bit-dtp-md", "bit-dtp-lg",
+        };
+
+        foreach (var element in new[] { component.Find(".bit-dtp"), component.Find(".bit-dtp-cal") })
+        {
+            foreach (var cssClass in published)
+            {
+                Assert.IsFalse(element.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+            }
+        }
     }
 
     // ── MonthPicker visibility ────────────────────────────────────────────────
@@ -4690,7 +4710,7 @@ public class BitDatePickerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDatePickerCalloutShouldInheritThePublicCssVariablesOfTheStyle()
+    public void BitDatePickerCalloutAndOverlayShouldCarryOnlyTheirOwnStyleWhileTheRootKeepsTheWholeStyle()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
@@ -4700,21 +4720,75 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.Styles, new BitDatePickerClassStyles
             {
                 Root = "--bit-DatePicker-callout-radius:1rem",
-                Callout = "--bit-DatePicker-day-radius:2px"
+                Callout = "--bit-DatePicker-day-radius:2px",
+                Overlay = "opacity:.5"
             });
         });
 
-        var callout = component.Find(".bit-dtp-cal").GetAttribute("style")!;
+        // Nothing of the root's style is written onto the popup any more: Callouts.ts carries it into the chain
+        // the callout and the overlay are relocated into, so they hold exactly what the component composes.
+        Assert.AreEqual("--bit-DatePicker-day-radius:2px", component.Find(".bit-dtp-cal").GetAttribute("style"));
+        Assert.AreEqual("display:none;opacity:.5", component.Find(".bit-dtp-ovl").GetAttribute("style"));
 
-        StringAssert.Contains(callout, "--bit-DatePicker-today-background:red;");
-        StringAssert.Contains(callout, "--bit-DatePicker-callout-radius:1rem;");
-        Assert.IsFalse(callout.Contains("margin"), callout);
+        // ... and the root keeps everything it was given.
+        var root = component.Find(".bit-dtp").GetAttribute("style");
+        Assert.IsNotNull(root);
+        StringAssert.Contains(root, "margin:1rem");
+        StringAssert.Contains(root, "--bit-DatePicker-day-radius:0");
+        StringAssert.Contains(root, "--bit-DatePicker-today-background:red");
+        StringAssert.Contains(root, "--bit-DatePicker-callout-radius:1rem");
+    }
 
-        // Styles.Callout comes after the copy, so a value written for the callout wins.
-        Assert.IsTrue(callout.IndexOf("--bit-DatePicker-day-radius:0", StringComparison.Ordinal) <
-                      callout.IndexOf("--bit-DatePicker-day-radius:2px", StringComparison.Ordinal));
+    [TestMethod]
+    public void BitDatePickerShouldKeepItsFocusedStyleOutOfThePopupStyle()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
-        StringAssert.Contains(component.Find(".bit-dtp-ovl").GetAttribute("style")!, "--bit-DatePicker-today-background:red;");
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Style, "--bit-DatePicker-today-background:red");
+            parameters.Add(p => p.Styles, new BitDatePickerClassStyles
+            {
+                Root = "--bit-DatePicker-callout-radius:1rem",
+                Focused = "--bit-DatePicker-border-color:green"
+            });
+        });
+
+        // Without a passing state applied, the root's style is all there is, and Callouts.ts reads it from there.
+        Assert.IsFalse(component.Find(".bit-dtp").HasAttribute("data-bit-popup-style"));
+
+        component.Find(".bit-dtp-wrp input").FocusIn();
+
+        // Focused comes and goes as the focus moves between the field and the calendar, so the root names the
+        // style it has without it for the chain the calendar is relocated into to copy instead.
+        var root = component.Find(".bit-dtp");
+        StringAssert.Contains(root.GetAttribute("style"), "--bit-DatePicker-border-color:green");
+        Assert.AreEqual("--bit-DatePicker-callout-radius:1rem;--bit-DatePicker-today-background:red", root.GetAttribute("data-bit-popup-style"));
+
+        component.Find(".bit-dtp-wrp input").FocusOut();
+
+        Assert.IsFalse(component.Find(".bit-dtp").HasAttribute("data-bit-popup-style"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldNameItsRootWhenItTogglesTheCallout()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Style, "--bit-DatePicker-today-background:red");
+        });
+
+        component.Find(".bit-dtp-wrp").Click();
+
+        // The root is what Callouts.ts copies into the chain it relocates the callout and the overlay into,
+        // which is how the public variables of the instance still reach them once they sit under the body.
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+        var rootId = component.Find(".bit-dtp").Id;
+
+        Assert.IsFalse(string.IsNullOrEmpty(rootId));
+        Assert.AreEqual(rootId, toggle.Arguments[^1]);
     }
 
     [TestMethod]
@@ -4732,7 +4806,7 @@ public class BitDatePickerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDatePickerStandaloneMessagesShouldInheritThePublicCssVariablesOfTheStyle()
+    public void BitDatePickerStandaloneShouldCarryThePublicCssVariablesOfTheStyleOntoTheCalendarAndTheMessages()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
@@ -4740,10 +4814,66 @@ public class BitDatePickerTests : BunitTestContext
         {
             parameters.Add(p => p.Standalone, true);
             parameters.Add(p => p.Description, "Pick a weekday.");
-            parameters.Add(p => p.Style, "--bit-DatePicker-description-color:red");
+            parameters.Add(p => p.Style, "margin:1rem;--bit-DatePicker-description-color:red");
+            parameters.Add(p => p.Styles, new BitDatePickerClassStyles { Root = "--bit-DatePicker-accent-color:blue", Callout = "padding:2px", DescriptionContainer = "padding:1px" });
         });
 
-        StringAssert.Contains(component.Find(".bit-dtp-des").GetAttribute("style")!, "--bit-DatePicker-description-color:red;");
+        // A standalone calendar is never relocated, so the chain Callouts.ts carries the root's declarations through
+        // is never built for it: the public variables of Style and Styles.Root are copied onto it, and onto the
+        // messages that follow it, ahead of the part's own style - and nothing else of the Style travels.
+        Assert.AreEqual("--bit-DatePicker-description-color:red;--bit-DatePicker-accent-color:blue;padding:2px", component.Find(".bit-dtp-cal").GetAttribute("style"));
+        Assert.AreEqual("--bit-DatePicker-description-color:red;--bit-DatePicker-accent-color:blue;padding:1px", component.Find(".bit-dtp-des").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldCopyNothingOntoTheCalendarUnlessItIsStandalone()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Style, "--bit-DatePicker-accent-color:blue");
+            parameters.Add(p => p.Styles, new BitDatePickerClassStyles { Callout = "padding:2px" });
+        });
+
+        Assert.AreEqual("padding:2px", component.Find(".bit-dtp-cal").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerStandaloneShouldKeepASemicolonInsideAValueWhenItCopiesTheVariables()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Style, "--bit-DatePicker-today-background:url(data:image/png;base64,AAA);color:blue;--bit-DatePicker-accent-color:'a;b'");
+            parameters.Add(p => p.Styles, new BitDatePickerClassStyles { Callout = "padding:2px" });
+        });
+
+        // A semicolon inside brackets or quotes is part of the value: cut there, the copy would leave an unclosed url(
+        // or quote that swallows everything written after it on the calendar, its own style included.
+        Assert.AreEqual("--bit-DatePicker-today-background:url(data:image/png;base64,AAA);--bit-DatePicker-accent-color:'a;b';padding:2px",
+                        component.Find(".bit-dtp-cal").GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerStandaloneShouldFollowAChangeOfItsStyle()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Style, "--bit-DatePicker-accent-color:red");
+        });
+
+        Assert.AreEqual("--bit-DatePicker-accent-color:red;", component.Find(".bit-dtp-cal").GetAttribute("style"));
+
+        // What was picked out of the Style is remembered between renders, so a new Style has to replace it.
+        component.Render(parameters => parameters.Add(p => p.Style, "--bit-DatePicker-accent-color:blue"));
+
+        Assert.AreEqual("--bit-DatePicker-accent-color:blue;", component.Find(".bit-dtp-cal").GetAttribute("style"));
     }
 
     // The component counts months with CultureInfo.Calendar, which has no public setter and is not

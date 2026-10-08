@@ -8,13 +8,13 @@
 //   --bit-Toggle-hover-track-background      track fill on hover while off                 (default: as the track fill at rest)
 //   --bit-Toggle-hover-track-border-color    track stroke on hover while off               (default: $clr-brd-pri-hover)
 //   --bit-Toggle-hover-thumb-color           the knob on hover while off                   (default: $clr-fg-sec-hover)
-//   --bit-Toggle-checked-background          track fill while on                           (default: the role's main color)
+//   --bit-Toggle-checked-background          track fill while on                           (default: $clr-pri)
 //   --bit-Toggle-checked-border-color        track stroke while on                         (default: transparent)
-//   --bit-Toggle-checked-thumb-color         the knob while on                             (default: the role's on-color)
-//   --bit-Toggle-checked-hover-background    track fill on hover while on                  (default: the role's hover color)
+//   --bit-Toggle-checked-thumb-color         the knob while on                             (default: $clr-pri-text)
+//   --bit-Toggle-checked-hover-background    track fill on hover while on                  (default: $clr-pri-hover)
 //   --bit-Toggle-icon-color                  the glyph inside the knob, in both states     (default: the track fill behind the knob)
 //   --bit-Toggle-spinner-color               the spinner's moving arc                      (default: as the glyph it replaces)
-//   --bit-Toggle-content-color               the content carried inside the track          (default: $clr-fg-sec off, the role's on-color on)
+//   --bit-Toggle-content-color               the content carried inside the track          (default: $clr-fg-sec off, $clr-pri-text on)
 //   --bit-Toggle-label-color                 the label beside the knob                     (default: $clr-fg-pri)
 //   --bit-Toggle-text-color                  the state text beside the knob                (default: inherited from the page)
 //   --bit-Toggle-description-color           the description line under the toggle         (default: $clr-fg-sec)
@@ -27,13 +27,13 @@
 //                                            message and focus ring while the state
 //                                            is invalid                                    (default: $clr-err)
 //   --bit-Toggle-required-color              the asterisk of a required toggle             (default: $clr-req)
-//   --bit-Toggle-focus-color                 focus ring color                              (default: the role's focus color)
+//   --bit-Toggle-focus-color                 focus ring color                              (default: $clr-pri-focus)
 //   --bit-Toggle-track-width                 smallest width of the track; it still grows
-//                                            to fit whatever content it carries            (default: per size, $siz-switch-w-*, stepped up when the knob holds a glyph)
-//   --bit-Toggle-track-height                height of the track                           (default: per size, $siz-switch-h-*, stepped up when the knob holds a glyph)
+//                                            to fit whatever content it carries            (default: $siz-switch-w-md, stepped up when the knob holds a glyph)
+//   --bit-Toggle-track-height                height of the track                           (default: $siz-switch-h-md, stepped up when the knob holds a glyph)
 //   --bit-Toggle-track-radius                corner radius of the track and its focus ring (default: half its height, i.e. a pill)
 //   --bit-Toggle-border-width                thickness of the track stroke                 (default: $shp-border-width)
-//   --bit-Toggle-thumb-size                  diameter of the knob                          (default: per size, $siz-switch-thumb-*, stepped up when it holds a glyph)
+//   --bit-Toggle-thumb-size                  diameter of the knob                          (default: $siz-switch-thumb-md, stepped up when it holds a glyph)
 //   --bit-Toggle-thumb-radius                corner radius of the knob                     (default: 50%, i.e. a circle)
 //   --bit-Toggle-thumb-inset                 room between the knob and the stroke, on
 //                                            every side of it                              (default: derived from the track height and the knob)
@@ -46,15 +46,25 @@
 //                                            label, the track and the state text, and the
 //                                            toggle and the lines under it                 (default: spacing(1))
 //   --bit-Toggle-content-padding             inset of the track content from the ends of
-//                                            the track                                     (default: per size)
-//   --bit-Toggle-label-font-size             the label                                     (default: per size, from the type ramp)
+//                                            the track                                     (default: spacing(0.375))
+//   --bit-Toggle-label-font-size             the label                                     (default: $tg-fs-sm)
 //   --bit-Toggle-label-font-weight           the label                                     (default: $tg-fw-semibold)
-//   --bit-Toggle-text-font-size              the state text                                (default: per size, from the type ramp)
-//   --bit-Toggle-description-font-size       the description                               (default: per size, one step below the label)
-//   --bit-Toggle-error-font-size             the error message line                        (default: as the description)
-//   --bit-Toggle-content-font-size           the content carried inside the track          (default: per size, from the type ramp)
+//   --bit-Toggle-text-font-size              the state text                                (default: inherited from the page)
+//   --bit-Toggle-description-font-size       the description                               (default: $tg-fs-xs)
+//   --bit-Toggle-error-font-size             the error message line                        (default: $tg-fs-xs)
+//   --bit-Toggle-content-font-size           the content carried inside the track          (default: $tg-fs-xs)
 //   --bit-Toggle-transition-duration         how long the knob takes to cross the track,
 //                                            and every color with it                       (default: $mot-duration-short, which is already 0 under reduced motion)
+//
+// A parameter written on the toggle wins over the variable that restyles what it sets: an explicit Color over
+// the colors of the checked state it paints - the track fill, its hover, the knob and the track content - and
+// over the focus ring, and an explicit Size over the track and knob geometry, the content padding and every
+// font size above. The variables restyle the default, not a choice - which is why Color and Size publish
+// nothing while they are left unset: a class that always carried the default would be indistinguishable from
+// one that was asked for. What a Color leaves alone - the whole unchecked look, the checked stroke, the glyph
+// and spinner colors that follow the track unless set, the disabled and error colors of the states - stays
+// the variables'. A state the toggle is in (checked, disabled, invalid) still picks which of them is read, as
+// before.
 
 .bit-tgl {
     display: flex;
@@ -84,15 +94,37 @@
     --bit-tgl-line-basis: auto;
     --bit-tgl-hds-width: fit-content;
 
+    // The values the Color and Size classes publish start out unset on every root, which those classes -
+    // declared further down at the same weight - still win over on the root that carries them. That keeps a
+    // toggle placed in the label, the track content or the description of another one from inheriting the
+    // outer one's choice, and it is what lets each read below rank an explicit parameter first, then the
+    // public variable, then the primary, medium toggle an unset parameter stands for.
+    --bit-tgl-clr: initial;
+    --bit-tgl-clr-hover: initial;
+    --bit-tgl-clr-text: initial;
+    --bit-tgl-clr-focus: initial;
+    --bit-tgl-gap: initial;
+    --bit-tgl-trk-w-base: initial;
+    --bit-tgl-trk-h-base: initial;
+    --bit-tgl-thb-size-base: initial;
+    --bit-tgl-trk-w-ico: initial;
+    --bit-tgl-trk-h-ico: initial;
+    --bit-tgl-thb-size-ico: initial;
+    --bit-tgl-cnn-fontsize: initial;
+    --bit-tgl-cnn-pad: initial;
+    --bit-tgl-lbl-fontsize: initial;
+    --bit-tgl-stx-fontsize: initial;
+    --bit-tgl-des-fontsize: initial;
+
     // The geometry of the switch. The track and the knob come from the theme's switch tokens through
     // the size classes below (which set the -base triple) and step up to the icon variant's floor
     // when the knob has to hold a glyph; the inset of the knob from the padding edge of the track is
     // derived from the two rather than being a knob of its own, so it holds the knob the same
     // distance from the stroke on every side of whatever geometry a theme asks for.
     --bit-tgl-brd-w: var(--bit-Toggle-border-width, #{$shp-border-width});
-    --bit-tgl-trk-w: var(--bit-Toggle-track-width, var(--bit-tgl-trk-w-base));
-    --bit-tgl-trk-h: var(--bit-Toggle-track-height, var(--bit-tgl-trk-h-base));
-    --bit-tgl-thb-size: var(--bit-Toggle-thumb-size, var(--bit-tgl-thb-size-base));
+    --bit-tgl-trk-w: var(--bit-tgl-trk-w-base, var(--bit-Toggle-track-width, #{$siz-switch-w-md}));
+    --bit-tgl-trk-h: var(--bit-tgl-trk-h-base, var(--bit-Toggle-track-height, #{$siz-switch-h-md}));
+    --bit-tgl-thb-size: var(--bit-tgl-thb-size-base, var(--bit-Toggle-thumb-size, #{$siz-switch-thumb-md}));
     --bit-tgl-pad: var(--bit-Toggle-thumb-inset, calc((var(--bit-tgl-trk-h) - var(--bit-tgl-thb-size)) / 2 - var(--bit-tgl-brd-w)));
     // The glyph and the spinner are measured off the knob that carries them rather than off a size class, so
     // a knob resized through --bit-Toggle-thumb-size keeps whatever it holds in proportion instead of leaving
@@ -187,10 +219,10 @@
         --bit-tgl-thb-clr: var(--bit-Toggle-hover-thumb-color, #{$clr-fg-sec-hover});
 
         &.bit-tgl-chk {
-            --bit-tgl-trk-clr-bg: var(--bit-Toggle-checked-hover-background, var(--bit-tgl-clr-hover));
+            --bit-tgl-trk-clr-bg: var(--bit-tgl-clr-hover, var(--bit-Toggle-checked-hover-background, #{$clr-pri-hover}));
             // the stroke of the checked track has no hover state of its own, so it keeps the resting one
             --bit-tgl-trk-clr-brd: var(--bit-Toggle-checked-border-color, transparent);
-            --bit-tgl-thb-clr: var(--bit-Toggle-checked-thumb-color, var(--bit-tgl-clr-text));
+            --bit-tgl-thb-clr: var(--bit-tgl-clr-text, var(--bit-Toggle-checked-thumb-color, #{$clr-pri-text}));
         }
     }
 }
@@ -314,7 +346,7 @@
     order: var(--bit-tgl-des-order);
     flex-basis: var(--bit-tgl-line-basis);
     color: var(--bit-Toggle-description-color, #{$clr-fg-sec});
-    font-size: var(--bit-Toggle-description-font-size, var(--bit-tgl-des-fontsize));
+    font-size: var(--bit-tgl-des-fontsize, var(--bit-Toggle-description-font-size, #{$tg-fs-xs}));
 }
 
 // The error message. It sits above the description in every shape - what is wrong with the state is the
@@ -326,7 +358,7 @@
     overflow-wrap: break-word;
     flex-basis: var(--bit-tgl-line-basis);
     color: var(--bit-Toggle-error-color, #{$clr-err});
-    font-size: var(--bit-Toggle-error-font-size, var(--bit-tgl-des-fontsize));
+    font-size: var(--bit-tgl-des-fontsize, var(--bit-Toggle-error-font-size, #{$tg-fs-xs}));
 }
 
 // A read-only or loading toggle stays focusable and legible, but nothing about it invites a click anymore.
@@ -355,7 +387,7 @@
 .bit-tgl-lbl {
     cursor: pointer;
     color: var(--bit-Toggle-label-color, #{$clr-fg-pri});
-    font-size: var(--bit-Toggle-label-font-size, var(--bit-tgl-lbl-fontsize));
+    font-size: var(--bit-tgl-lbl-fontsize, var(--bit-Toggle-label-font-size, #{$tg-fs-sm}));
     font-weight: var(--bit-Toggle-label-font-weight, #{$tg-field-label-font-weight});
 }
 
@@ -386,7 +418,7 @@
     height: var(--bit-tgl-trk-h);
     min-width: var(--bit-tgl-trk-w);
     padding-block: 0;
-    padding-inline: calc(var(--bit-tgl-pad) + var(--bit-tgl-thb-size) + var(--bit-tgl-gap)) var(--bit-tgl-pad);
+    padding-inline: calc(var(--bit-tgl-pad) + var(--bit-tgl-thb-size) + var(--bit-tgl-gap, #{spacing(0.25)})) var(--bit-tgl-pad);
     background: var(--bit-tgl-trk-clr-bg);
     border-radius: var(--bit-Toggle-track-radius, calc(var(--bit-tgl-trk-h) / 2));
     transition: background var(--bit-tgl-dur) $mot-easing,
@@ -395,7 +427,7 @@
     border: var(--bit-tgl-brd-w) $shp-border-style var(--bit-tgl-trk-clr-brd);
 
     &:focus-visible {
-        @include focus-ring(var(--bit-Toggle-focus-color, var(--bit-tgl-clr-focus, #{$clr-pri-focus})));
+        @include focus-ring(var(--bit-tgl-clr-focus, var(--bit-Toggle-focus-color, #{$clr-pri-focus})));
     }
 
     // WCAG 2.2 Target Size (Minimum) asks for 24x24 CSS pixels, which the small and medium tracks are shorter
@@ -485,8 +517,8 @@
     white-space: nowrap;
     justify-items: center;
     color: var(--bit-tgl-cnn-clr);
-    font-size: var(--bit-Toggle-content-font-size, var(--bit-tgl-cnn-fontsize));
-    padding-inline: var(--bit-Toggle-content-padding, var(--bit-tgl-cnn-pad));
+    font-size: var(--bit-tgl-cnn-fontsize, var(--bit-Toggle-content-font-size, #{$tg-fs-xs}));
+    padding-inline: var(--bit-tgl-cnn-pad, var(--bit-Toggle-content-padding, #{spacing(0.375)}));
     transition: color var(--bit-tgl-dur) $mot-easing;
 }
 
@@ -520,7 +552,7 @@
     user-select: none;
     font-weight: $tg-fw-regular;
     color: var(--bit-Toggle-text-color, inherit);
-    font-size: var(--bit-Toggle-text-font-size, var(--bit-tgl-stx-fontsize));
+    font-size: var(--bit-tgl-stx-fontsize, var(--bit-Toggle-text-font-size, inherit));
 }
 
 .bit-tgl-dsc {
@@ -535,11 +567,13 @@
     clip-path: inset(50%);
 }
 
+// The checked state picks which colors are read; within it, an explicit Color comes first, then the public
+// variables, then the primary role an unset Color stands for. The stroke is not the Color's to paint.
 .bit-tgl-chk {
-    --bit-tgl-trk-clr-bg: var(--bit-Toggle-checked-background, var(--bit-tgl-clr));
+    --bit-tgl-trk-clr-bg: var(--bit-tgl-clr, var(--bit-Toggle-checked-background, #{$clr-pri}));
     --bit-tgl-trk-clr-brd: var(--bit-Toggle-checked-border-color, transparent);
-    --bit-tgl-thb-clr: var(--bit-Toggle-checked-thumb-color, var(--bit-tgl-clr-text));
-    --bit-tgl-cnn-clr: var(--bit-Toggle-content-color, var(--bit-tgl-clr-text));
+    --bit-tgl-thb-clr: var(--bit-tgl-clr-text, var(--bit-Toggle-checked-thumb-color, #{$clr-pri-text}));
+    --bit-tgl-cnn-clr: var(--bit-tgl-clr-text, var(--bit-Toggle-content-color, #{$clr-pri-text}));
 
     // The knob slides to the far end and the lane held open for it swaps with it, so whatever content the
     // track carries ends up on the side the knob has just left - in both reading directions.
@@ -548,10 +582,12 @@
     }
 
     .bit-tgl-btn {
-        padding-inline: var(--bit-tgl-pad) calc(var(--bit-tgl-pad) + var(--bit-tgl-thb-size) + var(--bit-tgl-gap));
+        padding-inline: var(--bit-tgl-pad) calc(var(--bit-tgl-pad) + var(--bit-tgl-thb-size) + var(--bit-tgl-gap, #{spacing(0.25)}));
     }
 }
 
+// A size class is published only by an explicit Size, which therefore wins over the public geometry and
+// font-size variables; an unset Size is the medium toggle, which the reads spell out after those variables.
 .bit-tgl-sm {
     --bit-tgl-gap: #{spacing(0.25)};
     --bit-tgl-trk-w-base: #{$siz-switch-w-sm};
@@ -578,7 +614,10 @@
     --bit-tgl-cnn-fontsize: #{$tg-fs-xs};
     --bit-tgl-cnn-pad: #{spacing(0.375)};
     --bit-tgl-lbl-fontsize: #{$tg-fs-sm};
-    --bit-tgl-stx-fontsize: inherit;
+    // The state text of the medium toggle keeps the size of the text around it. Written as 1em rather than as
+    // inherit, which on a custom property would inherit the property itself - an outer toggle's value - rather
+    // than the font size.
+    --bit-tgl-stx-fontsize: 1em;
     --bit-tgl-des-fontsize: #{$tg-fs-xs};
 }
 
@@ -605,14 +644,21 @@
 // The spinner asks for no step of its own: it is drawn to the size of whichever knob it lands in.
 // It carries the root class along, so it outweighs the size classes that sit on the same element instead of
 // only beating them on source order. A public geometry variable is a plain value rather than a floor: a
-// theme that names a track width has already accounted for what the knob carries.
+// theme that names a track width has already accounted for what the knob carries - unless an explicit Size
+// asked for this geometry, which wins over it. The floored values of a Size are left unset while it is: a max()
+// over an unset property is invalid, and an invalid custom property reads as unset, which hands the read on to
+// the public variable and then to the floored medium geometry.
 .bit-tgl.bit-tgl-tic {
-    --bit-tgl-trk-w: var(--bit-Toggle-track-width, max(var(--bit-tgl-trk-w-base), var(--bit-tgl-trk-w-ico)));
-    --bit-tgl-trk-h: var(--bit-Toggle-track-height, max(var(--bit-tgl-trk-h-base), var(--bit-tgl-trk-h-ico)));
-    --bit-tgl-thb-size: var(--bit-Toggle-thumb-size, max(var(--bit-tgl-thb-size-base), var(--bit-tgl-thb-size-ico)));
+    --bit-tgl-trk-w-tic: max(var(--bit-tgl-trk-w-base), var(--bit-tgl-trk-w-ico));
+    --bit-tgl-trk-h-tic: max(var(--bit-tgl-trk-h-base), var(--bit-tgl-trk-h-ico));
+    --bit-tgl-thb-size-tic: max(var(--bit-tgl-thb-size-base), var(--bit-tgl-thb-size-ico));
+    --bit-tgl-trk-w: var(--bit-tgl-trk-w-tic, var(--bit-Toggle-track-width, max(#{$siz-switch-w-md}, #{spacing(6.5)})));
+    --bit-tgl-trk-h: var(--bit-tgl-trk-h-tic, var(--bit-Toggle-track-height, max(#{$siz-switch-h-md}, #{spacing(3.5)})));
+    --bit-tgl-thb-size: var(--bit-tgl-thb-size-tic, var(--bit-Toggle-thumb-size, max(#{$siz-switch-thumb-md}, #{spacing(2.5)})));
 }
 
-// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
+// Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only
+// by an explicit Color; an unset one is the primary role, which every read spells out after the variables.
 @each $role, $tokens in $bit-color-roles {
     .bit-tgl-#{$role} {
         --bit-tgl-clr: #{role($tokens, main)};

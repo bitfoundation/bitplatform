@@ -15,6 +15,11 @@ public class BitTimelineItem
     /// <summary>
     /// The general color of the timeline item, overriding the color of the timeline.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the Color of the timeline and over the <c>--bit-Timeline-*</c> dot color variables
+    /// (dot background, dot border color, icon color), on this item alone; left unset, the item takes the Color of
+    /// the timeline, or - when that is unset too - is primary unless those variables say otherwise.
+    /// </remarks>
     public BitColor? Color { get; set; }
 
     /// <summary>
@@ -95,6 +100,11 @@ public class BitTimelineItem
     /// <summary>
     /// The size of the timeline item, overriding the size of the timeline.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the Size of the timeline and over <c>--bit-Timeline-font-size</c> and
+    /// <c>--bit-Timeline-dot-size</c>, on this item alone; left unset, the item takes the Size of the timeline, or -
+    /// when that is unset too - is medium unless those variables say otherwise.
+    /// </remarks>
     public BitSize? Size { get; set; }
 
     /// <summary>

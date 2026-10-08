@@ -1,5 +1,4 @@
-﻿using System.Text;
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -11,8 +10,6 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitDropMenu : BitComponentBase
 {
-    private const string PUBLIC_CSS_VARIABLE_PREFIX = "--bit-DropMenu-";
-
     private static readonly string[] _scrollingKeys = ["ArrowDown", "ArrowUp"];
 
     private string _buttonId = default!;
@@ -36,10 +33,6 @@ public partial class BitDropMenu : BitComponentBase
     private ElementReference _buttonRef;
     private DotNetObjectReference<BitDropMenu>? _dotnetObj;
     private DotNetObjectReference<BitDropMenu>? _swipesDotnetObj;
-    private string? _publicCssVariables;
-    private string? _lastRootStyle;
-    private string? _lastStylesRoot;
-    private string? _lastStylesOpened;
 
 
 
@@ -100,6 +93,10 @@ public partial class BitDropMenu : BitComponentBase
     /// <summary>
     /// The color kind of the background of the callout of the drop menu.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-DropMenu-callout-background</c>; left unset, the callout is the primary
+    /// background unless that variable says otherwise.
+    /// </remarks>
     [Parameter] public BitColorKind? Background { get; set; }
 
     /// <summary>
@@ -110,6 +107,11 @@ public partial class BitDropMenu : BitComponentBase
     /// <summary>
     /// The color kind of the border of the callout of the drop menu.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-DropMenu-callout-border-color</c> (the width stays
+    /// <c>--bit-DropMenu-callout-border-width</c>'s); left unset, the callout has no border unless those variables
+    /// say otherwise.
+    /// </remarks>
     [Parameter] public BitColorKind? Border { get; set; }
 
     /// <summary>
@@ -151,6 +153,10 @@ public partial class BitDropMenu : BitComponentBase
     /// <summary>
     /// The general color of the button of the drop menu.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-DropMenu-*</c> button color variables; left unset, the button takes
+    /// the <see cref="BitColor.PrimaryBackground"/> look unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -332,6 +338,11 @@ public partial class BitDropMenu : BitComponentBase
     /// <summary>
     /// The size of the button of the drop menu.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-DropMenu-min-height</c>, <c>--bit-DropMenu-padding</c>,
+    /// <c>--bit-DropMenu-font-size</c> and <c>--bit-DropMenu-icon-size</c>; left unset, the button is medium unless
+    /// those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -500,27 +511,9 @@ public partial class BitDropMenu : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-drm-pri",
-            BitColor.Secondary => "bit-drm-sec",
-            BitColor.Tertiary => "bit-drm-ter",
-            BitColor.Info => "bit-drm-inf",
-            BitColor.Success => "bit-drm-suc",
-            BitColor.Warning => "bit-drm-wrn",
-            BitColor.SevereWarning => "bit-drm-swr",
-            BitColor.Error => "bit-drm-err",
-            BitColor.PrimaryBackground => "bit-drm-pbg",
-            BitColor.SecondaryBackground => "bit-drm-sbg",
-            BitColor.TertiaryBackground => "bit-drm-tbg",
-            BitColor.PrimaryForeground => "bit-drm-pfg",
-            BitColor.SecondaryForeground => "bit-drm-sfg",
-            BitColor.TertiaryForeground => "bit-drm-tfg",
-            BitColor.PrimaryBorder => "bit-drm-pbr",
-            BitColor.SecondaryBorder => "bit-drm-sbr",
-            BitColor.TertiaryBorder => "bit-drm-tbr",
-            _ => string.Empty
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-DropMenu-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-drm"));
 
         ClassBuilder.Register(() => Variant switch
         {
@@ -530,13 +523,7 @@ public partial class BitDropMenu : BitComponentBase
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-drm-sm",
-            BitSize.Medium => "bit-drm-md",
-            BitSize.Large => "bit-drm-lg",
-            _ => "bit-drm-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-drm"));
 
         ClassBuilder.Register(() => IsOpen ? "bit-drm-omn" : string.Empty);
 
@@ -953,7 +940,8 @@ public partial class BitDropMenu : BitComponentBase
                 maxWindowWidth: 0,
                 gap: Gap,
                 preferredSide: Placement.ToEdgeName(fallback: ""),
-                alignment: Alignment.ToAlignmentName());
+                alignment: Alignment.ToAlignmentName(),
+                rootId: _Id);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1028,11 +1016,7 @@ public partial class BitDropMenu : BitComponentBase
     {
         if (IsDisposed) return;
 
-        try
-        {
-            await _buttonRef.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        await _buttonRef.FocusSafelyAsync();
     }
 
     private async Task<bool> CalloutContainsFocus()
@@ -1243,116 +1227,25 @@ public partial class BitDropMenu : BitComponentBase
         _swipesDotnetObj = null;
     }
 
-    // The callout and the overlay are rendered outside the root element - and relocated to the body while the
-    // callout is open - so they inherit nothing an author sets on the drop menu: neither the Style of the
-    // instance nor a custom property declared on an ancestor of it (only :root and body stay ancestors of them
-    // once they have moved). The public --bit-DropMenu-* declarations are therefore carried across by hand, so
-    // ONE Style on the component restyles the button and the callout it opens together.
-    private string? GetPublicCssVariables()
-    {
-        var style = Style;
-        var stylesRoot = Styles?.Root;
-        var stylesOpened = IsOpen ? Styles?.Opened : null;
-
-        // Rebuilt only when one of the strings it is made of has actually changed: the callout and the overlay
-        // both ask for it on every render, of every drop menu repeated down a list, and the result almost never
-        // changes.
-        if (string.Equals(style, _lastRootStyle, StringComparison.Ordinal) &&
-            string.Equals(stylesRoot, _lastStylesRoot, StringComparison.Ordinal) &&
-            string.Equals(stylesOpened, _lastStylesOpened, StringComparison.Ordinal))
-        {
-            return _publicCssVariables;
-        }
-
-        _lastRootStyle = style;
-        _lastStylesRoot = stylesRoot;
-        _lastStylesOpened = stylesOpened;
-
-        StringBuilder? builder = null;
-
-        AppendPublicCssVariables(ref builder, style);
-        AppendPublicCssVariables(ref builder, stylesRoot);
-        AppendPublicCssVariables(ref builder, stylesOpened);
-
-        return _publicCssVariables = builder?.ToString();
-    }
-
-    // A semicolon only ends a declaration outside of quotes and brackets, since a value can carry one of its own -
-    // the url(data:image/png;base64,...) of an image - and cutting it there would copy a declaration whose unclosed
-    // bracket swallows everything written after it, the sizing parameters and Styles.Callout included.
-    private static void AppendPublicCssVariables(ref StringBuilder? builder, string? style)
-    {
-        if (style.HasNoValue() || style!.Contains(PUBLIC_CSS_VARIABLE_PREFIX, StringComparison.Ordinal) is false) return;
-
-        var start = 0;
-        var depth = 0;
-        var quote = '\0';
-
-        for (var i = 0; i < style.Length; i++)
-        {
-            var c = style[i];
-
-            if (c == '\\')
-            {
-                i++;
-                continue;
-            }
-
-            if (quote != '\0')
-            {
-                if (c == quote)
-                {
-                    quote = '\0';
-                }
-
-                continue;
-            }
-
-            switch (c)
-            {
-                case '"' or '\'':
-                    quote = c;
-                    break;
-                case '(' or '[' or '{':
-                    depth++;
-                    break;
-                case ')' or ']' or '}':
-                    if (depth > 0) depth--;
-                    break;
-                case ';' when depth == 0:
-                    AppendPublicCssVariable(ref builder, style.AsSpan(start, i - start));
-                    start = i + 1;
-                    break;
-            }
-        }
-
-        if (start < style.Length)
-        {
-            AppendPublicCssVariable(ref builder, style.AsSpan(start));
-        }
-    }
-
-    private static void AppendPublicCssVariable(ref StringBuilder? builder, ReadOnlySpan<char> declaration)
-    {
-        declaration = declaration.Trim();
-
-        if (declaration.StartsWith(PUBLIC_CSS_VARIABLE_PREFIX, StringComparison.Ordinal) is false) return;
-
-        (builder ??= new StringBuilder()).Append(declaration).Append(';');
-    }
-
     private string? GetCalloutStyles()
     {
+        // The callout and the overlay are rendered outside the root element, and relocated to the body while the
+        // callout is open, but the public --bit-DropMenu-* variables need nothing here: whether they are set on an
+        // ancestor or through its class, in Style, Styles.Root or Styles.Opened, Callouts.ts carries what the root and
+        // its ancestors declare into the relocated parts, so they reach them like any inherited value and ONE
+        // Style on the component restyles the button and the callout it opens together.
+        //
         // The positioning code clears the callout's inline sizing on every layout pass, so the sizing
         // parameters travel as the public custom properties the stylesheet reads instead of as declarations
-        // of their own. They come after the copied ones, since a parameter set on the instance is the more
-        // specific of the two, and Styles.Callout comes last, so a value written for the callout still wins.
+        // of their own. Written on the callout itself, they win over the same variables inherited from the
+        // root, since a parameter set on the instance is the more specific of the two, and Styles.Callout
+        // comes last, so a value written for the callout still wins.
         var maxHeight = MaxHeight.HasValue() ? $"--bit-DropMenu-callout-max-height:{MaxHeight};" : null;
         var width = Width.HasValue() ? $"--bit-DropMenu-callout-width:{Width};" : null;
         var minWidth = MinWidth.HasValue() ? $"--bit-DropMenu-callout-min-width:{MinWidth};" : null;
         var maxWidth = MaxWidth.HasValue() ? $"--bit-DropMenu-callout-max-width:{MaxWidth};" : null;
 
-        var result = $"{GetPublicCssVariables()}{maxHeight}{width}{minWidth}{maxWidth}{Styles?.Callout}";
+        var result = $"{maxHeight}{width}{minWidth}{maxWidth}{Styles?.Callout}";
 
         return result.HasValue() ? result : null;
     }
@@ -1361,7 +1254,7 @@ public partial class BitDropMenu : BitComponentBase
     // rather than in the stylesheet because it is what the component toggles the layer with.
     private string GetOverlayStyles()
     {
-        return $"display:{(IsOpen ? "block" : "none")};{GetPublicCssVariables()}{Styles?.Overlay}";
+        return $"display:{(IsOpen ? "block" : "none")};{Styles?.Overlay}";
     }
 
     private string GetCalloutCssClasses()
@@ -1373,9 +1266,10 @@ public partial class BitDropMenu : BitComponentBase
             classes.Add("bit-drm-ocl");
         }
 
-        // While open the callout is relocated to the body, which takes it out of the subtree that carries
-        // the root's bit-fam class, so ForceAnimation has to be rendered on the callout itself for its
-        // opening animation to opt out of reduced motion.
+        // The callout is a sibling of the root, so the root's bit-fam class never reaches it where it is
+        // rendered - only while it is relocated, through the copy of the root Callouts.ts moves it into. So
+        // ForceAnimation is rendered on the callout itself, for its motion to opt out of reduced motion
+        // whether or not it is relocated.
         if (ForceAnimation)
         {
             classes.Add("bit-fam");

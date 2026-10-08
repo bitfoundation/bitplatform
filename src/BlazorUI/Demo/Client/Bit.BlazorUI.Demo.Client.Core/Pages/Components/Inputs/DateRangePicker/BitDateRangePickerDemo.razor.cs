@@ -134,7 +134,7 @@ public partial class BitDateRangePickerDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the DateRangePicker that applies to the today day button, the selected range, the highlighted current month and the selected AM/PM buttons.",
+            Description = "The general color of the DateRangePicker that applies to the today day button, the selected range, the highlighted current month and the selected AM/PM buttons. An explicit value wins over the --bit-DateRangePicker-* accent, text, hover, active, range and focus color variables; left unset, the DateRangePicker is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -938,7 +938,7 @@ public partial class BitDateRangePickerDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "Sets the preset size (Small, Medium, Large) of the field, the calendar cells and the label. The callout takes the size with it.",
+            Description = "Sets the preset size (Small, Medium, Large) of the field, the calendar cells and the label. The callout takes the size with it. An explicit value wins over the --bit-DateRangePicker-* size variables (input height and font size, label font size, day size and font size); left unset, the DateRangePicker is medium unless they say otherwise.",
         },
         new()
         {
@@ -1141,32 +1141,32 @@ public partial class BitDateRangePickerDemo
         new()
         {
             Name = "--bit-DateRangePicker-color",
-            DefaultValue = "The Color role's main color",
-            Description = "The accent: the two ends of the selected range, today's cell, the selected preset, the active AM/PM button and the border of the field while the calendar is open.",
+            DefaultValue = "--bit-clr-pri",
+            Description = "The accent: the two ends of the selected range, today's cell, the selected preset, the active AM/PM button and the border of the field while the calendar is open. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-DateRangePicker-text-color",
-            DefaultValue = "The Color role's on color",
-            Description = "Foreground of whatever the accent fills.",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "Foreground of whatever the accent fills. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-DateRangePicker-hover-color",
-            DefaultValue = "The Color role's hover color",
-            Description = "The accent while hovered.",
+            DefaultValue = "--bit-clr-pri-hover",
+            Description = "The accent while hovered. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-DateRangePicker-active-color",
-            DefaultValue = "The Color role's active color",
-            Description = "The accent while pressed.",
+            DefaultValue = "--bit-clr-pri-active",
+            Description = "The accent while pressed. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-DateRangePicker-range-background",
-            DefaultValue = "The Color role's light color",
-            Description = "Background of the days between the two ends of the selected range.",
+            DefaultValue = "--bit-clr-pri-light",
+            Description = "Background of the days between the two ends of the selected range. The Color parameter wins over it.",
         },
         new()
         {
@@ -1177,8 +1177,8 @@ public partial class BitDateRangePickerDemo
         new()
         {
             Name = "--bit-DateRangePicker-focus-color",
-            DefaultValue = "The Color role's focus color",
-            Description = "Color of the focus ring, around the field and around every cell and button of the calendar. An invalid value overrides it with the error focus color, so the field never shows two states at once.",
+            DefaultValue = "--bit-clr-pri-focus",
+            Description = "Color of the focus ring, around the field and around every cell and button of the calendar. An invalid value overrides it with the error focus color, so the field never shows two states at once. The Color parameter wins over it.",
         },
         new()
         {
@@ -1201,14 +1201,14 @@ public partial class BitDateRangePickerDemo
         new()
         {
             Name = "--bit-DateRangePicker-input-height",
-            DefaultValue = "Per Size, --bit-siz-ctrl-sm/md/lg",
-            Description = "Height of the field.",
+            DefaultValue = "--bit-siz-ctrl-md",
+            Description = "Height of the field. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-DateRangePicker-input-font-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Text size of the field.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the field. The Size parameter wins over it.",
         },
         new()
         {
@@ -1255,8 +1255,8 @@ public partial class BitDateRangePickerDemo
         new()
         {
             Name = "--bit-DateRangePicker-label-font-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Text size of the label.",
+            DefaultValue = "--bit-tpg-fs-sm",
+            Description = "Text size of the label. The Size parameter wins over it.",
         },
         new()
         {
@@ -1291,14 +1291,14 @@ public partial class BitDateRangePickerDemo
         new()
         {
             Name = "--bit-DateRangePicker-day-size",
-            DefaultValue = "Per Size, 24/28/34px",
-            Description = "Width and height of a day cell. The week numbers and the navigation buttons track it, so the whole calendar scales with this one value.",
+            DefaultValue = "28px",
+            Description = "Width and height of a day cell. The week numbers and the navigation buttons track it, so the whole calendar scales with this one value. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-DateRangePicker-day-font-size",
-            DefaultValue = "Per Size, from the type ramp",
-            Description = "Text size of a day cell and of the weekday initials above it.",
+            DefaultValue = "--bit-tpg-fs-xs",
+            Description = "Text size of a day cell and of the weekday initials above it. The Size parameter wins over it.",
         },
         new()
         {
@@ -1571,7 +1571,7 @@ public partial class BitDateRangePickerDemo
                     Name = "Callout",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "Custom CSS classes/styles for the callout of the BitDateRangePicker. Applied after the --bit-DateRangePicker-* variables copied from Style and Styles.Root, so it wins over them."
+                    Description = "Custom CSS classes/styles for the callout of the BitDateRangePicker. A --bit-DateRangePicker-* variable set here wins over one set in Style or Styles.Root."
                 },
                 new()
                 {

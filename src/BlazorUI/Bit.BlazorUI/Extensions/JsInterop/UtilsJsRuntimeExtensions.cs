@@ -22,6 +22,13 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // 2 when the browser has finished the img, 1 while it is painting one it knows the size of, 0 otherwise.
+    internal static ValueTask<int> BitUtilsGetImageProgress(this IJSRuntime jsRuntime, ElementReference element)
+    {
+        return jsRuntime.Invoke<int>("BitBlazorUI.Utils.getImageProgress", element);
+    }
+
+
     internal static ValueTask<string[]> BitUtilsGetChildrenAttributes(this IJSRuntime jsRuntime, string containerId, string attribute)
     {
         return jsRuntime.Invoke<string[]>("BitBlazorUI.Utils.getChildrenAttributes", containerId, attribute);
@@ -37,6 +44,12 @@ internal static class UtilsJsRuntimeExtensions
     internal static ValueTask BitUtilsFocusFirstElement(this IJSRuntime jsRuntime, string elementId, string? selector = null)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.focusFirstElement", elementId, selector);
+    }
+
+    // Focuses the trigger inside the given container unless the focus is already in it; see Utils.focusClickedTrigger.
+    internal static ValueTask BitUtilsFocusClickedTrigger(this IJSRuntime jsRuntime, string containerId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.focusClickedTrigger", containerId);
     }
 
 

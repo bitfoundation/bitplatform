@@ -232,35 +232,9 @@ public partial class BitLabel : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-lbl-sm",
-            BitSize.Medium => "bit-lbl-md",
-            BitSize.Large => "bit-lbl-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-lbl"));
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-lbl-pri",
-            BitColor.Secondary => "bit-lbl-sec",
-            BitColor.Tertiary => "bit-lbl-ter",
-            BitColor.Info => "bit-lbl-inf",
-            BitColor.Success => "bit-lbl-suc",
-            BitColor.Warning => "bit-lbl-wrn",
-            BitColor.SevereWarning => "bit-lbl-swr",
-            BitColor.Error => "bit-lbl-err",
-            BitColor.PrimaryBackground => "bit-lbl-pbg",
-            BitColor.SecondaryBackground => "bit-lbl-sbg",
-            BitColor.TertiaryBackground => "bit-lbl-tbg",
-            BitColor.PrimaryForeground => "bit-lbl-pfg",
-            BitColor.SecondaryForeground => "bit-lbl-sfg",
-            BitColor.TertiaryForeground => "bit-lbl-tfg",
-            BitColor.PrimaryBorder => "bit-lbl-pbr",
-            BitColor.SecondaryBorder => "bit-lbl-sbr",
-            BitColor.TertiaryBorder => "bit-lbl-tbr",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-lbl"));
 
         ClassBuilder.Register(() => Required ? "bit-lbl-req" : (Optional ? "bit-lbl-opt" : string.Empty));
 

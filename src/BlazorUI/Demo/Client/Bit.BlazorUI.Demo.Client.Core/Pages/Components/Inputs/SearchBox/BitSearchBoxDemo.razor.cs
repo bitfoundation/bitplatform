@@ -55,7 +55,7 @@ public partial class BitSearchBoxDemo
             Name = "Background",
             Type = "BitColorKind?",
             DefaultValue = "null",
-            Description = "The background color kind of the search box.",
+            Description = "The background color kind of the search box. An explicit value wins over --bit-SearchBox-background; left unset, the background is the primary kind unless it says otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-kind-enum",
         },
@@ -117,7 +117,7 @@ public partial class BitSearchBoxDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the search box, used for colored parts like icons.",
+            Description = "The general color of the search box, used for colored parts like icons. An explicit value wins over the --bit-SearchBox-* color variables it paints (the icon, the focus rings, the disabled colors, the search button, the spinner and the ring of the highlighted suggestion); left unset, the search box is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -509,7 +509,7 @@ public partial class BitSearchBoxDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the search box.",
+            Description = "The size of the search box. An explicit value wins over the --bit-SearchBox-* size variables (height, font sizes, icon sizes, search button width and padding, spinner size, suggest row height and font size); left unset, the search box is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -634,8 +634,8 @@ public partial class BitSearchBoxDemo
         new()
         {
             Name = "--bit-SearchBox-background",
-            DefaultValue = "Per Background kind ($clr-bg-pri by default)",
-            Description = "Background of the field.",
+            DefaultValue = "$clr-bg-pri",
+            Description = "Background of the field. The Background parameter wins over it.",
         },
         new()
         {
@@ -658,8 +658,8 @@ public partial class BitSearchBoxDemo
         new()
         {
             Name = "--bit-SearchBox-height",
-            DefaultValue = "Per Size ($siz-ctrl-md by default)",
-            Description = "Height of the field, and the width of its square icon and button slots.",
+            DefaultValue = "$siz-ctrl-md",
+            Description = "Height of the field, and the width of its square icon and button slots. The Size parameter wins over it.",
         },
         new()
         {
@@ -670,20 +670,20 @@ public partial class BitSearchBoxDemo
         new()
         {
             Name = "--bit-SearchBox-font-size",
-            DefaultValue = "Per Size (from the type ramp)",
-            Description = "Text size of the label, the field, its affixes, the description and the error message.",
+            DefaultValue = "$tg-fs-sm",
+            Description = "Text size of the label, the field, its affixes, the description and the error message. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-SearchBox-icon-size",
-            DefaultValue = "Per Size ($siz-icon-md by default)",
-            Description = "Glyph size of the leading icon and of the buttons.",
+            DefaultValue = "$siz-icon-md",
+            Description = "Glyph size of the leading icon and of the buttons. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-SearchBox-icon-color",
-            DefaultValue = "The Color role's main color",
-            Description = "Color of the leading icon.",
+            DefaultValue = "$clr-pri",
+            Description = "Color of the leading icon. The Color parameter wins over it.",
         },
         new()
         {
@@ -694,26 +694,26 @@ public partial class BitSearchBoxDemo
         new()
         {
             Name = "--bit-SearchBox-hover-icon-color",
-            DefaultValue = "The Color role's hover color",
-            Description = "Color of the leading icon while the field is hovered.",
+            DefaultValue = "$clr-pri-hover",
+            Description = "Color of the leading icon while the field is hovered. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-SearchBox-focus-color",
-            DefaultValue = "The Color role's focus color",
-            Description = "Focus ring color of the field, the clear button and the search button.",
+            DefaultValue = "$clr-pri-focus",
+            Description = "Focus ring color of the field, the clear button and the search button. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-SearchBox-disabled-color",
-            DefaultValue = "The Color role's disabled text color",
-            Description = "Text, icon and affix color when the search box is disabled.",
+            DefaultValue = "$clr-pri-dis-text",
+            Description = "Text, icon and affix color when the search box is disabled. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-SearchBox-disabled-background",
-            DefaultValue = "The Color role's disabled color",
-            Description = "Background and border color when the search box is disabled.",
+            DefaultValue = "$clr-pri-dis",
+            Description = "Background and border color when the search box is disabled. The Color parameter wins over it.",
         },
         new()
         {
@@ -767,7 +767,7 @@ public partial class BitSearchBoxDemo
         {
             Name = "--bit-SearchBox-clear-button-icon-size",
             DefaultValue = "Three quarters of --bit-SearchBox-icon-size",
-            Description = "Glyph size of the clear button, which is drawn smaller than the leading icon.",
+            Description = "Glyph size of the clear button, which is drawn smaller than the leading icon. The Size parameter wins over it.",
         },
         new()
         {
@@ -790,38 +790,38 @@ public partial class BitSearchBoxDemo
         new()
         {
             Name = "--bit-SearchBox-search-button-color",
-            DefaultValue = "The Color role's on-color",
-            Description = "Glyph color of the search button.",
+            DefaultValue = "$clr-pri-text",
+            Description = "Glyph color of the search button. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-SearchBox-search-button-background",
-            DefaultValue = "The Color role's main color",
-            Description = "Background and border color of the search button.",
+            DefaultValue = "$clr-pri",
+            Description = "Background and border color of the search button. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-SearchBox-search-button-hover-background",
-            DefaultValue = "The Color role's hover color",
-            Description = "Background of the hovered search button.",
+            DefaultValue = "$clr-pri-hover",
+            Description = "Background of the hovered search button. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-SearchBox-search-button-active-background",
-            DefaultValue = "The Color role's active color",
-            Description = "Background of the pressed search button.",
+            DefaultValue = "$clr-pri-active",
+            Description = "Background of the pressed search button. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-SearchBox-search-button-width",
             DefaultValue = "The height of the field, or its content when SearchButtonText is set",
-            Description = "Width of the search button.",
+            Description = "Width of the search button. The Size parameter wins over it for the square button, which is as wide as the field is tall.",
         },
         new()
         {
             Name = "--bit-SearchBox-search-button-padding",
-            DefaultValue = "Per Size ($siz-ctrl-pad-x-md by default)",
-            Description = "Inline padding of a search button that carries a SearchButtonText.",
+            DefaultValue = "$siz-ctrl-pad-x-md",
+            Description = "Inline padding of a search button that carries a SearchButtonText. The Size parameter wins over it.",
         },
         new()
         {
@@ -833,25 +833,25 @@ public partial class BitSearchBoxDemo
         {
             Name = "--bit-SearchBox-callout-background",
             DefaultValue = "$clr-bg-pri",
-            Description = "Background of the suggest callout. Set through the Callout key of Styles.",
+            Description = "Background of the suggest callout.",
         },
         new()
         {
             Name = "--bit-SearchBox-callout-radius",
             DefaultValue = "$shp-radius-popup",
-            Description = "Corner radius of the callout, on the two corners away from the field. Set through the Callout key of Styles.",
+            Description = "Corner radius of the callout, on the two corners away from the field.",
         },
         new()
         {
             Name = "--bit-SearchBox-callout-shadow",
             DefaultValue = "$box-shadow-popup",
-            Description = "Elevation of the callout. Set through the Callout key of Styles.",
+            Description = "Elevation of the callout.",
         },
         new()
         {
             Name = "--bit-SearchBox-callout-max-height",
             DefaultValue = "$siz-popup-max-height",
-            Description = "Tallest the suggest list grows before it scrolls. Set through the Callout key of Styles.",
+            Description = "Tallest the suggest list grows before it scrolls.",
         },
         new()
         {
@@ -874,8 +874,8 @@ public partial class BitSearchBoxDemo
         new()
         {
             Name = "--bit-SearchBox-spinner-color",
-            DefaultValue = "The Color role's main color",
-            Description = "Arc color of the loading spinner, in the field and in the callout.",
+            DefaultValue = "$clr-pri",
+            Description = "Arc color of the loading spinner, in the field and in the callout. The Color parameter wins over it.",
         },
         new()
         {
@@ -886,8 +886,8 @@ public partial class BitSearchBoxDemo
         new()
         {
             Name = "--bit-SearchBox-spinner-size",
-            DefaultValue = "Per Size ($siz-icon-md by default)",
-            Description = "Diameter of the loading spinner, in the field and in the callout.",
+            DefaultValue = "$siz-icon-md (the icon size in the field)",
+            Description = "Diameter of the loading spinner, in the field and in the callout. The Size parameter wins over it.",
         },
         new()
         {
@@ -898,8 +898,8 @@ public partial class BitSearchBoxDemo
         new()
         {
             Name = "--bit-SearchBox-item-min-height",
-            DefaultValue = "Per Size ($siz-item-md by default)",
-            Description = "Smallest height of a suggest item.",
+            DefaultValue = "$siz-item-md",
+            Description = "Smallest height of a suggest item. The Size parameter wins over it.",
         },
         new()
         {
@@ -910,8 +910,8 @@ public partial class BitSearchBoxDemo
         new()
         {
             Name = "--bit-SearchBox-item-font-size",
-            DefaultValue = "Per Size (from the type ramp)",
-            Description = "Text size of everything inside the callout.",
+            DefaultValue = "$tg-fs-sm",
+            Description = "Text size of everything inside the callout. The Size parameter wins over it.",
         },
         new()
         {
@@ -940,8 +940,8 @@ public partial class BitSearchBoxDemo
         new()
         {
             Name = "--bit-SearchBox-item-selected-border-color",
-            DefaultValue = "The Color role's focus color",
-            Description = "Ring drawn inside the suggest item the arrow keys highlight, which is the only thing that says where the keyboard is (the focus itself never leaves the input).",
+            DefaultValue = "$clr-pri-focus",
+            Description = "Ring drawn inside the suggest item the arrow keys highlight, which is the only thing that says where the keyboard is (the focus itself never leaves the input). The Color parameter wins over it.",
         },
         new()
         {

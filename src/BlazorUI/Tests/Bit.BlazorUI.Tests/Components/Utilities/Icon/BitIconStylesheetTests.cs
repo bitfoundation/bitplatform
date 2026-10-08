@@ -50,18 +50,25 @@ public partial class BitIconStylesheetTests
     }
 
     [TestMethod]
-    public void BitIconShouldLetThePublicColorsWinOverTheColorParameter()
+    public void BitIconShouldLetAParameterWinOverItsPublicVariable()
     {
         var stylesheet = ReadStylesheet();
 
-        // As on every other component, the public variable comes first and the role a Color parameter sets (the primary
-        // one when none is given) only supplies its default.
-        StringAssert.Contains(stylesheet, "$ico-clr: var(--bit-Icon-color, var(--bit-ico-clr, #{$clr-pri}));");
-        StringAssert.Contains(stylesheet, "$ico-clr-txt: var(--bit-Icon-contrast-color, var(--bit-ico-clr-txt, #{$clr-pri-text}));");
-        StringAssert.Contains(stylesheet, "$ico-clr-hover: var(--bit-Icon-hover-color, var(--bit-ico-pub-hover, var(--bit-ico-clr-hover, ");
-        StringAssert.Contains(stylesheet, "$ico-clr-active: var(--bit-Icon-active-color, var(--bit-ico-pub-active, var(--bit-ico-clr-active, ");
-        StringAssert.Contains(stylesheet, "$ico-clr-focus: var(--bit-Icon-focus-color, var(--bit-ico-clr-focus, ");
+        // An explicit Color publishes the role, which is read before the public variable; the variable only restyles
+        // the primary role an unset Color stands for, and so does the shade of an app's own --bit-Icon-color.
+        StringAssert.Contains(stylesheet, "$ico-clr: var(--bit-ico-clr, var(--bit-Icon-color, #{$clr-pri}));");
+        StringAssert.Contains(stylesheet, "$ico-clr-txt: var(--bit-ico-clr-txt, var(--bit-Icon-contrast-color, #{$clr-pri-text}));");
+        StringAssert.Contains(stylesheet, "$ico-clr-hover: var(--bit-ico-clr-hover, var(--bit-Icon-hover-color, var(--bit-ico-pub-hover, #{$clr-pri-hover})));");
+        StringAssert.Contains(stylesheet, "$ico-clr-active: var(--bit-ico-clr-active, var(--bit-Icon-active-color, var(--bit-ico-pub-active, #{$clr-pri-active})));");
+        StringAssert.Contains(stylesheet, "$ico-clr-focus: var(--bit-ico-clr-focus, var(--bit-Icon-focus-color, #{$clr-pri-focus}));");
         StringAssert.Contains(stylesheet, "@include focus-ring($ico-clr-focus);");
+
+        // So does an explicit Size, for the size of the glyph.
+        StringAssert.Contains(stylesheet, "font-size: var(--bit-ico-size, var(--bit-Icon-size, #{$siz-icon-md}));");
+
+        // The only private values read after a public variable are the shades of that variable itself, which no
+        // parameter publishes.
+        Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Icon-[a-z-]+, var\(--bit-ico-(?!pub-)"), "A public variable is read before the parameter it restyles the default of.");
 
         // A disabled icon never reads a public color, so it never looks enabled.
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"\$ico-clr-dis[a-z-]*: [^\n]*--bit-Icon-"), "A disabled color reads a public variable.");
@@ -96,7 +103,7 @@ public partial class BitIconStylesheetTests
     {
         var root = Block(ReadStylesheet(), ".bit-ico");
 
-        StringAssert.Contains(root, "font-size: var(--bit-Icon-size, var(--bit-ico-size, #{$siz-icon-md}));");
+        StringAssert.Contains(root, "font-size: var(--bit-ico-size, var(--bit-Icon-size, #{$siz-icon-md}));");
         StringAssert.Contains(root, "padding: var(--bit-Icon-padding, #{spacing(0.5)});");
         StringAssert.Contains(root, "border-radius: var(--bit-Icon-radius, #{$shp-radius-control});");
         StringAssert.Contains(root, "border-width: var(--bit-Icon-border-width, #{$shp-border-width});");
@@ -131,11 +138,12 @@ public partial class BitIconStylesheetTests
         DataRow("lg")]
     public void BitIconShouldTakeTheDefaultOfItsSizeFromTheTheme(string size)
     {
-        // A Size parameter supplies the default --bit-Icon-size wins over, the same as a Color does for the colors.
+        // A Size parameter publishes the private size the root reads ahead of --bit-Icon-size, the same as a Color does
+        // for the colors - and only that, so the one rule sizing the glyph keeps the weight a Classes class competes with.
         var block = Block(ReadStylesheet(), $".bit-ico-{size}");
 
         StringAssert.Contains(block, $"--bit-ico-size: #{{$siz-icon-{size}}};");
-        Assert.IsFalse(block.Contains("font-size"), $".bit-ico-{size} sets the font size, which would win over --bit-Icon-size.");
+        Assert.IsFalse(block.Contains("font-size"), $".bit-ico-{size} sets the font size itself rather than the private size the root reads.");
     }
 
     [TestMethod]

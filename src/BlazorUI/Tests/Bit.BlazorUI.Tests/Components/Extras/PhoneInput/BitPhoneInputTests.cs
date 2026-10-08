@@ -1384,8 +1384,19 @@ public class BitPhoneInputTests : BunitTestContext
         // variables of its own.
         Assert.IsTrue(component.Find(".bit-phi-cal").ClassList.Contains("bit-phi-lg"));
 
-        var medium = RenderComponent<BitPhoneInput>();
+        var medium = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Size, BitSize.Medium);
+        });
         Assert.IsTrue(medium.Find(".bit-phi-cal").ClassList.Contains("bit-phi-md"));
+
+        // An unset Size publishes no class on the callout either, so the public --bit-PhoneInput-* variables restyle
+        // the default rows while an explicit Size wins over them.
+        var unset = RenderComponent<BitPhoneInput>();
+        var callout = unset.Find(".bit-phi-cal").ClassList;
+        Assert.IsFalse(callout.Contains("bit-phi-sm"));
+        Assert.IsFalse(callout.Contains("bit-phi-md"));
+        Assert.IsFalse(callout.Contains("bit-phi-lg"));
     }
 
     [TestMethod]
@@ -2388,7 +2399,7 @@ public class BitPhoneInputTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitPhoneInputShouldCarryItsPublicCssVariablesToTheCalloutAndTheOverlay()
+    public void BitPhoneInputShouldLeaveItsPublicCssVariablesOnTheRoot()
     {
         var component = RenderComponent<BitPhoneInput>(parameters =>
         {
@@ -2401,32 +2412,45 @@ public class BitPhoneInputTests : BunitTestContext
             });
         });
 
+        var root = component.Find(".bit-phi").GetAttribute("style")!;
         var callout = component.Find(".bit-phi-cal").GetAttribute("style")!;
         var overlay = component.Find(".bit-phi-ovl").GetAttribute("style")!;
 
-        // The callout and the overlay are rendered outside the root, so the public declarations are copied
-        // onto them - and nothing else of the root's style is.
-        StringAssert.Contains(callout, "--bit-PhoneInput-radius: 2rem;");
-        StringAssert.Contains(callout, "--bit-PhoneInput-item-height: 40px;");
-        Assert.IsFalse(callout.Contains("width"));
-        StringAssert.Contains(overlay, "--bit-PhoneInput-radius: 2rem;");
-        StringAssert.Contains(overlay, "display:none");
-        Assert.IsFalse(overlay.Contains("width"));
+        // The root keeps its whole style, and Callouts.ts is what carries it into the callout and the overlay
+        // while they are relocated to the body, so nothing of it is written onto them here.
+        StringAssert.Contains(root, "width: 300px");
+        StringAssert.Contains(root, "--bit-PhoneInput-radius: 2rem");
+        StringAssert.Contains(root, "--bit-PhoneInput-item-height: 40px");
 
-        // What is written for the callout itself comes last, so it wins over the copy.
-        Assert.IsTrue(callout.IndexOf("--bit-PhoneInput-radius: 1rem;") > callout.IndexOf("--bit-PhoneInput-radius: 2rem;"));
-        Assert.IsTrue(overlay.EndsWith("opacity: 0.5;"));
+        Assert.AreEqual("--bit-PhoneInput-radius: 1rem;", callout);
+        Assert.AreEqual("display:none;opacity: 0.5;", overlay);
     }
 
     [TestMethod]
-    public void BitPhoneInputShouldLeaveTheCalloutStyleAloneWithoutPublicCssVariables()
+    public void BitPhoneInputShouldLeaveTheCalloutStyleAloneWithoutStylesCallout()
     {
         var component = RenderComponent<BitPhoneInput>(parameters =>
         {
-            parameters.Add(p => p.Style, "width: 300px;");
+            parameters.Add(p => p.Style, "width: 300px; --bit-PhoneInput-radius: 2rem");
         });
 
         Assert.IsNull(component.Find(".bit-phi-cal").GetAttribute("style"));
+        Assert.IsFalse(component.Find(".bit-phi-ovl").GetAttribute("style")!.Contains("--bit-PhoneInput-"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldNameItsRootToTheCallout()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        component.Find("button.bit-phi-drp").Click();
+
+        // The callout is anchored to the field group, but the element whose declarations it goes on inheriting
+        // once it is relocated is the root, which is the last argument of Callouts.toggle.
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        Assert.AreEqual(component.Find(".bit-phi").Id, toggle.Arguments[^1]);
+        Assert.AreNotEqual(component.Find(".bit-phi-fgp").Id, toggle.Arguments[^1]);
     }
 
     [TestMethod]
@@ -2547,6 +2571,29 @@ public class BitPhoneInputTests : BunitTestContext
         foreach (var cssClass in new[] { "bit-phi-bpr", "bit-phi-bse", "bit-phi-btr", "bit-phi-btn", "bit-phi-brp", "bit-phi-brs", "bit-phi-brt", "bit-phi-brn" })
         {
             Assert.IsFalse(classes.Contains(cssClass), cssClass);
+        }
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldPublishNoColorOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        // An unset Color or Size publishes nothing - on the root, nor on the callout that is given the same classes -
+        // so the public --bit-PhoneInput-* variables restyle the default while an explicit value wins over them.
+        var published = new[]
+        {
+            "bit-phi-pri", "bit-phi-sec", "bit-phi-ter", "bit-phi-inf", "bit-phi-suc", "bit-phi-wrn", "bit-phi-swr", "bit-phi-err",
+            "bit-phi-pbg", "bit-phi-sbg", "bit-phi-tbg", "bit-phi-pfg", "bit-phi-sfg", "bit-phi-tfg", "bit-phi-pbr", "bit-phi-sbr", "bit-phi-tbr",
+            "bit-phi-sm", "bit-phi-md", "bit-phi-lg",
+        };
+
+        foreach (var element in new[] { component.Find(".bit-phi"), component.Find(".bit-phi-cal") })
+        {
+            foreach (var cssClass in published)
+            {
+                Assert.IsFalse(element.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+            }
         }
     }
 

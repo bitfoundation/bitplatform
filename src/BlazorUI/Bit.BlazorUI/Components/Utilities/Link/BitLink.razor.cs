@@ -131,8 +131,8 @@ public partial class BitLink : BitComponentBase
     /// <remarks>
     /// <see cref="BitColor.Primary"/> when not set. A link is text read on the page, so an accent color other than
     /// the primary one is painted in the foreground shade of its role, the one picked to be read as text rather
-    /// than to fill a surface - a warning main falls under 2:1 as text on white. The <c>--bit-Link-*</c> color
-    /// variables win over it.
+    /// than to fill a surface - a warning main falls under 2:1 as text on white. An explicit value wins over the
+    /// <c>--bit-Link-*</c> color variables; left unset, the link is primary unless those variables say otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
@@ -290,6 +290,8 @@ public partial class BitLink : BitComponentBase
     /// A link is a piece of text before it is a control, so with nothing set here it takes the font size of
     /// whatever it sits in - which is what keeps a link inside a paragraph the same size as the sentence around
     /// it. A size is for the link that stands on its own, where there is no surrounding text to take one from.
+    /// An explicit value wins over <c>--bit-Link-font-size</c>; left unset, the link inherits its font size unless
+    /// that variable says otherwise.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
@@ -343,35 +345,11 @@ public partial class BitLink : BitComponentBase
 
         ClassBuilder.Register(() => _isCurrent ? "bit-lnk-cur" : string.Empty);
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-lnk-sm",
-            BitSize.Medium => "bit-lnk-md",
-            BitSize.Large => "bit-lnk-lg",
-            _ => string.Empty
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-Link-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-lnk"));
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-lnk-pri",
-            BitColor.Secondary => "bit-lnk-sec",
-            BitColor.Tertiary => "bit-lnk-ter",
-            BitColor.Info => "bit-lnk-inf",
-            BitColor.Success => "bit-lnk-suc",
-            BitColor.Warning => "bit-lnk-wrn",
-            BitColor.SevereWarning => "bit-lnk-swr",
-            BitColor.Error => "bit-lnk-err",
-            BitColor.PrimaryBackground => "bit-lnk-pbg",
-            BitColor.SecondaryBackground => "bit-lnk-sbg",
-            BitColor.TertiaryBackground => "bit-lnk-tbg",
-            BitColor.PrimaryForeground => "bit-lnk-pfg",
-            BitColor.SecondaryForeground => "bit-lnk-sfg",
-            BitColor.TertiaryForeground => "bit-lnk-tfg",
-            BitColor.PrimaryBorder => "bit-lnk-pbr",
-            BitColor.SecondaryBorder => "bit-lnk-sbr",
-            BitColor.TertiaryBorder => "bit-lnk-tbr",
-            _ => "bit-lnk-pri"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-lnk"));
     }
 
     /// <summary>
@@ -440,13 +418,7 @@ public partial class BitLink : BitComponentBase
         // rendered page and nothing else. The focus is moved here for the rest.
         if (firstRender is false || AutoFocus is false || IsFocusable() is false) return;
 
-        try
-        {
-            await RootElement.FocusAsync();
-        }
-        catch (JSDisconnectedException) { } // the circuit is gone (e.g. the user navigated away), nothing to focus
-        catch (JSException) { } // the element is no longer in the document, failing to focus it is not fatal
-        catch (InvalidOperationException) { } // the element reference is detached from its renderer, same as above
+        await RootElement.FocusSafelyAsync();
     }
 
 

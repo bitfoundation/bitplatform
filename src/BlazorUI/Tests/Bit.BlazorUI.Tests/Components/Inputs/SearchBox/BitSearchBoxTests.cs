@@ -477,13 +477,37 @@ public class BitSearchBoxTests : BunitTestContext
         DataRow(BitColor.Primary, "bit-srb-pri"),
         DataRow(BitColor.Secondary, "bit-srb-sec"),
         DataRow(BitColor.Error, "bit-srb-err"),
-        DataRow(BitColor.Success, "bit-srb-suc"),
-        DataRow(null, "bit-srb-pri")]
-    public void BitSearchBoxColorShouldHaveCorrectClassName(BitColor? color, string expectedClass)
+        DataRow(BitColor.Success, "bit-srb-suc")]
+    public void BitSearchBoxColorShouldHaveCorrectClassName(BitColor color, string expectedClass)
     {
         var component = RenderComponent<BitSearchBox>(parameters => parameters.Add(p => p.Color, color));
 
         Assert.IsTrue(component.Find(".bit-srb").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldPublishNoColorBackgroundOrSizeWhileTheyAreUnset()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters => parameters.Add(p => p.SuggestItems, Fruits));
+
+        // An unset Color, Background or Size publishes nothing - on the root, nor on the callout that is given the
+        // same classes - so the public --bit-SearchBox-* variables restyle the default while an explicit value, which
+        // does publish its class, wins over them.
+        var published = new[]
+        {
+            "bit-srb-pri", "bit-srb-sec", "bit-srb-ter", "bit-srb-inf", "bit-srb-suc", "bit-srb-wrn", "bit-srb-swr", "bit-srb-err",
+            "bit-srb-pbg", "bit-srb-sbg", "bit-srb-tbg", "bit-srb-pfg", "bit-srb-sfg", "bit-srb-tfg", "bit-srb-pbr", "bit-srb-sbr", "bit-srb-tbr",
+            "bit-srb-bpr", "bit-srb-bse", "bit-srb-btr", "bit-srb-btn",
+            "bit-srb-sm", "bit-srb-md", "bit-srb-lg",
+        };
+
+        foreach (var element in new[] { component.Find(".bit-srb"), component.Find(".bit-srb-cal") })
+        {
+            foreach (var cssClass in published)
+            {
+                Assert.IsFalse(element.ClassList.Contains(cssClass), $"An unset parameter published {cssClass}.");
+            }
+        }
     }
 
     [TestMethod]
@@ -1945,7 +1969,12 @@ public class BitSearchBoxTests : BunitTestContext
         var callout = component.Find(".bit-srb-cal");
 
         Assert.IsTrue(callout.ClassList.Contains("bit-srb-suc"));
-        Assert.IsTrue(callout.ClassList.Contains("bit-srb-md"));
+
+        // The Size is left unset, so the callout carries no size class either: its rows are the medium ones unless
+        // the public --bit-SearchBox-* variables say otherwise.
+        Assert.IsFalse(callout.ClassList.Contains("bit-srb-sm"));
+        Assert.IsFalse(callout.ClassList.Contains("bit-srb-md"));
+        Assert.IsFalse(callout.ClassList.Contains("bit-srb-lg"));
     }
 
     [TestMethod]
@@ -3713,7 +3742,7 @@ public class BitSearchBoxTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitSearchBoxShouldCarryItsPublicCssVariablesOntoTheCallout()
+    public void BitSearchBoxCalloutShouldCarryOnlyItsOwnStyle()
     {
         var component = RenderComponent<BitSearchBox>(parameters =>
         {
@@ -3726,11 +3755,47 @@ public class BitSearchBoxTests : BunitTestContext
             });
         });
 
-        var style = component.Find(".bit-srb-cal").GetAttribute("style");
+        // The callout renders outside the root and is relocated to the body while it is open, but the public
+        // variables set on the component are no longer copied onto it: Callouts.ts carries what the root
+        // declares into the popup, so its inline style is only what was written for the callout itself.
+        Assert.AreEqual("--bit-SearchBox-item-color:blue;", component.Find(".bit-srb-cal").GetAttribute("style"));
 
-        // The callout renders outside the root, so the public variables set on the component are copied
-        // across - and only those - with Styles.Callout last, so a value written for the callout still wins.
-        Assert.AreEqual("--bit-SearchBox-item-color: red;--bit-SearchBox-callout-background:#222;--bit-SearchBox-item-color:blue;", style);
+        // ... and the root keeps everything it was given.
+        var root = component.Find(".bit-srb").GetAttribute("style");
+        Assert.IsNotNull(root);
+        StringAssert.Contains(root, "--bit-SearchBox-item-color: red");
+        StringAssert.Contains(root, "margin: 4px");
+        StringAssert.Contains(root, "--bit-SearchBox-callout-background:#222");
+        StringAssert.Contains(root, "padding:2px");
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldNameItsRootWhenItTogglesTheCallout()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+            parameters.Add(p => p.Style, "--bit-SearchBox-item-color: red");
+        });
+
+        component.Find(".bit-srb-inp").Input("apple");
+
+        OpenTheCallout(component);
+
+        // The root is what Callouts.ts copies into the chain it relocates the callout into, which is how the
+        // public variables of the instance still reach the suggest list once it sits under the body. The
+        // component waits for the list to render before it positions it, so the call comes a moment later.
+        var rootId = component.Find(".bit-srb").Id;
+
+        Assert.IsFalse(string.IsNullOrEmpty(rootId));
+
+        component.WaitForAssertion(() =>
+        {
+            var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+            Assert.AreEqual(rootId, toggle.Arguments[^1]);
+        });
     }
 
     [TestMethod]

@@ -3,10 +3,11 @@
 
 // Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every
 // callout and one set on the Style of an instance re-skins that one alone.
-// The callout, its arrow and its overlay are rendered outside the root element (and relocated to the body while
-// the callout is open), so the component copies the --bit-Callout-* declarations of Style and Styles.Root onto
-// all three of them by hand - see GetPublicCssVariables. An ancestor of the root is not an ancestor of what has
-// been relocated, so a value meant for a group of callouts goes on :root, on their Style, or through BitParams.
+// The callout, its arrow and its overlay are rendered outside the root element and relocated to the body while
+// the callout is open, and Callouts.ts carries what the root and its ancestors declare (a variable set on an
+// ancestor or through its class, in Style or Styles.Root) into all three of them, so they reach them like any
+// inherited value: a value meant for a group of callouts goes on an element around them, as it would for any
+// other component.
 //
 //   --bit-Callout-background          background of the callout and its arrow   (default: $clr-bg-pri)
 //   --bit-Callout-color               text of the callout                       (default: $clr-fg-pri)
@@ -72,7 +73,7 @@
     // clicks for it: left at the shared level it would sit under the callout beneath it, where a click on
     // that callout would never reach the overlay meant to dismiss the one on top. One step is the whole
     // distance between the two levels plus one, so a nested overlay clears the callout below it. The
-    // level is set by the positioning code on the wrapper the relocated parts share.
+    // level is set by the positioning code on the innermost element the relocated parts share.
     z-index: calc(#{$zindex-overlay} + var(--bit-clo-lvl, 0) * (#{$zindex-callout} - #{$zindex-overlay} + 1));
     background-color: transparent;
 }
@@ -106,6 +107,16 @@
     // The responsive panel slides in from a logical edge, so the sign of the transform that takes it off
     // the screen is the one the direction of the callout gives it.
     --bit-clo-transform-factor: 1;
+
+    // The sizing the component writes inline on this callout from its parameters. A callout opened from
+    // inside another one would otherwise inherit the outer one's, since it is a descendant of it - in the
+    // page, and in the chain Callouts.ts relocates it into - so each callout starts from none of them and
+    // only its own inline style, which wins over this rule, sets one.
+    --bit-clo-wid: initial;
+    --bit-clo-mnw: initial;
+    --bit-clo-mnw-def: initial;
+    --bit-clo-mxw: initial;
+    --bit-clo-mxh: initial;
 
     @include clo-surface-vars;
 
@@ -251,6 +262,9 @@
 // It is a sibling of the callout rather than a child of it, so a callout that scrolls its own content
 // never clips it.
 .bit-clo-arw {
+    // ArrowSize is written inline; an outer callout's must not reach the arrow of one opened inside it.
+    --bit-clo-arw-siz: initial;
+
     @include clo-surface-vars;
 
     top: 0;

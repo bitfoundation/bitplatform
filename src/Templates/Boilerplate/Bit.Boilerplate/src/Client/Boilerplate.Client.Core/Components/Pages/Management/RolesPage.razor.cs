@@ -1,5 +1,7 @@
 //+:cnd:noEmit
 
+using System.ComponentModel;
+
 namespace Boilerplate.Client.Core.Components.Pages.Management;
 
 public partial class RolesPage
@@ -43,7 +45,8 @@ public partial class RolesPage
             ChildItems = [.. g.Select(p => new BitNavItem
             {
                 Key = p.Value,
-                Text = p.Name
+                Text = p.Name,
+                Title = p.Group.GetField(p.Name)!.GetCustomAttribute<DescriptionAttribute>()?.Description
             })]
         })];
 

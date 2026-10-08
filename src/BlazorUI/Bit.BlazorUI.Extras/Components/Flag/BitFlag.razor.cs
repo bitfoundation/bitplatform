@@ -723,13 +723,7 @@ public partial class BitFlag : BitComponentBase
     {
         ClassBuilder.Register(() => Classes?.Root);
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-flg-sm",
-            BitSize.Medium => "bit-flg-md",
-            BitSize.Large => "bit-flg-lg",
-            _ => string.Empty
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-flg"));
 
         // The emoji is a glyph rather than a picture that fills the frame: it is as wide as the font
         // draws it, so the frame lets it out instead of clipping it to a square. Only a frame that was

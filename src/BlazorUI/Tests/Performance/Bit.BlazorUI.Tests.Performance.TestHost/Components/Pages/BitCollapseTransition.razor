@@ -1,0 +1,83 @@
+@page "/regression/collapse-transition"
+@using System.Diagnostics
+
+<PageTitle>BitCollapse Transition Regression</PageTitle>
+
+@* The end of a BitCollapse transition is what the browser plays - a Duration, the public --bit-Collapse-duration
+   variable, a theme preset's motion tokens or the reduced motion preference - rather than the 300ms the component
+   would guess. Each collapse below closes at a pace the component cannot guess from its parameters, and records
+   when the work that waits for the end of the close happened, in ms after the close was asked for. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>BitCollapse Transition Regression</h3>
+    <div id="metrics" style="font-family: monospace;">
+        <p>Status: <span id="status">@_status</span></p>
+        <p>Unmount collapsed at: <span id="unmount-collapsed-at">@_unmountCollapsedAt</span></p>
+        <p>Late collapsed at: <span id="late-collapsed-at">@_lateCollapsedAt</span></p>
+    </div>
+</div>
+
+@* A searchable section, closed at a pace set by the Duration parameter. *@
+<button id="btn-huf" @onclick="() => _hufOpen = !_hufOpen">Toggle searchable</button>
+<BitCollapse Id="col-huf" @bind-Expanded="_hufOpen" HiddenUntilFound Duration="1500">
+    <p>Searchable text <span id="huf-target">needle</span></p>
+    <button id="huf-inner">Inner</button>
+    <div style="height: 200px;"></div>
+</BitCollapse>
+
+@* UnmountOnCollapse and OnCollapsed from the start, paced by the public variable the component cannot read. *@
+<button id="btn-unmount" @onclick="CloseUnmount">Close unmount</button>
+<BitCollapse Id="col-unmount"
+             Expanded="_unmountOpen"
+             UnmountOnCollapse
+             OnCollapsed="() => _unmountCollapsedAt = Elapsed(_unmountClosedAt)"
+             Style="--bit-Collapse-duration: 1500ms;">
+    <p id="unmount-content">Unmounted at the end of the close</p>
+    <div style="height: 200px;"></div>
+</BitCollapse>
+
+@* Nothing waits for the end when the close starts; an OnCollapsed is handed down part-way through it. *@
+<button id="btn-late" @onclick="CloseLate">Close late</button>
+<button id="btn-late-handler" @onclick="() => _lateHandler = true">Add handler</button>
+<BitCollapse Id="col-late"
+             Expanded="_lateOpen"
+             OnCollapsed="@(_lateHandler ? EventCallback.Factory.Create(this, () => _lateCollapsedAt = Elapsed(_lateClosedAt)) : default)"
+             Style="--bit-Collapse-duration: 1500ms;">
+    <p>Closed with nothing waiting</p>
+    <div style="height: 200px;"></div>
+</BitCollapse>
+
+@code {
+    private bool _hufOpen = true;
+    private bool _unmountOpen = true;
+    private bool _lateOpen = true;
+    private bool _lateHandler;
+    private long _unmountClosedAt;
+    private long _lateClosedAt;
+    private string _unmountCollapsedAt = "-";
+    private string _lateCollapsedAt = "-";
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
+    // interactive render moves it on, which is what the test waits for before it drives the page.
+    private string _status = "Loading";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+
+    private void CloseUnmount()
+    {
+        _unmountClosedAt = Stopwatch.GetTimestamp();
+        _unmountOpen = false;
+    }
+
+    private void CloseLate()
+    {
+        _lateClosedAt = Stopwatch.GetTimestamp();
+        _lateOpen = false;
+    }
+
+    private static string Elapsed(long since) => ((int)Stopwatch.GetElapsedTime(since).TotalMilliseconds).ToString();
+}

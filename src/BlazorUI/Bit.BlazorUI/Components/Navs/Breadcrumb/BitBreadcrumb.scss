@@ -2,26 +2,27 @@
 
 // Public CSS variables, read with a fallback and never declared here, so they inherit: set one on :root,
 // on any ancestor, or on the Style of a single breadcrumb. The overflow menu is rendered outside the root
-// element (and moved to the body by the callout positioning), so the component copies the
-// --bit-Breadcrumb-* declarations of Style and Styles.Root onto it by hand - see GetCalloutStyles.
+// element and relocated to the body while it is open, and Callouts.ts carries what the root and its
+// ancestors declare (a variable set on an ancestor or through its class, in Style or Styles.Root) into it, so
+// they reach it like any inherited value.
 //
 //   TRAIL
-//   --bit-Breadcrumb-color                  text of the items                          (default: the Color role's main color / $clr-fg-pri)
+//   --bit-Breadcrumb-color                  text of the items                          (default: $clr-fg-pri)
 //   --bit-Breadcrumb-selected-color         text of the current item                   (default: --bit-Breadcrumb-color)
 //   --bit-Breadcrumb-selected-font-weight   weight of the current item                 (default: $tg-fw-semibold)
 //   --bit-Breadcrumb-disabled-color         text of a disabled item                    (default: $clr-fg-dis)
 //   --bit-Breadcrumb-hover-color            text of a hovered item                     (default: unchanged from rest)
 //   --bit-Breadcrumb-hover-background       background of a hovered item               (default: $clr-bg-pri-hover)
 //   --bit-Breadcrumb-active-background      background of a pressed item               (default: $clr-bg-pri-active)
-//   --bit-Breadcrumb-focus-color            focus indicator color                      (default: the Color role's focus color)
-//   --bit-Breadcrumb-font-size              text size of the items                     (default: per size, from the type ramp)
-//   --bit-Breadcrumb-item-height            line height of the items                   (default: per size, $siz-ctrl-*)
+//   --bit-Breadcrumb-focus-color            focus indicator color                      (default: $clr-pri-focus)
+//   --bit-Breadcrumb-font-size              text size of the items                     (default: $tg-fs-sm)
+//   --bit-Breadcrumb-item-height            line height of the items                   (default: $siz-ctrl-md)
 //   --bit-Breadcrumb-item-padding           padding of the items                       (default: 0 spacing(1))
 //   --bit-Breadcrumb-item-gap               room between the icon and the text         (default: spacing(1))
 //   --bit-Breadcrumb-item-radius            corner radius of the items                 (default: $shp-radius-control)
 //   --bit-Breadcrumb-item-max-width         width the text truncates at                (default: none; the MaxItemWidth parameter wins)
-//   --bit-Breadcrumb-divider-color          dividers and the overflow button glyph     (default: the Color role's main color / $clr-fg-sec)
-//   --bit-Breadcrumb-divider-size           size of the divider glyphs                 (default: per size, from the type ramp)
+//   --bit-Breadcrumb-divider-color          dividers and the overflow button glyph     (default: $clr-fg-sec)
+//   --bit-Breadcrumb-divider-size           size of the divider glyphs                 (default: $tg-fs-md)
 //   --bit-Breadcrumb-divider-spacing        room on each side of a divider             (default: 0)
 //
 //   OVERFLOW MENU
@@ -30,8 +31,15 @@
 //   --bit-Breadcrumb-callout-shadow         elevation of the menu                      (default: $box-shadow-popup)
 //   --bit-Breadcrumb-callout-max-width      widest the menu gets before its rows are
 //                                           ellipsized                                 (default: the width of the viewport)
-//   --bit-Breadcrumb-overflow-item-height   height of a menu row                       (default: per size, $siz-item-*)
-//   --bit-Breadcrumb-overflow-font-size     text size of a menu row                    (default: per size, from the type ramp)
+//   --bit-Breadcrumb-overflow-item-height   height of a menu row                       (default: $siz-item-md)
+//   --bit-Breadcrumb-overflow-font-size     text size of a menu row                    (default: $tg-fs-sm)
+//
+// A parameter written on the breadcrumb wins over the variable that restyles what it sets: an explicit Color over
+// the text, selected, hover, divider and focus colors (the surfaces stay neutral, so the hover and active
+// backgrounds and the disabled color are the variables' alone), and an explicit Size over the font size, the item
+// height, the divider size and the overflow row height and font size. The variables restyle the default, not a
+// choice - which is why Color and Size publish nothing while they are left unset: a class that always carried the
+// default would be indistinguishable from one that was asked for.
 
 // The divider is a separator set in the text, so it follows the type ramp; the overflow glyph sits inside a
 // control, so it follows the icon scale of the controls.
@@ -45,23 +53,42 @@
     --bit-brc-sz-ofi-lh: #{$ofi-lh};
 }
 
-// The one place the public variables meet the per-size and per-role defaults. Every rule below reads the
-// private variables this leaves behind, and the block is included on the callout as well, which is a
-// sibling of the root (a child of the body once it is open) and inherits nothing from it.
+// The one place the public variables meet the values an explicit Color and Size publish. Every rule below reads
+// the private variables this leaves behind, and the block is included on the callout as well, which is a
+// sibling of the root rather than a descendant of it, so it resolves the public variables it inherits on its
+// own.
 @mixin brc-vars {
-    @include brc-size($tg-fs-sm, $siz-ctrl-md, $tg-fs-md, $siz-icon-md, $siz-item-md, $tg-fs-sm, spacing(2.5));
+    // The values the Color and Size classes publish start out unset, so a breadcrumb never inherits another one's
+    // choice from an ancestor carrying those classes, and the classes - declared further down at the same weight -
+    // still win on the root (and the callout) that carries them. Left unset, each sends the var() reading it on to
+    // the public variable and then to the default, which is what lets an explicit parameter outrank the variable
+    // while an unset one leaves the variable in charge.
+    --bit-brc-sz-fs: initial;
+    --bit-brc-sz-h: initial;
+    --bit-brc-sz-div: initial;
+    --bit-brc-sz-obt: initial;
+    --bit-brc-sz-ofi-h: initial;
+    --bit-brc-sz-ofi-fs: initial;
+    --bit-brc-sz-ofi-lh: initial;
+    --bit-brc-role-main: initial;
+    --bit-brc-role-focus: initial;
+    // So does the width MaxItemWidth writes on the style of the root (and of the callout), which that inline
+    // declaration still wins over.
+    --bit-brc-itm-max-width: initial;
 
-    --bit-brc-fs: var(--bit-Breadcrumb-font-size, var(--bit-brc-sz-fs));
-    --bit-brc-h: var(--bit-Breadcrumb-item-height, var(--bit-brc-sz-h));
-    --bit-brc-div-sz: var(--bit-Breadcrumb-divider-size, var(--bit-brc-sz-div));
-    --bit-brc-ofi-h: var(--bit-Breadcrumb-overflow-item-height, var(--bit-brc-sz-ofi-h));
-    --bit-brc-ofi-fs: var(--bit-Breadcrumb-overflow-font-size, var(--bit-brc-sz-ofi-fs));
+    // The value an explicit Size publishes first, then the public variable, then the medium size an unset Size is.
+    --bit-brc-fs: var(--bit-brc-sz-fs, var(--bit-Breadcrumb-font-size, #{$tg-fs-sm}));
+    --bit-brc-h: var(--bit-brc-sz-h, var(--bit-Breadcrumb-item-height, #{$siz-ctrl-md}));
+    --bit-brc-div-sz: var(--bit-brc-sz-div, var(--bit-Breadcrumb-divider-size, #{$tg-fs-md}));
+    --bit-brc-ofi-h: var(--bit-brc-sz-ofi-h, var(--bit-Breadcrumb-overflow-item-height, #{$siz-item-md}));
+    --bit-brc-ofi-fs: var(--bit-brc-sz-ofi-fs, var(--bit-Breadcrumb-overflow-font-size, #{$tg-fs-sm}));
 
-    --bit-brc-clr: var(--bit-Breadcrumb-color, var(--bit-brc-role-main, #{$clr-fg-pri}));
-    --bit-brc-sel-clr: var(--bit-Breadcrumb-selected-color, var(--bit-Breadcrumb-color, var(--bit-brc-role-main, #{$clr-fg-pri})));
+    // Likewise the role an explicit Color picks, then the public variable, then the neutral trail an unset Color is.
+    --bit-brc-clr: var(--bit-brc-role-main, var(--bit-Breadcrumb-color, #{$clr-fg-pri}));
+    --bit-brc-sel-clr: var(--bit-brc-role-main, var(--bit-Breadcrumb-selected-color, var(--bit-Breadcrumb-color, #{$clr-fg-pri})));
     --bit-brc-dis-clr: var(--bit-Breadcrumb-disabled-color, #{$clr-fg-dis});
-    --bit-brc-div-clr: var(--bit-Breadcrumb-divider-color, var(--bit-brc-role-main, #{$clr-fg-sec}));
-    --bit-brc-fcs-clr: var(--bit-Breadcrumb-focus-color, var(--bit-brc-role-focus, #{$clr-pri-focus}));
+    --bit-brc-div-clr: var(--bit-brc-role-main, var(--bit-Breadcrumb-divider-color, #{$clr-fg-sec}));
+    --bit-brc-fcs-clr: var(--bit-brc-role-focus, var(--bit-Breadcrumb-focus-color, #{$clr-pri-focus}));
     --bit-brc-hover-bg: var(--bit-Breadcrumb-hover-background, #{$clr-bg-pri-hover});
     --bit-brc-active-bg: var(--bit-Breadcrumb-active-background, #{$clr-bg-pri-active});
 }
@@ -200,7 +227,7 @@
     // An icon button, so a square as tall as the items rather than a glyph with some room around it.
     min-width: var(--bit-brc-h);
     color: var(--bit-brc-div-clr);
-    font-size: var(--bit-brc-sz-obt);
+    font-size: var(--bit-brc-sz-obt, #{$siz-icon-md});
     line-height: var(--bit-brc-h);
     border-radius: var(--bit-Breadcrumb-item-radius, #{$shp-radius-control});
     transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
@@ -208,7 +235,7 @@
     @media (hover: hover) {
         &:hover {
             background-color: var(--bit-brc-hover-bg);
-            color: var(--bit-Breadcrumb-hover-color, var(--bit-brc-div-clr));
+            color: var(--bit-brc-role-main, var(--bit-Breadcrumb-hover-color, var(--bit-brc-div-clr)));
         }
     }
 
@@ -272,7 +299,7 @@
     @media (hover: hover) {
         &:hover {
             background-color: var(--bit-brc-hover-bg);
-            color: var(--bit-Breadcrumb-hover-color, var(--bit-brc-itm-clr));
+            color: var(--bit-brc-role-main, var(--bit-Breadcrumb-hover-color, var(--bit-brc-itm-clr)));
         }
     }
 
@@ -359,7 +386,7 @@
     color: var(--bit-brc-itm-clr);
     height: var(--bit-brc-ofi-h);
     font-size: var(--bit-brc-ofi-fs);
-    line-height: var(--bit-brc-sz-ofi-lh);
+    line-height: var(--bit-brc-sz-ofi-lh, #{spacing(2.5)});
     background-color: transparent;
     border: $shp-border-width $shp-border-style transparent;
     // The rows span the full width of the menu, so they follow its corners rather than a radius of their own.
@@ -384,7 +411,7 @@
     @media (hover: hover) {
         &:hover {
             background-color: var(--bit-brc-hover-bg);
-            color: var(--bit-Breadcrumb-hover-color, var(--bit-brc-itm-clr));
+            color: var(--bit-brc-role-main, var(--bit-Breadcrumb-hover-color, var(--bit-brc-itm-clr)));
         }
     }
 
@@ -433,7 +460,8 @@
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss).
 // Only the item and divider colors are driven by the role, the surfaces stay neutral so the trail
-// keeps reading as text rather than as a filled control.
+// keeps reading as text rather than as a filled control. Published only by an explicit Color, which wins over
+// the public color variables (see brc-vars).
 @each $role, $tokens in $bit-color-roles {
     .bit-brc-#{$role} {
         --bit-brc-role-main: #{role($tokens, main)};
@@ -442,6 +470,8 @@
 }
 
 
+// Published only by an explicit Size, which wins over the public size variables; an unset one is the medium
+// breadcrumb brc-vars spells out after them.
 .bit-brc-sm {
     @include brc-size($tg-fs-xs, $siz-ctrl-sm, $tg-fs-sm, $siz-icon-sm, $siz-item-sm, $tg-fs-xs, spacing(2));
 }

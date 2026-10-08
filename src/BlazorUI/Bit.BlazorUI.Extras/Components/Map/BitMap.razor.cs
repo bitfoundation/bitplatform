@@ -502,6 +502,14 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// <summary>The exception behind <see cref="BitMapLoadState.Failed"/>, when one was captured.</summary>
     public Exception? LoadError => _loadError;
 
+    // Whether the loading indicator is up and the canvas busy. Idle counts: it is what a prerendered or static page
+    // renders, where the map has not been created yet and is about to be, and showing the loader there - rather than
+    // an empty box - is what lets the interactive render carry straight on into Loading with nothing on screen
+    // changing. A lazy map is left out: it stays Idle for as long as it waits to scroll into view, possibly for good,
+    // and a status region announced (and a canvas kept busy) for all that time would tell assistive technology about
+    // a load that is not happening; it shows the loader once it actually starts loading.
+    private bool IsLoading => _loadState is BitMapLoadState.Loading || (_loadState is BitMapLoadState.Idle && LazyLoad is false);
+
     /// <summary>
     /// Ids of the markers currently on the map. Read from the component's own snapshot, so it
     /// costs no interop round-trip. The order is the snapshot dictionary's own and is not

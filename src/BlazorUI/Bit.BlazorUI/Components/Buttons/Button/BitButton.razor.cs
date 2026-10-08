@@ -95,6 +95,10 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// The general color of the button.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Button-*</c> color variables (the disabled and focus colors included);
+    /// left unset, the button is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -317,8 +321,8 @@ public partial class BitButton : BitComponentBase
     /// Renders the button with fully rounded (pill shaped) corners, and an icon-only one as a circle.
     /// </summary>
     /// <remarks>
-    /// It changes the corner the button falls back to, so a <c>--bit-Button-radius</c> set on the button or on
-    /// an ancestor still has the last word.
+    /// It wins over <c>--bit-Button-radius</c>, set on the button or on an ancestor: the variable restyles the
+    /// default corner, not a rounded one.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Rounded { get; set; }
@@ -338,6 +342,10 @@ public partial class BitButton : BitComponentBase
     /// <summary>
     /// Sets the preset size for typography and padding of the button.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Button-*</c> size variables (padding, min-height, gap, font, icon and
+    /// spinner sizes); left unset, the button is medium unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -434,35 +442,11 @@ public partial class BitButton : BitComponentBase
             _ => "bit-btn-fil"
         });
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-btn-pri",
-            BitColor.Secondary => "bit-btn-sec",
-            BitColor.Tertiary => "bit-btn-ter",
-            BitColor.Info => "bit-btn-inf",
-            BitColor.Success => "bit-btn-suc",
-            BitColor.Warning => "bit-btn-wrn",
-            BitColor.SevereWarning => "bit-btn-swr",
-            BitColor.Error => "bit-btn-err",
-            BitColor.PrimaryBackground => "bit-btn-pbg",
-            BitColor.SecondaryBackground => "bit-btn-sbg",
-            BitColor.TertiaryBackground => "bit-btn-tbg",
-            BitColor.PrimaryForeground => "bit-btn-pfg",
-            BitColor.SecondaryForeground => "bit-btn-sfg",
-            BitColor.TertiaryForeground => "bit-btn-tfg",
-            BitColor.PrimaryBorder => "bit-btn-pbr",
-            BitColor.SecondaryBorder => "bit-btn-sbr",
-            BitColor.TertiaryBorder => "bit-btn-tbr",
-            _ => "bit-btn-pri"
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-Button-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-btn"));
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-btn-sm",
-            BitSize.Medium => "bit-btn-md",
-            BitSize.Large => "bit-btn-lg",
-            _ => "bit-btn-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-btn"));
 
         ClassBuilder.Register(() => IconPlacement is BitPlacement.End ? "bit-btn-eni" : string.Empty);
 

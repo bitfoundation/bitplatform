@@ -67,7 +67,7 @@ public partial class BitToggleDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the toggle, applied to the track of the checked state.",
+            Description = "The general color of the toggle, applied to the track of the checked state. An explicit value wins over the --bit-Toggle-* color variables of the checked state and the focus color; left unset, the toggle is primary unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -269,7 +269,7 @@ public partial class BitToggleDemo
             Name = "Size",
             Type = "BitSize?",
             DefaultValue = "null",
-            Description = "The size of the toggle.",
+            Description = "The size of the toggle. An explicit value wins over the --bit-Toggle-* size variables (track width and height, knob size, content padding, font sizes); left unset, the toggle is medium unless they say otherwise.",
             LinkType = LinkType.Link,
             Href = "#size-enum",
         },
@@ -529,8 +529,8 @@ public partial class BitToggleDemo
         new()
         {
             Name = "--bit-Toggle-checked-background",
-            DefaultValue = "The Color role's main color",
-            Description = "Track fill while the toggle is on.",
+            DefaultValue = "$clr-pri",
+            Description = "Track fill while the toggle is on. The Color parameter wins over it.",
         },
         new()
         {
@@ -541,14 +541,14 @@ public partial class BitToggleDemo
         new()
         {
             Name = "--bit-Toggle-checked-thumb-color",
-            DefaultValue = "The Color role's on-color",
-            Description = "The knob while the toggle is on, hover included.",
+            DefaultValue = "$clr-pri-text",
+            Description = "The knob while the toggle is on, hover included. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Toggle-checked-hover-background",
-            DefaultValue = "The Color role's hover color",
-            Description = "Track fill while hovered and on (pointer devices only).",
+            DefaultValue = "$clr-pri-hover",
+            Description = "Track fill while hovered and on (pointer devices only). The Color parameter wins over it.",
         },
         new()
         {
@@ -565,8 +565,8 @@ public partial class BitToggleDemo
         new()
         {
             Name = "--bit-Toggle-content-color",
-            DefaultValue = "$clr-fg-sec while off, the role's on-color while on",
-            Description = "The OnContent and OffContent carried inside the track.",
+            DefaultValue = "$clr-fg-sec while off, $clr-pri-text while on",
+            Description = "The OnContent and OffContent carried inside the track. The Color parameter wins over it while on.",
         },
         new()
         {
@@ -613,20 +613,20 @@ public partial class BitToggleDemo
         new()
         {
             Name = "--bit-Toggle-focus-color",
-            DefaultValue = "The Color role's focus color",
-            Description = "Focus ring color.",
+            DefaultValue = "$clr-pri-focus",
+            Description = "Focus ring color. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Toggle-track-width",
-            DefaultValue = "Per size, $siz-switch-w-*",
-            Description = "Smallest width of the track; a track carrying content still grows to fit it. Stepped up to the roomier icon geometry when the knob holds a glyph, unless this variable names a width of its own. Set it on the root, not on the track.",
+            DefaultValue = "$siz-switch-w-md",
+            Description = "Smallest width of the track; a track carrying content still grows to fit it. Stepped up to the roomier icon geometry when the knob holds a glyph, unless this variable names a width of its own. Set it on the root, not on the track. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Toggle-track-height",
-            DefaultValue = "Per size, $siz-switch-h-*",
-            Description = "Height of the track. Stepped up when the knob holds a glyph, unless set. Set it on the root, not on the track.",
+            DefaultValue = "$siz-switch-h-md",
+            Description = "Height of the track. Stepped up when the knob holds a glyph, unless set. Set it on the root, not on the track. The Size parameter wins over it.",
         },
         new()
         {
@@ -643,8 +643,8 @@ public partial class BitToggleDemo
         new()
         {
             Name = "--bit-Toggle-thumb-size",
-            DefaultValue = "Per size, $siz-switch-thumb-*",
-            Description = "Diameter of the knob. Stepped up when it holds a glyph, unless set. Set it on the root, not on the track.",
+            DefaultValue = "$siz-switch-thumb-md",
+            Description = "Diameter of the knob. Stepped up when it holds a glyph, unless set. Set it on the root, not on the track. The Size parameter wins over it.",
         },
         new()
         {
@@ -697,14 +697,14 @@ public partial class BitToggleDemo
         new()
         {
             Name = "--bit-Toggle-content-padding",
-            DefaultValue = "Per size",
-            Description = "Inset of the track content from the ends of the track.",
+            DefaultValue = "spacing(0.375)",
+            Description = "Inset of the track content from the ends of the track. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Toggle-label-font-size",
-            DefaultValue = "Per size, from the type ramp",
-            Description = "The label.",
+            DefaultValue = "$tg-fs-sm",
+            Description = "The label. The Size parameter wins over it.",
         },
         new()
         {
@@ -715,26 +715,26 @@ public partial class BitToggleDemo
         new()
         {
             Name = "--bit-Toggle-text-font-size",
-            DefaultValue = "Per size, from the type ramp",
-            Description = "The state text.",
+            DefaultValue = "inherit",
+            Description = "The state text. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Toggle-description-font-size",
-            DefaultValue = "Per size, one step below the label",
-            Description = "The description line.",
+            DefaultValue = "$tg-fs-xs",
+            Description = "The description line. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Toggle-error-font-size",
-            DefaultValue = "As the description",
-            Description = "The error message line.",
+            DefaultValue = "$tg-fs-xs",
+            Description = "The error message line. The Size parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Toggle-content-font-size",
-            DefaultValue = "Per size, from the type ramp",
-            Description = "The content carried inside the track.",
+            DefaultValue = "$tg-fs-xs",
+            Description = "The content carried inside the track. The Size parameter wins over it.",
         },
         new()
         {

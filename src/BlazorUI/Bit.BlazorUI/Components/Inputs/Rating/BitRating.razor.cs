@@ -108,6 +108,10 @@ public partial class BitRating : BitInputBase<double>
     /// The general color of the rating, applied to the filled part of the items.
     /// The unfilled part stays neutral so it reads as "not rated yet" whichever color is picked.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over the <c>--bit-Rating-*</c> color variables (the fill and its hover, active and
+    /// focus colors); left unset, the rating is primary unless those variables say otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
 
@@ -286,6 +290,11 @@ public partial class BitRating : BitInputBase<double>
     /// <summary>
     /// Size of the rating, which scales the item glyphs, the label and the description together.
     /// </summary>
+    /// <remarks>
+    /// An explicit value wins over <c>--bit-Rating-size</c>, <c>--bit-Rating-label-font-size</c> and
+    /// <c>--bit-Rating-description-font-size</c>; left unset, the rating is medium unless those variables say
+    /// otherwise.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitSize? Size { get; set; }
 
@@ -395,35 +404,11 @@ public partial class BitRating : BitInputBase<double>
             _ => string.Empty
         });
 
-        ClassBuilder.Register(() => Color switch
-        {
-            BitColor.Primary => "bit-rtg-pri",
-            BitColor.Secondary => "bit-rtg-sec",
-            BitColor.Tertiary => "bit-rtg-ter",
-            BitColor.Info => "bit-rtg-inf",
-            BitColor.Success => "bit-rtg-suc",
-            BitColor.Warning => "bit-rtg-wrn",
-            BitColor.SevereWarning => "bit-rtg-swr",
-            BitColor.Error => "bit-rtg-err",
-            BitColor.PrimaryBackground => "bit-rtg-pbg",
-            BitColor.SecondaryBackground => "bit-rtg-sbg",
-            BitColor.TertiaryBackground => "bit-rtg-tbg",
-            BitColor.PrimaryForeground => "bit-rtg-pfg",
-            BitColor.SecondaryForeground => "bit-rtg-sfg",
-            BitColor.TertiaryForeground => "bit-rtg-tfg",
-            BitColor.PrimaryBorder => "bit-rtg-pbr",
-            BitColor.SecondaryBorder => "bit-rtg-sbr",
-            BitColor.TertiaryBorder => "bit-rtg-tbr",
-            _ => "bit-rtg-pri"
-        });
+        // Color and Size publish nothing while they are unset, which is what lets the stylesheet tell a default
+        // from a choice: the public --bit-Rating-* variables restyle the default and never an explicit value.
+        ClassBuilder.Register(() => BitCssClasses.Color(Color, "bit-rtg"));
 
-        ClassBuilder.Register(() => Size switch
-        {
-            BitSize.Small => "bit-rtg-sm",
-            BitSize.Medium => "bit-rtg-md",
-            BitSize.Large => "bit-rtg-lg",
-            _ => "bit-rtg-md"
-        });
+        ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-rtg"));
     }
 
     protected override void RegisterCssStyles()
@@ -988,14 +973,7 @@ public partial class BitRating : BitInputBase<double>
     {
         if (index < 1 || index > _itemRefs.Length) return;
 
-        try
-        {
-            await _itemRefs[index - 1].FocusAsync();
-        }
-        catch (InvalidOperationException)
-        {
-            // The element reference is not attached yet (or anymore), which leaves the focus where it is.
-        }
+        await _itemRefs[index - 1].FocusSafelyAsync();
     }
 
 

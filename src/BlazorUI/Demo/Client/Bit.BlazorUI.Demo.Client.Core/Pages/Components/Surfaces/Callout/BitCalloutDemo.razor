@@ -632,8 +632,9 @@
     <DemoExample Title="Nesting" RazorCode="@example14RazorCode" Id="example14">
         <div>
             Opening a callout closes any other open one, except the one its anchor sits in: that one stays open beneath
-            it. Dismissing the outer one closes the inner ones, and Escape peels off the innermost. Dropdowns, date pickers
-            and menus nest the same way.
+            it. Dismissing the outer one closes the inner ones, and Escape peels off the innermost. A click outside all of
+            them closes them all, while one on a callout further down closes only the ones opened above it. Dropdowns,
+            date pickers and menus nest the same way.
         </div>
         <br />
         <div class="example-box">
@@ -777,8 +778,9 @@
     <DemoExample Title="Style &amp; Class" RazorCode="@example18RazorCode" Id="example18">
         <div>
             Reach for the <b>--bit-Callout-*</b> CSS variables first (listed in the API section). The callout moves to the
-            body while open, so set them on <b>:root</b>, on the callout's <b>Style</b> (copied onto the callout, its arrow
-            and its overlay) or through BitParams. <b>Style</b> and <b>Class</b> land on the root around the anchor;
+            end of the body while open, yet the callout, its arrow and its overlay keep inheriting from its root and the
+            ancestors around it, so set them on <b>:root</b>, on an ancestor or through its class, on the callout's
+            <b>Style</b> or through BitParams. <b>Style</b> and <b>Class</b> land on the root around the anchor;
             <b>Styles</b> and <b>Classes</b> reach each part. The callout and its arrow carry <b>data-bit-cal-pos</b>
             (below, above, left or right) and <b>data-bit-cal-align</b> for styles that follow the placement.
         </div>
