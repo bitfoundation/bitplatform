@@ -57,6 +57,10 @@
                 </div>
             }
 
+            @* data-bit-esc claims the Escape HandleEscape acts on (see Utils.claimEscape), so a dialog around the
+               field does not close on the press that closes the list or clears the field: the list is closed
+               whatever the field holds, a value is cleared whatever the input shows, and text not committed yet
+               is wiped while there is any. *@
             <input @ref="InputElement" @attributes="InputHtmlAttributes"
                    @onclick="@HandleOnClick"
                    @onkeyup="@HandleOnKeyUp"
@@ -71,6 +75,7 @@
                    id="@_inputId"
                    tabindex="@TabIndex"
                    readonly="@ReadOnly"
+                   data-bit-esc="@EscapeClaim"
                    required="@Required"
                    aria-required="@(Required ? "true" : null)"
                    value="@CurrentValue"

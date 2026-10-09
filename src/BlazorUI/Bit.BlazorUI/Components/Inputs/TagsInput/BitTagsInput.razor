@@ -10,7 +10,12 @@
     var hasLabel = LabelTemplate is not null || Label.HasValue();
     var hasDescription = DescriptionTemplate is not null || Description.HasValue();
     var isInteractive = Disabled is false && ReadOnly is false;
-    var showClearButton = ShowClearButton && isInteractive && (HasRemovableTag() || _inputText.Length > 0);
+    var canClear = ShowClearButton && isInteractive;
+
+    // Worked out once per render, for the clear button and for the Escape that stands in for it (EscapeClaim):
+    // it runs the consumer's CanRemoveTag over every tag.
+    var hasRemovableTag = canClear && HasRemovableTag();
+    var showClearButton = canClear && (hasRemovableTag || _inputText.Length > 0);
 
     // The tags beyond the MaxDisplayedTags are folded away behind a chip that says how many they are,
     // which the reader unfolds the list with; the value itself is untouched, only how much of it is drawn.
@@ -114,9 +119,13 @@
             @* The wrapper carries the list semantics that a row of loose divs would not have, while
                laying its children out in the flex box of the container above through display:contents,
                so that the tags and the input keep sharing the same wrapping line. The role is written
-               out explicitly because display:contents strips the implicit one in several engines. *@
+               out explicitly because display:contents strips the implicit one in several engines.
+               data-bit-esc claims the Escape that puts a carried tag back (see Utils.claimEscape), so a dialog
+               around the field does not close on the press that only takes back the move. One that just walks
+               the focus from a chip back to the input leaves nothing behind, and goes on to the dialog. *@
             <div role="list"
                  id="@_tagsId"
+                 data-bit-esc="@(_pickedUpTagIndex >= 0 && Disabled is false ? "claim" : null)"
                  aria-label="@(TagsAriaLabel ?? "Tags")"
                  style="@Styles?.TagsContainer"
                  class="bit-tgi-tgs @Classes?.TagsContainer">
@@ -197,7 +206,10 @@
                             @* Every one of these is stopped from bubbling: the tag around it carries its
                                own handlers for the very same events, which would otherwise run a second
                                time on the keystroke the edit has already dealt with - Enter would commit
-                               the edit and reopen it, Escape would cancel it and then walk the focus away. *@
+                               the edit and reopen it, Escape would cancel it and then walk the focus away.
+                               Blazor stops them within its own dispatch only, so a dialog around the field is
+                               kept from closing on the Escape that cancels the edit by data-bit-esc instead
+                               (see Utils.claimEscape). *@
                             @* The MaxLength is a limit of the tag rather than of the field, so unlike the
                                main input - which a whole separated list may be pasted into at once - this
                                one carries it natively, and the browser stops the eleventh character
@@ -212,6 +224,7 @@
                                    @onkeydown="HandleOnEditKeyDown"
                                    @onkeydown:stopPropagation="true"
                                    @onfocusout="HandleOnEditFocusOut"
+                                   data-bit-esc="claim"
                                    @onclick:stopPropagation="true"
                                    @ondblclick:stopPropagation="true"
                                    type="text"
@@ -282,7 +295,9 @@
            would otherwise be offered over the suggestion list of the field, and a value it saved for a single
            line text box is the last tag that was typed rather than the list the field holds.
            Spell checking is off for the same kind of reason - a tag is a value rather than a sentence - and
-           SpellCheck turns it back on for a field that does collect words. *@
+           SpellCheck turns it back on for a field that does collect words.
+           data-bit-esc claims the Escape that takes back the text being typed or clears the tags (see
+           Utils.claimEscape), so a dialog around the field does not close on that same press. *@
         <input @ref="InputElement"
                @attributes="InputHtmlAttributes"
                @onkeydown="HandleOnKeyDown"
@@ -294,6 +309,7 @@
                autocorrect="off"
                autocapitalize="none"
                readonly="@ReadOnly"
+               data-bit-esc="@EscapeClaim(hasRemovableTag)"
                value="@_inputText"
                style="@Styles?.Input"
                autofocus="@AutoFocus"

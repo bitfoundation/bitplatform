@@ -144,7 +144,9 @@
                away - LabelledBy is what keeps the two from colliding, and the visible label goes on naming
                the input through the for/id pair either way. And the spinbutton role replaces the native role
                of the input, so the required state is written out rather than left to the required attribute
-               that role supersedes. *@
+               that role supersedes.
+               data-bit-esc claims the Escape that clears the field (see Utils.claimEscape), so a dialog around it
+               does not close on that same press. *@
             <input @ref="InputElement" @attributes="@InputHtmlAttributes"
                    @onblur="HandleOnBlur"
                    @onclick="HandleOnClick"
@@ -160,6 +162,7 @@
                    name="@Name"
                    id="@_inputId"
                    readonly="@(ReadOnly || IsInputReadOnly)"
+                   data-bit-esc="@(ClearsOnEscape() ? "claim" : null)"
                    required="@Required"
                    style="@Styles?.Input"
                    autofocus="@AutoFocus"

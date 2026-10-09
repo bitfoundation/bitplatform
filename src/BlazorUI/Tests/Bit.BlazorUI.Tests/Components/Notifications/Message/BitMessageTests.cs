@@ -2236,6 +2236,72 @@ public class BitMessageTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMessageShouldClaimTheEscapeThatDismissesIt()
+    {
+        // The root carries data-bit-esc (Utils.claimEscape), so a dialog the message sits in does not close on the
+        // press that dismisses the message.
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.DismissOnEscape, true);
+            parameters.Add(p => p.OnDismiss, () => { });
+        });
+
+        Assert.AreEqual("claim", component.Find(".bit-msg").GetAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotDismissOnAModifiedEscape()
+    {
+        var dismissCount = 0;
+
+        // Utils.claimEscape never claims an Escape with a modifier, so the dialog the message sits in closes on it -
+        // and the message must not be dismissed on the same press.
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.DismissOnEscape, true);
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        component.Find(".bit-msg").KeyDown(new KeyboardEventArgs { Key = "Escape", ShiftKey = true });
+        component.Find(".bit-msg").KeyDown(new KeyboardEventArgs { Key = "Escape", CtrlKey = true });
+
+        Assert.AreEqual(0, dismissCount);
+
+        component.Find(".bit-msg").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotClaimAnEscapeItDoesNotDismissOn()
+    {
+        var off = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.OnDismiss, () => { });
+        });
+        Assert.IsFalse(off.Find(".bit-msg").HasAttribute("data-bit-esc"));
+
+        var disabled = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+            parameters.Add(p => p.DismissOnEscape, true);
+            parameters.Add(p => p.OnDismiss, () => { });
+        });
+        Assert.IsFalse(disabled.Find(".bit-msg").HasAttribute("data-bit-esc"));
+
+        // A keydown handler written on the component replaces the message's own, so nothing is dismissed.
+        var replaced = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitMessage>(0);
+            builder.AddAttribute(1, nameof(BitMessage.DismissOnEscape), true);
+            builder.AddAttribute(2, nameof(BitMessage.OnDismiss), EventCallback.Factory.Create(this, () => { }));
+            builder.AddAttribute(3, "onkeydown", EventCallback.Factory.Create<KeyboardEventArgs>(this, () => { }));
+            builder.CloseComponent();
+        });
+        Assert.IsFalse(replaced.Find(".bit-msg").HasAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
     public void BitMessageShouldNotListenForKeysWithoutADismissHandler()
     {
         var component = RenderComponent<BitMessage>(parameters =>

@@ -58,6 +58,11 @@ public partial class BitMessage : BitComponentBase
     private bool? _observedReflow;
     private DotNetObjectReference<BitMessage>? _dotnetObj;
 
+    // Whether the browser is telling the message which Escapes are its own (see SyncEscapeWatch), and what it answered
+    // for the Escape Blazor is about to hand the key handler (see _OnEscapeVerdict).
+    private bool _escapeWatched;
+    private bool _foreignEscape;
+
     // Held as fields so re-registering them on every parameter set keeps handing the renderer the same
     // delegate instance, which is what lets the diff leave the listener alone.
     private readonly Action<PointerEventArgs> _onPointerEnter;
@@ -665,6 +670,19 @@ public partial class BitMessage : BitComponentBase
         StateHasChanged();
     }
 
+    /// <summary>
+    /// Called by the browser as each Escape goes down inside a message that dismisses on it, ahead of the keydown
+    /// Blazor then dispatches, with whether the key belongs to something inside the message instead - a field that
+    /// clears on it, a surface rendered inside the message - so the key handler that runs next leaves it alone.
+    /// <br />
+    /// <strong>This method is intended for internal use and should not be called directly.</strong>
+    /// </summary>
+    [JSInvokable("OnEscapeVerdict")]
+    public void _OnEscapeVerdict(bool foreign)
+    {
+        _foreignEscape = foreign;
+    }
+
 
 
     protected override string RootElementClass => "bit-msg";
@@ -768,6 +786,8 @@ public partial class BitMessage : BitComponentBase
 
         await SyncOverflowObserver();
 
+        await SyncEscapeWatch();
+
         await pageVisibilityInit;
     }
 
@@ -818,6 +838,35 @@ public partial class BitMessage : BitComponentBase
         }
         catch (JSDisconnectedException) { } // the circuit is gone, nothing to observe
         catch (JSException) { } // without the observer the expander is rendered, as it always was
+    }
+
+    // The key handler hears every Escape pressed inside the message, the ones a component or a surface inside it took
+    // first included, so the browser tells it which are its own (Message.watchEscape) for as long as it claims the
+    // key at all. A message that comes back is a new element, so it is watched afresh.
+    private async Task SyncEscapeWatch()
+    {
+        var watch = _EscapeClaim is not null && Dismissed is false && IsDisposed is false;
+
+        if (watch == _escapeWatched) return;
+
+        _escapeWatched = watch;
+        _foreignEscape = false;
+
+        try
+        {
+            if (watch)
+            {
+                _dotnetObj ??= DotNetObjectReference.Create(this);
+
+                await _js.BitMessageWatchEscape(UniqueId, RootElement, _dotnetObj);
+            }
+            else
+            {
+                await _js.BitMessageUnwatchEscape(UniqueId);
+            }
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, and the listener with it
+        catch (JSException) { } // without the listener every Escape is taken for the message's own, as it always was
     }
 
     // Subscribed the first time a countdown asks for it, and kept until the message is disposed: the hold is read
@@ -982,6 +1031,13 @@ public partial class BitMessage : BitComponentBase
     private bool _HasAutoDismiss => _CanDismiss && Disabled is false && AutoDismissTime is { } delay && delay > TimeSpan.Zero;
 
     private bool _HandlesEscape => DismissOnEscape && _CanDismiss && Disabled is false;
+
+    // The Escape that dismisses the message is claimed on its root (see Utils.claimEscape), so a dialog the message
+    // sits in does not close on the same press - but only while the message's own handler is the one listening: a
+    // keydown handler written on the component replaces it, and dismisses nothing.
+    private string? _EscapeClaim => _HandlesEscape
+                                    && HtmlAttributes.TryGetValue("onkeydown", out var handler)
+                                    && ReferenceEquals(handler, _onRootKeyDown) ? "claim" : null;
 
     // There is nothing to count down where nothing is counting down, so the bar follows the countdown itself
     // rather than the parameter that asks for it.
@@ -1363,6 +1419,12 @@ public partial class BitMessage : BitComponentBase
         // "Esc" is what the older browsers report for the same key.
         if (e.Key is not ("Escape" or "Esc")) return;
 
+        // Only the plain key, the one the root claims from a surface the message sits in (see _EscapeClaim): with a
+        // modifier the press is that surface's, so it does not dismiss the message as well. Nor does one that a
+        // component or a surface inside the message took first, which the browser has said so of (_OnEscapeVerdict).
+        if (e.ShiftKey || e.CtrlKey || e.AltKey || e.MetaKey) return;
+        if (_foreignEscape) return;
+
         await DismissAsync(BitMessageDismissReason.Escape);
     }
 
@@ -1410,6 +1472,16 @@ public partial class BitMessage : BitComponentBase
                 await _js.BitMessageDispose(UniqueId);
             }
             catch (JSDisconnectedException) { } // the circuit is gone, and the observer with it
+            catch (JSException) { } // the .NET reference below is released regardless
+        }
+
+        if (_escapeWatched)
+        {
+            try
+            {
+                await _js.BitMessageUnwatchEscape(UniqueId);
+            }
+            catch (JSDisconnectedException) { } // the circuit is gone, and the listener with it
             catch (JSException) { } // the .NET reference below is released regardless
         }
 

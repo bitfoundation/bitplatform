@@ -545,7 +545,7 @@ public partial class BitNumberFieldDemo
             Name = "ShowClearButton",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Whether to show the clear button whenever the field is showing something, resetting the value to null with a single click (most useful with nullable value types). \"Showing something\" covers a string the user typed that failed to parse as well as a real value, so the button is also there to wipe an entry that has to be corrected. It is not rendered while the field is read-only or empty. It stays out of the tab order (like the increment/decrement buttons), the Escape key being the keyboard equivalent of clicking it.",
+            Description = "Whether to show the clear button whenever the field is showing something, resetting the value to null with a single click (most useful with nullable value types). \"Showing something\" covers a string the user typed that failed to parse as well as a real value, so the button is also there to wipe an entry that has to be corrected. It is not rendered while the field is read-only or empty. It stays out of the tab order (like the increment/decrement buttons), the Escape key being the keyboard equivalent of clicking it - a press that is the field's alone, so a Dialog, a Modal, a Panel or an Overlay around it closes on the next one.",
         },
         new()
         {
