@@ -247,7 +247,10 @@ public class BitThemeProvider : ComponentBase
         // and role text and tint colors.
         BitThemeMapper.AugmentWithFamilyAliasReSubstitution(cssVars);
 
-        // And for the card insets, which the stylesheets compute on :root from the density and the spacing unit.
+        // And for every token the stylesheets compute on :root from the density and the spacing unit (the
+        // control sizes and the dialog and card insets), which a density or spacing unit set here re-derives
+        // for the subtree; a token this theme sets explicitly is fixed for the subtree instead, so a provider
+        // nested inside that re-values only the density keeps it. See BitThemeMapper.AugmentWithSpacingReSubstitution.
         BitThemeMapper.AugmentWithSpacingReSubstitution(cssVars);
 
         return string.Join(';', cssVars.Select(kv => $"{kv.Key}:{kv.Value}"));

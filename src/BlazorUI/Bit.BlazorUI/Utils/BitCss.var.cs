@@ -595,24 +595,23 @@ public static partial class BitCss
                 public const string Md = "--bit-spa-card-md";
                 public const string Lg = "--bit-spa-card-lg";
             }
+        }
 
-            /// <summary>
-            /// The unitless steps of the spacing unit each inset above is derived from, as every packaged
-            /// preset declares them. Internal: they are not theme tokens of their own (a theme sets the
-            /// inset), only what <c>BitThemeMapper.AugmentWithSpacingReSubstitution</c> re-declares an
-            /// inset against when a scoped theme re-values the density or the spacing unit.
-            /// </summary>
-            internal static class Steps
-            {
-                public const string Dialog = "--bit-spa-dialog-steps";
+        /// <summary>
+        /// The names of the two companions a token derived from the spacing unit has in the stylesheets
+        /// (the insets of <see cref="Spacing"/> and most of <see cref="Size"/>): the unitless steps of the unit
+        /// a preset derives it from, and the absolute value a preset or a theme fixes it at instead.
+        /// Internal: neither is a theme token of its own (a theme sets the token itself), only what
+        /// <c>BitThemeMapper.AugmentWithSpacingReSubstitution</c> re-declares the token against when a scoped
+        /// theme re-values the density or the spacing unit.
+        /// </summary>
+        internal static class Derived
+        {
+            /// <summary>The unitless steps of the spacing unit <paramref name="token"/> is, e.g. <c>--bit-spa-dialog-steps</c>.</summary>
+            public static string Steps(string token) => $"{token}-steps";
 
-                public static class Card
-                {
-                    public const string Sm = "--bit-spa-card-sm-steps";
-                    public const string Md = "--bit-spa-card-md-steps";
-                    public const string Lg = "--bit-spa-card-lg-steps";
-                }
-            }
+            /// <summary>The absolute value <paramref name="token"/> is fixed at instead, e.g. <c>--bit-siz-ctrl-min-width-fixed</c>.</summary>
+            public static string Fixed(string token) => $"{token}-fixed";
         }
 
         public static class Motion

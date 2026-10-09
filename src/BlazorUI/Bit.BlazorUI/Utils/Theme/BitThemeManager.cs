@@ -118,6 +118,16 @@ public class BitThemeManager : IAsyncDisposable
     /// the family tier - track the override (an alias's <c>var()</c> reference is substituted where the alias is defined, so
     /// the <c>:root</c>-level default would otherwise keep the document's value).
     /// Explicitly-set alias values always win over this re-declaration.
+    /// <para>
+    /// The same holds for the tokens the stylesheets derive from the spacing unit and the density - the
+    /// control sizes (<c>--bit-siz-ctrl-*</c>, <c>--bit-siz-item-*</c>, ...) and the dialog and card insets
+    /// (<c>--bit-spa-dialog</c>, <c>--bit-spa-card-*</c>): when the theme re-values
+    /// <see cref="BitThemeLayout.DensityScale"/> or <see cref="BitThemeSpacings.ScalingFactor"/>, each one the
+    /// theme does not set is re-declared on the target element from the active preset's steps, so the
+    /// subtree's controls, dialogs and cards follow. Each one the theme does set is also written to its
+    /// <c>-fixed</c> companion, which keeps it at that value in a region nested inside that re-values only
+    /// the density.
+    /// </para>
     /// </remarks>
     /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>
     public async ValueTask ApplyBitThemeAsync(BitTheme? bitTheme, ElementReference? element = null)

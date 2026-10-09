@@ -427,14 +427,18 @@ Adding a global token means touching all of: `theme-variables.scss` (the `$` ali
 `BitThemeSerialization.EnsureNestedObjects` for a new branch, and the ThemingPage docs; the theme
 contract tests in `Tests/Bit.BlazorUI.Tests/Utils/Theme` fail on any drift between them.
 
-An inset derived from the spacing unit (`--bit-spa-dialog`, `--bit-spa-card-{sm,md,lg}`) is computed
-where it is declared, so a scoped density or spacing-unit override would leave it at the document's
-length. Each preset therefore declares its steps as a unitless `--bit-spa-<inset>-steps` token and the
-inset as `calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(<steps>))`, and
-`BitThemeMapper.AugmentWithSpacingReSubstitution` re-declares that expression on the scoped element.
-The steps tokens are **not** global tokens - no `$` alias, no `BitTheme` property, no mapper entry; a
-theme sets the inset - but their names have one home all the same: the `internal`
-`BitCss.Var.Spacing.Steps`, paired with each inset in `BitThemeMapper.SpacingStepTargets`. A new
-derived inset gets a steps constant, a row there and the steps declaration in all four presets;
-`BitThemeSpacingReSubstitutionTests` fails on an inset derived from the unit that has no row, and on a
-row whose steps a preset does not declare.
+A token derived from the spacing unit - the dialog and card insets (`--bit-spa-dialog`,
+`--bit-spa-card-{sm,md,lg}`) and the density-aware sizes (`--bit-siz-ctrl-*`, `-item-*`, `-switch-*`, ...) -
+is computed where it is declared, so a scoped density or spacing-unit override would leave it at the
+document's length. Each preset therefore declares it through one of two companions:
+`--bit-<token>-steps: <number>` beside `calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-<token>-steps))`
+when it derives it, or `--bit-<token>-fixed: <value>` beside `var(--bit-<token>-fixed)` when it sets an
+absolute value (Fluent's `auto` button min width, the Extras presets' dialog widths) - and a preset that
+derives a token another one fixes declares its `-fixed` as `initial`. `BitThemeMapper.AugmentWithSpacingReSubstitution`
+re-declares every such token the scoped theme does not set as `var(<fixed>, <the calc>)`, and writes each
+one the theme does set to its `-fixed`, so a region nested inside keeps it. The companions are **not**
+global tokens - no `$` alias, no `BitTheme` property, no mapper entry; a theme sets the token - and their
+names come from one convention, `BitCss.Var.Derived.Steps` / `.Fixed`. A new derived token gets a row in
+`BitThemeMapper.SpacingDerivedTargets` and its companion in every preset that declares it;
+`BitThemeSpacingReSubstitutionTests` reads every theme stylesheet and fails on a token derived from the
+unit that has no row, a declaration of one in any other form, and a missing `initial`.

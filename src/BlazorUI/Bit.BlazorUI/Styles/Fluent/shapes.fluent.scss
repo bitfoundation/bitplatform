@@ -13,9 +13,10 @@
     --bit-spa-scaling-factor: 0.5rem;
     --bit-layout-density-scale: 1;
     //the insets derived from the spacing unit. The steps of the unit each one is are their own unitless
-    //tokens (named in BitCss.Var.Spacing.Steps) so a theme applied lower in the tree that only re-values
-    //the density or the spacing unit can re-declare the inset there (BitThemeMapper.AugmentWithSpacingReSubstitution)
-    //and still land on this preset's steps rather than on the document's already-computed length.
+    //tokens (--bit-spa-<inset>-steps, named by BitCss.Var.Derived) so a theme applied lower in the tree that
+    //only re-values the density or the spacing unit can re-declare the inset there
+    //(BitThemeMapper.AugmentWithSpacingReSubstitution) and still land on this preset's steps rather than
+    //on the document's already-computed length - the same as the derived sizes in sizes.fluent.scss.
     //
     //the base inset of a dialog surface - the one padding a design system decides for dialog
     //headers, bodies and footers (Fluent 24px, Material 24px, Cupertino alerts 20px).

@@ -10,51 +10,94 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.BlazorUI.Tests.Utils.Theme;
 
 /// <summary>
-/// Contract and behavior for the spacing inset re-substitution: an inline theme override (a
-/// <see cref="BitThemeProvider"/> wrapper or <c>BitThemeManager.ApplyBitThemeAsync</c>, which share the same
-/// augmentation) that re-values only the density scale or the spacing unit re-declares <c>--bit-spa-dialog</c> and
-/// <c>--bit-spa-card-{sm,md,lg}</c> on the same element, as the very expression every packaged preset declares them
-/// with, so the dialogs and cards of the subtree resize against the active preset's steps instead of inheriting the
-/// document's already-computed inset.
+/// Contract and behavior for the re-substitution of the tokens derived from the spacing unit: an inline theme
+/// override (a <see cref="BitThemeProvider"/> wrapper or <c>BitThemeManager.ApplyBitThemeAsync</c>, which share the
+/// same augmentation) that re-values only the density scale or the spacing unit re-declares the dialog and card
+/// insets and the density-aware sizes on the same element, as the very expression every packaged preset declares them
+/// with, so the subtree resizes against the active preset's steps instead of inheriting the document's
+/// already-computed length - while a value fixed above, by a preset or by a theme, is kept.
 /// </summary>
 [TestClass]
 public sealed class BitThemeSpacingReSubstitutionTests : BunitTestContext
 {
-    /// <summary>
-    /// The stylesheet each packaged preset declares its spacing insets in: the core Fluent tokens and the three
-    /// presets of Bit.BlazorUI.Extras.
-    /// </summary>
-    private static readonly string[][] PresetSpacingStylesheets =
-    [
-        ["Fluent", "shapes.fluent.scss"],
-        ["Fluent2", "tokens.fluent2.scss"],
-        ["Material", "tokens.material.scss"],
-        ["Cupertino", "tokens.cupertino.scss"],
-    ];
+    /// <summary>One row of <c>BitThemeMapper.SpacingDerivedTargets</c>, read as the mapper reads it.</summary>
+    private sealed record Target(string Token, string Steps, string Fixed, string Expression, string ReSubstitution);
+
+    /// <summary>One declaration of a custom property in a theme stylesheet, with the rule it is written in.</summary>
+    private sealed record Declaration(string File, int Rule, string Name, string Value);
+
+    private static readonly Regex InnermostRule = new(@"\{([^{}]*)\}", RegexOptions.Compiled);
+
+    private static readonly Regex CustomPropertyDeclaration = new(@"(--bit-[a-z0-9-]+)\s*:\s*([^;]+);", RegexOptions.Compiled);
+
+    // A CSS <number>: an optional sign, then digits with an optional fraction, or a fraction alone (.75).
+    private static readonly Regex UnitlessNumber = new(@"^[+-]?(?:\d+(?:\.\d+)?|\.\d+)$", RegexOptions.Compiled);
+
+    private static readonly Lazy<IReadOnlyList<Target>> LazyTargets = new(ReadTargets);
+
+    private static readonly Lazy<IReadOnlyList<Declaration>> LazyDeclarations = new(ReadDeclarations);
 
     /// <summary>
-    /// Any inset a stylesheet derives from the spacing unit and the density, which is what makes it one a scoped
-    /// density override has to re-declare.
+    /// The mapper's table - read off the compiled mapper rather than restated here, so a steps or fixed name renamed
+    /// or mistyped there is one these tests look for in the stylesheets.
     /// </summary>
-    private static readonly Regex DerivedInsetDeclaration = new(
-        @"(--bit-spa-[a-z0-9-]+)\s*:\s*calc\(var\(--bit-spa-scaling-factor\)\s*\*\s*var\(--bit-layout-density-scale\)",
-        RegexOptions.Compiled);
+    private static IReadOnlyList<Target> Targets => LazyTargets.Value;
 
-    /// <summary>
-    /// The mapper's table of each inset and the steps token it is derived from - read as the mapper reads it, so a
-    /// steps name renamed or mistyped there is one these tests look for in the stylesheets.
-    /// </summary>
-    private static readonly IReadOnlyList<KeyValuePair<string, string>> StepTargets =
-        (IReadOnlyList<KeyValuePair<string, string>>)typeof(BitThemeProvider).Assembly
-            .GetType("Bit.BlazorUI.BitThemeMapper", throwOnError: true)!
-            .GetField("SpacingStepTargets", BindingFlags.Static | BindingFlags.NonPublic)!
-            .GetValue(null)!;
+    /// <summary>Every custom property declared in a theme stylesheet - the core ones and the Extras presets alike.</summary>
+    private static IReadOnlyList<Declaration> Declarations => LazyDeclarations.Value;
 
-    private static string Expected(string steps)
-        => $"calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var({steps}))";
+    private static Target TargetFor(string token) => Targets.Single(target => target.Token == token);
 
-    private static string ExpectedFor(string inset)
-        => Expected(StepTargets.Single(target => target.Key == inset).Value);
+    private static IReadOnlyList<Target> ReadTargets()
+    {
+        const string mapperName = "Bit.BlazorUI.BitThemeMapper";
+        const string tableName = "SpacingDerivedTargets";
+
+        var mapper = typeof(BitThemeProvider).Assembly.GetType(mapperName);
+        Assert.IsNotNull(mapper, $"{mapperName} was not found; these tests read its {tableName} table.");
+
+        var table = mapper.GetField(tableName, BindingFlags.Static | BindingFlags.NonPublic);
+        Assert.IsNotNull(table, $"{mapperName}.{tableName} was not found as a static field; these tests read it.");
+
+        var rows = table.GetValue(null) as System.Collections.IEnumerable;
+        Assert.IsNotNull(rows, $"{mapperName}.{tableName} is not a list.");
+
+        string Read(object row, string property)
+        {
+            var value = row.GetType().GetProperty(property)?.GetValue(row) as string;
+            Assert.IsNotNull(value, $"A row of {mapperName}.{tableName} has no string {property}.");
+            return value;
+        }
+
+        return rows.Cast<object>()
+                   .Select(row => new Target(Read(row, "Token"), Read(row, "Steps"), Read(row, "Fixed"), Read(row, "Expression"), Read(row, "ReSubstitution")))
+                   .ToArray();
+    }
+
+    private static IReadOnlyList<Declaration> ReadDeclarations()
+    {
+        return SourceFiles.EnumerateThemeStylesheets()
+                          .SelectMany(file =>
+                          {
+                              var name = Path.GetRelativePath(SourceFiles.Root, file);
+                              var scss = SourceFiles.StripScssComments(SourceFiles.ReadFullPath(file));
+
+                              return InnermostRule.Matches(scss)
+                                                  .SelectMany(rule => CustomPropertyDeclaration.Matches(rule.Groups[1].Value)
+                                                                                               .Select(d => new Declaration(name, rule.Index, d.Groups[1].Value, d.Groups[2].Value.Trim())));
+                          })
+                          .ToArray();
+    }
+
+    private static bool IsCompanion(string name) => name.EndsWith("-steps", StringComparison.Ordinal) || name.EndsWith("-fixed", StringComparison.Ordinal);
+
+    private static bool IsDerivedFromTheSpacingUnit(string value)
+        => value.Contains("--bit-spa-scaling-factor", StringComparison.Ordinal) ||
+           value.Contains("--bit-layout-density-scale", StringComparison.Ordinal) ||
+           value.Contains("spacing(", StringComparison.Ordinal);
+
+    private static IEnumerable<Declaration> InTheSameRule(Declaration declaration, string name)
+        => Declarations.Where(d => d.File == declaration.File && d.Rule == declaration.Rule && d.Name == name);
 
     private string RenderProviderStyle(BitTheme theme)
     {
@@ -68,67 +111,128 @@ public sealed class BitThemeSpacingReSubstitutionTests : BunitTestContext
     }
 
     [TestMethod]
-    public void TheMapperReSubstitutesEveryInsetDerivedFromTheSpacingUnit()
+    public void TheMapperReSubstitutesEveryTokenDerivedFromTheSpacingUnit()
     {
-        var derived = SourceFiles.EnumerateThemeStylesheets()
-            .SelectMany(file => DerivedInsetDeclaration.Matches(SourceFiles.ReadFullPath(file)).Select(m => m.Groups[1].Value))
-            .Distinct()
-            .OrderBy(name => name, StringComparer.Ordinal)
-            .ToArray();
+        var derivedInStylesheets = Declarations.Where(d => IsCompanion(d.Name) is false && IsDerivedFromTheSpacingUnit(d.Value))
+                                               .Select(d => d.Name)
+                                               .Where(name => name != "--bit-spa-scaling-factor" && name != "--bit-layout-density-scale")
+                                               .ToHashSet(StringComparer.Ordinal);
 
-        CollectionAssert.Contains(derived, "--bit-spa-dialog");
-        CollectionAssert.Contains(derived, "--bit-spa-card-md");
+        CollectionAssert.Contains(derivedInStylesheets.ToArray(), "--bit-spa-dialog");
+        CollectionAssert.Contains(derivedInStylesheets.ToArray(), "--bit-siz-ctrl-md");
 
-        CollectionAssert.AreEqual(derived, StepTargets.Select(target => target.Key).OrderBy(name => name, StringComparer.Ordinal).ToArray(),
-            "Every inset a stylesheet derives from the spacing unit and the density must have a row in BitThemeMapper.SpacingStepTargets, or a scoped density override leaves it at the document's length.");
+        var inTheTable = Targets.Select(target => target.Token).ToHashSet(StringComparer.Ordinal);
+
+        var missing = derivedInStylesheets.Except(inTheTable).Order(StringComparer.Ordinal).ToArray();
+        var stale = inTheTable.Except(derivedInStylesheets).Order(StringComparer.Ordinal).ToArray();
+
+        Assert.AreEqual(0, missing.Length,
+            $"A theme stylesheet derives {string.Join(", ", missing)} from the spacing unit, but BitThemeMapper.SpacingDerivedTargets has no row for it, so a scoped density override leaves it at the document's length.");
+        Assert.AreEqual(0, stale.Length,
+            $"BitThemeMapper.SpacingDerivedTargets has a row for {string.Join(", ", stale)}, which no theme stylesheet derives from the spacing unit.");
     }
 
     [TestMethod]
-    public void EveryPresetDeclaresEachStepsTokenTheMapperReadsAndDerivesTheInsetFromIt()
+    public void EveryDeclarationOfADerivedTokenIsOneTheMapperCanReproduce()
     {
-        foreach (var segments in PresetSpacingStylesheets)
+        var checkedDeclarations = 0;
+
+        foreach (var target in Targets)
         {
-            var file = Path.Combine(segments);
-            var scss = SourceFiles.ReadThemeStylesheet(segments);
-
-            foreach (var (inset, steps) in StepTargets)
+            foreach (var declaration in Declarations.Where(d => d.Name == target.Token))
             {
-                Assert.IsTrue(Regex.IsMatch(scss, Regex.Escape(steps) + @"\s*:\s*\d+(?:\.\d+)?\s*;"),
-                    $"{file} does not declare {steps}, the unitless steps BitThemeMapper re-declares {inset} against.");
+                checkedDeclarations++;
 
-                var declarations = Regex.Matches(scss, Regex.Escape(inset) + @"\s*:\s*([^;]+);");
-
-                Assert.AreNotEqual(0, declarations.Count, $"{file} does not declare {inset}.");
-
-                foreach (Match declaration in declarations)
+                if (declaration.Value == target.Expression)
                 {
-                    Assert.AreEqual(Expected(steps), declaration.Groups[1].Value.Trim(),
-                        $"{file} declares {inset} differently from what a scoped density override re-declares it as.");
+                    var steps = InTheSameRule(declaration, target.Steps).ToArray();
+
+                    Assert.AreEqual(1, steps.Length,
+                        $"{declaration.File} derives {target.Token} from {target.Steps} without declaring it in the same rule.");
+                    Assert.IsTrue(UnitlessNumber.IsMatch(steps[0].Value),
+                        $"{declaration.File} declares {target.Steps} as '{steps[0].Value}'; the steps of the spacing unit are a unitless number.");
                 }
+                else if (declaration.Value == $"var({target.Fixed})")
+                {
+                    var fixedValue = InTheSameRule(declaration, target.Fixed).ToArray();
+
+                    Assert.AreEqual(1, fixedValue.Length,
+                        $"{declaration.File} reads {target.Token} from {target.Fixed} without declaring it in the same rule.");
+                    Assert.AreNotEqual("initial", fixedValue[0].Value,
+                        $"{declaration.File} reads {target.Token} from {target.Fixed}, which it declares initial.");
+                }
+                else
+                {
+                    Assert.Fail($"{declaration.File} declares {target.Token} as '{declaration.Value}'. A scoped density override re-declares it as '{target.ReSubstitution}', " +
+                                $"so it is either '{target.Expression}' beside a unitless {target.Steps}, or 'var({target.Fixed})' beside the value {target.Fixed} declares.");
+                }
+            }
+        }
+
+        Assert.IsTrue(checkedDeclarations >= Targets.Count, "Expected every derived token to be declared by at least the core Fluent stylesheets.");
+    }
+
+    [TestMethod]
+    public void TheCoreFluentStylesheetsDeclareEveryDerivedToken()
+    {
+        var core = Declarations.Where(d => d.File.StartsWith(Path.Combine("Bit.BlazorUI", "Styles", "Fluent"), StringComparison.Ordinal))
+                               .Select(d => d.Name)
+                               .ToHashSet(StringComparer.Ordinal);
+
+        var missing = Targets.Select(target => target.Token).Where(token => core.Contains(token) is false).ToArray();
+
+        Assert.AreEqual(0, missing.Length,
+            $"The core Fluent stylesheets, which every preset is layered over, do not declare {string.Join(", ", missing)}.");
+    }
+
+    [TestMethod]
+    public void APresetThatDerivesATokenAnotherOneFixesClearsTheFixedValue()
+    {
+        foreach (var target in Targets)
+        {
+            var fixedSomewhere = Declarations.Any(d => d.Name == target.Fixed && d.Value != "initial");
+
+            if (fixedSomewhere is false) continue;
+
+            foreach (var derived in Declarations.Where(d => d.Name == target.Token && d.Value == target.Expression))
+            {
+                Assert.IsTrue(InTheSameRule(derived, target.Fixed).Any(d => d.Value == "initial"),
+                    $"{derived.File} derives {target.Token}, which another preset fixes, without declaring {target.Fixed}: initial - a scoped density override in a subtree scoped to it would land on the other preset's fixed value.");
             }
         }
     }
 
     [TestMethod]
-    public void DensityOnlyOverrideReDeclaresTheInsets()
+    public void DensityOnlyOverrideReDeclaresTheDerivedTokens()
     {
         var style = RenderProviderStyle(new BitTheme { Layout = { DensityScale = "0.9" } });
 
-        foreach (var (inset, steps) in StepTargets)
+        foreach (var target in Targets)
         {
-            StringAssert.Contains(style, $"{inset}:{Expected(steps)}");
+            StringAssert.Contains(style, $"{target.Token}:{target.ReSubstitution}");
         }
     }
 
     [TestMethod]
-    public void ScalingFactorOnlyOverrideReDeclaresTheInsets()
+    public void ScalingFactorOnlyOverrideReDeclaresTheDerivedTokens()
     {
         var style = RenderProviderStyle(new BitTheme { Spacing = { ScalingFactor = "0.25rem" } });
 
-        foreach (var (inset, steps) in StepTargets)
+        foreach (var target in Targets)
         {
-            StringAssert.Contains(style, $"{inset}:{Expected(steps)}");
+            StringAssert.Contains(style, $"{target.Token}:{target.ReSubstitution}");
         }
+    }
+
+    [TestMethod]
+    public void TheReSubstitutionPrefersAFixedValueOverTheSteps()
+    {
+        var target = TargetFor("--bit-spa-dialog");
+
+        Assert.AreEqual("--bit-spa-dialog-steps", target.Steps);
+        Assert.AreEqual("--bit-spa-dialog-fixed", target.Fixed);
+        Assert.AreEqual("calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-dialog-steps))", target.Expression);
+        Assert.AreEqual($"var(--bit-spa-dialog-fixed, {target.Expression})", target.ReSubstitution);
     }
 
     [TestMethod]
@@ -140,10 +244,10 @@ public sealed class BitThemeSpacingReSubstitutionTests : BunitTestContext
         var style = RenderProviderStyle(theme);
 
         StringAssert.Contains(style, "--bit-spa-card-md:10px");
-        Assert.IsFalse(style.Contains($"--bit-spa-card-md:{ExpectedFor("--bit-spa-card-md")}", StringComparison.Ordinal));
-        StringAssert.Contains(style, $"--bit-spa-card-sm:{ExpectedFor("--bit-spa-card-sm")}");
-        StringAssert.Contains(style, $"--bit-spa-card-lg:{ExpectedFor("--bit-spa-card-lg")}");
-        StringAssert.Contains(style, $"--bit-spa-dialog:{ExpectedFor("--bit-spa-dialog")}");
+        Assert.IsFalse(style.Contains($"--bit-spa-card-md:{TargetFor("--bit-spa-card-md").ReSubstitution}", StringComparison.Ordinal));
+        StringAssert.Contains(style, $"--bit-spa-card-sm:{TargetFor("--bit-spa-card-sm").ReSubstitution}");
+        StringAssert.Contains(style, $"--bit-spa-card-lg:{TargetFor("--bit-spa-card-lg").ReSubstitution}");
+        StringAssert.Contains(style, $"--bit-spa-dialog:{TargetFor("--bit-spa-dialog").ReSubstitution}");
     }
 
     [TestMethod]
@@ -155,19 +259,69 @@ public sealed class BitThemeSpacingReSubstitutionTests : BunitTestContext
         var style = RenderProviderStyle(theme);
 
         StringAssert.Contains(style, "--bit-spa-dialog:20px");
-        Assert.IsFalse(style.Contains($"--bit-spa-dialog:{ExpectedFor("--bit-spa-dialog")}", StringComparison.Ordinal));
-        StringAssert.Contains(style, $"--bit-spa-card-md:{ExpectedFor("--bit-spa-card-md")}");
+        Assert.IsFalse(style.Contains($"--bit-spa-dialog:{TargetFor("--bit-spa-dialog").ReSubstitution}", StringComparison.Ordinal));
+        StringAssert.Contains(style, $"--bit-spa-card-md:{TargetFor("--bit-spa-card-md").ReSubstitution}");
     }
 
     [TestMethod]
-    public void UntouchedDensityAndSpacingUnitLeaveTheInsetsInherited()
+    public void ExplicitControlSizeWins()
+    {
+        var theme = new BitTheme { Layout = { DensityScale = "0.9" } };
+        theme.Size.Control.Md = "40px";
+
+        var style = RenderProviderStyle(theme);
+
+        StringAssert.Contains(style, "--bit-siz-ctrl-md:40px");
+        Assert.IsFalse(style.Contains($"--bit-siz-ctrl-md:{TargetFor("--bit-siz-ctrl-md").ReSubstitution}", StringComparison.Ordinal));
+        StringAssert.Contains(style, $"--bit-siz-ctrl-sm:{TargetFor("--bit-siz-ctrl-sm").ReSubstitution}");
+    }
+
+    [TestMethod]
+    public void AnExplicitValueIsFixedForTheRegionsNestedInside()
+    {
+        var theme = new BitTheme();
+        theme.Spacing.Dialog = "32px";
+        theme.Size.Control.Md = "40px";
+
+        var style = RenderProviderStyle(theme);
+
+        StringAssert.Contains(style, "--bit-spa-dialog-fixed:var(--bit-spa-dialog)");
+        StringAssert.Contains(style, "--bit-siz-ctrl-md-fixed:var(--bit-siz-ctrl-md)");
+        Assert.IsFalse(style.Contains("--bit-spa-card-md", StringComparison.Ordinal),
+            $"Neither input changed, so nothing but the explicit values is fixed or re-declared. Actual: {style}");
+    }
+
+    [TestMethod]
+    public void ANestedProviderKeepsTheValueItsParentSetExplicitly()
+    {
+        var parent = new BitTheme();
+        parent.Spacing.Dialog = "32px";
+
+        var cut = RenderComponent<BitThemeProvider>(parameters =>
+        {
+            parameters.Add(p => p.Theme, parent);
+            parameters.AddChildContent<BitThemeProvider>(child =>
+            {
+                child.Add(p => p.Theme, new BitTheme { Layout = { DensityScale = "0.9" } });
+                child.AddChildContent("<span>content</span>");
+            });
+        });
+
+        var inner = cut.FindAll("div")[1].GetAttribute("style") ?? string.Empty;
+
+        StringAssert.Contains(inner, "--bit-spa-dialog:32px");
+        StringAssert.Contains(inner, $"--bit-spa-card-md:{TargetFor("--bit-spa-card-md").ReSubstitution}");
+    }
+
+    [TestMethod]
+    public void UntouchedDensityAndSpacingUnitLeaveTheDerivedTokensInherited()
     {
         var style = RenderProviderStyle(new BitTheme { Shape = { BorderRadius = "4px" } });
 
-        foreach (var (inset, _) in StepTargets)
+        foreach (var target in Targets)
         {
-            Assert.IsFalse(style.Contains(inset, StringComparison.Ordinal),
-                $"{inset} must not be re-declared when neither input changed. Actual: {style}");
+            Assert.IsFalse(style.Contains(target.Token, StringComparison.Ordinal),
+                $"{target.Token} must not be re-declared when neither input changed. Actual: {style}");
         }
     }
 }

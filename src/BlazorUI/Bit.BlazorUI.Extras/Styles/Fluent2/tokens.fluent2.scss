@@ -64,36 +64,54 @@
     // the 8px spacing unit - so they are written as spacing multiples rather than as absolute
     // lengths, and the compact/spacious density presets keep working on this preset.
     // Heights: 24 / 32 / 40 - Button and Input small/medium/large.
-    --bit-siz-ctrl-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
-    --bit-siz-ctrl-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4); //32px
-    --bit-siz-ctrl-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5); //40px
+    --bit-siz-ctrl-sm-steps: 3;
+    --bit-siz-ctrl-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-sm-steps)); //24px
+    --bit-siz-ctrl-md-steps: 4;
+    --bit-siz-ctrl-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-md-steps)); //32px
+    --bit-siz-ctrl-lg-steps: 5;
+    --bit-siz-ctrl-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-lg-steps)); //40px
     // Button padding: spacingHorizontalS / M / L across, and the vertical padding that adds up to
     // the heights above with the 16 / 20 / 22px label line boxes.
-    --bit-siz-ctrl-pad-x-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1); //8px
-    --bit-siz-ctrl-pad-x-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
-    --bit-siz-ctrl-pad-x-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
-    --bit-siz-ctrl-pad-y-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 0.375); //3px
-    --bit-siz-ctrl-pad-y-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 0.625); //5px
-    --bit-siz-ctrl-pad-y-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1); //8px
+    --bit-siz-ctrl-pad-x-sm-steps: 1;
+    --bit-siz-ctrl-pad-x-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-pad-x-sm-steps)); //8px
+    --bit-siz-ctrl-pad-x-md-steps: 1.5;
+    --bit-siz-ctrl-pad-x-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-pad-x-md-steps)); //12px
+    --bit-siz-ctrl-pad-x-lg-steps: 2;
+    --bit-siz-ctrl-pad-x-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-pad-x-lg-steps)); //16px
+    --bit-siz-ctrl-pad-y-sm-steps: 0.375;
+    --bit-siz-ctrl-pad-y-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-pad-y-sm-steps)); //3px
+    --bit-siz-ctrl-pad-y-md-steps: 0.625;
+    --bit-siz-ctrl-pad-y-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-pad-y-md-steps)); //5px
+    --bit-siz-ctrl-pad-y-lg-steps: 1;
+    --bit-siz-ctrl-pad-y-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-pad-y-lg-steps)); //8px
     // Fluent 2 gives a labeled button a 96px floor (its small size uses 64px, which is not a token
     // of its own here). Icon-only buttons opt out of the floor and stay square.
-    --bit-siz-ctrl-min-width: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 12); //96px
+    --bit-siz-ctrl-min-width-fixed: initial;
+    --bit-siz-ctrl-min-width-steps: 12;
+    --bit-siz-ctrl-min-width: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-min-width-steps)); //96px
     // Glyphs: the 16 / 20 / 24 icon ramp. rem, like type, so density does not shrink them.
     --bit-siz-icon-sm: 1rem; //16px
     --bit-siz-icon-md: 1.25rem; //20px
     --bit-siz-icon-lg: 1.5rem; //24px
     // Checkbox box / radio ring: Fluent 2 draws 16px at medium and 20px at large, i.e. half the
     // control height, which is what the small size follows too.
-    --bit-siz-sel-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
-    --bit-siz-sel-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
-    --bit-siz-sel-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
+    --bit-siz-sel-sm-steps: 1.5;
+    --bit-siz-sel-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-sel-sm-steps)); //12px
+    --bit-siz-sel-md-steps: 2;
+    --bit-siz-sel-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-sel-md-steps)); //16px
+    --bit-siz-sel-lg-steps: 2.5;
+    --bit-siz-sel-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-sel-lg-steps)); //20px
     // Popup list rows track the control heights - a Fluent 2 MenuItem is 32px.
-    --bit-siz-item-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
-    --bit-siz-item-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4); //32px
-    --bit-siz-item-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5); //40px
+    --bit-siz-item-sm-steps: 3;
+    --bit-siz-item-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-item-sm-steps)); //24px
+    --bit-siz-item-md-steps: 4;
+    --bit-siz-item-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-item-md-steps)); //32px
+    --bit-siz-item-lg-steps: 5;
+    --bit-siz-item-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-item-lg-steps)); //40px
     // Tab: spacingVerticalM over and under the 20px label line box; the selection indicator is
     // strokeWidthThicker, a step above the 2px Fluent 1 drew.
-    --bit-siz-tab: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5.5); //44px
+    --bit-siz-tab-steps: 5.5;
+    --bit-siz-tab: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-tab-steps)); //44px
     --bit-siz-tab-indicator: 0.1875rem; //3px - strokeWidthThicker
     // Divider: strokeWidthThin, re-declared here rather than inherited so a scoped fluent2 region
     // resolves it against this preset's border width.
@@ -108,31 +126,52 @@
     // Switch: the 40x20 track with a 14px thumb at the medium anchor; sm and lg scale around it. The
     // knob's inset from the track edge is derived from the two, so it stays 2px - (20 - 14) / 2 less
     // the 1px stroke - at every size.
-    --bit-siz-switch-w-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4); //32px
-    --bit-siz-switch-w-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5); //40px
-    --bit-siz-switch-w-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 6); //48px
-    --bit-siz-switch-h-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
-    --bit-siz-switch-h-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
-    --bit-siz-switch-h-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
-    --bit-siz-switch-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.25); //10px
-    --bit-siz-switch-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.75); //14px
-    --bit-siz-switch-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.25); //18px
+    --bit-siz-switch-w-sm-steps: 4;
+    --bit-siz-switch-w-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-w-sm-steps)); //32px
+    --bit-siz-switch-w-md-steps: 5;
+    --bit-siz-switch-w-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-w-md-steps)); //40px
+    --bit-siz-switch-w-lg-steps: 6;
+    --bit-siz-switch-w-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-w-lg-steps)); //48px
+    --bit-siz-switch-h-sm-steps: 2;
+    --bit-siz-switch-h-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-h-sm-steps)); //16px
+    --bit-siz-switch-h-md-steps: 2.5;
+    --bit-siz-switch-h-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-h-md-steps)); //20px
+    --bit-siz-switch-h-lg-steps: 3;
+    --bit-siz-switch-h-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-h-lg-steps)); //24px
+    --bit-siz-switch-thumb-sm-steps: 1.25;
+    --bit-siz-switch-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-thumb-sm-steps)); //10px
+    --bit-siz-switch-thumb-md-steps: 1.75;
+    --bit-siz-switch-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-thumb-md-steps)); //14px
+    --bit-siz-switch-thumb-lg-steps: 2.25;
+    --bit-siz-switch-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-thumb-lg-steps)); //18px
     // Slider handle: 16px at medium and 20px at large are Fluent 2's two sizes.
-    --bit-siz-slider-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
-    --bit-siz-slider-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
-    --bit-siz-slider-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
+    --bit-siz-slider-thumb-sm-steps: 1.5;
+    --bit-siz-slider-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-slider-thumb-sm-steps)); //12px
+    --bit-siz-slider-thumb-md-steps: 2;
+    --bit-siz-slider-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-slider-thumb-md-steps)); //16px
+    --bit-siz-slider-thumb-lg-steps: 2.5;
+    --bit-siz-slider-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-slider-thumb-lg-steps)); //20px
     // CounterBadge: the small / medium / large 16, 20 and 24px counters, and the tiny (6px) to
     // extra-small (10px) badges as the dot.
-    --bit-siz-badge-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
-    --bit-siz-badge-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
-    --bit-siz-badge-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
-    --bit-siz-badge-dot-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 0.75); //6px
-    --bit-siz-badge-dot-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1); //8px
-    --bit-siz-badge-dot-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.25); //10px
+    --bit-siz-badge-sm-steps: 2;
+    --bit-siz-badge-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-badge-sm-steps)); //16px
+    --bit-siz-badge-md-steps: 2.5;
+    --bit-siz-badge-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-badge-md-steps)); //20px
+    --bit-siz-badge-lg-steps: 3;
+    --bit-siz-badge-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-badge-lg-steps)); //24px
+    --bit-siz-badge-dot-sm-steps: 0.75;
+    --bit-siz-badge-dot-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-badge-dot-sm-steps)); //6px
+    --bit-siz-badge-dot-md-steps: 1;
+    --bit-siz-badge-dot-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-badge-dot-md-steps)); //8px
+    --bit-siz-badge-dot-lg-steps: 1.25;
+    --bit-siz-badge-dot-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-badge-dot-lg-steps)); //10px
     // Tag: the extra-small / small / medium 20, 24 and 32px tags.
-    --bit-siz-chip-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
-    --bit-siz-chip-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
-    --bit-siz-chip-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4); //32px
+    --bit-siz-chip-sm-steps: 2.5;
+    --bit-siz-chip-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-chip-sm-steps)); //20px
+    --bit-siz-chip-md-steps: 3;
+    --bit-siz-chip-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-chip-md-steps)); //24px
+    --bit-siz-chip-lg-steps: 4;
+    --bit-siz-chip-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-chip-lg-steps)); //32px
 
     /*---- Opacity ----*/
     // --bit-opa-dis is left at the core stylesheet's 0.5. Fluent 2 does not dim a disabled element
@@ -163,7 +202,8 @@
     --bit-layout-dialog-actions-align: center;
     --bit-layout-dialog-text-align: start;
     // Fluent 2's dialog surface is 600px wide at its medium size.
-    --bit-siz-dialog-max-width: 37.5rem; //600px
+    --bit-siz-dialog-max-width-fixed: 37.5rem; //600px
+    --bit-siz-dialog-max-width: var(--bit-siz-dialog-max-width-fixed);
 
     /*---- Typography ----*/
     // Segoe UI Variable is the Fluent 2 typeface (Windows 11 and the Office web apps ship it); the
