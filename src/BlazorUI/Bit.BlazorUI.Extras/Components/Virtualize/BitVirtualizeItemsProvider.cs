@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The item provider function of the BitVirtualize component that asynchronously supplies a window of items on demand.

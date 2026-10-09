@@ -1,4 +1,4 @@
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>A registered gradient definition referenced by id.</summary>

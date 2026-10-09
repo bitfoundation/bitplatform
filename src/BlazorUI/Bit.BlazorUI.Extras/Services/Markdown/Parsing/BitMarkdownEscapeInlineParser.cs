@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Handles backslash escapes and backslash hard line breaks.</summary>
 public sealed class BitMarkdownEscapeInlineParser : BitMarkdownInlineParser

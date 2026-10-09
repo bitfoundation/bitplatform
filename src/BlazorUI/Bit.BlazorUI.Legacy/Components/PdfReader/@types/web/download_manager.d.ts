@@ -1,4 +1,4 @@
-/**
+﻿/**
  * @implements {IDownloadManager}
  */
 declare class DownloadManager implements IDownloadManager {

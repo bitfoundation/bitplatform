@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Models;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Models;
 
 /// <summary>
 /// One file of an example's source.

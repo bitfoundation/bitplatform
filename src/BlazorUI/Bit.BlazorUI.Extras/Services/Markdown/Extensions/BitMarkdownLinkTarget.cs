@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Where a link opens, i.e. the <c>target</c> attribute it is rendered with.</summary>
 public enum BitMarkdownLinkTarget

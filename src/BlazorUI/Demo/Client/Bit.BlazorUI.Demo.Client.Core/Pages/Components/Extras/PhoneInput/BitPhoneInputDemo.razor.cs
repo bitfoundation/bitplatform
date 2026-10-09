@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.PhoneInput;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.PhoneInput;
 
 public partial class BitPhoneInputDemo
 {

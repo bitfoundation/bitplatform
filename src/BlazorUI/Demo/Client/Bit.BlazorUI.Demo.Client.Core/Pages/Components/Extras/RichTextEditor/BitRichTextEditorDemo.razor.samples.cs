@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.RichTextEditor;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.RichTextEditor;
 
 public partial class BitRichTextEditorDemo
 {

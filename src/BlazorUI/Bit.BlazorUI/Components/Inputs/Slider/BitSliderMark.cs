@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A single mark drawn on the track of a <see cref="BitSlider"/>, optionally carrying a label under it.

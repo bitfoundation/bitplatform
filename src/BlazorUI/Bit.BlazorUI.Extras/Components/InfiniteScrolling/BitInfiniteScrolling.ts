@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class InfiniteScrolling {
         private static _instances = new Map<string, InfiniteScrollingInstance>();
 

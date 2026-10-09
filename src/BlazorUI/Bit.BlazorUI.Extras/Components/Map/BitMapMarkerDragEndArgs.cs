@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Payload for the <see cref="BitMap{TMapProvider}.OnMarkerDragEnd"/> callback.</summary>
 public sealed class BitMapMarkerDragEndArgs

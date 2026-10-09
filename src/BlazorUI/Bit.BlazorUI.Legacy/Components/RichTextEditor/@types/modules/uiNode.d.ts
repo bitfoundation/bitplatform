@@ -1,4 +1,4 @@
-declare const TTL_FOR_VALID_SELECTION_CHANGE = 100;
+﻿declare const TTL_FOR_VALID_SELECTION_CHANGE = 100;
 
 declare class UINode extends Module {
     isListening: boolean;

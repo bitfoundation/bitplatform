@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Controls how the <see cref="BitMarkdownViewer"/> handles image sources, primarily as a

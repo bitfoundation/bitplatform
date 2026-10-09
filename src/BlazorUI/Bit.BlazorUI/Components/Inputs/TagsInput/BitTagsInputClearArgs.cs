@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Arguments of the OnBeforeClear callback of <see cref="BitTagsInput"/>, describing the whole list that

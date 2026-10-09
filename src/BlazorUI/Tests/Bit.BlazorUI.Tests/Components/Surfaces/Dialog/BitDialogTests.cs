@@ -3326,7 +3326,7 @@ public class BitDialogTests : BunitTestContext
         // A Dialog is as wide as its content, so without a ceiling a two-sentence confirmation spans the
         // screen. The ceiling is the design system's, and it is capped at the area the Dialog is in as well.
         // The public --bit-Dialog-max-width moves that ceiling without giving any one Dialog a size of its own.
-        Assert.AreEqual($"--bit-dlg-mxw:min(100%,var(--bit-Dialog-max-width,var({BitCss.Var.Size.DialogMaxWidth})));", style);
+        Assert.AreEqual("--bit-dlg-mxw:min(100%,var(--bit-Dialog-max-width,var(--bit-dlg-dmw)));", style);
     }
 
     [TestMethod]

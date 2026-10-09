@@ -1,4 +1,4 @@
-declare type XfaLayerBuilderOptions = {
+﻿declare type XfaLayerBuilderOptions = {
     pdfPage: PDFPageProxy;
     annotationStorage?: AnnotationStorage | undefined;
     linkService: IPDFLinkService;

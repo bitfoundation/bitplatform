@@ -164,6 +164,9 @@
     --bit-dlg-radius: var(--bit-Dialog-radius, #{$shp-radius-dialog});
     --bit-dlg-pad: var(--bit-Dialog-padding, #{$spa-dialog});
     --bit-dlg-text-align: var(--bit-Dialog-text-align, #{$layout-dialog-text-align});
+    // The design system's ceiling, which the default max width the C# side emits reads. Resolved here rather
+    // than named there, since the token is computed where it is used, against the density in effect here.
+    --bit-dlg-dmw: #{$siz-dialog-max-width};
 
     // The six sizing parameters arrive as custom properties on this element, so a Dialog that was given
     // none of them keeps the shrink-to-fit box it has always had and the ones it was given are the only

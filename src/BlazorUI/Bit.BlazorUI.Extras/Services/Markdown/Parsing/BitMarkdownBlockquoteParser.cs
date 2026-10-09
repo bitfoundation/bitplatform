@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Parses block quotes (<c>&gt; ...</c>) with lazy continuation.</summary>
 public sealed class BitMarkdownBlockquoteParser : BitMarkdownBlockParser

@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class Calendars {
         private static _handlers = new Map<string, AbortController>();
 
@@ -13,12 +13,13 @@ namespace BitBlazorUI {
 
         // Attaches the keydown listeners that prevent the default behavior (scrolling the page) of the keys
         // the calendar and the field of a picker are operated with - the actual keyboard logic runs in the
-        // Blazor keydown handlers, which cannot conditionally preventDefault per key - and, for a calendar
-        // that is a modal dialog, keeps Tab and Shift+Tab cycling inside it as the dialog pattern requires.
+        // Blazor keydown handlers, which cannot conditionally preventDefault per key. The tab order of a
+        // picker's callout is held by the callout itself while it floats as a modal dialog (see the trapFocus
+        // of Callouts.toggle), so it is registered and taken back with every open and close.
         // The id is the calendar itself: the root of a standalone one, the callout of a picker. A picker
         // passes the id of its field wrapper as well, since that part of it - the field and the clear
         // button on it - sits outside of the callout the rest of it is in.
-        public static setup(id: string, trapFocus: boolean, componentId: string | null) {
+        public static setup(id: string, componentId: string | null) {
             Calendars.dispose(id);
 
             const root = document.getElementById(id);
@@ -26,14 +27,7 @@ namespace BitBlazorUI {
 
             const controller = new AbortController();
 
-            root.addEventListener('keydown', e => {
-                if (trapFocus && e.key === 'Tab') {
-                    Utils.wrapFocus(root, e);
-                    return;
-                }
-
-                Calendars.preventScroll(e);
-            }, { signal: controller.signal });
+            root.addEventListener('keydown', e => Calendars.preventScroll(e), { signal: controller.signal });
 
             document.getElementById(componentId ?? '')
                 ?.addEventListener('keydown', e => Calendars.preventScroll(e), { signal: controller.signal });

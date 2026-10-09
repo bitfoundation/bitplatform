@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class _BitButtonGroupItem<TItem> where TItem : class
 {

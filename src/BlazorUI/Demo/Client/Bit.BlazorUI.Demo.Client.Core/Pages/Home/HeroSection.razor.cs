@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages;
 
 public partial class HeroSection
 {

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>A single item exposed to a custom tooltip template.</summary>
 public sealed class BitChartTooltipPoint

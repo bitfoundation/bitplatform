@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Inline code span.</summary>
 public sealed class BitMarkdownCodeSpanNode : BitMarkdownNode

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Font definition mirroring Chart.js Font options.</summary>
 public sealed class BitChartFont

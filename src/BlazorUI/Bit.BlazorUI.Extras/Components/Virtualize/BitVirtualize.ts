@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class Virtualize {
         private static _instances = new Map<string, VirtualizeInstance>();
 

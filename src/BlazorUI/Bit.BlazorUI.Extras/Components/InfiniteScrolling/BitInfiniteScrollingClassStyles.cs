@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Custom CSS classes/styles for different parts of the <see cref="BitInfiniteScrolling{TItem}"/>.

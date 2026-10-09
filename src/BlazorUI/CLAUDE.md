@@ -1,4 +1,4 @@
-# bit BlazorUI
+﻿# bit BlazorUI
 
 Guidance for the bit BlazorUI component library and its demo app. Coding style comes from the
 `.editorconfig` at the root of the `src` folder ([../CLAUDE.md](../CLAUDE.md)).
@@ -296,6 +296,14 @@ the whole library from one `:root[bit-theme="..."]` block.
   entry / exit; never a literal `ease` or `cubic-bezier` outside a looping loader keyframe.
 - **Opacity**: a disabled element that keeps its own colors dims with `$opa-dis`; text-bearing
   controls use the `$clr-*-dis` color tokens instead.
+- **Density**: a size or inset measured in spacing units is never computed in a theme scope - one
+  computed on `:root` is inherited as a length, so a density set lower down would never reach it. A
+  preset declares its unitless `--bit-<token>-steps` and resets `--bit-<token>: initial`; the
+  `theme-variables.scss` alias reads `var(--bit-<token>, calc(unit * density * var(--bit-<token>-steps)))`
+  where a component uses it, and a value set for the token itself wins. A C# inline style that needs one
+  reads it through a private property the component's stylesheet resolves from the alias (BitDialog's
+  `--bit-dlg-dmw`), never as a bare `var(--bit-<token>)`. `BitThemeDensityAwareTokensTests` pins it
+  against the compiled bundles.
 
 The packaged Fluent 2, Material and Cupertino presets ship with **Bit.BlazorUI.Extras**
 (`Bit.BlazorUI.Extras/Styles/Fluent2`, `.../Styles/Material`, `.../Styles/Cupertino`) as override-only
@@ -426,19 +434,3 @@ Adding a global token means touching all of: `theme-variables.scss` (the `$` ali
 `BitCss.var.cs`, `BitThemeMapper` (`MapToCssVariables`, `Merge`, `Normalize*`),
 `BitThemeSerialization.EnsureNestedObjects` for a new branch, and the ThemingPage docs; the theme
 contract tests in `Tests/Bit.BlazorUI.Tests/Utils/Theme` fail on any drift between them.
-
-A token derived from the spacing unit - the dialog and card insets (`--bit-spa-dialog`,
-`--bit-spa-card-{sm,md,lg}`) and the density-aware sizes (`--bit-siz-ctrl-*`, `-item-*`, `-switch-*`, ...) -
-is computed where it is declared, so a scoped density or spacing-unit override would leave it at the
-document's length. Each preset therefore declares it through one of two companions:
-`--bit-<token>-steps: <number>` beside `calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-<token>-steps))`
-when it derives it, or `--bit-<token>-fixed: <value>` beside `var(--bit-<token>-fixed)` when it sets an
-absolute value (Fluent's `auto` button min width, the Extras presets' dialog widths) - and a preset that
-derives a token another one fixes declares its `-fixed` as `initial`. `BitThemeMapper.AugmentWithSpacingReSubstitution`
-re-declares every such token the scoped theme does not set as `var(<fixed>, <the calc>)`, and writes each
-one the theme does set to its `-fixed`, so a region nested inside keeps it. The companions are **not**
-global tokens - no `$` alias, no `BitTheme` property, no mapper entry; a theme sets the token - and their
-names come from one convention, `BitCss.Var.Derived.Steps` / `.Fixed`. A new derived token gets a row in
-`BitThemeMapper.SpacingDerivedTargets` and its companion in every preset that declares it;
-`BitThemeSpacingReSubstitutionTests` reads every theme stylesheet and fails on a token derived from the
-unit that has no row, a declaration of one in any other form, and a missing `initial`.

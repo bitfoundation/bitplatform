@@ -1,4 +1,4 @@
-declare class EditorToolbar {
+﻿declare class EditorToolbar {
     static "__#4@#l10nRemove": null;
     static "__#4@#pointerDown"(e: any): void;
     constructor(editor: any);

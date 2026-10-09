@@ -1,4 +1,4 @@
-declare type AnnotationEditorParameters = {
+﻿declare type AnnotationEditorParameters = {
     /**
      * - the global manager
      */

@@ -194,134 +194,6 @@ internal static class BitThemeMapper
     internal static string RoleTintDefault(string roleMain)
         => $"color-mix(in srgb, var({roleMain}) 10%, transparent)";
 
-    /// <summary>
-    /// One token the stylesheets derive from the spacing unit, with the names of its two companions and
-    /// the expressions read off them built once, rather than on every call.
-    /// </summary>
-    internal sealed class SpacingDerivedTarget
-    {
-        /// <param name="token">The derived token, e.g. <c>--bit-spa-dialog</c> or <c>--bit-siz-ctrl-md</c>.</param>
-        public SpacingDerivedTarget(string token)
-        {
-            Token = token;
-            Steps = BitCss.Var.Derived.Steps(token);
-            Fixed = BitCss.Var.Derived.Fixed(token);
-            Expression = $"calc(var({BitCss.Var.Spacing.ScalingFactor}) * var({BitCss.Var.Layout.DensityScale}) * var({Steps}))";
-            ReSubstitution = $"var({Fixed}, {Expression})";
-        }
-
-        /// <summary>The derived token.</summary>
-        public string Token { get; }
-
-        /// <summary>The unitless steps of the spacing unit a preset derives the token from.</summary>
-        public string Steps { get; }
-
-        /// <summary>The absolute value a preset or a theme fixes the token at instead of deriving it.</summary>
-        public string Fixed { get; }
-
-        /// <summary>
-        /// The expression every packaged preset declares the token with when it derives it: the spacing
-        /// unit, times the density, times the token's own steps.
-        /// </summary>
-        public string Expression { get; }
-
-        /// <summary>
-        /// What a scoped theme re-declares the token as: the value it is fixed at, if anything above fixed
-        /// it, and otherwise <see cref="Expression"/> against the re-valued density and spacing unit.
-        /// </summary>
-        public string ReSubstitution { get; }
-    }
-
-    /// <summary>
-    /// Every token a packaged preset derives from the spacing unit - the dialog and card insets and the
-    /// density-aware sizes - mirroring <c>Styles/Fluent/shapes.fluent.scss</c>, <c>Styles/Fluent/sizes.fluent.scss</c>
-    /// and the Extras presets' <c>tokens.*.scss</c> (pinned to them by a contract test).
-    /// </summary>
-    internal static readonly IReadOnlyList<SpacingDerivedTarget> SpacingDerivedTargets =
-    [
-        new(BitCss.Var.Spacing.Dialog),
-        new(BitCss.Var.Spacing.Card.Sm),
-        new(BitCss.Var.Spacing.Card.Md),
-        new(BitCss.Var.Spacing.Card.Lg),
-        new(BitCss.Var.Size.Control.Sm),
-        new(BitCss.Var.Size.Control.Md),
-        new(BitCss.Var.Size.Control.Lg),
-        new(BitCss.Var.Size.ControlPaddingX.Sm),
-        new(BitCss.Var.Size.ControlPaddingX.Md),
-        new(BitCss.Var.Size.ControlPaddingX.Lg),
-        new(BitCss.Var.Size.ControlPaddingY.Sm),
-        new(BitCss.Var.Size.ControlPaddingY.Md),
-        new(BitCss.Var.Size.ControlPaddingY.Lg),
-        new(BitCss.Var.Size.ControlMinWidth),
-        new(BitCss.Var.Size.Selection.Sm),
-        new(BitCss.Var.Size.Selection.Md),
-        new(BitCss.Var.Size.Selection.Lg),
-        new(BitCss.Var.Size.Item.Sm),
-        new(BitCss.Var.Size.Item.Md),
-        new(BitCss.Var.Size.Item.Lg),
-        new(BitCss.Var.Size.Tab),
-        new(BitCss.Var.Size.SwitchWidth.Sm),
-        new(BitCss.Var.Size.SwitchWidth.Md),
-        new(BitCss.Var.Size.SwitchWidth.Lg),
-        new(BitCss.Var.Size.SwitchHeight.Sm),
-        new(BitCss.Var.Size.SwitchHeight.Md),
-        new(BitCss.Var.Size.SwitchHeight.Lg),
-        new(BitCss.Var.Size.SwitchThumb.Sm),
-        new(BitCss.Var.Size.SwitchThumb.Md),
-        new(BitCss.Var.Size.SwitchThumb.Lg),
-        new(BitCss.Var.Size.SliderThumb.Sm),
-        new(BitCss.Var.Size.SliderThumb.Md),
-        new(BitCss.Var.Size.SliderThumb.Lg),
-        new(BitCss.Var.Size.Badge.Sm),
-        new(BitCss.Var.Size.Badge.Md),
-        new(BitCss.Var.Size.Badge.Lg),
-        new(BitCss.Var.Size.BadgeDot.Sm),
-        new(BitCss.Var.Size.BadgeDot.Md),
-        new(BitCss.Var.Size.BadgeDot.Lg),
-        new(BitCss.Var.Size.Chip.Sm),
-        new(BitCss.Var.Size.Chip.Md),
-        new(BitCss.Var.Size.Chip.Lg),
-        new(BitCss.Var.Size.PopupMaxHeight),
-        new(BitCss.Var.Size.DialogMaxWidth),
-    ];
-
-    /// <summary>
-    /// Re-declares every token derived from the spacing unit next to a re-valued density scale or spacing
-    /// unit, so a theme applied lower in the tree resizes the controls, dialogs and cards of its subtree;
-    /// and fixes every such token the theme sets explicitly, so a theme applied further down still keeps it.
-    /// </summary>
-    /// <remarks>
-    /// The same substitution rule as <see cref="AugmentWithSemanticAliasReSubstitution"/>: the
-    /// stylesheets compute these tokens on <c>:root</c> from <c>--bit-spa-scaling-factor</c> and
-    /// <c>--bit-layout-density-scale</c>, and descendants inherit the already-computed length, so an
-    /// inline <see cref="BitThemeLayout.DensityScale"/> alone would leave every control, dialog and card
-    /// inside it at the document's size. Each preset declares the steps of a token it derives as a unitless
-    /// token that inherits unchanged, and the value of a token it sets to an absolute length as the token's
-    /// <c>-fixed</c> companion, so the expression re-declared here lands on the active preset's choice
-    /// either way. A token the theme sets explicitly always wins, and is written to its <c>-fixed</c>
-    /// companion as well: an explicit value is a length the density does not reach, so a region nested
-    /// inside, re-valuing only the density, keeps it rather than re-deriving it from the preset's steps.
-    /// </remarks>
-    internal static void AugmentWithSpacingReSubstitution(Dictionary<string, string> cssVariables)
-    {
-        foreach (var target in SpacingDerivedTargets)
-        {
-            if (cssVariables.ContainsKey(target.Token) is false) continue; // not set explicitly
-
-            cssVariables[target.Fixed] = $"var({target.Token})";
-        }
-
-        if (cssVariables.ContainsKey(BitCss.Var.Layout.DensityScale) is false &&
-            cssVariables.ContainsKey(BitCss.Var.Spacing.ScalingFactor) is false) return; // neither input touched
-
-        foreach (var target in SpacingDerivedTargets)
-        {
-            if (cssVariables.ContainsKey(target.Token)) continue; // explicit value wins
-
-            cssVariables[target.Token] = target.ReSubstitution;
-        }
-    }
-
     internal static Dictionary<string, string> MapToCssVariables(BitTheme bitTheme)
     {
         var result = new Dictionary<string, string>();
@@ -666,6 +538,10 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Spacing.Card.Sm, bitTheme.Spacing.Card.Sm);
         addCssVar(BitCss.Var.Spacing.Card.Md, bitTheme.Spacing.Card.Md);
         addCssVar(BitCss.Var.Spacing.Card.Lg, bitTheme.Spacing.Card.Lg);
+        addCssVar(BitCss.Var.Spacing.Steps.Dialog, bitTheme.Spacing.Steps.Dialog);
+        addCssVar(BitCss.Var.Spacing.Steps.Card.Sm, bitTheme.Spacing.Steps.Card.Sm);
+        addCssVar(BitCss.Var.Spacing.Steps.Card.Md, bitTheme.Spacing.Steps.Card.Md);
+        addCssVar(BitCss.Var.Spacing.Steps.Card.Lg, bitTheme.Spacing.Steps.Card.Lg);
 
         addCssVar(BitCss.Var.ZIndex.Snackbar, bitTheme.ZIndex.Snackbar);
         addCssVar(BitCss.Var.ZIndex.Modal, bitTheme.ZIndex.Modal);
@@ -897,6 +773,46 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Size.SpinnerStroke, bitTheme.Size.SpinnerStroke);
         addCssVar(BitCss.Var.Size.PopupMaxHeight, bitTheme.Size.PopupMaxHeight);
         addCssVar(BitCss.Var.Size.DialogMaxWidth, bitTheme.Size.DialogMaxWidth);
+        addCssVar(BitCss.Var.Size.Steps.Control.Sm, bitTheme.Size.Steps.Control.Sm);
+        addCssVar(BitCss.Var.Size.Steps.Control.Md, bitTheme.Size.Steps.Control.Md);
+        addCssVar(BitCss.Var.Size.Steps.Control.Lg, bitTheme.Size.Steps.Control.Lg);
+        addCssVar(BitCss.Var.Size.Steps.ControlPaddingX.Sm, bitTheme.Size.Steps.ControlPaddingX.Sm);
+        addCssVar(BitCss.Var.Size.Steps.ControlPaddingX.Md, bitTheme.Size.Steps.ControlPaddingX.Md);
+        addCssVar(BitCss.Var.Size.Steps.ControlPaddingX.Lg, bitTheme.Size.Steps.ControlPaddingX.Lg);
+        addCssVar(BitCss.Var.Size.Steps.ControlPaddingY.Sm, bitTheme.Size.Steps.ControlPaddingY.Sm);
+        addCssVar(BitCss.Var.Size.Steps.ControlPaddingY.Md, bitTheme.Size.Steps.ControlPaddingY.Md);
+        addCssVar(BitCss.Var.Size.Steps.ControlPaddingY.Lg, bitTheme.Size.Steps.ControlPaddingY.Lg);
+        addCssVar(BitCss.Var.Size.Steps.ControlMinWidth, bitTheme.Size.Steps.ControlMinWidth);
+        addCssVar(BitCss.Var.Size.Steps.Selection.Sm, bitTheme.Size.Steps.Selection.Sm);
+        addCssVar(BitCss.Var.Size.Steps.Selection.Md, bitTheme.Size.Steps.Selection.Md);
+        addCssVar(BitCss.Var.Size.Steps.Selection.Lg, bitTheme.Size.Steps.Selection.Lg);
+        addCssVar(BitCss.Var.Size.Steps.Item.Sm, bitTheme.Size.Steps.Item.Sm);
+        addCssVar(BitCss.Var.Size.Steps.Item.Md, bitTheme.Size.Steps.Item.Md);
+        addCssVar(BitCss.Var.Size.Steps.Item.Lg, bitTheme.Size.Steps.Item.Lg);
+        addCssVar(BitCss.Var.Size.Steps.Tab, bitTheme.Size.Steps.Tab);
+        addCssVar(BitCss.Var.Size.Steps.SwitchWidth.Sm, bitTheme.Size.Steps.Switch.Width.Sm);
+        addCssVar(BitCss.Var.Size.Steps.SwitchWidth.Md, bitTheme.Size.Steps.Switch.Width.Md);
+        addCssVar(BitCss.Var.Size.Steps.SwitchWidth.Lg, bitTheme.Size.Steps.Switch.Width.Lg);
+        addCssVar(BitCss.Var.Size.Steps.SwitchHeight.Sm, bitTheme.Size.Steps.Switch.Height.Sm);
+        addCssVar(BitCss.Var.Size.Steps.SwitchHeight.Md, bitTheme.Size.Steps.Switch.Height.Md);
+        addCssVar(BitCss.Var.Size.Steps.SwitchHeight.Lg, bitTheme.Size.Steps.Switch.Height.Lg);
+        addCssVar(BitCss.Var.Size.Steps.SwitchThumb.Sm, bitTheme.Size.Steps.Switch.Thumb.Sm);
+        addCssVar(BitCss.Var.Size.Steps.SwitchThumb.Md, bitTheme.Size.Steps.Switch.Thumb.Md);
+        addCssVar(BitCss.Var.Size.Steps.SwitchThumb.Lg, bitTheme.Size.Steps.Switch.Thumb.Lg);
+        addCssVar(BitCss.Var.Size.Steps.SliderThumb.Sm, bitTheme.Size.Steps.SliderThumb.Sm);
+        addCssVar(BitCss.Var.Size.Steps.SliderThumb.Md, bitTheme.Size.Steps.SliderThumb.Md);
+        addCssVar(BitCss.Var.Size.Steps.SliderThumb.Lg, bitTheme.Size.Steps.SliderThumb.Lg);
+        addCssVar(BitCss.Var.Size.Steps.Badge.Sm, bitTheme.Size.Steps.Badge.Sm);
+        addCssVar(BitCss.Var.Size.Steps.Badge.Md, bitTheme.Size.Steps.Badge.Md);
+        addCssVar(BitCss.Var.Size.Steps.Badge.Lg, bitTheme.Size.Steps.Badge.Lg);
+        addCssVar(BitCss.Var.Size.Steps.BadgeDot.Sm, bitTheme.Size.Steps.BadgeDot.Sm);
+        addCssVar(BitCss.Var.Size.Steps.BadgeDot.Md, bitTheme.Size.Steps.BadgeDot.Md);
+        addCssVar(BitCss.Var.Size.Steps.BadgeDot.Lg, bitTheme.Size.Steps.BadgeDot.Lg);
+        addCssVar(BitCss.Var.Size.Steps.Chip.Sm, bitTheme.Size.Steps.Chip.Sm);
+        addCssVar(BitCss.Var.Size.Steps.Chip.Md, bitTheme.Size.Steps.Chip.Md);
+        addCssVar(BitCss.Var.Size.Steps.Chip.Lg, bitTheme.Size.Steps.Chip.Lg);
+        addCssVar(BitCss.Var.Size.Steps.PopupMaxHeight, bitTheme.Size.Steps.PopupMaxHeight);
+        addCssVar(BitCss.Var.Size.Steps.DialogMaxWidth, bitTheme.Size.Steps.DialogMaxWidth);
 
         addCssVar(BitCss.Var.Opacity.Disabled, bitTheme.Opacity.Disabled);
 
@@ -1096,6 +1012,18 @@ internal static class BitThemeMapper
             ScalingFactor = src.ScalingFactor,
             Dialog = src.Dialog,
             Card = src.Card ?? new(),
+            Steps = NormalizeSpacingSteps(src.Steps),
+        };
+    }
+
+    private static BitThemeSpacingSteps NormalizeSpacingSteps(BitThemeSpacingSteps? src)
+    {
+        src ??= new BitThemeSpacingSteps();
+
+        return new BitThemeSpacingSteps
+        {
+            Dialog = src.Dialog,
+            Card = src.Card ?? new(),
         };
     }
 
@@ -1123,6 +1051,30 @@ internal static class BitThemeMapper
             BadgeDot = src.BadgeDot ?? new(),
             Chip = src.Chip ?? new(),
             SpinnerStroke = src.SpinnerStroke,
+            PopupMaxHeight = src.PopupMaxHeight,
+            DialogMaxWidth = src.DialogMaxWidth,
+            Steps = NormalizeSizeSteps(src.Steps),
+        };
+    }
+
+    private static BitThemeSizeSteps NormalizeSizeSteps(BitThemeSizeSteps? src)
+    {
+        src ??= new BitThemeSizeSteps();
+
+        return new BitThemeSizeSteps
+        {
+            Control = src.Control ?? new(),
+            ControlPaddingX = src.ControlPaddingX ?? new(),
+            ControlPaddingY = src.ControlPaddingY ?? new(),
+            ControlMinWidth = src.ControlMinWidth,
+            Selection = src.Selection ?? new(),
+            Item = src.Item ?? new(),
+            Tab = src.Tab,
+            Switch = NormalizeSwitchSize(src.Switch),
+            SliderThumb = src.SliderThumb ?? new(),
+            Badge = src.Badge ?? new(),
+            BadgeDot = src.BadgeDot ?? new(),
+            Chip = src.Chip ?? new(),
             PopupMaxHeight = src.PopupMaxHeight,
             DialogMaxWidth = src.DialogMaxWidth,
         };
@@ -1497,6 +1449,10 @@ internal static class BitThemeMapper
         result.Spacing.Card.Sm = bitTheme.Spacing.Card.Sm ?? other.Spacing.Card.Sm;
         result.Spacing.Card.Md = bitTheme.Spacing.Card.Md ?? other.Spacing.Card.Md;
         result.Spacing.Card.Lg = bitTheme.Spacing.Card.Lg ?? other.Spacing.Card.Lg;
+        result.Spacing.Steps.Dialog = bitTheme.Spacing.Steps.Dialog ?? other.Spacing.Steps.Dialog;
+        result.Spacing.Steps.Card.Sm = bitTheme.Spacing.Steps.Card.Sm ?? other.Spacing.Steps.Card.Sm;
+        result.Spacing.Steps.Card.Md = bitTheme.Spacing.Steps.Card.Md ?? other.Spacing.Steps.Card.Md;
+        result.Spacing.Steps.Card.Lg = bitTheme.Spacing.Steps.Card.Lg ?? other.Spacing.Steps.Card.Lg;
 
         result.ZIndex.Snackbar = bitTheme.ZIndex.Snackbar ?? other.ZIndex.Snackbar;
         result.ZIndex.Modal = bitTheme.ZIndex.Modal ?? other.ZIndex.Modal;
@@ -1727,6 +1683,46 @@ internal static class BitThemeMapper
         result.Size.SpinnerStroke = bitTheme.Size.SpinnerStroke ?? other.Size.SpinnerStroke;
         result.Size.PopupMaxHeight = bitTheme.Size.PopupMaxHeight ?? other.Size.PopupMaxHeight;
         result.Size.DialogMaxWidth = bitTheme.Size.DialogMaxWidth ?? other.Size.DialogMaxWidth;
+        result.Size.Steps.Control.Sm = bitTheme.Size.Steps.Control.Sm ?? other.Size.Steps.Control.Sm;
+        result.Size.Steps.Control.Md = bitTheme.Size.Steps.Control.Md ?? other.Size.Steps.Control.Md;
+        result.Size.Steps.Control.Lg = bitTheme.Size.Steps.Control.Lg ?? other.Size.Steps.Control.Lg;
+        result.Size.Steps.ControlPaddingX.Sm = bitTheme.Size.Steps.ControlPaddingX.Sm ?? other.Size.Steps.ControlPaddingX.Sm;
+        result.Size.Steps.ControlPaddingX.Md = bitTheme.Size.Steps.ControlPaddingX.Md ?? other.Size.Steps.ControlPaddingX.Md;
+        result.Size.Steps.ControlPaddingX.Lg = bitTheme.Size.Steps.ControlPaddingX.Lg ?? other.Size.Steps.ControlPaddingX.Lg;
+        result.Size.Steps.ControlPaddingY.Sm = bitTheme.Size.Steps.ControlPaddingY.Sm ?? other.Size.Steps.ControlPaddingY.Sm;
+        result.Size.Steps.ControlPaddingY.Md = bitTheme.Size.Steps.ControlPaddingY.Md ?? other.Size.Steps.ControlPaddingY.Md;
+        result.Size.Steps.ControlPaddingY.Lg = bitTheme.Size.Steps.ControlPaddingY.Lg ?? other.Size.Steps.ControlPaddingY.Lg;
+        result.Size.Steps.ControlMinWidth = bitTheme.Size.Steps.ControlMinWidth ?? other.Size.Steps.ControlMinWidth;
+        result.Size.Steps.Selection.Sm = bitTheme.Size.Steps.Selection.Sm ?? other.Size.Steps.Selection.Sm;
+        result.Size.Steps.Selection.Md = bitTheme.Size.Steps.Selection.Md ?? other.Size.Steps.Selection.Md;
+        result.Size.Steps.Selection.Lg = bitTheme.Size.Steps.Selection.Lg ?? other.Size.Steps.Selection.Lg;
+        result.Size.Steps.Item.Sm = bitTheme.Size.Steps.Item.Sm ?? other.Size.Steps.Item.Sm;
+        result.Size.Steps.Item.Md = bitTheme.Size.Steps.Item.Md ?? other.Size.Steps.Item.Md;
+        result.Size.Steps.Item.Lg = bitTheme.Size.Steps.Item.Lg ?? other.Size.Steps.Item.Lg;
+        result.Size.Steps.Tab = bitTheme.Size.Steps.Tab ?? other.Size.Steps.Tab;
+        result.Size.Steps.Switch.Width.Sm = bitTheme.Size.Steps.Switch.Width.Sm ?? other.Size.Steps.Switch.Width.Sm;
+        result.Size.Steps.Switch.Width.Md = bitTheme.Size.Steps.Switch.Width.Md ?? other.Size.Steps.Switch.Width.Md;
+        result.Size.Steps.Switch.Width.Lg = bitTheme.Size.Steps.Switch.Width.Lg ?? other.Size.Steps.Switch.Width.Lg;
+        result.Size.Steps.Switch.Height.Sm = bitTheme.Size.Steps.Switch.Height.Sm ?? other.Size.Steps.Switch.Height.Sm;
+        result.Size.Steps.Switch.Height.Md = bitTheme.Size.Steps.Switch.Height.Md ?? other.Size.Steps.Switch.Height.Md;
+        result.Size.Steps.Switch.Height.Lg = bitTheme.Size.Steps.Switch.Height.Lg ?? other.Size.Steps.Switch.Height.Lg;
+        result.Size.Steps.Switch.Thumb.Sm = bitTheme.Size.Steps.Switch.Thumb.Sm ?? other.Size.Steps.Switch.Thumb.Sm;
+        result.Size.Steps.Switch.Thumb.Md = bitTheme.Size.Steps.Switch.Thumb.Md ?? other.Size.Steps.Switch.Thumb.Md;
+        result.Size.Steps.Switch.Thumb.Lg = bitTheme.Size.Steps.Switch.Thumb.Lg ?? other.Size.Steps.Switch.Thumb.Lg;
+        result.Size.Steps.SliderThumb.Sm = bitTheme.Size.Steps.SliderThumb.Sm ?? other.Size.Steps.SliderThumb.Sm;
+        result.Size.Steps.SliderThumb.Md = bitTheme.Size.Steps.SliderThumb.Md ?? other.Size.Steps.SliderThumb.Md;
+        result.Size.Steps.SliderThumb.Lg = bitTheme.Size.Steps.SliderThumb.Lg ?? other.Size.Steps.SliderThumb.Lg;
+        result.Size.Steps.Badge.Sm = bitTheme.Size.Steps.Badge.Sm ?? other.Size.Steps.Badge.Sm;
+        result.Size.Steps.Badge.Md = bitTheme.Size.Steps.Badge.Md ?? other.Size.Steps.Badge.Md;
+        result.Size.Steps.Badge.Lg = bitTheme.Size.Steps.Badge.Lg ?? other.Size.Steps.Badge.Lg;
+        result.Size.Steps.BadgeDot.Sm = bitTheme.Size.Steps.BadgeDot.Sm ?? other.Size.Steps.BadgeDot.Sm;
+        result.Size.Steps.BadgeDot.Md = bitTheme.Size.Steps.BadgeDot.Md ?? other.Size.Steps.BadgeDot.Md;
+        result.Size.Steps.BadgeDot.Lg = bitTheme.Size.Steps.BadgeDot.Lg ?? other.Size.Steps.BadgeDot.Lg;
+        result.Size.Steps.Chip.Sm = bitTheme.Size.Steps.Chip.Sm ?? other.Size.Steps.Chip.Sm;
+        result.Size.Steps.Chip.Md = bitTheme.Size.Steps.Chip.Md ?? other.Size.Steps.Chip.Md;
+        result.Size.Steps.Chip.Lg = bitTheme.Size.Steps.Chip.Lg ?? other.Size.Steps.Chip.Lg;
+        result.Size.Steps.PopupMaxHeight = bitTheme.Size.Steps.PopupMaxHeight ?? other.Size.Steps.PopupMaxHeight;
+        result.Size.Steps.DialogMaxWidth = bitTheme.Size.Steps.DialogMaxWidth ?? other.Size.Steps.DialogMaxWidth;
 
         result.Opacity.Disabled = bitTheme.Opacity.Disabled ?? other.Opacity.Disabled;
 

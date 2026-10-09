@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Diagnostics;
 using System.Net.Sockets;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

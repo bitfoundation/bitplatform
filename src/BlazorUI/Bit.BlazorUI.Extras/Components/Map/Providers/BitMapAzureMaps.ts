@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
 
     /**
      * Azure Maps Web SDK v3 provider. Loads atlas.min.js from the Microsoft CDN

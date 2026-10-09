@@ -1,4 +1,4 @@
-declare type AnnotationEditorLayerBuilderOptions = {
+﻿declare type AnnotationEditorLayerBuilderOptions = {
     uiManager?: AnnotationEditorUIManager | undefined;
     pdfPage: PDFPageProxy;
     l10n?: IL10n | undefined;

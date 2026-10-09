@@ -1,4 +1,4 @@
-type CellData = {
+﻿type CellData = {
     content?: Delta['ops'];
     attributes?: Record<string, unknown>;
 };

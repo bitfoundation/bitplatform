@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// One-color theme quick start: builds a sparse <see cref="BitTheme"/> overlay in which the accent

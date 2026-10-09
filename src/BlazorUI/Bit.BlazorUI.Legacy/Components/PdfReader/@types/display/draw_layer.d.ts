@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Manage the SVGs drawn on top of the page canvas.
  * It's important to have them directly on top of the canvas because we want to
  * be able to use mix-blend-mode for some of them.

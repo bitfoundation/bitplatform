@@ -1,4 +1,4 @@
-declare function getShadingPattern(IR: any): RadialAxialShadingPattern | MeshShadingPattern | DummyShadingPattern;
+﻿declare function getShadingPattern(IR: any): RadialAxialShadingPattern | MeshShadingPattern | DummyShadingPattern;
 declare namespace PathType {
     let FILL: string;
     let STROKE: string;

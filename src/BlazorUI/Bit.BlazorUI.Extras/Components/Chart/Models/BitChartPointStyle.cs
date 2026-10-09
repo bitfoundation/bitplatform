@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Point marker styles, mirroring Chart.js pointStyle.</summary>
 public enum BitChartPointStyle

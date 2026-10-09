@@ -1,4 +1,4 @@
-declare class QuillImage extends EmbedBlot {
+﻿declare class QuillImage extends EmbedBlot {
     static blotName: string;
     static tagName: string;
     static create(value: string): Element;

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Marker clustering settings for <see cref="BitMap{TMapProvider}.Clustering"/>.

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A reference to the <see cref="BitModal"/> instance that is shown using the <see cref="BitModalService"/>.

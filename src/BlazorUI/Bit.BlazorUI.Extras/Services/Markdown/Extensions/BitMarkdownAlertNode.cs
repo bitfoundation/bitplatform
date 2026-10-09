@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A GitHub alert: a block quote whose first line is one of <c>[!NOTE]</c>, <c>[!TIP]</c>,

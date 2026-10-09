@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Loads optional alternate CSS bundles by id (creates or updates a <c>&lt;link rel="stylesheet"&gt;</c>).

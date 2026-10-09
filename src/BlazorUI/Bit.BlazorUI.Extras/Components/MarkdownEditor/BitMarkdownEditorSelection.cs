@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A selection range inside the <see cref="BitMarkdownEditor"/> textarea.

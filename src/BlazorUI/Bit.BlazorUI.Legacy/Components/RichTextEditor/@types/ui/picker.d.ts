@@ -1,4 +1,4 @@
-declare class Picker {
+﻿declare class Picker {
     select: HTMLSelectElement;
     container: HTMLElement;
     label: HTMLElement;

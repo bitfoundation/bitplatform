@@ -1,4 +1,4 @@
-declare type AnnotationElementParameters = {
+﻿declare type AnnotationElementParameters = {
     data: Object;
     layer: HTMLDivElement;
     linkService: IPDFLinkService;

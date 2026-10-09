@@ -1,4 +1,4 @@
-// Fluent 2 preset - the scheme-independent tokens: shape, size, typography and motion. Values are
+﻿// Fluent 2 preset - the scheme-independent tokens: shape, size, typography and motion. Values are
 // the Fluent 2 design tokens as the reference implementation publishes them
 // (github.com/microsoft/fluentui, packages/tokens/src/global) plus the component geometry those
 // tokens are assembled into in packages/react-components; the palette lives in colors.fluent2-*.scss
@@ -62,56 +62,57 @@
     /*---- Size ----*/
     // Fluent 2 fixes its control geometry in px, and every one of those numbers is a whole step of
     // the 8px spacing unit - so they are written as spacing multiples rather than as absolute
-    // lengths, and the compact/spacious density presets keep working on this preset.
+    // lengths, and the compact/spacious density presets keep working on this preset. Each is a
+    // unitless steps token, the length itself left `initial` so it is computed where it is used (see
+    // the spacing note in the core shapes.fluent.scss).
     // Heights: 24 / 32 / 40 - Button and Input small/medium/large.
-    --bit-siz-ctrl-sm-steps: 3;
-    --bit-siz-ctrl-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-sm-steps)); //24px
-    --bit-siz-ctrl-md-steps: 4;
-    --bit-siz-ctrl-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-md-steps)); //32px
-    --bit-siz-ctrl-lg-steps: 5;
-    --bit-siz-ctrl-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-lg-steps)); //40px
+    --bit-siz-ctrl-sm-steps: 3; //24px
+    --bit-siz-ctrl-md-steps: 4; //32px
+    --bit-siz-ctrl-lg-steps: 5; //40px
+    --bit-siz-ctrl-sm: initial;
+    --bit-siz-ctrl-md: initial;
+    --bit-siz-ctrl-lg: initial;
     // Button padding: spacingHorizontalS / M / L across, and the vertical padding that adds up to
     // the heights above with the 16 / 20 / 22px label line boxes.
-    --bit-siz-ctrl-pad-x-sm-steps: 1;
-    --bit-siz-ctrl-pad-x-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-pad-x-sm-steps)); //8px
-    --bit-siz-ctrl-pad-x-md-steps: 1.5;
-    --bit-siz-ctrl-pad-x-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-pad-x-md-steps)); //12px
-    --bit-siz-ctrl-pad-x-lg-steps: 2;
-    --bit-siz-ctrl-pad-x-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-pad-x-lg-steps)); //16px
-    --bit-siz-ctrl-pad-y-sm-steps: 0.375;
-    --bit-siz-ctrl-pad-y-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-pad-y-sm-steps)); //3px
-    --bit-siz-ctrl-pad-y-md-steps: 0.625;
-    --bit-siz-ctrl-pad-y-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-pad-y-md-steps)); //5px
-    --bit-siz-ctrl-pad-y-lg-steps: 1;
-    --bit-siz-ctrl-pad-y-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-pad-y-lg-steps)); //8px
+    --bit-siz-ctrl-pad-x-sm-steps: 1; //8px
+    --bit-siz-ctrl-pad-x-md-steps: 1.5; //12px
+    --bit-siz-ctrl-pad-x-lg-steps: 2; //16px
+    --bit-siz-ctrl-pad-y-sm-steps: 0.375; //3px
+    --bit-siz-ctrl-pad-y-md-steps: 0.625; //5px
+    --bit-siz-ctrl-pad-y-lg-steps: 1; //8px
+    --bit-siz-ctrl-pad-x-sm: initial;
+    --bit-siz-ctrl-pad-x-md: initial;
+    --bit-siz-ctrl-pad-x-lg: initial;
+    --bit-siz-ctrl-pad-y-sm: initial;
+    --bit-siz-ctrl-pad-y-md: initial;
+    --bit-siz-ctrl-pad-y-lg: initial;
     // Fluent 2 gives a labeled button a 96px floor (its small size uses 64px, which is not a token
     // of its own here). Icon-only buttons opt out of the floor and stay square.
-    --bit-siz-ctrl-min-width-fixed: initial;
-    --bit-siz-ctrl-min-width-steps: 12;
-    --bit-siz-ctrl-min-width: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-min-width-steps)); //96px
+    --bit-siz-ctrl-min-width-steps: 12; //96px
+    --bit-siz-ctrl-min-width: initial;
     // Glyphs: the 16 / 20 / 24 icon ramp. rem, like type, so density does not shrink them.
     --bit-siz-icon-sm: 1rem; //16px
     --bit-siz-icon-md: 1.25rem; //20px
     --bit-siz-icon-lg: 1.5rem; //24px
     // Checkbox box / radio ring: Fluent 2 draws 16px at medium and 20px at large, i.e. half the
     // control height, which is what the small size follows too.
-    --bit-siz-sel-sm-steps: 1.5;
-    --bit-siz-sel-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-sel-sm-steps)); //12px
-    --bit-siz-sel-md-steps: 2;
-    --bit-siz-sel-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-sel-md-steps)); //16px
-    --bit-siz-sel-lg-steps: 2.5;
-    --bit-siz-sel-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-sel-lg-steps)); //20px
+    --bit-siz-sel-sm-steps: 1.5; //12px
+    --bit-siz-sel-md-steps: 2; //16px
+    --bit-siz-sel-lg-steps: 2.5; //20px
+    --bit-siz-sel-sm: initial;
+    --bit-siz-sel-md: initial;
+    --bit-siz-sel-lg: initial;
     // Popup list rows track the control heights - a Fluent 2 MenuItem is 32px.
-    --bit-siz-item-sm-steps: 3;
-    --bit-siz-item-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-item-sm-steps)); //24px
-    --bit-siz-item-md-steps: 4;
-    --bit-siz-item-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-item-md-steps)); //32px
-    --bit-siz-item-lg-steps: 5;
-    --bit-siz-item-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-item-lg-steps)); //40px
+    --bit-siz-item-sm-steps: 3; //24px
+    --bit-siz-item-md-steps: 4; //32px
+    --bit-siz-item-lg-steps: 5; //40px
+    --bit-siz-item-sm: initial;
+    --bit-siz-item-md: initial;
+    --bit-siz-item-lg: initial;
     // Tab: spacingVerticalM over and under the 20px label line box; the selection indicator is
     // strokeWidthThicker, a step above the 2px Fluent 1 drew.
-    --bit-siz-tab-steps: 5.5;
-    --bit-siz-tab: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-tab-steps)); //44px
+    --bit-siz-tab-steps: 5.5; //44px
+    --bit-siz-tab: initial;
     --bit-siz-tab-indicator: 0.1875rem; //3px - strokeWidthThicker
     // Divider: strokeWidthThin, re-declared here rather than inherited so a scoped fluent2 region
     // resolves it against this preset's border width.
@@ -126,52 +127,52 @@
     // Switch: the 40x20 track with a 14px thumb at the medium anchor; sm and lg scale around it. The
     // knob's inset from the track edge is derived from the two, so it stays 2px - (20 - 14) / 2 less
     // the 1px stroke - at every size.
-    --bit-siz-switch-w-sm-steps: 4;
-    --bit-siz-switch-w-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-w-sm-steps)); //32px
-    --bit-siz-switch-w-md-steps: 5;
-    --bit-siz-switch-w-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-w-md-steps)); //40px
-    --bit-siz-switch-w-lg-steps: 6;
-    --bit-siz-switch-w-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-w-lg-steps)); //48px
-    --bit-siz-switch-h-sm-steps: 2;
-    --bit-siz-switch-h-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-h-sm-steps)); //16px
-    --bit-siz-switch-h-md-steps: 2.5;
-    --bit-siz-switch-h-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-h-md-steps)); //20px
-    --bit-siz-switch-h-lg-steps: 3;
-    --bit-siz-switch-h-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-h-lg-steps)); //24px
-    --bit-siz-switch-thumb-sm-steps: 1.25;
-    --bit-siz-switch-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-thumb-sm-steps)); //10px
-    --bit-siz-switch-thumb-md-steps: 1.75;
-    --bit-siz-switch-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-thumb-md-steps)); //14px
-    --bit-siz-switch-thumb-lg-steps: 2.25;
-    --bit-siz-switch-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-thumb-lg-steps)); //18px
+    --bit-siz-switch-w-sm-steps: 4; //32px
+    --bit-siz-switch-w-md-steps: 5; //40px
+    --bit-siz-switch-w-lg-steps: 6; //48px
+    --bit-siz-switch-h-sm-steps: 2; //16px
+    --bit-siz-switch-h-md-steps: 2.5; //20px
+    --bit-siz-switch-h-lg-steps: 3; //24px
+    --bit-siz-switch-thumb-sm-steps: 1.25; //10px
+    --bit-siz-switch-thumb-md-steps: 1.75; //14px
+    --bit-siz-switch-thumb-lg-steps: 2.25; //18px
+    --bit-siz-switch-w-sm: initial;
+    --bit-siz-switch-w-md: initial;
+    --bit-siz-switch-w-lg: initial;
+    --bit-siz-switch-h-sm: initial;
+    --bit-siz-switch-h-md: initial;
+    --bit-siz-switch-h-lg: initial;
+    --bit-siz-switch-thumb-sm: initial;
+    --bit-siz-switch-thumb-md: initial;
+    --bit-siz-switch-thumb-lg: initial;
     // Slider handle: 16px at medium and 20px at large are Fluent 2's two sizes.
-    --bit-siz-slider-thumb-sm-steps: 1.5;
-    --bit-siz-slider-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-slider-thumb-sm-steps)); //12px
-    --bit-siz-slider-thumb-md-steps: 2;
-    --bit-siz-slider-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-slider-thumb-md-steps)); //16px
-    --bit-siz-slider-thumb-lg-steps: 2.5;
-    --bit-siz-slider-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-slider-thumb-lg-steps)); //20px
+    --bit-siz-slider-thumb-sm-steps: 1.5; //12px
+    --bit-siz-slider-thumb-md-steps: 2; //16px
+    --bit-siz-slider-thumb-lg-steps: 2.5; //20px
+    --bit-siz-slider-thumb-sm: initial;
+    --bit-siz-slider-thumb-md: initial;
+    --bit-siz-slider-thumb-lg: initial;
     // CounterBadge: the small / medium / large 16, 20 and 24px counters, and the tiny (6px) to
     // extra-small (10px) badges as the dot.
-    --bit-siz-badge-sm-steps: 2;
-    --bit-siz-badge-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-badge-sm-steps)); //16px
-    --bit-siz-badge-md-steps: 2.5;
-    --bit-siz-badge-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-badge-md-steps)); //20px
-    --bit-siz-badge-lg-steps: 3;
-    --bit-siz-badge-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-badge-lg-steps)); //24px
-    --bit-siz-badge-dot-sm-steps: 0.75;
-    --bit-siz-badge-dot-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-badge-dot-sm-steps)); //6px
-    --bit-siz-badge-dot-md-steps: 1;
-    --bit-siz-badge-dot-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-badge-dot-md-steps)); //8px
-    --bit-siz-badge-dot-lg-steps: 1.25;
-    --bit-siz-badge-dot-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-badge-dot-lg-steps)); //10px
+    --bit-siz-badge-sm-steps: 2; //16px
+    --bit-siz-badge-md-steps: 2.5; //20px
+    --bit-siz-badge-lg-steps: 3; //24px
+    --bit-siz-badge-dot-sm-steps: 0.75; //6px
+    --bit-siz-badge-dot-md-steps: 1; //8px
+    --bit-siz-badge-dot-lg-steps: 1.25; //10px
+    --bit-siz-badge-sm: initial;
+    --bit-siz-badge-md: initial;
+    --bit-siz-badge-lg: initial;
+    --bit-siz-badge-dot-sm: initial;
+    --bit-siz-badge-dot-md: initial;
+    --bit-siz-badge-dot-lg: initial;
     // Tag: the extra-small / small / medium 20, 24 and 32px tags.
-    --bit-siz-chip-sm-steps: 2.5;
-    --bit-siz-chip-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-chip-sm-steps)); //20px
-    --bit-siz-chip-md-steps: 3;
-    --bit-siz-chip-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-chip-md-steps)); //24px
-    --bit-siz-chip-lg-steps: 4;
-    --bit-siz-chip-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-chip-lg-steps)); //32px
+    --bit-siz-chip-sm-steps: 2.5; //20px
+    --bit-siz-chip-md-steps: 3; //24px
+    --bit-siz-chip-lg-steps: 4; //32px
+    --bit-siz-chip-sm: initial;
+    --bit-siz-chip-md: initial;
+    --bit-siz-chip-lg: initial;
 
     /*---- Opacity ----*/
     // --bit-opa-dis is left at the core stylesheet's 0.5. Fluent 2 does not dim a disabled element
@@ -187,23 +188,22 @@
     /*---- Spacing / layout ----*/
     // Fluent 2's dialog inset is 24px and its actions run in a row hugging the trailing edge, which
     // is what the core Fluent tokens already say; they are re-declared rather than inherited so a
-    // scoped fluent2 region resolves the inset against this preset's spacing unit.
-    --bit-spa-dialog-steps: 3;
-    --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-dialog-steps)); //24px
+    // fluent2 region scoped inside another preset gets them back.
+    --bit-spa-dialog-steps: 3; //24px
+    --bit-spa-dialog: initial;
     // Card: the small / medium / large padding of the Fluent 2 Card.
-    --bit-spa-card-sm-steps: 1;
-    --bit-spa-card-md-steps: 1.5;
-    --bit-spa-card-lg-steps: 2;
-    --bit-spa-card-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-card-sm-steps)); //8px
-    --bit-spa-card-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-card-md-steps)); //12px
-    --bit-spa-card-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-card-lg-steps)); //16px
+    --bit-spa-card-sm-steps: 1; //8px
+    --bit-spa-card-md-steps: 1.5; //12px
+    --bit-spa-card-lg-steps: 2; //16px
+    --bit-spa-card-sm: initial;
+    --bit-spa-card-md: initial;
+    --bit-spa-card-lg: initial;
     --bit-layout-dialog-actions-direction: row;
     --bit-layout-dialog-actions-justify: flex-end;
     --bit-layout-dialog-actions-align: center;
     --bit-layout-dialog-text-align: start;
     // Fluent 2's dialog surface is 600px wide at its medium size.
-    --bit-siz-dialog-max-width-fixed: 37.5rem; //600px
-    --bit-siz-dialog-max-width: var(--bit-siz-dialog-max-width-fixed);
+    --bit-siz-dialog-max-width: 37.5rem; //600px
 
     /*---- Typography ----*/
     // Segoe UI Variable is the Fluent 2 typeface (Windows 11 and the Office web apps ship it); the

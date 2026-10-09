@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A radial gradient fill. Center and radius are expressed as fractions (0..1) of the filled

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Data label plugin options (renders the values on the chart itself).</summary>
 public sealed class BitChartDataLabelOptions

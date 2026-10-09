@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Toolbar button groups of the BitRichTextEditor. Combine with bitwise OR to choose which

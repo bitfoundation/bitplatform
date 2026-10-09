@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Axis border line configuration, mirroring Chart.js <c>scale.border</c>.</summary>
 public sealed class BitChartAxisBorderOptions

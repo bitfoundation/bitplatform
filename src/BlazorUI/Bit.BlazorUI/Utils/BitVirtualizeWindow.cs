@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// How many items a virtualized list renders before anything has been measured. Virtualize renders no item until

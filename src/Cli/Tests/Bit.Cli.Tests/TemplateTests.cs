@@ -159,7 +159,11 @@ public class TemplateTests
         Assert.IsNull(error);
         CollectionAssert.AreEquivalent(new[] { Platform.Web, Platform.Android, Platform.Windows }, platforms.ToArray());
 
-        Assert.IsNotNull(Commands.SharedOptions.ParsePlatforms(["ios"], HostOs.Windows).Error);
+        var (apple, appleError) = Commands.SharedOptions.ParsePlatforms(["ios,macos"], HostOs.Windows);
+        Assert.IsNull(appleError);
+        CollectionAssert.AreEquivalent(new[] { Platform.Web, Platform.Ios, Platform.MacOS }, apple.ToArray());
+
+        Assert.IsNotNull(Commands.SharedOptions.ParsePlatforms(["ios"], HostOs.Linux).Error);
         Assert.IsNotNull(Commands.SharedOptions.ParsePlatforms(["tizen"], HostOs.Linux).Error);
         CollectionAssert.AreEquivalent(new[] { Platform.Web }, Commands.SharedOptions.ParsePlatforms([], HostOs.Linux).Platforms.ToArray());
     }

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Base class for renderable SVG primitives produced by the renderer.</summary>
 public abstract class BitChartSvgNode

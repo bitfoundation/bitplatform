@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The context passed to the ItemTemplate of the BitRating, describing the rating item being rendered.

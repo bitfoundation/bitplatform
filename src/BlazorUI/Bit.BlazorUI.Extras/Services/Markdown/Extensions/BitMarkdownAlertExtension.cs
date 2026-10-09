@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Enables GitHub alerts: <c>&gt; [!NOTE]</c>, <c>&gt; [!TIP]</c>, <c>&gt; [!IMPORTANT]</c>,

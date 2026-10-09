@@ -1,4 +1,4 @@
-declare type PDFThumbnailViewOptions = {
+﻿declare type PDFThumbnailViewOptions = {
     /**
      * - The viewer element.
      */

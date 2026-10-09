@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Pivot;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.Pivot;
 
 public partial class BitPivotDemo
 {

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 // HTML source view. While active, the WYSIWYG surface is replaced by a raw-HTML textarea and
 // the formatting controls are disabled. On exit the edited HTML is sanitized, validated,

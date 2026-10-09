@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Animation options. For the SVG renderer these map to CSS transitions.</summary>
 public sealed class BitChartAnimationOptions

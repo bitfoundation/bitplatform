@@ -1,4 +1,4 @@
-using Bit.BlazorUI.Demo.Client.Core.Components;
+﻿using Bit.BlazorUI.Demo.Client.Core.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.DataGrid;

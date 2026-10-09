@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class Ratings {
         private static _controllers = new Map<string, AbortController>();
 

@@ -44,7 +44,7 @@ jobs:
           Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
 
       - name: Prepare this machine with bit setup
-        run: bit setup --no-browsers -p:Configuration=Release -p:Version="${{ vars.APP_VERSION }}" --yes
+        run: bit setup --no-build --yes
 
       - name: Translate .resx files
         env:
@@ -213,7 +213,7 @@ jobs:
           Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
 
       - name: Prepare this machine with bit setup
-        run: bit setup --platforms windows --no-browsers --yes
+        run: bit setup --platforms windows --no-build --yes
 
       - name: Translate .resx files
         env:
@@ -294,7 +294,7 @@ jobs:
           Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
 
       - name: Prepare this machine with bit setup
-        run: bit setup --platforms android --no-browsers --yes
+        run: bit setup --platforms android --no-build --yes
 
       - name: Extract Android signing key
         uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
@@ -366,7 +366,7 @@ jobs:
           Add-Content $env:GITHUB_PATH "$env:RUNNER_TEMP/bit-cli"
 
       - name: Prepare this machine with bit setup
-        run: bit setup --platforms ios --no-browsers --yes
+        run: bit setup --platforms ios --no-build --yes
 
       - name: Translate .resx files
         env:

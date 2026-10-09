@@ -105,14 +105,13 @@
     The callout is a sibling of the root instead of a child of it, so it carries the direction of the
     component itself - without it, everything inside would fall back to the direction of the page.
 *@
-<div @ref="_calloutRef"
-     id="@_calloutId"
+<div id="@_calloutId"
      style="@GetCalloutStyle()"
      class="@GetCalloutCssClasses()"
      dir="@Dir?.ToString().ToLower()">
     @*
         The callout is a modal dialog only when it floats over the page, where an overlay closes the rest of it
-        off and the focus leaving it dismisses it; standalone it is a group of controls that is part of the page
+        off and the focus is held inside it; standalone it is a group of controls that is part of the page
         like any other, where announcing a dialog would announce one the user can never leave.
 
         Escape is handled here rather than on the dial, so it dismisses the picker from whatever part of it

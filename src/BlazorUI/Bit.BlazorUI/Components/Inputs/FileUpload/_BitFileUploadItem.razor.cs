@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 // Which button of a file item the focus is to be moved to once the button that was pressed is gone.
 internal enum BitFileUploadFocusTarget

@@ -1,4 +1,4 @@
-@import 'abstracts/_functions.scss';
+﻿@import 'abstracts/_functions.scss';
 @import 'abstracts/_media-queries.scss';
 @import 'abstracts/_bit-css-variables.scss';
 @import 'abstracts/_docs.scss';
@@ -74,9 +74,11 @@
         // Cupertino 31px where Fluent draws it 20px - and a literal tuned to Fluent leaves the pivot
         // bar pinned *inside* this one on the other two presets. The floor keeps the row tall enough
         // for the label beside a switch a preset draws shorter than its own text - and stands in for
-        // the track entirely under a custom theme that ships no --bit-siz-switch-h-md, which would
-        // otherwise leave the max() invalid at computed-value time and this whole variable unusable.
-        --demo-motion-bar-height: calc(max(var(--bit-siz-switch-h-md, #{rem2(24px)}), #{rem2(24px)}) + #{$doc-space-2xs} * 2 + #{rem2(2px)});
+        // the track entirely under a custom theme that ships no switch geometry, which would otherwise
+        // leave the max() invalid at computed-value time and this whole variable unusable. The track
+        // is read the way the library's alias reads it - the token if one is set, else its steps of the
+        // spacing unit - each input guarded.
+        --demo-motion-bar-height: calc(max(var(--bit-siz-switch-h-md, calc(var(--bit-spa-scaling-factor, #{rem2(8px)}) * var(--bit-layout-density-scale, 1) * var(--bit-siz-switch-h-md-steps, 3))), #{rem2(24px)}) + #{$doc-space-2xs} * 2 + #{rem2(2px)});
     }
 
     // A component demo page with its ForceAnimation toggle off: exactly the library's own reduced
@@ -522,14 +524,17 @@ code {
 //
 // The tab row is read as a raw custom property rather than through an alias in
 // _bit-css-variables.scss, because it needs the same guard --demo-motion-bar-height documents and an
-// alias cannot carry one: a theme that ships no --bit-siz-tab would otherwise make this calc()
+// alias cannot carry one: a theme that ships no tab height would otherwise make this calc()
 // invalid at computed-value time and take the whole variable with it, leaving every anchor on a
-// multi-API page to scroll under the sticky header at 0 clearance.
+// multi-API page to scroll under the sticky header at 0 clearance. It is read the way the library's
+// alias reads it - the token if one is set, else its steps of the spacing unit - each input guarded.
+$demo-tab-height: var(--bit-siz-tab, calc(var(--bit-spa-scaling-factor, #{rem2(8px)}) * var(--bit-layout-density-scale, 1) * var(--bit-siz-tab-steps, 5.5)));
+
 .doc-main:has(.pivot-sticky-header) {
-    --demo-section-scroll-margin: calc(max(#{rem2(120px)}, var(--demo-pivot-sticky-top) + #{$bit-env-inset-top}) + var(--bit-siz-tab, #{rem2(44px)}) + #{rem2(8px)} + #{$doc-space-2xs});
+    --demo-section-scroll-margin: calc(max(#{rem2(120px)}, var(--demo-pivot-sticky-top) + #{$bit-env-inset-top}) + #{$demo-tab-height} + #{rem2(8px)} + #{$doc-space-2xs});
 
     .bit-ios & {
-        --demo-section-scroll-margin: calc(max(#{rem2(120px)}, var(--demo-pivot-sticky-top) + env(safe-area-inset-top)) + var(--bit-siz-tab, #{rem2(44px)}) + #{rem2(8px)} + #{$doc-space-2xs});
+        --demo-section-scroll-margin: calc(max(#{rem2(120px)}, var(--demo-pivot-sticky-top) + env(safe-area-inset-top)) + #{$demo-tab-height} + #{rem2(8px)} + #{$doc-space-2xs});
     }
 }
 

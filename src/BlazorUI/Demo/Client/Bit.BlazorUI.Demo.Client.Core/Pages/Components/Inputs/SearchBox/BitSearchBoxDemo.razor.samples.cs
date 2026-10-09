@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.SearchBox;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.SearchBox;
 
 public partial class BitSearchBoxDemo
 {

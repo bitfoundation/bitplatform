@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Legacy;
+﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
 /// Configures event handlers for <see cref="BitDataGridLegacy{TGridItem}"/>.

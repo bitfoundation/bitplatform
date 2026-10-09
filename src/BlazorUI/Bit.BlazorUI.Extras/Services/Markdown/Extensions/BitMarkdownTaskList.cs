@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Helpers for editing task markers in a Markdown source, so a ticked box can be written back into

@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using Microsoft.AspNetCore.Components.Rendering;
 
 namespace Bit.BlazorUI;

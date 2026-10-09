@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A dataset, mirroring Chart.js dataset configuration. A dataset can carry either a

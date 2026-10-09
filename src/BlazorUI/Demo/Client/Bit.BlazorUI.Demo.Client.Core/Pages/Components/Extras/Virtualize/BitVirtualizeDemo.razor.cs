@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Virtualize;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Virtualize;
 
 public partial class BitVirtualizeDemo
 {

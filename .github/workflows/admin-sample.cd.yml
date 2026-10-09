@@ -100,7 +100,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new AdminPanel --database PostgreSQL --module Admin --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --api Standalone --brouter true --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-browsers -p:Configuration=Release -p:Version="${{ vars.APP_VERSION}}" --no-format --no-migration --no-trust
+      run: bit new AdminPanel --database PostgreSQL --module Admin --appInsights --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --api Standalone --brouter true --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
        
     - name: Translate .resx files
       run: |
@@ -257,7 +257,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter false --theme Material --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-browsers -p:Configuration=Release -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true --no-format --no-migration --no-trust
+      run: bit new AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter false --theme Material --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -318,7 +318,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --captcha reCaptcha --signalR --ads --brouter true --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms windows --no-browsers --no-format --no-migration --no-trust
+      run: bit new AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --captcha reCaptcha --signalR --ads --brouter true --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms windows --no-build --no-format --no-migration --no-trust
   
     - name: Translate .resx files
       run: |
@@ -420,7 +420,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter true --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms android --no-browsers --no-format --no-migration --no-trust
+      run: bit new AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter true --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms android --no-build --no-format --no-migration --no-trust
 
     - name: Extract Android signing key from env
       uses: timheuer/base64-to-file@dfa5a5dd38803cb4f5c3a081eeb28e8362d43e9c # v2.0.0
@@ -515,7 +515,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter true --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms ios --no-browsers --no-format --no-migration --no-trust -p:CodesignRequireProvisioningProfile=false -p:ValidateEntitlements=warn
+      run: bit new AdminPanel --database PostgreSQL --module Admin --sentry --apiServerUrl ${{ env.SERVER_API_ADDRESS }} --webAppUrl ${{ env.SERVER_WEB_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter true --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms ios --no-build --no-format --no-migration --no-trust
   
     - name: Translate .resx files
       run: |

@@ -1,4 +1,4 @@
-declare type SelectionInfo = {
+﻿declare type SelectionInfo = {
     newRange: QuillRange;
     oldRange: QuillRange;
 };

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// An abbreviation definition (<c>*[HTML]: HyperText Markup Language</c>). Like a link reference

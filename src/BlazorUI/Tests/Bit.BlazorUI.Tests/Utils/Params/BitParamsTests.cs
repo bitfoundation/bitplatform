@@ -527,6 +527,127 @@ public class BitParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void EveryInheritedParameterTheParamsObjectStopsSupplyingShouldGoBack()
+    {
+        var component = RenderComponent<BitParams>(builder =>
+        {
+            builder.Add(p => p.Parameters, [new BitButtonParams
+            {
+                AriaLabel = "Shared",
+                ForceAnimation = true,
+                HtmlAttributes = new() { ["data-shared"] = "1" },
+                Id = "shared-id",
+                Style = "margin:1px",
+                TabIndex = "3",
+                Visibility = BitVisibility.Hidden
+            }]);
+            builder.AddChildContent<StaticButtonHost>();
+        });
+
+        var button = component.FindComponent<BitButton>().Instance;
+
+        Assert.AreEqual("Shared", button.AriaLabel);
+        Assert.IsTrue(button.ForceAnimation);
+        Assert.AreEqual("shared-id", button.Id);
+        Assert.AreEqual("margin:1px", button.Style);
+        Assert.AreEqual("3", button.TabIndex);
+        Assert.AreEqual(BitVisibility.Hidden, button.Visibility);
+
+        var cascaded = component.Find("button");
+
+        Assert.AreEqual("Shared", cascaded.GetAttribute("aria-label"));
+        Assert.IsTrue(cascaded.ClassList.Contains("bit-fam"));
+        Assert.AreEqual("1", cascaded.GetAttribute("data-shared"));
+        Assert.AreEqual("shared-id", cascaded.Id);
+        Assert.AreEqual("3", cascaded.GetAttribute("tabindex"));
+        Assert.Contains("margin:1px", cascaded.GetAttribute("style") ?? "");
+        Assert.Contains("visibility:hidden", cascaded.GetAttribute("style") ?? "");
+
+        component.Render(builder => builder.Add(p => p.Parameters, [new BitButtonParams()]));
+
+        Assert.IsNull(button.AriaLabel);
+        Assert.IsFalse(button.ForceAnimation);
+        Assert.IsFalse(button.HtmlAttributes.ContainsKey("data-shared"));
+        Assert.IsNull(button.Id);
+        Assert.IsNull(button.Style);
+        Assert.IsNull(button.TabIndex);
+        Assert.AreEqual(BitVisibility.Visible, button.Visibility);
+
+        var element = component.Find("button");
+
+        Assert.IsFalse(element.HasAttribute("aria-label"), "a cascaded name no longer announced");
+        Assert.IsFalse(element.ClassList.Contains("bit-fam"));
+        Assert.IsFalse(element.HasAttribute("data-shared"));
+        Assert.AreNotEqual("shared-id", element.Id);
+        Assert.IsFalse(element.HasAttribute("tabindex"));
+        Assert.DoesNotContain("margin:1px", element.GetAttribute("style") ?? "");
+        Assert.DoesNotContain("visibility:hidden", element.GetAttribute("style") ?? "", "a cascaded Hidden no longer hides it");
+    }
+
+    [TestMethod]
+    [DataRow(nameof(BitTextField.ReadOnly), "bit-tfl-rdl", "bit-rtg-rdl")]
+    [DataRow(nameof(BitTextField.Required), "bit-tfl-req", "bit-rtg-req")]
+    public void AnInheritedInputParameterTheParamsObjectStopsSupplyingShouldGoBack(string parameter, string textFieldClass, string ratingClass)
+    {
+        // One parameter at a time: a rating draws no -req class while it is read-only.
+        IBitComponentParams[] parameters = parameter == nameof(BitTextField.ReadOnly)
+            ? [new BitTextFieldParams { ReadOnly = true }, new BitRatingParams { ReadOnly = true }]
+            : [new BitTextFieldParams { Required = true }, new BitRatingParams { Required = true }];
+        var attribute = parameter.ToLowerInvariant();
+
+        var component = RenderComponent<BitParams>(builder =>
+        {
+            builder.Add(p => p.Parameters, parameters);
+            builder.AddChildContent<StaticInputsParameterHost>(host => host.Add(p => p.Parameter, parameter));
+        });
+
+        var textField = component.FindComponent<BitTextField>().Instance;
+        var ratings = component.FindComponents<BitRating>();
+        var cascaded = ratings[0].Instance;
+        var ownChoice = ratings[1].Instance;
+
+        bool IsSet<TValue>(BitInputBase<TValue> input) => parameter == nameof(BitTextField.ReadOnly) ? input.ReadOnly : input.Required;
+
+        Assert.IsTrue(IsSet(textField));
+        Assert.IsTrue(component.Find("input").HasAttribute(attribute));
+        Assert.IsTrue(component.Find(".bit-tfl").ClassList.Contains(textFieldClass));
+        Assert.IsTrue(IsSet(cascaded));
+        Assert.IsTrue(ratings[0].Find(".bit-rtg").ClassList.Contains(ratingClass));
+        Assert.IsTrue(IsSet(ownChoice));
+        Assert.IsTrue(ratings[1].Find(".bit-rtg").ClassList.Contains(ratingClass));
+
+        component.Render(builder => builder.Add(p => p.Parameters, [new BitTextFieldParams(), new BitRatingParams()]));
+
+        Assert.IsFalse(IsSet(textField));
+        Assert.IsFalse(component.Find("input").HasAttribute(attribute));
+        Assert.IsFalse(component.Find(".bit-tfl").ClassList.Contains(textFieldClass));
+        Assert.IsFalse(IsSet(cascaded));
+        Assert.IsFalse(ratings[0].Find(".bit-rtg").ClassList.Contains(ratingClass));
+        Assert.IsTrue(IsSet(ownChoice), "a value the markup sets stays");
+        Assert.IsTrue(ratings[1].Find(".bit-rtg").ClassList.Contains(ratingClass));
+    }
+
+    [TestMethod]
+    public void AnInheritedInputParameterSuppliedAgainUnchangedShouldNotRebuildTheClass()
+    {
+        var component = RenderComponent<BitParams>(builder =>
+        {
+            builder.Add(p => p.Parameters, [new BitTextFieldParams { ReadOnly = true, Required = true }]);
+            builder.AddChildContent<SwitchableTextFieldHost>(host => host.Add(p => p.Placeholder, "first"));
+        });
+
+        var classBuilder = component.FindComponent<BitTextField>().Instance.ClassBuilder;
+        var before = classBuilder.Value;
+
+        // Only the host renders, so the text field takes the very same params object again; and a builder that is
+        // not reset hands back the very string it built before.
+        component.FindComponent<SwitchableTextFieldHost>().Render(host => host.Add(p => p.Placeholder, "second"));
+
+        Assert.AreEqual("second", component.Find("input").GetAttribute("placeholder"), "the text field rendered again");
+        Assert.AreSame(before, classBuilder.Value);
+    }
+
+    [TestMethod]
     public void EveryParameterShouldGoBackOnceTheParamsObjectIsGone()
     {
         var component = RenderComponent<BitParams>(builder =>
@@ -1126,6 +1247,38 @@ public class BitParamsTests : BunitTestContext
             {
                 builder.AddComponentParameter(2, nameof(BitButton.Color), Color);
             }
+            builder.CloseComponent();
+        }
+    }
+
+    private sealed class StaticInputsParameterHost : ComponentBase
+    {
+        [Parameter] public string Parameter { get; set; } = default!;
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<BitTextField>(0);
+            builder.AddComponentParameter(1, nameof(BitTextField.Label), "Name");
+            builder.CloseComponent();
+
+            builder.OpenComponent<BitRating>(2);
+            builder.CloseComponent();
+
+            builder.OpenComponent<BitRating>(3);
+            builder.AddComponentParameter(4, Parameter, true);
+            builder.CloseComponent();
+        }
+    }
+
+    private sealed class SwitchableTextFieldHost : ComponentBase
+    {
+        [Parameter] public string? Placeholder { get; set; }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent<BitTextField>(0);
+            builder.AddComponentParameter(1, nameof(BitTextField.Label), "Name");
+            builder.AddComponentParameter(2, nameof(BitTextField.Placeholder), Placeholder);
             builder.CloseComponent();
         }
     }

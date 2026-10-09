@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Turns newlines into soft breaks, or hard breaks after two trailing spaces.</summary>
 public sealed class BitMarkdownLineBreakInlineParser : BitMarkdownInlineParser

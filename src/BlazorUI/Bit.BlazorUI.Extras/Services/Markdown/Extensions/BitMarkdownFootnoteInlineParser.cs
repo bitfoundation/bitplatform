@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Handles footnote references (<c>[^label]</c>). Only a label the document actually defines

@@ -123,6 +123,14 @@
             // Keeps a scroll or a resize of the page from dismissing the callout without taking away what
             // noDismiss does as well: a click outside of it still closes it. It follows its component instead.
             noScrollDismiss: boolean = false,
+            // Keeps Tab and Shift+Tab cycling inside the callout for as long as it is open, which is what a
+            // callout that reports itself a modal dialog has to do (see Utils.setupFocusTrap). It is registered
+            // with every open and taken back with every close, so a component that only floats its popup some
+            // of the time is never left holding a trap it no longer needs.
+            trapFocus: boolean = false,
+            // Dismisses the callout once the focus has moved on from both its component and itself - see
+            // setupFocusLeave.
+            dismissOnFocusLeave: boolean = false,
             // The id of the root of the component, when it is not an ancestor of the callout - which it is not
             // for any component whose popup is rendered beside its root. What the consumer declared on it for the
             // popup too (the custom properties of Style and Styles.Root, ForceAnimation's bit-fam; see mirrorRoot)
@@ -168,8 +176,18 @@
 
             Callouts.replaceCurrent({
                 dotnetObj, componentId, calloutId, overlayId, arrowId, responsiveMode, scrollContainerId, noDismiss,
-                noScrollDismiss: noDismiss || noScrollDismiss
+                noScrollDismiss: noDismiss || noScrollDismiss, trapFocus
             });
+
+            if (trapFocus) {
+                Utils.setupFocusTrap(calloutId);
+            }
+
+            if (dismissOnFocusLeave) {
+                Callouts.setupFocusLeave(calloutId, component, callout);
+            } else {
+                Callouts.disposeFocusLeave(calloutId);
+            }
 
             // Remember the inputs used to position this callout so it can be repositioned later
             // when the visual viewport changes (e.g. the iOS keyboard shows/hides).
@@ -1057,6 +1075,76 @@
             return true;
         }
 
+        private static _focusLeaves = new Map<string, AbortController>();
+
+        // Dismisses an open callout once the focus has moved on from both the component it was opened from and
+        // the callout itself - or anything opened from inside it - to somewhere else on the page. The callout is
+        // relocated to the end of the body while it is open, so the tab order of the page does not run through
+        // it: a Tab or a Shift+Tab on a field that keeps the focus while its popup is open goes straight on to
+        // the controls around the field, and would leave the popup open behind an overlay that swallows every
+        // click which could still dismiss it. Focus that leaves the callout itself for the page - a script
+        // moving it, a click on something the overlay does not cover - leaves it behind the same way.
+        // It is decided by where the focus lands rather than by the key that moved it, which is what keeps three
+        // things out of it: a Tab onto another part of the component (the clear button of a field) is not the
+        // focus leaving it; a Tab from a field that nothing follows lands in the callout at the end of the body,
+        // which keeps it open rather than hiding it from under the focus; and an input that commits what was
+        // typed into it once it loses the focus has done so - its change event comes before its blur - while the
+        // callout is still open, so a callout that is a transaction rolls that back along with everything else.
+        // A relatedTarget of null is left alone: that is the window itself losing the focus, or a press on
+        // something that cannot hold it, not the person moving on, and the callout has to still be there when
+        // they come back.
+        // The dismissal waits for the focus to settle, so the callout is not taken out of the page in the middle
+        // of the browser moving the focus out of it, and is called off if the focus has come back by then.
+        private static setupFocusLeave(calloutId: string, component: HTMLElement, callout: HTMLElement) {
+            Callouts.disposeFocusLeave(calloutId);
+
+            const controller = new AbortController();
+            const signal = controller.signal;
+
+            // Whether the node is inside the callout, its component, or a callout opened from inside it.
+            const holds = (node: Node | null) => {
+                const index = Callouts._stack.findIndex(entry => entry.calloutId === calloutId);
+                if (index < 0) return true;
+
+                return Callouts._stack.slice(index).some(entry => Callouts.entryContains(entry, node));
+            };
+
+            const onFocusOut = (e: FocusEvent) => {
+                const next = e.relatedTarget as Node | null;
+                if (next === null || holds(next)) return;
+
+                setTimeout(() => {
+                    if (signal.aborted || holds(document.activeElement)) return;
+
+                    Callouts.dismiss(calloutId);
+                });
+            };
+
+            component.addEventListener('focusout', onFocusOut, { signal });
+            callout.addEventListener('focusout', onFocusOut, { signal });
+
+            Callouts._focusLeaves.set(calloutId, controller);
+        }
+
+        private static disposeFocusLeave(calloutId: string) {
+            const controller = Callouts._focusLeaves.get(calloutId);
+            if (!controller) return;
+
+            controller.abort();
+            Callouts._focusLeaves.delete(calloutId);
+        }
+
+        // Dismisses the given open callout, along with everything that was opened from inside it, and tells
+        // their components about it.
+        private static dismiss(calloutId: string) {
+            const index = Callouts._stack.findIndex(entry => entry.calloutId === calloutId);
+            if (index < 0) return;
+
+            while (Callouts._stack.length > index) {
+                Callouts.closeTop();
+            }
+        }
+
         // True when the node lives inside the given open callout or inside the component it was opened
         // from. The component is where the anchor is: a click on it is the trigger toggling the callout,
         // which it does itself, and dismissing it here would fight that.
@@ -1537,6 +1625,11 @@
             // is not a second entry of it: the new record takes the place of the one already there.
             const index = Callouts._stack.findIndex(entry => entry.calloutId === callout.calloutId);
             if (index >= 0) {
+                // A trap the previous record registered goes with it unless the new one asks for it again.
+                if (Callouts._stack[index].trapFocus && !callout.trapFocus) {
+                    Utils.disposeFocusTrap(callout.calloutId);
+                }
+
                 Callouts._stack[index] = callout;
                 return;
             }
@@ -1656,6 +1749,14 @@
 
             Callouts._params.delete(entry.calloutId);
 
+            // Only a trap the toggle registered is taken back here: a component that registers its own (see
+            // setupKeyboard) takes it back itself.
+            if (entry.trapFocus) {
+                Utils.disposeFocusTrap(entry.calloutId);
+            }
+
+            Callouts.disposeFocusLeave(entry.calloutId);
+
             // The entry has already been taken off the stack by the time it is detached, so what is left
             // there is what is still open and still has to be tracked.
             Callouts.unobserveComponent(componentId);
@@ -1699,6 +1800,8 @@
         dotnetObj?: DotNetObject;
         scrollContainerId?: string;
         responsiveMode?: BitResponsiveMode;
+        // Whether the toggle registered the focus trap of the callout, which is then its to take back.
+        trapFocus?: boolean;
     }
 
     // One element of the chain a relocated callout is moved into, and the element of the page it stands for.

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Legend label configuration.</summary>
 public sealed class BitChartLegendLabelOptions

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Legacy;
+﻿namespace Bit.BlazorUI.Legacy;
 
 // This is used by BitDataGridLegacy to move its body rendering to the end of the render queue so we can collect
 // the list of child columns first. It has to be public only because it's used from .razor logic.

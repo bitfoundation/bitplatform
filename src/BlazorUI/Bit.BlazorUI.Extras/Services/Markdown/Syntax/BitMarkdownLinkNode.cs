@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>A hyperlink.</summary>
 public sealed class BitMarkdownLinkNode : BitMarkdownNode

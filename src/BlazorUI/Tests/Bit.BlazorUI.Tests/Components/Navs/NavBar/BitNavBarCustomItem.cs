@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace Bit.BlazorUI.Tests.Components.Navs.NavBar;
 
