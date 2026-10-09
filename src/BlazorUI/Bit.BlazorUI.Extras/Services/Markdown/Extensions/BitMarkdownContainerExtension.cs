@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Enables custom containers: <c>:::name optional title</c> ... <c>:::</c> renders as a

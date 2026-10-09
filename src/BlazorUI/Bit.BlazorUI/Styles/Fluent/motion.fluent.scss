@@ -1,4 +1,4 @@
-// The -full tokens hold the unreduced values and are never touched by the reduced-motion query
+﻿// The -full tokens hold the unreduced values and are never touched by the reduced-motion query
 // below, so they stay the single place to theme a duration: overriding --bit-mot-duration-full
 // changes both the normal value and the one .bit-fam restores. Components always read the plain
 // --bit-mot-* tokens; only the reduced-motion opt-out (.bit-fam in general.scss) reads -full.

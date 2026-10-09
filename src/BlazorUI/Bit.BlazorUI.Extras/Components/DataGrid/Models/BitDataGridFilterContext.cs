@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// What a column's <c>FilterTemplate</c> renders its own filter editor from: the filter currently

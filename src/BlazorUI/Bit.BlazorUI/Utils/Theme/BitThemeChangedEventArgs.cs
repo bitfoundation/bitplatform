@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Event data for <see cref="BitThemeNotifications.ThemeChanged"/>: which preset replaced which.

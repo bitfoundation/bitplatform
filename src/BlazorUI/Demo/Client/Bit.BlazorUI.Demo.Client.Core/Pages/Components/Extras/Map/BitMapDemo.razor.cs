@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Map;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Map;
 
 public partial class BitMapDemo
 {

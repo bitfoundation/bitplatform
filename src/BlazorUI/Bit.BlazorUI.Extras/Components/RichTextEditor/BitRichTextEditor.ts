@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
 
     // BitRichTextEditor - thin JS bridge.
     // Owns nothing but DOM events, formatting commands, and selection. All component

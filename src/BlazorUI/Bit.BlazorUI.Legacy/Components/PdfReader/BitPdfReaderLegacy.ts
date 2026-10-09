@@ -1,4 +1,4 @@
-namespace BitBlazorUI.Legacy {
+﻿namespace BitBlazorUI.Legacy {
     export class PdfReader {
         private static _bitPdfReaders = new Map<string, BitPdfReaderLegacyConfig>();
 

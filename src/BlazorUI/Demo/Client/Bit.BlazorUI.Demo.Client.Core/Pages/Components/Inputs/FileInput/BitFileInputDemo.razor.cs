@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.FileInput;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.FileInput;
 
 public partial class BitFileInputDemo
 {

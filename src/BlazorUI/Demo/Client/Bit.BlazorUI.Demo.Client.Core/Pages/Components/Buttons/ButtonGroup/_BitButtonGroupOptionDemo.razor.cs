@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.ButtonGroup;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Buttons.ButtonGroup;
 
 public partial class _BitButtonGroupOptionDemo
 {

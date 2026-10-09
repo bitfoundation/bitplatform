@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Bunit;
 using Bunit.Rendering;
 using Microsoft.AspNetCore.Components;

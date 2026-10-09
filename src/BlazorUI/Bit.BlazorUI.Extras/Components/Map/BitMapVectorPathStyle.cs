@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Shape of a stroke's end caps.</summary>
 public enum BitMapLineCap

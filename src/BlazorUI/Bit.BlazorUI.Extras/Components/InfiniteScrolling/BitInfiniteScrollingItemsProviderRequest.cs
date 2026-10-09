@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A request to a <see cref="BitInfiniteScrollingItemsProvider{T}"/> for the next page of items.

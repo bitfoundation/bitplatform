@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.TextShimmer;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.TextShimmer;
 
 public partial class BitTextShimmerDemo
 {

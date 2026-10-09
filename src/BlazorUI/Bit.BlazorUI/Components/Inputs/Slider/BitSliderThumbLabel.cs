@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Decides when the <see cref="BitSlider"/> shows the floating label that rides along with its thumb.

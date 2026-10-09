@@ -1,4 +1,4 @@
-declare function convertBlackAndWhiteToRGBA({ src, srcPos, dest, width, height, nonBlackColor, inverseDecode, }: {
+﻿declare function convertBlackAndWhiteToRGBA({ src, srcPos, dest, width, height, nonBlackColor, inverseDecode, }: {
     src: any;
     srcPos?: number | undefined;
     dest: any;

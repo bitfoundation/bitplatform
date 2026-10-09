@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A custom container: a <c>:::</c>-fenced block whose info word names what it is, the way docs

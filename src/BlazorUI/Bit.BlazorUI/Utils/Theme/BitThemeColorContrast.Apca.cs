@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// APCA (Advanced Perceptual Contrast Algorithm) contrast helpers - the perceptually-tuned,

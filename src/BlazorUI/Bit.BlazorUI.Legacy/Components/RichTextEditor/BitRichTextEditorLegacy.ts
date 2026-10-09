@@ -1,4 +1,4 @@
-namespace BitBlazorUI.Legacy {
+﻿namespace BitBlazorUI.Legacy {
 
     export class RichTextEditor {
         public static getQuillInstance(id: string) {

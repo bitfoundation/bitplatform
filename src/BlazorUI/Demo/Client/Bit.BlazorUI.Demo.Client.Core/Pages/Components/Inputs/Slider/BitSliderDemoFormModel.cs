@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Slider;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Slider;
 
 public class BitSliderDemoFormModel
 {

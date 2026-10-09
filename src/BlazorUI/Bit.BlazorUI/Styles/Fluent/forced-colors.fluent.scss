@@ -1,4 +1,4 @@
-// Windows High Contrast / forced-colors: preserve readability with system palette.
+﻿// Windows High Contrast / forced-colors: preserve readability with system palette.
 //
 // Selector specificity is deliberate: a bare `:root` here is (0,1,0), which LOSES to the
 // (0,2,0) `:root[bit-theme="…"]` palette selectors whenever the document pins a preset - the

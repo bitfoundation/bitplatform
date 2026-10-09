@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Supplies a region of the items of a <see cref="BitBasicList{TItem}"/> on demand, which is what a list

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Describes a filter applied to a single column.</summary>
 public sealed class BitDataGridFilterDescriptor

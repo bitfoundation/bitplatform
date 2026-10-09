@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
 
     export type BitMapLL = { lat: number, lng: number };
     export type BitMapBounds = { southWest: BitMapLL, northEast: BitMapLL };

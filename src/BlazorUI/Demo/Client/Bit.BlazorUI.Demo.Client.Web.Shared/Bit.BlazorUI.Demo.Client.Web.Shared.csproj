@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <!-- Holds the web-only (browser) bits shared by the two web hosts: the Blazor WebAssembly client
          (Bit.BlazorUI.Demo.Client.Web) and the server (Blazor Server circuits and the Bswup boot UI in

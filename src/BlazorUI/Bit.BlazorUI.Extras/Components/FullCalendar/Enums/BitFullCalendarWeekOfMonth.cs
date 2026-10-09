@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Which occurrence of a weekday within its month a <see cref="BitFullCalendarRecurrence"/> lands on -

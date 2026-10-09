@@ -1,4 +1,4 @@
-declare type GetPageSizeInchesParameters = {
+﻿declare type GetPageSizeInchesParameters = {
     view: number[];
     userUnit: number;
     rotate: number;

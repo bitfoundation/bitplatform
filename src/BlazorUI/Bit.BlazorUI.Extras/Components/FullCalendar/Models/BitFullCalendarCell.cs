@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// One day of a month grid, as <see cref="BitFullCalendar.MonthCellTemplate"/> receives it.

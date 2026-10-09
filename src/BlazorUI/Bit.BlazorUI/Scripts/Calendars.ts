@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class Calendars {
         private static _handlers = new Map<string, AbortController>();
 

@@ -1,4 +1,4 @@
-// a fork from the Blazor QuickGrid at https://github.com/dotnet/aspnetcore/tree/main/src/Components/QuickGrid
+﻿// a fork from the Blazor QuickGrid at https://github.com/dotnet/aspnetcore/tree/main/src/Components/QuickGrid
 
 namespace Bit.BlazorUI.Legacy;
 

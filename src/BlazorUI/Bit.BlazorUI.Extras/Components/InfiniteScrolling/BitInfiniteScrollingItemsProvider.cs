@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The function a <see cref="BitInfiniteScrolling{TItem}"/> calls for each page of items.

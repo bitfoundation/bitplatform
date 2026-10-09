@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
 
     <!-- The prose of the shared demo enum tables (Models/DemoSharedEnums.cs) is the enums' own XML
          documentation, written into a generated half of the class before every compile - a WebAssembly

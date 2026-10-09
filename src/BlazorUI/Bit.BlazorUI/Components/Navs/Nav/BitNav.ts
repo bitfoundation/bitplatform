@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class Nav {
         // The nav owns the arrow keys, Home and End (they walk the tree) and Space on a chevron (it
         // toggles the branch). The browser's default for those keys is to scroll the page, which has to

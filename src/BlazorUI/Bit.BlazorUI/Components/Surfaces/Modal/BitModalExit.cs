@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// What a modal container hands the <see cref="BitModal"/> it renders for one modal of its service, so the two can

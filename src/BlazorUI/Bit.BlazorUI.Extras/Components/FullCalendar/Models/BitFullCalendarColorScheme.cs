@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Resolved color list and lookup helpers. Built from the calendar's <c>EventColorOptions</c>

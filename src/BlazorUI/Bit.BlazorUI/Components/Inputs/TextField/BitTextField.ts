@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class TextField {
         // The three concerns of a text field (the multiline behaviors, the ghost text and the IME guard)
         // are wired independently and can be turned on and off at any point in the life of a component,

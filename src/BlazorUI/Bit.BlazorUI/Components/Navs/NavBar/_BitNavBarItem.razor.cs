@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 public partial class _BitNavBarItem<TItem> : IDisposable where TItem : class
 {

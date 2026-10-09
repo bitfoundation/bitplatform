@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class Headers {
         private static _entries = new Map<string, {
             element: HTMLElement,

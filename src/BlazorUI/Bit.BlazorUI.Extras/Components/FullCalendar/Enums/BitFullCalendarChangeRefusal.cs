@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Why the calendar refused to commit a user-driven change (a drop, a resize, or a dialog save).

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The permalink the auto-identifier flavor can append to a heading, so a reader can copy a link

@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Components.Web;
+﻿using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Utilities.Overlay;
 

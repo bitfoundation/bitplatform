@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.DropMenu;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.DropMenu;
 
 public partial class BitDropMenuDemo
 {

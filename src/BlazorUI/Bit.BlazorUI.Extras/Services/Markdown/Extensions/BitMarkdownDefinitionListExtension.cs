@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Enables definition lists: a term on its own line followed by <c>: its definition</c> renders as

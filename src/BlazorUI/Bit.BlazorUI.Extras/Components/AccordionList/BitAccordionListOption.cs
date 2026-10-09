@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Represents a single item (panel) of the <see cref="BitAccordionList{TItem}"/> component provided as a child component.

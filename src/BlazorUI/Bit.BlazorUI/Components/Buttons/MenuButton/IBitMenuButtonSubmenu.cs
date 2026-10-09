@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 // An item that owns an open submenu. The menu button keeps the open ones as a path - one per level,
 // outermost first - so that opening a submenu closes whatever was open beside it, and closing the menu

@@ -1,4 +1,4 @@
-declare class OpIterator {
+﻿declare class OpIterator {
     ops: Op[];
     index: number;
     offset: number;

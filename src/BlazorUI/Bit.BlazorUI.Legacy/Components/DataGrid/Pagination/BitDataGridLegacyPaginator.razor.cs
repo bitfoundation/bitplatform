@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Legacy;
+﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
 /// A component that provides a user interface for <see cref="BitDataGridLegacyPaginationState"/>.

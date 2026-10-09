@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class TimePicker {
         private static _bitControllers: BitController[] = [];
 

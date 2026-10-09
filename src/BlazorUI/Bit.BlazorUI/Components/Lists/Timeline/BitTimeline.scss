@@ -1,4 +1,4 @@
-@import "../../../Styles/functions.scss";
+﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables. They are read with a fallback and never declared here, so a value set on :root, on an
 // ancestor, on the Style of a timeline or on the Style of a single item inherits down to whatever reads it:

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The glyphs of the toolbar buttons: stroked SVGs drawn in <c>currentColor</c>, so a button takes its color from the

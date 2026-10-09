@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Layouts.Footer;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Layouts.Footer;
 
 public partial class BitFooterDemo
 {

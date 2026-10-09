@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Extras.Chart;
 
 public partial class _BitChartTrendlinesDemo
 {

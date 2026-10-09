@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Arguments of the OnInvalid callback of <see cref="BitTagsInput"/>, describing the tag that was

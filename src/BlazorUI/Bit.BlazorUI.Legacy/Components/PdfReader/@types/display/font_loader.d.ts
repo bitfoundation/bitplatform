@@ -1,4 +1,4 @@
-declare class FontFaceObject {
+﻿declare class FontFaceObject {
     constructor(translatedData: any, { disableFontFace, inspectFont }: {
         disableFontFace?: boolean | undefined;
         inspectFont?: null | undefined;

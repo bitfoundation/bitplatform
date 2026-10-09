@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class CircularTimePicker {
         private static _bitControllers: BitController[] = [];
 

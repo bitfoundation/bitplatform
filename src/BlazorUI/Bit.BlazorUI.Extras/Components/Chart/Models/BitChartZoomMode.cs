@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Zoom/pan axis mode.</summary>
 public enum BitChartZoomMode

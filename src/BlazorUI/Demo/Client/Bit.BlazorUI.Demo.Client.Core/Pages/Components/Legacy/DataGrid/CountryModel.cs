@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Legacy.DataGrid;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Legacy.DataGrid;
 
 public class CountryModel
 {

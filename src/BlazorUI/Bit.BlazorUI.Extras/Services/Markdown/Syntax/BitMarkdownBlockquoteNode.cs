@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>A block quote containing nested blocks.</summary>
 public sealed class BitMarkdownBlockquoteNode : BitMarkdownNode

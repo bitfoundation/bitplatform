@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Container for all plugin options, mirroring Chart.js <c>options.plugins</c>.</summary>
 public sealed class BitChartPluginOptions

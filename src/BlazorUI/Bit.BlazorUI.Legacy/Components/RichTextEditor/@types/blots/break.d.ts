@@ -1,4 +1,4 @@
-declare class Break extends EmbedBlot {
+﻿declare class Break extends EmbedBlot {
     static value(): undefined;
     optimize(): void;
     length(): number;

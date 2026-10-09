@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
 
     type GlState = {
         gl: any;            // global namespace (maplibregl or mapboxgl)

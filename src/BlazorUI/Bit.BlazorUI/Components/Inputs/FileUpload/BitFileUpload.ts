@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class FileUpload {
         private static readonly IMAGE_SIZE_CONCURRENCY = 8;
 

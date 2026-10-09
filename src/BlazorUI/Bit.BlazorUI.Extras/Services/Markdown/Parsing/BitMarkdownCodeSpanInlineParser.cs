@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Handles inline code spans delimited by runs of backticks.</summary>
 public sealed class BitMarkdownCodeSpanInlineParser : BitMarkdownInlineParser

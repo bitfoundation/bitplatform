@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Basic text editor in order to create a FreeTex annotation.
  */
 declare class StampEditor extends AnnotationEditor {

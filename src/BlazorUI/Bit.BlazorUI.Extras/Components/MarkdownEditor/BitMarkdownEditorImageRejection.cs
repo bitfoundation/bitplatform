@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Describes an image the <see cref="BitMarkdownEditor"/> refused to upload, passed to the
