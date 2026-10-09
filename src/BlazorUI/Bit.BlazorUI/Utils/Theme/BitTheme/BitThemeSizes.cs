@@ -6,10 +6,12 @@
 /// height of a popup list.
 /// </summary>
 /// <remarks>
-/// In the shipped stylesheets the heights and selection sizes are density-aware (multiples of
-/// <see cref="BitThemeSpacings.ScalingFactor"/> times <see cref="BitThemeLayout.DensityScale"/>), so
-/// the density presets keep working; a theme built for another design system may set absolute
-/// lengths instead (Material: <c>40px</c> buttons / <c>56px</c> fields, Cupertino: <c>44px</c>).
+/// In the shipped stylesheets the heights, paddings and selection sizes are density-aware (multiples of
+/// <see cref="BitThemeSpacings.ScalingFactor"/> times <see cref="BitThemeLayout.DensityScale"/>, each
+/// over a unitless <c>--bit-siz-*-steps</c> token), so the density presets keep working - including in
+/// a subtree: a theme that re-values either input re-declares them where it is applied. A size set
+/// here explicitly wins over that re-declaration. <see cref="ControlMinWidth"/> and
+/// <see cref="DialogMaxWidth"/> are absolute in every preset.
 /// </remarks>
 public class BitThemeSizes
 {

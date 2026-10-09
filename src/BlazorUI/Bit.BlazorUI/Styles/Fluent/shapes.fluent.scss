@@ -10,15 +10,21 @@
 :root[bit-theme="fluent-dark"],
 :root [bit-theme="fluent-dark"] {
     //spacing - base unit (length) times density (unitless); spacing() multiplies both.
+    //Every token derived from the two - the insets below and the density-aware sizes of
+    //sizes.fluent.scss - is declared as calc(unit * density * var(--<token>-steps)), its steps a unitless
+    //token of their own. A custom property is computed where it is declared and inherited as a length,
+    //so a theme applied lower in the tree that only re-values the density or the spacing unit has to
+    //re-declare each derived token there (BitThemeMapper.AugmentWithSpacingReSubstitution); the steps,
+    //being unitless, inherit unchanged, so that re-declaration lands on the active preset's steps rather
+    //than on the document's already-computed length. A token is derived like this in every preset or
+    //in none (an absolute length or `auto` cannot be written as steps).
     --bit-spa-scaling-factor: 0.5rem;
     --bit-layout-density-scale: 1;
     //the base inset of a dialog surface - the one padding a design system decides for dialog
     //headers, bodies and footers (Fluent 24px, Material 24px, Cupertino alerts 20px).
-    --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
-    //the inset of a card and of each of its parts, per size class. The steps of the spacing unit are
-    //their own unitless tokens so a theme applied lower in the tree that only re-values the density
-    //or the spacing unit can re-declare the inset there (BitThemeMapper.AugmentWithSpacingReSubstitution)
-    //and still land on this preset's steps rather than on the document's already-computed length.
+    --bit-spa-dialog-steps: 3;
+    --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-dialog-steps)); //24px
+    //the inset of a card and of each of its parts, per size class.
     --bit-spa-card-sm-steps: 1.5;
     --bit-spa-card-md-steps: 2;
     --bit-spa-card-lg-steps: 3;

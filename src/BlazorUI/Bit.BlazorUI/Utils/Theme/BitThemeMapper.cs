@@ -195,39 +195,96 @@ internal static class BitThemeMapper
         => $"color-mix(in srgb, var({roleMain}) 10%, transparent)";
 
     /// <summary>
-    /// Each card inset token paired with the unitless steps of the spacing unit it is derived from,
-    /// mirroring <c>Styles/Fluent/shapes.fluent.scss</c> and the Extras presets' <c>tokens.*.scss</c>.
+    /// Every token the stylesheets derive from the spacing unit and the density scale, mirroring
+    /// <c>Styles/Fluent/shapes.fluent.scss</c>, <c>Styles/Fluent/sizes.fluent.scss</c> and the Extras
+    /// presets' <c>tokens.*.scss</c>. Each is declared as <see cref="SpacingDerivedExpression"/> over
+    /// the unitless steps token <see cref="SpacingStepsOf"/> names.
     /// </summary>
-    internal static readonly IReadOnlyList<KeyValuePair<string, string>> CardSpacingStepTargets =
+    internal static readonly IReadOnlyList<string> SpacingDerivedTokens =
     [
-        new(BitCss.Var.Spacing.Card.Sm, "--bit-spa-card-sm-steps"),
-        new(BitCss.Var.Spacing.Card.Md, "--bit-spa-card-md-steps"),
-        new(BitCss.Var.Spacing.Card.Lg, "--bit-spa-card-lg-steps"),
+        BitCss.Var.Spacing.Dialog,
+        BitCss.Var.Spacing.Card.Sm,
+        BitCss.Var.Spacing.Card.Md,
+        BitCss.Var.Spacing.Card.Lg,
+
+        BitCss.Var.Size.Control.Sm,
+        BitCss.Var.Size.Control.Md,
+        BitCss.Var.Size.Control.Lg,
+        BitCss.Var.Size.ControlPaddingX.Sm,
+        BitCss.Var.Size.ControlPaddingX.Md,
+        BitCss.Var.Size.ControlPaddingX.Lg,
+        BitCss.Var.Size.ControlPaddingY.Sm,
+        BitCss.Var.Size.ControlPaddingY.Md,
+        BitCss.Var.Size.ControlPaddingY.Lg,
+        BitCss.Var.Size.Selection.Sm,
+        BitCss.Var.Size.Selection.Md,
+        BitCss.Var.Size.Selection.Lg,
+        BitCss.Var.Size.Item.Sm,
+        BitCss.Var.Size.Item.Md,
+        BitCss.Var.Size.Item.Lg,
+        BitCss.Var.Size.Tab,
+        BitCss.Var.Size.SwitchWidth.Sm,
+        BitCss.Var.Size.SwitchWidth.Md,
+        BitCss.Var.Size.SwitchWidth.Lg,
+        BitCss.Var.Size.SwitchHeight.Sm,
+        BitCss.Var.Size.SwitchHeight.Md,
+        BitCss.Var.Size.SwitchHeight.Lg,
+        BitCss.Var.Size.SwitchThumb.Sm,
+        BitCss.Var.Size.SwitchThumb.Md,
+        BitCss.Var.Size.SwitchThumb.Lg,
+        BitCss.Var.Size.SliderThumb.Sm,
+        BitCss.Var.Size.SliderThumb.Md,
+        BitCss.Var.Size.SliderThumb.Lg,
+        BitCss.Var.Size.Badge.Sm,
+        BitCss.Var.Size.Badge.Md,
+        BitCss.Var.Size.Badge.Lg,
+        BitCss.Var.Size.BadgeDot.Sm,
+        BitCss.Var.Size.BadgeDot.Md,
+        BitCss.Var.Size.BadgeDot.Lg,
+        BitCss.Var.Size.Chip.Sm,
+        BitCss.Var.Size.Chip.Md,
+        BitCss.Var.Size.Chip.Lg,
+        BitCss.Var.Size.PopupMaxHeight,
     ];
 
     /// <summary>
-    /// Re-declares the card insets next to a re-valued density scale or spacing unit, so a theme
-    /// applied lower in the tree resizes the cards of its subtree.
+    /// The unitless token holding how many steps of the spacing unit a <see cref="SpacingDerivedTokens"/>
+    /// entry is (<c>--bit-siz-ctrl-md</c> -> <c>--bit-siz-ctrl-md-steps</c>).
+    /// </summary>
+    internal static string SpacingStepsOf(string token) => $"{token}-steps";
+
+    /// <summary>
+    /// The expression every preset declares a <see cref="SpacingDerivedTokens"/> entry with, and the one
+    /// <see cref="AugmentWithSpacingReSubstitution"/> re-declares it as.
+    /// </summary>
+    internal static string SpacingDerivedExpression(string token)
+        => $"calc(var({BitCss.Var.Spacing.ScalingFactor}) * var({BitCss.Var.Layout.DensityScale}) * var({SpacingStepsOf(token)}))";
+
+    /// <summary>
+    /// Re-declares every token derived from the spacing unit and the density scale (the dialog and card
+    /// insets, the control heights and paddings, and the other density-aware sizes) next to a re-valued
+    /// density scale or spacing unit, so a theme applied lower in the tree resizes its subtree.
     /// </summary>
     /// <remarks>
     /// The same substitution rule as <see cref="AugmentWithSemanticAliasReSubstitution"/>: the
-    /// stylesheets compute <c>--bit-spa-card-{sm,md,lg}</c> on <c>:root</c> from
+    /// stylesheets compute the <see cref="SpacingDerivedTokens"/> on <c>:root</c> from
     /// <c>--bit-spa-scaling-factor</c> and <c>--bit-layout-density-scale</c>, and descendants inherit
     /// the already-computed length, so an inline <see cref="BitThemeLayout.DensityScale"/> alone would
-    /// leave every card inside it at the document's inset. Each preset declares its steps as a
-    /// unitless token that inherits unchanged, so the expression re-declared here still lands on the
-    /// active preset's steps. An inset the theme sets explicitly always wins.
+    /// leave everything inside it - including the document body <c>BitThemeManager.ApplyBitThemeAsync</c>
+    /// targets by default - at the document's sizes. Each preset declares its steps as a unitless token
+    /// that inherits unchanged, so the expression re-declared here still lands on the active preset's
+    /// steps. A token the theme sets explicitly always wins.
     /// </remarks>
     internal static void AugmentWithSpacingReSubstitution(Dictionary<string, string> cssVariables)
     {
         if (cssVariables.ContainsKey(BitCss.Var.Layout.DensityScale) is false &&
             cssVariables.ContainsKey(BitCss.Var.Spacing.ScalingFactor) is false) return; // neither input touched
 
-        foreach (var (inset, steps) in CardSpacingStepTargets)
+        foreach (var token in SpacingDerivedTokens)
         {
-            if (cssVariables.ContainsKey(inset)) continue; // explicit inset wins
+            if (cssVariables.ContainsKey(token)) continue; // explicit value wins
 
-            cssVariables[inset] = $"calc(var({BitCss.Var.Spacing.ScalingFactor}) * var({BitCss.Var.Layout.DensityScale}) * var({steps}))";
+            cssVariables[token] = SpacingDerivedExpression(token);
         }
     }
 

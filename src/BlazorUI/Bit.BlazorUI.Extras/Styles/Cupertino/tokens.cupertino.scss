@@ -58,28 +58,44 @@
     // --bit-layout-density-scale) keep reaching the control heights under this preset exactly as
     // they do under Fluent. At the default scale of 1 every line below resolves to the pt value its
     // comment names.
-    --bit-siz-ctrl-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.5); //28px - small button / segmented control segment
-    --bit-siz-ctrl-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4.5); //36px - text/search field
-    --bit-siz-ctrl-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5.5); //44px - the 44pt tap target / large button
-    --bit-siz-ctrl-pad-x-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
-    --bit-siz-ctrl-pad-x-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.875); //15px
-    --bit-siz-ctrl-pad-x-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
-    --bit-siz-ctrl-pad-y-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 0.75); //6px
-    --bit-siz-ctrl-pad-y-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 0.875); //7px
-    --bit-siz-ctrl-pad-y-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.375); //11px
+    --bit-siz-ctrl-sm-steps: 3.5;
+    --bit-siz-ctrl-md-steps: 4.5;
+    --bit-siz-ctrl-lg-steps: 5.5;
+    --bit-siz-ctrl-pad-x-sm-steps: 1.5;
+    --bit-siz-ctrl-pad-x-md-steps: 1.875;
+    --bit-siz-ctrl-pad-x-lg-steps: 2.5;
+    --bit-siz-ctrl-pad-y-sm-steps: 0.75;
+    --bit-siz-ctrl-pad-y-md-steps: 0.875;
+    --bit-siz-ctrl-pad-y-lg-steps: 1.375;
+    --bit-siz-ctrl-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-sm-steps)); //28px - small button / segmented control segment
+    --bit-siz-ctrl-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-md-steps)); //36px - text/search field
+    --bit-siz-ctrl-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-lg-steps)); //44px - the 44pt tap target / large button
+    --bit-siz-ctrl-pad-x-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-pad-x-sm-steps)); //12px
+    --bit-siz-ctrl-pad-x-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-pad-x-md-steps)); //15px
+    --bit-siz-ctrl-pad-x-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-pad-x-lg-steps)); //20px
+    --bit-siz-ctrl-pad-y-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-pad-y-sm-steps)); //6px
+    --bit-siz-ctrl-pad-y-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-pad-y-md-steps)); //7px
+    --bit-siz-ctrl-pad-y-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-pad-y-lg-steps)); //11px
     // iOS imposes no minimum width on a labeled button; the 44pt floor it does impose is a height.
     --bit-siz-ctrl-min-width: auto;
     // Glyphs: rem, like type, so density does not shrink them.
     --bit-siz-icon-sm: 1.0625rem; //17px - SF small scale
     --bit-siz-icon-md: 1.25rem; //20px - SF medium (body) scale
     --bit-siz-icon-lg: 1.375rem; //22px - SF large scale
-    --bit-siz-sel-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.75); //14px - the iOS checkbox box
-    --bit-siz-sel-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
-    --bit-siz-sel-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
-    --bit-siz-item-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4.5); //36px
-    --bit-siz-item-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5.5); //44px - the standard iOS list row
-    --bit-siz-item-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 7); //56px - two-line row
-    --bit-siz-tab: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5.5); //44px - nav-bar height
+    --bit-siz-sel-sm-steps: 1.75;
+    --bit-siz-sel-md-steps: 2.5;
+    --bit-siz-sel-lg-steps: 3;
+    --bit-siz-item-sm-steps: 4.5;
+    --bit-siz-item-md-steps: 5.5;
+    --bit-siz-item-lg-steps: 7;
+    --bit-siz-tab-steps: 5.5;
+    --bit-siz-sel-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-sel-sm-steps)); //14px - the iOS checkbox box
+    --bit-siz-sel-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-sel-md-steps)); //20px
+    --bit-siz-sel-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-sel-lg-steps)); //24px
+    --bit-siz-item-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-item-sm-steps)); //36px
+    --bit-siz-item-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-item-md-steps)); //44px - the standard iOS list row
+    --bit-siz-item-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-item-lg-steps)); //56px - two-line row
+    --bit-siz-tab: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-tab-steps)); //44px - nav-bar height
     --bit-siz-tab-indicator: 0.125rem; //2px
     --bit-siz-divider: 0.5px; //the hairline separator
     --bit-siz-track-sm: 0.125rem; //2px - the iOS slider/progress track
@@ -88,30 +104,51 @@
     // UISwitch: a 51x31 track with a 27pt thumb at the medium anchor; sm and lg scale around it.
     // The knob's inset from the track edge is derived from the two, so it stays the 2pt inset less
     // the hairline stroke - which is what centers the knob - at every size.
-    --bit-siz-switch-w-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5.125); //41px
-    --bit-siz-switch-w-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 6.375); //51px
-    --bit-siz-switch-w-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 7.625); //61px
-    --bit-siz-switch-h-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.125); //25px
-    --bit-siz-switch-h-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.875); //31px
-    --bit-siz-switch-h-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4.625); //37px
-    --bit-siz-switch-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.625); //21px
-    --bit-siz-switch-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.375); //27px
-    --bit-siz-switch-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4.125); //33px
+    --bit-siz-switch-w-sm-steps: 5.125;
+    --bit-siz-switch-w-md-steps: 6.375;
+    --bit-siz-switch-w-lg-steps: 7.625;
+    --bit-siz-switch-h-sm-steps: 3.125;
+    --bit-siz-switch-h-md-steps: 3.875;
+    --bit-siz-switch-h-lg-steps: 4.625;
+    --bit-siz-switch-thumb-sm-steps: 2.625;
+    --bit-siz-switch-thumb-md-steps: 3.375;
+    --bit-siz-switch-thumb-lg-steps: 4.125;
+    --bit-siz-switch-w-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-w-sm-steps)); //41px
+    --bit-siz-switch-w-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-w-md-steps)); //51px
+    --bit-siz-switch-w-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-w-lg-steps)); //61px
+    --bit-siz-switch-h-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-h-sm-steps)); //25px
+    --bit-siz-switch-h-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-h-md-steps)); //31px
+    --bit-siz-switch-h-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-h-lg-steps)); //37px
+    --bit-siz-switch-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-thumb-sm-steps)); //21px
+    --bit-siz-switch-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-thumb-md-steps)); //27px
+    --bit-siz-switch-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-switch-thumb-lg-steps)); //33px
     // UISlider: the 28pt knob at the medium anchor, on the 2pt track above.
-    --bit-siz-slider-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
-    --bit-siz-slider-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.5); //28px
-    --bit-siz-slider-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4); //32px
+    --bit-siz-slider-thumb-sm-steps: 3;
+    --bit-siz-slider-thumb-md-steps: 3.5;
+    --bit-siz-slider-thumb-lg-steps: 4;
+    --bit-siz-slider-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-slider-thumb-sm-steps)); //24px
+    --bit-siz-slider-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-slider-thumb-md-steps)); //28px
+    --bit-siz-slider-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-slider-thumb-lg-steps)); //32px
     // The UITabBarItem badge: 18pt at the medium anchor, with the 10pt unread dot of Mail as its dot.
-    --bit-siz-badge-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
-    --bit-siz-badge-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.25); //18px
-    --bit-siz-badge-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.75); //22px
-    --bit-siz-badge-dot-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1); //8px
-    --bit-siz-badge-dot-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.25); //10px
-    --bit-siz-badge-dot-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
+    --bit-siz-badge-sm-steps: 2;
+    --bit-siz-badge-md-steps: 2.25;
+    --bit-siz-badge-lg-steps: 2.75;
+    --bit-siz-badge-dot-sm-steps: 1;
+    --bit-siz-badge-dot-md-steps: 1.25;
+    --bit-siz-badge-dot-lg-steps: 1.5;
+    --bit-siz-badge-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-badge-sm-steps)); //16px
+    --bit-siz-badge-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-badge-md-steps)); //18px
+    --bit-siz-badge-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-badge-lg-steps)); //22px
+    --bit-siz-badge-dot-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-badge-dot-sm-steps)); //8px
+    --bit-siz-badge-dot-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-badge-dot-md-steps)); //10px
+    --bit-siz-badge-dot-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-badge-dot-lg-steps)); //12px
     // The capsule of a small / medium UIButton - 28pt at the medium anchor, 34pt at the large one.
-    --bit-siz-chip-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
-    --bit-siz-chip-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.5); //28px
-    --bit-siz-chip-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4.25); //34px
+    --bit-siz-chip-sm-steps: 3;
+    --bit-siz-chip-md-steps: 3.5;
+    --bit-siz-chip-lg-steps: 4.25;
+    --bit-siz-chip-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-chip-sm-steps)); //24px
+    --bit-siz-chip-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-chip-md-steps)); //28px
+    --bit-siz-chip-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-chip-lg-steps)); //34px
 
     /*---- Opacity ----*/
     // --bit-opa-dis is left at the core stylesheet's 0.5, which is already the platform value:
@@ -119,7 +156,8 @@
     // same half. There is nothing to retune here.
 
     /*---- Spacing / layout ----*/
-    --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px - alert edge inset
+    --bit-spa-dialog-steps: 2.5;
+    --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-dialog-steps)); //20px - alert edge inset
     // The 16pt inset of an inset-grouped section, with 12 and 20 either side of it.
     --bit-spa-card-sm-steps: 1.5;
     --bit-spa-card-md-steps: 2;

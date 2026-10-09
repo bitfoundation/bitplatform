@@ -1048,7 +1048,11 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
             </BitText>
 
             <BitText>
-                This holds under every packaged preset, not only Fluent. Fluent&nbsp;2, Material and Cupertino all fix their control geometry on an 8px grid - 40dp Material buttons, the 44pt iOS tap target, Fluent&nbsp;2's 32px medium control - so each preset writes those measurements as spacing multiples rather than as absolute lengths, and the density multiplier reaches them exactly as it does under Fluent. A preset of your own should do the same wherever its geometry lands on the grid; where it does not, an absolute length is fine and simply opts that one measurement out of density.
+                This holds under every packaged preset, not only Fluent. Fluent&nbsp;2, Material and Cupertino all fix their control geometry on an 8px grid - 40dp Material buttons, the 44pt iOS tap target, Fluent&nbsp;2's 32px medium control - so each preset writes those measurements as spacing multiples rather than as absolute lengths, and the density multiplier reaches them exactly as it does under Fluent. A preset of your own should do the same wherever its geometry lands on the grid, in the form the packaged ones use: the multiple as a unitless token of its own, and the measurement over it - <code>--bit-siz-ctrl-md-steps: 4;</code> and <code>--bit-siz-ctrl-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-siz-ctrl-md-steps));</code>.
+            </BitText>
+
+            <BitText>
+                The steps are what make a density change scoped to part of the page work. A custom property is computed where it is declared, so <code>:root</code> hands its descendants a finished length; a <code>BitThemeProvider</code> (or <code>ApplyBitThemeAsync</code>, which writes to the body) that sets <code>DensityScale</code> or <code>ScalingFactor</code> therefore re-declares every measurement derived from them - the control heights and paddings, list rows, tabs, switches, sliders, badges, chips, the dialog and card insets - over the steps it inherits, and the subtree resizes under whichever preset is active there. A measurement you set explicitly on the same theme wins over that re-declaration. The button minimum width and the dialog maximum width are absolute in every preset and never follow density.
             </BitText>
 
             <CodeBox Language="csharp">var theme = new BitTheme
