@@ -770,6 +770,21 @@
         line-height: calc(var(--bit-tfl-min-height, var(--bit-TextField-min-height, #{$siz-ctrl-md})) - #{spacing(1.25)});
         padding-block: spacing(0.625);
         padding-inline-start: spacing(1.5);
+
+        // The row is one line tall, so a label too long for it is cut short with an ellipsis (the component
+        // offers the whole text as its title) instead of wrapping out of the row onto whatever follows. The
+        // label never takes more than half the row, which leaves the input room to type in; it is a flex
+        // container so the required marker after the text keeps its place while the text is cut.
+        display: flex;
+        min-width: 0;
+        max-width: 50%;
+        flex: 0 1 auto;
+        white-space: nowrap;
+    }
+
+    .bit-tfl-ltx {
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .bit-tfl-fgp {
@@ -861,7 +876,10 @@
 .bit-tfl-und.bit-tfl-led {
     .bit-tfl-lbl {
         height: auto;
+        display: block;
+        max-width: none;
         margin-inline-end: 0;
+        white-space: normal;
         padding-inline-start: 0;
         line-height: spacing(2.5);
     }

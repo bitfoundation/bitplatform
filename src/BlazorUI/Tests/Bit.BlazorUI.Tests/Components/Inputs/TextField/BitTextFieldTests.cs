@@ -2193,6 +2193,44 @@ public class BitTextFieldTests : BunitTestContext
     }
 
     [TestMethod,
+        DataRow(false, null, null),
+        DataRow(true, null, "A label too long for the row"),
+        DataRow(true, BitPlacement.Left, "A label too long for the row"),
+        DataRow(true, BitPlacement.Top, null),
+        DataRow(true, BitPlacement.Bottom, null),
+        DataRow(true, BitPlacement.Start, null),
+        DataRow(true, BitPlacement.End, null),
+    ]
+    public void BitTextFieldOffersTheLabelAsATooltipOnlyWhereItIsCutShort(bool underlined, BitPlacement? placement, string? expectedTitle)
+    {
+        // Only the underlined variant keeps the label on one row and cuts it with an ellipsis; a placement that
+        // moves it off that row (the physical and combined values do not) lets it wrap, so nothing is hidden.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Label, "A label too long for the row");
+            parameters.Add(p => p.Underlined, underlined);
+            parameters.Add(p => p.LabelPlacement, placement);
+        });
+
+        var label = component.Find(".bit-tfl-lbl");
+
+        Assert.AreEqual(expectedTitle, label.GetAttribute("title"));
+        Assert.AreEqual("A label too long for the row", label.QuerySelector(".bit-tfl-ltx")!.TextContent);
+    }
+
+    [TestMethod]
+    public void BitTextFieldOffersNoTooltipForALabelTemplate()
+    {
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.Underlined, true);
+            parameters.Add(p => p.LabelTemplate, builder => builder.AddContent(0, "Templated"));
+        });
+
+        Assert.IsFalse(component.Find(".bit-tfl-lbl").HasAttribute("title"));
+    }
+
+    [TestMethod,
         DataRow(false),
         DataRow(true),
     ]

@@ -653,6 +653,11 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// <summary>
     /// Whether or not the text field is underlined.
     /// </summary>
+    /// <remarks>
+    /// The label sits on the row of the input, takes at most half of it and is cut short with an ellipsis when
+    /// it is longer, with the whole text offered as its tooltip; a <see cref="LabelPlacement"/> of Top, Bottom,
+    /// Start or End moves it off that row and lets it wrap again.
+    /// </remarks>
     [Parameter, ResetClassBuilder]
     public bool Underlined { get; set; }
 
@@ -1067,6 +1072,13 @@ public partial class BitTextField : BitTextInputBase<string?>
     private bool HasIcon => Icon is not null || IconName.HasValue();
 
     private bool HasLabel => Label.HasValue() || LabelTemplate is not null;
+
+    // The underlined variant keeps its label on the one row it shares with the input and cuts a long one short
+    // with an ellipsis, so the whole text is offered as a tooltip there. A LabelPlacement that moves the label
+    // off that row lets it wrap again, and so needs none.
+    private string? LabelTitle => Underlined && LabelPlacement is not (BitPlacement.Top or BitPlacement.Bottom or BitPlacement.Start or BitPlacement.End)
+                                    ? Label
+                                    : null;
 
     // What a press inside the frame can land on besides the input and its buttons. The templates are left out:
     // what they render is the consumer's own, and may well be meant to answer a press itself.
