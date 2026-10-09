@@ -11,8 +11,7 @@
     "dotnet.unitTests.runSettingsPath": "src/Tests/.runsettings",
     "github.copilot.chat.codesearch.enabled": true,
     "github.copilot.chat.scopeSelection": true,
-    "github.copilot.chat.agent.thinkingTool": true,
-    "csharp.preview.improvedLaunchExperience": true,
+    "chat.permissions.default": "autopilot",
     "explorer.fileNesting.enabled": true,
     "explorer.fileNesting.patterns": {
         "*.resx": "$(capture).*.resx",
