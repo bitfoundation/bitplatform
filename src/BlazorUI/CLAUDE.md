@@ -175,7 +175,10 @@ Three rules that are easy to get wrong:
 - **Scoped CSS needs an anchor.** `::deep` compiles to `[b-scope] .foo`, and the scope attribute lands
   only on plain HTML elements written in that `.razor`. A page whose root markup is all components
   (`<PageOutlet>`, `<DocsArticle>`) has nowhere for it to land, so it wraps the part it styles in a
-  plain element of its own (see `.icon-browser`, `.theming-doc`).
+  plain element of its own (see `.icon-browser`, `.theming-doc`). The same holds inside a `DemoExample`: a
+  class styled through an unanchored `::deep` and handed only to components (`Class`, `Classes`, a template)
+  matches nothing, so the section's markup sits in a plain `<div>`. `DemoScopedCssAnchorTests` fails on one
+  that does not, for every `.razor.scss` of the demo client at once.
 - **Prose rules stop at the section's own children.** `.doc-prose` sits on the prose pages only, but
   the same care applies wherever a wrapper can contain a live preview: a descendant selector for `ul`
   would re-indent a BitNav's list, one for `code` re-skin the Text demo's output. Every rule in that
