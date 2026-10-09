@@ -871,11 +871,124 @@ public class BitPhoneInputTests : BunitTestContext
         Assert.IsFalse(component.Instance.IsOpen);
         Assert.AreEqual(1, closed);
 
+        // A Tab from the search box is the JS side's to answer (see Utils.setupTabOut), which reports it through
+        // OnTabOut once it has moved the focus on past the country button.
         component.Find("button.bit-phi-drp").Click();
         component.Find(".bit-phi-srch").KeyDown("Tab");
 
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.AreEqual(1, closed);
+
+        component.InvokeAsync(() => component.Instance._OnTabOut()).GetAwaiter().GetResult();
+
         Assert.IsFalse(component.Instance.IsOpen);
         Assert.AreEqual(2, closed);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldPutTheOpenSearchBoxIntoTheTabOrderAfterTheCountryButton()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        Assert.AreEqual(0, CountInvocations("BitBlazorUI.Utils.setupTabOut"));
+
+        component.Find("button.bit-phi-drp").Click();
+
+        var setup = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Utils.setupTabOut");
+        var calloutId = component.Find(".bit-phi-cal").Id;
+        Assert.AreEqual(calloutId, setup.Arguments[0]);
+        Assert.AreEqual(component.Find("button.bit-phi-drp").Id, setup.Arguments[1]);
+
+        // A Shift+Tab from the search box goes back to the button with the list left open, and a Tab on the button
+        // goes back into it, both on the JS side.
+        component.Find(".bit-phi-srch").KeyDown(new KeyboardEventArgs { Key = "Tab", ShiftKey = true });
+        component.Find("button.bit-phi-drp").KeyDown("Tab");
+
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        component.Find(".bit-phi-srch").KeyDown("Escape");
+
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Utils.disposeTabOut" && Equals(i.Arguments[0], calloutId)));
+
+        // Every open registers it again.
+        component.Find("button.bit-phi-drp").Click();
+
+        Assert.AreEqual(2, CountInvocations("BitBlazorUI.Utils.setupTabOut"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldCloseTheCalloutOnAShiftTabFromTheCountryButton()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        component.Find("button.bit-phi-drp").Click();
+
+        // The focus leaves the field backwards, which the tab order around the list has no part in.
+        component.Find("button.bit-phi-drp").KeyDown(new KeyboardEventArgs { Key = "Tab", ShiftKey = true });
+
+        Assert.IsFalse(component.Instance.IsOpen);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldNotPutAListWithoutASearchBoxIntoTheTabOrder()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.NoSearchBox, true);
+        });
+
+        component.Find("button.bit-phi-drp").Click();
+
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.AreEqual(0, CountInvocations("BitBlazorUI.Utils.setupTabOut"));
+
+        // The focus stays on the button, so its Tab moves on through the page and the list closes behind it.
+        component.Find("button.bit-phi-drp").KeyDown("Tab");
+
+        Assert.IsFalse(component.Instance.IsOpen);
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitPhoneInputShouldKeepTheFocusRingOnlyWhenTheTabOutLandsInTheField(bool landsInField)
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        var dropdown = component.Find("button.bit-phi-drp");
+        dropdown.FocusIn();
+        dropdown.Click();
+
+        // The focus moves into the search box of the open list, which reports no focus of its own.
+        component.Find("button.bit-phi-drp").FocusOut();
+
+        if (landsInField)
+        {
+            component.Find("input.bit-phi-inp").FocusIn();
+        }
+
+        component.InvokeAsync(() => component.Instance._OnTabOut()).GetAwaiter().GetResult();
+
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(landsInField, component.Find(".bit-phi").ClassList.Contains("bit-phi-fcs"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldTakeTheTabOrderBackWhenDisposed()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        component.Find("button.bit-phi-drp").Click();
+
+        Context.DisposeComponentsAsync().GetAwaiter().GetResult();
+
+        Assert.AreEqual(1, CountInvocations("BitBlazorUI.Utils.disposeTabOut"));
+    }
+
+    private int CountInvocations(string identifier)
+    {
+        return Context.JSInterop.Invocations.Count(i => i.Identifier == identifier);
     }
 
     [TestMethod]

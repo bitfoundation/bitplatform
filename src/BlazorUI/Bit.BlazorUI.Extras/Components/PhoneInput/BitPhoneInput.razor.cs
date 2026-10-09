@@ -18,6 +18,8 @@ namespace Bit.BlazorUI;
 public partial class BitPhoneInput : BitTextInputBase<string?>
 {
     private bool _hasFocus;
+    private bool _fieldHasFocus;
+    private bool _tabOutRegistered;
     private bool _hasOpened;
     private bool _dropdownKeysWired;
     private bool _searchBoxKeysWired;
@@ -1013,6 +1015,22 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         await InvokeAsync(StateHasChanged);
     }
 
+    [JSInvokable("OnTabOut")]
+    public async Task _OnTabOut()
+    {
+        // The list may have been closed by something else - an outside click, the IsOpen parameter - while this
+        // call was on its way, and closing it again would reach the JS side to toggle a callout that is not shown.
+        if (IsOpen is false) return;
+
+        await CloseCallout();
+
+        // The JS side has already moved the focus on past the country button, which is usually the number input
+        // of this same field, so the ring CloseCallout dropped stays on when the focus has landed back in it.
+        SetHasFocus(_fieldHasFocus);
+
+        await InvokeAsync(StateHasChanged);
+    }
+
 
 
     protected override string RootElementClass => "bit-phi";
@@ -1275,6 +1293,8 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             }
         }
 
+        await SyncTabOut();
+
         // Keep the active option visible during keyboard navigation. Done after render so
         // the option element is guaranteed to exist and the callout is laid out.
         if (IsOpen && _activeIndex >= 0 && _activeIndex != _lastScrolledIndex)
@@ -1321,6 +1341,37 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             _searchBoxKeysWired = false;
             await _js.BitExtrasDisposePreventKeys(_searchInputRef);
         }
+    }
+
+    // The open list is relocated to the end of the body, so the browser's own tab order would run from its search
+    // box off the end of the page - skipping the number input right after the country button - and back from it
+    // into whatever ends the page, leaving the list open behind its overlay either way. While it is open the
+    // search box is put into the tab order right after the country button instead (see Utils.setupTabOut): Tab
+    // moves on to the number input and closes the list through OnTabOut, and Shift+Tab goes back to the button,
+    // leaving the list open for the Tab that brings the user back in.
+    // A list without a search box has nothing to tab into: the focus stays on the button, which is the
+    // select-only combobox the list belongs to, so the Tab key is left to move on from there as it would anyway.
+    // It is registered with every open and taken back with every close, so the field holds no listener while closed.
+    private async Task SyncTabOut()
+    {
+        var wantsTabOut = IsOpen && NoDropdown is false && NoSearchBox is false && IsDisposed is false && _dotnetObj is not null;
+
+        if (wantsTabOut == _tabOutRegistered) return;
+
+        _tabOutRegistered = wantsTabOut;
+
+        try
+        {
+            if (wantsTabOut)
+            {
+                await _js.BitUtilsSetupTabOut(_calloutId, _dropdownId, _dotnetObj!);
+            }
+            else
+            {
+                await _js.BitUtilsDisposeTabOut(_calloutId);
+            }
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
@@ -1708,8 +1759,15 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
                 break;
 
             case "Tab":
-                // Tab moves on to the next field, so the list must not stay open behind it. Its
-                // default is deliberately not suppressed, so the focus move itself still happens.
+                // A Tab the JS side puts into the tab order of the open list (see SyncTabOut) is its to answer: it
+                // goes from the button into the search box, from the search box back to the button, or on past
+                // the button with OnTabOut closing the list. What is left is the focus leaving the field the way it
+                // would anyway - a Shift+Tab from the button, any Tab of a list with no search box - so the list
+                // must not stay open behind it. Its default is deliberately not suppressed, so the focus move
+                // itself still happens.
+                if (_tabOutRegistered && e.AltKey is false && e.CtrlKey is false && e.MetaKey is false
+                    && (fromSearchBox || e.ShiftKey is false)) break;
+
                 await CloseCallout();
                 break;
 
@@ -2238,6 +2296,8 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     {
         if (Disabled) return;
 
+        _fieldHasFocus = true;
+
         SetHasFocus(true);
 
         await OnFocusIn.InvokeAsync(e);
@@ -2246,6 +2306,9 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     private async Task HandleOnFocusOut(FocusEventArgs e)
     {
         if (Disabled) return;
+
+        // Where the focus actually is, apart from the ring that stays on for the open callout (see _OnTabOut).
+        _fieldHasFocus = false;
 
         // The focus ring belongs to the field as a whole, and the search box of an open callout is
         // part of that field as far as the user is concerned, so the ring stays on while it is open.
@@ -2315,6 +2378,12 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             if (_searchBoxKeysWired)
             {
                 await _js.BitExtrasDisposePreventKeys(_searchInputRef);
+            }
+
+            if (_tabOutRegistered)
+            {
+                _tabOutRegistered = false;
+                await _js.BitUtilsDisposeTabOut(_calloutId);
             }
 
             await _js.BitCalloutClearCallout(_calloutId);
