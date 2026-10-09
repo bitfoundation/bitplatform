@@ -68,29 +68,47 @@
     // grid - so they are written as spacing multiples rather than as absolute lengths, and the
     // compact / spacious density presets (BitThemeDensityPresets, which move
     // --bit-layout-density-scale) keep reaching the control heights under this preset exactly as
-    // they do under Fluent. At the default scale of 1 every line below resolves to the dp value its
-    // comment names.
-    --bit-siz-ctrl-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4); //32px - chip height
-    --bit-siz-ctrl-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5); //40px - button / dense field height
-    --bit-siz-ctrl-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 7); //56px - the full M3 text-field height
-    --bit-siz-ctrl-pad-x-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
-    --bit-siz-ctrl-pad-x-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px - M3 button horizontal padding
-    --bit-siz-ctrl-pad-x-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
-    --bit-siz-ctrl-pad-y-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 0.875); //7px -> 32px with the 16px small label
-    --bit-siz-ctrl-pad-y-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.125); //9px -> 40px with the 20px label-large line
-    --bit-siz-ctrl-pad-y-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.625); //13px -> 48px with the 20px line
-    --bit-siz-ctrl-min-width: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 8); //64px - M3 mandates it for buttons
+    // they do under Fluent. Each is a unitless steps token, the length itself left `initial` so it is
+    // computed where it is used (see the spacing note in the core shapes.fluent.scss); at the default
+    // scale of 1 every steps line below comes to the dp value its comment names.
+    --bit-siz-ctrl-sm-steps: 4; //32px - chip height
+    --bit-siz-ctrl-md-steps: 5; //40px - button / dense field height
+    --bit-siz-ctrl-lg-steps: 7; //56px - the full M3 text-field height
+    --bit-siz-ctrl-pad-x-sm-steps: 2; //16px
+    --bit-siz-ctrl-pad-x-md-steps: 3; //24px - M3 button horizontal padding
+    --bit-siz-ctrl-pad-x-lg-steps: 3; //24px
+    --bit-siz-ctrl-pad-y-sm-steps: 0.875; //7px -> 32px with the 16px small label
+    --bit-siz-ctrl-pad-y-md-steps: 1.125; //9px -> 40px with the 20px label-large line
+    --bit-siz-ctrl-pad-y-lg-steps: 1.625; //13px -> 48px with the 20px line
+    --bit-siz-ctrl-sm: initial;
+    --bit-siz-ctrl-md: initial;
+    --bit-siz-ctrl-lg: initial;
+    --bit-siz-ctrl-pad-x-sm: initial;
+    --bit-siz-ctrl-pad-x-md: initial;
+    --bit-siz-ctrl-pad-x-lg: initial;
+    --bit-siz-ctrl-pad-y-sm: initial;
+    --bit-siz-ctrl-pad-y-md: initial;
+    --bit-siz-ctrl-pad-y-lg: initial;
+    --bit-siz-ctrl-min-width-steps: 8; //64px - M3 mandates it for buttons
+    --bit-siz-ctrl-min-width: initial;
     // Glyphs: rem, like type, so density does not shrink them.
     --bit-siz-icon-sm: 1rem; //16px
     --bit-siz-icon-md: 1.125rem; //18px - the icon-in-button/chip size
     --bit-siz-icon-lg: 1.5rem; //24px - the standard M3 icon
-    --bit-siz-sel-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
-    --bit-siz-sel-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.25); //18px - M3 checkbox box
-    --bit-siz-sel-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px - M3 radio diameter
-    --bit-siz-item-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5); //40px
-    --bit-siz-item-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 6); //48px - M3 menu item
-    --bit-siz-item-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 7); //56px - one-line list item
-    --bit-siz-tab: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 6); //48px
+    --bit-siz-sel-sm-steps: 2; //16px
+    --bit-siz-sel-md-steps: 2.25; //18px - M3 checkbox box
+    --bit-siz-sel-lg-steps: 2.5; //20px - M3 radio diameter
+    --bit-siz-item-sm-steps: 5; //40px
+    --bit-siz-item-md-steps: 6; //48px - M3 menu item
+    --bit-siz-item-lg-steps: 7; //56px - one-line list item
+    --bit-siz-tab-steps: 6; //48px
+    --bit-siz-sel-sm: initial;
+    --bit-siz-sel-md: initial;
+    --bit-siz-sel-lg: initial;
+    --bit-siz-item-sm: initial;
+    --bit-siz-item-md: initial;
+    --bit-siz-item-lg: initial;
+    --bit-siz-tab: initial;
     --bit-siz-tab-indicator: 0.1875rem; //3px
     --bit-siz-tab-divider: var(--bit-siz-divider); //1px - M3 tabs divider
     --bit-siz-track-sm: 0.25rem; //4px - M3 linear progress
@@ -100,30 +118,51 @@
     // M3 switch: a 52x32 track with a 24dp selected handle at the medium anchor; sm and lg scale
     // around it. The knob's inset from the track edge is derived from the two, so it stays 3px -
     // (32 - 24) / 2 less the 1px stroke - at every size.
-    --bit-siz-switch-w-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5.5); //44px
-    --bit-siz-switch-w-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 6.5); //52px
-    --bit-siz-switch-w-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 7.5); //60px
-    --bit-siz-switch-h-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.5); //28px
-    --bit-siz-switch-h-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4); //32px
-    --bit-siz-switch-h-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4.5); //36px
-    --bit-siz-switch-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
-    --bit-siz-switch-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
-    --bit-siz-switch-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.5); //28px
+    --bit-siz-switch-w-sm-steps: 5.5; //44px
+    --bit-siz-switch-w-md-steps: 6.5; //52px
+    --bit-siz-switch-w-lg-steps: 7.5; //60px
+    --bit-siz-switch-h-sm-steps: 3.5; //28px
+    --bit-siz-switch-h-md-steps: 4; //32px
+    --bit-siz-switch-h-lg-steps: 4.5; //36px
+    --bit-siz-switch-thumb-sm-steps: 2.5; //20px
+    --bit-siz-switch-thumb-md-steps: 3; //24px
+    --bit-siz-switch-thumb-lg-steps: 3.5; //28px
+    --bit-siz-switch-w-sm: initial;
+    --bit-siz-switch-w-md: initial;
+    --bit-siz-switch-w-lg: initial;
+    --bit-siz-switch-h-sm: initial;
+    --bit-siz-switch-h-md: initial;
+    --bit-siz-switch-h-lg: initial;
+    --bit-siz-switch-thumb-sm: initial;
+    --bit-siz-switch-thumb-md: initial;
+    --bit-siz-switch-thumb-lg: initial;
     // M3 slider: the 20dp handle at the medium anchor, on the 4dp track above.
-    --bit-siz-slider-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
-    --bit-siz-slider-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
-    --bit-siz-slider-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+    --bit-siz-slider-thumb-sm-steps: 2; //16px
+    --bit-siz-slider-thumb-md-steps: 2.5; //20px
+    --bit-siz-slider-thumb-lg-steps: 3; //24px
+    --bit-siz-slider-thumb-sm: initial;
+    --bit-siz-slider-thumb-md: initial;
+    --bit-siz-slider-thumb-lg: initial;
     // M3 badge: the 16dp large badge at the medium anchor and the 6dp small badge as its dot.
-    --bit-siz-badge-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.75); //14px
-    --bit-siz-badge-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
-    --bit-siz-badge-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
-    --bit-siz-badge-dot-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 0.625); //5px
-    --bit-siz-badge-dot-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 0.75); //6px
-    --bit-siz-badge-dot-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1); //8px
+    --bit-siz-badge-sm-steps: 1.75; //14px
+    --bit-siz-badge-md-steps: 2; //16px
+    --bit-siz-badge-lg-steps: 2.5; //20px
+    --bit-siz-badge-dot-sm-steps: 0.625; //5px
+    --bit-siz-badge-dot-md-steps: 0.75; //6px
+    --bit-siz-badge-dot-lg-steps: 1; //8px
+    --bit-siz-badge-sm: initial;
+    --bit-siz-badge-md: initial;
+    --bit-siz-badge-lg: initial;
+    --bit-siz-badge-dot-sm: initial;
+    --bit-siz-badge-dot-md: initial;
+    --bit-siz-badge-dot-lg: initial;
     // M3 chips: the 32dp assist, filter and input chip at the medium anchor.
-    --bit-siz-chip-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
-    --bit-siz-chip-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4); //32px
-    --bit-siz-chip-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5); //40px
+    --bit-siz-chip-sm-steps: 3; //24px
+    --bit-siz-chip-md-steps: 4; //32px
+    --bit-siz-chip-lg-steps: 5; //40px
+    --bit-siz-chip-sm: initial;
+    --bit-siz-chip-md: initial;
+    --bit-siz-chip-lg: initial;
 
     /*---- Opacity ----*/
     // M3 state layers: an element that is disabled but keeps its own colors sits at 38%, the one
@@ -137,14 +176,15 @@
     --bit-clr-tooltip-fg: var(--bit-clr-bg-pri);
 
     /*---- Spacing / layout ----*/
-    --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px - M3 dialog inset
+    --bit-spa-dialog-steps: 3; //24px - M3 dialog inset
+    --bit-spa-dialog: initial;
     // M3 cards inset their content 16dp, on the 4dp grid either side of it.
-    --bit-spa-card-sm-steps: 1.5;
-    --bit-spa-card-md-steps: 2;
-    --bit-spa-card-lg-steps: 3;
-    --bit-spa-card-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-card-sm-steps)); //12px
-    --bit-spa-card-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-card-md-steps)); //16px
-    --bit-spa-card-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-card-lg-steps)); //24px
+    --bit-spa-card-sm-steps: 1.5; //12px
+    --bit-spa-card-md-steps: 2; //16px
+    --bit-spa-card-lg-steps: 3; //24px
+    --bit-spa-card-sm: initial;
+    --bit-spa-card-md: initial;
+    --bit-spa-card-lg: initial;
     --bit-layout-dialog-actions-direction: row;
     --bit-layout-dialog-actions-justify: flex-end;
     --bit-layout-dialog-actions-align: center;

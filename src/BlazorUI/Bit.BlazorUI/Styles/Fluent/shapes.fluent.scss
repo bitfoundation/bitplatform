@@ -10,21 +10,29 @@
 :root[bit-theme="fluent-dark"],
 :root [bit-theme="fluent-dark"] {
     //spacing - base unit (length) times density (unitless); spacing() multiplies both.
+    //A token derived from the two - the insets below and the density-aware sizes of sizes.fluent.scss -
+    //is never computed here: a custom property is computed where it is declared and inherited as a
+    //length, so one declared on :root would hand every descendant the document's length, and a density
+    //or spacing unit re-valued lower in the tree (a BitThemeProvider, ApplyBitThemeAsync on the body, or
+    //plain CSS on any element) would never reach it. A preset declares only its unitless
+    //--<token>-steps, which inherit unchanged, and leaves the token itself `initial`; its alias in
+    //theme-variables.scss reads var(--<token>, calc(unit * density * var(--<token>-steps))) where a
+    //component uses it, against the density and the unit in effect there. A value set for the token
+    //itself - by a theme, by app CSS, or by a preset that wants an absolute length - wins over that
+    //fallback, and the `initial` keeps one set in an enclosing scope from leaking into this preset.
     --bit-spa-scaling-factor: 0.5rem;
     --bit-layout-density-scale: 1;
     //the base inset of a dialog surface - the one padding a design system decides for dialog
     //headers, bodies and footers (Fluent 24px, Material 24px, Cupertino alerts 20px).
-    --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
-    //the inset of a card and of each of its parts, per size class. The steps of the spacing unit are
-    //their own unitless tokens so a theme applied lower in the tree that only re-values the density
-    //or the spacing unit can re-declare the inset there (BitThemeMapper.AugmentWithSpacingReSubstitution)
-    //and still land on this preset's steps rather than on the document's already-computed length.
-    --bit-spa-card-sm-steps: 1.5;
-    --bit-spa-card-md-steps: 2;
-    --bit-spa-card-lg-steps: 3;
-    --bit-spa-card-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-card-sm-steps)); //12px
-    --bit-spa-card-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-card-md-steps)); //16px
-    --bit-spa-card-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-card-lg-steps)); //24px
+    --bit-spa-dialog-steps: 3; //24px
+    --bit-spa-dialog: initial;
+    //the inset of a card and of each of its parts, per size class.
+    --bit-spa-card-sm-steps: 1.5; //12px
+    --bit-spa-card-md-steps: 2; //16px
+    --bit-spa-card-lg-steps: 3; //24px
+    --bit-spa-card-sm: initial;
+    --bit-spa-card-md: initial;
+    --bit-spa-card-lg: initial;
     //layout - how a dialog/message-box footer lays out its action buttons. Fluent and Material run
     //them in a row hugging the trailing edge; Cupertino stacks them full-width and centred.
     --bit-layout-dialog-actions-direction: row;

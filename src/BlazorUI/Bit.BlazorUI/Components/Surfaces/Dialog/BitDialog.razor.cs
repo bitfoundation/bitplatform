@@ -1426,7 +1426,7 @@ public partial class BitDialog : BitComponentBase
     // squeezed back under this, and a full-width one is asking for the whole of the area by name.
     private string? DefaultMaxWidth => (Width.HasValue() || FullWidth || FullSize)
                                         ? null
-                                        : $"--bit-dlg-mxw:min(100%,var(--bit-Dialog-max-width,var({BitCss.Var.Size.DialogMaxWidth})));";
+                                        : "--bit-dlg-mxw:min(100%,var(--bit-Dialog-max-width,var(--bit-dlg-dmw)));";
 
     // An attribute selector rather than an id one, since an id is only a valid CSS identifier by accident:
     // a consumer-supplied Id can hold characters (a leading digit, a dot, a colon) that would make "#id"
