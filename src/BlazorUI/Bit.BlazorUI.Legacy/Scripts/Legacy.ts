@@ -1,4 +1,4 @@
-namespace BitBlazorUI.Legacy {
+﻿namespace BitBlazorUI.Legacy {
     export class Utils {
         private static _initScriptsPromises: { [key: string]: Promise<unknown> } = {};
         public static async initScripts(scripts: string[], isModule: boolean) {

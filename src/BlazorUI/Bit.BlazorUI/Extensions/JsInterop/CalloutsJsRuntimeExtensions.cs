@@ -58,6 +58,15 @@ internal static class CalloutsJsRuntimeExtensions
         // Keeps a scroll or a resize of the page from dismissing the callout, without what noDismiss also
         // takes away: a click outside of it still closes it. It is re-anchored to its anchor instead.
         bool noScrollDismiss = false,
+        // Keeps Tab and Shift+Tab cycling inside the callout while it is open, which is what a callout that
+        // reports itself a modal dialog has to do. It is registered with every open and taken back with every
+        // close, so it never outlives the dialog it is for.
+        bool trapFocus = false,
+        // Dismisses the callout once the focus has moved on from both the component and the callout to somewhere
+        // else on the page - a Tab or Shift+Tab from a field that keeps the focus while its popup is open, which
+        // would otherwise leave the popup open behind an overlay that swallows every click that could dismiss it.
+        // The component is told through its CloseCallout callback, as for any other dismissal from outside.
+        bool dismissOnFocusLeave = false,
         // The id of the root of the component, which its popup is rendered beside rather than inside. What the
         // consumer declared on the root for the popup too - the custom properties of Style and Styles.Root,
         // ForceAnimation's bit-fam - is carried into the popup while it is relocated to the body; an empty string
@@ -94,6 +103,8 @@ internal static class CalloutsJsRuntimeExtensions
             alignmentOffset,
             arrowPadding,
             noScrollDismiss,
+            trapFocus,
+            dismissOnFocusLeave,
             rootId);
     }
 

@@ -1,4 +1,4 @@
-declare type PDFScriptingManagerOptions = {
+﻿declare type PDFScriptingManagerOptions = {
     /**
      * - The application event bus.
      */

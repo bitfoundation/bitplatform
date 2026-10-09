@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>How much of a row an inline edit opens.</summary>
 public enum BitDataGridEditMode

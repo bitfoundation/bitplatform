@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Declarative marker definition used by <see cref="BitMap{TMapProvider}"/>.

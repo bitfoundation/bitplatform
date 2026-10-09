@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Rating;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Rating;
 
 public partial class BitRatingDemo
 {

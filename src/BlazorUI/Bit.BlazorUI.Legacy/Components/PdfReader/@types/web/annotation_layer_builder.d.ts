@@ -1,4 +1,4 @@
-declare type AnnotationLayerBuilderOptions = {
+﻿declare type AnnotationLayerBuilderOptions = {
     pdfPage: PDFPageProxy;
     annotationStorage?: AnnotationStorage | undefined;
     /**

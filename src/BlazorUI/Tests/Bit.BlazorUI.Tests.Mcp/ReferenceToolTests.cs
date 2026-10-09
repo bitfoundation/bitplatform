@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bit.BlazorUI.Tests.Mcp.Infrastructure;
 
 namespace Bit.BlazorUI.Tests.Mcp;

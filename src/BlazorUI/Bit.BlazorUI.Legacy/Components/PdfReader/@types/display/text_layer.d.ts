@@ -1,4 +1,4 @@
-declare type TextLayerParameters = {
+﻿declare type TextLayerParameters = {
     /**
      * - Text content to
      * render, i.e. the value returned by the page's `streamTextContent` or

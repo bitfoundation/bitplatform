@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     type BitStickySides = { top: number, bottom: number, left: number, right: number };
     type BitStickyPaddingSide = 'scrollPaddingBlockStart' | 'scrollPaddingBlockEnd' | 'scrollPaddingInlineStart' | 'scrollPaddingInlineEnd';
 

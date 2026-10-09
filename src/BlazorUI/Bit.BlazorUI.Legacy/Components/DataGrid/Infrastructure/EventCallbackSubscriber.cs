@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Legacy;
+﻿namespace Bit.BlazorUI.Legacy;
 
 /// <summary>
 /// Represents a subscriber that may be subscribe to an <see cref="EventCallbackSubscribable{T}"/>.

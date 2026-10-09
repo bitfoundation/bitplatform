@@ -2169,7 +2169,7 @@ public class BitCalloutTests : BunitTestContext
 
         // The page moving under it re-anchors the callout, while an outside click still dismisses it.
         Assert.AreEqual(false, arguments[20]);
-        Assert.AreEqual(true, arguments[^2]);
+        Assert.AreEqual(true, arguments[27]);
     }
 
     [TestMethod]

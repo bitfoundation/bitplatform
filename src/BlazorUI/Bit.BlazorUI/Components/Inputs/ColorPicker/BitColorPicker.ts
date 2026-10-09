@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class ColorPicker {
         private static _bitControllers: BitController[] = [];
 

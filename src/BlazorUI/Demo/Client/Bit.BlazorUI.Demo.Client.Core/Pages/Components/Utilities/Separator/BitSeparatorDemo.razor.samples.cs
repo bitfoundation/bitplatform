@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Utilities.Separator;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Utilities.Separator;
 
 public partial class BitSeparatorDemo
 {

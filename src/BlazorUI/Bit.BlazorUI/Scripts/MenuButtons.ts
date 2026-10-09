@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class MenuButtons {
         private static _handlers = new Map<string, { id: string, element: HTMLElement, handler: (e: KeyboardEvent) => void }[]>();
 

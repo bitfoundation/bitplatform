@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class DataGrid {
         // Infinite scrolling is the one feature that genuinely needs to read scroll
         // position (which Blazor's scroll EventArgs do not expose), so this watches

@@ -1,2 +1,2 @@
-declare const BackgroundClass: ClassAttributor;
+﻿declare const BackgroundClass: ClassAttributor;
 declare const BackgroundStyle: ColorAttributor;

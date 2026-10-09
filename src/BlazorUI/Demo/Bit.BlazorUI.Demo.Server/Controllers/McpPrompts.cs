@@ -1,4 +1,4 @@
-using System.ComponentModel;
+﻿using System.ComponentModel;
 using ModelContextProtocol.Server;
 
 namespace Bit.BlazorUI.Demo.Server.Controllers;

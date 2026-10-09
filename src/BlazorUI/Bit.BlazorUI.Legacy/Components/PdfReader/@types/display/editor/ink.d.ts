@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Basic draw editor in order to generate an Ink annotation.
  */
 declare class InkEditor extends AnnotationEditor {

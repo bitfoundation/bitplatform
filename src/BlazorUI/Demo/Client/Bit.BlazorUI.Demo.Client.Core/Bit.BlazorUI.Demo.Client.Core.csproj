@@ -6,10 +6,6 @@
              Defining INCLUDE_WASM here lets AppRenderMode.WasmEnabled know the WASM client is part of the
              build and boot the app as Blazor WebAssembly even in Debug. See AppRenderMode.Current. -->
         <DefineConstants Condition=" '$(IncludeWasm)' == 'true' ">$(DefineConstants);INCLUDE_WASM</DefineConstants>
-        <ResolveStaticWebAssetsInputsDependsOn>
-            BeforeBuildTasks;
-            $(ResolveStaticWebAssetsInputsDependsOn)
-        </ResolveStaticWebAssetsInputsDependsOn>
     </PropertyGroup>
 
     <ItemGroup>
@@ -91,11 +87,14 @@
         <TypeScriptFiles Include="**\*.ts" />
     </ItemGroup>
 
-    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
+    <Target Name="BeforeBuildTasks" BeforeTargets="ResolveProjectStaticWebAssets;ResolveScopedCssInputs" Condition=" '$(DesignTimeBuild)' != 'true' ">
         <CallTarget Targets="InstallNodejsDependencies" />
         <CallTarget Targets="BuildJavaScript" />
         <CallTarget Targets="BuildIsolatedScssFiles" />
         <CallTarget Targets="BuildGlobalScssFiles" />
+        <ItemGroup>
+            <Content Include="**\*.razor.css;wwwroot\scripts\app.js;wwwroot\styles\app.css" Exclude="@(Content);@(None);node_modules\**;bin\**;obj\**" />
+        </ItemGroup>
     </Target>
 
     <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">

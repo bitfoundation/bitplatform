@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using Bit.BlazorUI.Demo.Client.Core.Pages.Iconography;
 
 namespace Bit.BlazorUI.Demo.Server.Services.Mcp;

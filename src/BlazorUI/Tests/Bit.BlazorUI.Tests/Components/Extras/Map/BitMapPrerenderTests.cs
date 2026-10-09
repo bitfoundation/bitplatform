@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using AngleSharp.Html.Parser;
 using Microsoft.AspNetCore.Components;

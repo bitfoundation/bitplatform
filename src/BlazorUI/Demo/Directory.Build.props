@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
     <PropertyGroup>
         <LangVersion>14.0</LangVersion>
         <Nullable>enable</Nullable>

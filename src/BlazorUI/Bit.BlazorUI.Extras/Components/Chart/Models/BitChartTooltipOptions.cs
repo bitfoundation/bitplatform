@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Tooltip plugin options.</summary>
 public sealed class BitChartTooltipOptions

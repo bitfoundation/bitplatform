@@ -1,4 +1,4 @@
-declare const AbortException_base: any;
+﻿declare const AbortException_base: any;
 /**
  * Error used to indicate task cancellation.
  */

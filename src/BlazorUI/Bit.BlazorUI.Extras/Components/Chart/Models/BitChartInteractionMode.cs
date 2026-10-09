@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Interaction mode used to determine which items are active on hover.</summary>
 public enum BitChartInteractionMode

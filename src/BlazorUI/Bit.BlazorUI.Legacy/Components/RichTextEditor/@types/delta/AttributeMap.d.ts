@@ -1,4 +1,4 @@
-declare type AttributeMap = {
+﻿declare type AttributeMap = {
     [key: string]: unknown;
 }
 

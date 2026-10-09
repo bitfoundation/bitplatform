@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class FullCalendar {
         /**
          * The rendered height of one hour of a time grid. The stylesheet sizes every hour row from

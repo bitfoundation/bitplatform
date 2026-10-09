@@ -1,4 +1,4 @@
-declare type XfaLayerParameters = {
+﻿declare type XfaLayerParameters = {
     viewport: PageViewport;
     div: HTMLDivElement;
     xfaHtml: Object;

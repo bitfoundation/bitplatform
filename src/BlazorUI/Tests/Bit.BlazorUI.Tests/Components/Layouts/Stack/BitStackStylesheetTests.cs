@@ -1,4 +1,4 @@
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 

@@ -1,4 +1,4 @@
-declare type PDFViewerOptions = {
+﻿declare type PDFViewerOptions = {
     /**
      * - The container for the viewer element.
      */

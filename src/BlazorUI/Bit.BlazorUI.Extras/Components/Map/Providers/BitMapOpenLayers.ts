@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
 
     /**
      * OpenLayers provider. Loads OpenLayers ES modules from esm.sh on first init.

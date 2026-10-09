@@ -512,50 +512,31 @@ jobs:
         dotnet build src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj --output ./packages --configuration Release
 
-    - name: Generate CSS/JS files BlazorUI
-      run: dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
-
     - name: Build and pack BlazorUI
       run: |
         dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj --output ./packages --configuration Release
-
-    - name: Generate CSS/JS files BlazorUI.Extras
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
 
     - name: Build and pack BlazorUI.Extras
       run: |
         dotnet build src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj --output ./packages --configuration Release
 
-    - name: Generate CSS/JS files BlazorUI.Legacy
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
-
     - name: Build and pack BlazorUI.Legacy
       run: |
         dotnet build src/BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/BlazorUI/Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj --output ./packages --configuration Release
-
-    - name: Generate CSS/JS files BlazorUI.Assets
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
 
     - name: Build and pack BlazorUI.Assets
       run: |
         dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj --output ./packages --configuration Release
 
-    - name: Generate CSS/JS files BlazorUI.Icons
-      run: dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj -t:BeforeBuildTasks --no-restore -f:net10.0 -c Release
-
     - name: Build and pack BlazorUI.Icons
       run: |
         dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj --output ./packages --configuration Release
 
-    # No "Generate CSS/JS files" pre-step: unlike the BlazorUI projects above, Bit.Bswup generates
-    # its bundles as part of the build itself (see IncludeBswupAssetsAsStaticWebAsset /
-    # BuildBswupAssetsOnCrossTargeting in Bit.Bswup.csproj), so the build below emits them from a
-    # clean checkout on its own.
     - name: Build and pack Bswup
       run: |
         dotnet build src/Bswup/Bit.Bswup/Bit.Bswup.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false

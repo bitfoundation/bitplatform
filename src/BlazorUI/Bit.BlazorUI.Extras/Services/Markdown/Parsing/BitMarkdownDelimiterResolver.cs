@@ -1,4 +1,4 @@
-using static Bit.BlazorUI.BitMarkdownInlineProcessor;
+﻿using static Bit.BlazorUI.BitMarkdownInlineProcessor;
 
 namespace Bit.BlazorUI;
 

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>One fitted line drawn over a dataset by <see cref="BitChartTrendlinePlugin"/>.</summary>
 public sealed class BitChartTrendline

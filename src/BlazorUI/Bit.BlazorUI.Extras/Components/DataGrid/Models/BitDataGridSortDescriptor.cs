@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Describes the sort state applied to a single column.</summary>
 public sealed class BitDataGridSortDescriptor

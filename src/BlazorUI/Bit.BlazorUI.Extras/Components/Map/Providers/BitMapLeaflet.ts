@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
 
     type LeafletTileOptions = {
         tileUrl: string;

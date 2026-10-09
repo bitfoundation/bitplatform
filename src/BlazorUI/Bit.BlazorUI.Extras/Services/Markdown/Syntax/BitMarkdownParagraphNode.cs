@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>A paragraph of inline content.</summary>
 public sealed class BitMarkdownParagraphNode : BitMarkdownNode

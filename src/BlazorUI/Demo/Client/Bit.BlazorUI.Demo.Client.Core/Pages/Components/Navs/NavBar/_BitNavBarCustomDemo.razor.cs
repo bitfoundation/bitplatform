@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Navs.NavBar;
 
 public partial class _BitNavBarCustomDemo
 {

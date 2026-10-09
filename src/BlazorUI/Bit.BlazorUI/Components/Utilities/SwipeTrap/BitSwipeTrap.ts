@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class SwipeTrap {
         private static _swipeTraps: BitSwipeTrap[] = [];
 

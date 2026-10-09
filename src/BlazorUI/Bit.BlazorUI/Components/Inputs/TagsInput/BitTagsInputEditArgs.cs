@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Arguments of the OnEdit callback of <see cref="BitTagsInput"/>, describing an inline edit of a tag

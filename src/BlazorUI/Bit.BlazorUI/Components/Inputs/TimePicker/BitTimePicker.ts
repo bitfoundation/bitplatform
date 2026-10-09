@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class TimePicker {
         private static _bitControllers: BitController[] = [];
 
@@ -13,7 +13,7 @@ namespace BitBlazorUI {
         // stopping at its min and max rather than wrapping the way the spin buttons do.
         private static readonly _timeInputKeys = ['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' '];
 
-        public static setup(callout: HTMLElement, input: HTMLInputElement | null, trapFocus: boolean, dotnetObj: DotNetObject): string {
+        public static setup(callout: HTMLElement, input: HTMLInputElement | null, dotnetObj: DotNetObject): string {
             const bitController = new BitController();
 
             // Blazor cannot preventDefault per key, so the keys the picker acts on are stopped here instead -
@@ -22,19 +22,12 @@ namespace BitBlazorUI {
             // the picker and the dialog keys keep working. The listener goes on the callout rather than on the
             // root: everything the picker is operated with sits inside of it, standalone as well as in a
             // popup, and it stays attached while the callout is moved out to the body to be shown.
+            // The tab order of a callout that floats over the page as a modal dialog is held by the callout
+            // itself while it is open (see the trapFocus of Callouts.toggle).
             callout.addEventListener('keydown', e => {
                 const event = e as KeyboardEvent;
                 const target = event.target as HTMLElement | null;
                 if (target === null) return;
-
-                // A callout that floats over the page reports itself a modal dialog, which the tab order has to
-                // honor: without this the focus would walk out of the popup and onto the page behind it, where
-                // the overlay swallows every click that could bring it back. Standalone there is no dialog and
-                // no overlay, so the focus is free to leave the way it would leave any other part of the page.
-                if (trapFocus && event.key === 'Tab') {
-                    Utils.wrapFocus(callout, event);
-                    return;
-                }
 
                 if (target.closest('button') !== null) {
                     if (TimePicker._buttonKeys.indexOf(event.key) < 0) return;

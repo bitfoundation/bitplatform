@@ -1,4 +1,4 @@
-
+﻿
 namespace Bit.BlazorUI;
 
 /// <summary>Context passed to plugins, exposing the scene, area and scale conversions.</summary>

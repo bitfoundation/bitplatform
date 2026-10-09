@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Turns HTML entity references (<c>&amp;copy;</c>) and numeric character references

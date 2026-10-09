@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Pre-built density tweaks; merge with a baseline <see cref="BitTheme"/> from your app.

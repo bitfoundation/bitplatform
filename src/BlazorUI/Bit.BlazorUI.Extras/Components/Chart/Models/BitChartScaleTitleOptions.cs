@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Axis title configuration.</summary>
 public sealed class BitChartScaleTitleOptions

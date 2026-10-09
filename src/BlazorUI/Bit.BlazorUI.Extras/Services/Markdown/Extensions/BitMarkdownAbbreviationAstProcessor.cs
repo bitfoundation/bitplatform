@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Collects every abbreviation definition, removes it from the rendered tree, and wraps each whole

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Azure Maps Web SDK v3 provider for <see cref="BitMap{TMapProvider}"/>.

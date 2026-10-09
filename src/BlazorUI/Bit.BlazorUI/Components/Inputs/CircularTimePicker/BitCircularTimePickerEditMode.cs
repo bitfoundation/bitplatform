@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Which parts of the time the <see cref="BitCircularTimePicker"/> lets the user edit.

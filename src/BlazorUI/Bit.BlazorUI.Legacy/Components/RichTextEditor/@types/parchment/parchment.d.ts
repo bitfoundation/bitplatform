@@ -1,4 +1,4 @@
-declare class Attributor {
+﻿declare class Attributor {
     readonly attrName: string;
     readonly keyName: string;
     static keys(node: HTMLElement): string[];

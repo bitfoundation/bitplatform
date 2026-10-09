@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A single calendar event rendered across the day, week, month, year, agenda, and timeline views.

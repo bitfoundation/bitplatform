@@ -1,4 +1,4 @@
-@import "functions.scss";
+﻿@import "functions.scss";
 
 //accent roles (pri, sec, ter, inf, suc, wrn, swr, err) - 10 classes per role.
 @each $role, $tokens in $bit-semantic-color-roles {

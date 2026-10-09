@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Zoom &amp; pan options, mirroring chartjs-plugin-zoom. Cartesian charts only.</summary>
 public sealed class BitChartZoomOptions

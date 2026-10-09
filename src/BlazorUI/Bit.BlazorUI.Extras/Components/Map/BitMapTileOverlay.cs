@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Optional XYZ tile layer rendered above the base map (weather, labels, etc.).
