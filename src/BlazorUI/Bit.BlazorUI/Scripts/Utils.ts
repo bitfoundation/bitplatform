@@ -620,14 +620,49 @@
             Utils._focusTraps.delete(elementId);
         }
 
+        // The convention every surface that closes on Escape goes by (setupSurfaceEscape, setupEscapeGuard,
+        // watchEscape, watchLayerEscape, setupEscape, setupTooltip): whoever acts on the key claims it by
+        // preventing its default, so one press does one thing - a field inside a dialog clears, and the dialog
+        // waits for the next press. A component that acts on Escape only in its .NET handler cannot say so from
+        // there: a Blazor @onkeydown:preventDefault holds for every key at once, and the handler itself runs too
+        // late for anything to read its answer. It says so in its markup instead, on the element it listens on,
+        // and this is read off the DOM as the key goes down (general.ts, in the capture phase, so the claim is on
+        // the event before any surface around the component hears it):
+        // - data-bit-esc="claim": the element acts on every plain Escape pressed in it;
+        // - data-bit-esc="text": it acts while the field it is on holds text - the live text, which a field that
+        //   only commits on blur has not reported to .NET yet.
+        // The attribute is rendered from the very state the .NET handler decides on, so the key is claimed
+        // exactly when the component acts on it, and an Escape the component leaves alone still reaches the
+        // surface around it. An element that leaves the key alone hands it to the next one out, whose handler
+        // hears a key pressed anywhere inside it. An IME composition is nobody's here (the key cancels the
+        // candidate), and neither is an Escape with a modifier, which the components either ignore or treat
+        // as the plain key only by accident.
+        public static claimEscape(e: KeyboardEvent) {
+            if (e.key !== 'Escape' || e.defaultPrevented) return;
+            if (e.isComposing || e.keyCode === 229) return;
+            if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+
+            let element = e.target instanceof Element ? e.target.closest('[data-bit-esc]') : null;
+
+            while (element) {
+                const claim = element.getAttribute('data-bit-esc');
+                if (claim === 'claim' || (claim === 'text' && (element as HTMLInputElement).value)) {
+                    e.preventDefault();
+                    return;
+                }
+
+                element = element.parentElement?.closest('[data-bit-esc]') ?? null;
+            }
+        }
+
         private static _surfaceEscapes = new Map<string, AbortController>();
 
         // Answers an Escape pressed inside a surface (a dialog) through the OnEscape callback - but only when the
         // key is the surface's own. Four things own it first: an IME composition, which Escape cancels; a
-        // control that has taken it (defaultPrevented); a component inside the surface whose own popup is open -
-        // a combo box, a search box's suggestions, a date picker - which closes that popup on the key and has its
-        // keydown bubble on up through the surface; and a surface nested inside this one (a dialog opened from
-        // inside it), which has answered the key before it got here.
+        // control that has taken it (defaultPrevented, see claimEscape); a component inside the surface whose own
+        // popup is open - a combo box, a search box's suggestions, a date picker - which closes that popup on the
+        // key and has its keydown bubble on up through the surface; and a surface nested inside this one (a dialog
+        // opened from inside it), which has answered the key before it got here.
         // The popups are read as the key is pressed: this listener is on the element, so it runs before Blazor's
         // document-level delegation lets the component close its popup, while the stack of open callouts is still
         // the one the key was pressed against. Whether a control took the key is read once the whole dispatch is

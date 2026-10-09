@@ -4469,6 +4469,69 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual(1, clearCount);
     }
 
+    [TestMethod,
+        DataRow(true, false, "f-app", "claim"),
+        DataRow(false, false, "f-app", null),
+        DataRow(true, true, "f-app", null),
+        DataRow(true, false, null, null)
+    ]
+    public void BitDropdownShouldClaimTheEscapeThatClearsTheSelection(bool clearOnEscape, bool readOnly, string? value, string? claim)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        // The field carries data-bit-esc (Utils.claimEscape) for the press it acts on, so a dialog around the
+        // dropdown does not close on the press that takes back the selection - and only for that one.
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.ClearOnEscape, clearOnEscape);
+            parameters.Add(p => p.ReadOnly, readOnly);
+            parameters.Add(p => p.DefaultValue, value);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        Assert.AreEqual(claim, component.Find(".bit-drp-wrp").GetAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public void BitDropdownShouldClaimTheEscapeThatClosesTheCallout()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        var wrapper = component.Find(".bit-drp-wrp");
+        Assert.IsFalse(wrapper.HasAttribute("data-bit-esc"));
+
+        wrapper.KeyDown(new KeyboardEventArgs { Key = "Enter" });
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        Assert.AreEqual("claim", component.Find(".bit-drp-wrp").GetAttribute("data-bit-esc"));
+    }
+
+    [TestMethod,
+        DataRow(false, null, "text"),
+        DataRow(true, "f-app", "claim"),
+        DataRow(true, null, "text")
+    ]
+    public void BitDropdownComboShouldClaimTheEscapeThatDropsTheTypedTerm(bool clearOnEscape, string? value, string claim)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        // The ComboBox input drops the term typed into it on Escape, which only its live text says it holds.
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.ClearOnEscape, clearOnEscape);
+            parameters.Add(p => p.DefaultValue, value);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        Assert.AreEqual(claim, component.Find(".bit-drp-inp").GetAttribute("data-bit-esc"));
+    }
+
     [TestMethod]
     public void BitDropdownShouldKeepTheSelectionOnEscapeWithoutClearOnEscape()
     {

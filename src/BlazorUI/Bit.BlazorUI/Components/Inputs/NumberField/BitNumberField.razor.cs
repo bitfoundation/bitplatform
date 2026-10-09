@@ -1486,9 +1486,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
             if (IsDisposed) return;
 
-            if (ReadOnly || InvalidValueBinding()) return;
-
-            if (ShowClearButton is false || HasVisibleText() is false) return;
+            if (ClearsOnEscape() is false) return;
 
             await HandleOnClearButtonClick();
             return;
@@ -1593,6 +1591,13 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     }
 
     private static bool HasModifier(KeyboardEventArgs e) => e.ShiftKey || e.CtrlKey || e.AltKey || e.MetaKey;
+
+    // Whether a plain Escape clears the field: only where the clear button it stands in for is drawn. The input
+    // carries the answer as data-bit-esc, so the key is claimed from a dialog around the field exactly then.
+    private bool ClearsOnEscape() => ReadOnly is false
+                                     && InvalidValueBinding() is false
+                                     && ShowClearButton
+                                     && HasVisibleText();
 
     private async Task HandleOnKeyUp(KeyboardEventArgs e)
     {

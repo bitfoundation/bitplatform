@@ -4049,6 +4049,28 @@ public class BitTextFieldTests : BunitTestContext
         Assert.AreEqual(0, clearCount);
     }
 
+    [TestMethod,
+        DataRow(true, false, "hello", false, "claim"),
+        DataRow(true, false, "hello", true, "claim"),
+        DataRow(true, false, null, false, "text"),
+        DataRow(true, true, "hello", false, null),
+        DataRow(false, false, "hello", false, null)
+    ]
+    public void BitTextFieldClearOnEscapeClaimsTheKeyItClearsWith(bool clearOnEscape, bool readOnly, string? value, bool multiline, string? claim)
+    {
+        // The field carries data-bit-esc (Utils.claimEscape) for the press that clears it, so a dialog around it
+        // stays open on that press: always with a value, and with the text the input holds otherwise.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ClearOnEscape, clearOnEscape);
+            parameters.Add(p => p.ReadOnly, readOnly);
+            parameters.Add(p => p.Multiline, multiline);
+            parameters.Add(p => p.DefaultValue, value);
+        });
+
+        Assert.AreEqual(claim, component.Find(".bit-tfl-inp").GetAttribute("data-bit-esc"));
+    }
+
     [TestMethod]
     public void BitTextFieldClearOnEscapeInAnEmptyFieldRaisesAndAnnouncesNothing()
     {

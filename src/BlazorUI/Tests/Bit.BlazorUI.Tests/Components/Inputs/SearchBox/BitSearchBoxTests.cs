@@ -1158,6 +1158,58 @@ public class BitSearchBoxTests : BunitTestContext
         WaitForClosedCallout(component);
     }
 
+    // The Escape the field acts on is claimed through data-bit-esc (Utils.claimEscape), so a dialog around it does
+    // not close on the same press: always while there is a value to clear, and while there is text otherwise.
+    [TestMethod]
+    public void BitSearchBoxShouldClaimTheEscapeThatClearsIt()
+    {
+        var empty = RenderComponent<BitSearchBox>();
+        Assert.AreEqual("text", empty.Find(".bit-srb-inp").GetAttribute("data-bit-esc"));
+
+        var filled = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, "apple");
+        });
+        Assert.AreEqual("claim", filled.Find(".bit-srb-inp").GetAttribute("data-bit-esc"));
+    }
+
+    [TestMethod,
+        DataRow(true, false),
+        DataRow(false, true)
+    ]
+    public void BitSearchBoxShouldNotClaimTheEscapeItDoesNotClearWith(bool readOnly, bool noClearOnEscape)
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, readOnly);
+            parameters.Add(p => p.NoClearOnEscape, noClearOnEscape);
+            parameters.Add(p => p.DefaultValue, "apple");
+        });
+
+        Assert.IsFalse(component.Find(".bit-srb-inp").HasAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldClaimTheEscapeThatClosesTheCallout()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.NoClearOnEscape, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        Assert.IsFalse(component.Find(".bit-srb-inp").HasAttribute("data-bit-esc"));
+
+        component.Find(".bit-srb-inp").Input("apple");
+
+        OpenTheCallout(component);
+
+        // The list closes whether or not the field may be cleared, so the press is the field's either way.
+        Assert.AreEqual("claim", component.Find(".bit-srb-inp").GetAttribute("data-bit-esc"));
+    }
+
     [TestMethod]
     public void BitSearchBoxEscapeShouldCloseTheCalloutBeforeClearingTheValue()
     {

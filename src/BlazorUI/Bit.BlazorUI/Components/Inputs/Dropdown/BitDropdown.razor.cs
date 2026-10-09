@@ -3660,6 +3660,18 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // Escape with nothing left to dismiss takes back the selection, which is what a keyboard user
     // otherwise has to reach the clear button for. It goes through the very same clear, so it reports
     // itself through OnClear and is refused wherever that button would be.
+    // When an Escape reaches the selection rather than nothing at all: the clear it runs refuses a read-only
+    // dropdown. The two claims below are built on it, written onto the elements whose handlers act on the key
+    // for Utils.claimEscape - the field closes an open list or clears, and the ComboBox input, which the field
+    // leaves the key to while it has the focus, also drops the term typed into it while there is one.
+    private bool ClearsOnEscape => ClearOnEscape && ReadOnly is false && _selectedItems.Count > 0;
+
+    private string? TriggerEscapeClaim => Disabled is false && (IsOpen || ClearsOnEscape) ? "claim" : null;
+
+    private string? ComboEscapeClaim => Disabled || InvalidValueBinding() ? null
+                                      : IsOpen || ClearsOnEscape ? "claim"
+                                      : "text";
+
     private Task ClearOnEscapeKey()
     {
         if (ClearOnEscape is false) return Task.CompletedTask;

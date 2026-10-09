@@ -182,8 +182,10 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// Empties the field when the Escape key is pressed in it, which is the keyboard counterpart of the
     /// clear button and what a filter or a search field is expected to do. It raises <see cref="OnClear"/>
     /// and is announced the same way a press on the button is, it leaves a read-only field alone, and it
-    /// does not need <see cref="ShowClearButton"/>. <see cref="OnEscape"/> is still raised afterwards, so a
-    /// dialog that closes on Escape sees a field that is already empty. Escape keeps its own meaning while
+    /// does not need <see cref="ShowClearButton"/>. A press that clears the field is taken by it, so a dialog,
+    /// a modal, a panel or an overlay around the field stays open and closes on the next one; a press with
+    /// nothing to clear goes on to them as usual. <see cref="OnEscape"/> is still raised afterwards, so a
+    /// handler of the app's own sees a field that is already empty. Escape keeps its own meaning while
     /// an input method editor is composing, where it cancels the candidate rather than the value, and while a
     /// <see cref="GhostText"/> suggestion is showing, where it rejects the suggestion and leaves the typed text
     /// alone. An Escape in a field that is already empty clears nothing and raises nothing.
@@ -1093,6 +1095,12 @@ public partial class BitTextField : BitTextInputBase<string?>
     // not empty - one counting words, say - and a field holding text would otherwise lose its clear button.
     private bool ShowClear => ShowClearButton && _hasText;
 
+    // When ClearOnEscape clears the field (see ClearValue), written onto the input for Utils.claimEscape: a value
+    // whatever the input shows, and otherwise the text the input still holds.
+    private string? EscapeClaim => ClearOnEscape is false || ReadOnly ? null
+                                 : string.IsNullOrEmpty(CurrentValueAsString) is false ? "claim"
+                                 : "text";
+
     private bool NeedsCompositionGuard => Immediate
                                           || ClearOnEscape
                                           || OnInput.HasDelegate
@@ -1308,8 +1316,9 @@ public partial class BitTextField : BitTextInputBase<string?>
         }
         else if (e.Key == "Escape")
         {
-            // The clearing comes first so that a handler closing a dialog or a panel on Escape sees a field
-            // that is already empty rather than one that empties itself behind it.
+            // The clearing comes first so that an OnEscape handler sees a field that is already empty rather
+            // than one that empties itself behind it. A surface of the library around the field leaves this press
+            // alone: the input has claimed it (EscapeClaim).
             if (ClearOnEscape && ReadOnly is false && await ClearValue())
             {
                 await OnClear.InvokeAsync();

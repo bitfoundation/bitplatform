@@ -4854,6 +4854,58 @@ public class BitTagsInputTests : BunitTestContext
 
     #region the Escape key
 
+    // What the field acts on Escape for is claimed through data-bit-esc (Utils.claimEscape), so a dialog around it
+    // does not close on the same press: the tags it would clear always, the text being typed while there is some.
+    [TestMethod,
+        DataRow(true, false, false, "claim"),
+        DataRow(false, false, false, "text"),
+        DataRow(true, true, false, null),
+        DataRow(true, false, true, null)
+    ]
+    public void BitTagsInputClaimsTheEscapeItClearsWithTest(bool showClearButton, bool noClearOnEscape, bool readOnly, string? claim)
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, showClearButton);
+            parameters.Add(p => p.NoClearOnEscape, noClearOnEscape);
+            parameters.Add(p => p.ReadOnly, readOnly);
+            parameters.Add(p => p.DefaultValue, new List<string> { "a", "b" });
+        });
+
+        Assert.AreEqual(claim, com.Find(".bit-tgi-inp").GetAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputClaimsTheEscapeThatPutsACarriedTagBackTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.AllowReorder, true);
+            parameters.Add(p => p.DefaultValue, new List<string> { "a", "b", "c" });
+        });
+
+        // Walking the focus from a chip back to the input takes nothing back, so that press stays the dialog's.
+        Assert.IsFalse(com.Find(".bit-tgi-tgs").HasAttribute("data-bit-esc"));
+
+        await com.FindAll(".bit-tgi-rbt")[0].ClickAsync(new MouseEventArgs());
+
+        Assert.AreEqual("claim", com.Find(".bit-tgi-tgs").GetAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputClaimsTheEscapeThatCancelsAnEditTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.EditableTags, true);
+            parameters.Add(p => p.DefaultValue, new List<string> { "apple" });
+        });
+
+        await com.Find(".bit-tgi-tag").KeyDownAsync(new KeyboardEventArgs { Key = "F2" });
+
+        Assert.AreEqual("claim", com.Find(".bit-tgi-eip").GetAttribute("data-bit-esc"));
+    }
+
     [TestMethod]
     public async Task BitTagsInputNoClearOnEscapeLeavesTheKeyAloneTest()
     {

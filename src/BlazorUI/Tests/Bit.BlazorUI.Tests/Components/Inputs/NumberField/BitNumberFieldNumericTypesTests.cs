@@ -774,6 +774,26 @@ public class BitNumberFieldNumericTypesTests : BunitTestContext
         Assert.AreEqual(10, component.Instance.Value);
     }
 
+    [TestMethod,
+        DataRow(true, false, 10, "claim"),
+        DataRow(false, false, 10, null),
+        DataRow(true, true, 10, null),
+        DataRow(true, false, null, null)
+    ]
+    public void BitNumberFieldShouldClaimTheEscapeKeyExactlyWhenItClears(bool showClearButton, bool readOnly, int? value, string? claim)
+    {
+        // The input carries data-bit-esc (Utils.claimEscape) for the press that clears the field, so a dialog
+        // around it does not close on it - and only for that one, so any other Escape still closes the dialog.
+        var component = RenderComponent<BitNumberField<int?>>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, showClearButton);
+            parameters.Add(p => p.ReadOnly, readOnly);
+            parameters.Add(p => p.DefaultValue, value);
+        });
+
+        Assert.AreEqual(claim, component.Find("input").GetAttribute("data-bit-esc"));
+    }
+
     [TestMethod]
     public void BitNumberFieldShouldKeepTheValueWhenTheRoundingScaleOverflows()
     {

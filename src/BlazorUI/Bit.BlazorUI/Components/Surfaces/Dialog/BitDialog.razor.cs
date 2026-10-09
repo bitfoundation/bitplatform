@@ -220,10 +220,12 @@ public partial class BitDialog : BitComponentBase
     /// placed the focus somewhere else on the page is a Dialog the key no longer reaches.
     /// <br />
     /// An Escape that something inside the Dialog answers first is left to it: a combo box, a search box or a
-    /// date picker closing the list it has open, and an IME composition being cancelled, close that and
-    /// nothing else - neither dismissing the Dialog nor counting as a refused dismissal. So does a control that
-    /// prevents the default of the key, natively or with <c>@onkeydown:preventDefault</c>, which is how content
-    /// of your own claims the Escape it acts on.
+    /// date picker closing the list it has open, a field clearing itself (a search box, a number field with its
+    /// clear button, a text field with ClearOnEscape, a tags input, a dropdown with ClearOnEscape) or a message
+    /// dismissing itself, and an IME composition being cancelled, close that and nothing else - neither
+    /// dismissing the Dialog nor counting as a refused dismissal. So does a control that prevents the default of
+    /// the key, natively or with <c>@onkeydown:preventDefault</c>, which is how content of your own claims the
+    /// Escape it acts on, and how the components of the library claim theirs.
     /// </remarks>
     [Parameter] public bool CloseOnEscape { get; set; } = true;
 

@@ -116,10 +116,14 @@
     }
 
     @* The field is the interactive element of a dropdown that is not typed into, so it is the one
-       InputElement points at and the one FocusAsync (overridden for the ComboBox mode) focuses. *@
+       InputElement points at and the one FocusAsync (overridden for the ComboBox mode) focuses.
+       data-bit-esc claims the Escape HandleOnTriggerKeyDown acts on (see Utils.claimEscape), so a dialog around
+       the dropdown does not close on the press that closes the list or, with ClearOnEscape, takes back the
+       selection. *@
     <div @ref="InputElement"
          @onclick="HandleOnClick"
          @onkeydown="HandleOnTriggerKeyDown"
+         data-bit-esc="@TriggerEscapeClaim"
          @onfocusin="HandleOnFocusIn"
          @onfocusout="HandleOnFocusOut"
          title="@Title"
@@ -266,9 +270,12 @@
                    reports the list and whether it is showing. An input does not inherit the accessible
                    name of anything around it, so without an AriaLabel it is named after the label by
                    hand. Its readonly and disabled states are the native attributes, which is what the
-                   aria- pair would only be restating. *@
+                   aria- pair would only be restating.
+                   data-bit-esc claims the Escape HandleOnKeyDown acts on (see Utils.claimEscape): the one that
+                   drops the typed term as well as the ones the field around it would claim. *@
                 <input @ref="_comboBoxInputRef"
                        @onkeydown="@HandleOnKeyDown"
+                       data-bit-esc="@ComboEscapeClaim"
                        @oninput="@HandleOnComboInput"
                        @onchange="@HandleOnComboChange"
                        @onfocusin="HandleComboInputFocusIn"

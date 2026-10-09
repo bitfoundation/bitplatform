@@ -156,7 +156,7 @@ public partial class BitMessageDemo
             Name = "DismissOnEscape",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Dismisses the message when the Escape key is pressed while the focus is inside it. Only wired up while dismissing would do something - that is, while OnDismiss has a handler, Dismissible is set, or Dismissed is bound.",
+            Description = "Dismisses the message when the Escape key is pressed while the focus is inside it. Only wired up while dismissing would do something - that is, while OnDismiss has a handler, Dismissible is set, or Dismissed is bound. The press that dismisses the message is its alone, so a Dialog, a Modal, a Panel or an Overlay the message sits in closes on the next one.",
         },
         new()
         {

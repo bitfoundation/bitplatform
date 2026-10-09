@@ -1261,6 +1261,13 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
+    // When HandleEscape acts on the key, written onto the input for Utils.claimEscape: an open list is closed, a
+    // value is cleared, and with neither of them the input is wiped of text it still holds.
+    private string? EscapeClaim => _isOpen ? "claim"
+                                 : ReadOnly || NoClearOnEscape ? null
+                                 : CurrentValue.HasValue() ? "claim"
+                                 : "text";
+
     private async Task HandleEscape()
     {
         await OnEscape.InvokeAsync();

@@ -983,6 +983,13 @@ public partial class BitMessage : BitComponentBase
 
     private bool _HandlesEscape => DismissOnEscape && _CanDismiss && Disabled is false;
 
+    // The Escape that dismisses the message is claimed on its root (see Utils.claimEscape), so a dialog the message
+    // sits in does not close on the same press - but only while the message's own handler is the one listening: a
+    // keydown handler written on the component replaces it, and dismisses nothing.
+    private string? _EscapeClaim => _HandlesEscape
+                                    && HtmlAttributes.TryGetValue("onkeydown", out var handler)
+                                    && ReferenceEquals(handler, _onRootKeyDown) ? "claim" : null;
+
     // There is nothing to count down where nothing is counting down, so the bar follows the countdown itself
     // rather than the parameter that asks for it.
     private bool _ShowsAutoDismissProgress => ShowAutoDismissProgress && _HasAutoDismiss;

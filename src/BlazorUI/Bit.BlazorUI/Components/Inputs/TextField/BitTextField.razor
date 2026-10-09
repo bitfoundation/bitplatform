@@ -51,6 +51,8 @@
                 @IconFragment
             }
 
+            @* data-bit-esc on the field claims the Escape that ClearOnEscape clears it with (see
+               Utils.claimEscape), so a dialog around it does not close on that same press. *@
             <div class="bit-tfl-ghw @Classes?.GhostTextWrapper" style="@Styles?.GhostTextWrapper">
                 @if (IsMultilineElement)
                 {
@@ -71,6 +73,7 @@
                               rows="@(Rows ?? 1)"
                               tabindex="@TabIndex"
                               readonly="@ReadOnly"
+                              data-bit-esc="@EscapeClaim"
                               required="@Required"
                               style="@Styles?.Input"
                               autofocus="@AutoFocus"
@@ -109,6 +112,7 @@
                            type="@_inputType"
                            title="@InputTitle"
                            readonly="@ReadOnly"
+                           data-bit-esc="@EscapeClaim"
                            required="@Required"
                            tabindex="@TabIndex"
                            style="@Styles?.Input"

@@ -101,7 +101,7 @@ public partial class BitDialogDemo
             Name = "CloseOnEscape",
             Type = "bool",
             DefaultValue = "true",
-            Description = "Dismisses the Dialog when the Escape key is pressed while the focus is inside it. A blocking Dialog ignores the Escape key whatever this is set to, and an Escape a field inside answers first (closing its own open list, or an IME composition) is left to it."
+            Description = "Dismisses the Dialog when the Escape key is pressed while the focus is inside it. A blocking Dialog ignores the Escape key whatever this is set to, and an Escape a field inside answers first (closing its own open list, clearing itself, cancelling an IME composition) is left to it."
         },
         new()
         {

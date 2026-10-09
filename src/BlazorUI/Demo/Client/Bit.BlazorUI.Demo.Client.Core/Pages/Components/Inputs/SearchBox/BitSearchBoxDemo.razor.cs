@@ -330,7 +330,7 @@ public partial class BitSearchBoxDemo
             Name = "NoClearOnEscape",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Prevents clearing the value of the search box when the user presses the escape key.",
+            Description = "Prevents clearing the value of the search box when the user presses the escape key, which hands the key back to the Dialog, the Modal, the Panel or the Overlay the field sits in. Without it, the press that clears the field is the field's alone, and they close on the next one.",
         },
         new()
         {

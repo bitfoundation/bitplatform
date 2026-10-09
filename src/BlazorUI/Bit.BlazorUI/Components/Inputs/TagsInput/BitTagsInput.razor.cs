@@ -1571,6 +1571,12 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         return Format(MoreTagsAriaLabelFormat ?? "Show {0} more tags", hidden.ToString(System.Globalization.CultureInfo.CurrentCulture));
     }
 
+    // When HandleOnKeyDown acts on Escape, written onto the input for Utils.claimEscape: the tags are cleared
+    // whatever the input shows, and otherwise the text being typed is taken back while there is any.
+    private string? EscapeClaim => Disabled || ReadOnly || NoClearOnEscape ? null
+                                 : ShowClearButton && HasRemovableTag() ? "claim"
+                                 : "text";
+
     /// <summary>
     /// Whether the clear button would have anything to take off the field: every tag, unless
     /// <see cref="CanRemoveTag"/> holds some of them in place - and none at all where it holds all of
