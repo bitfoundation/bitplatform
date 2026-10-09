@@ -1,6 +1,8 @@
 # Buffered PDF engine benchmark
 
-This console benchmark measures parsing, page-tree construction, first-page HTML/canvas builds, and hot byte/lexer reads. It records every elapsed-time/allocation sample and output hashes as JSON. It uses the native C# engine; file I/O, browser painting, HTTP transfer, and forced GC between samples are outside the timings. Rendering metrics over the reference model have warm resource caches; `loadAndFirstPage*` creates a fresh document for each sample.
+This console benchmark measures parsing, page-tree construction, first-page HTML/canvas builds, and direct stream/lexer reads. It records every elapsed-time/allocation sample and output hashes as JSON. It uses the native C# engine; file I/O, browser painting, HTTP transfer, and forced GC between samples are outside the timings. Rendering metrics over the reference model have warm resource caches; `loadAndFirstPage*` creates a fresh document for each sample.
+
+`directStreamByteReadControl` measures an 8 MiB buffer through the array-backed `BitPdfStream.GetByte()` path as a control for timing noise. It does not isolate `BitPdfByteSourceReader.ReadByte()`; parsing and rendering workloads exercise the byte-source integration. Earlier JSON output named this same control `hotByteRead`. The workload is unchanged.
 
 Build from this directory, where `src/global.json` selects the repository SDK:
 

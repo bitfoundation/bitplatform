@@ -60,7 +60,8 @@ foreach (string path in args.Skip(2))
 
 byte[] hotBytes = new byte[8 * 1024 * 1024];
 new Random(13702).NextBytes(hotBytes);
-var hot = Measure(() =>
+// Direct array-backed reads provide a control for timing noise.
+var directStreamByteReadControl = Measure(() =>
 {
     var stream = new BitPdfStream(hotBytes);
     long sum = 0;
@@ -85,7 +86,7 @@ Console.WriteLine(JsonSerializer.Serialize(new
     iterations,
     warmups,
     results,
-    hotByteRead = hot,
+    directStreamByteReadControl,
     lexer,
     peakWorkingSetBytes = Process.GetCurrentProcess().PeakWorkingSet64,
 }, new JsonSerializerOptions { WriteIndented = true }));
