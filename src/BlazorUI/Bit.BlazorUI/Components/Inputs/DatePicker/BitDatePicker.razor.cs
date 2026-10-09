@@ -1794,6 +1794,20 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             return;
         }
 
+        // A field that is typed into keeps the focus while its callout is open. The callout is relocated to the
+        // end of the document, so it is not what the tab order runs into from the field: tabbing on would leave
+        // the popup open behind an overlay that swallows every click that could dismiss it. The focus is on its
+        // way to the next control, so it is left there rather than pulled back onto the field.
+        if (e.Key is "Tab")
+        {
+            if (IsOpen)
+            {
+                await CloseCallout();
+            }
+
+            return;
+        }
+
         if (IsOpen) return;
 
         var isSelectOnly = AllowTextInput is false || ReadOnly;

@@ -2257,6 +2257,20 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             return;
         }
 
+        // A field that is typed into keeps the focus while its callout is open. The callout is relocated to the
+        // end of the document, so it is not what the tab order runs into from the field: tabbing on would leave
+        // the popup open behind an overlay that swallows every click that could dismiss it. The focus is on its
+        // way to the next control, so it is left there rather than pulled back onto the field.
+        if (e.Key == "Tab")
+        {
+            if (IsOpen)
+            {
+                await CloseCallout();
+            }
+
+            return;
+        }
+
         // The input is a combobox, so it must be able to open its dialog from the keyboard too.
         // Enter and Space are left to the browser whenever the text input is editable.
         if (IsOpen is false && (e.Key is "ArrowDown" || ((e.Key is "Enter" or " ") && AllowTextInput is false)))

@@ -10,7 +10,7 @@ namespace BitBlazorUI {
             clock: HTMLElement,
             input: HTMLInputElement,
             callout: HTMLElement,
-            dismissOnFocusOut: boolean,
+            modal: boolean,
             pointerDownHandler: string,
             pointerMoveHandler: string,
             pointerUpHandler: string,
@@ -150,14 +150,26 @@ namespace BitBlazorUI {
                 e.preventDefault();
             }, { signal: bitController.controller.signal });
 
-            // An open callout is relocated to the end of the document, so the tab order does not run from it
-            // back into the page: focus that leaves it for anything else has left an open popup behind, under
-            // an overlay that swallows every click which could still dismiss it. A relatedTarget of null is
-            // deliberately left alone - that is the window itself losing the focus, not the person moving on,
-            // and the callout has to still be there when they come back. A standalone picker is inline and has
-            // no callout to dismiss, so it does not listen at all rather than answering every focus change
-            // with an interop call that would do nothing.
-            if (dismissOnFocusOut) {
+            // A callout that floats over the page reports itself a modal dialog, and it is relocated to the end
+            // of the document while it is open, so the tab order does not run from it back into the page: Tab
+            // from its last control would leave the page for the browser with the popup still open, and
+            // Shift+Tab from its first one would land in whatever ends the page, far from the field. So Tab and
+            // Shift+Tab cycle inside it, as the dialog pattern requires.
+            // Focus that leaves it all the same - a script moving it, a click on something the overlay does not
+            // cover - has left an open popup behind, under an overlay that swallows every click which could
+            // still dismiss it, so that dismisses it. A relatedTarget of null is deliberately left alone - that
+            // is the window itself losing the focus, not the person moving on, and the callout has to still be
+            // there when they come back.
+            // A standalone picker is inline, with no dialog and no callout to dismiss: the focus is free to leave
+            // it the way it leaves any other part of the page, and nothing listens for it to, rather than
+            // answering every focus change with an interop call that would do nothing.
+            if (modal) {
+                callout?.addEventListener('keydown', e => {
+                    if ((e as KeyboardEvent).key !== 'Tab') return;
+
+                    Utils.wrapFocus(callout, e as KeyboardEvent);
+                }, { signal: bitController.controller.signal });
+
                 callout?.addEventListener('focusout', e => {
                     const next = (e as FocusEvent).relatedTarget as Node | null;
 

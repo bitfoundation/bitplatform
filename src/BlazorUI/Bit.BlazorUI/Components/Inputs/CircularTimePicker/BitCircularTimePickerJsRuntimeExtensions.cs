@@ -7,13 +7,13 @@ internal static class BitCircularTimePickerJsRuntimeExtensions
         ElementReference clock,
         ElementReference input,
         ElementReference callout,
-        bool dismissOnFocusOut,
+        bool modal,
         string pointerDownHandler,
         string pointerMoveHandler,
         string pointerUpHandler,
         string focusOutHandler)
     {
-        return js.Invoke<string>("BitBlazorUI.CircularTimePicker.setup", obj, clock, input, callout, dismissOnFocusOut,
+        return js.Invoke<string>("BitBlazorUI.CircularTimePicker.setup", obj, clock, input, callout, modal,
                                  pointerDownHandler, pointerMoveHandler, pointerUpHandler, focusOutHandler);
     }
 

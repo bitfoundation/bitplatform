@@ -1853,6 +1853,33 @@ public class BitCircularTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCircularTimePickerShouldTrapTheFocusInAFloatingCallout()
+    {
+        RenderComponent<BitCircularTimePicker>();
+
+        // A callout that reports itself a modal dialog has to hold the tab order, which happens on the JS
+        // side - so it only works if the setup is actually told the callout is one.
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.CircularTimePicker.setup"].Single();
+
+        Assert.AreEqual(true, setup.Arguments[4]);
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldNotTrapTheFocusInAStandaloneCallout()
+    {
+        RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+        });
+
+        // Standalone there is no dialog and no overlay, so the focus is free to leave the way it leaves any
+        // other part of the page.
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.CircularTimePicker.setup"].Single();
+
+        Assert.AreEqual(false, setup.Arguments[4]);
+    }
+
+    [TestMethod]
     public async Task BitCircularTimePickerEnterShouldNotOpenAnEditableInput()
     {
         var isOpen = false;

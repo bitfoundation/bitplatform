@@ -2318,6 +2318,44 @@ public class BitDatePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDatePickerTabOnTheInputShouldCloseTheCallout()
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        var before = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count;
+
+        // The callout is relocated to the end of the document, so the tab order does not run into it from the
+        // field: tabbing on would leave it open behind an overlay that swallows every click that could dismiss it.
+        component.Find(".bit-dtp-inp").KeyDown(new KeyboardEventArgs { Key = "Tab" });
+
+        Assert.IsFalse(isOpen);
+
+        // The focus is on its way to the next control, so it is not pulled back onto the field.
+        Assert.AreEqual(before, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    public void BitDatePickerTabOnTheInputShouldNotReportAClosedCalloutClosing()
+    {
+        var closed = 0;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.OnClose, () => closed++);
+        });
+
+        component.Find(".bit-dtp-inp").KeyDown(new KeyboardEventArgs { Key = "Tab" });
+
+        Assert.AreEqual(0, closed);
+    }
+
+    [TestMethod]
     public void BitDatePickerEscapeInTheCalloutShouldCloseIt()
     {
         var isOpen = true;
