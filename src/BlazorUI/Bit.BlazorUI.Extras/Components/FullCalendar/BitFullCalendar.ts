@@ -550,7 +550,7 @@
             let target: HTMLElement | null = find(movedTo) ?? find(key);
             target ??= scope === root
                 ? root.querySelector<HTMLElement>(FullCalendar.ROVING_STOP) ?? root.querySelector<HTMLElement>('.bit-bfc-body')
-                : Extras.firstFocusable(scope) ?? scope;
+                : Utils.firstFocusable(scope) ?? scope;
             if (!target) return;
 
             try {
@@ -608,7 +608,7 @@
 
             const handler = (e: KeyboardEvent) => {
                 if (e.key !== 'Tab') return;
-                const focusable = Extras.getFocusables(container);
+                const focusable = Utils.getFocusables(container);
                 if (focusable.length === 0) {
                     e.preventDefault();
                     container.focus();
@@ -631,7 +631,7 @@
             container.addEventListener('keydown', handler);
             FullCalendar.dialogFocusState.set(container, { previous, root: container.closest<HTMLElement>('.bit-bfc'), handler });
 
-            (Extras.firstFocusable(container) ?? container).focus();
+            (Utils.firstFocusable(container) ?? container).focus();
         }
 
         public static teardownDialog(container: HTMLElement): void {

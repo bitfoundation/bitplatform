@@ -1075,7 +1075,7 @@
             if (!this.root.classList.contains('bit-mde-fsc') || this.root.querySelector('.bit-mde-hlp')) return;
 
             // Everything the Tab key can land on, the preview's rendered links and details included.
-            const focusables = Extras.getFocusables(this.root);
+            const focusables = Utils.getFocusables(this.root);
             if (!focusables.length) return;
 
             const first = focusables[0];

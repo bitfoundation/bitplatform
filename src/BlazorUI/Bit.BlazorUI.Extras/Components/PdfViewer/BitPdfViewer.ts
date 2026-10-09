@@ -1024,7 +1024,7 @@
                 PdfViewer._focusReturn.push(null as any);
             }
 
-            const focusables = () => Extras.getFocusables(dialog);
+            const focusables = () => Utils.getFocusables(dialog);
 
             // The requested control, else the first one, else the dialog itself - which
             // carries tabindex="-1" so it can hold focus while the reader has not

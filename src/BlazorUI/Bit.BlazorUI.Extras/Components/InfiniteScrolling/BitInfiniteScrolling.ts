@@ -383,18 +383,7 @@
             const feed = this._feedElement();
             if (!feed) return null;
 
-            const all = Array.from(document.querySelectorAll<HTMLElement>(Extras.focusableSelector))
-                .filter(el => !feed.contains(el) && Extras.isFocusable(el));
-
-            const position = (el: HTMLElement) => feed.compareDocumentPosition(el);
-
-            if (after) {
-                return all.find(el => (position(el) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0) ?? null;
-            }
-
-            const before = all.filter(el => (position(el) & Node.DOCUMENT_POSITION_PRECEDING) !== 0);
-
-            return before.length > 0 ? before[before.length - 1] : null;
+            return Utils.findFocusable(document, feed, after, el => feed.contains(el));
         }
 
         // The target is recomputed on the second pass: a list whose images or fonts land after the first one

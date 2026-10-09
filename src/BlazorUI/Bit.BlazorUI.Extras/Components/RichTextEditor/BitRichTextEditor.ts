@@ -1412,7 +1412,7 @@
             if (!root.classList.contains('bit-rte-fsc')) return;
             // The shared definition reads the attributes, never tabIndex: a contenteditable host reports a tabIndex of -1
             // in some engines while still being a tab stop.
-            const focusable = Extras.getFocusables(root);
+            const focusable = Utils.getFocusables(root);
             if (focusable.length === 0) return;
             const first = focusable[0];
             const last = focusable[focusable.length - 1];

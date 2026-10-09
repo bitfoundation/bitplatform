@@ -129,18 +129,16 @@
             try {
                 // The same set the focus trap cycles through, so the element the focus lands on when the
                 // popup opens is the same one Shift+Tab wraps back to from the end of it.
-                const candidates = Array.from(container.querySelectorAll<HTMLElement>(Utils.focusableSelector));
-
                 // The consumer naming the element the focus should land on, for the popups whose first
                 // focusable element is not the one worth starting at - a dismiss button ahead of the field
                 // the popup was opened to fill in. The first focusable element is the fallback.
                 // The standard autofocus attribute says the same thing and is what a native dialog reads,
                 // so it is honoured alongside the data- one: the browser only ever acts on it for markup
                 // that was in the document when it was parsed, which a popup's content never is.
-                const requested = candidates.find(el =>
-                    (el.hasAttribute('data-autofocus') || el.hasAttribute('autofocus')) && Utils.isFocusable(el));
+                const requested = Utils.firstFocusable(container, el =>
+                    el.hasAttribute('data-autofocus') === false && el.hasAttribute('autofocus') === false);
 
-                (requested ?? candidates.find(Utils.isFocusable) ?? container).focus();
+                (requested ?? Utils.firstFocusable(container) ?? container).focus();
             } catch (e) { console.error("BitBlazorUI.Utils.focusFirstElement:", e); }
         }
 
@@ -234,9 +232,27 @@
             observer: MutationObserver | null
         }>();
 
+        // The focusable elements that are content rather than a control: a disclosure's summary and an embedded
+        // frame or media player take the focus, but are never the control a popup or a tooltip belongs to, and
+        // one written ahead of that control would otherwise take the attributes meant for it.
+        private static readonly _notAControl = 'summary, iframe, audio, video';
+
+        // The first control inside the container a relationship can be mirrored onto, leaving out the ones the
+        // skip callback names. Nothing is measured: the relationship is written whether or not the control is
+        // on screen right now, as nothing writes it again the moment it is.
+        private static findControl(container: HTMLElement, skip?: (el: HTMLElement) => boolean): HTMLElement | null {
+            const all = container.querySelectorAll<HTMLElement>(Utils.focusableSelector);
+
+            for (let i = 0; i < all.length; i++) {
+                if (all[i].matches(Utils._notAControl) === false && skip?.(all[i]) !== true) return all[i];
+            }
+
+            return null;
+        }
+
         private static applyAriaPopup(state: { anchor: HTMLElement, popupId: string, isOpen: boolean, hasPopup: string, target: HTMLElement | null }) {
             const anchor = state.anchor;
-            const trigger = anchor.querySelector<HTMLElement>(Utils.focusableSelector) ?? anchor;
+            const trigger = Utils.findControl(anchor) ?? anchor;
 
             // The element that carried the relationship before is no longer the trigger - another control took
             // its place, or it lost the last focusable element to the container itself - so what this code put
@@ -282,8 +298,7 @@
 
                 // An interactive tooltip may hold something focusable of its own, which sits inside the same
                 // root and would otherwise be taken for the anchor whenever the anchor holds none itself.
-                const target = Array.from(root.querySelectorAll<HTMLElement>(Utils.focusableSelector))
-                    .find(el => el.closest('.bit-ttp-wrp') === null);
+                const target = Utils.findControl(root, el => el.closest('.bit-ttp-wrp') !== null);
 
                 // Nothing focusable to mirror onto: the markup has already declared the relationship on the
                 // root, which is where it stays.
@@ -1211,7 +1226,7 @@
         // renders around the consumer's own button - which takes no focus of its own, so the first focusable element
         // inside it is where the focus goes back to.
         private static focusTrigger(trigger: HTMLElement) {
-            const target = trigger.matches(Utils.focusableSelector) && Utils.isFocusable(trigger)
+            const target = Utils.isFocusableElement(trigger)
                 ? trigger
                 : Utils.firstFocusable(trigger);
 
@@ -1234,14 +1249,11 @@
         private static findFocusableAfter(anchor: HTMLElement, exclude: HTMLElement) {
             const scope = Utils.findTabScope(anchor);
 
-            const candidates = Array.from((scope ?? document).querySelectorAll<HTMLElement>(Utils.focusableSelector)).filter(el =>
-                !anchor.contains(el)
-                && !exclude.contains(el)
-                && Utils.isFocusable(el));
+            const skip = (el: HTMLElement) => anchor.contains(el) || exclude.contains(el);
 
-            const next = candidates.find(el => (anchor.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0);
+            const next = Utils.findFocusable(scope ?? document, anchor, true, skip);
 
-            return next ?? (scope ? candidates[0] ?? null : null);
+            return next ?? (scope ? Utils.firstFocusable(scope, skip) : null);
         }
 
         // The nearest ancestor of the element that keeps the keyboard inside itself, or null when it is in the
@@ -2059,9 +2071,9 @@
         // disclosure's summary and a media player's controls included, which a trap that missed them would
         // let the Tab out of the container from.
         // This is the library's one definition of "what can hold the focus": every script asks it, through
-        // isFocusable, getFocusables and firstFocusable below, rather than keeping a copy of its own that a fix
-        // here would not reach. Bit.BlazorUI.Extras is compiled and loaded on its own and cannot reach it, so
-        // it carries the one mirror of it (BitBlazorUI.Extras), which BitFocusablesContractTests keeps in step.
+        // the helpers below, rather than keeping a copy of its own that a fix here would not reach - the
+        // scripts of Bit.BlazorUI.Extras included, which call these members through the ambient declaration
+        // of Scripts/BitBlazorUI.d.ts (BitFocusablesContractTests keeps the two in step).
         public static readonly focusableSelector =
             'a[href]:not([tabindex="-1"]), button:not([disabled]):not([tabindex="-1"]), ' +
             'input:not([disabled]):not([tabindex="-1"]), select:not([disabled]):not([tabindex="-1"]), ' +
@@ -2080,15 +2092,25 @@
         // being edited are text to the browser, and counting one as the last stop of a trap would let the
         // Tab from the host walk out of it.
         // A hidden element has no box at all - which is how a display:none subtree (e.g. a collapsed
-        // section) is skipped without measuring every ancestor - and visibility:hidden leaves a box the
-        // focus still cannot land in, so it is asked about separately, and only for the elements that got
-        // past the cheap measurement.
+        // section) is skipped without measuring every ancestor. A subtree whose content the engine skips -
+        // hidden="until-found" (a HiddenUntilFound accordion panel), content-visibility:hidden - can still
+        // hand its descendants a box the focus never reaches; checkVisibility sees both, and the box alone is
+        // asked for only in the engines without it. visibility:hidden leaves a box the focus still cannot
+        // land in, so it is asked about separately, and only for the elements that got past the measurement.
         public static isFocusable(el: HTMLElement) {
             if (el.closest('[inert]') !== null || el.matches(':disabled') || el.parentElement?.isContentEditable === true) return false;
 
-            const hasBox = el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0;
+            const rendered = typeof el.checkVisibility === 'function'
+                ? el.checkVisibility()
+                : el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0;
 
-            return hasBox && getComputedStyle(el).visibility !== 'hidden';
+            return rendered && getComputedStyle(el).visibility !== 'hidden';
+        }
+
+        // Whether any element - not only one taken from the selector above - is a place the focus can land: the
+        // element a caller holds may be a plain container, which isFocusable alone would accept for its box.
+        public static isFocusableElement(el: HTMLElement) {
+            return el.matches(Utils.focusableSelector) && Utils.isFocusable(el);
         }
 
         // The elements inside the container the focus can land on, in document order.
@@ -2096,9 +2118,36 @@
             return Array.from(container.querySelectorAll<HTMLElement>(Utils.focusableSelector)).filter(Utils.isFocusable);
         }
 
-        // The first element inside the container the focus can land on, measuring no more of them than it takes.
-        public static firstFocusable(container: ParentNode): HTMLElement | null {
-            return Array.from(container.querySelectorAll<HTMLElement>(Utils.focusableSelector)).find(Utils.isFocusable) ?? null;
+        // The first element inside the container the focus can land on, leaving out the ones the skip callback
+        // names, and measuring no more of them than it takes.
+        public static firstFocusable(container: ParentNode, skip?: (el: HTMLElement) => boolean): HTMLElement | null {
+            const all = container.querySelectorAll<HTMLElement>(Utils.focusableSelector);
+
+            for (let i = 0; i < all.length; i++) {
+                if (skip?.(all[i]) !== true && Utils.isFocusable(all[i])) return all[i];
+            }
+
+            return null;
+        }
+
+        // The nearest element inside the scope the focus can land on that follows (or, backwards, precedes) the
+        // given node in the document, leaving out the ones the skip callback names - which is where a node's own
+        // descendants are left out, as they follow it too. Only the elements on the far side of the node are
+        // measured, and no more of them than it takes, which matters when the scope is the whole document.
+        public static findFocusable(scope: ParentNode, from: Node, forward: boolean, skip?: (el: HTMLElement) => boolean): HTMLElement | null {
+            const all = scope.querySelectorAll<HTMLElement>(Utils.focusableSelector);
+            const side = forward ? Node.DOCUMENT_POSITION_FOLLOWING : Node.DOCUMENT_POSITION_PRECEDING;
+            const step = forward ? 1 : -1;
+
+            for (let i = forward ? 0 : all.length - 1; i >= 0 && i < all.length; i += step) {
+                const el = all[i];
+
+                if ((from.compareDocumentPosition(el) & side) === 0) continue;
+
+                if (skip?.(el) !== true && Utils.isFocusable(el)) return el;
+            }
+
+            return null;
         }
 
         // Keeps Tab and Shift+Tab cycling inside a container, which is what a popup that reports itself a modal

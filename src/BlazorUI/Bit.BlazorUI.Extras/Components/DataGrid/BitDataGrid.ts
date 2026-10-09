@@ -240,7 +240,7 @@
             const header = root?.querySelector<HTMLElement>(`.bit-dtg-header-row .bit-dtg-hcell[data-col="${CSS.escape(columnId)}"]`);
             if (!header) return;
             const target = header.querySelector<HTMLElement>('button.bit-dtg-htext')
-                ?? Extras.firstFocusable(header);
+                ?? Utils.firstFocusable(header);
             target?.focus();
         }
 
@@ -257,7 +257,7 @@
             const cells = Array.from(root.querySelectorAll<HTMLElement>('[data-bit-dtg-edit]'))
                 .filter(c => c.closest('.bit-dtg') === root);
             const cell = (columnId ? cells.find(c => c.dataset.bitDtgEdit === columnId) : undefined) ?? cells[0];
-            const target = cell ? Extras.firstFocusable(cell) : undefined;
+            const target = cell ? Utils.firstFocusable(cell) : undefined;
             if (!target) return;
             target.focus();
             if (!(target instanceof HTMLInputElement) || !['text', 'search', 'number', 'email', 'tel', 'url'].includes(target.type)) return;
@@ -291,8 +291,7 @@
                 } catch {
                     continue;
                 }
-                const target = matches.find(el => el.closest('.bit-dtg') === root
-                    && el.matches(Extras.focusableSelector) && Extras.isFocusable(el));
+                const target = matches.find(el => el.closest('.bit-dtg') === root && Utils.isFocusableElement(el));
                 if (target) {
                     target.focus();
                     return;
@@ -710,7 +709,7 @@
                 const editingCell = target.closest<HTMLElement>('.bit-dtg-cell-editing');
                 if (!editingCell) return;
                 // The editor's controls that can take the focus, in DOM order: the first and last are the boundaries.
-                const controls = Extras.getFocusables(editingCell);
+                const controls = Utils.getFocusables(editingCell);
                 const index = controls.indexOf(target);
                 const staysInside = e.shiftKey ? index > 0 : index >= 0 && index < controls.length - 1;
                 if (staysInside) e.stopPropagation();
