@@ -469,7 +469,7 @@
     // In HideInput mode the spin buttons become keyboard focusable (there is no input left to focus),
     // so they need a visible focus indicator of their own.
     &:focus-visible {
-        @include focus-ring(var(--bit-nfl-clr-focus, var(--bit-NumberField-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-nfl-clr-focus, var(--bit-NumberField-focus-color)));
     }
 
     // The buttons are also disabled while the field is read-only, where the root does not carry the
@@ -585,7 +585,7 @@
     // The underlined variant is excluded so it gets only the bottom-rule treatment below - applying
     // the ring mixin and negating its box-shadow would still leave its forced-colors outline behind.
     &:not(.bit-nfl-und) .bit-nfl-cnt {
-        @include focus-ring(var(--bit-nfl-clr-focus, var(--bit-NumberField-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-nfl-clr-focus, var(--bit-NumberField-focus-color)));
     }
 
     &.bit-nfl-und .bit-nfl-cnt {

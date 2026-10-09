@@ -128,7 +128,7 @@
     --bit-phi-bg: var(--bit-phi-kind-bg, var(--bit-PhoneInput-background, #{$clr-bg-pri}));
     --bit-phi-brd: var(--bit-phi-kind-brd, var(--bit-phi-role-main, var(--bit-PhoneInput-border-color, #{$clr-brd-pri})));
     --bit-phi-brd-hover: var(--bit-phi-kind-brd-hover, var(--bit-phi-role-main, var(--bit-PhoneInput-hover-border-color, #{$clr-brd-pri-hover})));
-    --bit-phi-focus: var(--bit-phi-role-focus, var(--bit-PhoneInput-focus-color, #{$clr-pri-focus}));
+    --bit-phi-focus: var(--bit-phi-role-focus, var(--bit-PhoneInput-focus-color));
     --bit-phi-plc: var(--bit-PhoneInput-placeholder-color, #{$clr-fg-ter});
     --bit-phi-itm-clr: var(--bit-PhoneInput-item-color, #{$clr-fg-pri});
     --bit-phi-itm-hover-bg: var(--bit-PhoneInput-item-hover-background, #{$clr-bg-pri-hover});
@@ -140,7 +140,7 @@
 // the box-shadow the ring of the whole field is drawn with. The library resets the outline of every button,
 // so without it the two halves of the field would share one ring with nothing saying which of them has focus.
 @mixin phi-focus-inset {
-    outline: $shp-focus-ring-width $shp-border-style var(--bit-phi-focus);
+    outline: $shp-focus-ring-width $shp-border-style var(--bit-phi-focus, #{$clr-pri-focus});
     outline-offset: calc(-1 * #{$shp-focus-ring-width});
 
     @media (forced-colors: active) {
@@ -204,12 +204,12 @@
 }
 
 .bit-phi-fcs .bit-phi-fgp {
-    @include focus-ring(var(--bit-phi-focus));
+    @include focus-ring-own(var(--bit-phi-focus));
 
-    border-color: var(--bit-phi-focus);
+    border-color: var(--bit-phi-focus, #{$clr-pri-focus});
 
     @include phi-hover {
-        border-color: var(--bit-phi-focus);
+        border-color: var(--bit-phi-focus, #{$clr-pri-focus});
     }
 }
 

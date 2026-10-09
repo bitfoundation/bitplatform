@@ -36,7 +36,7 @@
 //   --bit-Chart-loading-spinner-color  the turning arc of the loading spinner         (default: $clr-pri)
 
 .bit-cht {
-    --bit-cht-clr-focus: var(--bit-Chart-focus-color, #{$clr-pri-focus});
+    --bit-cht-clr-focus: var(--bit-Chart-focus-color);
 
     display: flex;
     box-sizing: border-box;
@@ -106,7 +106,7 @@
 
     &:focus-visible {
         border-radius: $shp-radius-sm;
-        @include focus-ring(var(--bit-cht-clr-focus));
+        @include focus-ring-own(var(--bit-cht-clr-focus));
     }
 }
 
@@ -187,7 +187,7 @@
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-cht-clr-focus));
+        @include focus-ring-own(var(--bit-cht-clr-focus));
     }
 
     &:disabled,

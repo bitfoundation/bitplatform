@@ -119,7 +119,7 @@ public partial class BitMarkdownEditorStylesheetTests
         var stylesheet = ReadStylesheet();
 
         StringAssert.Contains(stylesheet, "$mde-focus: var(--bit-MarkdownEditor-focus-color, #{$clr-pri-focus});");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-btn {"), "@include focus-ring($mde-focus);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-btn {"), "@include focus-ring-own($mde-focus-ring);");
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-txa {"), "@include mde-inset-ring;");
     }
 

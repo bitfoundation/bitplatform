@@ -29,7 +29,7 @@ public class BitSliderStylesheetTests
         StringAssert.Contains(stylesheet, "var(--bit-sld-clr, var(--bit-Slider-color, #{$clr-pri}))");
         StringAssert.Contains(stylesheet, "var(--bit-sld-clr-hover, var(--bit-Slider-hover-color, var(--bit-Slider-color, #{$clr-pri-hover})))");
         StringAssert.Contains(stylesheet, "var(--bit-sld-clr-active, var(--bit-Slider-active-color, var(--bit-Slider-color, #{$clr-pri-active})))");
-        StringAssert.Contains(stylesheet, "--bit-sld-clr-ring: var(--bit-sld-clr-focus, var(--bit-Slider-focus-color, var(--bit-Slider-color, #{$clr-pri-focus})));");
+        StringAssert.Contains(stylesheet, "--bit-sld-clr-ring: var(--bit-sld-clr-focus, var(--bit-Slider-focus-color, var(--bit-Slider-color)));");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-sld-clr-on, var(--bit-Slider-mark-active-color, #{$clr-pri-text}));");
         StringAssert.Contains(stylesheet, "color: var(--bit-sld-clr-on, var(--bit-Slider-thumb-label-color, #{$clr-pri-text}));");
 

@@ -313,7 +313,7 @@ public partial class BitFlagDemo
         {
             Name = "--bit-Flag-focus-color",
             DefaultValue = "--bit-clr-pri-focus",
-            Description = "Color of the keyboard focus ring.",
+            Description = "Color of the keyboard focus ring. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
         },
         new()
         {

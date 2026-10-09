@@ -1966,7 +1966,7 @@ public partial class BitDropdownDemo
         {
             Name = "--bit-Dropdown-focus-color",
             DefaultValue = "--bit-clr-pri-focus",
-            Description = "Color of the focus indicator: the ring around the field, the underline of the Underlined and NoBorder variants, and the outline drawn inside the row the arrow keys have reached. The Color parameter wins over it.",
+            Description = "Color of the focus indicator: the ring around the field, the underline of the Underlined and NoBorder variants, and the outline drawn inside the row the arrow keys have reached. The Color parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
         },
         new()
         {

@@ -55,6 +55,14 @@ public class BitPersonaStylesheetTests
 
         foreach (var name in _publicVariables)
         {
+            // The focus color alone is read without a fallback, on purpose: its absence is what hands the ring over
+            // to the global --bit-shd-focus-ring (see BitFocusRingStylesheetTests).
+            if (name == "--bit-Persona-focus-color")
+            {
+                StringAssert.Contains(rules, $"var({name})", $"{name} is not read without a fallback.");
+                continue;
+            }
+
             Assert.IsTrue(Regex.IsMatch(rules, $@"var\({Regex.Escape(name)},\s*[^)\s]"), $"{name} is not read with a fallback.");
         }
     }

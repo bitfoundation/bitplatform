@@ -43,21 +43,10 @@
     // pane clicked with the pointer is not ringed.
     //
     // The default ring is the library's own - the global --bit-shd-focus-ring, so an app that re-shapes that
-    // one re-shapes this one too. Only a pane given a --bit-ScrollablePane-focus-color composes a ring of its
-    // own in that color, which has to be written out here: the composite substitutes its var()s where it is
-    // declared, on :root, and nothing set further down could reach it. Which of the two applies is decided
-    // without a fallback on purpose: a custom property that reads an unset variable with none is invalid,
-    // and an invalid --bit-scp-fcr is what hands box-shadow over to the global ring.
+    // one re-shapes this one too. Only a pane given a --bit-ScrollablePane-focus-color draws a ring of its own
+    // in that color, which is why the variable is read without a fallback (see focus-ring-own).
     &:focus-visible {
-        @include focus-ring;
-
-        --bit-scp-fcr:
-            0 0 0 #{$shp-focus-ring-offset} #{$clr-bg-pri},
-            0 0 0 calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width}) var(--bit-ScrollablePane-focus-color);
-
-        box-shadow: var(--bit-scp-fcr, var(--bit-shd-focus-ring,
-            0 0 0 #{$shp-focus-ring-offset} #{$clr-bg-pri},
-            0 0 0 calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width}) #{$clr-pri-focus}));
+        @include focus-ring-own(var(--bit-ScrollablePane-focus-color));
     }
 }
 

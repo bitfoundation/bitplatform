@@ -148,7 +148,7 @@
 
     // Focus lands on this hidden input, so the themed ring is drawn on the visible box.
     &:focus-visible ~ .bit-chb-lbl .bit-chb-box {
-        @include focus-ring(var(--bit-chb-clr-focus, var(--bit-Checkbox-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-chb-clr-focus, var(--bit-Checkbox-focus-color)));
     }
 }
 
@@ -157,7 +157,7 @@
 // still on the input, which nobody can see.
 .bit-chb-cct .bit-chb-inp:focus-visible ~ .bit-chb-lbl {
     border-radius: var(--bit-Checkbox-radius, #{$shp-radius-selection});
-    @include focus-ring(var(--bit-chb-clr-focus, var(--bit-Checkbox-focus-color, #{$clr-pri-focus})));
+    @include focus-ring-own(var(--bit-chb-clr-focus, var(--bit-Checkbox-focus-color)));
 }
 
 // The two states that recolor the ring around the box recolor it around the face as well, since the face

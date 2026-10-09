@@ -1,4 +1,6 @@
 ﻿@use 'sass:math';
+@use 'sass:meta';
+@use 'sass:string';
 @import "theme-variables.scss";
 @import "color-role-maps.scss";
 
@@ -62,6 +64,11 @@ $html-font-size: 16px;
  *     that token has already substituted its var()s on :root, so nothing declared further down the
  *     tree could reach it. The default call keeps reading it, so replacing it re-shapes every
  *     indicator that has not asked for a color of its own.
+ *   - A color passed here therefore always beats the global token, which is right for a ring that
+ *     MEANS something (the error color of an invalid control, the disabled color) and for one placed
+ *     against its element by a zero offset (a grid cell), a shape the global token cannot take. A
+ *     component's own focus color - a Color parameter, a --bit-<Component>-focus-color - is drawn with
+ *     focus-ring-own instead, which gives the global token back whenever none of it is set.
  *   - In Windows High Contrast / forced-colors mode box-shadows are stripped, so a real
  *     outline in the system Highlight color is rendered instead (matching focus-underline-ring).
  *   - $also is the box-shadow the element already draws for a reason of its own - an elevation -
@@ -118,8 +125,62 @@ $html-font-size: 16px;
         }
     }
 
-    // In Windows High Contrast / forced-colors mode box-shadows are stripped, which would leave the
-    // focused element with no visible indicator. Restore a real outline so focus stays perceivable.
+    @include focus-ring-forced-colors($offset);
+}
+
+/*
+ * focus-ring-own($color, $also)
+ * --------------------------------------------------
+ * The focus ring of a component that has a focus color of its own - a Color parameter, a
+ * --bit-<Component>-focus-color: drawn in that color when one is set, and as the library's global
+ * --bit-shd-focus-ring when none is, so an app that re-shapes the global ring re-shapes every
+ * component it has not recolored.
+ *
+ * $color is the component's var() chain WITHOUT the last fallback an unset parameter stood for -
+ * var(--bit-btn-clr-focus, var(--bit-Button-focus-color)), never one ending in $clr-pri-focus, which
+ * is what the global ring draws anyway. While nothing in the chain is set, the ring composed from it
+ * reads an unset variable with no fallback, which makes --bit-focus-ring-own invalid at computed-value
+ * time, and an invalid --bit-focus-ring-own is what hands box-shadow over to the global composite. The
+ * component's ring has to be composed here rather than through that composite, which substitutes its
+ * var()s where it is declared - on :root, where no color set further down the page can reach it.
+ *
+ * --bit-focus-ring-own inherits, but every rule that reads it declares it too, and a declaration that
+ * reads only unset variables computes to the guaranteed-invalid value rather than to the parent's, so a
+ * recolored ring never leaks into a focusable nested inside it.
+ *
+ * Usage:
+ *   .my-component:focus-visible {
+ *       @include focus-ring-own(var(--bit-my-clr-focus, var(--bit-MyComponent-focus-color)));
+ *   }
+ */
+@mixin focus-ring-own($color, $also: null) {
+    @if string.index(meta.inspect($color), '--bit-clr-pri-focus') {
+        @error "focus-ring-own() takes the color chain without its last fallback - leave out #{$clr-pri-focus}, which is what the global ring draws: #{$color}";
+    }
+
+    $kept: '';
+
+    @if $also != null {
+        $kept: ', #{$also}';
+    }
+
+    outline: none; // Replace native outline with the themed ring below.
+    --bit-focus-ring-offset: #{$shp-focus-ring-offset};
+    --bit-focus-ring-own:
+        0 0 0 #{$shp-focus-ring-offset} #{$clr-bg-pri},
+        0 0 0 calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width}) #{$color};
+    // The inline fallback mirrors the global --bit-shd-focus-ring expression in shapes.fluent.scss, so
+    // the ring still renders if a consumer-defined theme omits that token.
+    box-shadow: var(--bit-focus-ring-own, var(--bit-shd-focus-ring,
+        0 0 0 #{$shp-focus-ring-offset} #{$clr-bg-pri},
+        0 0 0 calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width}) #{$clr-pri-focus}))#{$kept};
+
+    @include focus-ring-forced-colors($shp-focus-ring-offset);
+}
+
+// In Windows High Contrast / forced-colors mode box-shadows are stripped, which would leave the
+// focused element with no visible indicator. Restore a real outline so focus stays perceivable.
+@mixin focus-ring-forced-colors($offset) {
     @media (forced-colors: active) {
         outline: #{$shp-focus-ring-width} solid Highlight;
 

@@ -54,7 +54,7 @@ public class BitChartStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(stylesheet, "--bit-cht-clr-focus: var(--bit-Chart-focus-color, #{$clr-pri-focus});");
+        StringAssert.Contains(stylesheet, "--bit-cht-clr-focus: var(--bit-Chart-focus-color);");
         StringAssert.Contains(stylesheet, "border-radius: var(--bit-Chart-tooltip-radius, #{$shp-radius-popup});");
         StringAssert.Contains(stylesheet, "box-shadow: var(--bit-Chart-tooltip-shadow, #{$box-shadow-tooltip});");
         StringAssert.Contains(stylesheet, "font-family: var(--bit-Chart-font-family, #{$tg-font-family});");

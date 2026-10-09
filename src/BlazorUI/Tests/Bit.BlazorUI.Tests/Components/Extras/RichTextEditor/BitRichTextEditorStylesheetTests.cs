@@ -113,7 +113,7 @@ public partial class BitRichTextEditorStylesheetTests
         var stylesheet = ReadStylesheet();
 
         StringAssert.Contains(stylesheet, "$rte-focus: var(--bit-RichTextEditor-focus-color, #{$clr-pri-focus});");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-rte-btn {"), "@include focus-ring($rte-focus);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-rte-btn {"), "@include focus-ring-own($rte-focus-ring);");
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-rte-edt {"), "@include rte-inset-ring;");
     }
 
