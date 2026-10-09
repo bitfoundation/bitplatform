@@ -684,12 +684,13 @@
         // content is made to read as if it sat right after the trigger instead: Tab on the trigger goes into it,
         // Tab from its last element moves on to what follows the trigger in the page and reports it through the
         // OnTabOut callback so the popup closes, and Shift+Tab from its first element goes back to the trigger,
-        // leaving the popup open for the Tab that brings the user back in.
+        // leaving the popup open for the Tab that brings the user back in. Reports whether it was registered,
+        // which it is not for a popup that is not in the page.
         public static setupTabOut(elementId: string, triggerId: string, dotnetObj: DotNetObject) {
             Utils.disposeTabOut(elementId);
 
             const element = document.getElementById(elementId);
-            if (!element) return;
+            if (!element) return false;
 
             const controller = new AbortController();
 
@@ -736,7 +737,9 @@
                     Utils.focusTrigger(trigger);
                 }
 
-                dotnetObj.invokeMethodAsync('OnTabOut');
+                // The component may be disposed while the call is on its way - a navigation the Tab started - and
+                // the popup goes with it then, which is all the call was for.
+                dotnetObj.invokeMethodAsync('OnTabOut').catch(() => { });
             }, { signal: controller.signal });
 
             // The trigger's half of the same order: a Tab on it goes into the content rather than past it. The
@@ -747,6 +750,11 @@
             // that would leave it is taken: the one from its last control. A Tab from any other moves on to the
             // next control inside it, as it would without the popup open. A trigger with no controls inside it
             // is a control itself, and every Tab on it is the one that leaves it.
+            // The Tab is only taken while there is somewhere in the popup for it to go. A popup its component has
+            // already closed - the trigger saying so through aria-expanded before the hiding and this listener's
+            // release reach the page - or one that is hidden, or that holds nothing the focus can land on and is
+            // not focusable itself, would otherwise swallow the key: the focus would be sent to an element that
+            // cannot take it, and stay where it is.
             document.getElementById(triggerId)?.addEventListener('keydown', e => {
                 if (!isPlainTab(e) || e.shiftKey) return;
 
@@ -754,12 +762,19 @@
                 const inner = Array.from(trigger.querySelectorAll<HTMLElement>(Utils._focusables)).filter(Utils.isFocusable);
                 if (inner.length > 0 && e.target !== inner[inner.length - 1]) return;
 
+                if (trigger.getAttribute('aria-expanded') === 'false' || !Utils.isFocusable(element)) return;
+
+                const target = getFocusables()[0] ?? (element.hasAttribute('tabindex') ? element : null);
+                if (!target) return;
+
                 e.preventDefault();
 
-                (getFocusables()[0] ?? element).focus();
+                target.focus();
             }, { signal: controller.signal });
 
             Utils._tabOuts.set(elementId, controller);
+
+            return true;
         }
 
         private static _focusIns = new Map<string, AbortController>();

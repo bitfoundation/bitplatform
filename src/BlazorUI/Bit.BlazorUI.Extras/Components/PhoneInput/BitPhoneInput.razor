@@ -246,8 +246,12 @@
                     <label style="@Styles?.ResponsiveLabel" class="bit-phi-rlb @Classes?.ResponsiveLabel">@Label</label>
                 }
 
+                @* Out of the tab order: the list is driven from its search box, which is what a Tab from the
+                   country button goes into and Shift+Tab goes back from, and Escape is the keyboard's close. A
+                   button ahead of the search box would take that place without any of the list's keys. *@
                 <button @onclick="CloseCalloutAndRestoreFocus"
                         type="button"
+                        tabindex="-1"
                         title="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
                         aria-label="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
                         style="@Styles?.ResponsiveCloseButton"
