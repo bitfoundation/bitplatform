@@ -209,14 +209,16 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
             bitColorPicker.TakeFromCascade(nameof(DefaultInputsMode), DefaultInputsMode.Value, static c => c.DefaultInputsMode, static (c, v) => c.DefaultInputsMode = v);
         }
 
+        var ownEyeDropperIcon = bitColorPicker.HasSetAnyOf(nameof(EyeDropperIcon), nameof(EyeDropperIconName));
+
         if (EyeDropperIcon is not null)
         {
-            bitColorPicker.TakeFromCascade(nameof(EyeDropperIcon), EyeDropperIcon, static c => c.EyeDropperIcon, static (c, v) => c.EyeDropperIcon = v);
+            bitColorPicker.TakeFromCascade(nameof(EyeDropperIcon), EyeDropperIcon, static c => c.EyeDropperIcon, static (c, v) => c.EyeDropperIcon = v, outranked: ownEyeDropperIcon);
         }
 
         if (EyeDropperIconName.HasValue())
         {
-            bitColorPicker.TakeFromCascade(nameof(EyeDropperIconName), EyeDropperIconName, static c => c.EyeDropperIconName, static (c, v) => c.EyeDropperIconName = v);
+            bitColorPicker.TakeFromCascade(nameof(EyeDropperIconName), EyeDropperIconName, static c => c.EyeDropperIconName, static (c, v) => c.EyeDropperIconName = v, outranked: ownEyeDropperIcon);
         }
 
         if (Format.HasValue)
@@ -224,14 +226,16 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
             bitColorPicker.TakeFromCascade(nameof(Format), Format.Value, static c => c.Format, static (c, v) => c.Format = v);
         }
 
+        var ownInputsModeSwitchIcon = bitColorPicker.HasSetAnyOf(nameof(InputsModeSwitchIcon), nameof(InputsModeSwitchIconName));
+
         if (InputsModeSwitchIcon is not null)
         {
-            bitColorPicker.TakeFromCascade(nameof(InputsModeSwitchIcon), InputsModeSwitchIcon, static c => c.InputsModeSwitchIcon, static (c, v) => c.InputsModeSwitchIcon = v);
+            bitColorPicker.TakeFromCascade(nameof(InputsModeSwitchIcon), InputsModeSwitchIcon, static c => c.InputsModeSwitchIcon, static (c, v) => c.InputsModeSwitchIcon = v, outranked: ownInputsModeSwitchIcon);
         }
 
         if (InputsModeSwitchIconName.HasValue())
         {
-            bitColorPicker.TakeFromCascade(nameof(InputsModeSwitchIconName), InputsModeSwitchIconName, static c => c.InputsModeSwitchIconName, static (c, v) => c.InputsModeSwitchIconName = v);
+            bitColorPicker.TakeFromCascade(nameof(InputsModeSwitchIconName), InputsModeSwitchIconName, static c => c.InputsModeSwitchIconName, static (c, v) => c.InputsModeSwitchIconName = v, outranked: ownInputsModeSwitchIcon);
         }
 
         if (Label.HasValue())

@@ -245,14 +245,16 @@ public class BitBadgeParams : BitComponentBaseParams, IBitComponentParams
             bitBadge.TakeFromCascade(nameof(Href), Href, static b => b.Href, static (b, v) => b.Href = v);
         }
 
+        var ownIcon = bitBadge.HasSetAnyOf(nameof(Icon), nameof(IconName));
+
         if (Icon is not null)
         {
-            bitBadge.TakeFromCascade(nameof(Icon), Icon, static b => b.Icon, static (b, v) => b.Icon = v);
+            bitBadge.TakeFromCascade(nameof(Icon), Icon, static b => b.Icon, static (b, v) => b.Icon = v, outranked: ownIcon);
         }
 
         if (IconName.HasValue())
         {
-            bitBadge.TakeFromCascade(nameof(IconName), IconName, static b => b.IconName, static (b, v) => b.IconName = v);
+            bitBadge.TakeFromCascade(nameof(IconName), IconName, static b => b.IconName, static (b, v) => b.IconName = v, outranked: ownIcon);
         }
 
         if (Inline.HasValue)

@@ -267,14 +267,16 @@ public class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
             bitDropMenu.TakeFromCascade(nameof(Border), Border.Value, static d => d.Border, static (d, v) => d.Border = v);
         }
 
+        var ownChevronDownIcon = bitDropMenu.HasSetAnyOf(nameof(ChevronDownIcon), nameof(ChevronDownIconName));
+
         if (ChevronDownIcon is not null)
         {
-            bitDropMenu.TakeFromCascade(nameof(ChevronDownIcon), ChevronDownIcon, static d => d.ChevronDownIcon, static (d, v) => d.ChevronDownIcon = v);
+            bitDropMenu.TakeFromCascade(nameof(ChevronDownIcon), ChevronDownIcon, static d => d.ChevronDownIcon, static (d, v) => d.ChevronDownIcon = v, outranked: ownChevronDownIcon);
         }
 
         if (ChevronDownIconName.HasValue())
         {
-            bitDropMenu.TakeFromCascade(nameof(ChevronDownIconName), ChevronDownIconName, static d => d.ChevronDownIconName, static (d, v) => d.ChevronDownIconName = v);
+            bitDropMenu.TakeFromCascade(nameof(ChevronDownIconName), ChevronDownIconName, static d => d.ChevronDownIconName, static (d, v) => d.ChevronDownIconName = v, outranked: ownChevronDownIcon);
         }
 
         if (Classes is not null)
@@ -312,14 +314,16 @@ public class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
             bitDropMenu.TakeFromCascade(nameof(HoverOpenDelay), HoverOpenDelay.Value, static d => d.HoverOpenDelay, static (d, v) => d.HoverOpenDelay = v);
         }
 
+        var ownIcon = bitDropMenu.HasSetAnyOf(nameof(Icon), nameof(IconName));
+
         if (Icon is not null)
         {
-            bitDropMenu.TakeFromCascade(nameof(Icon), Icon, static d => d.Icon, static (d, v) => d.Icon = v);
+            bitDropMenu.TakeFromCascade(nameof(Icon), Icon, static d => d.Icon, static (d, v) => d.Icon = v, outranked: ownIcon);
         }
 
         if (IconName.HasValue())
         {
-            bitDropMenu.TakeFromCascade(nameof(IconName), IconName, static d => d.IconName, static (d, v) => d.IconName = v);
+            bitDropMenu.TakeFromCascade(nameof(IconName), IconName, static d => d.IconName, static (d, v) => d.IconName = v, outranked: ownIcon);
         }
 
         if (IsLoading.HasValue)

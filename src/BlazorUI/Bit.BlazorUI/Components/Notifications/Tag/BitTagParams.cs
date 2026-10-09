@@ -244,14 +244,16 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
             bitTag.TakeFromCascade(nameof(Color), Color.Value, static t => t.Color, static (t, v) => t.Color = v);
         }
 
+        var ownDismissIcon = bitTag.HasSetAnyOf(nameof(DismissIcon), nameof(DismissIconName));
+
         if (DismissIcon is not null)
         {
-            bitTag.TakeFromCascade(nameof(DismissIcon), DismissIcon, static t => t.DismissIcon, static (t, v) => t.DismissIcon = v);
+            bitTag.TakeFromCascade(nameof(DismissIcon), DismissIcon, static t => t.DismissIcon, static (t, v) => t.DismissIcon = v, outranked: ownDismissIcon);
         }
 
         if (DismissIconName.HasValue())
         {
-            bitTag.TakeFromCascade(nameof(DismissIconName), DismissIconName, static t => t.DismissIconName, static (t, v) => t.DismissIconName = v);
+            bitTag.TakeFromCascade(nameof(DismissIconName), DismissIconName, static t => t.DismissIconName, static (t, v) => t.DismissIconName = v, outranked: ownDismissIcon);
         }
 
         if (DismissLabel.HasValue())
@@ -279,9 +281,13 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
             bitTag.TakeFromCascade(nameof(HideSelectedIcon), HideSelectedIcon.Value, static t => t.HideSelectedIcon, static (t, v) => t.HideSelectedIcon = v);
         }
 
+        // Icon, IconName and IconUrl are one setting - which icon is shown - and the first of them set wins, so
+        // a component that picked its icon through any of them keeps it.
+        var ownIcon = bitTag.HasSetAnyOf(nameof(Icon), nameof(IconName), nameof(IconUrl));
+
         if (Icon is not null)
         {
-            bitTag.TakeFromCascade(nameof(Icon), Icon, static t => t.Icon, static (t, v) => t.Icon = v);
+            bitTag.TakeFromCascade(nameof(Icon), Icon, static t => t.Icon, static (t, v) => t.Icon = v, outranked: ownIcon);
         }
 
         if (IconAlt.HasValue())
@@ -291,12 +297,12 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
 
         if (IconName.HasValue())
         {
-            bitTag.TakeFromCascade(nameof(IconName), IconName, static t => t.IconName, static (t, v) => t.IconName = v);
+            bitTag.TakeFromCascade(nameof(IconName), IconName, static t => t.IconName, static (t, v) => t.IconName = v, outranked: ownIcon);
         }
 
         if (IconUrl.HasValue())
         {
-            bitTag.TakeFromCascade(nameof(IconUrl), IconUrl, static t => t.IconUrl, static (t, v) => t.IconUrl = v);
+            bitTag.TakeFromCascade(nameof(IconUrl), IconUrl, static t => t.IconUrl, static (t, v) => t.IconUrl = v, outranked: ownIcon);
         }
 
         // an empty hint is a value of its own - the one that takes the announcement off - so only null is
@@ -326,14 +332,16 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
             bitTag.TakeFromCascade(nameof(Reversed), Reversed.Value, static t => t.Reversed, static (t, v) => t.Reversed = v);
         }
 
+        var ownSecondaryIcon = bitTag.HasSetAnyOf(nameof(SecondaryIcon), nameof(SecondaryIconName));
+
         if (SecondaryIcon is not null)
         {
-            bitTag.TakeFromCascade(nameof(SecondaryIcon), SecondaryIcon, static t => t.SecondaryIcon, static (t, v) => t.SecondaryIcon = v);
+            bitTag.TakeFromCascade(nameof(SecondaryIcon), SecondaryIcon, static t => t.SecondaryIcon, static (t, v) => t.SecondaryIcon = v, outranked: ownSecondaryIcon);
         }
 
         if (SecondaryIconName.HasValue())
         {
-            bitTag.TakeFromCascade(nameof(SecondaryIconName), SecondaryIconName, static t => t.SecondaryIconName, static (t, v) => t.SecondaryIconName = v);
+            bitTag.TakeFromCascade(nameof(SecondaryIconName), SecondaryIconName, static t => t.SecondaryIconName, static (t, v) => t.SecondaryIconName = v, outranked: ownSecondaryIcon);
         }
 
         if (SecondaryText.HasValue())
@@ -341,14 +349,16 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
             bitTag.TakeFromCascade(nameof(SecondaryText), SecondaryText, static t => t.SecondaryText, static (t, v) => t.SecondaryText = v);
         }
 
+        var ownSelectedIcon = bitTag.HasSetAnyOf(nameof(SelectedIcon), nameof(SelectedIconName));
+
         if (SelectedIcon is not null)
         {
-            bitTag.TakeFromCascade(nameof(SelectedIcon), SelectedIcon, static t => t.SelectedIcon, static (t, v) => t.SelectedIcon = v);
+            bitTag.TakeFromCascade(nameof(SelectedIcon), SelectedIcon, static t => t.SelectedIcon, static (t, v) => t.SelectedIcon = v, outranked: ownSelectedIcon);
         }
 
         if (SelectedIconName.HasValue())
         {
-            bitTag.TakeFromCascade(nameof(SelectedIconName), SelectedIconName, static t => t.SelectedIconName, static (t, v) => t.SelectedIconName = v);
+            bitTag.TakeFromCascade(nameof(SelectedIconName), SelectedIconName, static t => t.SelectedIconName, static (t, v) => t.SelectedIconName = v, outranked: ownSelectedIcon);
         }
 
         if (Shape.HasValue)

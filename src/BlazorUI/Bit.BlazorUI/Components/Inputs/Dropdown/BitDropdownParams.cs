@@ -692,14 +692,16 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
             bitDropdown.TakeFromCascade(nameof(AutoSelectFirstMatch), AutoSelectFirstMatch.Value, static d => d.AutoSelectFirstMatch, static (d, v) => d.AutoSelectFirstMatch = v);
         }
 
+        var ownCaretDownIcon = bitDropdown.HasSetAnyOf(nameof(CaretDownIcon), nameof(CaretDownIconName));
+
         if (CaretDownIcon is not null)
         {
-            bitDropdown.TakeFromCascade(nameof(CaretDownIcon), CaretDownIcon, static d => d.CaretDownIcon, static (d, v) => d.CaretDownIcon = v);
+            bitDropdown.TakeFromCascade(nameof(CaretDownIcon), CaretDownIcon, static d => d.CaretDownIcon, static (d, v) => d.CaretDownIcon = v, outranked: ownCaretDownIcon);
         }
 
         if (CaretDownIconName.HasValue())
         {
-            bitDropdown.TakeFromCascade(nameof(CaretDownIconName), CaretDownIconName, static d => d.CaretDownIconName, static (d, v) => d.CaretDownIconName = v);
+            bitDropdown.TakeFromCascade(nameof(CaretDownIconName), CaretDownIconName, static d => d.CaretDownIconName, static (d, v) => d.CaretDownIconName = v, outranked: ownCaretDownIcon);
         }
 
         if (Chips.HasValue)
@@ -712,14 +714,16 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
             bitDropdown.TakeFromCascade(nameof(ChipsRemoveButtonAriaLabel), ChipsRemoveButtonAriaLabel, static d => d.ChipsRemoveButtonAriaLabel, static (d, v) => d.ChipsRemoveButtonAriaLabel = v);
         }
 
+        var ownChipsRemoveIcon = bitDropdown.HasSetAnyOf(nameof(ChipsRemoveIcon), nameof(ChipsRemoveIconName));
+
         if (ChipsRemoveIcon is not null)
         {
-            bitDropdown.TakeFromCascade(nameof(ChipsRemoveIcon), ChipsRemoveIcon, static d => d.ChipsRemoveIcon, static (d, v) => d.ChipsRemoveIcon = v);
+            bitDropdown.TakeFromCascade(nameof(ChipsRemoveIcon), ChipsRemoveIcon, static d => d.ChipsRemoveIcon, static (d, v) => d.ChipsRemoveIcon = v, outranked: ownChipsRemoveIcon);
         }
 
         if (ChipsRemoveIconName.HasValue())
         {
-            bitDropdown.TakeFromCascade(nameof(ChipsRemoveIconName), ChipsRemoveIconName, static d => d.ChipsRemoveIconName, static (d, v) => d.ChipsRemoveIconName = v);
+            bitDropdown.TakeFromCascade(nameof(ChipsRemoveIconName), ChipsRemoveIconName, static d => d.ChipsRemoveIconName, static (d, v) => d.ChipsRemoveIconName = v, outranked: ownChipsRemoveIcon);
         }
 
         if (Classes is not null)
@@ -732,14 +736,16 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
             bitDropdown.TakeFromCascade(nameof(ClearButtonAriaLabel), ClearButtonAriaLabel, static d => d.ClearButtonAriaLabel, static (d, v) => d.ClearButtonAriaLabel = v);
         }
 
+        var ownClearButtonIcon = bitDropdown.HasSetAnyOf(nameof(ClearButtonIcon), nameof(ClearButtonIconName));
+
         if (ClearButtonIcon is not null)
         {
-            bitDropdown.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static d => d.ClearButtonIcon, static (d, v) => d.ClearButtonIcon = v);
+            bitDropdown.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static d => d.ClearButtonIcon, static (d, v) => d.ClearButtonIcon = v, outranked: ownClearButtonIcon);
         }
 
         if (ClearButtonIconName.HasValue())
         {
-            bitDropdown.TakeFromCascade(nameof(ClearButtonIconName), ClearButtonIconName, static d => d.ClearButtonIconName, static (d, v) => d.ClearButtonIconName = v);
+            bitDropdown.TakeFromCascade(nameof(ClearButtonIconName), ClearButtonIconName, static d => d.ClearButtonIconName, static (d, v) => d.ClearButtonIconName = v, outranked: ownClearButtonIcon);
         }
 
         if (ClearOnEscape.HasValue)
@@ -767,14 +773,16 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
             bitDropdown.TakeFromCascade(nameof(ComboBoxAddButtonAriaLabel), ComboBoxAddButtonAriaLabel, static d => d.ComboBoxAddButtonAriaLabel, static (d, v) => d.ComboBoxAddButtonAriaLabel = v);
         }
 
+        var ownComboBoxAddButtonIcon = bitDropdown.HasSetAnyOf(nameof(ComboBoxAddButtonIcon), nameof(ComboBoxAddButtonIconName));
+
         if (ComboBoxAddButtonIcon is not null)
         {
-            bitDropdown.TakeFromCascade(nameof(ComboBoxAddButtonIcon), ComboBoxAddButtonIcon, static d => d.ComboBoxAddButtonIcon, static (d, v) => d.ComboBoxAddButtonIcon = v);
+            bitDropdown.TakeFromCascade(nameof(ComboBoxAddButtonIcon), ComboBoxAddButtonIcon, static d => d.ComboBoxAddButtonIcon, static (d, v) => d.ComboBoxAddButtonIcon = v, outranked: ownComboBoxAddButtonIcon);
         }
 
         if (ComboBoxAddButtonIconName.HasValue())
         {
-            bitDropdown.TakeFromCascade(nameof(ComboBoxAddButtonIconName), ComboBoxAddButtonIconName, static d => d.ComboBoxAddButtonIconName, static (d, v) => d.ComboBoxAddButtonIconName = v);
+            bitDropdown.TakeFromCascade(nameof(ComboBoxAddButtonIconName), ComboBoxAddButtonIconName, static d => d.ComboBoxAddButtonIconName, static (d, v) => d.ComboBoxAddButtonIconName = v, outranked: ownComboBoxAddButtonIcon);
         }
 
         if (DebounceTime.HasValue)
@@ -847,14 +855,16 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
             bitDropdown.TakeFromCascade(nameof(IsLoading), IsLoading.Value, static d => d.IsLoading, static (d, v) => d.IsLoading = v);
         }
 
+        var ownItemCheckIcon = bitDropdown.HasSetAnyOf(nameof(ItemCheckIcon), nameof(ItemCheckIconName));
+
         if (ItemCheckIcon is not null)
         {
-            bitDropdown.TakeFromCascade(nameof(ItemCheckIcon), ItemCheckIcon, static d => d.ItemCheckIcon, static (d, v) => d.ItemCheckIcon = v);
+            bitDropdown.TakeFromCascade(nameof(ItemCheckIcon), ItemCheckIcon, static d => d.ItemCheckIcon, static (d, v) => d.ItemCheckIcon = v, outranked: ownItemCheckIcon);
         }
 
         if (ItemCheckIconName.HasValue())
         {
-            bitDropdown.TakeFromCascade(nameof(ItemCheckIconName), ItemCheckIconName, static d => d.ItemCheckIconName, static (d, v) => d.ItemCheckIconName = v);
+            bitDropdown.TakeFromCascade(nameof(ItemCheckIconName), ItemCheckIconName, static d => d.ItemCheckIconName, static (d, v) => d.ItemCheckIconName = v, outranked: ownItemCheckIcon);
         }
 
         if (Items is not null)
@@ -992,14 +1002,16 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
             bitDropdown.TakeFromCascade(nameof(ResponsiveCloseButtonAriaLabel), ResponsiveCloseButtonAriaLabel, static d => d.ResponsiveCloseButtonAriaLabel, static (d, v) => d.ResponsiveCloseButtonAriaLabel = v);
         }
 
+        var ownResponsiveCloseIcon = bitDropdown.HasSetAnyOf(nameof(ResponsiveCloseIcon), nameof(ResponsiveCloseIconName));
+
         if (ResponsiveCloseIcon is not null)
         {
-            bitDropdown.TakeFromCascade(nameof(ResponsiveCloseIcon), ResponsiveCloseIcon, static d => d.ResponsiveCloseIcon, static (d, v) => d.ResponsiveCloseIcon = v);
+            bitDropdown.TakeFromCascade(nameof(ResponsiveCloseIcon), ResponsiveCloseIcon, static d => d.ResponsiveCloseIcon, static (d, v) => d.ResponsiveCloseIcon = v, outranked: ownResponsiveCloseIcon);
         }
 
         if (ResponsiveCloseIconName.HasValue())
         {
-            bitDropdown.TakeFromCascade(nameof(ResponsiveCloseIconName), ResponsiveCloseIconName, static d => d.ResponsiveCloseIconName, static (d, v) => d.ResponsiveCloseIconName = v);
+            bitDropdown.TakeFromCascade(nameof(ResponsiveCloseIconName), ResponsiveCloseIconName, static d => d.ResponsiveCloseIconName, static (d, v) => d.ResponsiveCloseIconName = v, outranked: ownResponsiveCloseIcon);
         }
 
         if (SearchBoxAriaLabel.HasValue())
@@ -1012,24 +1024,28 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
             bitDropdown.TakeFromCascade(nameof(SearchBoxClearButtonAriaLabel), SearchBoxClearButtonAriaLabel, static d => d.SearchBoxClearButtonAriaLabel, static (d, v) => d.SearchBoxClearButtonAriaLabel = v);
         }
 
+        var ownSearchBoxClearIcon = bitDropdown.HasSetAnyOf(nameof(SearchBoxClearIcon), nameof(SearchBoxClearIconName));
+
         if (SearchBoxClearIcon is not null)
         {
-            bitDropdown.TakeFromCascade(nameof(SearchBoxClearIcon), SearchBoxClearIcon, static d => d.SearchBoxClearIcon, static (d, v) => d.SearchBoxClearIcon = v);
+            bitDropdown.TakeFromCascade(nameof(SearchBoxClearIcon), SearchBoxClearIcon, static d => d.SearchBoxClearIcon, static (d, v) => d.SearchBoxClearIcon = v, outranked: ownSearchBoxClearIcon);
         }
 
         if (SearchBoxClearIconName.HasValue())
         {
-            bitDropdown.TakeFromCascade(nameof(SearchBoxClearIconName), SearchBoxClearIconName, static d => d.SearchBoxClearIconName, static (d, v) => d.SearchBoxClearIconName = v);
+            bitDropdown.TakeFromCascade(nameof(SearchBoxClearIconName), SearchBoxClearIconName, static d => d.SearchBoxClearIconName, static (d, v) => d.SearchBoxClearIconName = v, outranked: ownSearchBoxClearIcon);
         }
+
+        var ownSearchBoxIcon = bitDropdown.HasSetAnyOf(nameof(SearchBoxIcon), nameof(SearchBoxIconName));
 
         if (SearchBoxIcon is not null)
         {
-            bitDropdown.TakeFromCascade(nameof(SearchBoxIcon), SearchBoxIcon, static d => d.SearchBoxIcon, static (d, v) => d.SearchBoxIcon = v);
+            bitDropdown.TakeFromCascade(nameof(SearchBoxIcon), SearchBoxIcon, static d => d.SearchBoxIcon, static (d, v) => d.SearchBoxIcon = v, outranked: ownSearchBoxIcon);
         }
 
         if (SearchBoxIconName.HasValue())
         {
-            bitDropdown.TakeFromCascade(nameof(SearchBoxIconName), SearchBoxIconName, static d => d.SearchBoxIconName, static (d, v) => d.SearchBoxIconName = v);
+            bitDropdown.TakeFromCascade(nameof(SearchBoxIconName), SearchBoxIconName, static d => d.SearchBoxIconName, static (d, v) => d.SearchBoxIconName = v, outranked: ownSearchBoxIcon);
         }
 
         if (SearchBoxPlaceholder.HasValue())

@@ -195,14 +195,16 @@ public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
             bitBreadcrumb.TakeFromCascade(nameof(Color), Color.Value, static b => b.Color, static (b, v) => b.Color = v);
         }
 
+        var ownDividerIcon = bitBreadcrumb.HasSetAnyOf(nameof(DividerIcon), nameof(DividerIconName));
+
         if (DividerIcon is not null)
         {
-            bitBreadcrumb.TakeFromCascade(nameof(DividerIcon), DividerIcon, static b => b.DividerIcon, static (b, v) => b.DividerIcon = v);
+            bitBreadcrumb.TakeFromCascade(nameof(DividerIcon), DividerIcon, static b => b.DividerIcon, static (b, v) => b.DividerIcon = v, outranked: ownDividerIcon);
         }
 
         if (DividerIconName.HasValue())
         {
-            bitBreadcrumb.TakeFromCascade(nameof(DividerIconName), DividerIconName, static b => b.DividerIconName, static (b, v) => b.DividerIconName = v);
+            bitBreadcrumb.TakeFromCascade(nameof(DividerIconName), DividerIconName, static b => b.DividerIconName, static (b, v) => b.DividerIconName = v, outranked: ownDividerIcon);
         }
 
         if (DividerIconTemplate is not null)
@@ -252,14 +254,16 @@ public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
             bitBreadcrumb.TakeFromCascade(nameof(OverflowAriaLabel), OverflowAriaLabel, static b => b.OverflowAriaLabel, static (b, v) => b.OverflowAriaLabel = v);
         }
 
+        var ownOverflowIcon = bitBreadcrumb.HasSetAnyOf(nameof(OverflowIcon), nameof(OverflowIconName));
+
         if (OverflowIcon is not null)
         {
-            bitBreadcrumb.TakeFromCascade(nameof(OverflowIcon), OverflowIcon, static b => b.OverflowIcon, static (b, v) => b.OverflowIcon = v);
+            bitBreadcrumb.TakeFromCascade(nameof(OverflowIcon), OverflowIcon, static b => b.OverflowIcon, static (b, v) => b.OverflowIcon = v, outranked: ownOverflowIcon);
         }
 
         if (OverflowIconName.HasValue())
         {
-            bitBreadcrumb.TakeFromCascade(nameof(OverflowIconName), OverflowIconName, static b => b.OverflowIconName, static (b, v) => b.OverflowIconName = v);
+            bitBreadcrumb.TakeFromCascade(nameof(OverflowIconName), OverflowIconName, static b => b.OverflowIconName, static (b, v) => b.OverflowIconName = v, outranked: ownOverflowIcon);
         }
 
         if (OverflowIconTemplate is not null)

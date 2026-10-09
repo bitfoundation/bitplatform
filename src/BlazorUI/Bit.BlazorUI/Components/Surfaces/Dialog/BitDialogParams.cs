@@ -263,33 +263,16 @@ public class BitDialogParams : BitComponentBaseParams, IBitComponentParams
             bitDialog.TakeFromCascade(nameof(CloseButtonTitle), CloseButtonTitle, static d => d.CloseButtonTitle, static (d, v) => d.CloseButtonTitle = v);
         }
 
-        // The two are one setting - which icon the close button shows - and CloseIcon wins over CloseIconName,
-        // so a Dialog that picked its icon through either of them keeps it: a cascaded CloseIcon filled in beside
-        // a CloseIconName of its own would otherwise replace the icon the Dialog asked for.
-        var ownCloseIcon = bitDialog.HasNotBeenSet(nameof(CloseIcon)) is false || bitDialog.HasNotBeenSet(nameof(CloseIconName)) is false;
+        var ownCloseIcon = bitDialog.HasSetAnyOf(nameof(CloseIcon), nameof(CloseIconName));
 
         if (CloseIcon is not null)
         {
-            if (ownCloseIcon is false)
-            {
-                bitDialog.TakeFromCascade(nameof(CloseIcon), CloseIcon, static d => d.CloseIcon, static (d, v) => d.CloseIcon = v);
-            }
-            else
-            {
-                bitDialog.ReleaseFromCascade(nameof(CloseIcon));
-            }
+            bitDialog.TakeFromCascade(nameof(CloseIcon), CloseIcon, static d => d.CloseIcon, static (d, v) => d.CloseIcon = v, outranked: ownCloseIcon);
         }
 
         if (CloseIconName.HasValue())
         {
-            if (ownCloseIcon is false)
-            {
-                bitDialog.TakeFromCascade(nameof(CloseIconName), CloseIconName, static d => d.CloseIconName, static (d, v) => d.CloseIconName = v);
-            }
-            else
-            {
-                bitDialog.ReleaseFromCascade(nameof(CloseIconName));
-            }
+            bitDialog.TakeFromCascade(nameof(CloseIconName), CloseIconName, static d => d.CloseIconName, static (d, v) => d.CloseIconName = v, outranked: ownCloseIcon);
         }
 
         if (CloseOnEscape.HasValue)

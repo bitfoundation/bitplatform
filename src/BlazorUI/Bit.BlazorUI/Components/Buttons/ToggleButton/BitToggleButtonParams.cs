@@ -341,14 +341,16 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
             bitToggleButton.TakeFromCascade(nameof(AutoLoading), AutoLoading.Value, static t => t.AutoLoading, static (t, v) => t.AutoLoading = v);
         }
 
+        var ownCheckMarkIcon = bitToggleButton.HasSetAnyOf(nameof(CheckMarkIcon), nameof(CheckMarkIconName));
+
         if (CheckMarkIcon is not null)
         {
-            bitToggleButton.TakeFromCascade(nameof(CheckMarkIcon), CheckMarkIcon, static t => t.CheckMarkIcon, static (t, v) => t.CheckMarkIcon = v);
+            bitToggleButton.TakeFromCascade(nameof(CheckMarkIcon), CheckMarkIcon, static t => t.CheckMarkIcon, static (t, v) => t.CheckMarkIcon = v, outranked: ownCheckMarkIcon);
         }
 
         if (CheckMarkIconName.HasValue())
         {
-            bitToggleButton.TakeFromCascade(nameof(CheckMarkIconName), CheckMarkIconName, static t => t.CheckMarkIconName, static (t, v) => t.CheckMarkIconName = v);
+            bitToggleButton.TakeFromCascade(nameof(CheckMarkIconName), CheckMarkIconName, static t => t.CheckMarkIconName, static (t, v) => t.CheckMarkIconName = v, outranked: ownCheckMarkIcon);
         }
 
         if (Classes is not null)
@@ -381,14 +383,16 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
             bitToggleButton.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static t => t.FullWidth, static (t, v) => t.FullWidth = v);
         }
 
+        var ownIcon = bitToggleButton.HasSetAnyOf(nameof(Icon), nameof(IconName));
+
         if (Icon is not null)
         {
-            bitToggleButton.TakeFromCascade(nameof(Icon), Icon, static t => t.Icon, static (t, v) => t.Icon = v);
+            bitToggleButton.TakeFromCascade(nameof(Icon), Icon, static t => t.Icon, static (t, v) => t.Icon = v, outranked: ownIcon);
         }
 
         if (IconName.HasValue())
         {
-            bitToggleButton.TakeFromCascade(nameof(IconName), IconName, static t => t.IconName, static (t, v) => t.IconName = v);
+            bitToggleButton.TakeFromCascade(nameof(IconName), IconName, static t => t.IconName, static (t, v) => t.IconName = v, outranked: ownIcon);
         }
 
         if (IconOnly.HasValue)
@@ -436,14 +440,16 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
             bitToggleButton.TakeFromCascade(nameof(OffColor), OffColor.Value, static t => t.OffColor, static (t, v) => t.OffColor = v);
         }
 
+        var ownOffIcon = bitToggleButton.HasSetAnyOf(nameof(OffIcon), nameof(OffIconName));
+
         if (OffIcon is not null)
         {
-            bitToggleButton.TakeFromCascade(nameof(OffIcon), OffIcon, static t => t.OffIcon, static (t, v) => t.OffIcon = v);
+            bitToggleButton.TakeFromCascade(nameof(OffIcon), OffIcon, static t => t.OffIcon, static (t, v) => t.OffIcon = v, outranked: ownOffIcon);
         }
 
         if (OffIconName.HasValue())
         {
-            bitToggleButton.TakeFromCascade(nameof(OffIconName), OffIconName, static t => t.OffIconName, static (t, v) => t.OffIconName = v);
+            bitToggleButton.TakeFromCascade(nameof(OffIconName), OffIconName, static t => t.OffIconName, static (t, v) => t.OffIconName = v, outranked: ownOffIcon);
         }
 
         if (OffText.HasValue())
@@ -471,14 +477,16 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
             bitToggleButton.TakeFromCascade(nameof(OnColor), OnColor.Value, static t => t.OnColor, static (t, v) => t.OnColor = v);
         }
 
+        var ownOnIcon = bitToggleButton.HasSetAnyOf(nameof(OnIcon), nameof(OnIconName));
+
         if (OnIcon is not null)
         {
-            bitToggleButton.TakeFromCascade(nameof(OnIcon), OnIcon, static t => t.OnIcon, static (t, v) => t.OnIcon = v);
+            bitToggleButton.TakeFromCascade(nameof(OnIcon), OnIcon, static t => t.OnIcon, static (t, v) => t.OnIcon = v, outranked: ownOnIcon);
         }
 
         if (OnIconName.HasValue())
         {
-            bitToggleButton.TakeFromCascade(nameof(OnIconName), OnIconName, static t => t.OnIconName, static (t, v) => t.OnIconName = v);
+            bitToggleButton.TakeFromCascade(nameof(OnIconName), OnIconName, static t => t.OnIconName, static (t, v) => t.OnIconName = v, outranked: ownOnIcon);
         }
 
         if (OnText.HasValue())

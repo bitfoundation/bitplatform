@@ -383,14 +383,16 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
             bitTimePicker.TakeFromCascade(nameof(Classes), Classes, static t => t.Classes, static (t, v) => t.Classes = v);
         }
 
+        var ownClearButtonIcon = bitTimePicker.HasSetAnyOf(nameof(ClearButtonIcon), nameof(ClearButtonIconName));
+
         if (ClearButtonIcon is not null)
         {
-            bitTimePicker.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static t => t.ClearButtonIcon, static (t, v) => t.ClearButtonIcon = v);
+            bitTimePicker.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static t => t.ClearButtonIcon, static (t, v) => t.ClearButtonIcon = v, outranked: ownClearButtonIcon);
         }
 
         if (ClearButtonIconName.HasValue())
         {
-            bitTimePicker.TakeFromCascade(nameof(ClearButtonIconName), ClearButtonIconName, static t => t.ClearButtonIconName, static (t, v) => t.ClearButtonIconName = v);
+            bitTimePicker.TakeFromCascade(nameof(ClearButtonIconName), ClearButtonIconName, static t => t.ClearButtonIconName, static (t, v) => t.ClearButtonIconName = v, outranked: ownClearButtonIcon);
         }
 
         if (ClearButtonText.HasValue())
@@ -403,14 +405,16 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
             bitTimePicker.TakeFromCascade(nameof(ClearButtonTitle), ClearButtonTitle!, static t => t.ClearButtonTitle, static (t, v) => t.ClearButtonTitle = v);
         }
 
+        var ownCloseButtonIcon = bitTimePicker.HasSetAnyOf(nameof(CloseButtonIcon), nameof(CloseButtonIconName));
+
         if (CloseButtonIcon is not null)
         {
-            bitTimePicker.TakeFromCascade(nameof(CloseButtonIcon), CloseButtonIcon, static t => t.CloseButtonIcon, static (t, v) => t.CloseButtonIcon = v);
+            bitTimePicker.TakeFromCascade(nameof(CloseButtonIcon), CloseButtonIcon, static t => t.CloseButtonIcon, static (t, v) => t.CloseButtonIcon = v, outranked: ownCloseButtonIcon);
         }
 
         if (CloseButtonIconName.HasValue())
         {
-            bitTimePicker.TakeFromCascade(nameof(CloseButtonIconName), CloseButtonIconName, static t => t.CloseButtonIconName, static (t, v) => t.CloseButtonIconName = v);
+            bitTimePicker.TakeFromCascade(nameof(CloseButtonIconName), CloseButtonIconName, static t => t.CloseButtonIconName, static (t, v) => t.CloseButtonIconName = v, outranked: ownCloseButtonIcon);
         }
 
         if (CloseButtonTitle.HasValue())
@@ -438,14 +442,16 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
             bitTimePicker.TakeFromCascade(nameof(Culture), Culture, static t => t.Culture, static (t, v) => t.Culture = v);
         }
 
+        var ownDecreaseHourIcon = bitTimePicker.HasSetAnyOf(nameof(DecreaseHourIcon), nameof(DecreaseHourIconName));
+
         if (DecreaseHourIcon is not null)
         {
-            bitTimePicker.TakeFromCascade(nameof(DecreaseHourIcon), DecreaseHourIcon, static t => t.DecreaseHourIcon, static (t, v) => t.DecreaseHourIcon = v);
+            bitTimePicker.TakeFromCascade(nameof(DecreaseHourIcon), DecreaseHourIcon, static t => t.DecreaseHourIcon, static (t, v) => t.DecreaseHourIcon = v, outranked: ownDecreaseHourIcon);
         }
 
         if (DecreaseHourIconName.HasValue())
         {
-            bitTimePicker.TakeFromCascade(nameof(DecreaseHourIconName), DecreaseHourIconName, static t => t.DecreaseHourIconName, static (t, v) => t.DecreaseHourIconName = v);
+            bitTimePicker.TakeFromCascade(nameof(DecreaseHourIconName), DecreaseHourIconName, static t => t.DecreaseHourIconName, static (t, v) => t.DecreaseHourIconName = v, outranked: ownDecreaseHourIcon);
         }
 
         if (DecreaseHourTitle.HasValue())
@@ -453,14 +459,16 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
             bitTimePicker.TakeFromCascade(nameof(DecreaseHourTitle), DecreaseHourTitle!, static t => t.DecreaseHourTitle, static (t, v) => t.DecreaseHourTitle = v);
         }
 
+        var ownDecreaseMinuteIcon = bitTimePicker.HasSetAnyOf(nameof(DecreaseMinuteIcon), nameof(DecreaseMinuteIconName));
+
         if (DecreaseMinuteIcon is not null)
         {
-            bitTimePicker.TakeFromCascade(nameof(DecreaseMinuteIcon), DecreaseMinuteIcon, static t => t.DecreaseMinuteIcon, static (t, v) => t.DecreaseMinuteIcon = v);
+            bitTimePicker.TakeFromCascade(nameof(DecreaseMinuteIcon), DecreaseMinuteIcon, static t => t.DecreaseMinuteIcon, static (t, v) => t.DecreaseMinuteIcon = v, outranked: ownDecreaseMinuteIcon);
         }
 
         if (DecreaseMinuteIconName.HasValue())
         {
-            bitTimePicker.TakeFromCascade(nameof(DecreaseMinuteIconName), DecreaseMinuteIconName, static t => t.DecreaseMinuteIconName, static (t, v) => t.DecreaseMinuteIconName = v);
+            bitTimePicker.TakeFromCascade(nameof(DecreaseMinuteIconName), DecreaseMinuteIconName, static t => t.DecreaseMinuteIconName, static (t, v) => t.DecreaseMinuteIconName = v, outranked: ownDecreaseMinuteIcon);
         }
 
         if (DecreaseMinuteTitle.HasValue())
@@ -468,14 +476,16 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
             bitTimePicker.TakeFromCascade(nameof(DecreaseMinuteTitle), DecreaseMinuteTitle!, static t => t.DecreaseMinuteTitle, static (t, v) => t.DecreaseMinuteTitle = v);
         }
 
+        var ownDecreaseSecondIcon = bitTimePicker.HasSetAnyOf(nameof(DecreaseSecondIcon), nameof(DecreaseSecondIconName));
+
         if (DecreaseSecondIcon is not null)
         {
-            bitTimePicker.TakeFromCascade(nameof(DecreaseSecondIcon), DecreaseSecondIcon, static t => t.DecreaseSecondIcon, static (t, v) => t.DecreaseSecondIcon = v);
+            bitTimePicker.TakeFromCascade(nameof(DecreaseSecondIcon), DecreaseSecondIcon, static t => t.DecreaseSecondIcon, static (t, v) => t.DecreaseSecondIcon = v, outranked: ownDecreaseSecondIcon);
         }
 
         if (DecreaseSecondIconName.HasValue())
         {
-            bitTimePicker.TakeFromCascade(nameof(DecreaseSecondIconName), DecreaseSecondIconName, static t => t.DecreaseSecondIconName, static (t, v) => t.DecreaseSecondIconName = v);
+            bitTimePicker.TakeFromCascade(nameof(DecreaseSecondIconName), DecreaseSecondIconName, static t => t.DecreaseSecondIconName, static (t, v) => t.DecreaseSecondIconName = v, outranked: ownDecreaseSecondIcon);
         }
 
         if (DecreaseSecondTitle.HasValue())
@@ -528,14 +538,16 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
             bitTimePicker.TakeFromCascade(nameof(HourStep), HourStep.Value, static t => t.HourStep, static (t, v) => t.HourStep = v);
         }
 
+        var ownIcon = bitTimePicker.HasSetAnyOf(nameof(Icon), nameof(IconName));
+
         if (Icon is not null)
         {
-            bitTimePicker.TakeFromCascade(nameof(Icon), Icon, static t => t.Icon, static (t, v) => t.Icon = v);
+            bitTimePicker.TakeFromCascade(nameof(Icon), Icon, static t => t.Icon, static (t, v) => t.Icon = v, outranked: ownIcon);
         }
 
         if (IconName.HasValue())
         {
-            bitTimePicker.TakeFromCascade(nameof(IconName), IconName, static t => t.IconName, static (t, v) => t.IconName = v);
+            bitTimePicker.TakeFromCascade(nameof(IconName), IconName, static t => t.IconName, static (t, v) => t.IconName = v, outranked: ownIcon);
         }
 
         if (IconPlacement.HasValue)
@@ -548,14 +560,16 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
             bitTimePicker.TakeFromCascade(nameof(IconTemplate), IconTemplate, static t => t.IconTemplate, static (t, v) => t.IconTemplate = v);
         }
 
+        var ownIncreaseHourIcon = bitTimePicker.HasSetAnyOf(nameof(IncreaseHourIcon), nameof(IncreaseHourIconName));
+
         if (IncreaseHourIcon is not null)
         {
-            bitTimePicker.TakeFromCascade(nameof(IncreaseHourIcon), IncreaseHourIcon, static t => t.IncreaseHourIcon, static (t, v) => t.IncreaseHourIcon = v);
+            bitTimePicker.TakeFromCascade(nameof(IncreaseHourIcon), IncreaseHourIcon, static t => t.IncreaseHourIcon, static (t, v) => t.IncreaseHourIcon = v, outranked: ownIncreaseHourIcon);
         }
 
         if (IncreaseHourIconName.HasValue())
         {
-            bitTimePicker.TakeFromCascade(nameof(IncreaseHourIconName), IncreaseHourIconName, static t => t.IncreaseHourIconName, static (t, v) => t.IncreaseHourIconName = v);
+            bitTimePicker.TakeFromCascade(nameof(IncreaseHourIconName), IncreaseHourIconName, static t => t.IncreaseHourIconName, static (t, v) => t.IncreaseHourIconName = v, outranked: ownIncreaseHourIcon);
         }
 
         if (IncreaseHourTitle.HasValue())
@@ -563,14 +577,16 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
             bitTimePicker.TakeFromCascade(nameof(IncreaseHourTitle), IncreaseHourTitle!, static t => t.IncreaseHourTitle, static (t, v) => t.IncreaseHourTitle = v);
         }
 
+        var ownIncreaseMinuteIcon = bitTimePicker.HasSetAnyOf(nameof(IncreaseMinuteIcon), nameof(IncreaseMinuteIconName));
+
         if (IncreaseMinuteIcon is not null)
         {
-            bitTimePicker.TakeFromCascade(nameof(IncreaseMinuteIcon), IncreaseMinuteIcon, static t => t.IncreaseMinuteIcon, static (t, v) => t.IncreaseMinuteIcon = v);
+            bitTimePicker.TakeFromCascade(nameof(IncreaseMinuteIcon), IncreaseMinuteIcon, static t => t.IncreaseMinuteIcon, static (t, v) => t.IncreaseMinuteIcon = v, outranked: ownIncreaseMinuteIcon);
         }
 
         if (IncreaseMinuteIconName.HasValue())
         {
-            bitTimePicker.TakeFromCascade(nameof(IncreaseMinuteIconName), IncreaseMinuteIconName, static t => t.IncreaseMinuteIconName, static (t, v) => t.IncreaseMinuteIconName = v);
+            bitTimePicker.TakeFromCascade(nameof(IncreaseMinuteIconName), IncreaseMinuteIconName, static t => t.IncreaseMinuteIconName, static (t, v) => t.IncreaseMinuteIconName = v, outranked: ownIncreaseMinuteIcon);
         }
 
         if (IncreaseMinuteTitle.HasValue())
@@ -578,14 +594,16 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
             bitTimePicker.TakeFromCascade(nameof(IncreaseMinuteTitle), IncreaseMinuteTitle!, static t => t.IncreaseMinuteTitle, static (t, v) => t.IncreaseMinuteTitle = v);
         }
 
+        var ownIncreaseSecondIcon = bitTimePicker.HasSetAnyOf(nameof(IncreaseSecondIcon), nameof(IncreaseSecondIconName));
+
         if (IncreaseSecondIcon is not null)
         {
-            bitTimePicker.TakeFromCascade(nameof(IncreaseSecondIcon), IncreaseSecondIcon, static t => t.IncreaseSecondIcon, static (t, v) => t.IncreaseSecondIcon = v);
+            bitTimePicker.TakeFromCascade(nameof(IncreaseSecondIcon), IncreaseSecondIcon, static t => t.IncreaseSecondIcon, static (t, v) => t.IncreaseSecondIcon = v, outranked: ownIncreaseSecondIcon);
         }
 
         if (IncreaseSecondIconName.HasValue())
         {
-            bitTimePicker.TakeFromCascade(nameof(IncreaseSecondIconName), IncreaseSecondIconName, static t => t.IncreaseSecondIconName, static (t, v) => t.IncreaseSecondIconName = v);
+            bitTimePicker.TakeFromCascade(nameof(IncreaseSecondIconName), IncreaseSecondIconName, static t => t.IncreaseSecondIconName, static (t, v) => t.IncreaseSecondIconName = v, outranked: ownIncreaseSecondIcon);
         }
 
         if (IncreaseSecondTitle.HasValue())

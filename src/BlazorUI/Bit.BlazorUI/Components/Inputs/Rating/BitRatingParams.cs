@@ -287,14 +287,16 @@ public class BitRatingParams : BitInputBaseParams<double>, IBitComponentParams
             bitRating.TakeFromCascade(nameof(Precision), Precision.Value, static r => r.Precision, static (r, v) => r.Precision = v);
         }
 
+        var ownSelectedIcon = bitRating.HasSetAnyOf(nameof(SelectedIcon), nameof(SelectedIconName));
+
         if (SelectedIcon is not null)
         {
-            bitRating.TakeFromCascade(nameof(SelectedIcon), SelectedIcon, static r => r.SelectedIcon, static (r, v) => r.SelectedIcon = v);
+            bitRating.TakeFromCascade(nameof(SelectedIcon), SelectedIcon, static r => r.SelectedIcon, static (r, v) => r.SelectedIcon = v, outranked: ownSelectedIcon);
         }
 
         if (SelectedIconName.HasValue())
         {
-            bitRating.TakeFromCascade(nameof(SelectedIconName), SelectedIconName, static r => r.SelectedIconName, static (r, v) => r.SelectedIconName = v);
+            bitRating.TakeFromCascade(nameof(SelectedIconName), SelectedIconName, static r => r.SelectedIconName, static (r, v) => r.SelectedIconName = v, outranked: ownSelectedIcon);
         }
 
         if (Size.HasValue)
@@ -307,14 +309,16 @@ public class BitRatingParams : BitInputBaseParams<double>, IBitComponentParams
             bitRating.TakeFromCascade(nameof(Styles), Styles, static r => r.Styles, static (r, v) => r.Styles = v);
         }
 
+        var ownUnselectedIcon = bitRating.HasSetAnyOf(nameof(UnselectedIcon), nameof(UnselectedIconName));
+
         if (UnselectedIcon is not null)
         {
-            bitRating.TakeFromCascade(nameof(UnselectedIcon), UnselectedIcon, static r => r.UnselectedIcon, static (r, v) => r.UnselectedIcon = v);
+            bitRating.TakeFromCascade(nameof(UnselectedIcon), UnselectedIcon, static r => r.UnselectedIcon, static (r, v) => r.UnselectedIcon = v, outranked: ownUnselectedIcon);
         }
 
         if (UnselectedIconName.HasValue())
         {
-            bitRating.TakeFromCascade(nameof(UnselectedIconName), UnselectedIconName, static r => r.UnselectedIconName, static (r, v) => r.UnselectedIconName = v);
+            bitRating.TakeFromCascade(nameof(UnselectedIconName), UnselectedIconName, static r => r.UnselectedIconName, static (r, v) => r.UnselectedIconName = v, outranked: ownUnselectedIcon);
         }
 
         if (ValueTextFormat.HasValue())

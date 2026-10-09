@@ -600,6 +600,20 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IBitCascadeTarget, ID
     /// </summary>
     internal bool HasNotBeenSet(string name) => _setByMarkup.Contains(name) is false;
 
+    /// <summary>
+    /// Puts back the value the named parameter held before the params object wrote it, while the params object still
+    /// supplies it but the boundary has set something that outranks it. The value stays recorded, so the parameter is
+    /// restored again once the params object stops supplying it.
+    /// </summary>
+    internal void ReleaseCascadeParameter(string name)
+    {
+        if (_setByMarkup.Contains(name)) return;
+
+        if (_cascadeTracker is null || _cascadeTracker.TryGetOriginal(name, out var original) is false) return;
+
+        BitCascadeMap.For(GetType())?.Parameters.GetValueOrDefault(name)?.SetOnComponent(this, original);
+    }
+
     bool IBitCascadeTarget.IsSetByMarkup(string name) => _setByMarkup.Contains(name);
 
     BitDir? IBitCascadeTarget.OwnDir

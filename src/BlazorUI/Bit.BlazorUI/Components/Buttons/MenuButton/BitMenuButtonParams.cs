@@ -319,14 +319,16 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
             bitMenuButton.TakeFromCascade(nameof(ButtonType), ButtonType.Value, static m => m.ButtonType, static (m, v) => m.ButtonType = v);
         }
 
+        var ownCheckIcon = bitMenuButton.HasSetAnyOf(nameof(CheckIcon), nameof(CheckIconName));
+
         if (CheckIcon is not null)
         {
-            bitMenuButton.TakeFromCascade(nameof(CheckIcon), CheckIcon, static m => m.CheckIcon, static (m, v) => m.CheckIcon = v);
+            bitMenuButton.TakeFromCascade(nameof(CheckIcon), CheckIcon, static m => m.CheckIcon, static (m, v) => m.CheckIcon = v, outranked: ownCheckIcon);
         }
 
         if (CheckIconName.HasValue())
         {
-            bitMenuButton.TakeFromCascade(nameof(CheckIconName), CheckIconName, static m => m.CheckIconName, static (m, v) => m.CheckIconName = v);
+            bitMenuButton.TakeFromCascade(nameof(CheckIconName), CheckIconName, static m => m.CheckIconName, static (m, v) => m.CheckIconName = v, outranked: ownCheckIcon);
         }
 
         if (ChevronDownAriaLabel.HasValue())
@@ -334,14 +336,16 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
             bitMenuButton.TakeFromCascade(nameof(ChevronDownAriaLabel), ChevronDownAriaLabel, static m => m.ChevronDownAriaLabel, static (m, v) => m.ChevronDownAriaLabel = v);
         }
 
+        var ownChevronDownIcon = bitMenuButton.HasSetAnyOf(nameof(ChevronDownIcon), nameof(ChevronDownIconName));
+
         if (ChevronDownIcon is not null)
         {
-            bitMenuButton.TakeFromCascade(nameof(ChevronDownIcon), ChevronDownIcon, static m => m.ChevronDownIcon, static (m, v) => m.ChevronDownIcon = v);
+            bitMenuButton.TakeFromCascade(nameof(ChevronDownIcon), ChevronDownIcon, static m => m.ChevronDownIcon, static (m, v) => m.ChevronDownIcon = v, outranked: ownChevronDownIcon);
         }
 
         if (ChevronDownIconName.HasValue())
         {
-            bitMenuButton.TakeFromCascade(nameof(ChevronDownIconName), ChevronDownIconName, static m => m.ChevronDownIconName, static (m, v) => m.ChevronDownIconName = v);
+            bitMenuButton.TakeFromCascade(nameof(ChevronDownIconName), ChevronDownIconName, static m => m.ChevronDownIconName, static (m, v) => m.ChevronDownIconName = v, outranked: ownChevronDownIcon);
         }
 
         if (ChevronDownTitle.HasValue())
@@ -389,14 +393,16 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
             bitMenuButton.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static m => m.FullWidth, static (m, v) => m.FullWidth = v);
         }
 
+        var ownIcon = bitMenuButton.HasSetAnyOf(nameof(Icon), nameof(IconName));
+
         if (Icon is not null)
         {
-            bitMenuButton.TakeFromCascade(nameof(Icon), Icon, static m => m.Icon, static (m, v) => m.Icon = v);
+            bitMenuButton.TakeFromCascade(nameof(Icon), Icon, static m => m.Icon, static (m, v) => m.Icon = v, outranked: ownIcon);
         }
 
         if (IconName.HasValue())
         {
-            bitMenuButton.TakeFromCascade(nameof(IconName), IconName, static m => m.IconName, static (m, v) => m.IconName = v);
+            bitMenuButton.TakeFromCascade(nameof(IconName), IconName, static m => m.IconName, static (m, v) => m.IconName = v, outranked: ownIcon);
         }
 
         if (IconOnly.HasValue)
@@ -441,14 +447,16 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
             bitMenuButton.TakeFromCascade(nameof(NoIcon), NoIcon.Value, static m => m.NoIcon, static (m, v) => m.NoIcon = v);
         }
 
+        var ownRadioIcon = bitMenuButton.HasSetAnyOf(nameof(RadioIcon), nameof(RadioIconName));
+
         if (RadioIcon is not null)
         {
-            bitMenuButton.TakeFromCascade(nameof(RadioIcon), RadioIcon, static m => m.RadioIcon, static (m, v) => m.RadioIcon = v);
+            bitMenuButton.TakeFromCascade(nameof(RadioIcon), RadioIcon, static m => m.RadioIcon, static (m, v) => m.RadioIcon = v, outranked: ownRadioIcon);
         }
 
         if (RadioIconName.HasValue())
         {
-            bitMenuButton.TakeFromCascade(nameof(RadioIconName), RadioIconName, static m => m.RadioIconName, static (m, v) => m.RadioIconName = v);
+            bitMenuButton.TakeFromCascade(nameof(RadioIconName), RadioIconName, static m => m.RadioIconName, static (m, v) => m.RadioIconName = v, outranked: ownRadioIcon);
         }
 
         if (Reclickable.HasValue)
@@ -481,14 +489,16 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
             bitMenuButton.TakeFromCascade(nameof(Styles), Styles, static m => m.Styles, static (m, v) => m.Styles = v);
         }
 
+        var ownSubmenuIcon = bitMenuButton.HasSetAnyOf(nameof(SubmenuIcon), nameof(SubmenuIconName));
+
         if (SubmenuIcon is not null)
         {
-            bitMenuButton.TakeFromCascade(nameof(SubmenuIcon), SubmenuIcon, static m => m.SubmenuIcon, static (m, v) => m.SubmenuIcon = v);
+            bitMenuButton.TakeFromCascade(nameof(SubmenuIcon), SubmenuIcon, static m => m.SubmenuIcon, static (m, v) => m.SubmenuIcon = v, outranked: ownSubmenuIcon);
         }
 
         if (SubmenuIconName.HasValue())
         {
-            bitMenuButton.TakeFromCascade(nameof(SubmenuIconName), SubmenuIconName, static m => m.SubmenuIconName, static (m, v) => m.SubmenuIconName = v);
+            bitMenuButton.TakeFromCascade(nameof(SubmenuIconName), SubmenuIconName, static m => m.SubmenuIconName, static (m, v) => m.SubmenuIconName = v, outranked: ownSubmenuIcon);
         }
 
         if (Text.HasValue())

@@ -385,14 +385,16 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
             bitNumberField.TakeFromCascade(nameof(ClearButtonAriaLabel), ClearButtonAriaLabel, static n => n.ClearButtonAriaLabel, static (n, v) => n.ClearButtonAriaLabel = v);
         }
 
+        var ownClearButtonIcon = bitNumberField.HasSetAnyOf(nameof(ClearButtonIcon), nameof(ClearButtonIconName));
+
         if (ClearButtonIcon is not null)
         {
-            bitNumberField.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static n => n.ClearButtonIcon, static (n, v) => n.ClearButtonIcon = v);
+            bitNumberField.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static n => n.ClearButtonIcon, static (n, v) => n.ClearButtonIcon = v, outranked: ownClearButtonIcon);
         }
 
         if (ClearButtonIconName.HasValue())
         {
-            bitNumberField.TakeFromCascade(nameof(ClearButtonIconName), ClearButtonIconName, static n => n.ClearButtonIconName, static (n, v) => n.ClearButtonIconName = v);
+            bitNumberField.TakeFromCascade(nameof(ClearButtonIconName), ClearButtonIconName, static n => n.ClearButtonIconName, static (n, v) => n.ClearButtonIconName = v, outranked: ownClearButtonIcon);
         }
 
         if (ContinuousSpinDelay.HasValue)
@@ -415,14 +417,16 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
             bitNumberField.TakeFromCascade(nameof(DecrementAriaLabel), DecrementAriaLabel, static n => n.DecrementAriaLabel, static (n, v) => n.DecrementAriaLabel = v);
         }
 
+        var ownDecrementIcon = bitNumberField.HasSetAnyOf(nameof(DecrementIcon), nameof(DecrementIconName));
+
         if (DecrementIcon is not null)
         {
-            bitNumberField.TakeFromCascade(nameof(DecrementIcon), DecrementIcon, static n => n.DecrementIcon, static (n, v) => n.DecrementIcon = v);
+            bitNumberField.TakeFromCascade(nameof(DecrementIcon), DecrementIcon, static n => n.DecrementIcon, static (n, v) => n.DecrementIcon = v, outranked: ownDecrementIcon);
         }
 
         if (DecrementIconName.HasValue())
         {
-            bitNumberField.TakeFromCascade(nameof(DecrementIconName), DecrementIconName, static n => n.DecrementIconName, static (n, v) => n.DecrementIconName = v);
+            bitNumberField.TakeFromCascade(nameof(DecrementIconName), DecrementIconName, static n => n.DecrementIconName, static (n, v) => n.DecrementIconName = v, outranked: ownDecrementIcon);
         }
 
         if (DecrementTitle.HasValue())
@@ -457,9 +461,11 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
             bitNumberField.TakeFromCascade(nameof(HideInput), HideInput.Value, static n => n.HideInput, static (n, v) => n.HideInput = v);
         }
 
+        var ownIcon = bitNumberField.HasSetAnyOf(nameof(Icon), nameof(IconName));
+
         if (Icon is not null)
         {
-            bitNumberField.TakeFromCascade(nameof(Icon), Icon, static n => n.Icon, static (n, v) => n.Icon = v);
+            bitNumberField.TakeFromCascade(nameof(Icon), Icon, static n => n.Icon, static (n, v) => n.Icon = v, outranked: ownIcon);
         }
 
         if (IconAriaLabel.HasValue())
@@ -469,7 +475,7 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
 
         if (IconName.HasValue())
         {
-            bitNumberField.TakeFromCascade(nameof(IconName), IconName, static n => n.IconName, static (n, v) => n.IconName = v);
+            bitNumberField.TakeFromCascade(nameof(IconName), IconName, static n => n.IconName, static (n, v) => n.IconName = v, outranked: ownIcon);
         }
 
         if (IncrementAriaLabel.HasValue())
@@ -477,14 +483,16 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
             bitNumberField.TakeFromCascade(nameof(IncrementAriaLabel), IncrementAriaLabel, static n => n.IncrementAriaLabel, static (n, v) => n.IncrementAriaLabel = v);
         }
 
+        var ownIncrementIcon = bitNumberField.HasSetAnyOf(nameof(IncrementIcon), nameof(IncrementIconName));
+
         if (IncrementIcon is not null)
         {
-            bitNumberField.TakeFromCascade(nameof(IncrementIcon), IncrementIcon, static n => n.IncrementIcon, static (n, v) => n.IncrementIcon = v);
+            bitNumberField.TakeFromCascade(nameof(IncrementIcon), IncrementIcon, static n => n.IncrementIcon, static (n, v) => n.IncrementIcon = v, outranked: ownIncrementIcon);
         }
 
         if (IncrementIconName.HasValue())
         {
-            bitNumberField.TakeFromCascade(nameof(IncrementIconName), IncrementIconName, static n => n.IncrementIconName, static (n, v) => n.IncrementIconName = v);
+            bitNumberField.TakeFromCascade(nameof(IncrementIconName), IncrementIconName, static n => n.IncrementIconName, static (n, v) => n.IncrementIconName = v, outranked: ownIncrementIcon);
         }
 
         if (IncrementTitle.HasValue())

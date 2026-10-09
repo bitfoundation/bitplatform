@@ -340,14 +340,18 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
             bitButton.TakeFromCascade(nameof(Href), Href, static b => b.Href, static (b, v) => b.Href = v);
         }
 
+        // Icon, IconName and IconUrl are one setting - which icon is shown - and the first of them set wins, so
+        // a component that picked its icon through any of them keeps it.
+        var ownIcon = bitButton.HasSetAnyOf(nameof(Icon), nameof(IconName), nameof(IconUrl));
+
         if (Icon is not null)
         {
-            bitButton.TakeFromCascade(nameof(Icon), Icon, static b => b.Icon, static (b, v) => b.Icon = v);
+            bitButton.TakeFromCascade(nameof(Icon), Icon, static b => b.Icon, static (b, v) => b.Icon = v, outranked: ownIcon);
         }
 
         if (IconName.HasValue())
         {
-            bitButton.TakeFromCascade(nameof(IconName), IconName, static b => b.IconName, static (b, v) => b.IconName = v);
+            bitButton.TakeFromCascade(nameof(IconName), IconName, static b => b.IconName, static (b, v) => b.IconName = v, outranked: ownIcon);
         }
 
         if (IconOnly.HasValue)
@@ -362,7 +366,7 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
 
         if (IconUrl.HasValue())
         {
-            bitButton.TakeFromCascade(nameof(IconUrl), IconUrl, static b => b.IconUrl, static (b, v) => b.IconUrl = v);
+            bitButton.TakeFromCascade(nameof(IconUrl), IconUrl, static b => b.IconUrl, static (b, v) => b.IconUrl = v, outranked: ownIcon);
         }
 
         if (IsLoading.HasValue)

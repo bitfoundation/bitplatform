@@ -395,14 +395,16 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
             bitSearchBox.TakeFromCascade(nameof(ClearButtonAriaLabel), ClearButtonAriaLabel!, static s => s.ClearButtonAriaLabel, static (s, v) => s.ClearButtonAriaLabel = v);
         }
 
+        var ownClearButtonIcon = bitSearchBox.HasSetAnyOf(nameof(ClearButtonIcon), nameof(ClearButtonIconName));
+
         if (ClearButtonIcon is not null)
         {
-            bitSearchBox.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static s => s.ClearButtonIcon, static (s, v) => s.ClearButtonIcon = v);
+            bitSearchBox.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static s => s.ClearButtonIcon, static (s, v) => s.ClearButtonIcon = v, outranked: ownClearButtonIcon);
         }
 
         if (ClearButtonIconName.HasValue())
         {
-            bitSearchBox.TakeFromCascade(nameof(ClearButtonIconName), ClearButtonIconName, static s => s.ClearButtonIconName, static (s, v) => s.ClearButtonIconName = v);
+            bitSearchBox.TakeFromCascade(nameof(ClearButtonIconName), ClearButtonIconName, static s => s.ClearButtonIconName, static (s, v) => s.ClearButtonIconName = v, outranked: ownClearButtonIcon);
         }
 
         if (Color.HasValue)
@@ -460,14 +462,16 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
             bitSearchBox.TakeFromCascade(nameof(HighlightSuggestItems), HighlightSuggestItems.Value, static s => s.HighlightSuggestItems, static (s, v) => s.HighlightSuggestItems = v);
         }
 
+        var ownIcon = bitSearchBox.HasSetAnyOf(nameof(Icon), nameof(IconName));
+
         if (Icon is not null)
         {
-            bitSearchBox.TakeFromCascade(nameof(Icon), Icon, static s => s.Icon, static (s, v) => s.Icon = v);
+            bitSearchBox.TakeFromCascade(nameof(Icon), Icon, static s => s.Icon, static (s, v) => s.Icon = v, outranked: ownIcon);
         }
 
         if (IconName.HasValue())
         {
-            bitSearchBox.TakeFromCascade(nameof(IconName), IconName, static s => s.IconName, static (s, v) => s.IconName = v);
+            bitSearchBox.TakeFromCascade(nameof(IconName), IconName, static s => s.IconName, static (s, v) => s.IconName = v, outranked: ownIcon);
         }
 
         if (Immediate.HasValue)
@@ -545,14 +549,16 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
             bitSearchBox.TakeFromCascade(nameof(SearchButtonAriaLabel), SearchButtonAriaLabel!, static s => s.SearchButtonAriaLabel, static (s, v) => s.SearchButtonAriaLabel = v);
         }
 
+        var ownSearchButtonIcon = bitSearchBox.HasSetAnyOf(nameof(SearchButtonIcon), nameof(SearchButtonIconName));
+
         if (SearchButtonIcon is not null)
         {
-            bitSearchBox.TakeFromCascade(nameof(SearchButtonIcon), SearchButtonIcon, static s => s.SearchButtonIcon, static (s, v) => s.SearchButtonIcon = v);
+            bitSearchBox.TakeFromCascade(nameof(SearchButtonIcon), SearchButtonIcon, static s => s.SearchButtonIcon, static (s, v) => s.SearchButtonIcon = v, outranked: ownSearchButtonIcon);
         }
 
         if (SearchButtonIconName.HasValue())
         {
-            bitSearchBox.TakeFromCascade(nameof(SearchButtonIconName), SearchButtonIconName, static s => s.SearchButtonIconName, static (s, v) => s.SearchButtonIconName = v);
+            bitSearchBox.TakeFromCascade(nameof(SearchButtonIconName), SearchButtonIconName, static s => s.SearchButtonIconName, static (s, v) => s.SearchButtonIconName = v, outranked: ownSearchButtonIcon);
         }
 
         if (SearchButtonText.HasValue())

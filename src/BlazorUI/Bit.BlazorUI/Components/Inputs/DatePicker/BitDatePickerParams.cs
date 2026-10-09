@@ -906,14 +906,16 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(Classes), Classes, static d => d.Classes, static (d, v) => d.Classes = v);
         }
 
+        var ownClearButtonIcon = bitDatePicker.HasSetAnyOf(nameof(ClearButtonIcon), nameof(ClearButtonIconName));
+
         if (ClearButtonIcon is not null)
         {
-            bitDatePicker.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static d => d.ClearButtonIcon, static (d, v) => d.ClearButtonIcon = v);
+            bitDatePicker.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static d => d.ClearButtonIcon, static (d, v) => d.ClearButtonIcon = v, outranked: ownClearButtonIcon);
         }
 
         if (ClearButtonIconName.HasValue())
         {
-            bitDatePicker.TakeFromCascade(nameof(ClearButtonIconName), ClearButtonIconName, static d => d.ClearButtonIconName, static (d, v) => d.ClearButtonIconName = v);
+            bitDatePicker.TakeFromCascade(nameof(ClearButtonIconName), ClearButtonIconName, static d => d.ClearButtonIconName, static (d, v) => d.ClearButtonIconName = v, outranked: ownClearButtonIcon);
         }
 
         if (ClearButtonTitle.HasValue())
@@ -921,14 +923,16 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(ClearButtonTitle), ClearButtonTitle!, static d => d.ClearButtonTitle, static (d, v) => d.ClearButtonTitle = v);
         }
 
+        var ownCloseButtonIcon = bitDatePicker.HasSetAnyOf(nameof(CloseButtonIcon), nameof(CloseButtonIconName));
+
         if (CloseButtonIcon is not null)
         {
-            bitDatePicker.TakeFromCascade(nameof(CloseButtonIcon), CloseButtonIcon, static d => d.CloseButtonIcon, static (d, v) => d.CloseButtonIcon = v);
+            bitDatePicker.TakeFromCascade(nameof(CloseButtonIcon), CloseButtonIcon, static d => d.CloseButtonIcon, static (d, v) => d.CloseButtonIcon = v, outranked: ownCloseButtonIcon);
         }
 
         if (CloseButtonIconName.HasValue())
         {
-            bitDatePicker.TakeFromCascade(nameof(CloseButtonIconName), CloseButtonIconName, static d => d.CloseButtonIconName, static (d, v) => d.CloseButtonIconName = v);
+            bitDatePicker.TakeFromCascade(nameof(CloseButtonIconName), CloseButtonIconName, static d => d.CloseButtonIconName, static (d, v) => d.CloseButtonIconName = v, outranked: ownCloseButtonIcon);
         }
 
         if (CloseButtonTitle.HasValue())
@@ -1061,14 +1065,16 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(GoToPrevYearTitle), GoToPrevYearTitle!, static d => d.GoToPrevYearTitle, static (d, v) => d.GoToPrevYearTitle = v);
         }
 
+        var ownGoToTodayIcon = bitDatePicker.HasSetAnyOf(nameof(GoToTodayIcon), nameof(GoToTodayIconName));
+
         if (GoToTodayIcon is not null)
         {
-            bitDatePicker.TakeFromCascade(nameof(GoToTodayIcon), GoToTodayIcon, static d => d.GoToTodayIcon, static (d, v) => d.GoToTodayIcon = v);
+            bitDatePicker.TakeFromCascade(nameof(GoToTodayIcon), GoToTodayIcon, static d => d.GoToTodayIcon, static (d, v) => d.GoToTodayIcon = v, outranked: ownGoToTodayIcon);
         }
 
         if (GoToTodayIconName.HasValue())
         {
-            bitDatePicker.TakeFromCascade(nameof(GoToTodayIconName), GoToTodayIconName, static d => d.GoToTodayIconName, static (d, v) => d.GoToTodayIconName = v);
+            bitDatePicker.TakeFromCascade(nameof(GoToTodayIconName), GoToTodayIconName, static d => d.GoToTodayIconName, static (d, v) => d.GoToTodayIconName = v, outranked: ownGoToTodayIcon);
         }
 
         if (GoToTodayTitle.HasValue())
@@ -1081,14 +1087,16 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(HasBorder), HasBorder.Value, static d => d.HasBorder, static (d, v) => d.HasBorder = v);
         }
 
+        var ownHideTimePickerIcon = bitDatePicker.HasSetAnyOf(nameof(HideTimePickerIcon), nameof(HideTimePickerIconName));
+
         if (HideTimePickerIcon is not null)
         {
-            bitDatePicker.TakeFromCascade(nameof(HideTimePickerIcon), HideTimePickerIcon, static d => d.HideTimePickerIcon, static (d, v) => d.HideTimePickerIcon = v);
+            bitDatePicker.TakeFromCascade(nameof(HideTimePickerIcon), HideTimePickerIcon, static d => d.HideTimePickerIcon, static (d, v) => d.HideTimePickerIcon = v, outranked: ownHideTimePickerIcon);
         }
 
         if (HideTimePickerIconName.HasValue())
         {
-            bitDatePicker.TakeFromCascade(nameof(HideTimePickerIconName), HideTimePickerIconName, static d => d.HideTimePickerIconName, static (d, v) => d.HideTimePickerIconName = v);
+            bitDatePicker.TakeFromCascade(nameof(HideTimePickerIconName), HideTimePickerIconName, static d => d.HideTimePickerIconName, static (d, v) => d.HideTimePickerIconName = v, outranked: ownHideTimePickerIcon);
         }
 
         if (HideTimePickerTitle.HasValue())
@@ -1126,9 +1134,11 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(HourStep), HourStep.Value, static d => d.HourStep, static (d, v) => d.HourStep = v);
         }
 
+        var ownIcon = bitDatePicker.HasSetAnyOf(nameof(Icon), nameof(IconName));
+
         if (Icon is not null)
         {
-            bitDatePicker.TakeFromCascade(nameof(Icon), Icon, static d => d.Icon, static (d, v) => d.Icon = v);
+            bitDatePicker.TakeFromCascade(nameof(Icon), Icon, static d => d.Icon, static (d, v) => d.Icon = v, outranked: ownIcon);
         }
 
         if (IconPlacement.HasValue)
@@ -1138,7 +1148,7 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
 
         if (IconName.HasValue())
         {
-            bitDatePicker.TakeFromCascade(nameof(IconName), IconName, static d => d.IconName, static (d, v) => d.IconName = v);
+            bitDatePicker.TakeFromCascade(nameof(IconName), IconName, static d => d.IconName, static (d, v) => d.IconName = v, outranked: ownIcon);
         }
 
         if (IconTemplate is not null)
@@ -1221,44 +1231,52 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(MonthPickerToggleTitle), MonthPickerToggleTitle!, static d => d.MonthPickerToggleTitle, static (d, v) => d.MonthPickerToggleTitle = v);
         }
 
+        var ownNextMonthNavIcon = bitDatePicker.HasSetAnyOf(nameof(NextMonthNavIcon), nameof(NextMonthNavIconName));
+
         if (NextMonthNavIcon is not null)
         {
-            bitDatePicker.TakeFromCascade(nameof(NextMonthNavIcon), NextMonthNavIcon, static d => d.NextMonthNavIcon, static (d, v) => d.NextMonthNavIcon = v);
+            bitDatePicker.TakeFromCascade(nameof(NextMonthNavIcon), NextMonthNavIcon, static d => d.NextMonthNavIcon, static (d, v) => d.NextMonthNavIcon = v, outranked: ownNextMonthNavIcon);
         }
 
         if (NextMonthNavIconName.HasValue())
         {
-            bitDatePicker.TakeFromCascade(nameof(NextMonthNavIconName), NextMonthNavIconName, static d => d.NextMonthNavIconName, static (d, v) => d.NextMonthNavIconName = v);
+            bitDatePicker.TakeFromCascade(nameof(NextMonthNavIconName), NextMonthNavIconName, static d => d.NextMonthNavIconName, static (d, v) => d.NextMonthNavIconName = v, outranked: ownNextMonthNavIcon);
         }
+
+        var ownNextYearNavIcon = bitDatePicker.HasSetAnyOf(nameof(NextYearNavIcon), nameof(NextYearNavIconName));
 
         if (NextYearNavIcon is not null)
         {
-            bitDatePicker.TakeFromCascade(nameof(NextYearNavIcon), NextYearNavIcon, static d => d.NextYearNavIcon, static (d, v) => d.NextYearNavIcon = v);
+            bitDatePicker.TakeFromCascade(nameof(NextYearNavIcon), NextYearNavIcon, static d => d.NextYearNavIcon, static (d, v) => d.NextYearNavIcon = v, outranked: ownNextYearNavIcon);
         }
 
         if (NextYearNavIconName.HasValue())
         {
-            bitDatePicker.TakeFromCascade(nameof(NextYearNavIconName), NextYearNavIconName, static d => d.NextYearNavIconName, static (d, v) => d.NextYearNavIconName = v);
+            bitDatePicker.TakeFromCascade(nameof(NextYearNavIconName), NextYearNavIconName, static d => d.NextYearNavIconName, static (d, v) => d.NextYearNavIconName = v, outranked: ownNextYearNavIcon);
         }
+
+        var ownNextYearRangeNavIcon = bitDatePicker.HasSetAnyOf(nameof(NextYearRangeNavIcon), nameof(NextYearRangeNavIconName));
 
         if (NextYearRangeNavIcon is not null)
         {
-            bitDatePicker.TakeFromCascade(nameof(NextYearRangeNavIcon), NextYearRangeNavIcon, static d => d.NextYearRangeNavIcon, static (d, v) => d.NextYearRangeNavIcon = v);
+            bitDatePicker.TakeFromCascade(nameof(NextYearRangeNavIcon), NextYearRangeNavIcon, static d => d.NextYearRangeNavIcon, static (d, v) => d.NextYearRangeNavIcon = v, outranked: ownNextYearRangeNavIcon);
         }
 
         if (NextYearRangeNavIconName.HasValue())
         {
-            bitDatePicker.TakeFromCascade(nameof(NextYearRangeNavIconName), NextYearRangeNavIconName, static d => d.NextYearRangeNavIconName, static (d, v) => d.NextYearRangeNavIconName = v);
+            bitDatePicker.TakeFromCascade(nameof(NextYearRangeNavIconName), NextYearRangeNavIconName, static d => d.NextYearRangeNavIconName, static (d, v) => d.NextYearRangeNavIconName = v, outranked: ownNextYearRangeNavIcon);
         }
+
+        var ownNowButtonIcon = bitDatePicker.HasSetAnyOf(nameof(NowButtonIcon), nameof(NowButtonIconName));
 
         if (NowButtonIcon is not null)
         {
-            bitDatePicker.TakeFromCascade(nameof(NowButtonIcon), NowButtonIcon, static d => d.NowButtonIcon, static (d, v) => d.NowButtonIcon = v);
+            bitDatePicker.TakeFromCascade(nameof(NowButtonIcon), NowButtonIcon, static d => d.NowButtonIcon, static (d, v) => d.NowButtonIcon = v, outranked: ownNowButtonIcon);
         }
 
         if (NowButtonIconName.HasValue())
         {
-            bitDatePicker.TakeFromCascade(nameof(NowButtonIconName), NowButtonIconName, static d => d.NowButtonIconName, static (d, v) => d.NowButtonIconName = v);
+            bitDatePicker.TakeFromCascade(nameof(NowButtonIconName), NowButtonIconName, static d => d.NowButtonIconName, static (d, v) => d.NowButtonIconName = v, outranked: ownNowButtonIcon);
         }
 
         if (NowButtonTitle.HasValue())
@@ -1276,34 +1294,40 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(Placeholder), Placeholder!, static d => d.Placeholder, static (d, v) => d.Placeholder = v);
         }
 
+        var ownPrevMonthNavIcon = bitDatePicker.HasSetAnyOf(nameof(PrevMonthNavIcon), nameof(PrevMonthNavIconName));
+
         if (PrevMonthNavIcon is not null)
         {
-            bitDatePicker.TakeFromCascade(nameof(PrevMonthNavIcon), PrevMonthNavIcon, static d => d.PrevMonthNavIcon, static (d, v) => d.PrevMonthNavIcon = v);
+            bitDatePicker.TakeFromCascade(nameof(PrevMonthNavIcon), PrevMonthNavIcon, static d => d.PrevMonthNavIcon, static (d, v) => d.PrevMonthNavIcon = v, outranked: ownPrevMonthNavIcon);
         }
 
         if (PrevMonthNavIconName.HasValue())
         {
-            bitDatePicker.TakeFromCascade(nameof(PrevMonthNavIconName), PrevMonthNavIconName, static d => d.PrevMonthNavIconName, static (d, v) => d.PrevMonthNavIconName = v);
+            bitDatePicker.TakeFromCascade(nameof(PrevMonthNavIconName), PrevMonthNavIconName, static d => d.PrevMonthNavIconName, static (d, v) => d.PrevMonthNavIconName = v, outranked: ownPrevMonthNavIcon);
         }
+
+        var ownPrevYearNavIcon = bitDatePicker.HasSetAnyOf(nameof(PrevYearNavIcon), nameof(PrevYearNavIconName));
 
         if (PrevYearNavIcon is not null)
         {
-            bitDatePicker.TakeFromCascade(nameof(PrevYearNavIcon), PrevYearNavIcon, static d => d.PrevYearNavIcon, static (d, v) => d.PrevYearNavIcon = v);
+            bitDatePicker.TakeFromCascade(nameof(PrevYearNavIcon), PrevYearNavIcon, static d => d.PrevYearNavIcon, static (d, v) => d.PrevYearNavIcon = v, outranked: ownPrevYearNavIcon);
         }
 
         if (PrevYearNavIconName.HasValue())
         {
-            bitDatePicker.TakeFromCascade(nameof(PrevYearNavIconName), PrevYearNavIconName, static d => d.PrevYearNavIconName, static (d, v) => d.PrevYearNavIconName = v);
+            bitDatePicker.TakeFromCascade(nameof(PrevYearNavIconName), PrevYearNavIconName, static d => d.PrevYearNavIconName, static (d, v) => d.PrevYearNavIconName = v, outranked: ownPrevYearNavIcon);
         }
+
+        var ownPrevYearRangeNavIcon = bitDatePicker.HasSetAnyOf(nameof(PrevYearRangeNavIcon), nameof(PrevYearRangeNavIconName));
 
         if (PrevYearRangeNavIcon is not null)
         {
-            bitDatePicker.TakeFromCascade(nameof(PrevYearRangeNavIcon), PrevYearRangeNavIcon, static d => d.PrevYearRangeNavIcon, static (d, v) => d.PrevYearRangeNavIcon = v);
+            bitDatePicker.TakeFromCascade(nameof(PrevYearRangeNavIcon), PrevYearRangeNavIcon, static d => d.PrevYearRangeNavIcon, static (d, v) => d.PrevYearRangeNavIcon = v, outranked: ownPrevYearRangeNavIcon);
         }
 
         if (PrevYearRangeNavIconName.HasValue())
         {
-            bitDatePicker.TakeFromCascade(nameof(PrevYearRangeNavIconName), PrevYearRangeNavIconName, static d => d.PrevYearRangeNavIconName, static (d, v) => d.PrevYearRangeNavIconName = v);
+            bitDatePicker.TakeFromCascade(nameof(PrevYearRangeNavIconName), PrevYearRangeNavIconName, static d => d.PrevYearRangeNavIconName, static (d, v) => d.PrevYearRangeNavIconName = v, outranked: ownPrevYearRangeNavIcon);
         }
 
         if (Responsive.HasValue)
@@ -1366,14 +1390,16 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(ShowTimePickerAsOverlay), ShowTimePickerAsOverlay.Value, static d => d.ShowTimePickerAsOverlay, static (d, v) => d.ShowTimePickerAsOverlay = v);
         }
 
+        var ownShowTimePickerIcon = bitDatePicker.HasSetAnyOf(nameof(ShowTimePickerIcon), nameof(ShowTimePickerIconName));
+
         if (ShowTimePickerIcon is not null)
         {
-            bitDatePicker.TakeFromCascade(nameof(ShowTimePickerIcon), ShowTimePickerIcon, static d => d.ShowTimePickerIcon, static (d, v) => d.ShowTimePickerIcon = v);
+            bitDatePicker.TakeFromCascade(nameof(ShowTimePickerIcon), ShowTimePickerIcon, static d => d.ShowTimePickerIcon, static (d, v) => d.ShowTimePickerIcon = v, outranked: ownShowTimePickerIcon);
         }
 
         if (ShowTimePickerIconName.HasValue())
         {
-            bitDatePicker.TakeFromCascade(nameof(ShowTimePickerIconName), ShowTimePickerIconName, static d => d.ShowTimePickerIconName, static (d, v) => d.ShowTimePickerIconName = v);
+            bitDatePicker.TakeFromCascade(nameof(ShowTimePickerIconName), ShowTimePickerIconName, static d => d.ShowTimePickerIconName, static (d, v) => d.ShowTimePickerIconName = v, outranked: ownShowTimePickerIcon);
         }
 
         if (ShowTimePickerTitle.HasValue())
@@ -1411,14 +1437,16 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(TimeFormat), TimeFormat.Value, static d => d.TimeFormat, static (d, v) => d.TimeFormat = v);
         }
 
+        var ownTimePickerDecreaseHourIcon = bitDatePicker.HasSetAnyOf(nameof(TimePickerDecreaseHourIcon), nameof(TimePickerDecreaseHourIconName));
+
         if (TimePickerDecreaseHourIcon is not null)
         {
-            bitDatePicker.TakeFromCascade(nameof(TimePickerDecreaseHourIcon), TimePickerDecreaseHourIcon, static d => d.TimePickerDecreaseHourIcon, static (d, v) => d.TimePickerDecreaseHourIcon = v);
+            bitDatePicker.TakeFromCascade(nameof(TimePickerDecreaseHourIcon), TimePickerDecreaseHourIcon, static d => d.TimePickerDecreaseHourIcon, static (d, v) => d.TimePickerDecreaseHourIcon = v, outranked: ownTimePickerDecreaseHourIcon);
         }
 
         if (TimePickerDecreaseHourIconName.HasValue())
         {
-            bitDatePicker.TakeFromCascade(nameof(TimePickerDecreaseHourIconName), TimePickerDecreaseHourIconName, static d => d.TimePickerDecreaseHourIconName, static (d, v) => d.TimePickerDecreaseHourIconName = v);
+            bitDatePicker.TakeFromCascade(nameof(TimePickerDecreaseHourIconName), TimePickerDecreaseHourIconName, static d => d.TimePickerDecreaseHourIconName, static (d, v) => d.TimePickerDecreaseHourIconName = v, outranked: ownTimePickerDecreaseHourIcon);
         }
 
         if (TimePickerDecreaseHourTitle.HasValue())
@@ -1426,14 +1454,16 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(TimePickerDecreaseHourTitle), TimePickerDecreaseHourTitle!, static d => d.TimePickerDecreaseHourTitle, static (d, v) => d.TimePickerDecreaseHourTitle = v);
         }
 
+        var ownTimePickerDecreaseMinuteIcon = bitDatePicker.HasSetAnyOf(nameof(TimePickerDecreaseMinuteIcon), nameof(TimePickerDecreaseMinuteIconName));
+
         if (TimePickerDecreaseMinuteIcon is not null)
         {
-            bitDatePicker.TakeFromCascade(nameof(TimePickerDecreaseMinuteIcon), TimePickerDecreaseMinuteIcon, static d => d.TimePickerDecreaseMinuteIcon, static (d, v) => d.TimePickerDecreaseMinuteIcon = v);
+            bitDatePicker.TakeFromCascade(nameof(TimePickerDecreaseMinuteIcon), TimePickerDecreaseMinuteIcon, static d => d.TimePickerDecreaseMinuteIcon, static (d, v) => d.TimePickerDecreaseMinuteIcon = v, outranked: ownTimePickerDecreaseMinuteIcon);
         }
 
         if (TimePickerDecreaseMinuteIconName.HasValue())
         {
-            bitDatePicker.TakeFromCascade(nameof(TimePickerDecreaseMinuteIconName), TimePickerDecreaseMinuteIconName, static d => d.TimePickerDecreaseMinuteIconName, static (d, v) => d.TimePickerDecreaseMinuteIconName = v);
+            bitDatePicker.TakeFromCascade(nameof(TimePickerDecreaseMinuteIconName), TimePickerDecreaseMinuteIconName, static d => d.TimePickerDecreaseMinuteIconName, static (d, v) => d.TimePickerDecreaseMinuteIconName = v, outranked: ownTimePickerDecreaseMinuteIcon);
         }
 
         if (TimePickerDecreaseMinuteTitle.HasValue())
@@ -1446,14 +1476,16 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(TimePickerHourTitle), TimePickerHourTitle!, static d => d.TimePickerHourTitle, static (d, v) => d.TimePickerHourTitle = v);
         }
 
+        var ownTimePickerIncreaseHourIcon = bitDatePicker.HasSetAnyOf(nameof(TimePickerIncreaseHourIcon), nameof(TimePickerIncreaseHourIconName));
+
         if (TimePickerIncreaseHourIcon is not null)
         {
-            bitDatePicker.TakeFromCascade(nameof(TimePickerIncreaseHourIcon), TimePickerIncreaseHourIcon, static d => d.TimePickerIncreaseHourIcon, static (d, v) => d.TimePickerIncreaseHourIcon = v);
+            bitDatePicker.TakeFromCascade(nameof(TimePickerIncreaseHourIcon), TimePickerIncreaseHourIcon, static d => d.TimePickerIncreaseHourIcon, static (d, v) => d.TimePickerIncreaseHourIcon = v, outranked: ownTimePickerIncreaseHourIcon);
         }
 
         if (TimePickerIncreaseHourIconName.HasValue())
         {
-            bitDatePicker.TakeFromCascade(nameof(TimePickerIncreaseHourIconName), TimePickerIncreaseHourIconName, static d => d.TimePickerIncreaseHourIconName, static (d, v) => d.TimePickerIncreaseHourIconName = v);
+            bitDatePicker.TakeFromCascade(nameof(TimePickerIncreaseHourIconName), TimePickerIncreaseHourIconName, static d => d.TimePickerIncreaseHourIconName, static (d, v) => d.TimePickerIncreaseHourIconName = v, outranked: ownTimePickerIncreaseHourIcon);
         }
 
         if (TimePickerIncreaseHourTitle.HasValue())
@@ -1461,14 +1493,16 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(TimePickerIncreaseHourTitle), TimePickerIncreaseHourTitle!, static d => d.TimePickerIncreaseHourTitle, static (d, v) => d.TimePickerIncreaseHourTitle = v);
         }
 
+        var ownTimePickerIncreaseMinuteIcon = bitDatePicker.HasSetAnyOf(nameof(TimePickerIncreaseMinuteIcon), nameof(TimePickerIncreaseMinuteIconName));
+
         if (TimePickerIncreaseMinuteIcon is not null)
         {
-            bitDatePicker.TakeFromCascade(nameof(TimePickerIncreaseMinuteIcon), TimePickerIncreaseMinuteIcon, static d => d.TimePickerIncreaseMinuteIcon, static (d, v) => d.TimePickerIncreaseMinuteIcon = v);
+            bitDatePicker.TakeFromCascade(nameof(TimePickerIncreaseMinuteIcon), TimePickerIncreaseMinuteIcon, static d => d.TimePickerIncreaseMinuteIcon, static (d, v) => d.TimePickerIncreaseMinuteIcon = v, outranked: ownTimePickerIncreaseMinuteIcon);
         }
 
         if (TimePickerIncreaseMinuteIconName.HasValue())
         {
-            bitDatePicker.TakeFromCascade(nameof(TimePickerIncreaseMinuteIconName), TimePickerIncreaseMinuteIconName, static d => d.TimePickerIncreaseMinuteIconName, static (d, v) => d.TimePickerIncreaseMinuteIconName = v);
+            bitDatePicker.TakeFromCascade(nameof(TimePickerIncreaseMinuteIconName), TimePickerIncreaseMinuteIconName, static d => d.TimePickerIncreaseMinuteIconName, static (d, v) => d.TimePickerIncreaseMinuteIconName = v, outranked: ownTimePickerIncreaseMinuteIcon);
         }
 
         if (TimePickerIncreaseMinuteTitle.HasValue())
@@ -1481,14 +1515,16 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(TimePickerMinuteTitle), TimePickerMinuteTitle!, static d => d.TimePickerMinuteTitle, static (d, v) => d.TimePickerMinuteTitle = v);
         }
 
+        var ownTimePickerDecreaseSecondIcon = bitDatePicker.HasSetAnyOf(nameof(TimePickerDecreaseSecondIcon), nameof(TimePickerDecreaseSecondIconName));
+
         if (TimePickerDecreaseSecondIcon is not null)
         {
-            bitDatePicker.TakeFromCascade(nameof(TimePickerDecreaseSecondIcon), TimePickerDecreaseSecondIcon, static d => d.TimePickerDecreaseSecondIcon, static (d, v) => d.TimePickerDecreaseSecondIcon = v);
+            bitDatePicker.TakeFromCascade(nameof(TimePickerDecreaseSecondIcon), TimePickerDecreaseSecondIcon, static d => d.TimePickerDecreaseSecondIcon, static (d, v) => d.TimePickerDecreaseSecondIcon = v, outranked: ownTimePickerDecreaseSecondIcon);
         }
 
         if (TimePickerDecreaseSecondIconName.HasValue())
         {
-            bitDatePicker.TakeFromCascade(nameof(TimePickerDecreaseSecondIconName), TimePickerDecreaseSecondIconName, static d => d.TimePickerDecreaseSecondIconName, static (d, v) => d.TimePickerDecreaseSecondIconName = v);
+            bitDatePicker.TakeFromCascade(nameof(TimePickerDecreaseSecondIconName), TimePickerDecreaseSecondIconName, static d => d.TimePickerDecreaseSecondIconName, static (d, v) => d.TimePickerDecreaseSecondIconName = v, outranked: ownTimePickerDecreaseSecondIcon);
         }
 
         if (TimePickerDecreaseSecondTitle.HasValue())
@@ -1496,14 +1532,16 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(TimePickerDecreaseSecondTitle), TimePickerDecreaseSecondTitle!, static d => d.TimePickerDecreaseSecondTitle, static (d, v) => d.TimePickerDecreaseSecondTitle = v);
         }
 
+        var ownTimePickerIncreaseSecondIcon = bitDatePicker.HasSetAnyOf(nameof(TimePickerIncreaseSecondIcon), nameof(TimePickerIncreaseSecondIconName));
+
         if (TimePickerIncreaseSecondIcon is not null)
         {
-            bitDatePicker.TakeFromCascade(nameof(TimePickerIncreaseSecondIcon), TimePickerIncreaseSecondIcon, static d => d.TimePickerIncreaseSecondIcon, static (d, v) => d.TimePickerIncreaseSecondIcon = v);
+            bitDatePicker.TakeFromCascade(nameof(TimePickerIncreaseSecondIcon), TimePickerIncreaseSecondIcon, static d => d.TimePickerIncreaseSecondIcon, static (d, v) => d.TimePickerIncreaseSecondIcon = v, outranked: ownTimePickerIncreaseSecondIcon);
         }
 
         if (TimePickerIncreaseSecondIconName.HasValue())
         {
-            bitDatePicker.TakeFromCascade(nameof(TimePickerIncreaseSecondIconName), TimePickerIncreaseSecondIconName, static d => d.TimePickerIncreaseSecondIconName, static (d, v) => d.TimePickerIncreaseSecondIconName = v);
+            bitDatePicker.TakeFromCascade(nameof(TimePickerIncreaseSecondIconName), TimePickerIncreaseSecondIconName, static d => d.TimePickerIncreaseSecondIconName, static (d, v) => d.TimePickerIncreaseSecondIconName = v, outranked: ownTimePickerIncreaseSecondIcon);
         }
 
         if (TimePickerIncreaseSecondTitle.HasValue())

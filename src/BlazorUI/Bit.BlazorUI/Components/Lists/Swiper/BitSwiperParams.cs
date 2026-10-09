@@ -371,14 +371,16 @@ public class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
             bitSwiper.TakeFromCascade(nameof(NextAriaLabel), NextAriaLabel, static s => s.NextAriaLabel, static (s, v) => s.NextAriaLabel = v);
         }
 
+        var ownNextIcon = bitSwiper.HasSetAnyOf(nameof(NextIcon), nameof(NextIconName));
+
         if (NextIcon is not null)
         {
-            bitSwiper.TakeFromCascade(nameof(NextIcon), NextIcon, static s => s.NextIcon, static (s, v) => s.NextIcon = v);
+            bitSwiper.TakeFromCascade(nameof(NextIcon), NextIcon, static s => s.NextIcon, static (s, v) => s.NextIcon = v, outranked: ownNextIcon);
         }
 
         if (NextIconName.HasValue())
         {
-            bitSwiper.TakeFromCascade(nameof(NextIconName), NextIconName, static s => s.NextIconName, static (s, v) => s.NextIconName = v);
+            bitSwiper.TakeFromCascade(nameof(NextIconName), NextIconName, static s => s.NextIconName, static (s, v) => s.NextIconName = v, outranked: ownNextIcon);
         }
 
         if (NoDrag.HasValue)
@@ -401,14 +403,16 @@ public class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
             bitSwiper.TakeFromCascade(nameof(Peek), Peek, static s => s.Peek, static (s, v) => s.Peek = v);
         }
 
+        var ownPauseIcon = bitSwiper.HasSetAnyOf(nameof(PauseIcon), nameof(PauseIconName));
+
         if (PauseIcon is not null)
         {
-            bitSwiper.TakeFromCascade(nameof(PauseIcon), PauseIcon, static s => s.PauseIcon, static (s, v) => s.PauseIcon = v);
+            bitSwiper.TakeFromCascade(nameof(PauseIcon), PauseIcon, static s => s.PauseIcon, static (s, v) => s.PauseIcon = v, outranked: ownPauseIcon);
         }
 
         if (PauseIconName.HasValue())
         {
-            bitSwiper.TakeFromCascade(nameof(PauseIconName), PauseIconName, static s => s.PauseIconName, static (s, v) => s.PauseIconName = v);
+            bitSwiper.TakeFromCascade(nameof(PauseIconName), PauseIconName, static s => s.PauseIconName, static (s, v) => s.PauseIconName = v, outranked: ownPauseIcon);
         }
 
         if (PauseOnFocus.HasValue)
@@ -426,14 +430,16 @@ public class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
             bitSwiper.TakeFromCascade(nameof(PlayButtonAriaLabel), PlayButtonAriaLabel!, static s => s.PlayButtonAriaLabel, static (s, v) => s.PlayButtonAriaLabel = v);
         }
 
+        var ownPlayIcon = bitSwiper.HasSetAnyOf(nameof(PlayIcon), nameof(PlayIconName));
+
         if (PlayIcon is not null)
         {
-            bitSwiper.TakeFromCascade(nameof(PlayIcon), PlayIcon, static s => s.PlayIcon, static (s, v) => s.PlayIcon = v);
+            bitSwiper.TakeFromCascade(nameof(PlayIcon), PlayIcon, static s => s.PlayIcon, static (s, v) => s.PlayIcon = v, outranked: ownPlayIcon);
         }
 
         if (PlayIconName.HasValue())
         {
-            bitSwiper.TakeFromCascade(nameof(PlayIconName), PlayIconName, static s => s.PlayIconName, static (s, v) => s.PlayIconName = v);
+            bitSwiper.TakeFromCascade(nameof(PlayIconName), PlayIconName, static s => s.PlayIconName, static (s, v) => s.PlayIconName = v, outranked: ownPlayIcon);
         }
 
         if (PrevAriaLabel.HasValue())
@@ -441,14 +447,16 @@ public class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
             bitSwiper.TakeFromCascade(nameof(PrevAriaLabel), PrevAriaLabel, static s => s.PrevAriaLabel, static (s, v) => s.PrevAriaLabel = v);
         }
 
+        var ownPrevIcon = bitSwiper.HasSetAnyOf(nameof(PrevIcon), nameof(PrevIconName));
+
         if (PrevIcon is not null)
         {
-            bitSwiper.TakeFromCascade(nameof(PrevIcon), PrevIcon, static s => s.PrevIcon, static (s, v) => s.PrevIcon = v);
+            bitSwiper.TakeFromCascade(nameof(PrevIcon), PrevIcon, static s => s.PrevIcon, static (s, v) => s.PrevIcon = v, outranked: ownPrevIcon);
         }
 
         if (PrevIconName.HasValue())
         {
-            bitSwiper.TakeFromCascade(nameof(PrevIconName), PrevIconName, static s => s.PrevIconName, static (s, v) => s.PrevIconName = v);
+            bitSwiper.TakeFromCascade(nameof(PrevIconName), PrevIconName, static s => s.PrevIconName, static (s, v) => s.PrevIconName = v, outranked: ownPrevIcon);
         }
 
         if (Rewind.HasValue)

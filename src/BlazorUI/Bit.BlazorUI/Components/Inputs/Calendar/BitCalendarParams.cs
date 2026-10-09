@@ -696,14 +696,16 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.TakeFromCascade(nameof(GoToNextYearTitle), GoToNextYearTitle!, static c => c.GoToNextYearTitle, static (c, v) => c.GoToNextYearTitle = v);
         }
 
+        var ownNowButtonIcon = bitCalendar.HasSetAnyOf(nameof(NowButtonIcon), nameof(NowButtonIconName));
+
         if (NowButtonIcon is not null)
         {
-            bitCalendar.TakeFromCascade(nameof(NowButtonIcon), NowButtonIcon, static c => c.NowButtonIcon, static (c, v) => c.NowButtonIcon = v);
+            bitCalendar.TakeFromCascade(nameof(NowButtonIcon), NowButtonIcon, static c => c.NowButtonIcon, static (c, v) => c.NowButtonIcon = v, outranked: ownNowButtonIcon);
         }
 
         if (NowButtonIconName.HasValue())
         {
-            bitCalendar.TakeFromCascade(nameof(NowButtonIconName), NowButtonIconName, static c => c.NowButtonIconName, static (c, v) => c.NowButtonIconName = v);
+            bitCalendar.TakeFromCascade(nameof(NowButtonIconName), NowButtonIconName, static c => c.NowButtonIconName, static (c, v) => c.NowButtonIconName = v, outranked: ownNowButtonIcon);
         }
 
         if (NowButtonTitle.HasValue())
@@ -726,14 +728,16 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.TakeFromCascade(nameof(GoToPrevYearTitle), GoToPrevYearTitle!, static c => c.GoToPrevYearTitle, static (c, v) => c.GoToPrevYearTitle = v);
         }
 
+        var ownGoToTodayIcon = bitCalendar.HasSetAnyOf(nameof(GoToTodayIcon), nameof(GoToTodayIconName));
+
         if (GoToTodayIcon is not null)
         {
-            bitCalendar.TakeFromCascade(nameof(GoToTodayIcon), GoToTodayIcon, static c => c.GoToTodayIcon, static (c, v) => c.GoToTodayIcon = v);
+            bitCalendar.TakeFromCascade(nameof(GoToTodayIcon), GoToTodayIcon, static c => c.GoToTodayIcon, static (c, v) => c.GoToTodayIcon = v, outranked: ownGoToTodayIcon);
         }
 
         if (GoToTodayIconName.HasValue())
         {
-            bitCalendar.TakeFromCascade(nameof(GoToTodayIconName), GoToTodayIconName, static c => c.GoToTodayIconName, static (c, v) => c.GoToTodayIconName = v);
+            bitCalendar.TakeFromCascade(nameof(GoToTodayIconName), GoToTodayIconName, static c => c.GoToTodayIconName, static (c, v) => c.GoToTodayIconName = v, outranked: ownGoToTodayIcon);
         }
 
         if (GoToTodayTitle.HasValue())
@@ -741,14 +745,16 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.TakeFromCascade(nameof(GoToTodayTitle), GoToTodayTitle!, static c => c.GoToTodayTitle, static (c, v) => c.GoToTodayTitle = v);
         }
 
+        var ownHideTimePickerIcon = bitCalendar.HasSetAnyOf(nameof(HideTimePickerIcon), nameof(HideTimePickerIconName));
+
         if (HideTimePickerIcon is not null)
         {
-            bitCalendar.TakeFromCascade(nameof(HideTimePickerIcon), HideTimePickerIcon, static c => c.HideTimePickerIcon, static (c, v) => c.HideTimePickerIcon = v);
+            bitCalendar.TakeFromCascade(nameof(HideTimePickerIcon), HideTimePickerIcon, static c => c.HideTimePickerIcon, static (c, v) => c.HideTimePickerIcon = v, outranked: ownHideTimePickerIcon);
         }
 
         if (HideTimePickerIconName.HasValue())
         {
-            bitCalendar.TakeFromCascade(nameof(HideTimePickerIconName), HideTimePickerIconName, static c => c.HideTimePickerIconName, static (c, v) => c.HideTimePickerIconName = v);
+            bitCalendar.TakeFromCascade(nameof(HideTimePickerIconName), HideTimePickerIconName, static c => c.HideTimePickerIconName, static (c, v) => c.HideTimePickerIconName = v, outranked: ownHideTimePickerIcon);
         }
 
         if (HideTimePickerTitle.HasValue())
@@ -821,34 +827,40 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.TakeFromCascade(nameof(MonthPickerToggleTitle), MonthPickerToggleTitle!, static c => c.MonthPickerToggleTitle, static (c, v) => c.MonthPickerToggleTitle = v);
         }
 
+        var ownNextMonthNavIcon = bitCalendar.HasSetAnyOf(nameof(NextMonthNavIcon), nameof(NextMonthNavIconName));
+
         if (NextMonthNavIcon is not null)
         {
-            bitCalendar.TakeFromCascade(nameof(NextMonthNavIcon), NextMonthNavIcon, static c => c.NextMonthNavIcon, static (c, v) => c.NextMonthNavIcon = v);
+            bitCalendar.TakeFromCascade(nameof(NextMonthNavIcon), NextMonthNavIcon, static c => c.NextMonthNavIcon, static (c, v) => c.NextMonthNavIcon = v, outranked: ownNextMonthNavIcon);
         }
 
         if (NextMonthNavIconName.HasValue())
         {
-            bitCalendar.TakeFromCascade(nameof(NextMonthNavIconName), NextMonthNavIconName, static c => c.NextMonthNavIconName, static (c, v) => c.NextMonthNavIconName = v);
+            bitCalendar.TakeFromCascade(nameof(NextMonthNavIconName), NextMonthNavIconName, static c => c.NextMonthNavIconName, static (c, v) => c.NextMonthNavIconName = v, outranked: ownNextMonthNavIcon);
         }
+
+        var ownNextYearNavIcon = bitCalendar.HasSetAnyOf(nameof(NextYearNavIcon), nameof(NextYearNavIconName));
 
         if (NextYearNavIcon is not null)
         {
-            bitCalendar.TakeFromCascade(nameof(NextYearNavIcon), NextYearNavIcon, static c => c.NextYearNavIcon, static (c, v) => c.NextYearNavIcon = v);
+            bitCalendar.TakeFromCascade(nameof(NextYearNavIcon), NextYearNavIcon, static c => c.NextYearNavIcon, static (c, v) => c.NextYearNavIcon = v, outranked: ownNextYearNavIcon);
         }
 
         if (NextYearNavIconName.HasValue())
         {
-            bitCalendar.TakeFromCascade(nameof(NextYearNavIconName), NextYearNavIconName, static c => c.NextYearNavIconName, static (c, v) => c.NextYearNavIconName = v);
+            bitCalendar.TakeFromCascade(nameof(NextYearNavIconName), NextYearNavIconName, static c => c.NextYearNavIconName, static (c, v) => c.NextYearNavIconName = v, outranked: ownNextYearNavIcon);
         }
+
+        var ownNextYearRangeNavIcon = bitCalendar.HasSetAnyOf(nameof(NextYearRangeNavIcon), nameof(NextYearRangeNavIconName));
 
         if (NextYearRangeNavIcon is not null)
         {
-            bitCalendar.TakeFromCascade(nameof(NextYearRangeNavIcon), NextYearRangeNavIcon, static c => c.NextYearRangeNavIcon, static (c, v) => c.NextYearRangeNavIcon = v);
+            bitCalendar.TakeFromCascade(nameof(NextYearRangeNavIcon), NextYearRangeNavIcon, static c => c.NextYearRangeNavIcon, static (c, v) => c.NextYearRangeNavIcon = v, outranked: ownNextYearRangeNavIcon);
         }
 
         if (NextYearRangeNavIconName.HasValue())
         {
-            bitCalendar.TakeFromCascade(nameof(NextYearRangeNavIconName), NextYearRangeNavIconName, static c => c.NextYearRangeNavIconName, static (c, v) => c.NextYearRangeNavIconName = v);
+            bitCalendar.TakeFromCascade(nameof(NextYearRangeNavIconName), NextYearRangeNavIconName, static c => c.NextYearRangeNavIconName, static (c, v) => c.NextYearRangeNavIconName = v, outranked: ownNextYearRangeNavIcon);
         }
 
         if (PagedNavigation.HasValue)
@@ -856,34 +868,40 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.TakeFromCascade(nameof(PagedNavigation), PagedNavigation.Value, static c => c.PagedNavigation, static (c, v) => c.PagedNavigation = v);
         }
 
+        var ownPrevMonthNavIcon = bitCalendar.HasSetAnyOf(nameof(PrevMonthNavIcon), nameof(PrevMonthNavIconName));
+
         if (PrevMonthNavIcon is not null)
         {
-            bitCalendar.TakeFromCascade(nameof(PrevMonthNavIcon), PrevMonthNavIcon, static c => c.PrevMonthNavIcon, static (c, v) => c.PrevMonthNavIcon = v);
+            bitCalendar.TakeFromCascade(nameof(PrevMonthNavIcon), PrevMonthNavIcon, static c => c.PrevMonthNavIcon, static (c, v) => c.PrevMonthNavIcon = v, outranked: ownPrevMonthNavIcon);
         }
 
         if (PrevMonthNavIconName.HasValue())
         {
-            bitCalendar.TakeFromCascade(nameof(PrevMonthNavIconName), PrevMonthNavIconName, static c => c.PrevMonthNavIconName, static (c, v) => c.PrevMonthNavIconName = v);
+            bitCalendar.TakeFromCascade(nameof(PrevMonthNavIconName), PrevMonthNavIconName, static c => c.PrevMonthNavIconName, static (c, v) => c.PrevMonthNavIconName = v, outranked: ownPrevMonthNavIcon);
         }
+
+        var ownPrevYearNavIcon = bitCalendar.HasSetAnyOf(nameof(PrevYearNavIcon), nameof(PrevYearNavIconName));
 
         if (PrevYearNavIcon is not null)
         {
-            bitCalendar.TakeFromCascade(nameof(PrevYearNavIcon), PrevYearNavIcon, static c => c.PrevYearNavIcon, static (c, v) => c.PrevYearNavIcon = v);
+            bitCalendar.TakeFromCascade(nameof(PrevYearNavIcon), PrevYearNavIcon, static c => c.PrevYearNavIcon, static (c, v) => c.PrevYearNavIcon = v, outranked: ownPrevYearNavIcon);
         }
 
         if (PrevYearNavIconName.HasValue())
         {
-            bitCalendar.TakeFromCascade(nameof(PrevYearNavIconName), PrevYearNavIconName, static c => c.PrevYearNavIconName, static (c, v) => c.PrevYearNavIconName = v);
+            bitCalendar.TakeFromCascade(nameof(PrevYearNavIconName), PrevYearNavIconName, static c => c.PrevYearNavIconName, static (c, v) => c.PrevYearNavIconName = v, outranked: ownPrevYearNavIcon);
         }
+
+        var ownPrevYearRangeNavIcon = bitCalendar.HasSetAnyOf(nameof(PrevYearRangeNavIcon), nameof(PrevYearRangeNavIconName));
 
         if (PrevYearRangeNavIcon is not null)
         {
-            bitCalendar.TakeFromCascade(nameof(PrevYearRangeNavIcon), PrevYearRangeNavIcon, static c => c.PrevYearRangeNavIcon, static (c, v) => c.PrevYearRangeNavIcon = v);
+            bitCalendar.TakeFromCascade(nameof(PrevYearRangeNavIcon), PrevYearRangeNavIcon, static c => c.PrevYearRangeNavIcon, static (c, v) => c.PrevYearRangeNavIcon = v, outranked: ownPrevYearRangeNavIcon);
         }
 
         if (PrevYearRangeNavIconName.HasValue())
         {
-            bitCalendar.TakeFromCascade(nameof(PrevYearRangeNavIconName), PrevYearRangeNavIconName, static c => c.PrevYearRangeNavIconName, static (c, v) => c.PrevYearRangeNavIconName = v);
+            bitCalendar.TakeFromCascade(nameof(PrevYearRangeNavIconName), PrevYearRangeNavIconName, static c => c.PrevYearRangeNavIconName, static (c, v) => c.PrevYearRangeNavIconName = v, outranked: ownPrevYearRangeNavIcon);
         }
 
         if (SelectedDateAriaAtomic.HasValue())
@@ -931,14 +949,16 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.TakeFromCascade(nameof(ShowTimePickerAsOverlay), ShowTimePickerAsOverlay.Value, static c => c.ShowTimePickerAsOverlay, static (c, v) => c.ShowTimePickerAsOverlay = v);
         }
 
+        var ownShowTimePickerIcon = bitCalendar.HasSetAnyOf(nameof(ShowTimePickerIcon), nameof(ShowTimePickerIconName));
+
         if (ShowTimePickerIcon is not null)
         {
-            bitCalendar.TakeFromCascade(nameof(ShowTimePickerIcon), ShowTimePickerIcon, static c => c.ShowTimePickerIcon, static (c, v) => c.ShowTimePickerIcon = v);
+            bitCalendar.TakeFromCascade(nameof(ShowTimePickerIcon), ShowTimePickerIcon, static c => c.ShowTimePickerIcon, static (c, v) => c.ShowTimePickerIcon = v, outranked: ownShowTimePickerIcon);
         }
 
         if (ShowTimePickerIconName.HasValue())
         {
-            bitCalendar.TakeFromCascade(nameof(ShowTimePickerIconName), ShowTimePickerIconName, static c => c.ShowTimePickerIconName, static (c, v) => c.ShowTimePickerIconName = v);
+            bitCalendar.TakeFromCascade(nameof(ShowTimePickerIconName), ShowTimePickerIconName, static c => c.ShowTimePickerIconName, static (c, v) => c.ShowTimePickerIconName = v, outranked: ownShowTimePickerIcon);
         }
 
         if (ShowTimePickerTitle.HasValue())
@@ -971,14 +991,16 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.TakeFromCascade(nameof(TimeFormat), TimeFormat.Value, static c => c.TimeFormat, static (c, v) => c.TimeFormat = v);
         }
 
+        var ownTimePickerDecreaseHourIcon = bitCalendar.HasSetAnyOf(nameof(TimePickerDecreaseHourIcon), nameof(TimePickerDecreaseHourIconName));
+
         if (TimePickerDecreaseHourIcon is not null)
         {
-            bitCalendar.TakeFromCascade(nameof(TimePickerDecreaseHourIcon), TimePickerDecreaseHourIcon, static c => c.TimePickerDecreaseHourIcon, static (c, v) => c.TimePickerDecreaseHourIcon = v);
+            bitCalendar.TakeFromCascade(nameof(TimePickerDecreaseHourIcon), TimePickerDecreaseHourIcon, static c => c.TimePickerDecreaseHourIcon, static (c, v) => c.TimePickerDecreaseHourIcon = v, outranked: ownTimePickerDecreaseHourIcon);
         }
 
         if (TimePickerDecreaseHourIconName.HasValue())
         {
-            bitCalendar.TakeFromCascade(nameof(TimePickerDecreaseHourIconName), TimePickerDecreaseHourIconName, static c => c.TimePickerDecreaseHourIconName, static (c, v) => c.TimePickerDecreaseHourIconName = v);
+            bitCalendar.TakeFromCascade(nameof(TimePickerDecreaseHourIconName), TimePickerDecreaseHourIconName, static c => c.TimePickerDecreaseHourIconName, static (c, v) => c.TimePickerDecreaseHourIconName = v, outranked: ownTimePickerDecreaseHourIcon);
         }
 
         if (TimePickerDecreaseHourTitle.HasValue())
@@ -991,14 +1013,16 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.TakeFromCascade(nameof(TimePickerDecreaseMinuteTitle), TimePickerDecreaseMinuteTitle!, static c => c.TimePickerDecreaseMinuteTitle, static (c, v) => c.TimePickerDecreaseMinuteTitle = v);
         }
 
+        var ownTimePickerDecreaseMinuteIcon = bitCalendar.HasSetAnyOf(nameof(TimePickerDecreaseMinuteIcon), nameof(TimePickerDecreaseMinuteIconName));
+
         if (TimePickerDecreaseMinuteIcon is not null)
         {
-            bitCalendar.TakeFromCascade(nameof(TimePickerDecreaseMinuteIcon), TimePickerDecreaseMinuteIcon, static c => c.TimePickerDecreaseMinuteIcon, static (c, v) => c.TimePickerDecreaseMinuteIcon = v);
+            bitCalendar.TakeFromCascade(nameof(TimePickerDecreaseMinuteIcon), TimePickerDecreaseMinuteIcon, static c => c.TimePickerDecreaseMinuteIcon, static (c, v) => c.TimePickerDecreaseMinuteIcon = v, outranked: ownTimePickerDecreaseMinuteIcon);
         }
 
         if (TimePickerDecreaseMinuteIconName.HasValue())
         {
-            bitCalendar.TakeFromCascade(nameof(TimePickerDecreaseMinuteIconName), TimePickerDecreaseMinuteIconName, static c => c.TimePickerDecreaseMinuteIconName, static (c, v) => c.TimePickerDecreaseMinuteIconName = v);
+            bitCalendar.TakeFromCascade(nameof(TimePickerDecreaseMinuteIconName), TimePickerDecreaseMinuteIconName, static c => c.TimePickerDecreaseMinuteIconName, static (c, v) => c.TimePickerDecreaseMinuteIconName = v, outranked: ownTimePickerDecreaseMinuteIcon);
         }
 
         if (TimePickerHourTitle.HasValue())
@@ -1011,24 +1035,28 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
             bitCalendar.TakeFromCascade(nameof(TimePickerMinuteTitle), TimePickerMinuteTitle!, static c => c.TimePickerMinuteTitle, static (c, v) => c.TimePickerMinuteTitle = v);
         }
 
+        var ownTimePickerIncreaseHourIcon = bitCalendar.HasSetAnyOf(nameof(TimePickerIncreaseHourIcon), nameof(TimePickerIncreaseHourIconName));
+
         if (TimePickerIncreaseHourIcon is not null)
         {
-            bitCalendar.TakeFromCascade(nameof(TimePickerIncreaseHourIcon), TimePickerIncreaseHourIcon, static c => c.TimePickerIncreaseHourIcon, static (c, v) => c.TimePickerIncreaseHourIcon = v);
+            bitCalendar.TakeFromCascade(nameof(TimePickerIncreaseHourIcon), TimePickerIncreaseHourIcon, static c => c.TimePickerIncreaseHourIcon, static (c, v) => c.TimePickerIncreaseHourIcon = v, outranked: ownTimePickerIncreaseHourIcon);
         }
 
         if (TimePickerIncreaseHourIconName.HasValue())
         {
-            bitCalendar.TakeFromCascade(nameof(TimePickerIncreaseHourIconName), TimePickerIncreaseHourIconName, static c => c.TimePickerIncreaseHourIconName, static (c, v) => c.TimePickerIncreaseHourIconName = v);
+            bitCalendar.TakeFromCascade(nameof(TimePickerIncreaseHourIconName), TimePickerIncreaseHourIconName, static c => c.TimePickerIncreaseHourIconName, static (c, v) => c.TimePickerIncreaseHourIconName = v, outranked: ownTimePickerIncreaseHourIcon);
         }
+
+        var ownTimePickerIncreaseMinuteIcon = bitCalendar.HasSetAnyOf(nameof(TimePickerIncreaseMinuteIcon), nameof(TimePickerIncreaseMinuteIconName));
 
         if (TimePickerIncreaseMinuteIcon is not null)
         {
-            bitCalendar.TakeFromCascade(nameof(TimePickerIncreaseMinuteIcon), TimePickerIncreaseMinuteIcon, static c => c.TimePickerIncreaseMinuteIcon, static (c, v) => c.TimePickerIncreaseMinuteIcon = v);
+            bitCalendar.TakeFromCascade(nameof(TimePickerIncreaseMinuteIcon), TimePickerIncreaseMinuteIcon, static c => c.TimePickerIncreaseMinuteIcon, static (c, v) => c.TimePickerIncreaseMinuteIcon = v, outranked: ownTimePickerIncreaseMinuteIcon);
         }
 
         if (TimePickerIncreaseMinuteIconName.HasValue())
         {
-            bitCalendar.TakeFromCascade(nameof(TimePickerIncreaseMinuteIconName), TimePickerIncreaseMinuteIconName, static c => c.TimePickerIncreaseMinuteIconName, static (c, v) => c.TimePickerIncreaseMinuteIconName = v);
+            bitCalendar.TakeFromCascade(nameof(TimePickerIncreaseMinuteIconName), TimePickerIncreaseMinuteIconName, static c => c.TimePickerIncreaseMinuteIconName, static (c, v) => c.TimePickerIncreaseMinuteIconName = v, outranked: ownTimePickerIncreaseMinuteIcon);
         }
 
         if (TimePickerIncreaseHourTitle.HasValue())

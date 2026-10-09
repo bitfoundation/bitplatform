@@ -294,14 +294,16 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
             bitPersona.TakeFromCascade(nameof(ActionButtonTitle), ActionButtonTitle!, static p => p.ActionButtonTitle, static (p, v) => p.ActionButtonTitle = v);
         }
 
+        var ownActionIcon = bitPersona.HasSetAnyOf(nameof(ActionIcon), nameof(ActionIconName));
+
         if (ActionIcon is not null)
         {
-            bitPersona.TakeFromCascade(nameof(ActionIcon), ActionIcon, static p => p.ActionIcon, static (p, v) => p.ActionIcon = v);
+            bitPersona.TakeFromCascade(nameof(ActionIcon), ActionIcon, static p => p.ActionIcon, static (p, v) => p.ActionIcon = v, outranked: ownActionIcon);
         }
 
         if (ActionIconName.HasValue())
         {
-            bitPersona.TakeFromCascade(nameof(ActionIconName), ActionIconName, static p => p.ActionIconName, static (p, v) => p.ActionIconName = v);
+            bitPersona.TakeFromCascade(nameof(ActionIconName), ActionIconName, static p => p.ActionIconName, static (p, v) => p.ActionIconName = v, outranked: ownActionIcon);
         }
 
         if (ActiveAppearance.HasValue)
@@ -343,14 +345,16 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
             }
         }
 
+        var ownCoinIcon = bitPersona.HasSetAnyOf(nameof(CoinIcon), nameof(CoinIconName));
+
         if (CoinIcon is not null)
         {
-            bitPersona.TakeFromCascade(nameof(CoinIcon), CoinIcon, static p => p.CoinIcon, static (p, v) => p.CoinIcon = v);
+            bitPersona.TakeFromCascade(nameof(CoinIcon), CoinIcon, static p => p.CoinIcon, static (p, v) => p.CoinIcon = v, outranked: ownCoinIcon);
         }
 
         if (CoinIconName.HasValue())
         {
-            bitPersona.TakeFromCascade(nameof(CoinIconName), CoinIconName, static p => p.CoinIconName, static (p, v) => p.CoinIconName = v);
+            bitPersona.TakeFromCascade(nameof(CoinIconName), CoinIconName, static p => p.CoinIconName, static (p, v) => p.CoinIconName = v, outranked: ownCoinIcon);
         }
 
         // A size class set on the persona itself is the size it asked for, and a CoinSize handed down from here
@@ -494,14 +498,16 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
             bitPersona.TakeFromCascade(nameof(Target), Target, static p => p.Target, static (p, v) => p.Target = v);
         }
 
+        var ownUnknownIcon = bitPersona.HasSetAnyOf(nameof(UnknownIcon), nameof(UnknownIconName));
+
         if (UnknownIcon is not null)
         {
-            bitPersona.TakeFromCascade(nameof(UnknownIcon), UnknownIcon, static p => p.UnknownIcon, static (p, v) => p.UnknownIcon = v);
+            bitPersona.TakeFromCascade(nameof(UnknownIcon), UnknownIcon, static p => p.UnknownIcon, static (p, v) => p.UnknownIcon = v, outranked: ownUnknownIcon);
         }
 
         if (UnknownIconName.HasValue())
         {
-            bitPersona.TakeFromCascade(nameof(UnknownIconName), UnknownIconName, static p => p.UnknownIconName, static (p, v) => p.UnknownIconName = v);
+            bitPersona.TakeFromCascade(nameof(UnknownIconName), UnknownIconName, static p => p.UnknownIconName, static (p, v) => p.UnknownIconName = v, outranked: ownUnknownIcon);
         }
 
         if (Vertical.HasValue)

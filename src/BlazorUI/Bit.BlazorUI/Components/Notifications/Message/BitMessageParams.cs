@@ -254,14 +254,16 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
             bitMessage.TakeFromCascade(nameof(CollapseAriaLabel), CollapseAriaLabel!, static m => m.CollapseAriaLabel, static (m, v) => m.CollapseAriaLabel = v);
         }
 
+        var ownCollapseIcon = bitMessage.HasSetAnyOf(nameof(CollapseIcon), nameof(CollapseIconName));
+
         if (CollapseIcon is not null)
         {
-            bitMessage.TakeFromCascade(nameof(CollapseIcon), CollapseIcon, static m => m.CollapseIcon, static (m, v) => m.CollapseIcon = v);
+            bitMessage.TakeFromCascade(nameof(CollapseIcon), CollapseIcon, static m => m.CollapseIcon, static (m, v) => m.CollapseIcon = v, outranked: ownCollapseIcon);
         }
 
         if (CollapseIconName.HasValue())
         {
-            bitMessage.TakeFromCascade(nameof(CollapseIconName), CollapseIconName, static m => m.CollapseIconName, static (m, v) => m.CollapseIconName = v);
+            bitMessage.TakeFromCascade(nameof(CollapseIconName), CollapseIconName, static m => m.CollapseIconName, static (m, v) => m.CollapseIconName = v, outranked: ownCollapseIcon);
         }
 
         if (Color.HasValue)
@@ -284,14 +286,16 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
             bitMessage.TakeFromCascade(nameof(Dismissible), Dismissible.Value, static m => m.Dismissible, static (m, v) => m.Dismissible = v);
         }
 
+        var ownDismissIcon = bitMessage.HasSetAnyOf(nameof(DismissIcon), nameof(DismissIconName));
+
         if (DismissIcon is not null)
         {
-            bitMessage.TakeFromCascade(nameof(DismissIcon), DismissIcon, static m => m.DismissIcon, static (m, v) => m.DismissIcon = v);
+            bitMessage.TakeFromCascade(nameof(DismissIcon), DismissIcon, static m => m.DismissIcon, static (m, v) => m.DismissIcon = v, outranked: ownDismissIcon);
         }
 
         if (DismissIconName.HasValue())
         {
-            bitMessage.TakeFromCascade(nameof(DismissIconName), DismissIconName, static m => m.DismissIconName, static (m, v) => m.DismissIconName = v);
+            bitMessage.TakeFromCascade(nameof(DismissIconName), DismissIconName, static m => m.DismissIconName, static (m, v) => m.DismissIconName = v, outranked: ownDismissIcon);
         }
 
         if (DismissOnEscape.HasValue)
@@ -309,14 +313,16 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
             bitMessage.TakeFromCascade(nameof(ExpandAriaLabel), ExpandAriaLabel!, static m => m.ExpandAriaLabel, static (m, v) => m.ExpandAriaLabel = v);
         }
 
+        var ownExpandIcon = bitMessage.HasSetAnyOf(nameof(ExpandIcon), nameof(ExpandIconName));
+
         if (ExpandIcon is not null)
         {
-            bitMessage.TakeFromCascade(nameof(ExpandIcon), ExpandIcon, static m => m.ExpandIcon, static (m, v) => m.ExpandIcon = v);
+            bitMessage.TakeFromCascade(nameof(ExpandIcon), ExpandIcon, static m => m.ExpandIcon, static (m, v) => m.ExpandIcon = v, outranked: ownExpandIcon);
         }
 
         if (ExpandIconName.HasValue())
         {
-            bitMessage.TakeFromCascade(nameof(ExpandIconName), ExpandIconName, static m => m.ExpandIconName, static (m, v) => m.ExpandIconName = v);
+            bitMessage.TakeFromCascade(nameof(ExpandIconName), ExpandIconName, static m => m.ExpandIconName, static (m, v) => m.ExpandIconName = v, outranked: ownExpandIcon);
         }
 
         if (HideIcon.HasValue)
@@ -324,14 +330,16 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
             bitMessage.TakeFromCascade(nameof(HideIcon), HideIcon.Value, static m => m.HideIcon, static (m, v) => m.HideIcon = v);
         }
 
+        var ownIcon = bitMessage.HasSetAnyOf(nameof(Icon), nameof(IconName));
+
         if (Icon is not null)
         {
-            bitMessage.TakeFromCascade(nameof(Icon), Icon, static m => m.Icon, static (m, v) => m.Icon = v);
+            bitMessage.TakeFromCascade(nameof(Icon), Icon, static m => m.Icon, static (m, v) => m.Icon = v, outranked: ownIcon);
         }
 
         if (IconName.HasValue())
         {
-            bitMessage.TakeFromCascade(nameof(IconName), IconName, static m => m.IconName, static (m, v) => m.IconName = v);
+            bitMessage.TakeFromCascade(nameof(IconName), IconName, static m => m.IconName, static (m, v) => m.IconName = v, outranked: ownIcon);
         }
 
         if (MaxLines.HasValue)
