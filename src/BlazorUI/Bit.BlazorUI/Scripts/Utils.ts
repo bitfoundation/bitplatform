@@ -376,7 +376,7 @@
             }
         }
 
-        // The two document-level listeners every tooltip needs are shared by all of them, and each one asks the
+        // The two page-level listeners every tooltip needs are shared by all of them, and each one asks the
         // DOM for the few tooltips that are actually shown instead of every tooltip on the page asking for
         // itself - a toolbar or a grid of a few hundred tooltips pays for one listener per key and press.
         private static ensureTooltipListeners() {
@@ -390,9 +390,13 @@
 
             // In the capture phase, so the key is taken before whatever holds the focus acts on it. Every
             // tooltip under the pointer - a nested one along with the one around it - is dismissed by the press,
-            // and stopImmediatePropagation keeps it from any other listener on the document as well, a callout's
-            // own Escape listener included.
-            document.addEventListener('keydown', e => {
+            // and stopImmediatePropagation keeps it from every listener after this one, a callout's own Escape
+            // listener included. On the window rather than the document: listeners on one node run in the order
+            // they were added, and these are added when the first tooltip on the page registers - after the
+            // document listener of a menu that was already open, when the tooltip is in its content - so on the
+            // document the menu would hear the press before the tooltip took it. The window is ahead of the
+            // document whatever the order, and only the claim (general.ts) is on it ahead of this.
+            window.addEventListener('keydown', e => {
                 // A press a component claimed (see claimEscape) is that component's: the tooltip stays, and the key
                 // goes on to the component rather than being stopped here.
                 if (e.key !== 'Escape' || e.defaultPrevented) return;

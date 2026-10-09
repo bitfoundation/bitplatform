@@ -105,6 +105,21 @@ public sealed class BitEscapeClaimContractTests
         StringAssert.Contains(GetMethod(script, method), "Utils._escapeSurfaces.add(element)", $"Utils.{method} does not mark its element as a surface for Utils.claimEscape.");
     }
 
+    [TestMethod]
+    public void TheTooltipShouldTakeItsEscapeAheadOfTheCalloutsAroundIt()
+    {
+        var body = GetMethod(SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts"), "ensureTooltipListeners");
+
+        // The tooltips' shared listener is added when the first tooltip on the page registers, which can be after a
+        // hover-opened menu around it added its document listener (Utils.setupEscape). Listeners on one node run in
+        // the order they were added, so on the document the menu would close on the press the tooltip takes; on the
+        // window, in the capture phase, the tooltip hears it first whatever the order.
+        var listener = body.Split("addEventListener(").Skip(1).Single(l => l.StartsWith("'keydown'"));
+        StringAssert.Contains(body, "window.addEventListener('keydown'");
+        StringAssert.Contains(listener, "capture: true");
+        StringAssert.Contains(listener, "e.stopImmediatePropagation()");
+    }
+
     // The strings an attribute value or a property can come out as: the whole of a plain literal, or each branch of a
     // conditional expression.
     private static string[] Branches(string expression)
