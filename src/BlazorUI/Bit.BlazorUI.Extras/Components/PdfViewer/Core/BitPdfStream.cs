@@ -10,6 +10,9 @@ namespace Bit.BlazorUI;
 public sealed class BitPdfStream : BitPdfBaseStream
 {
     private readonly byte[] _bytes;
+    // Boundary parsing needs a source wrapper; ordinary/decoded byte reads keep
+    // the existing buffer and stream layout without another retained field.
+    internal override IBitPdfByteSource ByteSource => new BitPdfMemoryByteSource(_bytes);
 
     /// <summary>The underlying buffer. Reads are bounded by Start/End, not the buffer length.</summary>
     public byte[] Buffer => _bytes;
