@@ -144,14 +144,14 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     /// <summary>
     /// The custom template content to render divider icon.
     /// </summary>
-    [Parameter] public RenderFragment? DividerIconTemplate { get; set; }
+    [Parameter, Outranks(nameof(DividerText))] public RenderFragment? DividerIconTemplate { get; set; }
 
     /// <summary>
     /// A plain text divider (for example "/" or "›") to render in place of the default chevron icon.
     /// <br />
     /// It is ignored when the DividerIconTemplate is provided.
     /// </summary>
-    [Parameter] public string? DividerText { get; set; }
+    [Parameter, Outranks(nameof(DividerIcon))] public string? DividerText { get; set; }
 
     /// <summary>
     /// Makes the overflow button put the collapsed items back into the trail instead of opening them in a menu.

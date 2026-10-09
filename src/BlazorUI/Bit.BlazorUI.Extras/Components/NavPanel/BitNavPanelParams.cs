@@ -411,16 +411,15 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
             bitNavPanel.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static n => n.AutoFocus, static (n, v) => n.AutoFocus = v);
         }
 
-        var ownChevronDownIcon = bitNavPanel.HasSetAnyOf(nameof(ChevronDownIcon), nameof(ChevronDownIconName));
 
         if (ChevronDownIcon is not null)
         {
-            bitNavPanel.TakeFromCascade(nameof(ChevronDownIcon), ChevronDownIcon, static n => n.ChevronDownIcon, static (n, v) => n.ChevronDownIcon = v, outranked: ownChevronDownIcon);
+            bitNavPanel.TakeFromCascade(nameof(ChevronDownIcon), ChevronDownIcon, static n => n.ChevronDownIcon, static (n, v) => n.ChevronDownIcon = v);
         }
 
         if (ChevronDownIconName.HasValue())
         {
-            bitNavPanel.TakeFromCascade(nameof(ChevronDownIconName), ChevronDownIconName, static n => n.ChevronDownIconName, static (n, v) => n.ChevronDownIconName = v, outranked: ownChevronDownIcon);
+            bitNavPanel.TakeFromCascade(nameof(ChevronDownIconName), ChevronDownIconName, static n => n.ChevronDownIconName, static (n, v) => n.ChevronDownIconName = v);
         }
 
         if (Classes is not null)
@@ -433,16 +432,15 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
             bitNavPanel.TakeFromCascade(nameof(CloseAriaLabel), CloseAriaLabel, static n => n.CloseAriaLabel, static (n, v) => n.CloseAriaLabel = v);
         }
 
-        var ownCloseIcon = bitNavPanel.HasSetAnyOf(nameof(CloseIcon), nameof(CloseIconName));
 
         if (CloseIcon is not null)
         {
-            bitNavPanel.TakeFromCascade(nameof(CloseIcon), CloseIcon, static n => n.CloseIcon, static (n, v) => n.CloseIcon = v, outranked: ownCloseIcon);
+            bitNavPanel.TakeFromCascade(nameof(CloseIcon), CloseIcon, static n => n.CloseIcon, static (n, v) => n.CloseIcon = v);
         }
 
         if (CloseIconName.HasValue())
         {
-            bitNavPanel.TakeFromCascade(nameof(CloseIconName), CloseIconName, static n => n.CloseIconName, static (n, v) => n.CloseIconName = v, outranked: ownCloseIcon);
+            bitNavPanel.TakeFromCascade(nameof(CloseIconName), CloseIconName, static n => n.CloseIconName, static (n, v) => n.CloseIconName = v);
         }
 
         if (CollapseAriaLabel.HasValue())
@@ -665,16 +663,15 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
             bitNavPanel.TakeFromCascade(nameof(SearchDebounceTime), SearchDebounceTime.Value, static n => n.SearchDebounceTime, static (n, v) => n.SearchDebounceTime = v);
         }
 
-        var ownSearchIcon = bitNavPanel.HasSetAnyOf(nameof(SearchIcon), nameof(SearchIconName));
 
         if (SearchIcon is not null)
         {
-            bitNavPanel.TakeFromCascade(nameof(SearchIcon), SearchIcon, static n => n.SearchIcon, static (n, v) => n.SearchIcon = v, outranked: ownSearchIcon);
+            bitNavPanel.TakeFromCascade(nameof(SearchIcon), SearchIcon, static n => n.SearchIcon, static (n, v) => n.SearchIcon = v);
         }
 
         if (SearchIconName.HasValue())
         {
-            bitNavPanel.TakeFromCascade(nameof(SearchIconName), SearchIconName, static n => n.SearchIconName, static (n, v) => n.SearchIconName = v, outranked: ownSearchIcon);
+            bitNavPanel.TakeFromCascade(nameof(SearchIconName), SearchIconName, static n => n.SearchIconName, static (n, v) => n.SearchIconName = v);
         }
 
         if (ShowCloseButton.HasValue)
@@ -712,16 +709,15 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
             bitNavPanel.TakeFromCascade(nameof(ToggledWidth), ToggledWidth.Value, static n => n.ToggledWidth, static (n, v) => n.ToggledWidth = v);
         }
 
-        var ownToggleIcon = bitNavPanel.HasSetAnyOf(nameof(ToggleIcon), nameof(ToggleIconName));
 
         if (ToggleIcon is not null)
         {
-            bitNavPanel.TakeFromCascade(nameof(ToggleIcon), ToggleIcon, static n => n.ToggleIcon, static (n, v) => n.ToggleIcon = v, outranked: ownToggleIcon);
+            bitNavPanel.TakeFromCascade(nameof(ToggleIcon), ToggleIcon, static n => n.ToggleIcon, static (n, v) => n.ToggleIcon = v);
         }
 
         if (ToggleIconName.HasValue())
         {
-            bitNavPanel.TakeFromCascade(nameof(ToggleIconName), ToggleIconName, static n => n.ToggleIconName, static (n, v) => n.ToggleIconName = v, outranked: ownToggleIcon);
+            bitNavPanel.TakeFromCascade(nameof(ToggleIconName), ToggleIconName, static n => n.ToggleIconName, static (n, v) => n.ToggleIconName = v);
         }
 
         if (Top.HasValue)

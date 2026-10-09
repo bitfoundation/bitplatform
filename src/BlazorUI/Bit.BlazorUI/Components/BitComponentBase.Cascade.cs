@@ -72,19 +72,44 @@ public abstract partial class BitComponentBase : IBitCascadeTarget
     }
 
     /// <summary>
-    /// Puts back the value the named parameter held before the params object wrote it, while the params object
-    /// still supplies it but the component has set something that outranks it. The value stays recorded, so the
-    /// parameter is restored again once the params object stops supplying it.
+    /// Whether the params object may write the named parameter on this render: the markup has set neither it nor any
+    /// parameter it is one setting with (<see cref="BitCascadeMap.BitCascadeParameter.IsOutrankedOn"/>). A value the
+    /// params object wrote on an earlier render, before the component made its own choice of that setting, is put
+    /// back here, since it would otherwise go on outranking that choice.
     /// </summary>
-    internal void ReleaseCascadeParameter(string name)
+    internal bool MayTakeFromCascade(string name)
     {
-        if (HasNotBeenSet(name) is false) return;
-
-        if (_cascadeTracker is null || _cascadeTracker.TryGetOriginal(name, out var original) is false) return;
+        if (HasNotBeenSet(name) is false) return false;
 
         var parameter = GetCascadeMap()?.Parameters.GetValueOrDefault(name);
 
-        if (parameter is null || parameter.SetOnComponent(this, original) is false) return;
+        if (parameter is null || parameter.IsOutrankedOn(this) is false) return true;
+
+        ReleaseCascadeParameter(parameter);
+
+        return false;
+    }
+
+    /// <summary>
+    /// Puts back the value the named parameter held before the params object wrote it, while the params object
+    /// still supplies it but the component has set something that outranks it in a way no name tells - a size class
+    /// of its own beside a cascaded custom size. The value stays recorded, so the parameter is restored again once
+    /// the params object stops supplying it.
+    /// </summary>
+    internal void ReleaseCascadeParameter(string name)
+    {
+        var parameter = GetCascadeMap()?.Parameters.GetValueOrDefault(name);
+
+        if (parameter is null) return;
+
+        ReleaseCascadeParameter(parameter);
+    }
+
+
+
+    private void ReleaseCascadeParameter(BitCascadeMap.BitCascadeParameter parameter)
+    {
+        if (_cascadeTracker?.Release(this, parameter) is not true) return;
 
         if (parameter.ResetsClass) ClassBuilder.Reset();
         if (parameter.ResetsStyle) StyleBuilder.Reset();

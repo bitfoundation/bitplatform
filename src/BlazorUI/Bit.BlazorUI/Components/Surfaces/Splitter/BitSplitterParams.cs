@@ -210,16 +210,15 @@ public class BitSplitterParams : BitComponentBaseParams, IBitComponentParams
             bitSplitter.TakeFromCascade(nameof(Classes), Classes, static s => s.Classes, static (s, v) => s.Classes = v);
         }
 
-        var ownCollapseIcon = bitSplitter.HasSetAnyOf(nameof(CollapseIcon), nameof(CollapseIconName));
 
         if (CollapseIcon is not null)
         {
-            bitSplitter.TakeFromCascade(nameof(CollapseIcon), CollapseIcon, static s => s.CollapseIcon, static (s, v) => s.CollapseIcon = v, outranked: ownCollapseIcon);
+            bitSplitter.TakeFromCascade(nameof(CollapseIcon), CollapseIcon, static s => s.CollapseIcon, static (s, v) => s.CollapseIcon = v);
         }
 
         if (CollapseIconName.HasValue())
         {
-            bitSplitter.TakeFromCascade(nameof(CollapseIconName), CollapseIconName, static s => s.CollapseIconName, static (s, v) => s.CollapseIconName = v, outranked: ownCollapseIcon);
+            bitSplitter.TakeFromCascade(nameof(CollapseIconName), CollapseIconName, static s => s.CollapseIconName, static (s, v) => s.CollapseIconName = v);
         }
 
         if (CollapsedSize.HasValue)
@@ -263,16 +262,15 @@ public class BitSplitterParams : BitComponentBaseParams, IBitComponentParams
             bitSplitter.TakeFromCascade(nameof(DragStep), DragStep.Value, static s => s.DragStep, static (s, v) => s.DragStep = v);
         }
 
-        var ownExpandIcon = bitSplitter.HasSetAnyOf(nameof(ExpandIcon), nameof(ExpandIconName));
 
         if (ExpandIcon is not null)
         {
-            bitSplitter.TakeFromCascade(nameof(ExpandIcon), ExpandIcon, static s => s.ExpandIcon, static (s, v) => s.ExpandIcon = v, outranked: ownExpandIcon);
+            bitSplitter.TakeFromCascade(nameof(ExpandIcon), ExpandIcon, static s => s.ExpandIcon, static (s, v) => s.ExpandIcon = v);
         }
 
         if (ExpandIconName.HasValue())
         {
-            bitSplitter.TakeFromCascade(nameof(ExpandIconName), ExpandIconName, static s => s.ExpandIconName, static (s, v) => s.ExpandIconName = v, outranked: ownExpandIcon);
+            bitSplitter.TakeFromCascade(nameof(ExpandIconName), ExpandIconName, static s => s.ExpandIconName, static (s, v) => s.ExpandIconName = v);
         }
 
         if (FirstPanelMaxSize.HasValue)
@@ -290,16 +288,15 @@ public class BitSplitterParams : BitComponentBaseParams, IBitComponentParams
             bitSplitter.TakeFromCascade(nameof(GutterHitSize), GutterHitSize, static s => s.GutterHitSize, static (s, v) => s.GutterHitSize = v);
         }
 
-        var ownGutterIcon = bitSplitter.HasSetAnyOf(nameof(GutterIcon), nameof(GutterIconName));
 
         if (GutterIcon is not null)
         {
-            bitSplitter.TakeFromCascade(nameof(GutterIcon), GutterIcon, static s => s.GutterIcon, static (s, v) => s.GutterIcon = v, outranked: ownGutterIcon);
+            bitSplitter.TakeFromCascade(nameof(GutterIcon), GutterIcon, static s => s.GutterIcon, static (s, v) => s.GutterIcon = v);
         }
 
         if (GutterIconName.HasValue())
         {
-            bitSplitter.TakeFromCascade(nameof(GutterIconName), GutterIconName, static s => s.GutterIconName, static (s, v) => s.GutterIconName = v, outranked: ownGutterIcon);
+            bitSplitter.TakeFromCascade(nameof(GutterIconName), GutterIconName, static s => s.GutterIconName, static (s, v) => s.GutterIconName = v);
         }
 
         if (GutterSize.HasValue)

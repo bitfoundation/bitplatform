@@ -236,7 +236,7 @@ public partial class BitSplitter : BitComponentBase
     /// goes in here is decoration rather than a control: a focusable element inside it would be a second tab
     /// stop on something a screen reader reports as a single separator.
     /// </remarks>
-    [Parameter] public RenderFragment? GutterTemplate { get; set; }
+    [Parameter, Outranks(nameof(GutterIcon))] public RenderFragment? GutterTemplate { get; set; }
 
     /// <summary>
     /// How far, in pixels, one press of an arrow key on the gutter moves the split.

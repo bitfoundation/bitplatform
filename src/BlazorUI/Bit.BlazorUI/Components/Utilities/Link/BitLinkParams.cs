@@ -244,16 +244,15 @@ public class BitLinkParams : BitComponentBaseParams, IBitComponentParams
             bitLink.TakeFromCascade(nameof(Href), Href, static l => l.Href, static (l, v) => l.Href = v);
         }
 
-        var ownIcon = bitLink.HasSetAnyOf(nameof(Icon), nameof(IconName));
 
         if (Icon is not null)
         {
-            bitLink.TakeFromCascade(nameof(Icon), Icon, static l => l.Icon, static (l, v) => l.Icon = v, outranked: ownIcon);
+            bitLink.TakeFromCascade(nameof(Icon), Icon, static l => l.Icon, static (l, v) => l.Icon = v);
         }
 
         if (IconName.HasValue())
         {
-            bitLink.TakeFromCascade(nameof(IconName), IconName, static l => l.IconName, static (l, v) => l.IconName = v, outranked: ownIcon);
+            bitLink.TakeFromCascade(nameof(IconName), IconName, static l => l.IconName, static (l, v) => l.IconName = v);
         }
 
         if (IconPlacement.HasValue)

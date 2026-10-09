@@ -240,16 +240,15 @@ public class BitSnackBarParams : BitComponentBaseParams, IBitComponentParams
             bitSnackBar.TakeFromCascade(nameof(DismissAriaLabel), DismissAriaLabel, static s => s.DismissAriaLabel, static (s, v) => s.DismissAriaLabel = v);
         }
 
-        var ownDismissIcon = bitSnackBar.HasSetAnyOf(nameof(DismissIcon), nameof(DismissIconName));
 
         if (DismissIcon is not null)
         {
-            bitSnackBar.TakeFromCascade(nameof(DismissIcon), DismissIcon, static s => s.DismissIcon, static (s, v) => s.DismissIcon = v, outranked: ownDismissIcon);
+            bitSnackBar.TakeFromCascade(nameof(DismissIcon), DismissIcon, static s => s.DismissIcon, static (s, v) => s.DismissIcon = v);
         }
 
         if (DismissIconName.HasValue())
         {
-            bitSnackBar.TakeFromCascade(nameof(DismissIconName), DismissIconName, static s => s.DismissIconName, static (s, v) => s.DismissIconName = v, outranked: ownDismissIcon);
+            bitSnackBar.TakeFromCascade(nameof(DismissIconName), DismissIconName, static s => s.DismissIconName, static (s, v) => s.DismissIconName = v);
         }
 
         if (DismissOnClick.HasValue)
@@ -272,16 +271,15 @@ public class BitSnackBarParams : BitComponentBaseParams, IBitComponentParams
             bitSnackBar.TakeFromCascade(nameof(Hotkey), Hotkey, static s => s.Hotkey, static (s, v) => s.Hotkey = v);
         }
 
-        var ownIcon = bitSnackBar.HasSetAnyOf(nameof(Icon), nameof(IconName));
 
         if (Icon is not null)
         {
-            bitSnackBar.TakeFromCascade(nameof(Icon), Icon, static s => s.Icon, static (s, v) => s.Icon = v, outranked: ownIcon);
+            bitSnackBar.TakeFromCascade(nameof(Icon), Icon, static s => s.Icon, static (s, v) => s.Icon = v);
         }
 
         if (IconName.HasValue())
         {
-            bitSnackBar.TakeFromCascade(nameof(IconName), IconName, static s => s.IconName, static (s, v) => s.IconName = v, outranked: ownIcon);
+            bitSnackBar.TakeFromCascade(nameof(IconName), IconName, static s => s.IconName, static (s, v) => s.IconName = v);
         }
 
         if (MaxItems.HasValue)

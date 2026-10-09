@@ -326,16 +326,15 @@ public class BitPaginationParams : BitComponentBaseParams, IBitComponentParams
             bitPagination.TakeFromCascade(nameof(FirstButtonAriaLabel), FirstButtonAriaLabel, static p => p.FirstButtonAriaLabel, static (p, v) => p.FirstButtonAriaLabel = v);
         }
 
-        var ownFirstButtonIcon = bitPagination.HasSetAnyOf(nameof(FirstButtonIcon), nameof(FirstButtonIconName));
 
         if (FirstButtonIcon is not null)
         {
-            bitPagination.TakeFromCascade(nameof(FirstButtonIcon), FirstButtonIcon, static p => p.FirstButtonIcon, static (p, v) => p.FirstButtonIcon = v, outranked: ownFirstButtonIcon);
+            bitPagination.TakeFromCascade(nameof(FirstButtonIcon), FirstButtonIcon, static p => p.FirstButtonIcon, static (p, v) => p.FirstButtonIcon = v);
         }
 
         if (FirstButtonIconName.HasValue())
         {
-            bitPagination.TakeFromCascade(nameof(FirstButtonIconName), FirstButtonIconName, static p => p.FirstButtonIconName, static (p, v) => p.FirstButtonIconName = v, outranked: ownFirstButtonIcon);
+            bitPagination.TakeFromCascade(nameof(FirstButtonIconName), FirstButtonIconName, static p => p.FirstButtonIconName, static (p, v) => p.FirstButtonIconName = v);
         }
 
         if (FirstButtonText is not null)
@@ -383,16 +382,15 @@ public class BitPaginationParams : BitComponentBaseParams, IBitComponentParams
             bitPagination.TakeFromCascade(nameof(LastButtonAriaLabel), LastButtonAriaLabel, static p => p.LastButtonAriaLabel, static (p, v) => p.LastButtonAriaLabel = v);
         }
 
-        var ownLastButtonIcon = bitPagination.HasSetAnyOf(nameof(LastButtonIcon), nameof(LastButtonIconName));
 
         if (LastButtonIcon is not null)
         {
-            bitPagination.TakeFromCascade(nameof(LastButtonIcon), LastButtonIcon, static p => p.LastButtonIcon, static (p, v) => p.LastButtonIcon = v, outranked: ownLastButtonIcon);
+            bitPagination.TakeFromCascade(nameof(LastButtonIcon), LastButtonIcon, static p => p.LastButtonIcon, static (p, v) => p.LastButtonIcon = v);
         }
 
         if (LastButtonIconName.HasValue())
         {
-            bitPagination.TakeFromCascade(nameof(LastButtonIconName), LastButtonIconName, static p => p.LastButtonIconName, static (p, v) => p.LastButtonIconName = v, outranked: ownLastButtonIcon);
+            bitPagination.TakeFromCascade(nameof(LastButtonIconName), LastButtonIconName, static p => p.LastButtonIconName, static (p, v) => p.LastButtonIconName = v);
         }
 
         if (LastButtonText is not null)
@@ -415,16 +413,15 @@ public class BitPaginationParams : BitComponentBaseParams, IBitComponentParams
             bitPagination.TakeFromCascade(nameof(NextButtonAriaLabel), NextButtonAriaLabel, static p => p.NextButtonAriaLabel, static (p, v) => p.NextButtonAriaLabel = v);
         }
 
-        var ownNextButtonIcon = bitPagination.HasSetAnyOf(nameof(NextButtonIcon), nameof(NextButtonIconName));
 
         if (NextButtonIcon is not null)
         {
-            bitPagination.TakeFromCascade(nameof(NextButtonIcon), NextButtonIcon, static p => p.NextButtonIcon, static (p, v) => p.NextButtonIcon = v, outranked: ownNextButtonIcon);
+            bitPagination.TakeFromCascade(nameof(NextButtonIcon), NextButtonIcon, static p => p.NextButtonIcon, static (p, v) => p.NextButtonIcon = v);
         }
 
         if (NextButtonIconName.HasValue())
         {
-            bitPagination.TakeFromCascade(nameof(NextButtonIconName), NextButtonIconName, static p => p.NextButtonIconName, static (p, v) => p.NextButtonIconName = v, outranked: ownNextButtonIcon);
+            bitPagination.TakeFromCascade(nameof(NextButtonIconName), NextButtonIconName, static p => p.NextButtonIconName, static (p, v) => p.NextButtonIconName = v);
         }
 
         if (NextButtonText is not null)
@@ -452,16 +449,15 @@ public class BitPaginationParams : BitComponentBaseParams, IBitComponentParams
             bitPagination.TakeFromCascade(nameof(PreviousButtonAriaLabel), PreviousButtonAriaLabel, static p => p.PreviousButtonAriaLabel, static (p, v) => p.PreviousButtonAriaLabel = v);
         }
 
-        var ownPreviousButtonIcon = bitPagination.HasSetAnyOf(nameof(PreviousButtonIcon), nameof(PreviousButtonIconName));
 
         if (PreviousButtonIcon is not null)
         {
-            bitPagination.TakeFromCascade(nameof(PreviousButtonIcon), PreviousButtonIcon, static p => p.PreviousButtonIcon, static (p, v) => p.PreviousButtonIcon = v, outranked: ownPreviousButtonIcon);
+            bitPagination.TakeFromCascade(nameof(PreviousButtonIcon), PreviousButtonIcon, static p => p.PreviousButtonIcon, static (p, v) => p.PreviousButtonIcon = v);
         }
 
         if (PreviousButtonIconName.HasValue())
         {
-            bitPagination.TakeFromCascade(nameof(PreviousButtonIconName), PreviousButtonIconName, static p => p.PreviousButtonIconName, static (p, v) => p.PreviousButtonIconName = v, outranked: ownPreviousButtonIcon);
+            bitPagination.TakeFromCascade(nameof(PreviousButtonIconName), PreviousButtonIconName, static p => p.PreviousButtonIconName, static (p, v) => p.PreviousButtonIconName = v);
         }
 
         if (PreviousButtonText is not null)

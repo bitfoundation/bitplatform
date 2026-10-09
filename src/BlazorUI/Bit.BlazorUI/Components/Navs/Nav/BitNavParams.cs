@@ -195,16 +195,15 @@ public class BitNavParams : BitComponentBaseParams, IBitComponentParams
             bitNav.TakeFromCascade(nameof(AllExpanded), AllExpanded.Value, static n => n.AllExpanded, static (n, v) => n.AllExpanded = v);
         }
 
-        var ownChevronDownIcon = bitNav.HasSetAnyOf(nameof(ChevronDownIcon), nameof(ChevronDownIconName));
 
         if (ChevronDownIcon is not null)
         {
-            bitNav.TakeFromCascade(nameof(ChevronDownIcon), ChevronDownIcon, static n => n.ChevronDownIcon, static (n, v) => n.ChevronDownIcon = v, outranked: ownChevronDownIcon);
+            bitNav.TakeFromCascade(nameof(ChevronDownIcon), ChevronDownIcon, static n => n.ChevronDownIcon, static (n, v) => n.ChevronDownIcon = v);
         }
 
         if (ChevronDownIconName.HasValue())
         {
-            bitNav.TakeFromCascade(nameof(ChevronDownIconName), ChevronDownIconName, static n => n.ChevronDownIconName, static (n, v) => n.ChevronDownIconName = v, outranked: ownChevronDownIcon);
+            bitNav.TakeFromCascade(nameof(ChevronDownIconName), ChevronDownIconName, static n => n.ChevronDownIconName, static (n, v) => n.ChevronDownIconName = v);
         }
 
         if (Classes is not null)

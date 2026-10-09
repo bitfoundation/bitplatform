@@ -235,16 +235,15 @@ public class BitModalParams : BitComponentBaseParams, IBitComponentParams
             bitModal.TakeFromCascade(nameof(CloseButtonTitle), CloseButtonTitle, static m => m.CloseButtonTitle, static (m, v) => m.CloseButtonTitle = v);
         }
 
-        var ownCloseIcon = bitModal.HasSetAnyOf(nameof(CloseIcon), nameof(CloseIconName));
 
         if (CloseIcon is not null)
         {
-            bitModal.TakeFromCascade(nameof(CloseIcon), CloseIcon, static m => m.CloseIcon, static (m, v) => m.CloseIcon = v, outranked: ownCloseIcon);
+            bitModal.TakeFromCascade(nameof(CloseIcon), CloseIcon, static m => m.CloseIcon, static (m, v) => m.CloseIcon = v);
         }
 
         if (CloseIconName.HasValue())
         {
-            bitModal.TakeFromCascade(nameof(CloseIconName), CloseIconName, static m => m.CloseIconName, static (m, v) => m.CloseIconName = v, outranked: ownCloseIcon);
+            bitModal.TakeFromCascade(nameof(CloseIconName), CloseIconName, static m => m.CloseIconName, static (m, v) => m.CloseIconName = v);
         }
 
         if (DragElementSelector.HasValue())

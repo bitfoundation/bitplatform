@@ -178,16 +178,15 @@ public class BitMessageBoxParams : BitComponentBaseParams, IBitComponentParams
             bitMessageBox.TakeFromCascade(nameof(CloseButtonTitle), CloseButtonTitle, static m => m.CloseButtonTitle, static (m, v) => m.CloseButtonTitle = v);
         }
 
-        var ownCloseIcon = bitMessageBox.HasSetAnyOf(nameof(CloseIcon), nameof(CloseIconName));
 
         if (CloseIcon is not null)
         {
-            bitMessageBox.TakeFromCascade(nameof(CloseIcon), CloseIcon, static m => m.CloseIcon, static (m, v) => m.CloseIcon = v, outranked: ownCloseIcon);
+            bitMessageBox.TakeFromCascade(nameof(CloseIcon), CloseIcon, static m => m.CloseIcon, static (m, v) => m.CloseIcon = v);
         }
 
         if (CloseIconName.HasValue())
         {
-            bitMessageBox.TakeFromCascade(nameof(CloseIconName), CloseIconName, static m => m.CloseIconName, static (m, v) => m.CloseIconName = v, outranked: ownCloseIcon);
+            bitMessageBox.TakeFromCascade(nameof(CloseIconName), CloseIconName, static m => m.CloseIconName, static (m, v) => m.CloseIconName = v);
         }
 
         if (DefaultButton.HasValue)

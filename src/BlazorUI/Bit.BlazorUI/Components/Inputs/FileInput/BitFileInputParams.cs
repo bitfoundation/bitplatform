@@ -322,16 +322,15 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
             bitFileInput.TakeFromCascade(nameof(Directory), Directory.Value, static f => f.Directory, static (f, v) => f.Directory = v);
         }
 
-        var ownDropZoneIcon = bitFileInput.HasSetAnyOf(nameof(DropZoneIcon), nameof(DropZoneIconName));
 
         if (DropZoneIcon is not null)
         {
-            bitFileInput.TakeFromCascade(nameof(DropZoneIcon), DropZoneIcon, static f => f.DropZoneIcon, static (f, v) => f.DropZoneIcon = v, outranked: ownDropZoneIcon);
+            bitFileInput.TakeFromCascade(nameof(DropZoneIcon), DropZoneIcon, static f => f.DropZoneIcon, static (f, v) => f.DropZoneIcon = v);
         }
 
         if (DropZoneIconName.HasValue())
         {
-            bitFileInput.TakeFromCascade(nameof(DropZoneIconName), DropZoneIconName, static f => f.DropZoneIconName, static (f, v) => f.DropZoneIconName = v, outranked: ownDropZoneIcon);
+            bitFileInput.TakeFromCascade(nameof(DropZoneIconName), DropZoneIconName, static f => f.DropZoneIconName, static (f, v) => f.DropZoneIconName = v);
         }
 
         if (DuplicateErrorMessage.HasValue())
@@ -429,16 +428,15 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
             bitFileInput.TakeFromCascade(nameof(ReadImageDimensions), ReadImageDimensions.Value, static f => f.ReadImageDimensions, static (f, v) => f.ReadImageDimensions = v);
         }
 
-        var ownRemoveButtonIcon = bitFileInput.HasSetAnyOf(nameof(RemoveButtonIcon), nameof(RemoveButtonIconName));
 
         if (RemoveButtonIcon is not null)
         {
-            bitFileInput.TakeFromCascade(nameof(RemoveButtonIcon), RemoveButtonIcon, static f => f.RemoveButtonIcon, static (f, v) => f.RemoveButtonIcon = v, outranked: ownRemoveButtonIcon);
+            bitFileInput.TakeFromCascade(nameof(RemoveButtonIcon), RemoveButtonIcon, static f => f.RemoveButtonIcon, static (f, v) => f.RemoveButtonIcon = v);
         }
 
         if (RemoveButtonIconName.HasValue())
         {
-            bitFileInput.TakeFromCascade(nameof(RemoveButtonIconName), RemoveButtonIconName, static f => f.RemoveButtonIconName, static (f, v) => f.RemoveButtonIconName = v, outranked: ownRemoveButtonIcon);
+            bitFileInput.TakeFromCascade(nameof(RemoveButtonIconName), RemoveButtonIconName, static f => f.RemoveButtonIconName, static (f, v) => f.RemoveButtonIconName = v);
         }
 
         if (RemoveButtonTitle.HasValue())

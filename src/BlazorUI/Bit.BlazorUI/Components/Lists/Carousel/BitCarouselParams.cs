@@ -369,16 +369,15 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
             bitCarousel.TakeFromCascade(nameof(GoLeftAriaLabel), GoLeftAriaLabel, static c => c.GoLeftAriaLabel, static (c, v) => c.GoLeftAriaLabel = v);
         }
 
-        var ownGoLeftIcon = bitCarousel.HasSetAnyOf(nameof(GoLeftIcon), nameof(GoLeftIconName));
 
         if (GoLeftIcon is not null)
         {
-            bitCarousel.TakeFromCascade(nameof(GoLeftIcon), GoLeftIcon, static c => c.GoLeftIcon, static (c, v) => c.GoLeftIcon = v, outranked: ownGoLeftIcon);
+            bitCarousel.TakeFromCascade(nameof(GoLeftIcon), GoLeftIcon, static c => c.GoLeftIcon, static (c, v) => c.GoLeftIcon = v);
         }
 
         if (GoLeftIconName.HasValue())
         {
-            bitCarousel.TakeFromCascade(nameof(GoLeftIconName), GoLeftIconName, static c => c.GoLeftIconName, static (c, v) => c.GoLeftIconName = v, outranked: ownGoLeftIcon);
+            bitCarousel.TakeFromCascade(nameof(GoLeftIconName), GoLeftIconName, static c => c.GoLeftIconName, static (c, v) => c.GoLeftIconName = v);
         }
 
         if (GoRightAriaLabel.HasValue())
@@ -386,16 +385,15 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
             bitCarousel.TakeFromCascade(nameof(GoRightAriaLabel), GoRightAriaLabel, static c => c.GoRightAriaLabel, static (c, v) => c.GoRightAriaLabel = v);
         }
 
-        var ownGoRightIcon = bitCarousel.HasSetAnyOf(nameof(GoRightIcon), nameof(GoRightIconName));
 
         if (GoRightIcon is not null)
         {
-            bitCarousel.TakeFromCascade(nameof(GoRightIcon), GoRightIcon, static c => c.GoRightIcon, static (c, v) => c.GoRightIcon = v, outranked: ownGoRightIcon);
+            bitCarousel.TakeFromCascade(nameof(GoRightIcon), GoRightIcon, static c => c.GoRightIcon, static (c, v) => c.GoRightIcon = v);
         }
 
         if (GoRightIconName.HasValue())
         {
-            bitCarousel.TakeFromCascade(nameof(GoRightIconName), GoRightIconName, static c => c.GoRightIconName, static (c, v) => c.GoRightIconName = v, outranked: ownGoRightIcon);
+            bitCarousel.TakeFromCascade(nameof(GoRightIconName), GoRightIconName, static c => c.GoRightIconName, static (c, v) => c.GoRightIconName = v);
         }
 
         if (HideDots.HasValue)
@@ -433,16 +431,15 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
             bitCarousel.TakeFromCascade(nameof(PauseButtonAriaLabel), PauseButtonAriaLabel!, static c => c.PauseButtonAriaLabel, static (c, v) => c.PauseButtonAriaLabel = v);
         }
 
-        var ownPauseIcon = bitCarousel.HasSetAnyOf(nameof(PauseIcon), nameof(PauseIconName));
 
         if (PauseIcon is not null)
         {
-            bitCarousel.TakeFromCascade(nameof(PauseIcon), PauseIcon, static c => c.PauseIcon, static (c, v) => c.PauseIcon = v, outranked: ownPauseIcon);
+            bitCarousel.TakeFromCascade(nameof(PauseIcon), PauseIcon, static c => c.PauseIcon, static (c, v) => c.PauseIcon = v);
         }
 
         if (PauseIconName.HasValue())
         {
-            bitCarousel.TakeFromCascade(nameof(PauseIconName), PauseIconName, static c => c.PauseIconName, static (c, v) => c.PauseIconName = v, outranked: ownPauseIcon);
+            bitCarousel.TakeFromCascade(nameof(PauseIconName), PauseIconName, static c => c.PauseIconName, static (c, v) => c.PauseIconName = v);
         }
 
         if (PauseOnFocus.HasValue)
@@ -460,16 +457,15 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
             bitCarousel.TakeFromCascade(nameof(PlayButtonAriaLabel), PlayButtonAriaLabel!, static c => c.PlayButtonAriaLabel, static (c, v) => c.PlayButtonAriaLabel = v);
         }
 
-        var ownPlayIcon = bitCarousel.HasSetAnyOf(nameof(PlayIcon), nameof(PlayIconName));
 
         if (PlayIcon is not null)
         {
-            bitCarousel.TakeFromCascade(nameof(PlayIcon), PlayIcon, static c => c.PlayIcon, static (c, v) => c.PlayIcon = v, outranked: ownPlayIcon);
+            bitCarousel.TakeFromCascade(nameof(PlayIcon), PlayIcon, static c => c.PlayIcon, static (c, v) => c.PlayIcon = v);
         }
 
         if (PlayIconName.HasValue())
         {
-            bitCarousel.TakeFromCascade(nameof(PlayIconName), PlayIconName, static c => c.PlayIconName, static (c, v) => c.PlayIconName = v, outranked: ownPlayIcon);
+            bitCarousel.TakeFromCascade(nameof(PlayIconName), PlayIconName, static c => c.PlayIconName, static (c, v) => c.PlayIconName = v);
         }
 
         if (ResponsiveOptions is not null)

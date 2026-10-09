@@ -285,16 +285,15 @@ public class BitToggleParams : BitComponentBaseParams, IBitComponentParams
             bitToggle.TakeFromCascade(nameof(Loading), Loading.Value, static t => t.Loading, static (t, v) => t.Loading = v);
         }
 
-        var ownOffIcon = bitToggle.HasSetAnyOf(nameof(OffIcon), nameof(OffIconName));
 
         if (OffIcon is not null)
         {
-            bitToggle.TakeFromCascade(nameof(OffIcon), OffIcon, static t => t.OffIcon, static (t, v) => t.OffIcon = v, outranked: ownOffIcon);
+            bitToggle.TakeFromCascade(nameof(OffIcon), OffIcon, static t => t.OffIcon, static (t, v) => t.OffIcon = v);
         }
 
         if (OffIconName.HasValue())
         {
-            bitToggle.TakeFromCascade(nameof(OffIconName), OffIconName, static t => t.OffIconName, static (t, v) => t.OffIconName = v, outranked: ownOffIcon);
+            bitToggle.TakeFromCascade(nameof(OffIconName), OffIconName, static t => t.OffIconName, static (t, v) => t.OffIconName = v);
         }
 
         if (OffText.HasValue())
@@ -302,16 +301,15 @@ public class BitToggleParams : BitComponentBaseParams, IBitComponentParams
             bitToggle.TakeFromCascade(nameof(OffText), OffText, static t => t.OffText, static (t, v) => t.OffText = v);
         }
 
-        var ownOnIcon = bitToggle.HasSetAnyOf(nameof(OnIcon), nameof(OnIconName));
 
         if (OnIcon is not null)
         {
-            bitToggle.TakeFromCascade(nameof(OnIcon), OnIcon, static t => t.OnIcon, static (t, v) => t.OnIcon = v, outranked: ownOnIcon);
+            bitToggle.TakeFromCascade(nameof(OnIcon), OnIcon, static t => t.OnIcon, static (t, v) => t.OnIcon = v);
         }
 
         if (OnIconName.HasValue())
         {
-            bitToggle.TakeFromCascade(nameof(OnIconName), OnIconName, static t => t.OnIconName, static (t, v) => t.OnIconName = v, outranked: ownOnIcon);
+            bitToggle.TakeFromCascade(nameof(OnIconName), OnIconName, static t => t.OnIconName, static (t, v) => t.OnIconName = v);
         }
 
         if (OnText.HasValue())

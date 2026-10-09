@@ -601,17 +601,24 @@ public partial class BitErrorBoundary : ErrorBoundaryBase, IBitCascadeTarget, ID
     internal bool HasNotBeenSet(string name) => _setByMarkup.Contains(name) is false;
 
     /// <summary>
-    /// Puts back the value the named parameter held before the params object wrote it, while the params object still
-    /// supplies it but the boundary has set something that outranks it. The value stays recorded, so the parameter is
-    /// restored again once the params object stops supplying it.
+    /// Whether the params object may write the named parameter on this render: the markup has set neither it nor any
+    /// parameter it is one setting with - an IconName beside a cascaded Icon. A value the params object wrote on an
+    /// earlier render, before the boundary made its own choice of that setting, is put back here, the same way
+    /// BitComponentBase.MayTakeFromCascade puts it back for every other component.
     /// </summary>
-    internal void ReleaseCascadeParameter(string name)
+    internal bool MayTakeFromCascade(string name)
     {
-        if (_setByMarkup.Contains(name)) return;
+        if (_setByMarkup.Contains(name)) return false;
 
-        if (_cascadeTracker is null || _cascadeTracker.TryGetOriginal(name, out var original) is false) return;
+        var parameter = BitCascadeMap.For(GetType())?.Parameters.GetValueOrDefault(name);
 
-        BitCascadeMap.For(GetType())?.Parameters.GetValueOrDefault(name)?.SetOnComponent(this, original);
+        if (parameter is null || parameter.IsOutrankedOn(this) is false) return true;
+
+        // The boundary's parameters have no setup hooks: the render this OnParametersSet leads to is all a value put
+        // back needs.
+        _cascadeTracker?.Release(this, parameter);
+
+        return false;
     }
 
     bool IBitCascadeTarget.IsSetByMarkup(string name) => _setByMarkup.Contains(name);

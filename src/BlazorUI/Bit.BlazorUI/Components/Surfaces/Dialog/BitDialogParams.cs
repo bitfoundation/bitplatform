@@ -263,16 +263,15 @@ public class BitDialogParams : BitComponentBaseParams, IBitComponentParams
             bitDialog.TakeFromCascade(nameof(CloseButtonTitle), CloseButtonTitle, static d => d.CloseButtonTitle, static (d, v) => d.CloseButtonTitle = v);
         }
 
-        var ownCloseIcon = bitDialog.HasSetAnyOf(nameof(CloseIcon), nameof(CloseIconName));
 
         if (CloseIcon is not null)
         {
-            bitDialog.TakeFromCascade(nameof(CloseIcon), CloseIcon, static d => d.CloseIcon, static (d, v) => d.CloseIcon = v, outranked: ownCloseIcon);
+            bitDialog.TakeFromCascade(nameof(CloseIcon), CloseIcon, static d => d.CloseIcon, static (d, v) => d.CloseIcon = v);
         }
 
         if (CloseIconName.HasValue())
         {
-            bitDialog.TakeFromCascade(nameof(CloseIconName), CloseIconName, static d => d.CloseIconName, static (d, v) => d.CloseIconName = v, outranked: ownCloseIcon);
+            bitDialog.TakeFromCascade(nameof(CloseIconName), CloseIconName, static d => d.CloseIconName, static (d, v) => d.CloseIconName = v);
         }
 
         if (CloseOnEscape.HasValue)

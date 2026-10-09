@@ -22,8 +22,11 @@ internal static class BitCascadeExtensions
 
 
     /// <summary>
-    /// Supplies a parameter from the cascade, unless the markup has set it. BitComponentBase remembers the value it
-    /// held before the cascade first supplied it, and puts it back once the cascade stops giving one.
+    /// Supplies a parameter from the cascade, unless the markup has set it or a parameter it is one setting with - an
+    /// XIconName beside a cascaded XIcon, a text drawn in place of a cascaded icon (see
+    /// <see cref="BitComponentBase.MayTakeFromCascade"/>). BitComponentBase remembers the value it held before the
+    /// cascade first supplied it, and puts it back once the cascade stops giving one, or once the component makes its
+    /// own choice of that setting.
     /// </summary>
     /// <remarks>
     /// This runs on every render of every component under a BitParams, so a value the cascade supplies again
@@ -46,7 +49,7 @@ internal static class BitCascadeExtensions
                                                       Action<TComponent, T> set)
         where TComponent : BitComponentBase
     {
-        if (component.HasNotBeenSet(name) is false) return false;
+        if (component.MayTakeFromCascade(name) is false) return false;
 
         var current = get(component);
 
@@ -67,61 +70,6 @@ internal static class BitCascadeExtensions
         component.OnTakenFromCascade(name);
 
         return true;
-    }
-
-    /// <summary>
-    /// Supplies a parameter from the cascade, unless the markup has set it or the component has set something that
-    /// outranks it - in which case a value the cascade wrote on an earlier render is taken back
-    /// (<see cref="ReleaseFromCascade"/>), since it would otherwise go on outranking the component's own choice.
-    /// </summary>
-    /// <remarks>
-    /// This is how the parameters that make up one setting are cascaded. An icon is taken as an XIcon, an XIconName
-    /// or an IconUrl, and the first of them that is set wins, so the cascade supplies none of them to a component that
-    /// has set any one (<see cref="HasSetAnyOf"/>): a cascaded XIcon filled in beside the component's own XIconName
-    /// would replace the icon the component asked for, and a cascaded XIconName beside its own XIcon would leave a
-    /// value on it that says something it does not show.
-    /// </remarks>
-    /// <returns>
-    /// Whether the value was written and changed what the component held.
-    /// </returns>
-    public static bool TakeFromCascade<TComponent, T>(this TComponent component,
-                                                      string name,
-                                                      T value,
-                                                      Func<TComponent, T> get,
-                                                      Action<TComponent, T> set,
-                                                      bool outranked)
-        where TComponent : BitComponentBase
-    {
-        if (outranked is false) return component.TakeFromCascade(name, value, get, set);
-
-        component.ReleaseFromCascade(name);
-
-        return false;
-    }
-
-    /// <summary>
-    /// Whether the markup has set any of the named parameters: how a params object tells that a component has made
-    /// its own choice of a setting it takes through several parameters, which outranks every one of them the cascade
-    /// supplies.
-    /// </summary>
-    public static bool HasSetAnyOf(this BitComponentBase component, params ReadOnlySpan<string> names)
-    {
-        foreach (var name in names)
-        {
-            if (component.HasNotBeenSet(name) is false) return true;
-        }
-
-        return false;
-    }
-
-    /// <summary>
-    /// Takes back a parameter the cascade supplies but the component must not take on this render, because a
-    /// parameter the component set itself outranks it: puts back the value it held before the cascade wrote it,
-    /// which would otherwise go on outranking the component's own choice for as long as the cascade supplies it.
-    /// </summary>
-    public static void ReleaseFromCascade(this BitComponentBase component, string name)
-    {
-        component.ReleaseCascadeParameter(name);
     }
 
     /// <summary>

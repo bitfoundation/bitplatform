@@ -290,37 +290,20 @@ public class BitErrorBoundaryParams : IBitComponentParams
             bitErrorBoundary.HomeUrl = HomeUrl;
         }
 
-        // Icon and IconName are one setting - which icon is shown - and Icon wins over IconName, so a boundary that
-        // picked its icon through either of them keeps it: a cascaded Icon filled in beside an IconName of its own
-        // would replace the icon the boundary asked for. One the cascade wrote before the boundary set the other is
-        // put back.
-        var ownIcon = bitErrorBoundary.HasNotBeenSet(nameof(Icon)) is false || bitErrorBoundary.HasNotBeenSet(nameof(IconName)) is false;
-
-        if (Icon is not null)
+        // Icon, IconName and IconTemplate are one setting - which icon is shown - so a boundary that picked its icon
+        // through any of them takes none of the others (MayTakeFromCascade).
+        if (Icon is not null && bitErrorBoundary.MayTakeFromCascade(nameof(Icon)))
         {
-            if (ownIcon)
-            {
-                bitErrorBoundary.ReleaseCascadeParameter(nameof(Icon));
-            }
-            else
-            {
-                bitErrorBoundary.Icon = Icon;
-            }
+            bitErrorBoundary.Icon = Icon;
         }
 
-        if (IconName is not null)
+        // Unlike a text, an empty icon name names no icon, and is not one the boundary could be given back from.
+        if (IconName.HasValue() && bitErrorBoundary.MayTakeFromCascade(nameof(IconName)))
         {
-            if (ownIcon)
-            {
-                bitErrorBoundary.ReleaseCascadeParameter(nameof(IconName));
-            }
-            else
-            {
-                bitErrorBoundary.IconName = IconName;
-            }
+            bitErrorBoundary.IconName = IconName;
         }
 
-        if (IconTemplate is not null && bitErrorBoundary.HasNotBeenSet(nameof(IconTemplate)))
+        if (IconTemplate is not null && bitErrorBoundary.MayTakeFromCascade(nameof(IconTemplate)))
         {
             bitErrorBoundary.IconTemplate = IconTemplate;
         }

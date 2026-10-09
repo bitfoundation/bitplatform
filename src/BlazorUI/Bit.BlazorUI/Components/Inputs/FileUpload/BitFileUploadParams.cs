@@ -743,16 +743,15 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
             bitFileUpload.TakeFromCascade(nameof(CancelAllText), CancelAllText!, static f => f.CancelAllText, static (f, v) => f.CancelAllText = v);
         }
 
-        var ownCancelIcon = bitFileUpload.HasSetAnyOf(nameof(CancelIcon), nameof(CancelIconName));
 
         if (CancelIcon is not null)
         {
-            bitFileUpload.TakeFromCascade(nameof(CancelIcon), CancelIcon, static f => f.CancelIcon, static (f, v) => f.CancelIcon = v, outranked: ownCancelIcon);
+            bitFileUpload.TakeFromCascade(nameof(CancelIcon), CancelIcon, static f => f.CancelIcon, static (f, v) => f.CancelIcon = v);
         }
 
         if (CancelIconName.HasValue())
         {
-            bitFileUpload.TakeFromCascade(nameof(CancelIconName), CancelIconName, static f => f.CancelIconName, static (f, v) => f.CancelIconName = v, outranked: ownCancelIcon);
+            bitFileUpload.TakeFromCascade(nameof(CancelIconName), CancelIconName, static f => f.CancelIconName, static (f, v) => f.CancelIconName = v);
         }
 
         if (CanceledUploadMessage.HasValue())
@@ -855,16 +854,15 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
             bitFileUpload.TakeFromCascade(nameof(Label), Label!, static f => f.Label, static (f, v) => f.Label = v);
         }
 
-        var ownLabelIcon = bitFileUpload.HasSetAnyOf(nameof(LabelIcon), nameof(LabelIconName));
 
         if (LabelIcon is not null)
         {
-            bitFileUpload.TakeFromCascade(nameof(LabelIcon), LabelIcon, static f => f.LabelIcon, static (f, v) => f.LabelIcon = v, outranked: ownLabelIcon);
+            bitFileUpload.TakeFromCascade(nameof(LabelIcon), LabelIcon, static f => f.LabelIcon, static (f, v) => f.LabelIcon = v);
         }
 
         if (LabelIconName.HasValue())
         {
-            bitFileUpload.TakeFromCascade(nameof(LabelIconName), LabelIconName, static f => f.LabelIconName, static (f, v) => f.LabelIconName = v, outranked: ownLabelIcon);
+            bitFileUpload.TakeFromCascade(nameof(LabelIconName), LabelIconName, static f => f.LabelIconName, static (f, v) => f.LabelIconName = v);
         }
 
         if (LabelIconPlacement.HasValue)
@@ -927,16 +925,15 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
             bitFileUpload.TakeFromCascade(nameof(PauseButtonTitle), PauseButtonTitle, static f => f.PauseButtonTitle, static (f, v) => f.PauseButtonTitle = v);
         }
 
-        var ownPauseIcon = bitFileUpload.HasSetAnyOf(nameof(PauseIcon), nameof(PauseIconName));
 
         if (PauseIcon is not null)
         {
-            bitFileUpload.TakeFromCascade(nameof(PauseIcon), PauseIcon, static f => f.PauseIcon, static (f, v) => f.PauseIcon = v, outranked: ownPauseIcon);
+            bitFileUpload.TakeFromCascade(nameof(PauseIcon), PauseIcon, static f => f.PauseIcon, static (f, v) => f.PauseIcon = v);
         }
 
         if (PauseIconName.HasValue())
         {
-            bitFileUpload.TakeFromCascade(nameof(PauseIconName), PauseIconName, static f => f.PauseIconName, static (f, v) => f.PauseIconName = v, outranked: ownPauseIcon);
+            bitFileUpload.TakeFromCascade(nameof(PauseIconName), PauseIconName, static f => f.PauseIconName, static (f, v) => f.PauseIconName = v);
         }
 
         if (PreloadedFileMessage.HasValue())
@@ -959,16 +956,15 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
             bitFileUpload.TakeFromCascade(nameof(RemoveButtonTitle), RemoveButtonTitle, static f => f.RemoveButtonTitle, static (f, v) => f.RemoveButtonTitle = v);
         }
 
-        var ownRemoveIcon = bitFileUpload.HasSetAnyOf(nameof(RemoveIcon), nameof(RemoveIconName));
 
         if (RemoveIcon is not null)
         {
-            bitFileUpload.TakeFromCascade(nameof(RemoveIcon), RemoveIcon, static f => f.RemoveIcon, static (f, v) => f.RemoveIcon = v, outranked: ownRemoveIcon);
+            bitFileUpload.TakeFromCascade(nameof(RemoveIcon), RemoveIcon, static f => f.RemoveIcon, static (f, v) => f.RemoveIcon = v);
         }
 
         if (RemoveIconName.HasValue())
         {
-            bitFileUpload.TakeFromCascade(nameof(RemoveIconName), RemoveIconName, static f => f.RemoveIconName, static (f, v) => f.RemoveIconName = v, outranked: ownRemoveIcon);
+            bitFileUpload.TakeFromCascade(nameof(RemoveIconName), RemoveIconName, static f => f.RemoveIconName, static (f, v) => f.RemoveIconName = v);
         }
 
         if (RemoveRequestHttpHeaders is not null)
@@ -1006,16 +1002,15 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
             bitFileUpload.TakeFromCascade(nameof(RetryButtonTitle), RetryButtonTitle, static f => f.RetryButtonTitle, static (f, v) => f.RetryButtonTitle = v);
         }
 
-        var ownRetryIcon = bitFileUpload.HasSetAnyOf(nameof(RetryIcon), nameof(RetryIconName));
 
         if (RetryIcon is not null)
         {
-            bitFileUpload.TakeFromCascade(nameof(RetryIcon), RetryIcon, static f => f.RetryIcon, static (f, v) => f.RetryIcon = v, outranked: ownRetryIcon);
+            bitFileUpload.TakeFromCascade(nameof(RetryIcon), RetryIcon, static f => f.RetryIcon, static (f, v) => f.RetryIcon = v);
         }
 
         if (RetryIconName.HasValue())
         {
-            bitFileUpload.TakeFromCascade(nameof(RetryIconName), RetryIconName, static f => f.RetryIconName, static (f, v) => f.RetryIconName = v, outranked: ownRetryIcon);
+            bitFileUpload.TakeFromCascade(nameof(RetryIconName), RetryIconName, static f => f.RetryIconName, static (f, v) => f.RetryIconName = v);
         }
 
         if (ShouldAutoRetry is not null)
@@ -1073,16 +1068,15 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
             bitFileUpload.TakeFromCascade(nameof(UploadFormFieldName), UploadFormFieldName, static f => f.UploadFormFieldName, static (f, v) => f.UploadFormFieldName = v);
         }
 
-        var ownUploadIcon = bitFileUpload.HasSetAnyOf(nameof(UploadIcon), nameof(UploadIconName));
 
         if (UploadIcon is not null)
         {
-            bitFileUpload.TakeFromCascade(nameof(UploadIcon), UploadIcon, static f => f.UploadIcon, static (f, v) => f.UploadIcon = v, outranked: ownUploadIcon);
+            bitFileUpload.TakeFromCascade(nameof(UploadIcon), UploadIcon, static f => f.UploadIcon, static (f, v) => f.UploadIcon = v);
         }
 
         if (UploadIconName.HasValue())
         {
-            bitFileUpload.TakeFromCascade(nameof(UploadIconName), UploadIconName, static f => f.UploadIconName, static (f, v) => f.UploadIconName = v, outranked: ownUploadIcon);
+            bitFileUpload.TakeFromCascade(nameof(UploadIconName), UploadIconName, static f => f.UploadIconName, static (f, v) => f.UploadIconName = v);
         }
 
         if (UploadRequestFormFields is not null)

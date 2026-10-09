@@ -257,11 +257,10 @@ public class BitCheckboxParams : BitComponentBaseParams, IBitComponentParams
             bitCheckbox.TakeFromCascade(nameof(AutoLoading), AutoLoading.Value, static c => c.AutoLoading, static (c, v) => c.AutoLoading = v);
         }
 
-        var ownCheckIcon = bitCheckbox.HasSetAnyOf(nameof(CheckIcon), nameof(CheckIconName));
 
         if (CheckIcon is not null)
         {
-            bitCheckbox.TakeFromCascade(nameof(CheckIcon), CheckIcon, static c => c.CheckIcon, static (c, v) => c.CheckIcon = v, outranked: ownCheckIcon);
+            bitCheckbox.TakeFromCascade(nameof(CheckIcon), CheckIcon, static c => c.CheckIcon, static (c, v) => c.CheckIcon = v);
         }
 
         if (CheckIconAriaLabel.HasValue())
@@ -271,7 +270,7 @@ public class BitCheckboxParams : BitComponentBaseParams, IBitComponentParams
 
         if (CheckIconName.HasValue())
         {
-            bitCheckbox.TakeFromCascade(nameof(CheckIconName), CheckIconName, static c => c.CheckIconName, static (c, v) => c.CheckIconName = v, outranked: ownCheckIcon);
+            bitCheckbox.TakeFromCascade(nameof(CheckIconName), CheckIconName, static c => c.CheckIconName, static (c, v) => c.CheckIconName = v);
         }
 
         if (Classes is not null)
@@ -304,16 +303,15 @@ public class BitCheckboxParams : BitComponentBaseParams, IBitComponentParams
             bitCheckbox.TakeFromCascade(nameof(Indeterminate), Indeterminate.Value, static c => c.Indeterminate, static (c, v) => c.Indeterminate = v);
         }
 
-        var ownIndeterminateIcon = bitCheckbox.HasSetAnyOf(nameof(IndeterminateIcon), nameof(IndeterminateIconName));
 
         if (IndeterminateIcon is not null)
         {
-            bitCheckbox.TakeFromCascade(nameof(IndeterminateIcon), IndeterminateIcon, static c => c.IndeterminateIcon, static (c, v) => c.IndeterminateIcon = v, outranked: ownIndeterminateIcon);
+            bitCheckbox.TakeFromCascade(nameof(IndeterminateIcon), IndeterminateIcon, static c => c.IndeterminateIcon, static (c, v) => c.IndeterminateIcon = v);
         }
 
         if (IndeterminateIconName.HasValue())
         {
-            bitCheckbox.TakeFromCascade(nameof(IndeterminateIconName), IndeterminateIconName, static c => c.IndeterminateIconName, static (c, v) => c.IndeterminateIconName = v, outranked: ownIndeterminateIcon);
+            bitCheckbox.TakeFromCascade(nameof(IndeterminateIconName), IndeterminateIconName, static c => c.IndeterminateIconName, static (c, v) => c.IndeterminateIconName = v);
         }
 
         if (Label.HasValue())
@@ -366,16 +364,15 @@ public class BitCheckboxParams : BitComponentBaseParams, IBitComponentParams
             bitCheckbox.TakeFromCascade(nameof(Title), Title, static c => c.Title, static (c, v) => c.Title = v);
         }
 
-        var ownUncheckedIcon = bitCheckbox.HasSetAnyOf(nameof(UncheckedIcon), nameof(UncheckedIconName));
 
         if (UncheckedIcon is not null)
         {
-            bitCheckbox.TakeFromCascade(nameof(UncheckedIcon), UncheckedIcon, static c => c.UncheckedIcon, static (c, v) => c.UncheckedIcon = v, outranked: ownUncheckedIcon);
+            bitCheckbox.TakeFromCascade(nameof(UncheckedIcon), UncheckedIcon, static c => c.UncheckedIcon, static (c, v) => c.UncheckedIcon = v);
         }
 
         if (UncheckedIconName.HasValue())
         {
-            bitCheckbox.TakeFromCascade(nameof(UncheckedIconName), UncheckedIconName, static c => c.UncheckedIconName, static (c, v) => c.UncheckedIconName = v, outranked: ownUncheckedIcon);
+            bitCheckbox.TakeFromCascade(nameof(UncheckedIconName), UncheckedIconName, static c => c.UncheckedIconName, static (c, v) => c.UncheckedIconName = v);
         }
     }
 }

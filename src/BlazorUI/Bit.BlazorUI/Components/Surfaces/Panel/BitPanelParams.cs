@@ -206,16 +206,15 @@ public class BitPanelParams : BitComponentBaseParams, IBitComponentParams
             bitPanel.TakeFromCascade(nameof(CloseButtonTitle), CloseButtonTitle, static p => p.CloseButtonTitle, static (p, v) => p.CloseButtonTitle = v);
         }
 
-        var ownCloseIcon = bitPanel.HasSetAnyOf(nameof(CloseIcon), nameof(CloseIconName));
 
         if (CloseIcon is not null)
         {
-            bitPanel.TakeFromCascade(nameof(CloseIcon), CloseIcon, static p => p.CloseIcon, static (p, v) => p.CloseIcon = v, outranked: ownCloseIcon);
+            bitPanel.TakeFromCascade(nameof(CloseIcon), CloseIcon, static p => p.CloseIcon, static (p, v) => p.CloseIcon = v);
         }
 
         if (CloseIconName.HasValue())
         {
-            bitPanel.TakeFromCascade(nameof(CloseIconName), CloseIconName, static p => p.CloseIconName, static (p, v) => p.CloseIconName = v, outranked: ownCloseIcon);
+            bitPanel.TakeFromCascade(nameof(CloseIconName), CloseIconName, static p => p.CloseIconName, static (p, v) => p.CloseIconName = v);
         }
 
         if (FullSize.HasValue)

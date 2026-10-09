@@ -534,16 +534,15 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
             bitTagsInput.TakeFromCascade(nameof(ClearButtonAriaLabel), ClearButtonAriaLabel, static t => t.ClearButtonAriaLabel, static (t, v) => t.ClearButtonAriaLabel = v);
         }
 
-        var ownClearButtonIcon = bitTagsInput.HasSetAnyOf(nameof(ClearButtonIcon), nameof(ClearButtonIconName));
 
         if (ClearButtonIcon is not null)
         {
-            bitTagsInput.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static t => t.ClearButtonIcon, static (t, v) => t.ClearButtonIcon = v, outranked: ownClearButtonIcon);
+            bitTagsInput.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static t => t.ClearButtonIcon, static (t, v) => t.ClearButtonIcon = v);
         }
 
         if (ClearButtonIconName.HasValue())
         {
-            bitTagsInput.TakeFromCascade(nameof(ClearButtonIconName), ClearButtonIconName, static t => t.ClearButtonIconName, static (t, v) => t.ClearButtonIconName = v, outranked: ownClearButtonIcon);
+            bitTagsInput.TakeFromCascade(nameof(ClearButtonIconName), ClearButtonIconName, static t => t.ClearButtonIconName, static (t, v) => t.ClearButtonIconName = v);
         }
 
         if (ClearButtonTitle.HasValue())
@@ -586,16 +585,15 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
             bitTagsInput.TakeFromCascade(nameof(DismissAriaLabelFormat), DismissAriaLabelFormat, static t => t.DismissAriaLabelFormat, static (t, v) => t.DismissAriaLabelFormat = v);
         }
 
-        var ownDismissIcon = bitTagsInput.HasSetAnyOf(nameof(DismissIcon), nameof(DismissIconName));
 
         if (DismissIcon is not null)
         {
-            bitTagsInput.TakeFromCascade(nameof(DismissIcon), DismissIcon, static t => t.DismissIcon, static (t, v) => t.DismissIcon = v, outranked: ownDismissIcon);
+            bitTagsInput.TakeFromCascade(nameof(DismissIcon), DismissIcon, static t => t.DismissIcon, static (t, v) => t.DismissIcon = v);
         }
 
         if (DismissIconName.HasValue())
         {
-            bitTagsInput.TakeFromCascade(nameof(DismissIconName), DismissIconName, static t => t.DismissIconName, static (t, v) => t.DismissIconName = v, outranked: ownDismissIcon);
+            bitTagsInput.TakeFromCascade(nameof(DismissIconName), DismissIconName, static t => t.DismissIconName, static (t, v) => t.DismissIconName = v);
         }
 
         if (DismissTitle.HasValue())
@@ -798,16 +796,15 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
             bitTagsInput.TakeFromCascade(nameof(ReorderDropAriaLabelFormat), ReorderDropAriaLabelFormat, static t => t.ReorderDropAriaLabelFormat, static (t, v) => t.ReorderDropAriaLabelFormat = v);
         }
 
-        var ownReorderIcon = bitTagsInput.HasSetAnyOf(nameof(ReorderIcon), nameof(ReorderIconName));
 
         if (ReorderIcon is not null)
         {
-            bitTagsInput.TakeFromCascade(nameof(ReorderIcon), ReorderIcon, static t => t.ReorderIcon, static (t, v) => t.ReorderIcon = v, outranked: ownReorderIcon);
+            bitTagsInput.TakeFromCascade(nameof(ReorderIcon), ReorderIcon, static t => t.ReorderIcon, static (t, v) => t.ReorderIcon = v);
         }
 
         if (ReorderIconName.HasValue())
         {
-            bitTagsInput.TakeFromCascade(nameof(ReorderIconName), ReorderIconName, static t => t.ReorderIconName, static (t, v) => t.ReorderIconName = v, outranked: ownReorderIcon);
+            bitTagsInput.TakeFromCascade(nameof(ReorderIconName), ReorderIconName, static t => t.ReorderIconName, static (t, v) => t.ReorderIconName = v);
         }
 
         if (ReorderTitle.HasValue())

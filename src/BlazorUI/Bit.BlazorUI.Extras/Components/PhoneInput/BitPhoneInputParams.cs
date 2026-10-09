@@ -380,16 +380,15 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
             bitPhoneInput.TakeFromCascade(nameof(ClearButtonAriaLabel), ClearButtonAriaLabel, static p => p.ClearButtonAriaLabel, static (p, v) => p.ClearButtonAriaLabel = v);
         }
 
-        var ownClearButtonIcon = bitPhoneInput.HasSetAnyOf(nameof(ClearButtonIcon), nameof(ClearButtonIconName));
 
         if (ClearButtonIcon is not null)
         {
-            bitPhoneInput.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static p => p.ClearButtonIcon, static (p, v) => p.ClearButtonIcon = v, outranked: ownClearButtonIcon);
+            bitPhoneInput.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static p => p.ClearButtonIcon, static (p, v) => p.ClearButtonIcon = v);
         }
 
         if (ClearButtonIconName.HasValue())
         {
-            bitPhoneInput.TakeFromCascade(nameof(ClearButtonIconName), ClearButtonIconName, static p => p.ClearButtonIconName, static (p, v) => p.ClearButtonIconName = v, outranked: ownClearButtonIcon);
+            bitPhoneInput.TakeFromCascade(nameof(ClearButtonIconName), ClearButtonIconName, static p => p.ClearButtonIconName, static (p, v) => p.ClearButtonIconName = v);
         }
 
         if (ClearButtonTemplate is not null)
@@ -588,16 +587,15 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
             bitPhoneInput.TakeFromCascade(nameof(ResponsiveCloseButtonAriaLabel), ResponsiveCloseButtonAriaLabel, static p => p.ResponsiveCloseButtonAriaLabel, static (p, v) => p.ResponsiveCloseButtonAriaLabel = v);
         }
 
-        var ownResponsiveCloseIcon = bitPhoneInput.HasSetAnyOf(nameof(ResponsiveCloseIcon), nameof(ResponsiveCloseIconName));
 
         if (ResponsiveCloseIcon is not null)
         {
-            bitPhoneInput.TakeFromCascade(nameof(ResponsiveCloseIcon), ResponsiveCloseIcon, static p => p.ResponsiveCloseIcon, static (p, v) => p.ResponsiveCloseIcon = v, outranked: ownResponsiveCloseIcon);
+            bitPhoneInput.TakeFromCascade(nameof(ResponsiveCloseIcon), ResponsiveCloseIcon, static p => p.ResponsiveCloseIcon, static (p, v) => p.ResponsiveCloseIcon = v);
         }
 
         if (ResponsiveCloseIconName.HasValue())
         {
-            bitPhoneInput.TakeFromCascade(nameof(ResponsiveCloseIconName), ResponsiveCloseIconName, static p => p.ResponsiveCloseIconName, static (p, v) => p.ResponsiveCloseIconName = v, outranked: ownResponsiveCloseIcon);
+            bitPhoneInput.TakeFromCascade(nameof(ResponsiveCloseIconName), ResponsiveCloseIconName, static p => p.ResponsiveCloseIconName, static (p, v) => p.ResponsiveCloseIconName = v);
         }
 
         if (SearchBoxAriaLabel.HasValue())
