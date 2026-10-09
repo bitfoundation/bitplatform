@@ -572,11 +572,13 @@
     font-weight: var(--bit-PhoneInput-label-font-weight, #{$tg-field-label-font-weight});
 }
 
+// Rendered after the search box so it follows it in the tab order, and drawn back at the end of the header from
+// there (see .bit-phi-res); hidden with the header wherever the list is not a panel.
 .bit-phi-cls {
     margin: 0;
     padding: 0;
     border: none;
-    display: flex;
+    display: none;
     cursor: pointer;
     appearance: none;
     align-items: center;
@@ -587,7 +589,6 @@
     width: $siz-ctrl-md;
     height: $siz-ctrl-md;
     font-size: $siz-icon-md;
-    margin-inline-start: auto;
     border-radius: $shp-radius-button;
 
     @include phi-hover {
@@ -620,6 +621,15 @@
             align-items: center;
             box-sizing: border-box;
             padding: spacing(1.5) spacing(1.5);
+            min-height: calc(#{$siz-ctrl-md} + #{spacing(3)});
+            padding-inline-end: calc(#{$siz-ctrl-md} + #{spacing(2.5)});
+        }
+
+        .bit-phi-cls {
+            display: flex;
+            position: absolute;
+            top: spacing(1.5);
+            inset-inline-end: spacing(1.5);
         }
 
         .bit-phi-scn {

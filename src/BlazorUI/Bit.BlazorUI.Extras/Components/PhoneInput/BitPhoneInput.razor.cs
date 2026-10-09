@@ -2082,8 +2082,9 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     // box off the end of the page - skipping the number input right after the country button - and back from it
     // into whatever ends the page, leaving the list open behind its overlay either way. While it is open the
     // search box is put into the tab order right after the country button instead (see Utils.setupTabOut): Tab
-    // moves on to the number input and closes the list through OnTabOut, and Shift+Tab goes back to the button,
-    // leaving the list open for the Tab that brings the user back in.
+    // moves on through the rest of the list - the responsive close button, rendered after the search box for that
+    // reason - to the number input and closes the list through OnTabOut, and Shift+Tab from the search box goes
+    // back to the button, leaving the list open for the Tab that brings the user back in.
     // A list without a search box has nothing to tab into: the focus stays on the button, which is the
     // select-only combobox the list belongs to, so the Tab key is left to move on from there as it would anyway.
     // Both ride on the toggle itself, which registers them with the open and takes them back with the close or a

@@ -1058,15 +1058,21 @@ public class BitPhoneInputTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitPhoneInputShouldKeepTheResponsiveCloseButtonOutOfTheTabOrder()
+    public void BitPhoneInputShouldPutTheResponsiveCloseButtonAfterTheSearchBoxInTheTabOrder()
     {
         var component = RenderComponent<BitPhoneInput>(parameters =>
         {
             parameters.Add(p => p.Responsive, true);
         });
 
-        // The search box is what a Tab from the country button goes into and Shift+Tab goes back from.
-        Assert.AreEqual("-1", component.Find(".bit-phi-cls").GetAttribute("tabindex"));
+        // The search box is what a Tab from the country button goes into and Shift+Tab goes back from, and the
+        // close button stays in the tab order right after it.
+        var inOrder = component.FindAll(".bit-phi-srch, .bit-phi-cls");
+
+        Assert.HasCount(2, inOrder);
+        Assert.IsTrue(inOrder[0].ClassList.Contains("bit-phi-srch"));
+        Assert.IsTrue(inOrder[1].ClassList.Contains("bit-phi-cls"));
+        Assert.IsFalse(inOrder[1].HasAttribute("tabindex"));
     }
 
     [TestMethod]
