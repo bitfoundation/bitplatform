@@ -160,6 +160,21 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // Reports, through the OnFocusIn callback, the first time the focus goes into the element other than by the
+    // pointer - the keyboard tabbing into it, or a script focusing something in it; see Utils.setupFocusIn.
+    internal static ValueTask BitUtilsSetupFocusIn<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime, string elementId, DotNetObjectReference<T> dotnetObj) where T : class
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.setupFocusIn", elementId, dotnetObj);
+    }
+
+
+    internal static ValueTask BitUtilsDisposeFocusIn(this IJSRuntime jsRuntime, string elementId)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeFocusIn", elementId);
+    }
+
+
     // Reports Escape pressed inside an open callout through the OnEscape callback, unless a callout opened from
     // inside it is the innermost open one and so the one the key belongs to; see Utils.setupEscape. With a
     // triggerId, an Escape pressed anywhere outside the callout and that trigger is reported as well.
