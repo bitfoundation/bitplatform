@@ -782,12 +782,23 @@ BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
     --bit-shp-radius-chip: 0.5rem;
     --bit-shp-radius-selection: 0.125rem;
 
-    /* size: 40px controls, 18px checkboxes, 24px icons, the 52x32 switch, the 20dp slider handle */
-    --bit-siz-ctrl-sm: 2rem;  --bit-siz-ctrl-md: 2.5rem;  --bit-siz-ctrl-lg: 3rem;
-    --bit-siz-sel-sm: 1rem;   --bit-siz-sel-md: 1.125rem; --bit-siz-sel-lg: 1.25rem;
-    --bit-siz-icon-sm: 1.125rem; --bit-siz-icon-md: 1.25rem; --bit-siz-icon-lg: 1.5rem;
-    --bit-siz-switch-w-md: 3.25rem; --bit-siz-switch-h-md: 2rem; --bit-siz-switch-thumb-md: 1.5rem;
-    --bit-siz-slider-thumb-md: 1.25rem;
+    /* size: 40px controls, 18px checkboxes, 24px icons, the 52x32 switch, the 20dp slider handle -
+       as steps of the 8px spacing unit, with the measurement reset, so a nested density reaches them */
+    --bit-siz-ctrl-sm-steps: 4;  --bit-siz-ctrl-md-steps: 5;    --bit-siz-ctrl-lg-steps: 6;
+    --bit-siz-ctrl-sm: initial;  --bit-siz-ctrl-md: initial;    --bit-siz-ctrl-lg: initial;
+    --bit-siz-sel-sm-steps: 2;   --bit-siz-sel-md-steps: 2.25;  --bit-siz-sel-lg-steps: 2.5;
+    --bit-siz-sel-sm: initial;   --bit-siz-sel-md: initial;     --bit-siz-sel-lg: initial;
+    --bit-siz-icon-sm: 1.125rem; --bit-siz-icon-md: 1.25rem; --bit-siz-icon-lg: 1.5rem; /* rem: glyphs never follow density */
+    --bit-siz-switch-w-md-steps: 6.5; --bit-siz-switch-h-md-steps: 4; --bit-siz-switch-thumb-md-steps: 3;
+    --bit-siz-switch-w-md: initial;   --bit-siz-switch-h-md: initial; --bit-siz-switch-thumb-md: initial;
+    --bit-siz-slider-thumb-md-steps: 2.5;
+    --bit-siz-slider-thumb-md: initial;
+
+    /* spacing: 24px dialog inset, 12/16/24px card insets - steps too */
+    --bit-spa-dialog-steps: 3;
+    --bit-spa-dialog: initial;
+    --bit-spa-card-sm-steps: 1.5; --bit-spa-card-md-steps: 2; --bit-spa-card-lg-steps: 3;
+    --bit-spa-card-sm: initial;   --bit-spa-card-md: initial; --bit-spa-card-lg: initial;
 
     /* elevation: level 1 cards, level 2 menus, level 3 dialogs, level 6 snackbars, flat tooltips */
     --bit-shd-card: var(--bit-shd-1);
@@ -845,11 +856,16 @@ BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
     },
     Size =
     {
-        Control = { Sm = "2rem", Md = "2.5rem", Lg = "3rem" },
-        Selection = { Sm = "1rem", Md = "1.125rem", Lg = "1.25rem" },
-        Switch = { Width = { Md = "3.25rem" }, Height = { Md = "2rem" }, Thumb = { Md = "1.5rem" } },
-        SliderThumb = { Md = "1.25rem" },
+        // steps of the spacing unit rather than lengths, so a nested DensityScale still reaches them
+        Steps =
+        {
+            Control = { Sm = "4", Md = "5", Lg = "6" },
+            Selection = { Sm = "2", Md = "2.25", Lg = "2.5" },
+            Switch = { Width = { Md = "6.5" }, Height = { Md = "4" }, Thumb = { Md = "3" } },
+            SliderThumb = { Md = "2.5" },
+        },
     },
+    Spacing = { Steps = { Dialog = "3", Card = { Sm = "1.5", Md = "2", Lg = "3" } } },
     BoxShadow = { Card = "var(--bit-shd-1)", Popup = "var(--bit-shd-2)", Dialog = "var(--bit-shd-3)", Snackbar = "var(--bit-shd-6)" },
     Motion = { EasingDecelerate = "cubic-bezier(0.05, 0.7, 0.1, 1)" },
     Opacity = { Disabled = "0.38" },
