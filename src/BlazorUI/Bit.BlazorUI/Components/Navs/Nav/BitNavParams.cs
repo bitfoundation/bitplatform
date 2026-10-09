@@ -195,18 +195,10 @@ public class BitNavParams : BitComponentBaseParams, IBitComponentParams
             bitNav.TakeFromCascade(nameof(AllExpanded), AllExpanded.Value, static n => n.AllExpanded, static (n, v) => n.AllExpanded = v);
         }
 
-        // The icon takes precedence over the icon name, so a cascaded icon is only a default for a nav that has
-        // set neither: applied over a nav's own ChevronDownIconName it would override it rather than default it.
+
         if (ChevronDownIcon is not null)
         {
-            if (bitNav.HasNotBeenSet(nameof(ChevronDownIconName)))
-            {
-                bitNav.TakeFromCascade(nameof(ChevronDownIcon), ChevronDownIcon, static n => n.ChevronDownIcon, static (n, v) => n.ChevronDownIcon = v);
-            }
-            else
-            {
-                bitNav.ReleaseFromCascade(nameof(ChevronDownIcon));
-            }
+            bitNav.TakeFromCascade(nameof(ChevronDownIcon), ChevronDownIcon, static n => n.ChevronDownIcon, static (n, v) => n.ChevronDownIcon = v);
         }
 
         if (ChevronDownIconName.HasValue())

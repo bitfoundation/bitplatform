@@ -210,6 +210,7 @@ public class BitSplitterParams : BitComponentBaseParams, IBitComponentParams
             bitSplitter.TakeFromCascade(nameof(Classes), Classes, static s => s.Classes, static (s, v) => s.Classes = v);
         }
 
+
         if (CollapseIcon is not null)
         {
             bitSplitter.TakeFromCascade(nameof(CollapseIcon), CollapseIcon, static s => s.CollapseIcon, static (s, v) => s.CollapseIcon = v);
@@ -261,6 +262,7 @@ public class BitSplitterParams : BitComponentBaseParams, IBitComponentParams
             bitSplitter.TakeFromCascade(nameof(DragStep), DragStep.Value, static s => s.DragStep, static (s, v) => s.DragStep = v);
         }
 
+
         if (ExpandIcon is not null)
         {
             bitSplitter.TakeFromCascade(nameof(ExpandIcon), ExpandIcon, static s => s.ExpandIcon, static (s, v) => s.ExpandIcon = v);
@@ -285,6 +287,7 @@ public class BitSplitterParams : BitComponentBaseParams, IBitComponentParams
         {
             bitSplitter.TakeFromCascade(nameof(GutterHitSize), GutterHitSize, static s => s.GutterHitSize, static (s, v) => s.GutterHitSize = v);
         }
+
 
         if (GutterIcon is not null)
         {

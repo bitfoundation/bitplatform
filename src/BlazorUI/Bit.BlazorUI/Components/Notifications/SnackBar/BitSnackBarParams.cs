@@ -240,6 +240,7 @@ public class BitSnackBarParams : BitComponentBaseParams, IBitComponentParams
             bitSnackBar.TakeFromCascade(nameof(DismissAriaLabel), DismissAriaLabel, static s => s.DismissAriaLabel, static (s, v) => s.DismissAriaLabel = v);
         }
 
+
         if (DismissIcon is not null)
         {
             bitSnackBar.TakeFromCascade(nameof(DismissIcon), DismissIcon, static s => s.DismissIcon, static (s, v) => s.DismissIcon = v);
@@ -269,6 +270,7 @@ public class BitSnackBarParams : BitComponentBaseParams, IBitComponentParams
         {
             bitSnackBar.TakeFromCascade(nameof(Hotkey), Hotkey, static s => s.Hotkey, static (s, v) => s.Hotkey = v);
         }
+
 
         if (Icon is not null)
         {

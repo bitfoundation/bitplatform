@@ -534,6 +534,7 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
             bitTagsInput.TakeFromCascade(nameof(ClearButtonAriaLabel), ClearButtonAriaLabel, static t => t.ClearButtonAriaLabel, static (t, v) => t.ClearButtonAriaLabel = v);
         }
 
+
         if (ClearButtonIcon is not null)
         {
             bitTagsInput.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static t => t.ClearButtonIcon, static (t, v) => t.ClearButtonIcon = v);
@@ -583,6 +584,7 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
         {
             bitTagsInput.TakeFromCascade(nameof(DismissAriaLabelFormat), DismissAriaLabelFormat, static t => t.DismissAriaLabelFormat, static (t, v) => t.DismissAriaLabelFormat = v);
         }
+
 
         if (DismissIcon is not null)
         {
@@ -793,6 +795,7 @@ public class BitTagsInputParams : BitComponentBaseParams, IBitComponentParams
         {
             bitTagsInput.TakeFromCascade(nameof(ReorderDropAriaLabelFormat), ReorderDropAriaLabelFormat, static t => t.ReorderDropAriaLabelFormat, static (t, v) => t.ReorderDropAriaLabelFormat = v);
         }
+
 
         if (ReorderIcon is not null)
         {

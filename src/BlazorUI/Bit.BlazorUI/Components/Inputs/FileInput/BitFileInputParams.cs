@@ -322,6 +322,7 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
             bitFileInput.TakeFromCascade(nameof(Directory), Directory.Value, static f => f.Directory, static (f, v) => f.Directory = v);
         }
 
+
         if (DropZoneIcon is not null)
         {
             bitFileInput.TakeFromCascade(nameof(DropZoneIcon), DropZoneIcon, static f => f.DropZoneIcon, static (f, v) => f.DropZoneIcon = v);
@@ -426,6 +427,7 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
         {
             bitFileInput.TakeFromCascade(nameof(ReadImageDimensions), ReadImageDimensions.Value, static f => f.ReadImageDimensions, static (f, v) => f.ReadImageDimensions = v);
         }
+
 
         if (RemoveButtonIcon is not null)
         {

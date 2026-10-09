@@ -294,6 +294,7 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
             bitPersona.TakeFromCascade(nameof(ActionButtonTitle), ActionButtonTitle!, static p => p.ActionButtonTitle, static (p, v) => p.ActionButtonTitle = v);
         }
 
+
         if (ActionIcon is not null)
         {
             bitPersona.TakeFromCascade(nameof(ActionIcon), ActionIcon, static p => p.ActionIcon, static (p, v) => p.ActionIcon = v);
@@ -339,9 +340,10 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
             }
             else
             {
-                bitPersona.ReleaseFromCascade(nameof(CoinColor));
+                bitPersona.ReleaseCascadeParameter(nameof(CoinColor));
             }
         }
+
 
         if (CoinIcon is not null)
         {
@@ -363,7 +365,7 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
             }
             else
             {
-                bitPersona.ReleaseFromCascade(nameof(CoinSize));
+                bitPersona.ReleaseCascadeParameter(nameof(CoinSize));
             }
         }
 
@@ -397,32 +399,17 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
             bitPersona.TakeFromCascade(nameof(ImageOverlayText), ImageOverlayText!, static p => p.ImageOverlayText, static (p, v) => p.ImageOverlayText = v);
         }
 
-        // The persona's own single-status glyph answers only where the maps have nothing to say, so a map handed
-        // down from here would otherwise hide the glyph the persona set for itself.
-        var hasOwnPresenceIcon = bitPersona.PresenceIcon is not null || bitPersona.PresenceIconName.HasValue();
-
+        // PresenceIcons, PresenceIconNames, PresenceIcon and PresenceIconName are one setting, the maps winning over
+        // the single-status glyph and PresenceIcons over PresenceIconNames, so a persona that set any of them takes
+        // neither map from here (TakeFromCascade): one handed down would hide the glyph the persona picked itself.
         if (PresenceIcons is not null)
         {
-            if (hasOwnPresenceIcon is false)
-            {
-                bitPersona.TakeFromCascade(nameof(PresenceIcons), PresenceIcons, static p => p.PresenceIcons, static (p, v) => p.PresenceIcons = v);
-            }
-            else
-            {
-                bitPersona.ReleaseFromCascade(nameof(PresenceIcons));
-            }
+            bitPersona.TakeFromCascade(nameof(PresenceIcons), PresenceIcons, static p => p.PresenceIcons, static (p, v) => p.PresenceIcons = v);
         }
 
         if (PresenceIconNames is not null)
         {
-            if (hasOwnPresenceIcon is false)
-            {
-                bitPersona.TakeFromCascade(nameof(PresenceIconNames), PresenceIconNames, static p => p.PresenceIconNames, static (p, v) => p.PresenceIconNames = v);
-            }
-            else
-            {
-                bitPersona.ReleaseFromCascade(nameof(PresenceIconNames));
-            }
+            bitPersona.TakeFromCascade(nameof(PresenceIconNames), PresenceIconNames, static p => p.PresenceIconNames, static (p, v) => p.PresenceIconNames = v);
         }
 
         if (PresenceTitles is not null)
@@ -450,7 +437,7 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
             }
             else
             {
-                bitPersona.ReleaseFromCascade(nameof(Shape));
+                bitPersona.ReleaseCascadeParameter(nameof(Shape));
             }
         }
 
@@ -493,6 +480,7 @@ public class BitPersonaParams : BitComponentBaseParams, IBitComponentParams
         {
             bitPersona.TakeFromCascade(nameof(Target), Target, static p => p.Target, static (p, v) => p.Target = v);
         }
+
 
         if (UnknownIcon is not null)
         {

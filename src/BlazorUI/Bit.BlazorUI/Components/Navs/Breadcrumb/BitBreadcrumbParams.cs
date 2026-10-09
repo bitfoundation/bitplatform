@@ -195,6 +195,7 @@ public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
             bitBreadcrumb.TakeFromCascade(nameof(Color), Color.Value, static b => b.Color, static (b, v) => b.Color = v);
         }
 
+
         if (DividerIcon is not null)
         {
             bitBreadcrumb.TakeFromCascade(nameof(DividerIcon), DividerIcon, static b => b.DividerIcon, static (b, v) => b.DividerIcon = v);
@@ -251,6 +252,7 @@ public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
         {
             bitBreadcrumb.TakeFromCascade(nameof(OverflowAriaLabel), OverflowAriaLabel, static b => b.OverflowAriaLabel, static (b, v) => b.OverflowAriaLabel = v);
         }
+
 
         if (OverflowIcon is not null)
         {

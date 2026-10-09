@@ -64,6 +64,16 @@ internal sealed class BitCascadeMap
             var cascade = cascades[0];
             var parameters = new Dictionary<string, BitCascadeParameter>(StringComparer.Ordinal);
 
+            // Every parameter of the component, the most derived one of each name: the ones the params object cannot
+            // supply count too, since a template set in the markup outranks a cascaded icon just as well.
+            var componentParameters = properties.Where(p => p.IsDefined(typeof(ParameterAttribute)))
+                                                .GroupBy(p => p.Name, StringComparer.Ordinal)
+                                                .ToDictionary(g => g.Key,
+                                                              g => g.OrderByDescending(p => Depth(p.DeclaringType)).First(),
+                                                              StringComparer.Ordinal);
+
+            var settings = Settings(componentParameters);
+
             foreach (var source in cascade.PropertyType.GetProperties(BindingFlags.Public | BindingFlags.Instance))
             {
                 // The name is what the params object is read by, and the attributes are merged into the ones the
@@ -84,7 +94,9 @@ internal sealed class BitCascadeMap
                 if (target.PropertyType.IsAssignableFrom(valueType) is false
                     && target.PropertyType != source.PropertyType) continue;
 
-                parameters.Add(source.Name, BitCascadeParameter.Create(source, target));
+                var peers = settings.GetValueOrDefault(source.Name)?.Select(n => componentParameters[n]).ToArray() ?? [];
+
+                parameters.Add(source.Name, BitCascadeParameter.Create(source, target, peers));
             }
 
             return parameters.Count == 0 ? null : new BitCascadeMap(cascade, parameters);
@@ -102,6 +114,86 @@ internal sealed class BitCascadeMap
 
 
 
+    // The ends of the names that take one icon, longest first so that each name is read by the end it really has.
+    private static readonly string[] _iconSuffixes = ["IconTemplate", "IconNames", "IconName", "IconUrl", "Icons", "Icon"];
+
+    /// <summary>
+    /// The parameters each parameter of a component is one setting with, in a way that a value of the component's own
+    /// for any of them outranks one the params object supplies for it.
+    /// </summary>
+    /// <remarks>
+    /// An icon is taken through several parameters, the first of them set winning: an XIcon, its XIconName, its
+    /// XIconUrl, an XIconTemplate drawn in its place, the XIcons / XIconNames maps that pick one per state and a
+    /// GetXIcon selector that picks one per item. Their names make them one setting, so a component that picks its
+    /// icon through any of them takes none of the others from the cascade: a cascaded XIcon filled in beside its own
+    /// XIconName would replace the icon it asked for, and a cascaded XIconName beside its own XIcon would leave a
+    /// value on it that says something it does not show. What the names do not tell - a text or a template shown in
+    /// place of an icon, an icon that replaces another one while the component is in a state - is declared with
+    /// <see cref="OutranksAttribute"/>, which only goes one way: a cascaded OnIcon must not replace the Icon a toggle
+    /// button picked, while a cascaded Icon is still what it shows when off, beside an OnIcon of its own.
+    /// </remarks>
+    private static Dictionary<string, HashSet<string>> Settings(Dictionary<string, PropertyInfo> componentParameters)
+    {
+        var bySetting = componentParameters.Keys.GroupBy(SettingOf, StringComparer.Ordinal)
+                                           .ToDictionary(g => g.Key, g => g.ToArray(), StringComparer.Ordinal);
+
+        var outranked = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+
+        foreach (var (name, property) in componentParameters)
+        {
+            foreach (var attribute in property.GetCustomAttributes<OutranksAttribute>(inherit: true))
+            {
+                if (componentParameters.ContainsKey(attribute.Parameter) is false)
+                {
+                    throw new InvalidOperationException($"{property.DeclaringType?.Name}.{name} outranks {attribute.Parameter}, which is not one of its parameters.");
+                }
+
+                var setting = SettingOf(name);
+
+                if (outranked.TryGetValue(setting, out var others) is false)
+                {
+                    outranked.Add(setting, others = new(StringComparer.Ordinal));
+                }
+
+                others.Add(SettingOf(attribute.Parameter));
+            }
+        }
+
+        var peers = new Dictionary<string, HashSet<string>>(StringComparer.Ordinal);
+
+        foreach (var name in componentParameters.Keys)
+        {
+            var setting = SettingOf(name);
+            var names = new HashSet<string>(bySetting[setting], StringComparer.Ordinal);
+
+            foreach (var other in outranked.GetValueOrDefault(setting) ?? [])
+            {
+                names.UnionWith(bySetting[other]);
+            }
+
+            names.Remove(name);
+
+            if (names.Count > 0) peers.Add(name, names);
+        }
+
+        return peers;
+
+        static string SettingOf(string name)
+        {
+            // GetSelectedIcon picks the SelectedIcon of one item.
+            if (name.Length >= 7 && name.StartsWith("Get", StringComparison.Ordinal) && name.EndsWith("Icon", StringComparison.Ordinal)) return name[3..];
+
+            foreach (var suffix in _iconSuffixes)
+            {
+                if (name.EndsWith(suffix, StringComparison.Ordinal)) return string.Concat(name.AsSpan(0, name.Length - suffix.Length), "Icon");
+            }
+
+            return name;
+        }
+    }
+
+
+
     /// <summary>
     /// One parameter a params object can supply: where it is read from on the params object, where it is written
     /// to on the component, and the setup hooks the component runs whenever it changes.
@@ -112,11 +204,13 @@ internal sealed class BitCascadeMap
         private readonly PropertyInfo _target;
         private readonly MethodInfo? _onSet;
         private readonly MethodInfo? _onSetAsync;
+        private readonly PropertyInfo[] _peers;
 
-        protected BitCascadeParameter(PropertyInfo source, PropertyInfo target)
+        protected BitCascadeParameter(PropertyInfo source, PropertyInfo target, PropertyInfo[] peers)
         {
             _source = source;
             _target = target;
+            _peers = peers;
             _onSet = FindHook(target, CallOnSetAttributeName);
             _onSetAsync = FindHook(target, CallOnSetAsyncAttributeName);
 
@@ -154,19 +248,40 @@ internal sealed class BitCascadeMap
         /// </summary>
         public bool HasAsyncSetupHook => _onSetAsync is not null;
 
-        public static BitCascadeParameter Create(PropertyInfo source, PropertyInfo target)
+        /// <summary>
+        /// The name of the parameter, on the params object and on the component alike.
+        /// </summary>
+        public string Name => _source.Name;
+
+        public static BitCascadeParameter Create(PropertyInfo source, PropertyInfo target, PropertyInfo[] peers)
         {
             // Dir reads through to the direction cascaded from above when it is not set, so what it holds of its own
             // is its backing field, which is what has to be put back rather than the direction it happens to show.
             return target.Name == nameof(BitComponentBase.Dir) && typeof(IBitCascadeTarget).IsAssignableFrom(target.DeclaringType)
-                ? new DirParameter(source, target)
-                : new BitCascadeParameter(source, target);
+                ? new DirParameter(source, target, peers)
+                : new BitCascadeParameter(source, target, peers);
         }
 
         /// <summary>
         /// Whether the params object supplies the parameter, by the rule its UpdateParameters writes it by.
         /// </summary>
         public bool IsSuppliedBy(IBitComponentParams parameters) => BitCascadeExtensions.IsSupplied(_source.GetValue(parameters));
+
+        /// <summary>
+        /// Whether the component has made its own choice of the setting the parameter is part of (see
+        /// <see cref="Settings"/>), which outranks whatever the params object supplies for it: the markup set one of
+        /// the parameters it is one setting with, to a value that supplies it. One written as null or "" - an icon
+        /// bound to an item that has none - picks nothing, and leaves the cascade to fill the setting in.
+        /// </summary>
+        public bool IsOutrankedOn(IBitCascadeTarget component)
+        {
+            foreach (var peer in _peers)
+            {
+                if (component.IsSetByMarkup(peer.Name) && BitCascadeExtensions.IsSupplied(peer.GetValue(component))) return true;
+            }
+
+            return false;
+        }
 
         public virtual object? GetFromComponent(IBitCascadeTarget component) => _target.GetValue(component);
 
@@ -213,7 +328,7 @@ internal sealed class BitCascadeMap
         }
     }
 
-    private sealed class DirParameter(PropertyInfo source, PropertyInfo target) : BitCascadeParameter(source, target)
+    private sealed class DirParameter(PropertyInfo source, PropertyInfo target, PropertyInfo[] peers) : BitCascadeParameter(source, target, peers)
     {
         public override object? GetFromComponent(IBitCascadeTarget component) => component.OwnDir;
 

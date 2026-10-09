@@ -250,6 +250,7 @@ public class BitPivotParams : BitComponentBaseParams, IBitComponentParams
             bitPivot.TakeFromCascade(nameof(AddAriaLabel), AddAriaLabel, static p => p.AddAriaLabel, static (p, v) => p.AddAriaLabel = v);
         }
 
+
         if (AddIcon is not null)
         {
             bitPivot.TakeFromCascade(nameof(AddIcon), AddIcon, static p => p.AddIcon, static (p, v) => p.AddIcon = v);
@@ -294,6 +295,7 @@ public class BitPivotParams : BitComponentBaseParams, IBitComponentParams
         {
             bitPivot.TakeFromCascade(nameof(DismissAriaLabelFormat), DismissAriaLabelFormat, static p => p.DismissAriaLabelFormat, static (p, v) => p.DismissAriaLabelFormat = v);
         }
+
 
         if (DismissIcon is not null)
         {
@@ -355,6 +357,7 @@ public class BitPivotParams : BitComponentBaseParams, IBitComponentParams
             bitPivot.TakeFromCascade(nameof(NextAriaLabel), NextAriaLabel, static p => p.NextAriaLabel, static (p, v) => p.NextAriaLabel = v);
         }
 
+
         if (NextIcon is not null)
         {
             bitPivot.TakeFromCascade(nameof(NextIcon), NextIcon, static p => p.NextIcon, static (p, v) => p.NextIcon = v);
@@ -375,6 +378,7 @@ public class BitPivotParams : BitComponentBaseParams, IBitComponentParams
             bitPivot.TakeFromCascade(nameof(OverflowBehavior), OverflowBehavior.Value, static p => p.OverflowBehavior, static (p, v) => p.OverflowBehavior = v);
         }
 
+
         if (OverflowIcon is not null)
         {
             bitPivot.TakeFromCascade(nameof(OverflowIcon), OverflowIcon, static p => p.OverflowIcon, static (p, v) => p.OverflowIcon = v);
@@ -394,6 +398,7 @@ public class BitPivotParams : BitComponentBaseParams, IBitComponentParams
         {
             bitPivot.TakeFromCascade(nameof(PreviousAriaLabel), PreviousAriaLabel, static p => p.PreviousAriaLabel, static (p, v) => p.PreviousAriaLabel = v);
         }
+
 
         if (PreviousIcon is not null)
         {

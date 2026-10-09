@@ -267,6 +267,7 @@ public class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
             bitDropMenu.TakeFromCascade(nameof(Border), Border.Value, static d => d.Border, static (d, v) => d.Border = v);
         }
 
+
         if (ChevronDownIcon is not null)
         {
             bitDropMenu.TakeFromCascade(nameof(ChevronDownIcon), ChevronDownIcon, static d => d.ChevronDownIcon, static (d, v) => d.ChevronDownIcon = v);
@@ -311,6 +312,7 @@ public class BitDropMenuParams : BitComponentBaseParams, IBitComponentParams
         {
             bitDropMenu.TakeFromCascade(nameof(HoverOpenDelay), HoverOpenDelay.Value, static d => d.HoverOpenDelay, static (d, v) => d.HoverOpenDelay = v);
         }
+
 
         if (Icon is not null)
         {

@@ -692,6 +692,7 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
             bitDropdown.TakeFromCascade(nameof(AutoSelectFirstMatch), AutoSelectFirstMatch.Value, static d => d.AutoSelectFirstMatch, static (d, v) => d.AutoSelectFirstMatch = v);
         }
 
+
         if (CaretDownIcon is not null)
         {
             bitDropdown.TakeFromCascade(nameof(CaretDownIcon), CaretDownIcon, static d => d.CaretDownIcon, static (d, v) => d.CaretDownIcon = v);
@@ -712,6 +713,7 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
             bitDropdown.TakeFromCascade(nameof(ChipsRemoveButtonAriaLabel), ChipsRemoveButtonAriaLabel, static d => d.ChipsRemoveButtonAriaLabel, static (d, v) => d.ChipsRemoveButtonAriaLabel = v);
         }
 
+
         if (ChipsRemoveIcon is not null)
         {
             bitDropdown.TakeFromCascade(nameof(ChipsRemoveIcon), ChipsRemoveIcon, static d => d.ChipsRemoveIcon, static (d, v) => d.ChipsRemoveIcon = v);
@@ -731,6 +733,7 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
         {
             bitDropdown.TakeFromCascade(nameof(ClearButtonAriaLabel), ClearButtonAriaLabel, static d => d.ClearButtonAriaLabel, static (d, v) => d.ClearButtonAriaLabel = v);
         }
+
 
         if (ClearButtonIcon is not null)
         {
@@ -766,6 +769,7 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
         {
             bitDropdown.TakeFromCascade(nameof(ComboBoxAddButtonAriaLabel), ComboBoxAddButtonAriaLabel, static d => d.ComboBoxAddButtonAriaLabel, static (d, v) => d.ComboBoxAddButtonAriaLabel = v);
         }
+
 
         if (ComboBoxAddButtonIcon is not null)
         {
@@ -846,6 +850,7 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
         {
             bitDropdown.TakeFromCascade(nameof(IsLoading), IsLoading.Value, static d => d.IsLoading, static (d, v) => d.IsLoading = v);
         }
+
 
         if (ItemCheckIcon is not null)
         {
@@ -992,6 +997,7 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
             bitDropdown.TakeFromCascade(nameof(ResponsiveCloseButtonAriaLabel), ResponsiveCloseButtonAriaLabel, static d => d.ResponsiveCloseButtonAriaLabel, static (d, v) => d.ResponsiveCloseButtonAriaLabel = v);
         }
 
+
         if (ResponsiveCloseIcon is not null)
         {
             bitDropdown.TakeFromCascade(nameof(ResponsiveCloseIcon), ResponsiveCloseIcon, static d => d.ResponsiveCloseIcon, static (d, v) => d.ResponsiveCloseIcon = v);
@@ -1012,6 +1018,7 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
             bitDropdown.TakeFromCascade(nameof(SearchBoxClearButtonAriaLabel), SearchBoxClearButtonAriaLabel, static d => d.SearchBoxClearButtonAriaLabel, static (d, v) => d.SearchBoxClearButtonAriaLabel = v);
         }
 
+
         if (SearchBoxClearIcon is not null)
         {
             bitDropdown.TakeFromCascade(nameof(SearchBoxClearIcon), SearchBoxClearIcon, static d => d.SearchBoxClearIcon, static (d, v) => d.SearchBoxClearIcon = v);
@@ -1021,6 +1028,7 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
         {
             bitDropdown.TakeFromCascade(nameof(SearchBoxClearIconName), SearchBoxClearIconName, static d => d.SearchBoxClearIconName, static (d, v) => d.SearchBoxClearIconName = v);
         }
+
 
         if (SearchBoxIcon is not null)
         {

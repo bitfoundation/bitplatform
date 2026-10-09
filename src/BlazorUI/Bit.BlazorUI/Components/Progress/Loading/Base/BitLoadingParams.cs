@@ -172,7 +172,7 @@ public class BitLoadingParams : BitComponentBaseParams, IBitComponentParams
             }
             else
             {
-                bitLoading.ReleaseFromCascade(nameof(Color));
+                bitLoading.ReleaseCascadeParameter(nameof(Color));
             }
         }
 
@@ -193,7 +193,7 @@ public class BitLoadingParams : BitComponentBaseParams, IBitComponentParams
             }
             else
             {
-                bitLoading.ReleaseFromCascade(nameof(CustomSize));
+                bitLoading.ReleaseCascadeParameter(nameof(CustomSize));
             }
         }
 
@@ -236,7 +236,7 @@ public class BitLoadingParams : BitComponentBaseParams, IBitComponentParams
             }
             else
             {
-                bitLoading.ReleaseFromCascade(nameof(Size));
+                bitLoading.ReleaseCascadeParameter(nameof(Size));
             }
         }
 

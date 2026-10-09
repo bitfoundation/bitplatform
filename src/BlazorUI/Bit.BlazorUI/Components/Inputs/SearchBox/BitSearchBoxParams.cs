@@ -395,6 +395,7 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
             bitSearchBox.TakeFromCascade(nameof(ClearButtonAriaLabel), ClearButtonAriaLabel!, static s => s.ClearButtonAriaLabel, static (s, v) => s.ClearButtonAriaLabel = v);
         }
 
+
         if (ClearButtonIcon is not null)
         {
             bitSearchBox.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static s => s.ClearButtonIcon, static (s, v) => s.ClearButtonIcon = v);
@@ -459,6 +460,7 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
         {
             bitSearchBox.TakeFromCascade(nameof(HighlightSuggestItems), HighlightSuggestItems.Value, static s => s.HighlightSuggestItems, static (s, v) => s.HighlightSuggestItems = v);
         }
+
 
         if (Icon is not null)
         {
@@ -544,6 +546,7 @@ public class BitSearchBoxParams : BitInputBaseParams<string?>, IBitComponentPara
         {
             bitSearchBox.TakeFromCascade(nameof(SearchButtonAriaLabel), SearchButtonAriaLabel!, static s => s.SearchButtonAriaLabel, static (s, v) => s.SearchButtonAriaLabel = v);
         }
+
 
         if (SearchButtonIcon is not null)
         {

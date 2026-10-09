@@ -285,6 +285,7 @@ public class BitToggleParams : BitComponentBaseParams, IBitComponentParams
             bitToggle.TakeFromCascade(nameof(Loading), Loading.Value, static t => t.Loading, static (t, v) => t.Loading = v);
         }
 
+
         if (OffIcon is not null)
         {
             bitToggle.TakeFromCascade(nameof(OffIcon), OffIcon, static t => t.OffIcon, static (t, v) => t.OffIcon = v);
@@ -299,6 +300,7 @@ public class BitToggleParams : BitComponentBaseParams, IBitComponentParams
         {
             bitToggle.TakeFromCascade(nameof(OffText), OffText, static t => t.OffText, static (t, v) => t.OffText = v);
         }
+
 
         if (OnIcon is not null)
         {

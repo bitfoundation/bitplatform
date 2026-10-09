@@ -906,6 +906,7 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(Classes), Classes, static d => d.Classes, static (d, v) => d.Classes = v);
         }
 
+
         if (ClearButtonIcon is not null)
         {
             bitDatePicker.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static d => d.ClearButtonIcon, static (d, v) => d.ClearButtonIcon = v);
@@ -920,6 +921,7 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
         {
             bitDatePicker.TakeFromCascade(nameof(ClearButtonTitle), ClearButtonTitle!, static d => d.ClearButtonTitle, static (d, v) => d.ClearButtonTitle = v);
         }
+
 
         if (CloseButtonIcon is not null)
         {
@@ -1061,6 +1063,7 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(GoToPrevYearTitle), GoToPrevYearTitle!, static d => d.GoToPrevYearTitle, static (d, v) => d.GoToPrevYearTitle = v);
         }
 
+
         if (GoToTodayIcon is not null)
         {
             bitDatePicker.TakeFromCascade(nameof(GoToTodayIcon), GoToTodayIcon, static d => d.GoToTodayIcon, static (d, v) => d.GoToTodayIcon = v);
@@ -1080,6 +1083,7 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
         {
             bitDatePicker.TakeFromCascade(nameof(HasBorder), HasBorder.Value, static d => d.HasBorder, static (d, v) => d.HasBorder = v);
         }
+
 
         if (HideTimePickerIcon is not null)
         {
@@ -1125,6 +1129,7 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
         {
             bitDatePicker.TakeFromCascade(nameof(HourStep), HourStep.Value, static d => d.HourStep, static (d, v) => d.HourStep = v);
         }
+
 
         if (Icon is not null)
         {
@@ -1221,6 +1226,7 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(MonthPickerToggleTitle), MonthPickerToggleTitle!, static d => d.MonthPickerToggleTitle, static (d, v) => d.MonthPickerToggleTitle = v);
         }
 
+
         if (NextMonthNavIcon is not null)
         {
             bitDatePicker.TakeFromCascade(nameof(NextMonthNavIcon), NextMonthNavIcon, static d => d.NextMonthNavIcon, static (d, v) => d.NextMonthNavIcon = v);
@@ -1230,6 +1236,7 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
         {
             bitDatePicker.TakeFromCascade(nameof(NextMonthNavIconName), NextMonthNavIconName, static d => d.NextMonthNavIconName, static (d, v) => d.NextMonthNavIconName = v);
         }
+
 
         if (NextYearNavIcon is not null)
         {
@@ -1241,6 +1248,7 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(NextYearNavIconName), NextYearNavIconName, static d => d.NextYearNavIconName, static (d, v) => d.NextYearNavIconName = v);
         }
 
+
         if (NextYearRangeNavIcon is not null)
         {
             bitDatePicker.TakeFromCascade(nameof(NextYearRangeNavIcon), NextYearRangeNavIcon, static d => d.NextYearRangeNavIcon, static (d, v) => d.NextYearRangeNavIcon = v);
@@ -1250,6 +1258,7 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
         {
             bitDatePicker.TakeFromCascade(nameof(NextYearRangeNavIconName), NextYearRangeNavIconName, static d => d.NextYearRangeNavIconName, static (d, v) => d.NextYearRangeNavIconName = v);
         }
+
 
         if (NowButtonIcon is not null)
         {
@@ -1276,6 +1285,7 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(Placeholder), Placeholder!, static d => d.Placeholder, static (d, v) => d.Placeholder = v);
         }
 
+
         if (PrevMonthNavIcon is not null)
         {
             bitDatePicker.TakeFromCascade(nameof(PrevMonthNavIcon), PrevMonthNavIcon, static d => d.PrevMonthNavIcon, static (d, v) => d.PrevMonthNavIcon = v);
@@ -1286,6 +1296,7 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(PrevMonthNavIconName), PrevMonthNavIconName, static d => d.PrevMonthNavIconName, static (d, v) => d.PrevMonthNavIconName = v);
         }
 
+
         if (PrevYearNavIcon is not null)
         {
             bitDatePicker.TakeFromCascade(nameof(PrevYearNavIcon), PrevYearNavIcon, static d => d.PrevYearNavIcon, static (d, v) => d.PrevYearNavIcon = v);
@@ -1295,6 +1306,7 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
         {
             bitDatePicker.TakeFromCascade(nameof(PrevYearNavIconName), PrevYearNavIconName, static d => d.PrevYearNavIconName, static (d, v) => d.PrevYearNavIconName = v);
         }
+
 
         if (PrevYearRangeNavIcon is not null)
         {
@@ -1366,6 +1378,7 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(ShowTimePickerAsOverlay), ShowTimePickerAsOverlay.Value, static d => d.ShowTimePickerAsOverlay, static (d, v) => d.ShowTimePickerAsOverlay = v);
         }
 
+
         if (ShowTimePickerIcon is not null)
         {
             bitDatePicker.TakeFromCascade(nameof(ShowTimePickerIcon), ShowTimePickerIcon, static d => d.ShowTimePickerIcon, static (d, v) => d.ShowTimePickerIcon = v);
@@ -1411,6 +1424,7 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(TimeFormat), TimeFormat.Value, static d => d.TimeFormat, static (d, v) => d.TimeFormat = v);
         }
 
+
         if (TimePickerDecreaseHourIcon is not null)
         {
             bitDatePicker.TakeFromCascade(nameof(TimePickerDecreaseHourIcon), TimePickerDecreaseHourIcon, static d => d.TimePickerDecreaseHourIcon, static (d, v) => d.TimePickerDecreaseHourIcon = v);
@@ -1425,6 +1439,7 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
         {
             bitDatePicker.TakeFromCascade(nameof(TimePickerDecreaseHourTitle), TimePickerDecreaseHourTitle!, static d => d.TimePickerDecreaseHourTitle, static (d, v) => d.TimePickerDecreaseHourTitle = v);
         }
+
 
         if (TimePickerDecreaseMinuteIcon is not null)
         {
@@ -1446,6 +1461,7 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(TimePickerHourTitle), TimePickerHourTitle!, static d => d.TimePickerHourTitle, static (d, v) => d.TimePickerHourTitle = v);
         }
 
+
         if (TimePickerIncreaseHourIcon is not null)
         {
             bitDatePicker.TakeFromCascade(nameof(TimePickerIncreaseHourIcon), TimePickerIncreaseHourIcon, static d => d.TimePickerIncreaseHourIcon, static (d, v) => d.TimePickerIncreaseHourIcon = v);
@@ -1460,6 +1476,7 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
         {
             bitDatePicker.TakeFromCascade(nameof(TimePickerIncreaseHourTitle), TimePickerIncreaseHourTitle!, static d => d.TimePickerIncreaseHourTitle, static (d, v) => d.TimePickerIncreaseHourTitle = v);
         }
+
 
         if (TimePickerIncreaseMinuteIcon is not null)
         {
@@ -1481,6 +1498,7 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
             bitDatePicker.TakeFromCascade(nameof(TimePickerMinuteTitle), TimePickerMinuteTitle!, static d => d.TimePickerMinuteTitle, static (d, v) => d.TimePickerMinuteTitle = v);
         }
 
+
         if (TimePickerDecreaseSecondIcon is not null)
         {
             bitDatePicker.TakeFromCascade(nameof(TimePickerDecreaseSecondIcon), TimePickerDecreaseSecondIcon, static d => d.TimePickerDecreaseSecondIcon, static (d, v) => d.TimePickerDecreaseSecondIcon = v);
@@ -1495,6 +1513,7 @@ public class BitDatePickerParams : BitComponentBaseParams, IBitComponentParams
         {
             bitDatePicker.TakeFromCascade(nameof(TimePickerDecreaseSecondTitle), TimePickerDecreaseSecondTitle!, static d => d.TimePickerDecreaseSecondTitle, static (d, v) => d.TimePickerDecreaseSecondTitle = v);
         }
+
 
         if (TimePickerIncreaseSecondIcon is not null)
         {

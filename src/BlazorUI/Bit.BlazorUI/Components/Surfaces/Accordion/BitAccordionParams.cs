@@ -166,6 +166,7 @@ public class BitAccordionParams : BitComponentBaseParams, IBitComponentParams
             bitAccordion.TakeFromCascade(nameof(Classes), Classes, static a => a.Classes, static (a, v) => a.Classes = v);
         }
 
+
         if (ExpandedExpanderIcon is not null)
         {
             bitAccordion.TakeFromCascade(nameof(ExpandedExpanderIcon), ExpandedExpanderIcon, static a => a.ExpandedExpanderIcon, static (a, v) => a.ExpandedExpanderIcon = v);
@@ -175,6 +176,7 @@ public class BitAccordionParams : BitComponentBaseParams, IBitComponentParams
         {
             bitAccordion.TakeFromCascade(nameof(ExpandedExpanderIconName), ExpandedExpanderIconName, static a => a.ExpandedExpanderIconName, static (a, v) => a.ExpandedExpanderIconName = v);
         }
+
 
         if (ExpanderIcon is not null)
         {
@@ -205,7 +207,7 @@ public class BitAccordionParams : BitComponentBaseParams, IBitComponentParams
             }
             else
             {
-                bitAccordion.ReleaseFromCascade(nameof(HeadingLevel));
+                bitAccordion.ReleaseCascadeParameter(nameof(HeadingLevel));
             }
         }
 

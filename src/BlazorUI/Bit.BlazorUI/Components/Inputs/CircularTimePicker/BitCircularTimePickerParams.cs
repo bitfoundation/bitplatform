@@ -415,6 +415,7 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
             bitCircularTimePicker.TakeFromCascade(nameof(ClearButtonText), ClearButtonText!, static c => c.ClearButtonText, static (c, v) => c.ClearButtonText = v);
         }
 
+
         if (CloseButtonIcon is not null)
         {
             bitCircularTimePicker.TakeFromCascade(nameof(CloseButtonIcon), CloseButtonIcon, static c => c.CloseButtonIcon, static (c, v) => c.CloseButtonIcon = v);
@@ -479,6 +480,7 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
         {
             bitCircularTimePicker.TakeFromCascade(nameof(HourStep), HourStep.Value, static c => c.HourStep, static (c, v) => c.HourStep = v);
         }
+
 
         if (Icon is not null)
         {

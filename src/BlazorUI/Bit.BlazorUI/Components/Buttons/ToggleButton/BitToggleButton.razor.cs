@@ -316,7 +316,7 @@ public partial class BitToggleButton : BitComponentBase
     /// FontAwesome: OffIcon="BitIconInfo.Fa("solid house")"
     /// Custom CSS: OffIcon="BitIconInfo.Css("my-icon-class")"
     /// </example>
-    [Parameter] public BitIconInfo? OffIcon { get; set; }
+    [Parameter, Outranks(nameof(Icon))] public BitIconInfo? OffIcon { get; set; }
 
     /// <summary>
     /// The icon of the toggle button when it is not checked.
@@ -390,7 +390,7 @@ public partial class BitToggleButton : BitComponentBase
     /// FontAwesome: OnIcon="BitIconInfo.Fa("solid house")"
     /// Custom CSS: OnIcon="BitIconInfo.Css("my-icon-class")"
     /// </example>
-    [Parameter] public BitIconInfo? OnIcon { get; set; }
+    [Parameter, Outranks(nameof(Icon))] public BitIconInfo? OnIcon { get; set; }
 
     /// <summary>
     /// The icon of the toggle button when it is checked.

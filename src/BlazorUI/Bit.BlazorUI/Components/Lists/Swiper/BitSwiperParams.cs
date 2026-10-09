@@ -371,6 +371,7 @@ public class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
             bitSwiper.TakeFromCascade(nameof(NextAriaLabel), NextAriaLabel, static s => s.NextAriaLabel, static (s, v) => s.NextAriaLabel = v);
         }
 
+
         if (NextIcon is not null)
         {
             bitSwiper.TakeFromCascade(nameof(NextIcon), NextIcon, static s => s.NextIcon, static (s, v) => s.NextIcon = v);
@@ -401,6 +402,7 @@ public class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
             bitSwiper.TakeFromCascade(nameof(Peek), Peek, static s => s.Peek, static (s, v) => s.Peek = v);
         }
 
+
         if (PauseIcon is not null)
         {
             bitSwiper.TakeFromCascade(nameof(PauseIcon), PauseIcon, static s => s.PauseIcon, static (s, v) => s.PauseIcon = v);
@@ -426,6 +428,7 @@ public class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
             bitSwiper.TakeFromCascade(nameof(PlayButtonAriaLabel), PlayButtonAriaLabel!, static s => s.PlayButtonAriaLabel, static (s, v) => s.PlayButtonAriaLabel = v);
         }
 
+
         if (PlayIcon is not null)
         {
             bitSwiper.TakeFromCascade(nameof(PlayIcon), PlayIcon, static s => s.PlayIcon, static (s, v) => s.PlayIcon = v);
@@ -440,6 +443,7 @@ public class BitSwiperParams : BitComponentBaseParams, IBitComponentParams
         {
             bitSwiper.TakeFromCascade(nameof(PrevAriaLabel), PrevAriaLabel, static s => s.PrevAriaLabel, static (s, v) => s.PrevAriaLabel = v);
         }
+
 
         if (PrevIcon is not null)
         {

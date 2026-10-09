@@ -22,8 +22,11 @@ internal static class BitCascadeExtensions
 
 
     /// <summary>
-    /// Supplies a parameter from the cascade, unless the markup has set it. BitComponentBase remembers the value it
-    /// held before the cascade first supplied it, and puts it back once the cascade stops giving one.
+    /// Supplies a parameter from the cascade, unless the markup has set it or a parameter it is one setting with - an
+    /// XIconName beside a cascaded XIcon, a text drawn in place of a cascaded icon (see
+    /// <see cref="BitComponentBase.MayTakeFromCascade"/>). BitComponentBase remembers the value it held before the
+    /// cascade first supplied it, and puts it back once the cascade stops giving one, or once the component makes its
+    /// own choice of that setting.
     /// </summary>
     /// <remarks>
     /// This runs on every render of every component under a BitParams, so a value the cascade supplies again
@@ -46,7 +49,7 @@ internal static class BitCascadeExtensions
                                                       Action<TComponent, T> set)
         where TComponent : BitComponentBase
     {
-        if (component.HasNotBeenSet(name) is false) return false;
+        if (component.MayTakeFromCascade(name) is false) return false;
 
         var current = get(component);
 
@@ -67,16 +70,6 @@ internal static class BitCascadeExtensions
         component.OnTakenFromCascade(name);
 
         return true;
-    }
-
-    /// <summary>
-    /// Takes back a parameter the cascade supplies but the component must not take on this render, because a
-    /// parameter the component set itself outranks it: puts back the value it held before the cascade wrote it,
-    /// which would otherwise go on outranking the component's own choice for as long as the cascade supplies it.
-    /// </summary>
-    public static void ReleaseFromCascade(this BitComponentBase component, string name)
-    {
-        component.ReleaseCascadeParameter(name);
     }
 
     /// <summary>

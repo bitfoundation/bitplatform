@@ -341,6 +341,7 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
             bitToggleButton.TakeFromCascade(nameof(AutoLoading), AutoLoading.Value, static t => t.AutoLoading, static (t, v) => t.AutoLoading = v);
         }
 
+
         if (CheckMarkIcon is not null)
         {
             bitToggleButton.TakeFromCascade(nameof(CheckMarkIcon), CheckMarkIcon, static t => t.CheckMarkIcon, static (t, v) => t.CheckMarkIcon = v);
@@ -380,6 +381,7 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
         {
             bitToggleButton.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static t => t.FullWidth, static (t, v) => t.FullWidth = v);
         }
+
 
         if (Icon is not null)
         {
@@ -436,6 +438,7 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
             bitToggleButton.TakeFromCascade(nameof(OffColor), OffColor.Value, static t => t.OffColor, static (t, v) => t.OffColor = v);
         }
 
+
         if (OffIcon is not null)
         {
             bitToggleButton.TakeFromCascade(nameof(OffIcon), OffIcon, static t => t.OffIcon, static (t, v) => t.OffIcon = v);
@@ -470,6 +473,7 @@ public class BitToggleButtonParams : BitComponentBaseParams, IBitComponentParams
         {
             bitToggleButton.TakeFromCascade(nameof(OnColor), OnColor.Value, static t => t.OnColor, static (t, v) => t.OnColor = v);
         }
+
 
         if (OnIcon is not null)
         {

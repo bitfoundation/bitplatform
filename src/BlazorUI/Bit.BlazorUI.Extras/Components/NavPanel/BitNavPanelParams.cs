@@ -411,18 +411,10 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
             bitNavPanel.TakeFromCascade(nameof(AutoFocus), AutoFocus.Value, static n => n.AutoFocus, static (n, v) => n.AutoFocus = v);
         }
 
-        // The icon takes precedence over the icon name, so a cascaded icon is only a default for a panel that has
-        // set neither: applied over a panel's own icon name it would override it rather than default it.
+
         if (ChevronDownIcon is not null)
         {
-            if (bitNavPanel.HasNotBeenSet(nameof(ChevronDownIconName)))
-            {
-                bitNavPanel.TakeFromCascade(nameof(ChevronDownIcon), ChevronDownIcon, static n => n.ChevronDownIcon, static (n, v) => n.ChevronDownIcon = v);
-            }
-            else
-            {
-                bitNavPanel.ReleaseFromCascade(nameof(ChevronDownIcon));
-            }
+            bitNavPanel.TakeFromCascade(nameof(ChevronDownIcon), ChevronDownIcon, static n => n.ChevronDownIcon, static (n, v) => n.ChevronDownIcon = v);
         }
 
         if (ChevronDownIconName.HasValue())
@@ -440,16 +432,10 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
             bitNavPanel.TakeFromCascade(nameof(CloseAriaLabel), CloseAriaLabel, static n => n.CloseAriaLabel, static (n, v) => n.CloseAriaLabel = v);
         }
 
+
         if (CloseIcon is not null)
         {
-            if (bitNavPanel.HasNotBeenSet(nameof(CloseIconName)))
-            {
-                bitNavPanel.TakeFromCascade(nameof(CloseIcon), CloseIcon, static n => n.CloseIcon, static (n, v) => n.CloseIcon = v);
-            }
-            else
-            {
-                bitNavPanel.ReleaseFromCascade(nameof(CloseIcon));
-            }
+            bitNavPanel.TakeFromCascade(nameof(CloseIcon), CloseIcon, static n => n.CloseIcon, static (n, v) => n.CloseIcon = v);
         }
 
         if (CloseIconName.HasValue())
@@ -677,16 +663,10 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
             bitNavPanel.TakeFromCascade(nameof(SearchDebounceTime), SearchDebounceTime.Value, static n => n.SearchDebounceTime, static (n, v) => n.SearchDebounceTime = v);
         }
 
+
         if (SearchIcon is not null)
         {
-            if (bitNavPanel.HasNotBeenSet(nameof(SearchIconName)))
-            {
-                bitNavPanel.TakeFromCascade(nameof(SearchIcon), SearchIcon, static n => n.SearchIcon, static (n, v) => n.SearchIcon = v);
-            }
-            else
-            {
-                bitNavPanel.ReleaseFromCascade(nameof(SearchIcon));
-            }
+            bitNavPanel.TakeFromCascade(nameof(SearchIcon), SearchIcon, static n => n.SearchIcon, static (n, v) => n.SearchIcon = v);
         }
 
         if (SearchIconName.HasValue())
@@ -729,16 +709,10 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
             bitNavPanel.TakeFromCascade(nameof(ToggledWidth), ToggledWidth.Value, static n => n.ToggledWidth, static (n, v) => n.ToggledWidth = v);
         }
 
+
         if (ToggleIcon is not null)
         {
-            if (bitNavPanel.HasNotBeenSet(nameof(ToggleIconName)))
-            {
-                bitNavPanel.TakeFromCascade(nameof(ToggleIcon), ToggleIcon, static n => n.ToggleIcon, static (n, v) => n.ToggleIcon = v);
-            }
-            else
-            {
-                bitNavPanel.ReleaseFromCascade(nameof(ToggleIcon));
-            }
+            bitNavPanel.TakeFromCascade(nameof(ToggleIcon), ToggleIcon, static n => n.ToggleIcon, static (n, v) => n.ToggleIcon = v);
         }
 
         if (ToggleIconName.HasValue())

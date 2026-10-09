@@ -287,6 +287,7 @@ public class BitRatingParams : BitInputBaseParams<double>, IBitComponentParams
             bitRating.TakeFromCascade(nameof(Precision), Precision.Value, static r => r.Precision, static (r, v) => r.Precision = v);
         }
 
+
         if (SelectedIcon is not null)
         {
             bitRating.TakeFromCascade(nameof(SelectedIcon), SelectedIcon, static r => r.SelectedIcon, static (r, v) => r.SelectedIcon = v);
@@ -306,6 +307,7 @@ public class BitRatingParams : BitInputBaseParams<double>, IBitComponentParams
         {
             bitRating.TakeFromCascade(nameof(Styles), Styles, static r => r.Styles, static (r, v) => r.Styles = v);
         }
+
 
         if (UnselectedIcon is not null)
         {

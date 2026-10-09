@@ -455,6 +455,7 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
             bitTextField.TakeFromCascade(nameof(ClearButtonAriaLabel), ClearButtonAriaLabel, static t => t.ClearButtonAriaLabel, static (t, v) => t.ClearButtonAriaLabel = v);
         }
 
+
         if (ClearButtonIcon is not null)
         {
             bitTextField.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static t => t.ClearButtonIcon, static (t, v) => t.ClearButtonIcon = v);
@@ -515,6 +516,7 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
             bitTextField.TakeFromCascade(nameof(FullWidth), FullWidth.Value, static t => t.FullWidth, static (t, v) => t.FullWidth = v);
         }
 
+
         if (HidePasswordIcon is not null)
         {
             bitTextField.TakeFromCascade(nameof(HidePasswordIcon), HidePasswordIcon, static t => t.HidePasswordIcon, static (t, v) => t.HidePasswordIcon = v);
@@ -524,6 +526,7 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
         {
             bitTextField.TakeFromCascade(nameof(HidePasswordIconName), HidePasswordIconName, static t => t.HidePasswordIconName, static (t, v) => t.HidePasswordIconName = v);
         }
+
 
         if (Icon is not null)
         {
@@ -649,6 +652,7 @@ public class BitTextFieldParams : BitInputBaseParams<string?>, IBitComponentPara
         {
             bitTextField.TakeFromCascade(nameof(RevealPasswordAriaLabel), RevealPasswordAriaLabel, static t => t.RevealPasswordAriaLabel, static (t, v) => t.RevealPasswordAriaLabel = v);
         }
+
 
         if (RevealPasswordIcon is not null)
         {

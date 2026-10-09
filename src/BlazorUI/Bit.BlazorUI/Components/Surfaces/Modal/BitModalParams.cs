@@ -235,6 +235,7 @@ public class BitModalParams : BitComponentBaseParams, IBitComponentParams
             bitModal.TakeFromCascade(nameof(CloseButtonTitle), CloseButtonTitle, static m => m.CloseButtonTitle, static (m, v) => m.CloseButtonTitle = v);
         }
 
+
         if (CloseIcon is not null)
         {
             bitModal.TakeFromCascade(nameof(CloseIcon), CloseIcon, static m => m.CloseIcon, static (m, v) => m.CloseIcon = v);

@@ -144,7 +144,7 @@ public partial class BitAccordion : BitComponentBase
     /// Setting either of them also turns the rotation of the expander icon off, since a swapped icon
     /// already reports the state on its own.
     /// </summary>
-    [Parameter] public BitIconInfo? ExpandedExpanderIcon { get; set; }
+    [Parameter, Outranks(nameof(ExpanderIcon))] public BitIconInfo? ExpandedExpanderIcon { get; set; }
 
     /// <summary>
     /// Gets or sets the name of the icon, from the built-in Fluent UI icons, to show in place of the

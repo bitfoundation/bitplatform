@@ -206,6 +206,7 @@ public class BitPanelParams : BitComponentBaseParams, IBitComponentParams
             bitPanel.TakeFromCascade(nameof(CloseButtonTitle), CloseButtonTitle, static p => p.CloseButtonTitle, static (p, v) => p.CloseButtonTitle = v);
         }
 
+
         if (CloseIcon is not null)
         {
             bitPanel.TakeFromCascade(nameof(CloseIcon), CloseIcon, static p => p.CloseIcon, static (p, v) => p.CloseIcon = v);

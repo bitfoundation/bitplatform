@@ -106,14 +106,20 @@ internal sealed class BitCascadeTracker
     }
 
     /// <summary>
-    /// The value the named parameter held before the params object first supplied it, which stays recorded for as
-    /// long as the params object supplies it and the markup does not set it.
+    /// Puts back the value a parameter held before the params object first supplied it, while the params object still
+    /// supplies it but the component has made its own choice of the setting it is part of
+    /// (<see cref="BitCascadeMap.BitCascadeParameter.IsOutrankedOn"/>): a value written on an earlier render would
+    /// otherwise go on outranking that choice for as long as the params object supplies it. The value stays recorded,
+    /// so the parameter is put back again once the params object stops supplying it.
     /// </summary>
-    public bool TryGetOriginal(string name, out object? original)
+    /// <returns>Whether that changed what the component held.</returns>
+    public bool Release(IBitCascadeTarget component, BitCascadeMap.BitCascadeParameter parameter)
     {
-        original = null;
+        if (component.IsSetByMarkup(parameter.Name)) return false;
 
-        return _cascadeOriginals?.TryGetValue(name, out original) is true;
+        if (_cascadeOriginals?.TryGetValue(parameter.Name, out var original) is not true) return false;
+
+        return parameter.SetOnComponent(component, original);
     }
 
     /// <summary>

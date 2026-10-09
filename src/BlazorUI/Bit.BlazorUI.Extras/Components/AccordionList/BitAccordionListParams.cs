@@ -230,18 +230,10 @@ public class BitAccordionListParams : BitComponentBaseParams, IBitComponentParam
             bitAccordionList.TakeFromCascade(nameof(EmptyContent), EmptyContent, static a => a.EmptyContent, static (a, v) => a.EmptyContent = v);
         }
 
-        // The icon takes precedence over the icon name, so a cascaded icon is only a default for a list that has
-        // set neither: applied over a list's own ExpandedExpanderIconName it would override it rather than default it.
+
         if (ExpandedExpanderIcon is not null)
         {
-            if (bitAccordionList.HasNotBeenSet(nameof(ExpandedExpanderIconName)))
-            {
-                bitAccordionList.TakeFromCascade(nameof(ExpandedExpanderIcon), ExpandedExpanderIcon, static a => a.ExpandedExpanderIcon, static (a, v) => a.ExpandedExpanderIcon = v);
-            }
-            else
-            {
-                bitAccordionList.ReleaseFromCascade(nameof(ExpandedExpanderIcon));
-            }
+            bitAccordionList.TakeFromCascade(nameof(ExpandedExpanderIcon), ExpandedExpanderIcon, static a => a.ExpandedExpanderIcon, static (a, v) => a.ExpandedExpanderIcon = v);
         }
 
         if (ExpandedExpanderIconName.HasValue())
@@ -249,17 +241,10 @@ public class BitAccordionListParams : BitComponentBaseParams, IBitComponentParam
             bitAccordionList.TakeFromCascade(nameof(ExpandedExpanderIconName), ExpandedExpanderIconName, static a => a.ExpandedExpanderIconName, static (a, v) => a.ExpandedExpanderIconName = v);
         }
 
-        // Likewise for the collapsed expander icon and the list's own ExpanderIconName.
+
         if (ExpanderIcon is not null)
         {
-            if (bitAccordionList.HasNotBeenSet(nameof(ExpanderIconName)))
-            {
-                bitAccordionList.TakeFromCascade(nameof(ExpanderIcon), ExpanderIcon, static a => a.ExpanderIcon, static (a, v) => a.ExpanderIcon = v);
-            }
-            else
-            {
-                bitAccordionList.ReleaseFromCascade(nameof(ExpanderIcon));
-            }
+            bitAccordionList.TakeFromCascade(nameof(ExpanderIcon), ExpanderIcon, static a => a.ExpanderIcon, static (a, v) => a.ExpanderIcon = v);
         }
 
         if (ExpanderIconName.HasValue())

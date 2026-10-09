@@ -257,6 +257,7 @@ public class BitCheckboxParams : BitComponentBaseParams, IBitComponentParams
             bitCheckbox.TakeFromCascade(nameof(AutoLoading), AutoLoading.Value, static c => c.AutoLoading, static (c, v) => c.AutoLoading = v);
         }
 
+
         if (CheckIcon is not null)
         {
             bitCheckbox.TakeFromCascade(nameof(CheckIcon), CheckIcon, static c => c.CheckIcon, static (c, v) => c.CheckIcon = v);
@@ -301,6 +302,7 @@ public class BitCheckboxParams : BitComponentBaseParams, IBitComponentParams
         {
             bitCheckbox.TakeFromCascade(nameof(Indeterminate), Indeterminate.Value, static c => c.Indeterminate, static (c, v) => c.Indeterminate = v);
         }
+
 
         if (IndeterminateIcon is not null)
         {
@@ -361,6 +363,7 @@ public class BitCheckboxParams : BitComponentBaseParams, IBitComponentParams
         {
             bitCheckbox.TakeFromCascade(nameof(Title), Title, static c => c.Title, static (c, v) => c.Title = v);
         }
+
 
         if (UncheckedIcon is not null)
         {

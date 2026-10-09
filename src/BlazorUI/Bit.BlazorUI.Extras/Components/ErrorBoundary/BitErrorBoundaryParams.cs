@@ -290,17 +290,20 @@ public class BitErrorBoundaryParams : IBitComponentParams
             bitErrorBoundary.HomeUrl = HomeUrl;
         }
 
-        if (Icon is not null && bitErrorBoundary.HasNotBeenSet(nameof(Icon)))
+        // Icon, IconName and IconTemplate are one setting - which icon is shown - so a boundary that picked its icon
+        // through any of them takes none of the others (MayTakeFromCascade).
+        if (Icon is not null && bitErrorBoundary.MayTakeFromCascade(nameof(Icon)))
         {
             bitErrorBoundary.Icon = Icon;
         }
 
-        if (IconName is not null && bitErrorBoundary.HasNotBeenSet(nameof(IconName)))
+        // Unlike a text, an empty icon name names no icon, and is not one the boundary could be given back from.
+        if (IconName.HasValue() && bitErrorBoundary.MayTakeFromCascade(nameof(IconName)))
         {
             bitErrorBoundary.IconName = IconName;
         }
 
-        if (IconTemplate is not null && bitErrorBoundary.HasNotBeenSet(nameof(IconTemplate)))
+        if (IconTemplate is not null && bitErrorBoundary.MayTakeFromCascade(nameof(IconTemplate)))
         {
             bitErrorBoundary.IconTemplate = IconTemplate;
         }

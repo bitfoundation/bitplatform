@@ -167,7 +167,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// <summary>
     /// The custom content of the clear button, which replaces its icon.
     /// </summary>
-    [Parameter] public RenderFragment? ClearButtonTemplate { get; set; }
+    [Parameter, Outranks(nameof(ClearButtonIcon))] public RenderFragment? ClearButtonTemplate { get; set; }
 
     /// <summary>
     /// What a screen reader announces once the field has been emptied - by the clear button or by
@@ -570,7 +570,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// The custom content of the reveal password button, which receives whether the password is currently
     /// revealed and replaces the default icon.
     /// </summary>
-    [Parameter] public RenderFragment<bool>? RevealPasswordTemplate { get; set; }
+    [Parameter, Outranks(nameof(RevealPasswordIcon)), Outranks(nameof(HidePasswordIcon))] public RenderFragment<bool>? RevealPasswordTemplate { get; set; }
 
     /// <summary>
     /// For multiline text, Number of rows.

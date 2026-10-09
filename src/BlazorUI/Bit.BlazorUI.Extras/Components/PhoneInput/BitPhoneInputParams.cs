@@ -380,6 +380,7 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
             bitPhoneInput.TakeFromCascade(nameof(ClearButtonAriaLabel), ClearButtonAriaLabel, static p => p.ClearButtonAriaLabel, static (p, v) => p.ClearButtonAriaLabel = v);
         }
 
+
         if (ClearButtonIcon is not null)
         {
             bitPhoneInput.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static p => p.ClearButtonIcon, static (p, v) => p.ClearButtonIcon = v);
@@ -585,6 +586,7 @@ public class BitPhoneInputParams : BitInputBaseParams<string?>, IBitComponentPar
         {
             bitPhoneInput.TakeFromCascade(nameof(ResponsiveCloseButtonAriaLabel), ResponsiveCloseButtonAriaLabel, static p => p.ResponsiveCloseButtonAriaLabel, static (p, v) => p.ResponsiveCloseButtonAriaLabel = v);
         }
+
 
         if (ResponsiveCloseIcon is not null)
         {

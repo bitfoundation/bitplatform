@@ -385,6 +385,7 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
             bitNumberField.TakeFromCascade(nameof(ClearButtonAriaLabel), ClearButtonAriaLabel, static n => n.ClearButtonAriaLabel, static (n, v) => n.ClearButtonAriaLabel = v);
         }
 
+
         if (ClearButtonIcon is not null)
         {
             bitNumberField.TakeFromCascade(nameof(ClearButtonIcon), ClearButtonIcon, static n => n.ClearButtonIcon, static (n, v) => n.ClearButtonIcon = v);
@@ -414,6 +415,7 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
         {
             bitNumberField.TakeFromCascade(nameof(DecrementAriaLabel), DecrementAriaLabel, static n => n.DecrementAriaLabel, static (n, v) => n.DecrementAriaLabel = v);
         }
+
 
         if (DecrementIcon is not null)
         {
@@ -457,6 +459,7 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
             bitNumberField.TakeFromCascade(nameof(HideInput), HideInput.Value, static n => n.HideInput, static (n, v) => n.HideInput = v);
         }
 
+
         if (Icon is not null)
         {
             bitNumberField.TakeFromCascade(nameof(Icon), Icon, static n => n.Icon, static (n, v) => n.Icon = v);
@@ -476,6 +479,7 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
         {
             bitNumberField.TakeFromCascade(nameof(IncrementAriaLabel), IncrementAriaLabel, static n => n.IncrementAriaLabel, static (n, v) => n.IncrementAriaLabel = v);
         }
+
 
         if (IncrementIcon is not null)
         {

@@ -177,7 +177,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     /// <summary>
     /// The custom template for the clear button of the number input.
     /// </summary>
-    [Parameter] public RenderFragment? ClearButtonTemplate { get; set; }
+    [Parameter, Outranks(nameof(ClearButtonIcon))] public RenderFragment? ClearButtonTemplate { get; set; }
 
     /// <summary>
     /// What a screen reader announces once the number has been emptied - by the clear button or by

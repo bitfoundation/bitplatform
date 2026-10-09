@@ -137,7 +137,9 @@ public class BitPdfViewerParamsTests : BunitTestContext
 
         Assert.AreEqual(BitPdfScrollMode.Wrapped, viewer.Instance.CurrentScrollMode);
         Assert.AreEqual(BitPdfCursorTool.Pan, viewer.Instance.CurrentCursorTool);
-        Assert.AreEqual(1, component.FindAll(".bit-pdv-pages.bit-pdv-w").Count);
+        // PageCount is read off the page list, which fills before the render that
+        // swaps the loading shimmer's container for the laid-out one has landed.
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-pdv-pages.bit-pdv-w").Count));
         Assert.AreEqual(1, component.FindAll(".bit-pdv-surface.bit-pdv-pan").Count);
     }
 

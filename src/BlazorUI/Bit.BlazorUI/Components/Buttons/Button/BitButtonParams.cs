@@ -340,6 +340,7 @@ public class BitButtonParams : BitComponentBaseParams, IBitComponentParams
             bitButton.TakeFromCascade(nameof(Href), Href, static b => b.Href, static (b, v) => b.Href = v);
         }
 
+
         if (Icon is not null)
         {
             bitButton.TakeFromCascade(nameof(Icon), Icon, static b => b.Icon, static (b, v) => b.Icon = v);

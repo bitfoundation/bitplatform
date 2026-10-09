@@ -209,6 +209,7 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
             bitColorPicker.TakeFromCascade(nameof(DefaultInputsMode), DefaultInputsMode.Value, static c => c.DefaultInputsMode, static (c, v) => c.DefaultInputsMode = v);
         }
 
+
         if (EyeDropperIcon is not null)
         {
             bitColorPicker.TakeFromCascade(nameof(EyeDropperIcon), EyeDropperIcon, static c => c.EyeDropperIcon, static (c, v) => c.EyeDropperIcon = v);
@@ -223,6 +224,7 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
         {
             bitColorPicker.TakeFromCascade(nameof(Format), Format.Value, static c => c.Format, static (c, v) => c.Format = v);
         }
+
 
         if (InputsModeSwitchIcon is not null)
         {

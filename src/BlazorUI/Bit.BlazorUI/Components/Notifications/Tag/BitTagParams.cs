@@ -244,6 +244,7 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
             bitTag.TakeFromCascade(nameof(Color), Color.Value, static t => t.Color, static (t, v) => t.Color = v);
         }
 
+
         if (DismissIcon is not null)
         {
             bitTag.TakeFromCascade(nameof(DismissIcon), DismissIcon, static t => t.DismissIcon, static (t, v) => t.DismissIcon = v);
@@ -278,6 +279,7 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
         {
             bitTag.TakeFromCascade(nameof(HideSelectedIcon), HideSelectedIcon.Value, static t => t.HideSelectedIcon, static (t, v) => t.HideSelectedIcon = v);
         }
+
 
         if (Icon is not null)
         {
@@ -326,6 +328,7 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
             bitTag.TakeFromCascade(nameof(Reversed), Reversed.Value, static t => t.Reversed, static (t, v) => t.Reversed = v);
         }
 
+
         if (SecondaryIcon is not null)
         {
             bitTag.TakeFromCascade(nameof(SecondaryIcon), SecondaryIcon, static t => t.SecondaryIcon, static (t, v) => t.SecondaryIcon = v);
@@ -340,6 +343,7 @@ public class BitTagParams : BitComponentBaseParams, IBitComponentParams
         {
             bitTag.TakeFromCascade(nameof(SecondaryText), SecondaryText, static t => t.SecondaryText, static (t, v) => t.SecondaryText = v);
         }
+
 
         if (SelectedIcon is not null)
         {

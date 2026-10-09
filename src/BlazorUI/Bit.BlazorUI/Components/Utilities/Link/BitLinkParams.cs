@@ -244,6 +244,7 @@ public class BitLinkParams : BitComponentBaseParams, IBitComponentParams
             bitLink.TakeFromCascade(nameof(Href), Href, static l => l.Href, static (l, v) => l.Href = v);
         }
 
+
         if (Icon is not null)
         {
             bitLink.TakeFromCascade(nameof(Icon), Icon, static l => l.Icon, static (l, v) => l.Icon = v);

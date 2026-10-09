@@ -743,6 +743,7 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
             bitFileUpload.TakeFromCascade(nameof(CancelAllText), CancelAllText!, static f => f.CancelAllText, static (f, v) => f.CancelAllText = v);
         }
 
+
         if (CancelIcon is not null)
         {
             bitFileUpload.TakeFromCascade(nameof(CancelIcon), CancelIcon, static f => f.CancelIcon, static (f, v) => f.CancelIcon = v);
@@ -853,6 +854,7 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
             bitFileUpload.TakeFromCascade(nameof(Label), Label!, static f => f.Label, static (f, v) => f.Label = v);
         }
 
+
         if (LabelIcon is not null)
         {
             bitFileUpload.TakeFromCascade(nameof(LabelIcon), LabelIcon, static f => f.LabelIcon, static (f, v) => f.LabelIcon = v);
@@ -923,6 +925,7 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
             bitFileUpload.TakeFromCascade(nameof(PauseButtonTitle), PauseButtonTitle, static f => f.PauseButtonTitle, static (f, v) => f.PauseButtonTitle = v);
         }
 
+
         if (PauseIcon is not null)
         {
             bitFileUpload.TakeFromCascade(nameof(PauseIcon), PauseIcon, static f => f.PauseIcon, static (f, v) => f.PauseIcon = v);
@@ -952,6 +955,7 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
         {
             bitFileUpload.TakeFromCascade(nameof(RemoveButtonTitle), RemoveButtonTitle, static f => f.RemoveButtonTitle, static (f, v) => f.RemoveButtonTitle = v);
         }
+
 
         if (RemoveIcon is not null)
         {
@@ -997,6 +1001,7 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
         {
             bitFileUpload.TakeFromCascade(nameof(RetryButtonTitle), RetryButtonTitle, static f => f.RetryButtonTitle, static (f, v) => f.RetryButtonTitle = v);
         }
+
 
         if (RetryIcon is not null)
         {
@@ -1062,6 +1067,7 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
         {
             bitFileUpload.TakeFromCascade(nameof(UploadFormFieldName), UploadFormFieldName, static f => f.UploadFormFieldName, static (f, v) => f.UploadFormFieldName = v);
         }
+
 
         if (UploadIcon is not null)
         {

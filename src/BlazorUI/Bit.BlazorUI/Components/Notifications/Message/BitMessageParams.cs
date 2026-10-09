@@ -254,6 +254,7 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
             bitMessage.TakeFromCascade(nameof(CollapseAriaLabel), CollapseAriaLabel!, static m => m.CollapseAriaLabel, static (m, v) => m.CollapseAriaLabel = v);
         }
 
+
         if (CollapseIcon is not null)
         {
             bitMessage.TakeFromCascade(nameof(CollapseIcon), CollapseIcon, static m => m.CollapseIcon, static (m, v) => m.CollapseIcon = v);
@@ -284,6 +285,7 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
             bitMessage.TakeFromCascade(nameof(Dismissible), Dismissible.Value, static m => m.Dismissible, static (m, v) => m.Dismissible = v);
         }
 
+
         if (DismissIcon is not null)
         {
             bitMessage.TakeFromCascade(nameof(DismissIcon), DismissIcon, static m => m.DismissIcon, static (m, v) => m.DismissIcon = v);
@@ -309,6 +311,7 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
             bitMessage.TakeFromCascade(nameof(ExpandAriaLabel), ExpandAriaLabel!, static m => m.ExpandAriaLabel, static (m, v) => m.ExpandAriaLabel = v);
         }
 
+
         if (ExpandIcon is not null)
         {
             bitMessage.TakeFromCascade(nameof(ExpandIcon), ExpandIcon, static m => m.ExpandIcon, static (m, v) => m.ExpandIcon = v);
@@ -323,6 +326,7 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
         {
             bitMessage.TakeFromCascade(nameof(HideIcon), HideIcon.Value, static m => m.HideIcon, static (m, v) => m.HideIcon = v);
         }
+
 
         if (Icon is not null)
         {

@@ -369,6 +369,7 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
             bitCarousel.TakeFromCascade(nameof(GoLeftAriaLabel), GoLeftAriaLabel, static c => c.GoLeftAriaLabel, static (c, v) => c.GoLeftAriaLabel = v);
         }
 
+
         if (GoLeftIcon is not null)
         {
             bitCarousel.TakeFromCascade(nameof(GoLeftIcon), GoLeftIcon, static c => c.GoLeftIcon, static (c, v) => c.GoLeftIcon = v);
@@ -383,6 +384,7 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
         {
             bitCarousel.TakeFromCascade(nameof(GoRightAriaLabel), GoRightAriaLabel, static c => c.GoRightAriaLabel, static (c, v) => c.GoRightAriaLabel = v);
         }
+
 
         if (GoRightIcon is not null)
         {
@@ -429,6 +431,7 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
             bitCarousel.TakeFromCascade(nameof(PauseButtonAriaLabel), PauseButtonAriaLabel!, static c => c.PauseButtonAriaLabel, static (c, v) => c.PauseButtonAriaLabel = v);
         }
 
+
         if (PauseIcon is not null)
         {
             bitCarousel.TakeFromCascade(nameof(PauseIcon), PauseIcon, static c => c.PauseIcon, static (c, v) => c.PauseIcon = v);
@@ -453,6 +456,7 @@ public class BitCarouselParams : BitComponentBaseParams, IBitComponentParams
         {
             bitCarousel.TakeFromCascade(nameof(PlayButtonAriaLabel), PlayButtonAriaLabel!, static c => c.PlayButtonAriaLabel, static (c, v) => c.PlayButtonAriaLabel = v);
         }
+
 
         if (PlayIcon is not null)
         {
