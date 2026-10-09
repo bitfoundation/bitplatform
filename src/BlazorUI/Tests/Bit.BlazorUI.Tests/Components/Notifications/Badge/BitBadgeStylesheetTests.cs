@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -23,7 +24,11 @@ public partial class BitBadgeStylesheetTests
 
         foreach (var name in documented)
         {
-            StringAssert.Contains(stylesheet, $"var({name}, ", $"{name} is documented but never read with a fallback.");
+            // The focus color alone is read without a fallback, on purpose: its absence is what hands the ring over
+            // to the global --bit-shd-focus-ring (see BitFocusRingStylesheetTests).
+            var read = name.EndsWith("-focus-color", StringComparison.Ordinal) ? $"var({name})" : $"var({name}, ";
+
+            StringAssert.Contains(stylesheet, read, $"{name} is documented but never read as it should be.");
         }
     }
 
@@ -142,7 +147,7 @@ public partial class BitBadgeStylesheetTests
         // So does an explicit Color, for every color it paints.
         StringAssert.Contains(stylesheet, "--bit-bdg-cnt-clr-bg: var(--bit-bdg-clr, var(--bit-Badge-background, #{$clr-pri}));");
         StringAssert.Contains(stylesheet, "--bit-bdg-cnt-clr-txt: var(--bit-bdg-clr-txt, var(--bit-Badge-color, #{$clr-pri-text}));");
-        StringAssert.Contains(stylesheet, "var(--bit-bdg-clr-fcs, var(--bit-Badge-focus-color, #{$clr-pri-focus}))");
+        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-bdg-clr-fcs, var(--bit-Badge-focus-color)))");
         StringAssert.Contains(stylesheet, "var(--bit-bdg-clr, var(--bit-Badge-pulse-color, #{$clr-pri}))");
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Badge-[a-z-]+, var\(--bit-bdg-"), "A public variable is read before the parameter it restyles the default of.");

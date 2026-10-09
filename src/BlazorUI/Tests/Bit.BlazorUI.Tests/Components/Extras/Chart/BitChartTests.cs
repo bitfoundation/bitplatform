@@ -1736,13 +1736,13 @@ public class BitChartTests : BunitTestContext
     }
 
     [TestMethod]
-    public void TheFocusRingShouldReadThePublicFocusVariable()
+    public void TheFocusRingShouldLeaveItsColorToTheStylesheet()
     {
+        // .bit-cht-focus-ring paints it in the chart's focus color, which a presentation attribute would only shadow.
         var component = RenderChart();
         component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
 
-        Assert.AreEqual("var(--bit-Chart-focus-color, var(--bit-clr-pri-focus))",
-            component.Find(".bit-cht-focus-ring").GetAttribute("stroke"));
+        Assert.IsNull(component.Find(".bit-cht-focus-ring").GetAttribute("stroke"));
     }
 
     // ---- sparkline ----

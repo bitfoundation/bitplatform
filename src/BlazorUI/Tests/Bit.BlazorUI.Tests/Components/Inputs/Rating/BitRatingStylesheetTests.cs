@@ -26,7 +26,7 @@ public class BitRatingStylesheetTests
         StringAssert.Contains(stylesheet, "color: var(--bit-rtg-clr, var(--bit-Rating-color, #{$clr-pri}));");
         StringAssert.Contains(stylesheet, "color: var(--bit-rtg-clr-hover, var(--bit-Rating-hover-color, #{$clr-pri-hover}));");
         StringAssert.Contains(stylesheet, "color: var(--bit-rtg-clr-active, var(--bit-Rating-active-color, #{$clr-pri-active}));");
-        StringAssert.Contains(stylesheet, "var(--bit-rtg-clr-focus, var(--bit-Rating-focus-color, #{$clr-pri-focus}))");
+        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-rtg-clr-focus, var(--bit-Rating-focus-color)))");
 
         // The values the parameters publish are never read behind a public variable. The unfilled part is not the
         // Color's to paint (--bit-rtg-clr-uns), so it stays the variable's.

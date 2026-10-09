@@ -62,7 +62,7 @@
     // Shadow, and one declaration replaces the other: a focused raised flag would lose its elevation for
     // as long as it is focused. So the elevation is handed to the mixin as a layer to keep under the ring.
     &:focus-visible {
-        @include focus-ring(var(--bit-Flag-focus-color, #{$clr-pri-focus}), $shp-focus-ring-offset, var(--bit-flg-elv));
+        @include focus-ring-own(var(--bit-Flag-focus-color), var(--bit-flg-elv));
     }
 }
 

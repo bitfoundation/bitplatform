@@ -32,7 +32,7 @@ public partial class BitSearchBoxStylesheetTests
         // So do an explicit Color and Background, for every color they paint.
         StringAssert.Contains(stylesheet, "var(--bit-srb-clr-bg, var(--bit-SearchBox-background, #{$clr-bg-pri}))");
         StringAssert.Contains(stylesheet, "var(--bit-srb-clr, var(--bit-SearchBox-icon-color, #{$clr-pri}))");
-        StringAssert.Contains(stylesheet, "var(--bit-srb-clr-focus, var(--bit-SearchBox-focus-color, #{$clr-pri-focus}))");
+        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-srb-clr-focus, var(--bit-SearchBox-focus-color)))");
         StringAssert.Contains(stylesheet, "var(--bit-srb-clr, var(--bit-SearchBox-search-button-background, #{$clr-pri}))");
         StringAssert.Contains(stylesheet, "var(--bit-srb-clr-txt, var(--bit-SearchBox-search-button-color, #{$clr-pri-text}))");
         StringAssert.Contains(stylesheet, "--bit-srb-dis-clr: var(--bit-srb-clr-dis-text, var(--bit-SearchBox-disabled-color, #{$clr-pri-dis-text}));");

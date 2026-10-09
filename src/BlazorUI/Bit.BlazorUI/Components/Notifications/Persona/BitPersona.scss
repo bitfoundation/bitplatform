@@ -464,7 +464,7 @@
     &:focus-visible {
         opacity: 1;
 
-        @include focus-ring(var(--bit-Persona-focus-color, #{$clr-pri-focus}));
+        @include focus-ring-own(var(--bit-Persona-focus-color));
     }
 }
 
@@ -498,7 +498,7 @@
         // The overlay names what activating the coin does, so it is shown to the keyboard on the same terms
         // as to the pointer.
         &:focus-visible {
-            @include focus-ring(var(--bit-Persona-focus-color, #{$clr-pri-focus}));
+            @include focus-ring-own(var(--bit-Persona-focus-color));
 
             .bit-prs-imo {
                 opacity: 1;

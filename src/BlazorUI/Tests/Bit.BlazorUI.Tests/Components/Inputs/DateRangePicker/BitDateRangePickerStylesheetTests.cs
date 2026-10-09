@@ -26,7 +26,7 @@ public class BitDateRangePickerStylesheetTests
         StringAssert.Contains(resolution, "--bit-dtrp-clr-hover: var(--bit-dtrp-rl-hover, var(--bit-DateRangePicker-hover-color, #{$clr-pri-hover}));");
         StringAssert.Contains(resolution, "--bit-dtrp-clr-active: var(--bit-dtrp-rl-active, var(--bit-DateRangePicker-active-color, #{$clr-pri-active}));");
         StringAssert.Contains(resolution, "--bit-dtrp-clr-body: var(--bit-dtrp-rl-body, var(--bit-DateRangePicker-range-background, #{$clr-pri-light}));");
-        StringAssert.Contains(resolution, "--bit-dtrp-clr-focus: var(--bit-dtrp-rl-focus, var(--bit-DateRangePicker-focus-color, #{$clr-pri-focus}));");
+        StringAssert.Contains(resolution, "--bit-dtrp-clr-focus: var(--bit-dtrp-rl-focus, var(--bit-DateRangePicker-focus-color));");
         Assert.IsFalse(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-dtrp-#{$role} {").Contains("--bit-DateRangePicker-"), "A role class reads a public variable ahead of its own color.");
 
         // So does an explicit Size, for the five sizes a variable restyles.

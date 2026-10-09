@@ -222,7 +222,7 @@
 
     &:focus-visible {
         outline: none;
-        @include focus-ring(var(--bit-tln-clr-focus, #{$clr-pri-focus}));
+        @include focus-ring-own(var(--bit-tln-clr-focus));
     }
 }
 

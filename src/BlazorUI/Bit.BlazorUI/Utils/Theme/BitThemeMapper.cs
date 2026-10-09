@@ -47,6 +47,45 @@ internal static class BitThemeMapper
     }
 
     /// <summary>
+    /// The tokens the global focus ring is composed of, as <c>Styles/Fluent/shapes.fluent.scss</c> declares it (pinned to
+    /// it by a contract test): the page background of its separator ring, the primary focus color of its outer ring, and
+    /// the ring's width and offset. The default value itself is <see cref="FocusRingDefault"/>.
+    /// </summary>
+    internal static readonly IReadOnlyList<string> FocusRingInputs =
+    [
+        BitCss.Var.Color.Background.Primary.Main,
+        BitCss.Var.Color.Primary.Focus,
+        BitCss.Var.Shape.FocusRingWidth,
+        BitCss.Var.Shape.FocusRingOffset,
+    ];
+
+    /// <summary>
+    /// The default of <c>--bit-shd-focus-ring</c> as <c>Styles/Fluent/shapes.fluent.scss</c> declares it.
+    /// </summary>
+    internal static readonly string FocusRingDefault =
+        $"0 0 0 var(--bit-focus-ring-offset, var({BitCss.Var.Shape.FocusRingOffset})) var({BitCss.Var.Color.Background.Primary.Main}), " +
+        $"0 0 0 calc(var(--bit-focus-ring-offset, var({BitCss.Var.Shape.FocusRingOffset})) + var({BitCss.Var.Shape.FocusRingWidth})) var(--bit-focus-ring-color, var({BitCss.Var.Color.Primary.Focus}))";
+
+    /// <summary>
+    /// Re-declares the global focus ring (as its default composite) next to any of its inputs the mapped theme overrides,
+    /// so the focus ring of every control that has not been given a focus color of its own tracks the override.
+    /// </summary>
+    /// <remarks>
+    /// The same substitution rule as <see cref="AugmentWithSemanticAliasReSubstitution"/>: <c>--bit-shd-focus-ring</c> is
+    /// composed on <c>:root</c>, so a theme that re-values the page background, the primary focus color or the ring's
+    /// width or offset further down the tree would otherwise leave those rings in the document's values. It runs before
+    /// the semantic augmentation, whose <c>--bit-sem-focus-ring</c> falls back to this token and so is re-declared along
+    /// with it. A focus ring the theme sets explicitly always wins.
+    /// </remarks>
+    internal static void AugmentWithFocusRingReSubstitution(Dictionary<string, string> cssVariables)
+    {
+        if (cssVariables.ContainsKey(BitCss.Var.Shadow.FocusRing)) return; // explicit ring wins
+        if (FocusRingInputs.Any(cssVariables.ContainsKey) is false) return; // inputs untouched; keep the inherited ring
+
+        cssVariables[BitCss.Var.Shadow.FocusRing] = FocusRingDefault;
+    }
+
+    /// <summary>
     /// The family alias tier's default targets, mirroring <c>Styles/family-tokens.scss</c> (pinned
     /// to it by a contract test). ORDERED so that a chained alias resolves in a single pass: an
     /// entry may only point at a primitive or at an alias declared ABOVE it (the control radius is

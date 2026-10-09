@@ -171,7 +171,7 @@
 
     &:focus-visible {
         z-index: 1;
-        @include focus-ring(var(--bit-pgn-clr-fcs, var(--bit-Pagination-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-pgn-clr-fcs, var(--bit-Pagination-focus-color)));
     }
 
     &[disabled],
@@ -233,7 +233,7 @@
 
     &:focus-visible {
         z-index: 1;
-        @include focus-ring(var(--bit-pgn-clr-fcs, var(--bit-Pagination-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-pgn-clr-fcs, var(--bit-Pagination-focus-color)));
     }
 
     &[disabled] {
@@ -320,7 +320,7 @@
 
     &:focus-visible {
         z-index: 1;
-        @include focus-ring(var(--bit-pgn-clr-fcs, var(--bit-Pagination-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-pgn-clr-fcs, var(--bit-Pagination-focus-color)));
     }
 
     // A link has no disabled attribute of its own, so a page control it cannot reach reports aria-disabled

@@ -154,7 +154,7 @@
     }
 
     &:has(.bit-drm-btn:focus-visible) {
-        @include focus-ring(var(--bit-drm-clr-focus, var(--bit-DropMenu-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-drm-clr-focus, var(--bit-DropMenu-focus-color)));
     }
 
     // A drop menu that is loading takes no interaction either, so it wears the look of a disabled one rather

@@ -100,7 +100,7 @@
     // Only the keyboard focus: a link that stays in its hover color after a mouse click reads as stuck.
     &:focus-visible {
         color: var(--bit-lnk-clr-hover, var(--bit-Link-hover-color, #{$clr-pri-hover}));
-        @include focus-ring(var(--bit-lnk-clr-focus, var(--bit-Link-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-lnk-clr-focus, var(--bit-Link-focus-color)));
     }
 
     // Declared after the focus, so a link pressed from the keyboard shows the press color inside its ring.

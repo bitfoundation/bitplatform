@@ -391,7 +391,7 @@
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-tfl-clr-focus, var(--bit-TextField-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-tfl-clr-focus, var(--bit-TextField-focus-color)));
     }
 
     // A read-only field keeps its buttons enabled-looking otherwise: the disabled state of the field is a
@@ -459,7 +459,7 @@
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-tfl-clr-focus, var(--bit-TextField-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-tfl-clr-focus, var(--bit-TextField-focus-color)));
     }
 
     // A read-only field disables the button through the html attribute rather than through the disabled
@@ -511,7 +511,7 @@
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-tfl-clr-focus, var(--bit-TextField-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-tfl-clr-focus, var(--bit-TextField-focus-color)));
     }
 
     &:disabled {
@@ -730,7 +730,7 @@
     // The underlined variant is excluded so it gets only the bottom-rule treatment below - applying
     // the ring mixin and negating its box-shadow would still leave its forced-colors outline behind.
     &:not(.bit-tfl-und) .bit-tfl-fgp {
-        @include focus-ring(var(--bit-tfl-clr-focus, var(--bit-TextField-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-tfl-clr-focus, var(--bit-TextField-focus-color)));
     }
 
     &.bit-tfl-und {

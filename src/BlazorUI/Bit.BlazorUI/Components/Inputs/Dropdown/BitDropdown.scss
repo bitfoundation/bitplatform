@@ -151,7 +151,7 @@
     --bit-drp-clr: var(--bit-drp-role-main, var(--bit-Dropdown-accent-color, #{$clr-pri}));
     --bit-drp-clr-hover: var(--bit-drp-role-hover, var(--bit-Dropdown-accent-hover-color, var(--bit-Dropdown-accent-color, #{$clr-pri-hover})));
     --bit-drp-clr-text: var(--bit-drp-role-on, var(--bit-Dropdown-accent-text-color, #{$clr-pri-text}));
-    --bit-drp-clr-focus: var(--bit-drp-role-focus, var(--bit-Dropdown-focus-color, #{$clr-pri-focus}));
+    --bit-drp-clr-focus: var(--bit-drp-role-focus, var(--bit-Dropdown-focus-color));
 
     --bit-drp-itm-clr: var(--bit-Dropdown-item-color, #{$clr-fg-pri});
     --bit-drp-itm-hover-bg: var(--bit-Dropdown-item-hover-background, #{$clr-bg-pri-hover});
@@ -167,7 +167,7 @@
 // forced-colors palette, which strips the box-shadow that ring is drawn with.
 // Every one of these is a <button>, and the library resets `button { outline: none }` globally, so without
 // this the keyboard has nothing to follow through the list at all.
-@mixin drp-focus-inset($color: var(--bit-drp-clr-focus)) {
+@mixin drp-focus-inset($color: var(--bit-drp-clr-focus, #{$clr-pri-focus})) {
     outline: $shp-focus-ring-width $shp-border-style #{$color};
     outline-offset: calc(-1 * #{$shp-focus-ring-width});
 
@@ -311,7 +311,7 @@
         &:has(.bit-drp-inp:focus-visible) {
             // No-border variant: keep the no-border look but use an inset underline-style
             // ring as a keyboard-only, high-contrast focus cue (WCAG 2.4.7 / 2.4.13).
-            @include focus-underline-ring(var(--bit-drp-clr-focus));
+            @include focus-underline-ring(var(--bit-drp-clr-focus, #{$clr-pri-focus}));
         }
     }
 }
@@ -337,7 +337,7 @@
 
         &:focus-visible,
         &:has(.bit-drp-inp:focus-visible) {
-            @include focus-underline-ring(var(--bit-drp-clr-focus));
+            @include focus-underline-ring(var(--bit-drp-clr-focus, #{$clr-pri-focus}));
         }
     }
 }
@@ -467,7 +467,7 @@
             color: var(--bit-Dropdown-icon-color, #{$clr-fg-pri});
         }
 
-        @include focus-ring(var(--bit-drp-clr-focus));
+        @include focus-ring-own(var(--bit-drp-clr-focus));
     }
 }
 

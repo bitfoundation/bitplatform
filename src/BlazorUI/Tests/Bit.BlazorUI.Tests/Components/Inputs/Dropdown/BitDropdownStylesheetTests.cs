@@ -34,7 +34,7 @@ public class BitDropdownStylesheetTests
         StringAssert.Contains(vars, "--bit-drp-clr: var(--bit-drp-role-main, var(--bit-Dropdown-accent-color, #{$clr-pri}));");
         StringAssert.Contains(vars, "--bit-drp-clr-hover: var(--bit-drp-role-hover, var(--bit-Dropdown-accent-hover-color, var(--bit-Dropdown-accent-color, #{$clr-pri-hover})));");
         StringAssert.Contains(vars, "--bit-drp-clr-text: var(--bit-drp-role-on, var(--bit-Dropdown-accent-text-color, #{$clr-pri-text}));");
-        StringAssert.Contains(vars, "--bit-drp-clr-focus: var(--bit-drp-role-focus, var(--bit-Dropdown-focus-color, #{$clr-pri-focus}));");
+        StringAssert.Contains(vars, "--bit-drp-clr-focus: var(--bit-drp-role-focus, var(--bit-Dropdown-focus-color));");
         StringAssert.Contains(stylesheet, "color: var(--bit-drp-role-main, var(--bit-Dropdown-header-color, var(--bit-drp-clr)));");
 
         // And Transparent, over the background of the field.

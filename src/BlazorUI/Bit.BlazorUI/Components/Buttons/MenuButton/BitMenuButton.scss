@@ -125,7 +125,7 @@
 
     &:focus-visible,
     &:has(:focus-visible) {
-        @include focus-ring(var(--bit-mnb-clr-focus, var(--bit-MenuButton-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-mnb-clr-focus, var(--bit-MenuButton-focus-color)));
     }
 
     &.bit-dis {

@@ -49,7 +49,7 @@
     // to, for instance - and then it shows the focus ring of the library rather than the browser's own, which also
     // brings back a Highlight outline in a forced-colors mode, where the ring's shadow is stripped.
     &:focus-visible {
-        @include focus-ring(var(--bit-Label-focus-color, #{$clr-pri-focus}));
+        @include focus-ring-own(var(--bit-Label-focus-color));
     }
 }
 
