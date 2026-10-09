@@ -27,6 +27,7 @@ public partial class ProjectAssistantController : AppControllerBase
 
         var chatOptions = new ChatOptions
         {
+            AdditionalProperties = new() { ["strict"] = true },
             Tools =
             [
                 AIFunctionFactory.Create(async (string topic, string details) =>
@@ -42,11 +43,11 @@ public partial class ProjectAssistantController : AppControllerBase
 
         configuration.GetSection("AppSettings:ChatOptions").Bind(chatOptions);
 
-        ChatResponse<ProjectAssistantReply> response;
+        ChatResponse<ProjectAssistantAnswer> response;
 
         try
         {
-            response = await chatClient.GetResponseAsync<ProjectAssistantReply>(
+            response = await chatClient.GetResponseAsync<ProjectAssistantAnswer>(
                 [new(ChatRole.System, ProjectAssistant.SystemPrompt), new(ChatRole.User, ProjectAssistant.UserTurn(request))],
                 chatOptions,
                 cancellationToken: cancellationToken);

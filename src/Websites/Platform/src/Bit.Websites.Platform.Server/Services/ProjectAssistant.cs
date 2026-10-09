@@ -12,7 +12,7 @@ public static partial class ProjectAssistant
         **HOW A ROUND WORKS:**
         - You get the summary of the conversation so far, the options chosen so far as JSON, your previous reply, and the user's new message.
         - You return a short reply, an updated summary, and the options.
-        - Set an option when the user asked for it, or when what they said clearly calls for it, even if they said it earlier and only now it's clear which option it affects. Leave an option null to keep its current value.
+        - Set an option when the user asked for it, or when what they said clearly calls for it, even if they said it earlier and only now it's clear which option it affects. Leave an option out to keep its current value.
         - After every round the page shows a ready `bit new` command built from the options. The user may copy it and leave at any time, and your questions only make the project fit better. Say that once, briefly, in your first reply.
 
         **KEEP IT SHORT:**
@@ -79,35 +79,42 @@ public static partial class ProjectAssistant
             """;
     }
 
-    public static ProjectOptions Normalize(ProjectOptions? options)
+    public static ProjectOptions Normalize(List<ProjectOptionSetting>? settings)
     {
-        if (options is null)
-            return new();
+        var values = (settings ?? [])
+            .Where(s => string.IsNullOrWhiteSpace(s.Option) is false)
+            .GroupBy(s => s.Option.Trim(), StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(g => g.Key, g => g.Last().Value?.Trim() ?? "", StringComparer.OrdinalIgnoreCase);
+
+        string? Text(string option) => values.GetValueOrDefault(option);
+        bool? Flag(string option) => bool.TryParse(Text(option), out var value) ? value : null;
+
+        var name = Text("name");
 
         return new()
         {
-            Name = IsValidName(options.Name?.Trim()) ? options.Name!.Trim() : null,
-            Database = Pick(options.Database, databases),
-            FilesStorage = Pick(options.FilesStorage, filesStorages),
-            Api = Pick(options.Api, apis),
-            Pipeline = Pick(options.Pipeline, pipelines),
-            Module = Pick(options.Module, modules),
-            Captcha = Pick(options.Captcha, captchas),
-            Theme = Pick(options.Theme, themes),
-            Aspire = options.Aspire,
-            Multitenant = options.Multitenant,
-            Notification = options.Notification,
-            Cloudflare = options.Cloudflare,
-            Redis = options.Redis,
-            SignalR = options.SignalR,
-            OfflineDb = options.OfflineDb,
-            Sentry = options.Sentry,
-            AppInsights = options.AppInsights,
-            Ads = options.Ads,
-            Brouter = options.Brouter,
-            Sample = options.Sample,
-            Platforms = options.Platforms?.Select(p => Pick(p, platforms)).OfType<string>().Distinct().ToList(),
-            Ide = Pick(options.Ide, ides)
+            Name = IsValidName(name) ? name : null,
+            Database = Pick(Text("database"), databases),
+            FilesStorage = Pick(Text("filesStorage"), filesStorages),
+            Api = Pick(Text("api"), apis),
+            Pipeline = Pick(Text("pipeline"), pipelines),
+            Module = Pick(Text("module"), modules),
+            Captcha = Pick(Text("captcha"), captchas),
+            Theme = Pick(Text("theme"), themes),
+            Aspire = Flag("aspire"),
+            Multitenant = Flag("multitenant"),
+            Notification = Flag("notification"),
+            Cloudflare = Flag("cloudflare"),
+            Redis = Flag("redis"),
+            SignalR = Flag("signalR"),
+            OfflineDb = Flag("offlineDb"),
+            Sentry = Flag("sentry"),
+            AppInsights = Flag("appInsights"),
+            Ads = Flag("ads"),
+            Brouter = Flag("brouter"),
+            Sample = Flag("sample"),
+            Platforms = Text("platforms")?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).Select(p => Pick(p, platforms)).OfType<string>().Distinct().ToList(),
+            Ide = Pick(Text("ide"), ides)
         };
     }
 
