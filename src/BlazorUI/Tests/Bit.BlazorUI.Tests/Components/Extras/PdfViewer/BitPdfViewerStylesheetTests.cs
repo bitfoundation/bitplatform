@@ -70,6 +70,7 @@ public partial class BitPdfViewerStylesheetTests
         var stylesheet = ReadStylesheet();
 
         StringAssert.Contains(stylesheet, "$pdv-focus: var(--bit-PdfViewer-focus-color, #{$clr-pri-focus});");
+        StringAssert.Contains(stylesheet, "$pdv-focus-ring: focus-ring-color($pdv-focus);");
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-btn {"), "@include focus-ring-own($pdv-focus-ring);");
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-opt {"), "@include focus-ring-own($pdv-focus-ring);");
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-thumb {"), "@include focus-ring-own($pdv-focus-ring);");

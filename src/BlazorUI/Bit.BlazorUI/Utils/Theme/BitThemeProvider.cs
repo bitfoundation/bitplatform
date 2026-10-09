@@ -235,6 +235,10 @@ public class BitThemeProvider : ComponentBase
     {
         var cssVars = BitThemeMapper.MapToCssVariables(theme);
 
+        // The global focus ring is a composite declared on :root as well, so it is re-declared wherever this theme
+        // re-values one of its inputs - before the semantic aliases, one of which falls back to it.
+        BitThemeMapper.AugmentWithFocusRingReSubstitution(cssVars);
+
         // Re-declare the semantic aliases whose target primitives this theme overrides, so app CSS
         // reading the alias tier inside this provider tracks the override (an alias's var() is
         // substituted where the alias is DEFINED, so the :root-level default would otherwise keep

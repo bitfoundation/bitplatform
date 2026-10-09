@@ -43,9 +43,9 @@ $rte-background: var(--bit-RichTextEditor-background, #{$clr-bg-pri});
 $rte-border-color: var(--bit-RichTextEditor-border-color, #{$clr-brd-pri});
 $rte-divider: var(--bit-RichTextEditor-divider-color, #{$clr-brd-sec});
 $rte-focus: var(--bit-RichTextEditor-focus-color, #{$clr-pri-focus});
-// The same color without a fallback, for the focus rings: while it is unset they are the global
-// --bit-shd-focus-ring (see focus-ring-own).
-$rte-focus-ring: var(--bit-RichTextEditor-focus-color);
+// The same color less its fallback, for the focus rings: while it is unset they are the global
+// --bit-shd-focus-ring (see focus-ring-own and focus-ring-color).
+$rte-focus-ring: focus-ring-color($rte-focus);
 $rte-error: var(--bit-RichTextEditor-error-color, #{$clr-err});
 $rte-padding: var(--bit-RichTextEditor-padding, #{spacing(1.75) spacing(2)});
 $rte-bar-background: var(--bit-RichTextEditor-toolbar-background, #{$clr-bg-sec});

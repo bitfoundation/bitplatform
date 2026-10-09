@@ -48,6 +48,48 @@ $html-font-size: 16px;
 }
 
 /*
+ * focus-ring-layers($color, $offset)
+ * --------------------------------------------------
+ * The two box-shadow layers of a focus ring, composed where they are used: an inner ring in the page
+ * background (the separator) and an outer ring in $color. Written out where the element is styled,
+ * every var() in them - the color, --bit-clr-bg-pri, the width and the offset - is substituted against
+ * that element, so a value set on any ancestor or on the element's own Style reaches the ring. This is
+ * the same recipe the global --bit-shd-focus-ring is declared with in shapes.fluent.scss.
+ *
+ * A zero offset is added as a number rather than as a length, and calc() refuses to add the two, so the
+ * ring that sits against its element is written with the width on its own.
+ */
+@function focus-ring-layers($color, $offset: $shp-focus-ring-offset) {
+    @if $offset == 0 {
+        @return string.unquote("0 0 0 0 #{$clr-bg-pri}, 0 0 0 #{$shp-focus-ring-width} #{$color}");
+    }
+
+    @return string.unquote("0 0 0 #{$offset} #{$clr-bg-pri}, 0 0 0 calc(#{$offset} + #{$shp-focus-ring-width}) #{$color}");
+}
+
+/*
+ * focus-ring-color($color)
+ * --------------------------------------------------
+ * The chain a focus-ring-own() call takes, out of a component's focus color: the same var()s less the
+ * primary focus color they fall back to, which is what the global ring draws anyway. It lets a component
+ * name its public focus variable once, in the plain color its flush or inset rings and borders read:
+ *
+ *   $my-focus: var(--bit-MyComponent-focus-color, #{$clr-pri-focus});
+ *   $my-focus-ring: focus-ring-color($my-focus); // var(--bit-MyComponent-focus-color)
+ */
+@function focus-ring-color($color) {
+    $color: meta.inspect($color);
+    $fallback: ', #{$clr-pri-focus}';
+    $at: string.index($color, $fallback);
+
+    @if $at == null {
+        @error "focus-ring-color() takes a color that falls back to #{$clr-pri-focus}: #{$color}";
+    }
+
+    @return string.unquote(string.slice($color, 1, $at - 1) + string.slice($color, $at + string.length($fallback)));
+}
+
+/*
  * focus-ring($color, $offset)
  * --------------------------------------------------
  * Renders a consistent, theme-aware focus indicator across components.
@@ -58,13 +100,14 @@ $html-font-size: 16px;
  *     WCAG 2.4.11 (Focus Not Obscured) and 2.4.13 (Focus Appearance).
  *   - Width is driven by --bit-shp-focus-ring-width and offset by --bit-shp-focus-ring-offset,
  *     both globally themable.
- *   - Color defaults to --bit-clr-pri-focus and accepts any role token (e.g. $clr-err-focus)
- *     so invalid/success/etc. variants can opt into matching focus colors. A call that passes one
- *     writes the two-layer shadow out itself rather than reading the global --bit-shd-focus-ring:
- *     that token has already substituted its var()s on :root, so nothing declared further down the
- *     tree could reach it. The default call keeps reading it, so replacing it re-shapes every
- *     indicator that has not asked for a color of its own.
- *   - A color passed here therefore always beats the global token, which is right for a ring that
+ *   - The default call draws the global --bit-shd-focus-ring, so replacing that token re-shapes
+ *     every indicator drawn with it. The token is a composite, and a composite substitutes its
+ *     var()s where it is declared: on :root, on a [bit-theme] scope, and on the element a
+ *     BitThemeProvider or BitThemeManager.ApplyBitThemeAsync applies a theme to (both re-declare it
+ *     whenever the theme re-values one of its inputs). A focus color, page background or ring
+ *     width set by app CSS on any other element does not reach it.
+ *   - A call that passes a color or an offset composes the two layers itself (focus-ring-layers),
+ *     against the element, so the color always beats the global token. That is right for a ring that
  *     MEANS something (the error color of an invalid control, the disabled color) and for one placed
  *     against its element by a zero offset (a grid cell), a shape the global token cannot take. A
  *     component's own focus color - a Color parameter, a --bit-<Component>-focus-color - is drawn with
@@ -94,35 +137,16 @@ $html-font-size: 16px;
     --bit-focus-ring-offset: #{$offset};
 
     @if $color == $clr-pri-focus and $offset == $shp-focus-ring-offset {
-        // The default ring is read off the global composite, so an app that replaces
-        // --bit-shd-focus-ring wholesale re-shapes every focus indicator drawn with it.
-        // Inline fallback mirrors the global --bit-shd-focus-ring expression in shapes.fluent.scss
-        // so focus indicators still render if a consumer-defined theme omits that token.
-        box-shadow: var(--bit-shd-focus-ring,
-            0 0 0 var(--bit-focus-ring-offset, #{$offset}) #{$clr-bg-pri},
-            0 0 0 calc(var(--bit-focus-ring-offset, #{$offset}) + #{$shp-focus-ring-width}) var(--bit-focus-ring-color, #{$color}))#{$kept};
+        // Every bundle declares the global token (shapes.fluent.scss), so it is read without a fallback.
+        box-shadow: #{$box-shadow-focus-ring}#{$kept};
     }
     @else {
         // A per-call color or offset cannot travel through --bit-shd-focus-ring: a custom property's
-        // var() references are substituted at the element that DECLARES it, so the composite on :root
-        // has already resolved --bit-focus-ring-color to the primary focus color by the time anything
-        // inherits it, and the two declarations above would be read by nothing. The same expression is
-        // written out here instead, where it is substituted against this element - which is what lets a
-        // component expose a --bit-<Component>-focus-color of its own, and an invalid control draw its
-        // ring in the error color.
-        //
-        // A zero offset is added as a number rather than as a length, and calc() refuses to add the two, so
-        // the ring that sits against the element is written with the width on its own.
-        @if $offset == 0 {
-            box-shadow:
-                0 0 0 0 #{$clr-bg-pri},
-                0 0 0 #{$shp-focus-ring-width} #{$color}#{$kept};
-        }
-        @else {
-            box-shadow:
-                0 0 0 #{$offset} #{$clr-bg-pri},
-                0 0 0 calc(#{$offset} + #{$shp-focus-ring-width}) #{$color}#{$kept};
-        }
+        // var() references are substituted at the element that DECLARES it, so the composite has already
+        // resolved --bit-focus-ring-color to the primary focus color by the time anything inherits it,
+        // and the two declarations above would be read by nothing. The layers are composed here instead,
+        // where they are substituted against this element.
+        box-shadow: #{focus-ring-layers($color, $offset)}#{$kept};
     }
 
     @include focus-ring-forced-colors($offset);
@@ -142,11 +166,11 @@ $html-font-size: 16px;
  * reads an unset variable with no fallback, which makes --bit-focus-ring-own invalid at computed-value
  * time, and an invalid --bit-focus-ring-own is what hands box-shadow over to the global composite. The
  * component's ring has to be composed here rather than through that composite, which substitutes its
- * var()s where it is declared - on :root, where no color set further down the page can reach it.
+ * var()s where it is declared, where no color set further down the page can reach it.
  *
- * --bit-focus-ring-own inherits, but every rule that reads it declares it too, and a declaration that
- * reads only unset variables computes to the guaranteed-invalid value rather than to the parent's, so a
- * recolored ring never leaks into a focusable nested inside it.
+ * --bit-focus-ring-own is registered as a property that does not inherit (general.scss), so a recolored
+ * ring never reaches a focusable nested inside the element that draws it - whichever rule an engine
+ * follows for a custom property that is invalid at computed-value time.
  *
  * Usage:
  *   .my-component:focus-visible {
@@ -166,14 +190,8 @@ $html-font-size: 16px;
 
     outline: none; // Replace native outline with the themed ring below.
     --bit-focus-ring-offset: #{$shp-focus-ring-offset};
-    --bit-focus-ring-own:
-        0 0 0 #{$shp-focus-ring-offset} #{$clr-bg-pri},
-        0 0 0 calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width}) #{$color};
-    // The inline fallback mirrors the global --bit-shd-focus-ring expression in shapes.fluent.scss, so
-    // the ring still renders if a consumer-defined theme omits that token.
-    box-shadow: var(--bit-focus-ring-own, var(--bit-shd-focus-ring,
-        0 0 0 #{$shp-focus-ring-offset} #{$clr-bg-pri},
-        0 0 0 calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width}) #{$clr-pri-focus}))#{$kept};
+    --bit-focus-ring-own: #{focus-ring-layers($color)};
+    box-shadow: var(--bit-focus-ring-own, #{$box-shadow-focus-ring})#{$kept};
 
     @include focus-ring-forced-colors($shp-focus-ring-offset);
 }
