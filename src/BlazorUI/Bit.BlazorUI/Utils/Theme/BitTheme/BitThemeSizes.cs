@@ -6,12 +6,12 @@
 /// height of a popup list.
 /// </summary>
 /// <remarks>
-/// In the shipped stylesheets the heights, paddings and selection sizes are density-aware (multiples of
-/// <see cref="BitThemeSpacings.ScalingFactor"/> times <see cref="BitThemeLayout.DensityScale"/>, each
-/// over a unitless <c>--bit-siz-*-steps</c> token), so the density presets keep working - including in
-/// a subtree: a theme that re-values either input re-declares them where it is applied. A size set
-/// here explicitly wins over that re-declaration. <see cref="ControlMinWidth"/> and
-/// <see cref="DialogMaxWidth"/> are absolute in every preset.
+/// In the shipped stylesheets the heights, paddings and selection sizes are density-aware: each is a
+/// unitless number of steps (<see cref="Steps"/>) of <see cref="BitThemeSpacings.ScalingFactor"/> times
+/// <see cref="BitThemeLayout.DensityScale"/>, computed where a component uses it, so the density presets
+/// keep working - in a subtree too, wherever either input is re-valued. A size set here is an absolute
+/// value that wins over its steps and opts that one measurement out of density; a preset may do the
+/// same (Fluent's <c>auto</c> button minimum width, the Extras presets' dialog maximum width).
 /// </remarks>
 public class BitThemeSizes
 {
@@ -74,6 +74,66 @@ public class BitThemeSizes
 
     /// <summary>The widest a dialog grows on its own before its message wraps (<c>--bit-siz-dialog-max-width</c>); a dialog given a width or a max width of its own ignores it.</summary>
     public string? DialogMaxWidth { get; set; }
+
+    /// <summary>
+    /// The unitless multiples of the spacing unit the density-aware sizes are computed from (<c>--bit-siz-*-steps</c>).
+    /// </summary>
+    public BitThemeSizeSteps Steps { get; set; } = new();
+}
+
+/// <summary>
+/// How many steps of the spacing unit each density-aware size is (<c>--bit-siz-*-steps</c>): a unitless number,
+/// such as <c>4</c> for a 32px medium control at the default 8px unit and density of 1.
+/// </summary>
+/// <remarks>
+/// A size is computed where a component uses it, as <see cref="BitThemeSpacings.ScalingFactor"/> times
+/// <see cref="BitThemeLayout.DensityScale"/> times its steps, so a theme that re-proportions a preset's
+/// geometry through these still follows a density or a spacing unit re-valued anywhere in the tree. A value
+/// set for the size itself on <see cref="BitThemeSizes"/>, or by the active preset, wins over its steps.
+/// </remarks>
+public class BitThemeSizeSteps
+{
+    /// <summary>The steps of the control heights per size class (<c>--bit-siz-ctrl-{sm,md,lg}-steps</c>).</summary>
+    public BitThemeSizeScale Control { get; set; } = new();
+
+    /// <summary>The steps of the inner horizontal padding of padded controls per size class (<c>--bit-siz-ctrl-pad-x-{sm,md,lg}-steps</c>).</summary>
+    public BitThemeSizeScale ControlPaddingX { get; set; } = new();
+
+    /// <summary>The steps of the inner vertical padding of padded controls per size class (<c>--bit-siz-ctrl-pad-y-{sm,md,lg}-steps</c>).</summary>
+    public BitThemeSizeScale ControlPaddingY { get; set; } = new();
+
+    /// <summary>The steps of the minimum width of a labeled button (<c>--bit-siz-ctrl-min-width-steps</c>; Material 8, Fluent 2 12 - Fluent and Cupertino set the width itself to <c>auto</c>).</summary>
+    public string? ControlMinWidth { get; set; }
+
+    /// <summary>The steps of the checkbox box and radio ring sizes per size class (<c>--bit-siz-sel-{sm,md,lg}-steps</c>).</summary>
+    public BitThemeSizeScale Selection { get; set; } = new();
+
+    /// <summary>The steps of the row heights of the item lists inside popups per size class (<c>--bit-siz-item-{sm,md,lg}-steps</c>).</summary>
+    public BitThemeSizeScale Item { get; set; } = new();
+
+    /// <summary>The steps of the height of a tab (pivot) header (<c>--bit-siz-tab-steps</c>).</summary>
+    public string? Tab { get; set; }
+
+    /// <summary>The steps of the geometry of a switch per size class (<c>--bit-siz-switch-*-steps</c>).</summary>
+    public BitThemeSwitchSizes Switch { get; set; } = new();
+
+    /// <summary>The steps of the handle of a <c>BitSlider</c> per size class (<c>--bit-siz-slider-thumb-{sm,md,lg}-steps</c>).</summary>
+    public BitThemeSizeScale SliderThumb { get; set; } = new();
+
+    /// <summary>The steps of the height of a <c>BitBadge</c> per size class (<c>--bit-siz-badge-{sm,md,lg}-steps</c>).</summary>
+    public BitThemeSizeScale Badge { get; set; } = new();
+
+    /// <summary>The steps of the diameter of a dot <c>BitBadge</c> per size class (<c>--bit-siz-badge-dot-{sm,md,lg}-steps</c>).</summary>
+    public BitThemeSizeScale BadgeDot { get; set; } = new();
+
+    /// <summary>The steps of the height of a chip (<c>BitTag</c>) per size class (<c>--bit-siz-chip-{sm,md,lg}-steps</c>).</summary>
+    public BitThemeSizeScale Chip { get; set; } = new();
+
+    /// <summary>The steps of the tallest a popup list grows before it scrolls (<c>--bit-siz-popup-max-height-steps</c>).</summary>
+    public string? PopupMaxHeight { get; set; }
+
+    /// <summary>The steps of the widest a dialog grows on its own (<c>--bit-siz-dialog-max-width-steps</c>; the Extras presets set the width itself).</summary>
+    public string? DialogMaxWidth { get; set; }
 }
 
 /// <summary>
@@ -95,7 +155,7 @@ public class BitThemeSwitchSizes
     public BitThemeSizeScale Thumb { get; set; } = new();
 }
 
-/// <summary>A small / medium / large triple of CSS lengths.</summary>
+/// <summary>A small / medium / large triple of CSS lengths (under a <c>Steps</c> branch, of unitless numbers of steps).</summary>
 public class BitThemeSizeScale
 {
     public string? Sm { get; set; }

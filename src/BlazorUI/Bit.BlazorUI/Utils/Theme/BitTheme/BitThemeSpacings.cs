@@ -20,4 +20,27 @@ public class BitThemeSpacings
     /// Maps to <c>--bit-spa-card-{sm,md,lg}</c>.
     /// </summary>
     public BitThemeSizeScale Card { get; set; } = new();
+
+    /// <summary>
+    /// The unitless multiples of the spacing unit the density-aware insets are computed from (<c>--bit-spa-*-steps</c>).
+    /// </summary>
+    /// <remarks>
+    /// <see cref="Dialog"/> and <see cref="Card"/> are computed where a component uses them, as
+    /// <see cref="ScalingFactor"/> times <see cref="BitThemeLayout.DensityScale"/> times these steps, so they
+    /// follow a density or a spacing unit re-valued anywhere in the tree; a value set for an inset itself wins.
+    /// </remarks>
+    public BitThemeSpacingSteps Steps { get; set; } = new();
+}
+
+/// <summary>
+/// How many steps of the spacing unit each density-aware inset is (<c>--bit-spa-*-steps</c>): a unitless number,
+/// such as <c>3</c> for a 24px dialog inset at the default 8px unit and density of 1.
+/// </summary>
+public class BitThemeSpacingSteps
+{
+    /// <summary>The steps of the base inset of a dialog surface (<c>--bit-spa-dialog-steps</c>).</summary>
+    public string? Dialog { get; set; }
+
+    /// <summary>The steps of the inset of a <c>BitCard</c> per size class (<c>--bit-spa-card-{sm,md,lg}-steps</c>).</summary>
+    public BitThemeSizeScale Card { get; set; } = new();
 }

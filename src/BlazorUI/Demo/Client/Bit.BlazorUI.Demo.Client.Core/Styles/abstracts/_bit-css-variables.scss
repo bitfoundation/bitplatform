@@ -366,19 +366,20 @@ $bit-shape-radius-button: var(--bit-shp-radius-button);
 $bit-shape-radius-chip: var(--bit-shp-radius-chip);
 $bit-shape-radius-selection: var(--bit-shp-radius-selection);
 
-//size
-$bit-size-control-sm: var(--bit-siz-ctrl-sm);
-$bit-size-control-md: var(--bit-siz-ctrl-md);
-$bit-size-control-lg: var(--bit-siz-ctrl-lg);
+//size - a density-aware size is read with the fallback the library's own alias carries: the presets
+//declare only its unitless steps, so the length is computed where it is used, against the density there.
+$bit-size-control-sm: var(--bit-siz-ctrl-sm, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-ctrl-sm-steps)));
+$bit-size-control-md: var(--bit-siz-ctrl-md, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-ctrl-md-steps)));
+$bit-size-control-lg: var(--bit-siz-ctrl-lg, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-ctrl-lg-steps)));
 $bit-size-icon-sm: var(--bit-siz-icon-sm);
 $bit-size-icon-md: var(--bit-siz-icon-md);
 $bit-size-icon-lg: var(--bit-siz-icon-lg);
-$bit-size-selection-sm: var(--bit-siz-sel-sm);
-$bit-size-selection-md: var(--bit-siz-sel-md);
-$bit-size-selection-lg: var(--bit-siz-sel-lg);
+$bit-size-selection-sm: var(--bit-siz-sel-sm, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-sel-sm-steps)));
+$bit-size-selection-md: var(--bit-siz-sel-md, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-sel-md-steps)));
+$bit-size-selection-lg: var(--bit-siz-sel-lg, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-sel-lg-steps)));
 $bit-size-spinner-stroke: var(--bit-siz-spinner-stroke);
-$bit-size-popup-max-height: var(--bit-siz-popup-max-height);
-$bit-size-dialog-max-width: var(--bit-siz-dialog-max-width);
+$bit-size-popup-max-height: var(--bit-siz-popup-max-height, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-popup-max-height-steps)));
+$bit-size-dialog-max-width: var(--bit-siz-dialog-max-width, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-dialog-max-width-steps)));
 
 //opacity
 $bit-opacity-disabled: var(--bit-opa-dis);

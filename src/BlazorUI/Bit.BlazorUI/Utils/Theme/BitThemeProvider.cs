@@ -247,9 +247,6 @@ public class BitThemeProvider : ComponentBase
         // and role text and tint colors.
         BitThemeMapper.AugmentWithFamilyAliasReSubstitution(cssVars);
 
-        // And for the insets and sizes the stylesheets compute on :root from the density and the spacing unit.
-        BitThemeMapper.AugmentWithSpacingReSubstitution(cssVars);
-
         return string.Join(';', cssVars.Select(kv => $"{kv.Key}:{kv.Value}"));
     }
 }

@@ -111,6 +111,8 @@ public static class BitThemeSerialization
         theme.BoxShadow ??= new BitThemeBoxShadows();
         theme.Spacing ??= new BitThemeSpacings();
         theme.Spacing.Card ??= new BitThemeSizeScale();
+        theme.Spacing.Steps ??= new BitThemeSpacingSteps();
+        theme.Spacing.Steps.Card ??= new BitThemeSizeScale();
         theme.ZIndex ??= new BitThemeZIndices();
         theme.Shape ??= new BitThemeShapes();
         theme.Typography ??= new BitThemeTypography();
@@ -180,5 +182,21 @@ public static class BitThemeSerialization
         theme.Size.Switch.Width ??= new BitThemeSizeScale();
         theme.Size.Switch.Height ??= new BitThemeSizeScale();
         theme.Size.Switch.Thumb ??= new BitThemeSizeScale();
+
+        // Size steps branch.
+        var steps = theme.Size.Steps ??= new BitThemeSizeSteps();
+        steps.Control ??= new BitThemeSizeScale();
+        steps.ControlPaddingX ??= new BitThemeSizeScale();
+        steps.ControlPaddingY ??= new BitThemeSizeScale();
+        steps.Selection ??= new BitThemeSizeScale();
+        steps.Item ??= new BitThemeSizeScale();
+        steps.SliderThumb ??= new BitThemeSizeScale();
+        steps.Badge ??= new BitThemeSizeScale();
+        steps.BadgeDot ??= new BitThemeSizeScale();
+        steps.Chip ??= new BitThemeSizeScale();
+        steps.Switch ??= new BitThemeSwitchSizes();
+        steps.Switch.Width ??= new BitThemeSizeScale();
+        steps.Switch.Height ??= new BitThemeSizeScale();
+        steps.Switch.Thumb ??= new BitThemeSizeScale();
     }
 }

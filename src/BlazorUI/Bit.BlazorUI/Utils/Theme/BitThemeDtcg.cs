@@ -26,7 +26,8 @@ namespace Bit.BlazorUI;
 /// DTCG <c>$type</c> that descendants inherit (<c>color</c> → <c>color</c>, <c>boxShadow</c> →
 /// <c>shadow</c>, <c>spacing</c> and <c>size</c> → <c>dimension</c>, <c>zIndex</c> and <c>opacity</c> → <c>number</c>), with the one
 /// shadow-valued token inside the color group (<c>color.semantic.focusRing</c>) overriding to
-/// <c>shadow</c>. Mixed groups (typography, shape, motion, layout) are emitted untyped, which is
+/// <c>shadow</c>, and the unitless steps of the spacing unit (<c>spacing.steps.*</c>, <c>size.steps.*</c>)
+/// to <c>number</c>. Mixed groups (typography, shape, motion, layout) are emitted untyped, which is
 /// valid DTCG.
 /// </para>
 /// <para>
@@ -196,11 +197,12 @@ public static partial class BitThemeDtcg
         _ => null,
     };
 
-    // The lone non-color leaf living under the color group: its value is a box-shadow, so it
-    // overrides the inherited color type.
+    // The leaves whose value is not of their top-level group's type: the one box-shadow under the color
+    // group, and the unitless steps of the spacing unit under the dimension-typed spacing and size groups.
     private static string? LeafTypeOverride(string path) => path switch
     {
         "color.semantic.focusRing" => "shadow",
+        _ when path.StartsWith("spacing.steps.", StringComparison.Ordinal) || path.StartsWith("size.steps.", StringComparison.Ordinal) => "number",
         _ => null,
     };
 
