@@ -328,8 +328,6 @@ $mnb-private-properties: clr, clr-txt, clr-hover, clr-active, clr-dark, clr-dark
     background-color: transparent;
 }
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $mnb-cal-private-properties: cal-bg;
 
 .bit-mnb-cal {

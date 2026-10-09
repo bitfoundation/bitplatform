@@ -48,8 +48,6 @@
 // back to, the min-width), so the variables keep the last word there - as they do over the default a component of
 // the library gives the buttons it renders (see .bit-btn-dft-*), which is read after them.
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $btn-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis, clr-dis-text, dft-clr, dft-clr-txt,
                          dft-clr-hover, dft-clr-active, dft-clr-focus, dft-clr-dis, dft-clr-dis-text, lbl-fontsize,
                          prt-fontsize, sct-fontsize, icn-size, spn-size, min-height, icn-margintop, gap, pad-ntx,

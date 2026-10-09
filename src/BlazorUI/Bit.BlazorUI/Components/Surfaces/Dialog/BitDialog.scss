@@ -22,7 +22,14 @@
 //   --bit-Dialog-subtitle-color            color of the subtitle                          (default: $clr-fg-sec)
 //   --bit-Dialog-message-color             color of the message                           (default: $clr-fg-sec)
 
+$dlg-private-properties: wid, hei, mnw, mnh, mxw, mxh;
+
 .bit-dlg {
+    // What the component writes into an inline style starts out unset on every root, so an instance nested in
+    // another one never takes the outer one's value for its own; the inline declaration still wins on its element.
+    @each $name in $dlg-private-properties {
+        --bit-dlg-#{$name}: initial;
+    }
     // The color of the action buttons, defaulted to the primary role and re-pointed by the role classes
     // below. They are declared on the root rather than on the buttons so a Dialog that is given a color
     // paints the pair of them, the spinner between them and the ring around either, from one place.

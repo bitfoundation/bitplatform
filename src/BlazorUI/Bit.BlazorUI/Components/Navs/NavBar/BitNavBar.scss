@@ -59,8 +59,6 @@
     }
 }
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $nbr-private-properties: clr, clr-ind, clr-dis, clr-fcs, clr-acc-hover, clr-acc-active, clr-acc-text, fil-hover,
                          fil-active, fil-text, sz-ico, sz-txt, sz-gap, sz-pad, sz-sec-pad, sz-row-pad, sz-min;
 

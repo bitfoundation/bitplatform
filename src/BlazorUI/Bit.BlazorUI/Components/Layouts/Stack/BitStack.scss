@@ -7,8 +7,6 @@
 
 $bit-stc-breakpoints: ( 'xs': 0, 'sm': $mq-sm-min, 'md': $mq-md-min, 'lg': $mq-lg-min, 'xl': $mq-xl-min, 'xxl': $mq-xxl-min );
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $stc-private-properties:
     size,
     // What the component writes into an inline style, which wins over this on the element it is written on.
@@ -97,8 +95,6 @@ $stc-private-properties:
     }
 }
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $stc-rsp-private-properties: ai, jc;
 
 /*

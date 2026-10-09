@@ -65,8 +65,6 @@
     }
 }
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $nav-private-properties: item-font-size, item-min-height, icon-size, des-font-size, header-font-size,
                          header-min-height, chevron-size, clr, clr-text, clr-hover, clr-active, clr-icon, clr-des;
 

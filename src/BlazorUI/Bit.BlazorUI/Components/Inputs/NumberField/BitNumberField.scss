@@ -54,8 +54,6 @@
 // would be indistinguishable from one that was asked for. A state the field is in - disabled, invalid - is still
 // read first.
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $nfl-private-properties: height, fontsize, label-fontsize, icon-size, btn-width, stack-width, btn-icon-size, pad-x,
                          spn-size, clr, clr-focus, clr-bg, clr-brd, clr-brd-hover;
 

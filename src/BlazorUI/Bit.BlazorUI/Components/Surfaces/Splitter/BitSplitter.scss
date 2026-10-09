@@ -19,8 +19,6 @@
 //   --bit-Splitter-collapse-button-hover-background the collapse button under the pointer      (default: $clr-pri)
 //   --bit-Splitter-collapse-button-radius           corner radius of the collapse button       (default: $shp-radius-full)
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $spl-private-properties: fpn-size, fpn-grow, fpn-max, fpn-min, spn-size, spn-grow, spn-max, spn-min, col-size;
 
 .bit-spl {

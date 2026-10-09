@@ -67,8 +67,6 @@
 // rail color, the thumb face, the unreached marks, the labels' colors, the gap - stays the variables'. A state
 // the slider is in (disabled, invalid) still paints over all of them, as before.
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $sld-private-properties:
     clr, clr-on, clr-hover, clr-active, clr-focus, sz-thumb, sz-rail, sz-length, sz-font-size, sz-font-size-sub,
     // What the component writes into an inline style, which wins over this on the element it is written on.

@@ -44,8 +44,6 @@
 // Size wins over the gap and the active ring's gap and width; an unset one is laid out as Size48, whose values
 // those three variables restyle (see .bit-prs-ssz).
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $prs-private-properties:
     gap, ring-gap, ring-width,
     // The corner of the coin, published only by an explicit Shape (or Squared) and unset here otherwise - rather

@@ -48,8 +48,6 @@
 // nothing while they are left unset: a class that always carried the default would be indistinguishable from one
 // that was asked for.
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $tag-private-properties:
     clr, clr-txt, clr-dis, clr-dis-text, clr-active, clr-light, clr-light-hover, clr-light-active,
     sz-gap, sz-lbl-gap, sz-fs, sz-stx-fs, sz-img, sz-pad-y, sz-pad-x, sz-min-height, radius,

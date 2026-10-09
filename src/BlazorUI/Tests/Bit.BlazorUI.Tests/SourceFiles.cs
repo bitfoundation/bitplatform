@@ -88,31 +88,140 @@ internal static class SourceFiles
     /// Reads a component stylesheet like <see cref="Read"/>, with each reset its private property list drives
     /// (<c>@each $name in $xxx-private-properties { --bit-xxx-#{$name}: initial; }</c>) written out as the
     /// declarations it compiles to, in the order of the list - so a test pins what a rule resets the way it pins any
-    /// other declaration of it. BitComponentPrivatePropertyResetTests reads the lists themselves.
+    /// other declaration of it. The lists are read by <see cref="GetPrivatePropertyLists"/>, as every test reads them.
     /// </summary>
     public static string ReadStylesheet(params string[] segments)
     {
         return ExpandedCache.GetOrAdd(GetPath(segments), _ => ExpandPrivatePropertyResets(Read(segments)));
     }
 
-    private static string ExpandPrivatePropertyResets(string stylesheet)
+    /// <summary>
+    /// A stylesheet with each reset its private property lists drive written out as the declarations it compiles to,
+    /// one line each at the indent of the @each, as <see cref="ReadStylesheet"/> reads a component stylesheet.
+    /// </summary>
+    public static string ExpandPrivatePropertyResets(string stylesheet)
     {
-        // The comments between the names of a list are prose, semicolons and all.
-        var code = StripScssComments(stylesheet);
+        var expanded = new StringBuilder(stylesheet);
 
-        return Regex.Replace(stylesheet,
-            @"^(?<indent>[ \t]*)@each \$name in \$(?<list>[a-z-]+-private-properties) \{\n\s*--(?<prefix>bit-[a-z]+)-#\{\$name\}: initial;\n\s*\}",
-            each =>
+        // Written out from the last to the first, so the index of every reset still to go is where it was read.
+        foreach (var (list, reset) in GetPrivatePropertyLists(stylesheet).SelectMany(l => l.Resets.Select(r => (List: l, Reset: r)))
+                                                                         .OrderByDescending(r => r.Reset.Index))
+        {
+            var lineStart = stylesheet.LastIndexOf('\n', reset.Index) + 1;
+            var indent = stylesheet[lineStart..reset.Index];
+
+            Assert.IsTrue(indent.All(char.IsWhiteSpace), $"The reset of ${list.Name} does not start its own line.");
+
+            expanded.Remove(reset.Index, reset.Length)
+                    .Insert(reset.Index, string.Join($"\n{indent}", list.Names.Select(name => $"--{reset.Prefix}-{name}: initial;")));
+        }
+
+        return expanded.ToString();
+    }
+
+    /// <summary>A <c>$xxx-private-properties</c> list of a stylesheet, as <see cref="GetPrivatePropertyLists"/> reads it.</summary>
+    /// <param name="Name">The variable, without its $.</param>
+    /// <param name="Names">The names it lists, in order, without the prefix the resets give them.</param>
+    /// <param name="Resets">Every <c>@each</c> that resets it; none when nothing does.</param>
+    public sealed record PrivatePropertyList(string Name, IReadOnlyList<string> Names, IReadOnlyList<PrivatePropertyReset> Resets);
+
+    /// <summary>One <c>@each $name in $xxx-private-properties { --bit-xxx-#{$name}: initial; }</c> of a stylesheet.</summary>
+    /// <param name="Prefix">The prefix it gives every name (bit-xxx).</param>
+    /// <param name="Rule">The header of the top-level rule, or mixin, it is written in; empty at the top level.</param>
+    /// <param name="Index">Where the @each starts in the stylesheet.</param>
+    /// <param name="Length">Its length, through the brace that closes it.</param>
+    public sealed record PrivatePropertyReset(string Prefix, string Rule, int Index, int Length);
+
+    /// <summary>
+    /// Every <c>$xxx-private-properties</c> list of a stylesheet, with the <c>@each</c> blocks that reset it. The one
+    /// reading of them every test shares, and a strict one: a list is a comma separated run of names, so two names
+    /// with no comma between them fail here rather than being read as two - Sass compiles them to one name with a
+    /// space in it, a declaration the browser drops, so neither is reset. An @each over a list that does anything but
+    /// reset each name to initial fails too, and so does one over a list the stylesheet does not declare.
+    /// </summary>
+    public static IReadOnlyList<PrivatePropertyList> GetPrivatePropertyLists(string stylesheet) => PrivatePropertyListCache.GetValue(stylesheet, ReadPrivatePropertyLists);
+
+    private static readonly ConditionalWeakTable<string, IReadOnlyList<PrivatePropertyList>> PrivatePropertyListCache = new();
+
+    private static readonly Regex PrivatePropertyListStart = new(@"^\$(?<list>[a-z0-9-]+-private-properties)\s*:", RegexOptions.Multiline | RegexOptions.Compiled);
+
+    // An @each over a list that declares a custom property; one doing anything else with it (BitIcon's @property
+    // registration) is not a reset.
+    private static readonly Regex PrivatePropertyEachStart = new(@"@each\s+\$[a-z-]+\s+in\s+\$(?<list>[a-z0-9-]+-private-properties)\s*\{\s*--", RegexOptions.Compiled);
+
+    private static readonly Regex PrivatePropertyEach = new(
+        @"\G@each\s+\$(?<var>[a-z-]+)\s+in\s+\$(?<list>[a-z0-9-]+-private-properties)\s*\{\s*--(?<prefix>bit-[a-z]+)-#\{\$\k<var>\}\s*:\s*initial\s*;?\s*\}",
+        RegexOptions.Compiled);
+
+    private static IReadOnlyList<PrivatePropertyList> ReadPrivatePropertyLists(string stylesheet)
+    {
+        var kinds = Classify(stylesheet);
+
+        var resets = new Dictionary<string, List<PrivatePropertyReset>>(StringComparer.Ordinal);
+
+        foreach (Match start in PrivatePropertyEachStart.Matches(stylesheet))
+        {
+            if (kinds[start.Index] is not ScssChar.Code) continue;
+
+            var each = PrivatePropertyEach.Match(stylesheet, start.Index);
+            var list = start.Groups["list"].Value;
+
+            Assert.IsTrue(each.Success, $"The @each over ${list} has to do nothing but reset each name: @each $name in ${list} {{ --bit-xxx-#{{$name}}: initial; }}");
+
+            if (resets.TryGetValue(list, out var ofList) is false) resets[list] = ofList = [];
+
+            ofList.Add(new(each.Groups["prefix"].Value, GetTopLevelRule(stylesheet, kinds, each.Index), each.Index, each.Length));
+        }
+
+        var lists = new List<PrivatePropertyList>();
+
+        foreach (Match start in PrivatePropertyListStart.Matches(stylesheet))
+        {
+            if (kinds[start.Index] is not ScssChar.Code) continue;
+
+            var name = start.Groups["list"].Value;
+
+            // The value runs to the first semicolon of the code; the comments between the names are prose,
+            // semicolons and all, and are no part of it.
+            var value = new StringBuilder();
+            var i = start.Index + start.Length;
+            for (; i < stylesheet.Length && (kinds[i] is not ScssChar.Code || stylesheet[i] != ';'); i++)
             {
-                var list = Regex.Match(code, $@"^\${each.Groups["list"].Value}\s*:(?<names>[^;]+);", RegexOptions.Multiline);
+                if (kinds[i] is ScssChar.Code) value.Append(stylesheet[i]);
+            }
+            Assert.IsTrue(i < stylesheet.Length, $"${name} is not closed by a semicolon.");
 
-                Assert.IsTrue(list.Success, $"No ${each.Groups["list"].Value} for the reset that reads it.");
+            var names = value.ToString().Split(',').Select(n => n.Trim()).ToArray();
 
-                var names = list.Groups["names"].Value.Split([',', ' ', '\n', '\t'], StringSplitOptions.RemoveEmptyEntries);
+            foreach (var n in names)
+            {
+                Assert.IsTrue(Regex.IsMatch(n, "^[a-z0-9-]+$"),
+                    $"${name} lists \"{Regex.Replace(n, @"\s+", " ")}\", which is not one name: a comma is missing (Sass reads two names with none between them as one name holding a space, which the browser drops) or one is left empty.");
+            }
 
-                return string.Join("\n", names.Select(name => $"{each.Groups["indent"].Value}--{each.Groups["prefix"].Value}-{name}: initial;"));
-            },
-            RegexOptions.Multiline);
+            var duplicates = names.GroupBy(n => n, StringComparer.Ordinal).Where(g => g.Count() > 1).Select(g => g.Key).ToArray();
+            Assert.AreEqual(0, duplicates.Length, $"${name} lists {string.Join(", ", duplicates)} more than once.");
+
+            lists.Add(new(name, names, resets.Remove(name, out var listResets) ? listResets : []));
+        }
+
+        Assert.AreEqual(0, resets.Count, $"No list for the reset that reads it: ${string.Join(", $", resets.Keys)}.");
+
+        return lists;
+    }
+
+    // The header of the top-level rule (or mixin) the code at `index` is written in, or empty when it is at the top level.
+    private static string GetTopLevelRule(string stylesheet, ScssChar[] kinds, int index)
+    {
+        foreach (var rule in GetScssRules(stylesheet).Where(r => r.Ancestors.Count == 0 && r.Index < index).Reverse())
+        {
+            var open = rule.Index;
+            while (open < stylesheet.Length && (kinds[open] is not ScssChar.Code || stylesheet[open] != '{' || (open > 0 && stylesheet[open - 1] == '#'))) open++;
+
+            return FindClose(stylesheet, kinds, open) > index ? rule.Header : string.Empty;
+        }
+
+        return string.Empty;
     }
 
     /// <summary>

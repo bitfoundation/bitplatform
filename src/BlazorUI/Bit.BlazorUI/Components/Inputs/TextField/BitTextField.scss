@@ -85,8 +85,6 @@
 // for which no parameter has a value of its own (--bit-TextField-focus-border-color and
 // --bit-TextField-hover-background fall back to the frame and the fill ranked as above).
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn-width, spn-size, clr, clr-focus,
                          clr-bg, clr-brd, clr-brd-hover;
 

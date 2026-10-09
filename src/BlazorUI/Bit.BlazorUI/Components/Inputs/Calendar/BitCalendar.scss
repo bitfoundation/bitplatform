@@ -61,8 +61,6 @@
     --bit-cal-pane-min-w: #{spacing(26)};
 }
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $cal-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, evt-clr, cell-size-sz, cell-fs-sz;
 
 .bit-cal {

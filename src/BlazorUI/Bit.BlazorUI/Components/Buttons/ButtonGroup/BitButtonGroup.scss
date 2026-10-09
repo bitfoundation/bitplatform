@@ -56,8 +56,6 @@
 // while they are left unset: a class that always carried the default would be indistinguishable from one that was
 // asked for. The Gap parameter writes --bit-ButtonGroup-gap on the group itself, after its Style.
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus, clr-dark, clr-dark-hover,
                          clr-dark-active, clr-dis, clr-dis-text, itm-min-height, itm-pad-y, itm-padding, itm-fontsize,
                          itm-bdg-fs, itm-iconsize, rad;

@@ -66,8 +66,6 @@
 // the variables'. A state the toggle is in (checked, disabled, invalid) still picks which of them is read, as
 // before.
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $tgl-private-properties: clr, clr-hover, clr-text, clr-focus, gap, trk-w-base, trk-h-base, thb-size-base, trk-w-ico,
                          trk-h-ico, thb-size-ico, cnn-fontsize, cnn-pad, lbl-fontsize, stx-fontsize, des-fontsize;
 

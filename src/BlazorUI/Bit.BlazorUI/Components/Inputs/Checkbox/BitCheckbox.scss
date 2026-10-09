@@ -39,8 +39,6 @@
 // before; the icon size, the mixed-state size and the min height are proportions of the box that the variables
 // alone override.
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $chb-private-properties: clr, clr-hover, clr-txt, clr-txt-sec, clr-txt-hover, clr-dis, clr-dis-text, clr-focus,
                          box-size, lbl-fontsize, des-fontsize;
 

@@ -1,13 +1,5 @@
 ﻿@import "../../../Styles/functions.scss";
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
-$pgn-private-properties:
-    clr-fcs, clr-txt, clr, clr-hover, clr-active, clr-sel, clr-sel-hover, clr-sel-active, clr-dis-bg, clr-dis-text,
-    size-btn, font-size, pad-x,
-    // What the component writes into an inline style, which wins over this on the element it is written on.
-    justify-content;
-
 // Public CSS variables (read here with a fallback and never declared, so they inherit: set one on
 // :root, on any ancestor, or on the Style of a single pagination):
 //   --bit-Pagination-gap                      room between the controls                          (default: spacing(0.5))
@@ -38,6 +30,13 @@ $pgn-private-properties:
 // Color and Size publish nothing while they are left unset: a class that always carried the default would be
 // indistinguishable from one that was asked for. A disabled control keeps the disabled colors whatever the
 // variables say.
+
+$pgn-private-properties:
+    clr-fcs, clr-txt, clr, clr-hover, clr-active, clr-sel, clr-sel-hover, clr-sel-active, clr-dis-bg, clr-dis-text,
+    size-btn, font-size, pad-x,
+    // What the component writes into an inline style, which wins over this on the element it is written on.
+    justify-content;
+
 .bit-pgn {
     // Each root starts the values the Color and Size classes publish out unset, so a pagination never inherits
     // another one's choice from an ancestor carrying those classes, and the classes - declared further down at the

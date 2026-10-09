@@ -95,8 +95,6 @@
     animation-timing-function: $mot-easing-decelerate;
 }
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $clo-cal-private-properties: wid, mnw, mnw-def, mxw, mxh;
 
 .bit-clo-cal {
@@ -258,8 +256,6 @@ $clo-cal-private-properties: wid, mnw, mnw-def, mxw, mxh;
     padding: var(--bit-Callout-padding, 0);
 }
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $clo-arw-private-properties: arw-siz;
 
 // The beak that points at the anchor. It is a square rotated onto its corner and centred on the point the

@@ -25,8 +25,6 @@
 // default, not a choice - which is why Color and Size publish nothing while they are left unset: a class that
 // always carried the default would be indistinguishable from one that was asked for.
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $msg-private-properties:
     boxshadow,
     // The values the Color and Size classes publish, which those classes - declared further down at the same

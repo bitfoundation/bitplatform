@@ -40,8 +40,6 @@
 // theme, so it never reads as an enabled one. A Dot badge ignores the height, padding and radius above and is
 // a circle of --bit-Badge-dot-size.
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $bdg-private-properties:
     dot-size, dot-padding, dot-radius, dis-txt, dis-bg, dis-brd,
     // The offsets, set on the style of the root that asks for them.

@@ -63,8 +63,6 @@
 // always carried the default would be indistinguishable from one that was asked for. The disabled state is
 // read before all of them, as before.
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $fin-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, lbl-height, lbl-fontsize, lbl-padding,
                          itm-fontsize, fs-fontsize, prv-size, dzn-height, dzn-padding, dzn-ico-size, rbt-size,
                          ico-fontsize;

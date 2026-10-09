@@ -35,7 +35,14 @@
 //   --bit-Chart-loading-color          the loading label                              (default: $clr-fg-sec)
 //   --bit-Chart-loading-spinner-color  the turning arc of the loading spinner         (default: $clr-pri)
 
+$cht-private-properties: dur, ease;
+
 .bit-cht {
+    // What the component writes into an inline style starts out unset on every root, so an instance nested in
+    // another one never takes the outer one's value for its own; the inline declaration still wins on its element.
+    @each $name in $cht-private-properties {
+        --bit-cht-#{$name}: initial;
+    }
     --bit-cht-clr-focus: var(--bit-Chart-focus-color, #{$clr-pri-focus});
 
     display: flex;

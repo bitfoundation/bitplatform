@@ -38,8 +38,6 @@ $csl-clr-hover: var(--bit-csl-clr-hover, var(--bit-Carousel-dot-current-hover-co
 $csl-btn: var(--bit-csl-btn, var(--bit-Carousel-button-color, #{$clr-fg-pri}));
 $csl-btn-hover: var(--bit-csl-btn-hover, var(--bit-Carousel-button-hover-color, #{$clr-fg-pri-hover}));
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $csl-private-properties:
     clr, clr-hover, btn, btn-hover, fcs, dot-size, btn-size, ppb-size,
     // What the component writes into an inline style, which wins over this on the element it is written on.

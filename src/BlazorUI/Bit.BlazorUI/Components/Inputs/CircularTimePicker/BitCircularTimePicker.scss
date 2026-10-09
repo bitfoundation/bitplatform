@@ -128,8 +128,6 @@
     --bit-ctp-tlb-minwidth: #{spacing(32.5)};
 }
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $ctp-private-properties: rl-clr, rl-text, rl-focus, inp-h, inp-fs, lbl-fs, clk-size, num-size, txt-fontsize,
                          apb-fontsize, apk-fontsize, num-fontsize, thb-size, thb-size-min;
 

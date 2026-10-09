@@ -56,8 +56,6 @@
 // colors - stays the variables'. A state an item is in (checked, disabled, invalid) still picks which of them
 // is read, as before.
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $chg-private-properties: clr, clr-bg, clr-hover, clr-dis, clr-dis-text, clr-focus, gap, ico-size, fontsize,
                          circle-size, dot-size, desc-fontsize, inline-ico-size, card-padding;
 

@@ -84,8 +84,6 @@
 // they are left unset, on the root and on the callout alike: a class that always carried the default would be
 // indistinguishable from one that was asked for.
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $srb-private-properties: siz-height, siz-fontsize, siz-iconsize, siz-cbt-iconsize, siz-btnpad, clr, clr-txt, clr-hover,
                          clr-active, clr-focus, clr-dis, clr-dis-text, clr-bg;
 
@@ -813,8 +811,6 @@ $srb-private-properties: siz-height, siz-fontsize, siz-iconsize, siz-cbt-iconsiz
     background-color: transparent;
 }
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $srb-cal-private-properties: siz-item-height, siz-item-fontsize, siz-spn-size, clr, clr-focus;
 
 // The callout is a sibling of the root element rather than a child of it, so the size class of the

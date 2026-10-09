@@ -82,8 +82,6 @@ $sel: in-tablist(".bit-pvti-sel");
 // The tabs, and the More button of the Menu behavior, which is drawn like one of them beside the tablist.
 $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $pvt-private-properties:
     gap,
     // The values the Color and Size classes publish, which those classes - declared further down at the

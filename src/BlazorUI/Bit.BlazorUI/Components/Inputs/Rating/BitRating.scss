@@ -36,8 +36,6 @@
 // Color leaves alone - the unfilled part, the label and description colors - stays the variables'. A state the
 // rating is in (disabled, invalid) still paints over all of them, as before.
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $rtg-private-properties: clr, clr-hover, clr-active, clr-focus, size, lbl-size, dsc-size;
 
 .bit-rtg {

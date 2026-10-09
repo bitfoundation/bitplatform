@@ -47,8 +47,6 @@
 // and a state - disabled, invalid - is still read before everything. The label follows the size of the code by
 // inheritance, so --bit-OtpInput-label-font-size, which is there to set it apart from the code, keeps the label.
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $otp-private-properties: size, fontsize, dsc-fontsize, clr, clr-focus;
 
 .bit-otp {

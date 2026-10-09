@@ -13,17 +13,6 @@ $crd-shd-active: var(--bit-crd-shd-act, var(--bit-Card-active-shadow, var(--bit-
 $crd-pad: var(--bit-crd-pad, var(--bit-Card-padding, #{$spa-card-md}));
 $crd-gap: var(--bit-crd-gap, var(--bit-Card-gap, #{spacing(1.5)}));
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
-$crd-private-properties:
-    clr, clr-txt, clr-fg, clr-tint, clr-hover, clr-active, clr-dis, clr-dis-text, fg, bg, bg-hov, bg-act, shd, shd-hov,
-    shd-act, radius, brd-wid, brd-clr, dvd-clr, sel-clr, dis-txt, dis-bg, dis-brd,
-    // The four the cover parameters write onto the style of the root; an inline declaration wins over these.
-    img-height, img-position, cvr-width, cvr-ratio,
-    // The ones the Size classes publish; Size publishes nothing while it is unset, which leaves the public variables
-    // and then the medium card.
-    pad, gap, htx-gap, ttl-fontsize, sub-fontsize, icn-fontsize;
-
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // card and one set on the Style of an instance re-skins that one alone:
 //   --bit-Card-color                 text color                                     (default: $clr-fg-pri)
@@ -64,7 +53,16 @@ $crd-private-properties:
 // shades of its role rather than the two background variables); the variables re-skin what the theme would
 // otherwise decide. A disabled card ignores the colors above and keeps the disabled colors of the theme, so it
 // never reads as an enabled one.
-//
+
+$crd-private-properties:
+    clr, clr-txt, clr-fg, clr-tint, clr-hover, clr-active, clr-dis, clr-dis-text, fg, bg, bg-hov, bg-act, shd, shd-hov,
+    shd-act, radius, brd-wid, brd-clr, dvd-clr, sel-clr, dis-txt, dis-bg, dis-brd,
+    // The four the cover parameters write onto the style of the root; an inline declaration wins over these.
+    img-height, img-position, cvr-width, cvr-ratio,
+    // The ones the Size classes publish; Size publishes nothing while it is unset, which leaves the public variables
+    // and then the medium card.
+    pad, gap, htx-gap, ttl-fontsize, sub-fontsize, icn-fontsize;
+
 // Every rule below reads the card's own private variables, which the parameter classes set on the root. Custom
 // properties inherit, which would hand an outer card's paint, rule, corner or shadow to every card nested in it,
 // so each root starts them out unset - which leaves every var() reading them to its fallback.

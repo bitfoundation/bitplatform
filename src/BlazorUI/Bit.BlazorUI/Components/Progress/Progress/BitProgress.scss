@@ -31,12 +31,10 @@
 // paints the buffer - its default is only derived from the bar color, which Color and BarColor replace - so the
 // variable keeps it, the way the Outline background of a badge stays the badge's variable under an explicit Color.
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $prb-private-properties:
     fs, des-fs, clr, clr-on, thk, dia, ring-stroke,
     // What the component writes into an inline style, which wins over this on the element it is written on.
-    segments, segment-gap, gap, delay;
+    segments, segment-gap, gap, delay, percent, buffer;
 
 .bit-prb {
     font-weight: $tg-fw-regular;

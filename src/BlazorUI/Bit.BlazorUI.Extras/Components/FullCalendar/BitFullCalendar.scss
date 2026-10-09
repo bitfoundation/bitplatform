@@ -31,6 +31,8 @@
 // --bit-FullCalendar-month-cell-min-height    minimum height of a month-grid day
 // --bit-FullCalendar-dialog-max-width         maximum width of the built-in dialogs
 
+$bfc-private-properties: evt-color;
+
 /* ===== CSS Variables =====
    The calendar maps its internal --bit-bfc-* custom properties onto the Bit BlazorUI theme tokens
    (--bit-clr-*, shape and shadow tokens). Because those tokens are redefined by the active Bit
@@ -42,6 +44,11 @@
    --bit-bfc-* names are what the rules below consume; they stay settable on the root itself (an inline
    style or a class on the calendar outranks this block) for the apps that already re-skin through them. */
 .bit-bfc {
+    // What the component writes into an inline style starts out unset on every root, so an instance nested in
+    // another one never takes the outer one's value for its own; the inline declaration still wins on its element.
+    @each $name in $bfc-private-properties {
+        --bit-bfc-#{$name}: initial;
+    }
     --bit-bfc-bg: var(--bit-FullCalendar-background, #{$clr-bg-pri});
     --bit-bfc-bg-secondary: var(--bit-FullCalendar-secondary-background, #{$clr-bg-sec});
     --bit-bfc-bg-hover: var(--bit-FullCalendar-hover-background, #{$clr-bg-pri-hover});

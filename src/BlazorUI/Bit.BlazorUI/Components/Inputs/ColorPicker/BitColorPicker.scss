@@ -75,8 +75,6 @@
     background-position: 0 0, #{$size} #{$size};
 }
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $clp-private-properties:
     width-sz, sat-height-sz, track-height-sz, thumb-size-sz, button-size-sz, swatch-size-sz, preview-size-sz, fs-sz,
     fs-sub-sz, icon-size-sz,

@@ -55,8 +55,6 @@
 // unset: a class that always carried the default would be indistinguishable from one that was asked for. The
 // callout takes no Color or Size, so nothing of them has to reach it once it is moved to the body.
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $drm-private-properties: clr, clr-txt, clr-flt, clr-hover, clr-active, clr-focus, clr-dis, clr-dis-text, font-size,
                          min-height, icon-size, pad-y, padding;
 
@@ -280,8 +278,6 @@ $drm-private-properties: clr, clr-txt, clr-flt, clr-hover, clr-active, clr-focus
     pointer-events: none;
 }
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $drm-cal-private-properties: cal-bg, cal-brd;
 
 .bit-drm-cal {

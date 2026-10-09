@@ -239,8 +239,8 @@ public class BitPersonaStylesheetTests
 
         StringAssert.Contains(SourceFiles.GetScssBlock(rules, "\n.bit-prs {"), "--bit-prs-coin-clr-bg: initial;");
         StringAssert.Contains(SourceFiles.GetScssBlock(rules, "\n.bit-prs {"), "--bit-prs-coin-clr-txt: initial;");
-        Assert.IsTrue(rules.IndexOf("\n.bit-prs {") < rules.IndexOf("\n.bit-prs-pri {"), "A color class comes before the reset it has to win over.");
-        Assert.IsTrue(rules.IndexOf("\n.bit-prs {") < rules.IndexOf("\n.bit-prs-cir {"), "A shape class comes before the reset it has to win over.");
+        Assert.IsTrue(rules.IndexOf("\n.bit-prs {") < rules.IndexOf("\n.bit-prs-pri {"), "The reset comes before the color class that has to win over it.");
+        Assert.IsTrue(rules.IndexOf("\n.bit-prs {") < rules.IndexOf("\n.bit-prs-cir {"), "The reset comes before the shape class that has to win over it.");
     }
 
     /// <summary>

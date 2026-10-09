@@ -1,9 +1,5 @@
 ﻿@import "../../../Styles/functions.scss";
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
-$lnk-private-properties: clr, clr-hover, clr-active, clr-focus, clr-dis, fs;
-
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // link, one set on an ancestor every link inside it, and one set on the Style of an instance that one alone:
 //   --bit-Link-color                  text color at rest                          (default: $clr-pri)
@@ -32,6 +28,9 @@ $lnk-private-properties: clr, clr-hover, clr-active, clr-focus, clr-dis, fs;
 // indistinguishable from one that was asked for. NoColor still wins over the colors, since it asks for no link
 // color at all, and a disabled link keeps its disabled color whatever the other color variables say, so it never
 // reads as an enabled one.
+
+$lnk-private-properties: clr, clr-hover, clr-active, clr-focus, clr-dis, fs;
+
 .bit-lnk {
     // Each root starts the values the Color and Size classes publish out unset, so a link never inherits another
     // one's choice from an ancestor carrying those classes, and the classes - declared further down at the same

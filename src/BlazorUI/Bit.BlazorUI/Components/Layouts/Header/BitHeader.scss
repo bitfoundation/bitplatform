@@ -39,8 +39,6 @@ $hdr-fg-dis: var(--bit-hdr-fg-dis, var(--bit-Header-disabled-color, #{$clr-fg-di
 $hdr-pad-y: var(--bit-hdr-pad-y, var(--bit-Header-padding-block, #{spacing(1)}));
 $hdr-pad-x: var(--bit-hdr-pad-x, var(--bit-Header-padding-inline, #{spacing(3)}));
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
 
 // The z-index is left without a position of its own on purpose: it only takes effect once one of the

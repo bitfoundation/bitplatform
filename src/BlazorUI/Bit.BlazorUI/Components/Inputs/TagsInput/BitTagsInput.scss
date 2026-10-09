@@ -63,8 +63,6 @@
 // label, affix and helper colors - stays the variables'. A state the field is in (disabled, invalid, a refused
 // tag) still paints over all of them, as before.
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $tgi-private-properties: clr, clr-txt, clr-hover, clr-focus, gap, fontsize, iconsize, helperfontsize, tagfontsize,
                          minheight, padding, tagminheight, tagpadding;
 

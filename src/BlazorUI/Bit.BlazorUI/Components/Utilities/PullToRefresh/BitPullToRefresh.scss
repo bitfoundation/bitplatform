@@ -1,9 +1,5 @@
 ﻿@import "../../../Styles/functions.scss";
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
-$ptr-private-properties: color;
-
 // Public CSS variables, read off the parts and never declared here, so a value set on :root re-skins every pull
 // to refresh, one set on an ancestor every one inside it, and one set on the Style of an instance that one:
 //   --bit-PullToRefresh-color                     glyph of the indicator              (default: $clr-fg-pri)
@@ -20,6 +16,9 @@ $ptr-private-properties: color;
 //
 // The Color and CustomColor parameters win over the color variable. Both sizes are what the indicator reaches at
 // the trigger; below it, it is drawn at the fraction of them the pull has come.
+
+$ptr-private-properties: color;
+
 .bit-ptr {
     width: fit-content;
     position: relative;

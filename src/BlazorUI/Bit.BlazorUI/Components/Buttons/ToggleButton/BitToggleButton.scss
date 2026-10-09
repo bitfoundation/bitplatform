@@ -58,8 +58,6 @@
 // was asked for. The checked and the disabled states are still read before both, so a re-tinted toggle button
 // keeps showing which state it is in.
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $tgb-private-properties: clr-txt, clr, clr-hover, clr-active, clr-focus, clr-dark, clr-dark-hover, clr-dark-active,
                          clr-dis, clr-dis-text, min-height, padding, fontsize, ntx-pad, ntx-icn-size, spn-size,
                          lbl-fontsize;

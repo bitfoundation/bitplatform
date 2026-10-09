@@ -421,7 +421,13 @@ resets on the root. `BitBadge` and `BitShimmer` are the reference implementation
 role or size class publishes, or the component writes into an inline style, has to be declared again by the
 component's own rules - in its list, or by the root rule at the default the unset parameter stands for;
 `BitComponentPrivatePropertyResetTests` fails on one that is not, on a list no `@each` resets, and on a listed
-name nothing uses any more, for every stylesheet at once. A variant rule giving one slot the value `initial`
+name nothing uses any more, for every stylesheet at once - a component that never had a list included. What a
+class publishes counts as reset only by the rules of the element it lands on (a callout's list resets nothing
+on the root), and a name the C# puts together (`$"--bit-stc-ai{suffix}"`) stands for every name of the
+stylesheet it can spell, so a helper that writes one variable is handed its whole name
+(`GetVar("--bit-grd-span", ...)`). `SourceFiles.GetPrivatePropertyLists` is the one reader of the lists, and a
+strict one: two names with no comma between them fail there, since Sass compiles them to one name holding a
+space, which the browser drops. A variant rule giving one slot the value `initial`
 (`.bit-drm-otl { --bit-drm-rst-bg: initial; }`) is a value, not a reset, and stays written out.
 
 The lists reset with `initial` rather than registering the variables as `@property { inherits: false; }`

@@ -103,8 +103,6 @@ $snb-private-properties:
     --bit-snb-dur: var(--bit-snb-dur-full, 200ms);
 }
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
 $snb-itm-private-properties: bg, fg, clr-txt, gap, pad, hdr-gap, ttl-fs, bdy-fs, ico-fs, cbt-size;
 
 .bit-snb-itm {

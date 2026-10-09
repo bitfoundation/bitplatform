@@ -1,9 +1,5 @@
 ﻿@import "../../../Styles/functions.scss";
 
-// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
-// it is nested in. A private variable added to the component goes in this list.
-$spr-private-properties: brd, siz, stl, bg, ofs, ins, dis-brd, dis-fg;
-
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // separator, one set on an ancestor every separator inside it, and one set on the Style of an instance that one:
 //   --bit-Separator-color                 color of the line                              (default: $clr-brd-sec)
@@ -30,7 +26,9 @@ $spr-private-properties: brd, siz, stl, bg, ofs, ins, dis-brd, dis-fg;
 // opaque patch. That is what keeps a labeled separator right on a gradient, a picture or a surface tier other than
 // the one it was configured for, and what lets the offset of a start- or end-aligned label be a percentage of the
 // length of the line whichever way it runs.
-//
+
+$spr-private-properties: brd, siz, stl, bg, ofs, ins, dis-brd, dis-fg;
+
 // Every rule below reads the separator's own private variables, which the parameter classes set on the root and the
 // length parameters write onto its style. Custom properties inherit, which would hand the line of a separator to one
 // nested in its content, so each root starts them out unset - which leaves every var() reading them to its fallback.
