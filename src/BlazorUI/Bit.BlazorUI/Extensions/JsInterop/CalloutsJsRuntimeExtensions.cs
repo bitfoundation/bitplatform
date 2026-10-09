@@ -67,6 +67,10 @@ internal static class CalloutsJsRuntimeExtensions
         // would otherwise leave the popup open behind an overlay that swallows every click that could dismiss it.
         // The component is told through its CloseCallout callback, as for any other dismissal from outside.
         bool dismissOnFocusLeave = false,
+        // The id of the trigger the callout is put into the tab order right after while it is open (see
+        // Utils.setupTabOut), or an empty string for none. It rides on the open and the close themselves, so it
+        // costs no round trip of its own and is taken back with every way the callout can close.
+        string tabOutTriggerId = "",
         // The id of the root of the component, which its popup is rendered beside rather than inside. What the
         // consumer declared on the root for the popup too - the custom properties of Style and Styles.Root,
         // ForceAnimation's bit-fam - is carried into the popup while it is relocated to the body; an empty string
@@ -105,6 +109,7 @@ internal static class CalloutsJsRuntimeExtensions
             noScrollDismiss,
             trapFocus,
             dismissOnFocusLeave,
+            tabOutTriggerId,
             rootId);
     }
 

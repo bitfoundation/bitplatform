@@ -871,11 +871,232 @@ public class BitPhoneInputTests : BunitTestContext
         Assert.IsFalse(component.Instance.IsOpen);
         Assert.AreEqual(1, closed);
 
+        // A Tab from the search box is the JS side's to answer (see Utils.setupTabOut), which reports it through
+        // OnTabOut once it has moved the focus on past the country button.
         component.Find("button.bit-phi-drp").Click();
         component.Find(".bit-phi-srch").KeyDown("Tab");
 
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.AreEqual(1, closed);
+
+        component.InvokeAsync(() => component.Instance._OnTabOut()).GetAwaiter().GetResult();
+
         Assert.IsFalse(component.Instance.IsOpen);
         Assert.AreEqual(2, closed);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldPutTheOpenSearchBoxIntoTheTabOrderAfterTheCountryButton()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        component.Find("button.bit-phi-drp").Click();
+
+        // The tab order rides on the toggle that shows the list, so it costs no round trip of its own, and the list
+        // is dismissed once the focus moves on from both the field and itself.
+        var open = LastToggle();
+        Assert.AreEqual(true, open.Arguments[6]);
+        Assert.AreEqual(component.Find("button.bit-phi-drp").Id, open.Arguments[^2]);
+        Assert.AreEqual(true, open.Arguments[^3]);
+        Assert.AreEqual(0, CountInvocations("BitBlazorUI.Utils.setupTabOut"));
+
+        // A Shift+Tab from the search box goes back to the button with the list left open, and a Tab on the button
+        // goes back into it, both on the JS side.
+        component.Find(".bit-phi-srch").KeyDown(new KeyboardEventArgs { Key = "Tab", ShiftKey = true });
+        component.Find("button.bit-phi-drp").KeyDown("Tab");
+
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        component.Find(".bit-phi-srch").KeyDown("Escape");
+
+        // The toggle that hides the list takes the tab order back with it.
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(false, LastToggle().Arguments[6]);
+        Assert.AreEqual(0, CountInvocations("BitBlazorUI.Utils.disposeTabOut"));
+
+        // Every open registers it again.
+        component.Find("button.bit-phi-drp").Click();
+
+        Assert.AreEqual(component.Find("button.bit-phi-drp").Id, LastToggle().Arguments[^2]);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldLeaveTheFocusLeavingTheFieldToTheJsSide()
+    {
+        var closed = 0;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.OnClose, () => closed++);
+        });
+
+        component.Find("button.bit-phi-drp").Click();
+
+        // The focus leaves the field backwards. Which Tab the JS side took is not guessed at here: the list is
+        // dismissed by where the focus lands, through the CloseCallout callback.
+        component.Find("button.bit-phi-drp").KeyDown(new KeyboardEventArgs { Key = "Tab", ShiftKey = true });
+
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        var toggles = CountInvocations("BitBlazorUI.Callouts.toggle");
+
+        component.InvokeAsync(() => component.Instance._CloseCalloutBeforeAnotherCalloutIsOpened()).GetAwaiter().GetResult();
+
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(1, closed);
+
+        // The JS side has already hidden it.
+        Assert.AreEqual(toggles, CountInvocations("BitBlazorUI.Callouts.toggle"));
+
+        // And the Tab key of the next open list is still the JS side's.
+        component.Find("button.bit-phi-drp").Click();
+        component.Find(".bit-phi-srch").KeyDown("Tab");
+
+        Assert.IsTrue(component.Instance.IsOpen);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldNotPutAListWithoutASearchBoxIntoTheTabOrder()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.NoSearchBox, true);
+        });
+
+        component.Find("button.bit-phi-drp").Click();
+
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.AreEqual("", LastToggle().Arguments[^2]);
+
+        // The focus stays on the button, so its Tab moves on through the page and the list closes behind it.
+        component.Find("button.bit-phi-drp").KeyDown("Tab");
+
+        Assert.IsFalse(component.Instance.IsOpen);
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public void BitPhoneInputShouldKeepTheFocusRingOnlyWhenTheTabOutLandsInTheField(bool landsInField)
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        var dropdown = component.Find("button.bit-phi-drp");
+        dropdown.FocusIn();
+        dropdown.Click();
+
+        // The focus moves into the search box of the open list, which reports no focus of its own.
+        component.Find("button.bit-phi-drp").FocusOut();
+
+        if (landsInField)
+        {
+            component.Find("input.bit-phi-inp").FocusIn();
+        }
+
+        component.InvokeAsync(() => component.Instance._OnTabOut()).GetAwaiter().GetResult();
+
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(landsInField, component.Find(".bit-phi").ClassList.Contains("bit-phi-fcs"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldKeepTheFocusRingOfAListItsIsOpenKeepsOpen()
+    {
+        // IsOpen bound one way: the component cannot close the list.
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        component.Find("button.bit-phi-drp").FocusIn();
+        component.Find("button.bit-phi-drp").FocusOut();
+
+        component.InvokeAsync(() => component.Instance._OnTabOut()).GetAwaiter().GetResult();
+
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.IsTrue(component.Find(".bit-phi").ClassList.Contains("bit-phi-fcs"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldHandTheListKeysOfTheButtonToTheSearchBox()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, FiveCountries);
+        });
+
+        component.Find("button.bit-phi-drp").Click();
+
+        var options = component.FindAll("button.bit-phi-itm");
+        Assert.AreEqual(options[0].Id, component.Find(".bit-phi-srch").GetAttribute("aria-activedescendant"));
+
+        // A Shift+Tab has taken the focus back to the button, which names no option: the arrow moves the active one
+        // and hands the focus to the search box, which does.
+        var focuses = CountInvocations("Blazor._internal.domWrapper.focus");
+
+        component.Find("button.bit-phi-drp").KeyDown("ArrowDown");
+
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.AreEqual(component.FindAll("button.bit-phi-itm")[1].Id, component.Find(".bit-phi-srch").GetAttribute("aria-activedescendant"));
+        Assert.AreEqual(focuses + 1, CountInvocations("Blazor._internal.domWrapper.focus"));
+        Assert.IsNull(component.Find("button.bit-phi-drp").GetAttribute("aria-activedescendant"));
+
+        // A letter goes into the search box as if it had been typed there.
+        component.Find("button.bit-phi-drp").KeyDown("c");
+
+        Assert.AreEqual("c", component.Find(".bit-phi-srch").GetAttribute("value"));
+        Assert.IsTrue(component.FindAll("button.bit-phi-itm").Count < FiveCountries.Count);
+        Assert.AreEqual(focuses + 2, CountInvocations("Blazor._internal.domWrapper.focus"));
+
+        // Enter presses the button, which closes the list as a click on it does, and selects nothing.
+        var country = component.Instance.Country;
+
+        component.Find("button.bit-phi-drp").KeyDown("Enter");
+
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(country, component.Instance.Country);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldPutTheResponsiveCloseButtonAfterTheSearchBoxInTheTabOrder()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Responsive, true);
+        });
+
+        // The search box is what a Tab from the country button goes into and Shift+Tab goes back from, and the
+        // close button stays in the tab order right after it.
+        var inOrder = component.FindAll(".bit-phi-srch, .bit-phi-cls");
+
+        Assert.HasCount(2, inOrder);
+        Assert.IsTrue(inOrder[0].ClassList.Contains("bit-phi-srch"));
+        Assert.IsTrue(inOrder[1].ClassList.Contains("bit-phi-cls"));
+        Assert.IsFalse(inOrder[1].HasAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldTakeTheTabOrderBackWhenDisposed()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        component.Find("button.bit-phi-drp").Click();
+
+        Context.DisposeComponentsAsync().GetAwaiter().GetResult();
+
+        // Clearing the callout takes back what its toggle registered.
+        Assert.AreEqual(1, CountInvocations("BitBlazorUI.Callouts.clear"));
+        Assert.AreEqual(0, CountInvocations("BitBlazorUI.Utils.disposeTabOut"));
+    }
+
+    private int CountInvocations(string identifier)
+    {
+        return Context.JSInterop.Invocations.Count(i => i.Identifier == identifier);
+    }
+
+    private JSRuntimeInvocation LastToggle()
+    {
+        return Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
     }
 
     [TestMethod]
