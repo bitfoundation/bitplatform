@@ -29,7 +29,9 @@ public class BitBreadcrumbStylesheetTests
         StringAssert.Contains(stylesheet, "--bit-brc-sel-clr: var(--bit-brc-role-main, var(--bit-Breadcrumb-selected-color, ");
         StringAssert.Contains(stylesheet, "--bit-brc-div-clr: var(--bit-brc-role-main, var(--bit-Breadcrumb-divider-color, #{$clr-fg-sec}));");
         StringAssert.Contains(stylesheet, "--bit-brc-fcs-clr: var(--bit-brc-role-focus, var(--bit-Breadcrumb-focus-color, #{$clr-pri-focus}));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-brc-role-main, var(--bit-Breadcrumb-hover-color, ");
+        // (The hover sets the state color the rule at rest reads, rather than painting the color itself.)
+        StringAssert.Contains(stylesheet, "--bit-brc-sfg: var(--bit-brc-role-main, var(--bit-Breadcrumb-hover-color, ");
+        StringAssert.Contains(stylesheet, "color: var(--bit-brc-sfg, var(--bit-brc-itm-clr));");
 
         // The hover color still falls back to the color the item has at rest (--bit-brc-itm-clr, --bit-brc-div-clr),
         // which is no parameter's own value, so only the size and role values are banned behind a public variable.

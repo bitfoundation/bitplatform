@@ -342,6 +342,13 @@ $hdr-pad-x: var(--bit-hdr-pad-x, var(--bit-Header-padding-inline, #{spacing(3)})
     inset-inline-start: 0;
     clip-path: inset(50%);
     clip: rect(0 0 0 0);
+    // The link is only drawn while it has the focus, and the focus changes the variables it is painted from rather
+    // than its colors: a link the app paints through Classes.SkipLink keeps that paint once it is shown, instead
+    // of losing it to the focus rule that outranks the app's class. Unset, they leave the hidden link inheriting.
+    --bit-hdr-skp-clr: initial;
+    --bit-hdr-skp-bg: initial;
+    color: var(--bit-hdr-skp-clr);
+    background-color: var(--bit-hdr-skp-bg);
 
     &:focus {
         // z-index keeps the focused link above the content of the header it lands on top of.
@@ -352,8 +359,8 @@ $hdr-pad-x: var(--bit-hdr-pad-x, var(--bit-Header-padding-inline, #{spacing(3)})
         overflow: visible;
         clip-path: none;
         border-radius: $shp-radius-control;
-        color: var(--bit-Header-skip-link-color, #{$clr-pri-text});
-        background-color: var(--bit-Header-skip-link-background, #{$clr-pri});
+        --bit-hdr-skp-clr: var(--bit-Header-skip-link-color, #{$clr-pri-text});
+        --bit-hdr-skp-bg: var(--bit-Header-skip-link-background, #{$clr-pri});
         padding: #{spacing(1)} #{spacing(2)};
     }
 

@@ -145,10 +145,13 @@
     font-size: var(--bit-bdg-fontsize, var(--bit-Badge-font-size, #{$tg-fs-sm}));
     border-radius: var(--bit-bdg-dot-radius, var(--bit-bdg-radius, var(--bit-Badge-radius, #{$shp-radius-full})));
     // The colors are resolved per variant on the root (see .bit-bdg-fil), where the Color and the public
-    // variables are ranked against each other.
+    // variables are ranked against each other. The hover and press of a clickable badge come between the
+    // disabled colors and those (see .bit-bdg-clk), and start out unset on every badge.
+    --bit-bdg-cnt-sbr: initial;
+    --bit-bdg-cnt-sbg: initial;
     color: var(--bit-bdg-dis-txt, var(--bit-bdg-cnt-clr-txt));
-    border-color: var(--bit-bdg-dis-brd, var(--bit-bdg-cnt-clr-brd));
-    background-color: var(--bit-bdg-dis-bg, var(--bit-bdg-cnt-clr-bg));
+    border-color: var(--bit-bdg-dis-brd, var(--bit-bdg-cnt-sbr, var(--bit-bdg-cnt-clr-brd)));
+    background-color: var(--bit-bdg-dis-bg, var(--bit-bdg-cnt-sbg, var(--bit-bdg-cnt-clr-bg)));
     translate: var(--bit-bdg-ofs-x, 0) var(--bit-bdg-ofs-y, 0);
 }
 
@@ -182,16 +185,19 @@
     appearance: none;
     pointer-events: auto;
 
+    // The states change the variables the badge is painted from rather than its colors, so the one rule that
+    // paints is the one at rest (.bit-bdg-ctn): a badge the app paints through Classes.Badge keeps that paint
+    // under the pointer and while it is pressed, instead of losing it to a state that outranks the app's class.
     @media (hover: hover) {
         &:hover {
-            border-color: var(--bit-bdg-cnt-clr-brd-hover);
-            background-color: var(--bit-bdg-cnt-clr-bg-hover);
+            --bit-bdg-cnt-sbr: var(--bit-bdg-cnt-clr-brd-hover);
+            --bit-bdg-cnt-sbg: var(--bit-bdg-cnt-clr-bg-hover);
         }
     }
 
     &:active {
-        border-color: var(--bit-bdg-cnt-clr-brd-active);
-        background-color: var(--bit-bdg-cnt-clr-bg-active);
+        --bit-bdg-cnt-sbr: var(--bit-bdg-cnt-clr-brd-active);
+        --bit-bdg-cnt-sbg: var(--bit-bdg-cnt-clr-bg-active);
     }
 
     &:focus-visible {

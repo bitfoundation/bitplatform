@@ -32,8 +32,11 @@ public partial class BitMenuButtonStylesheetTests
         // focus ring and check mark of the items included.
         StringAssert.Contains(stylesheet, "background-color: var(--bit-mnb-clr, var(--bit-MenuButton-background, #{$clr-pri}));");
         StringAssert.Contains(stylesheet, "color: var(--bit-mnb-clr-txt, var(--bit-MenuButton-color, #{$clr-pri-text}));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-mnb-clr-hover, var(--bit-MenuButton-hover-background, #{$clr-pri-hover}));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-mnb-clr-dark, var(--bit-MenuButton-toggled-background, #{$clr-pri-dark}));");
+        // The hover and press states of the two halves set the variables the rules at rest paint from, never the
+        // colors themselves, so the state's value is read ahead of the rest value it stands in for.
+        StringAssert.Contains(stylesheet, "--bit-mnb-hlf-sbg: var(--bit-mnb-clr-hover, var(--bit-MenuButton-hover-background, #{$clr-pri-hover}));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-mnb-hlf-sbg, var(--bit-mnb-clr-dark, var(--bit-MenuButton-toggled-background, #{$clr-pri-dark})));");
+        StringAssert.Contains(stylesheet, "--bit-mnb-sbr: var(--bit-mnb-clr-hover, var(--bit-MenuButton-hover-background, #{$clr-pri-hover}));");
         StringAssert.Contains(stylesheet, "--bit-mnb-dis-clr: var(--bit-mnb-clr-dis-text, var(--bit-MenuButton-disabled-color, #{$clr-pri-dis-text}));");
         StringAssert.Contains(stylesheet, "--bit-mnb-clr-spb: var(--bit-mnb-clr-txt, var(--bit-MenuButton-divider-color, var(--bit-MenuButton-color, #{$clr-pri-text})));");
         StringAssert.Contains(stylesheet, "var(--bit-mnb-clr-focus, var(--bit-MenuButton-focus-color, #{$clr-pri-focus}))");
@@ -70,6 +73,13 @@ public partial class BitMenuButtonStylesheetTests
         // The callout is a sibling of the root rather than a descendant of it and carries the classes again, so it
         // resets them too - and the Background class it alone carries.
         StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-mnb {"), "@include bit-mnb-unset-published;");
+
+        // The colors the hover and press states move start out unset on the element they are painted on - the root's
+        // border, each half of the button, each item - so a nested menu button never inherits the outer one's state.
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-mnb {"), "--bit-mnb-sbr: initial;");
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-mnb-opb,\n.bit-mnb-chb {"), "--bit-mnb-hlf-sfg: initial;");
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-mnb-opb,\n.bit-mnb-chb {"), "--bit-mnb-hlf-sbg: initial;");
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-mnb-itm {"), "--bit-mnb-itm-sbg: initial;");
 
         var callout = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-mnb-cal {");
         StringAssert.Contains(callout, "@include bit-mnb-unset-published;");

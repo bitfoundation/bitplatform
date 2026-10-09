@@ -192,9 +192,14 @@
     // first, then the public variable (read here, so one set on the Style of a single button reaches it), then the
     // medium primary group an unset one stands for (per variant, see .bit-btg-fil).
     padding: var(--bit-btg-itm-padding, var(--bit-ButtonGroup-padding, #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-md}));
-    color: var(--bit-btg-itm-clr-txt, var(--bit-ButtonGroup-color, var(--bit-btg-dfl-txt)));
+    // The colors the hover and press states move (here and on the toggled button), unset at rest so a button never
+    // inherits them from a button of an outer group it sits in.
+    --bit-btg-itm-sfg: initial;
+    --bit-btg-itm-sbg: initial;
+    --bit-btg-itm-sbr: initial;
+    color: var(--bit-btg-itm-sfg, var(--bit-btg-itm-clr-txt, var(--bit-ButtonGroup-color, var(--bit-btg-dfl-txt))));
     border-color: var(--bit-btg-sep);
-    background-color: var(--bit-btg-itm-clr-bg, var(--bit-ButtonGroup-background, var(--bit-btg-dfl-bg)));
+    background-color: var(--bit-btg-itm-sbg, var(--bit-btg-itm-clr-bg, var(--bit-ButtonGroup-background, var(--bit-btg-dfl-bg))));
     // The control height of the size class, as a floor rather than a height: the button still grows
     // with a wrapped label or a taller template. It is what lines a group up with the other controls
     // of its size, and what keeps the smallest one above the 24px minimum pointer target of
@@ -211,15 +216,18 @@
     // tokens above, so animating the three properties here covers every variant of the group.
     transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
+    // The states change the variables the button is painted from rather than its colors, so the rules at rest (this
+    // one and .bit-btg-chk) are the only ones that paint: a button the app paints through Class keeps that paint under
+    // the pointer and while pressed, instead of losing it to a state that outranks the app's class.
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-btg-itm-clr-hover, var(--bit-ButtonGroup-hover-color, #{$clr-pri-text}));
-            background-color: var(--bit-btg-itm-clr-bg-hover, var(--bit-ButtonGroup-hover-background, #{$clr-pri-hover}));
+            --bit-btg-itm-sfg: var(--bit-btg-itm-clr-hover, var(--bit-ButtonGroup-hover-color, #{$clr-pri-text}));
+            --bit-btg-itm-sbg: var(--bit-btg-itm-clr-bg-hover, var(--bit-ButtonGroup-hover-background, #{$clr-pri-hover}));
         }
     }
 
     &:active {
-        background-color: var(--bit-btg-itm-clr-bg-active, var(--bit-ButtonGroup-active-background, var(--bit-ButtonGroup-hover-background, #{$clr-pri-active})));
+        --bit-btg-itm-sbg: var(--bit-btg-itm-clr-bg-active, var(--bit-ButtonGroup-active-background, var(--bit-ButtonGroup-hover-background, #{$clr-pri-active})));
     }
 
     // The focus ring is drawn inside the button because the group clips its overflow, which would
@@ -532,22 +540,23 @@
 // press, the way the group's own border color is. An explicit Color's toggled colors are read before all of them,
 // and the primary role's after.
 .bit-btg-chk {
-    color: var(--bit-btg-clr-txt, var(--bit-ButtonGroup-selected-color, #{$clr-pri-text}));
-    border-color: var(--bit-btg-clr-dark, var(--bit-ButtonGroup-selected-border-color, var(--bit-ButtonGroup-selected-background, #{$clr-pri-dark})));
-    background-color: var(--bit-btg-clr-dark, var(--bit-ButtonGroup-selected-background, #{$clr-pri-dark}));
+    // The hover of .bit-btg-itm moves the foreground read here, as it always has on a toggled button.
+    color: var(--bit-btg-itm-sfg, var(--bit-btg-clr-txt, var(--bit-ButtonGroup-selected-color, #{$clr-pri-text})));
+    border-color: var(--bit-btg-itm-sbr, var(--bit-btg-clr-dark, var(--bit-ButtonGroup-selected-border-color, var(--bit-ButtonGroup-selected-background, #{$clr-pri-dark}))));
+    background-color: var(--bit-btg-itm-sbg, var(--bit-btg-clr-dark, var(--bit-ButtonGroup-selected-background, #{$clr-pri-dark})));
     --bit-btg-itm-clr-fcs: var(--bit-btg-clr-txt);
     --bit-btg-dfl-fcs: #{$clr-pri-text};
 
     @media (hover: hover) {
         &:hover {
-            border-color: var(--bit-btg-clr-dark-hover, var(--bit-ButtonGroup-selected-border-color, var(--bit-ButtonGroup-selected-hover-background, #{$clr-pri-dark-hover})));
-            background-color: var(--bit-btg-clr-dark-hover, var(--bit-ButtonGroup-selected-hover-background, #{$clr-pri-dark-hover}));
+            --bit-btg-itm-sbr: var(--bit-btg-clr-dark-hover, var(--bit-ButtonGroup-selected-border-color, var(--bit-ButtonGroup-selected-hover-background, #{$clr-pri-dark-hover})));
+            --bit-btg-itm-sbg: var(--bit-btg-clr-dark-hover, var(--bit-ButtonGroup-selected-hover-background, #{$clr-pri-dark-hover}));
         }
     }
 
     &:active {
-        border-color: var(--bit-btg-clr-dark-active, var(--bit-ButtonGroup-selected-border-color, var(--bit-ButtonGroup-selected-hover-background, #{$clr-pri-dark-active})));
-        background-color: var(--bit-btg-clr-dark-active, var(--bit-ButtonGroup-selected-hover-background, #{$clr-pri-dark-active}));
+        --bit-btg-itm-sbr: var(--bit-btg-clr-dark-active, var(--bit-ButtonGroup-selected-border-color, var(--bit-ButtonGroup-selected-hover-background, #{$clr-pri-dark-active})));
+        --bit-btg-itm-sbg: var(--bit-btg-clr-dark-active, var(--bit-ButtonGroup-selected-hover-background, #{$clr-pri-dark-active}));
     }
 }
 

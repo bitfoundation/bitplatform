@@ -66,8 +66,10 @@ public partial class BitBadgeStylesheetTests
         // so a re-tinted badge that is disabled still reads as disabled, while the rule painting it keeps the weight
         // of a single class a Classes.Badge class can compete with.
         StringAssert.Contains(stylesheet, "color: var(--bit-bdg-dis-txt, var(--bit-bdg-cnt-clr-txt));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-bdg-dis-bg, var(--bit-bdg-cnt-clr-bg));");
-        StringAssert.Contains(stylesheet, "border-color: var(--bit-bdg-dis-brd, var(--bit-bdg-cnt-clr-brd));");
+        // The hover and press of a clickable badge only move a variable read between the two, so a Classes.Badge
+        // class painting the badge keeps that paint under the pointer.
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-bdg-dis-bg, var(--bit-bdg-cnt-sbg, var(--bit-bdg-cnt-clr-bg)));");
+        StringAssert.Contains(stylesheet, "border-color: var(--bit-bdg-dis-brd, var(--bit-bdg-cnt-sbr, var(--bit-bdg-cnt-clr-brd)));");
         Assert.IsFalse(stylesheet.Contains("\n.bit-bdg.bit-dis .bit-bdg-ctn {"), "The disabled colors are set by a heavier rule of their own.");
     }
 

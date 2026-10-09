@@ -29,16 +29,19 @@ public partial class BitToggleButtonStylesheetTests
         // So does an explicit Color, for every color the role paints - the checked state's included, since the state
         // is the rule's but the colors it shows are still the role's.
         StringAssert.Contains(stylesheet, "--bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-color, #{$clr-pri-text}));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-tgb-clr, var(--bit-ToggleButton-background, #{$clr-pri}));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover}));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-background, #{$clr-pri-active}));");
+        // The hover and press states set the variables the rules at rest paint from (--bit-tgb-sfg / -sbg / -sbr), never
+        // the colors themselves, so the state's value is read ahead of the rest value it stands in for.
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-tgb-sbg, var(--bit-tgb-clr, var(--bit-ToggleButton-background, #{$clr-pri})));");
+        StringAssert.Contains(stylesheet, "--bit-tgb-sbg: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover}));");
+        StringAssert.Contains(stylesheet, "--bit-tgb-sbg: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-background, #{$clr-pri-active}));");
         StringAssert.Contains(stylesheet, "--bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-checked-color, #{$clr-pri-text}));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-tgb-clr-dark, var(--bit-ToggleButton-checked-background, #{$clr-pri-dark}));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-tgb-sbg, var(--bit-tgb-clr-dark, var(--bit-ToggleButton-checked-background, #{$clr-pri-dark})));");
+        StringAssert.Contains(stylesheet, "--bit-tgb-sbg: var(--bit-tgb-clr-dark-hover, var(--bit-ToggleButton-checked-hover-background, #{$clr-pri-dark-hover}));");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-tgb-clr-dis, var(--bit-ToggleButton-disabled-background, #{$clr-pri-dis}));");
         StringAssert.Contains(stylesheet, "var(--bit-tgb-clr-focus, var(--bit-ToggleButton-focus-color, #{$clr-pri-focus}))");
 
         // What a Color does not paint stays the variables' alone: the transparent background of Outline and Text.
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-ToggleButton-background, transparent);");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-tgb-sbg, var(--bit-ToggleButton-background, transparent));");
 
         // Two reads keep the variable in front on purpose, neither of them in front of a value a parameter publishes
         // on its own: the gap, which only the absence of a label zeroes, and the minimum width, which Size does not
@@ -62,7 +65,9 @@ public partial class BitToggleButtonStylesheetTests
         foreach (var property in new[] { "--bit-tgb-clr-txt", "--bit-tgb-clr", "--bit-tgb-clr-hover", "--bit-tgb-clr-active", "--bit-tgb-clr-focus",
                                          "--bit-tgb-clr-dark", "--bit-tgb-clr-dark-hover", "--bit-tgb-clr-dark-active", "--bit-tgb-clr-dis",
                                          "--bit-tgb-clr-dis-text", "--bit-tgb-min-height", "--bit-tgb-padding", "--bit-tgb-fontsize",
-                                         "--bit-tgb-ntx-pad", "--bit-tgb-ntx-icn-size", "--bit-tgb-spn-size", "--bit-tgb-lbl-fontsize" })
+                                         "--bit-tgb-ntx-pad", "--bit-tgb-ntx-icn-size", "--bit-tgb-spn-size", "--bit-tgb-lbl-fontsize",
+                                         // The colors the hover and press states move, which a nested toggle button must not inherit either.
+                                         "--bit-tgb-sfg", "--bit-tgb-sbg", "--bit-tgb-sbr" })
         {
             StringAssert.Contains(root, $"{property}: initial;");
         }

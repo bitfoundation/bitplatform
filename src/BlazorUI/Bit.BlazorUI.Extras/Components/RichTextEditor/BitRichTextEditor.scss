@@ -190,7 +190,8 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
     display: inline-flex;
     justify-content: center;
     box-sizing: border-box;
-    background: transparent;
+    --bit-rte-btn-sbg: initial;
+    background: var(--bit-rte-btn-sbg, transparent);
     height: $rte-button-size;
     min-width: $rte-button-size;
     border-radius: $rte-button-radius;
@@ -209,19 +210,22 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
         transform: scaleX(-1);
     }
 
+    // The states move the variable the button is painted from rather than its background, so a button the app
+    // paints through a class keeps that paint under the pointer and while pressed. Every rule that paints the button
+    // at rest and that the states outrank (the toggled look, the panels' text buttons) reads it.
     &:hover:not(:disabled) {
-        background: var(--bit-RichTextEditor-button-hover-background, #{$clr-bg-sec-hover});
+        --bit-rte-btn-sbg: var(--bit-RichTextEditor-button-hover-background, #{$clr-bg-sec-hover});
     }
 
     // The press itself, so a click that only toggles a state elsewhere (a format applied to the selection) is felt.
     &:active:not(:disabled) {
-        background: $clr-bg-sec-active;
+        --bit-rte-btn-sbg: #{$clr-bg-sec-active};
     }
 
     &.bit-rte-act {
         color: $rte-button-active-color;
         border-color: $rte-button-active-color;
-        background: $rte-button-active-background;
+        background: var(--bit-rte-btn-sbg, #{$rte-button-active-background});
     }
 
     &:disabled {
@@ -241,7 +245,7 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
     padding: 0 $siz-ctrl-pad-x-sm;
     text-transform: $tg-ctrl-text-transform;
     border-color: $clr-brd-pri;
-    background: $clr-bg-pri;
+    background: var(--bit-rte-btn-sbg, #{$clr-bg-pri});
 }
 
 .bit-rte-sel {
@@ -259,9 +263,11 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
     padding: 0 spacing(0.5);
     height: $rte-button-size;
     border-radius: $rte-button-radius;
+    --bit-rte-color-sbg: initial;
+    background: var(--bit-rte-color-sbg);
 
     &:hover {
-        background: var(--bit-RichTextEditor-button-hover-background, #{$clr-bg-sec-hover});
+        --bit-rte-color-sbg: var(--bit-RichTextEditor-button-hover-background, #{$clr-bg-sec-hover});
     }
 
     &:has(input:focus-visible) {
@@ -392,14 +398,15 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
     padding: 0;
     cursor: pointer;
     font-size: $tg-fs-lg;
-    background: transparent;
+    --bit-rte-emoji-sbg: initial;
+    background: var(--bit-rte-emoji-sbg, transparent);
     width: $rte-button-size;
     height: $rte-button-size;
     border-radius: $rte-button-radius;
     border: $shp-border-width $shp-border-style transparent;
 
     &:hover {
-        background: var(--bit-RichTextEditor-button-hover-background, #{$clr-bg-sec-hover});
+        --bit-rte-emoji-sbg: var(--bit-RichTextEditor-button-hover-background, #{$clr-bg-sec-hover});
     }
 
     &:focus-visible {
@@ -889,13 +896,15 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
     text-align: start;
     color: $clr-fg-pri;
     font-size: $tg-fs-sm;
-    background: transparent;
+    --bit-rte-slash-sbg: initial;
+    background: var(--bit-rte-slash-sbg, transparent);
     min-height: $siz-item-md;
     padding: spacing(0.5) spacing(1);
     border-radius: $shp-radius-control;
 
+    // The selected row comes later at the same weight and still wins over the hover, so it paints on its own.
     &:hover {
-        background: var(--bit-RichTextEditor-button-hover-background, #{$clr-bg-sec-hover});
+        --bit-rte-slash-sbg: var(--bit-RichTextEditor-button-hover-background, #{$clr-bg-sec-hover});
     }
 
     &.bit-rte-slash-item-sel {

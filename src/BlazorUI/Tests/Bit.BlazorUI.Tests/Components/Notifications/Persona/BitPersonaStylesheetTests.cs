@@ -177,11 +177,12 @@ public class BitPersonaStylesheetTests
 
         var rule = GetRule(rules, "abt");
 
-        StringAssert.Contains(rule, "background-color: var(--bit-Persona-action-background, #{$clr-bg-pri});");
+        StringAssert.Contains(rule, "background-color: var(--bit-prs-abt-sbg, var(--bit-Persona-action-background, #{$clr-bg-pri}));");
         Assert.IsFalse(rule.Contains("transparent"), "The action button is hidden by painting it transparent, which leaves no surface under it once shown.");
 
-        // A custom surface is kept on hover rather than snapped back to the light default under a glyph paired with it.
-        StringAssert.Contains(rule, "background-color: var(--bit-Persona-action-hover-background, var(--bit-Persona-action-background, #{$clr-bg-pri-hover}));");
+        // A custom surface is kept on hover rather than snapped back to the light default under a glyph paired with it;
+        // the hover only moves the variable the rule at rest paints from, so a Classes paint is not outranked by it.
+        StringAssert.Contains(rule, "--bit-prs-abt-sbg: var(--bit-Persona-action-hover-background, var(--bit-Persona-action-background, #{$clr-bg-pri-hover}));");
     }
 
     [TestMethod]

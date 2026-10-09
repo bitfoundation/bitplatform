@@ -206,22 +206,24 @@
         cursor: default;
     }
 
+    // Like every state of these parts (see .bit-dtrp-dbt), these set the variables the rules at rest paint
+    // from rather than the colors themselves.
     @media (hover: hover) {
         .bit-dtrp-dbt:hover,
         .bit-dtrp-prb:hover,
         .bit-dtrp-tbt:hover {
-            background-color: transparent;
+            --bit-dtrp-sbg: transparent;
         }
 
         // The filled cells keep their own fill, in the order the plain rules above paint them: they show
         // the value, not a hover state.
         .bit-dtrp-dhl:hover {
-            background-color: var(--bit-DateRangePicker-highlighted-background, #{$clr-bg-ter});
+            --bit-dtrp-sbg: var(--bit-DateRangePicker-highlighted-background, #{$clr-bg-ter});
         }
 
         .bit-dtrp-dsb:hover {
-            color: var(--bit-DateRangePicker-day-color, #{$clr-fg-pri});
-            background-color: var(--bit-dtrp-clr-body);
+            --bit-dtrp-sfg: var(--bit-DateRangePicker-day-color, #{$clr-fg-pri});
+            --bit-dtrp-sbg: var(--bit-dtrp-clr-body);
         }
 
         .bit-dtrp-dtd:hover,
@@ -229,23 +231,23 @@
         .bit-dtrp-dse:hover,
         .bit-dtrp-prs:hover,
         .bit-dtrp-bns:hover {
-            background-color: var(--bit-dtrp-clr);
+            --bit-dtrp-sbg: var(--bit-dtrp-clr);
         }
     }
 
     .bit-dtrp-dbt:active,
     .bit-dtrp-prb:active,
     .bit-dtrp-tbt:active {
-        background-color: transparent;
+        --bit-dtrp-sbg: transparent;
     }
 
     .bit-dtrp-dhl:active {
-        background-color: var(--bit-DateRangePicker-highlighted-background, #{$clr-bg-ter});
+        --bit-dtrp-sbg: var(--bit-DateRangePicker-highlighted-background, #{$clr-bg-ter});
     }
 
     .bit-dtrp-dsb:active {
-        color: var(--bit-DateRangePicker-day-color, #{$clr-fg-pri});
-        background-color: var(--bit-dtrp-clr-body);
+        --bit-dtrp-sfg: var(--bit-DateRangePicker-day-color, #{$clr-fg-pri});
+        --bit-dtrp-sbg: var(--bit-dtrp-clr-body);
     }
 
     .bit-dtrp-dtd:active,
@@ -253,7 +255,7 @@
     .bit-dtrp-dse:active,
     .bit-dtrp-prs:active,
     .bit-dtrp-bns:active {
-        background-color: var(--bit-dtrp-clr);
+        --bit-dtrp-sbg: var(--bit-dtrp-clr);
     }
 }
 
@@ -310,7 +312,8 @@
     width: var(--bit-dtrp-clr-size);
     height: var(--bit-dtrp-clr-size);
     justify-content: center;
-    background-color: $clr-bg-sec;
+    --bit-dtrp-sbg: initial;
+    background-color: var(--bit-dtrp-sbg, #{$clr-bg-sec});
     border-radius: $shp-radius-control;
     transition: background-color $mot-duration-short $mot-easing;
 
@@ -325,12 +328,12 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            --bit-dtrp-sbg: #{$clr-bg-pri-hover};
         }
     }
 
     &:active {
-        background-color: $clr-bg-pri-active;
+        --bit-dtrp-sbg: #{$clr-bg-pri-active};
     }
 
     // It sits inside the field, whose own ring is drawn around the border a pixel away, so this one
@@ -502,7 +505,15 @@
     display: flex;
     cursor: pointer;
     overflow: visible;
-    color: var(--bit-DateRangePicker-day-color, #{$clr-fg-pri});
+    // The states of a part change the variables it is painted from rather than its colors, so only the rules
+    // at rest paint it - the plain cell here, and today, the ends, the body and the preview of the range and
+    // the highlighted days further down, each with its own fallback: a cell the app paints through Classes
+    // keeps that paint under the pointer and while pressed, instead of losing it to a state that outranks the
+    // app's class. Each part that answers a state starts the variables out unset, so it never inherits an
+    // outer one's state.
+    --bit-dtrp-sbg: initial;
+    --bit-dtrp-sfg: initial;
+    color: var(--bit-dtrp-sfg, var(--bit-DateRangePicker-day-color, #{$clr-fg-pri}));
     position: relative;
     width: var(--bit-dtrp-cell-size, var(--bit-DateRangePicker-day-size, #{spacing(3.5)}));
     align-items: center;
@@ -513,7 +524,7 @@
     font-size: var(--bit-dtrp-cell-fs, var(--bit-DateRangePicker-day-font-size, #{$tg-fs-xs}));
     line-height: 1;
     justify-content: center;
-    background-color: transparent;
+    background-color: var(--bit-dtrp-sbg, transparent);
     border-radius: var(--bit-DateRangePicker-day-radius, #{$shp-radius-control});
     // Only what a state actually changes is transitioned, so a cell that is hovered or joins the
     // range eases rather than snapping - and collapses to nothing under prefers-reduced-motion,
@@ -522,12 +533,12 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-DateRangePicker-day-hover-background, #{$clr-bg-pri-hover});
+            --bit-dtrp-sbg: var(--bit-DateRangePicker-day-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active {
-        background-color: $clr-bg-pri-active;
+        --bit-dtrp-sbg: #{$clr-bg-pri-active};
     }
 
     &:disabled {
@@ -548,7 +559,7 @@
 
 .bit-dtrp-dbo {
     font-weight: $tg-fw-regular;
-    color: var(--bit-DateRangePicker-outside-day-color, #{$clr-fg-sec});
+    color: var(--bit-dtrp-sfg, var(--bit-DateRangePicker-outside-day-color, #{$clr-fg-sec}));
 }
 
 .bit-dtrp-dbe {
@@ -558,48 +569,48 @@
 
 .bit-dtrp-dhl {
     font-weight: $tg-fw-semibold;
-    background-color: var(--bit-DateRangePicker-highlighted-background, #{$clr-bg-ter});
+    background-color: var(--bit-dtrp-sbg, var(--bit-DateRangePicker-highlighted-background, #{$clr-bg-ter}));
 }
 
 .bit-dtrp-dtd {
     font-weight: $tg-fw-semibold;
     border-radius: var(--bit-DateRangePicker-today-radius, #{$shp-radius-full});
-    color: var(--bit-dtrp-clr-txt);
-    background-color: var(--bit-dtrp-clr);
+    color: var(--bit-dtrp-sfg, var(--bit-dtrp-clr-txt));
+    background-color: var(--bit-dtrp-sbg, var(--bit-dtrp-clr));
 
     @media(hover: hover) {
         &:hover {
-            background-color: var(--bit-dtrp-clr-hover);
+            --bit-dtrp-sbg: var(--bit-dtrp-clr-hover);
         }
     }
 
     &:active {
-        background-color: var(--bit-dtrp-clr-active);
+        --bit-dtrp-sbg: var(--bit-dtrp-clr-active);
     }
 }
 
 .bit-dtrp-dss {
-    color: var(--bit-dtrp-clr-txt);
+    color: var(--bit-dtrp-sfg, var(--bit-dtrp-clr-txt));
     border-end-end-radius: 0;
     border-start-end-radius: 0;
-    background-color: var(--bit-dtrp-clr);
+    background-color: var(--bit-dtrp-sbg, var(--bit-dtrp-clr));
     border-end-start-radius: var(--bit-DateRangePicker-range-radius, #{$shp-radius-lg});
     border-start-start-radius: var(--bit-DateRangePicker-range-radius, #{$shp-radius-lg});
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-dtrp-clr-hover);
+            --bit-dtrp-sbg: var(--bit-dtrp-clr-hover);
         }
     }
 
     &:active {
-        background-color: var(--bit-dtrp-clr-active);
+        --bit-dtrp-sbg: var(--bit-dtrp-clr-active);
     }
 }
 
 .bit-dtrp-dse {
-    color: var(--bit-dtrp-clr-txt);
-    background-color: var(--bit-dtrp-clr);
+    color: var(--bit-dtrp-sfg, var(--bit-dtrp-clr-txt));
+    background-color: var(--bit-dtrp-sbg, var(--bit-dtrp-clr));
     border-end-start-radius: 0;
     border-start-start-radius: 0;
     border-end-end-radius: var(--bit-DateRangePicker-range-radius, #{$shp-radius-lg});
@@ -607,12 +618,12 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-dtrp-clr-hover);
+            --bit-dtrp-sbg: var(--bit-dtrp-clr-hover);
         }
     }
 
     &:active {
-        background-color: var(--bit-dtrp-clr-active);
+        --bit-dtrp-sbg: var(--bit-dtrp-clr-active);
     }
 }
 
@@ -623,33 +634,33 @@
 
 .bit-dtrp-dsb {
     border-radius: 0;
-    color: var(--bit-DateRangePicker-day-color, #{$clr-fg-pri});
-    background-color: var(--bit-dtrp-clr-body);
+    color: var(--bit-dtrp-sfg, var(--bit-DateRangePicker-day-color, #{$clr-fg-pri}));
+    background-color: var(--bit-dtrp-sbg, var(--bit-dtrp-clr-body));
 
     @media (hover: hover) {
         &:hover {
             // The hover and active states swap the light range body for the full-strength color,
             // so the text has to switch to the color's own foreground along with it.
-            color: var(--bit-dtrp-clr-txt);
-            background-color: var(--bit-dtrp-clr-hover);
+            --bit-dtrp-sfg: var(--bit-dtrp-clr-txt);
+            --bit-dtrp-sbg: var(--bit-dtrp-clr-hover);
         }
     }
 
     &:active {
-        color: var(--bit-dtrp-clr-txt);
-        background-color: var(--bit-dtrp-clr-active);
+        --bit-dtrp-sfg: var(--bit-dtrp-clr-txt);
+        --bit-dtrp-sbg: var(--bit-dtrp-clr-active);
     }
 }
 
 // The prospective range previewed while the pointer moves over the day cells.
 .bit-dtrp-dhr {
     border-radius: 0;
-    color: var(--bit-DateRangePicker-day-color, #{$clr-fg-pri});
-    background-color: var(--bit-DateRangePicker-preview-background, #{$clr-bg-sec});
+    color: var(--bit-dtrp-sfg, var(--bit-DateRangePicker-day-color, #{$clr-fg-pri}));
+    background-color: var(--bit-dtrp-sbg, var(--bit-DateRangePicker-preview-background, #{$clr-bg-sec}));
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-sec-hover;
+            --bit-dtrp-sbg: #{$clr-bg-sec-hover};
         }
     }
 }
@@ -704,7 +715,8 @@
     padding: 0 spacing(0.75);
     font-size: var(--bit-dtrp-hdr-fs);
     line-height: var(--bit-dtrp-cell-size, var(--bit-DateRangePicker-day-size, #{spacing(3.5)}));
-    background-color: transparent;
+    --bit-dtrp-sbg: initial;
+    background-color: var(--bit-dtrp-sbg, transparent);
     border-radius: $shp-radius-control;
 }
 
@@ -714,7 +726,7 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            --bit-dtrp-sbg: #{$clr-bg-pri-hover};
         }
     }
 
@@ -757,13 +769,14 @@
     min-width: var(--bit-dtrp-cell-size, var(--bit-DateRangePicker-day-size, #{spacing(3.5)}));
     min-height: var(--bit-dtrp-cell-size, var(--bit-DateRangePicker-day-size, #{spacing(3.5)}));
     line-height: var(--bit-dtrp-cell-size, var(--bit-DateRangePicker-day-size, #{spacing(3.5)}));
-    background-color: transparent;
+    --bit-dtrp-sbg: initial;
+    background-color: var(--bit-dtrp-sbg, transparent);
     border-radius: $shp-radius-control;
     transition: background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-DateRangePicker-day-hover-background, #{$clr-bg-pri-hover});
+            --bit-dtrp-sbg: var(--bit-DateRangePicker-day-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
@@ -796,18 +809,19 @@
     outline: transparent;
     font-size: var(--bit-dtrp-cell-fs, #{$tg-fs-xs});
     line-height: var(--bit-dtrp-time-size);
-    background-color: transparent;
+    --bit-dtrp-sbg: initial;
+    background-color: var(--bit-dtrp-sbg, transparent);
     border-radius: $shp-radius-control;
     transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            --bit-dtrp-sbg: #{$clr-bg-pri-hover};
         }
     }
 
     &:active {
-        background-color: $clr-bg-pri-hover;
+        --bit-dtrp-sbg: #{$clr-bg-pri-hover};
     }
 
     &:focus-visible {
@@ -875,14 +889,15 @@
     text-overflow: ellipsis;
     padding: spacing(1) spacing(1.25);
     font-size: var(--bit-dtrp-hdr-fs);
-    background-color: transparent;
+    --bit-dtrp-sbg: initial;
+    background-color: var(--bit-dtrp-sbg, transparent);
     border-radius: $shp-radius-control;
     font-family: $tg-font-family;
     transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            --bit-dtrp-sbg: #{$clr-bg-pri-hover};
         }
     }
 
@@ -902,16 +917,16 @@
 .bit-dtrp-prs {
     font-weight: $tg-fw-semibold;
     color: var(--bit-dtrp-clr-txt);
-    background-color: var(--bit-dtrp-clr);
+    background-color: var(--bit-dtrp-sbg, var(--bit-dtrp-clr));
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-dtrp-clr-hover);
+            --bit-dtrp-sbg: var(--bit-dtrp-clr-hover);
         }
     }
 
     &:active {
-        background-color: var(--bit-dtrp-clr-active);
+        --bit-dtrp-sbg: var(--bit-dtrp-clr-active);
     }
 }
 
@@ -944,13 +959,14 @@
     font-size: var(--bit-dtrp-cell-fs, #{$tg-fs-xs});
     line-height: var(--bit-dtrp-month-cell-h);
     text-overflow: ellipsis;
-    background-color: transparent;
+    --bit-dtrp-sbg: initial;
+    background-color: var(--bit-dtrp-sbg, transparent);
     border-radius: $shp-radius-control;
     transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            --bit-dtrp-sbg: #{$clr-bg-pri-hover};
         }
     }
 
@@ -970,22 +986,22 @@
 
 .bit-dtrp-psm {
     font-weight: $tg-fw-semibold;
-    background-color: $clr-bg-sec;
+    background-color: var(--bit-dtrp-sbg, #{$clr-bg-sec});
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            --bit-dtrp-sbg: #{$clr-bg-pri-hover};
         }
     }
 }
 
 .bit-dtrp-pcm {
     color: var(--bit-dtrp-clr-txt);
-    background-color: var(--bit-dtrp-clr);
+    background-color: var(--bit-dtrp-sbg, var(--bit-dtrp-clr));
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-dtrp-clr-hover);
+            --bit-dtrp-sbg: var(--bit-dtrp-clr-hover);
         }
     }
 }
@@ -1063,9 +1079,10 @@
         -webkit-appearance: none;
     }
 
+    // No border of its own on focus: the rule above already takes the input's away, so one the app gives it
+    // through Classes stays put while the field is focused.
     &:focus {
         @include focus-underline-ring(var(--bit-dtrp-clr-focus));
-        border: none;
     }
 
     &:disabled {
@@ -1084,7 +1101,7 @@
 
 .bit-dtrp-bns {
     color: var(--bit-dtrp-clr-txt);
-    background-color: var(--bit-dtrp-clr);
+    background-color: var(--bit-dtrp-sbg, var(--bit-dtrp-clr));
 
     &:disabled {
         background-color: $clr-bg-dis;
@@ -1092,12 +1109,12 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-dtrp-clr-hover);
+            --bit-dtrp-sbg: var(--bit-dtrp-clr-hover);
         }
     }
 
     &:active {
-        background-color: var(--bit-dtrp-clr-active);
+        --bit-dtrp-sbg: var(--bit-dtrp-clr-active);
     }
 }
 
@@ -1147,6 +1164,7 @@
     text-transform: $tg-ctrl-text-transform;
     border-radius: $shp-radius-button;
     border: $shp-border-width $shp-border-style transparent;
+    --bit-dtrp-sbg: initial;
     transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     &:disabled {
@@ -1163,32 +1181,32 @@
 
 .bit-dtrp-cnb {
     color: $clr-fg-pri;
-    background-color: transparent;
+    background-color: var(--bit-dtrp-sbg, transparent);
     border-color: $clr-brd-pri;
 
     @media (hover: hover) {
         &:hover {
-            background-color: $clr-bg-pri-hover;
+            --bit-dtrp-sbg: #{$clr-bg-pri-hover};
         }
     }
 
     &:active {
-        background-color: $clr-bg-pri-active;
+        --bit-dtrp-sbg: #{$clr-bg-pri-active};
     }
 }
 
 .bit-dtrp-apb {
     color: var(--bit-dtrp-clr-txt);
-    background-color: var(--bit-dtrp-clr);
+    background-color: var(--bit-dtrp-sbg, var(--bit-dtrp-clr));
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-dtrp-clr-hover);
+            --bit-dtrp-sbg: var(--bit-dtrp-clr-hover);
         }
     }
 
     &:active {
-        background-color: var(--bit-dtrp-clr-active);
+        --bit-dtrp-sbg: var(--bit-dtrp-clr-active);
     }
 
     &:disabled {

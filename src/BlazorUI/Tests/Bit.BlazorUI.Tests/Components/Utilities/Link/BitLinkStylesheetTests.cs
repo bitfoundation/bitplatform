@@ -58,9 +58,10 @@ public partial class BitLinkStylesheetTests
 
         // An explicit Color or Size publishes these, so they are read before the variable, which only restyles the
         // default an unset one stands for: the primary role, and the font size of the text around the link.
-        StringAssert.Contains(root, "color: var(--bit-lnk-clr, var(--bit-Link-color, #{$clr-pri}));");
-        StringAssert.Contains(root, "color: var(--bit-lnk-clr-hover, var(--bit-Link-hover-color, #{$clr-pri-hover}));");
-        StringAssert.Contains(root, "color: var(--bit-lnk-clr-active, var(--bit-Link-active-color, #{$clr-pri-active}));");
+        // (The states set the state color the rules at rest read first, rather than painting the color themselves.)
+        StringAssert.Contains(root, "color: var(--bit-lnk-sfg, var(--bit-lnk-clr, var(--bit-Link-color, #{$clr-pri})));");
+        StringAssert.Contains(root, "--bit-lnk-sfg: var(--bit-lnk-clr-hover, var(--bit-Link-hover-color, #{$clr-pri-hover}));");
+        StringAssert.Contains(root, "--bit-lnk-sfg: var(--bit-lnk-clr-active, var(--bit-Link-active-color, #{$clr-pri-active}));");
         StringAssert.Contains(root, "font-size: var(--bit-lnk-fs, var(--bit-Link-font-size, inherit));");
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Link-[a-z-]+, var\(--bit-lnk-"), "A public variable is read before the parameter it restyles the default of.");
@@ -153,7 +154,7 @@ public partial class BitLinkStylesheetTests
         var active = root.IndexOf("&:active {", System.StringComparison.Ordinal);
 
         Assert.IsTrue(visited >= 0 && visited < hover && visited < active, "A visited link would no longer change under the pointer.");
-        StringAssert.Contains(root, "color: var(--bit-lnk-clr, var(--bit-Link-visited-color, var(--bit-Link-color, #{$clr-pri})));");
+        StringAssert.Contains(root, "color: var(--bit-lnk-sfg, var(--bit-lnk-clr, var(--bit-Link-visited-color, var(--bit-Link-color, #{$clr-pri}))));");
     }
 
     [TestMethod]
@@ -169,7 +170,7 @@ public partial class BitLinkStylesheetTests
 
         Assert.IsTrue(current >= 0 && current < hover, "The current link is not styled ahead of the interactive states.");
         StringAssert.Contains(root, "&:where(.bit-lnk-cur):visited {");
-        StringAssert.Contains(root, "color: var(--bit-lnk-clr, var(--bit-Link-current-color, var(--bit-Link-color, #{$clr-pri})));");
+        StringAssert.Contains(root, "color: var(--bit-lnk-sfg, var(--bit-lnk-clr, var(--bit-Link-current-color, var(--bit-Link-color, #{$clr-pri}))));");
 
         // Color alone must not be what tells the current link apart, and NoUnderline still takes the underline off.
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-lnk-cur {"), "--bit-lnk-deco: underline;");

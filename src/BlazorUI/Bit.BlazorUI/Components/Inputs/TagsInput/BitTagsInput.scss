@@ -182,6 +182,11 @@
     border-radius: var(--bit-TagsInput-radius, #{$shp-radius-control});
     border-width: var(--bit-TagsInput-border-width, #{$shp-border-width});
     transition: border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
+    //the hover and the focus of the field change these rather than its colors, which only the variant and the
+    //state of the field paint (further down): a field the app paints through Classes keeps that paint under
+    //the pointer and while focused, instead of losing it to a state that outranks the app's class.
+    --bit-tgi-cnt-brd: initial;
+    --bit-tgi-cnt-bg: initial;
 }
 
 //the tags share the wrapping line of the container above rather than forming a box of their own, while
@@ -202,11 +207,16 @@
     //to a chip through Classes, GetTagClass or a scoped stylesheet, has to be able to repaint it. Each is
     //ranked the Color's first (unset while the Color is), then the public variable, then the primary chip
     //of the tag variant.
+    //The hover of a chip a click opens moves the -s* values rather than the colors, so this stays the one
+    //rule painting the chip and a class handed to it keeps its paint under the pointer as well.
     border-style: $shp-border-style;
     border-width: var(--bit-TagsInput-tag-border-width, #{$shp-border-width});
-    border-color: var(--bit-tgi-tag-brd, var(--bit-TagsInput-tag-border-color, var(--bit-tgi-tag-brd-dft)));
-    color: var(--bit-tgi-tag-clr, var(--bit-TagsInput-tag-color, var(--bit-tgi-tag-clr-dft)));
-    background-color: var(--bit-tgi-tag-bg, var(--bit-TagsInput-tag-background, var(--bit-tgi-tag-bg-dft)));
+    --bit-tgi-tag-sfg: initial;
+    --bit-tgi-tag-sbr: initial;
+    --bit-tgi-tag-sbg: initial;
+    border-color: var(--bit-tgi-tag-sbr, var(--bit-tgi-tag-brd, var(--bit-TagsInput-tag-border-color, var(--bit-tgi-tag-brd-dft))));
+    color: var(--bit-tgi-tag-sfg, var(--bit-tgi-tag-clr, var(--bit-TagsInput-tag-color, var(--bit-tgi-tag-clr-dft))));
+    background-color: var(--bit-tgi-tag-sbg, var(--bit-tgi-tag-bg, var(--bit-TagsInput-tag-background, var(--bit-tgi-tag-bg-dft))));
     border-radius: var(--bit-TagsInput-tag-radius, #{$shp-radius-chip});
     font-size: var(--bit-tgi-tagfontsize, var(--bit-TagsInput-tag-font-size, #{$tg-fs-xs}));
     gap: var(--bit-TagsInput-tag-gap, #{spacing(0.375)});
@@ -308,9 +318,12 @@
     //so unlike the tags it follows the casing the design system gives its controls.
     text-transform: $tg-ctrl-text-transform;
     border-width: var(--bit-TagsInput-tag-border-width, #{$shp-border-width});
-    border-color: var(--bit-tgi-tag-brd, var(--bit-TagsInput-tag-border-color, var(--bit-tgi-tag-brd-dft)));
-    color: var(--bit-tgi-tag-clr, var(--bit-TagsInput-tag-color, var(--bit-tgi-tag-clr-dft)));
-    background-color: var(--bit-tgi-tag-bg, var(--bit-TagsInput-tag-background, var(--bit-tgi-tag-bg-dft)));
+    --bit-tgi-tgl-sfg: initial;
+    --bit-tgi-tgl-sbr: initial;
+    --bit-tgi-tgl-sbg: initial;
+    border-color: var(--bit-tgi-tgl-sbr, var(--bit-tgi-tag-brd, var(--bit-TagsInput-tag-border-color, var(--bit-tgi-tag-brd-dft))));
+    color: var(--bit-tgi-tgl-sfg, var(--bit-tgi-tag-clr, var(--bit-TagsInput-tag-color, var(--bit-tgi-tag-clr-dft))));
+    background-color: var(--bit-tgi-tgl-sbg, var(--bit-tgi-tag-bg, var(--bit-TagsInput-tag-background, var(--bit-tgi-tag-bg-dft))));
     border-radius: var(--bit-TagsInput-tag-radius, #{$shp-radius-chip});
     font-size: var(--bit-tgi-tagfontsize, var(--bit-TagsInput-tag-font-size, #{$tg-fs-xs}));
     padding: var(--bit-tgi-tagpadding, var(--bit-TagsInput-tag-padding, 0 calc(#{$siz-ctrl-pad-x-md} / 2)));
@@ -319,9 +332,9 @@
 
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-tgi-tag-clr-hover, var(--bit-TagsInput-toggle-hover-color, var(--bit-tgi-tag-clr-hover-dft)));
-            border-color: var(--bit-tgi-tag-brd-hover, var(--bit-TagsInput-toggle-hover-background, var(--bit-tgi-tag-brd-hover-dft)));
-            background-color: var(--bit-tgi-tag-bg-hover, var(--bit-TagsInput-toggle-hover-background, var(--bit-tgi-tag-bg-hover-dft)));
+            --bit-tgi-tgl-sfg: var(--bit-tgi-tag-clr-hover, var(--bit-TagsInput-toggle-hover-color, var(--bit-tgi-tag-clr-hover-dft)));
+            --bit-tgi-tgl-sbr: var(--bit-tgi-tag-brd-hover, var(--bit-TagsInput-toggle-hover-background, var(--bit-tgi-tag-brd-hover-dft)));
+            --bit-tgi-tgl-sbg: var(--bit-tgi-tag-bg-hover, var(--bit-TagsInput-toggle-hover-background, var(--bit-tgi-tag-bg-hover-dft)));
         }
     }
 
@@ -455,9 +468,9 @@
 
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-tgi-tag-clr-hover, var(--bit-TagsInput-tag-hover-color, var(--bit-tgi-tag-clr-hover-dft)));
-            border-color: var(--bit-tgi-tag-brd-hover, var(--bit-TagsInput-tag-hover-background, var(--bit-tgi-tag-brd-hover-dft)));
-            background-color: var(--bit-tgi-tag-bg-hover, var(--bit-TagsInput-tag-hover-background, var(--bit-tgi-tag-bg-hover-dft)));
+            --bit-tgi-tag-sfg: var(--bit-tgi-tag-clr-hover, var(--bit-TagsInput-tag-hover-color, var(--bit-tgi-tag-clr-hover-dft)));
+            --bit-tgi-tag-sbr: var(--bit-tgi-tag-brd-hover, var(--bit-TagsInput-tag-hover-background, var(--bit-tgi-tag-brd-hover-dft)));
+            --bit-tgi-tag-sbg: var(--bit-tgi-tag-bg-hover, var(--bit-TagsInput-tag-hover-background, var(--bit-tgi-tag-bg-hover-dft)));
         }
     }
 }
@@ -478,7 +491,8 @@
 .bit-tgi-cbt {
     margin-inline-start: auto;
     padding-inline: spacing(0.25);
-    color: var(--bit-TagsInput-clear-color, #{$clr-fg-sec});
+    --bit-tgi-cbt-clr: initial;
+    color: var(--bit-tgi-cbt-clr, var(--bit-TagsInput-clear-color, #{$clr-fg-sec}));
     font-size: var(--bit-tgi-iconsize, var(--bit-TagsInput-icon-size, #{$siz-icon-md}));
     //a control of the field rather than a part of a chip, so it carries the 24 CSS pixel pointer target of
     //WCAG 2.2 (SC 2.5.8) on both axes at every size, whatever the glyph inside it measures.
@@ -488,7 +502,7 @@
 
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-TagsInput-clear-hover-color, #{$clr-fg-pri});
+            --bit-tgi-cbt-clr: var(--bit-TagsInput-clear-hover-color, #{$clr-fg-pri});
         }
     }
 
@@ -528,13 +542,13 @@
 //Outline - the default: a full rule around the field, filled with the page surface.
 .bit-tgi-otl {
     .bit-tgi-cnt {
-        border-color: var(--bit-TagsInput-border-color, #{$clr-brd-pri});
-        background-color: var(--bit-TagsInput-background, #{$clr-bg-pri});
+        border-color: var(--bit-tgi-cnt-brd, var(--bit-TagsInput-border-color, #{$clr-brd-pri}));
+        background-color: var(--bit-tgi-cnt-bg, var(--bit-TagsInput-background, #{$clr-bg-pri}));
     }
 
     @media (hover: hover) {
         &:hover:not(.bit-dis) .bit-tgi-cnt {
-            border-color: var(--bit-TagsInput-hover-border-color, var(--bit-TagsInput-border-color, #{$clr-brd-pri-hover}));
+            --bit-tgi-cnt-brd: var(--bit-TagsInput-hover-border-color, var(--bit-TagsInput-border-color, #{$clr-brd-pri-hover}));
         }
     }
 }
@@ -542,14 +556,14 @@
 //Fill: the field is painted with the secondary surface and carries no rule of its own.
 .bit-tgi-fil {
     .bit-tgi-cnt {
-        border-color: var(--bit-TagsInput-border-color, transparent);
-        background-color: var(--bit-TagsInput-background, #{$clr-bg-sec});
+        border-color: var(--bit-tgi-cnt-brd, var(--bit-TagsInput-border-color, transparent));
+        background-color: var(--bit-tgi-cnt-bg, var(--bit-TagsInput-background, #{$clr-bg-sec}));
     }
 
     @media (hover: hover) {
         &:hover:not(.bit-dis) .bit-tgi-cnt {
-            border-color: var(--bit-TagsInput-hover-border-color, var(--bit-TagsInput-border-color, transparent));
-            background-color: var(--bit-TagsInput-background, #{$clr-bg-sec-hover});
+            --bit-tgi-cnt-brd: var(--bit-TagsInput-hover-border-color, var(--bit-TagsInput-border-color, transparent));
+            --bit-tgi-cnt-bg: var(--bit-TagsInput-background, #{$clr-bg-sec-hover});
         }
     }
 }
@@ -558,26 +572,26 @@
 .bit-tgi-txt {
     .bit-tgi-cnt {
         border-radius: 0;
-        border-color: var(--bit-TagsInput-border-color, #{$clr-brd-pri});
-        background-color: var(--bit-TagsInput-background, transparent);
+        border-color: var(--bit-tgi-cnt-brd, var(--bit-TagsInput-border-color, #{$clr-brd-pri}));
+        background-color: var(--bit-tgi-cnt-bg, var(--bit-TagsInput-background, transparent));
         border-width: 0 0 var(--bit-TagsInput-border-width, #{$shp-border-width}) 0;
     }
 
     @media (hover: hover) {
         &:hover:not(.bit-dis) .bit-tgi-cnt {
-            border-color: var(--bit-TagsInput-hover-border-color, var(--bit-TagsInput-border-color, #{$clr-brd-pri-hover}));
+            --bit-tgi-cnt-brd: var(--bit-TagsInput-hover-border-color, var(--bit-TagsInput-border-color, #{$clr-brd-pri-hover}));
         }
     }
 }
 
 .bit-tgi-nbd {
     .bit-tgi-cnt {
-        border-color: transparent;
+        border-color: var(--bit-tgi-cnt-brd, transparent);
     }
 
     @media (hover: hover) {
         &:hover:not(.bit-dis) .bit-tgi-cnt {
-            border-color: transparent;
+            --bit-tgi-cnt-brd: transparent;
         }
     }
 }
@@ -666,23 +680,23 @@
 }
 
 
-//the focus ring is declared after the variants on purpose: it is as specific as they are, so only the
-//source order keeps a focused field from being painted over by its variant colors. It follows the whole
-//field rather than the input alone, so that a tag reached with the arrow keys lights it up as well.
+//the focus ring is declared after the variants, and like their hover it sets the variable the variant paints
+//the rule of the field from rather than painting the rule itself. It follows the whole field rather than the
+//input alone, so that a tag reached with the arrow keys lights it up as well.
 .bit-tgi .bit-tgi-cnt:focus-within {
     @include focus-ring(var(--bit-tgi-clr-focus, var(--bit-TagsInput-focus-color, #{$clr-pri-focus})));
 
-    border-color: var(--bit-tgi-clr, var(--bit-TagsInput-focus-border-color, #{$clr-pri}));
+    --bit-tgi-cnt-brd: var(--bit-tgi-clr, var(--bit-TagsInput-focus-border-color, #{$clr-pri}));
 }
 
 .bit-tgi-txt .bit-tgi-cnt:focus-within {
     @include focus-underline-ring(var(--bit-tgi-clr-focus, var(--bit-TagsInput-focus-color, #{$clr-pri-focus})));
 
-    border-color: var(--bit-tgi-clr, var(--bit-TagsInput-focus-border-color, #{$clr-pri}));
+    --bit-tgi-cnt-brd: var(--bit-tgi-clr, var(--bit-TagsInput-focus-border-color, #{$clr-pri}));
 }
 
 .bit-tgi-nbd .bit-tgi-cnt:focus-within {
-    border-color: transparent;
+    --bit-tgi-cnt-brd: transparent;
 }
 
 .bit-tgi.bit-dis {
@@ -727,24 +741,24 @@
     }
 
     .bit-tgi-cnt {
-        border-color: var(--bit-TagsInput-invalid-color, #{$clr-err});
+        border-color: var(--bit-tgi-cnt-brd, var(--bit-TagsInput-invalid-color, #{$clr-err}));
 
         &:focus-within {
             @include focus-ring(var(--bit-TagsInput-invalid-color, #{$clr-err-focus}));
 
-            border-color: var(--bit-TagsInput-invalid-color, #{$clr-err-focus});
+            --bit-tgi-cnt-brd: var(--bit-TagsInput-invalid-color, #{$clr-err-focus});
         }
     }
 
     &.bit-tgi-txt .bit-tgi-cnt:focus-within {
         @include focus-underline-ring(var(--bit-TagsInput-invalid-color, #{$clr-err-focus}));
 
-        border-color: var(--bit-TagsInput-invalid-color, #{$clr-err-focus});
+        --bit-tgi-cnt-brd: var(--bit-TagsInput-invalid-color, #{$clr-err-focus});
     }
 
     @media (hover: hover) {
         &:hover:not(.bit-dis) .bit-tgi-cnt {
-            border-color: var(--bit-TagsInput-invalid-color, #{$clr-err});
+            --bit-tgi-cnt-brd: var(--bit-TagsInput-invalid-color, #{$clr-err});
         }
     }
 }
@@ -757,24 +771,24 @@
 //refused, whichever of the two turned it down.
 .bit-tgi-rjd {
     .bit-tgi-cnt {
-        border-color: var(--bit-TagsInput-invalid-color, #{$clr-err});
+        border-color: var(--bit-tgi-cnt-brd, var(--bit-TagsInput-invalid-color, #{$clr-err}));
 
         &:focus-within {
             @include focus-ring(var(--bit-TagsInput-invalid-color, #{$clr-err-focus}));
 
-            border-color: var(--bit-TagsInput-invalid-color, #{$clr-err-focus});
+            --bit-tgi-cnt-brd: var(--bit-TagsInput-invalid-color, #{$clr-err-focus});
         }
     }
 
     &.bit-tgi-txt .bit-tgi-cnt:focus-within {
         @include focus-underline-ring(var(--bit-TagsInput-invalid-color, #{$clr-err-focus}));
 
-        border-color: var(--bit-TagsInput-invalid-color, #{$clr-err-focus});
+        --bit-tgi-cnt-brd: var(--bit-TagsInput-invalid-color, #{$clr-err-focus});
     }
 
     @media (hover: hover) {
         &:hover:not(.bit-dis) .bit-tgi-cnt {
-            border-color: var(--bit-TagsInput-invalid-color, #{$clr-err});
+            --bit-tgi-cnt-brd: var(--bit-TagsInput-invalid-color, #{$clr-err});
         }
     }
 }

@@ -5,6 +5,31 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## vNext (after 10.6.2)
 
+### An app's class keeps painting a part while it is hovered, pressed or focused ([#13542](https://github.com/bitfoundation/bitplatform/issues/13542))
+
+The hover, pressed and focus states of the components used to paint their parts' `color`, `background`,
+`border-color`, `fill` and `stroke` themselves, in rules more specific than the single class an app hands a
+part through `Class` or `Classes`. So a `Class="brand-btn"` with `.brand-btn { background: purple }` painted the
+button at rest and lost to the library's hover color as soon as the pointer was over it. Those states now
+change a private variable that the rule at rest paints from, so a part an app paints keeps that paint in
+every state it keeps it at rest. This applies to every component in `Bit.BlazorUI` and `Bit.BlazorUI.Extras`.
+
+Nothing changes for an app that restyles through the public `--bit-<Component>-*-hover-*` / `-active-*`
+variables, or one that does not paint a part through its own class. **An app that paints a part through its
+own class and relied on the library's hover, pressed or focus color showing over it now keeps its own color in
+those states.** To bring back state feedback, style the state in the app's own rule:
+
+```css
+.brand-btn { background: purple; }
+.brand-btn:hover { background: rebeccapurple; }
+```
+
+Disabled states, `forced-colors` mode, the browser's scrollbar parts and the Leaflet / OpenLayers controls
+of `BitMap` still paint directly, as before. One side effect in `forced-colors` mode: a part that is drawn
+in system colors at rest (today or the selected day of a calendar, a checked or toggled button, an active
+toolbar button) now keeps those colors under the pointer, where a library hover rule used to paint theme
+colors over them.
+
 ### Every anchor resolves a new tab's rel the same way ([#13475](https://github.com/bitfoundation/bitplatform/issues/13475))
 
 The components that render an anchor from a `Target` (`BitLink`, `BitTag`, `BitButton`, `BitActionButton`,

@@ -369,7 +369,8 @@
     justify-content: center;
     margin-inline-start: auto;
     border-radius: $shp-radius-button;
-    background-color: transparent;
+    --bit-snb-cbt-sbg: initial;
+    background-color: var(--bit-snb-cbt-sbg, transparent);
     transition: background-color $mot-duration-short $mot-easing;
 
     // The glyph alone is a target of about 16px, well under what a finger can be expected to hit; the button is
@@ -382,15 +383,17 @@
     }
 
     // The button sits on the item's own fill, so the states are tinted from the color already on it rather than
-    // from a palette token, the same way the buttons of BitMessage are.
+    // from a palette token, the same way the buttons of BitMessage are. They change the variable the button is
+    // painted from rather than its background, so a button the app paints through Classes keeps that paint under
+    // the pointer and while it is pressed, instead of losing it to a state that outranks the app's class.
     @media (hover: hover) {
         &:hover {
-            background-color: translucent(currentcolor, 12%);
+            --bit-snb-cbt-sbg: #{translucent(currentcolor, 12%)};
         }
     }
 
     &:active {
-        background-color: translucent(currentcolor, 20%);
+        --bit-snb-cbt-sbg: #{translucent(currentcolor, 20%)};
     }
 
     // The ring is drawn in the item's own foreground rather than through the shared focus-ring mixin: the

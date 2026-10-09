@@ -40,13 +40,15 @@
     --bit-lnk-clr-focus: initial;
     --bit-lnk-clr-dis: initial;
     --bit-lnk-fs: initial;
+    // The color the states below set, which every color at rest reads first (see &:hover).
+    --bit-lnk-sfg: initial;
     margin: 0;
     padding: 0;
     outline: none;
     cursor: pointer;
     background-color: transparent;
     border-radius: var(--bit-Link-radius, #{$shp-radius-control});
-    color: var(--bit-lnk-clr, var(--bit-Link-color, #{$clr-pri}));
+    color: var(--bit-lnk-sfg, var(--bit-lnk-clr, var(--bit-Link-color, #{$clr-pri})));
     // A link is a piece of text before it is a control, so it takes the type of the sentence it sits in
     // rather than a size of its own - which is also what the properties below are for. A button brings its
     // own centered text, its own line box, its own baseline and its own letter spacing and case, and a link
@@ -75,9 +77,11 @@
     box-decoration-break: clone;
     transition: color $mot-duration-short $mot-easing;
 
-    // Declared ahead of the states below: a visited link still changes under the pointer and while pressed.
+    // Declared ahead of the states below: a visited link still changes under the pointer and while pressed. It
+    // paints the color itself (a browser ignores a custom property set under :visited) and reads the state color
+    // first like the rest color does, so it is the one the states move.
     &:visited {
-        color: var(--bit-lnk-clr, var(--bit-Link-visited-color, var(--bit-Link-color, #{$clr-pri})));
+        color: var(--bit-lnk-sfg, var(--bit-lnk-clr, var(--bit-Link-visited-color, var(--bit-Link-color, #{$clr-pri}))));
     }
 
     // The link to the page already open. That page has been visited by definition, so the visited color would
@@ -85,28 +89,31 @@
     // press, the focus, NoColor and the disabled state all winning over it the way they win over the rest color.
     &:where(.bit-lnk-cur),
     &:where(.bit-lnk-cur):visited {
-        color: var(--bit-lnk-clr, var(--bit-Link-current-color, var(--bit-Link-color, #{$clr-pri})));
+        color: var(--bit-lnk-sfg, var(--bit-lnk-clr, var(--bit-Link-current-color, var(--bit-Link-color, #{$clr-pri}))));
         font-weight: var(--bit-Link-current-font-weight, var(--bit-Link-font-weight, inherit));
     }
 
     // Under a pointer that can hover only, so a tap on a touch screen does not leave the link underlined.
+    // The states set the state color rather than the color, so the rules that declare the color are the ones at
+    // rest: a link the app paints through Class keeps that paint under the pointer, the press and the focus,
+    // instead of losing it to a state that outranks the app's class.
     @media (hover: hover) {
         &:hover {
             text-decoration-line: var(--bit-lnk-deco-hover, underline);
-            color: var(--bit-lnk-clr-hover, var(--bit-Link-hover-color, #{$clr-pri-hover}));
+            --bit-lnk-sfg: var(--bit-lnk-clr-hover, var(--bit-Link-hover-color, #{$clr-pri-hover}));
         }
     }
 
     // Only the keyboard focus: a link that stays in its hover color after a mouse click reads as stuck.
     &:focus-visible {
-        color: var(--bit-lnk-clr-hover, var(--bit-Link-hover-color, #{$clr-pri-hover}));
+        --bit-lnk-sfg: var(--bit-lnk-clr-hover, var(--bit-Link-hover-color, #{$clr-pri-hover}));
         @include focus-ring(var(--bit-lnk-clr-focus, var(--bit-Link-focus-color, #{$clr-pri-focus})));
     }
 
     // Declared after the focus, so a link pressed from the keyboard shows the press color inside its ring.
     &:active {
         text-decoration-line: var(--bit-lnk-deco-hover, underline);
-        color: var(--bit-lnk-clr-active, var(--bit-Link-active-color, #{$clr-pri-active}));
+        --bit-lnk-sfg: var(--bit-lnk-clr-active, var(--bit-Link-active-color, #{$clr-pri-active}));
     }
 
     &.bit-dis {
@@ -130,14 +137,13 @@
     }
 }
 
-// The link color is taken off altogether, so the content keeps the color it brings or the one around it.
+// The link color is taken off altogether, so the content keeps the color it brings or the one around it. The
+// pointer, the press and the focus only set the state color, which this does not read, so it is :visited alone -
+// a color of its own that outranks this one - that has to be taken off again.
 .bit-lnk-ncl {
     color: inherit;
 
-    &:visited,
-    &:hover,
-    &:active,
-    &:focus-visible {
+    &:visited {
         color: inherit;
     }
 }

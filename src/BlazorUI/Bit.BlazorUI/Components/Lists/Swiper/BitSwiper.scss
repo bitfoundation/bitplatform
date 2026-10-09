@@ -231,18 +231,23 @@ $swp-target: 24px;
     text-align: center;
     align-items: center;
     justify-content: center;
-    color: $swp-btn;
+    --bit-swp-btn-sfg: initial;
+    --bit-swp-btn-sbg: initial;
+    color: var(--bit-swp-btn-sfg, #{$swp-btn});
 
     // The resting glyph stays opaque enough to keep the 3:1 contrast of a control (WCAG 1.4.11) against the
     // background it sits on; the hover brings it to full strength.
     opacity: var(--bit-Swiper-button-opacity, .7);
     transition: opacity $mot-duration $mot-easing, color $mot-duration $mot-easing, background-color $mot-duration $mot-easing;
 
+    // The states change the variables the controls are painted from rather than their colors, so the rules that
+    // paint are the ones at rest: a button or a dot the app paints through Classes keeps that paint under the
+    // pointer, instead of losing it to a state that outranks the app's class.
     @media (hover: hover) {
         &:hover {
             opacity: 1;
             text-decoration: none;
-            color: $swp-btn-hover;
+            --bit-swp-btn-sfg: #{$swp-btn-hover};
         }
     }
 
@@ -272,11 +277,11 @@ $swp-target: 24px;
     // A percentage of a narrow swiper is less than a pointer target, so the strip never gets narrower than one.
     min-width: $swp-target;
     font-size: var(--bit-swp-btnsz, var(--bit-Swiper-button-size, #{spacing(3)}));
-    background-color: var(--bit-Swiper-button-background, transparent);
+    background-color: var(--bit-swp-btn-sbg, var(--bit-Swiper-button-background, transparent));
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-Swiper-button-hover-background, var(--bit-Swiper-button-background, transparent));
+            --bit-swp-btn-sbg: var(--bit-Swiper-button-hover-background, var(--bit-Swiper-button-background, transparent));
         }
     }
 
@@ -371,7 +376,9 @@ $swp-target: 24px;
     width: var(--bit-swp-dot-size);
     height: var(--bit-swp-dot-size);
     border-radius: var(--bit-Swiper-dot-radius, #{$shp-radius-full});
-    background-color: var(--bit-Swiper-dot-color, #{$clr-brd-pri});
+    --bit-swp-dot-sbg: initial;
+    --bit-swp-dot-sfg: initial;
+    background-color: var(--bit-swp-dot-sbg, var(--bit-Swiper-dot-color, #{$clr-brd-pri}));
     transition: background-color $mot-duration-long $mot-easing, width $mot-duration-long $mot-easing;
 
     // The hit area is grown to the WCAG pointer target around the drawn dot, without changing how it looks.
@@ -383,7 +390,7 @@ $swp-target: 24px;
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-Swiper-dot-hover-color, #{$clr-brd-pri-hover});
+            --bit-swp-dot-sbg: var(--bit-Swiper-dot-hover-color, #{$clr-brd-pri-hover});
         }
     }
 
@@ -409,8 +416,8 @@ $swp-target: 24px;
     align-items: center;
     justify-content: center;
     border-radius: $shp-radius-button;
-    background-color: transparent;
-    color: $swp-btn;
+    background-color: var(--bit-swp-dot-sbg, transparent);
+    color: var(--bit-swp-dot-sfg, #{$swp-btn});
     transition: color $mot-duration-long $mot-easing;
 
     &::after {
@@ -419,8 +426,8 @@ $swp-target: 24px;
 
     @media (hover: hover) {
         &:hover {
-            background-color: transparent;
-            color: $swp-btn-hover;
+            --bit-swp-dot-sbg: transparent;
+            --bit-swp-dot-sfg: #{$swp-btn-hover};
         }
     }
 
@@ -432,24 +439,24 @@ $swp-target: 24px;
 
 .bit-swp-cud {
     width: var(--bit-Swiper-dot-current-width, var(--bit-swp-dot-size));
-    background-color: $swp-clr;
+    background-color: var(--bit-swp-dot-sbg, #{$swp-clr});
 
     @media (hover: hover) {
         &:hover {
-            background-color: $swp-clr-hover;
+            --bit-swp-dot-sbg: #{$swp-clr-hover};
         }
     }
 }
 
 .bit-swp-dtt.bit-swp-cud {
     width: auto;
-    background-color: transparent;
-    color: $swp-clr;
+    background-color: var(--bit-swp-dot-sbg, transparent);
+    color: var(--bit-swp-dot-sfg, #{$swp-clr});
 
     @media (hover: hover) {
         &:hover {
-            background-color: transparent;
-            color: $swp-clr-hover;
+            --bit-swp-dot-sbg: transparent;
+            --bit-swp-dot-sfg: #{$swp-clr-hover};
         }
     }
 }

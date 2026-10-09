@@ -186,10 +186,13 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
     .leaflet-popup-close-button,
     .maplibregl-popup-close-button,
     .mapboxgl-popup-close-button {
-        color: $map-popup-close-color;
+        --bit-map-pcb-sfg: initial;
+        color: var(--bit-map-pcb-sfg, #{$map-popup-close-color});
 
+        // The states move the variable a part is painted from rather than its color, so a part painted through a
+        // class keeps that paint under the pointer. Leaflet's own rules for its button outrank both of these.
         &:hover {
-            color: $map-popup-color;
+            --bit-map-pcb-sfg: #{$map-popup-color};
         }
 
         &:focus-visible {
@@ -236,6 +239,8 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
         background-color: $clr-bg-pri;
         border-bottom-color: $clr-brd-sec;
 
+        // Painted here rather than through a variable: Leaflet's own `.leaflet-bar a:hover` loads later at the
+        // weight of the rule above, so only a state rule of this weight keeps its fixed gray off the button.
         &:hover,
         &:focus-visible {
             background-color: $clr-bg-pri-hover;
@@ -273,12 +278,16 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
 
         button {
             color: $clr-fg-pri;
-            background-color: $clr-bg-pri;
+            --bit-map-olb-sbg: initial;
+            background-color: var(--bit-map-olb-sbg, #{$clr-bg-pri});
 
+            // The color is painted here rather than through a variable: OpenLayers' own `.ol-control button:hover`
+            // loads later at the weight of the rule above and recolors the glyph, so only a state rule of this
+            // weight keeps the theme's color on it. Its background is left alone by that rule, so it moves.
             &:hover,
             &:focus-visible {
                 color: $clr-fg-pri;
-                background-color: $clr-bg-pri-hover;
+                --bit-map-olb-sbg: #{$clr-bg-pri-hover};
                 outline: none;
             }
 
@@ -338,6 +347,15 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
     clip-path: inset(50%);
 }
 
+// The instructions are painted from variables the focus below moves, so a help text painted through a class keeps
+// that paint while it is shown.
+.bit-map-help {
+    --bit-map-hlp-sfg: initial;
+    --bit-map-hlp-sbg: initial;
+    color: var(--bit-map-hlp-sfg);
+    background: var(--bit-map-hlp-sbg);
+}
+
 // Sighted keyboard users get the same instructions the moment the map takes focus - they
 // are the ones who need to know that arrow keys pan and Escape leaves.
 .bit-map-canvas:focus-visible ~ .bit-map-help {
@@ -352,8 +370,8 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
     white-space: normal;
     clip-path: none;
     z-index: $map-z-help;
-    color: $map-popup-color;
-    background: $map-popup-background;
+    --bit-map-hlp-sfg: #{$map-popup-color};
+    --bit-map-hlp-sbg: #{$map-popup-background};
     border-radius: $map-popup-radius;
     box-shadow: $map-popup-shadow;
     font-size: $tg-fs-xs;
@@ -505,15 +523,17 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
     padding: 0;
     border: none;
     border-radius: $shp-radius-sm;
-    background: transparent;
-    color: $map-popup-close-color;
+    --bit-map-cls-sfg: initial;
+    --bit-map-cls-sbg: initial;
+    background: var(--bit-map-cls-sbg, transparent);
+    color: var(--bit-map-cls-sfg, #{$map-popup-close-color});
     font-size: $tg-fs-md;
     line-height: 1;
     cursor: pointer;
 
     &:hover {
-        color: $map-popup-color;
-        background: $map-popup-close-hover-background;
+        --bit-map-cls-sfg: #{$map-popup-color};
+        --bit-map-cls-sbg: #{$map-popup-close-hover-background};
     }
 
     &:focus-visible {
@@ -567,14 +587,15 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
     padding: spacing(0.25) spacing(0.75);
     border: $siz-divider solid $clr-brd-sec;
     border-radius: $shp-radius-button;
-    background: transparent;
+    --bit-map-mta-sbg: initial;
+    background: var(--bit-map-mta-sbg, transparent);
     color: $clr-pri;
     font: inherit;
     letter-spacing: $tg-ctrl-letter-spacing;
     cursor: pointer;
 
     &:hover {
-        background: $clr-bg-pri-hover;
+        --bit-map-mta-sbg: #{$clr-bg-pri-hover};
     }
 
     &:focus-visible {
@@ -678,13 +699,14 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
     border: none;
     border-radius: $shp-radius-sm;
     background: transparent;
-    color: $map-popup-close-color;
+    --bit-map-olc-sfg: initial;
+    color: var(--bit-map-olc-sfg, #{$map-popup-close-color});
     font-size: $tg-fs-md;
     line-height: 1;
     cursor: pointer;
 
     &:hover {
-        color: $map-popup-color;
+        --bit-map-olc-sfg: #{$map-popup-color};
     }
 
     &:focus-visible {

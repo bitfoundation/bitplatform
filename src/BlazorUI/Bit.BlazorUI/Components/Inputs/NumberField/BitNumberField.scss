@@ -262,7 +262,8 @@
     height: var(--bit-nfl-height, var(--bit-NumberField-height, #{$siz-ctrl-md}));
     border-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
     background-color: var(--bit-nfl-clr-bg, var(--bit-NumberField-background, #{$clr-bg-pri}));
-    border: var(--bit-NumberField-border-width, #{$shp-border-width}) $shp-border-style var(--bit-nfl-clr-brd, var(--bit-NumberField-border-color, #{$clr-brd-pri}));
+    --bit-nfl-cnt-hbr: initial;
+    border: var(--bit-NumberField-border-width, #{$shp-border-width}) $shp-border-style var(--bit-nfl-cnt-hbr, var(--bit-nfl-clr-brd, var(--bit-NumberField-border-color, #{$clr-brd-pri})));
     transition: border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 }
 
@@ -274,9 +275,14 @@
 // only on a field there is something to type into: not a disabled or a read-only one, not the stepper-only
 // HideInput one (whose input is hidden, and so read-only too), not one whose border is invisible, and never
 // over the accent of the focus ring or the red of an invalid field.
+//
+// This state, and the hovers and presses of the buttons below, change the variables the parts are painted from
+// rather than their colors, so only the rules at rest paint them: a part the app paints through Classes keeps
+// that paint under the pointer and while it is pressed, instead of losing it to a state that outranks the
+// app's class.
 @media (hover: hover) {
     .bit-nfl:not(.bit-dis, .bit-inv, .bit-nfl-fcs, .bit-nfl-brn) .bit-nfl-cnt:not(:has(> .bit-nfl-inp:read-only)):hover {
-        border-color: var(--bit-nfl-clr-brd-hover, var(--bit-NumberField-hover-border-color, #{$clr-brd-pri-hover}));
+        --bit-nfl-cnt-hbr: var(--bit-nfl-clr-brd-hover, var(--bit-NumberField-hover-border-color, #{$clr-brd-pri-hover}));
     }
 }
 
@@ -343,8 +349,10 @@
     box-sizing: border-box;
     padding: 0 spacing(0.5);
     font-family: $tg-font-family;
-    background-color: transparent;
-    color: var(--bit-NumberField-button-color, #{$clr-fg-sec});
+    --bit-nfl-cbt-bg: initial;
+    --bit-nfl-cbt-fg: initial;
+    background-color: var(--bit-nfl-cbt-bg, transparent);
+    color: var(--bit-nfl-cbt-fg, var(--bit-NumberField-button-color, #{$clr-fg-sec}));
     width: var(--bit-nfl-btn-width, var(--bit-NumberField-button-width, #{$siz-ctrl-md}));
     font-size: var(--bit-nfl-fontsize, var(--bit-NumberField-font-size, #{$tg-fs-sm}));
     border-start-start-radius: 0;
@@ -365,14 +373,14 @@
 
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-NumberField-button-hover-color, #{$clr-fg-pri-hover});
-            background-color: var(--bit-NumberField-button-hover-background, #{$clr-bg-pri-hover});
+            --bit-nfl-cbt-fg: var(--bit-NumberField-button-hover-color, #{$clr-fg-pri-hover});
+            --bit-nfl-cbt-bg: var(--bit-NumberField-button-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active {
-        color: var(--bit-NumberField-button-active-color, #{$clr-fg-pri-active});
-        background-color: var(--bit-NumberField-button-active-background, #{$clr-bg-pri-active});
+        --bit-nfl-cbt-fg: var(--bit-NumberField-button-active-color, #{$clr-fg-pri-active});
+        --bit-nfl-cbt-bg: var(--bit-NumberField-button-active-background, #{$clr-bg-pri-active});
     }
 
     // The rounded end above belongs to the button only while it really is the end of the field. Anything
@@ -445,15 +453,17 @@
     text-align: center;
     text-decoration: none;
     box-sizing: border-box;
-    background-color: transparent;
-    color: var(--bit-NumberField-button-color, #{$clr-fg-pri});
+    --bit-nfl-stp-bg: initial;
+    --bit-nfl-stp-fg: initial;
+    background-color: var(--bit-nfl-stp-bg, transparent);
+    color: var(--bit-nfl-stp-fg, var(--bit-NumberField-button-color, #{$clr-fg-pri}));
     border-radius: var(--bit-NumberField-radius, #{$shp-radius-control});
     transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-NumberField-button-hover-color, #{$clr-fg-pri-hover});
-            background-color: var(--bit-NumberField-button-hover-background, #{$clr-bg-pri-hover});
+            --bit-nfl-stp-fg: var(--bit-NumberField-button-hover-color, #{$clr-fg-pri-hover});
+            --bit-nfl-stp-bg: var(--bit-NumberField-button-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
@@ -462,8 +472,8 @@
     // expected to show. It is not scoped to (hover: hover): on a touch screen this is the only feedback
     // there is. The bound-reached state below turns it off again, along with the hover.
     &:active {
-        color: var(--bit-NumberField-button-active-color, #{$clr-fg-pri-active});
-        background-color: var(--bit-NumberField-button-active-background, #{$clr-bg-pri-active});
+        --bit-nfl-stp-fg: var(--bit-NumberField-button-active-color, #{$clr-fg-pri-active});
+        --bit-nfl-stp-bg: var(--bit-NumberField-button-active-background, #{$clr-bg-pri-active});
     }
 
     // In HideInput mode the spin buttons become keyboard focusable (there is no input left to focus),
@@ -492,18 +502,18 @@
 // place in the tab order and its focus ring, and only loses its affordance and its hover feedback.
 .bit-nfl-sbb {
     cursor: default;
-    color: var(--bit-NumberField-button-inert-color, #{$clr-fg-dis});
+    color: var(--bit-nfl-stp-fg, var(--bit-NumberField-button-inert-color, #{$clr-fg-dis}));
 
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-NumberField-button-inert-color, #{$clr-fg-dis});
-            background-color: transparent;
+            --bit-nfl-stp-fg: var(--bit-NumberField-button-inert-color, #{$clr-fg-dis});
+            --bit-nfl-stp-bg: transparent;
         }
     }
 
     &:active {
-        color: var(--bit-NumberField-button-inert-color, #{$clr-fg-dis});
-        background-color: transparent;
+        --bit-nfl-stp-fg: var(--bit-NumberField-button-inert-color, #{$clr-fg-dis});
+        --bit-nfl-stp-bg: transparent;
     }
 
     @media (forced-colors: active) {
