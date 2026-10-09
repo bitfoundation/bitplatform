@@ -105,8 +105,7 @@
     The callout is a sibling of the root instead of a child of it, so it carries the direction of the
     component itself - without it, everything inside would fall back to the direction of the page.
 *@
-<div @ref="_calloutRef"
-     id="@_calloutId"
+<div id="@_calloutId"
      style="@GetCalloutStyle()"
      class="@GetCalloutCssClasses()"
      dir="@Dir?.ToString().ToLower()">

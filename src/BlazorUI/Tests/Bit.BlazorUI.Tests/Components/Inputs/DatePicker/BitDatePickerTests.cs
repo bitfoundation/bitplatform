@@ -2318,41 +2318,78 @@ public class BitDatePickerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitDatePickerTabOnTheInputShouldCloseTheCallout()
+    public void BitDatePickerTabOnTheInputShouldLeaveTheCalloutToWhereTheFocusLands()
     {
+        var closed = 0;
         var isOpen = true;
 
         var component = RenderComponent<BitDatePicker>(parameters =>
         {
             parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.OnClose, () => closed++);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        // Whether a Tab dismisses the callout depends on where the focus lands - the clear button beside the
+        // field keeps it open, a control elsewhere on the page does not - which only the JS side knows.
+        component.Find(".bit-dtp-inp").KeyDown(new KeyboardEventArgs { Key = "Tab" });
+
+        Assert.IsTrue(isOpen);
+        Assert.AreEqual(0, closed);
+    }
+
+    [TestMethod]
+    public async Task BitDatePickerShouldCloseWithoutTakingTheFocusBackWhenTheJsSideDismissesIt()
+    {
+        var closed = 0;
+        var isOpen = true;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.OnClose, () => closed++);
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
         var before = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count;
 
-        // The callout is relocated to the end of the document, so the tab order does not run into it from the
-        // field: tabbing on would leave it open behind an overlay that swallows every click that could dismiss it.
-        component.Find(".bit-dtp-inp").KeyDown(new KeyboardEventArgs { Key = "Tab" });
+        // The JS side dismisses the callout once the focus has moved on from both the field and it, which
+        // reaches the picker as the CloseCallout callback.
+        await component.InvokeAsync(() => component.Instance._CloseCalloutBeforeAnotherCalloutIsOpened());
 
         Assert.IsFalse(isOpen);
+        Assert.AreEqual(1, closed);
 
-        // The focus is on its way to the next control, so it is not pulled back onto the field.
+        // The focus is already on whatever it was moved to, so it is not pulled back onto the field.
         Assert.AreEqual(before, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
     }
 
     [TestMethod]
-    public void BitDatePickerTabOnTheInputShouldNotReportAClosedCalloutClosing()
+    public void BitDatePickerShouldHandItsCalloutTheTabOrderAndTheFocusLeavingIt()
     {
-        var closed = 0;
+        var component = RenderComponent<BitDatePicker>();
 
-        var component = RenderComponent<BitDatePicker>(parameters =>
+        component.Find(".bit-dtp-wrp").Click();
+
+        // The callout is relocated to the end of the document while it is open, so the tab order of the page
+        // does not run through it: the JS side holds the tab order inside it and dismisses it once the focus has
+        // moved on from both the field and it - which only works if the toggle is asked to.
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        Assert.AreEqual(true, toggle.Arguments[28]); // trapFocus
+        Assert.AreEqual(true, toggle.Arguments[29]); // dismissOnFocusLeave
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldNotTrapTheFocusInAStandaloneCallout()
+    {
+        RenderComponent<BitDatePicker>(parameters =>
         {
-            parameters.Add(p => p.OnClose, () => closed++);
+            parameters.Add(p => p.Standalone, true);
         });
 
-        component.Find(".bit-dtp-inp").KeyDown(new KeyboardEventArgs { Key = "Tab" });
-
-        Assert.AreEqual(0, closed);
+        // Standalone there is no dialog and no overlay, so the focus is free to leave the way it leaves any
+        // other part of the page: the callout is never toggled, and nothing is trapped.
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Callouts.toggle"));
     }
 
     [TestMethod]

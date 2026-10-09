@@ -1853,15 +1853,19 @@ public class BitCircularTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCircularTimePickerShouldTrapTheFocusInAFloatingCallout()
+    public void BitCircularTimePickerShouldHandItsCalloutTheTabOrderAndTheFocusLeavingIt()
     {
-        RenderComponent<BitCircularTimePicker>();
+        var component = RenderComponent<BitCircularTimePicker>();
 
-        // A callout that reports itself a modal dialog has to hold the tab order, which happens on the JS
-        // side - so it only works if the setup is actually told the callout is one.
-        var setup = Context.JSInterop.Invocations["BitBlazorUI.CircularTimePicker.setup"].Single();
+        component.Find(".bit-ctp-wrp").Click();
 
-        Assert.AreEqual(true, setup.Arguments[4]);
+        // The callout is relocated to the end of the document while it is open, so the tab order of the page
+        // does not run through it: the JS side holds the tab order inside it and dismisses it once the focus has
+        // moved on from both the field and it - which only works if the toggle is asked to.
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        Assert.AreEqual(true, toggle.Arguments[28]); // trapFocus
+        Assert.AreEqual(true, toggle.Arguments[29]); // dismissOnFocusLeave
     }
 
     [TestMethod]
@@ -1873,10 +1877,8 @@ public class BitCircularTimePickerTests : BunitTestContext
         });
 
         // Standalone there is no dialog and no overlay, so the focus is free to leave the way it leaves any
-        // other part of the page.
-        var setup = Context.JSInterop.Invocations["BitBlazorUI.CircularTimePicker.setup"].Single();
-
-        Assert.AreEqual(false, setup.Arguments[4]);
+        // other part of the page: the callout is never toggled, and nothing is trapped.
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Callouts.toggle"));
     }
 
     [TestMethod]
@@ -3002,11 +3004,9 @@ public class BitCircularTimePickerTests : BunitTestContext
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
-        // the keys that dismiss the picker reach it whether or not it was open at the time
+        // the key that dismisses the picker reaches it whether or not it was open at the time
         await component.InvokeAsync(() =>
             component.Find(".bit-ctp-inp").KeyDown(new KeyboardEventArgs { Key = "Escape" }));
-        await component.InvokeAsync(() =>
-            component.Find(".bit-ctp-inp").KeyDown(new KeyboardEventArgs { Key = "Tab" }));
 
         Assert.AreEqual(0, closed);
 
@@ -3042,7 +3042,28 @@ public class BitCircularTimePickerTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitCircularTimePickerShouldCloseWhenTheFocusLeavesTheCallout()
+    public void BitCircularTimePickerTabOnTheInputShouldLeaveTheCalloutToWhereTheFocusLands()
+    {
+        var closed = 0;
+        var isOpen = true;
+
+        var component = RenderComponent<BitCircularTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.OnClose, () => closed++);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        // Whether a Tab dismisses the callout depends on where the focus lands - the clear button beside the
+        // field keeps it open, a control elsewhere on the page does not - which only the JS side knows.
+        component.Find(".bit-ctp-inp").KeyDown(new KeyboardEventArgs { Key = "Tab" });
+
+        Assert.IsTrue(isOpen);
+        Assert.AreEqual(0, closed);
+    }
+
+    [TestMethod]
+    public async Task BitCircularTimePickerShouldCloseWithoutTakingTheFocusBackWhenTheJsSideDismissesIt()
     {
         var closed = 0;
         var isOpen = true;
@@ -3055,35 +3076,14 @@ public class BitCircularTimePickerTests : BunitTestContext
 
         var before = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count;
 
-        // an open callout is relocated to the end of the document, so tabbing out of it would otherwise leave
-        // it open behind an overlay that swallows every click which could still dismiss it
-        await component.InvokeAsync(() => component.Instance._HandleCalloutFocusOut());
+        // The JS side dismisses the callout once the focus has moved on from both the field and it, which
+        // reaches the picker as the CloseCallout callback.
+        await component.InvokeAsync(() => component.Instance._CloseCalloutBeforeAnotherCalloutIsOpened());
 
+        Assert.IsFalse(isOpen);
         Assert.AreEqual(1, closed);
-        Assert.IsFalse(isOpen);
 
-        // the focus is already on whatever it was moved to, so pulling it back onto the field would make it
-        // impossible to tab past an open picker at all
-        Assert.AreEqual(before, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
-    }
-
-    [TestMethod]
-    public async Task BitCircularTimePickerTabShouldCloseTheCalloutFromTheField()
-    {
-        var isOpen = true;
-
-        var component = RenderComponent<BitCircularTimePicker>(parameters =>
-        {
-            parameters.Add(p => p.AllowTextInput, true);
-            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
-        });
-
-        var before = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count;
-
-        await component.InvokeAsync(() =>
-            component.Find(".bit-ctp-inp").KeyDown(new KeyboardEventArgs { Key = "Tab" }));
-
-        Assert.IsFalse(isOpen);
+        // The focus is already on whatever it was moved to, so it is not pulled back onto the field.
         Assert.AreEqual(before, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
     }
 
