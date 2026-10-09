@@ -595,6 +595,24 @@ public static partial class BitCss
                 public const string Md = "--bit-spa-card-md";
                 public const string Lg = "--bit-spa-card-lg";
             }
+
+            /// <summary>
+            /// The unitless steps of the spacing unit each inset above is derived from, as every packaged
+            /// preset declares them. Internal: they are not theme tokens of their own (a theme sets the
+            /// inset), only what <c>BitThemeMapper.AugmentWithSpacingReSubstitution</c> re-declares an
+            /// inset against when a scoped theme re-values the density or the spacing unit.
+            /// </summary>
+            internal static class Steps
+            {
+                public const string Dialog = "--bit-spa-dialog-steps";
+
+                public static class Card
+                {
+                    public const string Sm = "--bit-spa-card-sm-steps";
+                    public const string Md = "--bit-spa-card-md-steps";
+                    public const string Lg = "--bit-spa-card-lg-steps";
+                }
+            }
         }
 
         public static class Motion

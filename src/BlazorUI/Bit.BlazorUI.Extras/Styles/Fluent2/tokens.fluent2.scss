@@ -149,7 +149,8 @@
     // Fluent 2's dialog inset is 24px and its actions run in a row hugging the trailing edge, which
     // is what the core Fluent tokens already say; they are re-declared rather than inherited so a
     // scoped fluent2 region resolves the inset against this preset's spacing unit.
-    --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+    --bit-spa-dialog-steps: 3;
+    --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-dialog-steps)); //24px
     // Card: the small / medium / large padding of the Fluent 2 Card.
     --bit-spa-card-sm-steps: 1;
     --bit-spa-card-md-steps: 1.5;

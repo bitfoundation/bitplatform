@@ -12,13 +12,16 @@
     //spacing - base unit (length) times density (unitless); spacing() multiplies both.
     --bit-spa-scaling-factor: 0.5rem;
     --bit-layout-density-scale: 1;
+    //the insets derived from the spacing unit. The steps of the unit each one is are their own unitless
+    //tokens (named in BitCss.Var.Spacing.Steps) so a theme applied lower in the tree that only re-values
+    //the density or the spacing unit can re-declare the inset there (BitThemeMapper.AugmentWithSpacingReSubstitution)
+    //and still land on this preset's steps rather than on the document's already-computed length.
+    //
     //the base inset of a dialog surface - the one padding a design system decides for dialog
     //headers, bodies and footers (Fluent 24px, Material 24px, Cupertino alerts 20px).
-    --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
-    //the inset of a card and of each of its parts, per size class. The steps of the spacing unit are
-    //their own unitless tokens so a theme applied lower in the tree that only re-values the density
-    //or the spacing unit can re-declare the inset there (BitThemeMapper.AugmentWithSpacingReSubstitution)
-    //and still land on this preset's steps rather than on the document's already-computed length.
+    --bit-spa-dialog-steps: 3;
+    --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-dialog-steps)); //24px
+    //the inset of a card and of each of its parts, per size class.
     --bit-spa-card-sm-steps: 1.5;
     --bit-spa-card-md-steps: 2;
     --bit-spa-card-lg-steps: 3;

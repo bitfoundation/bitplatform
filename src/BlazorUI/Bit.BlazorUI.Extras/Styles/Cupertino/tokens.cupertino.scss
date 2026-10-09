@@ -119,7 +119,8 @@
     // same half. There is nothing to retune here.
 
     /*---- Spacing / layout ----*/
-    --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px - alert edge inset
+    --bit-spa-dialog-steps: 2.5;
+    --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-dialog-steps)); //20px - alert edge inset
     // The 16pt inset of an inset-grouped section, with 12 and 20 either side of it.
     --bit-spa-card-sm-steps: 1.5;
     --bit-spa-card-md-steps: 2;

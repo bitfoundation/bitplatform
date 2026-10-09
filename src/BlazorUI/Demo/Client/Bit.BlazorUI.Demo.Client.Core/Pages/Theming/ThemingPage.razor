@@ -1051,6 +1051,10 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
                 This holds under every packaged preset, not only Fluent. Fluent&nbsp;2, Material and Cupertino all fix their control geometry on an 8px grid - 40dp Material buttons, the 44pt iOS tap target, Fluent&nbsp;2's 32px medium control - so each preset writes those measurements as spacing multiples rather than as absolute lengths, and the density multiplier reaches them exactly as it does under Fluent. A preset of your own should do the same wherever its geometry lands on the grid; where it does not, an absolute length is fine and simply opts that one measurement out of density.
             </BitText>
 
+            <BitText>
+                A density or spacing unit set on a <i>region</i> (a <code>BitThemeProvider</code>, or <code>ApplyBitThemeAsync</code> on an element) reaches the dialog and card insets too. <code>--bit-spa-dialog</code> and <code>--bit-spa-card-{sm,md,lg}</code> are computed where they are declared, so the region would otherwise inherit the document's lengths; the theme system re-declares them on the region instead, from the unitless steps each preset declares beside them (<code>--bit-spa-dialog-steps</code>, <code>--bit-spa-card-{sm,md,lg}-steps</code>). Those steps are the preset's own wiring, not theme tokens: set the inset itself (<code>BitTheme.Spacing.Dialog</code> / <code>Card</code>), which always wins. A preset of your own that derives these insets from the spacing unit declares the same steps tokens.
+            </BitText>
+
             <CodeBox Language="csharp">var theme = new BitTheme
 {
     Layout =

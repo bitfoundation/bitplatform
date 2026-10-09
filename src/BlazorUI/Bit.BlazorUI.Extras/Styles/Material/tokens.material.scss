@@ -137,7 +137,8 @@
     --bit-clr-tooltip-fg: var(--bit-clr-bg-pri);
 
     /*---- Spacing / layout ----*/
-    --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px - M3 dialog inset
+    --bit-spa-dialog-steps: 3;
+    --bit-spa-dialog: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * var(--bit-spa-dialog-steps)); //24px - M3 dialog inset
     // M3 cards inset their content 16dp, on the 4dp grid either side of it.
     --bit-spa-card-sm-steps: 1.5;
     --bit-spa-card-md-steps: 2;
