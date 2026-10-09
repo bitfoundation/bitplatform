@@ -60,5 +60,5 @@ public class BitBreadcrumbStylesheetTests
         Assert.IsTrue(callout < stylesheet.IndexOf("\n.bit-brc-md {", System.StringComparison.Ordinal), "The size classes are declared ahead of the rules that reset them.");
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Navs", "Breadcrumb", "BitBreadcrumb.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Navs", "Breadcrumb", "BitBreadcrumb.scss");
 }

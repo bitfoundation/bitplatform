@@ -399,9 +399,13 @@ the variables restyle the default, never a choice, so `:root { --bit-Badge-backg
   `string.Empty`, and a value parameter (`Height`, `Gap`) writes no inline property while it is null: a
   class that always carried the default would be indistinguishable from one that was asked for. A value
   from a `BitParams` ancestor counts as set.
-- **The root rule resets what those classes publish** (`--bit-bdg-clr: initial;`), so an instance nested
-  in another one's content never inherits the outer one's choice; the classes come later in the file
-  at the same weight and still win on the root that carries them.
+- **The root rule resets what those classes publish**, so an instance nested in another one's content
+  never inherits the outer one's choice; the classes come later in the file at the same weight and still
+  win on the root that carries them. The reset is never written by hand: one list per component,
+  `$bdg-private-properties: clr, clr-txt, ...;`, declared above the rule, drives it with
+  `@each $name in $bdg-private-properties { --bit-bdg-#{$name}: initial; }`, so a new private variable is
+  one name added to the list. A component writing the same variables on a sibling of its root (a callout)
+  keeps a second list for it (`$srb-cal-private-properties`).
 - **Every read ranks private, then public, then default**:
   `var(--bit-bdg-clr, var(--bit-Badge-background, #{$clr-pri}))`, never
   `var(--bit-Badge-background, var(--bit-bdg-clr))` - the last fallback being the token the unset
@@ -414,9 +418,16 @@ explicit `Color`. The demo page's `componentCssVariables` row says which paramet
 variable ("The Color parameter wins over it."), and the stylesheet test pins the order - no
 `var(--bit-<Component>-..., var(--bit-<prefix>-` left where the private one is a parameter's, plus the
 resets on the root. `BitBadge` and `BitShimmer` are the reference implementations. Every private property a
-role or size class publishes has to be declared again by the component's own rules (`initial`, or the default
-the unset parameter stands for); `BitComponentPrivatePropertyResetTests` fails on one that is not, for every
-stylesheet at once.
+role or size class publishes, or the component writes into an inline style, has to be declared again by the
+component's own rules - in its list, or by the root rule at the default the unset parameter stands for;
+`BitComponentPrivatePropertyResetTests` fails on one that is not, on a list no `@each` resets, and on a listed
+name nothing uses any more, for every stylesheet at once. A variant rule giving one slot the value `initial`
+(`.bit-drm-otl { --bit-drm-rst-bg: initial; }`) is a value, not a reset, and stays written out.
+
+The lists reset with `initial` rather than registering the variables as `@property { inherits: false; }`
+(which only `BitIcon` does): a variable that does not inherit cannot be read by the parts inside the root
+that sets it, and nearly every component publishes on its root what its children read (a card's title size,
+its image height).
 
 A component that renders a core one and wants a default other than the core one's (BitMessageBox's neutral
 buttons) never passes it as the parameter, which would make it a choice that outranks an app's variables. It

@@ -39,6 +39,11 @@
 // before; the icon size, the mixed-state size and the min height are proportions of the box that the variables
 // alone override.
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$chb-private-properties: clr, clr-hover, clr-txt, clr-txt-sec, clr-txt-hover, clr-dis, clr-dis-text, clr-focus,
+                         box-size, lbl-fontsize, des-fontsize;
+
 .bit-chb {
     cursor: pointer;
     width: fit-content;
@@ -54,17 +59,9 @@
     // checkbox placed in the label or the custom face of another one from inheriting the outer one's choice,
     // and it is what lets each read below rank an explicit parameter first, then the public variable, then
     // the primary, medium checkbox an unset parameter stands for.
-    --bit-chb-clr: initial;
-    --bit-chb-clr-hover: initial;
-    --bit-chb-clr-txt: initial;
-    --bit-chb-clr-txt-sec: initial;
-    --bit-chb-clr-txt-hover: initial;
-    --bit-chb-clr-dis: initial;
-    --bit-chb-clr-dis-text: initial;
-    --bit-chb-clr-focus: initial;
-    --bit-chb-box-size: initial;
-    --bit-chb-lbl-fontsize: initial;
-    --bit-chb-des-fontsize: initial;
+    @each $name in $chb-private-properties {
+        --bit-chb-#{$name}: initial;
+    }
     // The side of the box every other size is read off, resolved once here.
     --bit-chb-box-side: var(--bit-chb-box-size, var(--bit-Checkbox-box-size, #{$siz-sel-md}));
     --bit-chb-ico-opa: 0;

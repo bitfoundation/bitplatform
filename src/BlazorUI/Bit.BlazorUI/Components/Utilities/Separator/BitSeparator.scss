@@ -1,5 +1,9 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$spr-private-properties: brd, siz, stl, bg, ofs, ins, dis-brd, dis-fg;
+
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // separator, one set on an ancestor every separator inside it, and one set on the Style of an instance that one:
 //   --bit-Separator-color                 color of the line                              (default: $clr-brd-sec)
@@ -31,14 +35,9 @@
 // length parameters write onto its style. Custom properties inherit, which would hand the line of a separator to one
 // nested in its content, so each root starts them out unset - which leaves every var() reading them to its fallback.
 .bit-spr {
-    --bit-spr-brd: initial;
-    --bit-spr-siz: initial;
-    --bit-spr-stl: initial;
-    --bit-spr-bg: initial;
-    --bit-spr-ofs: initial;
-    --bit-spr-ins: initial;
-    --bit-spr-dis-brd: initial;
-    --bit-spr-dis-fg: initial;
+    @each $name in $spr-private-properties {
+        --bit-spr-#{$name}: initial;
+    }
     display: flex;
     position: relative;
     // The inset is padding, and a separator is sized against its container, so the two have to add up

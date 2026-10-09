@@ -1,5 +1,9 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$ptr-private-properties: color;
+
 // Public CSS variables, read off the parts and never declared here, so a value set on :root re-skins every pull
 // to refresh, one set on an ancestor every one inside it, and one set on the Style of an instance that one:
 //   --bit-PullToRefresh-color                     glyph of the indicator              (default: $clr-fg-pri)
@@ -21,7 +25,9 @@
     position: relative;
     // The color the Color and CustomColor parameters write inline on the root. Reset here, so a pull to refresh
     // inside the anchor of another one does not inherit the color its host was given.
-    --bit-ptr-color: initial;
+    @each $name in $ptr-private-properties {
+        --bit-ptr-#{$name}: initial;
+    }
 }
 
 // An anchor that fills a page or a layout region needs the component around it to fill it too, which the

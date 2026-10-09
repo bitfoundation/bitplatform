@@ -16,6 +16,10 @@
 // the easing. A disabled collapse keeps the disabled colors of the theme, and the reduced motion preference
 // collapses the duration unless ForceAnimation opts out of it.
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$col-private-properties: dur-full, del-full, eas, csz;
+
 // The size is animated by the grid track rather than by a max-height guess: a track going from 0fr to 1fr
 // interpolates, so the collapse opens to whatever its content actually measures and closes to nothing, with
 // no magic number to keep in sync with the content and nothing to clip when the content outgrows it. The
@@ -27,10 +31,9 @@
     // one that was given a Duration, a Delay, an Easing or a CollapsedSize would take them on as its own; each
     // root starts them out unset instead, which leaves every var() reading them to its fallback. The inline
     // declaration sits on the element itself, so it still wins over this one on the collapse that set it.
-    --bit-col-dur-full: initial;
-    --bit-col-del-full: initial;
-    --bit-col-eas: initial;
-    --bit-col-csz: initial;
+    @each $name in $col-private-properties {
+        --bit-col-#{$name}: initial;
+    }
     // The pace of the transition. The Duration and Delay parameters arrive inline as the -full tokens and
     // the transitions read these derived ones, following the -full pattern of motion.fluent.scss, so the
     // reduced-motion query below can still collapse a pace that was set inline or through the public variable.

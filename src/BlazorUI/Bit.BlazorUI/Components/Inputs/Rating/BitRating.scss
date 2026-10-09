@@ -36,6 +36,10 @@
 // Color leaves alone - the unfilled part, the label and description colors - stays the variables'. A state the
 // rating is in (disabled, invalid) still paints over all of them, as before.
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$rtg-private-properties: clr, clr-hover, clr-active, clr-focus, size, lbl-size, dsc-size;
+
 .bit-rtg {
     // Block-level like the plain div the rating has always been, so two ratings written one after the other
     // still stack; a rating that belongs inside a line of text is made inline-flex through its Style.
@@ -57,13 +61,9 @@
     // rating placed in the label or an item template of another one from inheriting the outer one's choice,
     // and it is what lets each read below rank an explicit parameter first, then the public variable, then
     // the primary, medium rating an unset parameter stands for.
-    --bit-rtg-clr: initial;
-    --bit-rtg-clr-hover: initial;
-    --bit-rtg-clr-active: initial;
-    --bit-rtg-clr-focus: initial;
-    --bit-rtg-size: initial;
-    --bit-rtg-lbl-size: initial;
-    --bit-rtg-dsc-size: initial;
+    @each $name in $rtg-private-properties {
+        --bit-rtg-#{$name}: initial;
+    }
     // The unfilled part stays neutral whatever the Color is, so it keeps reading as "not rated yet"
     // instead of as a second, dimmer accent.
     --bit-rtg-clr-uns: #{$clr-fg-ter};

@@ -1,5 +1,9 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$lnk-private-properties: clr, clr-hover, clr-active, clr-focus, clr-dis, fs;
+
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // link, one set on an ancestor every link inside it, and one set on the Style of an instance that one alone:
 //   --bit-Link-color                  text color at rest                          (default: $clr-pri)
@@ -34,12 +38,9 @@
     // weight - still win on the root that carries them. Left unset, each sends the var() reading it on to the
     // public variable and then to the default, which is what lets an explicit parameter outrank the variable while
     // an unset one leaves the variable in charge.
-    --bit-lnk-clr: initial;
-    --bit-lnk-clr-hover: initial;
-    --bit-lnk-clr-active: initial;
-    --bit-lnk-clr-focus: initial;
-    --bit-lnk-clr-dis: initial;
-    --bit-lnk-fs: initial;
+    @each $name in $lnk-private-properties {
+        --bit-lnk-#{$name}: initial;
+    }
     margin: 0;
     padding: 0;
     outline: none;

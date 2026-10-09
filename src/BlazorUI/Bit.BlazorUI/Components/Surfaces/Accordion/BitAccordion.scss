@@ -1,5 +1,12 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$acd-private-properties:
+    pad, ttl-fontsize, fontsize, icn-fontsize,
+    // What the component writes into an inline style, which wins over this on the element it is written on.
+    max-h;
+
 // Public CSS variables (read here with a fallback and never declared, so they inherit: set one on :root, on any
 // ancestor, or on the Style of a single accordion - an accordion nested in the panel of another one inherits it too):
 //   --bit-Accordion-color                     text of the accordion                         (default: $clr-fg-pri)
@@ -66,10 +73,9 @@
     // The values the Size classes publish, unset here - rather than inherited from an accordion this one sits in the
     // panel of - and won back by those classes, declared further down at the same weight, on the root that carries
     // them. Left unset, each sends the var() reading it on to the public variable and then to the medium size.
-    --bit-acd-pad: initial;
-    --bit-acd-ttl-fontsize: initial;
-    --bit-acd-fontsize: initial;
-    --bit-acd-icn-fontsize: initial;
+    @each $name in $acd-private-properties {
+        --bit-acd-#{$name}: initial;
+    }
 
     // The duration of the expand/collapse transition. TransitionDuration arrives inline as the -full token and
     // everything below reads this derived one, following the -full pattern of motion.fluent.scss, so the

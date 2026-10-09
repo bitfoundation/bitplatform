@@ -248,5 +248,5 @@ public class BitPivotStylesheetTests
         return (documented, body);
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Navs", "Pivot", "BitPivot.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Navs", "Pivot", "BitPivot.scss");
 }

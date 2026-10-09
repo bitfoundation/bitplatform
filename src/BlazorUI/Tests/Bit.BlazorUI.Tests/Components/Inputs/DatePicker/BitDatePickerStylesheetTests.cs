@@ -11,7 +11,7 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.DatePicker;
 [TestClass]
 public class BitDatePickerStylesheetTests
 {
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Inputs", "DatePicker", "BitDatePicker.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "DatePicker", "BitDatePicker.scss");
 
     [TestMethod]
     public void BitDatePickerShouldLetAParameterWinOverItsPublicVariable()

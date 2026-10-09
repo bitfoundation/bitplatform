@@ -18,7 +18,9 @@ namespace Bit.BlazorUI.Tests.Utils.Theme;
 /// (<c>initial</c>), or at the default its unset parameter stands for - or an instance nested in another one's content
 /// would read the outer one's choice as its own. That reset is a second list beside the classes, and the one that is
 /// easy to forget when a slot is added to <c>$bit-color-roles</c> or a size class gains a line; this is what fails
-/// on it, for every stylesheet at once.
+/// on it, for every stylesheet at once. The same holds for what a component writes into an inline style. The list is
+/// a <c>$xxx-private-properties</c> one an <c>@each</c> resets, so this also fails on a list nothing resets and on a
+/// name in it nothing uses any more.
 /// </remarks>
 [TestClass]
 public sealed class BitComponentPrivatePropertyResetTests
@@ -30,7 +32,7 @@ public sealed class BitComponentPrivatePropertyResetTests
 
     // A list a stylesheet resets with one @each (BitIcon's $ico-private-properties).
     private static readonly Regex PropertyList = new(
-        @"\$[a-z-]+-private-properties\s*:\s*(?<names>[^;]+);",
+        @"\$(?<list>[a-z-]+-private-properties)\s*:\s*(?<names>[^;]+);",
         RegexOptions.Compiled);
 
     [TestMethod]
@@ -92,6 +94,118 @@ public sealed class BitComponentPrivatePropertyResetTests
         CollectionAssert.AreEqual(Array.Empty<string>(), offenders,
             $"A role or size class publishes a private property no rule of its component resets, so a nested instance inherits the outer one's choice: {string.Join(", ", offenders)}");
     }
+
+    [TestMethod]
+    public void EveryPrivatePropertyListIsResetByAnEachBlock()
+    {
+        var offenders = new List<string>();
+        var lists = 0;
+
+        foreach (var file in EnumerateComponentStylesheets())
+        {
+            var stylesheet = SourceFiles.StripScssComments(SourceFiles.ReadFullPath(file)).Replace("\r\n", "\n");
+
+            foreach (Match list in PropertyList.Matches(stylesheet))
+            {
+                lists++;
+
+                var name = list.Groups["list"].Value;
+                var each = Regex.Match(stylesheet, $@"@each \$name in \${name} \{{\s*--(?<prefix>bit-[a-z]+)-#\{{\$name\}}: initial;\s*\}}");
+
+                if (each.Success is false)
+                {
+                    offenders.Add($"{Path.GetFileName(file)}: ${name} resets nothing");
+                    continue;
+                }
+
+                // A name nothing else mentions is one left behind when its variable was renamed or removed, which the
+                // reset would then carry for nothing while the new name goes without it.
+                var prefix = each.Groups["prefix"].Value;
+                var source = ReadComponentSource(file);
+                var rest = stylesheet.Remove(list.Index, list.Length);
+
+                offenders.AddRange(Names(list).Select(n => $"--{prefix}-{n}")
+                                              .Where(n => Regex.IsMatch(rest + source, $@"{Regex.Escape(n)}(?![a-z0-9-])") is false)
+                                              .Select(n => $"{Path.GetFileName(file)}: {n} is listed but used nowhere"));
+            }
+        }
+
+        Assert.IsTrue(lists > 50, $"Only {lists} private property lists were found; the pattern no longer matches them.");
+
+        offenders.Sort(StringComparer.Ordinal);
+
+        CollectionAssert.AreEqual(Array.Empty<string>(), offenders, string.Join(", ", offenders));
+    }
+
+    [TestMethod]
+    public void EveryPrivatePropertyAComponentWritesInlineIsInItsList()
+    {
+        var offenders = new List<string>();
+
+        foreach (var file in EnumerateComponentStylesheets())
+        {
+            var stylesheet = SourceFiles.StripScssComments(SourceFiles.ReadFullPath(file)).Replace("\r\n", "\n");
+
+            var listed = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (Match list in PropertyList.Matches(stylesheet))
+            {
+                var each = Regex.Match(stylesheet, $@"@each \$name in \${list.Groups["list"].Value} \{{\s*--(?<prefix>bit-[a-z]+)-#\{{\$name\}}");
+
+                if (each.Success is false) continue;
+
+                listed.UnionWith(Names(list).Select(n => $"--{each.Groups["prefix"].Value}-{n}"));
+            }
+
+            // Only a component that resets its private properties is held to it; the prefixes are the ones it resets.
+            if (listed.Count == 0) continue;
+
+            var prefixes = listed.Select(n => Regex.Match(n, "^--bit-[a-z]+-").Value).ToHashSet(StringComparer.Ordinal);
+
+            // A rule that starts a variable out at a default of its own, rather than unset, resets it just as well: the
+            // root rule of the component, or one of the rules the lists are reset in.
+            foreach (var rule in SourceFiles.GetScssRules(stylesheet).Where(r => r.Ancestors.Count == 0))
+            {
+                var isRoot = prefixes.Any(p => rule.Header == $".{p.TrimStart('-').TrimEnd('-')}");
+                var block = SourceFiles.GetScssBlock(stylesheet[rule.Index..], rule.Header);
+
+                if (isRoot is false && block.Contains("@each $name in $", StringComparison.Ordinal) is false) continue;
+
+                var declarations = SourceFiles.GetScssDeclarations(stylesheet[rule.Index..], rule.Header);
+
+                listed.UnionWith(Regex.Matches(declarations, @"(--bit-[a-z]+-[a-z0-9-]+)\s*:").Select(m => m.Groups[1].Value));
+            }
+
+            // An inline declaration on the root is inherited by everything inside it, a nested instance included, so
+            // it has to be started out unset there like any value a class publishes.
+            var inline = InlineDeclaration.Matches(ReadComponentSource(file))
+                                          .Select(m => m.Groups[1].Value)
+                                          .Where(n => prefixes.Any(p => n.StartsWith(p, StringComparison.Ordinal)))
+                                          .Distinct(StringComparer.Ordinal);
+
+            offenders.AddRange(inline.Where(n => listed.Contains(n) is false)
+                                     .Select(n => $"{Path.GetFileName(file)}: {n}"));
+        }
+
+        offenders.Sort(StringComparer.Ordinal);
+
+        CollectionAssert.AreEqual(Array.Empty<string>(), offenders,
+            $"A component writes a private property into its inline style that no private property list of its stylesheet resets, so a nested instance inherits it: {string.Join(", ", offenders)}");
+    }
+
+    private static IEnumerable<string> Names(Match list)
+        => list.Groups["names"].Value.Split([',', ' ', '\n', '\t'], StringSplitOptions.RemoveEmptyEntries);
+
+    // The C# and markup beside a stylesheet: the component it styles, and the ones in its folder that share it.
+    private static string ReadComponentSource(string stylesheet)
+        => string.Join("\n", Directory.EnumerateFiles(Path.GetDirectoryName(stylesheet)!, "*.*", SearchOption.AllDirectories)
+                                      .Where(path => path.EndsWith(".cs", StringComparison.Ordinal) || path.EndsWith(".razor", StringComparison.Ordinal))
+                                      .Select(SourceFiles.ReadFullPath));
+
+    // A private property given a value in the C# or the markup: an inline style, interpolated or concatenated.
+    private static readonly Regex InlineDeclaration = new(
+        @"(?<![a-zA-Z0-9-])(--bit-[a-z]+-[a-z0-9-]+)\s*:",
+        RegexOptions.Compiled);
 
     private static IEnumerable<string> EnumerateComponentStylesheets()
         => new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras" }

@@ -66,6 +66,11 @@
 // the variables'. A state the toggle is in (checked, disabled, invalid) still picks which of them is read, as
 // before.
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$tgl-private-properties: clr, clr-hover, clr-text, clr-focus, gap, trk-w-base, trk-h-base, thb-size-base, trk-w-ico,
+                         trk-h-ico, thb-size-ico, cnn-fontsize, cnn-pad, lbl-fontsize, stx-fontsize, des-fontsize;
+
 .bit-tgl {
     display: flex;
     width: fit-content;
@@ -99,22 +104,9 @@
     // toggle placed in the label, the track content or the description of another one from inheriting the
     // outer one's choice, and it is what lets each read below rank an explicit parameter first, then the
     // public variable, then the primary, medium toggle an unset parameter stands for.
-    --bit-tgl-clr: initial;
-    --bit-tgl-clr-hover: initial;
-    --bit-tgl-clr-text: initial;
-    --bit-tgl-clr-focus: initial;
-    --bit-tgl-gap: initial;
-    --bit-tgl-trk-w-base: initial;
-    --bit-tgl-trk-h-base: initial;
-    --bit-tgl-thb-size-base: initial;
-    --bit-tgl-trk-w-ico: initial;
-    --bit-tgl-trk-h-ico: initial;
-    --bit-tgl-thb-size-ico: initial;
-    --bit-tgl-cnn-fontsize: initial;
-    --bit-tgl-cnn-pad: initial;
-    --bit-tgl-lbl-fontsize: initial;
-    --bit-tgl-stx-fontsize: initial;
-    --bit-tgl-des-fontsize: initial;
+    @each $name in $tgl-private-properties {
+        --bit-tgl-#{$name}: initial;
+    }
 
     // The geometry of the switch. The track and the knob come from the theme's switch tokens through
     // the size classes below (which set the -base triple) and step up to the icon variant's floor

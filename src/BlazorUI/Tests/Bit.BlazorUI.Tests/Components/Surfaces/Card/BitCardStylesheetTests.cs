@@ -303,7 +303,7 @@ public partial class BitCardStylesheetTests
         return SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Surfaces", "Card", "BitCard.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Surfaces", "Card", "BitCard.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-Card-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

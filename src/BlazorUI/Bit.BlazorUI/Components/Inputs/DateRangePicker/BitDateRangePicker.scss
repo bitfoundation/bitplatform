@@ -83,6 +83,11 @@
     --bit-dtrp-month-pane-w: #{spacing(24.5)};
 }
 
+// Every private variable the mixin below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$dtrp-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-body, rl-focus, inp-h, inp-fs, cell-size, cell-fs,
+                          lbl-fs;
+
 // What the Color and Size classes publish starts out unset on the root and on the callout alike, so a
 // DateRangePicker in the content of another one (a callout template, say) never inherits the outer one's
 // choice; the classes - declared further down at the same weight - still win on the element that carries
@@ -90,17 +95,9 @@
 // which is what lets an explicit parameter outrank the variable while an unset one leaves the variable in
 // charge.
 @mixin dtrp-parameter-resets {
-    --bit-dtrp-rl-clr: initial;
-    --bit-dtrp-rl-txt: initial;
-    --bit-dtrp-rl-hover: initial;
-    --bit-dtrp-rl-active: initial;
-    --bit-dtrp-rl-body: initial;
-    --bit-dtrp-rl-focus: initial;
-    --bit-dtrp-inp-h: initial;
-    --bit-dtrp-inp-fs: initial;
-    --bit-dtrp-cell-size: initial;
-    --bit-dtrp-cell-fs: initial;
-    --bit-dtrp-lbl-fs: initial;
+    @each $name in $dtrp-private-properties {
+        --bit-dtrp-#{$name}: initial;
+    }
 }
 
 // The colors resolve once, on whichever of the two elements the parts live under: the explicit Color first,

@@ -63,28 +63,21 @@
 // always carried the default would be indistinguishable from one that was asked for. The disabled state is
 // read before all of them, as before.
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$fin-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, lbl-height, lbl-fontsize, lbl-padding,
+                         itm-fontsize, fs-fontsize, prv-size, dzn-height, dzn-padding, dzn-ico-size, rbt-size,
+                         ico-fontsize;
+
 .bit-fin {
     // A file input can sit in a template of another one, which must not inherit the outer one's Color or Size:
     // each root starts the values those classes publish out unset, and the classes - declared further down at
     // the same weight - still win on the root that carries them. Left unset, each sends the var() reading it on
     // to the public variable and then to the default, which is what lets an explicit parameter outrank the
     // variable while an unset one leaves the variable in charge.
-    --bit-fin-clr: initial;
-    --bit-fin-clr-txt: initial;
-    --bit-fin-clr-hover: initial;
-    --bit-fin-clr-active: initial;
-    --bit-fin-clr-focus: initial;
-    --bit-fin-lbl-height: initial;
-    --bit-fin-lbl-fontsize: initial;
-    --bit-fin-lbl-padding: initial;
-    --bit-fin-itm-fontsize: initial;
-    --bit-fin-fs-fontsize: initial;
-    --bit-fin-prv-size: initial;
-    --bit-fin-dzn-height: initial;
-    --bit-fin-dzn-padding: initial;
-    --bit-fin-dzn-ico-size: initial;
-    --bit-fin-rbt-size: initial;
-    --bit-fin-ico-fontsize: initial;
+    @each $name in $fin-private-properties {
+        --bit-fin-#{$name}: initial;
+    }
     display: flex;
     flex-flow: column nowrap;
     font-family: $tg-font-family;

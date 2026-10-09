@@ -45,5 +45,5 @@ public class BitFooterStylesheetTests
         }
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Layouts", "Footer", "BitFooter.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Layouts", "Footer", "BitFooter.scss");
 }

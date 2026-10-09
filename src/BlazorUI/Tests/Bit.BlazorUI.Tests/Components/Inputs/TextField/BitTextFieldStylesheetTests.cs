@@ -76,7 +76,7 @@ public partial class BitTextFieldStylesheetTests
         StringAssert.Contains(disabled, "--bit-tfl-spn-clr: currentcolor;");
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Inputs", "TextField", "BitTextField.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "TextField", "BitTextField.scss");
 
     [GeneratedRegex(@"var\(--bit-TextField-[a-z-]+, var\(--bit-tfl-")]
     private static partial Regex PublicBeforePrivate();

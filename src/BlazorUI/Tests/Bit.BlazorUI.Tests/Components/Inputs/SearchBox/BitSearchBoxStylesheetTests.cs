@@ -67,7 +67,7 @@ public partial class BitSearchBoxStylesheetTests
         }
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Inputs", "SearchBox", "BitSearchBox.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "SearchBox", "BitSearchBox.scss");
 
     [GeneratedRegex(@"var\(--bit-SearchBox-[a-z-]+, (var\(|calc\(var\()--bit-srb-")]
     private static partial Regex PublicBeforePrivate();

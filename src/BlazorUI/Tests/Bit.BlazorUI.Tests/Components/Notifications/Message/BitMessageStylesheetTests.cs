@@ -81,5 +81,5 @@ public class BitMessageStylesheetTests
         }
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Notifications", "Message", "BitMessage.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Notifications", "Message", "BitMessage.scss");
 }

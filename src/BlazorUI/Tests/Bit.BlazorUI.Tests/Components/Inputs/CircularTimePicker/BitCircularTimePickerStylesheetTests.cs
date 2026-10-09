@@ -11,7 +11,7 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.CircularTimePicker;
 [TestClass]
 public class BitCircularTimePickerStylesheetTests
 {
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Inputs", "CircularTimePicker", "BitCircularTimePicker.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "CircularTimePicker", "BitCircularTimePicker.scss");
 
     [TestMethod]
     public void BitCircularTimePickerShouldLetAParameterWinOverItsPublicVariable()

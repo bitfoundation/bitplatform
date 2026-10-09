@@ -45,6 +45,13 @@ $swp-btn-hover: var(--bit-swp-btn-hover, var(--bit-Swiper-button-hover-color, #{
 // is grown around them and the row spaces them at least this far apart.
 $swp-target: 24px;
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$swp-private-properties:
+    dotsz, btnsz, clr, clr-hover, btn, btn-hover, fcs,
+    // What the component writes into an inline style, which wins over this on the element it is written on.
+    isz;
+
 .bit-swp {
     margin: auto;
     display: flex;
@@ -56,13 +63,9 @@ $swp-target: 24px;
     // the items of another one never inherits the outer one's choice; the classes - declared further down at the
     // same weight - still win on the root that carries them. Left unset, each var() reading them moves on to the
     // public variable and then to the default (see $swp-clr and the rest at the top).
-    --bit-swp-dotsz: initial;
-    --bit-swp-btnsz: initial;
-    --bit-swp-clr: initial;
-    --bit-swp-clr-hover: initial;
-    --bit-swp-btn: initial;
-    --bit-swp-btn-hover: initial;
-    --bit-swp-fcs: initial;
+    @each $name in $swp-private-properties {
+        --bit-swp-#{$name}: initial;
+    }
 
     // Declared here rather than read with a fallback where they are used, so a swiper nested in another does not
     // inherit the gap and the peek of the outer one, while the Gap and Peek parameters, which arrive inline on this

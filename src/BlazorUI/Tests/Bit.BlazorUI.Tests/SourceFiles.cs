@@ -6,6 +6,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests;
@@ -33,6 +34,8 @@ internal static class SourceFiles
     // The source tree does not change while the tests run, so a file is read once however many tests read it - and
     // the same string is handed back each time, which is what lets its classification be kept per string.
     private static readonly ConcurrentDictionary<string, string> FileCache = new(StringComparer.Ordinal);
+
+    private static readonly ConcurrentDictionary<string, string> ExpandedCache = new(StringComparer.Ordinal);
 
     private static readonly ConditionalWeakTable<string, ScssChar[]> ClassifyCache = new();
 
@@ -79,6 +82,37 @@ internal static class SourceFiles
         Assert.IsTrue(File.Exists(path), $"Missing {path}; this test reads the source tree, so it must run from a source checkout.");
 
         return FileCache.GetOrAdd(Path.GetFullPath(path), p => File.ReadAllText(p).Replace("\r\n", "\n"));
+    }
+
+    /// <summary>
+    /// Reads a component stylesheet like <see cref="Read"/>, with each reset its private property list drives
+    /// (<c>@each $name in $xxx-private-properties { --bit-xxx-#{$name}: initial; }</c>) written out as the
+    /// declarations it compiles to, in the order of the list - so a test pins what a rule resets the way it pins any
+    /// other declaration of it. BitComponentPrivatePropertyResetTests reads the lists themselves.
+    /// </summary>
+    public static string ReadStylesheet(params string[] segments)
+    {
+        return ExpandedCache.GetOrAdd(GetPath(segments), _ => ExpandPrivatePropertyResets(Read(segments)));
+    }
+
+    private static string ExpandPrivatePropertyResets(string stylesheet)
+    {
+        // The comments between the names of a list are prose, semicolons and all.
+        var code = StripScssComments(stylesheet);
+
+        return Regex.Replace(stylesheet,
+            @"^(?<indent>[ \t]*)@each \$name in \$(?<list>[a-z-]+-private-properties) \{\n\s*--(?<prefix>bit-[a-z]+)-#\{\$name\}: initial;\n\s*\}",
+            each =>
+            {
+                var list = Regex.Match(code, $@"^\${each.Groups["list"].Value}\s*:(?<names>[^;]+);", RegexOptions.Multiline);
+
+                Assert.IsTrue(list.Success, $"No ${each.Groups["list"].Value} for the reset that reads it.");
+
+                var names = list.Groups["names"].Value.Split([',', ' ', '\n', '\t'], StringSplitOptions.RemoveEmptyEntries);
+
+                return string.Join("\n", names.Select(name => $"{each.Groups["indent"].Value}--{each.Groups["prefix"].Value}-{name}: initial;"));
+            },
+            RegexOptions.Multiline);
     }
 
     /// <summary>

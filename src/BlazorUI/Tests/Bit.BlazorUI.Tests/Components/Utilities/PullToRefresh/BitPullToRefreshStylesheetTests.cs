@@ -170,7 +170,7 @@ public partial class BitPullToRefreshStylesheetTests
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Utilities", "PullToRefresh", "BitPullToRefresh.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Utilities", "PullToRefresh", "BitPullToRefresh.scss");
 
     private static string ReadDemoPage() => SourceFiles.Read("Demo", "Client", "Bit.BlazorUI.Demo.Client.Core", "Pages", "Components", "Utilities", "PullToRefresh", "BitPullToRefreshDemo.razor.cs");
 

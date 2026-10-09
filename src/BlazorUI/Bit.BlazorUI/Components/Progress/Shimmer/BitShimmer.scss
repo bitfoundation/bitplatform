@@ -17,6 +17,10 @@
 // default, not a choice. That is why Background, Color and Size publish nothing while they are left unset - a
 // class that always carried the default would be indistinguishable from one that was asked for.
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$smr-private-properties: hgt, gap, llw, rad, shp, dly, lnh, crs, bg-clr, wrp-bg;
+
 .bit-smr {
     display: block;
 
@@ -26,16 +30,9 @@
     // each var() back to its fallback on every nested root, while the inline style that publishes them still
     // wins on the element that was actually given the parameter. The same goes for the values the Size, Color
     // and Background classes publish, which the classes below still win over since they come later.
-    --bit-smr-hgt: initial;
-    --bit-smr-gap: initial;
-    --bit-smr-llw: initial;
-    --bit-smr-rad: initial;
-    --bit-smr-shp: initial;
-    --bit-smr-dly: initial;
-    --bit-smr-lnh: initial;
-    --bit-smr-crs: initial;
-    --bit-smr-bg-clr: initial;
-    --bit-smr-wrp-bg: initial;
+    @each $name in $smr-private-properties {
+        --bit-smr-#{$name}: initial;
+    }
 
     @keyframes bit-smr-anim-wave {
         0% {

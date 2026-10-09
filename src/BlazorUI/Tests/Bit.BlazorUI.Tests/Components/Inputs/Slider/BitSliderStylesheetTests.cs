@@ -58,5 +58,5 @@ public class BitSliderStylesheetTests
         }
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Inputs", "Slider", "BitSlider.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "Slider", "BitSlider.scss");
 }

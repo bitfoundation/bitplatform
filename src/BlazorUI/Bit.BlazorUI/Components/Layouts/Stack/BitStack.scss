@@ -7,6 +7,13 @@
 
 $bit-stc-breakpoints: ( 'xs': 0, 'sm': $mq-sm-min, 'md': $mq-md-min, 'lg': $mq-lg-min, 'xl': $mq-xl-min, 'xxl': $mq-xxl-min );
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$stc-private-properties:
+    size,
+    // What the component writes into an inline style, which wins over this on the element it is written on.
+    dir, gap, hgap, vgap, wrap;
+
 // Almost everything a stack does is an inline style, so the root class only carries what has to hold for every
 // stack: the box it takes and the two alignments a stack that was told nothing falls back to. The direction, the
 // gap and the alignments that were asked for are written onto the element, where they outrank these.
@@ -16,7 +23,9 @@ $bit-stc-breakpoints: ( 'xs': 0, 'sm': $mq-sm-min, 'md': $mq-md-min, 'lg': $mq-l
     --bit-stc-dgap: var(--bit-Stack-gap, #{spacing(2)});
     // The step a size class publishes starts out unset, so a sized stack never hands it to one nested in it; the
     // size classes, declared further down at the same weight, still win on the stack that carries them.
-    --bit-stc-size: initial;
+    @each $name in $stc-private-properties {
+        --bit-stc-#{$name}: initial;
+    }
     width: 100%;
     height: 100%;
     box-sizing: border-box;
@@ -88,6 +97,10 @@ $bit-stc-breakpoints: ( 'xs': 0, 'sm': $mq-sm-min, 'md': $mq-md-min, 'lg': $mq-l
     }
 }
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$stc-rsp-private-properties: ai, jc;
+
 /*
  * The direction of a stack that changes it with the width of the window, and the two alignments that follow it. Each
  * per breakpoint property falls back to the breakpoint below it rather than to the base value, which is what makes
@@ -109,8 +122,9 @@ $bit-stc-breakpoints: ( 'xs': 0, 'sm': $mq-sm-min, 'md': $mq-md-min, 'lg': $mq-l
  * told no alignment would otherwise read its base straight off the inline style of a responsive stack around it.
  */
 .bit-stc-rsp {
-    --bit-stc-ai: initial;
-    --bit-stc-jc: initial;
+    @each $name in $stc-rsp-private-properties {
+        --bit-stc-#{$name}: initial;
+    }
 
     --bit-stc-dir-xs: var(--bit-stc-dir);
     --bit-stc-dir-sm: var(--bit-stc-dir-xs);

@@ -237,9 +237,9 @@ public class BitPersonaStylesheetTests
         StringAssert.Contains(SourceFiles.GetScssBlock(rules, "\n.bit-prs {"), "--bit-prs-ring-width: initial;");
         Assert.IsTrue(rules.IndexOf("\n.bit-prs-s120 {") < rules.IndexOf("\n.bit-prs-ssz {"), "The explicit size comes before a size class it reads.");
 
-        var colors = rules[rules.IndexOf("\n.bit-prs {\n    --bit-prs-coin-clr-bg: initial;")..];
-        StringAssert.Contains(colors, "--bit-prs-coin-clr-txt: initial;");
-        Assert.IsTrue(colors.IndexOf("--bit-prs-coin-clr-bg: initial;") < colors.IndexOf("\n.bit-prs-pri {"), "A color class comes before the reset it has to win over.");
+        StringAssert.Contains(SourceFiles.GetScssBlock(rules, "\n.bit-prs {"), "--bit-prs-coin-clr-bg: initial;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(rules, "\n.bit-prs {"), "--bit-prs-coin-clr-txt: initial;");
+        Assert.IsTrue(rules.IndexOf("\n.bit-prs {") < rules.IndexOf("\n.bit-prs-pri {"), "A color class comes before the reset it has to win over.");
         Assert.IsTrue(rules.IndexOf("\n.bit-prs {") < rules.IndexOf("\n.bit-prs-cir {"), "A shape class comes before the reset it has to win over.");
     }
 
@@ -256,5 +256,5 @@ public class BitPersonaStylesheetTests
 
     private static string GetHeader(string stylesheet) => stylesheet[..stylesheet.IndexOf("\n.bit-prs {")];
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Notifications", "Persona", "BitPersona.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Notifications", "Persona", "BitPersona.scss");
 }

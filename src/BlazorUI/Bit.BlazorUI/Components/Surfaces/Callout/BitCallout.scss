@@ -95,6 +95,10 @@
     animation-timing-function: $mot-easing-decelerate;
 }
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$clo-cal-private-properties: wid, mnw, mnw-def, mxw, mxh;
+
 .bit-clo-cal {
     // The entry offset is signed by where the callout was placed, so it always slides out of the anchor:
     // downward when it opens below it, upward when there was only room above it, and sideways when it was
@@ -112,11 +116,9 @@
     // inside another one would otherwise inherit the outer one's, since it is a descendant of it - in the
     // page, and in the chain Callouts.ts relocates it into - so each callout starts from none of them and
     // only its own inline style, which wins over this rule, sets one.
-    --bit-clo-wid: initial;
-    --bit-clo-mnw: initial;
-    --bit-clo-mnw-def: initial;
-    --bit-clo-mxw: initial;
-    --bit-clo-mxh: initial;
+    @each $name in $clo-cal-private-properties {
+        --bit-clo-#{$name}: initial;
+    }
 
     @include clo-surface-vars;
 
@@ -256,6 +258,10 @@
     padding: var(--bit-Callout-padding, 0);
 }
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$clo-arw-private-properties: arw-siz;
+
 // The beak that points at the anchor. It is a square rotated onto its corner and centred on the point the
 // positioning code puts it at, which is the middle of the edge of the callout that faces the anchor: one
 // half of it lands inside the callout, which is painted over it, and the other half shows as the beak.
@@ -263,7 +269,9 @@
 // never clips it.
 .bit-clo-arw {
     // ArrowSize is written inline; an outer callout's must not reach the arrow of one opened inside it.
-    --bit-clo-arw-siz: initial;
+    @each $name in $clo-arw-private-properties {
+        --bit-clo-#{$name}: initial;
+    }
 
     @include clo-surface-vars;
 

@@ -11,7 +11,7 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.Calendar;
 [TestClass]
 public class BitCalendarStylesheetTests
 {
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Inputs", "Calendar", "BitCalendar.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "Calendar", "BitCalendar.scss");
 
     [TestMethod]
     public void BitCalendarShouldLetAParameterWinOverItsPublicVariable()

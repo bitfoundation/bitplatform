@@ -85,7 +85,7 @@ public partial class BitButtonGroupStylesheetTests
         }
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Buttons", "ButtonGroup", "BitButtonGroup.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Buttons", "ButtonGroup", "BitButtonGroup.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-ButtonGroup-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

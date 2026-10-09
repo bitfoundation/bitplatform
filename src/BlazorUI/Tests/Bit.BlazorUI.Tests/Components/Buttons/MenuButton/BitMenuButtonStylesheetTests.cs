@@ -76,7 +76,7 @@ public partial class BitMenuButtonStylesheetTests
         StringAssert.Contains(callout, "--bit-mnb-cal-bg: initial;");
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Buttons", "MenuButton", "BitMenuButton.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Buttons", "MenuButton", "BitMenuButton.scss");
 
     [GeneratedRegex(@"var\(--bit-MenuButton-[a-z-]+, var\(--bit-mnb-")]
     private static partial Regex PublicBeforePrivate();

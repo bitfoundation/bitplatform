@@ -56,30 +56,21 @@
 // while they are left unset: a class that always carried the default would be indistinguishable from one that was
 // asked for. The Gap parameter writes --bit-ButtonGroup-gap on the group itself, after its Style.
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus, clr-dark, clr-dark-hover,
+                         clr-dark-active, clr-dis, clr-dis-text, itm-min-height, itm-pad-y, itm-padding, itm-fontsize,
+                         itm-bdg-fs, itm-iconsize, rad;
+
 .bit-btg {
     // The values the Color and Size classes and Rounded publish start out unset on every group, so one placed in
     // the template of another one's button never inherits the outer group's choice; those classes - declared
     // further down at the same weight - still win on the root that carries them. Left unset, each sends the var()
     // reading it on to the public variable and then to the default, which is what lets an explicit parameter
     // outrank the variable while an unset one leaves the variable in charge.
-    --bit-btg-clr: initial;
-    --bit-btg-clr-txt: initial;
-    --bit-btg-clr-brd: initial;
-    --bit-btg-clr-hover: initial;
-    --bit-btg-clr-active: initial;
-    --bit-btg-clr-focus: initial;
-    --bit-btg-clr-dark: initial;
-    --bit-btg-clr-dark-hover: initial;
-    --bit-btg-clr-dark-active: initial;
-    --bit-btg-clr-dis: initial;
-    --bit-btg-clr-dis-text: initial;
-    --bit-btg-itm-min-height: initial;
-    --bit-btg-itm-pad-y: initial;
-    --bit-btg-itm-padding: initial;
-    --bit-btg-itm-fontsize: initial;
-    --bit-btg-itm-bdg-fs: initial;
-    --bit-btg-itm-iconsize: initial;
-    --bit-btg-rad: initial;
+    @each $name in $btg-private-properties {
+        --bit-btg-#{$name}: initial;
+    }
     // The separators' default, which the disabled state below swaps for the disabled one.
     --bit-btg-dfl-brd: #{$clr-pri-dark};
     overflow: hidden;

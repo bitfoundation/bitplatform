@@ -84,6 +84,11 @@
 // they are left unset, on the root and on the callout alike: a class that always carried the default would be
 // indistinguishable from one that was asked for.
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$srb-private-properties: siz-height, siz-fontsize, siz-iconsize, siz-cbt-iconsize, siz-btnpad, clr, clr-txt, clr-hover,
+                         clr-active, clr-focus, clr-dis, clr-dis-text, clr-bg;
+
 .bit-srb {
     margin: 0;
     padding: 0;
@@ -99,19 +104,9 @@
     // sends the var() reading it on to the public variable and then to the default (the medium size, the primary
     // role, the primary background), which is what lets an explicit parameter outrank the variable while an
     // unset one leaves the variable in charge.
-    --bit-srb-siz-height: initial;
-    --bit-srb-siz-fontsize: initial;
-    --bit-srb-siz-iconsize: initial;
-    --bit-srb-siz-cbt-iconsize: initial;
-    --bit-srb-siz-btnpad: initial;
-    --bit-srb-clr: initial;
-    --bit-srb-clr-txt: initial;
-    --bit-srb-clr-hover: initial;
-    --bit-srb-clr-active: initial;
-    --bit-srb-clr-focus: initial;
-    --bit-srb-clr-dis: initial;
-    --bit-srb-clr-dis-text: initial;
-    --bit-srb-clr-bg: initial;
+    @each $name in $srb-private-properties {
+        --bit-srb-#{$name}: initial;
+    }
 
     // The size and its public variables are ranked once here, so every rule further down keeps reading the one
     // internal name it always read.
@@ -818,6 +813,10 @@
     background-color: transparent;
 }
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$srb-cal-private-properties: siz-item-height, siz-item-fontsize, siz-spn-size, clr, clr-focus;
+
 // The callout is a sibling of the root element rather than a child of it, so the size class of the
 // component never reaches it through the cascade. It is given the same class and declares the two
 // row tokens itself, which is what keeps a small search box from opening a medium sized list. It is given
@@ -834,11 +833,9 @@
     transform: translateY(0);
     transition: opacity $mot-duration-short $mot-easing-decelerate, transform $mot-duration-long $mot-easing-decelerate;
 
-    --bit-srb-siz-item-height: initial;
-    --bit-srb-siz-item-fontsize: initial;
-    --bit-srb-siz-spn-size: initial;
-    --bit-srb-clr: initial;
-    --bit-srb-clr-focus: initial;
+    @each $name in $srb-cal-private-properties {
+        --bit-srb-#{$name}: initial;
+    }
 
     --bit-srb-item-height: var(--bit-srb-siz-item-height, var(--bit-SearchBox-item-min-height, #{$siz-item-md}));
     --bit-srb-item-fontsize: var(--bit-srb-siz-item-fontsize, var(--bit-SearchBox-item-font-size, #{$tg-fs-sm}));

@@ -90,6 +90,11 @@
     --bit-phi-sz-itm-h: #{$itm-h};
 }
 
+// Every private variable the mixin below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role-focus, kind-bg, kind-brd,
+                         kind-brd-hover;
+
 // The values the Size, Color, Background and Border classes publish start out unset on the root and on the
 // callout, so a field rendered inside another one's template never inherits the outer field's choice; the
 // classes - declared further down at the same weight - still win on the element that carries them. Left
@@ -97,16 +102,9 @@
 // medium size, the primary role, the primary background and border), which is what lets an explicit parameter
 // outrank the variable while an unset one leaves the variable in charge.
 @mixin phi-resets {
-    --bit-phi-sz-fs: initial;
-    --bit-phi-sz-h: initial;
-    --bit-phi-sz-pad: initial;
-    --bit-phi-sz-icon: initial;
-    --bit-phi-sz-itm-h: initial;
-    --bit-phi-role-main: initial;
-    --bit-phi-role-focus: initial;
-    --bit-phi-kind-bg: initial;
-    --bit-phi-kind-brd: initial;
-    --bit-phi-kind-brd-hover: initial;
+    @each $name in $phi-private-properties {
+        --bit-phi-#{$name}: initial;
+    }
 }
 
 // The one place the public variables meet the parameters and the defaults: the value an explicit parameter

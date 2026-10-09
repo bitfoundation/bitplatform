@@ -13,6 +13,17 @@ $crd-shd-active: var(--bit-crd-shd-act, var(--bit-Card-active-shadow, var(--bit-
 $crd-pad: var(--bit-crd-pad, var(--bit-Card-padding, #{$spa-card-md}));
 $crd-gap: var(--bit-crd-gap, var(--bit-Card-gap, #{spacing(1.5)}));
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$crd-private-properties:
+    clr, clr-txt, clr-fg, clr-tint, clr-hover, clr-active, clr-dis, clr-dis-text, fg, bg, bg-hov, bg-act, shd, shd-hov,
+    shd-act, radius, brd-wid, brd-clr, dvd-clr, sel-clr, dis-txt, dis-bg, dis-brd,
+    // The four the cover parameters write onto the style of the root; an inline declaration wins over these.
+    img-height, img-position, cvr-width, cvr-ratio,
+    // The ones the Size classes publish; Size publishes nothing while it is unset, which leaves the public variables
+    // and then the medium card.
+    pad, gap, htx-gap, ttl-fontsize, sub-fontsize, icn-fontsize;
+
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // card and one set on the Style of an instance re-skins that one alone:
 //   --bit-Card-color                 text color                                     (default: $clr-fg-pri)
@@ -58,42 +69,9 @@ $crd-gap: var(--bit-crd-gap, var(--bit-Card-gap, #{spacing(1.5)}));
 // properties inherit, which would hand an outer card's paint, rule, corner or shadow to every card nested in it,
 // so each root starts them out unset - which leaves every var() reading them to its fallback.
 .bit-crd {
-    --bit-crd-clr: initial;
-    --bit-crd-clr-txt: initial;
-    --bit-crd-clr-fg: initial;
-    --bit-crd-clr-tint: initial;
-    --bit-crd-clr-hover: initial;
-    --bit-crd-clr-active: initial;
-    --bit-crd-clr-dis: initial;
-    --bit-crd-clr-dis-text: initial;
-    --bit-crd-fg: initial;
-    --bit-crd-bg: initial;
-    --bit-crd-bg-hov: initial;
-    --bit-crd-bg-act: initial;
-    --bit-crd-shd: initial;
-    --bit-crd-shd-hov: initial;
-    --bit-crd-shd-act: initial;
-    --bit-crd-radius: initial;
-    --bit-crd-brd-wid: initial;
-    --bit-crd-brd-clr: initial;
-    --bit-crd-dvd-clr: initial;
-    --bit-crd-sel-clr: initial;
-    --bit-crd-dis-txt: initial;
-    --bit-crd-dis-bg: initial;
-    --bit-crd-dis-brd: initial;
-    // The four the cover parameters write onto the style of the root; an inline declaration wins over these.
-    --bit-crd-img-height: initial;
-    --bit-crd-img-position: initial;
-    --bit-crd-cvr-width: initial;
-    --bit-crd-cvr-ratio: initial;
-    // The ones the Size classes publish; Size publishes nothing while it is unset, which leaves the public variables
-    // and then the medium card.
-    --bit-crd-pad: initial;
-    --bit-crd-gap: initial;
-    --bit-crd-htx-gap: initial;
-    --bit-crd-ttl-fontsize: initial;
-    --bit-crd-sub-fontsize: initial;
-    --bit-crd-icn-fontsize: initial;
+    @each $name in $crd-private-properties {
+        --bit-crd-#{$name}: initial;
+    }
     position: relative;
     box-sizing: border-box;
     width: fit-content;

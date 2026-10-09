@@ -53,7 +53,7 @@ public partial class BitPhoneInputStylesheetTests
         StringAssert.Contains(SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-phi-cal {"), "@include phi-resets;");
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "PhoneInput", "BitPhoneInput.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI.Extras", "Components", "PhoneInput", "BitPhoneInput.scss");
 
     [GeneratedRegex(@"var\(--bit-PhoneInput-[a-z-]+, (0 )?var\(--bit-phi-(sz-[a-z-]+|role-[a-z]+|kind-[a-z-]+|fs|h|pad-x|icon)\b")]
     private static partial Regex PublicBeforePrivate();

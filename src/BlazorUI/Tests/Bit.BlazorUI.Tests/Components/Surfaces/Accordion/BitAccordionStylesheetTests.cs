@@ -216,6 +216,6 @@ public class BitAccordionStylesheetTests
 
     private static string ReadStylesheet()
     {
-        return SourceFiles.Read("Bit.BlazorUI", "Components", "Surfaces", "Accordion", "BitAccordion.scss");
+        return SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Surfaces", "Accordion", "BitAccordion.scss");
     }
 }

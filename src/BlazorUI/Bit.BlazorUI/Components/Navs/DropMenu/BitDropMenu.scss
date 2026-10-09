@@ -55,6 +55,11 @@
 // unset: a class that always carried the default would be indistinguishable from one that was asked for. The
 // callout takes no Color or Size, so nothing of them has to reach it once it is moved to the body.
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$drm-private-properties: clr, clr-txt, clr-flt, clr-hover, clr-active, clr-focus, clr-dis, clr-dis-text, font-size,
+                         min-height, icon-size, pad-y, padding;
+
 .bit-drm {
     display: flex;
     width: fit-content;
@@ -85,19 +90,9 @@
     // The values the Color and Size classes publish start out unset on every root, so a drop menu never inherits
     // another one's choice from an ancestor carrying those classes (one placed in the callout of another, say);
     // the classes - declared further down at the same weight - still win on the root that carries them.
-    --bit-drm-clr: initial;
-    --bit-drm-clr-txt: initial;
-    --bit-drm-clr-flt: initial;
-    --bit-drm-clr-hover: initial;
-    --bit-drm-clr-active: initial;
-    --bit-drm-clr-focus: initial;
-    --bit-drm-clr-dis: initial;
-    --bit-drm-clr-dis-text: initial;
-    --bit-drm-font-size: initial;
-    --bit-drm-min-height: initial;
-    --bit-drm-icon-size: initial;
-    --bit-drm-pad-y: initial;
-    --bit-drm-padding: initial;
+    @each $name in $drm-private-properties {
+        --bit-drm-#{$name}: initial;
+    }
 
     // What each state paints the button with: the rest (rst), hover (hov), pressed-or-open (act) and
     // disabled (dis) text, background and border, each in two slots. The bare one is what an explicit Color
@@ -285,6 +280,10 @@
     pointer-events: none;
 }
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$drm-cal-private-properties: cal-bg, cal-brd;
+
 .bit-drm-cal {
     // The entry offset is signed by where the callout was placed, so it always slides out of the button:
     // downward when it opens below it, upward when there was only room above it. The attribute is set by
@@ -294,8 +293,9 @@
     --bit-drm-cal-tra: var(--bit-drm-cal-tra-ent);
     // What an explicit Background and Border publish (see .bit-drm-bpg, .bit-drm-bpr), unset on every callout so
     // one never takes them from an ancestor, and read ahead of the public variables below.
-    --bit-drm-cal-bg: initial;
-    --bit-drm-cal-brd: initial;
+    @each $name in $drm-cal-private-properties {
+        --bit-drm-#{$name}: initial;
+    }
 
     display: none;
     outline: transparent;

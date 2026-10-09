@@ -11,7 +11,7 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.TimePicker;
 [TestClass]
 public class BitTimePickerStylesheetTests
 {
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Inputs", "TimePicker", "BitTimePicker.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "TimePicker", "BitTimePicker.scss");
 
     [TestMethod]
     public void BitTimePickerShouldLetAParameterWinOverItsPublicVariable()

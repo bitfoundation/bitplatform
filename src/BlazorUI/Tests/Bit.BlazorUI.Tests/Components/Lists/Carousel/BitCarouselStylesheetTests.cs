@@ -49,5 +49,5 @@ public class BitCarouselStylesheetTests
         }
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Lists", "Carousel", "BitCarousel.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Lists", "Carousel", "BitCarousel.scss");
 }

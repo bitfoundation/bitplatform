@@ -68,7 +68,7 @@ public partial class BitToggleButtonStylesheetTests
         }
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Buttons", "ToggleButton", "BitToggleButton.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Buttons", "ToggleButton", "BitToggleButton.scss");
 
     [GeneratedRegex(@"var\(--bit-ToggleButton-[a-z-]+, var\(--bit-tgb-")]
     private static partial Regex PublicBeforePrivate();

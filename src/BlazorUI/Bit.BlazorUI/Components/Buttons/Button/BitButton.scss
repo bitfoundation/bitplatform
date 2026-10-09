@@ -48,6 +48,13 @@
 // back to, the min-width), so the variables keep the last word there - as they do over the default a component of
 // the library gives the buttons it renders (see .bit-btn-dft-*), which is read after them.
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$btn-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis, clr-dis-text, dft-clr, dft-clr-txt,
+                         dft-clr-hover, dft-clr-active, dft-clr-focus, dft-clr-dis, dft-clr-dis-text, lbl-fontsize,
+                         prt-fontsize, sct-fontsize, icn-size, spn-size, min-height, icn-margintop, gap, pad-ntx,
+                         padding, radius;
+
 .bit-btn {
     cursor: pointer;
     text-align: start;
@@ -64,31 +71,9 @@
     // further down at the same weight - still win on the root that carries them. Left unset, each sends the var()
     // reading it on to the public variable and then to the default, which is what lets an explicit parameter
     // outrank the variable while an unset one leaves the variable in charge.
-    --bit-btn-clr: initial;
-    --bit-btn-clr-txt: initial;
-    --bit-btn-clr-hover: initial;
-    --bit-btn-clr-active: initial;
-    --bit-btn-clr-focus: initial;
-    --bit-btn-clr-dis: initial;
-    --bit-btn-clr-dis-text: initial;
-    --bit-btn-dft-clr: initial;
-    --bit-btn-dft-clr-txt: initial;
-    --bit-btn-dft-clr-hover: initial;
-    --bit-btn-dft-clr-active: initial;
-    --bit-btn-dft-clr-focus: initial;
-    --bit-btn-dft-clr-dis: initial;
-    --bit-btn-dft-clr-dis-text: initial;
-    --bit-btn-lbl-fontsize: initial;
-    --bit-btn-prt-fontsize: initial;
-    --bit-btn-sct-fontsize: initial;
-    --bit-btn-icn-size: initial;
-    --bit-btn-spn-size: initial;
-    --bit-btn-min-height: initial;
-    --bit-btn-icn-margintop: initial;
-    --bit-btn-gap: initial;
-    --bit-btn-pad-ntx: initial;
-    --bit-btn-padding: initial;
-    --bit-btn-radius: initial;
+    @each $name in $btn-private-properties {
+        --bit-btn-#{$name}: initial;
+    }
     // Casing and tracking default to the global control tokens but are reachable per component, because dropping
     // the uppercasing of the buttons alone - without touching the tags, the pivots and everything else that reads
     // $tg-ctrl-text-transform - is the first thing asked of a button inherited from another design system.

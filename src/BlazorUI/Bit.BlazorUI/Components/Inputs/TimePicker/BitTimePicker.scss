@@ -76,6 +76,11 @@
 // would be indistinguishable from one that was asked for. An invalid field keeps the error color on its
 // focus ring whatever either says.
 
+// Every private variable the mixin below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$tpc-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-focus, inp-h, inp-fs, lbl-fs, des-fs, fld-ico-fs,
+                         cell-size, cell-fs, ico-fs, sep-fs, ampm-fs, act-fs;
+
 // What the Color and Size classes publish starts out unset on the root and on the callout alike, so a
 // TimePicker in the content of another one (a callout template, say) never inherits the outer one's
 // choice; the classes - declared further down at the same weight - still win on the element that carries
@@ -83,22 +88,9 @@
 // which is what lets an explicit parameter outrank the variable while an unset one leaves the variable in
 // charge.
 @mixin tpc-parameter-resets {
-    --bit-tpc-rl-clr: initial;
-    --bit-tpc-rl-txt: initial;
-    --bit-tpc-rl-hover: initial;
-    --bit-tpc-rl-active: initial;
-    --bit-tpc-rl-focus: initial;
-    --bit-tpc-inp-h: initial;
-    --bit-tpc-inp-fs: initial;
-    --bit-tpc-lbl-fs: initial;
-    --bit-tpc-des-fs: initial;
-    --bit-tpc-fld-ico-fs: initial;
-    --bit-tpc-cell-size: initial;
-    --bit-tpc-cell-fs: initial;
-    --bit-tpc-ico-fs: initial;
-    --bit-tpc-sep-fs: initial;
-    --bit-tpc-ampm-fs: initial;
-    --bit-tpc-act-fs: initial;
+    @each $name in $tpc-private-properties {
+        --bit-tpc-#{$name}: initial;
+    }
 }
 
 // The colors resolve once, on whichever of the two elements the parts live under: the explicit Color first,

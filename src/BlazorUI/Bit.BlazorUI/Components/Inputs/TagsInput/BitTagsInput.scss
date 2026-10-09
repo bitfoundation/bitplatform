@@ -63,6 +63,11 @@
 // label, affix and helper colors - stays the variables'. A state the field is in (disabled, invalid, a refused
 // tag) still paints over all of them, as before.
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$tgi-private-properties: clr, clr-txt, clr-hover, clr-focus, gap, fontsize, iconsize, helperfontsize, tagfontsize,
+                         minheight, padding, tagminheight, tagpadding;
+
 .bit-tgi {
     font-weight: $tg-fw-regular;
     position: relative;
@@ -74,19 +79,9 @@
     // tags input placed in a template of another one from inheriting the outer one's choice, and it is what
     // lets each read below rank an explicit parameter first, then the public variable, then the primary,
     // medium field an unset parameter stands for.
-    --bit-tgi-clr: initial;
-    --bit-tgi-clr-txt: initial;
-    --bit-tgi-clr-hover: initial;
-    --bit-tgi-clr-focus: initial;
-    --bit-tgi-gap: initial;
-    --bit-tgi-fontsize: initial;
-    --bit-tgi-iconsize: initial;
-    --bit-tgi-helperfontsize: initial;
-    --bit-tgi-tagfontsize: initial;
-    --bit-tgi-minheight: initial;
-    --bit-tgi-padding: initial;
-    --bit-tgi-tagminheight: initial;
-    --bit-tgi-tagpadding: initial;
+    @each $name in $tgi-private-properties {
+        --bit-tgi-#{$name}: initial;
+    }
 }
 
 .bit-tgi-lbl {

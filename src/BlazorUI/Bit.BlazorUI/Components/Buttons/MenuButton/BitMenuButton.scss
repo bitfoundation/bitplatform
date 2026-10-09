@@ -1,5 +1,11 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// Every private variable the mixin below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$mnb-private-properties: clr, clr-txt, clr-hover, clr-active, clr-dark, clr-dark-hover, clr-dark-active, clr-focus,
+                         clr-dis, clr-dis-text, font-size, min-height, icon-size, item-height, pad-y, padding,
+                         item-padding;
+
 // The values the Color and Size classes publish, started out unset on each element those classes land on - the
 // root, and the callout that repeats them (see .bit-mnb-cal) - so a menu button placed inside another one's
 // header or menu never inherits the outer one's choice. The classes are declared further down at the same
@@ -7,23 +13,9 @@
 // public variable and then to the default, which is what lets an explicit parameter outrank the variable while
 // an unset one leaves the variable in charge.
 @mixin bit-mnb-unset-published {
-    --bit-mnb-clr: initial;
-    --bit-mnb-clr-txt: initial;
-    --bit-mnb-clr-hover: initial;
-    --bit-mnb-clr-active: initial;
-    --bit-mnb-clr-dark: initial;
-    --bit-mnb-clr-dark-hover: initial;
-    --bit-mnb-clr-dark-active: initial;
-    --bit-mnb-clr-focus: initial;
-    --bit-mnb-clr-dis: initial;
-    --bit-mnb-clr-dis-text: initial;
-    --bit-mnb-font-size: initial;
-    --bit-mnb-min-height: initial;
-    --bit-mnb-icon-size: initial;
-    --bit-mnb-item-height: initial;
-    --bit-mnb-pad-y: initial;
-    --bit-mnb-padding: initial;
-    --bit-mnb-item-padding: initial;
+    @each $name in $mnb-private-properties {
+        --bit-mnb-#{$name}: initial;
+    }
 }
 
 // Public CSS variables, read off the elements and never declared here, so a value set on :root re-skins every
@@ -336,11 +328,17 @@
     background-color: transparent;
 }
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$mnb-cal-private-properties: cal-bg;
+
 .bit-mnb-cal {
     // The callout carries the Color and Size classes of its menu button (and the Background class of its own), so
     // what they publish is unset here first, exactly as on the root.
     @include bit-mnb-unset-published;
-    --bit-mnb-cal-bg: initial;
+    @each $name in $mnb-cal-private-properties {
+        --bit-mnb-#{$name}: initial;
+    }
     // The entry offset is signed by where the callout was placed, so it always slides out of the
     // button: downward when it opens below it, upward when there was only room above. The attribute
     // is set by Callouts.playEntryAnimation, which knows the placement only after measuring.

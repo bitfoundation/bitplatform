@@ -65,6 +65,11 @@
     }
 }
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$nav-private-properties: item-font-size, item-min-height, icon-size, des-font-size, header-font-size,
+                         header-min-height, chevron-size, clr, clr-text, clr-hover, clr-active, clr-icon, clr-des;
+
 .bit-nav {
     font-family: $tg-font-family;
     color: var(--bit-Nav-color, #{$clr-fg-pri});
@@ -75,19 +80,9 @@
     // weight - still win on the root that carries them. Left unset, each sends the var() reading it on to the
     // public variable and then to the default (the medium size, the primary Color, the PrimaryBackground Accent),
     // which is what lets an explicit parameter outrank the variable while an unset one leaves the variable in charge.
-    --bit-nav-item-font-size: initial;
-    --bit-nav-item-min-height: initial;
-    --bit-nav-icon-size: initial;
-    --bit-nav-des-font-size: initial;
-    --bit-nav-header-font-size: initial;
-    --bit-nav-header-min-height: initial;
-    --bit-nav-chevron-size: initial;
-    --bit-nav-clr: initial;
-    --bit-nav-clr-text: initial;
-    --bit-nav-clr-hover: initial;
-    --bit-nav-clr-active: initial;
-    --bit-nav-clr-icon: initial;
-    --bit-nav-clr-des: initial;
+    @each $name in $nav-private-properties {
+        --bit-nav-#{$name}: initial;
+    }
 
     // Only the nav's own lists (.bit-nav-lst) are laid out here: a template can render a list of its own
     // inside an item, and a descendant selector would force it into the nav's column and gaps.

@@ -65,5 +65,5 @@ public class BitChoiceGroupStylesheetTests
         }
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Inputs", "ChoiceGroup", "BitChoiceGroup.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "ChoiceGroup", "BitChoiceGroup.scss");
 }
