@@ -1024,11 +1024,7 @@
                 PdfViewer._focusReturn.push(null as any);
             }
 
-            const focusables = () => Array.prototype.filter.call(
-                dialog.querySelectorAll(
-                    "a[href],button:not([disabled]),input:not([disabled]),select:not([disabled])," +
-                    "textarea:not([disabled]),[tabindex]:not([tabindex='-1'])"),
-                (el: HTMLElement) => el.offsetParent !== null || el === document.activeElement) as HTMLElement[];
+            const focusables = () => Extras.getFocusables(dialog);
 
             // The requested control, else the first one, else the dialog itself - which
             // carries tabindex="-1" so it can hold focus while the reader has not

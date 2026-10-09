@@ -550,7 +550,7 @@
             let target: HTMLElement | null = find(movedTo) ?? find(key);
             target ??= scope === root
                 ? root.querySelector<HTMLElement>(FullCalendar.ROVING_STOP) ?? root.querySelector<HTMLElement>('.bit-bfc-body')
-                : FullCalendar.getDialogFocusable(scope)[0] ?? scope;
+                : Extras.firstFocusable(scope) ?? scope;
             if (!target) return;
 
             try {
@@ -601,12 +601,6 @@
          */
         private static dialogFocusState = new WeakMap<HTMLElement, { previous: Element | null; root: HTMLElement | null; handler: (e: KeyboardEvent) => void }>();
 
-        private static getDialogFocusable(container: HTMLElement): HTMLElement[] {
-            const selector = 'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
-            return Array.from(container.querySelectorAll<HTMLElement>(selector))
-                .filter(el => !el.hasAttribute('disabled') && (el.offsetParent !== null || el.getClientRects().length > 0));
-        }
-
         public static setupDialog(container: HTMLElement): void {
             if (!container || FullCalendar.dialogFocusState.has(container)) return;
 
@@ -614,7 +608,7 @@
 
             const handler = (e: KeyboardEvent) => {
                 if (e.key !== 'Tab') return;
-                const focusable = FullCalendar.getDialogFocusable(container);
+                const focusable = Extras.getFocusables(container);
                 if (focusable.length === 0) {
                     e.preventDefault();
                     container.focus();
@@ -637,8 +631,7 @@
             container.addEventListener('keydown', handler);
             FullCalendar.dialogFocusState.set(container, { previous, root: container.closest<HTMLElement>('.bit-bfc'), handler });
 
-            const focusable = FullCalendar.getDialogFocusable(container);
-            (focusable[0] ?? container).focus();
+            (Extras.firstFocusable(container) ?? container).focus();
         }
 
         public static teardownDialog(container: HTMLElement): void {

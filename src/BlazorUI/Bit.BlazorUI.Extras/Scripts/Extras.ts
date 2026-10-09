@@ -5,6 +5,35 @@
             Object.keys(cssVariables).forEach(key => document.documentElement.style.setProperty(key, cssVariables[key]));
         }
 
+        // What can hold the focus, for every script of this package. It is the core library's own definition
+        // (BitBlazorUI.Utils.focusableSelector / isFocusable, where the reasons for each part are written down),
+        // mirrored rather than called: this bundle is compiled on its own and an app may load it on its own, so
+        // the core one is out of its reach. BitFocusablesContractTests fails the moment the two differ, so a fix
+        // made to one is made to both.
+        public static readonly focusableSelector =
+            'a[href]:not([tabindex="-1"]), button:not([disabled]):not([tabindex="-1"]), ' +
+            'input:not([disabled]):not([tabindex="-1"]), select:not([disabled]):not([tabindex="-1"]), ' +
+            'textarea:not([disabled]):not([tabindex="-1"]), summary:not([tabindex="-1"]), ' +
+            'iframe:not([tabindex="-1"]), audio[controls]:not([tabindex="-1"]), video[controls]:not([tabindex="-1"]), ' +
+            '[contenteditable]:not([contenteditable="false"]):not([tabindex="-1"]), ' +
+            '[tabindex]:not([tabindex="-1"])';
+
+        public static isFocusable(el: HTMLElement) {
+            if (el.closest('[inert]') !== null || el.matches(':disabled') || el.parentElement?.isContentEditable === true) return false;
+
+            const hasBox = el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0;
+
+            return hasBox && getComputedStyle(el).visibility !== 'hidden';
+        }
+
+        public static getFocusables(container: ParentNode): HTMLElement[] {
+            return Array.from(container.querySelectorAll<HTMLElement>(Extras.focusableSelector)).filter(Extras.isFocusable);
+        }
+
+        public static firstFocusable(container: ParentNode): HTMLElement | null {
+            return Array.from(container.querySelectorAll<HTMLElement>(Extras.focusableSelector)).find(Extras.isFocusable) ?? null;
+        }
+
         // A behavior handed in from C# overrides the scroll-behavior of the element, so the stylesheet
         // rule that takes the animation off under the reduced motion preference is not consulted at all
         // for these moves - the preference has to be read here instead, the same way every animated

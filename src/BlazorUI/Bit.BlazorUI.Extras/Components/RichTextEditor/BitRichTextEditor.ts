@@ -1410,11 +1410,9 @@
         private static containFullScreenTab(root: HTMLElement, e: KeyboardEvent) {
             if (e.key !== 'Tab' || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
             if (!root.classList.contains('bit-rte-fsc')) return;
-            const focusable = (Array.from(root.querySelectorAll(
-                'button,select,input,textarea,[contenteditable="true"],[tabindex]')) as HTMLElement[])
-                // A contenteditable host reports a tabIndex of -1 in some engines while still being a tab stop.
-                .filter(el => (el.isContentEditable && !el.hasAttribute('tabindex') ? 0 : el.tabIndex) >= 0
-                    && !(el as HTMLButtonElement).disabled && !el.hidden && el.getClientRects().length > 0);
+            // The shared definition reads the attributes, never tabIndex: a contenteditable host reports a tabIndex of -1
+            // in some engines while still being a tab stop.
+            const focusable = Extras.getFocusables(root);
             if (focusable.length === 0) return;
             const first = focusable[0];
             const last = focusable[focusable.length - 1];

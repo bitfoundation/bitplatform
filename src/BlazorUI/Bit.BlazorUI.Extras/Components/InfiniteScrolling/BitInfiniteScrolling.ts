@@ -85,8 +85,6 @@
         // The input types that hold no text to edit. Every other one has a caret its own Ctrl+Home / Ctrl+End move.
         private static readonly NON_TEXT_INPUTS = ['button', 'checkbox', 'color', 'file', 'image', 'radio', 'range', 'reset', 'submit'];
 
-        private static readonly FOCUSABLE = 'a[href], area[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), iframe, summary, [contenteditable=""], [contenteditable="true"], [tabindex]:not([tabindex="-1"])';
-
         private _observer: IntersectionObserver;
         // The second observer of a list that scrolls an element of its own (see the constructor).
         private _viewportObserver: IntersectionObserver | null = null;
@@ -385,8 +383,8 @@
             const feed = this._feedElement();
             if (!feed) return null;
 
-            const all = Array.from(document.querySelectorAll<HTMLElement>(InfiniteScrollingInstance.FOCUSABLE))
-                .filter(el => !feed.contains(el) && el.getClientRects().length > 0);
+            const all = Array.from(document.querySelectorAll<HTMLElement>(Extras.focusableSelector))
+                .filter(el => !feed.contains(el) && Extras.isFocusable(el));
 
             const position = (el: HTMLElement) => feed.compareDocumentPosition(el);
 

@@ -47,9 +47,6 @@
         // fractional media-query bound and one is not always enough to stay below the edge.
         private static _rangeEpsilon = 0.02;
 
-        // The elements the focus can be handed to when the content it was on is swapped out.
-        private static _focusables = 'a[href], area[href], button, input, select, textarea, iframe, summary, audio[controls], video[controls], [contenteditable]:not([contenteditable="false"]), [tabindex]';
-
         /**
          * @param key          The listener key. The component's own unique id rather than the id of
          *                     an element, so two components sharing an explicit Id cannot collide.
@@ -248,7 +245,7 @@
                 if (active && active !== document.body && active !== document.documentElement) return;
                 if (!element.isConnected) return;
 
-                const candidates = Array.from(element.querySelectorAll<HTMLElement>(MediaQuery._focusables)).filter(MediaQuery.isFocusable);
+                const candidates = Utils.getFocusables(element);
                 const target = (focusedId && candidates.find(c => c.id === focusedId)) || candidates[0];
 
                 if (target) {
@@ -298,13 +295,6 @@
             if (!inView && typeof el.scrollIntoView === 'function') {
                 el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
             }
-        }
-
-        private static isFocusable(el: HTMLElement): boolean {
-            if (el.tabIndex < 0 || (el as HTMLButtonElement).disabled) return false;
-            if (el.closest('[inert]')) return false;
-
-            return el.getClientRects().length > 0;
         }
 
         // Builds the media query for a predefined BitScreenQuery from the resolved theme breakpoints.
