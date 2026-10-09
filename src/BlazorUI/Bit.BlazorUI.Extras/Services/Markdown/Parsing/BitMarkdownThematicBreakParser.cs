@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Parses thematic breaks / horizontal rules.</summary>
 public sealed class BitMarkdownThematicBreakParser : BitMarkdownBlockParser

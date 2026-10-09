@@ -2224,4 +2224,35 @@ public class BitFlagTests : BunitTestContext
         Assert.AreEqual("button", root.GetAttribute("role"));
         Assert.AreEqual(pressed, root.GetAttribute("aria-pressed"));
     }
+
+    [TestMethod]
+    public void BitFlagShouldFindTheSplattedAriaHiddenAndAriaLabelledByWhateverTheyAreCased()
+    {
+        // Attribute names are case insensitive, so a differently cased aria-hidden or aria-labelledby is still the
+        // page's own: the flag neither hides a flag the page kept visible nor leaves a named one unnamed.
+        var visible = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitFlag>(0);
+            builder.AddAttribute(1, nameof(BitFlag.Emoji), true);
+            builder.AddAttribute(2, nameof(BitFlag.Country), BitCountries.Netherlands);
+            builder.AddAttribute(3, "Aria-Hidden", "false");
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("false", visible.Find(".bit-flg").GetAttribute("aria-hidden"));
+
+        var named = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitFlag>(0);
+            builder.AddAttribute(1, nameof(BitFlag.Emoji), true);
+            builder.AddAttribute(2, nameof(BitFlag.Country), BitCountries.Netherlands);
+            builder.AddAttribute(3, "Aria-Labelledby", "flag-caption");
+            builder.CloseComponent();
+        });
+
+        var root = named.Find(".bit-flg");
+
+        Assert.AreEqual("img", root.GetAttribute("role"));
+        Assert.IsFalse(root.HasAttribute("aria-hidden"));
+    }
 }

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 // Toolbar render pipeline. Groups are rendered in a computed order (default = the original
 // order). Custom items and host-specified ordering are layered over this seam.

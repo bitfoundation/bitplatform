@@ -381,4 +381,46 @@ public class BitChoiceGroupTests : BunitTestContext
             },
         };
     }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldKeepTheAttributesThePageSplatsOn()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(0);
+            builder.AddAttribute(1, nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.Items), GetChoiceGroupItems());
+            builder.AddAttribute(2, "aria-label", "Size");
+            builder.AddAttribute(3, "aria-labelledby", "size-heading");
+            builder.AddAttribute(4, "aria-required", "true");
+            builder.AddAttribute(5, "aria-invalid", "true");
+            builder.AddAttribute(6, "aria-readonly", "true");
+            builder.AddAttribute(7, "aria-disabled", "true");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-chg");
+
+        Assert.AreEqual("Size", root.GetAttribute("aria-label"));
+        Assert.AreEqual("size-heading", root.GetAttribute("aria-labelledby"));
+        Assert.AreEqual("true", root.GetAttribute("aria-required"));
+        Assert.AreEqual("true", root.GetAttribute("aria-invalid"));
+        Assert.AreEqual("true", root.GetAttribute("aria-readonly"));
+        Assert.AreEqual("true", root.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldNotAnnounceADisabledGroupAsRequired()
+    {
+        // A disabled field is neither submitted nor validated, so a splatted aria-required goes with it.
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(0);
+            builder.AddAttribute(1, nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.Items), GetChoiceGroupItems());
+            builder.AddAttribute(2, nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.Disabled), true);
+            builder.AddAttribute(3, "aria-required", "true");
+            builder.CloseComponent();
+        });
+
+        Assert.IsFalse(component.Find(".bit-chg").HasAttribute("aria-required"));
+    }
 }

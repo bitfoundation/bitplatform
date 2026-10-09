@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Layouts.Layout;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Layouts.Layout;
 
 public partial class BitLayoutDemo
 {

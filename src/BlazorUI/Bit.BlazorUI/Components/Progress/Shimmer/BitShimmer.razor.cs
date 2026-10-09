@@ -86,8 +86,14 @@ public partial class BitShimmer : BitComponentBase
     // aria-label is not a global attribute: on a plain div or a span it names nothing at all, so a shimmer
     // that was given one publishes itself as an indeterminate progress bar - which is what a placeholder
     // standing in for content that is on its way actually is - and gives the role back once the content is
-    // in and the element is nothing but the box around it.
-    private string? _role => _loaded is false && AriaLabel.HasValue() ? "progressbar" : null;
+    // in and the element is nothing but the box around it. The role, the name and the busy state are written after
+    // the splatted attributes, where a null removes the attribute of the same name, so each falls back to the one the
+    // page wrote by hand (see BitComponentBase.GetSplattedAttribute) - a role of its own wins outright.
+    private string? _role => GetSplattedAttribute("role") ?? (_loaded is false && _ariaLabel.HasValue() ? "progressbar" : null);
+
+    private string? _ariaLabel => ResolveAriaLabel();
+
+    private string? _ariaBusy => _loaded ? GetSplattedAttribute("aria-busy") : "true";
 
     private string _animationClass => _animation switch
     {

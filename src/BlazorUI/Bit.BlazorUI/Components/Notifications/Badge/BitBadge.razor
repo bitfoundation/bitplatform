@@ -44,11 +44,13 @@
         </text>;
 }
 
+@* The AriaLabel only replaces the label the page splatted on while it names the root itself; otherwise that one is
+   written back (see BitComponentBase.GetSplattedAttribute), since a null written over it would remove it. *@
 <span @ref="RootElement" @attributes="HtmlAttributes"
       id="@_Id"
       style="@StyleBuilder.Value"
       class="@ClassBuilder.Value"
-      aria-label="@(_isRootNamed ? AriaLabel : null)"
+      aria-label="@(_isRootNamed ? AriaLabel : GetSplattedAttribute("aria-label"))"
       dir="@Dir?.ToString().ToLower()">
 
     @ChildContent

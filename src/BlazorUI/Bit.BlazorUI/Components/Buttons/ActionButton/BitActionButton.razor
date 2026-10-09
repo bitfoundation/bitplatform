@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 @{
@@ -12,7 +12,7 @@
     // they mirror - Blazor matches an attribute to a parameter by name, and AriaLabel is not aria-label - so writing one
     // by hand is a real thing to do, and losing it would take a control's name or state with it.
     var formId = FormId ?? GetSplattedAttribute("form");
-    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
+    var ariaLabel = ResolveAriaLabel();
     var ariaHidden = AriaHidden || GetSplattedAttribute("aria-hidden") is "true";
     var ariaBusy = IsLoading ? "true" : GetSplattedAttribute("aria-busy");
     var ariaDisabled = Disabled ? "true" : GetSplattedAttribute("aria-disabled");

@@ -1,4 +1,4 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
 namespace Bit.BlazorUI.Tests.Components.Utilities.Separator;

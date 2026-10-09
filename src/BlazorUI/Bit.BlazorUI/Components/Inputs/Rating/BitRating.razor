@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitInputBase<double>
 
 @{
@@ -16,6 +16,14 @@
     var labelledBy = rendersValueText ? $"{nameReference} {_valueTextId}" : nameReference;
     var ariaLabel = nameReference is null ? _AriaLabel : null;
     var describedBy = _AriaDescribedBy;
+    // A null written over a splatted attribute removes it, so the states of an interactive rating are resolved against
+    // what the page wrote by hand (see BitComponentBase.GetSplattedAttribute). A read-only one writes none of them,
+    // the page's included: the img role it takes supports none of them. Nor does a disabled one write the page's
+    // aria-required: a disabled field asks for nothing, which is why _IsRequired drops it in the first place.
+    var ariaInvalid = ReadOnly ? null : (ValueInvalid is true ? "true" : GetSplattedAttribute("aria-invalid"));
+    var ariaRequired = ReadOnly || Disabled ? null : (_IsRequired ? "true" : GetSplattedAttribute("aria-required"));
+    var ariaDisabled = ReadOnly ? null : (Disabled ? "true" : GetSplattedAttribute("aria-disabled"));
+    var ariaOrientation = ReadOnly ? null : (Vertical ? "vertical" : GetSplattedAttribute("aria-orientation"));
 }
 
 @* A read-only rating is no longer a set of choices but a picture of a value, so it drops the radiogroup
@@ -37,10 +45,10 @@
      aria-labelledby="@labelledBy"
      aria-describedby="@describedBy"
      aria-label="@ariaLabel"
-     aria-invalid="@(ReadOnly is false && ValueInvalid is true ? "true" : null)"
-     aria-required="@(_IsRequired ? "true" : null)"
-     aria-disabled="@(ReadOnly is false && Disabled ? "true" : null)"
-     aria-orientation="@(ReadOnly is false && Vertical ? "vertical" : null)">
+     aria-invalid="@ariaInvalid"
+     aria-required="@ariaRequired"
+     aria-disabled="@ariaDisabled"
+     aria-orientation="@ariaOrientation">
 
     @* Not a label element: with no single input to point a "for" at, a label here would label nothing;
        the group is named through aria-labelledby referencing this id instead. *@

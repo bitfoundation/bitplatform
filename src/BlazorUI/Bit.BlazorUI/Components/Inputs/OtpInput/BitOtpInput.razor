@@ -1,7 +1,8 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitInputBase<string?>
 
-@* read by the javascript side at the moment of a copy, so that turning the masking on and off never
+@* The no-copy flag of a hidden code is the component's own data attribute, written after the splatted attributes on
+   purpose, and read by the javascript side at the moment of a copy, so that turning the masking on and off never
    has to tear the listeners (and the pending WebOTP request behind them) down and set them up again. *@
 @* No aria-label on the root: it is a generic element, where the attribute is prohibited and dropped by
    assistive technologies anyway, and the group below is the element that the name of the code belongs on.

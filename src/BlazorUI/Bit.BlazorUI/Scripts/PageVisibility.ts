@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class PageVisibility {
         private static _isInitialized = false;
         private static _listeners: Record<string, DotNetObject> = {};

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The CSS notation the <see cref="BitColorPicker"/> writes its color value in.

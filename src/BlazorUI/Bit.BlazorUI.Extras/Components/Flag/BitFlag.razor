@@ -8,12 +8,12 @@
         and a null one takes it off the element altogether. Everything the flag decides below therefore
         has to read what came in with the attributes and write it back, or setting it that way would
         stop working. *@
-    var splattedRole = HtmlAttributes.TryGetValue("role", out var srl) ? srl?.ToString() : null;
-    var splattedTitle = HtmlAttributes.TryGetValue("title", out var stl) ? stl?.ToString() : null;
-    var splattedLabel = HtmlAttributes.TryGetValue("aria-label", out var sal) ? sal?.ToString() : null;
-    var splattedTabIndex = HtmlAttributes.TryGetValue("tabindex", out var sti) ? sti?.ToString() : null;
-    var splattedHidden = HtmlAttributes.TryGetValue("aria-hidden", out var shd) ? shd?.ToString() : null;
-    var splattedDisabled = HtmlAttributes.TryGetValue("aria-disabled", out var sdd) ? sdd?.ToString() : null;
+    var splattedRole = GetSplattedAttribute("role");
+    var splattedTitle = GetSplattedAttribute("title");
+    var splattedLabel = GetSplattedAttribute("aria-label");
+    var splattedTabIndex = GetSplattedAttribute("tabindex");
+    var splattedHidden = GetSplattedAttribute("aria-hidden");
+    var splattedDisabled = GetSplattedAttribute("aria-disabled");
 
     var title = Title ?? (AutoTitle ? _country?.Name : null) ?? splattedTitle;
 
@@ -30,7 +30,7 @@
         as one written here does, so a flag carrying one is not the decorative flag that is left out of
         the accessibility tree. It names the element it is written on, which is the frame, so the frame
         is what takes the img role for it while the picture inside keeps the empty alt of a decoration. *@
-    var labelledBy = HtmlAttributes.ContainsKey("aria-labelledby");
+    var labelledBy = HasSplattedAttribute("aria-labelledby");
     var named = name.HasValue() || labelledBy;
 
     @*  Which element carries the name depends on what is drawn. An image carries it in its own alt,
@@ -63,7 +63,7 @@
         accessibility tree altogether - unless the page said otherwise in the attributes, which is left
         exactly as it was given. *@
     var hidden = imageMode is false && interactive is false && named is false
-              && HtmlAttributes.ContainsKey("aria-hidden") is false;
+              && HasSplattedAttribute("aria-hidden") is false;
     var ariaHidden = hidden ? "true" : splattedHidden;
 
     @*  A flag with a handler is a tab stop; a disabled one leaves the tab order but stays in the

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Shared.Dtos.QuickGridDemo;
+﻿namespace Bit.BlazorUI.Demo.Shared.Dtos.QuickGridDemo;
 
 public class Meta
 {

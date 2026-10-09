@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Turns a block quote whose first line is <c>[!NOTE]</c> (or <c>[!TIP]</c>,

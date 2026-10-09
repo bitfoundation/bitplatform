@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The Overlay component is used to provide emphasis on a particular element or parts of it. It signals to

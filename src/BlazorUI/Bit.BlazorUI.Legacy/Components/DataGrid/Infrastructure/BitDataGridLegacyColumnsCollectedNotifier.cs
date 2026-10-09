@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Legacy;
+﻿namespace Bit.BlazorUI.Legacy;
 
 // One awkwardness of the way BitDataGridLegacy collects its list of child columns is that, during OnParametersSetAsync,
 // it only knows about the set of columns that were present on the *previous* render. If it's going to trigger a

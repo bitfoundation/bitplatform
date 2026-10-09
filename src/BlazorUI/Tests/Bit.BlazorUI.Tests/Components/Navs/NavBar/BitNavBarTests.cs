@@ -3089,4 +3089,19 @@ public class BitNavBarTests : BunitTestContext
         Assert.AreEqual(expectedCallCount, focused.Count);
         focused[^1].Arguments[0].ShouldBeElementReferenceTo(component.FindAll(".bit-nbr-itm")[expectedIndex]);
     }
+
+    [TestMethod]
+    public void BitNavBarShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitNavBar<BitNavBarItem>>(0);
+            builder.AddAttribute(1, "aria-label", "Main");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-nbr");
+
+        Assert.AreEqual("Main", root.GetAttribute("aria-label"));
+    }
 }

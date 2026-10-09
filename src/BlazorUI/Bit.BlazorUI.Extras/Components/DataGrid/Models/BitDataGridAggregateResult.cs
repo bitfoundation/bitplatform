@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Holds the computed aggregate value for a column footer or group.</summary>
 public sealed class BitDataGridAggregateResult

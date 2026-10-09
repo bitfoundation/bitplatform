@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>How a line/area dataset fills relative to a baseline.</summary>
 public enum BitChartFillMode

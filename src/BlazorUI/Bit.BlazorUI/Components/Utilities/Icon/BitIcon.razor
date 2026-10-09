@@ -11,13 +11,13 @@
        and a null one takes it off the element altogether. Everything the icon decides below therefore
        has to read what came in with the attributes and write it back, or setting it that way would
        stop working. *@
-    var splattedLabel = HtmlAttributes.TryGetValue("aria-label", out var sal) ? sal?.ToString() : null;
-    var splattedTitle = HtmlAttributes.TryGetValue("title", out var stl) ? stl?.ToString() : null;
-    var splattedRole = HtmlAttributes.TryGetValue("role", out var srl) ? srl?.ToString() : null;
-    var splattedTabIndex = HtmlAttributes.TryGetValue("tabindex", out var sti) ? sti?.ToString() : null;
-    var splattedHidden = HtmlAttributes.TryGetValue("aria-hidden", out var shd) ? shd?.ToString() : null;
-    var splattedTranslate = HtmlAttributes.TryGetValue("translate", out var stn) ? stn?.ToString() : null;
-    var splattedDisabled = HtmlAttributes.TryGetValue("aria-disabled", out var sdd) ? sdd?.ToString() : null;
+    var splattedLabel = GetSplattedAttribute("aria-label");
+    var splattedTitle = GetSplattedAttribute("title");
+    var splattedRole = GetSplattedAttribute("role");
+    var splattedTabIndex = GetSplattedAttribute("tabindex");
+    var splattedHidden = GetSplattedAttribute("aria-hidden");
+    var splattedTranslate = GetSplattedAttribute("translate");
+    var splattedDisabled = GetSplattedAttribute("aria-disabled");
 
     var label = AriaLabel ?? splattedLabel;
     var title = Title ?? splattedTitle;
@@ -28,7 +28,7 @@
        role and the name arrive together, and an unnamed icon is hidden the way every glyph the other
        components of this library render inline is hidden. An aria-hidden or a role of the app's own is
        left exactly as it was given. *@
-    var named = label.HasValue() || title.HasValue() || HtmlAttributes.ContainsKey("aria-labelledby");
+    var named = label.HasValue() || title.HasValue() || HasSplattedAttribute("aria-labelledby");
 
     @* An icon with a handler is a tab stop; a disabled one leaves the tab order but stays in the
        document, so whatever pointed at it still has something to point at. Everywhere else the tab
@@ -40,7 +40,7 @@
        the focus hands a screen reader a stop it has been told does not exist (axe: aria-hidden-focus).
        A negative tab index is not a tab stop, so an icon given one is hidden as before. *@
     var tabStop = interactive || (int.TryParse(rootTabIndex, NumberStyles.Integer, CultureInfo.InvariantCulture, out var ti) && ti >= 0);
-    var hidden = tabStop is false && named is false && HtmlAttributes.ContainsKey("aria-hidden") is false;
+    var hidden = tabStop is false && named is false && HasSplattedAttribute("aria-hidden") is false;
     var ariaHidden = hidden ? "true" : splattedHidden;
 
     @* A ligature set names its glyph with the element's own text, which a page translator reads as a

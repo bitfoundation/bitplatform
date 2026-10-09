@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Basic draw editor in order to generate an Highlight annotation.
  */
 declare class HighlightEditor extends AnnotationEditor {

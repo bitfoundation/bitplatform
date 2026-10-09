@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The names and selectors of the custom input type properties for the <see cref="BitAccordionList{TItem}"/>.

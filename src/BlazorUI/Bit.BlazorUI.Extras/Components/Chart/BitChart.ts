@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     interface BitChartZoomOptions {
         wheel: boolean;
         pan: boolean;

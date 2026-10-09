@@ -1,7 +1,14 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 @typeparam TItem
 
+@{
+    // A null written over a splatted attribute removes it, so the label and the busy state are resolved against what
+    // the page wrote by hand (see BitComponentBase.GetSplattedAttribute) rather than overwritten with the null of the
+    // parameter or of an idle list.
+    var ariaLabel = ResolveAriaLabel();
+    var ariaBusy = _fetching ? "true" : GetSplattedAttribute("aria-busy");
+}
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      role="@GetRootRole()"
@@ -9,8 +16,8 @@
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
      tabindex="@GetRootTabIndex()"
-     aria-busy="@(_fetching ? "true" : null)"
-     aria-label="@AriaLabel">
+     aria-busy="@ariaBusy"
+     aria-label="@ariaLabel">
     @if (HeaderTemplate is not null)
     {
         <div style="@Styles?.Header" class="bit-vir-hdr @Classes?.Header">@HeaderTemplate</div>

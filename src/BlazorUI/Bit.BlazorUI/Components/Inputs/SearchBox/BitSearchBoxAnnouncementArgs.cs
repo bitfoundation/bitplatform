@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The state of the suggest items of a <see cref="BitSearchBox"/> at the moment its screen reader

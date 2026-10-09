@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Toggle;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Inputs.Toggle;
 
 public partial class BitToggleDemo
 {

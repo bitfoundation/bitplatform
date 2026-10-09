@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class SearchBox {
         // Keys that drive the suggest list and therefore must lose their default behavior
         // (moving the caret, scrolling the page) while the list is open.

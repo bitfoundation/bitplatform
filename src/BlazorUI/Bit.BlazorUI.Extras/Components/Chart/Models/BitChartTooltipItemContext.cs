@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A single tooltip item exposed to tooltip callbacks, mirroring Chart.js <c>BitChartTooltipItem</c>.

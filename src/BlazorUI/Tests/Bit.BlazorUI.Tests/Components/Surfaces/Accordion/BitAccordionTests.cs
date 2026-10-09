@@ -2738,4 +2738,20 @@ public class BitAccordionTests : BunitTestContext
 
         Assert.AreEqual(0, unmounted.FindAll(".unmounted-body").Count);
     }
+
+    [TestMethod]
+    public void BitAccordionShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitAccordion>(0);
+            builder.AddAttribute(1, "aria-label", "Main");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-acd");
+
+        Assert.AreEqual("Main", root.GetAttribute("aria-label"));
+        Assert.AreEqual("group", root.GetAttribute("role"));
+    }
 }

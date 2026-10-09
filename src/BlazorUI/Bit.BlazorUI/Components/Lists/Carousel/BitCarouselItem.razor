@@ -1,6 +1,10 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
+@* The group role and the slide description come ahead of the splatted attributes, so a page can rename them. inert
+   and aria-hidden are the carousel's own state - which slide is the one shown - and are written after them on
+   purpose, so a slide out of view is never left reachable, nor the one in view hidden, by an attribute the page
+   passed. *@
 <div role="group"
      aria-roledescription="slide"
      aria-label="@GetAriaLabel()"

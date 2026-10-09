@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
 
     /**
      * ArcGIS Maps SDK for JavaScript 5.0 provider. Loads the SDK as an ES module via the

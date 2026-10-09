@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Legacy;
+﻿namespace Bit.BlazorUI.Legacy;
 
 internal static class BitDataGridLegacyJsRuntimeExtensions
 {

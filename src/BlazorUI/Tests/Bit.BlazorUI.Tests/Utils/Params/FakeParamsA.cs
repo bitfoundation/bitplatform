@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Tests.Utils.Params;
+﻿namespace Bit.BlazorUI.Tests.Utils.Params;
 
 public sealed class FakeParamsA : IBitComponentParams
 {

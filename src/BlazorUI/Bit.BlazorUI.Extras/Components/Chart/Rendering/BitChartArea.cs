@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>A rectangular plotting area in SVG pixel coordinates.</summary>
 public struct BitChartArea

@@ -1788,4 +1788,19 @@ public class BitPullToRefreshTests : BunitTestContext
         }, renders);
         Assert.AreEqual(component.Instance.UniqueId, Context.JSInterop.Invocations["BitBlazorUI.PullToRefresh.release"].Single().Arguments[0]);
     }
+
+    [TestMethod]
+    public void BitPullToRefreshShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitPullToRefresh>(0);
+            builder.AddAttribute(1, "aria-label", "Main");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-ptr");
+
+        Assert.AreEqual("Main", root.GetAttribute("aria-label"));
+    }
 }

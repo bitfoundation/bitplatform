@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The custom CSS classes or styles of the parts of the <see cref="BitSplitter"/> component.

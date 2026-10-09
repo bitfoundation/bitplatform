@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Wraps the stream handed out by <see cref="BitFileInput.OpenReadStreamAsync"/> so that the underlying

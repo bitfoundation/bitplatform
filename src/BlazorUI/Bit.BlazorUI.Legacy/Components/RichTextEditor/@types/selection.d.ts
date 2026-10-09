@@ -1,4 +1,4 @@
-type NativeRange = AbstractRange;
+﻿type NativeRange = AbstractRange;
 interface NormalizedRange {
     start: {
         node: NativeRange['startContainer'];

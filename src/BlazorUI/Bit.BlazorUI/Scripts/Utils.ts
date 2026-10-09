@@ -762,6 +762,47 @@
             Utils._tabOuts.set(elementId, controller);
         }
 
+        private static _focusIns = new Map<string, AbortController>();
+
+        // Reports, through the OnFocusIn callback, the first time the focus goes into the element other than by the
+        // pointer: the keyboard tabbing into it, or a script focusing something in it. A popup a pointer opened by
+        // hovering is the pointer's until then, and a click on it - on a field, or on its own background when it
+        // is focusable itself - is still the pointer's, so the focus a press moves in is left out. What moved the
+        // focus is the last of the two that went down, a pointer or a key, since a press reaches the focus through
+        // more than one event (a mousedown focuses a field, a click on a label focuses the field it names). It is
+        // registered once and released by the callback that reports it.
+        public static setupFocusIn(elementId: string, dotnetObj: DotNetObject) {
+            Utils.disposeFocusIn(elementId);
+
+            const element = document.getElementById(elementId);
+            if (!element) return;
+
+            const controller = new AbortController();
+
+            let byPointer = false;
+
+            document.addEventListener('pointerdown', () => byPointer = true, { signal: controller.signal, capture: true });
+            document.addEventListener('keydown', () => byPointer = false, { signal: controller.signal, capture: true });
+
+            element.addEventListener('focusin', () => {
+                if (byPointer) return;
+
+                Utils.disposeFocusIn(elementId);
+
+                dotnetObj.invokeMethodAsync('OnFocusIn');
+            }, { signal: controller.signal });
+
+            Utils._focusIns.set(elementId, controller);
+        }
+
+        public static disposeFocusIn(elementId: string) {
+            const controller = Utils._focusIns.get(elementId);
+            if (!controller) return;
+
+            controller.abort();
+            Utils._focusIns.delete(elementId);
+        }
+
         private static _escapes = new Map<string, AbortController>();
 
         // Dismisses an open callout on Escape through the OnEscape callback - but only when it is the innermost

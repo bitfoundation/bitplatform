@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 // The keyboard help: every key the editor answers to, listed in one panel opened by Alt+0 (the chord other editors
 // use for it) or by the Help group. The chords are read off the effective shortcut map, so a custom binding shows up

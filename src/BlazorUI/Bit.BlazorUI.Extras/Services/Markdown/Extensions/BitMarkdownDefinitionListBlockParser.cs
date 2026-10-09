@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Parses definition lists in the shape Pandoc and markdown-it use: a term on its own line,

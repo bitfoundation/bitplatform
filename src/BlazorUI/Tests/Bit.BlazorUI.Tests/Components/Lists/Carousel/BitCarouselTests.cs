@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -2871,5 +2871,23 @@ public partial class BitCarouselTests : BunitTestContext
                 builder.CloseComponent();
             });
         });
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitCarousel>(0);
+            builder.AddAttribute(1, "aria-label", "Featured");
+            builder.AddAttribute(2, nameof(BitCarousel.ChildContent), (RenderFragment)(items =>
+            {
+                items.OpenComponent<BitCarouselItem>(0);
+                items.CloseComponent();
+            }));
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("Featured", component.Find(".bit-csl").GetAttribute("aria-label"));
     }
 }

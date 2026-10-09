@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Type-safe wrapper for the <c>bit-theme</c> attribute name. Use the static factories

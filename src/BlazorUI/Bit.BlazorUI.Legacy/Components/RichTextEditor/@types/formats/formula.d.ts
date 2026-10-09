@@ -1,4 +1,4 @@
-declare class Formula extends Embed {
+﻿declare class Formula extends Embed {
     static blotName: string;
     static className: string;
     static tagName: string;

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Cubic interpolation mode for line smoothing, mirroring Chart.js.</summary>
 public enum BitChartCubicInterpolationMode

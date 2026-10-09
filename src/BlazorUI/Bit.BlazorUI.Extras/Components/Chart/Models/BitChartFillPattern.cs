@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>A repeating SVG pattern fill (hatching, dots, grid, ...).</summary>
 public sealed class BitChartFillPattern

@@ -1,4 +1,4 @@
-using Bunit;
+﻿using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Layouts.Spacer;
@@ -604,5 +604,22 @@ public class BitSpacerTests : BunitTestContext
         Assert.AreEqual("SPAN", spacers[2].TagName);
         StringAssert.Contains(spacers[2].GetAttribute("style")!, "flex-grow:2");
         StringAssert.Contains(spacers[2].GetAttribute("style")!, "min-block-size:1rem");
+    }
+
+    [TestMethod]
+    public void BitSpacerShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitSpacer>(0);
+            builder.AddAttribute(1, "aria-label", "Main");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-spc");
+
+        Assert.AreEqual("Main", root.GetAttribute("aria-label"));
+        Assert.AreEqual("separator", root.GetAttribute("role"));
+        Assert.IsFalse(root.HasAttribute("aria-hidden"));
     }
 }

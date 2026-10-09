@@ -19,11 +19,14 @@
         }
         else if (Label.HasValue())
         {
+            @* The text has a span of its own so that an ellipsis can cut it short in the underlined variant
+               while the required marker, drawn after it, stays visible. *@
             <label id="@_labelId"
                    for="@_inputId"
+                   title="@LabelTitle"
                    style="@Styles?.Label"
                    class="bit-tfl-lbl @Classes?.Label">
-                @Label
+                <span class="bit-tfl-ltx">@Label</span>
             </label>
         }
 

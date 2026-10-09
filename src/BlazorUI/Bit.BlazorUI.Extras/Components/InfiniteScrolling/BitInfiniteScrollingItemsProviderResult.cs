@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// The optional result of a <see cref="BitInfiniteScrollingItemsProvider{T}"/>, which lets a provider state

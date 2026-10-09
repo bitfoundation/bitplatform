@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class OtpInput {
         private static abortControllers: { [key: string]: AbortController } = {};
 

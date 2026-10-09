@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Mutable interaction state shared with the component (legend toggles + zoom ranges).</summary>
 public sealed class BitChartRenderState

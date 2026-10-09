@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 @typeparam TItem
 
@@ -10,7 +10,7 @@
     // BitComponentBase.GetSplattedAttribute) instead of being overwritten with the parameter's null. The
     // hyphenated aria-* names cannot reach the parameters they mirror - Blazor matches an attribute to a
     // parameter by name, and AriaLabel is not aria-label - so writing one by hand is a real thing to do.
-    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
+    var ariaLabel = ResolveAriaLabel();
     var ariaHidden = AriaHidden || GetSplattedAttribute("aria-hidden") is "true";
     // aria-describedby is a list of ids, so the author's are kept beside the component's rather than replaced.
     var describedBy = string.Join(' ', new[] { GetSplattedAttribute("aria-describedby"), descriptionId }.Where(id => id.HasValue()));

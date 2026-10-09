@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class TagsInput {
         // The keys the tag elements answer to that would otherwise carry a browser default with them:
         // Home and End scroll the page, the arrow keys scroll it sideways, Alt with an arrow is the

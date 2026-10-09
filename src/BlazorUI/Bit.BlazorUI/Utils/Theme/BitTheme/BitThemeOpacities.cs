@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>The opacity tokens (<c>--bit-opa-*</c>).</summary>
 public class BitThemeOpacities

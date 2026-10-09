@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>Provides localized labels and tooltips for the BitRichTextEditor's controls.</summary>
 public interface IBitRichTextEditorLocalizer

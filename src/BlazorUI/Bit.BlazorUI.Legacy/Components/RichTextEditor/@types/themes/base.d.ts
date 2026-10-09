@@ -1,4 +1,4 @@
-declare class BaseTheme extends Theme {
+﻿declare class BaseTheme extends Theme {
     pickers: Picker[];
     tooltip?: Tooltip;
     constructor(quill: Quill, options: ThemeOptions);

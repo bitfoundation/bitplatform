@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI.Demo.Client.Core.Components;
+﻿namespace Bit.BlazorUI.Demo.Client.Core.Components;
 
 /// <summary>
 /// Where the switcher is being rendered, which decides its size and the widths it shows at. The two

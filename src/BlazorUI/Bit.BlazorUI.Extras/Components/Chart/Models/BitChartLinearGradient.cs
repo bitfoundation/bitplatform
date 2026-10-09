@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// A linear gradient fill. By default it runs vertically (top→bottom of the chart area),

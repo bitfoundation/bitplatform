@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
@@ -1726,5 +1726,22 @@ public class BitHeaderTests : BunitTestContext
         component.Render(parameters => parameters.Add(p => p.ExtensionContent, (Microsoft.AspNetCore.Components.RenderFragment?)null));
 
         Assert.AreEqual(0, component.FindAll(".bit-hdr-ext").Count);
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldKeepASplattedAriaLabelAndInert()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitHeader>(0);
+            builder.AddAttribute(1, "aria-label", "Site header");
+            builder.AddAttribute(2, "inert", true);
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-hdr");
+
+        Assert.AreEqual("Site header", root.GetAttribute("aria-label"));
+        Assert.IsTrue(root.HasAttribute("inert"));
     }
 }

@@ -1,4 +1,4 @@
-declare class BubbleTooltip extends BaseTooltip {
+﻿declare class BubbleTooltip extends BaseTooltip {
     static TEMPLATE: string;
     constructor(quill: Quill, bounds?: HTMLElement);
     listen(): void;

@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 // Sanitization plumbing. When SanitizationPolicy is null the bridge applies a secure default
 // allowlist; otherwise the provided allowlist payload is sent to the bridge.

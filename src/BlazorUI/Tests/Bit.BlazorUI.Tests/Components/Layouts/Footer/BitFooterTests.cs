@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
@@ -1391,5 +1391,22 @@ public class BitFooterTests : BunitTestContext
         });
 
         Assert.AreEqual(2, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Footers.setup"));
+    }
+
+    [TestMethod]
+    public void BitFooterShouldKeepASplattedAriaLabelAndInert()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitFooter>(0);
+            builder.AddAttribute(1, "aria-label", "Site footer");
+            builder.AddAttribute(2, "inert", true);
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-ftr");
+
+        Assert.AreEqual("Site footer", root.GetAttribute("aria-label"));
+        Assert.IsTrue(root.HasAttribute("inert"));
     }
 }

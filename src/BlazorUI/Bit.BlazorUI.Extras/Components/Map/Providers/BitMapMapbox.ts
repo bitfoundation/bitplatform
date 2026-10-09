@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     /**
      * Mapbox GL JS provider. Loads from the official Mapbox CDN; the C# layer adds the script tag.
      * Routes every method through BitMapGlBase using the 'mapbox' provider key.

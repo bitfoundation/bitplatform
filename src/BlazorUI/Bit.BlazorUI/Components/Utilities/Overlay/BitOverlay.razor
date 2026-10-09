@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
 @* Pressing something that cannot hold the focus is what takes the focus off whatever had it, and the layer
@@ -23,7 +23,7 @@
      @onclick="HandleOnClick"
      @onmousedown="HandleOnMouseDown"
      id="@_Id"
-     aria-label="@AriaLabel"
+     aria-label="@ResolveAriaLabel()"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value"
      dir="@Dir?.ToString().ToLower()"

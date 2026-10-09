@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Configures a <see cref="BitMarkdownPipeline"/>. A freshly created builder contains

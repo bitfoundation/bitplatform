@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -1879,5 +1879,23 @@ public class BitSwiperTests : BunitTestContext
             ?? throw new InvalidOperationException($"The '{name}' option is missing from {options.GetType().Name}.");
 
         return property.GetValue(options);
+    }
+
+    [TestMethod]
+    public void BitSwiperShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitSwiper>(0);
+            builder.AddAttribute(1, "aria-label", "Featured");
+            builder.AddAttribute(2, nameof(BitSwiper.ChildContent), (RenderFragment)(items =>
+            {
+                items.OpenComponent<BitSwiperItem>(0);
+                items.CloseComponent();
+            }));
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("Featured", component.Find(".bit-swp").GetAttribute("aria-label"));
     }
 }

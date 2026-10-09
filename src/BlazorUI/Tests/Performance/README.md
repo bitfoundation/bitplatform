@@ -1,4 +1,4 @@
-# Bit.BlazorUI Performance Tests
+﻿# Bit.BlazorUI Performance Tests
 
 This folder contains browser-based performance tests for Bit.BlazorUI components using Playwright.
 

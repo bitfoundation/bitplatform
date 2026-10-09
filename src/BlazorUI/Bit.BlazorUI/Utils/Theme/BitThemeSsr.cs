@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Optional first-paint theme bootstrap for apps that use <c>bit-theme-persist</c> and/or <c>bit-theme-system</c> on the document element.

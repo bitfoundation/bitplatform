@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class Pivot {
         private static _instances: Record<string, PivotInstance> = {};
         private static _keyHandlers: Record<string, { element: HTMLElement, handler: (e: KeyboardEvent) => void }> = {};

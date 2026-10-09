@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 internal static class BitCircularTimePickerJsRuntimeExtensions
 {
@@ -6,15 +6,12 @@ internal static class BitCircularTimePickerJsRuntimeExtensions
         DotNetObjectReference<BitCircularTimePicker> obj,
         ElementReference clock,
         ElementReference input,
-        ElementReference callout,
-        bool dismissOnFocusOut,
         string pointerDownHandler,
         string pointerMoveHandler,
-        string pointerUpHandler,
-        string focusOutHandler)
+        string pointerUpHandler)
     {
-        return js.Invoke<string>("BitBlazorUI.CircularTimePicker.setup", obj, clock, input, callout, dismissOnFocusOut,
-                                 pointerDownHandler, pointerMoveHandler, pointerUpHandler, focusOutHandler);
+        return js.Invoke<string>("BitBlazorUI.CircularTimePicker.setup", obj, clock, input,
+                                 pointerDownHandler, pointerMoveHandler, pointerUpHandler);
     }
 
     internal static ValueTask BitCircularTimePickerDispose(this IJSRuntime jSRuntime, string? abortControllerId)

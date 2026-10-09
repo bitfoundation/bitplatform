@@ -250,4 +250,21 @@ public class BitThemeSwitcherTests : BunitTestContext
         Assert.AreEqual("group", root.GetAttribute("role"));
         Assert.AreEqual("Appearance", root.GetAttribute("aria-label"));
     }
+
+    [TestMethod]
+    public void BitThemeSwitcherShouldKeepASplattedAriaLabel()
+    {
+        RegisterServices();
+
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitThemeSwitcher>(0);
+            builder.AddAttribute(1, "aria-label", "Main");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-ths");
+
+        Assert.AreEqual("Main", root.GetAttribute("aria-label"));
+    }
 }

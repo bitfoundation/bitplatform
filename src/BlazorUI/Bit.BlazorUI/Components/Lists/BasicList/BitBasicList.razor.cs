@@ -1,4 +1,4 @@
-using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 namespace Bit.BlazorUI;
@@ -94,6 +94,12 @@ public partial class BitBasicList<TItem> : BitComponentBase
     private bool _LabelOnItems => _ShowLoading is false && IsNameableRole(_EffectiveRole);
 
     private bool _LabelOnRoot => AriaLabel.HasValue() && _LabelOnItems is false;
+
+    // A name the page splatted onto the root names the root whatever the AriaLabel does, and a name on a generic div is
+    // dropped by a screen reader - so a root carrying one takes the group role as well.
+    private bool _RootNamed => _LabelOnRoot
+                               || GetSplattedAttribute("aria-label").HasValue()
+                               || GetSplattedAttribute("aria-labelledby").HasValue();
 
     private string _LoadMoreId => $"{_Id}-lmb";
 

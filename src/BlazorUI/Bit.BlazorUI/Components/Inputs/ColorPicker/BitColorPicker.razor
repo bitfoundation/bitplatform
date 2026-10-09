@@ -19,8 +19,12 @@
        above the text fields is optional, so which one that is has to be worked out rather than assumed. *@
     var describes = ShowContrast ? _ContrastId : null;
     var sliders = ShowHueSlider || ShowAlphaSlider;
+    var (rootLabel, rootLabelledBy) = GetRootName();
 }
 
+@* The group role is the picker's own and is written after the splatted attributes on purpose. The disabled state is
+   resolved against an aria-disabled the page wrote by hand (see BitComponentBase.GetSplattedAttribute), since a
+   null written over a splatted attribute removes it. *@
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
      id="@_Id"
@@ -28,9 +32,9 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLower()"
-     aria-label="@(_AriaLabelledBy is null ? _AriaLabel : null)"
-     aria-labelledby="@_AriaLabelledBy"
-     aria-disabled="@(Disabled ? "true" : null)">
+     aria-label="@rootLabel"
+     aria-labelledby="@rootLabelledBy"
+     aria-disabled="@(Disabled ? "true" : GetSplattedAttribute("aria-disabled"))">
 
     @* aria-readonly is not a state a "group" carries - it belongs to the widgets inside it, which is where
        the saturation slider and the native ranges declare it. *@

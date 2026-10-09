@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>An ATX (<c># Heading</c>) or setext heading. <see cref="Level"/> is 1-6.</summary>
 public sealed class BitMarkdownHeadingNode : BitMarkdownNode

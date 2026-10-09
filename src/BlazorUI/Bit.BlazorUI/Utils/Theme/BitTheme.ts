@@ -1,4 +1,4 @@
-// Attribute / storage names - kept aligned with BitThemeAttributeNames.cs and BitThemeSsr.cs in
+﻿// Attribute / storage names - kept aligned with BitThemeAttributeNames.cs and BitThemeSsr.cs in
 // C#. If you rename a constant here, mirror the change there (the contract test under
 // Bit.BlazorUI.Tests.Utils.Theme will catch a mismatch).
 namespace BitBlazorUI {

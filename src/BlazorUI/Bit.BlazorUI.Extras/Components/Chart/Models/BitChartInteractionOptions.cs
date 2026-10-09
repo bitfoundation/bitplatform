@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Interaction options, mirroring Chart.js <c>options.interaction</c>. They decide which elements

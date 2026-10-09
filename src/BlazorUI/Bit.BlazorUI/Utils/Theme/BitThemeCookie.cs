@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Cookie name convention for persisting a theme preference on the server when using SSR or hybrid hosting.

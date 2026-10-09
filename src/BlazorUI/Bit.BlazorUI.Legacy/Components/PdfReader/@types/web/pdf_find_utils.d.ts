@@ -1,4 +1,4 @@
-declare namespace CharacterType {
+﻿declare namespace CharacterType {
     let SPACE: number;
     let ALPHA_LETTER: number;
     let PUNCT: number;

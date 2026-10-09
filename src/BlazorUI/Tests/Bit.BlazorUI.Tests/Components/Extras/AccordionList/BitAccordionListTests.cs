@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
@@ -343,5 +343,22 @@ public class BitAccordionListTests : BunitTestContext
         public string? Id { get; set; }
         public string? Name { get; set; }
         public bool Open { get; set; }
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldKeepASplattedAriaLabel()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitAccordionList<BitAccordionListItem>>(0);
+            builder.AddAttribute(1, "aria-label", "Main");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-acl");
+
+        Assert.AreEqual("Main", root.GetAttribute("aria-label"));
+        // A label on a plain container is dropped by a screen reader, so a splatted one makes the list a group too.
+        Assert.AreEqual("group", root.GetAttribute("role"));
     }
 }

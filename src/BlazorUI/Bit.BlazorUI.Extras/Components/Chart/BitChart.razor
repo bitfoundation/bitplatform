@@ -1,12 +1,14 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 
+@* A null written over a splatted attribute removes it, so an idle chart writes back the aria-busy the page splatted on
+   (see BitComponentBase.GetSplattedAttribute) rather than wiping it. *@
 <div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value"
      dir="@Dir?.ToString().ToLowerInvariant()"
-     aria-busy="@(IsLoading ? "true" : null)">
+     aria-busy="@(IsLoading ? "true" : GetSplattedAttribute("aria-busy"))">
     @if (_scene.Title is { } title && TitleSide(title) == BitPlacement.Top)
     {
         @RenderTitle(title, "bit-cht-ttl", false)

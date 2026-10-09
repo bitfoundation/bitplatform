@@ -27,11 +27,11 @@
     @* An attribute written after the splat wins over the one the app passed in through HtmlAttributes, and a
        null one takes it off the element altogether. What the tag has of its own therefore still comes first,
        but it falls back to - and for a description joins - whatever came in with the attributes. *@
-    var splattedLabel = HtmlAttributes.TryGetValue("aria-label", out var sal) ? sal?.ToString() : null;
-    var splattedLabelledBy = HtmlAttributes.TryGetValue("aria-labelledby", out var slb) ? slb?.ToString() : null;
-    var splattedTitle = HtmlAttributes.TryGetValue("title", out var stl) ? stl?.ToString() : null;
-    var splattedDescribedBy = HtmlAttributes.TryGetValue("aria-describedby", out var sdb) ? sdb?.ToString() : null;
-    var splattedTabIndex = HtmlAttributes.TryGetValue("tabindex", out var sti) ? sti?.ToString() : null;
+    var splattedLabel = GetSplattedAttribute("aria-label");
+    var splattedLabelledBy = GetSplattedAttribute("aria-labelledby");
+    var splattedTitle = GetSplattedAttribute("title");
+    var splattedDescribedBy = GetSplattedAttribute("aria-describedby");
+    var splattedTabIndex = GetSplattedAttribute("tabindex");
 
     @* A tag that is a control carries its tab index on that control, and a dismissible one on its button, so
        the root only takes it where there is nothing else inside the tag to take it - which is the one case

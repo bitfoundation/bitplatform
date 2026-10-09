@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// How <see cref="BitMap{TMapProvider}"/> renders the text alternative to its markers.

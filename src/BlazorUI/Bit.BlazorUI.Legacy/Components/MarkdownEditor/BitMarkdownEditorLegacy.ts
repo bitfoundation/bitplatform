@@ -1,4 +1,4 @@
-namespace BitBlazorUI.Legacy {
+﻿namespace BitBlazorUI.Legacy {
 
     export class MarkdownEditor {
         private static _editors: { [key: string]: Editor } = {};

@@ -1,4 +1,4 @@
-namespace BitBlazorUI {
+﻿namespace BitBlazorUI {
     export class SnackBars {
         private static _isInitialized = false;
         private static _hotkeys: Map<string, string[]> = new Map();

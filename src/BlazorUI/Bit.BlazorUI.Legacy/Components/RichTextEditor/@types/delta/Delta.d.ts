@@ -1,4 +1,4 @@
-declare type EmbedHandler<T> = {
+﻿declare type EmbedHandler<T> = {
     compose(a: T, b: T, keepNull: boolean): T;
     invert(a: T, b: T): T;
     transform(a: T, b: T, priority: boolean): T;

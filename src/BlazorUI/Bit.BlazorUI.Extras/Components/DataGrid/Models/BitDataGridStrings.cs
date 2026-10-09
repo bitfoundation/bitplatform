@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// All user-visible (and screen-reader-visible) strings rendered by <see cref="BitDataGrid{TItem}"/>.

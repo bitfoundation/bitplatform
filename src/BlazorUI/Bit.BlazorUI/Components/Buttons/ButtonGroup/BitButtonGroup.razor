@@ -1,4 +1,4 @@
-@namespace Bit.BlazorUI
+﻿@namespace Bit.BlazorUI
 @inherits BitComponentBase
 @typeparam TItem
 
@@ -23,7 +23,7 @@
         splattedRole = null;
     }
     var role = splattedRole ?? _RootRole;
-    var ariaLabel = AriaLabel ?? GetSplattedAttribute("aria-label");
+    var ariaLabel = ResolveAriaLabel();
     var ariaOrientation = GetSplattedAttribute("aria-orientation") ?? GetAriaOrientation(role);
     // A disabled group says so on the group itself as well as on each of its buttons: every role it renders with -
     // radiogroup, toolbar, group - supports aria-disabled, and it is what tells a screen reader that the whole

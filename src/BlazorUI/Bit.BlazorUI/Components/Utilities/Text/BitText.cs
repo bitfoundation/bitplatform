@@ -610,7 +610,7 @@ public partial class BitText : BitComponentBase
         builder.AddAttribute(4, "class", JoinClasses(ClassBuilder.Value, GetSplattedAttribute("class")));
         builder.AddAttribute(5, "dir", Dir?.ToString().ToLower(CultureInfo.InvariantCulture) ?? GetSplattedAttribute("dir"));
         builder.AddAttribute(6, "lang", Lang.HasValue() ? Lang : GetSplattedAttribute("lang"));
-        builder.AddAttribute(7, "aria-label", AriaLabel ?? GetSplattedAttribute("aria-label"));
+        builder.AddAttribute(7, "aria-label", ResolveAriaLabel());
         // A run of text is not focusable of itself, so the tab index is only ever written by a page that means to
         // reach it - a "-1" for a message the validation of a form moves the focus to, for instance.
         builder.AddAttribute(8, "tabindex", TabIndex ?? GetSplattedAttribute("tabindex"));

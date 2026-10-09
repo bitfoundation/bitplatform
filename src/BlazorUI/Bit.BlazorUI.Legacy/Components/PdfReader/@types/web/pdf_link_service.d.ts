@@ -1,4 +1,4 @@
-declare type PDFLinkServiceOptions = {
+﻿declare type PDFLinkServiceOptions = {
     /**
      * - The application event bus.
      */

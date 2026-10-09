@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Parses an inline construct triggered by one of <see cref="TriggerChars"/>.

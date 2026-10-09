@@ -1,4 +1,4 @@
-namespace Bit.BlazorUI;
+﻿namespace Bit.BlazorUI;
 
 /// <summary>
 /// Arguments for the OnToggling callback of <see cref="BitAccordionList{TItem}"/>.

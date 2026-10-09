@@ -1,4 +1,4 @@
-
+﻿
 namespace Bit.BlazorUI;
 
 public sealed class BitChartTitleModel

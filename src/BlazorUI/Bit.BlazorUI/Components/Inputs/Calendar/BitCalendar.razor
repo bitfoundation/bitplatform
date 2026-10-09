@@ -22,16 +22,21 @@
     var decreaseHourIconCss = BitIconInfo.From(TimePickerDecreaseHourIcon, TimePickerDecreaseHourIconName ?? "ChevronDownSmall")?.GetCssClasses();
     var increaseMinuteIconCss = BitIconInfo.From(TimePickerIncreaseMinuteIcon, TimePickerIncreaseMinuteIconName ?? "ChevronDownSmall bit-ico-r180")?.GetCssClasses();
     var decreaseMinuteIconCss = BitIconInfo.From(TimePickerDecreaseMinuteIcon, TimePickerDecreaseMinuteIconName ?? "ChevronDownSmall")?.GetCssClasses();
+
+    var ariaLabel = ResolveAriaLabel();
 }
 
 @* A calendar is a composite of labelled grids, so it needs no role of its own - but one given a name is a
-   named group, which is what lets a screen reader say which of two calendars on a page the focus is in. *@
-<div @ref="RootElement" @attributes="HtmlAttributes"
+   named group, which is what lets a screen reader say which of two calendars on a page the focus is in.
+   The role comes ahead of the splatted attributes, since the last of two attributes of the same name wins:
+   a role the page passes itself is kept, rather than replaced by this one or dropped along with its null. *@
+<div @ref="RootElement"
+     role="@(ariaLabel.HasValue() || GetSplattedAttribute("aria-labelledby").HasValue() ? "group" : null)"
+     @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     role="@(AriaLabel.HasValue() ? "group" : null)"
-     aria-label="@AriaLabel"
+     aria-label="@ariaLabel"
      dir="@Dir?.ToString().ToLower()">
 
     @if (HeaderTemplate is not null)

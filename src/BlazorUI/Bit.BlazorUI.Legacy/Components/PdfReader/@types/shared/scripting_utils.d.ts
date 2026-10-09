@@ -1,4 +1,4 @@
-declare class ColorConverters {
+﻿declare class ColorConverters {
     static CMYK_G([c, y, m, k]: [any, any, any, any]): (string | number)[];
     static G_CMYK([g]: [any]): (string | number)[];
     static G_RGB([g]: [any]): any[];

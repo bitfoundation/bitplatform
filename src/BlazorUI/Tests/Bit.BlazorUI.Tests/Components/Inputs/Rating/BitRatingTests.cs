@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -2327,5 +2327,47 @@ public class BitRatingTests : BunitTestContext
         component.FindAll(".bit-rtg-btn")[3].Click();
 
         Assert.IsFalse(component.Find(".bit-rtg").ClassList.Contains("bit-inv"));
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true),
+    ]
+    public void BitRatingShouldKeepTheSplattedStatesOfAnInteractiveRatingOnly(bool readOnly)
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitRating>(0);
+            builder.AddAttribute(1, nameof(BitRating.ReadOnly), readOnly);
+            builder.AddAttribute(2, "aria-required", "true");
+            builder.AddAttribute(3, "aria-invalid", "true");
+            builder.AddAttribute(4, "aria-disabled", "true");
+            builder.AddAttribute(5, "aria-orientation", "horizontal");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-rtg");
+
+        // A read-only rating is an image, which supports none of them, so it writes none of them - the page's included.
+        var expected = readOnly ? null : "true";
+        Assert.AreEqual(expected, root.GetAttribute("aria-required"));
+        Assert.AreEqual(expected, root.GetAttribute("aria-invalid"));
+        Assert.AreEqual(expected, root.GetAttribute("aria-disabled"));
+        Assert.AreEqual(readOnly ? null : "horizontal", root.GetAttribute("aria-orientation"));
+    }
+
+    [TestMethod]
+    public void BitRatingShouldNotAnnounceADisabledRatingAsRequired()
+    {
+        // A disabled field is neither submitted nor validated, so a splatted aria-required goes with it.
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitRating>(0);
+            builder.AddAttribute(1, nameof(BitRating.Disabled), true);
+            builder.AddAttribute(2, "aria-required", "true");
+            builder.CloseComponent();
+        });
+
+        Assert.IsFalse(component.Find(".bit-rtg").HasAttribute("aria-required"));
     }
 }
