@@ -4855,10 +4855,10 @@ public class BitTagsInputTests : BunitTestContext
     #region the Escape key
 
     // What the field acts on Escape for is claimed through data-bit-esc (Utils.claimEscape), so a dialog around it
-    // does not close on the same press: the tags it would clear always, the text being typed while there is some.
+    // does not close on the same press: the tags it would clear, or the text being typed while there is some.
     [TestMethod,
         DataRow(true, false, false, "claim"),
-        DataRow(false, false, false, "text"),
+        DataRow(false, false, false, null),
         DataRow(true, true, false, null),
         DataRow(true, false, true, null)
     ]
@@ -4889,7 +4889,15 @@ public class BitTagsInputTests : BunitTestContext
             parameters.Add(p => p.OnClear, () => clearCount++);
         });
 
-        Assert.AreEqual("text", com.Find(".bit-tgi-inp").GetAttribute("data-bit-esc"));
+        Assert.IsFalse(com.Find(".bit-tgi-inp").HasAttribute("data-bit-esc"));
+
+        await com.Find(".bit-tgi-inp").InputAsync(new ChangeEventArgs { Value = "c" });
+
+        Assert.AreEqual("claim", com.Find(".bit-tgi-inp").GetAttribute("data-bit-esc"));
+
+        await com.Find(".bit-tgi-inp").KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsFalse(com.Find(".bit-tgi-inp").HasAttribute("data-bit-esc"));
 
         await com.Find(".bit-tgi-inp").KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
 

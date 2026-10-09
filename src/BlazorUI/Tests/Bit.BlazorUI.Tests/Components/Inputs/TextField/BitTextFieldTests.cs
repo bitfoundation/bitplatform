@@ -4052,14 +4052,14 @@ public class BitTextFieldTests : BunitTestContext
     [TestMethod,
         DataRow(true, false, "hello", false, "claim"),
         DataRow(true, false, "hello", true, "claim"),
-        DataRow(true, false, null, false, "text"),
+        DataRow(true, false, null, false, null),
         DataRow(true, true, "hello", false, null),
         DataRow(false, false, "hello", false, null)
     ]
     public void BitTextFieldClearOnEscapeClaimsTheKeyItClearsWith(bool clearOnEscape, bool readOnly, string? value, bool multiline, string? claim)
     {
         // The field carries data-bit-esc (Utils.claimEscape) for the press that clears it, so a dialog around it
-        // stays open on that press: always with a value, and with the text the input holds otherwise.
+        // stays open on that press, and only for that press: an empty field leaves the key to the dialog.
         var component = RenderComponent<BitTextField>(parameters =>
         {
             parameters.Add(p => p.ClearOnEscape, clearOnEscape);
@@ -4069,6 +4069,28 @@ public class BitTextFieldTests : BunitTestContext
         });
 
         Assert.AreEqual(claim, component.Find(".bit-tfl-inp").GetAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public void BitTextFieldClearOnEscapeClaimsTheKeyForTextNotCommittedYet()
+    {
+        // A field that only commits on blur has no value while it is typed into, but the input has reported its
+        // text, which is what the clear acts on - so the claim follows it there and back.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ClearOnEscape, true);
+        });
+
+        Assert.IsFalse(component.Find(".bit-tfl-inp").HasAttribute("data-bit-esc"));
+
+        component.Find(".bit-tfl-inp").Input("h");
+
+        Assert.IsNull(component.Instance.Value);
+        Assert.AreEqual("claim", component.Find(".bit-tfl-inp").GetAttribute("data-bit-esc"));
+
+        component.Find(".bit-tfl-inp").Input("");
+
+        Assert.IsFalse(component.Find(".bit-tfl-inp").HasAttribute("data-bit-esc"));
     }
 
     [TestMethod]

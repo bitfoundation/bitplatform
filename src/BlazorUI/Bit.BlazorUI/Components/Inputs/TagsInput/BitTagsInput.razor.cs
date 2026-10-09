@@ -1583,11 +1583,11 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
                                                          && hasRemovableTag
                                                          && InvalidValueBinding() is false;
 
-    // When HandleOnKeyDown acts on Escape, written onto the input for Utils.claimEscape: the tags are cleared
-    // whatever the input shows, and otherwise the text being typed is taken back while there is any.
-    private string? EscapeClaim(bool hasRemovableTag) => HandlesEscape is false ? null
-                                                         : ClearsOnEscape(hasRemovableTag) ? "claim"
-                                                         : "text";
+    // When HandleOnKeyDown acts on Escape, written onto the input for Utils.claimEscape: read off the same state
+    // it decides on - the text being typed, which it takes back first, or else the tags it clears.
+    private string? EscapeClaim(bool hasRemovableTag) => HandlesEscape && (_inputText.Length > 0 || ClearsOnEscape(hasRemovableTag))
+                                                            ? "claim"
+                                                            : null;
 
     /// <summary>
     /// Whether the clear button would have anything to take off the field: every tag, unless

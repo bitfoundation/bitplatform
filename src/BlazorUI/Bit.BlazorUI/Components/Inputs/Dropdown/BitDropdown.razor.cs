@@ -3673,14 +3673,17 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // two claims below go by: there is a selection, and the clear it runs would not refuse it (CanClear). The
     // claims are written onto the elements whose handlers act on the key, for Utils.claimEscape - the field closes
     // an open list or clears, and the ComboBox input, which the field leaves the key to while it has the focus,
-    // also drops the term typed into it while there is one.
+    // also drops the term typed into it while there is one (the term HandleOnKeyDown reads, not the input's DOM
+    // value, which ClearComboBoxInput leaves alone in a read-only dropdown).
     private bool ClearsOnEscape => ClearOnEscape && _selectedItems.Count > 0 && CanClear;
 
     private string? TriggerEscapeClaim => Disabled is false && (IsOpen || ClearsOnEscape) ? "claim" : null;
 
     private string? ComboEscapeClaim => Disabled || InvalidValueBinding() ? null
-                                      : IsOpen || ClearsOnEscape ? "claim"
-                                      : "text";
+                                      : IsOpen || ClearsOnEscape || HasComboTermToDrop ? "claim"
+                                      : null;
+
+    private bool HasComboTermToDrop => ReadOnly is false && (_comboInputText.HasValue() || _searchText.HasValue());
 
     // Only a plain Escape clears: one with a modifier is never claimed from the surface around the dropdown (see
     // Utils.claimEscape), which closes on it instead.

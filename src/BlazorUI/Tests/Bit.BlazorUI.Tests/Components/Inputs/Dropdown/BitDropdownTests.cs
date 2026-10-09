@@ -4572,15 +4572,16 @@ public class BitDropdownTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(false, null, "text"),
+        DataRow(false, null, null),
         DataRow(true, "f-app", "claim"),
-        DataRow(true, null, "text")
+        DataRow(true, null, null)
     ]
-    public void BitDropdownComboShouldClaimTheEscapeThatDropsTheTypedTerm(bool clearOnEscape, string? value, string claim)
+    public void BitDropdownComboShouldClaimTheEscapeThatDropsTheTypedTerm(bool clearOnEscape, string? value, string? claim)
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
-        // The ComboBox input drops the term typed into it on Escape, which only its live text says it holds.
+        // The ComboBox input drops the term typed into it on Escape, and with nothing typed, nothing open and
+        // nothing to clear it leaves the key alone; once a term is typed, the press is the input's.
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Combo, true);
@@ -4590,6 +4591,10 @@ public class BitDropdownTests : BunitTestContext
         });
 
         Assert.AreEqual(claim, component.Find(".bit-drp-inp").GetAttribute("data-bit-esc"));
+
+        component.Find(".bit-drp-inp").Input("ban");
+
+        Assert.AreEqual("claim", component.Find(".bit-drp-inp").GetAttribute("data-bit-esc"));
     }
 
     [TestMethod]

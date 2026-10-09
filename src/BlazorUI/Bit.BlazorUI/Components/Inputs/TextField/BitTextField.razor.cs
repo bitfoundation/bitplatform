@@ -1046,7 +1046,8 @@ public partial class BitTextField : BitTextInputBase<string?>
     // is what keeps them right on a field that only commits its value when it loses focus: a clear button
     // that shows up a whole blur after the first character would be of no use.
     // Whether the input holds anything is tracked whatever is shown, since it is also what tells a clearing
-    // that there is something to clear; only the re-render is kept for the fields that draw either of them.
+    // that there is something to clear; only the re-render is kept for the fields that draw either of them, or
+    // that claim the Escape which clears it (EscapeClaim).
     private void UpdateCharCount(string? text)
     {
         var hasText = string.IsNullOrEmpty(text) is false;
@@ -1057,7 +1058,7 @@ public partial class BitTextField : BitTextInputBase<string?>
         _hasText = hasText;
         _charCount = count;
 
-        if (ShowCount || ShowClearButton)
+        if (ShowCount || ShowClearButton || ClearOnEscape)
         {
             StateHasChanged();
         }
@@ -1100,11 +1101,12 @@ public partial class BitTextField : BitTextInputBase<string?>
     // go by: never in a read-only field, nor in one bound one way, whose value refuses the empty one.
     private bool ClearsOnEscape => ClearOnEscape && Disabled is false && ReadOnly is false && InvalidValueBinding() is false;
 
-    // When ClearOnEscape clears the field, written onto the input for Utils.claimEscape: a value whatever the input
-    // shows, and otherwise the text the input still holds.
-    private string? EscapeClaim => ClearsOnEscape is false ? null
-                                 : string.IsNullOrEmpty(CurrentValueAsString) is false ? "claim"
-                                 : "text";
+    // When ClearOnEscape clears the field, written onto the input for Utils.claimEscape: read off the same state
+    // ClearValue decides on - a value, or the text the input has reported on its way to one - so the key is
+    // claimed exactly when the press clears something.
+    private string? EscapeClaim => ClearsOnEscape && (_hasText || string.IsNullOrEmpty(CurrentValueAsString) is false)
+                                    ? "claim"
+                                    : null;
 
     private bool NeedsCompositionGuard => Immediate
                                           || ClearOnEscape
