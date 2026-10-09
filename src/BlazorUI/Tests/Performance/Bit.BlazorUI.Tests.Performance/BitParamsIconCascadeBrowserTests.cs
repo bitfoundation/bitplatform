@@ -25,7 +25,7 @@ public class BitParamsIconCascadeBrowserTests : PerformanceTestBase
     private const string CascadedUrl = "img[src*='cascaded-icon.svg']";
     private const string DividerText = ".bit-brc-dtx";
 
-    [DataTestMethod]
+    [TestMethod]
     [DataRow("button-cascaded", Cascaded, null)]
     [DataRow("button-own", Own, Cascaded)]
     [DataRow("button-own-vs-url", Own, CascadedUrl)]
