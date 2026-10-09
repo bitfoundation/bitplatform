@@ -10,10 +10,6 @@
         <InvariantTimezone Condition="'$(Configuration)' == 'Release'">true</InvariantTimezone>
         <InvariantGlobalization Condition="'$(Configuration)' == 'Release'">true</InvariantGlobalization>
         <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
-        <ResolveStaticWebAssetsInputsDependsOn>
-            BeforeBuildTasks;
-            $(ResolveStaticWebAssetsInputsDependsOn)
-        </ResolveStaticWebAssetsInputsDependsOn>
         
         <WasmFingerprintAssets>false</WasmFingerprintAssets>
         <StaticWebAssetsFingerprintContent>false</StaticWebAssetsFingerprintContent>
@@ -98,11 +94,14 @@
         <TypeScriptFiles Include="**\*.ts" Exclude="node_modules\**;bin\**;obj\**" />
     </ItemGroup>
 
-    <Target Name="BeforeBuildTasks" AfterTargets="CoreCompile">
+    <Target Name="BeforeBuildTasks" BeforeTargets="ResolveProjectStaticWebAssets;ResolveScopedCssInputs" Condition=" '$(DesignTimeBuild)' != 'true' ">
         <CallTarget Targets="InstallNodejsDependencies" />
         <CallTarget Targets="BuildJavaScript" />
         <CallTarget Targets="BuildIsolatedScssFiles" />
         <CallTarget Targets="BuildGlobalScssFiles" />
+        <ItemGroup>
+            <Content Include="**\*.razor.css;wwwroot\scripts\app.js;wwwroot\styles\app.css" Exclude="@(Content);@(None);node_modules\**;bin\**;obj\**" />
+        </ItemGroup>
     </Target>
 
     <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
