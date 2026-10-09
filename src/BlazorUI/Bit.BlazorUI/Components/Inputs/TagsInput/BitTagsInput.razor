@@ -10,7 +10,12 @@
     var hasLabel = LabelTemplate is not null || Label.HasValue();
     var hasDescription = DescriptionTemplate is not null || Description.HasValue();
     var isInteractive = Disabled is false && ReadOnly is false;
-    var showClearButton = ShowClearButton && isInteractive && (HasRemovableTag() || _inputText.Length > 0);
+    var canClear = ShowClearButton && isInteractive;
+
+    // Worked out once per render, for the clear button and for the Escape that stands in for it (EscapeClaim):
+    // it runs the consumer's CanRemoveTag over every tag.
+    var hasRemovableTag = canClear && HasRemovableTag();
+    var showClearButton = canClear && (hasRemovableTag || _inputText.Length > 0);
 
     // The tags beyond the MaxDisplayedTags are folded away behind a chip that says how many they are,
     // which the reader unfolds the list with; the value itself is untouched, only how much of it is drawn.
@@ -304,7 +309,7 @@
                autocorrect="off"
                autocapitalize="none"
                readonly="@ReadOnly"
-               data-bit-esc="@EscapeClaim"
+               data-bit-esc="@EscapeClaim(hasRemovableTag)"
                value="@_inputText"
                style="@Styles?.Input"
                autofocus="@AutoFocus"

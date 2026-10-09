@@ -181,14 +181,15 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// <summary>
     /// Empties the field when the Escape key is pressed in it, which is the keyboard counterpart of the
     /// clear button and what a filter or a search field is expected to do. It raises <see cref="OnClear"/>
-    /// and is announced the same way a press on the button is, it leaves a read-only field alone, and it
-    /// does not need <see cref="ShowClearButton"/>. A press that clears the field is taken by it, so a dialog,
-    /// a modal, a panel or an overlay around the field stays open and closes on the next one; a press with
-    /// nothing to clear goes on to them as usual. <see cref="OnEscape"/> is still raised afterwards, so a
-    /// handler of the app's own sees a field that is already empty. Escape keeps its own meaning while
-    /// an input method editor is composing, where it cancels the candidate rather than the value, and while a
-    /// <see cref="GhostText"/> suggestion is showing, where it rejects the suggestion and leaves the typed text
-    /// alone. An Escape in a field that is already empty clears nothing and raises nothing.
+    /// and is announced the same way a press on the button is, it leaves a read-only field and one bound one
+    /// way (a Value with neither a ValueChanged nor an OnChange) alone, and it does not need
+    /// <see cref="ShowClearButton"/>. A press that clears the field is taken by it, so a dialog, a modal, a
+    /// panel or an overlay around the field stays open and closes on the next one; a press with nothing to
+    /// clear, and one with Shift, Ctrl, Alt or Meta held, goes on to them as usual. <see cref="OnEscape"/> is
+    /// still raised afterwards, so a handler of the app's own sees a field that is already empty. Escape keeps
+    /// its own meaning while an input method editor is composing, where it cancels the candidate rather than
+    /// the value, and while a <see cref="GhostText"/> suggestion is showing, where it rejects the suggestion and
+    /// leaves the typed text alone. An Escape in a field that is already empty clears nothing and raises nothing.
     /// </summary>
     [Parameter] public bool ClearOnEscape { get; set; }
 
@@ -1095,9 +1096,13 @@ public partial class BitTextField : BitTextInputBase<string?>
     // not empty - one counting words, say - and a field holding text would otherwise lose its clear button.
     private bool ShowClear => ShowClearButton && _hasText;
 
-    // When ClearOnEscape clears the field (see ClearValue), written onto the input for Utils.claimEscape: a value
-    // whatever the input shows, and otherwise the text the input still holds.
-    private string? EscapeClaim => ClearOnEscape is false || ReadOnly ? null
+    // Whether a plain Escape clears the field (see ClearValue), the one rule HandleOnKeyDown and EscapeClaim both
+    // go by: never in a read-only field, nor in one bound one way, whose value refuses the empty one.
+    private bool ClearsOnEscape => ClearOnEscape && Disabled is false && ReadOnly is false && InvalidValueBinding() is false;
+
+    // When ClearOnEscape clears the field, written onto the input for Utils.claimEscape: a value whatever the input
+    // shows, and otherwise the text the input still holds.
+    private string? EscapeClaim => ClearsOnEscape is false ? null
                                  : string.IsNullOrEmpty(CurrentValueAsString) is false ? "claim"
                                  : "text";
 
@@ -1318,8 +1323,9 @@ public partial class BitTextField : BitTextInputBase<string?>
         {
             // The clearing comes first so that an OnEscape handler sees a field that is already empty rather
             // than one that empties itself behind it. A surface of the library around the field leaves this press
-            // alone: the input has claimed it (EscapeClaim).
-            if (ClearOnEscape && ReadOnly is false && await ClearValue())
+            // alone: the input has claimed it (EscapeClaim). An Escape with a modifier is the surface's, so it
+            // clears nothing here.
+            if (ClearsOnEscape && e.IsPlainEscape() && await ClearValue())
             {
                 await OnClear.InvokeAsync();
             }

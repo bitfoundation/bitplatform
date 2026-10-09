@@ -2381,7 +2381,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             }
             else
             {
-                await ClearOnEscapeKey();
+                await ClearOnEscapeKey(e);
             }
 
             return;
@@ -3262,15 +3262,21 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         await _virtualizeElement.RefreshDataAsync();
     }
 
+    // Whether the selection can be taken back at all, the one rule the clear button, ClearAsync and the Escape key
+    // (ClearsOnEscape) all go by: never in a read-only or a disabled dropdown, nor where the selection is bound one
+    // way - a Values without a ValuesChanged, or a Value with neither a ValueChanged nor an OnChange - which refuses
+    // the empty one.
+    private bool CanClear => ReadOnly is false
+                             && Disabled is false
+                             && (MultiSelect ? ValuesHasBeenSet is false || ValuesChanged.HasDelegate
+                                             : InvalidValueBinding() is false);
+
     private async Task HandleOnClearClick()
     {
-        if (ReadOnly) return;
-        if (Disabled) return;
+        if (CanClear is false) return;
 
         if (MultiSelect)
         {
-            if (ValuesHasBeenSet && ValuesChanged.HasDelegate is false) return;
-
             await AssignValues([]);
 
             // A copy, like every other call site: handing over the live Values collection (which a
@@ -3279,8 +3285,6 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
         else
         {
-            if (InvalidValueBinding()) return;
-
             CurrentValue = default;
 
             _selectedItems.Clear();
@@ -3607,6 +3611,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         if (eventArgs.Key == "Escape")
         {
+            // An Escape with a modifier is never claimed from the surface around the dropdown (see
+            // Utils.claimEscape), so with the callout closed it is that surface's and drops nothing here. An open
+            // callout is closed by any Escape, the surfaces leaving the key to it whatever is held.
+            if (IsOpen is false && eventArgs.IsPlainEscape() is false) return;
+
             // What this press has to take back before it can reach the selection: a callout on the
             // screen, and a term the user typed into the input. Both are read before they are dropped.
             var hadSomethingToDismiss = IsOpen || _comboInputText.HasValue();
@@ -3619,7 +3628,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
             if (hadSomethingToDismiss is false)
             {
-                await ClearOnEscapeKey();
+                await ClearOnEscapeKey(eventArgs);
             }
         }
         else if (eventArgs.Key == "Enter")
@@ -3660,11 +3669,12 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     // Escape with nothing left to dismiss takes back the selection, which is what a keyboard user
     // otherwise has to reach the clear button for. It goes through the very same clear, so it reports
     // itself through OnClear and is refused wherever that button would be.
-    // When an Escape reaches the selection rather than nothing at all: the clear it runs refuses a read-only
-    // dropdown. The two claims below are built on it, written onto the elements whose handlers act on the key
-    // for Utils.claimEscape - the field closes an open list or clears, and the ComboBox input, which the field
-    // leaves the key to while it has the focus, also drops the term typed into it while there is one.
-    private bool ClearsOnEscape => ClearOnEscape && ReadOnly is false && _selectedItems.Count > 0;
+    // When a plain Escape reaches the selection rather than nothing at all, the one rule ClearOnEscapeKey and the
+    // two claims below go by: there is a selection, and the clear it runs would not refuse it (CanClear). The
+    // claims are written onto the elements whose handlers act on the key, for Utils.claimEscape - the field closes
+    // an open list or clears, and the ComboBox input, which the field leaves the key to while it has the focus,
+    // also drops the term typed into it while there is one.
+    private bool ClearsOnEscape => ClearOnEscape && _selectedItems.Count > 0 && CanClear;
 
     private string? TriggerEscapeClaim => Disabled is false && (IsOpen || ClearsOnEscape) ? "claim" : null;
 
@@ -3672,10 +3682,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
                                       : IsOpen || ClearsOnEscape ? "claim"
                                       : "text";
 
-    private Task ClearOnEscapeKey()
+    // Only a plain Escape clears: one with a modifier is never claimed from the surface around the dropdown (see
+    // Utils.claimEscape), which closes on it instead.
+    private Task ClearOnEscapeKey(KeyboardEventArgs e)
     {
-        if (ClearOnEscape is false) return Task.CompletedTask;
-        if (_selectedItems.Count == 0) return Task.CompletedTask;
+        if (e.IsPlainEscape() is false || ClearsOnEscape is false) return Task.CompletedTask;
 
         return HandleOnClearClick();
     }

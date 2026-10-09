@@ -1159,7 +1159,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
                 break;
 
             case "Escape":
-                await HandleEscape();
+                await HandleEscape(e);
                 break;
 
             case "ArrowDown":
@@ -1261,14 +1261,19 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
-    // When HandleEscape acts on the key, written onto the input for Utils.claimEscape: an open list is closed, a
-    // value is cleared, and with neither of them the input is wiped of text it still holds.
-    private string? EscapeClaim => _isOpen ? "claim"
-                                 : ReadOnly || NoClearOnEscape ? null
-                                 : CurrentValue.HasValue() ? "claim"
-                                 : "text";
+    // When HandleEscape acts on the key, written onto the input for Utils.claimEscape: an open list is closed, and
+    // otherwise the field is cleared (ClearClaim).
+    private string? EscapeClaim => _isOpen ? "claim" : ClearClaim;
 
-    private async Task HandleEscape()
+    // What a plain Escape clears once the list is closed, the one rule HandleEscape and EscapeClaim both go by: a
+    // value whatever the input shows ("claim"), and with none the text the input still holds ("text"). A read-only
+    // field, NoClearOnEscape and a value bound one way, which refuses the empty one, leave the key alone (null).
+    private string? ClearClaim => Disabled || ReadOnly || NoClearOnEscape ? null
+                                : CurrentValue.HasNoValue() ? "text"
+                                : InvalidValueBinding() ? null
+                                : "claim";
+
+    private async Task HandleEscape(KeyboardEventArgs e)
     {
         await OnEscape.InvokeAsync();
 
@@ -1288,9 +1293,14 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             return;
         }
 
-        if (ReadOnly || NoClearOnEscape) return;
+        // An Escape with a modifier is never claimed from the surface around the field, so it clears nothing here.
+        if (e.IsPlainEscape() is false) return;
 
-        if (CurrentValue.HasNoValue())
+        var claim = ClearClaim;
+
+        if (claim is null) return;
+
+        if (claim == "text")
         {
             // The model is already empty, but without Immediate the input element can still hold
             // text that was never committed. Escape must wipe that too, and since nothing was

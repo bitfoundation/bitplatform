@@ -4876,6 +4876,54 @@ public class BitTagsInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitTagsInputLeavesTheEscapeOfAOneWayBindingToTheTextTest()
+    {
+        var clearCount = 0;
+
+        // A Value with neither a ValueChanged nor an OnChange refuses the list the clear would leave, so the tags are
+        // not what an Escape takes: it claims the key only for the text being typed, and clears nothing.
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.Value, new List<string> { "a", "b" });
+            parameters.Add(p => p.OnClear, () => clearCount++);
+        });
+
+        Assert.AreEqual("text", com.Find(".bit-tgi-inp").GetAttribute("data-bit-esc"));
+
+        await com.Find(".bit-tgi-inp").KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(2, com.FindAll(".bit-tgi-tag").Count);
+        Assert.AreEqual(0, clearCount);
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputLeavesAModifiedEscapeAloneTest()
+    {
+        var clearCount = 0;
+
+        // Utils.claimEscape never claims an Escape with a modifier, so the dialog around the field closes on it - and
+        // the field must not take back the text or the tags on the same press.
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.DefaultValue, new List<string> { "a", "b" });
+            parameters.Add(p => p.OnClear, () => clearCount++);
+        });
+
+        await com.Find(".bit-tgi-inp").InputAsync(new ChangeEventArgs { Value = "c" });
+        await com.Find(".bit-tgi-inp").KeyDownAsync(new KeyboardEventArgs { Key = "Escape", ShiftKey = true });
+
+        Assert.AreEqual("c", com.Find(".bit-tgi-inp").GetAttribute("value"));
+
+        await com.Find(".bit-tgi-inp").InputAsync(new ChangeEventArgs { Value = "" });
+        await com.Find(".bit-tgi-inp").KeyDownAsync(new KeyboardEventArgs { Key = "Escape", CtrlKey = true });
+
+        Assert.AreEqual(2, com.FindAll(".bit-tgi-tag").Count);
+        Assert.AreEqual(0, clearCount);
+    }
+
+    [TestMethod]
     public async Task BitTagsInputClaimsTheEscapeThatPutsACarriedTagBackTest()
     {
         var com = RenderComponent<BitTagsInput>(parameters =>

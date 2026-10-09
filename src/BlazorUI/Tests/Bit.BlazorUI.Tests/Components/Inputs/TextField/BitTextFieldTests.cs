@@ -4072,6 +4072,54 @@ public class BitTextFieldTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitTextFieldClearOnEscapeLeavesTheKeyOfAOneWayBindingAlone()
+    {
+        var clearCount = 0;
+
+        // A Value with neither a ValueChanged nor an OnChange refuses the empty value, so the Escape clears nothing
+        // and is not claimed: it goes on to the dialog around the field instead of being taken for nothing.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ClearOnEscape, true);
+            parameters.Add(p => p.Value, "hello");
+            parameters.Add(p => p.OnClear, () => clearCount++);
+        });
+
+        var input = component.Find(".bit-tfl-inp");
+        Assert.IsFalse(input.HasAttribute("data-bit-esc"));
+
+        input.KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual("hello", component.Instance.Value);
+        Assert.AreEqual(0, clearCount);
+    }
+
+    [TestMethod,
+        DataRow(true, false, false, false),
+        DataRow(false, true, false, false),
+        DataRow(false, false, true, false),
+        DataRow(false, false, false, true)
+    ]
+    public void BitTextFieldClearOnEscapeLeavesAModifiedEscapeAlone(bool shift, bool ctrl, bool alt, bool meta)
+    {
+        var clearCount = 0;
+
+        // Utils.claimEscape never claims an Escape with a modifier, so the dialog around the field closes on it - and
+        // the field must not clear on the same press.
+        var component = RenderComponent<BitTextField>(parameters =>
+        {
+            parameters.Add(p => p.ClearOnEscape, true);
+            parameters.Add(p => p.DefaultValue, "hello");
+            parameters.Add(p => p.OnClear, () => clearCount++);
+        });
+
+        component.Find(".bit-tfl-inp").KeyDown(new KeyboardEventArgs { Key = "Escape", ShiftKey = shift, CtrlKey = ctrl, AltKey = alt, MetaKey = meta });
+
+        Assert.AreEqual("hello", component.Instance.Value);
+        Assert.AreEqual(0, clearCount);
+    }
+
+    [TestMethod]
     public void BitTextFieldClearOnEscapeInAnEmptyFieldRaisesAndAnnouncesNothing()
     {
         var clearCount = 0;

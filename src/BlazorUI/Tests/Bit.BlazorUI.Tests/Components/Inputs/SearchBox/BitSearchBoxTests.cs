@@ -1190,6 +1190,48 @@ public class BitSearchBoxTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitSearchBoxShouldLeaveTheEscapeOfAOneWayBindingAlone()
+    {
+        var clearCount = 0;
+
+        // A Value with neither a ValueChanged nor an OnChange refuses the empty value, so the Escape clears nothing,
+        // raises nothing and is not claimed: it goes on to the dialog around the field.
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Value, "apple");
+            parameters.Add(p => p.OnClear, () => clearCount++);
+        });
+
+        var input = component.Find(".bit-srb-inp");
+        Assert.IsFalse(input.HasAttribute("data-bit-esc"));
+
+        input.KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual("apple", component.Instance.Value);
+        Assert.AreEqual(0, clearCount);
+        Assert.IsFalse(component.Find(".bit-srb-inp").HasAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public void BitSearchBoxShouldLeaveAModifiedEscapeAlone()
+    {
+        var clearCount = 0;
+
+        // Utils.claimEscape never claims an Escape with a modifier, so the dialog around the field closes on it - and
+        // the field must not clear on the same press.
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, "apple");
+            parameters.Add(p => p.OnClear, () => clearCount++);
+        });
+
+        component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "Escape", ShiftKey = true });
+
+        Assert.AreEqual("apple", component.Instance.Value);
+        Assert.AreEqual(0, clearCount);
+    }
+
+    [TestMethod]
     public void BitSearchBoxShouldClaimTheEscapeThatClosesTheCallout()
     {
         var component = RenderComponent<BitSearchBox>(parameters =>

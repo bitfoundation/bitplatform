@@ -2250,6 +2250,29 @@ public class BitMessageTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMessageShouldNotDismissOnAModifiedEscape()
+    {
+        var dismissCount = 0;
+
+        // Utils.claimEscape never claims an Escape with a modifier, so the dialog the message sits in closes on it -
+        // and the message must not be dismissed on the same press.
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.DismissOnEscape, true);
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+        });
+
+        component.Find(".bit-msg").KeyDown(new KeyboardEventArgs { Key = "Escape", ShiftKey = true });
+        component.Find(".bit-msg").KeyDown(new KeyboardEventArgs { Key = "Escape", CtrlKey = true });
+
+        Assert.AreEqual(0, dismissCount);
+
+        component.Find(".bit-msg").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(1, dismissCount);
+    }
+
+    [TestMethod]
     public void BitMessageShouldNotClaimAnEscapeItDoesNotDismissOn()
     {
         var off = RenderComponent<BitMessage>(parameters =>

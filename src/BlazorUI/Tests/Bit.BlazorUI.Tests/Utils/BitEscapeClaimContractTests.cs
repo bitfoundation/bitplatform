@@ -37,7 +37,7 @@ public sealed class BitEscapeClaimContractTests
         var components = SourceFiles.GetDirectory("Bit.BlazorUI", "Components");
 
         // A claim is written either straight into the attribute - a literal, or the branches of a conditional - or
-        // through one of the components' EscapeClaim properties, whose branches are the values it can take.
+        // through one of the components' ...Claim members, whose branches are the values it can take.
         var markup = Directory.EnumerateFiles(components, "*.razor", SearchOption.AllDirectories)
                               .SelectMany(file => SourceFiles.ReadFullPath(file).Split('\n')
                                                              .Where(line => line.Contains("data-bit-esc=\""))
@@ -50,7 +50,7 @@ public sealed class BitEscapeClaimContractTests
                                                  .Select(value => (m.file, value)));
 
         var properties = Directory.EnumerateFiles(components, "*.razor.cs", SearchOption.AllDirectories)
-                                  .SelectMany(file => Regex.Matches(SourceFiles.ReadFullPath(file), @"EscapeClaim\s*=>[^;]*;", RegexOptions.Singleline)
+                                  .SelectMany(file => Regex.Matches(SourceFiles.ReadFullPath(file), @"\w*Claim(\([^)]*\))?\s*=>[^;]*;", RegexOptions.Singleline)
                                                            .SelectMany(m => Branches(m.Value))
                                                            .Select(value => (file, value)));
 
@@ -67,13 +67,42 @@ public sealed class BitEscapeClaimContractTests
         DataRow("watchEscape"),
         DataRow("watchLayerEscape"),
         DataRow("setupEscape"),
-        DataRow("setupTooltip")
+        DataRow("setupTooltip"),
+        DataRow("ensureTooltipListeners")
     ]
     public void EverySurfaceShouldLeaveAClaimedEscapeAlone(string method)
     {
         var body = GetMethod(SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts"), method);
 
-        StringAssert.Contains(body, "e.defaultPrevented", $"Utils.{method} answers an Escape a component inside it has claimed.");
+        // Each keydown listener that answers the key - the ones calling into .NET - reads the claim itself: one of
+        // them reading it does not keep another listener of the same method from closing the surface. The listeners
+        // that only record what was there to see (an open callout, a composition) for another one are left out.
+        var listeners = body.Split("addEventListener(").Skip(1)
+                            .Where(listener => listener.StartsWith("'keydown'"))
+                            .Where(listener => listener.Contains("invokeMethodAsync"))
+                            .ToList();
+
+        Assert.IsTrue(listeners.Count > 0, $"Utils.{method} has no keydown listener that answers the key.");
+
+        foreach (var listener in listeners)
+        {
+            StringAssert.Contains(listener, "e.defaultPrevented", $"A keydown listener of Utils.{method} answers an Escape a component inside it has claimed.");
+        }
+    }
+
+    [TestMethod,
+        DataRow("setupSurfaceEscape"),
+        DataRow("setupEscapeGuard"),
+        DataRow("setupEscape")
+    ]
+    public void EverySurfaceShouldBoundTheClaimsAroundIt(string method)
+    {
+        var script = SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts");
+
+        // A claim is only looked for up to the nearest surface the key was pressed in, so a message or a field around
+        // a dialog never takes the key away from the dialog itself.
+        StringAssert.Contains(GetMethod(script, "claimEscape"), "Utils.isEscapeSurface(element)");
+        StringAssert.Contains(GetMethod(script, method), "Utils._escapeSurfaces.add(element)", $"Utils.{method} does not mark its element as a surface for Utils.claimEscape.");
     }
 
     // The strings an attribute value or a property can come out as: the whole of a plain literal, or each branch of a

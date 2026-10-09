@@ -4492,6 +4492,66 @@ public class BitDropdownTests : BunitTestContext
         Assert.AreEqual(claim, component.Find(".bit-drp-wrp").GetAttribute("data-bit-esc"));
     }
 
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public void BitDropdownShouldLeaveTheEscapeOfAOneWayBindingAlone(bool multiSelect)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var clearCount = 0;
+
+        // A Value or a Values bound one way refuses the empty selection, so the Escape clears nothing, raises
+        // nothing and is not claimed: it goes on to the dialog around the dropdown.
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.ClearOnEscape, true);
+            parameters.Add(p => p.MultiSelect, multiSelect);
+            if (multiSelect)
+            {
+                parameters.Add(p => p.Values, ["f-app"]);
+            }
+            else
+            {
+                parameters.Add(p => p.Value, "f-app");
+            }
+            parameters.Add(p => p.OnClear, () => clearCount++);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        var wrapper = component.Find(".bit-drp-wrp");
+        Assert.IsFalse(wrapper.HasAttribute("data-bit-esc"));
+
+        wrapper.KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, clearCount);
+        Assert.IsFalse(component.Find(".bit-drp-wrp").HasAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public void BitDropdownShouldLeaveAModifiedEscapeAlone()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var clearCount = 0;
+
+        // Utils.claimEscape never claims an Escape with a modifier, so the dialog around the dropdown closes on it -
+        // and the selection must not be taken back on the same press.
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.ClearOnEscape, true);
+            parameters.Add(p => p.DefaultValue, "f-app");
+            parameters.Add(p => p.OnClear, () => clearCount++);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        component.Find(".bit-drp-wrp").KeyDown(new KeyboardEventArgs { Key = "Escape", ShiftKey = true });
+
+        Assert.AreEqual(0, clearCount);
+        Assert.AreEqual("f-app", component.Instance.Value);
+    }
+
     [TestMethod]
     public void BitDropdownShouldClaimTheEscapeThatClosesTheCallout()
     {

@@ -1,0 +1,133 @@
+@page "/regression/escape-claim"
+
+<PageTitle>Escape Claim Regression</PageTitle>
+
+@* One Escape does one thing: a component that acts on the key claims it (data-bit-esc, read by Utils.claimEscape as
+   the key goes down), and the surface around it - a Dialog, a Modal, a Panel or an Overlay, picked with ?surface= -
+   closes on the next press. A press the component does not act on (a one-way binding it cannot clear, an Escape
+   with a modifier) is the surface's straight away. The page-level section covers the claims that have to stop at a
+   surface rendered inside the claimer (a Modal inside a Message), and the listeners that hear the key from anywhere
+   (a Tooltip shown on hover). *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>Escape Claim Regression (@Surface)</h3>
+    <button @onclick="Open" id="btn-open">Open</button>
+    <div id="metrics" style="font-family: monospace;">
+        <p>Surface: <span id="surface-state">@(_isOpen ? "open" : "closed")</span></p>
+        <p>TextField: <span id="v-tf">@_tf</span></p>
+        <p>SearchBox: <span id="v-sb">@_sb</span></p>
+        <p>NumberField: <span id="v-nf">@_nf</span></p>
+        <p>Tags: <span id="v-tgi">@_tags.Count</span></p>
+        <p>Dropdown: <span id="v-drp">@_drp</span></p>
+        <p>Combo: <span id="v-cmb">@_cmb</span></p>
+        <p>Message: <span id="msg-state">@(_msgDismissed ? "dismissed" : "shown")</span></p>
+        <p>Message field: <span id="v-mtf">@_mtf</span></p>
+        <p>Clears: <span id="clears">@_clears</span></p>
+        <p>Status: <span id="status">@_status</span></p>
+    </div>
+</div>
+
+@* The tests put the focus on the field they drive themselves, so the surfaces are kept from moving it as they open:
+   a focus landing a moment after the test's own would take the keystrokes that follow it. *@
+@switch (Surface)
+{
+    case "modal":
+        <BitModal @bind-IsOpen="_isOpen" NoAutoFocus>@Content</BitModal>
+        break;
+
+    case "panel":
+        <BitPanel @bind-IsOpen="_isOpen" NoAutoFocus>@Content</BitPanel>
+        break;
+
+    case "overlay":
+        <BitOverlay @bind-IsOpen="_isOpen">@Content</BitOverlay>
+        break;
+
+    default:
+        <BitDialog @bind-IsOpen="_isOpen" AutoFocus="false" Title="Dialog" Body="Content" />
+        break;
+}
+
+<div id="page-level" style="padding: 20px;">
+    @* A Message that dismisses on Escape with a Modal rendered inside its content: the press made in the Modal is
+       the Modal's, and the Message stays. *@
+    <BitMessage DismissOnEscape @bind-Dismissed="_outerMsgDismissed">
+        <span id="outer-msg-state">@(_outerMsgDismissed ? "dismissed" : "shown")</span>
+        <button id="btn-inner-modal" @onclick="() => _innerModalOpen = true">Open inner modal</button>
+        <BitModal @bind-IsOpen="_innerModalOpen">
+            <input id="inner-modal-input" />
+        </BitModal>
+    </BitMessage>
+    <p>Inner modal: <span id="inner-modal-state">@(_innerModalOpen ? "open" : "closed")</span></p>
+
+    @* A Tooltip shown on hover answers an Escape pressed anywhere - but not one a field elsewhere has claimed. *@
+    <BitTooltip Text="Tooltip text">
+        <span id="tooltip-anchor" style="display: inline-block; padding: 8px; border: 1px solid;">Hover me</span>
+    </BitTooltip>
+    <div id="w-ptf"><BitTextField ClearOnEscape Immediate @bind-Value="_ptf" /></div>
+    <p>Page field: <span id="v-ptf">@_ptf</span></p>
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "surface")] public string? Surface { get; set; }
+
+    private readonly List<BitDropdownItem<string>> _items =
+    [
+        new() { Text = "Apple", Value = "a" },
+        new() { Text = "Banana", Value = "b" },
+        new() { Text = "Cherry", Value = "c" },
+    ];
+
+    private bool _isOpen;
+    private string? _tf;
+    private string? _sb;
+    private int? _nf = 5;
+    private ICollection<string>? _tagsValue = ["x", "y"];
+    private ICollection<string> _tags => _tagsValue ?? [];
+    private string? _drp = "a";
+    private string? _cmb = "a";
+    private bool _msgDismissed;
+    private string? _mtf;
+    private string? _ptf;
+    private bool _outerMsgDismissed;
+    private bool _innerModalOpen;
+    private int _clears;
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
+    // interactive render moves it on, which is what the test waits for before it drives the page.
+    private string _status = "Loading";
+
+    private RenderFragment Content => @<div id="surface-content" style="display: flex; flex-direction: column; gap: 8px; padding: 16px; max-height: 80vh; overflow: auto;">
+        <button id="surface-btn">Surface button</button>
+        <div id="w-tf"><BitTextField ClearOnEscape Immediate @bind-Value="_tf" OnClear="Cleared" /></div>
+        <div id="w-tf1"><BitTextField ClearOnEscape Value="locked" OnClear="Cleared" /></div>
+        <div id="w-sb"><BitSearchBox Immediate @bind-Value="_sb" OnClear="Cleared" /></div>
+        <div id="w-sb1"><BitSearchBox Value="locked" OnClear="Cleared" /></div>
+        <div id="w-nf"><BitNumberField ShowClearButton @bind-Value="_nf" /></div>
+        <div id="w-tgi"><BitTagsInput ShowClearButton @bind-Value="_tagsValue" /></div>
+        <div id="w-tgi1"><BitTagsInput ShowClearButton Value="@(new List<string> { "p", "q" })" OnClear="Cleared" /></div>
+        <div id="w-drp"><BitDropdown ClearOnEscape @bind-Value="_drp" Items="_items" OnClear="Cleared" /></div>
+        <div id="w-drp1"><BitDropdown ClearOnEscape Value="@("a")" Items="_items" OnClear="Cleared" /></div>
+        <div id="w-cmb"><BitDropdown Combo ClearOnEscape @bind-Value="_cmb" Items="_items" OnClear="Cleared" /></div>
+        <div id="w-msg">
+            <BitMessage DismissOnEscape @bind-Dismissed="_msgDismissed">
+                <button id="msg-btn">Message button</button>
+                <div id="w-mtf"><BitTextField ClearOnEscape Immediate @bind-Value="_mtf" /></div>
+            </BitMessage>
+        </div>
+    </div>;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+
+    private void Open()
+    {
+        _isOpen = true;
+        _status = "Open";
+    }
+
+    private void Cleared() => _clears++;
+}

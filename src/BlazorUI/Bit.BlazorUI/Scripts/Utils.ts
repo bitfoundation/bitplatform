@@ -393,7 +393,9 @@
             // and stopImmediatePropagation keeps it from any other listener on the document as well, a callout's
             // own Escape listener included.
             document.addEventListener('keydown', e => {
-                if (e.key !== 'Escape') return;
+                // A press a component claimed (see claimEscape) is that component's: the tooltip stays, and the key
+                // goes on to the component rather than being stopped here.
+                if (e.key !== 'Escape' || e.defaultPrevented) return;
 
                 const target = e.target as Node | null;
                 let taken = false;
@@ -634,24 +636,52 @@
         // The attribute is rendered from the very state the .NET handler decides on, so the key is claimed
         // exactly when the component acts on it, and an Escape the component leaves alone still reaches the
         // surface around it. An element that leaves the key alone hands it to the next one out, whose handler
-        // hears a key pressed anywhere inside it. An IME composition is nobody's here (the key cancels the
-        // candidate), and neither is an Escape with a modifier, which the components either ignore or treat
-        // as the plain key only by accident.
+        // hears a key pressed anywhere inside it - up to the nearest surface the key was pressed in (isEscapeSurface):
+        // that surface is the innermost thing the key closes, so nothing it is rendered inside of (a message, a
+        // dropdown's field) claims the key away from it. An IME composition is nobody's here (the key cancels the
+        // candidate), and neither is an Escape with a modifier, which the components leave alone (IsPlainEscape)
+        // so the surface around them closes on it.
         public static claimEscape(e: KeyboardEvent) {
             if (e.key !== 'Escape' || e.defaultPrevented) return;
             if (e.isComposing || e.keyCode === 229) return;
             if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
 
-            let element = e.target instanceof Element ? e.target.closest('[data-bit-esc]') : null;
-
-            while (element) {
+            for (let element = e.target instanceof Element ? e.target : null; element; element = element.parentElement) {
                 const claim = element.getAttribute('data-bit-esc');
                 if (claim === 'claim' || (claim === 'text' && (element as HTMLInputElement).value)) {
+                    Utils._escapeClaimers.set(e, element);
                     e.preventDefault();
                     return;
                 }
 
-                element = element.parentElement?.closest('[data-bit-esc]') ?? null;
+                if (Utils.isEscapeSurface(element)) return;
+            }
+        }
+
+        private static _escapeClaimers = new WeakMap<Event, Element>();
+
+        // The element an Escape was claimed for (see claimEscape), if any. A claimer whose .NET handler hears every
+        // key pressed inside it - a message dismissing on Escape - reads it to tell its own press from one that a
+        // component or a surface inside it took first, which Blazor's dispatch goes on bubbling to it all the same.
+        public static escapeClaimer(e: Event) {
+            return Utils._escapeClaimers.get(e) ?? null;
+        }
+
+        // The elements that close on an Escape pressed inside them, registered by the surfaces of the library as they
+        // start listening (setupSurfaceEscape, setupEscapeGuard, setupEscape; watchEscape and watchLayerEscape mark
+        // theirs as escape roots), plus a dialog of the consumer's own.
+        private static _escapeSurfaces = new WeakSet<Element>();
+
+        private static isEscapeSurface(element: Element) {
+            return Utils._escapeSurfaces.has(element)
+                || !!(element as any).__bitEscapeRoot
+                || element.matches('[role="dialog"],[role="alertdialog"],dialog');
+        }
+
+        private static forgetEscapeSurface(elementId: string) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                Utils._escapeSurfaces.delete(element);
             }
         }
 
@@ -675,6 +705,8 @@
 
             const element = document.getElementById(elementId);
             if (!element) return;
+
+            Utils._escapeSurfaces.add(element);
 
             const controller = new AbortController();
             const signal = controller.signal;
@@ -708,6 +740,7 @@
 
             controller.abort();
             Utils._surfaceEscapes.delete(elementId);
+            Utils.forgetEscapeSurface(elementId);
         }
 
         private static _tabOuts = new Map<string, AbortController>();
@@ -817,6 +850,8 @@
             const element = document.getElementById(elementId);
             if (!element) return;
 
+            Utils._escapeSurfaces.add(element);
+
             const controller = new AbortController();
 
             element.addEventListener('keydown', e => {
@@ -834,7 +869,8 @@
                 // open callouts is read before Blazor's document-level delegation lets a popup the key belongs to
                 // (a dropdown list relocated to the body, holding the focus in its search box) close itself.
                 document.addEventListener('keydown', e => {
-                    if (e.key !== 'Escape') return;
+                    // A press a component claimed (see claimEscape) is that component's, wherever its focus is.
+                    if (e.key !== 'Escape' || e.defaultPrevented) return;
 
                     if (Callouts.current.calloutId !== elementId) return;
 
@@ -856,6 +892,7 @@
 
             controller.abort();
             Utils._escapes.delete(elementId);
+            Utils.forgetEscapeSurface(elementId);
         }
 
         // The callouts that answer an Escape pressed anywhere in the page (setupEscape with a trigger), not only
@@ -888,6 +925,8 @@
             const element = document.getElementById(elementId);
             if (!element) return;
 
+            Utils._escapeSurfaces.add(element);
+
             const controller = new AbortController();
 
             element.addEventListener('keydown', e => {
@@ -916,6 +955,7 @@
 
             controller.abort();
             Utils._escapeGuards.delete(elementId);
+            Utils.forgetEscapeSurface(elementId);
         }
 
         // Whether the innermost open callout is the one the key closes: it was pressed inside the callout or on

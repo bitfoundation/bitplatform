@@ -120,7 +120,7 @@ public partial class BitTextFieldDemo : IDisposable
             Name = "ClearOnEscape",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Empties the field when the Escape key is pressed in it, which is the keyboard counterpart of the clear button and what a filter or a search field is expected to do. It raises OnClear and is announced the same way a press on the button is, it leaves a read-only field alone, and it does not need ShowClearButton. The press that clears the field is the field's alone, so a Dialog, a Modal, a Panel or an Overlay around it closes on the next one. OnEscape is still raised afterwards, and Escape keeps its own meaning while an input method editor is composing.",
+            Description = "Empties the field when the Escape key is pressed in it, which is the keyboard counterpart of the clear button and what a filter or a search field is expected to do. It raises OnClear and is announced the same way a press on the button is, it leaves a read-only field and one bound one way alone, and it does not need ShowClearButton. The press that clears the field is the field's alone, so a Dialog, a Modal, a Panel or an Overlay around it closes on the next one; an Escape with Shift, Ctrl, Alt or Meta held clears nothing and goes straight to them. OnEscape is still raised afterwards, and Escape keeps its own meaning while an input method editor is composing.",
         },
         new()
         {
