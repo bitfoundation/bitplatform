@@ -110,7 +110,7 @@ public class WizardTests
 
     [TestMethod]
     [DataRow(HostOs.Linux, new[] { "Android" })]
-    [DataRow(HostOs.Windows, new[] { "Android", "Windows" })]
+    [DataRow(HostOs.Windows, new[] { "Android", "iOS", "macOS", "Windows" })]
     [DataRow(HostOs.MacOS, new[] { "Android", "iOS", "macOS" })]
     public void TheNativeAppsBitSetupOffers_Should_OnlyIncludeWhatThisMachineCanBuild(HostOs os, string[] expected)
     {

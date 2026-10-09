@@ -43,7 +43,7 @@ public static class Platforms
 
     public static IReadOnlyList<Platform> AvailableOn(HostOs os) => os switch
     {
-        HostOs.Windows => [Platform.Web, Platform.Android, Platform.Windows],
+        HostOs.Windows => [Platform.Web, Platform.Android, Platform.Ios, Platform.MacOS, Platform.Windows],
         HostOs.MacOS => [Platform.Web, Platform.Android, Platform.Ios, Platform.MacOS],
         _ => [Platform.Web, Platform.Android]
     };
