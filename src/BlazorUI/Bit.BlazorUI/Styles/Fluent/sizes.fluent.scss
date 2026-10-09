@@ -1,8 +1,11 @@
 ﻿// Size and opacity tokens - the dimensions a design system decides once and every component repeats.
 // The control heights and selection sizes are density-aware (multiples of the spacing unit times the
-// density multiplier, exactly what spacing() computes) so the compact/spacious presets keep working;
-// a preset built for another design system may set absolute lengths instead (Material: 40px
-// buttons / 56px fields; Cupertino: 44px).
+// density multiplier, exactly what spacing() computes) so the compact/spacious presets keep working.
+// Each is declared as a unitless --<token>-steps and the token itself left `initial`, so it is computed
+// where it is used, against the density in effect there (see the spacing note in shapes.fluent.scss);
+// the comment beside a steps line is the length it comes to at the default unit and density. A preset
+// built for another design system may instead set a token as an absolute length, which opts that one
+// measurement out of density (Fluent 2, Material and Cupertino do for the dialog maximum width).
 :root,
 :root[bit-theme="light"],
 :root [bit-theme="light"],
@@ -15,9 +18,12 @@
 :root[bit-theme="fluent-dark"],
 :root [bit-theme="fluent-dark"] {
     //control heights (text fields, dropdowns, pickers, search boxes, icon-only buttons) per size class.
-    --bit-siz-ctrl-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.25); //26px
-    --bit-siz-ctrl-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4); //32px
-    --bit-siz-ctrl-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5); //40px
+    --bit-siz-ctrl-sm-steps: 3.25; //26px
+    --bit-siz-ctrl-md-steps: 4; //32px
+    --bit-siz-ctrl-lg-steps: 5; //40px
+    --bit-siz-ctrl-sm: initial;
+    --bit-siz-ctrl-md: initial;
+    --bit-siz-ctrl-lg: initial;
 
     //icon glyph sizes inside controls per size class - rem, like type, so density does not shrink glyphs.
     --bit-siz-icon-sm: 0.75rem; //12px
@@ -25,33 +31,46 @@
     --bit-siz-icon-lg: 1.25rem; //20px
 
     //selection indicators - the checkbox box and the radio ring - per size class.
-    --bit-siz-sel-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.75); //14px
-    --bit-siz-sel-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
-    --bit-siz-sel-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.25); //26px
+    --bit-siz-sel-sm-steps: 1.75; //14px
+    --bit-siz-sel-md-steps: 2.5; //20px
+    --bit-siz-sel-lg-steps: 3.25; //26px
+    --bit-siz-sel-sm: initial;
+    --bit-siz-sel-md: initial;
+    --bit-siz-sel-lg: initial;
 
     //control padding per size class - the inner horizontal / vertical padding of a padded control
     //(buttons, toggle buttons, menu buttons; text inputs keep their own denser rhythm). Density-aware
-    //like the heights; a preset may set absolute lengths (Material: 24px x-padding; Cupertino: 20px).
-    --bit-siz-ctrl-pad-x-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
-    --bit-siz-ctrl-pad-x-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
-    --bit-siz-ctrl-pad-x-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
-    --bit-siz-ctrl-pad-y-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 0.5); //4px
-    --bit-siz-ctrl-pad-y-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 0.75); //6px
-    --bit-siz-ctrl-pad-y-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1); //8px
+    //like the heights (Material: 24px x-padding; Cupertino: 20px).
+    --bit-siz-ctrl-pad-x-sm-steps: 1.5; //12px
+    --bit-siz-ctrl-pad-x-md-steps: 2; //16px
+    --bit-siz-ctrl-pad-x-lg-steps: 2.5; //20px
+    --bit-siz-ctrl-pad-y-sm-steps: 0.5; //4px
+    --bit-siz-ctrl-pad-y-md-steps: 0.75; //6px
+    --bit-siz-ctrl-pad-y-lg-steps: 1; //8px
+    --bit-siz-ctrl-pad-x-sm: initial;
+    --bit-siz-ctrl-pad-x-md: initial;
+    --bit-siz-ctrl-pad-x-lg: initial;
+    --bit-siz-ctrl-pad-y-sm: initial;
+    --bit-siz-ctrl-pad-y-md: initial;
+    --bit-siz-ctrl-pad-y-lg: initial;
 
     //the minimum width of a labeled button. Fluent imposes none; Material mandates 64px.
     --bit-siz-ctrl-min-width: auto;
 
     //row heights of the item lists inside popups (dropdown options, menu-button items, drop-menu
     //rows, breadcrumb overflow) per size class (Material menu rows: 48px; Cupertino rows: 44px).
-    --bit-siz-item-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.75); //30px
-    --bit-siz-item-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4.5); //36px
-    --bit-siz-item-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5.5); //44px
+    --bit-siz-item-sm-steps: 3.75; //30px
+    --bit-siz-item-md-steps: 4.5; //36px
+    --bit-siz-item-lg-steps: 5.5; //44px
+    --bit-siz-item-sm: initial;
+    --bit-siz-item-md: initial;
+    --bit-siz-item-lg: initial;
 
     //tab (pivot) header height and the thickness of its selection indicator. The indicator is its
     //own token rather than the thick border width: Material's 3px tab indicator and a 2px focus
     //underline are independent decisions.
-    --bit-siz-tab: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5.5); //44px
+    --bit-siz-tab-steps: 5.5; //44px
+    --bit-siz-tab: initial;
     --bit-siz-tab-indicator: 0.125rem; //2px
     //the rule a tab strip draws under its whole header, which the indicator of the selected tab sits
     //on. Fluent draws none; Material draws the divider hairline.
@@ -65,35 +84,56 @@
     //of the knob. Density-aware like the control heights. The inset that holds the knob off the
     //track edge is not a token: it is (track height - knob) / 2 less the border, which is what keeps
     //the knob the same distance from the stroke on every side whatever geometry a preset sets.
-    --bit-siz-switch-w-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4); //32px
-    --bit-siz-switch-w-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 5); //40px
-    --bit-siz-switch-w-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 6.5); //52px
-    --bit-siz-switch-h-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
-    --bit-siz-switch-h-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
-    --bit-siz-switch-h-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3.25); //26px
-    --bit-siz-switch-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1); //8px
-    --bit-siz-switch-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
-    --bit-siz-switch-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
+    --bit-siz-switch-w-sm-steps: 4; //32px
+    --bit-siz-switch-w-md-steps: 5; //40px
+    --bit-siz-switch-w-lg-steps: 6.5; //52px
+    --bit-siz-switch-h-sm-steps: 2; //16px
+    --bit-siz-switch-h-md-steps: 2.5; //20px
+    --bit-siz-switch-h-lg-steps: 3.25; //26px
+    --bit-siz-switch-thumb-sm-steps: 1; //8px
+    --bit-siz-switch-thumb-md-steps: 1.5; //12px
+    --bit-siz-switch-thumb-lg-steps: 2; //16px
+    --bit-siz-switch-w-sm: initial;
+    --bit-siz-switch-w-md: initial;
+    --bit-siz-switch-w-lg: initial;
+    --bit-siz-switch-h-sm: initial;
+    --bit-siz-switch-h-md: initial;
+    --bit-siz-switch-h-lg: initial;
+    --bit-siz-switch-thumb-sm: initial;
+    --bit-siz-switch-thumb-md: initial;
+    --bit-siz-switch-thumb-lg: initial;
 
     //the draggable handle of a BitSlider per size class.
-    --bit-siz-slider-thumb-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
-    --bit-siz-slider-thumb-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
-    --bit-siz-slider-thumb-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
+    --bit-siz-slider-thumb-sm-steps: 1.5; //12px
+    --bit-siz-slider-thumb-md-steps: 2; //16px
+    --bit-siz-slider-thumb-lg-steps: 3; //24px
+    --bit-siz-slider-thumb-sm: initial;
+    --bit-siz-slider-thumb-md: initial;
+    --bit-siz-slider-thumb-lg: initial;
 
     //the height of a badge per size class - also the diameter of a single-digit counter - and the
     //diameter of a dot badge. Density-aware like the control heights.
-    --bit-siz-badge-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2); //16px
-    --bit-siz-badge-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
-    --bit-siz-badge-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
-    --bit-siz-badge-dot-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1); //8px
-    --bit-siz-badge-dot-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.125); //9px
-    --bit-siz-badge-dot-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 1.5); //12px
+    --bit-siz-badge-sm-steps: 2; //16px
+    --bit-siz-badge-md-steps: 2.5; //20px
+    --bit-siz-badge-lg-steps: 3; //24px
+    --bit-siz-badge-dot-sm-steps: 1; //8px
+    --bit-siz-badge-dot-md-steps: 1.125; //9px
+    --bit-siz-badge-dot-lg-steps: 1.5; //12px
+    --bit-siz-badge-sm: initial;
+    --bit-siz-badge-md: initial;
+    --bit-siz-badge-lg: initial;
+    --bit-siz-badge-dot-sm: initial;
+    --bit-siz-badge-dot-md: initial;
+    --bit-siz-badge-dot-lg: initial;
 
     //the height of a chip (BitTag) per size class, measured inside its rule - the height its dismiss
     //button gets, which keeps the medium one on the 24px pointer target of WCAG 2.2. Density-aware.
-    --bit-siz-chip-sm: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 2.5); //20px
-    --bit-siz-chip-md: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 3); //24px
-    --bit-siz-chip-lg: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 4); //32px
+    --bit-siz-chip-sm-steps: 2.5; //20px
+    --bit-siz-chip-md-steps: 3; //24px
+    --bit-siz-chip-lg-steps: 4; //32px
+    --bit-siz-chip-sm: initial;
+    --bit-siz-chip-md: initial;
+    --bit-siz-chip-lg: initial;
 
     //the thickness of a linear track (BitProgress bar) per size class.
     --bit-siz-track-sm: 0.125rem; //2px
@@ -104,13 +144,15 @@
     --bit-siz-spinner-stroke: 0.125rem; //2px
 
     //the tallest a popup list (dropdown, search suggestions, breadcrumb overflow) grows before it scrolls.
-    --bit-siz-popup-max-height: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 88.875);
+    --bit-siz-popup-max-height-steps: 88.875; //711px
+    --bit-siz-popup-max-height: initial;
 
     //the widest a dialog grows on its own before its message starts wrapping, which is what keeps a
     //two-sentence confirmation from spanning a desktop screen. A dialog given a width or a max width of
     //its own ignores this, and a full-width one is not capped at all (Fluent 2: 600px; Material's basic
     //dialog: 560px; Cupertino's alert: 270pt).
-    --bit-siz-dialog-max-width: calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale) * 65); //520px
+    --bit-siz-dialog-max-width-steps: 65; //520px
+    --bit-siz-dialog-max-width: initial;
 
     //opacity of an element that is disabled but keeps its own colors (an image, a color swatch).
     --bit-opa-dis: 0.5;

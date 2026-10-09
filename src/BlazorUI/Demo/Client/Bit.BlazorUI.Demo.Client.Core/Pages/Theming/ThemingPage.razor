@@ -296,6 +296,7 @@
                     <li><code>--bit-siz-spinner-stroke</code> - the stroke of an inline spinner</li>
                     <li><code>--bit-siz-popup-max-height</code> - the height a scrolling popup list stops at</li>
                     <li><code>--bit-siz-dialog-max-width</code> - the width a dialog stops growing at on its own</li>
+                    <li><code>--bit-siz-*-steps</code> - for every size above that follows density (all but the icons, tracks, tab indicator and divider, spinner stroke and Fluent's <code>auto</code> button floor), the unitless number of spacing units it is: <code>--bit-siz-ctrl-md-steps: 4</code> is the 32px medium control. The presets declare these and leave the size itself unset, so it is computed where it is used - see <a href="#density-layout-rtl">Density, layout and RTL</a></li>
                 </ul>
 
                 <BitText>
@@ -306,6 +307,7 @@
                     <li><code>--bit-spa-scaling-factor</code> - the spacing unit everything else is a multiple of</li>
                     <li><code>--bit-spa-dialog</code> - the inset padding of dialogs and message boxes: 24px</li>
                     <li><code>--bit-spa-card-{sm,md,lg}</code> - BitCard's inset, per size: 12/16/24px; Fluent 2 8/12/16px</li>
+                    <li><code>--bit-spa-dialog-steps</code> / <code>--bit-spa-card-{sm,md,lg}-steps</code> - the unitless number of spacing units each inset is: 3, and 1.5/2/3</li>
                 </ul>
 
                 <BitText>
@@ -780,12 +782,23 @@ BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
     --bit-shp-radius-chip: 0.5rem;
     --bit-shp-radius-selection: 0.125rem;
 
-    /* size: 40px controls, 18px checkboxes, 24px icons, the 52x32 switch, the 20dp slider handle */
-    --bit-siz-ctrl-sm: 2rem;  --bit-siz-ctrl-md: 2.5rem;  --bit-siz-ctrl-lg: 3rem;
-    --bit-siz-sel-sm: 1rem;   --bit-siz-sel-md: 1.125rem; --bit-siz-sel-lg: 1.25rem;
-    --bit-siz-icon-sm: 1.125rem; --bit-siz-icon-md: 1.25rem; --bit-siz-icon-lg: 1.5rem;
-    --bit-siz-switch-w-md: 3.25rem; --bit-siz-switch-h-md: 2rem; --bit-siz-switch-thumb-md: 1.5rem;
-    --bit-siz-slider-thumb-md: 1.25rem;
+    /* size: 40px controls, 18px checkboxes, 24px icons, the 52x32 switch, the 20dp slider handle -
+       as steps of the 8px spacing unit, with the measurement reset, so a nested density reaches them */
+    --bit-siz-ctrl-sm-steps: 4;  --bit-siz-ctrl-md-steps: 5;    --bit-siz-ctrl-lg-steps: 6;
+    --bit-siz-ctrl-sm: initial;  --bit-siz-ctrl-md: initial;    --bit-siz-ctrl-lg: initial;
+    --bit-siz-sel-sm-steps: 2;   --bit-siz-sel-md-steps: 2.25;  --bit-siz-sel-lg-steps: 2.5;
+    --bit-siz-sel-sm: initial;   --bit-siz-sel-md: initial;     --bit-siz-sel-lg: initial;
+    --bit-siz-icon-sm: 1.125rem; --bit-siz-icon-md: 1.25rem; --bit-siz-icon-lg: 1.5rem; /* rem: glyphs never follow density */
+    --bit-siz-switch-w-md-steps: 6.5; --bit-siz-switch-h-md-steps: 4; --bit-siz-switch-thumb-md-steps: 3;
+    --bit-siz-switch-w-md: initial;   --bit-siz-switch-h-md: initial; --bit-siz-switch-thumb-md: initial;
+    --bit-siz-slider-thumb-md-steps: 2.5;
+    --bit-siz-slider-thumb-md: initial;
+
+    /* spacing: 24px dialog inset, 12/16/24px card insets - steps too */
+    --bit-spa-dialog-steps: 3;
+    --bit-spa-dialog: initial;
+    --bit-spa-card-sm-steps: 1.5; --bit-spa-card-md-steps: 2; --bit-spa-card-lg-steps: 3;
+    --bit-spa-card-sm: initial;   --bit-spa-card-md: initial; --bit-spa-card-lg: initial;
 
     /* elevation: level 1 cards, level 2 menus, level 3 dialogs, level 6 snackbars, flat tooltips */
     --bit-shd-card: var(--bit-shd-1);
@@ -843,11 +856,16 @@ BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
     },
     Size =
     {
-        Control = { Sm = "2rem", Md = "2.5rem", Lg = "3rem" },
-        Selection = { Sm = "1rem", Md = "1.125rem", Lg = "1.25rem" },
-        Switch = { Width = { Md = "3.25rem" }, Height = { Md = "2rem" }, Thumb = { Md = "1.5rem" } },
-        SliderThumb = { Md = "1.25rem" },
+        // steps of the spacing unit rather than lengths, so a nested DensityScale still reaches them
+        Steps =
+        {
+            Control = { Sm = "4", Md = "5", Lg = "6" },
+            Selection = { Sm = "2", Md = "2.25", Lg = "2.5" },
+            Switch = { Width = { Md = "6.5" }, Height = { Md = "4" }, Thumb = { Md = "3" } },
+            SliderThumb = { Md = "2.5" },
+        },
     },
+    Spacing = { Steps = { Dialog = "3", Card = { Sm = "1.5", Md = "2", Lg = "3" } } },
     BoxShadow = { Card = "var(--bit-shd-1)", Popup = "var(--bit-shd-2)", Dialog = "var(--bit-shd-3)", Snackbar = "var(--bit-shd-6)" },
     Motion = { EasingDecelerate = "cubic-bezier(0.05, 0.7, 0.1, 1)" },
     Opacity = { Disabled = "0.38" },
@@ -1048,7 +1066,11 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
             </BitText>
 
             <BitText>
-                This holds under every packaged preset, not only Fluent. Fluent&nbsp;2, Material and Cupertino all fix their control geometry on an 8px grid - 40dp Material buttons, the 44pt iOS tap target, Fluent&nbsp;2's 32px medium control - so each preset writes those measurements as spacing multiples rather than as absolute lengths, and the density multiplier reaches them exactly as it does under Fluent. A preset of your own should do the same wherever its geometry lands on the grid; where it does not, an absolute length is fine and simply opts that one measurement out of density.
+                This holds under every packaged preset, not only Fluent. Fluent&nbsp;2, Material and Cupertino all fix their control geometry on an 8px grid - 40dp Material buttons, the 44pt iOS tap target, Fluent&nbsp;2's 32px medium control - so each preset writes those measurements as spacing multiples rather than as absolute lengths, and the density multiplier reaches them exactly as it does under Fluent. A preset of your own should do the same wherever its geometry lands on the grid, in the form the packaged ones use: the multiple as a unitless steps token, and the measurement itself reset - <code>--bit-siz-ctrl-md-steps: 4;</code> and <code>--bit-siz-ctrl-md: initial;</code> (or <code>BitTheme.Size.Steps.Control.Md = "4"</code>). Where it does not land on the grid, set the measurement itself as an absolute length, which simply opts that one measurement out of density.
+            </BitText>
+
+            <BitText>
+                The steps are what make a density change scoped to part of the page work. A custom property is computed where it is declared, so a measurement declared on <code>:root</code> would hand its descendants a finished length that no density set lower down could reach. So no preset declares one: each component computes it where it is drawn - the measurement if something set it, else its steps of the spacing unit times the density in effect <i>there</i>. A <code>BitThemeProvider</code>, <code>ApplyBitThemeAsync</code> (which writes to the body), or plain CSS such as <code>.compact-panel { --bit-layout-density-scale: 0.8; }</code> therefore resizes everything under it - the control heights and paddings, list rows, tabs, switches, sliders, badges, chips, the dialog and card insets - under whichever preset is active there. A measurement set explicitly anywhere above - on a theme, in your own CSS, or as an absolute length in a preset - wins over its steps and stays as set.
             </BitText>
 
             <CodeBox Language="csharp">var theme = new BitTheme
@@ -1749,6 +1771,9 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
                 </li>
                 <li>
                     <b>The packaged palettes were re-solved (visual, not source-breaking).</b> Token <i>names</i> are unchanged, so nothing to update in code - but the values moved, and the differences are visible. The on-color now clears 4.5:1 on every fill it is painted on (it previously dipped to 2.3:1 on some dark-tier fills), disabled text clears 3:1, and the tertiary foreground is readable on all three surfaces. The dark canvas moved off near-black, severe-warning moved onto Fluent 2's own severe-warning hue, and the dark modal scrim is now a dark veil rather than a white one. If you pinned brand tokens on top of a packaged palette, re-check the pairs you pinned; if you hardcoded a packaged hex anywhere, take the value from the <i>Design tokens</i> section above.
+                </li>
+                <li>
+                    <b>The density-aware sizes and insets are computed where they are used.</b> The presets now declare <code>--bit-siz-ctrl-md-steps: 4</code> and leave <code>--bit-siz-ctrl-md</code> itself unset (likewise every <code>--bit-siz-*</code> and <code>--bit-spa-dialog</code> / <code>--bit-spa-card-*</code> token listed with a <code>-steps</code> twin above), so a density changed on part of the page reaches them. Setting one of them - in CSS or through <code>BitTheme</code> - works exactly as before. Reading one with a bare <code>var(--bit-siz-ctrl-md)</code> in your own CSS now finds nothing unless something set it; read it the way the library does, with the steps as the fallback: <code>var(--bit-siz-ctrl-md, calc(var(--bit-spa-scaling-factor) * var(--bit-layout-density-scale, 1) * var(--bit-siz-ctrl-md-steps)))</code>.
                 </li>
                 <li>
                     <b>Dark-scheme derivation now lightens on interaction.</b> <code>BitThemeColorDerivation.FillColorRoleFromMain(&hellip;, BitThemeColorScheme.Dark)</code> (and therefore <code>BitThemeFactory.CreateDarkTheme</code>) used to <i>darken</i> hover/active on a dark surface; it now steps them <i>up</i> in lightness, matching the packaged dark palette and Fluent 2's dark hover tokens. Themes you derive from a brand color will hover the opposite way from before - which is the point: previously a derived dark role and a packaged one reacted in opposite directions in the same UI. Slots you set explicitly are still never overwritten.
