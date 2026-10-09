@@ -1,4 +1,4 @@
-declare function docProperties(pdfDocument: any): Promise<any>;
+﻿declare function docProperties(pdfDocument: any): Promise<any>;
 declare class GenericScripting {
     constructor(sandboxBundleSrc: any);
     _ready: Promise<any>;

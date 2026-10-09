@@ -1,4 +1,4 @@
-/** @implements {IPDFStream} */
+﻿/** @implements {IPDFStream} */
 declare class PDFDataTransportStream implements IPDFStream {
     constructor(pdfDataRangeTransport: any, { disableRange, disableStream }: {
         disableRange?: boolean | undefined;

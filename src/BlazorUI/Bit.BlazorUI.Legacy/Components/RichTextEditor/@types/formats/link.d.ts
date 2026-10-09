@@ -1,4 +1,4 @@
-declare class Link extends Inline {
+﻿declare class Link extends Inline {
     static blotName: string;
     static tagName: string;
     static SANITIZED_URL: string;

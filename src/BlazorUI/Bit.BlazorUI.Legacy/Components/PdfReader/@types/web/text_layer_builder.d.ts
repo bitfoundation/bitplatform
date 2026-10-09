@@ -1,4 +1,4 @@
-declare type TextLayerBuilderOptions = {
+﻿declare type TextLayerBuilderOptions = {
     pdfPage: PDFPageProxy;
     /**
      * - Optional object that will handle

@@ -1,0 +1,35 @@
+﻿# Extends src/.editorconfig, whose [*] section gives every file charset = utf-8-bom. These are the files of
+# src/BlazorUI whose own tooling reads or writes them without a BOM, so the rule above would break them or
+# fight the tool on every save. Every other tracked text file carries a BOM, and SourceFilesBomTests in
+# Tests/Bit.BlazorUI.Tests fails on a source file that does not.
+###############################
+# Charset exemptions          #
+###############################
+# cmd.exe reads a leading BOM as part of the first command.
+[*.{bat,cmd}]
+charset = utf-8
+# JSON forbids a BOM (RFC 8259), and npm writes package.json / package-lock.json without one.
+[*.json]
+charset = utf-8
+# Apple's property lists and privacy manifests.
+[*.{plist,xcprivacy}]
+charset = utf-8
+# Android resource files, as aapt2 and the Android tooling write them.
+[Demo/Client/**/Platforms/Android/Resources/**.xml]
+charset = utf-8
+# The Windows side-by-side application manifest.
+[*.manifest]
+charset = utf-8
+# Read by crawlers, not all of which skip a BOM.
+[robots.txt]
+charset = utf-8
+# .gitignore, .gitattributes and the other files git reads itself.
+[.git*]
+charset = utf-8
+# Images, kept as the tool that drew them exported them.
+[*.svg]
+charset = unset
+# Scripts and stylesheets served straight out of wwwroot, most of them vendored third-party builds: they keep
+# whatever bytes they came with, so a library upgrade replaces the file without an encoding diff.
+[**/wwwroot/**.{js,css}]
+charset = unset

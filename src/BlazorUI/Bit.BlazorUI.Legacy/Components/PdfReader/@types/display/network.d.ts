@@ -1,4 +1,4 @@
-/** @implements {IPDFStream} */
+﻿/** @implements {IPDFStream} */
 declare class PDFNetworkStream implements IPDFStream {
     constructor(source: any);
     _source: any;
