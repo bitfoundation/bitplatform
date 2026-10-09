@@ -1214,8 +1214,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
 
         if (await AssignIsOpenInternal(false) is false) return;
 
-        // The focus is on its way to whatever callout is being opened in this one's place, so this is the
-        // one close that must not pull it back onto the field.
+        // The callout has already been dismissed on the JS side - another callout opening in its place, the page
+        // moving under it, the focus moving on from both the field and it - so the focus is on its way somewhere
+        // else, and this is the one close that must not pull it back onto the field.
         await OnClose.InvokeAsync();
 
         StateHasChanged();
@@ -1349,10 +1350,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             {
                 // Prevents the default behavior (scrolling the page) of the keys handled by the keydown
                 // handlers of the grid cells and of the field, since Blazor cannot conditionally
-                // preventDefault per key, and keeps the focus inside the callout while it is the modal
-                // dialog it reports itself to be. A standalone picker has no field to pass along: what it
-                // carries instead is a hidden input nobody can land on.
-                await _js.BitCalendarsSetup(_calloutId, Standalone is false, Standalone ? null : _datePickerId);
+                // preventDefault per key. A standalone picker has no field to pass along: what it carries
+                // instead is a hidden input nobody can land on.
+                await _js.BitCalendarsSetup(_calloutId, Standalone ? null : _datePickerId);
 
                 // The swipe dismisses the callout, and standalone there is no callout to dismiss.
                 if (Responsive && Standalone is false)
@@ -4143,6 +4143,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             setCalloutWidth: false,
             fixedCalloutWidth: false,
             maxWindowWidth: GetMaxWidth(),
+            // A floating callout is a modal dialog: the tab order is held inside it, and the focus moving on from
+            // both the field and the callout - a Tab or Shift+Tab from a field that keeps the focus while it is
+            // open - dismisses it rather than leaving it open behind its overlay.
+            trapFocus: true,
+            dismissOnFocusLeave: true,
             rootId: _Id);
     }
 

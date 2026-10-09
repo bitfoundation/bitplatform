@@ -26,7 +26,6 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     private bool _pointerPicked;
     private bool _isPointerDown;
     private ElementReference _clockRef;
-    private ElementReference _calloutRef;
     private string? _abortControllerId;
     private bool _internalIsOpenChange;
     private bool _cascadeApplied;
@@ -592,12 +591,17 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     {
         if (Standalone) return;
         if (Disabled) return;
+
+        // Any close settles the question an AutoClose wait was still holding open - see CloseCallout.
+        CancelAutoClose();
+
         if (IsOpen is false) return;
 
         if (await AssignIsOpenInternal(false) is false) return;
 
-        // The focus is on its way to whatever callout is being opened in this one's place, so this is the one
-        // close that must not pull it back onto the field.
+        // The callout has already been dismissed on the JS side - another callout opening in its place, the page
+        // moving under it, the focus moving on from both the field and it - so the focus is on its way somewhere
+        // else, and this is the one close that must not pull it back onto the field.
         await OnClose.InvokeAsync();
 
         StateHasChanged();
@@ -616,19 +620,6 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
     public async Task _OnClose()
     {
         await CloseCallout();
-        await InvokeAsync(StateHasChanged);
-    }
-
-    /// <summary>
-    /// Called from JavaScript when the focus leaves the callout for something outside of it.
-    /// </summary>
-    [JSInvokable(nameof(_HandleCalloutFocusOut))]
-    public async Task _HandleCalloutFocusOut()
-    {
-        // The focus is already on whatever it was moved to, so this is the one close that must not pull it
-        // back onto the field: doing so would make it impossible to tab past an open picker at all.
-        await CloseCallout(restoreFocus: false);
-
         await InvokeAsync(StateHasChanged);
     }
 
@@ -864,12 +855,10 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
 
             if (IsDisposed) return;
 
-            _abortControllerId = await _js.BitCircularTimePickerSetup(_dotnetObj, _clockRef, InputElement, _calloutRef,
-                                                                     Standalone is false,
+            _abortControllerId = await _js.BitCircularTimePickerSetup(_dotnetObj, _clockRef, InputElement,
                                                                      nameof(_HandlePointerDown),
                                                                      nameof(_HandlePointerMove),
-                                                                     nameof(_HandlePointerUp),
-                                                                     nameof(_HandleCalloutFocusOut));
+                                                                     nameof(_HandlePointerUp));
 
             // The setup is a round trip, so the picker can be gone by the time the controller id comes back -
             // at a point where DisposeAsync had nothing to abort yet. The listeners it registered would
@@ -946,8 +935,8 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
         // is dropped - a picker dismissed and opened again during the wait would otherwise be shut by it.
         CancelAutoClose();
 
-        // See OpenCallout: a close that has nothing to close must stay silent, since the keys that dismiss the
-        // picker - Escape, Tab - reach here whether or not it was open at the time.
+        // See OpenCallout: a close that has nothing to close must stay silent, since Escape, the key that
+        // dismisses the picker, reaches here whether or not it was open at the time.
         if (IsOpen is false) return;
 
         if (await AssignIsOpenInternal(false) is false) return;
@@ -1672,6 +1661,11 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             setCalloutWidth: false,
             fixedCalloutWidth: false,
             maxWindowWidth: 0,
+            // A floating callout is a modal dialog: the tab order is held inside it, and the focus moving on from
+            // both the field and the callout - a Tab or Shift+Tab from a field that keeps the focus while it is
+            // open - dismisses it rather than leaving it open behind its overlay.
+            trapFocus: true,
+            dismissOnFocusLeave: true,
             // The callout is anchored to the input wrapper, but the root is the element whose public variables
             // (of Style and Styles.Root) and classes the dial has to go on inheriting once the callout is
             // relocated to the body, so it is named apart.
@@ -1771,14 +1765,6 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             case "ArrowDown":
             case "ArrowUp":
                 await OpenCallout();
-                break;
-
-            case "Tab":
-                // An open callout is relocated to the end of the document, so it is not what the tab order
-                // runs into from the field: tabbing on would leave the popup open behind an overlay that
-                // swallows every click that could dismiss it. The focus is on its way to the next control,
-                // so it is left there rather than pulled back onto the field.
-                await CloseCallout(restoreFocus: false);
                 break;
 
             case "Enter":

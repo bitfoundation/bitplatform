@@ -2,9 +2,9 @@ namespace Bit.BlazorUI;
 
 internal static class CalendarsJsRuntimeExtensions
 {
-    internal static ValueTask BitCalendarsSetup(this IJSRuntime jsRuntime, string id, bool trapFocus = false, string? componentId = null)
+    internal static ValueTask BitCalendarsSetup(this IJSRuntime jsRuntime, string id, string? componentId = null)
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Calendars.setup", id, trapFocus, componentId);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Calendars.setup", id, componentId);
     }
 
     internal static ValueTask BitCalendarsDispose(this IJSRuntime jsRuntime, string id)

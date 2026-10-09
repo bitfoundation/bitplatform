@@ -849,8 +849,9 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
 
         if (await AssignIsOpenInternal(false) is false) return;
 
-        // The focus is on its way to whatever callout is being opened in this one's place, so this is the one
-        // close that must not pull it back onto the field.
+        // The callout has already been dismissed on the JS side - another callout opening in its place, the page
+        // moving under it, the focus moving on from both the field and it - so the focus is on its way somewhere
+        // else, and this is the one close that must not pull it back onto the field.
         await OnClose.InvokeAsync();
 
         StateHasChanged();
@@ -1049,13 +1050,11 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             if (IsDisposed) return;
 
             // Prevents the default behavior (scrolling the page) of the keys the field and the parts of the
-            // callout are worked with, since Blazor cannot conditionally preventDefault per key, and keeps the
-            // focus inside the callout while it is the modal dialog it reports itself to be.
+            // callout are worked with, since Blazor cannot conditionally preventDefault per key.
             // A standalone picker has no field to pass along: what it carries instead is a hidden input nobody
             // can land on, so there are no field keys to cancel the defaults of.
             _abortControllerId = await _js.BitTimePickerSetup(_calloutRef,
                                                              Standalone ? null : InputElement,
-                                                             Standalone is false,
                                                              _dotnetObj);
 
             // The setup is a round trip, so the picker can be gone by the time the controller id comes back -
@@ -1186,8 +1185,8 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         if (Standalone) return;
         if (Disabled) return;
 
-        // A close that has nothing to close must stay silent, since the keys that dismiss the picker -
-        // Escape, Tab - reach here whether or not it was open at the time.
+        // A close that has nothing to close must stay silent, since Escape, the key that dismisses the picker,
+        // reaches here whether or not it was open at the time.
         if (IsOpen is false) return;
 
         if (await AssignIsOpenInternal(false) is false) return;
@@ -1226,9 +1225,14 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             footerId: CalloutFooterTemplate is not null ? _footerId : string.Empty,
             setCalloutWidth: true,
             fixedCalloutWidth: false,
+            maxWindowWidth: 0,
+            // A floating callout is a modal dialog: the tab order is held inside it, and the focus moving on from
+            // both the field and the callout - a Tab or Shift+Tab from a field that keeps the focus while it is
+            // open - dismisses it rather than leaving it open behind its overlay.
+            trapFocus: true,
             // No rootId: the callout is rendered inside the root, so the root is one of the ancestors the chain
             // Callouts.ts relocates it into copies anyway.
-            maxWindowWidth: 0);
+            dismissOnFocusLeave: true);
     }
 
     private async Task HandleOnChange(ChangeEventArgs e)
@@ -1274,14 +1278,6 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
                 {
                     await OpenCallout();
                 }
-                break;
-
-            case "Tab":
-                // An open callout is relocated to the end of the document, so it is not what the tab order
-                // runs into from the field: tabbing on would leave the popup open behind an overlay that
-                // swallows every click that could dismiss it. The focus is on its way to the next control,
-                // so it is left there rather than pulled back onto the field.
-                await CloseCallout(restoreFocus: false);
                 break;
 
             case "Enter":
