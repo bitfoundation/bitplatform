@@ -181,9 +181,6 @@
         };
         private static readonly CLOSING_CHARS = [')', ']', '}', '`', '"'];
         private static readonly MODIFIER_KEYS = ['Shift', 'Control', 'Alt', 'Meta', 'AltGraph'];
-        // Everything the Tab key can land on, the preview's rendered links and details included.
-        private static readonly FOCUSABLE = 'a[href], area[href], button, input, select, textarea, summary, iframe, ' +
-            'audio[controls], video[controls], [contenteditable]:not([contenteditable="false"]), [tabindex]';
         // Auto-closing is skipped in front of anything that is not whitespace or a closer.
         private static readonly NOT_BEFORE_CLOSE = /[^\s)\]}>]/;
         // Ctrl/Cmd+Alt+<digit> heading shortcuts, keyed by physical code so they survive
@@ -1077,8 +1074,8 @@
             if (e.key !== 'Tab' || e.defaultPrevented || !this.root) return;
             if (!this.root.classList.contains('bit-mde-fsc') || this.root.querySelector('.bit-mde-hlp')) return;
 
-            const focusables = Array.from(this.root.querySelectorAll<HTMLElement>(MarkdownEditorCore.FOCUSABLE))
-                .filter(el => el.tabIndex >= 0 && !(el as HTMLButtonElement).disabled && el.offsetParent !== null);
+            // Everything the Tab key can land on, the preview's rendered links and details included.
+            const focusables = Utils.getFocusables(this.root);
             if (!focusables.length) return;
 
             const first = focusables[0];

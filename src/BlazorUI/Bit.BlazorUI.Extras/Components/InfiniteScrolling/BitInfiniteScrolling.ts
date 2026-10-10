@@ -85,8 +85,6 @@
         // The input types that hold no text to edit. Every other one has a caret its own Ctrl+Home / Ctrl+End move.
         private static readonly NON_TEXT_INPUTS = ['button', 'checkbox', 'color', 'file', 'image', 'radio', 'range', 'reset', 'submit'];
 
-        private static readonly FOCUSABLE = 'a[href], area[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), iframe, summary, [contenteditable=""], [contenteditable="true"], [tabindex]:not([tabindex="-1"])';
-
         private _observer: IntersectionObserver;
         // The second observer of a list that scrolls an element of its own (see the constructor).
         private _viewportObserver: IntersectionObserver | null = null;
@@ -385,18 +383,7 @@
             const feed = this._feedElement();
             if (!feed) return null;
 
-            const all = Array.from(document.querySelectorAll<HTMLElement>(InfiniteScrollingInstance.FOCUSABLE))
-                .filter(el => !feed.contains(el) && el.getClientRects().length > 0);
-
-            const position = (el: HTMLElement) => feed.compareDocumentPosition(el);
-
-            if (after) {
-                return all.find(el => (position(el) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0) ?? null;
-            }
-
-            const before = all.filter(el => (position(el) & Node.DOCUMENT_POSITION_PRECEDING) !== 0);
-
-            return before.length > 0 ? before[before.length - 1] : null;
+            return Utils.findFocusable(document, feed, after, el => feed.contains(el));
         }
 
         // The target is recomputed on the second pass: a list whose images or fonts land after the first one
