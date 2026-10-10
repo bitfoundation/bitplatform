@@ -43,7 +43,11 @@ public class BitPaginationStylesheetTests
 
         foreach (var variable in PublicVariables)
         {
-            Assert.IsTrue(stylesheet.Contains($"var({variable}, "), $"{variable} is never read with a fallback.");
+            // The focus color alone is read without a fallback, on purpose: its absence is what hands the ring over
+            // to the global --bit-shd-focus-ring (see BitFocusRingStylesheetTests).
+            var expected = variable == "--bit-Pagination-focus-color" ? $"var({variable})" : $"var({variable}, ";
+
+            Assert.IsTrue(stylesheet.Contains(expected), $"{variable} is never read as it should be.");
             Assert.IsFalse(Regex.IsMatch(stylesheet, $@"(^|[\s;{{]){Regex.Escape(variable)}\s*:", RegexOptions.Multiline), $"{variable} is declared, which stops it from inheriting.");
         }
 
@@ -125,7 +129,7 @@ public class BitPaginationStylesheetTests
         StringAssert.Contains(stylesheet, "--bit-pgn-clr-btn-bg: var(--bit-Pagination-button-background, transparent);");
         StringAssert.Contains(stylesheet, "--bit-pgn-sbg: var(--bit-pgn-clr-btn-bg-hover, var(--bit-Pagination-button-hover-background, #{$clr-pri-hover}));");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-pgn-sbg, var(--bit-pgn-clr-btn-sel-bg, var(--bit-Pagination-selected-background, #{$clr-pri-dark})));");
-        StringAssert.Contains(stylesheet, "@include focus-ring(var(--bit-pgn-clr-fcs, var(--bit-Pagination-focus-color, #{$clr-pri-focus})));");
+        StringAssert.Contains(stylesheet, "@include focus-ring-own(var(--bit-pgn-clr-fcs, var(--bit-Pagination-focus-color)));");
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Pagination-[a-z-]+, var\(--bit-pgn-"), "A public variable is read before the parameter it restyles the default of.");
     }

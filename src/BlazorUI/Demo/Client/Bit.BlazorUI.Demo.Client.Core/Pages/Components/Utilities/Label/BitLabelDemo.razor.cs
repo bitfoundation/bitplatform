@@ -180,7 +180,7 @@ public partial class BitLabelDemo
         {
             Name = "--bit-Label-focus-color",
             DefaultValue = "--bit-clr-pri-focus",
-            Description = "Color of the focus ring of a label given a TabIndex.",
+            Description = "Color of the focus ring of a label given a TabIndex. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
         },
     ];
 

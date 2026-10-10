@@ -37,12 +37,20 @@ public class BitThemeBoxShadows
     public string? S24 { get; set; }
 
     /// <summary>
-    /// The focus ring drawn in the default focus color (<c>--bit-shd-focus-ring</c>). Replacing it re-shapes only the rings
-    /// that use that color: a control that draws its ring in a color of its own (an invalid input, a colored variant, or a
-    /// component's <c>--bit-&lt;Component&gt;-focus-color</c>) composes the two layers itself, since this composite substitutes
-    /// its <c>var()</c>s where it is declared. To restyle every ring, set <see cref="BitThemeShapes.FocusRingWidth"/>,
-    /// <see cref="BitThemeShapes.FocusRingOffset"/> and the <c>--bit-clr-*-focus</c> colors, which reach both.
+    /// The focus ring of every control that has not been given a focus color of its own (<c>--bit-shd-focus-ring</c>), so
+    /// replacing it re-shapes the focus indicators of the whole library. A control that has been - a <c>Color</c> parameter,
+    /// a <c>--bit-&lt;Component&gt;-focus-color</c> - composes the two layers itself in that color, and so do the rings that
+    /// mean something (an invalid input's error color, a disabled control's) and the ones drawn flush against a cell; replacing
+    /// this token leaves those alone. To restyle every ring, set <see cref="BitThemeShapes.FocusRingWidth"/>,
+    /// <see cref="BitThemeShapes.FocusRingOffset"/> and the <c>--bit-clr-*-focus</c> colors, which reach both kinds.
     /// </summary>
+    /// <remarks>
+    /// This token is a composite of the page background, the primary focus color and the ring's width and offset, and a
+    /// composite substitutes its <c>var()</c>s where it is declared: on <c>:root</c>, on a <c>[bit-theme]</c> scope, and on
+    /// the element a <see cref="BitThemeProvider"/> or <see cref="BitThemeManager.ApplyBitThemeAsync"/> applies a theme to,
+    /// both of which re-declare it whenever the theme re-values one of those inputs. App CSS that sets one of them on any
+    /// other element has to re-declare <c>--bit-shd-focus-ring</c> there as well for the default ring to follow.
+    /// </remarks>
     public string? FocusRing { get; set; }
 
     /// <summary>The resting elevation of a card (<c>--bit-shd-card</c>).</summary>

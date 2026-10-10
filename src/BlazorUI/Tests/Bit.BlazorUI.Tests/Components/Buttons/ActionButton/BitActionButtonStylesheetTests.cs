@@ -44,7 +44,7 @@ public partial class BitActionButtonStylesheetTests
         // The hover and press states set the variable the rule at rest paints from, never the color itself.
         StringAssert.Contains(stylesheet, "--bit-acb-sfg: var(--bit-acb-clr-hover, var(--bit-ActionButton-hover-color, #{$clr-pri-hover}));");
         StringAssert.Contains(stylesheet, "--bit-acb-sfg: var(--bit-acb-clr-active, var(--bit-ActionButton-active-color, #{$clr-pri-active}));");
-        StringAssert.Contains(stylesheet, "var(--bit-acb-clr-focus, var(--bit-ActionButton-focus-color, #{$clr-pri-focus}))");
+        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-acb-clr-focus, var(--bit-ActionButton-focus-color)))");
         StringAssert.Contains(stylesheet, "--bit-acb-ico: var(--bit-acb-clr-dis-text, var(--bit-ActionButton-disabled-color, #{$clr-pri-dis-text}));");
 
         // What a Color does not paint stays the variable's: the neutral text, at rest and disabled, and the backgrounds.

@@ -342,7 +342,7 @@
 // Every item label carries .bit-chg-itl and the tile layout only adds .bit-chg-ili on top of it, so the
 // single rule here covers both the plain and the tile item without them stacking two rings on each other.
 .bit-chg-inp:focus-visible + .bit-chg-itl {
-    @include focus-ring(var(--bit-chg-clr-focus, var(--bit-ChoiceGroup-focus-color, #{$clr-pri-focus})));
+    @include focus-ring-own(var(--bit-chg-clr-focus, var(--bit-ChoiceGroup-focus-color)));
 }
 
 .bit-chg-itl {

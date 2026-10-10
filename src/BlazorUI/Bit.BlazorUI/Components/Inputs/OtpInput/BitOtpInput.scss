@@ -445,7 +445,7 @@
 //the ring only to take its shadow away again would still leave its forced-colors outline behind.
 .bit-otp:not(.bit-otp-txt) .bit-otp-inp {
     &:focus-visible {
-        @include focus-ring(var(--bit-otp-clr-focus, var(--bit-OtpInput-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-otp-clr-focus, var(--bit-OtpInput-focus-color)));
     }
 }
 

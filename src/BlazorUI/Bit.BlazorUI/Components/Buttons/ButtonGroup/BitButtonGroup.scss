@@ -111,7 +111,7 @@
     // buttons holds it. The root keeps a ring of its own only for a consumer who makes it
     // focusable through a tabindex of their own.
     &:focus-visible {
-        @include focus-ring(var(--bit-btg-clr-focus, var(--bit-ButtonGroup-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-btg-clr-focus, var(--bit-ButtonGroup-focus-color)));
     }
 
     &.bit-dis, &.bit-dis * {
@@ -281,6 +281,8 @@
     // ring held off the button by a gap, which reads at a glance next to the separated buttons around it.
     // Except while the group scrolls, which clips along its own axis like the attached layout does - there
     // a ring held off the button is exactly what gets cut off, so the inset outline above is kept.
+    // Its default color is the variant's (the on-color of a filled group, the main color of the others),
+    // never the primary focus color, so it stays a ring of its own rather than the global one.
     &:not(.bit-btg-scr):not(.bit-btg-scb) .bit-btg-itm:focus-visible {
         @include focus-ring(var(--bit-btg-itm-clr-fcs, var(--bit-ButtonGroup-focus-color, var(--bit-btg-dfl-fcs))));
     }

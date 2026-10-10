@@ -26,7 +26,7 @@
     // rows needs one to be scrolled from the keyboard), or where the LoadMore button that held the focus
     // went away with the last page and the focus was handed to the list rather than dropped on the body.
     &:focus-visible {
-        @include focus-ring(var(--bit-BasicList-focus-color, #{$clr-pri-focus}));
+        @include focus-ring-own(var(--bit-BasicList-focus-color));
     }
 }
 

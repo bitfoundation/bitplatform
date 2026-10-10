@@ -684,7 +684,7 @@
 //the rule of the field from rather than painting the rule itself. It follows the whole field rather than the
 //input alone, so that a tag reached with the arrow keys lights it up as well.
 .bit-tgi .bit-tgi-cnt:focus-within {
-    @include focus-ring(var(--bit-tgi-clr-focus, var(--bit-TagsInput-focus-color, #{$clr-pri-focus})));
+    @include focus-ring-own(var(--bit-tgi-clr-focus, var(--bit-TagsInput-focus-color)));
 
     --bit-tgi-cnt-brd: var(--bit-tgi-clr, var(--bit-TagsInput-focus-border-color, #{$clr-pri}));
 }

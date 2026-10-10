@@ -107,14 +107,11 @@
     transition: color $bit-motion-duration-short $bit-motion-easing,
                 border-color $bit-motion-duration-short $bit-motion-easing,
                 background-color $bit-motion-duration-short $bit-motion-easing;
-
-    // BitIcon always emits a color class of its own, so the glyph would stay primary-blue
-    // through every state of the button - invisible once .active paints the primary background
-    // behind it. The icon is part of the label here, so it follows the label's color.
-    ::deep .bit-ico {
-        color: inherit;
-        font-size: rem2(15px);
-    }
+    // A BitIcon given no Color is primary, which would vanish once .active paints the primary
+    // background behind it. The icon is part of the label here, so it follows the label's color
+    // through every state of the button - safe as currentColor because it is a Text icon.
+    --bit-Icon-color: currentColor;
+    --bit-Icon-size: #{rem2(15px)};
 
     &:hover {
         color: $bit-color-foreground-primary;
@@ -371,16 +368,18 @@
     transition: color $bit-motion-duration-short $bit-motion-easing,
                 border-color $bit-motion-duration-short $bit-motion-easing;
 
+    --bit-Icon-size: #{rem2(16px)};
+
     span {
         overflow: hidden;
         white-space: nowrap;
         text-overflow: ellipsis;
     }
 
+    // Layout rather than theming, so it is not one of the icon's variables: the name beside the
+    // glyph is what gives way when the cell is narrow.
     ::deep .bit-ico {
         flex: none;
-        font-size: rem2(16px);
-        color: $bit-color-primary;
     }
 
     &:hover {
@@ -518,6 +517,10 @@
     align-items: center;
     font-weight: $bit-typography-fw-semibold;
     font-size: $bit-typography-fs-sm;
+    // The mark takes the heading's success or error color rather than the primary one it has
+    // when given no Color.
+    --bit-Icon-color: currentColor;
+    --bit-Icon-size: #{rem2(15px)};
 
     .do & {
         color: $bit-color-success;
@@ -525,11 +528,6 @@
 
     .dont & {
         color: $bit-color-error;
-    }
-
-    ::deep .bit-ico {
-        color: inherit;
-        font-size: rem2(15px);
     }
 }
 

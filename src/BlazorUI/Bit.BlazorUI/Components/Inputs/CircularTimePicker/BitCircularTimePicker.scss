@@ -178,7 +178,7 @@
     // public variables, then the primary role an unset Color stands for.
     --bit-ctp-clr: var(--bit-ctp-rl-clr, var(--bit-CircularTimePicker-color, #{$clr-pri}));
     --bit-ctp-clr-text: var(--bit-ctp-rl-text, var(--bit-CircularTimePicker-text-color, #{$clr-pri-text}));
-    --bit-ctp-clr-focus: var(--bit-ctp-rl-focus, var(--bit-CircularTimePicker-focus-color, #{$clr-pri-focus}));
+    --bit-ctp-clr-focus: var(--bit-ctp-rl-focus, var(--bit-CircularTimePicker-focus-color));
 
     // The hand, the pin and the ring of the thumb are one object drawn in three pieces, so they follow the
     // accent together unless the hand is given a color of its own - which an explicit Color still wins over.
@@ -397,7 +397,7 @@
     }
 
     &:not(.bit-ctp-und) .bit-ctp-icn {
-        @include focus-ring(var(--bit-ctp-clr-focus, #{$clr-pri-focus}));
+        @include focus-ring-own(var(--bit-ctp-clr-focus));
 
         border-color: var(--bit-ctp-clr-foc-brd, #{$clr-pri});
     }
@@ -826,7 +826,7 @@ span.bit-ctp-txt {
     border-radius: 50%;
 
     &:focus-visible {
-        @include focus-ring(var(--bit-ctp-clr-focus, #{$clr-pri-focus}));
+        @include focus-ring-own(var(--bit-ctp-clr-focus));
     }
 }
 
@@ -864,7 +864,7 @@ span.bit-ctp-txt {
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-ctp-clr-focus, #{$clr-pri-focus}));
+        @include focus-ring-own(var(--bit-ctp-clr-focus));
     }
 
     &:disabled {
@@ -902,7 +902,7 @@ span.bit-ctp-txt {
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-ctp-clr-focus, #{$clr-pri-focus}));
+        @include focus-ring-own(var(--bit-ctp-clr-focus));
     }
 }
 

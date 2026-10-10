@@ -28,7 +28,7 @@ public class BitBreadcrumbStylesheetTests
         StringAssert.Contains(stylesheet, "--bit-brc-clr: var(--bit-brc-role-main, var(--bit-Breadcrumb-color, #{$clr-fg-pri}));");
         StringAssert.Contains(stylesheet, "--bit-brc-sel-clr: var(--bit-brc-role-main, var(--bit-Breadcrumb-selected-color, ");
         StringAssert.Contains(stylesheet, "--bit-brc-div-clr: var(--bit-brc-role-main, var(--bit-Breadcrumb-divider-color, #{$clr-fg-sec}));");
-        StringAssert.Contains(stylesheet, "--bit-brc-fcs-clr: var(--bit-brc-role-focus, var(--bit-Breadcrumb-focus-color, #{$clr-pri-focus}));");
+        StringAssert.Contains(stylesheet, "--bit-brc-fcs-clr: var(--bit-brc-role-focus, var(--bit-Breadcrumb-focus-color));");
         // (The hover sets the state color the rule at rest reads, rather than painting the color itself.)
         StringAssert.Contains(stylesheet, "--bit-brc-sfg: var(--bit-brc-role-main, var(--bit-Breadcrumb-hover-color, ");
         StringAssert.Contains(stylesheet, "color: var(--bit-brc-sfg, var(--bit-brc-itm-clr));");

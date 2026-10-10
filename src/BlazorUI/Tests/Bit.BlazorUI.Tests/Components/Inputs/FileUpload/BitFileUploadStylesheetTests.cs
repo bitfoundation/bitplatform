@@ -40,7 +40,7 @@ public class BitFileUploadStylesheetTests
         StringAssert.Contains(stylesheet, "var(--bit-upl-clr-tint-8, var(--bit-FileUpload-drop-area-hover-background, #{translucent($clr-pri, 8%)}))");
         StringAssert.Contains(stylesheet, "var(--bit-upl-clr-tint-10, var(--bit-FileUpload-action-hover-background, #{translucent($clr-pri, 10%)}))");
         StringAssert.Contains(stylesheet, "var(--bit-upl-clr, var(--bit-FileUpload-progress-color, #{$clr-pri}))");
-        StringAssert.Contains(stylesheet, "var(--bit-upl-clr-focus, var(--bit-FileUpload-focus-color, #{$clr-pri-focus}))");
+        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-upl-clr-focus, var(--bit-FileUpload-focus-color)))");
 
         // What a Color does not paint - the transparent fill of Outline and Text - stays the variable's alone.
         StringAssert.Contains(stylesheet, "background-color: var(--bit-upl-lbl-sbg, var(--bit-FileUpload-label-background, transparent));");

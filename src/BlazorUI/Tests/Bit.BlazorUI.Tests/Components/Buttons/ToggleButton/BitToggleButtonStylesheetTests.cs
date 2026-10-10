@@ -38,7 +38,7 @@ public partial class BitToggleButtonStylesheetTests
         StringAssert.Contains(stylesheet, "background-color: var(--bit-tgb-sbg, var(--bit-tgb-clr-dark, var(--bit-ToggleButton-checked-background, #{$clr-pri-dark})));");
         StringAssert.Contains(stylesheet, "--bit-tgb-sbg: var(--bit-tgb-clr-dark-hover, var(--bit-ToggleButton-checked-hover-background, #{$clr-pri-dark-hover}));");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-tgb-clr-dis, var(--bit-ToggleButton-disabled-background, #{$clr-pri-dis}));");
-        StringAssert.Contains(stylesheet, "var(--bit-tgb-clr-focus, var(--bit-ToggleButton-focus-color, #{$clr-pri-focus}))");
+        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-tgb-clr-focus, var(--bit-ToggleButton-focus-color)))");
 
         // What a Color does not paint stays the variables' alone: the transparent background of Outline and Text.
         StringAssert.Contains(stylesheet, "background-color: var(--bit-tgb-sbg, var(--bit-ToggleButton-background, transparent));");

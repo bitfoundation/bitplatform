@@ -32,7 +32,7 @@ public class BitChoiceGroupStylesheetTests
         StringAssert.Contains(stylesheet, "var(--bit-chg-clr-hover, var(--bit-ChoiceGroup-hover-color, #{$clr-pri-hover}))");
         StringAssert.Contains(stylesheet, "var(--bit-chg-clr-dis, var(--bit-ChoiceGroup-disabled-color, #{$clr-pri-dis}))");
         StringAssert.Contains(stylesheet, "var(--bit-chg-clr-dis-text, var(--bit-ChoiceGroup-disabled-text-color, #{$clr-pri-dis-text}))");
-        StringAssert.Contains(stylesheet, "var(--bit-chg-clr-focus, var(--bit-ChoiceGroup-focus-color, #{$clr-pri-focus}))");
+        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-chg-clr-focus, var(--bit-ChoiceGroup-focus-color)))");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-chg-clr-bg, var(--bit-ChoiceGroup-item-background, #{$clr-bg-sec}));");
         // The checked card at rest reads the variable its hover moves first, then the Color as everywhere else.
         StringAssert.Contains(stylesheet, "border-color: var(--bit-chg-itl-brd, var(--bit-chg-clr, var(--bit-ChoiceGroup-item-checked-border-color, var(--bit-ChoiceGroup-color, #{$clr-pri}))));");

@@ -65,7 +65,7 @@ $csl-btn-hover: var(--bit-csl-btn-hover, var(--bit-Carousel-button-hover-color, 
 
     // The dot size that is actually drawn, which everything laid out around a dot is measured from.
     --bit-csl-dotsz: var(--bit-csl-dot-size, var(--bit-Carousel-dot-size, #{spacing(1.25)}));
-    --bit-csl-focus: var(--bit-csl-fcs, var(--bit-Carousel-focus-color, #{$clr-pri-focus}));
+    --bit-csl-focus: var(--bit-csl-fcs, var(--bit-Carousel-focus-color));
 
     // The duration of the slide/fade of the pages. The AnimationDuration parameter arrives inline as
     // the -full token and the transitions read this derived one, following the -full pattern of
@@ -81,7 +81,7 @@ $csl-btn-hover: var(--bit-csl-btn-hover, var(--bit-Carousel-button-hover-color, 
     gap: var(--bit-Carousel-dots-margin, #{spacing(1.25)});
 
     &:focus-visible {
-        @include focus-ring(var(--bit-csl-focus));
+        @include focus-ring-own(var(--bit-csl-focus));
     }
 }
 
@@ -173,7 +173,7 @@ $csl-btn-hover: var(--bit-csl-btn-hover, var(--bit-Carousel-button-hover-color, 
     &:focus-visible {
         opacity: 1;
 
-        @include focus-ring(var(--bit-csl-focus));
+        @include focus-ring-own(var(--bit-csl-focus));
     }
 
     &:disabled {
@@ -302,7 +302,7 @@ $csl-btn-hover: var(--bit-csl-btn-hover, var(--bit-Carousel-button-hover-color, 
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-csl-focus));
+        @include focus-ring-own(var(--bit-csl-focus));
     }
 
     &:disabled {

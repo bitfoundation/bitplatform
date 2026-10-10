@@ -228,7 +228,7 @@ $isc-ring-room: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});
     }
 
     &:focus-visible {
-        @include focus-ring($clr-pri-focus);
+        @include focus-ring;
     }
 
     // The button keeps its place - and the focus that pressed it - while the load it started runs. It is marked

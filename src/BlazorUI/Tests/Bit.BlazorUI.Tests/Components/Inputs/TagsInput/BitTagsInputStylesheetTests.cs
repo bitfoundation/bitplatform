@@ -32,7 +32,7 @@ public class BitTagsInputStylesheetTests
         StringAssert.Contains(stylesheet, "background-color: var(--bit-tgi-tag-sbg, var(--bit-tgi-tag-bg, var(--bit-TagsInput-tag-background, var(--bit-tgi-tag-bg-dft))));");
         StringAssert.Contains(stylesheet, "color: var(--bit-tgi-tag-sfg, var(--bit-tgi-tag-clr, var(--bit-TagsInput-tag-color, var(--bit-tgi-tag-clr-dft))));");
         StringAssert.Contains(stylesheet, "var(--bit-tgi-tag-ring, var(--bit-TagsInput-tag-focus-color, var(--bit-tgi-tag-ring-dft)))");
-        StringAssert.Contains(stylesheet, "var(--bit-tgi-clr-focus, var(--bit-TagsInput-focus-color, #{$clr-pri-focus}))");
+        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-tgi-clr-focus, var(--bit-TagsInput-focus-color)))");
         StringAssert.Contains(stylesheet, "var(--bit-tgi-clr, var(--bit-TagsInput-focus-border-color, #{$clr-pri}))");
         StringAssert.Contains(stylesheet, "var(--bit-tgi-clr, var(--bit-TagsInput-spinner-color, #{$clr-pri}))");
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-tgi-tgf {"), "--bit-tgi-tag-bg: var(--bit-tgi-clr);");

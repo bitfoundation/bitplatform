@@ -344,7 +344,7 @@
 
 .bit-dtp-foc:not(.bit-dtp-und) {
     .bit-dtp-icn {
-        @include focus-ring(var(--bit-dtp-clr-focus, var(--bit-DatePicker-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-dtp-clr-focus, var(--bit-DatePicker-focus-color)));
     }
 }
 

@@ -28,7 +28,7 @@ public class BitCalendarStylesheetTests
         StringAssert.Contains(stylesheet, "var(--bit-cal-clr-txt, var(--bit-Calendar-today-color, #{$clr-pri-text}))");
         StringAssert.Contains(stylesheet, "var(--bit-cal-clr-hover, var(--bit-Calendar-today-hover-background, #{$clr-pri-hover}))");
         StringAssert.Contains(stylesheet, "var(--bit-cal-clr-active, var(--bit-Calendar-today-active-background, #{$clr-pri-active}))");
-        StringAssert.Contains(stylesheet, "var(--bit-cal-clr-focus, var(--bit-Calendar-focus-color, #{$clr-pri-focus}))");
+        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-cal-clr-focus, var(--bit-Calendar-focus-color)))");
 
         // An event's own color comes before both.
         StringAssert.Contains(stylesheet, "var(--bit-cal-evt-clr, var(--bit-cal-clr, var(--bit-Calendar-event-color, #{$clr-pri})))");

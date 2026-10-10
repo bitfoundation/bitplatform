@@ -83,7 +83,8 @@
 
 
 // The root is focusable while it carries a TabIndex or an AutoFocus, so a keyboard user can land on the message
-// itself - and has to be able to see that they did.
+// itself - and has to be able to see that they did. The ring is in the message's own color even when no Color
+// is set, since an unset one stands for the Info role rather than the primary one the global ring is drawn in.
 .bit-msg:focus-visible {
     @include focus-ring(var(--bit-msg-focus));
 }

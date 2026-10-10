@@ -93,7 +93,7 @@
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-acb-clr-focus, var(--bit-ActionButton-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-acb-clr-focus, var(--bit-ActionButton-focus-color)));
     }
 
     &.bit-dis {

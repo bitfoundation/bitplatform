@@ -109,7 +109,7 @@
     --bit-tpc-clr-txt: var(--bit-tpc-rl-txt, var(--bit-TimePicker-on-color, #{$clr-pri-text}));
     --bit-tpc-clr-hover: var(--bit-tpc-rl-hover, var(--bit-TimePicker-hover-color, #{$clr-pri-hover}));
     --bit-tpc-clr-active: var(--bit-tpc-rl-active, var(--bit-TimePicker-active-color, #{$clr-pri-active}));
-    --bit-tpc-clr-focus: var(--bit-tpc-rl-focus, var(--bit-TimePicker-focus-color, #{$clr-pri-focus}));
+    --bit-tpc-clr-focus: var(--bit-tpc-rl-focus, var(--bit-TimePicker-focus-color));
 }
 
 .bit-tpc {
@@ -347,7 +347,7 @@
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-tpc-clr-focus));
+        @include focus-ring-own(var(--bit-tpc-clr-focus));
     }
 
     &:disabled {
@@ -401,7 +401,7 @@
 
 .bit-tpc-foc:not(.bit-tpc-und) {
     .bit-tpc-icn {
-        @include focus-ring(var(--bit-tpc-clr-focus));
+        @include focus-ring-own(var(--bit-tpc-clr-focus));
     }
 }
 
@@ -426,7 +426,7 @@
 
     &.bit-tpc-foc {
         .bit-tpc-icn {
-            @include focus-underline-ring(var(--bit-tpc-clr-focus));
+            @include focus-underline-ring(var(--bit-tpc-clr-focus, #{$clr-pri-focus}));
         }
     }
 }
@@ -584,7 +584,7 @@
     // The input is already drawn borderless at rest, so the focus adds only the underline - a border of its own
     // would take away one the app gives the input through Classes exactly while it is being typed in.
     &:focus {
-        @include focus-underline-ring(var(--bit-tpc-clr-focus));
+        @include focus-underline-ring(var(--bit-tpc-clr-focus, #{$clr-pri-focus}));
     }
 }
 
@@ -638,7 +638,7 @@
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-tpc-clr-focus));
+        @include focus-ring-own(var(--bit-tpc-clr-focus));
     }
 }
 
@@ -710,7 +710,7 @@
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-tpc-clr-focus));
+        @include focus-ring-own(var(--bit-tpc-clr-focus));
     }
 }
 

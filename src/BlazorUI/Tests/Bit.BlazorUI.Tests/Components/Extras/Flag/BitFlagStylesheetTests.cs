@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -26,7 +27,11 @@ public partial class BitFlagStylesheetTests
 
         foreach (var name in documented)
         {
-            StringAssert.Contains(body, $"var({name}, ", $"{name} is documented but never read with a fallback.");
+            // The focus color alone is read without a fallback, on purpose: its absence is what hands the ring over
+            // to the global --bit-shd-focus-ring (see BitFocusRingStylesheetTests).
+            var read = name.EndsWith("-focus-color", StringComparison.Ordinal) ? $"var({name})" : $"var({name}, ";
+
+            StringAssert.Contains(body, read, $"{name} is documented but never read as it should be.");
         }
     }
 
@@ -107,14 +112,14 @@ public partial class BitFlagStylesheetTests
 
         var focus = SourceFiles.GetScssBlock(stylesheet, "&:focus-visible {");
 
-        StringAssert.Contains(focus, "@include focus-ring(var(--bit-Flag-focus-color, #{$clr-pri-focus}), $shp-focus-ring-offset, var(--bit-flg-elv));");
+        StringAssert.Contains(focus, "@include focus-ring-own(var(--bit-Flag-focus-color), var(--bit-flg-elv));");
         Assert.IsFalse(focus.Contains("outline:"), "The focus ring is drawn by hand rather than with the shared mixin.");
 
         StringAssert.Contains(RuleOf(stylesheet, ".bit-flg"), "--bit-flg-elv: 0 0 #0000;");
         StringAssert.Contains(RuleOf(stylesheet, ".bit-flg-shd"), "--bit-flg-elv: var(--bit-Flag-shadow, #{$box-shadow-card});\n    box-shadow: var(--bit-flg-elv);");
 
         StringAssert.Contains(SourceFiles.Read("Bit.BlazorUI", "Styles", "functions.scss"),
-"@mixin focus-ring($color: $clr-pri-focus, $offset: $shp-focus-ring-offset, $also: null) {");
+"@mixin focus-ring-own($color, $also: null) {");
     }
 
     [TestMethod]

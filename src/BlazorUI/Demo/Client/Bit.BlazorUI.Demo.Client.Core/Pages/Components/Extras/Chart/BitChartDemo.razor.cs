@@ -311,7 +311,7 @@ public partial class BitChartDemo
         {
             Name = "--bit-Chart-focus-color",
             DefaultValue = "--bit-clr-pri-focus",
-            Description = "Focus ring of the plot and the legend items, and the outline of the element the keyboard is on.",
+            Description = "Focus ring of the plot and the legend items, and the dashed outline of the element the keyboard is on. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too; the outline is a stroke, drawn in the primary focus color.",
         },
         new()
         {

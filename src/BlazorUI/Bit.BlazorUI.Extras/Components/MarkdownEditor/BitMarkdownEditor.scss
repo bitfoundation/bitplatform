@@ -40,6 +40,9 @@ $mde-border-width: var(--bit-MarkdownEditor-border-width, #{$shp-border-width});
 $mde-radius: var(--bit-MarkdownEditor-border-radius, #{$shp-radius-surface});
 $mde-divider: var(--bit-MarkdownEditor-divider-color, #{$clr-brd-sec});
 $mde-focus: var(--bit-MarkdownEditor-focus-color, #{$clr-pri-focus});
+// The same color less its fallback, for the focus rings: while it is unset they are the global
+// --bit-shd-focus-ring (see focus-ring-own and focus-ring-color).
+$mde-focus-ring: focus-ring-color($mde-focus);
 $mde-error: var(--bit-MarkdownEditor-error-color, #{$clr-err});
 $mde-bar-background: var(--bit-MarkdownEditor-toolbar-background, #{$clr-bg-sec});
 $mde-button-color: var(--bit-MarkdownEditor-button-color, #{$clr-fg-sec});
@@ -182,7 +185,7 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
     }
 
     &:focus-visible {
-        @include focus-ring($mde-focus);
+        @include focus-ring-own($mde-focus-ring);
     }
 
     &.bit-mde-act {
@@ -350,7 +353,7 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
     }
 
     &:focus-visible {
-        @include focus-ring($mde-focus);
+        @include focus-ring-own($mde-focus-ring);
     }
 
     &.bit-mde-act {
@@ -643,7 +646,7 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
     }
 
     &:focus-visible {
-        @include focus-ring($mde-focus);
+        @include focus-ring-own($mde-focus-ring);
     }
 }
 

@@ -39,7 +39,7 @@ public partial class BitMenuButtonStylesheetTests
         StringAssert.Contains(stylesheet, "--bit-mnb-sbr: var(--bit-mnb-clr-hover, var(--bit-MenuButton-hover-background, #{$clr-pri-hover}));");
         StringAssert.Contains(stylesheet, "--bit-mnb-dis-clr: var(--bit-mnb-clr-dis-text, var(--bit-MenuButton-disabled-color, #{$clr-pri-dis-text}));");
         StringAssert.Contains(stylesheet, "--bit-mnb-clr-spb: var(--bit-mnb-clr-txt, var(--bit-MenuButton-divider-color, var(--bit-MenuButton-color, #{$clr-pri-text})));");
-        StringAssert.Contains(stylesheet, "var(--bit-mnb-clr-focus, var(--bit-MenuButton-focus-color, #{$clr-pri-focus}))");
+        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-mnb-clr-focus, var(--bit-MenuButton-focus-color)))");
         StringAssert.Contains(stylesheet, "var(--bit-mnb-clr-focus, var(--bit-MenuButton-item-focus-color, #{$clr-pri-focus}))");
         StringAssert.Contains(stylesheet, "color: var(--bit-mnb-clr, var(--bit-MenuButton-item-checked-color, #{$clr-pri}));");
 
