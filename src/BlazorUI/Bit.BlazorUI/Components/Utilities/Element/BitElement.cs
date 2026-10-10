@@ -49,18 +49,6 @@ public partial class BitElement : BitComponentBase
         "button", "fieldset", "input", "optgroup", "option", "select", "textarea"
     };
 
-    // The events an element is activated through: by the pointer, by touch, by the keyboard, and by the click an
-    // assistive technology dispatches. A disabled element drops the handlers splatted for them, since a form element
-    // the browser disables is out of reach of all of them, while the ones that only follow the pointer or the focus
-    // around (a hover, a focus) are left alone.
-    private static readonly string[] _activationEvents =
-    [
-        "onclick", "ondblclick", "onauxclick", "oncontextmenu",
-        "onmousedown", "onmouseup", "onpointerdown", "onpointerup",
-        "ontouchstart", "ontouchend",
-        "onkeydown", "onkeyup", "onkeypress"
-    ];
-
 
 
     /// <summary>
@@ -255,7 +243,12 @@ public partial class BitElement : BitComponentBase
         // The splatted attributes come first so everything the component builds itself is written over them. The values
         // the component would otherwise write as null are resolved against them below, since a null written over a
         // splatted attribute does not leave that attribute alone - it removes it.
-        builder.AddMultipleAttributes(1, RuntimeHelpers.TypeCheck(HtmlAttributes));
+        // The pointer events the disabled class turns off are only one of the ways an event reaches an element: a screen
+        // reader activates what it announces by dispatching a click on it, and an event of an enabled control inside a
+        // disabled container - a click, a key, a press - bubbles up to it. A form element the browser disables is out of
+        // reach of the pointer and the keyboard both, so a disabled element of any tag leaves the splatted handlers of
+        // the events that activate an element out rather than run them for a state it announces as unavailable.
+        builder.AddMultipleAttributes(1, RuntimeHelpers.TypeCheck(DisabledAwareHtmlAttributes));
         builder.AddAttribute(2, "id", Id.HasValue() ? Id : (GetSplattedAttribute("id") ?? _Id));
         builder.AddAttribute(3, "style", JoinStyles(GetSplattedAttribute("style"), StyleBuilder.Value));
         builder.AddAttribute(4, "class", JoinClasses(ClassBuilder.Value, GetSplattedAttribute("class")));
@@ -289,21 +282,7 @@ public partial class BitElement : BitComponentBase
             var role = GetSplattedAttribute("role");
             builder.AddAttribute(11, "role", role.HasValue() ? role : "link");
         }
-        // The pointer events the disabled class turns off are only one of the ways an event reaches an element: a
-        // screen reader activates what it announces by dispatching a click on it, and an event of an enabled control
-        // inside a disabled container - a click, a key, a press - bubbles up to it. A form element the browser disables
-        // is out of reach of the pointer and the keyboard both, so a disabled element of any tag drops the splatted
-        // handlers of the events that activate an element rather than run them for a state it announces as unavailable.
-        // The block keeps its length whichever way the element stands, so the frames after it keep their numbers.
         var seq = 12;
-        foreach (var @event in _activationEvents)
-        {
-            if (Disabled)
-            {
-                builder.AddAttribute(seq, @event, (object?)null);
-            }
-            seq++;
-        }
         // The event modifiers of a plain element, which the razor compiler refuses on a component. A modifier that is
         // off writes no attribute at all, and the renderer takes the one a previous render wrote away again by not
         // finding it here, so the two of the click are asked for on every render whichever way they stand and the ones

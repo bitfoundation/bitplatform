@@ -5,6 +5,33 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## vNext (after 10.6.2)
 
+### A disabled component no longer runs the activation handlers written on it ([#13547](https://github.com/bitfoundation/bitplatform/issues/13547))
+
+An HTML event handler written straight on a component (`<BitToggle Disabled="true" @onclick="...">`) lands on
+its root element, and it used to run while the component was disabled: a screen reader's click ignores the
+`pointer-events: none` of the disabled state, a click or key of an enabled control inside the component bubbles
+up to its root, and several components do not turn the pointer off at all. A disabled component now drops the
+handlers of the events an element is activated through - `onclick`, `ondblclick`, `onauxclick`,
+`oncontextmenu`, `onmousedown` / `onmouseup`, `onpointerdown` / `onpointerup`, `ontouchstart` / `ontouchend`,
+`onkeydown` / `onkeyup` / `onkeypress` - the way `BitElement` already did and a disabled form control does.
+Hover and focus handlers are kept, and every handler is back as soon as the component is enabled again.
+
+This applies to the buttons (`BitActionButton`, `BitButton`, `BitButtonGroup`, `BitMenuButton`,
+`BitToggleButton`), every input, `BitTimeline`, the navs (`BitBreadcrumb`, `BitDropMenu`, `BitNav`,
+`BitNavBar`, `BitPagination`, and `BitPivotItem` - disabled on its own or by its `BitPivot`), `BitPersona`,
+`BitTag`, `BitCard`, `BitIcon`, `BitImage`, `BitLink`, and in `Bit.BlazorUI.Extras` to `BitFlag`,
+`BitPhoneInput`, `BitThemeSwitcher`, `BitAccentColorSwitcher`, `BitRichTextEditor`, `BitMarkdownEditor`,
+`BitDataGrid`, `BitChart` and `BitPdfViewer`. A component whose `Disabled` only switches one behaviour off
+while the content it hosts stays live keeps running them: `BitBadge`, `BitTooltip`, `BitCallout`,
+`BitAccordion` and `BitAccordionList` (their panels), `BitCarousel` and `BitSwiper` (their slides), `BitPivot`
+(the panel of its open tab), `BitMap` (its overlay), `BitMessageBox`, `BitNavPanel`, and the other panels,
+dialogs and layouts. **An app that relied on a handler of a disabled component running** - to explain why it is
+disabled, say - puts it on an element of its own around the component.
+
+`BitButtonGroup` also turns an item's click away for the group's own `Disabled`, not only for the item's
+`IsDisabled`: with `DisabledInteractive`, a disabled group used to still run `OnItemClick`, the item's
+`OnClick` and its toggle on a key press. The link items of a disabled group are out of the tab order.
+
 ### An app's class keeps painting a part while it is hovered, pressed or focused ([#13542](https://github.com/bitfoundation/bitplatform/issues/13542))
 
 The hover, pressed and focus states of the components used to paint their parts' `color`, `background`,

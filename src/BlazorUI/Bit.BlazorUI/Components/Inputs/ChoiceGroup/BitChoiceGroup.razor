@@ -16,7 +16,7 @@
 }
 @* The invalid state belongs to the choice as a whole, not to the option that happens to be focused,
    so the group carries the aria-invalid too and not only the individual radio inputs of the base class. *@
-<div @ref="RootElement" @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      role="radiogroup"
      style="@StyleBuilder.Value"

@@ -12,7 +12,7 @@
    their browser defaults (see BitDataGrid.ts) reads whether they are live off the root rather than
    guessing: a grid without them must leave Ctrl+A and Ctrl+C to the browser. *@
 <div @ref="RootElement"
-     @attributes="HtmlAttributes"
+     @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      tabindex="@TabIndex"
      style="@StyleBuilder.Value"
