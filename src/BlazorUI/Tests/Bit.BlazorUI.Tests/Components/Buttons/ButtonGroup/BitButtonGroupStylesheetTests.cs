@@ -46,13 +46,21 @@ public partial class BitButtonGroupStylesheetTests
         StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-btg-rnd {"), "--bit-btg-rad: #{$shp-radius-full};");
 
         // So does an explicit Color, for every color it paints - read on the button itself, where a variable set on the
-        // Style of a single button arrives, with the default of the variant after it.
-        StringAssert.Contains(stylesheet, "color: var(--bit-btg-itm-clr-txt, var(--bit-ButtonGroup-color, var(--bit-btg-dfl-txt)));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-btg-itm-clr-bg, var(--bit-ButtonGroup-background, var(--bit-btg-dfl-bg)));");
+        // Style of a single button arrives, with the default of the variant after it. The hover and press states set the
+        // variables the rules at rest paint from (--bit-btg-itm-sfg / -sbg / -sbr), never the colors themselves, so the
+        // state's value is read ahead of the rest value it stands in for.
+        StringAssert.Contains(stylesheet, "color: var(--bit-btg-itm-sfg, var(--bit-btg-itm-clr-txt, var(--bit-ButtonGroup-color, var(--bit-btg-dfl-txt))));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-btg-itm-sbg, var(--bit-btg-itm-clr-bg, var(--bit-ButtonGroup-background, var(--bit-btg-dfl-bg))));");
         StringAssert.Contains(stylesheet, "border-color: var(--bit-btg-clr-outer, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-outer)));");
         StringAssert.Contains(stylesheet, "--bit-btg-sep: var(--bit-btg-itm-clr-brd, var(--bit-ButtonGroup-separator-color, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-brd))));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-btg-itm-clr-bg-hover, var(--bit-ButtonGroup-hover-background, #{$clr-pri-hover}));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-btg-clr-dark, var(--bit-ButtonGroup-selected-background, #{$clr-pri-dark}));");
+        StringAssert.Contains(stylesheet, "--bit-btg-itm-sbg: var(--bit-btg-itm-clr-bg-hover, var(--bit-ButtonGroup-hover-background, #{$clr-pri-hover}));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-btg-itm-sbg, var(--bit-btg-clr-dark, var(--bit-ButtonGroup-selected-background, #{$clr-pri-dark})));");
+
+        // The variables the states move start out unset on each button, so one nested in another never inherits its state.
+        var item = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-btg-itm {");
+        StringAssert.Contains(item, "--bit-btg-itm-sfg: initial;");
+        StringAssert.Contains(item, "--bit-btg-itm-sbg: initial;");
+        StringAssert.Contains(item, "--bit-btg-itm-sbr: initial;");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-btg-itm-clr-bg-dis, var(--bit-ButtonGroup-disabled-background, var(--bit-btg-dfl-bg-dis)));");
         StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-btg-clr-focus, var(--bit-ButtonGroup-focus-color)))");
 

@@ -190,7 +190,8 @@ $bfc-private-properties: evt-color;
     min-height: $siz-ctrl-md;
     border: $shp-border-width $shp-border-style var(--bit-bfc-border);
     border-radius: $shp-radius-button;
-    background: var(--bit-bfc-bg);
+    --bit-bfc-btn-sbg: initial;
+    background: var(--bit-bfc-btn-sbg, var(--bit-bfc-bg));
     color: var(--bit-bfc-text);
     font-size: $tg-fs-sm;
     font-weight: $tg-fw-medium;
@@ -202,8 +203,11 @@ $bfc-private-properties: evt-color;
     line-height: 1.25;
 }
 
+/* The states in this file move a private variable the rule at rest paints from, rather than painting the part
+   themselves: a state outranks the single class an app hands a part, so a part the app paints keeps that paint
+   under the pointer and the keyboard. Every rule painting a part at rest that one of its states outranks reads it. */
 .bit-bfc-btn:hover:not(:disabled, [aria-disabled="true"]) {
-    background: var(--bit-bfc-bg-hover);
+    --bit-bfc-btn-sbg: var(--bit-bfc-bg-hover);
 }
 
 /* A step past MinDate/MaxDate, a Today outside the window, a save in flight: the control says it is
@@ -217,23 +221,23 @@ $bfc-private-properties: evt-color;
 }
 
 .bit-bfc-btn-primary {
-    background: var(--bit-bfc-primary);
+    background: var(--bit-bfc-btn-sbg, var(--bit-bfc-primary));
     color: var(--bit-bfc-primary-text);
     border-color: var(--bit-bfc-primary);
 }
 
 .bit-bfc-btn-primary:hover:not(:disabled) {
-    background: var(--bit-bfc-primary-hover);
+    --bit-bfc-btn-sbg: var(--bit-bfc-primary-hover);
 }
 
 .bit-bfc-btn-danger {
-    background: var(--bit-bfc-danger);
+    background: var(--bit-bfc-btn-sbg, var(--bit-bfc-danger));
     color: var(--bit-bfc-danger-text);
     border-color: var(--bit-bfc-danger);
 }
 
 .bit-bfc-btn-danger:hover:not(:disabled) {
-    background: var(--bit-bfc-danger-hover);
+    --bit-bfc-btn-sbg: var(--bit-bfc-danger-hover);
 }
 
 .bit-bfc-btn-primary:disabled,
@@ -288,8 +292,10 @@ $bfc-private-properties: evt-color;
     padding: spacing(0.625) spacing(1.5);
     border: none;
     border-radius: $shp-radius-button;
-    background: transparent;
-    color: var(--bit-bfc-text-secondary);
+    --bit-bfc-vwt-sbg: initial;
+    --bit-bfc-vwt-sfg: initial;
+    background: var(--bit-bfc-vwt-sbg, transparent);
+    color: var(--bit-bfc-vwt-sfg, var(--bit-bfc-text-secondary));
     font-size: $tg-fs-sm;
     font-weight: $tg-fw-medium;
     letter-spacing: $tg-ctrl-letter-spacing;
@@ -299,8 +305,8 @@ $bfc-private-properties: evt-color;
 }
 
 .bit-bfc-view-tab:hover {
-    color: var(--bit-bfc-text);
-    background: var(--bit-bfc-bg-hover);
+    --bit-bfc-vwt-sfg: var(--bit-bfc-text);
+    --bit-bfc-vwt-sbg: var(--bit-bfc-bg-hover);
 }
 
 .bit-bfc-view-tab.active {
@@ -410,10 +416,30 @@ $bfc-private-properties: evt-color;
     font-weight: $tg-fw-semibold;
 }
 
+/* ===== Cells =====
+   Each kind of cell has a variable of its own that its state moves: the month cell's hover (and the blanked
+   one's), the hour row's, the timeline cell's, and the focus of a time-grid or timeline slot. Every cell resets all
+   of them, so a slot never inherits the hover of the cell or the row it sits in, and a rule painting a cell at rest
+   reads only the states that outrank it - a drop target, for one, still wins over a hovered month cell. */
+.bit-bfc-month-cell,
+.bit-bfc-hour-row,
+.bit-bfc-hour-slot,
+.bit-bfc-hour-row-half,
+.bit-bfc-tl-cell,
+.bit-bfc-tl-cell-slot,
+.bit-bfc-tl-cell-half {
+    --bit-bfc-mcl-sbg: initial;
+    --bit-bfc-mbl-sbg: initial;
+    --bit-bfc-hrw-sbg: initial;
+    --bit-bfc-tlc-sbg: initial;
+    --bit-bfc-slt-sbg: initial;
+    background: var(--bit-bfc-mcl-sbg, var(--bit-bfc-hrw-sbg, var(--bit-bfc-tlc-sbg, var(--bit-bfc-slt-sbg))));
+}
+
 /* ===== Business hours ===== */
 .bit-bfc-slot-off,
 .bit-bfc-day-off {
-    background-color: var(--bit-bfc-off-hours);
+    background-color: var(--bit-bfc-mcl-sbg, var(--bit-bfc-tlc-sbg, var(--bit-bfc-slt-sbg, var(--bit-bfc-off-hours))));
 }
 
 /* Today's column in the week grid, tinted so the eye finds it without reading the header. Sits
@@ -425,10 +451,13 @@ $bfc-private-properties: evt-color;
 /* A blanked day borrowed from a neighbouring month keeps its column open but draws nothing, which
    is what turning ShowNonCurrentDates off asks for. The selectors carry the cell class as well so
    they outrank .bit-bfc-month-cell's own cursor and hover treatment. */
-.bit-bfc-month-cell.bit-bfc-month-cell-blank,
-.bit-bfc-month-cell.bit-bfc-month-cell-blank:hover {
+.bit-bfc-month-cell.bit-bfc-month-cell-blank {
     cursor: default;
-    background: var(--bit-bfc-bg-secondary);
+    background: var(--bit-bfc-mbl-sbg, var(--bit-bfc-bg-secondary));
+}
+
+.bit-bfc-month-cell.bit-bfc-month-cell-blank:hover {
+    --bit-bfc-mbl-sbg: var(--bit-bfc-bg-secondary);
 }
 
 .bit-bfc-week-header-day-link {
@@ -479,7 +508,7 @@ $bfc-private-properties: evt-color;
 }
 
 .bit-bfc-month-cell:hover {
-    background: var(--bit-bfc-bg-hover);
+    --bit-bfc-mcl-sbg: var(--bit-bfc-bg-hover);
 }
 
 /* The grid is not always seven cells wide - a work week narrows it, and the week-number rail adds a
@@ -492,7 +521,7 @@ $bfc-private-properties: evt-color;
 /* A day borrowed from a neighbouring month says so through its number, which is drawn in the muted
    text colour. Fading the whole cell would take its events below a readable contrast with it. */
 .bit-bfc-month-cell.other-month {
-    background: color-mix(in srgb, var(--bit-bfc-bg-secondary) 50%, transparent);
+    background: var(--bit-bfc-mbl-sbg, color-mix(in srgb, var(--bit-bfc-bg-secondary) 50%, transparent));
 }
 
 .bit-bfc-month-cell.other-month .bit-bfc-month-cell-day:not(.today) {
@@ -547,7 +576,6 @@ $bfc-private-properties: evt-color;
 
 .bit-bfc-month-more {
     font-size: $tg-fs-xs;
-    color: var(--bit-bfc-text-secondary);
     padding: spacing(0.25) spacing(0.5);
     cursor: pointer;
     font-weight: $tg-fw-medium;
@@ -559,10 +587,12 @@ $bfc-private-properties: evt-color;
     background: none;
     font-family: inherit;
     text-align: start;
+    --bit-bfc-mmr-sfg: initial;
+    color: var(--bit-bfc-mmr-sfg, var(--bit-bfc-text-secondary));
 }
 
 .bit-bfc-month-more:hover {
-    color: var(--bit-bfc-primary);
+    --bit-bfc-mmr-sfg: var(--bit-bfc-primary);
 }
 
 /* ===== Event Badge (month view) ===== */
@@ -860,6 +890,8 @@ $bfc-private-properties: evt-color;
     z-index: 3;
     touch-action: none;
     border-radius: $shp-radius-sm;
+    --bit-bfc-rsh-sbg: initial;
+    background: var(--bit-bfc-rsh-sbg);
     transition: background $mot-duration-short $mot-easing, box-shadow $mot-duration-short $mot-easing;
 }
 
@@ -895,7 +927,7 @@ $bfc-private-properties: evt-color;
 }
 
 .bit-bfc-resize-handle:hover {
-    background: var(--bit-bfc-resize-glow);
+    --bit-bfc-rsh-sbg: var(--bit-bfc-resize-glow);
 }
 
 .bit-bfc-resize-handle:hover::after {
@@ -1195,7 +1227,8 @@ $bfc-private-properties: evt-color;
     border: none;
     background: none;
     padding: 0;
-    color: inherit;
+    --bit-bfc-ymt-sfg: initial;
+    color: var(--bit-bfc-ymt-sfg, inherit);
     font-family: inherit;
     text-align: start;
     font-weight: $tg-fw-semibold;
@@ -1206,7 +1239,7 @@ $bfc-private-properties: evt-color;
 }
 
 .bit-bfc-year-month-title:hover {
-    color: var(--bit-bfc-primary);
+    --bit-bfc-ymt-sfg: var(--bit-bfc-primary);
 }
 
 .bit-bfc-year-weekdays {
@@ -1262,7 +1295,8 @@ $bfc-private-properties: evt-color;
 .bit-bfc-year-day.has-events {
     appearance: none;
     border: none;
-    background: none;
+    --bit-bfc-yrd-sbg: initial;
+    background: var(--bit-bfc-yrd-sbg, none);
     font: inherit;
     font-weight: $tg-fw-semibold;
     color: inherit;
@@ -1270,7 +1304,7 @@ $bfc-private-properties: evt-color;
 }
 
 .bit-bfc-year-day.has-events:hover {
-    background: var(--bit-bfc-bg-hover);
+    --bit-bfc-yrd-sbg: var(--bit-bfc-bg-hover);
 }
 
 .bit-bfc-year-day-bullets {
@@ -1296,7 +1330,8 @@ $bfc-private-properties: evt-color;
 .bit-bfc-agenda-search input {
     width: 100%;
     padding: spacing(1) spacing(1.5);
-    border: $shp-border-width $shp-border-style var(--bit-bfc-control-border);
+    --bit-bfc-ags-sbr: initial;
+    border: $shp-border-width $shp-border-style var(--bit-bfc-ags-sbr, var(--bit-bfc-control-border));
     border-radius: var(--bit-bfc-radius-sm);
     background: var(--bit-bfc-bg);
     color: var(--bit-bfc-text);
@@ -1305,7 +1340,7 @@ $bfc-private-properties: evt-color;
 }
 
 .bit-bfc-agenda-search input:focus {
-    border-color: var(--bit-bfc-primary);
+    --bit-bfc-ags-sbr: var(--bit-bfc-primary);
 }
 
 .bit-bfc-agenda-group {
@@ -1334,7 +1369,8 @@ $bfc-private-properties: evt-color;
     width: 100%;
     padding: spacing(1.25) spacing(2);
     border: none;
-    background: none;
+    --bit-bfc-agi-sbg: initial;
+    background: var(--bit-bfc-agi-sbg, none);
     font: inherit;
     color: inherit;
     text-align: start;
@@ -1343,7 +1379,7 @@ $bfc-private-properties: evt-color;
 }
 
 .bit-bfc-agenda-item:hover {
-    background: var(--bit-bfc-bg-hover);
+    --bit-bfc-agi-sbg: var(--bit-bfc-bg-hover);
 }
 
 .bit-bfc-agenda-avatar {
@@ -1484,17 +1520,19 @@ $bfc-private-properties: evt-color;
     height: $siz-ctrl-sm;
     padding: 0;
     border: none;
-    background: none;
+    --bit-bfc-dcb-sbg: initial;
+    --bit-bfc-dcb-sfg: initial;
+    background: var(--bit-bfc-dcb-sbg, none);
     border-radius: $shp-radius-button;
-    color: var(--bit-bfc-text-muted);
+    color: var(--bit-bfc-dcb-sfg, var(--bit-bfc-text-muted));
     cursor: pointer;
     flex-shrink: 0;
     transition: background $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 }
 
 .bit-bfc-dialog-close-btn:hover {
-    background: var(--bit-bfc-bg-hover);
-    color: var(--bit-bfc-text);
+    --bit-bfc-dcb-sbg: var(--bit-bfc-bg-hover);
+    --bit-bfc-dcb-sfg: var(--bit-bfc-text);
 }
 
 .bit-bfc-dialog-body {
@@ -1558,7 +1596,8 @@ $bfc-private-properties: evt-color;
 .bit-bfc-field textarea {
     width: 100%;
     padding: spacing(1) spacing(1.25);
-    border: $shp-border-width $shp-border-style var(--bit-bfc-control-border);
+    --bit-bfc-fld-sbr: initial;
+    border: $shp-border-width $shp-border-style var(--bit-bfc-fld-sbr, var(--bit-bfc-control-border));
     border-radius: var(--bit-bfc-radius-sm);
     background: var(--bit-bfc-bg);
     color: var(--bit-bfc-text);
@@ -1570,11 +1609,12 @@ $bfc-private-properties: evt-color;
 .bit-bfc-field input:focus,
 .bit-bfc-field select:focus,
 .bit-bfc-field textarea:focus {
-    border-color: var(--bit-bfc-primary);
+    --bit-bfc-fld-sbr: var(--bit-bfc-primary);
 }
 
+/* The focus outranks it, so a focused invalid field takes the focus color as it always has. */
 .bit-bfc-field [aria-invalid="true"] {
-    border-color: var(--bit-bfc-danger);
+    border-color: var(--bit-bfc-fld-sbr, var(--bit-bfc-danger));
 }
 
 .bit-bfc-field textarea {
@@ -1598,7 +1638,8 @@ $bfc-private-properties: evt-color;
     padding: spacing(1) spacing(1.25);
     border: $shp-border-width $shp-border-style var(--bit-bfc-control-border);
     border-radius: var(--bit-bfc-radius-sm);
-    background: var(--bit-bfc-bg);
+    --bit-bfc-dtt-sbg: initial;
+    background: var(--bit-bfc-dtt-sbg, var(--bit-bfc-bg));
     color: var(--bit-bfc-text);
     font-size: $tg-fs-sm;
     text-align: start;
@@ -1610,7 +1651,7 @@ $bfc-private-properties: evt-color;
 }
 
 .bit-bfc-dtp-trigger:hover {
-    background: var(--bit-bfc-bg-hover);
+    --bit-bfc-dtt-sbg: var(--bit-bfc-bg-hover);
 }
 
 .bit-bfc-dtp-trigger-icon {
@@ -1645,7 +1686,8 @@ $bfc-private-properties: evt-color;
 
 .bit-bfc-dtp-nav-btn {
     border: $shp-border-width $shp-border-style var(--bit-bfc-border);
-    background: var(--bit-bfc-bg);
+    --bit-bfc-dnb-sbg: initial;
+    background: var(--bit-bfc-dnb-sbg, var(--bit-bfc-bg));
     color: var(--bit-bfc-text);
     width: rem2(24px);
     height: rem2(24px);
@@ -1655,7 +1697,7 @@ $bfc-private-properties: evt-color;
 }
 
 .bit-bfc-dtp-nav-btn:hover {
-    background: var(--bit-bfc-bg-hover);
+    --bit-bfc-dnb-sbg: var(--bit-bfc-bg-hover);
 }
 
 .bit-bfc-dtp-weekdays {
@@ -1679,7 +1721,8 @@ $bfc-private-properties: evt-color;
 
 .bit-bfc-dtp-day {
     border: $shp-border-width $shp-border-style transparent;
-    background: transparent;
+    --bit-bfc-dtd-sbg: initial;
+    background: var(--bit-bfc-dtd-sbg, transparent);
     color: var(--bit-bfc-text);
     border-radius: $shp-radius-sm;
     height: rem2(28px);
@@ -1688,7 +1731,7 @@ $bfc-private-properties: evt-color;
 }
 
 .bit-bfc-dtp-day:hover:not(:disabled) {
-    background: var(--bit-bfc-bg-hover);
+    --bit-bfc-dtd-sbg: var(--bit-bfc-bg-hover);
 }
 
 .bit-bfc-dtp-day:disabled {
@@ -1701,12 +1744,12 @@ $bfc-private-properties: evt-color;
 }
 
 .bit-bfc-dtp-day-selected {
-    background: var(--bit-bfc-primary);
+    background: var(--bit-bfc-dtd-sbg, var(--bit-bfc-primary));
     color: var(--bit-bfc-primary-text);
 }
 
 .bit-bfc-dtp-day-selected:hover {
-    background: var(--bit-bfc-primary);
+    --bit-bfc-dtd-sbg: var(--bit-bfc-primary);
 }
 
 .bit-bfc-dtp-time {
@@ -1792,12 +1835,14 @@ $bfc-private-properties: evt-color;
     display: flex;
     align-items: center;
     justify-content: center;
-    background: none;
+    --bit-bfc-acr-sbg: initial;
+    --bit-bfc-acr-sfg: initial;
+    background: var(--bit-bfc-acr-sbg, none);
     border: none;
     padding: 0;
     margin-inline-start: spacing(0.25);
     cursor: pointer;
-    color: var(--bit-bfc-text-muted);
+    color: var(--bit-bfc-acr-sfg, var(--bit-bfc-text-muted));
     border-radius: $shp-radius-full;
     width: rem2(16px);
     height: rem2(16px);
@@ -1805,8 +1850,8 @@ $bfc-private-properties: evt-color;
 }
 
 .bit-bfc-attendee-chip-remove:hover {
-    background: var(--bit-bfc-danger);
-    color: var(--bit-bfc-danger-text);
+    --bit-bfc-acr-sbg: var(--bit-bfc-danger);
+    --bit-bfc-acr-sfg: var(--bit-bfc-danger-text);
 }
 
 /* Attendee add row */
@@ -1820,7 +1865,8 @@ $bfc-private-properties: evt-color;
     flex: 1;
     min-width: rem2(80px);
     padding: spacing(0.75) spacing(1);
-    border: $shp-border-width $shp-border-style var(--bit-bfc-border);
+    --bit-bfc-aar-sbr: initial;
+    border: $shp-border-width $shp-border-style var(--bit-bfc-aar-sbr, var(--bit-bfc-border));
     border-radius: var(--bit-bfc-radius-sm);
     background: var(--bit-bfc-bg);
     color: var(--bit-bfc-text);
@@ -1830,7 +1876,7 @@ $bfc-private-properties: evt-color;
 }
 
 .bit-bfc-attendee-add-row input:focus {
-    border-color: var(--bit-bfc-primary);
+    --bit-bfc-aar-sbr: var(--bit-bfc-primary);
 }
 
 /* Repeat rule */
@@ -1867,7 +1913,8 @@ $bfc-private-properties: evt-color;
     padding: 0 spacing(0.75);
     border: $shp-border-width $shp-border-style var(--bit-bfc-border);
     border-radius: $shp-radius-chip;
-    background: var(--bit-bfc-bg);
+    --bit-bfc-rpd-sbg: initial;
+    background: var(--bit-bfc-rpd-sbg, var(--bit-bfc-bg));
     color: var(--bit-bfc-text);
     font-size: $tg-fs-xs;
     font-weight: $tg-fw-medium;
@@ -1876,7 +1923,7 @@ $bfc-private-properties: evt-color;
 }
 
 .bit-bfc-repeat-day:hover {
-    background: var(--bit-bfc-bg-hover);
+    --bit-bfc-rpd-sbg: var(--bit-bfc-bg-hover);
 }
 
 .bit-bfc-repeat-day[aria-pressed="true"] {
@@ -2023,14 +2070,18 @@ $bfc-private-properties: evt-color;
     font-size: $tg-fs-sm;
     text-align: start;
     transition: background $mot-duration-short $mot-easing;
-    background: transparent;
+    --bit-bfc-ddi-sbg: initial;
+    background: var(--bit-bfc-ddi-sbg, transparent);
 }
 
 button.bit-bfc-dropdown-item {
     cursor: pointer;
 }
 
-button.bit-bfc-dropdown-item:hover,
+button.bit-bfc-dropdown-item:hover {
+    --bit-bfc-ddi-sbg: var(--bit-bfc-bg-hover);
+}
+
 .bit-bfc-dropdown-item[aria-checked="true"].bit-bfc-dropdown-choice {
     background: var(--bit-bfc-bg-hover);
 }
@@ -2120,7 +2171,8 @@ button.bit-bfc-dropdown-item:hover,
 /* ===== Filter Select ===== */
 .bit-bfc-filter-select {
     padding: spacing(0.75) spacing(1.25);
-    border: $shp-border-width $shp-border-style var(--bit-bfc-control-border);
+    --bit-bfc-fsl-sbr: initial;
+    border: $shp-border-width $shp-border-style var(--bit-bfc-fsl-sbr, var(--bit-bfc-control-border));
     border-radius: var(--bit-bfc-radius-sm);
     font-size: $tg-fs-xs;
     font-weight: $tg-fw-medium;
@@ -2136,11 +2188,11 @@ button.bit-bfc-dropdown-item:hover,
 }
 
 .bit-bfc-filter-select:focus {
-    border-color: var(--bit-bfc-primary);
+    --bit-bfc-fsl-sbr: var(--bit-bfc-primary);
 }
 
 .bit-bfc-filter-select:hover {
-    border-color: var(--bit-bfc-text-secondary);
+    --bit-bfc-fsl-sbr: var(--bit-bfc-text-secondary);
 }
 
 /* ===== Drag feedback ===== */
@@ -2183,11 +2235,12 @@ button.bit-bfc-dropdown-item:hover,
     font-size: $tg-fs-xs;
     cursor: pointer;
     transition: background $mot-duration-short $mot-easing;
-    background: transparent;
+    --bit-bfc-mcd-sbg: initial;
+    background: var(--bit-bfc-mcd-sbg, transparent);
 }
 
 .bit-bfc-mini-calendar-day:hover:not(:disabled) {
-    background: var(--bit-bfc-bg-hover);
+    --bit-bfc-mcd-sbg: var(--bit-bfc-bg-hover);
 }
 
 .bit-bfc-mini-calendar-day:disabled {
@@ -2208,7 +2261,7 @@ button.bit-bfc-dropdown-item:hover,
 }
 
 .bit-bfc-mini-calendar-day.today {
-    background: var(--bit-bfc-primary);
+    background: var(--bit-bfc-mcd-sbg, var(--bit-bfc-primary));
     color: var(--bit-bfc-primary-text);
 }
 
@@ -2252,7 +2305,8 @@ button.bit-bfc-dropdown-item:hover,
     border-radius: var(--bit-bfc-radius-sm);
     margin-bottom: spacing(0.75);
     border: $shp-border-width $shp-border-style var(--bit-bfc-border);
-    background: var(--bit-bfc-bg);
+    --bit-bfc-hpe-sbg: initial;
+    background: var(--bit-bfc-hpe-sbg, var(--bit-bfc-bg));
     color: inherit;
     font: inherit;
     text-align: start;
@@ -2261,7 +2315,7 @@ button.bit-bfc-dropdown-item:hover,
 }
 
 .bit-bfc-happening-event:hover {
-    background: var(--bit-bfc-bg-hover);
+    --bit-bfc-hpe-sbg: var(--bit-bfc-bg-hover);
 }
 
 .bit-bfc-happening-event:focus-visible {
@@ -2420,22 +2474,22 @@ button.bit-bfc-dropdown-item:hover,
 }
 
 .bit-bfc-droppable.drag-over {
-    background: color-mix(in srgb, var(--bit-bfc-primary) 8%, transparent);
+    background: var(--bit-bfc-slt-sbg, color-mix(in srgb, var(--bit-bfc-primary) 8%, transparent));
 }
 
 .bit-bfc-droppable.bit-bfc-drop-preview-hour {
-    background: linear-gradient(to bottom,
+    background: var(--bit-bfc-slt-sbg, linear-gradient(to bottom,
             color-mix(in srgb, var(--bit-bfc-primary) 16%, transparent) 0%,
             color-mix(in srgb, var(--bit-bfc-primary) 16%, transparent) 50%,
             transparent 50%,
-            transparent 100%);
+            transparent 100%));
     outline: $shp-border-width $shp-border-style color-mix(in srgb, var(--bit-bfc-primary) 45%, transparent);
     outline-offset: -1px;
     z-index: 6;
 }
 
 .bit-bfc-droppable.bit-bfc-drop-preview-half {
-    background: color-mix(in srgb, var(--bit-bfc-primary) 16%, transparent);
+    background: var(--bit-bfc-slt-sbg, color-mix(in srgb, var(--bit-bfc-primary) 16%, transparent));
     outline: $shp-border-width $shp-border-style color-mix(in srgb, var(--bit-bfc-primary) 45%, transparent);
     outline-offset: -1px;
     z-index: 7;
@@ -2449,7 +2503,7 @@ button.bit-bfc-dropdown-item:hover,
 }
 
 .bit-bfc-hour-row:hover {
-    background: var(--bit-bfc-bg-hover);
+    --bit-bfc-hrw-sbg: var(--bit-bfc-bg-hover);
 }
 
 .bit-bfc-cell-add-hint {
@@ -2490,7 +2544,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 
 /* The slots covered by an in-progress range selection (press and drag across the time grid). */
 .bit-bfc-slot-selected {
-    background: var(--bit-bfc-selection);
+    background: var(--bit-bfc-slt-sbg, var(--bit-bfc-selection));
     opacity: 1;
 }
 
@@ -2503,7 +2557,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
     outline: $shp-border-width-thick $shp-border-style var(--bit-bfc-primary);
     outline-offset: -2px;
     box-shadow: none;
-    background: var(--bit-bfc-resize-glow);
+    --bit-bfc-slt-sbg: var(--bit-bfc-resize-glow);
     opacity: 1;
     z-index: 4;
 }
@@ -2530,9 +2584,12 @@ button.bit-bfc-cell-add-hint:focus-visible {
     cursor: default;
 }
 
-.bit-bfc-no-add .bit-bfc-hour-row:hover,
+.bit-bfc-no-add .bit-bfc-hour-row:hover {
+    --bit-bfc-hrw-sbg: none;
+}
+
 .bit-bfc-no-add .bit-bfc-tl-cell:hover {
-    background: none;
+    --bit-bfc-tlc-sbg: none;
 }
 
 /* An event that cannot be moved - read-only, AllowDrag or AllowEdit off, a locked event - stays clickable (it opens
@@ -2665,8 +2722,10 @@ button.bit-bfc-cell-add-hint:focus-visible {
     padding: spacing(0.625) spacing(1.5);
     border: none;
     border-radius: $shp-radius-button;
-    background: transparent;
-    color: var(--bit-bfc-text-secondary);
+    --bit-bfc-mdt-sbg: initial;
+    --bit-bfc-mdt-sfg: initial;
+    background: var(--bit-bfc-mdt-sbg, transparent);
+    color: var(--bit-bfc-mdt-sfg, var(--bit-bfc-text-secondary));
     font-size: $tg-fs-sm;
     font-weight: $tg-fw-medium;
     letter-spacing: $tg-ctrl-letter-spacing;
@@ -2676,8 +2735,8 @@ button.bit-bfc-cell-add-hint:focus-visible {
 }
 
 .bit-bfc-mode-tab:hover {
-    color: var(--bit-bfc-text);
-    background: var(--bit-bfc-bg-hover);
+    --bit-bfc-mdt-sfg: var(--bit-bfc-text);
+    --bit-bfc-mdt-sbg: var(--bit-bfc-bg-hover);
 }
 
 .bit-bfc-mode-tab.active {
@@ -2883,7 +2942,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 }
 
 .bit-bfc-tl-cell:hover {
-    background: var(--bit-bfc-bg-hover);
+    --bit-bfc-tlc-sbg: var(--bit-bfc-bg-hover);
 }
 
 .bit-bfc-tl-cell:hover .bit-bfc-cell-add-hint {
@@ -2904,7 +2963,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 }
 
 .bit-bfc-tl-drop-preview {
-    background: var(--bit-bfc-resize-glow);
+    background: var(--bit-bfc-tlc-sbg, var(--bit-bfc-slt-sbg, var(--bit-bfc-resize-glow)));
 }
 
 .bit-bfc-tl-event-anchor {
@@ -2977,6 +3036,8 @@ button.bit-bfc-cell-add-hint:focus-visible {
     z-index: 3;
     touch-action: none;
     border-radius: $shp-radius-sm;
+    --bit-bfc-rhh-sbg: initial;
+    background: var(--bit-bfc-rhh-sbg);
     transition: background $mot-duration-short $mot-easing, box-shadow $mot-duration-short $mot-easing;
 }
 
@@ -3010,7 +3071,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 }
 
 .bit-bfc-resize-handle-h:hover {
-    background: var(--bit-bfc-resize-glow);
+    --bit-bfc-rhh-sbg: var(--bit-bfc-resize-glow);
 }
 
 .bit-bfc-resize-handle-h:hover::after {

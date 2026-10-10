@@ -60,7 +60,10 @@
 
 $tgb-private-properties: clr-txt, clr, clr-hover, clr-active, clr-focus, clr-dark, clr-dark-hover, clr-dark-active,
                          clr-dis, clr-dis-text, min-height, padding, fontsize, ntx-pad, ntx-icn-size, spn-size,
-                         lbl-fontsize;
+                         lbl-fontsize,
+                         // The colors the hover and press states move (see the variants below), unset at rest so a
+                         // toggle button nested in another one never inherits the outer one's state.
+                         sfg, sbg, sbr;
 
 .bit-tgb {
     cursor: pointer;
@@ -282,23 +285,28 @@ $tgb-private-properties: clr-txt, clr, clr-hover, clr-active, clr-focus, clr-dar
 // .bit-tgb) - then from the public variables, then from the primary role an unset Color stands for. A color the
 // role leaves alone (the transparent background of Outline and Text, the transparent border of Text) is the
 // variables' alone.
+//
+// The states change the variables the toggle button is painted from (--bit-tgb-sfg / -sbg / -sbr, reset on .bit-tgb)
+// rather than its colors, so the rules at rest are the only ones that paint: a toggle button the app paints through
+// Class keeps that paint under the pointer and while pressed, instead of losing it to a state that outranks the
+// app's class. The states still rank among themselves as they did, the checked ones after the variants'.
 .bit-tgb-fil {
-    color: var(--bit-tgb-fg);
-    border-color: var(--bit-tgb-clr, var(--bit-ToggleButton-border-color, var(--bit-ToggleButton-background, #{$clr-pri})));
-    background-color: var(--bit-tgb-clr, var(--bit-ToggleButton-background, #{$clr-pri}));
+    color: var(--bit-tgb-sfg, var(--bit-tgb-fg));
+    border-color: var(--bit-tgb-sbr, var(--bit-tgb-clr, var(--bit-ToggleButton-border-color, var(--bit-ToggleButton-background, #{$clr-pri}))));
+    background-color: var(--bit-tgb-sbg, var(--bit-tgb-clr, var(--bit-ToggleButton-background, #{$clr-pri})));
 
     @media (hover: hover) {
         &:not(.bit-dis):not(.bit-tgb-lod):hover {
-            color: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-hover-color, var(--bit-ToggleButton-color, #{$clr-pri-text})));
-            border-color: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-border-color, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover})));
-            background-color: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover}));
+            --bit-tgb-sfg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-hover-color, var(--bit-ToggleButton-color, #{$clr-pri-text})));
+            --bit-tgb-sbr: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-border-color, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover})));
+            --bit-tgb-sbg: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover}));
         }
     }
 
     &:not(.bit-dis):not(.bit-tgb-lod):active {
-        color: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-active-color, var(--bit-ToggleButton-hover-color, var(--bit-ToggleButton-color, #{$clr-pri-text}))));
-        border-color: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-border-color, var(--bit-ToggleButton-active-background, #{$clr-pri-active})));
-        background-color: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-background, #{$clr-pri-active}));
+        --bit-tgb-sfg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-active-color, var(--bit-ToggleButton-hover-color, var(--bit-ToggleButton-color, #{$clr-pri-text}))));
+        --bit-tgb-sbr: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-border-color, var(--bit-ToggleButton-active-background, #{$clr-pri-active})));
+        --bit-tgb-sbg: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-background, #{$clr-pri-active}));
     }
 
     &.bit-dis {
@@ -309,22 +317,22 @@ $tgb-private-properties: clr-txt, clr, clr-hover, clr-active, clr-focus, clr-dar
 }
 
 .bit-tgb-otl {
-    color: var(--bit-tgb-clr, var(--bit-ToggleButton-color, #{$clr-pri}));
-    border-color: var(--bit-tgb-clr, var(--bit-ToggleButton-border-color, #{$clr-pri}));
-    background-color: var(--bit-ToggleButton-background, transparent);
+    color: var(--bit-tgb-sfg, var(--bit-tgb-clr, var(--bit-ToggleButton-color, #{$clr-pri})));
+    border-color: var(--bit-tgb-sbr, var(--bit-tgb-clr, var(--bit-ToggleButton-border-color, #{$clr-pri})));
+    background-color: var(--bit-tgb-sbg, var(--bit-ToggleButton-background, transparent));
 
     @media (hover: hover) {
         &:not(.bit-dis):not(.bit-tgb-lod):hover {
-            color: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-hover-color, #{$clr-pri-text}));
-            border-color: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-border-color, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover})));
-            background-color: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover}));
+            --bit-tgb-sfg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-hover-color, #{$clr-pri-text}));
+            --bit-tgb-sbr: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-border-color, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover})));
+            --bit-tgb-sbg: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover}));
         }
     }
 
     &:not(.bit-dis):not(.bit-tgb-lod):active {
-        color: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-active-color, var(--bit-ToggleButton-hover-color, #{$clr-pri-text})));
-        border-color: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-border-color, var(--bit-ToggleButton-active-background, #{$clr-pri-active})));
-        background-color: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-background, #{$clr-pri-active}));
+        --bit-tgb-sfg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-active-color, var(--bit-ToggleButton-hover-color, #{$clr-pri-text})));
+        --bit-tgb-sbr: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-border-color, var(--bit-ToggleButton-active-background, #{$clr-pri-active})));
+        --bit-tgb-sbg: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-background, #{$clr-pri-active}));
     }
 
     &.bit-dis {
@@ -335,22 +343,22 @@ $tgb-private-properties: clr-txt, clr, clr-hover, clr-active, clr-focus, clr-dar
 }
 
 .bit-tgb-txt {
-    color: var(--bit-tgb-clr, var(--bit-ToggleButton-color, #{$clr-pri}));
-    border-color: var(--bit-ToggleButton-border-color, transparent);
-    background-color: var(--bit-ToggleButton-background, transparent);
+    color: var(--bit-tgb-sfg, var(--bit-tgb-clr, var(--bit-ToggleButton-color, #{$clr-pri})));
+    border-color: var(--bit-tgb-sbr, var(--bit-ToggleButton-border-color, transparent));
+    background-color: var(--bit-tgb-sbg, var(--bit-ToggleButton-background, transparent));
 
     @media (hover: hover) {
         &:not(.bit-dis):not(.bit-tgb-lod):hover {
-            color: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-hover-color, #{$clr-pri-text}));
-            border-color: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-border-color, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover})));
-            background-color: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover}));
+            --bit-tgb-sfg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-hover-color, #{$clr-pri-text}));
+            --bit-tgb-sbr: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-border-color, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover})));
+            --bit-tgb-sbg: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover}));
         }
     }
 
     &:not(.bit-dis):not(.bit-tgb-lod):active {
-        color: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-active-color, var(--bit-ToggleButton-hover-color, #{$clr-pri-text})));
-        border-color: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-border-color, var(--bit-ToggleButton-active-background, #{$clr-pri-active})));
-        background-color: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-background, #{$clr-pri-active}));
+        --bit-tgb-sfg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-active-color, var(--bit-ToggleButton-hover-color, #{$clr-pri-text})));
+        --bit-tgb-sbr: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-border-color, var(--bit-ToggleButton-active-background, #{$clr-pri-active})));
+        --bit-tgb-sbg: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-background, #{$clr-pri-active}));
     }
 
     &.bit-dis {
@@ -370,22 +378,22 @@ $tgb-private-properties: clr-txt, clr, clr-hover, clr-active, clr-focus, clr-dar
     // Retargeted here rather than on the root, so FixedColor pins the checked foreground on a checked toggle
     // button and the resting one on an unchecked one, without the pin having to name either state.
     --bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-checked-color, #{$clr-pri-text}));
-    color: var(--bit-tgb-fg);
-    border-color: var(--bit-tgb-clr-dark, var(--bit-ToggleButton-checked-border-color, var(--bit-ToggleButton-checked-background, #{$clr-pri-dark})));
-    background-color: var(--bit-tgb-clr-dark, var(--bit-ToggleButton-checked-background, #{$clr-pri-dark}));
+    color: var(--bit-tgb-sfg, var(--bit-tgb-fg));
+    border-color: var(--bit-tgb-sbr, var(--bit-tgb-clr-dark, var(--bit-ToggleButton-checked-border-color, var(--bit-ToggleButton-checked-background, #{$clr-pri-dark}))));
+    background-color: var(--bit-tgb-sbg, var(--bit-tgb-clr-dark, var(--bit-ToggleButton-checked-background, #{$clr-pri-dark})));
 
     @media (hover: hover) {
         &:not(.bit-dis):not(.bit-tgb-lod):hover {
-            color: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-checked-hover-color, var(--bit-ToggleButton-checked-color, #{$clr-pri-text})));
-            border-color: var(--bit-tgb-clr-dark-hover, var(--bit-ToggleButton-checked-hover-border-color, var(--bit-ToggleButton-checked-hover-background, #{$clr-pri-dark-hover})));
-            background-color: var(--bit-tgb-clr-dark-hover, var(--bit-ToggleButton-checked-hover-background, #{$clr-pri-dark-hover}));
+            --bit-tgb-sfg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-checked-hover-color, var(--bit-ToggleButton-checked-color, #{$clr-pri-text})));
+            --bit-tgb-sbr: var(--bit-tgb-clr-dark-hover, var(--bit-ToggleButton-checked-hover-border-color, var(--bit-ToggleButton-checked-hover-background, #{$clr-pri-dark-hover})));
+            --bit-tgb-sbg: var(--bit-tgb-clr-dark-hover, var(--bit-ToggleButton-checked-hover-background, #{$clr-pri-dark-hover}));
         }
     }
 
     &:not(.bit-dis):not(.bit-tgb-lod):active {
-        color: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-checked-active-color, var(--bit-ToggleButton-checked-hover-color, var(--bit-ToggleButton-checked-color, #{$clr-pri-text}))));
-        border-color: var(--bit-tgb-clr-dark-active, var(--bit-ToggleButton-checked-active-border-color, var(--bit-ToggleButton-checked-active-background, #{$clr-pri-dark-active})));
-        background-color: var(--bit-tgb-clr-dark-active, var(--bit-ToggleButton-checked-active-background, #{$clr-pri-dark-active}));
+        --bit-tgb-sfg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-checked-active-color, var(--bit-ToggleButton-checked-hover-color, var(--bit-ToggleButton-checked-color, #{$clr-pri-text}))));
+        --bit-tgb-sbr: var(--bit-tgb-clr-dark-active, var(--bit-ToggleButton-checked-active-border-color, var(--bit-ToggleButton-checked-active-background, #{$clr-pri-dark-active})));
+        --bit-tgb-sbg: var(--bit-tgb-clr-dark-active, var(--bit-ToggleButton-checked-active-background, #{$clr-pri-dark-active}));
     }
 }
 
@@ -536,16 +544,16 @@ $tgb-private-properties: clr-txt, clr, clr-hover, clr-active, clr-focus, clr-dar
 // of the states that take no clicks are named out of it: the disabled one keeps its inert color, and the loading
 // one is not painting a pointer state to pin in the first place.
 .bit-tgb-fxc {
-    color: var(--bit-tgb-fg);
+    color: var(--bit-tgb-sfg, var(--bit-tgb-fg));
 
     @media (hover: hover) {
         &:not(.bit-dis):not(.bit-tgb-lod):hover {
-            color: var(--bit-tgb-fg);
+            --bit-tgb-sfg: var(--bit-tgb-fg);
         }
     }
 
     &:not(.bit-dis):not(.bit-tgb-lod):active {
-        color: var(--bit-tgb-fg);
+        --bit-tgb-sfg: var(--bit-tgb-fg);
     }
 }
 

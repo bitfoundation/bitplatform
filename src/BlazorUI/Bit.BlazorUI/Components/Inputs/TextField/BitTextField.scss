@@ -258,8 +258,10 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
     box-shadow: var(--bit-TextField-shadow, none);
     border-radius: var(--bit-TextField-radius, #{$shp-radius-control});
     min-height: var(--bit-tfl-min-height, var(--bit-TextField-min-height, #{$siz-ctrl-md}));
-    background-color: var(--bit-tfl-clr-bg, var(--bit-TextField-background, #{$clr-bg-pri}));
-    border: var(--bit-TextField-border-width, #{$shp-border-width}) $shp-border-style var(--bit-tfl-clr-brd, var(--bit-TextField-border-color, #{$clr-brd-pri}));
+    --bit-tfl-fgp-bg: initial;
+    --bit-tfl-fgp-brd: initial;
+    background-color: var(--bit-tfl-fgp-bg, var(--bit-tfl-clr-bg, var(--bit-TextField-background, #{$clr-bg-pri})));
+    border: var(--bit-TextField-border-width, #{$shp-border-width}) $shp-border-style var(--bit-tfl-fgp-brd, var(--bit-tfl-clr-brd, var(--bit-TextField-border-color, #{$clr-brd-pri})));
     // Rest, hover and focus repaint the same two properties, so they cross-fade instead of snapping. The
     // duration comes from the motion tokens, which collapse to near zero under prefers-reduced-motion.
     transition: border-color var(--bit-TextField-transition-duration, #{$mot-duration-short}) $mot-easing,
@@ -272,15 +274,19 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
 // something the hover does not. An explicit Border carries a hover step of its own, which outranks the
 // public hover frame color; a Background has none, so the public hover fill comes first and falls back to
 // the rest fill.
+//
+// The states change the variables the parts are painted from rather than their colors, so the rules that
+// declare the colors are the ones at rest: a part the app paints through Classes keeps that paint under the
+// pointer, instead of losing it to a state that outranks the app's class.
 @media (hover: hover) {
     .bit-tfl:not(.bit-dis):not(.bit-tfl-fcs):not(.bit-inv) {
         .bit-tfl-fgp:hover {
-            background-color: var(--bit-TextField-hover-background, var(--bit-tfl-clr-bg, var(--bit-TextField-background, #{$clr-bg-pri})));
-            border-color: var(--bit-tfl-clr-brd-hover, var(--bit-TextField-hover-border-color, #{$clr-brd-pri-hover}));
+            --bit-tfl-fgp-bg: var(--bit-TextField-hover-background, var(--bit-tfl-clr-bg, var(--bit-TextField-background, #{$clr-bg-pri})));
+            --bit-tfl-fgp-brd: var(--bit-tfl-clr-brd-hover, var(--bit-TextField-hover-border-color, #{$clr-brd-pri-hover}));
         }
 
         &.bit-tfl-und .bit-tfl-wrp:hover {
-            border-bottom-color: var(--bit-tfl-clr-brd-hover, var(--bit-TextField-hover-border-color, #{$clr-brd-pri-hover}));
+            --bit-tfl-wrp-brd: var(--bit-tfl-clr-brd-hover, var(--bit-TextField-hover-border-color, #{$clr-brd-pri-hover}));
         }
     }
 }
@@ -372,7 +378,8 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
     position: relative;
     outline: transparent;
     padding: 0 spacing(0.5);
-    background-color: transparent;
+    --bit-tfl-rpb-bg: initial;
+    background-color: var(--bit-tfl-rpb-bg, transparent);
     color: var(--bit-tfl-clr, var(--bit-TextField-button-color, var(--bit-TextField-accent-color, #{$clr-pri})));
     width: var(--bit-tfl-btn-width, var(--bit-TextField-button-width, #{$siz-ctrl-md}));
     min-height: var(--bit-tfl-inp-min-height);
@@ -398,7 +405,7 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
 
     @media (hover: hover) {
         &:not(:disabled):hover {
-            background-color: var(--bit-TextField-button-hover-background, #{$clr-bg-pri-hover});
+            --bit-tfl-rpb-bg: var(--bit-TextField-button-hover-background, #{$clr-bg-pri-hover});
         }
     }
 }
@@ -427,10 +434,12 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
     justify-content: center;
     box-sizing: border-box;
     padding: 0 spacing(0.5);
-    background-color: transparent;
+    --bit-tfl-cbt-bg: initial;
+    --bit-tfl-cbt-clr: initial;
+    background-color: var(--bit-tfl-cbt-bg, transparent);
     font-weight: var(--bit-TextField-font-weight, #{$tg-fw-regular});
     font-family: var(--bit-TextField-font-family, #{$tg-font-family});
-    color: var(--bit-TextField-button-color, #{$clr-fg-sec});
+    color: var(--bit-tfl-cbt-clr, var(--bit-TextField-button-color, #{$clr-fg-sec}));
     width: var(--bit-tfl-btn-width, var(--bit-TextField-button-width, #{$siz-ctrl-md}));
     font-size: var(--bit-tfl-font-size, var(--bit-TextField-font-size, #{$tg-fs-sm}));
     min-height: var(--bit-tfl-inp-min-height);
@@ -466,8 +475,8 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
 
     @media (hover: hover) {
         &:not(:disabled):hover {
-            color: var(--bit-TextField-button-hover-color, #{$clr-fg-pri-hover});
-            background-color: var(--bit-TextField-button-hover-background, #{$clr-bg-pri-hover});
+            --bit-tfl-cbt-clr: var(--bit-TextField-button-hover-color, #{$clr-fg-pri-hover});
+            --bit-tfl-cbt-bg: var(--bit-TextField-button-hover-background, #{$clr-bg-pri-hover});
         }
     }
 }
@@ -487,8 +496,10 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
     justify-content: center;
     box-sizing: border-box;
     padding: 0 spacing(0.5);
-    background-color: transparent;
-    color: var(--bit-TextField-icon-color, #{$clr-fg-pri});
+    --bit-tfl-icb-bg: initial;
+    --bit-tfl-icb-clr: initial;
+    background-color: var(--bit-tfl-icb-bg, transparent);
+    color: var(--bit-tfl-icb-clr, var(--bit-TextField-icon-color, #{$clr-fg-pri}));
     width: var(--bit-tfl-btn-width, var(--bit-TextField-button-width, #{$siz-ctrl-md}));
     min-height: var(--bit-tfl-inp-min-height);
 
@@ -521,8 +532,8 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
 
     @media (hover: hover) {
         &:not(:disabled):hover {
-            color: var(--bit-TextField-button-hover-color, #{$clr-fg-pri-hover});
-            background-color: var(--bit-TextField-button-hover-background, #{$clr-bg-pri-hover});
+            --bit-tfl-icb-clr: var(--bit-TextField-button-hover-color, #{$clr-fg-pri-hover});
+            --bit-tfl-icb-bg: var(--bit-TextField-button-hover-background, #{$clr-bg-pri-hover});
         }
     }
 }
@@ -714,7 +725,7 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
     // The button is what paints the glyph inside it, so the accent is handed to the button rather than to
     // the icon it inherits from.
     .bit-tfl-icb {
-        color: var(--bit-tfl-clr, var(--bit-TextField-accent-color, #{$clr-pri}));
+        color: var(--bit-tfl-icb-clr, var(--bit-tfl-clr, var(--bit-TextField-accent-color, #{$clr-pri})));
     }
 
     .bit-tfl-pre,
@@ -752,7 +763,8 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
     .bit-tfl-wrp {
         width: 100%;
         display: flex;
-        border-bottom: var(--bit-TextField-border-width, #{$shp-border-width}) $shp-border-style var(--bit-tfl-clr-brd, var(--bit-TextField-border-color, #{$clr-brd-pri}));
+        --bit-tfl-wrp-brd: initial;
+        border-bottom: var(--bit-TextField-border-width, #{$shp-border-width}) $shp-border-style var(--bit-tfl-wrp-brd, var(--bit-tfl-clr-brd, var(--bit-TextField-border-color, #{$clr-brd-pri})));
         transition: border-color var(--bit-TextField-transition-duration, #{$mot-duration-short}) $mot-easing;
     }
 

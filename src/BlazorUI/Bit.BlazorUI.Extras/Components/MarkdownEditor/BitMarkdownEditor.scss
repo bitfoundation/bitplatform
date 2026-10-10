@@ -150,13 +150,16 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
     cursor: pointer;
     align-items: center;
     display: inline-flex;
-    background: transparent;
+    --bit-mde-btn-sfg: initial;
+    --bit-mde-btn-sbg: initial;
+    --bit-mde-btn-sbr: initial;
+    background: var(--bit-mde-btn-sbg, transparent);
     justify-content: center;
-    color: $mde-button-color;
+    color: var(--bit-mde-btn-sfg, #{$mde-button-color});
     border-radius: $mde-button-radius;
     width: var(--bit-MarkdownEditor-button-size, #{$siz-ctrl-md});
     height: var(--bit-MarkdownEditor-button-size, #{$siz-ctrl-md});
-    border: $shp-border-width $shp-border-style transparent;
+    border: $shp-border-width $shp-border-style var(--bit-mde-btn-sbr, transparent);
     transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing;
 
     svg {
@@ -169,10 +172,12 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
         font-size: $siz-icon-md;
     }
 
+    // The hover moves the variables the button is painted from rather than its colors, so a button the app paints
+    // through a class keeps that paint under the pointer. The pressed look reads them too, as the hover outranks it.
     &:hover:not(:disabled) {
-        border-color: $mde-divider;
-        color: var(--bit-MarkdownEditor-button-hover-color, #{$clr-fg-pri});
-        background: var(--bit-MarkdownEditor-button-hover-background, #{$clr-bg-sec-hover});
+        --bit-mde-btn-sbr: #{$mde-divider};
+        --bit-mde-btn-sfg: var(--bit-MarkdownEditor-button-hover-color, #{$clr-fg-pri});
+        --bit-mde-btn-sbg: var(--bit-MarkdownEditor-button-hover-background, #{$clr-bg-sec-hover});
     }
 
     &:active:not(:disabled) {
@@ -184,9 +189,9 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
     }
 
     &.bit-mde-act {
-        color: $mde-button-active-color;
-        background: $mde-button-active-background;
-        border-color: $mde-button-active-background;
+        color: var(--bit-mde-btn-sfg, #{$mde-button-active-color});
+        background: var(--bit-mde-btn-sbg, #{$mde-button-active-background});
+        border-color: var(--bit-mde-btn-sbr, #{$mde-button-active-background});
     }
 
     &:disabled {
@@ -329,7 +334,8 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
 .bit-mde-fnb {
     cursor: pointer;
     color: $clr-fg-pri;
-    background: $clr-bg-pri;
+    --bit-mde-fnb-sbg: initial;
+    background: var(--bit-mde-fnb-sbg, #{$clr-bg-pri});
     font-size: $tg-fs-xs;
     box-sizing: border-box;
     text-transform: $tg-ctrl-text-transform;
@@ -343,7 +349,7 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
     transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     &:hover:not(:disabled) {
-        background: $clr-bg-sec-hover;
+        --bit-mde-fnb-sbg: #{$clr-bg-sec-hover};
     }
 
     &:focus-visible {
@@ -352,7 +358,7 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
 
     &.bit-mde-act {
         color: $mde-button-active-color;
-        background: $mde-button-active-background;
+        background: var(--bit-mde-fnb-sbg, #{$mde-button-active-background});
         border-color: $mde-button-active-background;
     }
 
@@ -629,13 +635,14 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
     justify-content: center;
     min-width: spacing(3);
     min-height: spacing(3);
-    color: $clr-fg-sec;
+    --bit-mde-hcl-sfg: initial;
+    color: var(--bit-mde-hcl-sfg, #{$clr-fg-sec});
     background: transparent;
     font-size: $tg-fs-xl;
     border-radius: $mde-button-radius;
 
     &:hover {
-        color: $clr-fg-pri;
+        --bit-mde-hcl-sfg: #{$clr-fg-pri};
     }
 
     &:focus-visible {

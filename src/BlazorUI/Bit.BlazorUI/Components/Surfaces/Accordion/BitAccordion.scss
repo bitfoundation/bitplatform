@@ -148,7 +148,7 @@ $acd-private-properties:
 .bit-acd-exp > .bit-acd-hwr {
     border-end-start-radius: 0;
     border-end-end-radius: 0;
-    background-color: var(--bit-Accordion-header-expanded-background, transparent);
+    background-color: var(--bit-acd-hwr-sbg, var(--bit-Accordion-header-expanded-background, transparent));
 }
 
 // The text of the open header is set on the header line rather than left to a variable on the root, which would
@@ -248,6 +248,8 @@ $acd-private-properties:
 .bit-acd-hwr {
     display: flex;
     align-items: center;
+    --bit-acd-hwr-sbg: initial;
+    background-color: var(--bit-acd-hwr-sbg);
     transition: background-color $mot-duration-short $mot-easing 0ms;
 }
 
@@ -290,15 +292,19 @@ $acd-private-properties:
 // The rule is chained down from the root rather than reaching for a descendant, so that the disabled state of an
 // outer accordion does not take the hover away from the headers of the accordions nested in its panel. A busy
 // header answers no click, so it is left unpainted too, the way a read-only one is.
+//
+// The states change the variable the header line is painted from rather than its background, so the rules that
+// paint it are the ones at rest: a header line the app paints through Classes keeps that paint under the pointer
+// and while it is pressed, instead of losing it to a state that outranks the app's class.
 .bit-acd:not(.bit-dis, .bit-acd-rdo) > .bit-acd-hwr {
     @media (hover: hover) {
         &:has(> .bit-acd-hed > .bit-acd-hdr:not(.bit-acd-bsy):hover) {
-            background-color: var(--bit-acd-hov);
+            --bit-acd-hwr-sbg: var(--bit-acd-hov);
         }
     }
 
     &:has(> .bit-acd-hed > .bit-acd-hdr:not(.bit-acd-bsy):active) {
-        background-color: var(--bit-acd-prs);
+        --bit-acd-hwr-sbg: var(--bit-acd-prs);
     }
 }
 
@@ -308,12 +314,12 @@ $acd-private-properties:
 .bit-acd-exp:not(.bit-dis, .bit-acd-rdo) > .bit-acd-hwr {
     @media (hover: hover) {
         &:has(> .bit-acd-hed > .bit-acd-hdr:not(.bit-acd-bsy):hover) {
-            background-color: var(--bit-Accordion-header-expanded-background, var(--bit-acd-hov));
+            --bit-acd-hwr-sbg: var(--bit-Accordion-header-expanded-background, var(--bit-acd-hov));
         }
     }
 
     &:has(> .bit-acd-hed > .bit-acd-hdr:not(.bit-acd-bsy):active) {
-        background-color: var(--bit-Accordion-header-expanded-background, var(--bit-acd-prs));
+        --bit-acd-hwr-sbg: var(--bit-Accordion-header-expanded-background, var(--bit-acd-prs));
     }
 }
 

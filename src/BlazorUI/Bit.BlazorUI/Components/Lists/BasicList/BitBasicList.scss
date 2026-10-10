@@ -164,21 +164,26 @@
 button.bit-bsl-lmb {
     letter-spacing: $tg-ctrl-letter-spacing;
     text-transform: $tg-ctrl-text-transform;
-    color: var(--bit-BasicList-load-more-color, #{$clr-pri});
-    background-color: var(--bit-BasicList-load-more-background, transparent);
+    --bit-bsl-lmb-sfg: initial;
+    --bit-bsl-lmb-sbg: initial;
+    color: var(--bit-bsl-lmb-sfg, var(--bit-BasicList-load-more-color, #{$clr-pri}));
+    background-color: var(--bit-bsl-lmb-sbg, var(--bit-BasicList-load-more-background, transparent));
     font-weight: var(--bit-BasicList-load-more-font-weight, #{$tg-fw-semibold});
     font-size: var(--bit-BasicList-load-more-font-size, inherit);
     transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
+    // The states change the variables the button is painted from rather than its colors, so the one rule that
+    // paints is the one at rest: a button the app paints through Classes keeps that paint under the pointer
+    // and while it is pressed, instead of losing it to a state that outranks the app's class.
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-BasicList-load-more-hover-color, #{$clr-pri-hover});
-            background-color: var(--bit-BasicList-load-more-hover-background, #{$clr-bg-pri-hover});
+            --bit-bsl-lmb-sfg: var(--bit-BasicList-load-more-hover-color, #{$clr-pri-hover});
+            --bit-bsl-lmb-sbg: var(--bit-BasicList-load-more-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active {
-        background-color: var(--bit-BasicList-load-more-active-background, var(--bit-BasicList-load-more-hover-background, #{$clr-bg-pri-active}));
+        --bit-bsl-lmb-sbg: var(--bit-BasicList-load-more-active-background, var(--bit-BasicList-load-more-hover-background, #{$clr-bg-pri-active}));
     }
 
     &[aria-busy="true"] {

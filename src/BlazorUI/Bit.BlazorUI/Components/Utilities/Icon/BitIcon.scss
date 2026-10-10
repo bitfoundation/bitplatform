@@ -54,7 +54,7 @@ $ico-clr-dis-text: var(--bit-ico-clr-dis-text, #{$clr-pri-dis-text});
 // gets the same from the root rule, which starts each of them out unset. A private variable added to the
 // component goes in this list, and the stylesheet test fails on one that does not.
 $ico-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis, clr-dis-text, pub-hover, pub-active,
-                         size, rotate, scale-x, scale-y, rtl-scale-x, anm-dur, anm-dly, anm-itr;
+                         size, rotate, scale-x, scale-y, rtl-scale-x, anm-dur, anm-dly, anm-itr, sfg, sbr, sbg;
 
 @each $name in $ico-private-properties {
     @property --bit-ico-#{$name} {
@@ -103,9 +103,11 @@ $ico-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
 
 
 .bit-ico-fil {
-    color: $ico-clr-txt;
-    border-color: $ico-clr;
-    background-color: $ico-clr;
+    // Each variant reads the state colors of a clickable icon first (see .bit-ico-int), which the root starts out
+    // unset with the rest of $ico-private-properties.
+    color: var(--bit-ico-sfg, #{$ico-clr-txt});
+    border-color: var(--bit-ico-sbr, #{$ico-clr});
+    background-color: var(--bit-ico-sbg, #{$ico-clr});
 
     &.bit-dis {
         color: $ico-clr-dis-text;
@@ -115,9 +117,9 @@ $ico-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
 }
 
 .bit-ico-out {
-    color: $ico-clr;
-    border-color: $ico-clr;
-    background-color: transparent;
+    color: var(--bit-ico-sfg, #{$ico-clr});
+    border-color: var(--bit-ico-sbr, #{$ico-clr});
+    background-color: var(--bit-ico-sbg, transparent);
 
     &.bit-dis {
         color: $ico-clr-dis-text;
@@ -127,7 +129,7 @@ $ico-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
 }
 
 .bit-ico-txt {
-    color: $ico-clr;
+    color: var(--bit-ico-sfg, #{$ico-clr});
     border-color: transparent;
     background-color: transparent;
     border: none;
@@ -464,33 +466,36 @@ $ico-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
     // color, and the two variants that paint a box move that box through the role's hover and active
     // shades, exactly as a button of the same role does. Guarded by the hover media query so a touch
     // device is not left with the hover state stuck on after a tap.
+    // The states set the state colors the variants read rather than the colors themselves, so the rules that
+    // declare the colors are the ones at rest: an icon the app paints through Class keeps that paint under the
+    // pointer and the press, instead of losing it to a state that outranks the app's class.
     @media (hover: hover) {
         &:not(.bit-dis):hover {
-            color: $ico-clr-hover;
+            --bit-ico-sfg: #{$ico-clr-hover};
         }
 
         &.bit-ico-fil:not(.bit-dis):hover {
-            color: $ico-clr-txt;
-            border-color: $ico-clr-hover;
-            background-color: $ico-clr-hover;
+            --bit-ico-sfg: #{$ico-clr-txt};
+            --bit-ico-sbr: #{$ico-clr-hover};
+            --bit-ico-sbg: #{$ico-clr-hover};
         }
 
         &.bit-ico-out:not(.bit-dis):hover {
-            color: $ico-clr-txt;
-            border-color: $ico-clr-hover;
-            background-color: $ico-clr-hover;
+            --bit-ico-sfg: #{$ico-clr-txt};
+            --bit-ico-sbr: #{$ico-clr-hover};
+            --bit-ico-sbg: #{$ico-clr-hover};
         }
     }
 
     &:not(.bit-dis):active {
-        color: $ico-clr-active;
+        --bit-ico-sfg: #{$ico-clr-active};
     }
 
     &.bit-ico-fil:not(.bit-dis):active,
     &.bit-ico-out:not(.bit-dis):active {
-        color: $ico-clr-txt;
-        border-color: $ico-clr-active;
-        background-color: $ico-clr-active;
+        --bit-ico-sfg: #{$ico-clr-txt};
+        --bit-ico-sbr: #{$ico-clr-active};
+        --bit-ico-sbg: #{$ico-clr-active};
     }
 
     // A disabled icon keeps answering the pointer, and refuses the click in the handler instead. Turning

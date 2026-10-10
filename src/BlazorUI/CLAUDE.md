@@ -447,6 +447,18 @@ variable, not per component:
 
 A name moves to the root-only list only once no selector reading it matches anything but the root.
 
+**A state moves a variable, never the paint.** A `:hover` / `:active` / `:focus*` rule outranks the single class
+an app hands a part through `Class` / `Classes`, so one that set `color`, `background`, `border-color`, `fill`
+or `stroke` itself would take the part back exactly while the user is pointing at it. The state rule keeps its
+selector and assigns a private variable instead (`--bit-acb-sbg: <the hover value>`); the part's own base rule
+resets it (`initial`, so a nested instance never inherits an outer one's hover) and the rule at rest paints from
+it with the rest value as the fallback (`background-color: var(--bit-acb-sbg, <rest value>)`). Both sit on the
+element that is painted, never an ancestor. Still painting directly, by design: a disabled state (read before
+anything else), `@media (forced-colors: active)` blocks, the browser's `::-webkit-scrollbar` parts, and the
+controls BitMap's providers draw (their own stylesheets, loaded later, paint those states at the same weight).
+`BitSplitter` is the reference; `BitComponentStatePaintTests` fails on a state that paints, for every stylesheet
+at once.
+
 A component that renders a core one and wants a default other than the core one's (BitMessageBox's neutral
 buttons) never passes it as the parameter, which would make it a choice that outranks an app's variables. It
 leaves the parameter unset and adds the core component's host-default class instead (`bit-btn-dft-<role>`),

@@ -27,9 +27,10 @@ public class BitTagsInputStylesheetTests
         StringAssert.Contains(stylesheet, "var(--bit-tgi-helperfontsize, var(--bit-TagsInput-description-font-size, #{$tg-fs-xs}))");
 
         // So does an explicit Color: the chip colors of the tag variant are the Color's (unset while it is), then the
-        // variable's, then the primary chip's; the field's focus ring and rule and the spinner rank the same way.
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-tgi-tag-bg, var(--bit-TagsInput-tag-background, var(--bit-tgi-tag-bg-dft)));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-tgi-tag-clr, var(--bit-TagsInput-tag-color, var(--bit-tgi-tag-clr-dft)));");
+        // variable's, then the primary chip's; the field's focus ring and rule and the spinner rank the same way. The
+        // chip reads them behind the value its own hover moves, which is unset while the chip is not hovered.
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-tgi-tag-sbg, var(--bit-tgi-tag-bg, var(--bit-TagsInput-tag-background, var(--bit-tgi-tag-bg-dft))));");
+        StringAssert.Contains(stylesheet, "color: var(--bit-tgi-tag-sfg, var(--bit-tgi-tag-clr, var(--bit-TagsInput-tag-color, var(--bit-tgi-tag-clr-dft))));");
         StringAssert.Contains(stylesheet, "var(--bit-tgi-tag-ring, var(--bit-TagsInput-tag-focus-color, var(--bit-tgi-tag-ring-dft)))");
         StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-tgi-clr-focus, var(--bit-TagsInput-focus-color)))");
         StringAssert.Contains(stylesheet, "var(--bit-tgi-clr, var(--bit-TagsInput-focus-border-color, #{$clr-pri}))");

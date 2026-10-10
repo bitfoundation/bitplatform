@@ -230,7 +230,8 @@ $sld-private-properties:
     position: absolute;
     height: var(--bit-sld-rail);
     border-radius: var(--bit-Slider-rail-radius, var(--bit-sld-rail));
-    background-color: var(--bit-sld-clr, var(--bit-Slider-color, #{$clr-pri}));
+    --bit-sld-fil-bg: initial;
+    background-color: var(--bit-sld-fil-bg, var(--bit-sld-clr, var(--bit-Slider-color, #{$clr-pri})));
     transform: translateY(calc(var(--bit-sld-rail) / -2));
     transition: background-color var(--bit-Slider-transition-duration, #{$mot-duration-short}) $mot-easing,
                 inset-inline-start var(--bit-Slider-transition-duration, #{$mot-duration-short}) $mot-easing,
@@ -254,7 +255,8 @@ $sld-private-properties:
     margin-top: calc(var(--bit-sld-thumb) / -2);
     margin-inline-start: calc(var(--bit-sld-thumb) / -2);
     border-style: $shp-border-style;
-    border-color: var(--bit-sld-clr, var(--bit-Slider-color, #{$clr-pri}));
+    --bit-sld-thb-brd: initial;
+    border-color: var(--bit-sld-thb-brd, var(--bit-sld-clr, var(--bit-Slider-color, #{$clr-pri})));
     border-width: var(--bit-Slider-thumb-border-width, #{$shp-border-width-thick});
     transition: border-color var(--bit-Slider-transition-duration, #{$mot-duration-short}) $mot-easing,
                 box-shadow var(--bit-Slider-transition-duration, #{$mot-duration-short}) $mot-easing,
@@ -272,22 +274,25 @@ $sld-private-properties:
     }
 }
 
+// The states change the variables the parts are painted from rather than their colors, so only the rules at
+// rest paint them: a fill, thumb or label the app paints through Classes keeps that paint under the pointer and
+// through a drag, instead of losing it to a state that outranks the app's class.
 @media (hover: hover) {
     .bit-sld:not(.bit-dis):not(.bit-sld-rdl):not(.bit-inv) {
         .bit-sld-box:hover {
             .bit-sld-fil {
-                background-color: var(--bit-sld-clr-hover, var(--bit-Slider-hover-color, var(--bit-Slider-color, #{$clr-pri-hover})));
+                --bit-sld-fil-bg: var(--bit-sld-clr-hover, var(--bit-Slider-hover-color, var(--bit-Slider-color, #{$clr-pri-hover})));
             }
 
             .bit-sld-thb {
-                border-color: var(--bit-sld-clr-hover, var(--bit-Slider-hover-color, var(--bit-Slider-color, #{$clr-pri-hover})));
+                --bit-sld-thb-brd: var(--bit-sld-clr-hover, var(--bit-Slider-hover-color, var(--bit-Slider-color, #{$clr-pri-hover})));
             }
 
             // The floating label is a chip of the accent, so it moves with it rather than being left as the
             // one part of the slider still wearing the resting color. A background named outright still wins
             // over the public accents, though not over an explicit Color.
             .bit-sld-tlb {
-                background-color: var(--bit-sld-clr-hover, var(--bit-Slider-thumb-label-background, var(--bit-Slider-hover-color, var(--bit-Slider-color, #{$clr-pri-hover}))));
+                --bit-sld-tlb-bg: var(--bit-sld-clr-hover, var(--bit-Slider-thumb-label-background, var(--bit-Slider-hover-color, var(--bit-Slider-color, #{$clr-pri-hover}))));
             }
         }
     }
@@ -300,15 +305,15 @@ $sld-private-properties:
 .bit-sld:not(.bit-dis):not(.bit-sld-rdl):not(.bit-inv) {
     .bit-sld-box:has(> .bit-sld-inp:active) {
         .bit-sld-fil {
-            background-color: var(--bit-sld-clr-active, var(--bit-Slider-active-color, var(--bit-Slider-color, #{$clr-pri-active})));
+            --bit-sld-fil-bg: var(--bit-sld-clr-active, var(--bit-Slider-active-color, var(--bit-Slider-color, #{$clr-pri-active})));
         }
 
         .bit-sld-thb {
-            border-color: var(--bit-sld-clr-active, var(--bit-Slider-active-color, var(--bit-Slider-color, #{$clr-pri-active})));
+            --bit-sld-thb-brd: var(--bit-sld-clr-active, var(--bit-Slider-active-color, var(--bit-Slider-color, #{$clr-pri-active})));
         }
 
         .bit-sld-tlb {
-            background-color: var(--bit-sld-clr-active, var(--bit-Slider-thumb-label-background, var(--bit-Slider-active-color, var(--bit-Slider-color, #{$clr-pri-active}))));
+            --bit-sld-tlb-bg: var(--bit-sld-clr-active, var(--bit-Slider-thumb-label-background, var(--bit-Slider-active-color, var(--bit-Slider-color, #{$clr-pri-active}))));
         }
     }
 }
@@ -578,7 +583,8 @@ $sld-private-properties:
     pointer-events: none;
     justify-content: center;
     color: var(--bit-sld-clr-on, var(--bit-Slider-thumb-label-color, #{$clr-pri-text}));
-    background-color: var(--bit-sld-clr, var(--bit-Slider-thumb-label-background, var(--bit-Slider-color, #{$clr-pri})));
+    --bit-sld-tlb-bg: initial;
+    background-color: var(--bit-sld-tlb-bg, var(--bit-sld-clr, var(--bit-Slider-thumb-label-background, var(--bit-Slider-color, #{$clr-pri}))));
     border-radius: var(--bit-Slider-thumb-label-radius, #{$shp-radius-popup});
     padding: var(--bit-Slider-thumb-label-padding, #{spacing(0.25)} #{spacing(0.75)});
     font-size: var(--bit-sld-sz-font-size-sub, var(--bit-Slider-thumb-label-font-size, #{$tg-fs-xs}));

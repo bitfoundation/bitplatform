@@ -205,22 +205,26 @@ $isc-ring-room: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});
     font-weight: $tg-font-weight;
     letter-spacing: $tg-ctrl-letter-spacing;
     text-transform: $tg-ctrl-text-transform;
-    color: var(--bit-InfiniteScrolling-button-color, #{$clr-pri});
-    background-color: var(--bit-InfiniteScrolling-button-background, transparent);
+    --bit-isc-btn-sfg: initial;
+    --bit-isc-btn-sbg: initial;
+    color: var(--bit-isc-btn-sfg, var(--bit-InfiniteScrolling-button-color, #{$clr-pri}));
+    background-color: var(--bit-isc-btn-sbg, var(--bit-InfiniteScrolling-button-background, transparent));
     border-radius: var(--bit-InfiniteScrolling-button-radius, #{$shp-radius-button});
     padding: var(--bit-InfiniteScrolling-button-padding, #{$siz-ctrl-pad-y-sm} #{$siz-ctrl-pad-x-sm});
     transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
+    // The states move the variables the button is painted from rather than its colors, so a button the app paints
+    // through a class keeps that paint under the pointer and while pressed.
     @media (hover: hover) {
         &:hover:not([aria-disabled="true"]) {
             text-decoration: underline;
-            color: var(--bit-InfiniteScrolling-button-hover-color, #{$clr-pri-hover});
-            background-color: var(--bit-InfiniteScrolling-button-hover-background, var(--bit-InfiniteScrolling-button-background, transparent));
+            --bit-isc-btn-sfg: var(--bit-InfiniteScrolling-button-hover-color, #{$clr-pri-hover});
+            --bit-isc-btn-sbg: var(--bit-InfiniteScrolling-button-hover-background, var(--bit-InfiniteScrolling-button-background, transparent));
         }
     }
 
     &:active:not([aria-disabled="true"]) {
-        color: $clr-pri-active;
+        --bit-isc-btn-sfg: #{$clr-pri-active};
     }
 
     &:focus-visible {

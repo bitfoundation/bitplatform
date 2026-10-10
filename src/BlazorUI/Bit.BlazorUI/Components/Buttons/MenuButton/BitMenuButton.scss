@@ -103,6 +103,9 @@ $mnb-private-properties: clr, clr-txt, clr-hover, clr-active, clr-dark, clr-dark
     letter-spacing: $tg-ctrl-letter-spacing;
     text-transform: $tg-ctrl-text-transform;
     @include bit-mnb-unset-published;
+    // The border color the hover and press states move (see .bit-mnb-fil), unset at rest so a menu button nested in
+    // another one never inherits the outer one's state.
+    --bit-mnb-sbr: initial;
     font-size: var(--bit-mnb-font-size, var(--bit-MenuButton-font-size, #{$tg-fs-sm}));
     border-width: var(--bit-MenuButton-border-width, #{$shp-border-width});
     border-radius: var(--bit-MenuButton-radius, #{$shp-radius-button});
@@ -202,30 +205,38 @@ $mnb-private-properties: clr, clr-txt, clr-hover, clr-active, clr-dark, clr-dark
     // medium primary menu button an unset one stands for.
     padding: var(--bit-mnb-padding, var(--bit-MenuButton-padding, #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-sm}));
     transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
+    // The colors the hover and press states below move, unset at rest so the half never inherits them from the
+    // header of an outer menu button it sits in.
+    --bit-mnb-hlf-sfg: initial;
+    --bit-mnb-hlf-sbg: initial;
 
+    // The states change the variables each half is painted from rather than its colors, so the rules at rest
+    // (.bit-mnb-opb, .bit-mnb-chb and the toggled header) are the only ones that paint: a half the app paints
+    // through Classes keeps that paint under the pointer and while pressed, instead of losing it to a state that
+    // outranks the app's class.
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-mnb-clr-txt, var(--bit-MenuButton-hover-color, #{$clr-pri-text}));
-            background-color: var(--bit-mnb-clr-hover, var(--bit-MenuButton-hover-background, #{$clr-pri-hover}));
+            --bit-mnb-hlf-sfg: var(--bit-mnb-clr-txt, var(--bit-MenuButton-hover-color, #{$clr-pri-text}));
+            --bit-mnb-hlf-sbg: var(--bit-mnb-clr-hover, var(--bit-MenuButton-hover-background, #{$clr-pri-hover}));
         }
     }
 
     &:active {
-        color: var(--bit-mnb-clr-txt, var(--bit-MenuButton-active-color, #{$clr-pri-text}));
-        background-color: var(--bit-mnb-clr-active, var(--bit-MenuButton-active-background, #{$clr-pri-active}));
+        --bit-mnb-hlf-sfg: var(--bit-mnb-clr-txt, var(--bit-MenuButton-active-color, #{$clr-pri-text}));
+        --bit-mnb-hlf-sbg: var(--bit-mnb-clr-active, var(--bit-MenuButton-active-background, #{$clr-pri-active}));
     }
 }
 
 .bit-mnb-opb {
     flex-grow: 1;
-    color: var(--bit-mnb-clr-opb-txt);
-    background-color: var(--bit-mnb-clr-opb-bg);
+    color: var(--bit-mnb-hlf-sfg, var(--bit-mnb-clr-opb-txt));
+    background-color: var(--bit-mnb-hlf-sbg, var(--bit-mnb-clr-opb-bg));
 }
 
 .bit-mnb-chb {
     flex-shrink: 0;
-    color: var(--bit-mnb-clr-chb-txt);
-    background-color: var(--bit-mnb-clr-chb-bg);
+    color: var(--bit-mnb-hlf-sfg, var(--bit-mnb-clr-chb-txt));
+    background-color: var(--bit-mnb-hlf-sbg, var(--bit-mnb-clr-chb-bg));
     // The chevron half is a square of the control's own height, the way every icon button in the library is,
     // so it clears the minimum pointer target of WCAG 2.2 (SC 2.5.8) on the narrow axis too.
     width: var(--bit-mnb-min-height, var(--bit-MenuButton-chevron-width, var(--bit-MenuButton-min-height, #{$siz-ctrl-md})));
@@ -260,25 +271,26 @@ $mnb-private-properties: clr, clr-txt, clr-hover, clr-active, clr-dark, clr-dark
 // The toggled header is painted with the darker end of the role, the way BitToggleButton's checked state is,
 // rather than with the pressed color: pressed is a lighter step of the role in the dark scheme, so a sustained
 // state drawn with it made the button that is ON read as the lighter - and so the weaker - of the two. The
-// hovered and the pressed steps are restated here because `.bit-mnb-opb:hover` weighs the same as this rule
-// and would otherwise be settled by source order, leaving a toggled header inert under the pointer. The state
-// is the rule's, but the colors it shows are still the role's, so an explicit Color outranks the toggled
-// variables here just as it outranks the resting ones.
-.bit-mnb-tgl {
+// hovered and the pressed steps are restated here because the ones `.bit-mnb-opb:hover` sets are the role's
+// resting steps, which a toggled header under the pointer would otherwise read. The state is the rule's, but the
+// colors it shows are still the role's, so an explicit Color outranks the toggled variables here just as it
+// outranks the resting ones. The toggled state is held in :where() so the rule weighs no more than the header's
+// own, and a class an app hands the header still paints it while it is toggled.
+:where(.bit-mnb-tgl) {
     > .bit-mnb-opb {
-        color: var(--bit-mnb-clr-txt, var(--bit-MenuButton-toggled-color, #{$clr-pri-text}));
-        background-color: var(--bit-mnb-clr-dark, var(--bit-MenuButton-toggled-background, #{$clr-pri-dark}));
+        color: var(--bit-mnb-hlf-sfg, var(--bit-mnb-clr-txt, var(--bit-MenuButton-toggled-color, #{$clr-pri-text})));
+        background-color: var(--bit-mnb-hlf-sbg, var(--bit-mnb-clr-dark, var(--bit-MenuButton-toggled-background, #{$clr-pri-dark})));
 
         @media (hover: hover) {
             &:hover {
-                color: var(--bit-mnb-clr-txt, var(--bit-MenuButton-toggled-color, #{$clr-pri-text}));
-                background-color: var(--bit-mnb-clr-dark-hover, var(--bit-MenuButton-toggled-hover-background, #{$clr-pri-dark-hover}));
+                --bit-mnb-hlf-sfg: var(--bit-mnb-clr-txt, var(--bit-MenuButton-toggled-color, #{$clr-pri-text}));
+                --bit-mnb-hlf-sbg: var(--bit-mnb-clr-dark-hover, var(--bit-MenuButton-toggled-hover-background, #{$clr-pri-dark-hover}));
             }
         }
 
         &:active {
-            color: var(--bit-mnb-clr-txt, var(--bit-MenuButton-toggled-color, #{$clr-pri-text}));
-            background-color: var(--bit-mnb-clr-dark-active, var(--bit-MenuButton-toggled-active-background, #{$clr-pri-dark-active}));
+            --bit-mnb-hlf-sfg: var(--bit-mnb-clr-txt, var(--bit-MenuButton-toggled-color, #{$clr-pri-text}));
+            --bit-mnb-hlf-sbg: var(--bit-mnb-clr-dark-active, var(--bit-MenuButton-toggled-active-background, #{$clr-pri-dark-active}));
         }
     }
 }
@@ -472,7 +484,10 @@ $mnb-cal-private-properties: cal-bg;
     letter-spacing: inherit;
     box-sizing: border-box;
     text-decoration: none;
-    background-color: transparent;
+    // The background the hover and press states below move, unset at rest so an item never inherits it from an
+    // outer item it sits in; this rule and the checked one are the only ones that paint it.
+    --bit-mnb-itm-sbg: initial;
+    background-color: var(--bit-mnb-itm-sbg, transparent);
     -webkit-tap-highlight-color: transparent;
     color: var(--bit-MenuButton-item-color, #{$clr-fg-pri});
     gap: var(--bit-MenuButton-item-gap, #{spacing(1)});
@@ -502,19 +517,19 @@ $mnb-cal-private-properties: cal-bg;
     // foreground it already had, so the contrast of an item never depends on the color role of the button.
     @media (hover: hover) {
         &:hover:not([disabled]):not([aria-disabled="true"]) {
-            background-color: var(--bit-MenuButton-item-hover-background, #{$clr-bg-pri-hover});
+            --bit-mnb-itm-sbg: var(--bit-MenuButton-item-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active:not([disabled]):not([aria-disabled="true"]) {
-        background-color: var(--bit-MenuButton-item-active-background, #{$clr-bg-pri-active});
+        --bit-mnb-itm-sbg: var(--bit-MenuButton-item-active-background, #{$clr-bg-pri-active});
     }
 }
 
 // A checked item keeps a tinted row even while the pointer is elsewhere, so the state can be read without
 // hovering every row to compare them.
 .bit-mnb-chk {
-    background-color: var(--bit-MenuButton-item-checked-background, #{$clr-bg-sec});
+    background-color: var(--bit-mnb-itm-sbg, var(--bit-MenuButton-item-checked-background, #{$clr-bg-sec}));
 }
 
 .bit-mnb-iic {
@@ -580,18 +595,19 @@ $mnb-cal-private-properties: cal-bg;
 // variables' alone. The divider is resolved here too, and the disabled state replaces it outright (see .bit-mnb).
 .bit-mnb-fil {
     color: var(--bit-mnb-clr-txt, var(--bit-MenuButton-color, #{$clr-pri-text}));
-    border-color: var(--bit-mnb-clr, var(--bit-MenuButton-border-color, var(--bit-MenuButton-background, #{$clr-pri})));
+    border-color: var(--bit-mnb-sbr, var(--bit-mnb-clr, var(--bit-MenuButton-border-color, var(--bit-MenuButton-background, #{$clr-pri}))));
     background-color: var(--bit-mnb-clr, var(--bit-MenuButton-background, #{$clr-pri}));
     --bit-mnb-clr-spb: var(--bit-mnb-clr-txt, var(--bit-MenuButton-divider-color, var(--bit-MenuButton-color, #{$clr-pri-text})));
 
+    // Like the halves', the states move the variable the border is painted from rather than the border itself.
     @media (hover: hover) {
         &:hover {
-            border-color: var(--bit-mnb-clr-hover, var(--bit-MenuButton-hover-background, #{$clr-pri-hover}));
+            --bit-mnb-sbr: var(--bit-mnb-clr-hover, var(--bit-MenuButton-hover-background, #{$clr-pri-hover}));
         }
     }
 
     &:active {
-        border-color: var(--bit-mnb-clr-active, var(--bit-MenuButton-active-background, #{$clr-pri-active}));
+        --bit-mnb-sbr: var(--bit-mnb-clr-active, var(--bit-MenuButton-active-background, #{$clr-pri-active}));
     }
 
     &.bit-dis {
@@ -603,18 +619,18 @@ $mnb-cal-private-properties: cal-bg;
 
 .bit-mnb-otl {
     color: var(--bit-mnb-clr, var(--bit-MenuButton-color, #{$clr-pri}));
-    border-color: var(--bit-mnb-clr, var(--bit-MenuButton-border-color, #{$clr-pri}));
+    border-color: var(--bit-mnb-sbr, var(--bit-mnb-clr, var(--bit-MenuButton-border-color, #{$clr-pri})));
     background-color: var(--bit-MenuButton-background, transparent);
     --bit-mnb-clr-spb: var(--bit-mnb-clr, var(--bit-MenuButton-divider-color, var(--bit-MenuButton-border-color, #{$clr-pri})));
 
     @media (hover: hover) {
         &:hover {
-            border-color: var(--bit-mnb-clr-hover, var(--bit-MenuButton-hover-background, #{$clr-pri-hover}));
+            --bit-mnb-sbr: var(--bit-mnb-clr-hover, var(--bit-MenuButton-hover-background, #{$clr-pri-hover}));
         }
     }
 
     &:active {
-        border-color: var(--bit-mnb-clr-active, var(--bit-MenuButton-active-background, #{$clr-pri-active}));
+        --bit-mnb-sbr: var(--bit-mnb-clr-active, var(--bit-MenuButton-active-background, #{$clr-pri-active}));
     }
 
     &.bit-dis {

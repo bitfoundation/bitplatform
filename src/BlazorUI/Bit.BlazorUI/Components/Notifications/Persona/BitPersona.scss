@@ -429,7 +429,8 @@ $prs-private-properties:
     border-radius: $shp-radius-full;
     box-shadow: $box-shadow-card;
     color: var(--bit-Persona-action-color, #{$clr-fg-pri});
-    background-color: var(--bit-Persona-action-background, #{$clr-bg-pri});
+    --bit-prs-abt-sbg: initial;
+    background-color: var(--bit-prs-abt-sbg, var(--bit-Persona-action-background, #{$clr-bg-pri}));
     transition: opacity $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     // The button is drawn at the size the coin leaves room for, which on the smallest coins is under the 24px a
@@ -447,8 +448,10 @@ $prs-private-properties:
     @media (hover: hover) {
         &:hover {
             // A custom surface keeps itself on hover unless it is given a hover of its own, so a dark button is
-            // not snapped back to the light default under the glyph it was paired with.
-            background-color: var(--bit-Persona-action-hover-background, var(--bit-Persona-action-background, #{$clr-bg-pri-hover}));
+            // not snapped back to the light default under the glyph it was paired with. The hover changes the
+            // variable the surface is painted from rather than the background, so a button the app paints through
+            // Classes keeps that paint under the pointer instead of losing it to a state that outranks the class.
+            --bit-prs-abt-sbg: var(--bit-Persona-action-hover-background, var(--bit-Persona-action-background, #{$clr-bg-pri-hover}));
         }
     }
 

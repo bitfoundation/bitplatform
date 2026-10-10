@@ -185,11 +185,15 @@ $cht-private-properties: dur, ease;
     align-items: center;
     display: inline-flex;
     border-radius: $shp-radius-sm;
+    --bit-cht-lgd-sbg: initial;
+    background-color: var(--bit-cht-lgd-sbg, transparent);
     transition: background-color $mot-duration-short $mot-easing;
 
+    // The hover moves the variable the item is painted from rather than its background, so an item the app paints
+    // through Classes keeps that paint under the pointer instead of losing it to a state that outranks the class.
     @media (hover: hover) {
         &:not(:disabled):not(.bit-cht-lgd-sta):hover {
-            background-color: $clr-bg-pri-hover;
+            --bit-cht-lgd-sbg: #{$clr-bg-pri-hover};
         }
     }
 

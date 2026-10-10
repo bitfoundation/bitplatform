@@ -429,7 +429,8 @@ $clp-private-properties:
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    background-color: transparent;
+    --bit-clp-btn-bg: initial;
+    background-color: var(--bit-clp-btn-bg, transparent);
     color: var(--bit-ColorPicker-button-color, #{$clr-fg-pri});
     width: var(--bit-clp-button-size-sz, var(--bit-ColorPicker-button-size, #{spacing(3)}));
     height: var(--bit-clp-button-size-sz, var(--bit-ColorPicker-button-size, #{spacing(3)}));
@@ -438,15 +439,17 @@ $clp-private-properties:
     transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     // Gated on a device that can actually hover, so a tap on a touch screen does not leave the button stuck
-    // in the hovered background until something else is touched.
+    // in the hovered background until something else is touched. The states change the variable the button
+    // is painted from rather than its background, so only the rule at rest paints it: a button the app paints
+    // through Classes keeps that paint under the pointer and while it is pressed.
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-ColorPicker-button-hover-background, #{$clr-bg-sec-hover});
+            --bit-clp-btn-bg: var(--bit-ColorPicker-button-hover-background, #{$clr-bg-sec-hover});
         }
     }
 
     &:active {
-        background-color: var(--bit-ColorPicker-button-active-background, #{$clr-bg-sec-active});
+        --bit-clp-btn-bg: var(--bit-ColorPicker-button-active-background, #{$clr-bg-sec-active});
     }
 
     &:focus-visible {

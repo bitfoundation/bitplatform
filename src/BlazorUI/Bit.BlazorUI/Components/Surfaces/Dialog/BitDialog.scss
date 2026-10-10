@@ -415,20 +415,25 @@ $dlg-private-properties: wid, hei, mnw, mnh, mxw, mxh;
 }
 
 .bit-dlg-okb {
+    --bit-dlg-okb-brd: initial;
+    --bit-dlg-okb-bg: initial;
     color: var(--bit-dlg-clr-txt);
-    border-color: var(--bit-dlg-clr);
-    background-color: var(--bit-dlg-clr);
+    border-color: var(--bit-dlg-okb-brd, var(--bit-dlg-clr));
+    background-color: var(--bit-dlg-okb-bg, var(--bit-dlg-clr));
 
+    // The states change the variables the button is painted from rather than its colors, so the one rule that
+    // paints is the one at rest: an action the app paints through Classes keeps that paint under the pointer
+    // and while it is pressed, instead of losing it to a state that outranks the app's class.
     @media (hover: hover) {
         &:hover:not(:disabled):not([aria-disabled="true"]) {
-            border-color: var(--bit-dlg-clr-hover);
-            background-color: var(--bit-dlg-clr-hover);
+            --bit-dlg-okb-brd: var(--bit-dlg-clr-hover);
+            --bit-dlg-okb-bg: var(--bit-dlg-clr-hover);
         }
     }
 
     &:active:not(:disabled):not([aria-disabled="true"]) {
-        border-color: var(--bit-dlg-clr-active);
-        background-color: var(--bit-dlg-clr-active);
+        --bit-dlg-okb-brd: var(--bit-dlg-clr-active);
+        --bit-dlg-okb-bg: var(--bit-dlg-clr-active);
     }
 }
 
@@ -437,22 +442,25 @@ $dlg-private-properties: wid, hei, mnw, mnh, mxw, mxh;
 }
 
 .bit-dlg-cnb {
-    color: var(--bit-dlg-clr);
-    border-color: var(--bit-dlg-clr);
-    background-color: transparent;
+    --bit-dlg-cnb-clr: initial;
+    --bit-dlg-cnb-brd: initial;
+    --bit-dlg-cnb-bg: initial;
+    color: var(--bit-dlg-cnb-clr, var(--bit-dlg-clr));
+    border-color: var(--bit-dlg-cnb-brd, var(--bit-dlg-clr));
+    background-color: var(--bit-dlg-cnb-bg, transparent);
 
     @media (hover: hover) {
         &:hover:not(:disabled) {
-            color: var(--bit-dlg-clr-txt);
-            border-color: var(--bit-dlg-clr-hover);
-            background-color: var(--bit-dlg-clr-hover);
+            --bit-dlg-cnb-clr: var(--bit-dlg-clr-txt);
+            --bit-dlg-cnb-brd: var(--bit-dlg-clr-hover);
+            --bit-dlg-cnb-bg: var(--bit-dlg-clr-hover);
         }
     }
 
     &:active:not(:disabled) {
-        color: var(--bit-dlg-clr-txt);
-        border-color: var(--bit-dlg-clr-active);
-        background-color: var(--bit-dlg-clr-active);
+        --bit-dlg-cnb-clr: var(--bit-dlg-clr-txt);
+        --bit-dlg-cnb-brd: var(--bit-dlg-clr-active);
+        --bit-dlg-cnb-bg: var(--bit-dlg-clr-active);
     }
 }
 
@@ -494,8 +502,10 @@ $dlg-private-properties: wid, hei, mnw, mnh, mxw, mxh;
     padding: 0 spacing(0.5);
     font-size: $tg-fs-sm;
     border-radius: $shp-radius-control;
-    background-color: transparent;
-    color: inherit;
+    --bit-dlg-cls-bg: initial;
+    --bit-dlg-cls-clr: initial;
+    background-color: var(--bit-dlg-cls-bg, transparent);
+    color: var(--bit-dlg-cls-clr, inherit);
     transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     span {
@@ -512,14 +522,14 @@ $dlg-private-properties: wid, hei, mnw, mnh, mxw, mxh;
 
     @media (hover: hover) {
         &:hover:not(:disabled) {
-            color: $clr-fg-pri-hover;
-            background-color: $clr-bg-pri-hover;
+            --bit-dlg-cls-clr: #{$clr-fg-pri-hover};
+            --bit-dlg-cls-bg: #{$clr-bg-pri-hover};
         }
     }
 
     &:active:not(:disabled) {
-        color: $clr-fg-pri-active;
-        background-color: $clr-bg-pri-active;
+        --bit-dlg-cls-clr: #{$clr-fg-pri-active};
+        --bit-dlg-cls-bg: #{$clr-bg-pri-active};
     }
 
     &:focus-visible {

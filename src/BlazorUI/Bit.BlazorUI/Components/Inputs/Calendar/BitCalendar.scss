@@ -232,7 +232,13 @@ $cal-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, evt-clr
     font-weight: inherit;
     box-sizing: border-box;
     justify-content: center;
-    background-color: transparent;
+    // The states of a cell change the variable it is painted from rather than its background, so only the
+    // rules at rest paint it - the plain cell here, and today, the selected and the highlighted days further
+    // down, each with its own fallback: a cell the app paints through Classes keeps that paint under the
+    // pointer and while pressed, instead of losing it to a state that outranks the app's class. Each part
+    // that answers a state starts the variable out unset, so it never inherits an outer one's state.
+    --bit-cal-sbg: initial;
+    background-color: var(--bit-cal-sbg, transparent);
     width: var(--bit-cal-cell-size);
     height: var(--bit-cal-cell-size);
     line-height: var(--bit-cal-cell-size);
@@ -246,12 +252,12 @@ $cal-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, evt-clr
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-Calendar-hover-background, #{$clr-bg-pri-hover});
+            --bit-cal-sbg: var(--bit-Calendar-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active {
-        background-color: var(--bit-Calendar-active-background, #{$clr-bg-pri-active});
+        --bit-cal-sbg: var(--bit-Calendar-active-background, #{$clr-bg-pri-active});
     }
 
     &:disabled {
@@ -279,12 +285,12 @@ $cal-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, evt-clr
 
 .bit-cal-dhl {
     font-weight: $tg-fw-semibold;
-    background-color: var(--bit-Calendar-highlighted-background, #{$clr-bg-ter});
+    background-color: var(--bit-cal-sbg, var(--bit-Calendar-highlighted-background, #{$clr-bg-ter}));
 }
 
 .bit-cal-dbs {
     color: var(--bit-Calendar-selected-color, var(--bit-Calendar-color, #{$clr-fg-pri}));
-    background-color: var(--bit-Calendar-selected-background, #{$clr-bg-sec});
+    background-color: var(--bit-cal-sbg, var(--bit-Calendar-selected-background, #{$clr-bg-sec}));
 
     &::after {
         inset: 0;
@@ -304,16 +310,16 @@ $cal-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, evt-clr
     font-weight: $tg-fw-semibold;
     border-radius: var(--bit-Calendar-today-radius, #{$shp-radius-full});
     color: var(--bit-cal-clr-txt, var(--bit-Calendar-today-color, #{$clr-pri-text}));
-    background-color: var(--bit-cal-clr, var(--bit-Calendar-today-background, #{$clr-pri}));
+    background-color: var(--bit-cal-sbg, var(--bit-cal-clr, var(--bit-Calendar-today-background, #{$clr-pri})));
 
     @media(hover: hover) {
         &:hover {
-            background-color: var(--bit-cal-clr-hover, var(--bit-Calendar-today-hover-background, #{$clr-pri-hover}));
+            --bit-cal-sbg: var(--bit-cal-clr-hover, var(--bit-Calendar-today-hover-background, #{$clr-pri-hover}));
         }
     }
 
     &:active {
-        background-color: var(--bit-cal-clr-active, var(--bit-Calendar-today-active-background, #{$clr-pri-active}));
+        --bit-cal-sbg: var(--bit-cal-clr-active, var(--bit-Calendar-today-active-background, #{$clr-pri-active}));
     }
 }
 
@@ -366,7 +372,8 @@ $cal-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, evt-clr
     font-size: $tg-fs-sm;
     animation-fill-mode: both;
     animation-name: bit-fade-show;
-    background-color: transparent;
+    --bit-cal-sbg: initial;
+    background-color: var(--bit-cal-sbg, transparent);
     line-height: var(--bit-cal-cell-size);
     animation-duration: $mot-duration-long;
     animation-timing-function: $mot-easing;
@@ -380,7 +387,7 @@ $cal-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, evt-clr
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-Calendar-hover-background, #{$clr-bg-pri-hover});
+            --bit-cal-sbg: var(--bit-Calendar-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
@@ -406,7 +413,8 @@ $cal-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, evt-clr
     position: relative;
     text-align: center;
     outline: transparent;
-    background-color: transparent;
+    --bit-cal-sbg: initial;
+    background-color: var(--bit-cal-sbg, transparent);
     width: var(--bit-cal-cell-size);
     height: var(--bit-cal-cell-size);
     min-width: var(--bit-cal-cell-size);
@@ -419,12 +427,12 @@ $cal-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, evt-clr
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-Calendar-hover-background, #{$clr-bg-pri-hover});
+            --bit-cal-sbg: var(--bit-Calendar-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active {
-        background-color: var(--bit-Calendar-active-background, #{$clr-bg-pri-active});
+        --bit-cal-sbg: var(--bit-Calendar-active-background, #{$clr-bg-pri-active});
     }
 
     &:focus-visible {
@@ -452,7 +460,8 @@ $cal-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, evt-clr
     position: relative;
     text-align: center;
     outline: transparent;
-    background-color: transparent;
+    --bit-cal-sbg: initial;
+    background-color: var(--bit-cal-sbg, transparent);
     width: var(--bit-cal-tcell-size);
     line-height: var(--bit-cal-tcell-size);
     font-size: var(--bit-cal-cell-fs);
@@ -462,12 +471,12 @@ $cal-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, evt-clr
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-Calendar-hover-background, #{$clr-bg-pri-hover});
+            --bit-cal-sbg: var(--bit-Calendar-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active {
-        background-color: var(--bit-Calendar-active-background, #{$clr-bg-pri-active});
+        --bit-cal-sbg: var(--bit-Calendar-active-background, #{$clr-bg-pri-active});
     }
 
     &:focus-visible {
@@ -527,22 +536,24 @@ $cal-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, evt-clr
     white-space: nowrap;
     outline: transparent;
     text-overflow: ellipsis;
-    background-color: transparent;
+    --bit-cal-sbg: initial;
+    --bit-cal-sfg: initial;
+    background-color: var(--bit-cal-sbg, transparent);
     width: var(--bit-cal-mcell-w);
     line-height: var(--bit-cal-mcell-h);
     font-size: var(--bit-cal-cell-fs);
-    color: var(--bit-Calendar-color, #{$clr-fg-pri});
+    color: var(--bit-cal-sfg, var(--bit-Calendar-color, #{$clr-fg-pri}));
     border-radius: var(--bit-Calendar-day-radius, #{$shp-radius-control});
     transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-Calendar-hover-background, #{$clr-bg-pri-hover});
+            --bit-cal-sbg: var(--bit-Calendar-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active {
-        background-color: var(--bit-Calendar-active-background, #{$clr-bg-pri-active});
+        --bit-cal-sbg: var(--bit-Calendar-active-background, #{$clr-bg-pri-active});
     }
 
     // The month and year grids move the focus with the arrow keys just as the day grid does, so the cell the
@@ -561,23 +572,23 @@ $cal-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, evt-clr
 
 .bit-cal-psm {
     font-weight: $tg-fw-semibold;
-    background-color: var(--bit-Calendar-selected-background, #{$clr-bg-sec});
+    background-color: var(--bit-cal-sbg, var(--bit-Calendar-selected-background, #{$clr-bg-sec}));
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-Calendar-hover-background, #{$clr-bg-pri-hover});
+            --bit-cal-sbg: var(--bit-Calendar-hover-background, #{$clr-bg-pri-hover});
         }
     }
 }
 
 .bit-cal-pcm {
-    color: var(--bit-cal-clr-txt, var(--bit-Calendar-today-color, #{$clr-pri-text}));
-    background-color: var(--bit-cal-clr, var(--bit-Calendar-today-background, #{$clr-pri}));
+    color: var(--bit-cal-sfg, var(--bit-cal-clr-txt, var(--bit-Calendar-today-color, #{$clr-pri-text})));
+    background-color: var(--bit-cal-sbg, var(--bit-cal-clr, var(--bit-Calendar-today-background, #{$clr-pri})));
 
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-cal-clr-txt, var(--bit-Calendar-today-color, #{$clr-pri-text}));
-            background-color: var(--bit-cal-clr-hover, var(--bit-Calendar-today-hover-background, #{$clr-pri-hover}));
+            --bit-cal-sfg: var(--bit-cal-clr-txt, var(--bit-Calendar-today-color, #{$clr-pri-text}));
+            --bit-cal-sbg: var(--bit-cal-clr-hover, var(--bit-Calendar-today-hover-background, #{$clr-pri-hover}));
         }
     }
 }
@@ -652,9 +663,10 @@ $cal-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, evt-clr
         color: var(--bit-Calendar-disabled-color, #{$clr-fg-dis});
     }
 
+    // No border of its own on focus: the rule above already takes the input's away, so one the app gives it
+    // through Classes stays put while the field is focused.
     &:focus {
         @include focus-underline-ring(var(--bit-cal-clr-focus, var(--bit-Calendar-focus-color, #{$clr-pri-focus})));
-        border: none;
     }
 }
 
@@ -670,7 +682,7 @@ $cal-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, evt-clr
 
 .bit-cal-bns {
     color: var(--bit-cal-clr-txt, var(--bit-Calendar-today-color, #{$clr-pri-text}));
-    background-color: var(--bit-cal-clr, var(--bit-Calendar-today-background, #{$clr-pri}));
+    background-color: var(--bit-cal-sbg, var(--bit-cal-clr, var(--bit-Calendar-today-background, #{$clr-pri})));
 
     &:disabled {
         background-color: $clr-bg-dis;
@@ -678,12 +690,12 @@ $cal-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, evt-clr
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-cal-clr-hover, var(--bit-Calendar-today-hover-background, #{$clr-pri-hover}));
+            --bit-cal-sbg: var(--bit-cal-clr-hover, var(--bit-Calendar-today-hover-background, #{$clr-pri-hover}));
         }
     }
 
     &:active {
-        background-color: var(--bit-cal-clr-active, var(--bit-Calendar-today-active-background, #{$clr-pri-active}));
+        --bit-cal-sbg: var(--bit-cal-clr-active, var(--bit-Calendar-today-active-background, #{$clr-pri-active}));
     }
 }
 
@@ -782,10 +794,12 @@ $cal-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, evt-clr
     cursor: pointer;
     line-height: 1;
     align-items: center;
-    color: $clr-fg-sec;
+    --bit-cal-sfg: initial;
+    --bit-cal-sbg: initial;
+    color: var(--bit-cal-sfg, #{$clr-fg-sec});
     font-size: $tg-fs-md;
     justify-content: center;
-    background-color: transparent;
+    background-color: var(--bit-cal-sbg, transparent);
     // The 24px floor of WCAG 2.2's target-size minimum: the glyph alone is a few pixels short of it.
     width: spacing(3);
     height: spacing(3);
@@ -794,8 +808,8 @@ $cal-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, evt-clr
 
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-Calendar-color, #{$clr-fg-pri});
-            background-color: var(--bit-Calendar-hover-background, #{$clr-bg-pri-hover});
+            --bit-cal-sfg: var(--bit-Calendar-color, #{$clr-fg-pri});
+            --bit-cal-sbg: var(--bit-Calendar-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
