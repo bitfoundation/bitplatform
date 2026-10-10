@@ -27,7 +27,7 @@
         <PackageProjectUrl>https://github.com/bitfoundation/bitplatform</PackageProjectUrl>
 
         <!-- Version -->
-        <ReleaseVersion>10.6.2</ReleaseVersion>
+        <ReleaseVersion>11.0.0-pre-07</ReleaseVersion>
           <PackageVersion>$(ReleaseVersion)</PackageVersion>
         <PackageReleaseNotes>https://github.com/bitfoundation/bitplatform/releases/tag/v-$(ReleaseVersion)</PackageReleaseNotes>
         <Version Condition=" '$(Configuration)' == 'Release' ">$([System.String]::Copy($(ReleaseVersion)).Replace('-pre-', '.'))</Version>
@@ -38,7 +38,7 @@
         <NeutralLanguage>en</NeutralLanguage>
         <LangVersion>preview</LangVersion>
         <Nullable>enable</Nullable>
-        <NoWarn>$(NoWarn);NU1605;CS1591;NU1701;CA1303;CA1308;CA2007;CA1014;CA2227;BL0007;CA1056;BL0005;CS1998</NoWarn>
+        <NoWarn>$(NoWarn);NU1605;CS1591;NU1701;CA1303;CA1308;CA2007;CA1014;CA2227;BL0007;CA1056;BL0005;CS1998;BL0016</NoWarn>
         <WarningsAsErrors>$(WarningsAsErrors);CS0114;RZ10012</WarningsAsErrors>
         <!-- https://stackoverflow.com/a/46815541/2720104 -->
         <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
@@ -59,6 +59,17 @@
         <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
         <EnableAotAnalyzer>false</EnableAotAnalyzer>
         <EnableSingleFileAnalyzer>false</EnableSingleFileAnalyzer>
+    </PropertyGroup>
+
+    <!-- Static web assets packed in the format every SDK reads. With net11.0 among TargetFrameworks, the .NET 11 SDK
+         packs the whole package in its new format - a json manifest behind a generated build\<PackageId>.targets -
+         which the .NET 8, 9 and 10 SDKs don't read: an app built with one of them got none of the package's css and js.
+         That generated file also took the place of a package's own build\<PackageId>.targets, which is how
+         Bit.Butil's publish-time trimming stopped running. The switch is the SDK's own (private, read only by
+         Microsoft.NET.Sdk.StaticWebAssets.Pack.targets); drop it once every SDK the packages support reads the new
+         format. -->
+    <PropertyGroup>
+        <_UseJsonManifestPackaging>false</_UseJsonManifestPackaging>
     </PropertyGroup>
 
     <!-- README and LICENSE -->

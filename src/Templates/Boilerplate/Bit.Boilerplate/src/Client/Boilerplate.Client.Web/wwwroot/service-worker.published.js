@@ -2,7 +2,7 @@
 // [mirror] push notification and notificationclick handlers - keep in sync with:
 // - src/Client/Boilerplate.Client.Web/wwwroot/service-worker.js
 
-// bit version: 10.6.2
+// bit version: 11.0.0-pre-07
 // https://github.com/bitfoundation/bitplatform/tree/develop/src/Bswup
 
 //#if (notification == true)
@@ -80,7 +80,7 @@ self.externalAssets = [
     },
     ...(isServerHosted ? [
         {
-            url: "_framework/bit.blazor.web.es2019.js"
+            url: "_framework/blazor.web.js"
         },
         {
             "url": "Boilerplate.Server.Web.styles.css"
