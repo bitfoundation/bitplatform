@@ -376,48 +376,78 @@
             }
         }
 
-        // The two page-level listeners every tooltip needs are shared by all of them, and each one asks the
-        // DOM for the few tooltips that are actually shown instead of every tooltip on the page asking for
-        // itself - a toolbar or a grid of a few hundred tooltips pays for one listener per key and press.
+        // The tooltips registered on the page that are shown right now and carry the given marker, read off the DOM
+        // so that a toolbar or a grid of a few hundred tooltips is asked about only the few that are shown.
+        private static shownTooltips(marker: string) {
+            return Array.from(document.querySelectorAll<HTMLElement>(`.bit-ttp-wrp.bit-ttp-vis[${marker}]`))
+                .map(wrp => wrp.parentElement)
+                .filter((root): root is HTMLElement => !!root && Utils._tooltipsByRoot.has(root));
+        }
+
+        // Dismisses every dismissible tooltip under the pointer - a nested one along with the one around it - on an
+        // Escape pressed anywhere in the page. It is not added by the tooltips: general.ts adds it once, as the page
+        // loads, on the window in the capture phase right after the claim (claimEscape). Listeners on one node run in
+        // the order they were added, so one a tooltip added as it registered would land wherever the page happened
+        // to be by then - behind the listener of a menu that was already open when the tooltip is in its content,
+        // or of an overlay opened before the first tooltip was - and those would act on the press the tooltip takes.
+        // Added first it is ahead of every surface of the library whenever it opened, and it costs nothing while no
+        // tooltip is shown.
+        // A press it takes goes no further than the window: it is prevented, and stopPropagation keeps it from the
+        // document and everything under it - a callout's own Escape listener and Blazor's delegation included. The
+        // other listeners on the window still hear it, and read it as taken (defaultPrevented), which leaves an app's
+        // own listener there the key it has always been given.
+        public static dismissTooltipsOnEscape(e: KeyboardEvent) {
+            // A press a component claimed (see claimEscape) is that component's: the tooltip stays, and the key goes
+            // on to the component rather than being stopped here.
+            if (e.key !== 'Escape' || e.defaultPrevented) return;
+
+            if (Utils._tooltipsByRoot.size === 0) return;
+
+            // A gesture in progress that the key puts back (a swipe) is what the user is doing with the pointer the
+            // tooltip is under, so the press is the gesture's, and the tooltip stays.
+            for (const takes of Utils._escapeGestures) {
+                if (takes()) return;
+            }
+
+            const target = e.target as Node | null;
+            let taken = false;
+
+            for (const root of Utils.shownTooltips('data-bit-ttp-esc')) {
+                if (target && root.contains(target)) continue; // the root's own listener answers it
+                if (!root.matches(':hover')) continue;
+
+                Utils._tooltipsByRoot.get(root)!.invokeMethodAsync('OnEscape')
+                     .catch(err => console.error("BitBlazorUI.Utils.dismissTooltipsOnEscape:", err));
+                taken = true;
+            }
+
+            if (!taken) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // The gestures in progress that an Escape puts back, each asked as the key goes down whether this press is
+        // its own. They take the key on a listener of their own, added on the window as the gesture starts - after
+        // the one that dismisses the tooltips, which has to leave the press to them.
+        private static _escapeGestures = new Set<() => boolean>();
+
+        public static addEscapeGesture(takes: () => boolean) {
+            Utils._escapeGestures.add(takes);
+        }
+
+        public static removeEscapeGesture(takes: () => boolean) {
+            Utils._escapeGestures.delete(takes);
+        }
+
+        // The page-level listener every tooltip a press opens needs is shared by all of them, and asks the DOM for
+        // the few tooltips that are actually shown instead of every tooltip on the page asking for itself - a
+        // toolbar or a grid of a few hundred tooltips pays for one listener per press. (The Escape that dismisses a
+        // tooltip has a listener of its own, added once for the page: see dismissTooltipsOnEscape.)
         private static ensureTooltipListeners() {
             if (Utils._tooltipsController) return;
 
             const controller = Utils._tooltipsController = new AbortController();
-
-            const shown = (marker: string) => Array.from(document.querySelectorAll<HTMLElement>(`.bit-ttp-wrp.bit-ttp-vis[${marker}]`))
-                .map(wrp => wrp.parentElement)
-                .filter((root): root is HTMLElement => !!root && Utils._tooltipsByRoot.has(root));
-
-            // In the capture phase, so the key is taken before whatever holds the focus acts on it. Every
-            // tooltip under the pointer - a nested one along with the one around it - is dismissed by the press,
-            // and stopImmediatePropagation keeps it from every listener after this one, a callout's own Escape
-            // listener included. On the window rather than the document: listeners on one node run in the order
-            // they were added, and these are added when the first tooltip on the page registers - after the
-            // document listener of a menu that was already open, when the tooltip is in its content - so on the
-            // document the menu would hear the press before the tooltip took it. The window is ahead of the
-            // document whatever the order, and only the claim (general.ts) is on it ahead of this.
-            window.addEventListener('keydown', e => {
-                // A press a component claimed (see claimEscape) is that component's: the tooltip stays, and the key
-                // goes on to the component rather than being stopped here.
-                if (e.key !== 'Escape' || e.defaultPrevented) return;
-
-                const target = e.target as Node | null;
-                let taken = false;
-
-                for (const root of shown('data-bit-ttp-esc')) {
-                    if (target && root.contains(target)) continue; // the root's own listener answers it
-                    if (!root.matches(':hover')) continue;
-
-                    Utils._tooltipsByRoot.get(root)!.invokeMethodAsync('OnEscape')
-                         .catch(err => console.error("BitBlazorUI.Utils.setupTooltip:", err));
-                    taken = true;
-                }
-
-                if (!taken) return;
-
-                e.preventDefault();
-                e.stopImmediatePropagation();
-            }, { signal: controller.signal, capture: true });
 
             // A tooltip a press of the anchor opened (data-bit-ttp-clk) is dismissed by the next press elsewhere.
             // The focus leaving the anchor says as much in some browsers, but Safari and the touch browsers never
@@ -426,7 +456,7 @@
             document.addEventListener('pointerdown', e => {
                 const target = e.target as Node | null;
 
-                for (const root of shown('data-bit-ttp-clk')) {
+                for (const root of Utils.shownTooltips('data-bit-ttp-clk')) {
                     if (target && root.contains(target)) continue;
 
                     Utils._tooltipsByRoot.get(root)!.invokeMethodAsync('OnOutsidePress')
