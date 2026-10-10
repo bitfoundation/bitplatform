@@ -39,12 +39,13 @@
 // inside an always-dark region of a page pinned to "light" has to take the region's recipe, not the
 // document's, and both of those name a bit-theme.
 //
-// Scoped regions of different themes nested in one another all meet at that same weight, so a named
-// twin also steps aside for every region nearer to the overlay than its own (theme-overlay-nearest):
+// Scoped regions of different themes nested in one another all meet at that same weight, so every named
+// selector - the document's as well as the twins - also steps aside for every region nearer to the
+// overlay than its own (theme-overlay-nearest; the root element counts as a region of its bit-theme):
 // what the overlay takes is the recipe of its NEAREST region, as it would by inheritance without one,
-// never the one of whichever bundle happens to come later. The core's `[bit-theme]` twins are the
-// fallback for any region and step aside for none; the nearest region's own twin outranks them on
-// source order, as its main block outranks the core one.
+// never the one of whichever bundle happens to come later or of whichever selector happens to weigh
+// more. The core's `[bit-theme]` twins are the fallback for any region and step aside for none; the
+// nearest region's own twin outranks them on source order, as its main block outranks the core one.
 @mixin theme-overlay($group, $names: (), $document: false, $any-scope: false) {
     $overlay: '[bit-theme-overlay~="#{$group}"]';
     $selectors: ();
@@ -60,8 +61,9 @@
 
     @each $name in $names {
         $region: '[bit-theme="#{$name}"]';
-        $selectors: list.append($selectors, string.unquote(':root#{$region} #{$overlay}'), $separator: comma);
-        $selectors: list.append($selectors, string.unquote(':root:root #{$region} #{$overlay}#{theme-overlay-nearest($region, $overlay)}'), $separator: comma);
+        $nearest: theme-overlay-nearest($region, $overlay);
+        $selectors: list.append($selectors, string.unquote(':root#{$region} #{$overlay}#{$nearest}'), $separator: comma);
+        $selectors: list.append($selectors, string.unquote(':root:root #{$region} #{$overlay}#{$nearest}'), $separator: comma);
         $selectors: list.append($selectors, string.unquote(':root:root #{$region}#{$overlay}'), $separator: comma);
     }
 
@@ -75,7 +77,7 @@
 // region of its own name) meet at equal weight again, and the later bundle wins there.
 $theme-overlay-nesting-depth: 3;
 
-// The condition, of zero specificity, under which the twin of the scoped region $region matches only an
+// The condition, of zero specificity, under which a selector of the region $region matches only an
 // overlay whose nearest region (itself included) is one of that name: the overlay element is not a region
 // of another theme, and the regions above it do not end in one. Selectors cannot ask for the nearest
 // ancestor, but they can count alternations: below the outermost $region, a chain $region / other /

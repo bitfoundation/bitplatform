@@ -148,6 +148,9 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
     {
         var overlay = $"[bit-theme-overlay~={group}]";
 
+        // A named document selector steps aside for a nearer region of another theme, as a named twin does.
+        if (themeSelector.StartsWith(":root[", StringComparison.Ordinal)) return [$"{themeSelector} {overlay}{NearestRegionCondition(themeSelector[5..], overlay)}"];
+
         if (themeSelector.StartsWith(":root [", StringComparison.Ordinal) is false) return [$"{themeSelector} {overlay}"];
 
         var region = themeSelector[6..];
@@ -552,28 +555,35 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
     }
 
     [TestMethod]
-    public void EveryNamedScopedTwinStepsAsideForANearerRegion()
+    public void EveryNamedOverlaySelectorStepsAsideForANearerRegion()
     {
         // Two scoped regions of different themes nested in one another meet at the same weight, so a named twin
         // that did not step aside would hand an overlay in the inner region the outer theme's recipe whenever
         // the outer theme's rule comes later (a dark header in a light section, a Fluent region in a Material one).
+        // The document's named selector steps aside too, so what decides is the nesting, never its lower weight.
         var checkedTwins = 0;
+        var checkedDocuments = 0;
 
         foreach (var (bundle, rules) in Bundles())
         {
             foreach (var selector in rules.SelectMany(r => r.Selectors))
             {
-                var twin = Regex.Match(selector, @"^:root:root (\[bit-theme=[a-z0-9-]+\]) (\[bit-theme-overlay~=[a-z-]+\])");
+                var named = Regex.Match(selector, @"^(:root:root |:root)(\[bit-theme=[a-z0-9-]+\]) (\[bit-theme-overlay~=[a-z-]+\])");
 
-                if (twin.Success is false) continue;
+                if (named.Success is false) continue;
+
+                var (prefix, region, overlay) = (named.Groups[1].Value, named.Groups[2].Value, named.Groups[3].Value);
 
                 Assert.AreEqual(
-                    $":root:root {twin.Groups[1].Value} {twin.Groups[2].Value}{NearestRegionCondition(twin.Groups[1].Value, twin.Groups[2].Value)}",
-                    selector, $"{bundle}: a named scoped twin without the nearest-region condition of theme-overlay.scss.");
-                checkedTwins++;
+                    $"{prefix}{region} {overlay}{NearestRegionCondition(region, overlay)}",
+                    selector, $"{bundle}: a named overlay selector without the nearest-region condition of theme-overlay.scss.");
+
+                if (prefix == ":root") checkedDocuments++;
+                else checkedTwins++;
             }
         }
 
         Assert.IsTrue(checkedTwins > 20, $"Only {checkedTwins} named scoped twins were found.");
+        Assert.IsTrue(checkedDocuments > 20, $"Only {checkedDocuments} named document selectors were found.");
     }
 }

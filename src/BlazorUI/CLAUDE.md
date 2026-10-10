@@ -360,11 +360,12 @@ core default under a preset that decided otherwise. So a group's declarations li
 overlay rule; a family alias added to a theme block without the overlay rule fails
 `BitThemeFamilyAliasReSubstitutionTests` against the compiled bundles. A group's mixin carries every alias
 any theme re-declares for that group, literals included, and the core one in `family-tokens.scss` carries
-them all: the document theme's overlay rule also matches inside a scoped region of another theme, where only
-the core rule's scoped twins outrank it, so an alias the core rule leaves out carries the document theme's
-recipe into the region (the same test fails on one). The mixin's named scoped twins also step aside for any
-region of another theme nearer to the overlay (`theme-overlay-nearest`, a `:where(:not(...))` of zero
-specificity), so nested regions hand an overlay the NEAREST region's recipe rather than the later bundle's. A
+them all: the bare-`:root` document theme's overlay rule also matches inside a scoped region of another theme,
+where only the core rule's scoped twins outrank it, so an alias the core rule leaves out carries the document
+theme's recipe into the region (the same test fails on one). Every NAMED selector of the mixin - the document's
+`:root[bit-theme="x"]` one and the scoped twins - also steps aside for any region of another theme nearer to the
+overlay (`theme-overlay-nearest`, a `:where(:not(...))` of zero specificity), so nested regions hand an overlay
+the NEAREST region's recipe rather than the later bundle's or the heavier selector's. A
 new input a theme builds an alias from is a new entry in the group table - in C# and in its twin
 `FAMILY_ALIAS_OVERLAY_GROUPS` in `BitTheme.ts`, from which the client's `applyTheme` derives the attribute
 itself (the tests pin the two to each other, and every token an overlay rule reads to the inputs of its
