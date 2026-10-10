@@ -38,6 +38,10 @@ public partial class BitFcSettings : IDisposable
         ? BitFullCalendarBadgeVariant.Colored
         : BitFullCalendarBadgeVariant.Dot);
 
+    // The Escape that closes the panel, claimed on the dropdown and its panel (see Utils.claimEscape) - read off the
+    // same state OnKeyDown decides on, so a closed panel leaves the key to whatever the calendar sits in.
+    private string? _EscapeClaim => _open ? "claim" : null;
+
     private void OnKeyDown(KeyboardEventArgs e)
     {
         // A panel that only closes by clicking its trigger again traps keyboard users; Escape is the

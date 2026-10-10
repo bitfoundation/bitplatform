@@ -7,7 +7,8 @@
    closes on the next press. A press the component does not act on (a one-way binding it cannot clear, an Escape
    with a modifier) is the surface's straight away. The page-level section covers the claims that have to stop at a
    surface rendered inside the claimer (a Modal inside a Message), and the listeners that hear the key from anywhere
-   (a Tooltip shown on hover). *@
+   (a Tooltip shown on hover). A Tooltip inside the surface takes a press nothing in its anchor acts on, and goes
+   along with one a field claims or a popup of its anchor closes on - the surface waiting for the next press either way. *@
 <div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
     <h3>Escape Claim Regression (@Surface)</h3>
     <button @onclick="Open" id="btn-open">Open</button>
@@ -21,6 +22,7 @@
         <p>Combo: <span id="v-cmb">@_cmb</span></p>
         <p>Message: <span id="msg-state">@(_msgDismissed ? "dismissed" : "shown")</span></p>
         <p>Message field: <span id="v-mtf">@_mtf</span></p>
+        <p>Tooltip field: <span id="v-ttf">@_ttf</span></p>
         <p>Clears: <span id="clears">@_clears</span></p>
         <p>Status: <span id="status">@_status</span></p>
     </div>
@@ -88,6 +90,7 @@
     private bool _msgDismissed;
     private string? _mtf;
     private string? _ptf;
+    private string? _ttf;
     private bool _outerMsgDismissed;
     private bool _innerModalOpen;
     private int _clears;
@@ -107,6 +110,10 @@
         <div id="w-drp"><BitDropdown ClearOnEscape @bind-Value="_drp" Items="_items" OnClear="Cleared" /></div>
         <div id="w-drp1"><BitDropdown ClearOnEscape Value="@("a")" Items="_items" OnClear="Cleared" /></div>
         <div id="w-cmb"><BitDropdown Combo ClearOnEscape @bind-Value="_cmb" Items="_items" OnClear="Cleared" /></div>
+        <div id="w-ttf"><BitTooltip Text="Clearing field tip"><BitTextField ClearOnEscape Immediate @bind-Value="_ttf" /></BitTooltip></div>
+        <div id="w-tpf"><BitTooltip Text="Plain field tip"><BitTextField /></BitTooltip></div>
+        @* Shown from the start rather than by the pointer, which the picker's overlay takes off the anchor as it opens. *@
+        <div id="w-tdp"><BitTooltip Text="Date picker tip" DefaultIsShown ShowOnHover="false"><BitDatePicker AllowTextInput /></BitTooltip></div>
         <div id="w-msg">
             <BitMessage DismissOnEscape @bind-Dismissed="_msgDismissed">
                 <button id="msg-btn">Message button</button>

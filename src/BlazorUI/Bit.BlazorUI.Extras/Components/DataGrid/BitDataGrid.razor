@@ -89,9 +89,12 @@
     @if (_showColumnChooserPanel)
     {
         @* Escape closes the panel from anywhere inside it, the dismissal every popup owes its keyboard
-           users; the toggle button keeps aria-expanded in sync either way. *@
+           users; the toggle button keeps aria-expanded in sync either way. The panel is only rendered while it is
+           open, so it claims every Escape pressed in it (data-bit-esc, see Utils.claimEscape): a dialog the grid
+           sits in does not close on the press that closes the panel. *@
         <div class="bit-dtg-column-chooser @Classes?.ColumnChooser" style="@Styles?.ColumnChooser" id="@_columnChooserPanelId"
              role="group" aria-label="@Strings.ColumnChooserLabel"
+             data-bit-esc="claim"
              @onkeydown="OnColumnChooserKeyDown">
             @foreach (var col in AllColumns)
             {
@@ -1014,7 +1017,8 @@
     // opened it: the focus is inside the panel that is going away, and would otherwise drop to the document.
     private async Task OnColumnChooserKeyDown(KeyboardEventArgs e)
     {
-        if (e.Key != "Escape") return;
+        // Only the plain key, the one the panel claims: an Escape with a modifier is the surrounding surface's.
+        if (e.IsPlainEscape() is false) return;
 
         CloseColumnChooser();
 

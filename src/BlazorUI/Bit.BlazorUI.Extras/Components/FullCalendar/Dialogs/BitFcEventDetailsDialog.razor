@@ -1,8 +1,10 @@
 ﻿@namespace Bit.BlazorUI
 
 <div class="bit-bfc-overlay" @onclick="OnClose">
-    @* Escape dismisses the dialog, the way every modal is expected to behave. *@
+    @* Escape dismisses the dialog, the way every modal is expected to behave. data-bit-esc claims that press
+       (see Utils.claimEscape), so a surface the calendar sits in (a BitModal, a BitPanel) does not close on it too. *@
     <div class="bit-bfc-dialog @Parts.Classes?.Dialog" style="@Parts.Styles?.Dialog" role="dialog" aria-modal="true" aria-labelledby="@_dialogTitleId" tabindex="-1" @ref="_dialogRef"
+         data-bit-esc="@_EscapeClaim"
          @onkeydown="OnDialogKeyDown" @onclick:stopPropagation="true">
         <div class="bit-bfc-dialog-header bit-bfc-dialog-header-row">
             <h3 id="@_dialogTitleId">@Event.Title</h3>

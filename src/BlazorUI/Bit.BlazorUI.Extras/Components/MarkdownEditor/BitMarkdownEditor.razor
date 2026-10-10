@@ -111,6 +111,9 @@
 
     @if (_showFind)
     {
+        @* data-bit-esc on the find and the replace box claims the Escape that closes the panel (OnFindKeyDown,
+           OnReplaceKeyDown, see Utils.claimEscape), so a dialog around the editor does not close on that same press.
+           The boxes are only rendered while the panel is open, which is when their handlers act on the key. *@
         <div class="bit-mde-fnd" role="region" aria-label="@ActiveTexts.FindReplaceTitle">
             <input @ref="_findRef"
                    type="search"
@@ -121,7 +124,8 @@
                    aria-label="@ActiveTexts.FindPlaceholder"
                    value="@_findText"
                    @oninput="e => OnFindTextChanged(e.Value?.ToString() ?? string.Empty)"
-                   @onkeydown="OnFindKeyDown" />
+                   @onkeydown="OnFindKeyDown"
+                   data-bit-esc="claim" />
             <input class="bit-mde-fni"
                    type="text"
                    autocomplete="off"
@@ -130,7 +134,8 @@
                    aria-label="@ActiveTexts.ReplacePlaceholder"
                    value="@_replaceText"
                    @oninput="e => _replaceText = e.Value?.ToString() ?? string.Empty"
-                   @onkeydown="OnReplaceKeyDown" />
+                   @onkeydown="OnReplaceKeyDown"
+                   data-bit-esc="claim" />
             <button type="button"
                     class="bit-mde-fnb bit-mde-fnc @(_matchCase ? "bit-mde-act" : null)"
                     aria-pressed="@(_matchCase ? "true" : "false")"
@@ -157,7 +162,10 @@
                cannot focus without saying why, so only aria-required stays on it there.
                The value is the one it had before the first render, and never changes after it: that is what a
                prerendered or static page shows before the script seeds the textarea, while the script owns it from
-               then on - a value Blazor kept in step would be written over the text being typed. *@
+               then on - a value Blazor kept in step would be written over the text being typed.
+               data-bit-esc claims the Escape the script hands to .NET while that press closes the help or the find
+               panel or leaves full-screen (EscapeClaim, see Utils.claimEscape), so a dialog around the editor waits
+               for the next one. *@
             <textarea @ref="InputElement"
                       @attributes="InputHtmlAttributes"
                       value="@_seedValue"
@@ -174,6 +182,7 @@
                       disabled="@(Disabled)"
                       required="@(Required && Mode is not BitMarkdownEditorMode.Preview)"
                       aria-required="@(Required ? "true" : null)"
+                      data-bit-esc="@EscapeClaim"
                       autocomplete="off"
                       autocapitalize="off"
                       autocorrect="off"
@@ -182,13 +191,15 @@
         </div>
 
         @* The preview pane scrolls on its own, so it needs to be reachable by keyboard
-           for the arrow keys to be able to scroll it. *@
+           for the arrow keys to be able to scroll it. Its Escape goes to .NET just like the textarea's, so it
+           carries the same claim (EscapeClaim). *@
         <div @ref="_previewRef"
              style="@Styles?.Preview"
              class="bit-mde-pne bit-mde-ppn @Classes?.Preview"
              tabindex="0"
              role="group"
-             aria-label="@ActiveTexts.PreviewAriaLabel">
+             aria-label="@ActiveTexts.PreviewAriaLabel"
+             data-bit-esc="@EscapeClaim">
             @* Edit mode hides this pane, and rendering markdown nobody can see would re-parse the
                whole document on every keystroke for nothing. *@
             @if (Mode is BitMarkdownEditorMode.Edit)
@@ -251,6 +262,9 @@
 
     @if (_showHelp)
     {
+        @* data-bit-esc on the dialog claims the Escape that closes it (OnHelpKeyDown, see Utils.claimEscape), so a
+           dialog the editor sits in does not close on that same press. The dialog is only rendered while it is
+           open, and its handler closes it on every plain Escape pressed in it. *@
         <div class="bit-mde-hlp" @onclick="CloseHelp">
             <div @ref="_helpRef"
                  role="dialog"
@@ -259,6 +273,7 @@
                  tabindex="-1"
                  class="bit-mde-hcr"
                  @onkeydown="OnHelpKeyDown"
+                 data-bit-esc="claim"
                  @onclick:stopPropagation="true">
                 <span tabindex="0" class="bit-mde-guard" @onfocus="FocusHelpClose"></span>
                 <header>

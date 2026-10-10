@@ -2101,6 +2101,16 @@ public partial class BitPdfViewer : BitComponentBase
         StateHasChanged(); // the toolbar button reports the state it just entered/left
     }
 
+    // Whether the shortcut listener's Escape does anything (see the "escape" case of OnShortcut): the script forwards
+    // it from anywhere in the root without preventing its default, so the root claims it in its markup instead (see
+    // Utils.claimEscape) - read off the same state OnShortcut decides on, and only while the listener is attached and
+    // the viewer is enabled, so a dialog around the viewer stays open on the press that closes the properties or the
+    // find box or leaves presentation mode, and closes on any other.
+    private string? EscapeClaim => EnableKeyboardShortcuts && _keyboardAttached && Disabled is false
+                                   && (_showProperties || _showSearch || _presenting)
+                                   ? "claim"
+                                   : null;
+
     /// <summary>
     /// Invoked from JavaScript for a keyboard shortcut. The key matching (and the
     /// preventDefault that stops the browser's own Ctrl+P / Ctrl+F / Ctrl+S) lives

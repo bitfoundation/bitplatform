@@ -3054,6 +3054,11 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     internal bool IsEditingCell(TItem item, BitDataGridColumn<TItem> column)
         => IsEditing(item) && (!IsCellEditMode || _editColumnId == column.Id);
 
+    // Whether an Escape on a navigable cell cancels an edit, the one rule the cells' keyboard handling
+    // (BitDataGridCell.HandleKeyDown, HandleCellKeyDownAsync) and their Escape claim both go by: the open cell
+    // cancels its own edit, and any other cell the one that is open, so the key is the grid's while an edit is.
+    internal bool CancelsEditOnEscape => _editItem is not null;
+
     internal int EditVersion => _editVersion;
 
     /// <summary>The column of the cell open for editing in <see cref="BitDataGridEditMode.Cell"/> mode, or <c>null</c>.</summary>
@@ -4035,8 +4040,9 @@ public partial class BitDataGrid<TItem> : BitComponentBase
                 else if (e.Key == "Enter" && (HasDetailColumn || (HasDetailTemplate && ExpandDetailOnRowClick)) && _editItem is null)
                     await ToggleDetailAsync(item);
                 return;
-            case "Escape":
-                if (_editItem is not null) await CancelEditAsync();
+            // Only the plain key, the one the cells claim: an Escape with a modifier is the surrounding surface's.
+            case "Escape" when e.IsPlainEscape():
+                if (CancelsEditOnEscape) await CancelEditAsync();
                 return;
             case "Delete":
                 // Keyboard parity with the command column's Delete button, gated the same way

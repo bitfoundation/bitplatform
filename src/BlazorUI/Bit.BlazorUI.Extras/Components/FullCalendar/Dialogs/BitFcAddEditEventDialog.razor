@@ -4,8 +4,10 @@
    and released over the overlay is not a request to throw away what was typed. *@
 <div class="bit-bfc-overlay" @onmousedown="() => _pressStartedOnOverlay = true" @onclick="OnOverlayClick">
     @* Escape dismisses the dialog, the way every modal is expected to behave; the handler sits on
-       the dialog because focus is trapped inside it while it is open. *@
+       the dialog because focus is trapped inside it while it is open. data-bit-esc claims that press (see
+       Utils.claimEscape), so a surface the calendar sits in (a BitModal, a BitPanel) does not close on it too. *@
     <div @ref="_dialogRef" class="bit-bfc-dialog @Parts.Classes?.Dialog" style="@Parts.Styles?.Dialog" role="dialog" aria-modal="true" aria-labelledby="@_dialogTitleId" tabindex="-1"
+         data-bit-esc="@_EscapeClaim"
          @onkeydown="OnDialogKeyDown" @onclick:stopPropagation="true"
          @onmousedown="() => _pressStartedOnOverlay = false" @onmousedown:stopPropagation="true">
         <div class="bit-bfc-dialog-header bit-bfc-dialog-header-row">

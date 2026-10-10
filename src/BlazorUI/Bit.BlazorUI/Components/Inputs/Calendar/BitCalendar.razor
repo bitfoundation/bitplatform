@@ -390,9 +390,13 @@
 
                                     @* The current month and year are reported whether or not they are painted:
                                        HighlightCurrentMonth decides how the grid looks, not what a screen reader
-                                       is able to find in it. *@
+                                       is able to find in it.
+                                       data-bit-esc claims the Escape that leaves a month picker laid over the day
+                                       grid (see Utils.claimEscape), so a dialog around the calendar stays open on that
+                                       press; a month picker beside the day grid leaves the key to the dialog. *@
                                     <button @onclick="() => SelectMonth(month)"
                                             @onkeydown="e => HandleMonthKeyDown(e, month)"
+                                            data-bit-esc="@MonthEscapeClaim"
                                             type="button"
                                             role="gridcell"
                                             title="@monthName"
@@ -492,8 +496,11 @@
                                     var year = _yearPickerStartYear + (rowIndex * 4) + cellIndex;
                                     var disabled = Disabled || IsYearOutOfMinAndMaxDate(year);
                                     var selected = year == _currentYear;
+                                    @* data-bit-esc claims the Escape that takes the year grid back to the month grid
+                                       (see Utils.claimEscape), so a dialog around the calendar stays open on that press. *@
                                     <button @onclick="() => SelectYear(year)"
                                             @onkeydown="e => HandleYearKeyDown(e, year)"
+                                            data-bit-esc="@YearEscapeClaim"
                                             type="button"
                                             role="gridcell"
                                             id="@GetYearButtonId(year)"
@@ -529,7 +536,11 @@
                 <div style="@Styles?.Divider" class="bit-cal-dvd @Classes?.Divider"></div>
             }
 
+            @* data-bit-esc claims the Escape that hides a time picker laid over the day grid (see
+               Utils.claimEscape), so a dialog around the calendar stays open on that press; a time picker beside
+               the day grid leaves the key to the dialog. *@
             <div @onkeydown="HandleTimePickerKeyDown"
+                 data-bit-esc="@TimePickerEscapeClaim"
                  style="@Styles?.TimePickerWrapper"
                  class="bit-cal-twp @Classes?.TimePickerWrapper">
                 <div style="@Styles?.TimePickerHeader" class="bit-cal-pkh bit-cal-tph @Classes?.TimePickerHeader">
@@ -709,6 +720,9 @@
         <div class="bit-cal-eov @Classes?.EventModalOverlay"
              style="@Styles?.EventModalOverlay"
              @onclick="CloseEventModal">
+            @* data-bit-esc claims the Escape that closes the dialog (see Utils.claimEscape), so a dialog of the
+               library around the calendar does not close on the same press as well. It is only rendered while the
+               dialog is open, and the dialog closes on every press it hears. *@
             <div id="@_eventDialogId"
                  role="dialog"
                  tabindex="-1"
@@ -717,6 +731,7 @@
                  class="bit-cal-emc @Classes?.EventModalContainer"
                  style="@Styles?.EventModalContainer"
                  @onkeydown="HandleEventDialogKeyDown"
+                 data-bit-esc="claim"
                  @onclick:stopPropagation="true">
                 <div class="bit-cal-emh @Classes?.EventModalHeader"
                      style="@Styles?.EventModalHeader">

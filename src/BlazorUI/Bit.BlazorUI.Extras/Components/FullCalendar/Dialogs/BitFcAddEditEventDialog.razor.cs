@@ -467,11 +467,19 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
 
     private void RemoveAttendee(BitFullCalendarAttendee attendee) => _attendees.Remove(attendee);
 
+    // Whether Escape closes the dialog, the one rule OnDialogKeyDown and _EscapeClaim both go by: a save in flight
+    // is left alone so the dialog can't be dismissed out from under the change it is committing.
+    private bool _ClosesOnEscape => _isSubmitting is false;
+
+    // The Escape that closes the dialog, claimed on the dialog (see Utils.claimEscape) so a surface the calendar sits
+    // in does not close on the same press - and only while it does close it, so a press during a save still reaches
+    // that surface.
+    private string? _EscapeClaim => _ClosesOnEscape ? "claim" : null;
+
     private async Task OnDialogKeyDown(KeyboardEventArgs e)
     {
-        // Escape is the standard way out of a modal. A save in flight is left alone so the dialog
-        // can't be dismissed out from under the change it is committing.
-        if (e.Key is "Escape" or "Esc" && _isSubmitting is false)
+        // Escape is the standard way out of a modal.
+        if (e.Key is "Escape" or "Esc" && _ClosesOnEscape)
             await OnClose.InvokeAsync();
     }
 

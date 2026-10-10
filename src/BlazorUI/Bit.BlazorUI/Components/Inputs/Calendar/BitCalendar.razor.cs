@@ -1622,17 +1622,39 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     // takes the focus back. A picker that sits beside the day grid is not covering anything and stays put.
     private void DismissMonthPickerOverlay()
     {
-        if (ShowMonthPickerAsOverlay is false && (ShowTimePicker && ShowTimePickerAsOverlay is false) is false) return;
+        if (MonthPickerIsOverlay is false) return;
 
         ToggleMonthPickerOverlay();
     }
 
+    // Whether the month picker takes the place of the day grid rather than sitting beside it - laid over it, or
+    // swapped in for it beside a time picker - the one rule DismissMonthPickerOverlay and MonthEscapeClaim both go by.
+    private bool MonthPickerIsOverlay => ShowMonthPickerAsOverlay || (ShowTimePicker && ShowTimePickerAsOverlay is false);
+
+    // When HandleMonthKeyDown acts on Escape, written onto the month cells for Utils.claimEscape: a month picker in
+    // place of the day grid is left with the key, so a dialog around the calendar stays open on that press, while
+    // one beside the day grid does nothing with it and leaves it to the dialog.
+    private string? MonthEscapeClaim => Disabled is false && MonthPickerIsOverlay ? "claim" : null;
+
+    // When HandleYearKeyDown acts on Escape, written onto the year cells for Utils.claimEscape: the year grid always
+    // goes back to the month grid, so the key is the calendar's for as long as it answers keys at all.
+    private string? YearEscapeClaim => Disabled is false ? "claim" : null;
+
+    // Whether a plain Escape in the time picker hides it, the one rule HandleTimePickerKeyDown and
+    // TimePickerEscapeClaim both go by: only a time picker laid over the day grid is left with the key.
+    private bool TimePickerHidesOnEscape => Disabled is false && ShowTimePickerAsOverlay;
+
+    // When HandleTimePickerKeyDown acts on Escape, written onto the time picker for Utils.claimEscape, so a dialog
+    // around the calendar stays open on the press that hides the overlay, and only on that press.
+    private string? TimePickerEscapeClaim => TimePickerHidesOnEscape ? "claim" : null;
+
     /// <inheritdoc cref="DismissMonthPickerOverlay"/>
     private void HandleTimePickerKeyDown(KeyboardEventArgs e)
     {
-        if (Disabled) return;
-        if (e.Key is not "Escape") return;
-        if (ShowTimePickerAsOverlay is false) return;
+        // Only the plain key, the one the time picker claims (TimePickerEscapeClaim): an Escape with a modifier is
+        // left to the surface around the calendar.
+        if (e.IsPlainEscape() is false) return;
+        if (TimePickerHidesOnEscape is false) return;
 
         ToggleTimePickerOverlay();
     }
@@ -2133,7 +2155,9 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     {
         if (Disabled) return;
 
-        if (e.Key is "Escape")
+        // Only the plain key, the one the month cells claim (MonthEscapeClaim): an Escape with a modifier is left to
+        // the surface around the calendar, and answers nothing below either.
+        if (e.IsPlainEscape())
         {
             DismissMonthPickerOverlay();
             return;
@@ -2212,8 +2236,9 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         if (Disabled) return;
 
         // Escape leaves the year grid the way it was reached: back to the months of the year it is showing,
-        // and from there - a second Escape - out of the overlay entirely.
-        if (e.Key is "Escape")
+        // and from there - a second Escape - out of the overlay entirely. Only the plain key, the one the year cells
+        // claim (YearEscapeClaim): an Escape with a modifier is left to the surface around the calendar.
+        if (e.IsPlainEscape())
         {
             ToggleBetweenMonthAndYearPicker();
             FocusMonthCell(GetFocusableMonth());
@@ -2524,9 +2549,10 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     // Escape closes the dialog, the way every dismissible surface in the library is left, and hands the
     // keyboard back to the day that opened it (SyncEventDialogFocus).
+    // Only the plain key, the one the dialog claims: an Escape with a modifier is left to the surface around it.
     private void HandleEventDialogKeyDown(KeyboardEventArgs e)
     {
-        if (e.Key is not "Escape") return;
+        if (e.IsPlainEscape() is false) return;
 
         CloseEventModal();
     }

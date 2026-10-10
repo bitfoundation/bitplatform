@@ -310,24 +310,18 @@
         private static _tooltipsByRoot = new Map<HTMLElement, DotNetObject>();
         private static _tooltipsController: AbortController | null = null;
 
-        // An element that answers Escape itself - a text entry clears or reverts on it, a combobox or anything
-        // expanded closes what it opened - so a tooltip around it lets the key through to that element.
-        private static readonly _escapeOwners =
-            'input:not([type="button"],[type="submit"],[type="reset"],[type="checkbox"],[type="radio"],[type="image"],[type="range"],[type="color"],[type="file"]),' +
-            'textarea,select,[contenteditable]:not([contenteditable="false"]),' +
-            '[role="combobox"],[role="searchbox"],[role="textbox"],[role="spinbutton"],[aria-expanded="true"]';
-
         // Lets Escape dismiss a shown tooltip (WCAG 1.4.13 "dismissible") from the two places it can come from:
         // the keyboard inside the tooltip - on its anchor - and anywhere on the page while the pointer rests on
         // the tooltip, since a tooltip shown on hover is shown while the focus is wherever the user left it.
         // Either way the key is the tooltip's alone: it is taken before Blazor's document-level delegation sees
         // it, so a dialog or a callout the tooltip sits in is not dismissed by the same press, and a second
-        // Escape reaches them as usual. The one exception is a key pressed on something inside the anchor that
-        // answers Escape itself (a text field, a search box, a dropdown): the tooltip is dismissed along with
-        // it, and the key goes on to the component it was pressed on. Whether a tooltip takes it is read off the
-        // DOM on the spot - shown (bit-ttp-vis) and dismissible (data-bit-ttp-esc) - because the answer cannot
-        // wait for a round trip. It also tells a tooltip a click opened about the press outside it that
-        // dismisses it.
+        // Escape reaches them as usual. The one exception is a key pressed on a component inside the anchor that
+        // acts on it itself: the tooltip is dismissed along with it, and the key goes on to that component. Which
+        // components act on it is never guessed from what the target looks like - the components say so, the
+        // way every surface hears it: a claim (data-bit-esc, see claimEscape), or a popup of theirs that is open
+        // and that the key closes (Callouts.componentContains). Whether a tooltip takes it is read off the DOM on
+        // the spot - shown (bit-ttp-vis) and dismissible (data-bit-ttp-esc) - because the answer cannot wait for
+        // a round trip. It also tells a tooltip a click opened about the press outside it that dismisses it.
         public static setupTooltip(rootId: string, tooltipId: string, attribute: string, dotnetObj: DotNetObject) {
             Utils.disposeTooltip(rootId);
 
@@ -338,14 +332,17 @@
 
             const controller = new AbortController();
 
-            // A component inside the anchor that answered the key natively itself (and said so) keeps it.
             root.addEventListener('keydown', e => {
-                if (e.key !== 'Escape' || e.defaultPrevented) return;
+                if (e.key !== 'Escape') return;
                 if (!root.querySelector(':scope > .bit-ttp-wrp.bit-ttp-vis[data-bit-ttp-esc]')) return;
 
-                const target = e.target as Element | null;
-                const owner = target?.closest(Utils._escapeOwners);
-                if (!owner || !root.contains(owner) || owner.closest('.bit-ttp-wrp')) {
+                if (e.defaultPrevented) {
+                    // A press a component inside the anchor claimed is that component's, and the tooltip goes with
+                    // it. One prevented by anything else - a listener of the consumer's own - is left alone.
+                    const claimer = Utils.escapeClaimer(e);
+                    if (!claimer || !root.contains(claimer)) return;
+                } else if (!Callouts.componentContains(e.target as Node | null, root)) {
+                    // Nothing inside the anchor acts on the key, so it is the tooltip's alone.
                     e.preventDefault();
                     e.stopImmediatePropagation();
                 }

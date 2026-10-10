@@ -274,6 +274,60 @@ public class BitEscapeClaimBrowserTests : PerformanceTestBase
         await Expect(tooltip).ToHaveCountAsync(0);
     }
 
+    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay")]
+    public async Task Tooltip_AroundAFieldThatClaimsTheKey_GoesAlongAndTheSurfaceClosesOnTheNextPress(string surface)
+    {
+        await OpenSurface(surface);
+
+        // Shown by the focus going into its anchor.
+        await FocusAndType("#w-ttf input", "abc");
+        await Expect(Page.Locator("#v-ttf")).ToHaveTextAsync("abc");
+        var tooltip = Page.Locator("#w-ttf .bit-ttp-wrp.bit-ttp-vis");
+        await Expect(tooltip).ToHaveCountAsync(1);
+
+        await PressEscapeAndExpectOpen();
+        await Expect(Page.Locator("#v-ttf")).ToHaveTextAsync("");
+        await Expect(tooltip).ToHaveCountAsync(0);
+
+        await PressEscapeAndExpectClosed();
+    }
+
+    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay")]
+    public async Task Tooltip_AroundAFieldThatLeavesTheKeyAlone_TakesItAndTheSurfaceClosesOnTheNextPress(string surface)
+    {
+        await OpenSurface(surface);
+
+        // A text field that does not act on Escape is no reason to let the key through: the tooltip is all it closes.
+        await Page.Locator("#w-tpf input").FocusAsync();
+        var tooltip = Page.Locator("#w-tpf .bit-ttp-wrp.bit-ttp-vis");
+        await Expect(tooltip).ToHaveCountAsync(1);
+
+        await PressEscapeAndExpectOpen();
+        await Expect(tooltip).ToHaveCountAsync(0);
+
+        await PressEscapeAndExpectClosed();
+    }
+
+    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay")]
+    public async Task Tooltip_AroundAnOpenPopup_GoesAlongAsThePopupClosesAndTheSurfaceStays(string surface)
+    {
+        await OpenSurface(surface);
+
+        // A picker that takes typed dates keeps the focus in its field while a press of the pointer opens its popup, so
+        // the key is pressed there, inside the tooltip's anchor. One that moves the focus into the popup is pressed
+        // outside the anchor, which the tooltip never hears.
+        await Page.Locator("#w-tdp .bit-dtp-inp").ClickAsync();
+        await Expect(Page.Locator("#w-tdp .bit-dtp-inp")).ToHaveAttributeAsync("aria-expanded", "true");
+        await Expect(Page.Locator("#w-tdp .bit-dtp-inp")).ToBeFocusedAsync();
+        await Settle();
+        var tooltip = Page.Locator("#w-tdp .bit-ttp-wrp.bit-ttp-vis");
+        await Expect(tooltip).ToHaveCountAsync(1);
+
+        await PressEscapeAndExpectOpen();
+        await Expect(Page.Locator("#w-tdp .bit-dtp-inp")).ToHaveAttributeAsync("aria-expanded", "false");
+        await Expect(tooltip).ToHaveCountAsync(0);
+    }
+
     private async Task OpenPage(string? surface = null)
     {
         await Page.GotoAsync($"{BaseUrl}/regression/escape-claim{(surface is null ? "" : $"?surface={surface}")}");

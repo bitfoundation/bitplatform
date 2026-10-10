@@ -89,12 +89,19 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
             await BitFcDialogInterop.SetupAsync(JS, _dialogRef);
     }
 
+    // Whether Escape closes the dialog, the one rule OnDialogKeyDown and _EscapeClaim both go by. While the edit
+    // overlay or the scope prompt is open it owns the key (and claims it on its own dialog), and a delete in flight
+    // is left alone so the dialog can't close mid-commit.
+    private bool _ClosesOnEscape => _showEdit is false && _pendingScopeAction is ScopeAction.None && _isDeleting is false;
+
+    // The Escape that closes the dialog, claimed on the dialog (see Utils.claimEscape) so a surface the calendar sits
+    // in does not close on the same press - and only while it does close it.
+    private string? _EscapeClaim => _ClosesOnEscape ? "claim" : null;
+
     private async Task OnDialogKeyDown(KeyboardEventArgs e)
     {
-        // Escape is the standard way out of a modal. While the edit overlay or the scope prompt is
-        // open it owns the key, and a delete in flight is left alone so the dialog can't close
-        // mid-commit.
-        if (e.Key is "Escape" or "Esc" && _showEdit is false && _pendingScopeAction is ScopeAction.None && _isDeleting is false)
+        // Escape is the standard way out of a modal.
+        if (e.Key is "Escape" or "Esc" && _ClosesOnEscape)
             await OnClose.InvokeAsync();
     }
 

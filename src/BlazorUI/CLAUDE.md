@@ -70,6 +70,26 @@ components' markup, defaults and accessibility behaviour as well.
 - **`Bit.BlazorUI.Extras` is the composition layer**: its components are built out of core ones (BitMessageBox
   renders a BitTextField), which is exactly what keeps the core ones from having to be.
 
+## One Escape does one thing
+
+A field inside a dialog clears on Escape, and the dialog waits for the next press. Whoever acts on the key
+claims it by preventing its default, and every surface that closes on Escape (BitDialog, BitModal, BitPanel,
+the callouts, BitTooltip, BitMessage - the listeners in `Scripts/Utils.ts`) leaves a claimed key alone.
+
+- **A component that acts on Escape in .NET says so in its markup.** A Blazor `@onkeydown:preventDefault`
+  holds for every key, and the handler runs too late for any listener to read its answer, so the component
+  renders `data-bit-esc="claim"` on the element its `@onkeydown` listens on (or `"text"`: it acts while the
+  input it is on holds text). `Utils.claimEscape` reads it on the window in the capture phase, ahead of every
+  surface, and prevents the default. The value comes from one `EscapeClaim` member computed from the very state
+  the handler decides on, so the key is claimed exactly when the press does something and left to the surface
+  around the component otherwise (an empty field, a one-way binding, a closed list, a modified Escape).
+  `BitEscapeClaimContractTests` pins the values and the surfaces; each component's tests pin its states.
+- **A popup opened through `Callouts` needs no claim.** The surfaces ask `Callouts.componentContains` whether
+  the key was pressed in a component whose popup is open, and leave it to that component.
+- **Nothing guesses from what the target looks like.** No selector of inputs, roles or `aria-expanded`
+  decides who owns the key; a component the claim and the open popup do not cover is fixed by claiming,
+  never by teaching a surface a new selector. A consumer's own control opts in the same way.
+
 ## Demo pages
 
 A component's demo page is

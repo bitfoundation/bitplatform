@@ -868,7 +868,9 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
         if (Disabled) return;
-        if (e.Key is not "Escape") return;
+        // Only the plain key, the one the root claims (_EscapeClaim): an Escape with a modifier is left to the
+        // surface the panel sits in, and neither empties the search nor closes the drawer.
+        if (e.IsPlainEscape() is false) return;
 
         // The first Escape empties an active search - which is what the search box does on its own when the
         // focus is in it, and what the key is expected to do from anywhere else in the panel - and only the
@@ -879,15 +881,23 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
             return;
         }
 
-        if (IsOpen is false) return;
-
-        // Only the drawer of a small screen is dismissed by the key: the column of a wide one is not a surface
-        // over the page, and closing it there would flip the open state - and report it - with nothing on
-        // screen to show for it.
-        if (_isDrawer is false) return;
+        if (_ClosesOnEscape is false) return;
 
         await ClosePanel();
     }
+
+    // Whether an Escape with no search to empty closes the panel, read by HandleOnKeyDown and _EscapeClaim alike.
+    // Only the open drawer of a small screen is dismissed by the key: the column of a wide one is not a surface
+    // over the page, and closing it there would flip the open state - and report it - with nothing on screen to
+    // show for it.
+    private bool _ClosesOnEscape => IsOpen && _isDrawer;
+
+    // When HandleOnKeyDown acts on Escape, written onto the root for Utils.claimEscape: read off the same state it
+    // decides on - an active search, which the press empties, or else the open drawer, which it closes - so a
+    // surface the panel sits in (a dialog, a BitPanel) closes on neither press. The root hears every key pressed
+    // inside the panel; a part of it that acts on the key itself (the search box, emptying its own text) claims
+    // it first. A column with no search to empty leaves the key alone.
+    private string? _EscapeClaim => Disabled is false && (_searchText.HasValue() || _ClosesOnEscape) ? "claim" : null;
 
     // The attributes of the root element: the ones the caller passed, plus the listeners of the panel itself.
     // Those are added to the splatted set rather than written out beside it in the markup, where an attribute

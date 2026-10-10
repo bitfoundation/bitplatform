@@ -1815,6 +1815,19 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual("false", component.Find(".bit-dtg-toolbar-end .bit-dtg-btn").GetAttribute("aria-expanded"));
     }
 
+    [TestMethod]
+    public void TheOpenColumnChooserClaimsEscape()
+    {
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.ShowToolbar, true);
+            parameters.Add(p => p.ShowColumnChooser, true);
+        });
+
+        component.Find(".bit-dtg-toolbar-end .bit-dtg-btn").Click();
+        Assert.AreEqual("claim", component.Find(".bit-dtg-column-chooser").GetAttribute("data-bit-esc"));
+    }
+
     // ------------------------------------------------------- Row appearance
 
     [TestMethod]
@@ -3519,6 +3532,71 @@ public class BitDataGridTests : BunitTestContext
         DataCell(component, 0, 1).KeyDown(new KeyboardEventArgs { Key = "Enter" });
         Assert.IsNotNull(component.Instance.EditingItem);
         Assert.AreEqual(1, component.FindAll(".bit-dtg-editor-error").Count);
+    }
+
+    [TestMethod]
+    public void CellModeClaimsEscapeOnlyWhileACellIsOpen()
+    {
+        var component = RenderCellEditGrid(CreateRows());
+
+        Assert.IsNull(DataCell(component, 0, 1).GetAttribute("data-bit-esc"),
+            "with nothing open the press cancels nothing, so it is left to a surface around the grid");
+
+        DataCell(component, 0, 1).KeyDown(new KeyboardEventArgs { Key = "Enter" });
+        Assert.AreEqual("claim", DataCell(component, 0, 1).GetAttribute("data-bit-esc"), "the open cell cancels its edit");
+
+        DataCell(component, 0, 1).KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.IsNull(component.Instance.EditingItem);
+        Assert.IsNull(DataCell(component, 0, 1).GetAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public void AModifiedEscapeCancelsNothingAndClosesNoChooser()
+    {
+        // Only the plain key is claimed, so only the plain key acts: one with a modifier is the surrounding surface's.
+        var component = RenderGrid(configure: parameters =>
+        {
+            parameters.Add(p => p.Editable, true);
+            parameters.Add(p => p.EditMode, BitDataGridEditMode.Cell);
+            parameters.Add(p => p.ShowToolbar, true);
+            parameters.Add(p => p.ShowColumnChooser, true);
+        });
+
+        DataCell(component, 0, 1).KeyDown(new KeyboardEventArgs { Key = "Enter" });
+        DataCell(component, 0, 1).KeyDown(new KeyboardEventArgs { Key = "Escape", ShiftKey = true });
+        Assert.IsNotNull(component.Instance.EditingItem, "the open cell stays open");
+        DataCell(component, 1, 0).KeyDown(new KeyboardEventArgs { Key = "Escape", CtrlKey = true });
+        Assert.IsNotNull(component.Instance.EditingItem, "nor does another cell cancel it");
+
+        component.Find(".bit-dtg-toolbar-end .bit-dtg-btn").Click();
+        component.Find(".bit-dtg-column-chooser").KeyDown(new KeyboardEventArgs { Key = "Escape", AltKey = true });
+        Assert.AreEqual(1, component.FindAll(".bit-dtg-column-chooser").Count, "the chooser stays open");
+    }
+
+    [TestMethod]
+    public void RowModeCellsClaimEscapeWhileTheRowIsEditedAndOnlyWhenTheyAreNavigable()
+    {
+        var navigable = RenderGrid(CreateRows(), parameters =>
+        {
+            parameters.Add(p => p.Editable, true);
+            parameters.Add(p => p.CellNavigation, true);
+        });
+
+        Assert.IsNull(DataCell(navigable, 0, 0).GetAttribute("data-bit-esc"));
+
+        navigable.FindAll(".bit-dtg-cell-command button")[0].Click(); // Edit
+        Assert.AreEqual("claim", DataCell(navigable, 0, 0).GetAttribute("data-bit-esc"), "a cell of the edited row cancels the edit");
+        Assert.AreEqual("claim", DataCell(navigable, 1, 0).GetAttribute("data-bit-esc"), "a cell of another row cancels it as well");
+
+        DataCell(navigable, 1, 0).KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.IsNull(navigable.Instance.EditingItem);
+        Assert.IsNull(DataCell(navigable, 1, 0).GetAttribute("data-bit-esc"));
+
+        // Without cell navigation the cells take no keys at all, so an open edit claims nothing through them.
+        var plain = RenderGrid(CreateRows(), parameters => parameters.Add(p => p.Editable, true));
+        plain.FindAll(".bit-dtg-cell-command button")[0].Click(); // Edit
+        Assert.IsNotNull(plain.Instance.EditingItem);
+        Assert.IsNull(DataCell(plain, 0, 0).GetAttribute("data-bit-esc"));
     }
 
     [TestMethod]

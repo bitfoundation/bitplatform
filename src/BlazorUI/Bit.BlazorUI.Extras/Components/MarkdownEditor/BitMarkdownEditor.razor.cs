@@ -734,6 +734,15 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
         }
     }
 
+    // Whether an Escape in the textarea or the preview pane does anything (see _OnEscape): the script hands every one
+    // of them to .NET without preventing its default, so the panes claim it in their markup instead (see
+    // Utils.claimEscape) - read off the same state _OnEscape decides on, so a dialog around the editor stays open on
+    // the press that closes the help or the find panel or leaves full-screen, and closes on any other. A full-screen
+    // bound one way cannot be left (AssignFullScreen refuses it), so it claims nothing.
+    private string? EscapeClaim => _showHelp || _showFind || (FullScreen && (FullScreenHasBeenSet is false || FullScreenChanged.HasDelegate))
+                                    ? "claim"
+                                    : null;
+
     /// <summary>
     /// Invoked from JavaScript for the shortcuts that drive the component's own chrome
     /// rather than the text: the find panel, the display mode and full-screen.
@@ -1381,7 +1390,9 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     {
         switch (e.Key)
         {
-            case "Escape":
+            // Only the plain key, the one the box claims (data-bit-esc): an Escape with a modifier is the surrounding
+            // surface's.
+            case "Escape" when e.IsPlainEscape():
                 _showFind = false;
                 await Focus();
                 break;
@@ -1400,7 +1411,9 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     {
         switch (e.Key)
         {
-            case "Escape":
+            // Only the plain key, the one the box claims (data-bit-esc): an Escape with a modifier is the surrounding
+            // surface's.
+            case "Escape" when e.IsPlainEscape():
                 _showFind = false;
                 await Focus();
                 break;

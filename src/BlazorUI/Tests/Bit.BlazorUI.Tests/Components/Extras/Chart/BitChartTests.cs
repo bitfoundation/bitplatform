@@ -501,6 +501,62 @@ public class BitChartTests : BunitTestContext
     }
 
     [TestMethod]
+    public void ThePlotShouldClaimEscapeOnlyWhileTheKeyboardPositionIsSet()
+    {
+        var component = RenderChart();
+
+        Assert.IsNull(component.Find("svg").GetAttribute("data-bit-esc"), "with nothing to let go of, the press is left to what the chart sits in");
+
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        Assert.AreEqual("claim", component.Find("svg").GetAttribute("data-bit-esc"));
+
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.IsNull(component.Find("svg").GetAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public void ThePlotShouldClaimEscapeWhileAPointerTooltipIsShown()
+    {
+        var component = RenderChart();
+
+        component.FindAll(".bit-cht-data > g")[0].MouseEnter();
+        Assert.AreEqual("claim", component.Find("svg").GetAttribute("data-bit-esc"));
+
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.AreEqual(0, component.FindAll(".bit-cht-tt").Count);
+        Assert.IsNull(component.Find("svg").GetAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public void AModifiedEscapeShouldLetGoOfNothing()
+    {
+        // Only the plain key is claimed, so only the plain key acts: one with a modifier is the surrounding surface's.
+        var component = RenderChart();
+        var svg = component.Find("svg");
+
+        svg.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        svg.KeyDown(new KeyboardEventArgs { Key = "Escape", ShiftKey = true });
+
+        Assert.AreEqual(1, component.FindAll(".bit-cht-focus-ring").Count);
+        StringAssert.Contains(component.Find("[role=status]").TextContent, "Jan");
+        Assert.AreEqual("claim", component.Find("svg").GetAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public void ADisabledPlotShouldNotClaimEscape()
+    {
+        var component = RenderComponent<BitChart>(p =>
+        {
+            p.Add(c => c.Data, TwoSeries());
+            p.Add(c => c.Disabled, true);
+        });
+
+        component.Find("svg").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        Assert.IsNull(component.Find("svg").GetAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
     public void EndKeyShouldJumpToTheLastElement()
     {
         var component = RenderChart();

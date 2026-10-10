@@ -39,6 +39,11 @@ public partial class BitFcEventListDialog : IAsyncDisposable
             await BitFcDialogInterop.SetupAsync(JS, _dialogRef);
     }
 
+    // The Escape that closes the dialog, claimed on the dialog (see Utils.claimEscape) so a surface the calendar sits
+    // in does not close on the same press - read off the same state OnDialogKeyDown decides on: while the details
+    // overlay is open it owns the key, and claims it on its own dialog.
+    private string? _EscapeClaim => _showDetails is false ? "claim" : null;
+
     private async Task OnDialogKeyDown(KeyboardEventArgs e)
     {
         // Escape is the standard way out of a modal. While the details overlay is open it owns the key.
