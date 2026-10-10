@@ -86,10 +86,11 @@ public class BitNavStylesheetTests
 
         // So does an explicit Color for the icon and the indicator, and an explicit Accent for the hover, the press
         // and the selection; an unset Accent is the PrimaryBackground one.
-        StringAssert.Contains(stylesheet, "color: var(--bit-nav-clr, var(--bit-Nav-icon-color, #{$clr-pri}));");
+        // (The states set the state variables the rules at rest read first, rather than painting the colors themselves.)
+        StringAssert.Contains(stylesheet, "color: var(--bit-nav-sfg, var(--bit-nav-clr, var(--bit-Nav-icon-color, #{$clr-pri})));");
         StringAssert.Contains(stylesheet, "border-color: var(--bit-nav-clr, var(--bit-Nav-indicator-color, #{$clr-pri}));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-nav-clr-hover, var(--bit-Nav-hover-background, #{$clr-bg-pri-hover}));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-nav-clr-active, var(--bit-Nav-selected-background, #{$clr-bg-pri-active}));");
+        StringAssert.Contains(stylesheet, "--bit-nav-sbg: var(--bit-nav-clr-hover, var(--bit-Nav-hover-background, #{$clr-bg-pri-hover}));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-nav-sbg, var(--bit-nav-clr-active, var(--bit-Nav-selected-background, #{$clr-bg-pri-active})));");
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Nav-[a-z-]+, var\(--bit-nav-"), "A public variable is read before the parameter it restyles the default of.");
     }
@@ -116,5 +117,5 @@ public class BitNavStylesheetTests
         Assert.IsTrue(rootAt < stylesheet.IndexOf("\n    .bit-nav-#{$role} {", StringComparison.Ordinal), "The color classes are declared ahead of the root that resets them.");
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Navs", "Nav", "BitNav.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Navs", "Nav", "BitNav.scss");
 }

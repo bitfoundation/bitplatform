@@ -68,8 +68,7 @@ public sealed class BitEscapeClaimContractTests
         DataRow("watchEscape"),
         DataRow("watchLayerEscape"),
         DataRow("setupEscape"),
-        DataRow("setupTooltip"),
-        DataRow("ensureTooltipListeners")
+        DataRow("setupTooltip")
     ]
     public void EverySurfaceShouldLeaveAClaimedEscapeAlone(string method)
     {
@@ -146,6 +145,48 @@ public sealed class BitEscapeClaimContractTests
         Assert.IsFalse(script.Contains("_escapeOwners"), "Utils.ts still keeps a selector of elements guessed to own Escape.");
     }
 
+    [TestMethod]
+    public void TheTooltipShouldTakeItsEscapeRightAfterTheClaim()
+    {
+        var general = SourceFiles.Read("Bit.BlazorUI", "Scripts", "general.ts");
+
+        // Listeners on one node run in the order they were added, so a listener a tooltip added as it registered would
+        // run behind whatever had registered before it - a hover-opened menu around it (Utils.setupEscape), an overlay
+        // (Utils.watchLayerEscape) - and those would act on the press the tooltip takes. Added as the page loads, on the
+        // window in the capture phase, the only listener of the library ahead of it is the claim, which it reads.
+        var keydowns = Regex.Matches(general, @"(window|document)\.addEventListener\('keydown'.*").Select(m => m.Value.Trim()).ToList();
+
+        Assert.HasCount(2, keydowns, "general.ts was expected to add the claim and the tooltips' Escape, in that order, and no other keydown listener.");
+        Assert.AreEqual("window.addEventListener('keydown', (e: KeyboardEvent) => BitBlazorUI.Utils.claimEscape(e), true);", keydowns[0]);
+        Assert.AreEqual("window.addEventListener('keydown', (e: KeyboardEvent) => BitBlazorUI.Utils.dismissTooltipsOnEscape(e), true);", keydowns[1]);
+
+        // No tooltip adds a page-level keydown listener of its own, whose place among the others would be left to chance.
+        var utils = SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts");
+        foreach (var method in new[] { "setupTooltip", "ensureTooltipListeners" })
+        {
+            var body = GetMethod(utils, method);
+            Assert.IsFalse(Regex.IsMatch(body, @"(window|document)\.addEventListener\('keydown'"), $"Utils.{method} adds a page-level keydown listener.");
+        }
+    }
+
+    [TestMethod]
+    public void TheTooltipShouldLeaveAnEscapeItDoesNotTakeToTheListenersAfterIt()
+    {
+        var body = GetMethod(SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts"), "dismissTooltipsOnEscape");
+
+        // A press a component claimed, or that a gesture in progress puts back (a swipe, whose own listener is added on
+        // the window after this one), is not the tooltip's.
+        StringAssert.Contains(body, "e.defaultPrevented");
+        StringAssert.Contains(body, "Utils._escapeGestures");
+        StringAssert.Contains(GetMethod(SourceFiles.Read("Bit.BlazorUI", "Components", "Utilities", "SwipeTrap", "BitSwipeTrap.ts"), "setup", "SwipeTrap"),
+                              "Utils.addEscapeGesture(");
+
+        // A press it does take goes no further than the window, where every other listener still hears it - as taken.
+        StringAssert.Contains(body, "e.preventDefault()");
+        StringAssert.Contains(body, "e.stopPropagation()");
+        Assert.IsFalse(body.Contains("stopImmediatePropagation"), "The tooltip's Escape keeps the press from the other listeners on the window as well.");
+    }
+
     // The strings an attribute value or a property can come out as: the whole of a plain literal, or each branch of a
     // conditional expression.
     private static string[] Branches(string expression)
@@ -158,11 +199,11 @@ public sealed class BitEscapeClaimContractTests
     }
 
     // From the method's signature to the next member declared at the same depth.
-    private static string GetMethod(string script, string name)
+    private static string GetMethod(string script, string name, string type = "Utils")
     {
         var match = Regex.Match(script, $@"\n        (public|private) static {name}\(.*?(?=\n        (public|private) )", RegexOptions.Singleline);
 
-        Assert.IsTrue(match.Success, $"Utils.{name} was not found in Utils.ts.");
+        Assert.IsTrue(match.Success, $"{type}.{name} was not found in the script.");
 
         return match.Value;
     }

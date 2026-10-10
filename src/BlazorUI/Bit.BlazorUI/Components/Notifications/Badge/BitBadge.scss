@@ -40,6 +40,17 @@
 // theme, so it never reads as an enabled one. A Dot badge ignores the height, padding and radius above and is
 // a circle of --bit-Badge-dot-size.
 
+$bdg-private-properties:
+    dot-size, dot-padding, dot-radius, dis-txt, dis-bg, dis-brd,
+    // The offsets, set on the style of the root that asks for them.
+    ofs-x, ofs-y,
+    // The values the Color, Size and Shape classes publish, which those classes - declared further down at
+    // the same weight - still win over on the root that carries them. Left unset, each sends the var() reading
+    // it on to the public variable and then to the default, which is what lets an explicit parameter outrank
+    // the variable while an unset one leaves the variable in charge.
+    clr, clr-txt, clr-dis, clr-dis-text, clr-hover, clr-active, clr-light, clr-light-hover, clr-fcs, height, padding,
+    fontsize, dotsize, radius;
+
 .bit-bdg {
     position: relative;
     display: inline-block;
@@ -47,33 +58,9 @@
     // The dot and the disabled state hand the badge values that win over the public variables (see .bit-bdg-ctn).
     // Custom properties inherit, which would pass a dot or a disabled state on to every badge in the child
     // content, so each root starts them out unset - which leaves every var() reading them to its fallback.
-    --bit-bdg-dot-size: initial;
-    --bit-bdg-dot-padding: initial;
-    --bit-bdg-dot-radius: initial;
-    --bit-bdg-dis-txt: initial;
-    --bit-bdg-dis-bg: initial;
-    --bit-bdg-dis-brd: initial;
-    // The offsets are set on the style of the root that asks for them, so the same goes for them.
-    --bit-bdg-ofs-x: initial;
-    --bit-bdg-ofs-y: initial;
-    // So do the values the Color, Size and Shape classes publish, which those classes - declared further down at
-    // the same weight - still win over on the root that carries them. Left unset, each sends the var() reading
-    // it on to the public variable and then to the default, which is what lets an explicit parameter outrank
-    // the variable while an unset one leaves the variable in charge.
-    --bit-bdg-clr: initial;
-    --bit-bdg-clr-txt: initial;
-    --bit-bdg-clr-dis: initial;
-    --bit-bdg-clr-dis-text: initial;
-    --bit-bdg-clr-hover: initial;
-    --bit-bdg-clr-active: initial;
-    --bit-bdg-clr-light: initial;
-    --bit-bdg-clr-light-hover: initial;
-    --bit-bdg-clr-fcs: initial;
-    --bit-bdg-height: initial;
-    --bit-bdg-padding: initial;
-    --bit-bdg-fontsize: initial;
-    --bit-bdg-dotsize: initial;
-    --bit-bdg-radius: initial;
+    @each $name in $bdg-private-properties {
+        --bit-bdg-#{$name}: initial;
+    }
 
     // A disabled badge is painted from the disabled colors alone, whatever the public colors say.
     &.bit-dis {
@@ -145,10 +132,13 @@
     font-size: var(--bit-bdg-fontsize, var(--bit-Badge-font-size, #{$tg-fs-sm}));
     border-radius: var(--bit-bdg-dot-radius, var(--bit-bdg-radius, var(--bit-Badge-radius, #{$shp-radius-full})));
     // The colors are resolved per variant on the root (see .bit-bdg-fil), where the Color and the public
-    // variables are ranked against each other.
+    // variables are ranked against each other. The hover and press of a clickable badge come between the
+    // disabled colors and those (see .bit-bdg-clk), and start out unset on every badge.
+    --bit-bdg-cnt-sbr: initial;
+    --bit-bdg-cnt-sbg: initial;
     color: var(--bit-bdg-dis-txt, var(--bit-bdg-cnt-clr-txt));
-    border-color: var(--bit-bdg-dis-brd, var(--bit-bdg-cnt-clr-brd));
-    background-color: var(--bit-bdg-dis-bg, var(--bit-bdg-cnt-clr-bg));
+    border-color: var(--bit-bdg-dis-brd, var(--bit-bdg-cnt-sbr, var(--bit-bdg-cnt-clr-brd)));
+    background-color: var(--bit-bdg-dis-bg, var(--bit-bdg-cnt-sbg, var(--bit-bdg-cnt-clr-bg)));
     translate: var(--bit-bdg-ofs-x, 0) var(--bit-bdg-ofs-y, 0);
 }
 
@@ -182,16 +172,19 @@
     appearance: none;
     pointer-events: auto;
 
+    // The states change the variables the badge is painted from rather than its colors, so the one rule that
+    // paints is the one at rest (.bit-bdg-ctn): a badge the app paints through Classes.Badge keeps that paint
+    // under the pointer and while it is pressed, instead of losing it to a state that outranks the app's class.
     @media (hover: hover) {
         &:hover {
-            border-color: var(--bit-bdg-cnt-clr-brd-hover);
-            background-color: var(--bit-bdg-cnt-clr-bg-hover);
+            --bit-bdg-cnt-sbr: var(--bit-bdg-cnt-clr-brd-hover);
+            --bit-bdg-cnt-sbg: var(--bit-bdg-cnt-clr-bg-hover);
         }
     }
 
     &:active {
-        border-color: var(--bit-bdg-cnt-clr-brd-active);
-        background-color: var(--bit-bdg-cnt-clr-bg-active);
+        --bit-bdg-cnt-sbr: var(--bit-bdg-cnt-clr-brd-active);
+        --bit-bdg-cnt-sbg: var(--bit-bdg-cnt-clr-bg-active);
     }
 
     &:focus-visible {

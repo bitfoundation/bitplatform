@@ -34,8 +34,9 @@ public class BitChoiceGroupStylesheetTests
         StringAssert.Contains(stylesheet, "var(--bit-chg-clr-dis-text, var(--bit-ChoiceGroup-disabled-text-color, #{$clr-pri-dis-text}))");
         StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-chg-clr-focus, var(--bit-ChoiceGroup-focus-color)))");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-chg-clr-bg, var(--bit-ChoiceGroup-item-background, #{$clr-bg-sec}));");
-        StringAssert.Contains(stylesheet, "border-color: var(--bit-chg-clr, var(--bit-ChoiceGroup-item-checked-border-color, var(--bit-ChoiceGroup-color, #{$clr-pri})));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-chg-card-tint, var(--bit-ChoiceGroup-item-checked-background, var(--bit-chg-card-bg-checked)));");
+        // The checked card at rest reads the variable its hover moves first, then the Color as everywhere else.
+        StringAssert.Contains(stylesheet, "border-color: var(--bit-chg-itl-brd, var(--bit-chg-clr, var(--bit-ChoiceGroup-item-checked-border-color, var(--bit-ChoiceGroup-color, #{$clr-pri}))));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-chg-itl-bg, var(--bit-chg-card-tint, var(--bit-ChoiceGroup-item-checked-background, var(--bit-chg-card-bg-checked))));");
 
         // A role class publishes the role's tokens alone, never a public variable ahead of them.
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-chg-err {"), "--bit-chg-clr: #{$clr-err};");
@@ -65,5 +66,5 @@ public class BitChoiceGroupStylesheetTests
         }
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Inputs", "ChoiceGroup", "BitChoiceGroup.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "ChoiceGroup", "BitChoiceGroup.scss");
 }

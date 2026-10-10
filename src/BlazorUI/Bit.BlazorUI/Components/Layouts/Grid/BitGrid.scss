@@ -112,6 +112,8 @@ $bit-grd-bands: ( 'xs': '(max-width: #{$mq-xs-max})',
     }
 }
 
+$grd-private-properties: mnw;
+
 /*
  * The grid is a wrapping flex line whose items are sized in the columns of the container. Everything an item
  * needs to size itself - the column count, the horizontal gap and the default span - is declared here as a
@@ -143,6 +145,11 @@ $bit-grd-bands: ( 'xs': '(max-width: #{$mq-xs-max})',
  * and why a single grid is changed through its parameter instead.
  */
 .bit-grd {
+    // What the component writes into an inline style starts out unset on every root, so an instance nested in
+    // another one never takes the outer one's value for its own; the inline declaration still wins on its element.
+    @each $name in $grd-private-properties {
+        --bit-grd-#{$name}: initial;
+    }
     --bit-grd-span: 1;
     /* Clamped the way the Columns parameter is, since every width is divided by the column count. */
     --bit-grd-cols: max(1, var(--bit-Grid-columns, 12));

@@ -28,7 +28,7 @@ public class BitShimmerStylesheetTests
     [TestMethod]
     public void BitShimmerShouldReadEveryPublicVariableWithoutDeclaringIt()
     {
-        var stylesheet = SourceFiles.Read("Bit.BlazorUI", "Components", "Progress", "Shimmer", "BitShimmer.scss");
+        var stylesheet = SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Progress", "Shimmer", "BitShimmer.scss");
 
         var read = Regex.Matches(stylesheet, @"var\((--bit-Shimmer-[a-z-]+)").Select(m => m.Groups[1].Value).Distinct().Order().ToArray();
 
@@ -54,7 +54,7 @@ public class BitShimmerStylesheetTests
     [TestMethod]
     public void BitShimmerShouldLetAParameterWinOverItsPublicVariable()
     {
-        var stylesheet = SourceFiles.Read("Bit.BlazorUI", "Components", "Progress", "Shimmer", "BitShimmer.scss");
+        var stylesheet = SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Progress", "Shimmer", "BitShimmer.scss");
 
         // The parameters publish the private properties inline, so they are read first and the variable only
         // restyles what the shimmer did not set.
@@ -76,7 +76,7 @@ public class BitShimmerStylesheetTests
     [TestMethod]
     public void BitShimmerShouldResetTheInheritedSizingOnEveryNestedShimmer()
     {
-        var stylesheet = SourceFiles.Read("Bit.BlazorUI", "Components", "Progress", "Shimmer", "BitShimmer.scss");
+        var stylesheet = SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Progress", "Shimmer", "BitShimmer.scss");
 
         var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-smr {");
 

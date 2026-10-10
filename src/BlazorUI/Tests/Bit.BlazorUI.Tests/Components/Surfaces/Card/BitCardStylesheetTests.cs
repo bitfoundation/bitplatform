@@ -59,7 +59,7 @@ public partial class BitCardStylesheetTests
         StringAssert.Contains(stylesheet, "color: var(--bit-crd-dis-txt, var(--bit-crd-fg, var(--bit-Card-color, ");
         // The surface and the shadow chains are the shared $crd-bg / $crd-shd the states read as well.
         StringAssert.Contains(stylesheet, "$crd-bg: var(--bit-crd-bg, var(--bit-Card-background, ");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-crd-dis-bg, #{$crd-bg});");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-crd-dis-bg, var(--bit-crd-sbg, #{$crd-bg}));");
         StringAssert.Contains(stylesheet, "border-color: var(--bit-crd-dis-brd, var(--bit-crd-brd-clr, var(--bit-Card-border-color, ");
         StringAssert.Contains(stylesheet, "border-radius: var(--bit-crd-radius, var(--bit-Card-radius, ");
         StringAssert.Contains(stylesheet, "$crd-shd: var(--bit-crd-shd, var(--bit-Card-shadow, ");
@@ -198,7 +198,7 @@ public partial class BitCardStylesheetTests
 
         // Only a control is shaded: a Hoverable card reacts to the pointer without being one, and only lifts.
         Assert.AreEqual(1, Regex.Matches(stylesheet, @"var\(--bit-Card-hover-background,").Count);
-        StringAssert.Contains(stylesheet, "    .bit-crd-int:hover {\n        background-color: $crd-bg-hover;");
+        StringAssert.Contains(stylesheet, "    .bit-crd-int:hover {\n        --bit-crd-sbg: #{$crd-bg-hover};");
     }
 
     [TestMethod]
@@ -210,8 +210,33 @@ public partial class BitCardStylesheetTests
         // surface cannot leave hover and press shading a different color from the card at rest.
         Assert.AreEqual(1, Regex.Matches(stylesheet, @"var\(--bit-crd-bg, ").Count, "The resting surface chain is written more than once.");
         Assert.AreEqual(1, Regex.Matches(stylesheet, @"var\(--bit-crd-shd, ").Count, "The resting shadow chain is written more than once.");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-crd-dis-bg, #{$crd-bg});");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-crd-dis-bg, var(--bit-crd-sbg, #{$crd-bg}));");
         StringAssert.Contains(stylesheet, "box-shadow: $crd-shd;");
+    }
+
+    [TestMethod]
+    public void BitCardShouldRegisterItsRootOnlyVariablesAsNonInheriting()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The shadow and the rule width are read by the root alone, so they are registered as properties that do not
+        // inherit, while still being reset on the root with the rest for a browser without @property.
+        StringAssert.Contains(stylesheet, "\n$crd-root-only-properties: shd, shd-hov, shd-act, brd-wid;\n");
+        StringAssert.Contains(stylesheet, """
+            @each $name in $crd-root-only-properties {
+                @property --bit-crd-#{$name} {
+                    syntax: "*";
+                    inherits: false;
+                }
+            }
+            """.Replace("\r\n", "\n"));
+
+        var privateList = SourceFiles.GetPrivatePropertyLists(stylesheet).Single(l => l.Name == "crd-private-properties");
+
+        foreach (var name in new[] { "shd", "shd-hov", "shd-act", "brd-wid" })
+        {
+            CollectionAssert.Contains(privateList.Names.ToArray(), name, $"{name} is registered but no longer reset on the root.");
+        }
     }
 
     [TestMethod]
@@ -221,7 +246,7 @@ public partial class BitCardStylesheetTests
 
         // A card that is a button is pressed through its root, in a rule that needs no :has, so a browser that cannot
         // read :has keeps the press of a root that is the control rather than dropping it with the rest of a list.
-        StringAssert.Contains(stylesheet, "\n.bit-crd-btn:active {\n    box-shadow: $crd-shd-active;\n    background-color: $crd-bg-active;\n}");
+        StringAssert.Contains(stylesheet, "\n.bit-crd-btn:active {\n    box-shadow: $crd-shd-active;\n    --bit-crd-sbg: #{$crd-bg-active};\n}");
 
         // A linked card is pressed through its anchor alone, since :active on the root would also be the press of a
         // control in its header or its footer.
@@ -303,7 +328,7 @@ public partial class BitCardStylesheetTests
         return SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Surfaces", "Card", "BitCard.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Surfaces", "Card", "BitCard.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-Card-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

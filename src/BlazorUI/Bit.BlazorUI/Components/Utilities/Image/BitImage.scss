@@ -197,12 +197,16 @@
         content: "";
         position: absolute;
         pointer-events: none;
-        background-color: transparent;
+        --bit-img-tnt-bg: initial;
+        background-color: var(--bit-img-tnt-bg, transparent);
         transition: background-color $mot-duration-short $mot-easing;
     }
 
+    // The states change the variable the tint is painted from rather than its background, so the one rule that
+    // paints it is the one at rest above: a tint the app paints itself keeps that paint under the pointer and
+    // while it is pressed, instead of losing it to a state that outranks the app's rule.
     &:has(> .bit-img-img:active, > .bit-img-pic > .bit-img-img:active)::after {
-        background-color: var(--bit-Image-active-overlay, color-mix(in srgb, currentcolor 10%, transparent));
+        --bit-img-tnt-bg: var(--bit-Image-active-overlay, color-mix(in srgb, currentcolor 10%, transparent));
     }
 }
 
@@ -210,7 +214,7 @@
 // tint behind on whatever was tapped last.
 @media (hover: hover) {
     .bit-img-clk:has(> .bit-img-img:hover, > .bit-img-pic > .bit-img-img:hover):not(:has(> .bit-img-img:active, > .bit-img-pic > .bit-img-img:active))::after {
-        background-color: var(--bit-Image-hover-overlay, color-mix(in srgb, currentcolor 5%, transparent));
+        --bit-img-tnt-bg: var(--bit-Image-hover-overlay, color-mix(in srgb, currentcolor 5%, transparent));
     }
 }
 

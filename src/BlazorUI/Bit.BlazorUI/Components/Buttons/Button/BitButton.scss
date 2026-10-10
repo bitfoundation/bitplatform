@@ -48,6 +48,14 @@
 // back to, the min-width), so the variables keep the last word there - as they do over the default a component of
 // the library gives the buttons it renders (see .bit-btn-dft-*), which is read after them.
 
+$btn-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis, clr-dis-text, dft-clr, dft-clr-txt,
+                         dft-clr-hover, dft-clr-active, dft-clr-focus, dft-clr-dis, dft-clr-dis-text, lbl-fontsize,
+                         prt-fontsize, sct-fontsize, icn-size, spn-size, min-height, icn-margintop, gap, pad-ntx,
+                         padding, radius,
+                         // The colors the hover and press states move (see the variants below), unset at rest so a
+                         // button nested in another one never inherits the outer one's state.
+                         sfg, sbg, sbr;
+
 .bit-btn {
     cursor: pointer;
     text-align: start;
@@ -64,31 +72,9 @@
     // further down at the same weight - still win on the root that carries them. Left unset, each sends the var()
     // reading it on to the public variable and then to the default, which is what lets an explicit parameter
     // outrank the variable while an unset one leaves the variable in charge.
-    --bit-btn-clr: initial;
-    --bit-btn-clr-txt: initial;
-    --bit-btn-clr-hover: initial;
-    --bit-btn-clr-active: initial;
-    --bit-btn-clr-focus: initial;
-    --bit-btn-clr-dis: initial;
-    --bit-btn-clr-dis-text: initial;
-    --bit-btn-dft-clr: initial;
-    --bit-btn-dft-clr-txt: initial;
-    --bit-btn-dft-clr-hover: initial;
-    --bit-btn-dft-clr-active: initial;
-    --bit-btn-dft-clr-focus: initial;
-    --bit-btn-dft-clr-dis: initial;
-    --bit-btn-dft-clr-dis-text: initial;
-    --bit-btn-lbl-fontsize: initial;
-    --bit-btn-prt-fontsize: initial;
-    --bit-btn-sct-fontsize: initial;
-    --bit-btn-icn-size: initial;
-    --bit-btn-spn-size: initial;
-    --bit-btn-min-height: initial;
-    --bit-btn-icn-margintop: initial;
-    --bit-btn-gap: initial;
-    --bit-btn-pad-ntx: initial;
-    --bit-btn-padding: initial;
-    --bit-btn-radius: initial;
+    @each $name in $btn-private-properties {
+        --bit-btn-#{$name}: initial;
+    }
     // Casing and tracking default to the global control tokens but are reachable per component, because dropping
     // the uppercasing of the buttons alone - without touching the tags, the pivots and everything else that reads
     // $tg-ctrl-text-transform - is the first thing asked of a button inherited from another design system.
@@ -100,7 +86,7 @@
     // Every value an explicit Size, Color or Rounded publishes is read first, then the public variable, then the
     // medium primary button with the button corner that an unset one stands for.
     gap: var(--bit-btn-gap, var(--bit-Button-gap, #{spacing(1)}));
-    color: var(--bit-btn-clr-txt, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})));
+    color: var(--bit-btn-sfg, var(--bit-btn-clr-txt, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text}))));
     font-weight: var(--bit-Button-font-weight, #{$tg-font-weight});
     padding: var(--bit-btn-padding, var(--bit-Button-padding, #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-md}));
     min-width: var(--bit-Button-min-width, #{$siz-ctrl-min-width});
@@ -333,24 +319,28 @@
 // Each color the Color role paints is read from the role first - published only by an explicit Color (see .bit-btn)
 // - then from the public variables, then from the primary role an unset Color stands for; a color the role leaves
 // alone (the transparent background of Outline and Text, the transparent border of Text) is the variables' alone.
+//
+// The states change the variables the button is painted from (--bit-btn-sfg / -sbg / -sbr, reset on .bit-btn) rather
+// than its colors, so the rules at rest are the only ones that paint: a button the app paints through Class keeps
+// that paint under the pointer and while pressed, instead of losing it to a state that outranks the app's class.
 .bit-btn-fil {
-    background-color: var(--bit-btn-clr, var(--bit-Button-background, var(--bit-btn-dft-clr, #{$clr-pri})));
-    border-color: var(--bit-btn-clr, var(--bit-Button-border-color, var(--bit-Button-background, var(--bit-btn-dft-clr, #{$clr-pri}))));
+    background-color: var(--bit-btn-sbg, var(--bit-btn-clr, var(--bit-Button-background, var(--bit-btn-dft-clr, #{$clr-pri}))));
+    border-color: var(--bit-btn-sbr, var(--bit-btn-clr, var(--bit-Button-border-color, var(--bit-Button-background, var(--bit-btn-dft-clr, #{$clr-pri})))));
 
     @media (hover: hover) {
         &:not(.bit-dis, .bit-btn-lnc):hover {
             // Filled buttons keep their foreground through hover and press, so these resolve to the rest color
             // until an author sets the state variable - the point is that the variable reaches this variant too.
-            color: var(--bit-btn-clr-txt, var(--bit-Button-hover-color, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text}))));
-            background-color: var(--bit-btn-clr-hover, var(--bit-Button-hover-background, var(--bit-btn-dft-clr-hover, #{$clr-pri-hover})));
-            border-color: var(--bit-btn-clr-hover, var(--bit-Button-hover-border-color, var(--bit-Button-hover-background, var(--bit-btn-dft-clr-hover, #{$clr-pri-hover}))));
+            --bit-btn-sfg: var(--bit-btn-clr-txt, var(--bit-Button-hover-color, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text}))));
+            --bit-btn-sbg: var(--bit-btn-clr-hover, var(--bit-Button-hover-background, var(--bit-btn-dft-clr-hover, #{$clr-pri-hover})));
+            --bit-btn-sbr: var(--bit-btn-clr-hover, var(--bit-Button-hover-border-color, var(--bit-Button-hover-background, var(--bit-btn-dft-clr-hover, #{$clr-pri-hover}))));
         }
     }
 
     &:not(.bit-dis, .bit-btn-lnc):active {
-        color: var(--bit-btn-clr-txt, var(--bit-Button-active-color, var(--bit-Button-hover-color, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})))));
-        background-color: var(--bit-btn-clr-active, var(--bit-Button-active-background, var(--bit-btn-dft-clr-active, #{$clr-pri-active})));
-        border-color: var(--bit-btn-clr-active, var(--bit-Button-active-border-color, var(--bit-Button-active-background, var(--bit-btn-dft-clr-active, #{$clr-pri-active}))));
+        --bit-btn-sfg: var(--bit-btn-clr-txt, var(--bit-Button-active-color, var(--bit-Button-hover-color, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})))));
+        --bit-btn-sbg: var(--bit-btn-clr-active, var(--bit-Button-active-background, var(--bit-btn-dft-clr-active, #{$clr-pri-active})));
+        --bit-btn-sbr: var(--bit-btn-clr-active, var(--bit-Button-active-border-color, var(--bit-Button-active-background, var(--bit-btn-dft-clr-active, #{$clr-pri-active}))));
     }
 
     &.bit-dis {
@@ -361,22 +351,22 @@
 }
 
 .bit-btn-otl {
-    color: var(--bit-btn-clr, var(--bit-Button-color, var(--bit-btn-dft-clr, #{$clr-pri})));
-    background-color: var(--bit-Button-background, transparent);
-    border-color: var(--bit-btn-clr, var(--bit-Button-border-color, var(--bit-btn-dft-clr, #{$clr-pri})));
+    color: var(--bit-btn-sfg, var(--bit-btn-clr, var(--bit-Button-color, var(--bit-btn-dft-clr, #{$clr-pri}))));
+    background-color: var(--bit-btn-sbg, var(--bit-Button-background, transparent));
+    border-color: var(--bit-btn-sbr, var(--bit-btn-clr, var(--bit-Button-border-color, var(--bit-btn-dft-clr, #{$clr-pri}))));
 
     @media (hover: hover) {
         &:not(.bit-dis, .bit-btn-lnc):hover {
-            color: var(--bit-btn-clr-txt, var(--bit-Button-hover-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})));
-            background-color: var(--bit-btn-clr-hover, var(--bit-Button-hover-background, var(--bit-btn-dft-clr-hover, #{$clr-pri-hover})));
-            border-color: var(--bit-btn-clr, var(--bit-Button-hover-border-color, var(--bit-Button-border-color, var(--bit-btn-dft-clr, #{$clr-pri}))));
+            --bit-btn-sfg: var(--bit-btn-clr-txt, var(--bit-Button-hover-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})));
+            --bit-btn-sbg: var(--bit-btn-clr-hover, var(--bit-Button-hover-background, var(--bit-btn-dft-clr-hover, #{$clr-pri-hover})));
+            --bit-btn-sbr: var(--bit-btn-clr, var(--bit-Button-hover-border-color, var(--bit-Button-border-color, var(--bit-btn-dft-clr, #{$clr-pri}))));
         }
     }
 
     &:not(.bit-dis, .bit-btn-lnc):active {
-        color: var(--bit-btn-clr-txt, var(--bit-Button-active-color, var(--bit-Button-hover-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text}))));
-        background-color: var(--bit-btn-clr-active, var(--bit-Button-active-background, var(--bit-btn-dft-clr-active, #{$clr-pri-active})));
-        border-color: var(--bit-btn-clr, var(--bit-Button-active-border-color, var(--bit-Button-border-color, var(--bit-btn-dft-clr, #{$clr-pri}))));
+        --bit-btn-sfg: var(--bit-btn-clr-txt, var(--bit-Button-active-color, var(--bit-Button-hover-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text}))));
+        --bit-btn-sbg: var(--bit-btn-clr-active, var(--bit-Button-active-background, var(--bit-btn-dft-clr-active, #{$clr-pri-active})));
+        --bit-btn-sbr: var(--bit-btn-clr, var(--bit-Button-active-border-color, var(--bit-Button-border-color, var(--bit-btn-dft-clr, #{$clr-pri}))));
     }
 
     &.bit-dis {
@@ -387,22 +377,22 @@
 }
 
 .bit-btn-txt {
-    color: var(--bit-btn-clr, var(--bit-Button-color, var(--bit-btn-dft-clr, #{$clr-pri})));
-    background-color: var(--bit-Button-background, transparent);
-    border-color: var(--bit-Button-border-color, transparent);
+    color: var(--bit-btn-sfg, var(--bit-btn-clr, var(--bit-Button-color, var(--bit-btn-dft-clr, #{$clr-pri}))));
+    background-color: var(--bit-btn-sbg, var(--bit-Button-background, transparent));
+    border-color: var(--bit-btn-sbr, var(--bit-Button-border-color, transparent));
 
     @media (hover: hover) {
         &:not(.bit-dis, .bit-btn-lnc):hover {
-            color: var(--bit-btn-clr-txt, var(--bit-Button-hover-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})));
-            background-color: var(--bit-btn-clr-hover, var(--bit-Button-hover-background, var(--bit-btn-dft-clr-hover, #{$clr-pri-hover})));
-            border-color: var(--bit-Button-hover-border-color, var(--bit-Button-border-color, transparent));
+            --bit-btn-sfg: var(--bit-btn-clr-txt, var(--bit-Button-hover-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})));
+            --bit-btn-sbg: var(--bit-btn-clr-hover, var(--bit-Button-hover-background, var(--bit-btn-dft-clr-hover, #{$clr-pri-hover})));
+            --bit-btn-sbr: var(--bit-Button-hover-border-color, var(--bit-Button-border-color, transparent));
         }
     }
 
     &:not(.bit-dis, .bit-btn-lnc):active {
-        color: var(--bit-btn-clr-txt, var(--bit-Button-active-color, var(--bit-Button-hover-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text}))));
-        background-color: var(--bit-btn-clr-active, var(--bit-Button-active-background, var(--bit-btn-dft-clr-active, #{$clr-pri-active})));
-        border-color: var(--bit-Button-active-border-color, var(--bit-Button-border-color, transparent));
+        --bit-btn-sfg: var(--bit-btn-clr-txt, var(--bit-Button-active-color, var(--bit-Button-hover-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text}))));
+        --bit-btn-sbg: var(--bit-btn-clr-active, var(--bit-Button-active-background, var(--bit-btn-dft-clr-active, #{$clr-pri-active})));
+        --bit-btn-sbr: var(--bit-Button-active-border-color, var(--bit-Button-border-color, transparent));
     }
 
     &.bit-dis {
@@ -604,16 +594,16 @@
 // on-color from the start and never shifts. An explicit Color's on-color is read before the public foreground, as
 // everywhere else on the button.
 .bit-btn.bit-btn-fxc:not(.bit-dis) {
-    color: var(--bit-btn-clr-txt, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})));
+    color: var(--bit-btn-sfg, var(--bit-btn-clr-txt, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text}))));
 
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-btn-clr-txt, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})));
+            --bit-btn-sfg: var(--bit-btn-clr-txt, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})));
         }
     }
 
     &:active {
-        color: var(--bit-btn-clr-txt, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})));
+        --bit-btn-sfg: var(--bit-btn-clr-txt, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})));
     }
 }
 

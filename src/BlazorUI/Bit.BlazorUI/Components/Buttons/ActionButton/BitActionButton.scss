@@ -26,6 +26,12 @@
 // is why Color and Size publish nothing while they are left unset: a class that always carried the default would be
 // indistinguishable from one that was asked for.
 
+$acb-private-properties: clr-ico, clr-hover, clr-active, clr-focus, clr-dis-text, pad-y, min-height, fontsize,
+                         ico-size, padding,
+                         // The colors the hover and press states below move, unset at rest so an action button nested
+                         // in another one never inherits the outer one's state.
+                         sfg, sbg;
+
 .bit-acb {
     border: none;
     cursor: pointer;
@@ -44,17 +50,10 @@
     // weight - still win on the root that carries them. Left unset, each sends the var() reading it on to the public
     // variable and then to the default, which is what lets an explicit parameter outrank the variable while an unset
     // one leaves the variable in charge.
-    --bit-acb-clr-ico: initial;
-    --bit-acb-clr-hover: initial;
-    --bit-acb-clr-active: initial;
-    --bit-acb-clr-focus: initial;
-    --bit-acb-clr-dis-text: initial;
-    --bit-acb-pad-y: initial;
-    --bit-acb-min-height: initial;
-    --bit-acb-fontsize: initial;
-    --bit-acb-ico-size: initial;
-    --bit-acb-padding: initial;
-    color: var(--bit-ActionButton-color, #{$clr-fg-pri});
+    @each $name in $acb-private-properties {
+        --bit-acb-#{$name}: initial;
+    }
+    color: var(--bit-acb-sfg, var(--bit-ActionButton-color, #{$clr-fg-pri}));
     // Every value an explicit Size or Color publishes is read first, then the public variable, then the medium
     // primary action button an unset one stands for.
     padding: var(--bit-acb-padding, var(--bit-ActionButton-padding, #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-sm}));
@@ -66,23 +65,26 @@
     min-height: var(--bit-acb-min-height, var(--bit-ActionButton-min-height, #{$siz-ctrl-md}));
     font-size: var(--bit-acb-fontsize, var(--bit-ActionButton-font-size, #{$tg-fs-sm}));
     border-radius: var(--bit-ActionButton-radius, #{$shp-radius-button});
-    background-color: var(--bit-ActionButton-background, transparent);
+    background-color: var(--bit-acb-sbg, var(--bit-ActionButton-background, transparent));
     // The one color the icon and the spinner read; every state below retargets it along with the text color.
     --bit-acb-ico: var(--bit-acb-clr-ico, var(--bit-ActionButton-icon-color, #{$clr-pri}));
     transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
+    // The states change the variables the button is painted from rather than its colors, so the rule at rest is the
+    // only one that paints: an action button the app paints through Class keeps that paint under the pointer and
+    // while pressed, instead of losing it to a state that outranks the app's class.
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-acb-clr-hover, var(--bit-ActionButton-hover-color, #{$clr-pri-hover}));
+            --bit-acb-sfg: var(--bit-acb-clr-hover, var(--bit-ActionButton-hover-color, #{$clr-pri-hover}));
             --bit-acb-ico: var(--bit-acb-clr-hover, var(--bit-ActionButton-hover-color, #{$clr-pri-hover}));
-            background-color: var(--bit-ActionButton-hover-background, var(--bit-ActionButton-background, transparent));
+            --bit-acb-sbg: var(--bit-ActionButton-hover-background, var(--bit-ActionButton-background, transparent));
         }
     }
 
     &:active {
-        color: var(--bit-acb-clr-active, var(--bit-ActionButton-active-color, #{$clr-pri-active}));
+        --bit-acb-sfg: var(--bit-acb-clr-active, var(--bit-ActionButton-active-color, #{$clr-pri-active}));
         --bit-acb-ico: var(--bit-acb-clr-active, var(--bit-ActionButton-active-color, #{$clr-pri-active}));
-        background-color: var(--bit-ActionButton-active-background, var(--bit-ActionButton-hover-background, var(--bit-ActionButton-background, transparent)));
+        --bit-acb-sbg: var(--bit-ActionButton-active-background, var(--bit-ActionButton-hover-background, var(--bit-ActionButton-background, transparent)));
     }
 
     &:focus-visible {

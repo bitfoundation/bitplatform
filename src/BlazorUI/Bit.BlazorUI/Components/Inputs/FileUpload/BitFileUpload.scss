@@ -104,29 +104,19 @@
 // always carried the default would be indistinguishable from one that was asked for. The disabled state and
 // a rejected drag are read before all of them, as before.
 
+$upl-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-tint-8, clr-tint-10, lbl-height,
+                         lbl-fontsize, lbl-padding, bab-height, bab-padding, itm-fontsize, fs-fontsize, prv-size,
+                         btn-size, ico-fontsize;
+
 .bit-upl {
     // A file upload can sit in a template of another one, which must not inherit the outer one's Color or
     // Size: each root starts the values those classes publish out unset, and the classes - declared further
     // down at the same weight - still win on the root that carries them. Left unset, each sends the var()
     // reading it on to the public variable and then to the default, which is what lets an explicit parameter
     // outrank the variable while an unset one leaves the variable in charge.
-    --bit-upl-clr: initial;
-    --bit-upl-clr-txt: initial;
-    --bit-upl-clr-hover: initial;
-    --bit-upl-clr-active: initial;
-    --bit-upl-clr-focus: initial;
-    --bit-upl-clr-tint-8: initial;
-    --bit-upl-clr-tint-10: initial;
-    --bit-upl-lbl-height: initial;
-    --bit-upl-lbl-fontsize: initial;
-    --bit-upl-lbl-padding: initial;
-    --bit-upl-bab-height: initial;
-    --bit-upl-bab-padding: initial;
-    --bit-upl-itm-fontsize: initial;
-    --bit-upl-fs-fontsize: initial;
-    --bit-upl-prv-size: initial;
-    --bit-upl-btn-size: initial;
-    --bit-upl-ico-fontsize: initial;
+    @each $name in $upl-private-properties {
+        --bit-upl-#{$name}: initial;
+    }
     display: flex;
     flex-flow: column nowrap;
     font-family: $tg-font-family;
@@ -158,6 +148,13 @@
 //everything the three variants share; the colors themselves live in the variant blocks right below,
 //which is also why the border is declared without its color here.
 .bit-upl-lbl {
+    // The hover and press states below change these rather than the colors, so the rules at rest are the only
+    // ones painting the button: a button the app paints through Classes keeps that paint under the pointer and
+    // while pressed, instead of losing it to a state that outranks the app's class. Reset here so a file upload
+    // nested in another one's template never inherits the outer button's state.
+    --bit-upl-lbl-sfg: initial;
+    --bit-upl-lbl-sbr: initial;
+    --bit-upl-lbl-sbg: initial;
     outline: 0;
     display: flex;
     cursor: pointer;
@@ -208,21 +205,21 @@
 //public variables, then from the primary role an unset Color stands for; the same holds in every block below.
 .bit-upl-fil {
     .bit-upl-lbl {
-        color: var(--bit-upl-clr-txt, var(--bit-FileUpload-label-color, #{$clr-pri-text}));
-        border-color: var(--bit-upl-clr, var(--bit-FileUpload-label-border-color, var(--bit-FileUpload-label-background, #{$clr-pri})));
-        background-color: var(--bit-upl-clr, var(--bit-FileUpload-label-background, #{$clr-pri}));
+        color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr-txt, var(--bit-FileUpload-label-color, #{$clr-pri-text})));
+        border-color: var(--bit-upl-lbl-sbr, var(--bit-upl-clr, var(--bit-FileUpload-label-border-color, var(--bit-FileUpload-label-background, #{$clr-pri}))));
+        background-color: var(--bit-upl-lbl-sbg, var(--bit-upl-clr, var(--bit-FileUpload-label-background, #{$clr-pri})));
 
         @media (hover: hover) {
             &:hover {
-                color: var(--bit-upl-clr-txt, var(--bit-FileUpload-label-hover-color, var(--bit-FileUpload-label-color, #{$clr-pri-text})));
-                border-color: var(--bit-upl-clr-hover, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover}));
-                background-color: var(--bit-upl-clr-hover, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover}));
+                --bit-upl-lbl-sfg: var(--bit-upl-clr-txt, var(--bit-FileUpload-label-hover-color, var(--bit-FileUpload-label-color, #{$clr-pri-text})));
+                --bit-upl-lbl-sbr: var(--bit-upl-clr-hover, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover}));
+                --bit-upl-lbl-sbg: var(--bit-upl-clr-hover, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover}));
             }
         }
 
         &:active {
-            border-color: var(--bit-upl-clr-active, var(--bit-FileUpload-label-active-background, #{$clr-pri-active}));
-            background-color: var(--bit-upl-clr-active, var(--bit-FileUpload-label-active-background, #{$clr-pri-active}));
+            --bit-upl-lbl-sbr: var(--bit-upl-clr-active, var(--bit-FileUpload-label-active-background, #{$clr-pri-active}));
+            --bit-upl-lbl-sbg: var(--bit-upl-clr-active, var(--bit-FileUpload-label-active-background, #{$clr-pri-active}));
         }
     }
 
@@ -237,20 +234,20 @@
 //stays the public background's alone.
 .bit-upl-otl {
     .bit-upl-lbl {
-        color: var(--bit-upl-clr, var(--bit-FileUpload-label-color, #{$clr-pri}));
-        border-color: var(--bit-upl-clr, var(--bit-FileUpload-label-border-color, #{$clr-pri}));
-        background-color: var(--bit-FileUpload-label-background, transparent);
+        color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr, var(--bit-FileUpload-label-color, #{$clr-pri})));
+        border-color: var(--bit-upl-lbl-sbr, var(--bit-upl-clr, var(--bit-FileUpload-label-border-color, #{$clr-pri})));
+        background-color: var(--bit-upl-lbl-sbg, var(--bit-FileUpload-label-background, transparent));
 
         @media (hover: hover) {
             &:hover {
-                color: var(--bit-upl-clr-txt, var(--bit-FileUpload-label-hover-color, #{$clr-pri-text}));
-                background-color: var(--bit-upl-clr-hover, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover}));
+                --bit-upl-lbl-sfg: var(--bit-upl-clr-txt, var(--bit-FileUpload-label-hover-color, #{$clr-pri-text}));
+                --bit-upl-lbl-sbg: var(--bit-upl-clr-hover, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover}));
             }
         }
 
         &:active {
-            color: var(--bit-upl-clr-txt, var(--bit-FileUpload-label-hover-color, #{$clr-pri-text}));
-            background-color: var(--bit-upl-clr-active, var(--bit-FileUpload-label-active-background, #{$clr-pri-active}));
+            --bit-upl-lbl-sfg: var(--bit-upl-clr-txt, var(--bit-FileUpload-label-hover-color, #{$clr-pri-text}));
+            --bit-upl-lbl-sbg: var(--bit-upl-clr-active, var(--bit-FileUpload-label-active-background, #{$clr-pri-active}));
         }
     }
 
@@ -264,20 +261,20 @@
 //are the variant's rather than the role's, so they stay the public variables' alone.
 .bit-upl-txt {
     .bit-upl-lbl {
-        color: var(--bit-upl-clr, var(--bit-FileUpload-label-color, #{$clr-pri}));
-        border-color: var(--bit-FileUpload-label-border-color, transparent);
-        background-color: var(--bit-FileUpload-label-background, transparent);
+        color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr, var(--bit-FileUpload-label-color, #{$clr-pri})));
+        border-color: var(--bit-upl-lbl-sbr, var(--bit-FileUpload-label-border-color, transparent));
+        background-color: var(--bit-upl-lbl-sbg, var(--bit-FileUpload-label-background, transparent));
 
         @media (hover: hover) {
             &:hover {
-                color: var(--bit-upl-clr-txt, var(--bit-FileUpload-label-hover-color, #{$clr-pri-text}));
-                background-color: var(--bit-upl-clr-hover, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover}));
+                --bit-upl-lbl-sfg: var(--bit-upl-clr-txt, var(--bit-FileUpload-label-hover-color, #{$clr-pri-text}));
+                --bit-upl-lbl-sbg: var(--bit-upl-clr-hover, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover}));
             }
         }
 
         &:active {
-            color: var(--bit-upl-clr-txt, var(--bit-FileUpload-label-hover-color, #{$clr-pri-text}));
-            background-color: var(--bit-upl-clr-active, var(--bit-FileUpload-label-active-background, #{$clr-pri-active}));
+            --bit-upl-lbl-sfg: var(--bit-upl-clr-txt, var(--bit-FileUpload-label-hover-color, #{$clr-pri-text}));
+            --bit-upl-lbl-sbg: var(--bit-upl-clr-active, var(--bit-FileUpload-label-active-background, #{$clr-pri-active}));
         }
     }
 
@@ -326,22 +323,24 @@
         border-radius: var(--bit-FileUpload-drop-area-radius, #{$shp-radius-surface});
         min-height: var(--bit-FileUpload-drop-area-min-height, #{spacing(16)});
         padding: var(--bit-FileUpload-drop-area-padding, #{spacing(3)});
-        color: var(--bit-FileUpload-drop-area-color, #{$clr-fg-pri});
-        border-color: var(--bit-FileUpload-drop-area-border-color, #{$clr-brd-pri});
-        background-color: var(--bit-FileUpload-drop-area-background, #{$clr-bg-sec});
+        color: var(--bit-upl-lbl-sfg, var(--bit-FileUpload-drop-area-color, #{$clr-fg-pri}));
+        border-color: var(--bit-upl-lbl-sbr, var(--bit-FileUpload-drop-area-border-color, #{$clr-brd-pri}));
+        background-color: var(--bit-upl-lbl-sbg, var(--bit-FileUpload-drop-area-background, #{$clr-bg-sec}));
 
+        // as on the variants' button, the states move the variables the panel is painted from; they outrank the
+        // variants' own states, so the panel's values are the ones its rest rule reads.
         @media (hover: hover) {
             &:hover {
-                color: var(--bit-FileUpload-drop-area-color, #{$clr-fg-pri});
-                border-color: var(--bit-upl-clr, var(--bit-FileUpload-drop-area-hover-border-color, #{$clr-pri}));
-                background-color: var(--bit-upl-clr-tint-8, var(--bit-FileUpload-drop-area-hover-background, #{translucent($clr-pri, 8%)}));
+                --bit-upl-lbl-sfg: var(--bit-FileUpload-drop-area-color, #{$clr-fg-pri});
+                --bit-upl-lbl-sbr: var(--bit-upl-clr, var(--bit-FileUpload-drop-area-hover-border-color, #{$clr-pri}));
+                --bit-upl-lbl-sbg: var(--bit-upl-clr-tint-8, var(--bit-FileUpload-drop-area-hover-background, #{translucent($clr-pri, 8%)}));
             }
         }
 
         &:active {
-            color: var(--bit-FileUpload-drop-area-color, #{$clr-fg-pri});
-            border-color: var(--bit-upl-clr, var(--bit-FileUpload-drop-area-hover-border-color, #{$clr-pri}));
-            background-color: var(--bit-upl-clr-tint-8, var(--bit-FileUpload-drop-area-hover-background, #{translucent($clr-pri, 8%)}));
+            --bit-upl-lbl-sfg: var(--bit-FileUpload-drop-area-color, #{$clr-fg-pri});
+            --bit-upl-lbl-sbr: var(--bit-upl-clr, var(--bit-FileUpload-drop-area-hover-border-color, #{$clr-pri}));
+            --bit-upl-lbl-sbg: var(--bit-upl-clr-tint-8, var(--bit-FileUpload-drop-area-hover-background, #{translucent($clr-pri, 8%)}));
         }
     }
 
@@ -409,6 +408,7 @@
 }
 
 .bit-upl-itm {
+    --bit-upl-itm-sbr: initial;
     display: flex;
     overflow: hidden;
     align-items: center;
@@ -419,12 +419,12 @@
     font-size: var(--bit-upl-itm-fontsize, var(--bit-FileUpload-item-font-size, #{$tg-fs-sm}));
     border-radius: var(--bit-FileUpload-item-radius, #{$shp-radius-surface});
     background-color: var(--bit-FileUpload-item-background, transparent);
-    border: $shp-border-width $shp-border-style var(--bit-FileUpload-item-border-color, #{$clr-brd-pri});
+    border: $shp-border-width $shp-border-style var(--bit-upl-itm-sbr, var(--bit-FileUpload-item-border-color, #{$clr-brd-pri}));
     transition: border-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            border-color: var(--bit-FileUpload-item-hover-border-color, #{$clr-brd-pri-hover});
+            --bit-upl-itm-sbr: var(--bit-FileUpload-item-hover-border-color, #{$clr-brd-pri-hover});
         }
     }
 
@@ -556,6 +556,7 @@
 }
 
 .bit-upl-usi {
+    --bit-upl-usi-sbg: initial;
     border: 0;
     padding: 0;
     display: flex;
@@ -564,7 +565,7 @@
     align-self: stretch;
     align-items: center;
     justify-content: center;
-    background-color: transparent;
+    background-color: var(--bit-upl-usi-sbg, transparent);
     font-family: $tg-font-family;
     color: var(--bit-FileUpload-action-color, #{$clr-fg-pri});
     width: var(--bit-upl-btn-size, var(--bit-FileUpload-action-size, #{$siz-ctrl-md}));
@@ -575,10 +576,10 @@
     // glyph directly and would otherwise outrank the disabled color the glyph inherits from the button.
     @media (hover: hover) {
         &:hover:not(:disabled) {
-            background-color: var(--bit-upl-clr-tint-10, var(--bit-FileUpload-action-hover-background, #{translucent($clr-pri, 10%)}));
+            --bit-upl-usi-sbg: var(--bit-upl-clr-tint-10, var(--bit-FileUpload-action-hover-background, #{translucent($clr-pri, 10%)}));
 
             i {
-                color: var(--bit-upl-clr, var(--bit-FileUpload-action-hover-color, #{$clr-pri}));
+                --bit-upl-usi-ifg: var(--bit-upl-clr, var(--bit-FileUpload-action-hover-color, #{$clr-pri}));
             }
         }
     }
@@ -599,9 +600,12 @@
         background-color: transparent;
     }
 
+    // left without a fallback, so that at rest the glyph inherits the button's color as it did with an
+    // explicit inherit - an unset variable computes to unset, which is inherit for a color.
     i {
+        --bit-upl-usi-ifg: initial;
         line-height: 1;
-        color: inherit;
+        color: var(--bit-upl-usi-ifg);
         transition: color $mot-duration-short $mot-easing;
         font-size: var(--bit-upl-ico-fontsize, var(--bit-FileUpload-action-icon-size, #{$siz-icon-md}));
     }
@@ -617,6 +621,7 @@
 }
 
 .bit-upl-bab {
+    --bit-upl-bab-sbg: initial;
     margin: 0;
     border: none;
     cursor: pointer;
@@ -624,7 +629,7 @@
     box-sizing: border-box;
     font-family: $tg-font-family;
     font-weight: $tg-font-weight;
-    background-color: transparent;
+    background-color: var(--bit-upl-bab-sbg, transparent);
     letter-spacing: $tg-ctrl-letter-spacing;
     text-transform: $tg-ctrl-text-transform;
     border-radius: $shp-radius-button;
@@ -638,7 +643,7 @@
 
     @media (hover: hover) {
         &:hover:not(:disabled, [aria-disabled="true"]) {
-            background-color: var(--bit-upl-clr-tint-10, var(--bit-FileUpload-batch-action-hover-background, #{translucent($clr-pri, 10%)}));
+            --bit-upl-bab-sbg: var(--bit-upl-clr-tint-10, var(--bit-FileUpload-batch-action-hover-background, #{translucent($clr-pri, 10%)}));
         }
     }
 

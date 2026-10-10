@@ -17,7 +17,7 @@ public class BitColorPickerStylesheetTests
         "--bit-clp-swatch-size-sz", "--bit-clp-preview-size-sz", "--bit-clp-fs-sz", "--bit-clp-fs-sub-sz", "--bit-clp-icon-size-sz",
     ];
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Inputs", "ColorPicker", "BitColorPicker.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "ColorPicker", "BitColorPicker.scss");
 
     [TestMethod]
     public void BitColorPickerShouldLetAParameterWinOverItsPublicVariable()

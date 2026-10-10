@@ -82,26 +82,24 @@ $sel: in-tablist(".bit-pvti-sel");
 // The tabs, and the More button of the Menu behavior, which is drawn like one of them beside the tablist.
 $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
 
+$pvt-private-properties:
+    gap,
+    // The values the Color and Size classes publish, which those classes - declared further down at the
+    // same weight - still win over on the root that carries them. Left unset, each sends the var() reading it
+    // on to the public variable and then to the default, which is what lets an explicit parameter outrank the
+    // variable while an unset one leaves the variable in charge.
+    role-main, role-hover, role-focus, role-text, role-dis, role-dis-text, fs, ih, is, mh,
+    // What the component writes into an inline style, which wins over this on the element it is written on.
+    hal;
+
 .bit-pvt {
     display: flex;
     gap: var(--bit-Pivot-body-gap, #{spacing(2)});
     // The Gap parameter writes this on the root inline; a nested pivot resets it so it never inherits the
     // gap of the pivot around it.
-    --bit-pvt-gap: initial;
-    // So do the values the Color and Size classes publish, which those classes - declared further down at the
-    // same weight - still win over on the root that carries them. Left unset, each sends the var() reading it
-    // on to the public variable and then to the default, which is what lets an explicit parameter outrank the
-    // variable while an unset one leaves the variable in charge.
-    --bit-pvt-role-main: initial;
-    --bit-pvt-role-hover: initial;
-    --bit-pvt-role-focus: initial;
-    --bit-pvt-role-text: initial;
-    --bit-pvt-role-dis: initial;
-    --bit-pvt-role-dis-text: initial;
-    --bit-pvt-fs: initial;
-    --bit-pvt-ih: initial;
-    --bit-pvt-is: initial;
-    --bit-pvt-mh: initial;
+    @each $name in $pvt-private-properties {
+        --bit-pvt-#{$name}: initial;
+    }
     // The accent is resolved here, once per pivot, so every rule below reads the same one: the role an explicit
     // Color picks, then the public variable, then the primary role an unset Color stands for.
     --bit-pvt-clr: var(--bit-pvt-role-main, var(--bit-Pivot-color, #{$clr-pri}));
@@ -364,12 +362,15 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
 }
 
 .bit-pvt-lnk {
+    // The hovers of every header type change the variables the item is painted from (reset on .bit-pvti) rather
+    // than its colors, so the rules that declare the colors are the ones at rest: an item the app paints through
+    // Classes keeps that paint under the pointer, instead of losing it to a state that outranks the app's class.
     #{$itm} {
         @media(hover:hover) {
             &:hover {
                 cursor: pointer;
-                color: var(--bit-Pivot-item-hover-color, #{$clr-fg-pri-hover});
-                background-color: var(--bit-Pivot-item-hover-background, #{$clr-bg-pri-hover});
+                --bit-pvt-itm-clr: var(--bit-Pivot-item-hover-color, #{$clr-fg-pri-hover});
+                --bit-pvt-itm-bg: var(--bit-Pivot-item-hover-background, #{$clr-bg-pri-hover});
             }
         }
     }
@@ -406,15 +407,15 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
 
         @media(hover:hover) {
             &:hover {
-                color: var(--bit-pvt-role-text, var(--bit-Pivot-item-hover-color, #{$clr-pri-text}));
-                background-color: var(--bit-pvt-role-hover, var(--bit-Pivot-item-hover-background, #{$clr-pri-hover}));
+                --bit-pvt-itm-clr: var(--bit-pvt-role-text, var(--bit-Pivot-item-hover-color, #{$clr-pri-text}));
+                --bit-pvt-itm-bg: var(--bit-pvt-role-hover, var(--bit-Pivot-item-hover-background, #{$clr-pri-hover}));
             }
         }
     }
 
     #{$sel} {
-        color: var(--bit-pvt-role-text, var(--bit-Pivot-item-selected-color, #{$clr-pri-text}));
-        background-color: var(--bit-pvt-role-main, var(--bit-Pivot-item-selected-background, var(--bit-Pivot-color, #{$clr-pri})));
+        color: var(--bit-pvt-itm-clr, var(--bit-pvt-role-text, var(--bit-Pivot-item-selected-color, #{$clr-pri-text})));
+        background-color: var(--bit-pvt-itm-bg, var(--bit-pvt-role-main, var(--bit-Pivot-item-selected-background, var(--bit-Pivot-color, #{$clr-pri}))));
     }
 
     // A disabled selection keeps its fill, in the muted pair of the role, so the text on it stays legible
@@ -462,8 +463,8 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
         @media(hover:hover) {
             &:hover {
                 cursor: pointer;
-                color: var(--bit-Pivot-item-hover-color, #{$clr-fg-pri-hover});
-                background-color: var(--bit-Pivot-item-hover-background, #{$clr-bg-pri-hover});
+                --bit-pvt-itm-clr: var(--bit-Pivot-item-hover-color, #{$clr-fg-pri-hover});
+                --bit-pvt-itm-bg: var(--bit-Pivot-item-hover-background, #{$clr-bg-pri-hover});
             }
         }
     }
@@ -474,13 +475,13 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
 
     #{$sel} {
         border-color: var(--bit-Pivot-divider-color, #{$clr-brd-sec});
-        color: var(--bit-Pivot-item-selected-color, #{$clr-fg-pri});
-        background-color: var(--bit-Pivot-item-selected-background, #{$clr-bg-pri});
+        color: var(--bit-pvt-itm-clr, var(--bit-Pivot-item-selected-color, #{$clr-fg-pri}));
+        background-color: var(--bit-pvt-itm-bg, var(--bit-Pivot-item-selected-background, #{$clr-bg-pri}));
 
         @media(hover:hover) {
             &:hover {
-                color: var(--bit-Pivot-item-selected-color, #{$clr-fg-pri});
-                background-color: var(--bit-Pivot-item-selected-background, #{$clr-bg-pri});
+                --bit-pvt-itm-clr: var(--bit-Pivot-item-selected-color, #{$clr-fg-pri});
+                --bit-pvt-itm-bg: var(--bit-Pivot-item-selected-background, #{$clr-bg-pri});
             }
         }
     }
@@ -653,7 +654,11 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
     text-decoration: none;
     box-sizing: border-box;
     scroll-margin: spacing(1);
-    background-color: transparent;
+    // The header types' hover rules set these rather than the colors (see .bit-pvt-lnk), and they are unset at
+    // rest so an item never takes them from an item of an outer pivot.
+    --bit-pvt-itm-clr: initial;
+    --bit-pvt-itm-bg: initial;
+    background-color: var(--bit-pvt-itm-bg, transparent);
     height: var(--bit-pvt-ih, var(--bit-Pivot-item-height, #{$siz-tab}));
     line-height: var(--bit-pvt-ih, var(--bit-Pivot-item-height, #{$siz-tab}));
     padding: 0 var(--bit-Pivot-item-padding-inline, #{spacing(1)});
@@ -661,7 +666,7 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
     border-radius: var(--bit-Pivot-item-radius, 0);
     min-width: var(--bit-Pivot-item-min-width, auto);
     max-width: var(--bit-Pivot-item-max-width, none);
-    color: var(--bit-Pivot-item-color, #{$clr-fg-pri});
+    color: var(--bit-pvt-itm-clr, var(--bit-Pivot-item-color, #{$clr-fg-pri}));
     font-size: var(--bit-pvt-fs, var(--bit-Pivot-font-size, #{$tg-fs-sm}));
     // Set rather than inherited, so a pivot placed inside bold text does not draw every tab as the selected one.
     font-weight: var(--bit-Pivot-item-font-weight, #{$tg-fw-regular});
@@ -770,8 +775,8 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
 }
 
 .bit-pvti-sel {
-    color: var(--bit-Pivot-item-selected-color, #{$clr-fg-pri});
-    background-color: var(--bit-Pivot-item-selected-background, transparent);
+    color: var(--bit-pvt-itm-clr, var(--bit-Pivot-item-selected-color, #{$clr-fg-pri}));
+    background-color: var(--bit-pvt-itm-bg, var(--bit-Pivot-item-selected-background, transparent));
     font-weight: var(--bit-Pivot-item-selected-font-weight, #{$tg-fw-semibold});
 
     // Only the scale differs from the unselected state; the geometry, color and transition all come
@@ -823,20 +828,22 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
     cursor: pointer;
     display: inline-flex;
     align-items: center;
-    color: currentcolor;
+    --bit-pvt-dbt-clr: initial;
+    --bit-pvt-dbt-bg: initial;
+    color: var(--bit-pvt-dbt-clr, currentcolor);
     justify-content: center;
     box-sizing: border-box;
     margin-inline-start: spacing(0.25);
     margin-inline-end: calc(-1 * #{spacing(0.5)});
     border-radius: $shp-radius-full;
-    background-color: transparent;
+    background-color: var(--bit-pvt-dbt-bg, transparent);
     width: var(--bit-Pivot-dismiss-size, #{spacing(3)});
     height: var(--bit-Pivot-dismiss-size, #{spacing(3)});
 
     @media (hover: hover) {
         &:hover {
-            color: $clr-fg-pri-hover;
-            background-color: $clr-bg-pri-hover;
+            --bit-pvt-dbt-clr: #{$clr-fg-pri-hover};
+            --bit-pvt-dbt-bg: #{$clr-bg-pri-hover};
         }
     }
 
@@ -858,20 +865,22 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
     padding: 0;
     flex-shrink: 0;
     cursor: pointer;
-    color: $clr-fg-pri;
+    --bit-pvt-abt-clr: initial;
+    --bit-pvt-abt-bg: initial;
+    color: var(--bit-pvt-abt-clr, #{$clr-fg-pri});
     width: spacing(4);
     align-items: center;
     display: inline-flex;
     box-sizing: border-box;
     justify-content: center;
-    background-color: transparent;
+    background-color: var(--bit-pvt-abt-bg, transparent);
     font-size: var(--bit-pvt-is, #{$siz-icon-md});
     height: var(--bit-pvt-ih, var(--bit-Pivot-item-height, #{$siz-tab}));
 
     @media (hover: hover) {
         &:hover {
-            color: $clr-fg-pri-hover;
-            background-color: $clr-bg-pri-hover;
+            --bit-pvt-abt-clr: #{$clr-fg-pri-hover};
+            --bit-pvt-abt-bg: #{$clr-bg-pri-hover};
         }
     }
 
@@ -934,20 +943,22 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
     padding: 0;
     flex-shrink: 0;
     cursor: pointer;
-    color: $clr-fg-pri;
+    --bit-pvt-sbt-clr: initial;
+    --bit-pvt-sbt-bg: initial;
+    color: var(--bit-pvt-sbt-clr, #{$clr-fg-pri});
     width: spacing(4);
     align-items: center;
     display: inline-flex;
     box-sizing: border-box;
     justify-content: center;
-    background-color: transparent;
+    background-color: var(--bit-pvt-sbt-bg, transparent);
     font-size: var(--bit-pvt-is, #{$siz-icon-md});
     height: var(--bit-pvt-ih, var(--bit-Pivot-item-height, #{$siz-tab}));
 
     @media (hover: hover) {
         &:hover {
-            color: $clr-fg-pri-hover;
-            background-color: $clr-bg-pri-hover;
+            --bit-pvt-sbt-clr: #{$clr-fg-pri-hover};
+            --bit-pvt-sbt-bg: #{$clr-bg-pri-hover};
         }
     }
 
@@ -1036,12 +1047,14 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
     cursor: pointer;
     text-align: start;
     gap: spacing(0.5);
-    color: $clr-fg-pri;
+    --bit-pvt-mni-clr: initial;
+    --bit-pvt-mni-bg: initial;
+    color: var(--bit-pvt-mni-clr, #{$clr-fg-pri});
     white-space: nowrap;
     align-items: center;
     font-family: inherit;
     box-sizing: border-box;
-    background-color: transparent;
+    background-color: var(--bit-pvt-mni-bg, transparent);
     font-weight: var(--bit-Pivot-item-font-weight, #{$tg-fw-regular});
     padding: spacing(0.5) spacing(2);
     min-height: var(--bit-pvt-mh, #{$siz-item-md});
@@ -1051,8 +1064,8 @@ $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
 
     @media (hover: hover) {
         &:hover {
-            color: $clr-fg-pri-hover;
-            background-color: $clr-bg-pri-hover;
+            --bit-pvt-mni-clr: #{$clr-fg-pri-hover};
+            --bit-pvt-mni-bg: #{$clr-bg-pri-hover};
         }
     }
 

@@ -115,10 +115,12 @@
 
             // A caller-supplied selector says where the focus belongs when the first focusable element is
             // not it. It is tried on its own so a selector that is invalid, or that matches nothing
-            // visible, falls through to the default rather than leaving the focus behind on the page.
+            // visible, falls through to the default rather than leaving the focus behind on the page. An
+            // element it names is focused even when a negative tabindex keeps it out of the tab sequence -
+            // a heading made programmatically focusable is a place the consumer asked for by name.
             if (selector) {
                 try {
-                    const preferred = Array.from(container.querySelectorAll<HTMLElement>(selector)).find(Utils.isFocusable);
+                    const preferred = Array.from(container.querySelectorAll<HTMLElement>(selector)).find(Utils.canHoldFocus);
                     if (preferred) {
                         preferred.focus();
                         return;
@@ -129,18 +131,16 @@
             try {
                 // The same set the focus trap cycles through, so the element the focus lands on when the
                 // popup opens is the same one Shift+Tab wraps back to from the end of it.
-                const candidates = Array.from(container.querySelectorAll<HTMLElement>(Utils._focusables));
-
                 // The consumer naming the element the focus should land on, for the popups whose first
                 // focusable element is not the one worth starting at - a dismiss button ahead of the field
                 // the popup was opened to fill in. The first focusable element is the fallback.
                 // The standard autofocus attribute says the same thing and is what a native dialog reads,
                 // so it is honoured alongside the data- one: the browser only ever acts on it for markup
                 // that was in the document when it was parsed, which a popup's content never is.
-                const requested = candidates.find(el =>
-                    (el.hasAttribute('data-autofocus') || el.hasAttribute('autofocus')) && Utils.isFocusable(el));
+                const requested = Utils.firstFocusable(container, el =>
+                    el.hasAttribute('data-autofocus') === false && el.hasAttribute('autofocus') === false);
 
-                (requested ?? candidates.find(Utils.isFocusable) ?? container).focus();
+                (requested ?? Utils.firstFocusable(container) ?? container).focus();
             } catch (e) { console.error("BitBlazorUI.Utils.focusFirstElement:", e); }
         }
 
@@ -155,7 +155,7 @@
                 const container = document.getElementById(containerId);
                 if (!container || container.contains(document.activeElement)) return;
 
-                const trigger = Array.from(container.querySelectorAll<HTMLElement>(Utils._focusables)).find(Utils.isFocusable);
+                const trigger = Utils.firstFocusable(container);
 
                 trigger?.focus({ preventScroll: true });
             } catch (e) { console.error("BitBlazorUI.Utils.focusClickedTrigger:", e); }
@@ -234,9 +234,27 @@
             observer: MutationObserver | null
         }>();
 
+        // The focusable elements that are content rather than a control: a disclosure's summary and an embedded
+        // frame or media player take the focus, but are never the control a popup or a tooltip belongs to, and
+        // one written ahead of that control would otherwise take the attributes meant for it.
+        private static readonly _notAControl = 'summary, iframe, audio, video';
+
+        // The first control inside the container a relationship can be mirrored onto, leaving out the ones the
+        // skip callback names. Nothing is measured: the relationship is written whether or not the control is
+        // on screen right now, as nothing writes it again the moment it is.
+        private static findControl(container: HTMLElement, skip?: (el: HTMLElement) => boolean): HTMLElement | null {
+            const all = container.querySelectorAll<HTMLElement>(Utils.focusableSelector);
+
+            for (let i = 0; i < all.length; i++) {
+                if (all[i].matches(Utils._notAControl) === false && skip?.(all[i]) !== true) return all[i];
+            }
+
+            return null;
+        }
+
         private static applyAriaPopup(state: { anchor: HTMLElement, popupId: string, isOpen: boolean, hasPopup: string, target: HTMLElement | null }) {
             const anchor = state.anchor;
-            const trigger = anchor.querySelector<HTMLElement>(Utils._focusables) ?? anchor;
+            const trigger = Utils.findControl(anchor) ?? anchor;
 
             // The element that carried the relationship before is no longer the trigger - another control took
             // its place, or it lost the last focusable element to the container itself - so what this code put
@@ -282,8 +300,7 @@
 
                 // An interactive tooltip may hold something focusable of its own, which sits inside the same
                 // root and would otherwise be taken for the anchor whenever the anchor holds none itself.
-                const target = Array.from(root.querySelectorAll<HTMLElement>(Utils._focusables))
-                    .find(el => el.closest('.bit-ttp-wrp') === null);
+                const target = Utils.findControl(root, el => el.closest('.bit-ttp-wrp') !== null);
 
                 // Nothing focusable to mirror onto: the markup has already declared the relationship on the
                 // root, which is where it stays.
@@ -375,45 +392,79 @@
             }
         }
 
-        // The two document-level listeners every tooltip needs are shared by all of them, and each one asks the
-        // DOM for the few tooltips that are actually shown instead of every tooltip on the page asking for
-        // itself - a toolbar or a grid of a few hundred tooltips pays for one listener per key and press.
+        // The tooltips registered on the page that are shown right now and carry the given marker, read off the DOM
+        // so that a toolbar or a grid of a few hundred tooltips is asked about only the few that are shown.
+        private static shownTooltips(marker: string) {
+            return Array.from(document.querySelectorAll<HTMLElement>(`.bit-ttp-wrp.bit-ttp-vis[${marker}]`))
+                .map(wrp => wrp.parentElement)
+                .filter((root): root is HTMLElement => !!root && Utils._tooltipsByRoot.has(root));
+        }
+
+        // Dismisses every dismissible tooltip under the pointer - a nested one along with the one around it - on an
+        // Escape pressed anywhere in the page. It is not added by the tooltips: general.ts adds it once, as the page
+        // loads, on the window in the capture phase right after the claim (claimEscape). Listeners on one node run in
+        // the order they were added, so one a tooltip added as it registered would land wherever the page happened
+        // to be by then - behind the listener of a menu that was already open when the tooltip is in its content,
+        // or of an overlay opened before the first tooltip was - and those would act on the press the tooltip takes.
+        // Added first it is ahead of every surface of the library whenever it opened, and it costs nothing while no
+        // tooltip is shown.
+        // A press it takes goes no further than the window: it is prevented, and stopPropagation keeps it from the
+        // document and everything under it - a callout's own Escape listener and Blazor's delegation included. The
+        // other listeners on the window still hear it, and read it as taken (defaultPrevented), which leaves an app's
+        // own listener there the key it has always been given.
+        public static dismissTooltipsOnEscape(e: KeyboardEvent) {
+            // A press a component claimed (see claimEscape) is that component's: the tooltip stays, and the key goes
+            // on to the component rather than being stopped here.
+            if (e.key !== 'Escape' || e.defaultPrevented) return;
+            if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+
+            if (Utils._tooltipsByRoot.size === 0) return;
+
+            // A gesture in progress that the key puts back (a swipe) is what the user is doing with the pointer the
+            // tooltip is under, so the press is the gesture's, and the tooltip stays.
+            for (const takes of Utils._escapeGestures) {
+                if (takes()) return;
+            }
+
+            const target = e.target as Node | null;
+            let taken = false;
+
+            for (const root of Utils.shownTooltips('data-bit-ttp-esc')) {
+                if (target && root.contains(target)) continue; // the root's own listener answers it
+                if (!root.matches(':hover')) continue;
+
+                Utils._tooltipsByRoot.get(root)!.invokeMethodAsync('OnEscape')
+                     .catch(err => console.error("BitBlazorUI.Utils.dismissTooltipsOnEscape:", err));
+                taken = true;
+            }
+
+            if (!taken) return;
+
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        // The gestures in progress that an Escape puts back, each asked as the key goes down whether this press is
+        // its own. They take the key on a listener of their own, added on the window as the gesture starts - after
+        // the one that dismisses the tooltips, which has to leave the press to them.
+        private static _escapeGestures = new Set<() => boolean>();
+
+        public static addEscapeGesture(takes: () => boolean) {
+            Utils._escapeGestures.add(takes);
+        }
+
+        public static removeEscapeGesture(takes: () => boolean) {
+            Utils._escapeGestures.delete(takes);
+        }
+
+        // The page-level listener every tooltip a press opens needs is shared by all of them, and asks the DOM for
+        // the few tooltips that are actually shown instead of every tooltip on the page asking for itself - a
+        // toolbar or a grid of a few hundred tooltips pays for one listener per press. (The Escape that dismisses a
+        // tooltip has a listener of its own, added once for the page: see dismissTooltipsOnEscape.)
         private static ensureTooltipListeners() {
             if (Utils._tooltipsController) return;
 
             const controller = Utils._tooltipsController = new AbortController();
-
-            const shown = (marker: string) => Array.from(document.querySelectorAll<HTMLElement>(`.bit-ttp-wrp.bit-ttp-vis[${marker}]`))
-                .map(wrp => wrp.parentElement)
-                .filter((root): root is HTMLElement => !!root && Utils._tooltipsByRoot.has(root));
-
-            // In the capture phase, so the key is taken before whatever holds the focus acts on it. Every
-            // tooltip under the pointer - a nested one along with the one around it - is dismissed by the press,
-            // and stopImmediatePropagation keeps it from any other listener on the document as well, a callout's
-            // own Escape listener included.
-            document.addEventListener('keydown', e => {
-                // A press a component claimed (see claimEscape) is that component's: the tooltip stays, and the key
-                // goes on to the component rather than being stopped here.
-                if (e.key !== 'Escape' || e.defaultPrevented) return;
-                if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
-
-                const target = e.target as Node | null;
-                let taken = false;
-
-                for (const root of shown('data-bit-ttp-esc')) {
-                    if (target && root.contains(target)) continue; // the root's own listener answers it
-                    if (!root.matches(':hover')) continue;
-
-                    Utils._tooltipsByRoot.get(root)!.invokeMethodAsync('OnEscape')
-                         .catch(err => console.error("BitBlazorUI.Utils.setupTooltip:", err));
-                    taken = true;
-                }
-
-                if (!taken) return;
-
-                e.preventDefault();
-                e.stopImmediatePropagation();
-            }, { signal: controller.signal, capture: true });
 
             // A tooltip a press of the anchor opened (data-bit-ttp-clk) is dismissed by the next press elsewhere.
             // The focus leaving the anchor says as much in some browsers, but Safari and the touch browsers never
@@ -422,7 +473,7 @@
             document.addEventListener('pointerdown', e => {
                 const target = e.target as Node | null;
 
-                for (const root of shown('data-bit-ttp-clk')) {
+                for (const root of Utils.shownTooltips('data-bit-ttp-clk')) {
                     if (target && root.contains(target)) continue;
 
                     Utils._tooltipsByRoot.get(root)!.invokeMethodAsync('OnOutsidePress')
@@ -816,8 +867,6 @@
 
             const isPlainTab = (e: KeyboardEvent) => e.key === 'Tab' && !e.defaultPrevented && !e.altKey && !e.ctrlKey && !e.metaKey;
 
-            const getFocusables = () => Array.from(element.querySelectorAll<HTMLElement>(Utils._focusables)).filter(Utils.isFocusable);
-
             element.addEventListener('keydown', e => {
                 if (!isPlainTab(e)) return;
 
@@ -827,7 +876,7 @@
                 const trigger = document.getElementById(triggerId);
                 if (!trigger) return;
 
-                const focusables = getFocusables();
+                const focusables = Utils.getFocusables(element);
                 const active = document.activeElement;
 
                 if (e.shiftKey) {
@@ -879,12 +928,12 @@
                 if (!isPlainTab(e) || e.shiftKey) return;
 
                 const trigger = e.currentTarget as HTMLElement;
-                const inner = Array.from(trigger.querySelectorAll<HTMLElement>(Utils._focusables)).filter(Utils.isFocusable);
+                const inner = Utils.getFocusables(trigger);
                 if (inner.length > 0 && e.target !== inner[inner.length - 1]) return;
 
                 if (trigger.getAttribute('aria-expanded') === 'false' || !Utils.isFocusable(element)) return;
 
-                const target = getFocusables()[0] ?? (element.hasAttribute('tabindex') ? element : null);
+                const target = Utils.firstFocusable(element) ?? (element.hasAttribute('tabindex') ? element : null);
                 if (!target) return;
 
                 e.preventDefault();
@@ -1280,9 +1329,9 @@
         // renders around the consumer's own button - which takes no focus of its own, so the first focusable element
         // inside it is where the focus goes back to.
         private static focusTrigger(trigger: HTMLElement) {
-            const target = trigger.matches(Utils._focusables) && Utils.isFocusable(trigger)
+            const target = Utils.isFocusableElement(trigger)
                 ? trigger
-                : Array.from(trigger.querySelectorAll<HTMLElement>(Utils._focusables)).find(Utils.isFocusable);
+                : Utils.firstFocusable(trigger);
 
             (target ?? trigger).focus();
         }
@@ -1303,14 +1352,11 @@
         private static findFocusableAfter(anchor: HTMLElement, exclude: HTMLElement) {
             const scope = Utils.findTabScope(anchor);
 
-            const candidates = Array.from((scope ?? document).querySelectorAll<HTMLElement>(Utils._focusables)).filter(el =>
-                !anchor.contains(el)
-                && !exclude.contains(el)
-                && Utils.isFocusable(el));
+            const skip = (el: HTMLElement) => anchor.contains(el) || exclude.contains(el);
 
-            const next = candidates.find(el => (anchor.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0);
+            const next = Utils.findFocusable(scope ?? document, anchor, true, skip);
 
-            return next ?? (scope ? candidates[0] ?? null : null);
+            return next ?? (scope ? Utils.firstFocusable(scope, skip) : null);
         }
 
         // The nearest ancestor of the element that keeps the keyboard inside itself, or null when it is in the
@@ -2124,25 +2170,104 @@
         // Everything that can hold the focus inside a container. A roving tabindex takes every item of a grid
         // but one out of the tab sequence, which is why tabindex="-1" is excluded here. The controls a header
         // or footer template brings along are part of the container too, so the whole set of natively
-        // focusable elements is listed rather than only the ones the components render themselves.
-        private static readonly _focusables =
+        // focusable elements is listed rather than only the ones the components render themselves - a
+        // disclosure's summary and a media player's controls included, which a trap that missed them would
+        // let the Tab out of the container from. Only the first summary of a details element is its disclosure
+        // control; any other summary is plain content the browser never puts in the tab sequence.
+        // This is the library's one definition of "what can hold the focus": every script asks it, through
+        // the helpers below, rather than keeping a copy of its own that a fix here would not reach - the
+        // scripts of Bit.BlazorUI.Extras included, which call these members through the ambient declaration
+        // of Scripts/BitBlazorUI.d.ts (BitFocusablesContractTests keeps the two in step).
+        public static readonly focusableSelector =
             'a[href]:not([tabindex="-1"]), button:not([disabled]):not([tabindex="-1"]), ' +
             'input:not([disabled]):not([tabindex="-1"]), select:not([disabled]):not([tabindex="-1"]), ' +
-            'textarea:not([disabled]):not([tabindex="-1"]), ' +
+            'textarea:not([disabled]):not([tabindex="-1"]), details > summary:first-of-type:not([tabindex="-1"]), ' +
+            'iframe:not([tabindex="-1"]), audio[controls]:not([tabindex="-1"]), video[controls]:not([tabindex="-1"]), ' +
             '[contenteditable]:not([contenteditable="false"]):not([tabindex="-1"]), ' +
             '[tabindex]:not([tabindex="-1"])';
 
         // Whether an element matching the set above is a place the focus can actually land. It is the one
         // answer both the initial focus and the focus trap ask for, so the element the focus is moved to
         // when a popup opens is the same one Shift+Tab wraps back to from the end of it.
+        // An inert subtree refuses the focus while still matching the selector and keeping its box - a
+        // surface playing its exit animation, a folded splitter panel - and so does a control disabled by
+        // the fieldset around it, which carries no disabled attribute of its own for the selector to see.
+        // Inside an editing host only the host itself is a tab stop; the links and controls of the content
+        // being edited are text to the browser, and counting one as the last stop of a trap would let the
+        // Tab from the host walk out of it.
         // A hidden element has no box at all - which is how a display:none subtree (e.g. a collapsed
-        // section) is skipped without measuring every ancestor - and visibility:hidden leaves a box the
-        // focus still cannot land in, so it is asked about separately, and only for the elements that got
-        // past the cheap measurement.
-        private static isFocusable(el: HTMLElement) {
-            const hasBox = el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0;
+        // section) is skipped without measuring every ancestor. A subtree whose content the engine skips -
+        // hidden="until-found" (a HiddenUntilFound accordion panel), content-visibility:hidden - can still
+        // hand its descendants a box the focus never reaches; checkVisibility sees both, and the box alone is
+        // asked for only in the engines without it. visibility:hidden leaves a box the focus still cannot
+        // land in, so it is asked about separately, and only for the elements that got past the measurement.
+        // A negative tabindex takes an element out of the tab sequence however it is written ("-2", " -1"), which
+        // the selector's exact match on "-1" cannot see, so the attribute is parsed the way the browser parses it.
+        public static isFocusable(el: HTMLElement) {
+            return Utils.isInTabSequence(el) && Utils.canHoldFocus(el);
+        }
 
-            return hasBox && getComputedStyle(el).visibility !== 'hidden';
+        // The attribute rather than the tabIndex property, which also reads -1 for an element that carries no
+        // tabindex at all (an editing host in some engines), so only a value written on the element counts. An
+        // unparsable value is ignored, as it is by the browser.
+        private static isInTabSequence(el: HTMLElement) {
+            const tabindex = el.getAttribute('tabindex');
+
+            return tabindex === null || (parseInt(tabindex, 10) < 0) === false;
+        }
+
+        // Whether the focus can be moved onto the element at all, by the keyboard or by a script.
+        private static canHoldFocus(el: HTMLElement) {
+            if (el.closest('[inert]') !== null || el.matches(':disabled') || el.parentElement?.isContentEditable === true) return false;
+
+            const rendered = typeof el.checkVisibility === 'function'
+                ? el.checkVisibility()
+                : el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0;
+
+            return rendered && getComputedStyle(el).visibility !== 'hidden';
+        }
+
+        // Whether any element - not only one taken from the selector above - is a place the focus can land: the
+        // element a caller holds may be a plain container, which isFocusable alone would accept for its box.
+        public static isFocusableElement(el: HTMLElement) {
+            return el.matches(Utils.focusableSelector) && Utils.isFocusable(el);
+        }
+
+        // The elements inside the container the focus can land on, in document order.
+        public static getFocusables(container: ParentNode): HTMLElement[] {
+            return Array.from(container.querySelectorAll<HTMLElement>(Utils.focusableSelector)).filter(Utils.isFocusable);
+        }
+
+        // The first element inside the container the focus can land on, leaving out the ones the skip callback
+        // names, and measuring no more of them than it takes.
+        public static firstFocusable(container: ParentNode, skip?: (el: HTMLElement) => boolean): HTMLElement | null {
+            const all = container.querySelectorAll<HTMLElement>(Utils.focusableSelector);
+
+            for (let i = 0; i < all.length; i++) {
+                if (skip?.(all[i]) !== true && Utils.isFocusable(all[i])) return all[i];
+            }
+
+            return null;
+        }
+
+        // The nearest element inside the scope the focus can land on that follows (or, backwards, precedes) the
+        // given node in the document, leaving out the ones the skip callback names - which is where a node's own
+        // descendants are left out, as they follow it too. Only the elements on the far side of the node are
+        // measured, and no more of them than it takes, which matters when the scope is the whole document.
+        public static findFocusable(scope: ParentNode, from: Node, forward: boolean, skip?: (el: HTMLElement) => boolean): HTMLElement | null {
+            const all = scope.querySelectorAll<HTMLElement>(Utils.focusableSelector);
+            const side = forward ? Node.DOCUMENT_POSITION_FOLLOWING : Node.DOCUMENT_POSITION_PRECEDING;
+            const step = forward ? 1 : -1;
+
+            for (let i = forward ? 0 : all.length - 1; i >= 0 && i < all.length; i += step) {
+                const el = all[i];
+
+                if ((from.compareDocumentPosition(el) & side) === 0) continue;
+
+                if (skip?.(el) !== true && Utils.isFocusable(el)) return el;
+            }
+
+            return null;
         }
 
         // Keeps Tab and Shift+Tab cycling inside a container, which is what a popup that reports itself a modal
@@ -2154,8 +2279,7 @@
 
             // A hidden element is not a place the focus can land, and a callout carries parts that are only
             // rendered for some of its states.
-            const focusables = Array.from(root.querySelectorAll<HTMLElement>(Utils._focusables))
-                .filter(Utils.isFocusable);
+            const focusables = Utils.getFocusables(root);
 
             const active = document.activeElement;
 

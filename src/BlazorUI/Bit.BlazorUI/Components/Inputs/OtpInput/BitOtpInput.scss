@@ -47,6 +47,8 @@
 // and a state - disabled, invalid - is still read before everything. The label follows the size of the code by
 // inheritance, so --bit-OtpInput-label-font-size, which is there to set it apart from the code, keeps the label.
 
+$otp-private-properties: size, fontsize, dsc-fontsize, clr, clr-focus;
+
 .bit-otp {
     display: flex;
     width: fit-content;
@@ -62,11 +64,9 @@
     //further down at the same weight - still win on the root that carries them. Left unset, each sends the var()
     //reading it on to the public variable and then to the default (the medium size, the primary role), which is
     //what lets an explicit parameter outrank the variable while an unset one leaves the variable in charge.
-    --bit-otp-size: initial;
-    --bit-otp-fontsize: initial;
-    --bit-otp-dsc-fontsize: initial;
-    --bit-otp-clr: initial;
-    --bit-otp-clr-focus: initial;
+    @each $name in $otp-private-properties {
+        --bit-otp-#{$name}: initial;
+    }
 }
 
 //the label follows the size of the code by default, and carries a variable of its own so that a code drawn
@@ -197,8 +197,13 @@
     //the two colors of a box are read from a single pair of variables here, and every variant declares what
     //that pair holds, so a consumer overriding one of the public variables below re-skins every variant
     //instead of having to repeat the override once per variant class.
-    border-color: var(--bit-OtpInput-border-color, var(--bit-otp-brd));
-    background-color: var(--bit-OtpInput-background, var(--bit-otp-bg));
+    //the states below set the two variables read ahead of them rather than the colors themselves, so only the
+    //rules at rest paint the box: a box the app paints through Classes keeps that paint under the pointer and
+    //while it is focused, instead of losing it to a state that outranks the app's class.
+    --bit-otp-inp-sbr: initial;
+    --bit-otp-inp-sbg: initial;
+    border-color: var(--bit-otp-inp-sbr, var(--bit-OtpInput-border-color, var(--bit-otp-brd)));
+    background-color: var(--bit-otp-inp-sbg, var(--bit-OtpInput-background, var(--bit-otp-bg)));
     transition: border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     &::placeholder {
@@ -208,23 +213,23 @@
     //a box that already holds a character, which is the hook for a row that shows its own progress. Both
     //of its colors fall back to the ones of the rest state, so nothing changes until one of the two is set.
     &.bit-otp-fld {
-        border-color: var(--bit-OtpInput-filled-border-color, var(--bit-OtpInput-border-color, var(--bit-otp-brd)));
-        background-color: var(--bit-OtpInput-filled-background, var(--bit-OtpInput-background, var(--bit-otp-bg)));
+        border-color: var(--bit-otp-inp-sbr, var(--bit-OtpInput-filled-border-color, var(--bit-OtpInput-border-color, var(--bit-otp-brd))));
+        background-color: var(--bit-otp-inp-sbg, var(--bit-OtpInput-filled-background, var(--bit-OtpInput-background, var(--bit-otp-bg))));
     }
 
     //the hover rule is qualified so that it lights up nothing but a box the user can actually type in:
     //never a disabled or a read-only component, and never over the accent color of the focused input.
     &:enabled:read-write:hover:not(:focus-visible) {
-        border-color: var(--bit-OtpInput-hover-border-color, var(--bit-otp-brd-hover));
-        background-color: var(--bit-OtpInput-hover-background, var(--bit-otp-bg-hover));
+        --bit-otp-inp-sbr: var(--bit-OtpInput-hover-border-color, var(--bit-otp-brd-hover));
+        --bit-otp-inp-sbg: var(--bit-OtpInput-hover-background, var(--bit-otp-bg-hover));
     }
 
-    //declared after the filled block on purpose, and of the very same specificity as it, so that the accent
-    //of the focused box is never painted over by the rule of a box that happens to hold a character. Only
-    //the rule is taken over: a filled background is a part of the box rather than of its rest state, so it
-    //stays underneath the accent while the box is being typed in.
+    //the accent of the focused box goes into the variable the filled block reads first as well, so it is never
+    //painted over by the rule of a box that happens to hold a character. Only the rule is taken over: a
+    //filled background is a part of the box rather than of its rest state, so it stays underneath the accent
+    //while the box is being typed in.
     &:focus-visible {
-        border-color: var(--bit-otp-clr, var(--bit-OtpInput-focus-border-color, #{$clr-pri}));
+        --bit-otp-inp-sbr: var(--bit-otp-clr, var(--bit-OtpInput-focus-border-color, #{$clr-pri}));
     }
 
     //the spin buttons of a number typed input would not fit in a single character wide box, and the
@@ -505,14 +510,14 @@
     }
 
     .bit-otp-inp {
-        border-color: var(--bit-OtpInput-invalid-color, #{$clr-err});
+        border-color: var(--bit-otp-inp-sbr, var(--bit-OtpInput-invalid-color, #{$clr-err}));
 
         &:enabled:read-write:hover:not(:focus-visible) {
-            border-color: var(--bit-OtpInput-invalid-color, #{$clr-err});
+            --bit-otp-inp-sbr: var(--bit-OtpInput-invalid-color, #{$clr-err});
         }
 
         &:focus-visible {
-            border-color: var(--bit-OtpInput-invalid-color, #{$clr-err});
+            --bit-otp-inp-sbr: var(--bit-OtpInput-invalid-color, #{$clr-err});
         }
     }
 

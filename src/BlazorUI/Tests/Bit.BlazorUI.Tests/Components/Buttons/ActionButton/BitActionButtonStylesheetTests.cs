@@ -41,13 +41,15 @@ public partial class BitActionButtonStylesheetTests
 
         // So does an explicit Color, for every color it paints - the disabled icon and focus ring included.
         StringAssert.Contains(stylesheet, "--bit-acb-ico: var(--bit-acb-clr-ico, var(--bit-ActionButton-icon-color, #{$clr-pri}));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-acb-clr-hover, var(--bit-ActionButton-hover-color, #{$clr-pri-hover}));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-acb-clr-active, var(--bit-ActionButton-active-color, #{$clr-pri-active}));");
+        // The hover and press states set the variable the rule at rest paints from, never the color itself.
+        StringAssert.Contains(stylesheet, "--bit-acb-sfg: var(--bit-acb-clr-hover, var(--bit-ActionButton-hover-color, #{$clr-pri-hover}));");
+        StringAssert.Contains(stylesheet, "--bit-acb-sfg: var(--bit-acb-clr-active, var(--bit-ActionButton-active-color, #{$clr-pri-active}));");
         StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-acb-clr-focus, var(--bit-ActionButton-focus-color)))");
         StringAssert.Contains(stylesheet, "--bit-acb-ico: var(--bit-acb-clr-dis-text, var(--bit-ActionButton-disabled-color, #{$clr-pri-dis-text}));");
 
         // What a Color does not paint stays the variable's: the neutral text, at rest and disabled, and the backgrounds.
-        StringAssert.Contains(stylesheet, "color: var(--bit-ActionButton-color, #{$clr-fg-pri});");
+        StringAssert.Contains(stylesheet, "color: var(--bit-acb-sfg, var(--bit-ActionButton-color, #{$clr-fg-pri}));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-acb-sbg, var(--bit-ActionButton-background, transparent));");
         StringAssert.Contains(stylesheet, "color: var(--bit-ActionButton-disabled-color, #{$clr-fg-dis});");
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-ActionButton-[a-z-]+, var\(--bit-acb-"), "A public variable is read before the parameter it restyles the default of.");
@@ -62,13 +64,15 @@ public partial class BitActionButtonStylesheetTests
         // Size: each root starts the values those classes publish out unset, and the classes - declared further down
         // at the same weight - still win on the root that carries them.
         foreach (var property in new[] { "--bit-acb-clr-ico", "--bit-acb-clr-hover", "--bit-acb-clr-active", "--bit-acb-clr-focus", "--bit-acb-clr-dis-text",
-                                         "--bit-acb-pad-y", "--bit-acb-min-height", "--bit-acb-fontsize", "--bit-acb-ico-size", "--bit-acb-padding" })
+                                         "--bit-acb-pad-y", "--bit-acb-min-height", "--bit-acb-fontsize", "--bit-acb-ico-size", "--bit-acb-padding",
+                                         // The colors the hover and press states move, which a nested action button must not inherit either.
+                                         "--bit-acb-sfg", "--bit-acb-sbg" })
         {
             StringAssert.Contains(root, $"{property}: initial;");
         }
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Buttons", "ActionButton", "BitActionButton.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Buttons", "ActionButton", "BitActionButton.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-ActionButton-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

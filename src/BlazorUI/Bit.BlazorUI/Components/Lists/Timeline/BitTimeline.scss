@@ -123,6 +123,8 @@
     --bit-tln-scn-flexdir: row;
 }
 
+$tln-private-properties: clr, clr-fg, clr-focus, clr-dis-bg, clr-dis-text, dot-sz, fs;
+
 .bit-tln {
     margin: 0;
     padding: 0;
@@ -138,13 +140,9 @@
     // carries them; the items inherit what the root ends up with and may publish their own. Left unset, each sends
     // the var() reading it on to the public variable and then to the default, which is what lets an explicit
     // parameter outrank the variable while an unset one leaves the variable in charge.
-    --bit-tln-clr: initial;
-    --bit-tln-clr-fg: initial;
-    --bit-tln-clr-focus: initial;
-    --bit-tln-clr-dis-bg: initial;
-    --bit-tln-clr-dis-text: initial;
-    --bit-tln-dot-sz: initial;
-    --bit-tln-fs: initial;
+    @each $name in $tln-private-properties {
+        --bit-tln-#{$name}: initial;
+    }
     --bit-tln-flexdir: column;
     --bit-tln-itm-flexdir: row;
     --bit-tln-pcn-flexdir: row-reverse;
@@ -207,17 +205,21 @@
     align-items: var(--bit-tln-align, center);
     flex-direction: var(--bit-tln-itm-flexdir);
     border-radius: var(--bit-Timeline-item-radius, #{$shp-radius-control});
+    --bit-tln-btn-sbg: initial;
+    background-color: var(--bit-tln-btn-sbg);
     transition: background-color $mot-duration-short $mot-easing;
 
-    // A disabled item takes no pointer events at all, so the hover plate never shows up on one.
+    // A disabled item takes no pointer events at all, so the hover plate never shows up on one. The states change
+    // the variable the item is painted from rather than its background, so an item the app paints through Classes
+    // keeps that paint under the pointer and while it is pressed, instead of losing it to a state that outranks it.
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-Timeline-item-hover-background, #{$clr-bg-pri-hover});
+            --bit-tln-btn-sbg: var(--bit-Timeline-item-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active {
-        background-color: var(--bit-Timeline-item-active-background, #{$clr-bg-pri-active});
+        --bit-tln-btn-sbg: var(--bit-Timeline-item-active-background, #{$clr-bg-pri-active});
     }
 
     &:focus-visible {

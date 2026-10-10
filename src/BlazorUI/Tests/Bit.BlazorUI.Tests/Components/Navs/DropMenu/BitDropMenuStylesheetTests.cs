@@ -97,5 +97,5 @@ public class BitDropMenuStylesheetTests
         Assert.IsTrue(rootAt < stylesheet.IndexOf("\n.bit-drm-md {", System.StringComparison.Ordinal), "The size classes are declared ahead of the root that resets them.");
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Navs", "DropMenu", "BitDropMenu.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Navs", "DropMenu", "BitDropMenu.scss");
 }

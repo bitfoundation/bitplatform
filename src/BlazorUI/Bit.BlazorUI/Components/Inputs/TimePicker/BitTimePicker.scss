@@ -76,6 +76,11 @@
 // would be indistinguishable from one that was asked for. An invalid field keeps the error color on its
 // focus ring whatever either says.
 
+// Every private variable the mixin below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$tpc-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-focus, inp-h, inp-fs, lbl-fs, des-fs, fld-ico-fs,
+                         cell-size, cell-fs, ico-fs, sep-fs, ampm-fs, act-fs;
+
 // What the Color and Size classes publish starts out unset on the root and on the callout alike, so a
 // TimePicker in the content of another one (a callout template, say) never inherits the outer one's
 // choice; the classes - declared further down at the same weight - still win on the element that carries
@@ -83,22 +88,9 @@
 // which is what lets an explicit parameter outrank the variable while an unset one leaves the variable in
 // charge.
 @mixin tpc-parameter-resets {
-    --bit-tpc-rl-clr: initial;
-    --bit-tpc-rl-txt: initial;
-    --bit-tpc-rl-hover: initial;
-    --bit-tpc-rl-active: initial;
-    --bit-tpc-rl-focus: initial;
-    --bit-tpc-inp-h: initial;
-    --bit-tpc-inp-fs: initial;
-    --bit-tpc-lbl-fs: initial;
-    --bit-tpc-des-fs: initial;
-    --bit-tpc-fld-ico-fs: initial;
-    --bit-tpc-cell-size: initial;
-    --bit-tpc-cell-fs: initial;
-    --bit-tpc-ico-fs: initial;
-    --bit-tpc-sep-fs: initial;
-    --bit-tpc-ampm-fs: initial;
-    --bit-tpc-act-fs: initial;
+    @each $name in $tpc-private-properties {
+        --bit-tpc-#{$name}: initial;
+    }
 }
 
 // The colors resolve once, on whichever of the two elements the parts live under: the explicit Color first,
@@ -194,6 +186,7 @@
 
 .bit-tpc-wrp {
     position: relative;
+    --bit-tpc-wrp-sbr: initial;
 }
 
 .bit-tpc-icn {
@@ -210,29 +203,33 @@
     box-sizing: border-box;
     border-radius: var(--bit-TimePicker-radius, #{$shp-radius-control});
     background-color: var(--bit-TimePicker-background, #{$clr-bg-pri});
-    border: var(--bit-TimePicker-border-width, #{$shp-border-width}) $shp-border-style var(--bit-TimePicker-border-color, #{$clr-brd-pri});
+    --bit-tpc-icn-sbr: initial;
+    border: var(--bit-TimePicker-border-width, #{$shp-border-width}) $shp-border-style var(--bit-tpc-icn-sbr, var(--bit-TimePicker-border-color, #{$clr-brd-pri}));
     transition: border-color $mot-duration-short $mot-easing;
 }
 
 // The field says it can be operated before it is: its border darkens under the pointer and a little more
 // while it is pressed. An invalid field keeps the color that says why, and a disabled one takes no pointer.
+// The states change the variables the borders are painted from rather than the borders themselves, so only the
+// rules at rest paint them: a part the app paints through Classes keeps that paint under the pointer and while
+// it is pressed, instead of losing it to a state that outranks the app's class.
 .bit-tpc:not(.bit-inv) {
     @media (hover: hover) {
         .bit-tpc-icn:hover {
-            border-color: var(--bit-TimePicker-hover-border-color, #{$clr-brd-pri-hover});
+            --bit-tpc-icn-sbr: var(--bit-TimePicker-hover-border-color, #{$clr-brd-pri-hover});
         }
 
         &.bit-tpc-und .bit-tpc-wrp:hover {
-            border-bottom-color: var(--bit-TimePicker-hover-border-color, #{$clr-brd-pri-hover});
+            --bit-tpc-wrp-sbr: var(--bit-TimePicker-hover-border-color, #{$clr-brd-pri-hover});
         }
     }
 
     .bit-tpc-icn:active {
-        border-color: var(--bit-TimePicker-hover-border-color, #{$clr-brd-pri-active});
+        --bit-tpc-icn-sbr: var(--bit-TimePicker-hover-border-color, #{$clr-brd-pri-active});
     }
 
     &.bit-tpc-und .bit-tpc-wrp:active {
-        border-bottom-color: var(--bit-TimePicker-hover-border-color, #{$clr-brd-pri-active});
+        --bit-tpc-wrp-sbr: var(--bit-TimePicker-hover-border-color, #{$clr-brd-pri-active});
     }
 }
 
@@ -319,7 +316,8 @@
     cursor: pointer;
     align-items: center;
     justify-content: center;
-    background: none transparent;
+    --bit-tpc-clb-bg: initial;
+    background: none var(--bit-tpc-clb-bg, transparent);
     color: var(--bit-TimePicker-icon-color, #{$clr-fg-sec});
     font-size: var(--bit-tpc-fld-ico-fs, var(--bit-TimePicker-icon-size, #{$siz-icon-md}));
     border-radius: var(--bit-TimePicker-cell-radius, #{$shp-radius-button});
@@ -332,12 +330,12 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-TimePicker-spin-hover-background, #{$clr-bg-pri-hover});
+            --bit-tpc-clb-bg: var(--bit-TimePicker-spin-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active {
-        background-color: var(--bit-TimePicker-spin-active-background, #{$clr-bg-pri-active});
+        --bit-tpc-clb-bg: var(--bit-TimePicker-spin-active-background, #{$clr-bg-pri-active});
     }
 
     &:focus-visible {
@@ -403,7 +401,7 @@
     .bit-tpc-wrp {
         width: 100%;
         display: flex;
-        border-bottom: var(--bit-TimePicker-border-width, #{$shp-border-width}) $shp-border-style var(--bit-TimePicker-border-color, #{$clr-brd-pri});
+        border-bottom: var(--bit-TimePicker-border-width, #{$shp-border-width}) $shp-border-style var(--bit-tpc-wrp-sbr, var(--bit-TimePicker-border-color, #{$clr-brd-pri}));
     }
 
     .bit-tpc-icn {
@@ -575,9 +573,10 @@
         margin: 0;
     }
 
+    // The input is already drawn borderless at rest, so the focus adds only the underline - a border of its own
+    // would take away one the app gives the input through Classes exactly while it is being typed in.
     &:focus {
         @include focus-underline-ring(var(--bit-tpc-clr-focus, #{$clr-pri-focus}));
-        border: none;
     }
 }
 
@@ -592,7 +591,9 @@
     outline: transparent;
     line-height: var(--bit-tpc-cell-size, var(--bit-TimePicker-cell-size, #{spacing(3.75)}));
     font-size: var(--bit-tpc-ico-fs, var(--bit-TimePicker-spin-font-size, #{$tg-fs-xs}));
-    background-color: transparent;
+    // Shared with the AM/PM buttons, which are spin buttons too: their own states set it after these ones.
+    --bit-tpc-tbt-bg: initial;
+    background-color: var(--bit-tpc-tbt-bg, transparent);
     color: var(--bit-TimePicker-spin-color, #{$clr-fg-pri});
     border-radius: var(--bit-TimePicker-cell-radius, #{$shp-radius-button});
     letter-spacing: $tg-ctrl-letter-spacing;
@@ -601,12 +602,12 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-TimePicker-spin-hover-background, #{$clr-bg-pri-hover});
+            --bit-tpc-tbt-bg: var(--bit-TimePicker-spin-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active {
-        background-color: var(--bit-TimePicker-spin-active-background, #{$clr-bg-pri-active});
+        --bit-tpc-tbt-bg: var(--bit-TimePicker-spin-active-background, #{$clr-bg-pri-active});
     }
 
     i {
@@ -642,7 +643,7 @@
 
 .bit-tpc-bns {
     color: var(--bit-tpc-clr-txt);
-    background-color: var(--bit-tpc-clr);
+    background-color: var(--bit-tpc-tbt-bg, var(--bit-tpc-clr));
 
     &:disabled {
         background-color: $clr-bg-dis;
@@ -650,12 +651,12 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-tpc-clr-hover);
+            --bit-tpc-tbt-bg: var(--bit-tpc-clr-hover);
         }
     }
 
     &:active {
-        background-color: var(--bit-tpc-clr-active);
+        --bit-tpc-tbt-bg: var(--bit-tpc-clr-active);
     }
 }
 
@@ -674,7 +675,8 @@
     font-weight: $tg-fw-semibold;
     color: var(--bit-tpc-clr);
     font-size: var(--bit-tpc-act-fs, var(--bit-TimePicker-action-font-size, #{$tg-fs-sm}));
-    background-color: transparent;
+    --bit-tpc-abn-bg: initial;
+    background-color: var(--bit-tpc-abn-bg, transparent);
     font-family: $tg-font-family;
     padding: spacing(0.75) spacing(1.5);
     border-radius: var(--bit-TimePicker-cell-radius, #{$shp-radius-button});
@@ -686,12 +688,12 @@
 
     @media (hover: hover) {
         &:hover:not(:disabled) {
-            background-color: var(--bit-TimePicker-spin-hover-background, #{$clr-bg-pri-hover});
+            --bit-tpc-abn-bg: var(--bit-TimePicker-spin-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active:not(:disabled) {
-        background-color: var(--bit-TimePicker-spin-active-background, #{$clr-bg-pri-active});
+        --bit-tpc-abn-bg: var(--bit-TimePicker-spin-active-background, #{$clr-bg-pri-active});
     }
 
     &:disabled {

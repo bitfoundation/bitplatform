@@ -60,8 +60,9 @@ public class BitPivotStylesheetTests
 
         // The indicator and the colors of a Tab item are the Color's as well, ahead of their own variables.
         StringAssert.Contains(stylesheet, "background-color: var(--bit-pvt-role-main, var(--bit-Pivot-indicator-color, var(--bit-Pivot-color, #{$clr-pri})));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-pvt-role-text, var(--bit-Pivot-item-selected-color, #{$clr-pri-text}));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-pvt-role-hover, var(--bit-Pivot-item-hover-background, #{$clr-pri-hover}));");
+        // (A hovered item is painted from the state variable its hover sets, read first by the rule at rest.)
+        StringAssert.Contains(stylesheet, "color: var(--bit-pvt-itm-clr, var(--bit-pvt-role-text, var(--bit-Pivot-item-selected-color, #{$clr-pri-text})));");
+        StringAssert.Contains(stylesheet, "--bit-pvt-itm-bg: var(--bit-pvt-role-hover, var(--bit-Pivot-item-hover-background, #{$clr-pri-hover}));");
 
         // An explicit Size publishes the font size and the item height, which an unset one leaves to the variables.
         StringAssert.Contains(stylesheet, "font-size: var(--bit-pvt-fs, var(--bit-Pivot-font-size, #{$tg-fs-sm}));");
@@ -248,5 +249,5 @@ public class BitPivotStylesheetTests
         return (documented, body);
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Navs", "Pivot", "BitPivot.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Navs", "Pivot", "BitPivot.scss");
 }

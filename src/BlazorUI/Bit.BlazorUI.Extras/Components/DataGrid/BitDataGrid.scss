@@ -48,16 +48,19 @@
     }
 }
 
+$dtg-private-properties:
+    rbg, cbg, tint, stripe-bg, hover-bg,
+    // What the component writes into an inline style, which wins over this on the element it is written on.
+    template, group-level, frozen-start, frozen-end, tree-level;
+
 .bit-dtg {
     --bit-dtg-cell-pad: var(--bit-DataGrid-cell-padding, #{spacing(1)} #{spacing(1.25)});
     --bit-dtg-brd: #{$shp-border-width} #{$shp-border-style} var(--bit-DataGrid-border-color, #{$clr-brd-ter});
     // The row state a cell paints, set by the rows below. Reset on every root, so a grid nested in another one's
     // template starts from its own defaults instead of inheriting the row it sits in.
-    --bit-dtg-rbg: initial;
-    --bit-dtg-cbg: initial;
-    --bit-dtg-tint: initial;
-    --bit-dtg-stripe-bg: initial;
-    --bit-dtg-hover-bg: initial;
+    @each $name in $dtg-private-properties {
+        --bit-dtg-#{$name}: initial;
+    }
 
     font-family: var(--bit-DataGrid-font-family, #{$tg-font-family});
     font-size: var(--bit-DataGrid-font-size, #{$tg-fs-sm});
@@ -481,16 +484,20 @@ button.bit-dtg-htext {
     height: 100%;
     cursor: col-resize;
     touch-action: none;
+    --bit-dtg-rsz-sbg: initial;
+    background: var(--bit-dtg-rsz-sbg);
 }
 
+/* The states move the variable a part is painted from rather than its colors, so a part the app paints through a
+   class keeps that paint under the pointer and under the focus, instead of losing it to a state that outranks it. */
 .bit-dtg-resizer:hover {
-    background: translucent(var(--bit-DataGrid-accent-color, #{$clr-pri}), 50%);
+    --bit-dtg-rsz-sbg: #{translucent(var(--bit-DataGrid-accent-color, #{$clr-pri}), 50%)};
 }
 
 /* The handle is a thin bar, so focus fills it rather than outlining it: an outline that narrow would be lost. */
 .bit-dtg-resizer:focus-visible {
     outline: none;
-    background: var(--bit-DataGrid-focus-color, #{$clr-pri-focus});
+    --bit-dtg-rsz-sbg: var(--bit-DataGrid-focus-color, #{$clr-pri-focus});
 }
 
 .bit-dtg-resize-overlay {
@@ -864,7 +871,10 @@ button.bit-dtg-htext {
     padding: 0 $siz-ctrl-pad-x-sm;
     border: var(--bit-dtg-brd);
     border-radius: $shp-radius-button;
-    background: var(--bit-DataGrid-background, #{$clr-bg-pri});
+    --bit-dtg-btn-sbg: initial;
+    --bit-dtg-btn-sbr: initial;
+    --bit-dtg-btn-sfg: initial;
+    background: var(--bit-dtg-btn-sbg, var(--bit-DataGrid-background, #{$clr-bg-pri}));
     color: inherit;
     font: inherit;
     letter-spacing: $tg-ctrl-letter-spacing;
@@ -880,7 +890,7 @@ button.bit-dtg-htext {
 }
 
 .bit-dtg-btn:hover:not(:disabled) {
-    background: $clr-bg-pri-hover;
+    --bit-dtg-btn-sbg: #{$clr-bg-pri-hover};
 }
 
 .bit-dtg-btn:disabled {
@@ -889,9 +899,9 @@ button.bit-dtg-htext {
 }
 
 .bit-dtg-btn-primary {
-    background: $clr-pri;
-    border-color: $clr-pri;
-    color: $clr-pri-text;
+    background: var(--bit-dtg-btn-sbg, #{$clr-pri});
+    border-color: var(--bit-dtg-btn-sbr, #{$clr-pri});
+    color: var(--bit-dtg-btn-sfg, #{$clr-pri-text});
 
     // The ring would vanish into the fill in the focus color, so it is drawn in the text color on it instead.
     &:focus-visible {
@@ -901,9 +911,9 @@ button.bit-dtg-htext {
 
 /* Win over the generic .bit-dtg-btn:hover rule so primary buttons keep their primary treatment on hover */
 .bit-dtg-btn-primary:hover:not(:disabled) {
-    background: $clr-pri-hover;
-    border-color: $clr-pri-hover;
-    color: $clr-pri-text;
+    --bit-dtg-btn-sbg: #{$clr-pri-hover};
+    --bit-dtg-btn-sbr: #{$clr-pri-hover};
+    --bit-dtg-btn-sfg: #{$clr-pri-text};
 }
 
 .bit-dtg-btn-danger {
@@ -929,7 +939,8 @@ button.bit-dtg-htext {
     flex: 0 0 auto;
     min-width: rem2(24px);
     min-height: rem2(24px);
-    background: none;
+    --bit-dtg-ibt-sbg: initial;
+    background: var(--bit-dtg-ibt-sbg, none);
     border: none;
     color: inherit;
     cursor: pointer;
@@ -949,7 +960,7 @@ button.bit-dtg-htext {
 }
 
 .bit-dtg-icon-btn:hover:not(:disabled) {
-    background: translucent(currentcolor, 10%);
+    --bit-dtg-ibt-sbg: #{translucent(currentcolor, 10%)};
 }
 
 .bit-dtg-group-btn.bit-dtg-active {

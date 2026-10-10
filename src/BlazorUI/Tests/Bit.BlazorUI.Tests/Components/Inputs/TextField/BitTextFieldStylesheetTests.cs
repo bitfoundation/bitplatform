@@ -32,7 +32,8 @@ public partial class BitTextFieldStylesheetTests
         StringAssert.Contains(stylesheet, "var(--bit-tfl-clr, var(--bit-TextField-button-color, var(--bit-TextField-accent-color, #{$clr-pri})))");
         StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-tfl-clr-focus, var(--bit-TextField-focus-color)))");
         StringAssert.Contains(stylesheet, "var(--bit-tfl-spn-clr, var(--bit-TextField-spinner-color, currentcolor))");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-tfl-clr-bg, var(--bit-TextField-background, #{$clr-bg-pri}));");
+        // The frame at rest reads the variable its hover moves first, then the fill ranked as everywhere else.
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-tfl-fgp-bg, var(--bit-tfl-clr-bg, var(--bit-TextField-background, #{$clr-bg-pri})));");
         StringAssert.Contains(stylesheet, "var(--bit-tfl-clr-brd, var(--bit-TextField-border-color, #{$clr-brd-pri}))");
         StringAssert.Contains(stylesheet, "var(--bit-tfl-clr-brd-hover, var(--bit-TextField-hover-border-color, #{$clr-brd-pri-hover}))");
 
@@ -76,7 +77,7 @@ public partial class BitTextFieldStylesheetTests
         StringAssert.Contains(disabled, "--bit-tfl-spn-clr: currentcolor;");
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Inputs", "TextField", "BitTextField.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "TextField", "BitTextField.scss");
 
     [GeneratedRegex(@"var\(--bit-TextField-[a-z-]+, var\(--bit-tfl-")]
     private static partial Regex PublicBeforePrivate();

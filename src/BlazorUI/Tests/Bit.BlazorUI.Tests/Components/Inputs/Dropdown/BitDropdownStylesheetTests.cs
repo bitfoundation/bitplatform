@@ -13,7 +13,7 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.Dropdown;
 [TestClass]
 public class BitDropdownStylesheetTests
 {
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Inputs", "Dropdown", "BitDropdown.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "Dropdown", "BitDropdown.scss");
 
     [TestMethod]
     public void BitDropdownShouldLetAParameterWinOverItsPublicVariable()

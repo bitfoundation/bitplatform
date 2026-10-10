@@ -23,8 +23,9 @@ public partial class BitOtpInputStylesheetTests
         StringAssert.Contains(stylesheet, "font-size: var(--bit-otp-fontsize, var(--bit-OtpInput-font-size, #{$tg-fs-sm}));");
         StringAssert.Contains(stylesheet, "font-size: var(--bit-otp-dsc-fontsize, var(--bit-OtpInput-description-font-size, #{$tg-fs-xs}));");
 
-        // So does an explicit Accent, for every color it paints.
-        StringAssert.Contains(stylesheet, "border-color: var(--bit-otp-clr, var(--bit-OtpInput-focus-border-color, #{$clr-pri}));");
+        // So does an explicit Accent, for every color it paints - the focused rule through the variable the box is
+        // painted from at rest, so an app's class on the box keeps its paint while it is focused.
+        StringAssert.Contains(stylesheet, "--bit-otp-inp-sbr: var(--bit-otp-clr, var(--bit-OtpInput-focus-border-color, #{$clr-pri}));");
         StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-otp-clr-focus, var(--bit-OtpInput-focus-color)))");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-otp-clr, var(--bit-OtpInput-loader-color, #{$clr-pri}));");
 
@@ -47,7 +48,7 @@ public partial class BitOtpInputStylesheetTests
         }
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Inputs", "OtpInput", "BitOtpInput.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "OtpInput", "BitOtpInput.scss");
 
     [GeneratedRegex(@"var\(--bit-OtpInput-[a-z-]+, (var\(--bit-OtpInput-[a-z-]+, )*var\(--bit-otp-(size|fontsize|dsc-fontsize|clr|clr-focus)\b")]
     private static partial Regex PublicBeforePrivate();

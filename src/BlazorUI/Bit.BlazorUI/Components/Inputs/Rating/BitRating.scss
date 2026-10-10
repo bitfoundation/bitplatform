@@ -36,6 +36,8 @@
 // Color leaves alone - the unfilled part, the label and description colors - stays the variables'. A state the
 // rating is in (disabled, invalid) still paints over all of them, as before.
 
+$rtg-private-properties: clr, clr-hover, clr-active, clr-focus, size, lbl-size, dsc-size;
+
 .bit-rtg {
     // Block-level like the plain div the rating has always been, so two ratings written one after the other
     // still stack; a rating that belongs inside a line of text is made inline-flex through its Style.
@@ -57,13 +59,9 @@
     // rating placed in the label or an item template of another one from inheriting the outer one's choice,
     // and it is what lets each read below rank an explicit parameter first, then the public variable, then
     // the primary, medium rating an unset parameter stands for.
-    --bit-rtg-clr: initial;
-    --bit-rtg-clr-hover: initial;
-    --bit-rtg-clr-active: initial;
-    --bit-rtg-clr-focus: initial;
-    --bit-rtg-size: initial;
-    --bit-rtg-lbl-size: initial;
-    --bit-rtg-dsc-size: initial;
+    @each $name in $rtg-private-properties {
+        --bit-rtg-#{$name}: initial;
+    }
     // The unfilled part stays neutral whatever the Color is, so it keeps reading as "not rated yet"
     // instead of as a second, dimmer accent.
     --bit-rtg-clr-uns: #{$clr-fg-ter};
@@ -71,12 +69,14 @@
     // While the pointer is over an interactive rating the filled part - which the hover preview has
     // already extended to the item under the pointer - shifts to the hover shade, so the preview reads
     // as "this is what a click would give you" rather than as the committed value. An invalid rating is
-    // left out of it, so the error color it is painted with survives the pointer passing over it.
+    // left out of it, so the error color it is painted with survives the pointer passing over it. The hover
+    // and the press below change the variable the fill is painted from rather than its color, so only the
+    // rule at rest paints it: a fill the app paints through Classes keeps that paint under the pointer.
     @media (hover: hover) {
         // Scoped to the box the items live in rather than to the root: the pointer resting on the label
         // or the description previews nothing, so it must not repaint the fill as though it did.
         &:not(.bit-dis):not(.bit-inv):not(.bit-rtg-rdl):not(.bit-rtg-nhp) .bit-rtg-cnt:hover .bit-rtg-ifl {
-            color: var(--bit-rtg-clr-hover, var(--bit-Rating-hover-color, #{$clr-pri-hover}));
+            --bit-rtg-ifl-clr: var(--bit-rtg-clr-hover, var(--bit-Rating-hover-color, #{$clr-pri-hover}));
         }
 
         // The item under the pointer grows a little, which is the affordance that says the items are
@@ -93,7 +93,7 @@
     // gated by the hover query the two rules above are in. Declared after that block rather than inside
     // it so that a press outranks the hover it happens under on a pointer device, on source order.
     &:not(.bit-dis):not(.bit-inv):not(.bit-rtg-rdl) .bit-rtg-cnt:active .bit-rtg-ifl {
-        color: var(--bit-rtg-clr-active, var(--bit-Rating-active-color, #{$clr-pri-active}));
+        --bit-rtg-ifl-clr: var(--bit-rtg-clr-active, var(--bit-Rating-active-color, #{$clr-pri-active}));
     }
 
     // Dipping rather than growing: the item is already grown by the hover it is pressed under on a
@@ -304,7 +304,8 @@
     font-weight: $tg-fw-regular;
     display: inline-block;
     vertical-align: middle;
-    color: var(--bit-rtg-clr, var(--bit-Rating-color, #{$clr-pri}));
+    --bit-rtg-ifl-clr: initial;
+    color: var(--bit-rtg-ifl-clr, var(--bit-rtg-clr, var(--bit-Rating-color, #{$clr-pri})));
     transition: width $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 }
 
@@ -407,13 +408,9 @@
     // brought back into the palette by hand. The hover and press shades and the error color are all theme
     // colors, and a forced palette has replaced the theme wholesale; the fill therefore keeps the one system
     // color that means "selected" through all three, and the states are carried by what does survive a forced
-    // palette: the focus outline, the required asterisk and the validation message beside the field.
-    // Repeated selector for selector, so that it is only source order deciding between them.
-    .bit-rtg:not(.bit-dis):not(.bit-inv):not(.bit-rtg-rdl):not(.bit-rtg-nhp) .bit-rtg-cnt:hover .bit-rtg-ifl,
-    .bit-rtg:not(.bit-dis):not(.bit-inv):not(.bit-rtg-rdl) .bit-rtg-cnt:active .bit-rtg-ifl {
-        color: Highlight;
-    }
-
+    // palette: the focus outline, the required asterisk and the validation message beside the field. The
+    // hover and the press only move the variable the rule at rest reads, which the rule above paints over
+    // already; the error color is painted outright, so it is taken back here.
     .bit-rtg.bit-inv {
         .bit-rtg-iem {
             color: ButtonText;

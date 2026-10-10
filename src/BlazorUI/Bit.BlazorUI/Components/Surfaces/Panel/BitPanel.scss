@@ -17,7 +17,14 @@
 //   --bit-Panel-header-font-size     text size of the header                            (default: $tg-fs-xl)
 //   --bit-Panel-header-font-weight   weight of the header                               (default: $tg-fw-semibold)
 
+$pnl-private-properties: zin-ovl, zin-cnt;
+
 .bit-pnl {
+    // What the component writes into an inline style starts out unset on every root, so an instance nested in
+    // another one never takes the outer one's value for its own; the inline declaration still wins on its element.
+    @each $name in $pnl-private-properties {
+        --bit-pnl-#{$name}: initial;
+    }
     font-weight: $tg-fw-regular;
     font-size: $tg-fs-md;
     z-index: $zindex-modal;
@@ -307,7 +314,8 @@
     display: flex;
     flex-shrink: 0;
     cursor: pointer;
-    color: inherit;
+    --bit-pnl-cls-clr: initial;
+    color: var(--bit-pnl-cls-clr, inherit);
     width: $siz-ctrl-md;
     height: $siz-ctrl-md;
     align-items: center;
@@ -315,19 +323,23 @@
     font-size: $siz-icon-md;
     margin-inline-start: auto;
     border-radius: $shp-radius-button;
-    background-color: transparent;
+    --bit-pnl-cls-bg: initial;
+    background-color: var(--bit-pnl-cls-bg, transparent);
     transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
+    // The states change the variables the button is painted from rather than its colors, so the one rule that
+    // paints is the one at rest: a close button the app paints through Classes keeps that paint under the
+    // pointer and while it is pressed, instead of losing it to a state that outranks the app's class.
     @media (hover: hover) {
         &:hover:not(:disabled) {
-            color: $clr-fg-pri-hover;
-            background-color: $clr-bg-pri-hover;
+            --bit-pnl-cls-clr: #{$clr-fg-pri-hover};
+            --bit-pnl-cls-bg: #{$clr-bg-pri-hover};
         }
     }
 
     &:active:not(:disabled) {
-        color: $clr-fg-pri-active;
-        background-color: $clr-bg-pri-active;
+        --bit-pnl-cls-clr: #{$clr-fg-pri-active};
+        --bit-pnl-cls-bg: #{$clr-bg-pri-active};
     }
 
     &:focus-visible {

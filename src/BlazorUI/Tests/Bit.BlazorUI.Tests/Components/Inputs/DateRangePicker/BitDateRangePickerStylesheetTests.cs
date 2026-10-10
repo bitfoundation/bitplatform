@@ -11,7 +11,7 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.DateRangePicker;
 [TestClass]
 public class BitDateRangePickerStylesheetTests
 {
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Inputs", "DateRangePicker", "BitDateRangePicker.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "DateRangePicker", "BitDateRangePicker.scss");
 
     [TestMethod]
     public void BitDateRangePickerShouldLetAParameterWinOverItsPublicVariable()

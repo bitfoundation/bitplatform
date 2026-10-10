@@ -67,22 +67,20 @@
 // rail color, the thumb face, the unreached marks, the labels' colors, the gap - stays the variables'. A state
 // the slider is in (disabled, invalid) still paints over all of them, as before.
 
+$sld-private-properties:
+    clr, clr-on, clr-hover, clr-active, clr-focus, sz-thumb, sz-rail, sz-length, sz-font-size, sz-font-size-sub,
+    // What the component writes into an inline style, which wins over this on the element it is written on.
+    vlb-min, inp-start, inp-end, inp-mid, bar-start, bar-end;
+
 .bit-sld {
     // The values the Color and Size classes publish start out unset on every root, which those classes -
     // declared further down at the same weight - still win over on the root that carries them. That keeps a
     // slider placed in a label template of another one from inheriting the outer one's choice, and it is what
     // lets each read below rank an explicit parameter first, then the public variable, then the primary,
     // medium slider an unset parameter stands for.
-    --bit-sld-clr: initial;
-    --bit-sld-clr-on: initial;
-    --bit-sld-clr-hover: initial;
-    --bit-sld-clr-active: initial;
-    --bit-sld-clr-focus: initial;
-    --bit-sld-sz-thumb: initial;
-    --bit-sld-sz-rail: initial;
-    --bit-sld-sz-length: initial;
-    --bit-sld-sz-font-size: initial;
-    --bit-sld-sz-font-size-sub: initial;
+    @each $name in $sld-private-properties {
+        --bit-sld-#{$name}: initial;
+    }
 
     // The thumb and the rail follow the theme (Material's 20dp handle on a 4dp track, the 28pt
     // UISlider knob on a 2pt one); the length stays this component's own knob. The size classes
@@ -232,7 +230,8 @@
     position: absolute;
     height: var(--bit-sld-rail);
     border-radius: var(--bit-Slider-rail-radius, var(--bit-sld-rail));
-    background-color: var(--bit-sld-clr, var(--bit-Slider-color, #{$clr-pri}));
+    --bit-sld-fil-bg: initial;
+    background-color: var(--bit-sld-fil-bg, var(--bit-sld-clr, var(--bit-Slider-color, #{$clr-pri})));
     transform: translateY(calc(var(--bit-sld-rail) / -2));
     transition: background-color var(--bit-Slider-transition-duration, #{$mot-duration-short}) $mot-easing,
                 inset-inline-start var(--bit-Slider-transition-duration, #{$mot-duration-short}) $mot-easing,
@@ -256,7 +255,8 @@
     margin-top: calc(var(--bit-sld-thumb) / -2);
     margin-inline-start: calc(var(--bit-sld-thumb) / -2);
     border-style: $shp-border-style;
-    border-color: var(--bit-sld-clr, var(--bit-Slider-color, #{$clr-pri}));
+    --bit-sld-thb-brd: initial;
+    border-color: var(--bit-sld-thb-brd, var(--bit-sld-clr, var(--bit-Slider-color, #{$clr-pri})));
     border-width: var(--bit-Slider-thumb-border-width, #{$shp-border-width-thick});
     transition: border-color var(--bit-Slider-transition-duration, #{$mot-duration-short}) $mot-easing,
                 box-shadow var(--bit-Slider-transition-duration, #{$mot-duration-short}) $mot-easing,
@@ -274,22 +274,25 @@
     }
 }
 
+// The states change the variables the parts are painted from rather than their colors, so only the rules at
+// rest paint them: a fill, thumb or label the app paints through Classes keeps that paint under the pointer and
+// through a drag, instead of losing it to a state that outranks the app's class.
 @media (hover: hover) {
     .bit-sld:not(.bit-dis):not(.bit-sld-rdl):not(.bit-inv) {
         .bit-sld-box:hover {
             .bit-sld-fil {
-                background-color: var(--bit-sld-clr-hover, var(--bit-Slider-hover-color, var(--bit-Slider-color, #{$clr-pri-hover})));
+                --bit-sld-fil-bg: var(--bit-sld-clr-hover, var(--bit-Slider-hover-color, var(--bit-Slider-color, #{$clr-pri-hover})));
             }
 
             .bit-sld-thb {
-                border-color: var(--bit-sld-clr-hover, var(--bit-Slider-hover-color, var(--bit-Slider-color, #{$clr-pri-hover})));
+                --bit-sld-thb-brd: var(--bit-sld-clr-hover, var(--bit-Slider-hover-color, var(--bit-Slider-color, #{$clr-pri-hover})));
             }
 
             // The floating label is a chip of the accent, so it moves with it rather than being left as the
             // one part of the slider still wearing the resting color. A background named outright still wins
             // over the public accents, though not over an explicit Color.
             .bit-sld-tlb {
-                background-color: var(--bit-sld-clr-hover, var(--bit-Slider-thumb-label-background, var(--bit-Slider-hover-color, var(--bit-Slider-color, #{$clr-pri-hover}))));
+                --bit-sld-tlb-bg: var(--bit-sld-clr-hover, var(--bit-Slider-thumb-label-background, var(--bit-Slider-hover-color, var(--bit-Slider-color, #{$clr-pri-hover}))));
             }
         }
     }
@@ -302,15 +305,15 @@
 .bit-sld:not(.bit-dis):not(.bit-sld-rdl):not(.bit-inv) {
     .bit-sld-box:has(> .bit-sld-inp:active) {
         .bit-sld-fil {
-            background-color: var(--bit-sld-clr-active, var(--bit-Slider-active-color, var(--bit-Slider-color, #{$clr-pri-active})));
+            --bit-sld-fil-bg: var(--bit-sld-clr-active, var(--bit-Slider-active-color, var(--bit-Slider-color, #{$clr-pri-active})));
         }
 
         .bit-sld-thb {
-            border-color: var(--bit-sld-clr-active, var(--bit-Slider-active-color, var(--bit-Slider-color, #{$clr-pri-active})));
+            --bit-sld-thb-brd: var(--bit-sld-clr-active, var(--bit-Slider-active-color, var(--bit-Slider-color, #{$clr-pri-active})));
         }
 
         .bit-sld-tlb {
-            background-color: var(--bit-sld-clr-active, var(--bit-Slider-thumb-label-background, var(--bit-Slider-active-color, var(--bit-Slider-color, #{$clr-pri-active}))));
+            --bit-sld-tlb-bg: var(--bit-sld-clr-active, var(--bit-Slider-thumb-label-background, var(--bit-Slider-active-color, var(--bit-Slider-color, #{$clr-pri-active}))));
         }
     }
 }
@@ -580,7 +583,8 @@
     pointer-events: none;
     justify-content: center;
     color: var(--bit-sld-clr-on, var(--bit-Slider-thumb-label-color, #{$clr-pri-text}));
-    background-color: var(--bit-sld-clr, var(--bit-Slider-thumb-label-background, var(--bit-Slider-color, #{$clr-pri})));
+    --bit-sld-tlb-bg: initial;
+    background-color: var(--bit-sld-tlb-bg, var(--bit-sld-clr, var(--bit-Slider-thumb-label-background, var(--bit-Slider-color, #{$clr-pri}))));
     border-radius: var(--bit-Slider-thumb-label-radius, #{$shp-radius-popup});
     padding: var(--bit-Slider-thumb-label-padding, #{spacing(0.25)} #{spacing(0.75)});
     font-size: var(--bit-sld-sz-font-size-sub, var(--bit-Slider-thumb-label-font-size, #{$tg-fs-xs}));

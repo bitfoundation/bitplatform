@@ -67,5 +67,5 @@ public class BitNavBarStylesheetTests
         Assert.IsTrue(rootAt < stylesheet.IndexOf("\n.bit-nbr-fil {", System.StringComparison.Ordinal), "The filled class is declared ahead of the root that resets it.");
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Navs", "NavBar", "BitNavBar.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Navs", "NavBar", "BitNavBar.scss");
 }

@@ -108,5 +108,5 @@ public class BitStackStylesheetTests : BunitTestContext
         Assert.IsTrue(rule.IsMatch(ReadStylesheet()), "A [hidden] stack is not hidden by an important display:none.");
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Layouts", "Stack", "BitStack.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Layouts", "Stack", "BitStack.scss");
 }

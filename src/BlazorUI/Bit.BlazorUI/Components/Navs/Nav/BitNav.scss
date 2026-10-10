@@ -39,20 +39,42 @@
 // accent's own colors at once. Each part had been given a color that reads on the page background
 // (the item text and the chevron the primary foreground, the icon the Color role, the description the
 // muted tertiary foreground), and none of those are meant to sit on a filled accent.
-@mixin accented-item-content($color) {
-    .bit-nav-itm,
-    .bit-nav-cbt {
-        color: $color;
-    }
-
+// A state (the hover, the press) passes $state: true and sets the variable each part is painted from rather than
+// its color, so the rules that declare the colors are the ones at rest - the parts' own rules and the selection's -
+// and a part the app paints through Classes keeps that paint under the pointer, instead of losing it to a state
+// that outranks the app's class. Each part unsets the variable on itself at rest (see .bit-nav-itm).
+@mixin accented-item-content($color, $state: false) {
     // A semantic Accent publishes these; any other leaves the icon and the description in the colors they have
     // at rest, ranked the same way as they are there.
-    .bit-nav-iic {
-        color: var(--bit-nav-clr-icon, var(--bit-nav-clr, var(--bit-Nav-icon-color, #{$clr-pri})));
-    }
+    $icon: var(--bit-nav-clr-icon, var(--bit-nav-clr, var(--bit-Nav-icon-color, #{$clr-pri})));
+    $des: var(--bit-nav-clr-des, var(--bit-Nav-description-color, #{$clr-fg-ter}));
 
-    .bit-nav-des {
-        color: var(--bit-nav-clr-des, var(--bit-Nav-description-color, #{$clr-fg-ter}));
+    @if $state {
+        .bit-nav-itm,
+        .bit-nav-cbt {
+            --bit-nav-sfg: #{$color};
+        }
+
+        .bit-nav-iic {
+            --bit-nav-sfg: #{$icon};
+        }
+
+        .bit-nav-des {
+            --bit-nav-sfg: #{$des};
+        }
+    } @else {
+        .bit-nav-itm,
+        .bit-nav-cbt {
+            color: var(--bit-nav-sfg, #{$color});
+        }
+
+        .bit-nav-iic {
+            color: var(--bit-nav-sfg, #{$icon});
+        }
+
+        .bit-nav-des {
+            color: var(--bit-nav-sfg, #{$des});
+        }
     }
 }
 
@@ -65,6 +87,9 @@
     }
 }
 
+$nav-private-properties: item-font-size, item-min-height, icon-size, des-font-size, header-font-size,
+                         header-min-height, chevron-size, clr, clr-text, clr-hover, clr-active, clr-icon, clr-des;
+
 .bit-nav {
     font-family: $tg-font-family;
     color: var(--bit-Nav-color, #{$clr-fg-pri});
@@ -75,19 +100,9 @@
     // weight - still win on the root that carries them. Left unset, each sends the var() reading it on to the
     // public variable and then to the default (the medium size, the primary Color, the PrimaryBackground Accent),
     // which is what lets an explicit parameter outrank the variable while an unset one leaves the variable in charge.
-    --bit-nav-item-font-size: initial;
-    --bit-nav-item-min-height: initial;
-    --bit-nav-icon-size: initial;
-    --bit-nav-des-font-size: initial;
-    --bit-nav-header-font-size: initial;
-    --bit-nav-header-min-height: initial;
-    --bit-nav-chevron-size: initial;
-    --bit-nav-clr: initial;
-    --bit-nav-clr-text: initial;
-    --bit-nav-clr-hover: initial;
-    --bit-nav-clr-active: initial;
-    --bit-nav-clr-icon: initial;
-    --bit-nav-clr-des: initial;
+    @each $name in $nav-private-properties {
+        --bit-nav-#{$name}: initial;
+    }
 
     // Only the nav's own lists (.bit-nav-lst) are laid out here: a template can render a list of its own
     // inside an item, and a descendant selector would force it into the nav's column and gaps.
@@ -164,6 +179,9 @@
     // A button does not inherit the font of the page, so the header would be set in the browser's own.
     font-family: inherit;
     color: var(--bit-Nav-header-color, #{$clr-fg-pri});
+    // The state background the hover and the press set (see accented-item-content), unset at rest.
+    --bit-nav-sbg: initial;
+    background-color: var(--bit-nav-sbg, transparent);
     min-height: var(--bit-nav-header-min-height, var(--bit-Nav-header-min-height, #{spacing(5.5)}));
     border-bottom: $siz-divider $shp-border-style var(--bit-Nav-header-border-color, #{$clr-brd-pri});
     transition: background-color $mot-duration-short $mot-easing;
@@ -176,12 +194,12 @@
     // than the Accent, which a semantic role would turn into a vivid fill under text that does not follow it.
     @media (hover: hover) {
         &:hover:not(:disabled, .bit-nav-gst) {
-            background-color: var(--bit-Nav-header-hover-background, #{$clr-bg-pri-hover});
+            --bit-nav-sbg: var(--bit-Nav-header-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active:not(:disabled, .bit-nav-gst) {
-        background-color: $clr-bg-pri-active;
+        --bit-nav-sbg: #{$clr-bg-pri-active};
     }
 
     &:focus-visible {
@@ -250,6 +268,8 @@
     gap: spacing(0.25);
     box-sizing: border-box;
     border-color: transparent;
+    --bit-nav-sbg: initial;
+    background-color: var(--bit-nav-sbg, transparent);
     border-inline-start-style: $shp-border-style;
     padding: var(--bit-Nav-item-padding, #{spacing(0.5)});
     border-radius: var(--bit-Nav-item-radius, #{$shp-radius-control});
@@ -265,18 +285,18 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-nav-clr-hover, var(--bit-Nav-hover-background, #{$clr-bg-pri-hover}));
+            --bit-nav-sbg: var(--bit-nav-clr-hover, var(--bit-Nav-hover-background, #{$clr-bg-pri-hover}));
 
-            @include accented-item-content(var(--bit-nav-clr-text, var(--bit-Nav-hover-color, #{$clr-fg-pri})));
+            @include accented-item-content(var(--bit-nav-clr-text, var(--bit-Nav-hover-color, #{$clr-fg-pri})), $state: true);
         }
     }
 
     // Unlike the hover, the pressed state is not kept to the pointers that can hover: on a touch screen it is
     // the one feedback a tap gets before the page changes.
     &:active {
-        background-color: var(--bit-nav-clr-active, var(--bit-Nav-pressed-background, #{$clr-bg-pri-active}));
+        --bit-nav-sbg: var(--bit-nav-clr-active, var(--bit-Nav-pressed-background, #{$clr-bg-pri-active}));
 
-        @include accented-item-content(var(--bit-nav-clr-text, var(--bit-Nav-hover-color, #{$clr-fg-pri})));
+        @include accented-item-content(var(--bit-nav-clr-text, var(--bit-Nav-hover-color, #{$clr-fg-pri})), $state: true);
     }
 }
 
@@ -300,7 +320,10 @@
     white-space: nowrap;
     flex-flow: row nowrap;
     text-overflow: ellipsis;
-    color: var(--bit-Nav-color, #{$clr-fg-pri});
+    // The state color the hover and the press of the item set (see accented-item-content), unset at rest so a part
+    // never takes it from an outer one; .bit-nav-cbt, .bit-nav-iic and .bit-nav-des do the same.
+    --bit-nav-sfg: initial;
+    color: var(--bit-nav-sfg, var(--bit-Nav-color, #{$clr-fg-pri}));
     letter-spacing: $tg-ctrl-letter-spacing;
     font-size: var(--bit-nav-item-font-size, var(--bit-Nav-font-size, #{$tg-fs-sm}));
     transition: color $mot-duration-short $mot-easing;
@@ -325,7 +348,8 @@
     background: transparent;
     text-overflow: ellipsis;
     padding-inline-start: spacing(2.75);
-    color: var(--bit-Nav-description-color, #{$clr-fg-ter});
+    --bit-nav-sfg: initial;
+    color: var(--bit-nav-sfg, var(--bit-Nav-description-color, #{$clr-fg-ter}));
     font-size: var(--bit-nav-des-font-size, var(--bit-Nav-description-font-size, #{$tg-fs-xs}));
     transition: color $mot-duration-short $mot-easing;
 }
@@ -340,7 +364,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--bit-Nav-color, #{$clr-fg-pri});
+    --bit-nav-sfg: initial;
+    color: var(--bit-nav-sfg, var(--bit-Nav-color, #{$clr-fg-pri}));
     transition: color $mot-duration-short $mot-easing;
 
     &:focus-visible {
@@ -351,7 +376,8 @@
 .bit-nav-iic {
     line-height: 1;
     flex-shrink: 0;
-    color: var(--bit-nav-clr, var(--bit-Nav-icon-color, #{$clr-pri}));
+    --bit-nav-sfg: initial;
+    color: var(--bit-nav-sfg, var(--bit-nav-clr, var(--bit-Nav-icon-color, #{$clr-pri})));
     font-size: var(--bit-nav-icon-size, var(--bit-Nav-icon-size, #{$siz-icon-md}));
     transition: color $mot-duration-short $mot-easing;
 }
@@ -388,7 +414,7 @@
 .bit-nav-sel,
 .bit-nav-sca {
     border-color: var(--bit-nav-clr, var(--bit-Nav-indicator-color, #{$clr-pri}));
-    background-color: var(--bit-nav-clr-active, var(--bit-Nav-selected-background, #{$clr-bg-pri-active}));
+    background-color: var(--bit-nav-sbg, var(--bit-nav-clr-active, var(--bit-Nav-selected-background, #{$clr-bg-pri-active})));
 
     @include accented-item-content(var(--bit-nav-clr-text, var(--bit-Nav-selected-color, #{$clr-fg-pri})));
 

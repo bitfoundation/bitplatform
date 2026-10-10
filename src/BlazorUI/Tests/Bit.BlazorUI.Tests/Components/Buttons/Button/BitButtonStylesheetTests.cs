@@ -52,17 +52,19 @@ public partial class BitButtonStylesheetTests
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-btn-rnd {"), "--bit-btn-radius: #{$shp-radius-full};");
 
         // So does an explicit Color, for every color it paints - the disabled and focus colors included.
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-btn-clr, var(--bit-Button-background, var(--bit-btn-dft-clr, #{$clr-pri})));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-btn-clr-txt, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-btn-clr-hover, var(--bit-Button-hover-background, var(--bit-btn-dft-clr-hover, #{$clr-pri-hover})));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-btn-clr-active, var(--bit-Button-active-background, var(--bit-btn-dft-clr-active, #{$clr-pri-active})));");
+        // The hover and press states set the variables the rules at rest paint from (--bit-btn-sfg / -sbg / -sbr), never
+        // the colors themselves, so the state's value is read ahead of the rest value it stands in for.
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-btn-sbg, var(--bit-btn-clr, var(--bit-Button-background, var(--bit-btn-dft-clr, #{$clr-pri}))));");
+        StringAssert.Contains(stylesheet, "color: var(--bit-btn-sfg, var(--bit-btn-clr-txt, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text}))));");
+        StringAssert.Contains(stylesheet, "--bit-btn-sbg: var(--bit-btn-clr-hover, var(--bit-Button-hover-background, var(--bit-btn-dft-clr-hover, #{$clr-pri-hover})));");
+        StringAssert.Contains(stylesheet, "--bit-btn-sbg: var(--bit-btn-clr-active, var(--bit-Button-active-background, var(--bit-btn-dft-clr-active, #{$clr-pri-active})));");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-btn-clr-dis, var(--bit-Button-disabled-background, var(--bit-btn-dft-clr-dis, #{$clr-pri-dis})));");
         StringAssert.Contains(stylesheet, "color: var(--bit-btn-clr-dis-text, var(--bit-Button-disabled-color, var(--bit-btn-dft-clr-dis-text, #{$clr-pri-dis-text})));");
         StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-btn-clr-focus, var(--bit-Button-focus-color, var(--bit-btn-dft-clr-focus))))");
 
         // What a Color does not paint stays the variable's: the transparent background of Outline and Text.
         var outline = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-btn-otl {");
-        StringAssert.Contains(outline, "background-color: var(--bit-Button-background, transparent);");
+        StringAssert.Contains(outline, "background-color: var(--bit-btn-sbg, var(--bit-Button-background, transparent));");
 
         // The default a host component gives its buttons (--bit-btn-dft-*) is the one private value read after them.
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Button-[a-z-]+, var\(--bit-btn-(?!dft-)"), "A public variable is read before the parameter it restyles the default of.");
@@ -82,13 +84,15 @@ public partial class BitButtonStylesheetTests
         foreach (var property in new[] { "--bit-btn-clr", "--bit-btn-clr-txt", "--bit-btn-clr-hover", "--bit-btn-clr-active", "--bit-btn-clr-focus",
                                          "--bit-btn-clr-dis", "--bit-btn-clr-dis-text", "--bit-btn-lbl-fontsize", "--bit-btn-prt-fontsize",
                                          "--bit-btn-sct-fontsize", "--bit-btn-icn-size", "--bit-btn-spn-size", "--bit-btn-min-height",
-                                         "--bit-btn-icn-margintop", "--bit-btn-gap", "--bit-btn-pad-ntx", "--bit-btn-padding", "--bit-btn-radius" })
+                                         "--bit-btn-icn-margintop", "--bit-btn-gap", "--bit-btn-pad-ntx", "--bit-btn-padding", "--bit-btn-radius",
+                                         // The colors the hover and press states move, which a nested button must not inherit either.
+                                         "--bit-btn-sfg", "--bit-btn-sbg", "--bit-btn-sbr" })
         {
             StringAssert.Contains(root, $"{property}: initial;");
         }
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Buttons", "Button", "BitButton.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Buttons", "Button", "BitButton.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-Button-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

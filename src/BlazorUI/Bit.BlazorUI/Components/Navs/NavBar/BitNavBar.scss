@@ -59,6 +59,9 @@
     }
 }
 
+$nbr-private-properties: clr, clr-ind, clr-dis, clr-fcs, clr-acc-hover, clr-acc-active, clr-acc-text, fil-hover,
+                         fil-active, fil-text, sz-ico, sz-txt, sz-gap, sz-pad, sz-sec-pad, sz-row-pad, sz-min;
+
 .bit-nbr {
     // The bar itself is a flex line, so the header and the footer sit beside (or above and below) the
     // items instead of on their own row, and the list of items takes whatever room is left over.
@@ -92,23 +95,9 @@
     // carries them. Left unset, each sends the var() reading it on to the public variable and then to the
     // default, which is what lets an explicit parameter outrank the variable while an unset one leaves the
     // variable in charge.
-    --bit-nbr-clr: initial;
-    --bit-nbr-clr-ind: initial;
-    --bit-nbr-clr-dis: initial;
-    --bit-nbr-clr-fcs: initial;
-    --bit-nbr-clr-acc-hover: initial;
-    --bit-nbr-clr-acc-active: initial;
-    --bit-nbr-clr-acc-text: initial;
-    --bit-nbr-fil-hover: initial;
-    --bit-nbr-fil-active: initial;
-    --bit-nbr-fil-text: initial;
-    --bit-nbr-sz-ico: initial;
-    --bit-nbr-sz-txt: initial;
-    --bit-nbr-sz-gap: initial;
-    --bit-nbr-sz-pad: initial;
-    --bit-nbr-sz-sec-pad: initial;
-    --bit-nbr-sz-row-pad: initial;
-    --bit-nbr-sz-min: initial;
+    @each $name in $nbr-private-properties {
+        --bit-nbr-#{$name}: initial;
+    }
 
     // The metrics every part reads: the step an explicit Size publishes, then the public variable, then the
     // medium navbar an unset Size stands for. The padding variable sets both the stacked padding and the wider

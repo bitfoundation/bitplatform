@@ -75,6 +75,12 @@
     background-position: 0 0, #{$size} #{$size};
 }
 
+$clp-private-properties:
+    width-sz, sat-height-sz, track-height-sz, thumb-size-sz, button-size-sz, swatch-size-sz, preview-size-sz, fs-sz,
+    fs-sub-sz, icon-size-sz,
+    // What the component writes into an inline style, which wins over this on the element it is written on.
+    prs-cols, alpha-clr, prt-clr;
+
 .bit-clp {
     // A picker can sit in the content of something holding another one, which must not inherit the outer
     // picker's Size: each root starts the values the size classes publish out unset, and the classes -
@@ -82,16 +88,9 @@
     // class sets is named apart from the public variable it feeds and read ahead of it, then the medium size
     // an unset Size stands for, which is what lets an explicit Size outrank the variable while an unset one
     // leaves the variable in charge.
-    --bit-clp-width-sz: initial;
-    --bit-clp-sat-height-sz: initial;
-    --bit-clp-track-height-sz: initial;
-    --bit-clp-thumb-size-sz: initial;
-    --bit-clp-button-size-sz: initial;
-    --bit-clp-swatch-size-sz: initial;
-    --bit-clp-preview-size-sz: initial;
-    --bit-clp-fs-sz: initial;
-    --bit-clp-fs-sub-sz: initial;
-    --bit-clp-icon-size-sz: initial;
+    @each $name in $clp-private-properties {
+        --bit-clp-#{$name}: initial;
+    }
 
     display: flex;
     user-select: none;
@@ -430,7 +429,8 @@
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
-    background-color: transparent;
+    --bit-clp-btn-bg: initial;
+    background-color: var(--bit-clp-btn-bg, transparent);
     color: var(--bit-ColorPicker-button-color, #{$clr-fg-pri});
     width: var(--bit-clp-button-size-sz, var(--bit-ColorPicker-button-size, #{spacing(3)}));
     height: var(--bit-clp-button-size-sz, var(--bit-ColorPicker-button-size, #{spacing(3)}));
@@ -439,15 +439,17 @@
     transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     // Gated on a device that can actually hover, so a tap on a touch screen does not leave the button stuck
-    // in the hovered background until something else is touched.
+    // in the hovered background until something else is touched. The states change the variable the button
+    // is painted from rather than its background, so only the rule at rest paints it: a button the app paints
+    // through Classes keeps that paint under the pointer and while it is pressed.
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-ColorPicker-button-hover-background, #{$clr-bg-sec-hover});
+            --bit-clp-btn-bg: var(--bit-ColorPicker-button-hover-background, #{$clr-bg-sec-hover});
         }
     }
 
     &:active {
-        background-color: var(--bit-ColorPicker-button-active-background, #{$clr-bg-sec-active});
+        --bit-clp-btn-bg: var(--bit-ColorPicker-button-active-background, #{$clr-bg-sec-active});
     }
 
     &:focus-visible {

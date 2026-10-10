@@ -88,25 +88,20 @@
     --bit-dtp-pane-min-w: #{spacing(26)};
 }
 
+// Every private variable the mixin below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$dtp-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, inp-h-sz, inp-fs-sz, ico-fs-sz, cell-size-sz,
+                         cell-fs-sz, lbl-fs-sz, hdr-fs-sz, time-fs-sz;
+
 // What the Color and Size classes publish starts out unset on the root and on the callout alike, so a
 // DatePicker in the content of another one (a callout template, say) never inherits the outer one's choice;
 // the classes - declared further down at the same weight - still win on the element that carries them. Left
 // unset, each sends the var() reading it on to the public variable and then to the default, which is what
 // lets an explicit parameter outrank the variable while an unset one leaves the variable in charge.
 @mixin dtp-parameter-resets {
-    --bit-dtp-clr: initial;
-    --bit-dtp-clr-txt: initial;
-    --bit-dtp-clr-hover: initial;
-    --bit-dtp-clr-active: initial;
-    --bit-dtp-clr-focus: initial;
-    --bit-dtp-inp-h-sz: initial;
-    --bit-dtp-inp-fs-sz: initial;
-    --bit-dtp-ico-fs-sz: initial;
-    --bit-dtp-cell-size-sz: initial;
-    --bit-dtp-cell-fs-sz: initial;
-    --bit-dtp-lbl-fs-sz: initial;
-    --bit-dtp-hdr-fs-sz: initial;
-    --bit-dtp-time-fs-sz: initial;
+    @each $name in $dtp-private-properties {
+        --bit-dtp-#{$name}: initial;
+    }
 }
 
 // The sizes resolve once, on whichever of the two elements the parts live under, so every part that lines up
@@ -275,7 +270,13 @@
     height: var(--bit-dtp-tcell-size);
     justify-content: center;
     align-items: center;
-    background-color: $clr-bg-sec;
+    // The states of a part change the variable it is painted from rather than its background, so only the
+    // rules at rest paint it, each with its own fallback: a part the app paints through Classes keeps that
+    // paint under the pointer and while pressed, instead of losing it to a state that outranks the app's
+    // class. Each part that answers a state starts the variable out unset, so it never inherits an outer
+    // one's state.
+    --bit-dtp-sbg: initial;
+    background-color: var(--bit-dtp-sbg, #{$clr-bg-sec});
     cursor: pointer;
     border-radius: var(--bit-DatePicker-day-radius, #{$shp-radius-control});
 
@@ -290,7 +291,7 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-DatePicker-hover-background, #{$clr-bg-pri-hover});
+            --bit-dtp-sbg: var(--bit-DatePicker-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
@@ -477,7 +478,8 @@
     font-size: var(--bit-dtp-cell-fs);
     line-height: spacing(3);
     justify-content: center;
-    background-color: transparent;
+    --bit-dtp-sbg: initial;
+    background-color: var(--bit-dtp-sbg, transparent);
     color: var(--bit-DatePicker-color, #{$clr-fg-pri});
     border-radius: var(--bit-DatePicker-day-radius, #{$shp-radius-control});
     // Only what a state actually changes is transitioned, so the cell that is hovered or selected eases
@@ -487,12 +489,12 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-DatePicker-hover-background, #{$clr-bg-pri-hover});
+            --bit-dtp-sbg: var(--bit-DatePicker-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active {
-        background-color: var(--bit-DatePicker-active-background, #{$clr-bg-pri-active});
+        --bit-dtp-sbg: var(--bit-DatePicker-active-background, #{$clr-bg-pri-active});
     }
 
     &:disabled {
@@ -520,12 +522,12 @@
 
 .bit-dtp-dhl {
     font-weight: $tg-fw-semibold;
-    background-color: var(--bit-DatePicker-highlighted-background, #{$clr-bg-ter});
+    background-color: var(--bit-dtp-sbg, var(--bit-DatePicker-highlighted-background, #{$clr-bg-ter}));
 }
 
 .bit-dtp-dbs {
     color: var(--bit-DatePicker-selected-color, var(--bit-DatePicker-color, #{$clr-fg-pri}));
-    background-color: var(--bit-DatePicker-selected-background, #{$clr-bg-sec});
+    background-color: var(--bit-dtp-sbg, var(--bit-DatePicker-selected-background, #{$clr-bg-sec}));
 
     &::after {
         inset: 0;
@@ -545,16 +547,16 @@
     font-weight: $tg-fw-semibold;
     border-radius: var(--bit-DatePicker-today-radius, #{$shp-radius-full});
     color: var(--bit-dtp-clr-txt, var(--bit-DatePicker-today-color, #{$clr-pri-text}));
-    background-color: var(--bit-dtp-clr, var(--bit-DatePicker-today-background, #{$clr-pri}));
+    background-color: var(--bit-dtp-sbg, var(--bit-dtp-clr, var(--bit-DatePicker-today-background, #{$clr-pri})));
 
     @media(hover: hover) {
         &:hover {
-            background-color: var(--bit-dtp-clr-hover, var(--bit-DatePicker-today-hover-background, #{$clr-pri-hover}));
+            --bit-dtp-sbg: var(--bit-dtp-clr-hover, var(--bit-DatePicker-today-hover-background, #{$clr-pri-hover}));
         }
     }
 
     &:active {
-        background-color: var(--bit-dtp-clr-active, var(--bit-DatePicker-today-active-background, #{$clr-pri-active}));
+        --bit-dtp-sbg: var(--bit-dtp-clr-active, var(--bit-DatePicker-today-active-background, #{$clr-pri-active}));
     }
 }
 
@@ -606,7 +608,8 @@
     padding: 0 spacing(0.75);
     font-size: var(--bit-dtp-hdr-fs);
     line-height: var(--bit-dtp-cell-size);
-    background-color: transparent;
+    --bit-dtp-sbg: initial;
+    background-color: var(--bit-dtp-sbg, transparent);
     border-radius: var(--bit-DatePicker-day-radius, #{$shp-radius-control});
 }
 
@@ -616,7 +619,7 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-DatePicker-hover-background, #{$clr-bg-pri-hover});
+            --bit-dtp-sbg: var(--bit-DatePicker-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
@@ -657,19 +660,20 @@
     min-height: var(--bit-dtp-cell-size);
     line-height: var(--bit-dtp-cell-size);
     font-size: var(--bit-dtp-cell-fs);
-    background-color: transparent;
+    --bit-dtp-sbg: initial;
+    background-color: var(--bit-dtp-sbg, transparent);
     color: var(--bit-DatePicker-color, #{$clr-fg-pri});
     border-radius: var(--bit-DatePicker-day-radius, #{$shp-radius-control});
     transition: background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-DatePicker-hover-background, #{$clr-bg-pri-hover});
+            --bit-dtp-sbg: var(--bit-DatePicker-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active {
-        background-color: var(--bit-DatePicker-active-background, #{$clr-bg-pri-active});
+        --bit-dtp-sbg: var(--bit-DatePicker-active-background, #{$clr-bg-pri-active});
     }
 
     &:disabled {
@@ -699,20 +703,22 @@
     width: var(--bit-dtp-tcell-size);
     line-height: var(--bit-dtp-tcell-size);
     font-size: var(--bit-dtp-cell-fs);
-    background-color: transparent;
-    color: var(--bit-DatePicker-color, #{$clr-fg-pri});
+    --bit-dtp-sbg: initial;
+    --bit-dtp-sfg: initial;
+    background-color: var(--bit-dtp-sbg, transparent);
+    color: var(--bit-dtp-sfg, var(--bit-DatePicker-color, #{$clr-fg-pri}));
     border-radius: var(--bit-DatePicker-day-radius, #{$shp-radius-control});
     aspect-ratio: 1;
     transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-DatePicker-hover-background, #{$clr-bg-pri-hover});
+            --bit-dtp-sbg: var(--bit-DatePicker-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active {
-        background-color: var(--bit-DatePicker-active-background, #{$clr-bg-pri-active});
+        --bit-dtp-sbg: var(--bit-DatePicker-active-background, #{$clr-bg-pri-active});
     }
 
     i {
@@ -794,19 +800,21 @@
     line-height: var(--bit-dtp-mcell-h);
     font-size: var(--bit-dtp-cell-fs);
     text-overflow: ellipsis;
-    background-color: transparent;
-    color: var(--bit-DatePicker-color, #{$clr-fg-pri});
+    --bit-dtp-sbg: initial;
+    --bit-dtp-sfg: initial;
+    background-color: var(--bit-dtp-sbg, transparent);
+    color: var(--bit-dtp-sfg, var(--bit-DatePicker-color, #{$clr-fg-pri}));
     border-radius: var(--bit-DatePicker-day-radius, #{$shp-radius-control});
     transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-DatePicker-hover-background, #{$clr-bg-pri-hover});
+            --bit-dtp-sbg: var(--bit-DatePicker-hover-background, #{$clr-bg-pri-hover});
         }
     }
 
     &:active {
-        background-color: var(--bit-DatePicker-active-background, #{$clr-bg-pri-active});
+        --bit-dtp-sbg: var(--bit-DatePicker-active-background, #{$clr-bg-pri-active});
     }
 
     &:disabled {
@@ -823,23 +831,23 @@
 
 .bit-dtp-psm {
     font-weight: $tg-fw-semibold;
-    background-color: var(--bit-DatePicker-selected-background, #{$clr-bg-sec});
+    background-color: var(--bit-dtp-sbg, var(--bit-DatePicker-selected-background, #{$clr-bg-sec}));
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-DatePicker-hover-background, #{$clr-bg-pri-hover});
+            --bit-dtp-sbg: var(--bit-DatePicker-hover-background, #{$clr-bg-pri-hover});
         }
     }
 }
 
 .bit-dtp-pcm {
-    color: var(--bit-dtp-clr-txt, var(--bit-DatePicker-today-color, #{$clr-pri-text}));
-    background-color: var(--bit-dtp-clr, var(--bit-DatePicker-today-background, #{$clr-pri}));
+    color: var(--bit-dtp-sfg, var(--bit-dtp-clr-txt, var(--bit-DatePicker-today-color, #{$clr-pri-text})));
+    background-color: var(--bit-dtp-sbg, var(--bit-dtp-clr, var(--bit-DatePicker-today-background, #{$clr-pri})));
 
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-dtp-clr-txt, var(--bit-DatePicker-today-color, #{$clr-pri-text}));
-            background-color: var(--bit-dtp-clr-hover, var(--bit-DatePicker-today-hover-background, #{$clr-pri-hover}));
+            --bit-dtp-sfg: var(--bit-dtp-clr-txt, var(--bit-DatePicker-today-color, #{$clr-pri-text}));
+            --bit-dtp-sbg: var(--bit-dtp-clr-hover, var(--bit-DatePicker-today-hover-background, #{$clr-pri-hover}));
         }
     }
 }
@@ -907,9 +915,10 @@
         margin: 0;
     }
 
+    // No border of its own on focus: the rule above already takes the input's away, so one the app gives it
+    // through Classes stays put while the field is focused.
     &:focus {
         @include focus-underline-ring(var(--bit-dtp-clr-focus, var(--bit-DatePicker-focus-color, #{$clr-pri-focus})));
-        border: none;
     }
 
     &:disabled {
@@ -929,8 +938,8 @@
 }
 
 .bit-dtp-bns {
-    color: var(--bit-dtp-clr-txt, var(--bit-DatePicker-today-color, #{$clr-pri-text}));
-    background-color: var(--bit-dtp-clr, var(--bit-DatePicker-today-background, #{$clr-pri}));
+    color: var(--bit-dtp-sfg, var(--bit-dtp-clr-txt, var(--bit-DatePicker-today-color, #{$clr-pri-text})));
+    background-color: var(--bit-dtp-sbg, var(--bit-dtp-clr, var(--bit-DatePicker-today-background, #{$clr-pri})));
 
     &:disabled {
         background-color: $clr-bg-dis;
@@ -938,13 +947,13 @@
 
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-dtp-clr-txt, var(--bit-DatePicker-today-color, #{$clr-pri-text}));
-            background-color: var(--bit-dtp-clr-hover, var(--bit-DatePicker-today-hover-background, #{$clr-pri-hover}));
+            --bit-dtp-sfg: var(--bit-dtp-clr-txt, var(--bit-DatePicker-today-color, #{$clr-pri-text}));
+            --bit-dtp-sbg: var(--bit-dtp-clr-hover, var(--bit-DatePicker-today-hover-background, #{$clr-pri-hover}));
         }
     }
 
     &:active {
-        background-color: var(--bit-dtp-clr-active, var(--bit-DatePicker-today-active-background, #{$clr-pri-active}));
+        --bit-dtp-sbg: var(--bit-dtp-clr-active, var(--bit-DatePicker-today-active-background, #{$clr-pri-active}));
     }
 }
 
@@ -1110,19 +1119,15 @@
         }
     }
 
-    // The hover and the active state of each of these paints a themed background of its own, from a rule of
-    // a higher specificity than this one, so each is answered with the same system pair - otherwise the
-    // palette is reinstated by a pointer resting on the cell.
+    // The hover and the active state of each of these only move the variable the rule at rest paints from,
+    // so the system pair declared here holds under the pointer too and the palette is not reinstated by a
+    // pointer resting on the cell.
     .bit-dtp-dtd,
     .bit-dtp-pcm,
     .bit-dtp-bns {
-        &,
-        &:hover,
-        &:active {
-            color: HighlightText;
-            background-color: Highlight;
-            forced-color-adjust: none;
-        }
+        color: HighlightText;
+        background-color: Highlight;
+        forced-color-adjust: none;
     }
 
     .bit-dtp-dbs::after {

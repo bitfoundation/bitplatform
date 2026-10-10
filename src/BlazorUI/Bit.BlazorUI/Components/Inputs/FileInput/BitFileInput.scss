@@ -63,28 +63,19 @@
 // always carried the default would be indistinguishable from one that was asked for. The disabled state is
 // read before all of them, as before.
 
+$fin-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, lbl-height, lbl-fontsize, lbl-padding,
+                         itm-fontsize, fs-fontsize, prv-size, dzn-height, dzn-padding, dzn-ico-size, rbt-size,
+                         ico-fontsize;
+
 .bit-fin {
     // A file input can sit in a template of another one, which must not inherit the outer one's Color or Size:
     // each root starts the values those classes publish out unset, and the classes - declared further down at
     // the same weight - still win on the root that carries them. Left unset, each sends the var() reading it on
     // to the public variable and then to the default, which is what lets an explicit parameter outrank the
     // variable while an unset one leaves the variable in charge.
-    --bit-fin-clr: initial;
-    --bit-fin-clr-txt: initial;
-    --bit-fin-clr-hover: initial;
-    --bit-fin-clr-active: initial;
-    --bit-fin-clr-focus: initial;
-    --bit-fin-lbl-height: initial;
-    --bit-fin-lbl-fontsize: initial;
-    --bit-fin-lbl-padding: initial;
-    --bit-fin-itm-fontsize: initial;
-    --bit-fin-fs-fontsize: initial;
-    --bit-fin-prv-size: initial;
-    --bit-fin-dzn-height: initial;
-    --bit-fin-dzn-padding: initial;
-    --bit-fin-dzn-ico-size: initial;
-    --bit-fin-rbt-size: initial;
-    --bit-fin-ico-fontsize: initial;
+    @each $name in $fin-private-properties {
+        --bit-fin-#{$name}: initial;
+    }
     display: flex;
     flex-flow: column nowrap;
     font-family: $tg-font-family;
@@ -124,6 +115,13 @@
 //everything the three variants share; the colors themselves live in the variant blocks right below,
 //which is also why the border is declared without its color here.
 .bit-fin-lbl {
+    // The hover and press states below change these rather than the colors, so the rules at rest are the only
+    // ones painting the button: a button the app paints through Classes keeps that paint under the pointer and
+    // while pressed, instead of losing it to a state that outranks the app's class. Reset here so a file input
+    // nested in another one's template never inherits the outer button's state.
+    --bit-fin-lbl-sfg: initial;
+    --bit-fin-lbl-sbr: initial;
+    --bit-fin-lbl-sbg: initial;
     display: flex;
     cursor: pointer;
     user-select: none;
@@ -183,20 +181,20 @@
 //Fill - the default: a solid block of the role color labelled in the role's on-color.
 .bit-fin-fil {
     .bit-fin-lbl {
-        color: var(--bit-fin-c-txt);
-        border-color: var(--bit-fin-c);
-        background-color: var(--bit-fin-c);
+        color: var(--bit-fin-lbl-sfg, var(--bit-fin-c-txt));
+        border-color: var(--bit-fin-lbl-sbr, var(--bit-fin-c));
+        background-color: var(--bit-fin-lbl-sbg, var(--bit-fin-c));
 
         @media (hover: hover) {
             &:hover {
-                border-color: var(--bit-fin-c-hover);
-                background-color: var(--bit-fin-c-hover);
+                --bit-fin-lbl-sbr: var(--bit-fin-c-hover);
+                --bit-fin-lbl-sbg: var(--bit-fin-c-hover);
             }
         }
 
         &:active {
-            border-color: var(--bit-fin-c-active);
-            background-color: var(--bit-fin-c-active);
+            --bit-fin-lbl-sbr: var(--bit-fin-c-active);
+            --bit-fin-lbl-sbg: var(--bit-fin-c-active);
         }
     }
 
@@ -210,20 +208,20 @@
 //variant once a pointer lands on it.
 .bit-fin-otl {
     .bit-fin-lbl {
-        color: var(--bit-fin-c);
-        border-color: var(--bit-fin-c);
-        background-color: transparent;
+        color: var(--bit-fin-lbl-sfg, var(--bit-fin-c));
+        border-color: var(--bit-fin-lbl-sbr, var(--bit-fin-c));
+        background-color: var(--bit-fin-lbl-sbg, transparent);
 
         @media (hover: hover) {
             &:hover {
-                color: var(--bit-fin-c-txt);
-                background-color: var(--bit-fin-c-hover);
+                --bit-fin-lbl-sfg: var(--bit-fin-c-txt);
+                --bit-fin-lbl-sbg: var(--bit-fin-c-hover);
             }
         }
 
         &:active {
-            color: var(--bit-fin-c-txt);
-            background-color: var(--bit-fin-c-active);
+            --bit-fin-lbl-sfg: var(--bit-fin-c-txt);
+            --bit-fin-lbl-sbg: var(--bit-fin-c-active);
         }
     }
 
@@ -236,20 +234,20 @@
 //Text: neither rule nor fill at rest, for a file input that should not outweigh the fields around it.
 .bit-fin-txt {
     .bit-fin-lbl {
-        color: var(--bit-fin-c);
-        border-color: transparent;
-        background-color: transparent;
+        color: var(--bit-fin-lbl-sfg, var(--bit-fin-c));
+        border-color: var(--bit-fin-lbl-sbr, transparent);
+        background-color: var(--bit-fin-lbl-sbg, transparent);
 
         @media (hover: hover) {
             &:hover {
-                color: var(--bit-fin-c-txt);
-                background-color: var(--bit-fin-c-hover);
+                --bit-fin-lbl-sfg: var(--bit-fin-c-txt);
+                --bit-fin-lbl-sbg: var(--bit-fin-c-hover);
             }
         }
 
         &:active {
-            color: var(--bit-fin-c-txt);
-            background-color: var(--bit-fin-c-active);
+            --bit-fin-lbl-sfg: var(--bit-fin-c-txt);
+            --bit-fin-lbl-sbg: var(--bit-fin-c-active);
         }
     }
 
@@ -306,6 +304,8 @@
 }
 
 .bit-fin-itm {
+    --bit-fin-itm-sbr: initial;
+    --bit-fin-itm-sbg: initial;
     display: flex;
     overflow: hidden;
     align-items: center;
@@ -318,16 +318,18 @@
     margin-top: var(--bit-FileInput-item-gap, #{spacing(0.375)});
     border-radius: var(--bit-FileInput-item-radius, #{$shp-radius-surface});
     font-size: var(--bit-fin-itm-fontsize, var(--bit-FileInput-item-font-size, #{$tg-fs-sm}));
-    border: $shp-border-width $shp-border-style var(--bit-FileInput-item-border-color, #{$clr-brd-pri});
+    border: $shp-border-width $shp-border-style var(--bit-fin-itm-sbr, var(--bit-FileInput-item-border-color, #{$clr-brd-pri}));
     transition: border-color $mot-duration-short $mot-easing,
                 background-color $mot-duration-short $mot-easing;
 
+    // like the browse button's, the item's hover moves the variable its rule is painted from, so an item the
+    // app paints through Classes keeps that paint under the pointer.
     @media (hover: hover) {
         &:hover {
             // an author who repaints the rule of an item usually means the hover too, so the dedicated
             // variable falls back to the resting one before it falls back to the theme's hover border.
-            border-color: var(--bit-FileInput-item-hover-border-color,
-                              var(--bit-FileInput-item-border-color, #{$clr-brd-pri-hover}));
+            --bit-fin-itm-sbr: var(--bit-FileInput-item-hover-border-color,
+                                   var(--bit-FileInput-item-border-color, #{$clr-brd-pri-hover}));
         }
     }
 
@@ -342,14 +344,14 @@
 }
 
 .bit-fin-vld {
-    background-color: var(--bit-FileInput-item-background, #{$clr-bg-sec});
+    background-color: var(--bit-fin-itm-sbg, var(--bit-FileInput-item-background, #{$clr-bg-sec}));
 
     @media (hover: hover) {
         &:hover {
             // as with the rule, an author who repaints the fill of an item usually means the hover too,
             // so the dedicated variable falls back to the resting one rather than to a theme color.
-            background-color: var(--bit-FileInput-item-hover-background,
-                                  var(--bit-FileInput-item-background, #{$clr-bg-sec}));
+            --bit-fin-itm-sbg: var(--bit-FileInput-item-hover-background,
+                                   var(--bit-FileInput-item-background, #{$clr-bg-sec}));
         }
     }
 }
@@ -358,7 +360,7 @@
 // so the rule around it turns to the error color too - and stays that color under the pointer, which the
 // hover rule above would otherwise paint back over.
 .bit-fin-itm.bit-fin-inv {
-    border-color: var(--bit-FileInput-error-color, #{$clr-err});
+    border-color: var(--bit-fin-itm-sbr, var(--bit-FileInput-error-color, #{$clr-err}));
     // the same fill as a valid item, so a rejected file still reads as a row of the list rather than as a
     // hollow gap in it. A tint of the error color set here is the other reasonable choice, which is why it
     // has a variable of its own instead of being welded to the valid one.
@@ -367,7 +369,7 @@
 
     @media (hover: hover) {
         &:hover {
-            border-color: var(--bit-FileInput-error-color, #{$clr-err});
+            --bit-fin-itm-sbr: var(--bit-FileInput-error-color, #{$clr-err});
         }
     }
 
@@ -471,6 +473,7 @@
 }
 
 .bit-fin-rbt {
+    --bit-fin-rbt-sbg: initial;
     display: flex;
     flex-shrink: 0;
     cursor: pointer;
@@ -479,19 +482,19 @@
     justify-content: center;
     -webkit-tap-highlight-color: transparent;
     color: var(--bit-FileInput-remove-button-color, #{$clr-fg-pri});
-    background-color: var(--bit-FileInput-remove-button-background, #{$clr-bg-sec});
+    background-color: var(--bit-fin-rbt-sbg, var(--bit-FileInput-remove-button-background, #{$clr-bg-sec}));
     width: var(--bit-fin-rbt-size, var(--bit-FileInput-remove-button-size, #{$siz-ctrl-md}));
     height: var(--bit-fin-rbt-size, var(--bit-FileInput-remove-button-size, #{$siz-ctrl-md}));
     transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-FileInput-remove-button-hover-background, #{$clr-bg-sec-hover});
+            --bit-fin-rbt-sbg: var(--bit-FileInput-remove-button-hover-background, #{$clr-bg-sec-hover});
         }
     }
 
     &:active {
-        background-color: var(--bit-FileInput-remove-button-active-background, #{$clr-bg-sec-active});
+        --bit-fin-rbt-sbg: var(--bit-FileInput-remove-button-active-background, #{$clr-bg-sec-active});
     }
 
     // the ring is drawn inside the button rather than around it: the file item clips its own overflow to

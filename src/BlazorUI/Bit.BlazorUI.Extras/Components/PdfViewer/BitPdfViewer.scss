@@ -74,7 +74,14 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
     }
 }
 
+$pdv-private-properties: scale;
+
 .bit-pdv {
+    // What the component writes into an inline style starts out unset on every root, so an instance nested in
+    // another one never takes the outer one's value for its own; the inline declaration still wins on its element.
+    @each $name in $pdv-private-properties {
+        --bit-pdv-#{$name}: initial;
+    }
     display: flex;
     overflow: hidden;
     position: relative;
@@ -226,15 +233,18 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
     color: $pdv-color;
     align-items: center;
     display: inline-flex;
-    background: transparent;
+    --bit-pdv-btn-sbg: initial;
+    background: var(--bit-pdv-btn-sbg, transparent);
     justify-content: center;
     width: var(--bit-PdfViewer-button-size, #{spacing(3.75)});
     height: var(--bit-PdfViewer-button-size, #{spacing(3.75)});
     border-radius: var(--bit-PdfViewer-button-radius, #{$shp-radius-button});
     transition: background-color $mot-duration $mot-easing, color $mot-duration $mot-easing;
 
+    // The states move the variable a part is painted from rather than its colors, so a part the app paints through
+    // a class keeps that paint under the pointer. Every rule painting the part at rest that a state outranks reads it.
     &:hover:not(:disabled) {
-        background: $pdv-button-hover-background;
+        --bit-pdv-btn-sbg: #{$pdv-button-hover-background};
     }
 
     &:focus-visible {
@@ -248,10 +258,10 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
 
     &.bit-pdv-act {
         color: $pdv-button-active-color;
-        background: $pdv-button-active-background;
+        background: var(--bit-pdv-btn-sbg, #{$pdv-button-active-background});
 
         &:hover:not(:disabled) {
-            background: $pdv-button-active-hover-background;
+            --bit-pdv-btn-sbg: #{$pdv-button-active-hover-background};
         }
     }
 
@@ -390,11 +400,12 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
     position: relative;
     background: $pdv-page-background;
     border-radius: $shp-radius-surface;
-    border: $shp-border-width-thick $shp-border-style transparent;
+    --bit-pdv-thb-sbr: initial;
+    border: $shp-border-width-thick $shp-border-style var(--bit-pdv-thb-sbr, transparent);
     transition: border-color $mot-duration $mot-easing;
 
     &:hover:not(.bit-pdv-act) {
-        border-color: $pdv-field-border;
+        --bit-pdv-thb-sbr: #{$pdv-field-border};
     }
 
     &:focus-visible {
@@ -462,11 +473,13 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
     > .bit-pdv-outline-row {
         border-radius: $shp-radius-sm;
         padding: 0 spacing(0.5);
+        --bit-pdv-orw-sbg: initial;
+        background: var(--bit-pdv-orw-sbg);
         transition: background-color $mot-duration $mot-easing;
     }
 
     &:hover > .bit-pdv-outline-row {
-        background: $pdv-item-hover-background;
+        --bit-pdv-orw-sbg: #{$pdv-item-hover-background};
     }
 
     // The bookmark that points at the page in front of the reader.
@@ -491,7 +504,7 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
         }
 
         &:hover > .bit-pdv-outline-row {
-            background: transparent;
+            --bit-pdv-orw-sbg: transparent;
         }
     }
 }
@@ -621,14 +634,15 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
     font-family: inherit;
     justify-content: center;
     min-width: spacing(3.25);
-    background: transparent;
+    --bit-pdv-opt-sbg: initial;
+    background: var(--bit-pdv-opt-sbg, transparent);
     font-weight: $tg-fw-semibold;
     border-radius: var(--bit-PdfViewer-button-radius, #{$shp-radius-button});
     border: $shp-border-width $shp-border-style $pdv-field-border;
     transition: background-color $mot-duration $mot-easing, color $mot-duration $mot-easing;
 
     &:hover:not(:disabled) {
-        background: $pdv-button-hover-background;
+        --bit-pdv-opt-sbg: #{$pdv-button-hover-background};
     }
 
     &:focus-visible {
@@ -642,11 +656,11 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
 
     &.bit-pdv-act {
         color: $pdv-button-active-color;
-        background: $pdv-button-active-background;
+        background: var(--bit-pdv-opt-sbg, #{$pdv-button-active-background});
         border-color: $pdv-button-active-background;
 
         &:hover:not(:disabled) {
-            background: $pdv-button-active-hover-background;
+            --bit-pdv-opt-sbg: #{$pdv-button-active-hover-background};
         }
     }
 
@@ -853,7 +867,8 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
     text-align: start;
     color: inherit;
     flex-direction: column;
-    background: transparent;
+    --bit-pdv-atc-sbg: initial;
+    background: var(--bit-pdv-atc-sbg, transparent);
     font-size: $tg-fs-sm;
     font-family: inherit;
     padding: spacing(0.5) spacing(0.7);
@@ -861,7 +876,7 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
     transition: background-color $mot-duration $mot-easing;
 
     &:hover {
-        background: $pdv-item-hover-background;
+        --bit-pdv-atc-sbg: #{$pdv-item-hover-background};
     }
 
     &:focus-visible {
@@ -936,7 +951,8 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
     height: $siz-ctrl-md;
     font-size: $tg-fs-sm;
     font-family: inherit;
-    background: transparent;
+    --bit-pdv-dbt-sbg: initial;
+    background: var(--bit-pdv-dbt-sbg, transparent);
     padding: 0 spacing(1.5);
     letter-spacing: $tg-ctrl-letter-spacing;
     text-transform: $tg-ctrl-text-transform;
@@ -945,20 +961,22 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
     min-width: $siz-ctrl-min-width;
 
     &:hover {
-        background: $clr-bg-sec-hover;
+        --bit-pdv-dbt-sbg: #{$clr-bg-sec-hover};
     }
 
     &:focus-visible {
         @include focus-ring-own($pdv-focus-ring);
     }
 
+    // The primary action reads the variable too, so its own hover below - which outranks the generic one - still
+    // answers the pointer.
     &.bit-pdv-act {
         color: $clr-pri-text;
-        background: $clr-pri;
+        background: var(--bit-pdv-dbt-sbg, #{$clr-pri});
         border-color: $clr-pri;
 
         &:hover {
-            background: $clr-pri-hover;
+            --bit-pdv-dbt-sbg: #{$clr-pri-hover};
         }
     }
 }
@@ -980,10 +998,12 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
     font-size: $tg-fs-sm;
     padding: spacing(0.4) spacing(0.7);
     border-radius: $shp-radius-sm;
+    --bit-pdv-lyr-sbg: initial;
+    background: var(--bit-pdv-lyr-sbg);
     transition: background-color $mot-duration $mot-easing;
 
     &:hover {
-        background: $pdv-item-hover-background;
+        --bit-pdv-lyr-sbg: #{$pdv-item-hover-background};
     }
 
     &:has(input:focus-visible) {

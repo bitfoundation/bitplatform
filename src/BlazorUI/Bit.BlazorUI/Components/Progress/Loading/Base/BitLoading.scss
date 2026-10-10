@@ -19,6 +19,8 @@
 // default would be indistinguishable from one that was asked for. The 1em of an inline loader given no size is such
 // a default too, so the variables still win over it.
 
+$ldn-private-properties: clr, sz, lfs, stroke, spd, sz-def, lfs-def;
+
 .bit-ldn {
     display: flex;
     width: fit-content;
@@ -30,13 +32,9 @@
     // class - start out unset on every root, so a loader nested in the label of another one never inherits the
     // outer one's choice; the classes, declared further down at the same weight, and the style attribute still
     // win on the root that carries them. So do the defaults of an inline loader given no size (.bit-ldn-em).
-    --bit-ldn-clr: initial;
-    --bit-ldn-sz: initial;
-    --bit-ldn-lfs: initial;
-    --bit-ldn-stroke: initial;
-    --bit-ldn-spd: initial;
-    --bit-ldn-sz-def: initial;
-    --bit-ldn-lfs-def: initial;
+    @each $name in $ldn-private-properties {
+        --bit-ldn-#{$name}: initial;
+    }
 
     // What every part of a loader reads, resolved here, once, from the parameter, then the public variable, then
     // the default. The drawing's geometry is expressed in units of an 80th of the size - the grid the artwork was

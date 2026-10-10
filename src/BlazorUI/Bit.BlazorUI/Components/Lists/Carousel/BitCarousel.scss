@@ -38,6 +38,11 @@ $csl-clr-hover: var(--bit-csl-clr-hover, var(--bit-Carousel-dot-current-hover-co
 $csl-btn: var(--bit-csl-btn, var(--bit-Carousel-button-color, #{$clr-fg-pri}));
 $csl-btn-hover: var(--bit-csl-btn-hover, var(--bit-Carousel-button-hover-color, #{$clr-fg-pri-hover}));
 
+$csl-private-properties:
+    clr, clr-hover, btn, btn-hover, fcs, dot-size, btn-size, ppb-size,
+    // What the component writes into an inline style, which wins over this on the element it is written on.
+    dur-full;
+
 .bit-csl {
     display: flex;
     position: relative;
@@ -49,14 +54,9 @@ $csl-btn-hover: var(--bit-csl-btn-hover, var(--bit-Carousel-button-hover-color, 
     // same weight - still win on the root that carries them. Left unset, each var() reading them moves on to the
     // public variable and then to the default (see $csl-clr and the rest at the top): the uncolored carousel
     // resolves to the primary accent, which is what it always rendered with.
-    --bit-csl-clr: initial;
-    --bit-csl-clr-hover: initial;
-    --bit-csl-btn: initial;
-    --bit-csl-btn-hover: initial;
-    --bit-csl-fcs: initial;
-    --bit-csl-dot-size: initial;
-    --bit-csl-btn-size: initial;
-    --bit-csl-ppb-size: initial;
+    @each $name in $csl-private-properties {
+        --bit-csl-#{$name}: initial;
+    }
 
     // The space between the slides. It is declared here rather than read with a fallback where it is
     // used, so a carousel nested in another does not inherit the gap of the outer one, and the Gap
@@ -150,18 +150,23 @@ $csl-btn-hover: var(--bit-csl-btn-hover, var(--bit-Carousel-button-hover-color, 
     text-align: center;
     align-items: center;
     justify-content: center;
-    color: $csl-btn;
+    --bit-csl-btn-sfg: initial;
+    --bit-csl-btn-sbg: initial;
+    color: var(--bit-csl-btn-sfg, #{$csl-btn});
     opacity: var(--bit-Carousel-button-opacity, 0.5);
-    background-color: var(--bit-Carousel-button-background, transparent);
+    background-color: var(--bit-csl-btn-sbg, var(--bit-Carousel-button-background, transparent));
     transition: opacity $mot-duration $mot-easing, background-color $mot-duration $mot-easing;
 
+    // The states change the variables the controls are painted from rather than their colors, so the rules that
+    // paint are the ones at rest: a button or a dot the app paints through Classes keeps that paint under the
+    // pointer, instead of losing it to a state that outranks the app's class.
     @media (hover: hover) {
         &:hover {
             outline: 0;
             text-decoration: none;
             opacity: var(--bit-Carousel-button-hover-opacity, 0.9);
-            color: $csl-btn-hover;
-            background-color: var(--bit-Carousel-button-hover-background, var(--bit-Carousel-button-background, transparent));
+            --bit-csl-btn-sfg: #{$csl-btn-hover};
+            --bit-csl-btn-sbg: var(--bit-Carousel-button-hover-background, var(--bit-Carousel-button-background, transparent));
         }
     }
 
@@ -285,12 +290,14 @@ $csl-btn-hover: var(--bit-csl-btn-hover, var(--bit-Carousel-button-hover-color, 
     border-radius: var(--bit-Carousel-dot-radius, #{$shp-radius-full});
     // A border token rather than a background one: the dots are controls, and the border family is the one
     // held to the 3:1 non-text contrast WCAG asks of them against the surface they sit on.
-    background-color: var(--bit-Carousel-dot-color, #{$clr-brd-pri});
+    --bit-csl-dot-sbg: initial;
+    --bit-csl-dot-sfg: initial;
+    background-color: var(--bit-csl-dot-sbg, var(--bit-Carousel-dot-color, #{$clr-brd-pri}));
     transition: background-color $mot-duration-long $mot-easing, width $mot-duration-long $mot-easing, height $mot-duration-long $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-Carousel-dot-hover-color, #{$clr-brd-pri-hover});
+            --bit-csl-dot-sbg: var(--bit-Carousel-dot-hover-color, #{$clr-brd-pri-hover});
         }
     }
 
@@ -314,14 +321,14 @@ $csl-btn-hover: var(--bit-csl-btn-hover, var(--bit-Carousel-button-hover-color, 
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background-color: transparent;
-    color: $csl-btn;
+    background-color: var(--bit-csl-dot-sbg, transparent);
+    color: var(--bit-csl-dot-sfg, #{$csl-btn});
     transition: color $mot-duration-long $mot-easing;
 
     @media (hover: hover) {
         &:hover {
-            background-color: transparent;
-            color: $csl-btn-hover;
+            --bit-csl-dot-sbg: transparent;
+            --bit-csl-dot-sfg: #{$csl-btn-hover};
         }
     }
 
@@ -332,11 +339,11 @@ $csl-btn-hover: var(--bit-csl-btn-hover, var(--bit-Carousel-button-hover-color, 
 }
 
 .bit-csl-cud {
-    background-color: $csl-clr;
+    background-color: var(--bit-csl-dot-sbg, #{$csl-clr});
 
     @media (hover: hover) {
         &:hover {
-            background-color: $csl-clr-hover;
+            --bit-csl-dot-sbg: #{$csl-clr-hover};
         }
     }
 }
@@ -350,13 +357,13 @@ $csl-btn-hover: var(--bit-csl-btn-hover, var(--bit-Carousel-button-hover-color, 
 }
 
 .bit-csl-dtt.bit-csl-cud {
-    background-color: transparent;
-    color: $csl-clr;
+    background-color: var(--bit-csl-dot-sbg, transparent);
+    color: var(--bit-csl-dot-sfg, #{$csl-clr});
 
     @media (hover: hover) {
         &:hover {
-            background-color: transparent;
-            color: $csl-clr-hover;
+            --bit-csl-dot-sbg: transparent;
+            --bit-csl-dot-sfg: #{$csl-clr-hover};
         }
     }
 }

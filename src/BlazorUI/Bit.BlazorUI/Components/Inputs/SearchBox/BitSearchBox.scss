@@ -84,6 +84,9 @@
 // they are left unset, on the root and on the callout alike: a class that always carried the default would be
 // indistinguishable from one that was asked for.
 
+$srb-private-properties: siz-height, siz-fontsize, siz-iconsize, siz-cbt-iconsize, siz-btnpad, clr, clr-txt, clr-hover,
+                         clr-active, clr-focus, clr-dis, clr-dis-text, clr-bg;
+
 .bit-srb {
     margin: 0;
     padding: 0;
@@ -99,19 +102,9 @@
     // sends the var() reading it on to the public variable and then to the default (the medium size, the primary
     // role, the primary background), which is what lets an explicit parameter outrank the variable while an
     // unset one leaves the variable in charge.
-    --bit-srb-siz-height: initial;
-    --bit-srb-siz-fontsize: initial;
-    --bit-srb-siz-iconsize: initial;
-    --bit-srb-siz-cbt-iconsize: initial;
-    --bit-srb-siz-btnpad: initial;
-    --bit-srb-clr: initial;
-    --bit-srb-clr-txt: initial;
-    --bit-srb-clr-hover: initial;
-    --bit-srb-clr-active: initial;
-    --bit-srb-clr-focus: initial;
-    --bit-srb-clr-dis: initial;
-    --bit-srb-clr-dis-text: initial;
-    --bit-srb-clr-bg: initial;
+    @each $name in $srb-private-properties {
+        --bit-srb-#{$name}: initial;
+    }
 
     // The size and its public variables are ranked once here, so every rule further down keeps reading the one
     // internal name it always read.
@@ -197,21 +190,24 @@
 
     &.bit-inv {
         .bit-srb-cnt {
-            border-color: var(--bit-srb-err-clr);
+            border-color: var(--bit-srb-cnt-brd, var(--bit-srb-err-clr));
         }
 
         .bit-srb-iwp i {
-            color: var(--bit-srb-err-clr);
+            color: var(--bit-srb-ico-clr, var(--bit-srb-err-clr));
         }
 
+        // The states of the field change the variables its parts are painted from rather than their colors, so
+        // the rules that declare the colors are the ones at rest: a part the app paints through Classes keeps
+        // that paint under the pointer, instead of losing it to a state that outranks the app's class.
         @media (hover: hover) {
             &:hover {
                 .bit-srb-cnt {
-                    border-color: var(--bit-srb-err-clr);
+                    --bit-srb-cnt-brd: var(--bit-srb-err-clr);
                 }
 
                 .bit-srb-iwp i {
-                    color: var(--bit-srb-err-clr);
+                    --bit-srb-ico-clr: var(--bit-srb-err-clr);
                 }
             }
         }
@@ -241,20 +237,23 @@
 
     @media (hover: hover) {
         &:hover {
-            .bit-srb-cnt,
+            .bit-srb-cnt {
+                --bit-srb-cnt-brd: var(--bit-SearchBox-hover-border-color, #{$clr-brd-pri-hover});
+            }
+
             &.bit-srb-und .bit-srb-sbn {
-                border-color: var(--bit-SearchBox-hover-border-color, #{$clr-brd-pri-hover});
+                --bit-srb-sbn-brd: var(--bit-SearchBox-hover-border-color, #{$clr-brd-pri-hover});
             }
 
             &.bit-srb-foc {
                 .bit-srb-sbn {
-                    border-color: var(--bit-srb-clr-focus, var(--bit-SearchBox-focus-color, #{$clr-pri-focus}));
+                    --bit-srb-sbn-brd: var(--bit-srb-clr-focus, var(--bit-SearchBox-focus-color, #{$clr-pri-focus}));
                 }
             }
 
             .bit-srb-iwp {
                 i {
-                    color: var(--bit-srb-clr-hover, var(--bit-SearchBox-hover-icon-color, #{$clr-pri-hover}));
+                    --bit-srb-ico-clr: var(--bit-srb-clr-hover, var(--bit-SearchBox-hover-icon-color, #{$clr-pri-hover}));
                 }
             }
         }
@@ -295,7 +294,8 @@
     color: var(--bit-SearchBox-color, #{$clr-fg-pri});
     border-radius: var(--bit-SearchBox-radius, #{$shp-radius-control});
     background-color: var(--bit-srb-clr-bg, var(--bit-SearchBox-background, #{$clr-bg-pri}));
-    border: var(--bit-SearchBox-border-width, #{$shp-border-width}) $shp-border-style var(--bit-SearchBox-border-color, #{$clr-brd-pri});
+    --bit-srb-cnt-brd: initial;
+    border: var(--bit-SearchBox-border-width, #{$shp-border-width}) $shp-border-style var(--bit-srb-cnt-brd, var(--bit-SearchBox-border-color, #{$clr-brd-pri}));
     // The border is repainted on hover, on focus and on a rejected value, so it moves between those
     // states instead of snapping. The token collapses under prefers-reduced-motion like every other one.
     transition: border-color $mot-duration-short $mot-easing 0s;
@@ -319,7 +319,8 @@
         width: unset;
         height: unset;
         display: inline-block;
-        color: var(--bit-srb-clr, var(--bit-SearchBox-icon-color, #{$clr-pri}));
+        --bit-srb-ico-clr: initial;
+        color: var(--bit-srb-ico-clr, var(--bit-srb-clr, var(--bit-SearchBox-icon-color, #{$clr-pri})));
         transition: opacity $mot-duration $mot-easing 0s;
     }
 }
@@ -390,7 +391,8 @@
     box-sizing: border-box;
     padding: 0 spacing(0.5);
     width: var(--bit-srb-height);
-    background-color: transparent;
+    --bit-srb-cbt-bg: initial;
+    background-color: var(--bit-srb-cbt-bg, transparent);
     font-family: $tg-font-family;
     font-size: var(--bit-srb-fontsize);
     letter-spacing: $tg-ctrl-letter-spacing;
@@ -408,7 +410,8 @@
         // Deliberately smaller than the leading icon: the clear button is an affordance to reach for, not
         // one to read the field by, and at the same size it competes with the text beside it.
         font-size: var(--bit-srb-siz-cbt-iconsize, var(--bit-SearchBox-clear-button-icon-size, calc(var(--bit-SearchBox-icon-size, #{$siz-icon-md}) * 0.75)));
-        color: var(--bit-SearchBox-clear-button-color, #{$clr-fg-sec});
+        --bit-srb-cbt-clr: initial;
+        color: var(--bit-srb-cbt-clr, var(--bit-SearchBox-clear-button-color, #{$clr-fg-sec}));
     }
 
     // NoClearOnEscape puts the clear button into the tab order, since escape no longer empties the
@@ -419,15 +422,15 @@
     }
 
     &:active {
-        background-color: var(--bit-SearchBox-clear-button-active-background, #{$clr-bg-pri-active});
+        --bit-srb-cbt-bg: var(--bit-SearchBox-clear-button-active-background, #{$clr-bg-pri-active});
     }
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-SearchBox-clear-button-hover-background, #{$clr-bg-pri-hover});
+            --bit-srb-cbt-bg: var(--bit-SearchBox-clear-button-hover-background, #{$clr-bg-pri-hover});
 
             i {
-                color: var(--bit-SearchBox-clear-button-hover-color, #{$clr-fg-pri-hover});
+                --bit-srb-cbt-clr: var(--bit-SearchBox-clear-button-hover-color, #{$clr-fg-pri-hover});
             }
         }
     }
@@ -454,10 +457,12 @@
     letter-spacing: $tg-ctrl-letter-spacing;
     // Square by default: as wide as the field is tall, which an explicit Size sets ahead of the public width.
     width: var(--bit-srb-siz-height, var(--bit-SearchBox-search-button-width, var(--bit-SearchBox-height, #{$siz-ctrl-md})));
-    background-color: var(--bit-srb-clr, var(--bit-SearchBox-search-button-background, #{$clr-pri}));
+    --bit-srb-sbn-bg: initial;
+    --bit-srb-sbn-brd: initial;
+    background-color: var(--bit-srb-sbn-bg, var(--bit-srb-clr, var(--bit-SearchBox-search-button-background, #{$clr-pri})));
     border-end-end-radius: var(--bit-SearchBox-radius, #{$shp-radius-control});
     border-start-end-radius: var(--bit-SearchBox-radius, #{$shp-radius-control});
-    border: var(--bit-SearchBox-border-width, #{$shp-border-width}) $shp-border-style var(--bit-srb-clr, var(--bit-SearchBox-search-button-background, #{$clr-pri}));
+    border: var(--bit-SearchBox-border-width, #{$shp-border-width}) $shp-border-style var(--bit-srb-sbn-brd, var(--bit-srb-clr, var(--bit-SearchBox-search-button-background, #{$clr-pri})));
     border-inline-start: none;
     transition: border-color $mot-duration-short $mot-easing 0s, background-color $mot-duration-short $mot-easing 0s;
 
@@ -470,14 +475,14 @@
 
     @media (hover: hover) {
         &:hover {
-            border-color: var(--bit-srb-clr-hover, var(--bit-SearchBox-search-button-hover-background, #{$clr-pri-hover}));
-            background-color: var(--bit-srb-clr-hover, var(--bit-SearchBox-search-button-hover-background, #{$clr-pri-hover}));
+            --bit-srb-sbn-brd: var(--bit-srb-clr-hover, var(--bit-SearchBox-search-button-hover-background, #{$clr-pri-hover}));
+            --bit-srb-sbn-bg: var(--bit-srb-clr-hover, var(--bit-SearchBox-search-button-hover-background, #{$clr-pri-hover}));
         }
     }
 
     &:active {
-        border-color: var(--bit-srb-clr-active, var(--bit-SearchBox-search-button-active-background, #{$clr-pri-active}));
-        background-color: var(--bit-srb-clr-active, var(--bit-SearchBox-search-button-active-background, #{$clr-pri-active}));
+        --bit-srb-sbn-brd: var(--bit-srb-clr-active, var(--bit-SearchBox-search-button-active-background, #{$clr-pri-active}));
+        --bit-srb-sbn-bg: var(--bit-srb-clr-active, var(--bit-SearchBox-search-button-active-background, #{$clr-pri-active}));
     }
 
     i {
@@ -488,7 +493,8 @@
         height: var(--bit-srb-iconsize);
         font-size: var(--bit-srb-iconsize);
         line-height: var(--bit-srb-iconsize);
-        color: var(--bit-srb-clr-txt, var(--bit-SearchBox-search-button-color, #{$clr-pri-text}));
+        --bit-srb-sbn-clr: initial;
+        color: var(--bit-srb-sbn-clr, var(--bit-srb-clr-txt, var(--bit-SearchBox-search-button-color, #{$clr-pri-text})));
     }
 }
 
@@ -500,7 +506,8 @@
     font-size: var(--bit-srb-fontsize);
     letter-spacing: $tg-ctrl-letter-spacing;
     text-transform: $tg-ctrl-text-transform;
-    color: var(--bit-srb-clr-txt, var(--bit-SearchBox-search-button-color, #{$clr-pri-text}));
+    --bit-srb-sbn-clr: initial;
+    color: var(--bit-srb-sbn-clr, var(--bit-srb-clr-txt, var(--bit-SearchBox-search-button-color, #{$clr-pri-text})));
 }
 
 .bit-srb-sbt {
@@ -541,8 +548,12 @@
         border-top-width: 0;
         border-inline-end-width: 0;
         border-inline-start-width: 0;
-        background-color: transparent;
-        border-color: var(--bit-SearchBox-border-color, #{$clr-brd-pri});
+        // The button's own hover and press are outranked here by these colors, so the variables they set are
+        // started out unset again at this weight: only a state that outranks the colors still reaches them.
+        --bit-srb-sbn-bg: initial;
+        --bit-srb-sbn-brd: initial;
+        background-color: var(--bit-srb-sbn-bg, transparent);
+        border-color: var(--bit-srb-sbn-brd, var(--bit-SearchBox-border-color, #{$clr-brd-pri}));
 
         // A full ring around a button that has no box of its own contradicts the variant, so the
         // underlined search box keeps the same underline indicator its input uses.
@@ -551,20 +562,20 @@
         }
 
         i {
-            color: var(--bit-srb-clr, var(--bit-SearchBox-icon-color, #{$clr-pri}));
+            color: var(--bit-srb-sbn-clr, var(--bit-srb-clr, var(--bit-SearchBox-icon-color, #{$clr-pri})));
         }
 
         .bit-srb-sbx {
-            color: var(--bit-srb-clr, var(--bit-SearchBox-icon-color, #{$clr-pri}));
+            color: var(--bit-srb-sbn-clr, var(--bit-srb-clr, var(--bit-SearchBox-icon-color, #{$clr-pri})));
         }
 
         @media (hover: hover) {
             &:hover {
-                background-color: var(--bit-srb-clr-hover, var(--bit-SearchBox-search-button-hover-background, #{$clr-pri-hover}));
+                --bit-srb-sbn-bg: var(--bit-srb-clr-hover, var(--bit-SearchBox-search-button-hover-background, #{$clr-pri-hover}));
 
                 i,
                 .bit-srb-sbx {
-                    color: var(--bit-srb-clr-txt, var(--bit-SearchBox-search-button-color, #{$clr-pri-text}));
+                    --bit-srb-sbn-clr: var(--bit-srb-clr-txt, var(--bit-SearchBox-search-button-color, #{$clr-pri-text}));
                 }
             }
         }
@@ -585,8 +596,10 @@
         color: var(--bit-srb-clr, var(--bit-SearchBox-icon-color, #{$clr-pri}));
     }
 
+    // Outranks the button's own hover and press like the underlined variant does, and is started out the same way.
     .bit-srb-sbn {
-        border-color: var(--bit-srb-clr-focus, var(--bit-SearchBox-focus-color, #{$clr-pri-focus}));
+        --bit-srb-sbn-brd: initial;
+        border-color: var(--bit-srb-sbn-brd, var(--bit-srb-clr-focus, var(--bit-SearchBox-focus-color, #{$clr-pri-focus})));
     }
 
     &:not(.bit-srb-und) .bit-srb-cnt {
@@ -611,20 +624,22 @@
 
     .bit-srb-sbn {
         border: none;
-        background-color: transparent;
+        // Started out unset again for the same reason as in the underlined variant.
+        --bit-srb-sbn-bg: initial;
+        background-color: var(--bit-srb-sbn-bg, transparent);
 
         i,
         .bit-srb-sbx {
-            color: var(--bit-srb-clr, var(--bit-SearchBox-icon-color, #{$clr-pri}));
+            color: var(--bit-srb-sbn-clr, var(--bit-srb-clr, var(--bit-SearchBox-icon-color, #{$clr-pri})));
         }
 
         @media (hover: hover) {
             &:hover {
-                background-color: var(--bit-srb-clr-hover, var(--bit-SearchBox-search-button-hover-background, #{$clr-pri-hover}));
+                --bit-srb-sbn-bg: var(--bit-srb-clr-hover, var(--bit-SearchBox-search-button-hover-background, #{$clr-pri-hover}));
 
                 i,
                 .bit-srb-sbx {
-                    color: var(--bit-srb-clr-txt, var(--bit-SearchBox-search-button-color, #{$clr-pri-text}));
+                    --bit-srb-sbn-clr: var(--bit-srb-clr-txt, var(--bit-SearchBox-search-button-color, #{$clr-pri-text}));
                 }
             }
         }
@@ -664,7 +679,7 @@
 
                     i {
                         opacity: 1;
-                        color: var(--bit-srb-clr-hover, var(--bit-SearchBox-hover-icon-color, #{$clr-pri-hover}));
+                        --bit-srb-ico-clr: var(--bit-srb-clr-hover, var(--bit-SearchBox-hover-icon-color, #{$clr-pri-hover}));
                     }
                 }
             }
@@ -699,13 +714,13 @@
 
     @media (hover: hover) {
         .bit-srb-itm:hover {
-            background-color: transparent;
-            color: var(--bit-SearchBox-item-color, #{$clr-fg-pri});
+            --bit-srb-itm-bg: transparent;
+            --bit-srb-itm-clr: var(--bit-SearchBox-item-color, #{$clr-fg-pri});
         }
 
         .bit-srb-sel:hover {
-            color: var(--bit-SearchBox-item-selected-color, var(--bit-SearchBox-item-color, #{$clr-fg-pri}));
-            background-color: var(--bit-SearchBox-item-selected-background, #{$clr-bg-sec});
+            --bit-srb-itm-clr: var(--bit-SearchBox-item-selected-color, var(--bit-SearchBox-item-color, #{$clr-fg-pri}));
+            --bit-srb-itm-bg: var(--bit-SearchBox-item-selected-background, #{$clr-bg-sec});
         }
     }
 }
@@ -818,6 +833,8 @@
     background-color: transparent;
 }
 
+$srb-cal-private-properties: siz-item-height, siz-item-fontsize, siz-spn-size, clr, clr-focus;
+
 // The callout is a sibling of the root element rather than a child of it, so the size class of the
 // component never reaches it through the cascade. It is given the same class and declares the two
 // row tokens itself, which is what keeps a small search box from opening a medium sized list. It is given
@@ -834,11 +851,9 @@
     transform: translateY(0);
     transition: opacity $mot-duration-short $mot-easing-decelerate, transform $mot-duration-long $mot-easing-decelerate;
 
-    --bit-srb-siz-item-height: initial;
-    --bit-srb-siz-item-fontsize: initial;
-    --bit-srb-siz-spn-size: initial;
-    --bit-srb-clr: initial;
-    --bit-srb-clr-focus: initial;
+    @each $name in $srb-cal-private-properties {
+        --bit-srb-#{$name}: initial;
+    }
 
     --bit-srb-item-height: var(--bit-srb-siz-item-height, var(--bit-SearchBox-item-min-height, #{$siz-item-md}));
     --bit-srb-item-fontsize: var(--bit-srb-siz-item-fontsize, var(--bit-SearchBox-item-font-size, #{$tg-fs-sm}));
@@ -914,11 +929,13 @@
     box-sizing: border-box;
     text-overflow: ellipsis;
     line-height: spacing(2.5);
-    background-color: transparent;
+    --bit-srb-itm-bg: initial;
+    --bit-srb-itm-clr: initial;
+    background-color: var(--bit-srb-itm-bg, transparent);
     font-family: $tg-font-family;
     font-size: var(--bit-srb-item-fontsize);
     min-height: var(--bit-srb-item-height);
-    color: var(--bit-SearchBox-item-color, #{$clr-fg-pri});
+    color: var(--bit-srb-itm-clr, var(--bit-SearchBox-item-color, #{$clr-fg-pri}));
     padding: var(--bit-SearchBox-item-padding, #{spacing(0.5)} #{spacing(1)});
     border: $shp-border-width $shp-border-style transparent;
 
@@ -930,10 +947,10 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-SearchBox-item-hover-background, #{$clr-bg-pri-hover});
+            --bit-srb-itm-bg: var(--bit-SearchBox-item-hover-background, #{$clr-bg-pri-hover});
             // A row whose background is repainted needs its text repainted with it: a hover surface dark
             // enough to read against is the usual reason to set one, and the default text would vanish on it.
-            color: var(--bit-SearchBox-item-hover-color, var(--bit-SearchBox-item-color, #{$clr-fg-pri}));
+            --bit-srb-itm-clr: var(--bit-SearchBox-item-hover-color, var(--bit-SearchBox-item-color, #{$clr-fg-pri}));
         }
     }
 }
@@ -945,15 +962,15 @@
 // 1.4.11 against the callout behind it. So the row is ringed as well, inside its own box so that the
 // scroll container it sits in can never clip the ring away.
 .bit-srb-sel {
-    color: var(--bit-SearchBox-item-selected-color, var(--bit-SearchBox-item-color, #{$clr-fg-pri}));
-    background-color: var(--bit-SearchBox-item-selected-background, #{$clr-bg-sec});
+    color: var(--bit-srb-itm-clr, var(--bit-SearchBox-item-selected-color, var(--bit-SearchBox-item-color, #{$clr-fg-pri})));
+    background-color: var(--bit-srb-itm-bg, var(--bit-SearchBox-item-selected-background, #{$clr-bg-sec}));
     outline: $shp-focus-ring-width $shp-border-style var(--bit-srb-clr-focus, var(--bit-SearchBox-item-selected-border-color, #{$clr-pri-focus}));
     outline-offset: calc(-1 * #{$shp-focus-ring-width});
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-SearchBox-item-hover-background, #{$clr-bg-pri-hover});
-            color: var(--bit-SearchBox-item-hover-color, var(--bit-SearchBox-item-color, #{$clr-fg-pri}));
+            --bit-srb-itm-bg: var(--bit-SearchBox-item-hover-background, #{$clr-bg-pri-hover});
+            --bit-srb-itm-clr: var(--bit-SearchBox-item-hover-color, var(--bit-SearchBox-item-color, #{$clr-fg-pri}));
         }
     }
 }
