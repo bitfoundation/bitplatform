@@ -803,7 +803,7 @@
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-cal-clr-focus, var(--bit-Calendar-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-cal-clr-focus, var(--bit-Calendar-focus-color)));
     }
 }
 

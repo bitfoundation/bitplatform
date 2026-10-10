@@ -196,7 +196,7 @@
 
     &:focus-visible {
         z-index: 1;
-        @include focus-ring(var(--bit-bdg-clr-fcs, var(--bit-Badge-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-bdg-clr-fcs, var(--bit-Badge-focus-color)));
     }
 
     // WCAG asks a pointer target to be at least 24x24, and a dot badge or a small counter is well under it.
@@ -264,7 +264,7 @@
 
     // The ring above is a box-shadow of its own, so the focus indicator has to be restated here to win it back.
     > .bit-bdg-wrp > .bit-bdg-clk:focus-visible {
-        @include focus-ring(var(--bit-bdg-clr-fcs, var(--bit-Badge-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-bdg-clr-fcs, var(--bit-Badge-focus-color)));
     }
 }
 

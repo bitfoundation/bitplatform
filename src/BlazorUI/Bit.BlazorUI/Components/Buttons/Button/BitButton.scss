@@ -116,7 +116,7 @@
     transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     &:focus-visible {
-        @include focus-ring(var(--bit-btn-clr-focus, var(--bit-Button-focus-color, var(--bit-btn-dft-clr-focus, #{$clr-pri-focus}))));
+        @include focus-ring-own(var(--bit-btn-clr-focus, var(--bit-Button-focus-color, var(--bit-btn-dft-clr-focus))));
     }
 
     // The pointer is deliberately left alone here. A disabled button that stops answering it also stops

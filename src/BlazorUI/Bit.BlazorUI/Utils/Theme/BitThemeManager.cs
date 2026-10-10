@@ -117,6 +117,8 @@ public class BitThemeManager : IAsyncDisposable
     /// the target element as well, so app CSS reading the alias tier - and the components, which read
     /// the family tier - track the override (an alias's <c>var()</c> reference is substituted where the alias is defined, so
     /// the <c>:root</c>-level default would otherwise keep the document's value).
+    /// So is the global focus ring (<c>--bit-shd-focus-ring</c>), a composite of the page background, the primary focus
+    /// color and the ring's width and offset, whenever the theme re-values one of them.
     /// Explicitly-set alias values always win over this re-declaration. A re-valued density scale or spacing unit
     /// needs no such help: the insets and sizes derived from them are computed where a component uses them.
     /// </remarks>
@@ -126,6 +128,7 @@ public class BitThemeManager : IAsyncDisposable
         await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
 
         var cssVariables = BitThemeMapper.MapToCssVariables(bitTheme ?? new BitTheme());
+        BitThemeMapper.AugmentWithFocusRingReSubstitution(cssVariables);
         BitThemeMapper.AugmentWithSemanticAliasReSubstitution(cssVariables);
         BitThemeMapper.AugmentWithFamilyAliasReSubstitution(cssVariables);
 

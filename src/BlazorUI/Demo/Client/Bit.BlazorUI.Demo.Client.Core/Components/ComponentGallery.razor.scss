@@ -102,6 +102,10 @@
     border: none;
     transition: color $bit-motion-duration-short $bit-motion-easing,
                 background-color $bit-motion-duration-short $bit-motion-easing;
+    // Same reason as the Iconography toolbar: a BitIcon given no Color is primary, which vanishes
+    // against the primary background .active lays behind it, so it follows the button's color.
+    --bit-Icon-color: currentColor;
+    --bit-Icon-size: #{rem2(15px)};
 
     & + & {
         border-inline-start: rem2(1px) solid $bit-color-border-secondary;
@@ -119,13 +123,6 @@
     &.active {
         color: $bit-color-primary-text;
         background-color: $bit-color-primary;
-    }
-
-    // Same reason as the Iconography toolbar: BitIcon paints itself primary unless told
-    // otherwise, which vanishes against the primary background .active lays behind it.
-    ::deep .bit-ico {
-        color: inherit;
-        font-size: rem2(15px);
     }
 }
 
@@ -213,10 +210,7 @@
     color: $bit-color-primary;
     border-radius: $bit-shape-radius-md;
     background-color: color-mix(in srgb, #{$bit-color-primary} 12%, transparent);
-
-    ::deep .bit-ico {
-        font-size: rem2(18px);
-    }
+    --bit-Icon-size: #{rem2(18px)};
 }
 
 .gallery-card-body {
@@ -316,10 +310,7 @@
     .gallery-card-icon {
         width: rem2(28px);
         height: rem2(28px);
-
-        ::deep .bit-ico {
-            font-size: rem2(15px);
-        }
+        --bit-Icon-size: #{rem2(15px)};
     }
 
     .gallery-card-body {

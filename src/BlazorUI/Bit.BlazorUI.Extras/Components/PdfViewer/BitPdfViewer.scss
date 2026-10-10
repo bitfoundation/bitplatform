@@ -45,6 +45,9 @@
 $pdv-color: var(--bit-PdfViewer-color, #{$clr-fg-pri});
 $pdv-divider: var(--bit-PdfViewer-divider-color, #{$clr-brd-sec});
 $pdv-focus: var(--bit-PdfViewer-focus-color, #{$clr-pri-focus});
+// The same color less its fallback, for the focus rings: while it is unset they are the global
+// --bit-shd-focus-ring (see focus-ring-own and focus-ring-color).
+$pdv-focus-ring: focus-ring-color($pdv-focus);
 $pdv-button-hover-background: var(--bit-PdfViewer-button-hover-background, #{$clr-bg-sec-hover});
 $pdv-button-active-color: var(--bit-PdfViewer-button-active-color, #{$clr-pri-text});
 $pdv-button-active-background: var(--bit-PdfViewer-button-active-background, #{$clr-pri});
@@ -235,7 +238,7 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
     }
 
     &:focus-visible {
-        @include focus-ring($pdv-focus);
+        @include focus-ring-own($pdv-focus-ring);
     }
 
     &:disabled {
@@ -395,7 +398,7 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
     }
 
     &:focus-visible {
-        @include focus-ring($pdv-focus);
+        @include focus-ring-own($pdv-focus-ring);
     }
 
     &.bit-pdv-act {
@@ -629,7 +632,7 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
     }
 
     &:focus-visible {
-        @include focus-ring($pdv-focus);
+        @include focus-ring-own($pdv-focus-ring);
     }
 
     &:disabled {
@@ -738,7 +741,7 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
     border-radius: $shp-radius-dialog;
 
     &:focus-visible {
-        @include focus-ring($pdv-focus);
+        @include focus-ring-own($pdv-focus-ring);
     }
 }
 
@@ -946,7 +949,7 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
     }
 
     &:focus-visible {
-        @include focus-ring($pdv-focus);
+        @include focus-ring-own($pdv-focus-ring);
     }
 
     &.bit-pdv-act {
@@ -1056,7 +1059,7 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
 
     /* The input is invisible, and so is its focus ring: the button shape shows it. */
     &:has(.bit-pdv-file:focus-visible) {
-        @include focus-ring($pdv-focus);
+        @include focus-ring-own($pdv-focus-ring);
     }
 
     &:has(.bit-pdv-file:disabled) {

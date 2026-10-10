@@ -25,7 +25,7 @@ public partial class BitOtpInputStylesheetTests
 
         // So does an explicit Accent, for every color it paints.
         StringAssert.Contains(stylesheet, "border-color: var(--bit-otp-clr, var(--bit-OtpInput-focus-border-color, #{$clr-pri}));");
-        StringAssert.Contains(stylesheet, "var(--bit-otp-clr-focus, var(--bit-OtpInput-focus-color, #{$clr-pri-focus}))");
+        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-otp-clr-focus, var(--bit-OtpInput-focus-color)))");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-otp-clr, var(--bit-OtpInput-loader-color, #{$clr-pri}));");
 
         // The colors of the boxes are the Variant's recipe, which the public background and border variables re-skin

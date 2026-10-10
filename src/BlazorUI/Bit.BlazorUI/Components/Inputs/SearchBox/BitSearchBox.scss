@@ -415,7 +415,7 @@
     // field and the button becomes the only way left to do it. A focusable control with no visible
     // indicator fails WCAG 2.4.7, so the ring is drawn here and not only on the input.
     &:focus-visible {
-        @include focus-ring(var(--bit-srb-clr-focus, var(--bit-SearchBox-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-srb-clr-focus, var(--bit-SearchBox-focus-color)));
     }
 
     &:active {
@@ -464,7 +464,7 @@
     // The search button is a tab stop of its own, and the one control of the component that the focus
     // styling of the input (.bit-srb-foc) never reaches.
     &:focus-visible {
-        @include focus-ring(var(--bit-srb-clr-focus, var(--bit-SearchBox-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-srb-clr-focus, var(--bit-SearchBox-focus-color)));
         z-index: 1; // The ring is drawn outside the button, over the field it sits against.
     }
 
@@ -590,7 +590,7 @@
     }
 
     &:not(.bit-srb-und) .bit-srb-cnt {
-        @include focus-ring(var(--bit-srb-clr-focus, var(--bit-SearchBox-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-srb-clr-focus, var(--bit-SearchBox-focus-color)));
     }
 
     &.bit-srb-und {

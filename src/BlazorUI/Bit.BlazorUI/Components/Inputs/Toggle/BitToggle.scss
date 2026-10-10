@@ -427,7 +427,7 @@
     border: var(--bit-tgl-brd-w) $shp-border-style var(--bit-tgl-trk-clr-brd);
 
     &:focus-visible {
-        @include focus-ring(var(--bit-tgl-clr-focus, var(--bit-Toggle-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-tgl-clr-focus, var(--bit-Toggle-focus-color)));
     }
 
     // WCAG 2.2 Target Size (Minimum) asks for 24x24 CSS pixels, which the small and medium tracks are shorter

@@ -131,6 +131,11 @@
             // Dismisses the callout once the focus has moved on from both its component and itself - see
             // setupFocusLeave.
             dismissOnFocusLeave: boolean = false,
+            // The id of the trigger the callout is put into the tab order right after while it is open (see
+            // Utils.setupTabOut), or '' for none. It is registered with the open and taken back with the close or
+            // the dismissal, in the same calls, so a component that asks for it here spends no round trip of its
+            // own on it and never holds it a moment longer than the callout is open.
+            tabOutTriggerId: string = '',
             // The id of the root of the component, when it is not an ancestor of the callout - which it is not
             // for any component whose popup is rendered beside its root. What the consumer declared on it for the
             // popup too (the custom properties of Style and Styles.Root, ForceAnimation's bit-fam; see mirrorRoot)
@@ -176,11 +181,15 @@
 
             Callouts.replaceCurrent({
                 dotnetObj, componentId, calloutId, overlayId, arrowId, responsiveMode, scrollContainerId, noDismiss,
-                noScrollDismiss: noDismiss || noScrollDismiss, trapFocus
+                noScrollDismiss: noDismiss || noScrollDismiss, trapFocus, tabOut: !!tabOutTriggerId
             });
 
             if (trapFocus) {
                 Utils.setupFocusTrap(calloutId);
+            }
+
+            if (tabOutTriggerId) {
+                Utils.setupTabOut(calloutId, tabOutTriggerId, dotnetObj);
             }
 
             if (dismissOnFocusLeave) {
@@ -1630,6 +1639,11 @@
                     Utils.disposeFocusTrap(callout.calloutId);
                 }
 
+                // And so does a tab order it registered.
+                if (Callouts._stack[index].tabOut && !callout.tabOut) {
+                    Utils.disposeTabOut(callout.calloutId);
+                }
+
                 Callouts._stack[index] = callout;
                 return;
             }
@@ -1755,6 +1769,11 @@
                 Utils.disposeFocusTrap(entry.calloutId);
             }
 
+            // The same goes for the tab order around the trigger.
+            if (entry.tabOut) {
+                Utils.disposeTabOut(entry.calloutId);
+            }
+
             Callouts.disposeFocusLeave(entry.calloutId);
 
             // The entry has already been taken off the stack by the time it is detached, so what is left
@@ -1802,6 +1821,8 @@
         responsiveMode?: BitResponsiveMode;
         // Whether the toggle registered the focus trap of the callout, which is then its to take back.
         trapFocus?: boolean;
+        // Whether the toggle put the callout into the tab order after its trigger, which is then its to take back.
+        tabOut?: boolean;
     }
 
     // One element of the chain a relocated callout is moved into, and the element of the page it stands for.
