@@ -546,7 +546,9 @@ public static class BlazorUIMarkdown
     /// <summary>
     /// The public custom properties the component reads off its root. Stated with how they are set
     /// rather than only listed: the one thing an agent needs beyond the names is that they inherit,
-    /// so a `:root` rule, an ancestor's style and an instance's `Style` are all valid places for one.
+    /// so a `:root` rule, an ancestor's style and an instance's `Style` are all valid places for one - and an
+    /// instance's `Style` reaches the instances nested in it as well, so what is meant for one alone is a parameter or
+    /// the real CSS property on its `Style` / `Styles`.
     /// </summary>
     private static void AppendCssVariables(StringBuilder builder, BlazorUIComponent component)
     {
@@ -557,7 +559,7 @@ public static class BlazorUIMarkdown
             BlazorUIComponentCatalog.Find(shown.Name) is { CssVariables.Count: > 0 } shownComponent)
         {
             builder.AppendLine("## CSS variables").AppendLine();
-            builder.AppendLine($"Every `{shownComponent.Name}` this service shows reads the {shownComponent.CssVariables.Count} public CSS variables `GetBitBlazorUIComponent(name: \"{shownComponent.Name}\")` lists (`{shownComponent.CssVariables[0].Name}`, ...). They inherit: set them on the `Style` of the parameters one showing is given to restyle that one, on the `Style` of the container's parameters to restyle every one it renders, or on `:root` to restyle every `{shownComponent.Name}` in the app.").AppendLine();
+            builder.AppendLine($"Every `{shownComponent.Name}` this service shows reads the {shownComponent.CssVariables.Count} public CSS variables `GetBitBlazorUIComponent(name: \"{shownComponent.Name}\")` lists (`{shownComponent.CssVariables[0].Name}`, ...). They inherit: set them on the `Style` of the parameters one showing is given to restyle that one and every one opened inside it, on the `Style` of the container's parameters to restyle every one it renders, or on `:root` to restyle every `{shownComponent.Name}` in the app.").AppendLine();
 
             return;
         }
@@ -565,7 +567,7 @@ public static class BlazorUIMarkdown
         if (component.CssVariables.Count == 0) return;
 
         builder.AppendLine("## CSS variables").AppendLine();
-        builder.AppendLine("Read off the root with a fallback and never declared by the component, so they inherit: set one on `:root` (or a `[bit-theme]` block) to restyle every instance, on an ancestor to restyle the ones inside it, or on the `Style` of one instance to restyle it alone. They restyle the default, never a choice: a parameter set on the instance (its `Color`, `Size`, `Shape`, ...) wins over the variable restyling what it sets, so a variable only shows on the instances that leave that parameter unset.").AppendLine();
+        builder.AppendLine("Read off the root with a fallback and never declared by the component, so they inherit: set one on `:root` (or a `[bit-theme]` block) to restyle every instance, on an ancestor to restyle the ones inside it, or on the `Style` of one instance to restyle it and every instance nested inside it, which inherits the value too - a parameter, or the real CSS property on its `Style` / `Styles`, changes one alone. They restyle the default, never a choice: a parameter set on the instance (its `Color`, `Size`, `Shape`, ...) wins over the variable restyling what it sets, so a variable only shows on the instances that leave that parameter unset.").AppendLine();
         builder.AppendLine("| Variable | Default | Description |");
         builder.AppendLine("| --- | --- | --- |");
 

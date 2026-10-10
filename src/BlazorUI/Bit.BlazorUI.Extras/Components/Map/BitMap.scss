@@ -1,8 +1,8 @@
 ﻿@import "../../../Bit.BlazorUI/Styles/functions.scss";
 
 // Public CSS variables, read off the map and never declared here, so a value set on :root re-skins every map of the
-// app and one set on the Style of a map - or of any element around a group of them - re-skins those alone. Styles and
-// Classes still reach each part by name and win over these.
+// app and one set on the Style of a map - or of any element around a group of them - re-skins those and the maps nested
+// in them. Styles and Classes still reach each part by name and win over these.
 //   --bit-Map-height                 height of the map; a percentage needs a container with a height   (default: 100%)
 //   --bit-Map-background             what shows where no tile is drawn: before the tiles load, behind the
 //                                    loading / error cover, and around a fullscreen map                (default: $clr-bg-sec)

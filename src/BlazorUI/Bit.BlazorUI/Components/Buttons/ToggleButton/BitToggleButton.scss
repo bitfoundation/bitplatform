@@ -1,8 +1,9 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// toggle button and one set on the Style of an instance re-skins that one alone. The unchecked and the
-// checked state carry their own sets, so restyling the resting look never silently repaints the state:
+// toggle button and one set on the Style of an instance re-skins that one and the toggle buttons nested in it. The
+// unchecked and the checked state carry their own sets, so restyling the resting look never silently repaints the
+// state:
 //   --bit-ToggleButton-color                          foreground at rest                      (default: per variant, $clr-pri-text or $clr-pri)
 //   --bit-ToggleButton-background                     background at rest                      (default: per variant, $clr-pri or transparent)
 //   --bit-ToggleButton-border-color                   border color at rest                    (default: per variant, $clr-pri or transparent)

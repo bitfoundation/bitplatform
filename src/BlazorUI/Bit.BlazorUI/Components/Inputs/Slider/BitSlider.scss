@@ -10,7 +10,7 @@
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // slider, one set on an ancestor re-skins the sliders inside it, and one set on the Style of an instance
-// re-skins that one alone:
+// re-skins that one and the sliders nested in it:
 //   --bit-Slider-color                   the accent: the fill and the ring around a thumb    (default: $clr-pri)
 //   --bit-Slider-hover-color             the accent while the slider is hovered              (default: --bit-Slider-color when set, else $clr-pri-hover)
 //   --bit-Slider-active-color            the accent while a thumb or the band is held down   (default: --bit-Slider-color when set, else $clr-pri-active)

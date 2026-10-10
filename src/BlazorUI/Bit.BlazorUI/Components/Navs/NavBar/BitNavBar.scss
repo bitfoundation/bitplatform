@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// navbar and one set on the Style of an instance re-skins that one alone:
+// navbar and one set on the Style of an instance re-skins that one and the navbars nested in it:
 //   --bit-NavBar-background              fill of the bar                                   (default: transparent)
 //   --bit-NavBar-border-radius           corners of the bar (a floating tab bar)           (default: 0)
 //   --bit-NavBar-shadow                  shadow of the bar                                 (default: none)

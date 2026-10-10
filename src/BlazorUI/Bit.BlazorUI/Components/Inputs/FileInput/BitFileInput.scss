@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// file input and one set on the Style of an instance re-skins that one alone:
+// file input and one set on the Style of an instance re-skins that one and the file inputs nested in it:
 //   --bit-FileInput-max-width                 widest the whole component gets                  (default: spacing(43.75))
 //   --bit-FileInput-color                     the role color: the fill of a Fill browse
 //                                             button, the rule and the text of the other two   (default: $clr-pri)

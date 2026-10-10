@@ -114,7 +114,7 @@
     @if (CssVariables.Any())
     {
         @("## CSS Variables\n")
-        @("Public CSS custom properties read off the component's root. Set one on `:root` to restyle every instance, on any ancestor to restyle the ones inside it, or on the `Style` of one instance.\n")
+        @("Public CSS custom properties read off the component's root. Set one on `:root` to restyle every instance, on any ancestor to restyle the ones inside it, or on the `Style` of one instance to restyle it and every instance nested inside it, which inherits the value too - a parameter, or the real CSS property on its `Style` / `Styles`, changes one alone.\n")
         @("| Name | Default Value | Description |\n")
         @("| :--- | :------------ | :---------- |\n")
         @foreach (var variable in CssVariables)
@@ -254,7 +254,9 @@ else
                     <BitText Typography="BitTypography.Body2" Class="css-vars-intro">
                         Every variable is read with a fallback and never declared by the component, so it inherits like any other custom property:
                         set one on <code>:root</code> (or in a <code>[bit-theme]</code> block) to restyle every instance, on any ancestor to restyle the ones inside it,
-                        or on the <b>Style</b> of one instance to restyle that one alone. Leave a variable unset and the component falls back to the theme token beside it.
+                        or on the <b>Style</b> of one instance to restyle it - and any instance nested inside it, which inherits the value too; a parameter, or the real
+                        CSS property on the instance's <b>Style</b> / <b>Styles</b>, changes one alone. Leave a variable unset and the component
+                        falls back to the theme token beside it.
                     </BitText>
 
                     <DemoCssVariablesTable Name="@($"Bit{Name}")" Variables="CssVariables" />

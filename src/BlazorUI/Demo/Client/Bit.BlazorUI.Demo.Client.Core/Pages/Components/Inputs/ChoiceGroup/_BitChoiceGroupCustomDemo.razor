@@ -1098,8 +1098,8 @@
     <div>
         The ChoiceGroup also reads a set of <BitLink Href="#css-variables-section">CSS variables</BitLink> off its root. They
         inherit, so a value on <code>:root</code> or any ancestor re-skins every ChoiceGroup below it, and one on the <b>Style</b>
-        of an instance re-skins that one alone. They restyle the default, not a choice: an explicit <b>Color</b>, <b>Size</b> or
-        <b>Gap</b> wins over the variables for what it sets.
+        of an instance re-skins that one and any ChoiceGroup nested in it. They restyle the default, not a choice: an explicit
+        <b>Color</b>, <b>Size</b> or <b>Gap</b> wins over the variables for what it sets.
     </div>
     <br />
     <div class="example-content column">

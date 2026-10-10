@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// otp input and one set on the Style of an instance re-skins that one alone:
+// otp input and one set on the Style of an instance re-skins that one and the otp inputs nested in it:
 //   --bit-OtpInput-gap                     room between the boxes                        (default: spacing(1.25))
 //   --bit-OtpInput-input-size              width and height of every box                 (default: $siz-ctrl-md)
 //   --bit-OtpInput-input-width             width alone, for a box wider than it is tall  (default: --bit-OtpInput-input-size)

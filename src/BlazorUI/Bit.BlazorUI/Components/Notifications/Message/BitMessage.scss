@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// message and one set on the Style of an instance re-skins that one alone:
+// message and one set on the Style of an instance re-skins that one and the messages nested in it:
 //   --bit-Message-color                    text, glyph and button color                   (default: per variant - $clr-inf-text filled, $clr-inf-fg otherwise)
 //   --bit-Message-background               background of the surface                     (default: $clr-inf filled, $clr-inf-tint when Tinted, transparent otherwise)
 //   --bit-Message-border-color             border color                                   (default: $clr-inf filled and outlined, transparent otherwise)

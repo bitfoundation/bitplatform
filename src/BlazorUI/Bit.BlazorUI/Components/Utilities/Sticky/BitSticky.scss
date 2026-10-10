@@ -1,7 +1,8 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root (or on the
-// scrolling container) re-tunes every sticky under it and one set on the Style of an instance that one alone:
+// scrolling container) re-tunes every sticky under it and one set on the Style of an instance that one and the
+// stickies nested in it:
 //   --bit-Sticky-z-index          stacking order                                   (default: 1, the ZIndex parameter wins)
 //   --bit-Sticky-offset-top       gap kept from the top edge by a Top sticky       (default: 0, the Top parameter wins)
 //   --bit-Sticky-offset-bottom    gap kept from the bottom edge by a Bottom sticky (default: 0, the Bottom parameter wins)

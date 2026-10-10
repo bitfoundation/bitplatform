@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// icon and one set on the Style of an instance re-skins that one alone:
+// icon and one set on the Style of an instance re-skins that one and the icons nested in it:
 //   --bit-Icon-color                 the icon's color: the glyph of a Text or an
 //                                    Outline icon, the box of a Fill one            (default: $clr-pri)
 //   --bit-Icon-contrast-color        the glyph drawn over the box of a Fill icon,

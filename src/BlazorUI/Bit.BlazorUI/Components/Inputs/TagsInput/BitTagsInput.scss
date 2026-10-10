@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the elements and never declared here, so a value set on :root re-skins every
-// tags input and one set on the Style of an instance re-skins that one alone:
+// tags input and one set on the Style of an instance re-skins that one and the tags inputs nested in it:
 //   --bit-TagsInput-font-size               text size of the field                            (default: $tg-fs-sm)
 //   --bit-TagsInput-color                   color of the typed text                           (default: $clr-fg-pri)
 //   --bit-TagsInput-placeholder-color       color of the placeholder                          (default: $clr-fg-ter)

@@ -4,7 +4,7 @@
 
 // Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every
 // message box - the ones the BitMessageBoxService shows included - one set on an ancestor the message boxes
-// inside it, and one set on the Style of an instance that one alone:
+// inside it, and one set on the Style of an instance that one and the message boxes nested in it:
 //   --bit-MessageBox-padding            inset of the message box                       (default: $spa-dialog)
 //   --bit-MessageBox-gap                room between the header, body and footer       (default: spacing(2))
 //   --bit-MessageBox-min-width          width the message box does not shrink below    (default: spacing(40), never past the max width)

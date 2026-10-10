@@ -1,7 +1,8 @@
 ﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
 
 // Public CSS variables, read with a fallback and never declared here, so a value set on :root (or on an
-// ancestor) re-tunes every editor under it and one set on the Style of an instance that one alone:
+// ancestor) re-tunes every editor under it and one set on the Style of an instance that one and the editors nested in
+// it:
 //   --bit-MarkdownEditor-color                     text of the editor                          (default: $clr-fg-pri)
 //   --bit-MarkdownEditor-background                background of the editor                    (default: $clr-bg-pri)
 //   --bit-MarkdownEditor-border-color              outer border                                (default: $clr-brd-pri)

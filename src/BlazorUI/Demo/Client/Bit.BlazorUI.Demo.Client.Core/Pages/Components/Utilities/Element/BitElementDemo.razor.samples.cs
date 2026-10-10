@@ -158,6 +158,10 @@ private readonly BitElementParams[] elementParams =
 <BitElement Element=""fieldset"" Disabled Style=""--bit-Element-disabled-opacity: 1;"">
     <BitElement Element=""legend"">A disabled fieldset, not dimmed</BitElement>
     <BitElement Element=""input"" placeholder=""Its input shows its own disabled look"" AriaLabel=""Fieldset input"" />
+</BitElement>
+<BitElement Element=""fieldset"" Disabled Style=""opacity: 1;"">
+    <BitElement Element=""legend"">A disabled fieldset, not dimmed on its own</BitElement>
+    <BitElement Element=""div"" role=""button"" Disabled>A disabled div inside it, still dimmed</BitElement>
 </BitElement>";
 
     private readonly string example13RazorCode = @"
