@@ -254,6 +254,24 @@ public class BitFullCalendarThemeAndAccessibilityTests : BunitTestContext
         Assert.AreEqual(0, component.FindAll(".bit-bfc-dropdown-menu").Count);
     }
 
+    [TestMethod]
+    public void BitFullCalendarSettingsShouldClaimEscapeOnlyWhileOpen()
+    {
+        var component = RenderComponent<BitFullCalendar>(parameters => parameters.Add(p => p.Events, Events()));
+        Assert.IsNull(component.Find(".bit-bfc-dropdown").GetAttribute("data-bit-esc"));
+
+        component.Find(".bit-bfc-dropdown > button").Click();
+
+        // Both the dropdown and its panel: the panel is a dialog, where Utils.claimEscape stops looking.
+        Assert.AreEqual("claim", component.Find(".bit-bfc-dropdown").GetAttribute("data-bit-esc"));
+        Assert.AreEqual("claim", component.Find(".bit-bfc-dropdown-menu").GetAttribute("data-bit-esc"));
+
+        component.Find(".bit-bfc-dropdown").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, component.FindAll(".bit-bfc-dropdown-menu").Count);
+        Assert.IsNull(component.Find(".bit-bfc-dropdown").GetAttribute("data-bit-esc"));
+    }
+
     #endregion
 
     #region Dates and events

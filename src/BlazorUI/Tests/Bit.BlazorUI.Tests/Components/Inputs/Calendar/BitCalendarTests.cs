@@ -1838,6 +1838,26 @@ public class BitCalendarTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCalendarEventDialogShouldClaimTheEscapeThatClosesIt()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.Events, [
+                new BitCalendarEvent { Title = "Meeting", Date = new DateOnly(2026, 1, 15) }
+            ]);
+        });
+
+        component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15").Click();
+
+        // The dialog carries data-bit-esc (Utils.claimEscape) for the press that closes it, so a dialog of the
+        // library around the calendar does not close on the same press as well.
+        Assert.AreEqual("claim", component.Find(".bit-cal-emc").GetAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
     public void BitCalendarShouldRespectShowEventDetails()
     {
         DateTimeOffset? value = null;
@@ -2282,6 +2302,210 @@ public class BitCalendarTests : BunitTestContext
         component.Find(".bit-cal-pkb[tabindex='0']").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.Contains("Jan", component.FindAll(".bit-cal-pkb").Select(b => b.TextContent.Trim()).ToList());
+    }
+
+    [TestMethod,
+        DataRow(true, false),
+        DataRow(false, true)
+    ]
+    public void BitCalendarMonthPickerInPlaceOfTheDayGridShouldClaimTheEscapeThatLeavesIt(bool showMonthPickerAsOverlay, bool showTimePicker)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.ShowMonthPickerAsOverlay, showMonthPickerAsOverlay);
+            parameters.Add(p => p.ShowTimePicker, showTimePicker);
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+        });
+
+        // The month toggle of the day picker's header, which swaps the day grid for the months.
+        component.Find(".bit-cal-ptb").Click();
+
+        Assert.IsNotEmpty(component.FindAll(".bit-cal-pkb"));
+
+        // The picker's wrapper carries data-bit-esc (Utils.claimEscape) for the press that takes the months away, so
+        // a dialog around the calendar stays open on that press; the cells leave it to the wrapper.
+        Assert.AreEqual("claim", component.Find(".bit-cal-mwp").GetAttribute("data-bit-esc"));
+        Assert.IsTrue(component.FindAll(".bit-cal-pkb").All(m => m.HasAttribute("data-bit-esc") is false));
+
+        // A disabled calendar answers no key, so it leaves the press to the dialog.
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
+
+        Assert.IsNotEmpty(component.FindAll(".bit-cal-pkb"));
+        Assert.IsFalse(component.Find(".bit-cal-mwp").HasAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public void BitCalendarMonthPickerBesideTheDayGridShouldLeaveTheEscapeAlone()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+        });
+
+        // A month picker beside the day grid does nothing with Escape (DismissMonthPickerOverlay), so the key goes
+        // on to the dialog around the calendar.
+        Assert.IsNotEmpty(component.FindAll(".bit-cal-pkb"));
+        Assert.IsFalse(component.Find(".bit-cal-mwp").HasAttribute("data-bit-esc"));
+        Assert.IsTrue(component.FindAll(".bit-cal-pkb").All(m => m.HasAttribute("data-bit-esc") is false));
+    }
+
+    [TestMethod]
+    public void BitCalendarYearGridShouldClaimTheEscapeThatLeavesIt()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+        });
+
+        // The year toggle of the month pane, which swaps the months for the years of the range.
+        component.FindAll(".bit-cal-ptb").Last().Click();
+
+        // The picker's wrapper carries data-bit-esc (Utils.claimEscape) for the press that goes back to the months,
+        // even where the month picker beside the day grid leaves the key alone.
+        Assert.Contains("2026", component.FindAll(".bit-cal-pkb").Select(b => b.TextContent.Trim()).ToList());
+        Assert.AreEqual("claim", component.Find(".bit-cal-mwp").GetAttribute("data-bit-esc"));
+
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
+
+        Assert.Contains("2026", component.FindAll(".bit-cal-pkb").Select(b => b.TextContent.Trim()).ToList());
+        Assert.IsFalse(component.Find(".bit-cal-mwp").HasAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public void BitCalendarEscapeOnTheMonthAndYearPickerHeaderShouldLeaveThemTheWayTheCellsDo()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.ShowMonthPickerAsOverlay, true);
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+        });
+
+        // The month picker overlay, then its year grid through the year toggle of the month pane.
+        component.Find(".bit-cal-ptb").Click();
+        component.Find(".bit-cal-mwp .bit-cal-ptb").Click();
+        Assert.Contains("2026", component.FindAll(".bit-cal-pkb").Select(b => b.TextContent.Trim()).ToList());
+
+        // Escape is answered on the wrapper, so a press on a nav button of the header takes the year grid back to
+        // the months - once: the press does not go on to leave the month picker as well.
+        component.Find(".bit-cal-mwp .bit-cal-nbt").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.Contains("Jan", component.FindAll(".bit-cal-pkb").Select(b => b.TextContent.Trim()).ToList());
+
+        // And a second one leaves the overlay for the day grid.
+        component.Find(".bit-cal-mwp .bit-cal-nbt").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.IsEmpty(component.FindAll(".bit-cal-pkb"));
+        Assert.IsNotEmpty(component.FindAll(".bit-cal-dbt"));
+    }
+
+    [TestMethod]
+    public void BitCalendarTimePickerOverlayShouldClaimTheEscapeThatHidesIt()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.ShowTimePickerAsOverlay, true);
+            parameters.Add(p => p.ShowMonthPicker, false);
+        });
+
+        // The clock button of the day picker's header opens the overlay, which is the last of its nav buttons.
+        component.FindAll(".bit-cal-dwp .bit-cal-nbt").Last().Click();
+
+        // The time picker carries data-bit-esc (Utils.claimEscape) for the press that hides it, so a dialog around
+        // the calendar stays open on that press.
+        Assert.AreEqual("claim", component.Find(".bit-cal-twp").GetAttribute("data-bit-esc"));
+
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
+
+        Assert.IsFalse(component.Find(".bit-cal-twp").HasAttribute("data-bit-esc"));
+    }
+
+    [TestMethod,
+        DataRow(true, false, false, false),
+        DataRow(false, true, false, false),
+        DataRow(false, false, true, false),
+        DataRow(false, false, false, true)
+    ]
+    public void BitCalendarEventDialogShouldLeaveAnEscapeWithAModifierAlone(bool shift, bool ctrl, bool alt, bool meta)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.Events, [
+                new BitCalendarEvent { Title = "Meeting", Date = new DateOnly(2026, 1, 15) }
+            ]);
+        });
+
+        component.FindAll(".bit-cal-dbt").First(b => b.TextContent.Trim() == "15").Click();
+
+        // Only a plain Escape is claimed from the surface around the calendar, so only a plain one closes the
+        // dialog: one with a modifier goes on to that surface alone.
+        component.Find(".bit-cal-emc").KeyDown(new KeyboardEventArgs { Key = "Escape", ShiftKey = shift, CtrlKey = ctrl, AltKey = alt, MetaKey = meta });
+
+        Assert.IsNotEmpty(component.FindAll(".bit-cal-eov"));
+    }
+
+    [TestMethod]
+    public void BitCalendarPickersShouldLeaveAnEscapeWithAModifierAlone()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var shiftEscape = new KeyboardEventArgs { Key = "Escape", ShiftKey = true };
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.ShowMonthPickerAsOverlay, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.ShowTimePickerAsOverlay, true);
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+        });
+
+        // The time picker overlay, opened from the clock button of the day picker's header (the last of its nav
+        // buttons), stays up.
+        component.FindAll(".bit-cal-dwp .bit-cal-nbt").Last().Click();
+        component.Find(".bit-cal-twp").KeyDown(shiftEscape);
+        Assert.IsNotEmpty(component.FindAll(".bit-cal-twp"));
+
+        // A plain Escape still hides it.
+        component.Find(".bit-cal-twp").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.IsEmpty(component.FindAll(".bit-cal-twp"));
+
+        // The month picker overlay, opened from the month toggle of the day picker's header, stays up.
+        component.Find(".bit-cal-ptb").Click();
+        component.Find(".bit-cal-pkb[tabindex='0']").KeyDown(shiftEscape);
+        Assert.Contains("Jan", component.FindAll(".bit-cal-pkb").Select(b => b.TextContent.Trim()).ToList());
+
+        // And so does the year grid, reached through the year toggle of the month pane.
+        component.FindAll(".bit-cal-ptb").Last().Click();
+        component.Find(".bit-cal-pkb[tabindex='0']").KeyDown(shiftEscape);
+        Assert.Contains("2026", component.FindAll(".bit-cal-pkb").Select(b => b.TextContent.Trim()).ToList());
+        Assert.IsFalse(component.FindAll(".bit-cal-pkb").Any(b => b.TextContent.Trim() == "Jan"));
+    }
+
+    [TestMethod]
+    public void BitCalendarTimePickerBesideTheDayGridShouldLeaveTheEscapeAlone()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowTimePicker, true);
+        });
+
+        // A time picker beside the day grid does nothing with Escape, so the key goes on to the dialog around the
+        // calendar.
+        Assert.IsFalse(component.Find(".bit-cal-twp").HasAttribute("data-bit-esc"));
     }
 
     [TestMethod]

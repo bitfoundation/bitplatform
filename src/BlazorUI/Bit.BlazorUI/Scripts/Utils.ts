@@ -327,24 +327,18 @@
         private static _tooltipsByRoot = new Map<HTMLElement, DotNetObject>();
         private static _tooltipsController: AbortController | null = null;
 
-        // An element that answers Escape itself - a text entry clears or reverts on it, a combobox or anything
-        // expanded closes what it opened - so a tooltip around it lets the key through to that element.
-        private static readonly _escapeOwners =
-            'input:not([type="button"],[type="submit"],[type="reset"],[type="checkbox"],[type="radio"],[type="image"],[type="range"],[type="color"],[type="file"]),' +
-            'textarea,select,[contenteditable]:not([contenteditable="false"]),' +
-            '[role="combobox"],[role="searchbox"],[role="textbox"],[role="spinbutton"],[aria-expanded="true"]';
-
         // Lets Escape dismiss a shown tooltip (WCAG 1.4.13 "dismissible") from the two places it can come from:
         // the keyboard inside the tooltip - on its anchor - and anywhere on the page while the pointer rests on
         // the tooltip, since a tooltip shown on hover is shown while the focus is wherever the user left it.
         // Either way the key is the tooltip's alone: it is taken before Blazor's document-level delegation sees
         // it, so a dialog or a callout the tooltip sits in is not dismissed by the same press, and a second
-        // Escape reaches them as usual. The one exception is a key pressed on something inside the anchor that
-        // answers Escape itself (a text field, a search box, a dropdown): the tooltip is dismissed along with
-        // it, and the key goes on to the component it was pressed on. Whether a tooltip takes it is read off the
-        // DOM on the spot - shown (bit-ttp-vis) and dismissible (data-bit-ttp-esc) - because the answer cannot
-        // wait for a round trip. It also tells a tooltip a click opened about the press outside it that
-        // dismisses it.
+        // Escape reaches them as usual. The one exception is a key pressed on a component inside the anchor that
+        // acts on it itself: the tooltip is dismissed along with it, and the key goes on to that component. Which
+        // components act on it is never guessed from what the target looks like - the components say so, the
+        // way every surface hears it: a claim (data-bit-esc, see claimEscape), or a popup of theirs that is open
+        // and that the key closes (Callouts.componentContains). Whether a tooltip takes it is read off the DOM on
+        // the spot - shown (bit-ttp-vis) and dismissible (data-bit-ttp-esc) - because the answer cannot wait for
+        // a round trip. It also tells a tooltip a click opened about the press outside it that dismisses it.
         public static setupTooltip(rootId: string, tooltipId: string, attribute: string, dotnetObj: DotNetObject) {
             Utils.disposeTooltip(rootId);
 
@@ -355,14 +349,19 @@
 
             const controller = new AbortController();
 
-            // A component inside the anchor that answered the key natively itself (and said so) keeps it.
             root.addEventListener('keydown', e => {
-                if (e.key !== 'Escape' || e.defaultPrevented) return;
+                // Only the plain key: an Escape with a modifier goes on to the surface around the tooltip, as it
+                // does past every component that acts on Escape (claimEscape).
+                if (e.key !== 'Escape' || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
                 if (!root.querySelector(':scope > .bit-ttp-wrp.bit-ttp-vis[data-bit-ttp-esc]')) return;
 
-                const target = e.target as Element | null;
-                const owner = target?.closest(Utils._escapeOwners);
-                if (!owner || !root.contains(owner) || owner.closest('.bit-ttp-wrp')) {
+                if (e.defaultPrevented) {
+                    // A press a component inside the anchor claimed is that component's, and the tooltip goes with
+                    // it. One prevented by anything else - a listener of the consumer's own - is left alone.
+                    const claimer = Utils.escapeClaimer(e);
+                    if (!claimer || !root.contains(claimer)) return;
+                } else if (!Callouts.componentContains(e.target as Node | null, root)) {
+                    // Nothing inside the anchor acts on the key, so it is the tooltip's alone.
                     e.preventDefault();
                     e.stopImmediatePropagation();
                 }
@@ -417,6 +416,7 @@
             // A press a component claimed (see claimEscape) is that component's: the tooltip stays, and the key goes
             // on to the component rather than being stopped here.
             if (e.key !== 'Escape' || e.defaultPrevented) return;
+            if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
 
             if (Utils._tooltipsByRoot.size === 0) return;
 
@@ -689,7 +689,11 @@
         // surface around it. An element that leaves the key alone hands it to the next one out, whose handler
         // hears a key pressed anywhere inside it - up to the nearest surface the key was pressed in (isEscapeSurface):
         // that surface is the innermost thing the key closes, so nothing it is rendered inside of (a message, a
-        // dropdown's field) claims the key away from it. An IME composition is nobody's here (the key cancels the
+        // dropdown's field) claims the key away from it. The same goes for the two other things that close on the
+        // key without claiming it: a shown tooltip whose anchor the key was pressed in (setupTooltip), and a
+        // component whose popup is open (Callouts.componentContains) - so a date picker in a navigation drawer
+        // closes its calendar, and a tooltip on a button of a dialog goes away, while the drawer or the dialog
+        // around them waits for the next press. An IME composition is nobody's here (the key cancels the
         // candidate), and neither is an Escape with a modifier, which the components leave alone (IsPlainEscape)
         // so the surface around them closes on it.
         public static claimEscape(e: KeyboardEvent) {
@@ -697,16 +701,28 @@
             if (e.isComposing || e.keyCode === 229) return;
             if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
 
-            for (let element = e.target instanceof Element ? e.target : null; element; element = element.parentElement) {
+            const target = e.target instanceof Element ? e.target : null;
+
+            for (let element = target; element; element = element.parentElement) {
                 const claim = element.getAttribute('data-bit-esc');
                 if (claim === 'claim' || (claim === 'text' && (element as HTMLInputElement).value)) {
+                    // A component between the key and the claim whose popup is open closes that popup on it.
+                    if (Callouts.componentContains(target, element)) return;
+
                     Utils._escapeClaimers.set(e, element);
                     e.preventDefault();
                     return;
                 }
 
                 if (Utils.isEscapeSurface(element)) return;
+                if (Utils.showsDismissibleTooltip(element)) return;
             }
+        }
+
+        // Whether the element is the anchor of a tooltip that is shown and closes on Escape (see setupTooltip).
+        private static showsDismissibleTooltip(element: Element) {
+            return Utils._tooltipsByRoot.has(element as HTMLElement)
+                && !!element.querySelector(':scope > .bit-ttp-wrp.bit-ttp-vis[data-bit-ttp-esc]');
         }
 
         private static _escapeClaimers = new WeakMap<Event, Element>();
@@ -716,6 +732,42 @@
         // component or a surface inside it took first, which Blazor's dispatch goes on bubbling to it all the same.
         public static escapeClaimer(e: Event) {
             return Utils._escapeClaimers.get(e) ?? null;
+        }
+
+        private static _escapeClaimWatches = new Map<string, AbortController>();
+
+        // Tells a component whose .NET keydown handler on its root acts on Escape, through its OnEscapeVerdict
+        // callback, whether the Escape that handler is about to hear is its own: the one its root claimed (see
+        // claimEscape), rather than one a component inside it acted on and claimed first (a search box emptying
+        // itself, a field of a template clearing), which Blazor's dispatch bubbles up to the root all the same. A
+        // press with a modifier or during an IME composition is claimed by nobody, so it is not the root's either.
+        // The listener is on the root, so it runs before Blazor's document-level delegation, and the answer is
+        // queued ahead of the keydown Blazor dispatches right after it. It only answers while the root claims the
+        // key at all (data-bit-esc). A BitMessage goes by it to dismiss itself, and the Extras' dialogs and panels
+        // through BitEscapeClaimWatch.
+        public static watchEscapeClaim(id: string, root: HTMLElement, dotnetObj: DotNetObject) {
+            Utils.unwatchEscapeClaim(id);
+
+            if (!root || !(root instanceof Element)) return;
+
+            const controller = new AbortController();
+
+            root.addEventListener('keydown', e => {
+                if (e.key !== 'Escape' || !root.hasAttribute('data-bit-esc')) return;
+
+                dotnetObj.invokeMethodAsync('OnEscapeVerdict', Utils.escapeClaimer(e) !== root)
+                         .catch(err => console.error("BitBlazorUI.Utils.watchEscapeClaim:", err));
+            }, { signal: controller.signal });
+
+            Utils._escapeClaimWatches.set(id, controller);
+        }
+
+        public static unwatchEscapeClaim(id: string) {
+            const controller = Utils._escapeClaimWatches.get(id);
+            if (!controller) return;
+
+            Utils._escapeClaimWatches.delete(id);
+            controller.abort();
         }
 
         // The elements that close on an Escape pressed inside them, registered by the surfaces of the library as they

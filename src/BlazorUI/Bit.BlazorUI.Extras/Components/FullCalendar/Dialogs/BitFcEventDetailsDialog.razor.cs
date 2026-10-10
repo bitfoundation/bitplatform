@@ -22,6 +22,10 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
     private bool _deleteCommitted;
     private ElementReference _dialogRef;
     private readonly string _dialogTitleId = $"bfc-details-title-{Guid.NewGuid():N}";
+    // Which Escapes something inside the dialog claimed first (see _OnEscapeVerdict), for OnDialogKeyDown. Made on
+    // first use, so a dialog disposed before it rendered never starts watching.
+    private BitEscapeClaimWatch<BitFcEventDetailsDialog>? _escapeWatch;
+    private BitEscapeClaimWatch<BitFcEventDetailsDialog> EscapeWatch => _escapeWatch ??= new(JS, this);
 
     /// <summary>The action waiting for the user to say whether it means one occurrence or the series.</summary>
     private enum ScopeAction { None, Edit, Delete }
@@ -86,15 +90,37 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
         // Move focus into the dialog and trap Tab navigation once it has rendered; teardown in
         // DisposeAsync restores focus to the element that was focused before it opened.
         if (firstRender)
+        {
             await BitFcDialogInterop.SetupAsync(JS, _dialogRef);
+            await EscapeWatch.WatchAsync(_dialogRef);
+        }
     }
+
+    // Whether Escape closes the dialog, the one rule OnDialogKeyDown and _EscapeClaim both go by. While the edit
+    // overlay or the scope prompt is open it owns the key (and claims it on its own dialog), and a delete in flight
+    // is left alone so the dialog can't close mid-commit.
+    private bool _ClosesOnEscape => _showEdit is false && _pendingScopeAction is ScopeAction.None && _isDeleting is false;
+
+    // The Escape that closes the dialog, claimed on the dialog (see Utils.claimEscape) so a surface the calendar sits
+    // in does not close on the same press. It stays claimed while a delete is in flight too, when the press does
+    // nothing: a surface closing on it would take the dialog away mid-commit all the same.
+    private string? _EscapeClaim => _ClosesOnEscape || _isDeleting ? "claim" : null;
 
     private async Task OnDialogKeyDown(KeyboardEventArgs e)
     {
-        // Escape is the standard way out of a modal. While the edit overlay or the scope prompt is
-        // open it owns the key, and a delete in flight is left alone so the dialog can't close
-        // mid-commit.
-        if (e.Key is "Escape" or "Esc" && _showEdit is false && _pendingScopeAction is ScopeAction.None && _isDeleting is false)
+        if (e.Key is not "Escape") return;
+
+        // One Escape does one thing: a press something inside the dialog claimed first (a field of an
+        // EventDetailsTemplate clearing itself) is that field's, which Blazor still bubbles up to here. The verdict
+        // is read once, so it never outlives the press it was given for.
+        if (EscapeWatch.TakeForeign()) return;
+
+        // Only the plain key, the one the dialog claims: an Escape with a modifier is left to the surface the
+        // calendar sits in.
+        if (e.IsPlainEscape() is false) return;
+
+        // Escape is the standard way out of a modal.
+        if (_ClosesOnEscape)
             await OnClose.InvokeAsync();
     }
 
@@ -267,8 +293,22 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
         }
     }
 
+    /// <summary>
+    /// Sent by the browser as each Escape goes down inside the dialog while it claims the key, ahead of the keydown
+    /// Blazor then dispatches, with whether something inside the dialog claimed it first - a field of an EventDetailsTemplate
+    /// clearing itself - so the key handler that runs next leaves that press alone.
+    /// <br />
+    /// <strong>This method is intended for internal use and should not be called directly.</strong>
+    /// </summary>
+    [JSInvokable("OnEscapeVerdict")]
+    public void _OnEscapeVerdict(bool foreign)
+    {
+        EscapeWatch.SetVerdict(foreign);
+    }
+
     public async ValueTask DisposeAsync()
     {
+        await EscapeWatch.DisposeAsync();
         await BitFcDialogInterop.TeardownAsync(JS, _dialogRef);
     }
 }

@@ -3,13 +3,17 @@
 
 @* A single data cell. Each cell owns one stable element with an unconditional @@ref so
    keyboard navigation can move DOM focus via Blazor's FocusAsync without conditional
-   reference-capture frames (which break render-tree diffing). *@
+   reference-capture frames (which break render-tree diffing).
+   data-bit-esc claims the Escape HandleKeyDown cancels an open edit with (see Utils.claimEscape), on the cell
+   whose handler hears it from the editor inside it as well, so a dialog the grid sits in does not close on the
+   same press. *@
 <div @ref="_el" class="@CssClass" role="@(Column.RowHeader ? "rowheader" : "gridcell")" style="@Style" tabindex="@TabIndex" title="@Title"
      aria-colindex="@Grid.AriaColIndex(ColIndex)"
      aria-colspan="@(ColSpan > 1 ? ColSpan : (int?)null)"
      data-bit-dtg-edit="@(ShowsEditor ? Column.Id : null)"
      data-bit-dtg-edit-version="@(ShowsEditor && Grid.IsCellEditMode ? Grid.EditVersion : (int?)null)"
      data-bit-dtg-typable="@(Grid.OpensEditorByTyping(Column) ? (Column.EffectiveDataType == BitDataGridColumnDataType.Number ? "number" : "text") : null)"
+     data-bit-esc="@EscapeClaim"
      @onclick="HandleClick"
      @ondblclick="HandleDoubleClick"
      @oncontextmenu="HandleContextMenu"
@@ -45,6 +49,15 @@
     private bool Editing => Grid.IsEditingCell(Item, Column);
     private bool ShowsEditor => Editing && Grid.ColumnEditable(Column);
 
+    // Whether a plain Escape on the cell cancels an edit, the one rule HandleKeyDown and EscapeClaim both go by: with
+    // an edit open (Grid.CancelsEditOnEscape), a navigable cell cancels it whether it is this cell's own or another's,
+    // and without cell navigation the cells of the row being edited cancel it.
+    private bool CancelsEditOnEscape => Grid.CancelsEditOnEscape && (Grid.CellNavigationActive || Editing);
+
+    // When HandleKeyDown acts on Escape, written onto the cell for Utils.claimEscape: read off the same state it
+    // decides on, so the key is claimed exactly when the press cancels something.
+    private string? EscapeClaim => CancelsEditOnEscape ? "claim" : null;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (Grid.CellNavigationActive && Grid.ShouldFocusCell(Item, ColIndex))
@@ -65,13 +78,21 @@
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
-        if (!Grid.CellNavigationActive) return;
+        if (!Grid.CellNavigationActive)
+        {
+            // Without cell navigation Escape is still the way out of the row's editors (CancelsEditOnEscape). There
+            // is no focused cell to go back to, so the focus goes to the row's Edit button, as it does from Cancel.
+            if (e.IsPlainEscape() && CancelsEditOnEscape) await Grid.CancelEditFromCommandAsync(Item);
+            return;
+        }
 
         // While inline-editing, the cell only handles the edit lifecycle keys; everything
         // else (typing, caret movement) belongs to the editor input.
         if (Editing)
         {
-            if (e.Key == "Escape")
+            // Only the plain key, the one the cell claims (EscapeClaim): an Escape with a modifier is left to the
+            // surface the grid sits in, and cancels nothing here.
+            if (e.IsPlainEscape())
             {
                 await Grid.CancelEditAsync();
                 Grid.RefocusFocusedCell();

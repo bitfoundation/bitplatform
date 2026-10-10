@@ -1631,7 +1631,9 @@
             if (!input || input._slashKeysBound) return;
             input._slashKeysBound = true;
             input.addEventListener('keydown', (e: KeyboardEvent) => {
-                if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'Enter' || e.key === 'Escape') {
+                // Escape is not among them: the input claims the plain one (data-bit-esc, see Utils.claimEscape),
+                // which prevents its default, and one with a modifier goes on to a dialog the editor sits in.
+                if (e.key === 'ArrowUp' || e.key === 'ArrowDown' || e.key === 'Enter') {
                     e.preventDefault();
                 }
             });

@@ -567,18 +567,22 @@
 
     installResizeDragGuard();
 
-    // A focused, navigable data cell owns the arrow / page / home / end / enter / escape / F2 keys
+    // A focused, navigable data cell owns the arrow / page / home / end / enter / F2 keys
     // (cell-to-cell movement and the edit lifecycle). Their browser defaults -- scrolling the
-    // page/grid, submitting a surrounding form, resetting an input -- must be cancelled *before* the
-    // event reaches Blazor's .NET handler. As with the reorder guard, @onkeydown:preventDefault can't
-    // do this (it's evaluated at render time, can't know the upcoming key, and lags one keystroke), so
-    // a single capture-phase listener decides per-key up front. Tab and ordinary typing are left
-    // untouched so focus can still leave the grid and editors keep receiving characters.
+    // page/grid, submitting a surrounding form -- must be cancelled *before* the event reaches
+    // Blazor's .NET handler. As with the reorder guard, @onkeydown:preventDefault can't do this (it's
+    // evaluated at render time, can't know the upcoming key, and lags one keystroke), so a single
+    // capture-phase listener decides per-key up front. Tab and ordinary typing are left untouched so
+    // focus can still leave the grid and editors keep receiving characters.
     // Space is grid-owned too: it toggles the focused row's selection, so its page-scroll default must
     // be cancelled exactly like the arrow keys'.
+    // Escape is not among them: the cell claims it (data-bit-esc, see BitDataGridCell and
+    // Utils.claimEscape) exactly while an edit is open for it to cancel, which is what prevents its
+    // default then. Preventing it here as well would take every Escape pressed on a cell away from a
+    // dialog the grid sits in, the ones the grid does nothing with included.
     const cellNavKeys = new Set([
         'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
-        'Home', 'End', 'PageUp', 'PageDown', 'Enter', 'Escape', 'F2', ' '
+        'Home', 'End', 'PageUp', 'PageDown', 'Enter', 'F2', ' '
     ]);
     // Keys that should stay with a self-managed control nested inside a cell. Escape is intentionally
     // excluded so it keeps bubbling to the grid as the universal "cancel edit" affordance, while the
@@ -735,16 +739,19 @@
                 return;
             }
 
-            // While inline-editing the focus sits on the editor input inside the row, so only the edit
-            // lifecycle keys (Enter commits, Escape cancels) are grid-owned; cancel their native
-            // actions but leave caret movement and typing to the input.
-            if ((e.key === 'Enter' || e.key === 'Escape') &&
+            // While inline-editing the focus sits on the editor input inside the row, so the edit
+            // lifecycle keys (Enter commits, Escape cancels) are grid-owned. Enter's native action is
+            // cancelled here, leaving caret movement and typing to the input. Escape's is not: the
+            // editing cell claims it (data-bit-esc, see BitDataGridCell and Utils.claimEscape) whenever
+            // its handler cancels the edit, with or without cell navigation, which prevents the default
+            // then - and an Escape with a modifier cancels nothing, and goes on to a dialog the grid sits in.
+            if (e.key === 'Enter' &&
                 (target.closest('.bit-dtg-row')?.classList?.contains('bit-dtg-editing') || target.closest('.bit-dtg-cell-editing'))) {
-                // Don't swallow these keys for nested controls that own their keyboard behavior:
+                // Don't swallow the key for nested controls that own their keyboard behavior:
                 // a <button> activates on Enter, a <select> opens/commits a choice, a <textarea>
                 // inserts a newline, and a contenteditable region edits text. Suppressing here would
                 // break those controls. Plain editor inputs aren't excluded, so Enter still avoids a
-                // surrounding form submit and Escape still avoids a native input reset for them.
+                // surrounding form submit for them.
                 if (isSelfManagedEditKeyControl(target)) return;
                 e.preventDefault();
             }

@@ -2393,6 +2393,50 @@ public class BitMapTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitMapPopupShouldClaimTheEscapeThatClosesIt()
+    {
+        // The popup is a dialog of its own: the Escape that closes it is claimed on it, so a dialog the map sits in
+        // stays open for the next press.
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.MarkerPopupTemplate, EmptyPopupTemplate);
+        });
+
+        await component.Instance.AddMarker(new BitMapMarker { Id = "a", Position = new(0, 0) });
+        await component.Instance._OnMarkerClick("a");
+
+        Assert.AreEqual("claim", component.Find(".bit-map-popup").GetAttribute("data-bit-esc"));
+
+        component.Find(".bit-map-popup").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsNull(component.Instance.OpenPopupMarker);
+        Assert.AreEqual(0, component.FindAll(".bit-map-popup").Count);
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count, "with the popup closed nothing in the map claims the key");
+    }
+
+    [TestMethod]
+    public async Task BitMapPopupShouldStayOpenOnAModifiedEscape()
+    {
+        // Only the plain key is claimed, so only the plain key acts: one with a modifier is the surrounding surface's.
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.MarkerPopupTemplate, EmptyPopupTemplate);
+        });
+
+        await component.Instance.AddMarker(new BitMapMarker { Id = "a", Position = new(0, 0) });
+        await component.Instance._OnMarkerClick("a");
+
+        component.Find(".bit-map-popup").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape", CtrlKey = true });
+
+        Assert.AreEqual("a", component.Instance.OpenPopupMarker?.Id);
+        Assert.AreEqual(1, component.FindAll(".bit-map-popup").Count);
+    }
+
+    [TestMethod]
     public async Task BitMapShouldCloseThePopupWhenItsMarkerIsRemoved()
     {
         // A popup for a marker that is no longer on the map would hang in space.

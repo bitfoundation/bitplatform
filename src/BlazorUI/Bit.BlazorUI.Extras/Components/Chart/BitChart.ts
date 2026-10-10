@@ -37,13 +37,22 @@
             // WCAG 1.4.13: a tooltip the pointer opened can be dismissed without moving the pointer. Escape is heard
             // on the whole document, since the pointer gives the chart no focus, but only while this chart shows a
             // tooltip; a keydown from inside the plot is the plot's own Escape, already handled in .NET.
+            // One Escape does one thing, as with a BitTooltip shown on hover (Utils.setupTooltip): the press is the
+            // tooltip's alone, taken in the capture phase before a dialog the chart sits in hears it - unless a
+            // component where the focus is claimed it first (Utils.claimEscape), or a modifier sends it on to the
+            // surface around the chart, or an input method is composing.
             function onDocumentKeyDown(e: KeyboardEvent) {
-                if (e.key !== 'Escape' && e.key !== 'Esc') return;
+                if (e.key !== 'Escape' || e.defaultPrevented) return;
+                if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.isComposing || e.keyCode === 229) return;
                 if (e.target instanceof Node && element.contains(e.target)) return;
-                if (!element.querySelector('.bit-cht-tt')) return;
+                // Only a tooltip the pointer opened: one the keyboard position shows goes with the plot's focus.
+                if (!element.querySelector('.bit-cht-tt') || !element.matches(':hover')) return;
+
+                e.preventDefault();
+                e.stopImmediatePropagation();
                 dotnet.invokeMethodAsync('OnDismissTooltip');
             }
-            document.addEventListener('keydown', onDocumentKeyDown);
+            document.addEventListener('keydown', onDocumentKeyDown, true);
 
             let ro: ResizeObserver | null = null;
             let listening = false;
@@ -61,7 +70,7 @@
             return {
                 dispose() {
                     element.removeEventListener('keydown', onKeyDown, true);
-                    document.removeEventListener('keydown', onDocumentKeyDown);
+                    document.removeEventListener('keydown', onDocumentKeyDown, true);
                     if (ro) ro.disconnect();
                     if (listening) window.removeEventListener('resize', report);
                 }

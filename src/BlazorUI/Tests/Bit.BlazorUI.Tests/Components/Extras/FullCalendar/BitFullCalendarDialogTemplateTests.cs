@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.FullCalendar;
@@ -89,6 +90,46 @@ public class BitFullCalendarDialogTemplateTests : BunitTestContext
         component.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn").Last(b => b.TextContent.Trim() == "Cancel").Click();
 
         Assert.AreEqual("Room 1", component.Instance.State.AllEvents.Single().Data);
+    }
+
+    // A control of a template that acts on Escape claims the press (data-bit-esc), which Blazor's dispatch still
+    // bubbles up to the dialog. The browser tells the dialog the press was claimed inside it (Utils.watchEscapeClaim),
+    // so the dialog stays open on it, and closes on the next one, its own.
+
+    [TestMethod]
+    public void BitFullCalendarDetailsDialogShouldLeaveAnEscapeItsTemplateClaimedAlone()
+    {
+        var component = RenderCalendar();
+
+        component.Find("[data-bit-bfc-event='1']").Click();
+
+        var dialog = component.FindComponent<BitFcEventDetailsDialog>();
+        dialog.InvokeAsync(() => dialog.Instance._OnEscapeVerdict(true));
+        component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog .location").Count);
+
+        component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, component.FindAll(".bit-bfc-dialog").Count);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarAddEditDialogShouldLeaveAnEscapeItsTemplateClaimedAlone()
+    {
+        var component = RenderCalendar();
+
+        component.Find(".bit-bfc-btn-primary").Click();
+
+        var dialog = component.FindComponent<BitFcAddEditEventDialog>();
+        dialog.InvokeAsync(() => dialog.Instance._OnEscapeVerdict(true));
+        component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog .set-location").Count);
+
+        component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, component.FindAll(".bit-bfc-dialog").Count);
     }
 
     [TestMethod]

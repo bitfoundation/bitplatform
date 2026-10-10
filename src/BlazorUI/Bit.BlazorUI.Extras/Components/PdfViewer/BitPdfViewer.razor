@@ -2,12 +2,15 @@
 @inherits BitComponentBase
 @using Microsoft.AspNetCore.Components.Forms
 
+@* data-bit-esc on the root claims the Escape the shortcut listener forwards to .NET while that press closes something
+   (EscapeClaim, see Utils.claimEscape), so a dialog around the viewer does not close on that same press. *@
 <div @ref="RootElement"
      @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
-     dir="@Dir?.ToString().ToLower()">
+     dir="@Dir?.ToString().ToLower()"
+     data-bit-esc="@EscapeClaim">
     @if (_loading)
     {
         @* Determinate while the work has a measure (a download of declared length, a print
@@ -189,11 +192,14 @@
                 {
                     @if (_showSearch)
                     {
+                        @* data-bit-esc on the box claims the Escape that closes it (OnSearchKeyDown, see
+                           Utils.claimEscape) - which the shortcut listener leaves to it, so it holds with the shortcuts
+                           off too. The box is only rendered while it is open, which is when its handler acts on the key. *@
                         <div class="bit-pdv-search-box @Classes?.SearchBox" style="@Styles?.SearchBox" role="search">
                             <input class="bit-pdv-search-input" type="search" autocomplete="off" placeholder="@ActiveTexts.FindPlaceholder"
                                    aria-label="@ActiveTexts.FindPlaceholder" @ref="_searchInputRef"
                                    value="@_searchBoxValue" @oninput="OnSearchInput" @onkeydown="OnSearchKeyDown" @onkeydown:stopPropagation="true"
-                                   disabled="@(_pages.Count == 0)" />
+                                   disabled="@(_pages.Count == 0)" data-bit-esc="claim" />
                             <button type="button" class="bit-pdv-opt @(_matchCase ? "bit-pdv-act" : "")"
                                     title="@ActiveTexts.MatchCase" aria-label="@ActiveTexts.MatchCase" aria-pressed="@AriaBool(_matchCase)"
                                     @onclick="ToggleMatchCase" disabled="@(_pages.Count == 0)">Aa</button>
@@ -491,10 +497,14 @@
 
         @if (_passwordRequest is not null)
         {
+            @* data-bit-esc on the dialog claims the Escape that cancels it (OnPasswordDialogKeyDown, and the box's own
+               OnPasswordKeyDown inside it, see Utils.claimEscape), so a dialog the viewer sits in does not close on
+               that same press. The dialog is only rendered while it is open, and every plain Escape in it cancels it. *@
             <div class="bit-pdv-dialog-overlay">
                 <div class="bit-pdv-dialog bit-pdv-password @Classes?.PasswordDialog" style="@Styles?.PasswordDialog"
                      role="dialog" aria-modal="true" aria-labelledby="@PasswordTitleId" aria-describedby="@PasswordPromptId"
-                     tabindex="-1" @ref="_passwordDialogRef" @onkeydown="OnPasswordDialogKeyDown">
+                     tabindex="-1" @ref="_passwordDialogRef" @onkeydown="OnPasswordDialogKeyDown"
+                     data-bit-esc="claim">
                     <div class="bit-pdv-dialog-head">
                         <span id="@PasswordTitleId">@ActiveTexts.PasswordTitle</span>
                         <button type="button" class="bit-pdv-btn" title="@ActiveTexts.Close" aria-label="@ActiveTexts.Close" @onclick="CancelPassword">
@@ -522,10 +532,14 @@
 
         @if (_showProperties)
         {
+            @* data-bit-esc on the dialog claims the Escape that closes it (OnPropertiesKeyDown, see Utils.claimEscape),
+               so a dialog the viewer sits in does not close on that same press. The dialog is only rendered while it
+               is open, and every plain Escape in it closes it. *@
             <div class="bit-pdv-dialog-overlay" @onclick="() => _showProperties = false">
                 <div class="bit-pdv-dialog @Classes?.PropertiesDialog" style="@Styles?.PropertiesDialog"
                      role="dialog" aria-modal="true" aria-labelledby="@PropertiesTitleId" tabindex="-1" @ref="_propertiesRef"
-                     @onclick:stopPropagation="true" @onkeydown="OnPropertiesKeyDown">
+                     @onclick:stopPropagation="true" @onkeydown="OnPropertiesKeyDown"
+                     data-bit-esc="claim">
                     <div class="bit-pdv-dialog-head">
                         <span id="@PropertiesTitleId">@ActiveTexts.Properties</span>
                         <button type="button" class="bit-pdv-btn" title="@ActiveTexts.Close" aria-label="@ActiveTexts.Close" @onclick="() => _showProperties = false">

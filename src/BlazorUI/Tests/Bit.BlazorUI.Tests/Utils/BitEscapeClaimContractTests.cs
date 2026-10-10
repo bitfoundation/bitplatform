@@ -34,11 +34,12 @@ public sealed class BitEscapeClaimContractTests
         StringAssert.Contains(script, "claim === 'claim'");
         StringAssert.Contains(script, "claim === 'text'");
 
-        var components = SourceFiles.GetDirectory("Bit.BlazorUI", "Components");
+        // The core components and the Extras ones alike: both packages' components sit in the surfaces of either.
+        string[] components = [SourceFiles.GetDirectory("Bit.BlazorUI", "Components"), SourceFiles.GetDirectory("Bit.BlazorUI.Extras", "Components")];
 
         // A claim is written either straight into the attribute - a literal, or the branches of a conditional - or
         // through one of the components' ...Claim members, whose branches are the values it can take.
-        var markup = Directory.EnumerateFiles(components, "*.razor", SearchOption.AllDirectories)
+        var markup = components.SelectMany(folder => Directory.EnumerateFiles(folder, "*.razor", SearchOption.AllDirectories))
                               .SelectMany(file => SourceFiles.ReadFullPath(file).Split('\n')
                                                              .Where(line => line.Contains("data-bit-esc=\""))
                                                              .Select(line => (file, line)))
@@ -49,7 +50,7 @@ public sealed class BitEscapeClaimContractTests
         var written = markup.SelectMany(m => Branches(Regex.Match(m.line, @"data-bit-esc=""(?<value>.*)""").Groups["value"].Value)
                                                  .Select(value => (m.file, value)));
 
-        var properties = Directory.EnumerateFiles(components, "*.razor.cs", SearchOption.AllDirectories)
+        var properties = components.SelectMany(folder => Directory.EnumerateFiles(folder, "*.razor.cs", SearchOption.AllDirectories))
                                   .SelectMany(file => Regex.Matches(SourceFiles.ReadFullPath(file), @"\w*Claim(\([^)]*\))?\s*=>[^;]*;", RegexOptions.Singleline)
                                                            .SelectMany(m => Branches(m.Value))
                                                            .Select(value => (file, value)));
@@ -102,6 +103,46 @@ public sealed class BitEscapeClaimContractTests
         // a dialog never takes the key away from the dialog itself.
         StringAssert.Contains(GetMethod(script, "claimEscape"), "Utils.isEscapeSurface(element)");
         StringAssert.Contains(GetMethod(script, method), "Utils._escapeSurfaces.add(element)", $"Utils.{method} does not mark its element as a surface for Utils.claimEscape.");
+    }
+
+    [TestMethod]
+    public void TheClaimShouldLeaveTheKeyToAnOpenPopupOrAShownTooltipInsideTheClaimer()
+    {
+        var claim = GetMethod(SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts"), "claimEscape");
+
+        // A component whose popup is open closes it on the key, and a shown tooltip is dismissed by it, without either
+        // claiming it: a root claiming every Escape pressed inside it (a navigation drawer, a dialog of the Extras)
+        // would otherwise take the key away from them and close itself instead.
+        StringAssert.Contains(claim, "Callouts.componentContains(target, element)");
+        StringAssert.Contains(claim, "Utils.showsDismissibleTooltip(element)");
+    }
+
+    [TestMethod]
+    public void TheVerdictForAClaimingRootShouldBeWrittenOnce()
+    {
+        // Every root whose .NET handler acts on the key it claims tells its own press from one a part of it claimed
+        // first through Utils.watchEscapeClaim - never through a copy of it, which would drift from it.
+        var copies = new[] { SourceFiles.GetDirectory("Bit.BlazorUI"), SourceFiles.GetDirectory("Bit.BlazorUI.Extras") }
+            .SelectMany(folder => Directory.EnumerateFiles(Path.Combine(folder, "Components"), "*.ts", SearchOption.AllDirectories))
+            .Where(file => SourceFiles.ReadFullPath(file).Contains("'OnEscapeVerdict'"))
+            .Select(Path.GetFileName)
+            .ToList();
+
+        Assert.AreEqual(0, copies.Count, $"These scripts answer OnEscapeVerdict on their own: {string.Join(", ", copies)}.");
+    }
+
+    [TestMethod]
+    public void TheTooltipShouldNotGuessWhoActsOnTheKey()
+    {
+        var script = SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts");
+        var tooltip = GetMethod(script, "setupTooltip");
+
+        // A press inside the anchor goes on to a component there only when the component said it acts on it - a claim,
+        // or a popup of its own that is open - never because the target looks like something that might.
+        StringAssert.Contains(tooltip, "Utils.escapeClaimer(e)");
+        StringAssert.Contains(tooltip, "Callouts.componentContains(");
+        Assert.IsFalse(tooltip.Contains(".closest("), "Utils.setupTooltip decides who owns the key from a selector.");
+        Assert.IsFalse(script.Contains("_escapeOwners"), "Utils.ts still keeps a selector of elements guessed to own Escape.");
     }
 
     [TestMethod]

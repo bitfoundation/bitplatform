@@ -262,8 +262,10 @@ public partial class BitTooltip : BitComponentBase
     /// for, so only turn it off for a tooltip that obscures nothing. A shown tooltip takes the Escape that
     /// dismisses it for itself, pressed on its anchor or anywhere while the pointer rests on it, so a
     /// dialog or a callout around it is not closed by the same press; with this on, the key goes on to them.
-    /// A key pressed on something inside the anchor that answers Escape itself - a text field, a search box,
-    /// a dropdown - dismisses the tooltip and still reaches that component.
+    /// A key pressed on a component inside the anchor that acts on Escape itself - a text field it clears,
+    /// a dropdown whose list it closes - dismisses the tooltip and still reaches that component. A control of
+    /// your own that acts on the key says so with <c>data-bit-esc="claim"</c> on the element it listens on,
+    /// rendered only while it is going to act on it.
     /// </remarks>
     [Parameter] public bool NoDismissOnEscape { get; set; }
 
