@@ -48,16 +48,19 @@
     }
 }
 
+$dtg-private-properties:
+    rbg, cbg, tint, stripe-bg, hover-bg,
+    // What the component writes into an inline style, which wins over this on the element it is written on.
+    template, group-level, frozen-start, frozen-end, tree-level;
+
 .bit-dtg {
     --bit-dtg-cell-pad: var(--bit-DataGrid-cell-padding, #{spacing(1)} #{spacing(1.25)});
     --bit-dtg-brd: #{$shp-border-width} #{$shp-border-style} var(--bit-DataGrid-border-color, #{$clr-brd-ter});
     // The row state a cell paints, set by the rows below. Reset on every root, so a grid nested in another one's
     // template starts from its own defaults instead of inheriting the row it sits in.
-    --bit-dtg-rbg: initial;
-    --bit-dtg-cbg: initial;
-    --bit-dtg-tint: initial;
-    --bit-dtg-stripe-bg: initial;
-    --bit-dtg-hover-bg: initial;
+    @each $name in $dtg-private-properties {
+        --bit-dtg-#{$name}: initial;
+    }
 
     font-family: var(--bit-DataGrid-font-family, #{$tg-font-family});
     font-size: var(--bit-DataGrid-font-size, #{$tg-fs-sm});

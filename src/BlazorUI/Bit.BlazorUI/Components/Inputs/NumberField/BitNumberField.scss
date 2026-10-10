@@ -54,6 +54,9 @@
 // would be indistinguishable from one that was asked for. A state the field is in - disabled, invalid - is still
 // read first.
 
+$nfl-private-properties: height, fontsize, label-fontsize, icon-size, btn-width, stack-width, btn-icon-size, pad-x,
+                         spn-size, clr, clr-focus, clr-bg, clr-brd, clr-brd-hover;
+
 .bit-nfl {
     display: flex;
     font-weight: $tg-fw-regular;
@@ -70,20 +73,9 @@
     // sends the var() reading it on to the public variable and then to the default (the medium size, the
     // primary accent, the primary background and border kinds), which is what lets an explicit parameter
     // outrank the variable while an unset one leaves the variable in charge.
-    --bit-nfl-height: initial;
-    --bit-nfl-fontsize: initial;
-    --bit-nfl-label-fontsize: initial;
-    --bit-nfl-icon-size: initial;
-    --bit-nfl-btn-width: initial;
-    --bit-nfl-stack-width: initial;
-    --bit-nfl-btn-icon-size: initial;
-    --bit-nfl-pad-x: initial;
-    --bit-nfl-spn-size: initial;
-    --bit-nfl-clr: initial;
-    --bit-nfl-clr-focus: initial;
-    --bit-nfl-clr-bg: initial;
-    --bit-nfl-clr-brd: initial;
-    --bit-nfl-clr-brd-hover: initial;
+    @each $name in $nfl-private-properties {
+        --bit-nfl-#{$name}: initial;
+    }
 
     &.bit-dis {
         .bit-nfl-lct {

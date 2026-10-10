@@ -61,20 +61,17 @@
     --bit-cal-pane-min-w: #{spacing(26)};
 }
 
+$cal-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, evt-clr, cell-size-sz, cell-fs-sz;
+
 .bit-cal {
     // A calendar can sit in the content of another one (a header, a footer, an event template), which must not
     // inherit the outer one's Color or Size: each root starts the values those classes publish out unset, and
     // the classes - declared further down at the same weight - still win on the root that carries them. Left
     // unset, each sends the var() reading it on to the public variable and then to the default, which is what
     // lets an explicit parameter outrank the variable while an unset one leaves the variable in charge.
-    --bit-cal-clr: initial;
-    --bit-cal-clr-txt: initial;
-    --bit-cal-clr-hover: initial;
-    --bit-cal-clr-active: initial;
-    --bit-cal-clr-focus: initial;
-    --bit-cal-evt-clr: initial;
-    --bit-cal-cell-size-sz: initial;
-    --bit-cal-cell-fs-sz: initial;
+    @each $name in $cal-private-properties {
+        --bit-cal-#{$name}: initial;
+    }
     // The size resolves here, once, so every part that lines up with a day - the week numbers, the empty
     // cells, the weekday headers, the navigation buttons - stays in step with the day cells: the explicit
     // Size first, then the public variable, then the medium size an unset one stands for.

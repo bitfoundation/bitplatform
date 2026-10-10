@@ -110,6 +110,11 @@
     @include drp-size($tg-fs-sm, $siz-ctrl-md, spacing(2.75), $siz-item-md, $tg-fs-sm, $siz-icon-md, $siz-sel-md);
 }
 
+// Every private variable the mixin below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz-sel, role-main, role-on, role-hover,
+                         role-focus, bg;
+
 // A dropdown can sit in the template of another one (and its callout in the callout of another one before
 // it is moved to the body), which must not inherit the outer one's Color, Size or Transparent: the root and
 // the callout each start the values those classes publish out unset, and the classes - declared further down
@@ -117,18 +122,9 @@
 // it on to the public variable and then to the default, which is what lets an explicit parameter outrank the
 // variable while an unset one leaves the variable in charge.
 @mixin drp-reset {
-    --bit-drp-sz-fs: initial;
-    --bit-drp-sz-h: initial;
-    --bit-drp-sz-lbl-lh: initial;
-    --bit-drp-sz-itm-h: initial;
-    --bit-drp-sz-itm-fs: initial;
-    --bit-drp-sz-ico: initial;
-    --bit-drp-sz-sel: initial;
-    --bit-drp-role-main: initial;
-    --bit-drp-role-on: initial;
-    --bit-drp-role-hover: initial;
-    --bit-drp-role-focus: initial;
-    --bit-drp-bg: initial;
+    @each $name in $drp-private-properties {
+        --bit-drp-#{$name}: initial;
+    }
 }
 
 // The one place the public variables meet the per-size and per-role values. Every rule below reads the

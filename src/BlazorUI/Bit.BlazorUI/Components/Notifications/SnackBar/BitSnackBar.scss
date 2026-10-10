@@ -31,7 +31,16 @@
 // Color and Size publish nothing while they are left unset: a class that always carried the default would be
 // indistinguishable from one that was asked for.
 
+// Every private variable the rule below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$snb-private-properties:
+    // What the component writes into an inline style, which wins over this on the element it is written on.
+    dur-full, max-w;
+
 .bit-snb {
+    @each $name in $snb-private-properties {
+        --bit-snb-#{$name}: initial;
+    }
     width: 100%;
     display: flex;
     position: fixed;
@@ -94,6 +103,8 @@
     --bit-snb-dur: var(--bit-snb-dur-full, 200ms);
 }
 
+$snb-itm-private-properties: bg, fg, clr-txt, gap, pad, hdr-gap, ttl-fs, bdy-fs, ico-fs, cbt-size;
+
 .bit-snb-itm {
     display: flex;
     position: relative;
@@ -126,16 +137,9 @@
     // the item that carries them. Left unset, each sends the var() reading it on to the public variable and then to
     // the default, which is what lets an explicit parameter outrank the variable while an unset one leaves the
     // variable in charge.
-    --bit-snb-bg: initial;
-    --bit-snb-fg: initial;
-    --bit-snb-clr-txt: initial;
-    --bit-snb-gap: initial;
-    --bit-snb-pad: initial;
-    --bit-snb-hdr-gap: initial;
-    --bit-snb-ttl-fs: initial;
-    --bit-snb-bdy-fs: initial;
-    --bit-snb-ico-fs: initial;
-    --bit-snb-cbt-size: initial;
+    @each $name in $snb-itm-private-properties {
+        --bit-snb-#{$name}: initial;
+    }
 
     // The horizontal half of the gesture belongs to the swipe (SwipeToDismiss) rather than to the browser, while
     // a vertical drag stays the page's scroll. Declared unconditionally so the item never changes behaviour

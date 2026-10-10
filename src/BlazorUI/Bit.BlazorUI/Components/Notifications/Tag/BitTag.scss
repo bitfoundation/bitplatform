@@ -48,6 +48,12 @@
 // nothing while they are left unset: a class that always carried the default would be indistinguishable from one
 // that was asked for.
 
+$tag-private-properties:
+    clr, clr-txt, clr-dis, clr-dis-text, clr-active, clr-light, clr-light-hover, clr-light-active,
+    sz-gap, sz-lbl-gap, sz-fs, sz-stx-fs, sz-img, sz-pad-y, sz-pad-x, sz-min-height, radius,
+    // Only Outline and Text step a selected tag further, so Fill falls back to its resting pair.
+    v-sel-hover-bg, v-sel-active-bg;
+
 // The root of the tag is only the shape and the paint: the rule, the corner, the colors and the height. What
 // is inside it is laid out by .bit-tag-cnt, which is the element that becomes an anchor or a button when the
 // tag is one - the padding lives there so that the whole chip, edge to edge, is what the pointer activates
@@ -57,23 +63,9 @@
 // them. Left unset, each sends the var() reading it on to the public variable and then to the default, which is what
 // lets an explicit parameter outrank the variable while an unset one leaves the variable in charge.
 .bit-tag {
-    --bit-tag-clr: initial;
-    --bit-tag-clr-txt: initial;
-    --bit-tag-clr-dis: initial;
-    --bit-tag-clr-dis-text: initial;
-    --bit-tag-clr-active: initial;
-    --bit-tag-clr-light: initial;
-    --bit-tag-clr-light-hover: initial;
-    --bit-tag-clr-light-active: initial;
-    --bit-tag-sz-gap: initial;
-    --bit-tag-sz-lbl-gap: initial;
-    --bit-tag-sz-fs: initial;
-    --bit-tag-sz-stx-fs: initial;
-    --bit-tag-sz-img: initial;
-    --bit-tag-sz-pad-y: initial;
-    --bit-tag-sz-pad-x: initial;
-    --bit-tag-sz-min-height: initial;
-    --bit-tag-radius: initial;
+    @each $name in $tag-private-properties {
+        --bit-tag-#{$name}: initial;
+    }
     // The colors are what the variant classes resolved out of the Color and the public variables (see .bit-tag-fil);
     // the sizes are resolved here - the --bit-tag-sz-* an explicit Size publishes first, then the public variables,
     // then the medium tag an unset one stands for. Every rule below reads what this leaves behind.
@@ -89,10 +81,6 @@
     --bit-tag-gap: var(--bit-tag-sz-gap, var(--bit-Tag-gap, #{spacing(1)}));
     --bit-tag-fs: var(--bit-tag-sz-fs, var(--bit-Tag-font-size, #{$tg-fs-sm}));
     --bit-tag-icn-sz: var(--bit-Tag-icon-size, 1em);
-    // Only Outline and Text step a selected tag further; unset here, rather than inherited from a tag this one
-    // sits inside, so Fill falls back to its resting pair.
-    --bit-tag-v-sel-hover-bg: initial;
-    --bit-tag-v-sel-active-bg: initial;
     line-height: 1;
     overflow: hidden;
     align-items: stretch;

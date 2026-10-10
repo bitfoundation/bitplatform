@@ -399,9 +399,13 @@ the variables restyle the default, never a choice, so `:root { --bit-Badge-backg
   `string.Empty`, and a value parameter (`Height`, `Gap`) writes no inline property while it is null: a
   class that always carried the default would be indistinguishable from one that was asked for. A value
   from a `BitParams` ancestor counts as set.
-- **The root rule resets what those classes publish** (`--bit-bdg-clr: initial;`), so an instance nested
-  in another one's content never inherits the outer one's choice; the classes come later in the file
-  at the same weight and still win on the root that carries them.
+- **The root rule resets what those classes publish**, so an instance nested in another one's content
+  never inherits the outer one's choice; the classes come later in the file at the same weight and still
+  win on the root that carries them. The reset is never written by hand: one list per component,
+  `$bdg-private-properties: clr, clr-txt, ...;`, declared above the rule, drives it with
+  `@each $name in $bdg-private-properties { --bit-bdg-#{$name}: initial; }`, so a new private variable is
+  one name added to the list. A component writing the same variables on a sibling of its root (a callout)
+  keeps a second list for it (`$srb-cal-private-properties`).
 - **Every read ranks private, then public, then default**:
   `var(--bit-bdg-clr, var(--bit-Badge-background, #{$clr-pri}))`, never
   `var(--bit-Badge-background, var(--bit-bdg-clr))` - the last fallback being the token the unset
@@ -414,9 +418,34 @@ explicit `Color`. The demo page's `componentCssVariables` row says which paramet
 variable ("The Color parameter wins over it."), and the stylesheet test pins the order - no
 `var(--bit-<Component>-..., var(--bit-<prefix>-` left where the private one is a parameter's, plus the
 resets on the root. `BitBadge` and `BitShimmer` are the reference implementations. Every private property a
-role or size class publishes has to be declared again by the component's own rules (`initial`, or the default
-the unset parameter stands for); `BitComponentPrivatePropertyResetTests` fails on one that is not, for every
-stylesheet at once.
+role or size class publishes, or the component writes into an inline style, has to be declared again by the
+component's own rules - in its list, or by the root rule at the default the unset parameter stands for;
+`BitComponentPrivatePropertyResetTests` fails on one that is not, on a list no `@each` resets, and on a listed
+name nothing uses any more, for every stylesheet at once - a component that never had a list included. What a
+class publishes counts as reset only by the rules of the element it lands on (a callout's list resets nothing
+on the root), and a name the C# puts together (`$"--bit-stc-ai{suffix}"`) stands for every name of the
+stylesheet it can spell, so a helper that writes one variable is handed its whole name
+(`GetVar("--bit-grd-span", ...)`). `SourceFiles.GetPrivatePropertyLists` is the one reader of the lists, and a
+strict one: two names with no comma between them fail there, since Sass compiles them to one name holding a
+space, which the browser drops. A variant rule giving one slot the value `initial`
+(`.bit-drm-otl { --bit-drm-rst-bg: initial; }`) is a value, not a reset, and stays written out.
+
+The lists reset with `initial`, which every private variable gets. Registering one as
+`@property { syntax: "*"; inherits: false; }` (no `initial-value`, so the guaranteed-invalid value sends every
+`var()` of it to its fallback) goes further and keeps an ancestor's value away from the root altogether - but a
+variable that does not inherit cannot be read by the parts inside the root that sets it. So the line is drawn per
+variable, not per component:
+
+- **Read only by the root itself** (its shadow, its border width): registered as well as reset. The component
+  keeps a second list of those names - `$crd-root-only-properties` beside `$crd-private-properties` - and
+  registers it with `@each $name in $... { @property --bit-xxx-#{$name} { ... } }`; every name stays in the
+  private list too, whose `initial` reset is the fallback for a browser without `@property`. `BitIcon`
+  registers its whole list, since nothing inside an icon reads its variables.
+- **Read by a descendant** (a card's title size, its image height, its inset; a badge's offsets, which its
+  positioned indicator reads off the root): never registered, only reset - registering one would cut its own
+  parts off from it.
+
+A name moves to the root-only list only once no selector reading it matches anything but the root.
 
 **A state moves a variable, never the paint.** A `:hover` / `:active` / `:focus*` rule outranks the single class
 an app hands a part through `Class` / `Classes`, so one that set `color`, `background`, `border-color`, `fill`

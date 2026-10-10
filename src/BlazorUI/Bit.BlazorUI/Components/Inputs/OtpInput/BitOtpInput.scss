@@ -47,6 +47,8 @@
 // and a state - disabled, invalid - is still read before everything. The label follows the size of the code by
 // inheritance, so --bit-OtpInput-label-font-size, which is there to set it apart from the code, keeps the label.
 
+$otp-private-properties: size, fontsize, dsc-fontsize, clr, clr-focus;
+
 .bit-otp {
     display: flex;
     width: fit-content;
@@ -62,11 +64,9 @@
     //further down at the same weight - still win on the root that carries them. Left unset, each sends the var()
     //reading it on to the public variable and then to the default (the medium size, the primary role), which is
     //what lets an explicit parameter outrank the variable while an unset one leaves the variable in charge.
-    --bit-otp-size: initial;
-    --bit-otp-fontsize: initial;
-    --bit-otp-dsc-fontsize: initial;
-    --bit-otp-clr: initial;
-    --bit-otp-clr-focus: initial;
+    @each $name in $otp-private-properties {
+        --bit-otp-#{$name}: initial;
+    }
 }
 
 //the label follows the size of the code by default, and carries a variable of its own so that a code drawn

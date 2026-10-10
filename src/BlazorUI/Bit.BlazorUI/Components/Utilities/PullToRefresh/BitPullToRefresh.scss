@@ -16,12 +16,17 @@
 //
 // The Color and CustomColor parameters win over the color variable. Both sizes are what the indicator reaches at
 // the trigger; below it, it is drawn at the fraction of them the pull has come.
+
+$ptr-private-properties: color;
+
 .bit-ptr {
     width: fit-content;
     position: relative;
     // The color the Color and CustomColor parameters write inline on the root. Reset here, so a pull to refresh
     // inside the anchor of another one does not inherit the color its host was given.
-    --bit-ptr-color: initial;
+    @each $name in $ptr-private-properties {
+        --bit-ptr-#{$name}: initial;
+    }
 }
 
 // An anchor that fills a page or a layout region needs the component around it to fill it too, which the

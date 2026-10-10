@@ -42,7 +42,7 @@ public class BitDataGridStylesheetTests
     [TestMethod]
     public void BitDataGridShouldReadEveryPublicVariableWithoutDeclaringIt()
     {
-        var stylesheet = SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "DataGrid", "BitDataGrid.scss");
+        var stylesheet = SourceFiles.ReadStylesheet("Bit.BlazorUI.Extras", "Components", "DataGrid", "BitDataGrid.scss");
 
         var read = Regex.Matches(stylesheet, @"var\((--bit-DataGrid-[a-z-]+)").Select(m => m.Groups[1].Value).Distinct().ToArray();
 
@@ -68,7 +68,7 @@ public class BitDataGridStylesheetTests
     [TestMethod]
     public void BitDataGridShouldResetItsRowStateOnEveryRoot()
     {
-        var stylesheet = SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "DataGrid", "BitDataGrid.scss");
+        var stylesheet = SourceFiles.ReadStylesheet("Bit.BlazorUI.Extras", "Components", "DataGrid", "BitDataGrid.scss");
 
         var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-dtg {");
 
@@ -82,7 +82,7 @@ public class BitDataGridStylesheetTests
     [TestMethod]
     public void BitDataGridShouldGiveEveryControlAFocusIndicator()
     {
-        var stylesheet = SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "DataGrid", "BitDataGrid.scss");
+        var stylesheet = SourceFiles.ReadStylesheet("Bit.BlazorUI.Extras", "Components", "DataGrid", "BitDataGrid.scss");
 
         // The library resets `button { outline: none }`, so each button family draws its own indicator.
         foreach (var selector in new[] { "button.bit-dtg-htext", ".bit-dtg-btn", ".bit-dtg-icon-btn", ".bit-dtg-drag-handle" })

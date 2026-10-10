@@ -85,6 +85,9 @@
 // for which no parameter has a value of its own (--bit-TextField-focus-border-color and
 // --bit-TextField-hover-background fall back to the frame and the fill ranked as above).
 
+$tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn-width, spn-size, clr, clr-focus,
+                         clr-bg, clr-brd, clr-brd-hover;
+
 .bit-tfl {
     margin: 0;
     padding: 0;
@@ -101,17 +104,9 @@
     // sends the var() reading it on to the public variable and then to the default (the medium size, the
     // primary accent, the primary background and border kinds), which is what lets an explicit parameter
     // outrank the variable while an unset one leaves the variable in charge.
-    --bit-tfl-font-size: initial;
-    --bit-tfl-line-height: initial;
-    --bit-tfl-min-height: initial;
-    --bit-tfl-icon-font-size: initial;
-    --bit-tfl-btn-width: initial;
-    --bit-tfl-spn-size: initial;
-    --bit-tfl-clr: initial;
-    --bit-tfl-clr-focus: initial;
-    --bit-tfl-clr-bg: initial;
-    --bit-tfl-clr-brd: initial;
-    --bit-tfl-clr-brd-hover: initial;
+    @each $name in $tfl-private-properties {
+        --bit-tfl-#{$name}: initial;
+    }
     // The row height of the input has no public variable to compete with, so the medium one sits on the root
     // itself instead of only on .bit-tfl-md.
     --bit-tfl-inp-min-height: #{spacing(3.75)};

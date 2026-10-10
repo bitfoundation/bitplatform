@@ -30,25 +30,22 @@
 // Color and Size publish nothing while they are left unset: a class that always carried the default would be
 // indistinguishable from one that was asked for. A disabled control keeps the disabled colors whatever the
 // variables say.
+
+$pgn-private-properties:
+    clr-fcs, clr-txt, clr, clr-hover, clr-active, clr-sel, clr-sel-hover, clr-sel-active, clr-dis-bg, clr-dis-text,
+    size-btn, font-size, pad-x,
+    // What the component writes into an inline style, which wins over this on the element it is written on.
+    justify-content;
+
 .bit-pgn {
     // Each root starts the values the Color and Size classes publish out unset, so a pagination never inherits
     // another one's choice from an ancestor carrying those classes, and the classes - declared further down at the
     // same weight - still win on the root that carries them. Left unset, each sends the var() reading it on to the
     // public variable and then to the default, which is what lets an explicit parameter outrank the variable while
     // an unset one leaves the variable in charge.
-    --bit-pgn-clr-fcs: initial;
-    --bit-pgn-clr-txt: initial;
-    --bit-pgn-clr: initial;
-    --bit-pgn-clr-hover: initial;
-    --bit-pgn-clr-active: initial;
-    --bit-pgn-clr-sel: initial;
-    --bit-pgn-clr-sel-hover: initial;
-    --bit-pgn-clr-sel-active: initial;
-    --bit-pgn-clr-dis-bg: initial;
-    --bit-pgn-clr-dis-text: initial;
-    --bit-pgn-size-btn: initial;
-    --bit-pgn-font-size: initial;
-    --bit-pgn-pad-x: initial;
+    @each $name in $pgn-private-properties {
+        --bit-pgn-#{$name}: initial;
+    }
 
     flex-wrap: wrap;
     align-items: center;

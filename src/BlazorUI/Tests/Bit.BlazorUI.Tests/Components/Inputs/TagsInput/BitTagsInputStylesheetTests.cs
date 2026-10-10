@@ -60,5 +60,5 @@ public class BitTagsInputStylesheetTests
         }
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Inputs", "TagsInput", "BitTagsInput.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "TagsInput", "BitTagsInput.scss");
 }

@@ -82,26 +82,24 @@ $sel: in-tablist(".bit-pvti-sel");
 // The tabs, and the More button of the Menu behavior, which is drawn like one of them beside the tablist.
 $itm: "#{$tab}, #{in-header('.bit-pvt-mor')}";
 
+$pvt-private-properties:
+    gap,
+    // The values the Color and Size classes publish, which those classes - declared further down at the
+    // same weight - still win over on the root that carries them. Left unset, each sends the var() reading it
+    // on to the public variable and then to the default, which is what lets an explicit parameter outrank the
+    // variable while an unset one leaves the variable in charge.
+    role-main, role-hover, role-focus, role-text, role-dis, role-dis-text, fs, ih, is, mh,
+    // What the component writes into an inline style, which wins over this on the element it is written on.
+    hal;
+
 .bit-pvt {
     display: flex;
     gap: var(--bit-Pivot-body-gap, #{spacing(2)});
     // The Gap parameter writes this on the root inline; a nested pivot resets it so it never inherits the
     // gap of the pivot around it.
-    --bit-pvt-gap: initial;
-    // So do the values the Color and Size classes publish, which those classes - declared further down at the
-    // same weight - still win over on the root that carries them. Left unset, each sends the var() reading it
-    // on to the public variable and then to the default, which is what lets an explicit parameter outrank the
-    // variable while an unset one leaves the variable in charge.
-    --bit-pvt-role-main: initial;
-    --bit-pvt-role-hover: initial;
-    --bit-pvt-role-focus: initial;
-    --bit-pvt-role-text: initial;
-    --bit-pvt-role-dis: initial;
-    --bit-pvt-role-dis-text: initial;
-    --bit-pvt-fs: initial;
-    --bit-pvt-ih: initial;
-    --bit-pvt-is: initial;
-    --bit-pvt-mh: initial;
+    @each $name in $pvt-private-properties {
+        --bit-pvt-#{$name}: initial;
+    }
     // The accent is resolved here, once per pivot, so every rule below reads the same one: the role an explicit
     // Color picks, then the public variable, then the primary role an unset Color stands for.
     --bit-pvt-clr: var(--bit-pvt-role-main, var(--bit-Pivot-color, #{$clr-pri}));

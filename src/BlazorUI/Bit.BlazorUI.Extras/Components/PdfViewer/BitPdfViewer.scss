@@ -74,7 +74,14 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
     }
 }
 
+$pdv-private-properties: scale;
+
 .bit-pdv {
+    // What the component writes into an inline style starts out unset on every root, so an instance nested in
+    // another one never takes the outer one's value for its own; the inline declaration still wins on its element.
+    @each $name in $pdv-private-properties {
+        --bit-pdv-#{$name}: initial;
+    }
     display: flex;
     overflow: hidden;
     position: relative;

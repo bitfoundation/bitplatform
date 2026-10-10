@@ -58,6 +58,13 @@
 // was asked for. The checked and the disabled states are still read before both, so a re-tinted toggle button
 // keeps showing which state it is in.
 
+$tgb-private-properties: clr-txt, clr, clr-hover, clr-active, clr-focus, clr-dark, clr-dark-hover, clr-dark-active,
+                         clr-dis, clr-dis-text, min-height, padding, fontsize, ntx-pad, ntx-icn-size, spn-size,
+                         lbl-fontsize,
+                         // The colors the hover and press states move (see the variants below), unset at rest so a
+                         // toggle button nested in another one never inherits the outer one's state.
+                         sfg, sbg, sbr;
+
 .bit-tgb {
     cursor: pointer;
     position: relative;
@@ -77,28 +84,9 @@
     // same weight - still win on the root that carries them. Left unset, each sends the var() reading it on to
     // the public variable and then to the default, which is what lets an explicit parameter outrank the variable
     // while an unset one leaves the variable in charge.
-    --bit-tgb-clr-txt: initial;
-    --bit-tgb-clr: initial;
-    --bit-tgb-clr-hover: initial;
-    --bit-tgb-clr-active: initial;
-    --bit-tgb-clr-focus: initial;
-    --bit-tgb-clr-dark: initial;
-    --bit-tgb-clr-dark-hover: initial;
-    --bit-tgb-clr-dark-active: initial;
-    --bit-tgb-clr-dis: initial;
-    --bit-tgb-clr-dis-text: initial;
-    --bit-tgb-min-height: initial;
-    --bit-tgb-padding: initial;
-    --bit-tgb-fontsize: initial;
-    --bit-tgb-ntx-pad: initial;
-    --bit-tgb-ntx-icn-size: initial;
-    --bit-tgb-spn-size: initial;
-    --bit-tgb-lbl-fontsize: initial;
-    // The colors the hover and press states move (see the variants below), unset at rest so a toggle button nested
-    // in another one never inherits the outer one's state.
-    --bit-tgb-sfg: initial;
-    --bit-tgb-sbg: initial;
-    --bit-tgb-sbr: initial;
+    @each $name in $tgb-private-properties {
+        --bit-tgb-#{$name}: initial;
+    }
     // Each read below ranks the value an explicit Size publishes, then the public variable, then the medium
     // size an unset one stands for.
     font-size: var(--bit-tgb-fontsize, var(--bit-ToggleButton-font-size, #{$tg-fs-sm}));

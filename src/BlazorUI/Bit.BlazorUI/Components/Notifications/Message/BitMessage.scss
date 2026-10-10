@@ -25,6 +25,17 @@
 // default, not a choice - which is why Color and Size publish nothing while they are left unset: a class that
 // always carried the default would be indistinguishable from one that was asked for.
 
+$msg-private-properties:
+    boxshadow,
+    // The values the Color and Size classes publish, which those classes - declared further down at the same
+    // weight - still win over on the root that carries them. Left unset, each sends the var() reading it on to the
+    // public variable and then to the default, which is what lets an explicit parameter outrank the variable while
+    // an unset one leaves the variable in charge.
+    clr, clr-bg, clr-txt, clr-focus, clr-tint, margin, fontsize, ico-margin, ico-fontsize, btn-size, btn-icosize,
+    act-maxheight, track-size,
+    // What the component writes into an inline style, which wins over this on the element it is written on.
+    justifycontent, maxlines;
+
 .bit-msg {
     width: 100%;
     display: flex;
@@ -46,24 +57,9 @@
     box-shadow: var(--bit-msg-boxshadow, var(--bit-Message-shadow, none));
     // A custom property inherits, so a message nested in the content of an elevated one would take its shadow
     // too; each message starts from nothing, and only its own Elevation writes one back on top of this.
-    --bit-msg-boxshadow: initial;
-    // So do the values the Color and Size classes publish, which those classes - declared further down at the same
-    // weight - still win over on the root that carries them. Left unset, each sends the var() reading it on to the
-    // public variable and then to the default, which is what lets an explicit parameter outrank the variable while
-    // an unset one leaves the variable in charge.
-    --bit-msg-clr: initial;
-    --bit-msg-clr-bg: initial;
-    --bit-msg-clr-txt: initial;
-    --bit-msg-clr-focus: initial;
-    --bit-msg-clr-tint: initial;
-    --bit-msg-margin: initial;
-    --bit-msg-fontsize: initial;
-    --bit-msg-ico-margin: initial;
-    --bit-msg-ico-fontsize: initial;
-    --bit-msg-btn-size: initial;
-    --bit-msg-btn-icosize: initial;
-    --bit-msg-act-maxheight: initial;
-    --bit-msg-track-size: initial;
+    @each $name in $msg-private-properties {
+        --bit-msg-#{$name}: initial;
+    }
     --bit-msg-radius: var(--bit-Message-radius, #{$shp-radius-surface});
     --bit-msg-focus: var(--bit-msg-clr-focus, var(--bit-Message-focus-color, #{$clr-inf-focus}));
     // How far a focus ring reaches outside the box it is drawn around.

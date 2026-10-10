@@ -161,6 +161,6 @@ public class BitPaginationStylesheetTests
 
     private static string ReadStylesheet()
     {
-        return SourceFiles.Read("Bit.BlazorUI", "Components", "Navs", "Pagination", "BitPagination.scss");
+        return SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Navs", "Pagination", "BitPagination.scss");
     }
 }

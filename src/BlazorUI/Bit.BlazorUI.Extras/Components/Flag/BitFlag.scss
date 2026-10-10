@@ -18,6 +18,8 @@
 // rounding, bordering or dimming every other one. The size is the default under the parameters: Size, Width and
 // Height still win over it.
 
+$flg-private-properties: crp-x, crp-y, crp-w, crp-h;
+
 // The frame. It is the box the flag is drawn in, and everything the component offers is a property of
 // it rather than of the picture inside: the size, the shape, the border and the shadow.
 //
@@ -26,6 +28,11 @@
 // medium icon size of the theme, which is the 16 pixels the packaged flag images are drawn at and the
 // size a flag has always been.
 .bit-flg {
+    // What the component writes into an inline style starts out unset on every root, so an instance nested in
+    // another one never takes the outer one's value for its own; the inline declaration still wins on its element.
+    @each $name in $flg-private-properties {
+        --bit-flg-#{$name}: initial;
+    }
     --bit-flg-siz: var(--bit-Flag-size, #{$siz-icon-md});
     // The corner of the frame, which a picture cut to the flag clips itself to.
     --bit-flg-rad: 0px;

@@ -76,7 +76,7 @@ public class BitCalloutScriptContractTests
     public void BitCalloutShouldResetEveryPrivateVariableItWritesInline()
     {
         var component = ReadFile("Bit.BlazorUI", "Components", "Surfaces", "Callout", "BitCallout.razor.cs");
-        var stylesheet = ReadFile("Bit.BlazorUI", "Components", "Surfaces", "Callout", "BitCallout.scss");
+        var stylesheet = SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Surfaces", "Callout", "BitCallout.scss");
 
         var written = Regex.Matches(component, @"\$""(--bit-clo-[a-z-]+):")
                            .Select(m => m.Groups[1].Value)

@@ -53,49 +53,40 @@ $crd-gap: var(--bit-crd-gap, var(--bit-Card-gap, #{spacing(1.5)}));
 // shades of its role rather than the two background variables); the variables re-skin what the theme would
 // otherwise decide. A disabled card ignores the colors above and keeps the disabled colors of the theme, so it
 // never reads as an enabled one.
-//
+
+$crd-private-properties:
+    clr, clr-txt, clr-fg, clr-tint, clr-hover, clr-active, clr-dis, clr-dis-text, fg, bg, bg-hov, bg-act, shd, shd-hov,
+    shd-act, radius, brd-wid, brd-clr, dvd-clr, sel-clr, dis-txt, dis-bg, dis-brd,
+    // The surface the hover and press states below move the root to; the states set it rather than the background.
+    sbg,
+    // The four the cover parameters write onto the style of the root; an inline declaration wins over these.
+    img-height, img-position, cvr-width, cvr-ratio,
+    // The ones the Size classes publish; Size publishes nothing while it is unset, which leaves the public variables
+    // and then the medium card.
+    pad, gap, htx-gap, ttl-fontsize, sub-fontsize, icn-fontsize;
+
+// The ones of the list above that only the root itself reads - its shadow in each state and the width of its rule -
+// are also registered as properties that do not inherit, so a value set on an ancestor never reaches a card at all,
+// with the guaranteed-invalid value (no initial-value) leaving every var() of them to its fallback. The rest stay
+// inheriting: the parts inside the card read them off the root (its title size, its image height, its inset), and a
+// property that does not inherit cannot be read there. The root rule still resets these too, for a browser without
+// @property.
+$crd-root-only-properties: shd, shd-hov, shd-act, brd-wid;
+
+@each $name in $crd-root-only-properties {
+    @property --bit-crd-#{$name} {
+        syntax: "*";
+        inherits: false;
+    }
+}
+
 // Every rule below reads the card's own private variables, which the parameter classes set on the root. Custom
 // properties inherit, which would hand an outer card's paint, rule, corner or shadow to every card nested in it,
 // so each root starts them out unset - which leaves every var() reading them to its fallback.
 .bit-crd {
-    --bit-crd-clr: initial;
-    --bit-crd-clr-txt: initial;
-    --bit-crd-clr-fg: initial;
-    --bit-crd-clr-tint: initial;
-    --bit-crd-clr-hover: initial;
-    --bit-crd-clr-active: initial;
-    --bit-crd-clr-dis: initial;
-    --bit-crd-clr-dis-text: initial;
-    --bit-crd-fg: initial;
-    --bit-crd-bg: initial;
-    --bit-crd-bg-hov: initial;
-    --bit-crd-bg-act: initial;
-    --bit-crd-shd: initial;
-    --bit-crd-shd-hov: initial;
-    --bit-crd-shd-act: initial;
-    --bit-crd-radius: initial;
-    --bit-crd-brd-wid: initial;
-    --bit-crd-brd-clr: initial;
-    --bit-crd-dvd-clr: initial;
-    --bit-crd-sel-clr: initial;
-    --bit-crd-dis-txt: initial;
-    --bit-crd-dis-bg: initial;
-    --bit-crd-dis-brd: initial;
-    // The surface the hover and press states below move the root to; the states set it rather than the background.
-    --bit-crd-sbg: initial;
-    // The four the cover parameters write onto the style of the root; an inline declaration wins over these.
-    --bit-crd-img-height: initial;
-    --bit-crd-img-position: initial;
-    --bit-crd-cvr-width: initial;
-    --bit-crd-cvr-ratio: initial;
-    // The ones the Size classes publish; Size publishes nothing while it is unset, which leaves the public variables
-    // and then the medium card.
-    --bit-crd-pad: initial;
-    --bit-crd-gap: initial;
-    --bit-crd-htx-gap: initial;
-    --bit-crd-ttl-fontsize: initial;
-    --bit-crd-sub-fontsize: initial;
-    --bit-crd-icn-fontsize: initial;
+    @each $name in $crd-private-properties {
+        --bit-crd-#{$name}: initial;
+    }
     position: relative;
     box-sizing: border-box;
     width: fit-content;

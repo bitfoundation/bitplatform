@@ -128,6 +128,9 @@
     --bit-ctp-tlb-minwidth: #{spacing(32.5)};
 }
 
+$ctp-private-properties: rl-clr, rl-text, rl-focus, inp-h, inp-fs, lbl-fs, clk-size, num-size, txt-fontsize,
+                         apb-fontsize, apk-fontsize, num-fontsize, thb-size, thb-size-min;
+
 .bit-ctp,
 .bit-ctp-cal {
     // What the Color and Size classes publish starts out unset on the root and on the callout alike - the
@@ -136,20 +139,9 @@
     // weight, still win on the element that carries them. Left unset, each sends the var() reading it on to
     // the public variable and then to the default, which is what lets an explicit parameter outrank the
     // variable while an unset one leaves the variable in charge.
-    --bit-ctp-rl-clr: initial;
-    --bit-ctp-rl-text: initial;
-    --bit-ctp-rl-focus: initial;
-    --bit-ctp-inp-h: initial;
-    --bit-ctp-inp-fs: initial;
-    --bit-ctp-lbl-fs: initial;
-    --bit-ctp-clk-size: initial;
-    --bit-ctp-num-size: initial;
-    --bit-ctp-txt-fontsize: initial;
-    --bit-ctp-apb-fontsize: initial;
-    --bit-ctp-apk-fontsize: initial;
-    --bit-ctp-num-fontsize: initial;
-    --bit-ctp-thb-size: initial;
-    --bit-ctp-thb-size-min: initial;
+    @each $name in $ctp-private-properties {
+        --bit-ctp-#{$name}: initial;
+    }
 
     @include ctp-size-medium;
 

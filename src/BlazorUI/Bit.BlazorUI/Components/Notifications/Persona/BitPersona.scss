@@ -44,6 +44,15 @@
 // Size wins over the gap and the active ring's gap and width; an unset one is laid out as Size48, whose values
 // those three variables restyle (see .bit-prs-ssz).
 
+$prs-private-properties:
+    gap, ring-gap, ring-width,
+    // The corner of the coin, published only by an explicit Shape (or Squared) and unset here otherwise - rather
+    // than inherited from a persona this one sits inside - so the var() reading it falls through to the public
+    // radius and then to the circle an unset Shape stands for.
+    coin-radius,
+    // The pair of colors a CoinColor (or AutoCoinColor) class publishes (.bit-prs-pri and the rest).
+    coin-clr-bg, coin-clr-txt;
+
 .bit-prs {
     display: flex;
     font-weight: $tg-fw-regular;
@@ -89,13 +98,9 @@
     // than inherited from a persona this one sits inside - so the var() reading each falls through to the public
     // variable and then to the size's own value: an explicit Size wins over the variables and an unset one leaves
     // them in charge.
-    --bit-prs-gap: initial;
-    --bit-prs-ring-gap: initial;
-    --bit-prs-ring-width: initial;
-    // The corner of the coin, published only by an explicit Shape (or Squared) and unset here otherwise - rather
-    // than inherited from a persona this one sits inside - so the var() reading it falls through to the public
-    // radius and then to the circle an unset Shape stands for.
-    --bit-prs-coin-radius: initial;
+    @each $name in $prs-private-properties {
+        --bit-prs-#{$name}: initial;
+    }
     --bit-prs-flex-direction: row;
     gap: var(--bit-prs-gap, var(--bit-Persona-gap, var(--bit-prs-sz-gap)));
     flex-direction: var(--bit-prs-flex-direction);
@@ -947,12 +952,11 @@
 
 // The coin reads its pair of colors through these two: first the pair a CoinColor (or AutoCoinColor) class below
 // declared, then the public variables, then the Info pair an unset CoinColor stands for. The pair itself is unset on
-// every root - rather than inherited from a persona this one sits inside - and the classes, declared further down at
-// the same weight, still win on the root that carries them; left unset, the var() reading it falls through to the
-// variables. So an explicit color wins over them and an unset one leaves them in charge.
+// every root by $prs-private-properties - rather than inherited from a persona this one sits inside - and the
+// classes, declared further down at the same weight, still win on the root that carries them; left unset, the var()
+// reading it falls through to the variables. So an explicit color wins over them and an unset one leaves them in
+// charge.
 .bit-prs {
-    --bit-prs-coin-clr-bg: initial;
-    --bit-prs-coin-clr-txt: initial;
     --bit-prs-coin-bg: var(--bit-prs-coin-clr-bg, var(--bit-Persona-coin-background, #{$clr-inf}));
     --bit-prs-coin-clr: var(--bit-prs-coin-clr-txt, var(--bit-Persona-coin-color, #{$clr-inf-text}));
 }

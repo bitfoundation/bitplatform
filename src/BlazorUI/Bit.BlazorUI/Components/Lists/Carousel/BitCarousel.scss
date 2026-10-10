@@ -38,6 +38,11 @@ $csl-clr-hover: var(--bit-csl-clr-hover, var(--bit-Carousel-dot-current-hover-co
 $csl-btn: var(--bit-csl-btn, var(--bit-Carousel-button-color, #{$clr-fg-pri}));
 $csl-btn-hover: var(--bit-csl-btn-hover, var(--bit-Carousel-button-hover-color, #{$clr-fg-pri-hover}));
 
+$csl-private-properties:
+    clr, clr-hover, btn, btn-hover, fcs, dot-size, btn-size, ppb-size,
+    // What the component writes into an inline style, which wins over this on the element it is written on.
+    dur-full;
+
 .bit-csl {
     display: flex;
     position: relative;
@@ -49,14 +54,9 @@ $csl-btn-hover: var(--bit-csl-btn-hover, var(--bit-Carousel-button-hover-color, 
     // same weight - still win on the root that carries them. Left unset, each var() reading them moves on to the
     // public variable and then to the default (see $csl-clr and the rest at the top): the uncolored carousel
     // resolves to the primary accent, which is what it always rendered with.
-    --bit-csl-clr: initial;
-    --bit-csl-clr-hover: initial;
-    --bit-csl-btn: initial;
-    --bit-csl-btn-hover: initial;
-    --bit-csl-fcs: initial;
-    --bit-csl-dot-size: initial;
-    --bit-csl-btn-size: initial;
-    --bit-csl-ppb-size: initial;
+    @each $name in $csl-private-properties {
+        --bit-csl-#{$name}: initial;
+    }
 
     // The space between the slides. It is declared here rather than read with a fallback where it is
     // used, so a carousel nested in another does not inherit the gap of the outer one, and the Gap

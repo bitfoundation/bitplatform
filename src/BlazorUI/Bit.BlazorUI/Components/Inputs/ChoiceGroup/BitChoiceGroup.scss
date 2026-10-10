@@ -56,6 +56,9 @@
 // colors - stays the variables'. A state an item is in (checked, disabled, invalid) still picks which of them
 // is read, as before.
 
+$chg-private-properties: clr, clr-bg, clr-hover, clr-dis, clr-dis-text, clr-focus, gap, ico-size, fontsize,
+                         circle-size, dot-size, desc-fontsize, inline-ico-size, card-padding;
+
 .bit-chg {
     display: flex;
     gap: spacing(1);
@@ -71,20 +74,9 @@
     // item template of another one from inheriting the outer one's choice, and it is what lets each read below
     // rank an explicit parameter first, then the public variable, then the primary, medium group an unset
     // parameter stands for.
-    --bit-chg-clr: initial;
-    --bit-chg-clr-bg: initial;
-    --bit-chg-clr-hover: initial;
-    --bit-chg-clr-dis: initial;
-    --bit-chg-clr-dis-text: initial;
-    --bit-chg-clr-focus: initial;
-    --bit-chg-gap: initial;
-    --bit-chg-ico-size: initial;
-    --bit-chg-fontsize: initial;
-    --bit-chg-circle-size: initial;
-    --bit-chg-dot-size: initial;
-    --bit-chg-desc-fontsize: initial;
-    --bit-chg-inline-ico-size: initial;
-    --bit-chg-card-padding: initial;
+    @each $name in $chg-private-properties {
+        --bit-chg-#{$name}: initial;
+    }
     // The sizes several rules are read off, resolved once here.
     --bit-chg-cnt-gap: var(--bit-chg-gap, var(--bit-ChoiceGroup-gap, #{spacing(1)}));
     --bit-chg-circle-side: var(--bit-chg-circle-size, var(--bit-ChoiceGroup-circle-size, #{$siz-sel-md}));

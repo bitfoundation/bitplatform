@@ -88,25 +88,20 @@
     --bit-dtp-pane-min-w: #{spacing(26)};
 }
 
+// Every private variable the mixin below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$dtp-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, inp-h-sz, inp-fs-sz, ico-fs-sz, cell-size-sz,
+                         cell-fs-sz, lbl-fs-sz, hdr-fs-sz, time-fs-sz;
+
 // What the Color and Size classes publish starts out unset on the root and on the callout alike, so a
 // DatePicker in the content of another one (a callout template, say) never inherits the outer one's choice;
 // the classes - declared further down at the same weight - still win on the element that carries them. Left
 // unset, each sends the var() reading it on to the public variable and then to the default, which is what
 // lets an explicit parameter outrank the variable while an unset one leaves the variable in charge.
 @mixin dtp-parameter-resets {
-    --bit-dtp-clr: initial;
-    --bit-dtp-clr-txt: initial;
-    --bit-dtp-clr-hover: initial;
-    --bit-dtp-clr-active: initial;
-    --bit-dtp-clr-focus: initial;
-    --bit-dtp-inp-h-sz: initial;
-    --bit-dtp-inp-fs-sz: initial;
-    --bit-dtp-ico-fs-sz: initial;
-    --bit-dtp-cell-size-sz: initial;
-    --bit-dtp-cell-fs-sz: initial;
-    --bit-dtp-lbl-fs-sz: initial;
-    --bit-dtp-hdr-fs-sz: initial;
-    --bit-dtp-time-fs-sz: initial;
+    @each $name in $dtp-private-properties {
+        --bit-dtp-#{$name}: initial;
+    }
 }
 
 // The sizes resolve once, on whichever of the two elements the parts live under, so every part that lines up

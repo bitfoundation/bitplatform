@@ -12,7 +12,7 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.FileUpload;
 [TestClass]
 public class BitFileUploadStylesheetTests
 {
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Inputs", "FileUpload", "BitFileUpload.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "FileUpload", "BitFileUpload.scss");
 
     [TestMethod]
     public void BitFileUploadShouldLetAParameterWinOverItsPublicVariable()

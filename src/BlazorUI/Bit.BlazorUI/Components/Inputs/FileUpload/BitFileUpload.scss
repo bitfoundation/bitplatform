@@ -104,29 +104,19 @@
 // always carried the default would be indistinguishable from one that was asked for. The disabled state and
 // a rejected drag are read before all of them, as before.
 
+$upl-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-tint-8, clr-tint-10, lbl-height,
+                         lbl-fontsize, lbl-padding, bab-height, bab-padding, itm-fontsize, fs-fontsize, prv-size,
+                         btn-size, ico-fontsize;
+
 .bit-upl {
     // A file upload can sit in a template of another one, which must not inherit the outer one's Color or
     // Size: each root starts the values those classes publish out unset, and the classes - declared further
     // down at the same weight - still win on the root that carries them. Left unset, each sends the var()
     // reading it on to the public variable and then to the default, which is what lets an explicit parameter
     // outrank the variable while an unset one leaves the variable in charge.
-    --bit-upl-clr: initial;
-    --bit-upl-clr-txt: initial;
-    --bit-upl-clr-hover: initial;
-    --bit-upl-clr-active: initial;
-    --bit-upl-clr-focus: initial;
-    --bit-upl-clr-tint-8: initial;
-    --bit-upl-clr-tint-10: initial;
-    --bit-upl-lbl-height: initial;
-    --bit-upl-lbl-fontsize: initial;
-    --bit-upl-lbl-padding: initial;
-    --bit-upl-bab-height: initial;
-    --bit-upl-bab-padding: initial;
-    --bit-upl-itm-fontsize: initial;
-    --bit-upl-fs-fontsize: initial;
-    --bit-upl-prv-size: initial;
-    --bit-upl-btn-size: initial;
-    --bit-upl-ico-fontsize: initial;
+    @each $name in $upl-private-properties {
+        --bit-upl-#{$name}: initial;
+    }
     display: flex;
     flex-flow: column nowrap;
     font-family: $tg-font-family;

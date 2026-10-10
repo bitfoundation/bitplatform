@@ -215,6 +215,31 @@ public partial class BitCardStylesheetTests
     }
 
     [TestMethod]
+    public void BitCardShouldRegisterItsRootOnlyVariablesAsNonInheriting()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The shadow and the rule width are read by the root alone, so they are registered as properties that do not
+        // inherit, while still being reset on the root with the rest for a browser without @property.
+        StringAssert.Contains(stylesheet, "\n$crd-root-only-properties: shd, shd-hov, shd-act, brd-wid;\n");
+        StringAssert.Contains(stylesheet, """
+            @each $name in $crd-root-only-properties {
+                @property --bit-crd-#{$name} {
+                    syntax: "*";
+                    inherits: false;
+                }
+            }
+            """.Replace("\r\n", "\n"));
+
+        var privateList = SourceFiles.GetPrivatePropertyLists(stylesheet).Single(l => l.Name == "crd-private-properties");
+
+        foreach (var name in new[] { "shd", "shd-hov", "shd-act", "brd-wid" })
+        {
+            CollectionAssert.Contains(privateList.Names.ToArray(), name, $"{name} is registered but no longer reset on the root.");
+        }
+    }
+
+    [TestMethod]
     public void BitCardShouldOnlyBePressedThroughItsOwnControl()
     {
         var stylesheet = ReadStylesheet();
@@ -303,7 +328,7 @@ public partial class BitCardStylesheetTests
         return SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Surfaces", "Card", "BitCard.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Surfaces", "Card", "BitCard.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-Card-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

@@ -35,6 +35,12 @@
 // carried the default would be indistinguishable from one that was asked for. NoBorder asks for no fill in
 // particular, so the variables still win over the secondary fill it falls back to; an open header's own fill
 // (--bit-Accordion-header-expanded-background) is a state of its own and wins over the shades of any Background.
+
+$acd-private-properties:
+    pad, ttl-fontsize, fontsize, icn-fontsize,
+    // What the component writes into an inline style, which wins over this on the element it is written on.
+    max-h;
+
 .bit-acd {
     width: 100%;
     display: flex;
@@ -66,10 +72,9 @@
     // The values the Size classes publish, unset here - rather than inherited from an accordion this one sits in the
     // panel of - and won back by those classes, declared further down at the same weight, on the root that carries
     // them. Left unset, each sends the var() reading it on to the public variable and then to the medium size.
-    --bit-acd-pad: initial;
-    --bit-acd-ttl-fontsize: initial;
-    --bit-acd-fontsize: initial;
-    --bit-acd-icn-fontsize: initial;
+    @each $name in $acd-private-properties {
+        --bit-acd-#{$name}: initial;
+    }
 
     // The duration of the expand/collapse transition. TransitionDuration arrives inline as the -full token and
     // everything below reads this derived one, following the -full pattern of motion.fluent.scss, so the

@@ -62,7 +62,7 @@ public partial class BitNumberFieldStylesheetTests
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-dis {"), "--bit-nfl-spn-clr: currentcolor;");
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Inputs", "NumberField", "BitNumberField.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "NumberField", "BitNumberField.scss");
 
     [GeneratedRegex(@"var\(--bit-NumberField-[a-z-]+, (var\(|calc\(var\()--bit-nfl-")]
     private static partial Regex PublicBeforePrivate();

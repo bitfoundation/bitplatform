@@ -26,6 +26,12 @@
 // is why Color and Size publish nothing while they are left unset: a class that always carried the default would be
 // indistinguishable from one that was asked for.
 
+$acb-private-properties: clr-ico, clr-hover, clr-active, clr-focus, clr-dis-text, pad-y, min-height, fontsize,
+                         ico-size, padding,
+                         // The colors the hover and press states below move, unset at rest so an action button nested
+                         // in another one never inherits the outer one's state.
+                         sfg, sbg;
+
 .bit-acb {
     border: none;
     cursor: pointer;
@@ -44,20 +50,9 @@
     // weight - still win on the root that carries them. Left unset, each sends the var() reading it on to the public
     // variable and then to the default, which is what lets an explicit parameter outrank the variable while an unset
     // one leaves the variable in charge.
-    --bit-acb-clr-ico: initial;
-    --bit-acb-clr-hover: initial;
-    --bit-acb-clr-active: initial;
-    --bit-acb-clr-focus: initial;
-    --bit-acb-clr-dis-text: initial;
-    --bit-acb-pad-y: initial;
-    --bit-acb-min-height: initial;
-    --bit-acb-fontsize: initial;
-    --bit-acb-ico-size: initial;
-    --bit-acb-padding: initial;
-    // The colors the hover and press states below move, unset at rest so an action button nested in another one
-    // never inherits the outer one's state.
-    --bit-acb-sfg: initial;
-    --bit-acb-sbg: initial;
+    @each $name in $acb-private-properties {
+        --bit-acb-#{$name}: initial;
+    }
     color: var(--bit-acb-sfg, var(--bit-ActionButton-color, #{$clr-fg-pri}));
     // Every value an explicit Size or Color publishes is read first, then the public variable, then the medium
     // primary action button an unset one stands for.

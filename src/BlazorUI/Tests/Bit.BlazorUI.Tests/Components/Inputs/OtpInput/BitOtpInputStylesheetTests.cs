@@ -48,7 +48,7 @@ public partial class BitOtpInputStylesheetTests
         }
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Inputs", "OtpInput", "BitOtpInput.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "OtpInput", "BitOtpInput.scss");
 
     [GeneratedRegex(@"var\(--bit-OtpInput-[a-z-]+, (var\(--bit-OtpInput-[a-z-]+, )*var\(--bit-otp-(size|fontsize|dsc-fontsize|clr|clr-focus)\b")]
     private static partial Regex PublicBeforePrivate();

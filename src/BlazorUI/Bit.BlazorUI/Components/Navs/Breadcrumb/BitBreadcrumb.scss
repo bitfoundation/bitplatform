@@ -53,6 +53,14 @@
     --bit-brc-sz-ofi-lh: #{$ofi-lh};
 }
 
+// Every private variable the mixin below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$brc-private-properties:
+    sz-fs, sz-h, sz-div, sz-obt, sz-ofi-h, sz-ofi-fs, sz-ofi-lh, role-main, role-focus,
+    // The width MaxItemWidth writes on the style of the root (and of the callout), which that inline
+    // declaration still wins over.
+    itm-max-width;
+
 // The one place the public variables meet the values an explicit Color and Size publish. Every rule below reads
 // the private variables this leaves behind, and the block is included on the callout as well, which is a
 // sibling of the root rather than a descendant of it, so it resolves the public variables it inherits on its
@@ -63,18 +71,9 @@
     // still win on the root (and the callout) that carries them. Left unset, each sends the var() reading it on to
     // the public variable and then to the default, which is what lets an explicit parameter outrank the variable
     // while an unset one leaves the variable in charge.
-    --bit-brc-sz-fs: initial;
-    --bit-brc-sz-h: initial;
-    --bit-brc-sz-div: initial;
-    --bit-brc-sz-obt: initial;
-    --bit-brc-sz-ofi-h: initial;
-    --bit-brc-sz-ofi-fs: initial;
-    --bit-brc-sz-ofi-lh: initial;
-    --bit-brc-role-main: initial;
-    --bit-brc-role-focus: initial;
-    // So does the width MaxItemWidth writes on the style of the root (and of the callout), which that inline
-    // declaration still wins over.
-    --bit-brc-itm-max-width: initial;
+    @each $name in $brc-private-properties {
+        --bit-brc-#{$name}: initial;
+    }
 
     // The value an explicit Size publishes first, then the public variable, then the medium size an unset Size is.
     --bit-brc-fs: var(--bit-brc-sz-fs, var(--bit-Breadcrumb-font-size, #{$tg-fs-sm}));

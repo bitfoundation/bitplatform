@@ -28,20 +28,20 @@
 // indistinguishable from one that was asked for. NoColor still wins over the colors, since it asks for no link
 // color at all, and a disabled link keeps its disabled color whatever the other color variables say, so it never
 // reads as an enabled one.
+
+$lnk-private-properties: clr, clr-hover, clr-active, clr-focus, clr-dis, fs,
+                         // The color the states below set, which every color at rest reads first (see &:hover).
+                         sfg;
+
 .bit-lnk {
     // Each root starts the values the Color and Size classes publish out unset, so a link never inherits another
     // one's choice from an ancestor carrying those classes, and the classes - declared further down at the same
     // weight - still win on the root that carries them. Left unset, each sends the var() reading it on to the
     // public variable and then to the default, which is what lets an explicit parameter outrank the variable while
     // an unset one leaves the variable in charge.
-    --bit-lnk-clr: initial;
-    --bit-lnk-clr-hover: initial;
-    --bit-lnk-clr-active: initial;
-    --bit-lnk-clr-focus: initial;
-    --bit-lnk-clr-dis: initial;
-    --bit-lnk-fs: initial;
-    // The color the states below set, which every color at rest reads first (see &:hover).
-    --bit-lnk-sfg: initial;
+    @each $name in $lnk-private-properties {
+        --bit-lnk-#{$name}: initial;
+    }
     margin: 0;
     padding: 0;
     outline: none;

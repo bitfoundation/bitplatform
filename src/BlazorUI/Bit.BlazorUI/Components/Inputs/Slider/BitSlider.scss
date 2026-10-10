@@ -67,22 +67,20 @@
 // rail color, the thumb face, the unreached marks, the labels' colors, the gap - stays the variables'. A state
 // the slider is in (disabled, invalid) still paints over all of them, as before.
 
+$sld-private-properties:
+    clr, clr-on, clr-hover, clr-active, clr-focus, sz-thumb, sz-rail, sz-length, sz-font-size, sz-font-size-sub,
+    // What the component writes into an inline style, which wins over this on the element it is written on.
+    vlb-min, inp-start, inp-end, inp-mid, bar-start, bar-end;
+
 .bit-sld {
     // The values the Color and Size classes publish start out unset on every root, which those classes -
     // declared further down at the same weight - still win over on the root that carries them. That keeps a
     // slider placed in a label template of another one from inheriting the outer one's choice, and it is what
     // lets each read below rank an explicit parameter first, then the public variable, then the primary,
     // medium slider an unset parameter stands for.
-    --bit-sld-clr: initial;
-    --bit-sld-clr-on: initial;
-    --bit-sld-clr-hover: initial;
-    --bit-sld-clr-active: initial;
-    --bit-sld-clr-focus: initial;
-    --bit-sld-sz-thumb: initial;
-    --bit-sld-sz-rail: initial;
-    --bit-sld-sz-length: initial;
-    --bit-sld-sz-font-size: initial;
-    --bit-sld-sz-font-size-sub: initial;
+    @each $name in $sld-private-properties {
+        --bit-sld-#{$name}: initial;
+    }
 
     // The thumb and the rail follow the theme (Material's 20dp handle on a 4dp track, the 28pt
     // UISlider knob on a 2pt one); the length stays this component's own knob. The size classes

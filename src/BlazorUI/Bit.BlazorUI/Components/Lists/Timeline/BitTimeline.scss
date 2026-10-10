@@ -123,6 +123,8 @@
     --bit-tln-scn-flexdir: row;
 }
 
+$tln-private-properties: clr, clr-fg, clr-focus, clr-dis-bg, clr-dis-text, dot-sz, fs;
+
 .bit-tln {
     margin: 0;
     padding: 0;
@@ -138,13 +140,9 @@
     // carries them; the items inherit what the root ends up with and may publish their own. Left unset, each sends
     // the var() reading it on to the public variable and then to the default, which is what lets an explicit
     // parameter outrank the variable while an unset one leaves the variable in charge.
-    --bit-tln-clr: initial;
-    --bit-tln-clr-fg: initial;
-    --bit-tln-clr-focus: initial;
-    --bit-tln-clr-dis-bg: initial;
-    --bit-tln-clr-dis-text: initial;
-    --bit-tln-dot-sz: initial;
-    --bit-tln-fs: initial;
+    @each $name in $tln-private-properties {
+        --bit-tln-#{$name}: initial;
+    }
     --bit-tln-flexdir: column;
     --bit-tln-itm-flexdir: row;
     --bit-tln-pcn-flexdir: row-reverse;

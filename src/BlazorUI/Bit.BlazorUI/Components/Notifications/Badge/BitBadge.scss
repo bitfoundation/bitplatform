@@ -40,6 +40,17 @@
 // theme, so it never reads as an enabled one. A Dot badge ignores the height, padding and radius above and is
 // a circle of --bit-Badge-dot-size.
 
+$bdg-private-properties:
+    dot-size, dot-padding, dot-radius, dis-txt, dis-bg, dis-brd,
+    // The offsets, set on the style of the root that asks for them.
+    ofs-x, ofs-y,
+    // The values the Color, Size and Shape classes publish, which those classes - declared further down at
+    // the same weight - still win over on the root that carries them. Left unset, each sends the var() reading
+    // it on to the public variable and then to the default, which is what lets an explicit parameter outrank
+    // the variable while an unset one leaves the variable in charge.
+    clr, clr-txt, clr-dis, clr-dis-text, clr-hover, clr-active, clr-light, clr-light-hover, clr-fcs, height, padding,
+    fontsize, dotsize, radius;
+
 .bit-bdg {
     position: relative;
     display: inline-block;
@@ -47,33 +58,9 @@
     // The dot and the disabled state hand the badge values that win over the public variables (see .bit-bdg-ctn).
     // Custom properties inherit, which would pass a dot or a disabled state on to every badge in the child
     // content, so each root starts them out unset - which leaves every var() reading them to its fallback.
-    --bit-bdg-dot-size: initial;
-    --bit-bdg-dot-padding: initial;
-    --bit-bdg-dot-radius: initial;
-    --bit-bdg-dis-txt: initial;
-    --bit-bdg-dis-bg: initial;
-    --bit-bdg-dis-brd: initial;
-    // The offsets are set on the style of the root that asks for them, so the same goes for them.
-    --bit-bdg-ofs-x: initial;
-    --bit-bdg-ofs-y: initial;
-    // So do the values the Color, Size and Shape classes publish, which those classes - declared further down at
-    // the same weight - still win over on the root that carries them. Left unset, each sends the var() reading
-    // it on to the public variable and then to the default, which is what lets an explicit parameter outrank
-    // the variable while an unset one leaves the variable in charge.
-    --bit-bdg-clr: initial;
-    --bit-bdg-clr-txt: initial;
-    --bit-bdg-clr-dis: initial;
-    --bit-bdg-clr-dis-text: initial;
-    --bit-bdg-clr-hover: initial;
-    --bit-bdg-clr-active: initial;
-    --bit-bdg-clr-light: initial;
-    --bit-bdg-clr-light-hover: initial;
-    --bit-bdg-clr-fcs: initial;
-    --bit-bdg-height: initial;
-    --bit-bdg-padding: initial;
-    --bit-bdg-fontsize: initial;
-    --bit-bdg-dotsize: initial;
-    --bit-bdg-radius: initial;
+    @each $name in $bdg-private-properties {
+        --bit-bdg-#{$name}: initial;
+    }
 
     // A disabled badge is painted from the disabled colors alone, whatever the public colors say.
     &.bit-dis {
