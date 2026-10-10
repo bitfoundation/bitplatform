@@ -17,14 +17,15 @@ handlers of the events an element is activated through - `onclick`, `ondblclick`
 Hover and focus handlers are kept, and every handler is back as soon as the component is enabled again.
 
 This applies to the buttons (`BitActionButton`, `BitButton`, `BitButtonGroup`, `BitMenuButton`,
-`BitToggleButton`), every input, `BitCarousel`, `BitSwiper`, `BitTimeline`, the navs (`BitBreadcrumb`,
-`BitDropMenu`, `BitNav`, `BitNavBar`, `BitPagination`, `BitPivot`, `BitPivotItem`), `BitPersona`, `BitTag`,
-`BitAccordion`, `BitCard`, `BitIcon`, `BitImage`, `BitLink`, and in `Bit.BlazorUI.Extras` to
-`BitAccordionList`, `BitFlag`, `BitPhoneInput`, `BitThemeSwitcher`, `BitAccentColorSwitcher`,
-`BitRichTextEditor`, `BitMarkdownEditor`, `BitMessageBox`, `BitDataGrid`, `BitChart`, `BitMap`,
-`BitPdfViewer` and `BitNavPanel`. A component whose `Disabled` only switches one behaviour off while the
-content it hosts stays live (`BitBadge`, `BitTooltip`, `BitCallout`, the panels, dialogs and layouts) keeps
-running them. **An app that relied on a handler of a disabled component running** - to explain why it is
+`BitToggleButton`), every input, `BitTimeline`, the navs (`BitBreadcrumb`, `BitDropMenu`, `BitNav`,
+`BitNavBar`, `BitPagination`, and `BitPivotItem` - disabled on its own or by its `BitPivot`), `BitPersona`,
+`BitTag`, `BitCard`, `BitIcon`, `BitImage`, `BitLink`, and in `Bit.BlazorUI.Extras` to `BitFlag`,
+`BitPhoneInput`, `BitThemeSwitcher`, `BitAccentColorSwitcher`, `BitRichTextEditor`, `BitMarkdownEditor`,
+`BitDataGrid`, `BitChart` and `BitPdfViewer`. A component whose `Disabled` only switches one behaviour off
+while the content it hosts stays live keeps running them: `BitBadge`, `BitTooltip`, `BitCallout`,
+`BitAccordion` and `BitAccordionList` (their panels), `BitCarousel` and `BitSwiper` (their slides), `BitPivot`
+(the panel of its open tab), `BitMap` (its overlay), `BitMessageBox`, `BitNavPanel`, and the other panels,
+dialogs and layouts. **An app that relied on a handler of a disabled component running** - to explain why it is
 disabled, say - puts it on an element of its own around the component.
 
 `BitButtonGroup` also turns an item's click away for the group's own `Disabled`, not only for the item's

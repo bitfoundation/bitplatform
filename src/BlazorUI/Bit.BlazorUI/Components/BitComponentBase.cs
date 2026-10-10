@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Collections.Frozen;
+
+namespace Bit.BlazorUI;
 
 public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 {
@@ -172,6 +174,7 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     {
         _assignedParameters.Clear();
         HtmlAttributes.Clear();
+        _disabledAwareHtmlAttributes = null;
         var parametersDictionary = ParametersCache ?? new Dictionary<string, object?>(parameters.ToDictionary());
         foreach (var parameter in parametersDictionary!)
         {
@@ -490,20 +493,31 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     /// assistive technology dispatches. The ones that only follow the pointer or the focus around (a hover, a focus)
     /// are not among them.
     /// </summary>
-    private protected static readonly string[] ActivationEvents =
-    [
+    /// <remarks>
+    /// Matched without regard to case, the way the renderer matches an attribute name, and frozen so the list every
+    /// disabled component filters by cannot be changed under it.
+    /// </remarks>
+    private protected static readonly FrozenSet<string> ActivationEvents = new[]
+    {
         "onclick", "ondblclick", "onauxclick", "oncontextmenu",
         "onmousedown", "onmouseup", "onpointerdown", "onpointerup",
         "ontouchstart", "ontouchend",
         "onkeydown", "onkeyup", "onkeypress"
-    ];
+    }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
-    private static readonly HashSet<string> _ActivationEventSet = new(ActivationEvents, StringComparer.OrdinalIgnoreCase);
+    // The attributes of the last read of DisabledAwareHtmlAttributes while disabled, and the dictionary and the count
+    // they were read off, so a component re-rendered while it stays disabled does not filter and copy them again on
+    // every render. The parameters are the one thing that replaces them, so SetParametersAsync drops the cache, and a
+    // dictionary that was swapped or added to since is read again.
+    private Dictionary<string, object>? _disabledAwareHtmlAttributes;
+    private Dictionary<string, object>? _disabledAwareHtmlAttributesSource;
+    private int _disabledAwareHtmlAttributesCount;
 
     /// <summary>
     /// The attributes the page splatted on the component, less the handlers of the <see cref="ActivationEvents"/>
     /// while the component is <see cref="Disabled"/>. A component whose disabled state makes it unavailable splats its
-    /// root with this rather than with <see cref="HtmlAttributes"/>.
+    /// root with this rather than with <see cref="HtmlAttributes"/>. One whose disabled state also follows another
+    /// component's (a tab of a disabled pivot) says so through <see cref="IsActivationDisabled"/>.
     /// </summary>
     /// <remarks>
     /// The pointer-events a disabled class turns off are only one of the ways an event reaches an element: a screen
@@ -519,29 +533,50 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     {
         get
         {
-            if (Disabled is false || HtmlAttributes.Count == 0) return HtmlAttributes;
+            if (IsActivationDisabled is false || HtmlAttributes.Count == 0) return HtmlAttributes;
 
-            var hasActivationEvent = false;
-            foreach (var name in HtmlAttributes.Keys)
+            if (_disabledAwareHtmlAttributes is not null
+                && ReferenceEquals(_disabledAwareHtmlAttributesSource, HtmlAttributes)
+                && _disabledAwareHtmlAttributesCount == HtmlAttributes.Count)
             {
-                if (_ActivationEventSet.Contains(name) is false) continue;
-
-                hasActivationEvent = true;
-                break;
+                return _disabledAwareHtmlAttributes;
             }
 
-            if (hasActivationEvent is false) return HtmlAttributes;
-
-            Dictionary<string, object> attributes = new(HtmlAttributes.Count);
-            foreach (var attribute in HtmlAttributes)
-            {
-                if (_ActivationEventSet.Contains(attribute.Key)) continue;
-
-                attributes.Add(attribute.Key, attribute.Value);
-            }
-
-            return attributes;
+            _disabledAwareHtmlAttributesSource = HtmlAttributes;
+            _disabledAwareHtmlAttributesCount = HtmlAttributes.Count;
+            return _disabledAwareHtmlAttributes = LeaveActivationHandlersOut(HtmlAttributes);
         }
+    }
+
+    /// <summary>
+    /// Whether the component is unavailable to the page's activation handlers (see <see cref="DisabledAwareHtmlAttributes"/>).
+    /// It is <see cref="Disabled"/> unless the component's disabled state also follows another one's.
+    /// </summary>
+    private protected virtual bool IsActivationDisabled => Disabled;
+
+    // The dictionary itself while it holds no handler of an activation event, so the common case allocates nothing.
+    private static Dictionary<string, object> LeaveActivationHandlersOut(Dictionary<string, object> htmlAttributes)
+    {
+        var hasActivationEvent = false;
+        foreach (var name in htmlAttributes.Keys)
+        {
+            if (ActivationEvents.Contains(name) is false) continue;
+
+            hasActivationEvent = true;
+            break;
+        }
+
+        if (hasActivationEvent is false) return htmlAttributes;
+
+        Dictionary<string, object> attributes = new(htmlAttributes.Count);
+        foreach (var attribute in htmlAttributes)
+        {
+            if (ActivationEvents.Contains(attribute.Key)) continue;
+
+            attributes.Add(attribute.Key, attribute.Value);
+        }
+
+        return attributes;
     }
 
     // A boolean is the one attribute value the renderer does not write as its text: an attribute is written with no

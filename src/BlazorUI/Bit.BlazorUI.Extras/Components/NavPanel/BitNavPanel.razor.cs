@@ -897,7 +897,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     // whole panel every time the pointer enters or leaves it, whether it changes anything or not.
     private Dictionary<string, object> GetRootAttributes()
     {
-        Dictionary<string, object> attributes = new(DisabledAwareHtmlAttributes);
+        Dictionary<string, object> attributes = new(HtmlAttributes);
 
         AddRootHandler<KeyboardEventArgs>(attributes, "onkeydown", HandleOnKeyDown);
 

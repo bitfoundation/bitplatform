@@ -47,36 +47,28 @@ public class BitDisabledActivationContractTests : BunitTestContext
         [typeof(BitTextField)],
         [typeof(BitTimePicker)],
         [typeof(BitToggle)],
-        [typeof(BitCarousel)],
-        [typeof(BitSwiper)],
         [typeof(BitTimeline<BitTimelineItem>)],
         [typeof(BitBreadcrumb<BitBreadcrumbItem>)],
         [typeof(BitDropMenu)],
         [typeof(BitNav<BitNavItem>)],
         [typeof(BitNavBar<BitNavBarItem>)],
         [typeof(BitPagination)],
-        [typeof(BitPivot)],
         [typeof(BitPivotItem)],
         [typeof(BitPersona)],
         [typeof(BitTag)],
-        [typeof(BitAccordion)],
         [typeof(BitCard)],
         [typeof(BitIcon)],
         [typeof(BitImage)],
         [typeof(BitLink)],
-        [typeof(BitAccordionList<BitAccordionListItem>)],
         [typeof(BitFlag)],
         [typeof(BitPhoneInput)],
         [typeof(BitThemeSwitcher)],
         [typeof(BitAccentColorSwitcher)],
         [typeof(BitRichTextEditor)],
         [typeof(BitMarkdownEditor)],
-        [typeof(BitMessageBox)],
         [typeof(BitDataGrid<Row>)],
         [typeof(BitChart)],
-        [typeof(BitMap<BitLeafletMapProvider>)],
         [typeof(BitPdfViewer)],
-        [typeof(BitNavPanel<BitNavItem>)],
     ];
 
     // The ones that render a plain ChildContent inside their root, which an enabled control of the page can sit in.
@@ -87,9 +79,25 @@ public class BitDisabledActivationContractTests : BunitTestContext
         [typeof(BitToggleButton)],
         [typeof(BitCheckbox)],
         [typeof(BitTag)],
-        [typeof(BitAccordion)],
         [typeof(BitCard)],
         [typeof(BitLink)],
+    ];
+
+    // The ones whose Disabled only switches one behaviour of theirs off while the content they host stays live: the
+    // panel of an accordion, the slides of a carousel, the panel of a pivot's open tab, the overlay of a map, the body
+    // of a message box, the header and footer of a nav panel. What bubbles up to their root from there is an enabled
+    // control's own event, so they keep the handlers the page splatted on them.
+    public static IEnumerable<object[]> ContentHosts =>
+    [
+        [typeof(BitBadge)],
+        [typeof(BitAccordion)],
+        [typeof(BitCarousel)],
+        [typeof(BitSwiper)],
+        [typeof(BitPivot)],
+        [typeof(BitAccordionList<BitAccordionListItem>)],
+        [typeof(BitMessageBox)],
+        [typeof(BitMap<BitLeafletMapProvider>)],
+        [typeof(BitNavPanel<BitNavItem>)],
     ];
 
     // The carousels, the theme and the accent color switchers read services of the library's own.
@@ -185,10 +193,29 @@ public class BitDisabledActivationContractTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BadgeShouldKeepTheSplattedHandlersOfTheContentItHosts()
+    [DynamicData(nameof(ContentHosts))]
+    public void DisabledContentHostShouldKeepTheSplattedActivationHandlers(Type type)
     {
-        // A badge's Disabled greys the badge, not the control it is pinned to, so what bubbles up to its root from
-        // there is the enabled control's own event and reaches the page's handler as it always has.
+        var activations = 0;
+
+        var component = RenderSplatted(type, disabled: true, () => activations++, () => { });
+
+        var root = component.Find($"[{ROOT}]");
+
+        root.DoubleClick();
+        root.PointerDown();
+
+        Assert.AreEqual(2, activations, $"{type.Name} dropped a splatted activation handler of the content it hosts.");
+    }
+
+    [TestMethod]
+    [DataRow(typeof(BitBadge))]
+    [DataRow(typeof(BitAccordion))]
+    public void DisabledContentHostShouldRunTheSplattedHandlersForAnEventBubblingUpFromItsContent(Type type)
+    {
+        // A badge's Disabled greys the badge, not the control it is pinned to, and an accordion's turns its header
+        // away, not its panel, so what bubbles up to the root from there is the enabled control's own event and
+        // reaches the page's handler as it always has.
         var activations = 0;
 
         RenderFragment content = builder =>
@@ -198,11 +225,97 @@ public class BitDisabledActivationContractTests : BunitTestContext
             builder.CloseElement();
         };
 
-        var component = RenderSplatted(typeof(BitBadge), disabled: true, () => activations++, () => { }, content);
+        var component = RenderSplatted(type, disabled: true, () => activations++, () => { }, content);
 
         component.Find(".inner").Click();
 
         Assert.AreEqual(1, activations);
+    }
+
+    [TestMethod]
+    public void TabOfADisabledPivotShouldDropTheSplattedActivationHandlers()
+    {
+        // A tab of a disabled pivot is announced as disabled like one disabled on its own, so it runs the page's
+        // activation handlers no more than one does, while the pivot's root keeps them for the panel it hosts.
+        var activations = 0;
+        var hovers = 0;
+
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitPivotItem>(0);
+                builder.AddAttribute(1, nameof(BitPivotItem.HeaderText), "Tab");
+                builder.AddAttribute(2, ROOT, "");
+                builder.AddAttribute(3, "ondblclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => activations++));
+                builder.AddAttribute(4, "onpointerdown", EventCallback.Factory.Create<PointerEventArgs>(this, () => activations++));
+                builder.AddAttribute(5, "onkeydown", EventCallback.Factory.Create<KeyboardEventArgs>(this, () => activations++));
+                builder.AddAttribute(6, "onmouseover", EventCallback.Factory.Create<MouseEventArgs>(this, () => hovers++));
+                builder.CloseComponent();
+            });
+        });
+
+        var tab = component.Find($"[{ROOT}]");
+
+        Trigger(() => tab.DoubleClick());
+        Trigger(() => tab.PointerDown());
+        Trigger(() => tab.KeyDown(Key.Enter));
+        tab.MouseOver();
+
+        Assert.AreEqual(0, activations);
+        Assert.AreEqual(1, hovers);
+    }
+
+    [TestMethod]
+    [DataRow(typeof(BitElement))]
+    [DataRow(typeof(BitButton))]
+    [DataRow(typeof(BitToggle))]
+    public void DisabledComponentShouldGetItsActivationHandlersBackOnceEnabled(Type type)
+    {
+        // The filtered attributes are kept between the renders of a component that stays disabled, never once it is
+        // enabled again.
+        var activations = 0;
+        var disabled = true;
+
+        RenderFragment content = builder =>
+        {
+            builder.OpenComponent(0, type);
+            builder.AddAttribute(1, nameof(BitComponentBase.Disabled), disabled);
+            builder.AddAttribute(2, ROOT, "");
+            builder.AddAttribute(3, "onpointerdown", EventCallback.Factory.Create<PointerEventArgs>(this, () => activations++));
+            builder.CloseComponent();
+        };
+
+        var host = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, []);
+            parameters.AddChildContent(content);
+        });
+
+        Trigger(() => host.Find($"[{ROOT}]").PointerDown());
+
+        host.Render(parameters =>
+        {
+            parameters.Add(p => p.Parameters, []);
+            parameters.AddChildContent(content);
+        });
+
+        Trigger(() => host.Find($"[{ROOT}]").PointerDown());
+
+        Assert.AreEqual(0, activations, $"{type.Name} ran a splatted activation handler while it stayed disabled.");
+
+        disabled = false;
+
+        host.Render(parameters =>
+        {
+            parameters.Add(p => p.Parameters, []);
+            parameters.AddChildContent(content);
+        });
+
+        host.Find($"[{ROOT}]").PointerDown();
+
+        Assert.AreEqual(1, activations, $"{type.Name} did not get its splatted activation handler back once enabled.");
     }
 
     private IRenderedComponent<BitParams> RenderSplatted(Type type, bool disabled, Action onActivation, Action onHover, RenderFragment? childContent = null)

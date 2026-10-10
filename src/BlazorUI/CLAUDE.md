@@ -79,18 +79,26 @@ makes it unavailable splats its root with **`@attributes="DisabledAwareHtmlAttri
 `HtmlAttributes`: while disabled it drops the page's handlers of the events an element is activated
 through (`BitComponentBase.ActivationEvents` - click, dblclick, auxclick, contextmenu, mouse/pointer
 down and up, touchstart/end, key down/up/press) and keeps the ones that only follow the pointer or the
-focus (a hover, a focus). `BitElement` does the same in its builder.
+focus (a hover, a focus). `BitElement` splats the same dictionary in its builder. A part whose disabled
+state also follows another component's (a `BitPivotItem` of a disabled `BitPivot`) overrides
+`IsActivationDisabled`, never filters by hand.
 
 - **Its own handlers still guard `Disabled` in C#**, a group's handler checking the group's `Disabled`
   as well as the item's (`BitButtonGroup.HandleOnItemClick`): a key press, a screen reader or a script
   still delivers a click to a button that `DisabledInteractive` / `AllowDisabledFocus` keeps out of the
   `disabled` attribute, and to every link.
 - **Not covered**: a component whose `Disabled` only switches one behaviour off while the content it
-  hosts stays live - `BitBadge` on its host, `BitTooltip` and `BitCallout` on their anchor, a pane,
-  panel, dialog or layout - keeps `HtmlAttributes`, since what bubbles up to it there is an enabled
-  control's own event.
+  hosts stays live - `BitBadge` on its host, `BitTooltip` and `BitCallout` on their anchor,
+  `BitAccordion` / `BitAccordionList` (the panel stays live), `BitCarousel` / `BitSwiper` (the slides),
+  `BitPivot` (the open tab's panel - its tabs are covered), `BitMap` (the overlay), a pane, panel,
+  dialog (`BitMessageBox`, `BitNavPanel`) or layout - keeps `HtmlAttributes`, since what bubbles up to
+  it there is an enabled control's own event. The test is whether page content inside the root is still
+  usable while disabled: `BitCard`'s `pointer-events: none` on its whole root, `BitNavBar`'s on its header
+  and footer, the `BitDataGrid`'s disabled controls and the `BitPdfViewer`'s `inert` regions say it is
+  not, so those are covered.
 - `BitDisabledActivationContractTests` renders every component that uses it with splatted handlers,
-  disabled and enabled, and with an enabled control in its content; a new one goes in its list.
+  disabled and enabled, and with an enabled control in its content, and every content host keeping
+  them; a new one goes in one of its lists.
 
 ## Demo pages
 

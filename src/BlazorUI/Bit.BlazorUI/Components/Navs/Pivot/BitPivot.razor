@@ -3,7 +3,7 @@
 
 @* The root carries no role of its own: it holds the tablist and the tabpanel, and any role here
    would sit between the two and break the association the WAI-ARIA tabs pattern relies on. *@
-<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
+<div @ref="RootElement" @attributes="HtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
