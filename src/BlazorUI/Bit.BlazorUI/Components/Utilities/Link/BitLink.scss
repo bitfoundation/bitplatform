@@ -1,7 +1,8 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// link, one set on an ancestor every link inside it, and one set on the Style of an instance that one alone:
+// link, one set on an ancestor every link inside it, and one set on the Style of an instance that one and the links
+// nested in it:
 //   --bit-Link-color                  text color at rest                          (default: $clr-pri)
 //   --bit-Link-hover-color            text color under the pointer and while
 //                                     focused from the keyboard                   (default: $clr-pri-hover)

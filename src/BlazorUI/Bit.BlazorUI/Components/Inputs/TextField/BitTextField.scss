@@ -1,7 +1,8 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the elements and never declared here, so a value set on :root re-skins every
-// text field and one set on the Style of an instance (or through Styles.Root) re-skins that one alone:
+// text field and one set on the Style of an instance (or through Styles.Root) re-skins that one and the text fields
+// nested in it:
 //   --bit-TextField-background              fill of the frame at rest                       (default: $clr-bg-pri)
 //   --bit-TextField-hover-background        fill while hovered                              (default: the rest fill)
 //   --bit-TextField-border-color            frame color at rest                             (default: $clr-brd-pri)

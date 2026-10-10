@@ -2,7 +2,7 @@
 
 // Public CSS variables, read off the error UI and never declared here, so a value set on :root re-skins every
 // boundary of the app and one set on the Style of a boundary - or of any element around a group of them - re-skins
-// those alone. Styles and Classes still reach each part by name and win over these.
+// those and the boundaries nested in them. Styles and Classes still reach each part by name and win over these.
 //   --bit-ErrorBoundary-background              background of the error UI                        (default: $clr-bg-pri)
 //   --bit-ErrorBoundary-border                  border of the error UI                             (default: none)
 //   --bit-ErrorBoundary-radius                  corner radius of the error UI                      (default: $shp-radius-none)

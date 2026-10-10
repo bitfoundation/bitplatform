@@ -1,7 +1,8 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// collapse, one set on an ancestor every collapse inside it, and one set on the Style of an instance that one:
+// collapse, one set on an ancestor every collapse inside it, and one set on the Style of an instance that one and the
+// collapses nested in it:
 //   --bit-Collapse-color          text color                                   (default: $clr-fg-pri)
 //   --bit-Collapse-background     background                                   (default: $clr-bg-pri)
 //   --bit-Collapse-padding        room between the edges and the content       (default: spacing(1.5))

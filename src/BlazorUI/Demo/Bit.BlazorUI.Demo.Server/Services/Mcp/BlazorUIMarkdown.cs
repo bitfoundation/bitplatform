@@ -547,7 +547,8 @@ public static class BlazorUIMarkdown
     /// The public custom properties the component reads off its root. Stated with how they are set
     /// rather than only listed: the one thing an agent needs beyond the names is that they inherit,
     /// so a `:root` rule, an ancestor's style and an instance's `Style` are all valid places for one - and an
-    /// instance's `Style` reaches the instances nested in it as well, so what is meant for one alone is a parameter.
+    /// instance's `Style` reaches the instances nested in it as well, so what is meant for one alone is a parameter or
+    /// the real CSS property on its `Style` / `Styles`.
     /// </summary>
     private static void AppendCssVariables(StringBuilder builder, BlazorUIComponent component)
     {
@@ -558,7 +559,7 @@ public static class BlazorUIMarkdown
             BlazorUIComponentCatalog.Find(shown.Name) is { CssVariables.Count: > 0 } shownComponent)
         {
             builder.AppendLine("## CSS variables").AppendLine();
-            builder.AppendLine($"Every `{shownComponent.Name}` this service shows reads the {shownComponent.CssVariables.Count} public CSS variables `GetBitBlazorUIComponent(name: \"{shownComponent.Name}\")` lists (`{shownComponent.CssVariables[0].Name}`, ...). They inherit: set them on the `Style` of the parameters one showing is given to restyle that one, on the `Style` of the container's parameters to restyle every one it renders, or on `:root` to restyle every `{shownComponent.Name}` in the app.").AppendLine();
+            builder.AppendLine($"Every `{shownComponent.Name}` this service shows reads the {shownComponent.CssVariables.Count} public CSS variables `GetBitBlazorUIComponent(name: \"{shownComponent.Name}\")` lists (`{shownComponent.CssVariables[0].Name}`, ...). They inherit: set them on the `Style` of the parameters one showing is given to restyle that one and every one opened inside it, on the `Style` of the container's parameters to restyle every one it renders, or on `:root` to restyle every `{shownComponent.Name}` in the app.").AppendLine();
 
             return;
         }

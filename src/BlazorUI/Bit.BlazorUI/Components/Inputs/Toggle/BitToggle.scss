@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// toggle and one set on the Style of an instance re-skins that one alone:
+// toggle and one set on the Style of an instance re-skins that one and the toggles nested in it:
 //   --bit-Toggle-track-background            track fill while off                          (default: $clr-bg-pri)
 //   --bit-Toggle-track-border-color          track stroke while off                        (default: $clr-brd-pri)
 //   --bit-Toggle-thumb-color                 the knob while off                            (default: $clr-fg-sec)

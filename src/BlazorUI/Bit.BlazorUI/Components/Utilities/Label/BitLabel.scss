@@ -1,7 +1,8 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// label, one set on an ancestor every label inside it, and one set on the Style of an instance that one:
+// label, one set on an ancestor every label inside it, and one set on the Style of an instance that one and the labels
+// nested in it:
 //   --bit-Label-color              text color                                    (default: inherit)
 //   --bit-Label-font-size          text size                                     (default: $tg-fs-sm)
 //   --bit-Label-font-weight        weight of the caption                         (default: $tg-field-label-font-weight)

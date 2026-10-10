@@ -1,9 +1,9 @@
 ﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// chart and one set on the Style of an instance re-skins that one alone. The colors the chart draws INSIDE
-// the SVG are the defaults of its options (BitChartTickOptions.Color, BitChartGridOptions.Color, ...), which
-// read these same variables, so an option set in C# still wins over them for that one chart:
+// chart and one set on the Style of an instance re-skins that one and the charts nested in it. The colors the chart
+// draws INSIDE the SVG are the defaults of its options (BitChartTickOptions.Color, BitChartGridOptions.Color, ...),
+// which read these same variables, so an option set in C# still wins over them for that one chart:
 //   --bit-Chart-font-family            typeface of every text the chart draws         (default: $tg-font-family)
 //   --bit-Chart-series-color-1..10     the default palette, one per series or slice   (default: the Chart.js palette)
 //   --bit-Chart-title-color            title text                                     (default: $clr-fg-pri)

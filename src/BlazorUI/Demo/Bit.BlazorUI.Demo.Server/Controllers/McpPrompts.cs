@@ -131,7 +131,8 @@ public static class McpPrompts
                was needed. When the change is one component rather than the app, call `GetBitBlazorUIComponent`
                for it first: the variables it reads off its own root are answered there with their defaults,
                and they inherit, so one of them set on :root, on an ancestor or on that instance's Style is
-               the whole change.
+               the whole change. Set on an instance's Style, it also reaches the instances nested inside that
+               one; what is meant for one alone is a parameter, or the real CSS property on its Style.
             5. If the app renders on the server, handle the first frame - "Server-side rendering" - or the app
                flashes the wrong theme before any JavaScript has run.
             6. Show me the diff, and say which layer each change landed in and why.

@@ -1,7 +1,8 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the frame and never declared here, so a value set on :root re-skins every
-// image, one set on an ancestor every image inside it, and one set on the Style of an instance that one:
+// image, one set on an ancestor every image inside it, and one set on the Style of an instance that one and the images
+// nested in it:
 //   --bit-Image-background          background of the frame, behind a contained image   (default: transparent)
 //   --bit-Image-radius              corner radius of a Rounded frame                    (default: $shp-radius-surface)
 //   --bit-Image-border-width        border width of a Bordered frame                    (default: $shp-border-width)

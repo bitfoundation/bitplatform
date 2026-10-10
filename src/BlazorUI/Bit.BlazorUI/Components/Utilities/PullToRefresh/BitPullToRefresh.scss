@@ -1,7 +1,8 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the parts and never declared here, so a value set on :root re-skins every pull
-// to refresh, one set on an ancestor every one inside it, and one set on the Style of an instance that one:
+// to refresh, one set on an ancestor every one inside it, and one set on the Style of an instance that one and the ones
+// nested in it:
 //   --bit-PullToRefresh-color                     glyph of the indicator              (default: $clr-fg-pri)
 //   --bit-PullToRefresh-pull-opacity              glyph while the pull falls short    (default: 0.6)
 //   --bit-PullToRefresh-indicator-size            diameter of the indicator's disc    (default: $siz-ctrl-md)
