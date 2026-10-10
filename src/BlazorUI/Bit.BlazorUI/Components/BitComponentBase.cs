@@ -108,13 +108,15 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 
     /// <summary>
     /// Captures additional HTML attributes to be applied to the rendered element, in addition to the component's parameters.
-    /// <br />
-    /// <strong>This parameter should not be assigned directly.</strong>
     /// </summary>
     /// <remarks>
     /// Each entry in the dictionary represents an attribute name and its corresponding value. This
     /// allows customization of the rendered element with other HTML attributes such as alt, title, data-* attributes, and
     /// more.
+    /// <br />
+    /// Every HTML attribute written on the component lands here. A dictionary passed to this parameter adds its entries
+    /// to those, and an attribute written on the component wins over an entry of the same name. The dictionary passed is
+    /// copied, never kept or changed.
     /// <br />
     /// This dictionary will be used as the value of the <strong>"@attributes"</strong> blazor directive when rendering the root element of the component.
     /// <br />
@@ -172,6 +174,7 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     {
         _assignedParameters.Clear();
         HtmlAttributes.Clear();
+        Dictionary<string, object>? htmlAttributes = null;
         var parametersDictionary = ParametersCache ?? new Dictionary<string, object?>(parameters.ToDictionary());
         foreach (var parameter in parametersDictionary!)
         {
@@ -223,6 +226,14 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
+                // Merged into the splatted attributes once every other one is in, never taken as the dictionary
+                // itself: HtmlAttributes is cleared on every pass, which would empty the caller's own dictionary.
+                case nameof(HtmlAttributes):
+                    _assignedParameters.Add(nameof(HtmlAttributes));
+                    htmlAttributes = (Dictionary<string, object>?)parameter.Value;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
                 case nameof(Id):
                     _assignedParameters.Add(nameof(Id));
                     Id = (string?)parameter.Value;
@@ -258,6 +269,8 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
             }
         }
 
+        MergeHtmlAttributesParameter(htmlAttributes);
+
         ParametersCache = null;
 
         var restore = RestoreDroppedCascadeParameters();
@@ -270,6 +283,25 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
         await restore;
 
         await base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    /// <summary>
+    /// Adds the entries of a dictionary passed as the HtmlAttributes parameter to the attributes the page wrote on the
+    /// component one by one, which win over an entry of the same name however either of them cases it - the render tree
+    /// treats differently cased names as one attribute, so both would otherwise reach it and the last one would win.
+    /// </summary>
+    private void MergeHtmlAttributesParameter(Dictionary<string, object>? htmlAttributes)
+    {
+        if (htmlAttributes is null || htmlAttributes.Count == 0) return;
+
+        HashSet<string>? written = HtmlAttributes.Count == 0 ? null : new(HtmlAttributes.Keys, StringComparer.OrdinalIgnoreCase);
+
+        foreach (var attribute in htmlAttributes)
+        {
+            if (written?.Contains(attribute.Key) is true) continue;
+
+            HtmlAttributes[attribute.Key] = attribute.Value;
+        }
     }
 
 
