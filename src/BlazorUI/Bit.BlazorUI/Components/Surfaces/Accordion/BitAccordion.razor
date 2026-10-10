@@ -10,7 +10,7 @@
    replaced by this one or dropped along with the null this is without a label. *@
 <div @ref="RootElement"
      role="@(ariaLabel.HasValue() || GetSplattedAttribute("aria-labelledby").HasValue() ? "group" : null)"
-     @attributes="HtmlAttributes"
+     @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"

@@ -39,7 +39,7 @@
                         && ariaHidden is false
                         && (Disabled is false || DisabledInteractive);
 }
-<div @ref="RootElement" @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      data-bit-popup-style="@(GetPopupStyle(Toggle && Split && IsToggled, Styles?.Toggled, JoinStyles(Styles?.Root, IsOpen ? Styles?.Opened : null)))"

@@ -82,7 +82,7 @@
     var trackValueAttr = ToInvariant(_rawBar ?? lower);
 }
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value"

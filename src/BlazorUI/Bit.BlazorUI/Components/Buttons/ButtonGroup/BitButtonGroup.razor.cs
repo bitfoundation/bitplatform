@@ -777,7 +777,10 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         // button it lands on everywhere - a click on macOS does not.
         HandleOnItemFocus(item);
 
-        if (GetIsDisabled(item)) return;
+        // The group's own Disabled counts as much as the item's: DisabledInteractive keeps a disabled group's
+        // buttons out of the disabled attribute, and a link item has none to begin with, so a key press, a
+        // screen reader or a script still delivers a click here.
+        if (Disabled || GetIsDisabled(item)) return;
         if (GetIsLoading(item)) return;
         // An item the Multiple mode's cap has taken out of reach reports itself as aria-disabled, so it does
         // nothing at all while it does - a click that runs the item's action but cannot toggle it would be
@@ -1065,10 +1068,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     }
 
     // Disabled items stay focusable in the DisabledInteractive mode, which the WAI-ARIA toolbar
-    // pattern recommends so that they remain discoverable by assistive technologies.
+    // pattern recommends so that they remain discoverable by assistive technologies. Otherwise an item
+    // of a disabled group is out of the tab order like a disabled item is, a link item included.
     private bool IsItemFocusable(TItem item)
     {
-        return DisabledInteractive || GetIsDisabled(item) is false;
+        return DisabledInteractive || (Disabled is false && GetIsDisabled(item) is false);
     }
 
     internal string? GetItemClass(TItem item)

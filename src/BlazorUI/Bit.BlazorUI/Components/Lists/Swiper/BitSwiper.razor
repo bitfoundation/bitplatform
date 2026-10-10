@@ -6,7 +6,7 @@
     // does the tab index, which NoKeyboard and Disabled take off the root on purpose.
     var ariaLabel = ResolveAriaLabel();
 }
-<div @ref="RootElement" @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      role="region"
      aria-roledescription="carousel"

@@ -17,7 +17,7 @@
     var draggable = _IsReorderable ? "true" : GetSplattedAttribute("draggable");
     var keyShortcuts = GetSplattedAttribute("aria-keyshortcuts") ?? Parent?.GetItemKeyShortcuts(this);
 }
-<div @ref="RootElement" @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      @onclick="HandleOnClick"
      @onfocusin="HandleOnFocusIn"
      @ondragstart="HandleOnDragStart"

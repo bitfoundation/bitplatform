@@ -7,7 +7,7 @@
 @* No aria-label on the root: it is a generic element, where the attribute is prohibited and dropped by
    assistive technologies anyway, and the group below is the element that the name of the code belongs on.
    The AriaLabel is therefore rendered there instead of being rendered twice. *@
-<div @ref="RootElement" @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"

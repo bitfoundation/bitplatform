@@ -485,6 +485,65 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     /// </remarks>
     private protected string? ResolveAriaLabel() => AriaLabel ?? GetSplattedAttribute("aria-label");
 
+    /// <summary>
+    /// The events an element is activated through: by the pointer, by touch, by the keyboard, and by the click an
+    /// assistive technology dispatches. The ones that only follow the pointer or the focus around (a hover, a focus)
+    /// are not among them.
+    /// </summary>
+    private protected static readonly string[] ActivationEvents =
+    [
+        "onclick", "ondblclick", "onauxclick", "oncontextmenu",
+        "onmousedown", "onmouseup", "onpointerdown", "onpointerup",
+        "ontouchstart", "ontouchend",
+        "onkeydown", "onkeyup", "onkeypress"
+    ];
+
+    private static readonly HashSet<string> _ActivationEventSet = new(ActivationEvents, StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// The attributes the page splatted on the component, less the handlers of the <see cref="ActivationEvents"/>
+    /// while the component is <see cref="Disabled"/>. A component whose disabled state makes it unavailable splats its
+    /// root with this rather than with <see cref="HtmlAttributes"/>.
+    /// </summary>
+    /// <remarks>
+    /// The pointer-events a disabled class turns off are only one of the ways an event reaches an element: a screen
+    /// reader activates what it announces by dispatching a click on it, and an event of an enabled control inside a
+    /// disabled container - a click, a key, a press - bubbles up to it. A form element the browser disables is out of
+    /// reach of the pointer and the keyboard both, so a disabled component drops the page's handlers of the events
+    /// that activate an element rather than run them for a state it announces as unavailable. A component whose
+    /// disabled state only switches one of its behaviours off while the content it hosts stays live (a badge on a
+    /// button, a tooltip on its anchor, a pane) keeps splatting <see cref="HtmlAttributes"/>, since what bubbles up
+    /// to it there is an enabled control's own event.
+    /// </remarks>
+    private protected Dictionary<string, object> DisabledAwareHtmlAttributes
+    {
+        get
+        {
+            if (Disabled is false || HtmlAttributes.Count == 0) return HtmlAttributes;
+
+            var hasActivationEvent = false;
+            foreach (var name in HtmlAttributes.Keys)
+            {
+                if (_ActivationEventSet.Contains(name) is false) continue;
+
+                hasActivationEvent = true;
+                break;
+            }
+
+            if (hasActivationEvent is false) return HtmlAttributes;
+
+            Dictionary<string, object> attributes = new(HtmlAttributes.Count);
+            foreach (var attribute in HtmlAttributes)
+            {
+                if (_ActivationEventSet.Contains(attribute.Key)) continue;
+
+                attributes.Add(attribute.Key, attribute.Value);
+            }
+
+            return attributes;
+        }
+    }
+
     // A boolean is the one attribute value the renderer does not write as its text: an attribute is written with no
     // value at all while it is true and left out altogether while it is false, which is what an attribute splatted
     // onto a plain element does. So the two are resolved into the same thing here rather than into the "True" and

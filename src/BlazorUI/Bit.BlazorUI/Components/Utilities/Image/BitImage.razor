@@ -22,7 +22,7 @@
 @*  The frame. Everything else is positioned against it, so it is the element that carries the size,
     the aspect ratio, the shape and the clipping - which is what lets a cover fit and a rounded corner
     crop the image without the image itself knowing about either. *@
-<div @ref="RootElement" @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"

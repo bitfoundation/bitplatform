@@ -32,7 +32,7 @@
    a role the page passes itself is kept, rather than replaced by this one or dropped along with its null. *@
 <div @ref="RootElement"
      role="@(ariaLabel.HasValue() || GetSplattedAttribute("aria-labelledby").HasValue() ? "group" : null)"
-     @attributes="HtmlAttributes"
+     @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"

@@ -49,18 +49,6 @@ public partial class BitElement : BitComponentBase
         "button", "fieldset", "input", "optgroup", "option", "select", "textarea"
     };
 
-    // The events an element is activated through: by the pointer, by touch, by the keyboard, and by the click an
-    // assistive technology dispatches. A disabled element drops the handlers splatted for them, since a form element
-    // the browser disables is out of reach of all of them, while the ones that only follow the pointer or the focus
-    // around (a hover, a focus) are left alone.
-    private static readonly string[] _activationEvents =
-    [
-        "onclick", "ondblclick", "onauxclick", "oncontextmenu",
-        "onmousedown", "onmouseup", "onpointerdown", "onpointerup",
-        "ontouchstart", "ontouchend",
-        "onkeydown", "onkeyup", "onkeypress"
-    ];
-
 
 
     /// <summary>
@@ -296,7 +284,7 @@ public partial class BitElement : BitComponentBase
         // handlers of the events that activate an element rather than run them for a state it announces as unavailable.
         // The block keeps its length whichever way the element stands, so the frames after it keep their numbers.
         var seq = 12;
-        foreach (var @event in _activationEvents)
+        foreach (var @event in ActivationEvents)
         {
             if (Disabled)
             {

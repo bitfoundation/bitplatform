@@ -70,6 +70,28 @@ components' markup, defaults and accessibility behaviour as well.
 - **`Bit.BlazorUI.Extras` is the composition layer**: its components are built out of core ones (BitMessageBox
   renders a BitTextField), which is exactly what keeps the core ones from having to be.
 
+## A disabled component runs none of the page's activation handlers
+
+`pointer-events: none` is not a disable: a screen reader activates what it announces by dispatching a
+`click`, which ignores it, and a click or key of an enabled control inside a disabled component bubbles
+up to its root. A natively disabled form control runs none of these, so a component whose `Disabled`
+makes it unavailable splats its root with **`@attributes="DisabledAwareHtmlAttributes"`**, never
+`HtmlAttributes`: while disabled it drops the page's handlers of the events an element is activated
+through (`BitComponentBase.ActivationEvents` - click, dblclick, auxclick, contextmenu, mouse/pointer
+down and up, touchstart/end, key down/up/press) and keeps the ones that only follow the pointer or the
+focus (a hover, a focus). `BitElement` does the same in its builder.
+
+- **Its own handlers still guard `Disabled` in C#**, a group's handler checking the group's `Disabled`
+  as well as the item's (`BitButtonGroup.HandleOnItemClick`): a key press, a screen reader or a script
+  still delivers a click to a button that `DisabledInteractive` / `AllowDisabledFocus` keeps out of the
+  `disabled` attribute, and to every link.
+- **Not covered**: a component whose `Disabled` only switches one behaviour off while the content it
+  hosts stays live - `BitBadge` on its host, `BitTooltip` and `BitCallout` on their anchor, a pane,
+  panel, dialog or layout - keeps `HtmlAttributes`, since what bubbles up to it there is an enabled
+  control's own event.
+- `BitDisabledActivationContractTests` renders every component that uses it with splatted handlers,
+  disabled and enabled, and with an enabled control in its content; a new one goes in its list.
+
 ## Demo pages
 
 A component's demo page is

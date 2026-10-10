@@ -353,6 +353,54 @@ public class BitButtonGroupTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitButtonGroupDisabledInteractiveShouldNotRunTheItemsOfADisabledGroup()
+    {
+        // DisabledInteractive keeps the buttons of a disabled group out of the disabled attribute, so the click a key
+        // press or a screen reader delivers reaches the group, which turns it away for the group's Disabled as it does
+        // for an item's own IsDisabled.
+        var itemClicks = 0;
+        var groupClicks = 0;
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "A", OnClick = _ => itemClicks++ },
+            new() { Text = "B", Href = "/b" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Disabled, true);
+            parameters.Add(p => p.DisabledInteractive, true);
+            parameters.Add(p => p.OnItemClick, (BitButtonGroupItem _) => groupClicks++);
+        });
+
+        comp.Find("button.bit-btg-itm").Click();
+        comp.Find("a.bit-btg-itm").Click();
+
+        Assert.AreEqual(0, itemClicks);
+        Assert.AreEqual(0, groupClicks);
+    }
+
+    [TestMethod]
+    public void BitButtonGroupDisabledGroupShouldTakeItsLinkItemsOutOfTheTabOrder()
+    {
+        // A link item has no disabled attribute to take it out of the tab order, so a disabled group does it for it.
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "A", Href = "/a" },
+            new() { Text = "B", Href = "/b" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        Assert.IsTrue(comp.FindAll("a.bit-btg-itm").All(a => a.GetAttribute("tabindex") == "-1"));
+    }
+
+    [TestMethod]
     public void BitButtonGroupItemHrefShouldRenderAnAnchor()
     {
         var items = new List<BitButtonGroupItem>

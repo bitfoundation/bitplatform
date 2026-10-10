@@ -31,7 +31,7 @@
     var ariaDisabled = Disabled ? "true" : GetSplattedAttribute("aria-disabled");
 }
 
-<div @ref="RootElement" @attributes="HtmlAttributes" @onkeydown="HandleOnKeyDown"
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes" @onkeydown="HandleOnKeyDown"
      id="@_Id"
      role="@role"
      style="@StyleBuilder.Value"
