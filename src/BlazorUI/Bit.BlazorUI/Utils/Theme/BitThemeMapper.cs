@@ -47,152 +47,67 @@ internal static class BitThemeMapper
     }
 
     /// <summary>
-    /// The family alias tier's default targets, mirroring <c>Styles/family-tokens.scss</c> (pinned
-    /// to it by a contract test). ORDERED so that a chained alias resolves in a single pass: an
-    /// entry may only point at a primitive or at an alias declared ABOVE it (the control radius is
-    /// re-declared before the button/chip/selection radii that fall back to it).
+    /// The groups of the family alias tier an inline theme overlay re-declares, each with the tokens it
+    /// is built from: the value of the <see cref="BitThemeAttributeNames.ThemeOverlay"/> attribute is the
+    /// space-separated names of the groups whose inputs the overlay re-values (<see cref="GetFamilyAliasOverlay"/>).
+    /// Mirrors <c>Styles/theme-overlay.scss</c>, and the groups are what every theme stylesheet keys its
+    /// overlay rules on (pinned by a contract test).
     /// </summary>
     /// <remarks>
-    /// The app-bar shadows and the snackbar elevation are deliberately absent: they are not plain
-    /// <c>var()</c> aliases of a primitive (a tinted expression and a literal <c>none</c>), so there
-    /// is nothing to re-substitute for them.
+    /// The inputs are every token a packaged theme builds a family alias from - a Material button is the full
+    /// radius rather than the control one, a Fluent 2 tooltip the primary background rather than the
+    /// secondary, a Fluent dark elevation rings its surface in the tertiary border - so the list names what
+    /// any of them reads, and a theme that does not read one simply re-declares its own value for it.
     /// </remarks>
-    internal static readonly IReadOnlyList<KeyValuePair<string, string>> FamilyAliasTargets =
+    internal static readonly IReadOnlyList<KeyValuePair<string, string[]>> FamilyAliasOverlayGroups =
     [
-        new(BitCss.Var.Shape.Radius.Control, BitCss.Var.Shape.BorderRadius),
-        new(BitCss.Var.Shape.Radius.Surface, BitCss.Var.Shape.BorderRadius),
-        new(BitCss.Var.Shape.Radius.Popup, BitCss.Var.Shape.BorderRadius),
-        new(BitCss.Var.Shape.Radius.Dialog, BitCss.Var.Shape.BorderRadius),
-        new(BitCss.Var.Shape.Radius.Button, BitCss.Var.Shape.Radius.Control),
-        new(BitCss.Var.Shape.Radius.Chip, BitCss.Var.Shape.Radius.Control),
-        new(BitCss.Var.Shape.Radius.Selection, BitCss.Var.Shape.Radius.Control),
-        new(BitCss.Var.Shadow.Card, BitCss.Var.Shadow.Callout),
-        new(BitCss.Var.Shadow.CardHover, BitCss.Var.Shadow.Callout),
-        new(BitCss.Var.Shadow.Popup, BitCss.Var.Shadow.Callout),
-        new(BitCss.Var.Shadow.Dialog, BitCss.Var.Shadow.Callout),
-        new(BitCss.Var.Shadow.Sheet, BitCss.Var.Shadow.Callout),
-        new(BitCss.Var.Shadow.Tooltip, BitCss.Var.Shadow.Callout),
-        new(BitCss.Var.Color.Tooltip.Background, BitCss.Var.Color.Background.Secondary.Main),
-        new(BitCss.Var.Color.Tooltip.Foreground, BitCss.Var.Color.Foreground.Primary.Main),
+        new("radius", [BitCss.Var.Shape.BorderRadius]),
+        new("radius-control", [BitCss.Var.Shape.Radius.Control, BitCss.Var.Shape.Radius.Full]),
+        new("shadow", [BitCss.Var.Shadow.Callout, BitCss.Var.Color.Border.Tertiary.Main]),
+        new("tooltip", [BitCss.Var.Color.Background.Primary.Main, BitCss.Var.Color.Background.Secondary.Main, BitCss.Var.Color.Foreground.Primary.Main]),
+        new("foreground", [BitCss.Var.Color.Foreground.Primary.Main]),
+        new("pri", [BitCss.Var.Color.Primary.Main]),
+        new("sec", [BitCss.Var.Color.Secondary.Main]),
+        new("ter", [BitCss.Var.Color.Tertiary.Main]),
+        new("inf", [BitCss.Var.Color.Info.Main]),
+        new("suc", [BitCss.Var.Color.Success.Main]),
+        new("wrn", [BitCss.Var.Color.Warning.Main]),
+        new("swr", [BitCss.Var.Color.SevereWarning.Main]),
+        new("err", [BitCss.Var.Color.Error.Main]),
     ];
 
     /// <summary>
-    /// Re-declares a family alias (as its default <c>var()</c> reference) next to any token the
-    /// mapped theme overrides it from, so the components - which read the family tier - track an
-    /// inline override for the styled subtree.
+    /// The <see cref="BitThemeAttributeNames.ThemeOverlay"/> value for an element carrying
+    /// <paramref name="cssVariables"/> inline: the family alias groups whose inputs they re-value, or
+    /// <see langword="null"/> when they re-value none.
     /// </summary>
     /// <remarks>
-    /// The same substitution rule as <see cref="AugmentWithSemanticAliasReSubstitution"/>, one tier
-    /// lower: <c>family-tokens.scss</c> declares the family aliases on <c>:root</c>, so a theme
-    /// applied further down the tree (a <see cref="BitThemeProvider"/> wrapper, or
-    /// <see cref="BitThemeManager.ApplyBitThemeAsync"/> on an element) that re-values
-    /// <c>--bit-shp-brd-radius</c> or <c>--bit-shd-cal</c> would otherwise leave every component
-    /// reading the document's already-substituted family value. The table is walked in order, so an
-    /// alias re-declared here becomes a touched target for the aliases that fall back to IT - which
-    /// is what carries a <c>Radius.Control</c> override through to buttons, chips and checkboxes.
-    /// An alias the theme sets explicitly always wins.
+    /// The family tier is declared on <c>:root</c> (and on scoped-preset elements), and a custom property's
+    /// <c>var()</c> references are substituted at the element that declares it, so a theme applied further
+    /// down the tree (a <see cref="BitThemeProvider"/> wrapper, or <see cref="BitThemeManager.ApplyBitThemeAsync"/>
+    /// on an element) that re-values <c>--bit-shp-brd-radius</c> or a palette color would otherwise leave
+    /// every component reading the document's already-substituted family value. Unlike the semantic tier
+    /// (<see cref="AugmentWithSemanticAliasReSubstitution"/>), the family tier is not re-declared here as
+    /// inline <c>var()</c>s: what each alias is built from is the ACTIVE theme's decision - Material casts no
+    /// shadow under a tooltip and paints it in the inverse surface, Fluent lifts a card by its own depth
+    /// rather than by the callout shadow - which C# cannot know, at prerender least of all, and which can
+    /// change under the element while it is shown. So the element only names the groups it re-values, and
+    /// every theme stylesheet re-declares its own aliases for each named group on it. An alias the theme sets
+    /// explicitly is inline and wins over any of those rules.
     /// </remarks>
-    internal static void AugmentWithFamilyAliasReSubstitution(Dictionary<string, string> cssVariables)
+    internal static string? GetFamilyAliasOverlay(IReadOnlyDictionary<string, string> cssVariables)
     {
-        var tooltipBackground = BitCss.Var.Color.Tooltip.Background;
-        var tooltipForeground = BitCss.Var.Color.Tooltip.Foreground;
-        var tooltipColorsSet = cssVariables.ContainsKey(tooltipBackground) || cssVariables.ContainsKey(tooltipForeground);
+        List<string>? groups = null;
 
-        foreach (var (alias, target) in FamilyAliasTargets)
+        foreach (var (group, inputs) in FamilyAliasOverlayGroups)
         {
-            if (cssVariables.ContainsKey(alias)) continue; // explicit alias value wins
-            if (cssVariables.ContainsKey(target) is false) continue; // target untouched; keep the inherited alias
+            if (inputs.Any(cssVariables.ContainsKey) is false) continue;
 
-            cssVariables[alias] = $"var({target})";
+            (groups ??= []).Add(group);
         }
 
-        // The tooltip's fill and text are one decision, and a preset may make it differently from the default
-        // pair (Material paints the inverse surface: the fill is the page's text color and the text its
-        // background). Re-declaring only the half whose palette color the theme touched would pair the
-        // default for that half with the preset's already-substituted other half - the same color for both,
-        // in the case of Material - so once either half is re-declared, both are.
-        if (tooltipColorsSet is false &&
-            (cssVariables.ContainsKey(tooltipBackground) || cssVariables.ContainsKey(tooltipForeground)))
-        {
-            foreach (var (alias, target) in FamilyAliasTargets)
-            {
-                if (alias != tooltipBackground && alias != tooltipForeground) continue;
-
-                cssVariables[alias] = $"var({target})";
-            }
-        }
-
-        // The role foregrounds are the one part of the tier that is not a plain var() alias: each one
-        // mixes its role's main color with the primary foreground, so it is re-declared (as that same
-        // expression) when EITHER of the two is re-valued - a theme that only changes the page's text
-        // color still has to re-shade every role's foreground towards it.
-        var foregroundTouched = cssVariables.ContainsKey(BitCss.Var.Color.Foreground.Primary.Main);
-
-        foreach (var (alias, role) in RoleForegroundAliasTargets)
-        {
-            if (cssVariables.ContainsKey(alias)) continue; // explicit foreground wins
-            if (foregroundTouched is false && cssVariables.ContainsKey(role) is false) continue; // both inputs untouched
-
-            cssVariables[alias] = RoleForegroundDefault(role);
-        }
-
-        // The role tints are a wash of their role alone, so only re-valuing the role itself re-tints one.
-        foreach (var (alias, role) in RoleTintAliasTargets)
-        {
-            if (cssVariables.ContainsKey(alias)) continue; // explicit tint wins
-            if (cssVariables.ContainsKey(role) is false) continue; // role untouched
-
-            cssVariables[alias] = RoleTintDefault(role);
-        }
+        return groups is null ? null : string.Join(' ', groups);
     }
-
-    /// <summary>
-    /// Each accent role's foreground alias (<c>--bit-clr-&lt;role&gt;-fg</c>) paired with the role's main
-    /// color it is derived from, mirroring <c>Styles/family-tokens.scss</c> (pinned to it by a contract
-    /// test). The default value itself is <see cref="RoleForegroundDefault"/>.
-    /// </summary>
-    internal static readonly IReadOnlyList<KeyValuePair<string, string>> RoleForegroundAliasTargets =
-    [
-        new(BitCss.Var.Color.Primary.Foreground, BitCss.Var.Color.Primary.Main),
-        new(BitCss.Var.Color.Secondary.Foreground, BitCss.Var.Color.Secondary.Main),
-        new(BitCss.Var.Color.Tertiary.Foreground, BitCss.Var.Color.Tertiary.Main),
-        new(BitCss.Var.Color.Info.Foreground, BitCss.Var.Color.Info.Main),
-        new(BitCss.Var.Color.Success.Foreground, BitCss.Var.Color.Success.Main),
-        new(BitCss.Var.Color.Warning.Foreground, BitCss.Var.Color.Warning.Main),
-        new(BitCss.Var.Color.SevereWarning.Foreground, BitCss.Var.Color.SevereWarning.Main),
-        new(BitCss.Var.Color.Error.Foreground, BitCss.Var.Color.Error.Main),
-    ];
-
-    /// <summary>
-    /// The default of a role's foreground alias as <c>Styles/family-tokens.scss</c> declares it: the
-    /// role's main color shaded towards the primary foreground.
-    /// </summary>
-    internal static string RoleForegroundDefault(string roleMain)
-        => $"color-mix(in srgb, var({roleMain}) 55%, var({BitCss.Var.Color.Foreground.Primary.Main}))";
-
-    /// <summary>
-    /// Each accent role's tint alias (<c>--bit-clr-&lt;role&gt;-tint</c>) paired with the role's main color
-    /// it washes, mirroring <c>Styles/family-tokens.scss</c> (pinned to it by a contract test). The default
-    /// value itself is <see cref="RoleTintDefault"/>.
-    /// </summary>
-    internal static readonly IReadOnlyList<KeyValuePair<string, string>> RoleTintAliasTargets =
-    [
-        new(BitCss.Var.Color.Primary.Tint, BitCss.Var.Color.Primary.Main),
-        new(BitCss.Var.Color.Secondary.Tint, BitCss.Var.Color.Secondary.Main),
-        new(BitCss.Var.Color.Tertiary.Tint, BitCss.Var.Color.Tertiary.Main),
-        new(BitCss.Var.Color.Info.Tint, BitCss.Var.Color.Info.Main),
-        new(BitCss.Var.Color.Success.Tint, BitCss.Var.Color.Success.Main),
-        new(BitCss.Var.Color.Warning.Tint, BitCss.Var.Color.Warning.Main),
-        new(BitCss.Var.Color.SevereWarning.Tint, BitCss.Var.Color.SevereWarning.Main),
-        new(BitCss.Var.Color.Error.Tint, BitCss.Var.Color.Error.Main),
-    ];
-
-    /// <summary>
-    /// The default of a role's tint alias as <c>Styles/family-tokens.scss</c> declares it: the role's main
-    /// color as a translucent wash over whatever surface is below.
-    /// </summary>
-    internal static string RoleTintDefault(string roleMain)
-        => $"color-mix(in srgb, var({roleMain}) 10%, transparent)";
 
     internal static Dictionary<string, string> MapToCssVariables(BitTheme bitTheme)
     {

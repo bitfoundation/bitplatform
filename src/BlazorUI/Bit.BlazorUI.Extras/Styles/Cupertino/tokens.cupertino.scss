@@ -8,6 +8,45 @@
 // differently is a global token the components already read (the capsule button and chip radii, the
 // UISwitch geometry, the slider knob, the stacked alert actions), so re-skinning the library stays a
 // matter of retuning tokens rather than of restyling components.
+//
+// The one import is the core stylesheet's theme-overlay mixin, which re-declares this preset's family
+// aliases on the element of an inline theme overlay (the rules after the dark-scheme block).
+@import "../../../Bit.BlazorUI/Styles/theme-overlay.scss";
+
+$cupertino-names: "cupertino", "cupertino-light", "cupertino-dark";
+
+@mixin cupertino-radius-aliases {
+    // The control radius is the corner of a FIELD - a text field, a one-time-code cell, a picker -
+    // which iOS rounds far less than it rounds a button; the buttons take the capsule below.
+    --bit-shp-radius-control: 0.5rem; //8px
+    --bit-shp-radius-surface: 0.625rem; //10px - inset-grouped section
+    --bit-shp-radius-popup: 0.8125rem; //13px - context menus / popovers
+    --bit-shp-radius-dialog: 0.875rem; //14px - alerts
+    @include cupertino-control-radius-aliases;
+}
+
+@mixin cupertino-control-radius-aliases {
+    // iOS buttons are capsules, and a menu button and a dialog action are buttons there as well.
+    // BitButtonGroup is left on the control radius: it publishes its own Rounded parameter, and the
+    // iOS segmented control is a rounded rectangle rather than a capsule anyway.
+    --bit-shp-radius-button: var(--bit-shp-radius-full);
+    // Tags read as the iOS gray capsule chip, inside a field as much as standing on their own.
+    --bit-shp-radius-chip: var(--bit-shp-radius-full);
+    // A checkbox is not an iOS control; it takes the corner iOS gives a small box, not a button's.
+    --bit-shp-radius-selection: 0.3125rem; //5px
+}
+
+// Cupertino separates surfaces with hairlines and dimming, not shadows: a card casts none, and what
+// remains is the soft context-menu/popover halo and the deeper lift of an alert or a sheet.
+@mixin cupertino-shadow-aliases {
+    --bit-shd-card: none;
+    --bit-shd-card-hover: none;
+    --bit-shd-popup: 0 0 10px rgba(0, 0, 0, 0.25);
+    --bit-shd-dialog: 0 10px 40px rgba(0, 0, 0, 0.2);
+    --bit-shd-sheet: 0 10px 40px rgba(0, 0, 0, 0.2);
+    --bit-shd-tooltip: 0 0 10px rgba(0, 0, 0, 0.25);
+}
+
 :root[bit-theme="cupertino"],
 :root [bit-theme="cupertino"],
 :root[bit-theme="cupertino-light"],
@@ -25,21 +64,9 @@
     --bit-shp-radius-xl: 0.875rem; //14px
     --bit-shp-radius-2xl: 1rem; //16px
     --bit-shp-radius-full: 9999px;
-    // The control radius is the corner of a FIELD - a text field, a one-time-code cell, a picker -
-    // which iOS rounds far less than it rounds a button; the buttons take the capsule below.
-    --bit-shp-radius-control: 0.5rem; //8px
-    --bit-shp-radius-surface: 0.625rem; //10px - inset-grouped section
-    --bit-shp-radius-popup: 0.8125rem; //13px - context menus / popovers
-    --bit-shp-radius-dialog: 0.875rem; //14px - alerts
+    // Per family (fields 8, grouped-list cards 10, menus 13, alerts 14) and per control sub-family.
+    @include cupertino-radius-aliases;
     --bit-shp-radius-sheet: 0.625rem; //10px - sheets
-    // iOS buttons are capsules, and a menu button and a dialog action are buttons there as well.
-    // BitButtonGroup is left on the control radius: it publishes its own Rounded parameter, and the
-    // iOS segmented control is a rounded rectangle rather than a capsule anyway.
-    --bit-shp-radius-button: var(--bit-shp-radius-full);
-    // Tags read as the iOS gray capsule chip, inside a field as much as standing on their own.
-    --bit-shp-radius-chip: var(--bit-shp-radius-full);
-    // A checkbox is not an iOS control; it takes the corner iOS gives a small box, not a button's.
-    --bit-shp-radius-selection: 0.3125rem; //5px
     // UIProgressView draws a capsule track with a capsule fill. A length rather than
     // var(--bit-shp-radius-full), for the reason given in the Material preset.
     --bit-shp-radius-progress: 9999px;
@@ -291,12 +318,7 @@
     // soft context-menu/popover halo and the thumb shadows the components own.
     --bit-shd-cal: 0 0 10px rgba(0, 0, 0, 0.25);
     --bit-shd-cal2: 0 10px 40px rgba(0, 0, 0, 0.2);
-    --bit-shd-card: none;
-    --bit-shd-card-hover: none;
-    --bit-shd-popup: 0 0 10px rgba(0, 0, 0, 0.25);
-    --bit-shd-dialog: 0 10px 40px rgba(0, 0, 0, 0.2);
-    --bit-shd-sheet: 0 10px 40px rgba(0, 0, 0, 0.2);
-    --bit-shd-tooltip: 0 0 10px rgba(0, 0, 0, 0.25);
+    @include cupertino-shadow-aliases;
     --bit-shd-snackbar: 0 3px 8px rgba(0, 0, 0, 0.15);
     // App bars separate with the hairline, drawn as a half-pixel shadow toward the content.
     --bit-shd-appbar-top: 0 0.5px 0 rgba(0, 0, 0, 0.3);
@@ -351,4 +373,19 @@
 :root [bit-theme="cupertino-dark"] {
     --bit-shd-appbar-top: 0 0.5px 0 rgba(255, 255, 255, 0.16);
     --bit-shd-appbar-bottom: 0 -0.5px 0 rgba(255, 255, 255, 0.16);
+}
+
+// The family aliases again, on the element of an inline theme overlay that re-values what each group
+// is built from (theme-overlay.scss): the core stylesheet would otherwise re-declare its own defaults
+// there - the field radius on a capsule button, a callout shadow under a flat card.
+@include theme-overlay("radius", $cupertino-names) {
+    @include cupertino-radius-aliases;
+}
+
+@include theme-overlay("radius-control", $cupertino-names) {
+    @include cupertino-control-radius-aliases;
+}
+
+@include theme-overlay("shadow", $cupertino-names) {
+    @include cupertino-shadow-aliases;
 }

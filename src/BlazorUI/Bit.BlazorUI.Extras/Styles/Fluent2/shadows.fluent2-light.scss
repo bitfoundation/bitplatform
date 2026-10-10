@@ -4,6 +4,20 @@
 // colorNeutralShadowAmbient rgba(0,0,0,0.12) and colorNeutralShadowKey rgba(0,0,0,0.14). It lives
 // beside the palette rather than in tokens.fluent2.scss because those two alphas are per-scheme.
 // Scoped-preset twins: see the note in colors.fluent-light.scss.
+@import "../../../Bit.BlazorUI/Styles/theme-overlay.scss";
+
+// Per surface family, at the level Fluent 2's own components sit at: Card shadow4, MenuPopover
+// and PopoverSurface shadow16, DialogSurface and OverlayDrawer shadow64, Tooltip shadow8. Re-declared
+// as they are on the element of an inline overlay of the callout shadow (the rule at the end).
+@mixin fluent2-light-shadow-aliases {
+    --bit-shd-card: 0 0 2px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.14); //shadow4
+    --bit-shd-card-hover: 0 0 2px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.14); //shadow8 - an interactive Card on hover
+    --bit-shd-popup: 0 0 2px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.14); //shadow16
+    --bit-shd-dialog: 0 0 8px rgba(0, 0, 0, 0.12), 0 32px 64px rgba(0, 0, 0, 0.14); //shadow64
+    --bit-shd-sheet: 0 0 8px rgba(0, 0, 0, 0.12), 0 32px 64px rgba(0, 0, 0, 0.14); //shadow64
+    --bit-shd-tooltip: 0 0 2px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.14); //shadow8
+}
+
 :root[bit-theme="fluent2"],
 :root [bit-theme="fluent2"],
 :root[bit-theme="fluent2-light"],
@@ -20,15 +34,9 @@
     --bit-shd-xl: 0 0 8px rgba(0, 0, 0, 0.12), 0 14px 28px rgba(0, 0, 0, 0.14); //shadow28
     --bit-shd-2xl: 0 0 8px rgba(0, 0, 0, 0.12), 0 32px 64px rgba(0, 0, 0, 0.14); //shadow64
 
-    // Per surface family, at the level Fluent 2's own components sit at: Card shadow4, MenuPopover
-    // and PopoverSurface shadow16, DialogSurface and OverlayDrawer shadow64, Tooltip and Toast
-    // shadow8. App bars cast the card shadow towards the content they cover.
-    --bit-shd-card: 0 0 2px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.14); //shadow4
-    --bit-shd-card-hover: 0 0 2px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.14); //shadow8 - an interactive Card on hover
-    --bit-shd-popup: 0 0 2px rgba(0, 0, 0, 0.12), 0 8px 16px rgba(0, 0, 0, 0.14); //shadow16
-    --bit-shd-dialog: 0 0 8px rgba(0, 0, 0, 0.12), 0 32px 64px rgba(0, 0, 0, 0.14); //shadow64
-    --bit-shd-sheet: 0 0 8px rgba(0, 0, 0, 0.12), 0 32px 64px rgba(0, 0, 0, 0.14); //shadow64
-    --bit-shd-tooltip: 0 0 2px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.14); //shadow8
+    // Per surface family. A Toast sits at shadow8, like the Tooltip; app bars cast the card shadow
+    // towards the content they cover.
+    @include fluent2-light-shadow-aliases;
     --bit-shd-snackbar: 0 0 2px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.14); //shadow8
     --bit-shd-appbar-top: 0 0 2px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.14); //shadow4
     --bit-shd-appbar-bottom: 0 0 2px rgba(0, 0, 0, 0.12), 0 -2px 4px rgba(0, 0, 0, 0.14); //shadow4, mirrored
@@ -64,4 +72,9 @@
     --bit-shd-22: 0 0 8px rgba(0, 0, 0, 0.12), 0 32px 64px rgba(0, 0, 0, 0.14);
     --bit-shd-23: 0 0 8px rgba(0, 0, 0, 0.12), 0 32px 64px rgba(0, 0, 0, 0.14);
     --bit-shd-24: 0 0 8px rgba(0, 0, 0, 0.12), 0 32px 64px rgba(0, 0, 0, 0.14);
+}
+
+// Inline overlays of the callout shadow (theme-overlay.scss).
+@include theme-overlay("shadow", ("fluent2", "fluent2-light")) {
+    @include fluent2-light-shadow-aliases;
 }

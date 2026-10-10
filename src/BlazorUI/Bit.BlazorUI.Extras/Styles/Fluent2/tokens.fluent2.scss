@@ -13,6 +13,38 @@
 // This bundle is override-only and TOKENS ONLY: every rule below declares --bit-* custom properties
 // under [bit-theme="fluent2*"] selectors and wins over the Fluent defaults on source order, so it
 // must be linked AFTER bit.blazorui.css. It never selects a component class.
+//
+// The one import is the core stylesheet's theme-overlay mixin, which re-declares this preset's family
+// aliases on the element of an inline theme overlay (the rules after the main block; the elevation
+// ones are in shadows.fluent2-*.scss).
+@import "../../../Bit.BlazorUI/Styles/theme-overlay.scss";
+
+$fluent2-names: "fluent2", "fluent2-light", "fluent2-dark";
+
+// Per family: fields, buttons, tags, cards, menus and tooltips all take borderRadiusMedium;
+// only the dialog surface goes up to borderRadiusXLarge.
+@mixin fluent2-radius-aliases {
+    --bit-shp-radius-control: 0.25rem; //4px
+    --bit-shp-radius-surface: 0.25rem; //4px - Card
+    --bit-shp-radius-popup: 0.25rem; //4px - MenuPopover / PopoverSurface / Tooltip
+    --bit-shp-radius-dialog: 0.5rem; //8px - DialogSurface
+    @include fluent2-control-radius-aliases;
+}
+
+// A Fluent 2 button, tag and in-field chip are all the control corner; only the checkbox box is
+// shaped apart, at borderRadiusSmall.
+@mixin fluent2-control-radius-aliases {
+    --bit-shp-radius-button: var(--bit-shp-radius-control);
+    --bit-shp-radius-chip: var(--bit-shp-radius-control);
+    --bit-shp-radius-selection: 0.125rem; //2px - Checkbox indicator
+}
+
+// A Fluent 2 tooltip (its "normal" appearance) is colorNeutralBackground1 with colorNeutralForeground1
+// text: the page's own surface, lifted off it by shadow8. The text is the core default.
+@mixin fluent2-tooltip-aliases {
+    --bit-clr-tooltip-bg: var(--bit-clr-bg-pri);
+}
+
 :root[bit-theme="fluent2"],
 :root [bit-theme="fluent2"],
 :root[bit-theme="fluent2-light"],
@@ -33,17 +65,8 @@
     --bit-shp-radius-xl: 0.75rem; //12px
     --bit-shp-radius-2xl: 1rem; //16px
     --bit-shp-radius-full: 9999px; //borderRadiusCircular
-    // Per family: fields, buttons, tags, cards, menus and tooltips all take borderRadiusMedium;
-    // only the dialog surface goes up to borderRadiusXLarge.
-    --bit-shp-radius-control: 0.25rem; //4px
-    --bit-shp-radius-surface: 0.25rem; //4px - Card
-    --bit-shp-radius-popup: 0.25rem; //4px - MenuPopover / PopoverSurface / Tooltip
-    --bit-shp-radius-dialog: 0.5rem; //8px - DialogSurface
-    // A Fluent 2 button, tag and in-field chip are all the control corner; only the checkbox box is
-    // shaped apart, at borderRadiusSmall.
-    --bit-shp-radius-button: var(--bit-shp-radius-control);
-    --bit-shp-radius-chip: var(--bit-shp-radius-control);
-    --bit-shp-radius-selection: 0.125rem; //2px - Checkbox indicator
+    // Per family and per control sub-family.
+    @include fluent2-radius-aliases;
     // The TabList selection indicator is a capsule (borderRadiusCircular).
     --bit-shp-radius-tab-indicator: var(--bit-shp-radius-full);
     // The ProgressBar is rounded by default (shape="rounded"), which is borderRadiusMedium on the track and
@@ -181,9 +204,7 @@
     // an element that keeps its own colors (an image, a color swatch), where Fluent 2 has no opinion.
 
     /*---- Surface colors ----*/
-    // A Fluent 2 tooltip (its "normal" appearance) is colorNeutralBackground1 with colorNeutralForeground1
-    // text: the page's own surface, lifted off it by shadow8.
-    --bit-clr-tooltip-bg: var(--bit-clr-bg-pri);
+    @include fluent2-tooltip-aliases;
 
     /*---- Spacing / layout ----*/
     // Fluent 2's dialog inset is 24px and its actions run in a row hugging the trailing edge, which
@@ -286,4 +307,19 @@
     --bit-mot-easing: cubic-bezier(0.33, 0, 0.67, 1);
     --bit-mot-easing-decelerate: cubic-bezier(0.1, 0.9, 0.2, 1);
     --bit-mot-easing-accelerate: cubic-bezier(0.9, 0.1, 1, 0.2);
+}
+
+// The family aliases again, on the element of an inline theme overlay that re-values what each group
+// is built from (theme-overlay.scss): the core stylesheet would otherwise re-declare its own defaults
+// there - the 2px Fluent corner, the secondary surface under the tooltip.
+@include theme-overlay("radius", $fluent2-names) {
+    @include fluent2-radius-aliases;
+}
+
+@include theme-overlay("radius-control", $fluent2-names) {
+    @include fluent2-control-radius-aliases;
+}
+
+@include theme-overlay("tooltip", $fluent2-names) {
+    @include fluent2-tooltip-aliases;
 }

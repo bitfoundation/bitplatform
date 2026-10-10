@@ -14,6 +14,9 @@ namespace BitBlazorUI {
     // Opt-in marker: keep <meta name="theme-color"> equal to a palette color of the live page (see
     // ThemeColorMeta). Its value names the custom property to read; empty means the default below.
     const ATTR_THEME_COLOR_META = 'bit-theme-color-meta';
+    // Written by applyTheme on its target: the family alias groups the applied theme re-values, for the
+    // stylesheets to re-declare the active theme's own aliases of there (Styles/theme-overlay.scss).
+    const ATTR_THEME_OVERLAY = 'bit-theme-overlay';
     // The page's own background - what a status bar sits above in nearly every app.
     const THEME_COLOR_VARIABLE = '--bit-clr-bg-pri';
     const STORAGE_KEY = 'bit-current-theme';
@@ -109,6 +112,9 @@ namespace BitBlazorUI {
         private static _dotnetNotifier: DotNetObject | null = null;
 
         private static _appliedVarKeys = new WeakMap<HTMLElement, string[]>();
+
+        // The targets applyTheme wrote ATTR_THEME_OVERLAY on, so clearing one removes only a marker it wrote.
+        private static _appliedOverlays = new WeakSet<HTMLElement>();
 
         public static init(options: ThemeOptions) {
             Object.assign(Theme._initOptions, options);
@@ -325,18 +331,32 @@ namespace BitBlazorUI {
             return Theme.set(Theme.SYSTEM_THEME);
         }
 
-        public static applyTheme(theme: Record<string, string>, element?: HTMLElement) {
+        public static applyTheme(theme: Record<string, string>, element?: HTMLElement, overlay?: string | null) {
             const el = element || document.body;
             const keys = Object.keys(theme);
             const prev = Theme._appliedVarKeys.get(el) || [];
             prev.filter(key => !keys.includes(key)).forEach(key => el.style.removeProperty(key));
             keys.forEach(key => el.style.setProperty(key, theme[key]));
             Theme._appliedVarKeys.set(el, keys);
+
+            // The family alias groups these variables re-value (BitThemeMapper.GetFamilyAliasOverlay): every
+            // theme stylesheet re-declares its own aliases of each named group on the element carrying it.
+            if (overlay) {
+                el.setAttribute(ATTR_THEME_OVERLAY, overlay);
+                Theme._appliedOverlays.add(el);
+            } else if (Theme._appliedOverlays.has(el)) {
+                el.removeAttribute(ATTR_THEME_OVERLAY);
+                Theme._appliedOverlays.delete(el);
+            }
         }
 
-        /** Removes --bit-* properties previously applied by applyTheme on the target (default document.body). */
+        /** Removes --bit-* properties previously applied by applyTheme on the target (default document.body), and its overlay marker. */
         public static clearAppliedTheme(element?: HTMLElement) {
             const el = element || document.body;
+            if (Theme._appliedOverlays.has(el)) {
+                el.removeAttribute(ATTR_THEME_OVERLAY);
+                Theme._appliedOverlays.delete(el);
+            }
             const keys = Theme._appliedVarKeys.get(el);
             if (!keys || keys.length === 0) return;
             keys.forEach(k => el.style.removeProperty(k));

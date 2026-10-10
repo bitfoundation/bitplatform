@@ -112,13 +112,15 @@ public class BitThemeManager : IAsyncDisposable
 
     /// <summary>Applies <paramref name="bitTheme"/> as CSS custom properties on <paramref name="element"/> (default: body), overriding stylesheet tokens for that subtree.</summary>
     /// <remarks>
-    /// Semantic aliases (<c>--bit-sem-*</c>) and family aliases (the per-family radii and
-    /// elevations, and the per-role foregrounds and tints) whose target the theme overrides are re-declared on
-    /// the target element as well, so app CSS reading the alias tier - and the components, which read
-    /// the family tier - track the override (an alias's <c>var()</c> reference is substituted where the alias is defined, so
-    /// the <c>:root</c>-level default would otherwise keep the document's value).
-    /// Explicitly-set alias values always win over this re-declaration. A re-valued density scale or spacing unit
-    /// needs no such help: the insets and sizes derived from them are computed where a component uses them.
+    /// Semantic aliases (<c>--bit-sem-*</c>) whose target the theme overrides are re-declared on the target
+    /// element as well, so app CSS reading the alias tier tracks the override (an alias's <c>var()</c>
+    /// reference is substituted where the alias is defined, so the <c>:root</c>-level default would
+    /// otherwise keep the document's value). The family aliases the components read (the per-family radii
+    /// and elevations, the tooltip colors, the per-role foregrounds and tints) need the same, as the active
+    /// theme builds them, so the element is marked with <see cref="BitThemeAttributeNames.ThemeOverlay"/>,
+    /// naming the groups the theme re-values, and every theme stylesheet re-declares its own aliases for
+    /// them there. Explicitly-set alias values always win over both. A re-valued density scale or spacing
+    /// unit needs no such help: the insets and sizes derived from them are computed where a component uses them.
     /// </remarks>
     /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>
     public async ValueTask ApplyBitThemeAsync(BitTheme? bitTheme, ElementReference? element = null)
@@ -127,13 +129,14 @@ public class BitThemeManager : IAsyncDisposable
 
         var cssVariables = BitThemeMapper.MapToCssVariables(bitTheme ?? new BitTheme());
         BitThemeMapper.AugmentWithSemanticAliasReSubstitution(cssVariables);
-        BitThemeMapper.AugmentWithFamilyAliasReSubstitution(cssVariables);
+        var familyAliasOverlay = BitThemeMapper.GetFamilyAliasOverlay(cssVariables);
 
-        await _js.BitThemeApplyBitTheme(cssVariables, element);
+        await _js.BitThemeApplyBitTheme(cssVariables, familyAliasOverlay, element);
     }
 
     /// <summary>
-    /// Removes custom properties previously applied by <see cref="ApplyBitThemeAsync"/> on <paramref name="element"/> (default: document body).
+    /// Removes custom properties previously applied by <see cref="ApplyBitThemeAsync"/> on <paramref name="element"/> (default: document body),
+    /// and the <see cref="BitThemeAttributeNames.ThemeOverlay"/> marker it wrote with them.
     /// Prefer scoping token overrides under <see cref="BitThemeProvider"/> when possible.
     /// </summary>
     /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>

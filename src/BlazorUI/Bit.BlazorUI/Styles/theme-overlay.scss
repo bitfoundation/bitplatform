@@ -1,0 +1,62 @@
+﻿@use 'sass:list';
+@use 'sass:string';
+
+// theme-overlay($group, $names, $document, $any-scope)
+// --------------------------------------------------
+// An inline theme overlay - a BitThemeProvider wrapper, or BitThemeManager.ApplyBitThemeAsync on an
+// element - re-values primitives as inline custom properties. The alias tokens built from those
+// primitives are declared on :root (or on a scoped-preset element), and a custom property's var()
+// references are substituted at the element that DECLARES it, so the aliases have to be declared
+// again on the overlay's own element to follow it. What they are declared AS is the active theme's
+// decision, never the core default: Material's tooltip casts no shadow and sits on the inverse
+// surface, Fluent lifts a card by its own depth rather than by the callout shadow. So the overlay
+// element only says WHICH inputs it re-values - the bit-theme-overlay attribute, a space-separated
+// list of the groups below - and every theme re-declares its own aliases for each group, keyed on
+// that attribute, from the same mixin its main block includes:
+//
+//   radius          --bit-shp-brd-radius            the per-family radii and the control sub-families
+//   radius-control  --bit-shp-radius-control/-full  the control sub-families (button, chip, selection)
+//   shadow          --bit-shd-cal, --bit-clr-brd-ter the per-family elevations (the Fluent dark ring)
+//   tooltip         --bit-clr-bg-pri/-bg-sec/-fg-pri the tooltip fill and text
+//   foreground      --bit-clr-fg-pri                every role foreground
+//   pri ... err     --bit-clr-<role>                that role's foreground and tint
+//
+// This mixin emits the selectors a theme block re-declares a group on, mirroring the selectors of the
+// block itself:
+//   $document   - the block applies on a bare :root (family-tokens.scss, the Fluent light scheme):
+//                 `:root [overlay]`, (0,2,0)
+//   $names      - the block's bit-theme names: `:root[bit-theme="x"] [overlay]`, (0,3,0), for the
+//                 document, and the scoped twins `:root:root [bit-theme="x"] [overlay]` /
+//                 `:root:root [bit-theme="x"][overlay]`, (0,4,0), for an overlay inside or on a
+//                 scoped-preset element
+//   $any-scope  - the block re-declares on every scoped-preset element (`:root [bit-theme]`), as the
+//                 alias tiers do: the twins above for `[bit-theme]`
+// Each one sits one attribute above the selector it mirrors, so the themes outrank one another here
+// exactly as their main blocks do (a pinned scheme over the bare-:root default, a later bundle over an
+// earlier one at equal weight). The scoped twins carry a doubled :root on top of that: an overlay
+// inside an always-dark region of a page pinned to "light" has to take the region's recipe, not the
+// document's, and both of those name a bit-theme. Two scoped regions of different themes nested in one
+// another still meet at equal weight, and the later bundle wins there.
+@mixin theme-overlay($group, $names: (), $document: false, $any-scope: false) {
+    $overlay: '[bit-theme-overlay~="#{$group}"]';
+    $selectors: ();
+
+    @if $document {
+        $selectors: list.append($selectors, string.unquote(':root #{$overlay}'), $separator: comma);
+    }
+
+    @if $any-scope {
+        $selectors: list.append($selectors, string.unquote(':root:root [bit-theme] #{$overlay}'), $separator: comma);
+        $selectors: list.append($selectors, string.unquote(':root:root [bit-theme]#{$overlay}'), $separator: comma);
+    }
+
+    @each $name in $names {
+        $selectors: list.append($selectors, string.unquote(':root[bit-theme="#{$name}"] #{$overlay}'), $separator: comma);
+        $selectors: list.append($selectors, string.unquote(':root:root [bit-theme="#{$name}"] #{$overlay}'), $separator: comma);
+        $selectors: list.append($selectors, string.unquote(':root:root [bit-theme="#{$name}"]#{$overlay}'), $separator: comma);
+    }
+
+    #{$selectors} {
+        @content;
+    }
+}

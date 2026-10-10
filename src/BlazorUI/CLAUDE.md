@@ -349,6 +349,19 @@ restyle `.bit-<cmp>-*` from a preset is the signal that a design-system decision
 global token tier: add the token, let the component read it, and keep the preset a pure
 `:root[bit-theme="..."]` block.
 
+**A family alias a theme declares is declared again for an inline overlay, from the same mixin.** A
+`BitThemeProvider` / `ApplyBitThemeAsync` writes only the primitives it was given, plus a
+`bit-theme-overlay` attribute naming the alias groups those feed (`BitThemeMapper.FamilyAliasOverlayGroups`:
+`radius`, `radius-control`, `shadow`, `tooltip`, `foreground`, the eight roles); every theme stylesheet
+re-declares its OWN aliases of each group on that element through the `theme-overlay($group, $names)` mixin
+of `Styles/theme-overlay.scss`, so the aliases follow the overlay as the active theme builds them - never the
+core default under a preset that decided otherwise. So a group's declarations live in one mixin per theme
+(`material-shadow-aliases`, `fluent-dark-shadow-aliases`, ...), included by the theme's main block and by its
+overlay rule; a family alias added to a theme block without the overlay rule fails
+`BitThemeFamilyAliasReSubstitutionTests` against the compiled bundles. A new input a theme builds an alias
+from is a new entry in the group table, and a new group is a row in that table, a rule in `family-tokens.scss`
+and a rule per theme that decides it.
+
 A component's own `--bit-<Component>-*` properties (the public surface its demo page documents as
 `componentCssVariables`) are read off its root **with a fallback and never declared**, so they
 inherit. A component whose popup is rendered outside that root - a callout, a menu, a panel - renders
@@ -430,7 +443,7 @@ Adding a preset means touching all of: its `Styles/<Name>/` folder and bundle en
 `BitExtraThemeRegistration` (the surfaces), `BitThemeSwitcher.DefaultDesignSystems`, the tests' `SourceFiles.ExtrasPresetFolders`
 and the palette/derivation test `DataRow`s, the demo host pages
 (`Demo/Bit.BlazorUI.Demo.Server/Components/App.razor`, the MAUI `index.html`), `ScssCompilerService`,
-and the ThemingPage docs.
+its `theme-overlay` rules for every family alias group it declares, and the ThemingPage docs.
 
 Adding a global token means touching all of: `theme-variables.scss` (the `$` alias), a
 `Styles/Fluent/*.scss` default (or `family-tokens.scss` for an alias), the `BitTheme` model class,

@@ -13,6 +13,23 @@
 // the Material preset's own note calls out as being the wrong design system.
 //
 // Scoped-preset twins: see the note in colors.fluent-light.scss.
+@import "../theme-overlay.scss";
+
+// Per surface family, at the depth Fabric's own component sits at: DocumentCard depth4, Callout
+// and ContextualMenu depth16, Tooltip depth8, Modal/Dialog and Panel depth64. These override the
+// aliases family-tokens.scss points at --bit-shd-cal, which is loaded before this file - and, being
+// literals, they stay what they are under an inline overlay of the callout shadow (the rule at the
+// end of this file), as they do when the same primitive is re-valued on :root.
+@mixin fluent-light-shadow-aliases {
+    --bit-shd-card: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108); //depth4
+    // A card that reacts to the pointer lifts one Fabric step, to where DocumentCard sits on hover.
+    --bit-shd-card-hover: 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.132), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.108); //depth8
+    --bit-shd-popup: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108); //depth16
+    --bit-shd-dialog: 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.22), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.18); //depth64
+    --bit-shd-sheet: 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.22), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.18); //depth64
+    --bit-shd-tooltip: 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.132), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.108); //depth8
+}
+
 :root,
 :root[bit-theme="light"],
 :root [bit-theme="light"],
@@ -25,18 +42,9 @@
     --bit-shd-cal: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108); //depth16
     --bit-shd-cal2: 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.22), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.18); //depth64
 
-    // Per surface family, at the depth Fabric's own component sits at: DocumentCard depth4, Callout
-    // and ContextualMenu depth16, Tooltip depth8, Modal/Dialog and Panel depth64. These override the
-    // aliases family-tokens.scss points at --bit-shd-cal, which is loaded before this file.
+    @include fluent-light-shadow-aliases;
     // A snackbar has no Fabric counterpart; it is a floating notification, so it takes the floating
     // surface's own depth rather than the flat "none" the alias tier falls back to.
-    --bit-shd-card: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108); //depth4
-    // A card that reacts to the pointer lifts one Fabric step, to where DocumentCard sits on hover.
-    --bit-shd-card-hover: 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.132), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.108); //depth8
-    --bit-shd-popup: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108); //depth16
-    --bit-shd-dialog: 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.22), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.18); //depth64
-    --bit-shd-sheet: 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.22), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.18); //depth64
-    --bit-shd-tooltip: 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.132), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.108); //depth8
     --bit-shd-snackbar: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108); //depth16
 
     // App bars cast towards the content they cover - downwards for the header, upwards for the
@@ -83,4 +91,9 @@
     --bit-shd-22: 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.22), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.18);
     --bit-shd-23: 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.22), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.18);
     --bit-shd-24: 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.22), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.18);
+}
+
+// Inline overlays of the callout shadow (theme-overlay.scss): the same depths, so an overlay keeps them.
+@include theme-overlay("shadow", ("light", "fluent", "fluent-light"), $document: true) {
+    @include fluent-light-shadow-aliases;
 }

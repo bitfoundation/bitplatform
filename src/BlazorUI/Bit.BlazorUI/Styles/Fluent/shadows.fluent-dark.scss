@@ -23,6 +23,20 @@
 // Scoped-preset twins: see the note in colors.fluent-light.scss.
 $dark-surface-ring: 0 0 0 #{$shp-border-width} #{$clr-brd-ter};
 
+@import "../theme-overlay.scss";
+
+// Per surface family - the same depths the light scheme assigns, each behind the ring. An inline
+// overlay of the callout shadow or of the tertiary border re-declares them (the rule at the end of
+// this file): the depths stay, the ring follows the overlay's stroke.
+@mixin fluent-dark-shadow-aliases {
+    --bit-shd-card: #{$dark-surface-ring}, 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.264), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.216); //depth4
+    --bit-shd-card-hover: #{$dark-surface-ring}, 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.264), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.216); //depth8
+    --bit-shd-popup: #{$dark-surface-ring}, 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.264), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.216); //depth16
+    --bit-shd-dialog: #{$dark-surface-ring}, 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.44), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.36); //depth64
+    --bit-shd-sheet: #{$dark-surface-ring}, 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.44), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.36); //depth64
+    --bit-shd-tooltip: #{$dark-surface-ring}, 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.264), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.216); //depth8
+}
+
 :root[bit-theme="dark"],
 :root [bit-theme="dark"],
 :root[bit-theme="fluent-dark"],
@@ -31,13 +45,8 @@ $dark-surface-ring: 0 0 0 #{$shp-border-width} #{$clr-brd-ter};
     --bit-shd-cal: #{$dark-surface-ring}, 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.264), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.216); //depth16
     --bit-shd-cal2: #{$dark-surface-ring}, 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.44), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.36); //depth64
 
-    // Per surface family - the same depths the light scheme assigns.
-    --bit-shd-card: #{$dark-surface-ring}, 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.264), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.216); //depth4
-    --bit-shd-card-hover: #{$dark-surface-ring}, 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.264), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.216); //depth8
-    --bit-shd-popup: #{$dark-surface-ring}, 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.264), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.216); //depth16
-    --bit-shd-dialog: #{$dark-surface-ring}, 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.44), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.36); //depth64
-    --bit-shd-sheet: #{$dark-surface-ring}, 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.44), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.36); //depth64
-    --bit-shd-tooltip: #{$dark-surface-ring}, 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.264), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.216); //depth8
+    // Per surface family.
+    @include fluent-dark-shadow-aliases;
     --bit-shd-snackbar: #{$dark-surface-ring}, 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.264), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.216); //depth16
 
     // App bars take a DIRECTIONAL hairline rather than the ring - a line under the header and over
@@ -80,4 +89,9 @@ $dark-surface-ring: 0 0 0 #{$shp-border-width} #{$clr-brd-ter};
     --bit-shd-22: #{$dark-surface-ring}, 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.44), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.36);
     --bit-shd-23: #{$dark-surface-ring}, 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.44), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.36);
     --bit-shd-24: #{$dark-surface-ring}, 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.44), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.36);
+}
+
+// Inline overlays of the callout shadow or the tertiary border (theme-overlay.scss).
+@include theme-overlay("shadow", ("dark", "fluent-dark")) {
+    @include fluent-dark-shadow-aliases;
 }

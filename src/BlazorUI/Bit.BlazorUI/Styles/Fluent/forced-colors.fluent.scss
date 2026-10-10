@@ -6,10 +6,14 @@
 // to (0,3,0) so it wins over any packaged (or similarly-specific app) palette block, while inline
 // theme overrides (an explicit runtime choice) still take precedence as inline style always does.
 // The `[bit-theme]` twin covers scoped-preset elements, whose OWN palette declarations would
-// otherwise beat these values arriving only by inheritance from :root.
+// otherwise beat these values arriving only by inheritance from :root. The `[bit-theme-overlay]` one
+// covers the element of an inline theme overlay, on which every theme re-declares its family aliases
+// (theme-overlay.scss) from up to (0,4,0) - in a bundle linked after this one, for the Extras presets -
+// so it carries one more :root than those.
 @media (forced-colors: active) {
     :root:root:root,
-    :root:root:root [bit-theme] {
+    :root:root:root [bit-theme],
+    :root:root:root:root [bit-theme-overlay] {
         --bit-clr-fg-pri: CanvasText;
         --bit-clr-fg-sec: CanvasText;
         --bit-clr-fg-ter: CanvasText;

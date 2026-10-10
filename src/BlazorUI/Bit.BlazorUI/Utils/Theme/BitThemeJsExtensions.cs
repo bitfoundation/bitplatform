@@ -17,9 +17,9 @@ internal static class BitThemeJsExtensions
         return js.Invoke<string?>("BitBlazorUI.Theme.toggleDarkLight");
     }
 
-    internal static ValueTask BitThemeApplyBitTheme(this IJSRuntime js, IReadOnlyDictionary<string, string> theme, ElementReference? element)
+    internal static ValueTask BitThemeApplyBitTheme(this IJSRuntime js, IReadOnlyDictionary<string, string> theme, string? overlay, ElementReference? element)
     {
-        return js.InvokeVoid("BitBlazorUI.Theme.applyTheme", theme, element);
+        return js.InvokeVoid("BitBlazorUI.Theme.applyTheme", theme, element, overlay);
     }
 
     internal static ValueTask<bool> BitThemeIsSystemDark(this IJSRuntime js)

@@ -79,6 +79,10 @@ public class BitThemeProvider : ComponentBase
     private BitTheme? _cachedMergedTheme;
     private string? _cachedCssVarStyle;
 
+    // The bit-theme-overlay value the cached style re-values (see BitThemeMapper.GetFamilyAliasOverlay).
+    // Derived from the same CSS variables as the style, so it changes only when the style does.
+    private string? _cachedFamilyAliasOverlay;
+
     // The Theme/ParentTheme references the cached result above was built from. Only consulted when
     // Frozen is true, to short-circuit the merge + CSS rebuild when neither reference changed.
     private BitTheme? _lastTheme;
@@ -91,6 +95,7 @@ public class BitThemeProvider : ComponentBase
             // No tokens to apply at this layer; we'll render ChildContent directly.
             _cachedMergedTheme = null;
             _cachedCssVarStyle = null;
+            _cachedFamilyAliasOverlay = null;
             return;
         }
 
@@ -104,6 +109,7 @@ public class BitThemeProvider : ComponentBase
             // wrapper element and duplicate CascadingValue.
             _cachedMergedTheme = ParentTheme;
             _cachedCssVarStyle = null;
+            _cachedFamilyAliasOverlay = null;
             return;
         }
 
@@ -131,7 +137,7 @@ public class BitThemeProvider : ComponentBase
         // when nothing actually changed (consumers are not woken up needlessly).
         var mergedTheme = BitThemeMapper.Merge(Theme, ParentTheme ?? new BitTheme());
 
-        var cssVarStyle = BuildCssVarStyle(mergedTheme);
+        var (cssVarStyle, familyAliasOverlay) = BuildCssVarStyle(mergedTheme);
 
         // Record the references this result was built from so a subsequent Frozen render can detect
         // that nothing changed by reference and skip the rebuild above.
@@ -148,6 +154,7 @@ public class BitThemeProvider : ComponentBase
 
         _cachedMergedTheme = mergedTheme;
         _cachedCssVarStyle = cssVarStyle;
+        _cachedFamilyAliasOverlay = familyAliasOverlay;
     }
 
     protected override void BuildRenderTree(RenderTreeBuilder builder)
@@ -215,23 +222,32 @@ public class BitThemeProvider : ComponentBase
 
         builder.AddAttribute(3, "style", style);
 
-        builder.OpenComponent<CascadingValue<BitTheme?>>(4);
+        // The family alias groups the style re-values, for every theme stylesheet to re-declare its own
+        // aliases of on this element (see BitThemeMapper.GetFamilyAliasOverlay). Added after the splat, so
+        // it is the library's to write; an attribute of that name passed in is replaced while the theme
+        // re-values a group, and left as passed when it re-values none.
+        if (_cachedFamilyAliasOverlay is not null)
+        {
+            builder.AddAttribute(4, BitThemeAttributeNames.ThemeOverlay, _cachedFamilyAliasOverlay);
+        }
+
+        builder.OpenComponent<CascadingValue<BitTheme?>>(5);
         if (ThemeName is not null)
         {
-            builder.AddAttribute(5, "Name", ThemeName);
+            builder.AddAttribute(6, "Name", ThemeName);
         }
-        builder.AddAttribute(6, "Value", _cachedMergedTheme);
+        builder.AddAttribute(7, "Value", _cachedMergedTheme);
         // IMPORTANT: do NOT close over a mutable outer sequence counter. The lambda runs lazily
         // during the cascade's render pass, so capturing a mutable local would feed Blazor a
         // sequence number that varies per render and defeats its diff. Sequence numbers inside a
         // RenderFragment are local to that fragment, so a constant is what we want.
-        builder.AddAttribute(7, "ChildContent", (RenderFragment)(b => b.AddContent(0, ChildContent)));
+        builder.AddAttribute(8, "ChildContent", (RenderFragment)(b => b.AddContent(0, ChildContent)));
         builder.CloseComponent();
 
         builder.CloseElement();
     }
 
-    private static string BuildCssVarStyle(BitTheme theme)
+    private static (string Style, string? FamilyAliasOverlay) BuildCssVarStyle(BitTheme theme)
     {
         var cssVars = BitThemeMapper.MapToCssVariables(theme);
 
@@ -241,12 +257,13 @@ public class BitThemeProvider : ComponentBase
         // the document palette's value). See BitThemeMapper.AugmentWithSemanticAliasReSubstitution.
         BitThemeMapper.AugmentWithSemanticAliasReSubstitution(cssVars);
 
-        // Same reason one tier lower: the per-family radii and elevations and the per-role foregrounds and tints
-        // are declared on :root by family-tokens.scss, so re-declare the ones whose target this theme
-        // re-values - otherwise components inside the provider keep the document's corners, shadows
-        // and role text and tint colors.
-        BitThemeMapper.AugmentWithFamilyAliasReSubstitution(cssVars);
+        // Same reason one tier lower: the per-family radii and elevations and the per-role foregrounds and
+        // tints are declared on :root, so the ones built from what this theme re-values have to be declared
+        // again here - otherwise components inside the provider keep the document's corners, shadows and
+        // role text and tint colors. What they are built from is the active theme's decision, so they are
+        // left to its stylesheet: this only names the groups (see BitThemeMapper.GetFamilyAliasOverlay).
+        var familyAliasOverlay = BitThemeMapper.GetFamilyAliasOverlay(cssVars);
 
-        return string.Join(';', cssVars.Select(kv => $"{kv.Key}:{kv.Value}"));
+        return (string.Join(';', cssVars.Select(kv => $"{kv.Key}:{kv.Value}")), familyAliasOverlay);
     }
 }
