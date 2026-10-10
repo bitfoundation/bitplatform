@@ -22,10 +22,10 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
     private bool _deleteCommitted;
     private ElementReference _dialogRef;
     private readonly string _dialogTitleId = $"bfc-details-title-{Guid.NewGuid():N}";
-    private readonly string _escapeWatchId = $"bfc-details-esc-{Guid.NewGuid():N}";
-    private DotNetObjectReference<BitFcEventDetailsDialog>? _dotnetObj;
-    // What the browser answered for the Escape Blazor is about to hand OnDialogKeyDown (see _OnEscapeVerdict).
-    private bool _foreignEscape;
+    // Which Escapes something inside the dialog claimed first (see _OnEscapeVerdict), for OnDialogKeyDown. Made on
+    // first use, so a dialog disposed before it rendered never starts watching.
+    private BitEscapeClaimWatch<BitFcEventDetailsDialog>? _escapeWatch;
+    private BitEscapeClaimWatch<BitFcEventDetailsDialog> EscapeWatch => _escapeWatch ??= new(JS, this);
 
     /// <summary>The action waiting for the user to say whether it means one occurrence or the series.</summary>
     private enum ScopeAction { None, Edit, Delete }
@@ -92,7 +92,7 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
         if (firstRender)
         {
             await BitFcDialogInterop.SetupAsync(JS, _dialogRef);
-            await WatchEscapeClaim();
+            await EscapeWatch.WatchAsync(_dialogRef);
         }
     }
 
@@ -108,14 +108,16 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
 
     private async Task OnDialogKeyDown(KeyboardEventArgs e)
     {
-        if (e.Key is not ("Escape" or "Esc")) return;
+        if (e.Key is not "Escape") return;
 
         // One Escape does one thing: a press something inside the dialog claimed first (a field of an
         // EventDetailsTemplate clearing itself) is that field's, which Blazor still bubbles up to here. The verdict
         // is read once, so it never outlives the press it was given for.
-        var foreign = _foreignEscape;
-        _foreignEscape = false;
-        if (foreign) return;
+        if (EscapeWatch.TakeForeign()) return;
+
+        // Only the plain key, the one the dialog claims: an Escape with a modifier is left to the surface the
+        // calendar sits in.
+        if (e.IsPlainEscape() is false) return;
 
         // Escape is the standard way out of a modal.
         if (_ClosesOnEscape)
@@ -301,42 +303,12 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
     [JSInvokable("OnEscapeVerdict")]
     public void _OnEscapeVerdict(bool foreign)
     {
-        _foreignEscape = foreign;
-    }
-
-    // The dialog hears every key pressed inside it, so the browser tells it which Escapes something inside it claimed
-    // first (see _OnEscapeVerdict, Utils.watchEscapeClaim).
-    private async Task WatchEscapeClaim()
-    {
-        _dotnetObj ??= DotNetObjectReference.Create(this);
-
-        try
-        {
-            await JS.BitUtilsWatchEscapeClaim(_escapeWatchId, _dialogRef, _dotnetObj);
-        }
-        catch (JSDisconnectedException) { }
-        catch (OperationCanceledException) { }
-    }
-
-    private async Task UnwatchEscapeClaim()
-    {
-        if (_dotnetObj is null) return;
-
-        try
-        {
-            await JS.BitUtilsUnwatchEscapeClaim(_escapeWatchId);
-        }
-        catch (JSDisconnectedException) { }
-        catch (OperationCanceledException) { }
-        catch (JSException) { }
-
-        _dotnetObj.Dispose();
-        _dotnetObj = null;
+        EscapeWatch.SetVerdict(foreign);
     }
 
     public async ValueTask DisposeAsync()
     {
-        await UnwatchEscapeClaim();
+        await EscapeWatch.DisposeAsync();
         await BitFcDialogInterop.TeardownAsync(JS, _dialogRef);
     }
 }

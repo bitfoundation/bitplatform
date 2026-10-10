@@ -1379,8 +1379,9 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
 
     private async Task OnHelpKeyDown(KeyboardEventArgs e)
     {
-        // The shortcut that opened the dialog closes it too, keyed by the physical key as the script keys it.
-        if (e.Key is "Escape" || ((e.CtrlKey || e.MetaKey) && e.Code is "Slash"))
+        // The shortcut that opened the dialog closes it too, keyed by the physical key as the script keys it. Escape
+        // is only the plain key, the one the dialog claims: an Escape with a modifier is the surrounding surface's.
+        if (e.IsPlainEscape() || ((e.CtrlKey || e.MetaKey) && e.Code is "Slash"))
         {
             await CloseHelp();
         }

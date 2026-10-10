@@ -107,6 +107,32 @@ public sealed class BitEscapeClaimContractTests
     }
 
     [TestMethod]
+    public void TheClaimShouldLeaveTheKeyToAnOpenPopupOrAShownTooltipInsideTheClaimer()
+    {
+        var claim = GetMethod(SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts"), "claimEscape");
+
+        // A component whose popup is open closes it on the key, and a shown tooltip is dismissed by it, without either
+        // claiming it: a root claiming every Escape pressed inside it (a navigation drawer, a dialog of the Extras)
+        // would otherwise take the key away from them and close itself instead.
+        StringAssert.Contains(claim, "Callouts.componentContains(target, element)");
+        StringAssert.Contains(claim, "Utils.showsDismissibleTooltip(element)");
+    }
+
+    [TestMethod]
+    public void TheVerdictForAClaimingRootShouldBeWrittenOnce()
+    {
+        // Every root whose .NET handler acts on the key it claims tells its own press from one a part of it claimed
+        // first through Utils.watchEscapeClaim - never through a copy of it, which would drift from it.
+        var copies = new[] { SourceFiles.GetDirectory("Bit.BlazorUI"), SourceFiles.GetDirectory("Bit.BlazorUI.Extras") }
+            .SelectMany(folder => Directory.EnumerateFiles(Path.Combine(folder, "Components"), "*.ts", SearchOption.AllDirectories))
+            .Where(file => SourceFiles.ReadFullPath(file).Contains("'OnEscapeVerdict'"))
+            .Select(Path.GetFileName)
+            .ToList();
+
+        Assert.AreEqual(0, copies.Count, $"These scripts answer OnEscapeVerdict on their own: {string.Join(", ", copies)}.");
+    }
+
+    [TestMethod]
     public void TheTooltipShouldNotGuessWhoActsOnTheKey()
     {
         var script = SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts");

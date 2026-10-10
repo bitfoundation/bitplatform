@@ -1786,7 +1786,8 @@ public partial class BitPdfViewer : BitComponentBase
     /// shortcut listener is off whenever <see cref="EnableKeyboardShortcuts"/> is.</summary>
     private void OnPasswordDialogKeyDown(KeyboardEventArgs e)
     {
-        if (e.Key == "Escape")
+        // Only the plain key, the one the dialog claims: an Escape with a modifier is the surrounding surface's.
+        if (e.IsPlainEscape())
         {
             CancelPassword();
         }
@@ -1797,7 +1798,8 @@ public partial class BitPdfViewer : BitComponentBase
     /// and a modal must always be closable from the keyboard.</summary>
     private void OnPropertiesKeyDown(KeyboardEventArgs e)
     {
-        if (e.Key == "Escape")
+        // Only the plain key, the one the dialog claims: an Escape with a modifier is the surrounding surface's.
+        if (e.IsPlainEscape())
         {
             _showProperties = false;
         }
@@ -1811,7 +1813,9 @@ public partial class BitPdfViewer : BitComponentBase
         {
             SubmitPassword();
         }
-        else if (e.Key == "Escape")
+        // Only the plain key, the one the dialog around the box claims: an Escape with a modifier is the
+        // surrounding surface's.
+        else if (e.IsPlainEscape())
         {
             CancelPassword();
         }
@@ -3974,7 +3978,8 @@ public partial class BitPdfViewer : BitComponentBase
                 await (e.ShiftKey ? SearchPrev() : SearchNext());
             }
         }
-        else if (e.Key == "Escape")
+        // Only the plain key, the one the box claims: an Escape with a modifier is the surrounding surface's.
+        else if (e.IsPlainEscape())
         {
             await CloseSearch();
             // The box held the focus and is about to leave the DOM, which would drop

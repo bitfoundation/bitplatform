@@ -47,10 +47,10 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     // Per-instance unique ids so multiple open dialogs don't collide on element ids, which would
     // break label-to-control association and the dialog's aria-labelledby reference.
     private readonly string _dialogTitleId = $"bfc-dlg-title-{Guid.NewGuid():N}";
-    private readonly string _escapeWatchId = $"bfc-dlg-esc-{Guid.NewGuid():N}";
-    private DotNetObjectReference<BitFcAddEditEventDialog>? _dotnetObj;
-    // What the browser answered for the Escape Blazor is about to hand OnDialogKeyDown (see _OnEscapeVerdict).
-    private bool _foreignEscape;
+    // Which Escapes something inside the dialog claimed first (see _OnEscapeVerdict), for OnDialogKeyDown. Made on
+    // first use, so a dialog disposed before it rendered never starts watching.
+    private BitEscapeClaimWatch<BitFcAddEditEventDialog>? _escapeWatch;
+    private BitEscapeClaimWatch<BitFcAddEditEventDialog> EscapeWatch => _escapeWatch ??= new(JS, this);
     private readonly string _titleInputId = $"bfc-title-{Guid.NewGuid():N}";
     private readonly string _colorSelectId = $"bfc-color-{Guid.NewGuid():N}";
     private readonly string _resourceSelectId = $"bfc-resource-{Guid.NewGuid():N}";
@@ -438,7 +438,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         if (firstRender)
         {
             await BitFcDialogInterop.SetupAsync(JS, _dialogRef);
-            await WatchEscapeClaim();
+            await EscapeWatch.WatchAsync(_dialogRef);
         }
 
         // A refused save sends the focus to the field it has to be fixed in, once the message is rendered.
@@ -478,21 +478,18 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     // under the change it is committing.
     private bool _ClosesOnEscape => _isSubmitting is false;
 
-    // The Escape that closes the dialog, claimed on the dialog (see Utils.claimEscape) so a surface the calendar sits
-    // in does not close on the same press. It stays claimed while a save is in flight too, when the press does
-    // nothing: a surface closing on it would take the dialog away mid-commit all the same.
-    private string? _EscapeClaim => "claim";
-
     private async Task OnDialogKeyDown(KeyboardEventArgs e)
     {
-        if (e.Key is not ("Escape" or "Esc")) return;
+        if (e.Key is not "Escape") return;
 
         // One Escape does one thing: a press something inside the dialog claimed first (a field of an
         // EventEditorTemplate clearing itself) is that field's, which Blazor still bubbles up to here. The verdict is
         // read once, so it never outlives the press it was given for.
-        var foreign = _foreignEscape;
-        _foreignEscape = false;
-        if (foreign) return;
+        if (EscapeWatch.TakeForeign()) return;
+
+        // Only the plain key, the one the dialog claims: an Escape with a modifier is left to the surface the
+        // calendar sits in.
+        if (e.IsPlainEscape() is false) return;
 
         // Escape is the standard way out of a modal.
         if (_ClosesOnEscape)
@@ -709,43 +706,13 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     [JSInvokable("OnEscapeVerdict")]
     public void _OnEscapeVerdict(bool foreign)
     {
-        _foreignEscape = foreign;
-    }
-
-    // The dialog hears every key pressed inside it, so the browser tells it which Escapes something inside it claimed
-    // first (see _OnEscapeVerdict, Utils.watchEscapeClaim).
-    private async Task WatchEscapeClaim()
-    {
-        _dotnetObj ??= DotNetObjectReference.Create(this);
-
-        try
-        {
-            await JS.BitUtilsWatchEscapeClaim(_escapeWatchId, _dialogRef, _dotnetObj);
-        }
-        catch (JSDisconnectedException) { }
-        catch (OperationCanceledException) { }
-    }
-
-    private async Task UnwatchEscapeClaim()
-    {
-        if (_dotnetObj is null) return;
-
-        try
-        {
-            await JS.BitUtilsUnwatchEscapeClaim(_escapeWatchId);
-        }
-        catch (JSDisconnectedException) { }
-        catch (OperationCanceledException) { }
-        catch (JSException) { }
-
-        _dotnetObj.Dispose();
-        _dotnetObj = null;
+        EscapeWatch.SetVerdict(foreign);
     }
 
     public async ValueTask DisposeAsync()
     {
         State.OnStateChanged -= HandleStateChanged;
-        await UnwatchEscapeClaim();
+        await EscapeWatch.DisposeAsync();
         await BitFcDialogInterop.TeardownAsync(JS, _dialogRef);
     }
 }

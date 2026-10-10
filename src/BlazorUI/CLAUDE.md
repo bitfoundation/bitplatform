@@ -85,7 +85,13 @@ the callouts, BitTooltip, BitMessage - the listeners in `Scripts/Utils.ts`) leav
   around the component otherwise (an empty field, a one-way binding, a closed list, a modified Escape).
   `BitEscapeClaimContractTests` pins the values and the surfaces; each component's tests pin its states.
 - **A popup opened through `Callouts` needs no claim.** The surfaces ask `Callouts.componentContains` whether
-  the key was pressed in a component whose popup is open, and leave it to that component.
+  the key was pressed in a component whose popup is open, and leave it to that component - and so does
+  `claimEscape`, so a claiming root around it (a NavPanel drawer, a dialog of the Extras) does not take the
+  key away from it either. A shown tooltip is the same: `claimEscape` stops at its anchor, the way it stops at
+  the nearest surface, so a claim outside the anchor never takes the tooltip's Escape.
+- **One shared watch per claiming root.** A component whose own .NET keydown on its root acts on the key it
+  claims there hears the presses a part inside it claimed first, too; it tells them apart through
+  `BitEscapeClaimWatch` (`Utils.watchEscapeClaim`), never a copy of it.
 - **Nothing guesses from what the target looks like.** No selector of inputs, roles or `aria-expanded`
   decides who owns the key; a component the claim and the open popup do not cover is fixed by claiming,
   never by teaching a surface a new selector. A consumer's own control opts in the same way.

@@ -1,0 +1,217 @@
+@page "/regression/escape-claim-extras"
+@inject IWebHostEnvironment Env
+
+<PageTitle>Escape Claim Regression (components)</PageTitle>
+
+@* One Escape does one thing, for the components that act on the key in their .NET handlers and claim it in their
+   markup (data-bit-esc, read by Utils.claimEscape): the inner state closes on the first press and the surface around
+   the component - a Dialog, a Modal or a Panel, picked with ?surface= - closes on the next one. With ?surface=none the
+   component is rendered on the page itself, which is where an Escape with a modifier is shown to leave the component
+   alone. ?part= picks the component, so each page carries one of them. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>Escape Claim Regression (@Part in @(Surface ?? "dialog"))</h3>
+    <button @onclick="Open" id="btn-open">Open</button>
+    <div id="metrics" style="font-family: monospace;">
+        <p>Surface: <span id="surface-state">@(Surface is "none" ? "none" : _isOpen ? "open" : "closed")</span></p>
+        <p>Field: <span id="v-field">@_field</span></p>
+        <p>Nav open: <span id="v-npn">@(_npnOpen ? "open" : "closed")</span></p>
+        <p>Full-screen: <span id="v-fs">@(_mdeFullScreen ? "on" : "off")</span></p>
+        <p>Status: <span id="status">@_status</span></p>
+    </div>
+</div>
+
+@switch (Surface)
+{
+    case "none":
+        @Content
+        break;
+
+    case "modal":
+        <BitModal @bind-IsOpen="_isOpen" NoAutoFocus>@Content</BitModal>
+        break;
+
+    case "panel":
+        <BitPanel @bind-IsOpen="_isOpen" NoAutoFocus>@Content</BitPanel>
+        break;
+
+    default:
+        <BitDialog @bind-IsOpen="_isOpen" AutoFocus="false" Title="Dialog" Body="Content" />
+        break;
+}
+
+@code {
+    [SupplyParameterFromQuery(Name = "surface")] public string? Surface { get; set; }
+    [SupplyParameterFromQuery(Name = "part")] public string? Part { get; set; }
+
+    private bool _isOpen;
+    private string? _field;
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
+    // interactive render moves it on, which is what the test waits for before it drives the page.
+    private string _status = "Loading";
+
+    // BitFullCalendar: two events on one day (with one shown per cell, the second goes under "+1 more"), and a
+    // recurring one for the scope prompt.
+    private readonly List<BitFullCalendarEvent> _fcEvents =
+    [
+        new() { Id = "a", Title = "Alpha", StartDate = DateTime.Today.AddHours(9), EndDate = DateTime.Today.AddHours(10) },
+        new() { Id = "b", Title = "Beta", StartDate = DateTime.Today.AddHours(11), EndDate = DateTime.Today.AddHours(12) },
+        new()
+        {
+            Id = "r", Title = "Standup",
+            StartDate = DateTime.Today.AddDays(1).AddHours(9), EndDate = DateTime.Today.AddDays(1).AddHours(9.5),
+            Recurrence = new() { Frequency = BitFullCalendarRecurrenceFrequency.Daily, Count = 3 }
+        },
+    ];
+    private readonly BitFullCalendarSettings _fcSettings = new() { MaxEventsPerDayCell = 1 };
+
+    // BitNavPanel
+    private bool _npnOpen = true;
+    private readonly List<BitNavItem> _npnItems =
+    [
+        new() { Text = "Home", Key = "home" },
+        new() { Text = "Settings", Key = "settings" },
+        new() { Text = "Profile", Key = "profile" },
+    ];
+
+    // BitPdfViewer: the demo's sample, read off the repository the host runs from.
+    private BitPdfSource? _pdf;
+
+    // BitMap
+    private readonly BitLeafletMapProvider _mapProvider = new() { Center = new(48.2082, 16.3738), Zoom = 12 };
+    private readonly List<BitMapMarker> _mapMarkers = [new() { Id = "opera", Position = new(48.2029, 16.3690), Alt = "Vienna State Opera" }];
+
+    // BitChart
+    private readonly BitChartData _chartData = new()
+    {
+        Labels = ["A", "B", "C"],
+        Datasets = [new() { Label = "S1", Data = [3, 5, 2] }]
+    };
+
+    // BitDataGrid
+    public class GridRow { public int Id { get; set; } public string Name { get; set; } = ""; }
+    private readonly List<GridRow> _gridRows = [new() { Id = 1, Name = "one" }, new() { Id = 2, Name = "two" }];
+
+    // BitMarkdownEditor
+    private string? _md = "hello";
+    private bool _mdeFullScreen;
+
+    // BitRichTextEditor
+    private string? _html = "<p>hello</p>";
+
+    // BitCalendar
+    private readonly BitCalendarEvent[] _calEvents =
+        [new() { Title = "Standup", Body = "Daily", Date = DateOnly.FromDateTime(DateTime.Today), StartTime = new TimeOnly(9, 0) }];
+
+    // BitSnackBar
+    private BitSnackBar _snackBar = default!;
+
+    private Task<IReadOnlyList<BitRichTextEditorMention>> SearchPeople(string term) =>
+        Task.FromResult<IReadOnlyList<BitRichTextEditorMention>>(
+            new[] { new BitRichTextEditorMention("1", "Alice", null), new BitRichTextEditorMention("2", "Bob", null) }
+                .Where(m => m.Display.Contains(term, StringComparison.OrdinalIgnoreCase)).ToList());
+
+    private RenderFragment Content => @<div id="surface-content" style="display: flex; flex-direction: column; gap: 8px; padding: 16px; min-width: 760px; max-height: 85vh; overflow: auto;">
+        <button id="surface-btn">Surface button</button>
+        @switch (Part)
+        {
+            case "fc":
+                <div style="height: 640px;">
+                    <BitFullCalendar Events="_fcEvents" DefaultView="BitFullCalendarView.Month" DefaultDate="DateTime.Today" Settings="_fcSettings">
+                        <EventEditorTemplate Context="ev">
+                            <div id="w-fcf"><BitTextField ClearOnEscape Immediate @bind-Value="_field" /></div>
+                            <div id="w-fct"><BitTooltip Text="Editor tip"><button id="fc-tip-btn">Tip</button></BitTooltip></div>
+                        </EventEditorTemplate>
+                    </BitFullCalendar>
+                </div>
+                break;
+
+            case "npn":
+                <BitNavPanel TItem="BitNavItem" @bind-IsOpen="_npnOpen" Items="_npnItems" SearchDebounceTime="0"
+                             DrawerBreakpoint="BitNavPanelBreakpoint.Always">
+                    <Footer>
+                        <div id="w-npn-dp"><BitDatePicker AllowTextInput /></div>
+                        <div id="w-npn-tt"><BitTooltip Text="Footer tip"><button id="npn-tip-btn">Tip</button></BitTooltip></div>
+                    </Footer>
+                </BitNavPanel>
+                break;
+
+            case "pdv":
+                <BitPdfViewer Source="_pdf" Height="480px" />
+                break;
+
+            case "map":
+                <div style="height: 360px;">
+                    <BitMap TMapProvider="BitLeafletMapProvider" Provider="_mapProvider" Markers="_mapMarkers"
+                            MarkerListMode="BitMapMarkerListMode.Visible">
+                        <MarkerPopupTemplate Context="marker">
+                            <b>@marker.Alt</b>
+                            <button id="map-popup-btn">In the popup</button>
+                        </MarkerPopupTemplate>
+                    </BitMap>
+                </div>
+                break;
+
+            case "cht":
+                <div style="width: 600px; height: 300px;">
+                    <BitChart Type="BitChartType.Bar" Data="_chartData" />
+                </div>
+                break;
+
+            case "dtg":
+                <BitDataGrid TItem="GridRow" Items="_gridRows" Editable ShowColumnChooser>
+                    <BitDataGridColumn TItem="GridRow" Field="@nameof(GridRow.Id)" Title="ID" Editable="false" />
+                    <BitDataGridColumn TItem="GridRow" Field="@nameof(GridRow.Name)" Title="Name" />
+                </BitDataGrid>
+                break;
+
+            case "dtg-nav":
+                <BitDataGrid TItem="GridRow" Items="_gridRows" Editable CellNavigation>
+                    <BitDataGridColumn TItem="GridRow" Field="@nameof(GridRow.Id)" Title="ID" Editable="false" />
+                    <BitDataGridColumn TItem="GridRow" Field="@nameof(GridRow.Name)" Title="Name" />
+                </BitDataGrid>
+                break;
+
+            case "mde":
+                <BitMarkdownEditor @bind-Value="_md" @bind-FullScreen="_mdeFullScreen" />
+                break;
+
+            case "rte":
+                <BitRichTextEditor @bind-Value="_html" Toolbar="BitRichTextEditorToolbar.AllExtended" OnMentionSearch="SearchPeople" />
+                break;
+
+            case "cal":
+                <BitCalendar ShowMonthPickerAsOverlay ShowTimePicker ShowTimePickerAsOverlay Events="_calEvents" />
+                break;
+
+            case "snb":
+                <button id="btn-snb" @onclick='() => _snackBar.Info("Saved", "body")'>Show item</button>
+                <button id="btn-snb-persistent" @onclick='() => _snackBar.Show(new BitSnackBarItem { Title = "Pinned", Persistent = true, OnClick = _ => Task.CompletedTask })'>Show persistent item</button>
+                <BitSnackBar @ref="_snackBar" />
+                break;
+        }
+    </div>;
+
+    protected override void OnInitialized()
+    {
+        if (Part is "pdv")
+        {
+            var path = Path.GetFullPath(Path.Combine(Env.ContentRootPath, "..", "..", "..", "Demo", "Client",
+                                                     "Bit.BlazorUI.Demo.Client.Core", "wwwroot", "samples", "sample-pdf.pdf"));
+            _pdf = BitPdfSource.FromBytes(File.ReadAllBytes(path), "sample-pdf.pdf");
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+
+    private void Open()
+    {
+        _isOpen = true;
+        _status = "Open";
+    }
+}

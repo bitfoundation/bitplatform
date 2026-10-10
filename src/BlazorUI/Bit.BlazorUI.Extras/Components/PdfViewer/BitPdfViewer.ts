@@ -754,6 +754,12 @@
                 return { command: "sidebar", prevent: true };
             }
             if (e.key === "Escape") {
+                // Only the plain key, the one the root claims (EscapeClaim): an Escape with a
+                // modifier is claimed by nobody, so it goes on to a dialog the viewer sits in,
+                // and closing something here as well would make one press do two things.
+                if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) {
+                    return null;
+                }
                 // The find box closes itself on Escape (so it still does with the
                 // shortcuts off). Forwarding that same key as well would reach .NET a
                 // second time and, depending on which call lands first, either close

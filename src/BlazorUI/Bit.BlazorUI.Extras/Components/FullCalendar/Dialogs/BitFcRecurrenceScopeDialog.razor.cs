@@ -38,7 +38,9 @@ public partial class BitFcRecurrenceScopeDialog : IAsyncDisposable
 
     private async Task OnDialogKeyDown(KeyboardEventArgs e)
     {
-        if (e.Key is "Escape" or "Esc")
+        // Only the plain key, the one the dialog claims: an Escape with a modifier is left to the surface the
+        // calendar sits in.
+        if (e.IsPlainEscape())
             await OnCancel.InvokeAsync();
     }
 

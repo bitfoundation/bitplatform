@@ -104,7 +104,9 @@ public partial class BitRichTextEditor
                 }
                 break;
 
-            case "Escape":
+            // Only the plain key, the one the box claims (data-bit-esc): an Escape with a modifier is the
+            // surrounding surface's.
+            case "Escape" when e.IsPlainEscape():
                 CloseMention();
                 RequestEditorFocus();
                 break;

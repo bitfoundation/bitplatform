@@ -756,9 +756,8 @@
             // lifecycle keys (Enter commits, Escape cancels) are grid-owned. Enter's native action is
             // cancelled here, leaving caret movement and typing to the input. Escape's is not: the
             // editing cell claims it (data-bit-esc, see BitDataGridCell and Utils.claimEscape) whenever
-            // its handler cancels the edit, which prevents the default then - and the grid's editors
-            // (text, number, date inputs) have no native Escape action worth cancelling otherwise; an
-            // edit nothing cancels leaves the key to a dialog the grid sits in.
+            // its handler cancels the edit, with or without cell navigation, which prevents the default
+            // then - and an Escape with a modifier cancels nothing, and goes on to a dialog the grid sits in.
             if (e.key === 'Enter' &&
                 (target.closest('.bit-dtg-row')?.classList?.contains('bit-dtg-editing') || target.closest('.bit-dtg-cell-editing'))) {
                 // Don't swallow the key for nested controls that own their keyboard behavior:

@@ -899,14 +899,21 @@
 
         // ==========================================================
 
+        // An Escape without a modifier: the only one the editor claims (data-bit-esc, see Utils.claimEscape), so the
+        // only one it acts on - one with a modifier goes on to the surface around the editor.
+        private static isPlainEscape(e: KeyboardEvent) {
+            return e.key === 'Escape' && !(e.altKey || e.ctrlKey || e.metaKey || e.shiftKey);
+        }
+
         private keyDownHandler = (e: KeyboardEvent) => {
             if (e.isComposing) return;
 
             // Escape arms the Tab escape hatch below, then lets .NET close the find panel
-            // or leave full-screen.
+            // or leave full-screen - only the plain key, the one the textarea claims
+            // (EscapeClaim): an Escape with a modifier goes on to a dialog the editor sits in.
             if (e.key === 'Escape') {
                 this._tabEscape = true;
-                this.invoke('OnEscape');
+                if (MarkdownEditorCore.isPlainEscape(e)) this.invoke('OnEscape');
                 return;
             }
 
@@ -1024,7 +1031,11 @@
         };
 
         private previewKeyDownHandler = (e: KeyboardEvent) => {
-            if (e.key === 'Escape') { this.invoke('OnEscape'); return; }
+            if (e.key === 'Escape') {
+                // Only the plain key, the one the pane claims, as in the textarea.
+                if (MarkdownEditorCore.isPlainEscape(e)) this.invoke('OnEscape');
+                return;
+            }
             if (this.runItemShortcut(e, false)) return;
             if ((e.ctrlKey || e.metaKey) && e.code === 'Slash') { e.preventDefault(); this.invoke('OnShortcut', 'help'); return; }
             if (e.key === 'F9') { e.preventDefault(); this.invoke('OnShortcut', 'mode'); return; }

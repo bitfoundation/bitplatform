@@ -95,7 +95,9 @@ public partial class BitRichTextEditor
                 }
                 break;
 
-            case "Escape":
+            // Only the plain key, the one the box claims (data-bit-esc): an Escape with a modifier is the
+            // surrounding surface's.
+            case "Escape" when e.IsPlainEscape():
                 CloseSlash();
                 RequestEditorFocus();
                 break;
@@ -130,8 +132,8 @@ public partial class BitRichTextEditor
         try
         {
             await _slashInputRef.FocusSafelyAsync();
-            // Suppress native browser handling of the menu's navigation keys (Arrow/Enter/Escape)
-            // on this input while leaving normal typing intact.
+            // Suppress native browser handling of the menu's navigation keys (Arrow/Enter) on this
+            // input while leaving normal typing intact. Escape's is prevented by its claim (data-bit-esc).
             await _js.BitRichTextEditorBindSlashKeys(_slashInputRef);
         }
         catch (JSDisconnectedException) { } // circuit gone; nothing to focus

@@ -3574,7 +3574,7 @@ public class BitDataGridTests : BunitTestContext
     }
 
     [TestMethod]
-    public void RowModeCellsClaimEscapeWhileTheRowIsEditedAndOnlyWhenTheyAreNavigable()
+    public void RowModeCellsClaimEscapeWhileTheRowIsEdited()
     {
         var navigable = RenderGrid(CreateRows(), parameters =>
         {
@@ -3592,11 +3592,22 @@ public class BitDataGridTests : BunitTestContext
         Assert.IsNull(navigable.Instance.EditingItem);
         Assert.IsNull(DataCell(navigable, 1, 0).GetAttribute("data-bit-esc"));
 
-        // Without cell navigation the cells take no keys at all, so an open edit claims nothing through them.
+        // Without cell navigation Escape is still the way out of the row's editors: the cells of the edited row claim
+        // it and cancel the edit, handing the focus to the row's Edit button as Cancel does, while the other rows' cells
+        // take no keys at all and claim nothing.
         var plain = RenderGrid(CreateRows(), parameters => parameters.Add(p => p.Editable, true));
         plain.FindAll(".bit-dtg-cell-command button")[0].Click(); // Edit
         Assert.IsNotNull(plain.Instance.EditingItem);
+        Assert.AreEqual("claim", DataCell(plain, 0, 0).GetAttribute("data-bit-esc"), "a cell of the edited row cancels the edit");
+        Assert.IsNull(DataCell(plain, 1, 0).GetAttribute("data-bit-esc"), "a cell of another row takes no keys");
+
+        DataCell(plain, 0, 0).KeyDown(new KeyboardEventArgs { Key = "Escape", ShiftKey = true });
+        Assert.IsNotNull(plain.Instance.EditingItem, "an Escape with a modifier is the surrounding surface's");
+
+        DataCell(plain, 0, 0).KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.IsNull(plain.Instance.EditingItem);
         Assert.IsNull(DataCell(plain, 0, 0).GetAttribute("data-bit-esc"));
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.DataGrid.focusRowCommand"));
     }
 
     [TestMethod]

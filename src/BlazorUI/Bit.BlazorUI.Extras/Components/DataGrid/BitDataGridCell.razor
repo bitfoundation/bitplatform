@@ -49,10 +49,14 @@
     private bool Editing => Grid.IsEditingCell(Item, Column);
     private bool ShowsEditor => Editing && Grid.ColumnEditable(Column);
 
+    // Whether a plain Escape on the cell cancels an edit, the one rule HandleKeyDown and EscapeClaim both go by: with
+    // an edit open (Grid.CancelsEditOnEscape), a navigable cell cancels it whether it is this cell's own or another's,
+    // and without cell navigation the cells of the row being edited cancel it.
+    private bool CancelsEditOnEscape => Grid.CancelsEditOnEscape && (Grid.CellNavigationActive || Editing);
+
     // When HandleKeyDown acts on Escape, written onto the cell for Utils.claimEscape: read off the same state it
-    // decides on - a navigable cell, and an edit open for Escape to cancel (Grid.CancelsEditOnEscape), whether it is
-    // this cell's own or another's - so the key is claimed exactly when the press cancels something.
-    private string? EscapeClaim => Grid.CellNavigationActive && Grid.CancelsEditOnEscape ? "claim" : null;
+    // decides on, so the key is claimed exactly when the press cancels something.
+    private string? EscapeClaim => CancelsEditOnEscape ? "claim" : null;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -74,7 +78,13 @@
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
-        if (!Grid.CellNavigationActive) return;
+        if (!Grid.CellNavigationActive)
+        {
+            // Without cell navigation Escape is still the way out of the row's editors (CancelsEditOnEscape). There
+            // is no focused cell to go back to, so the focus goes to the row's Edit button, as it does from Cancel.
+            if (e.IsPlainEscape() && CancelsEditOnEscape) await Grid.CancelEditFromCommandAsync(Item);
+            return;
+        }
 
         // While inline-editing, the cell only handles the edit lifecycle keys; everything
         // else (typing, caret movement) belongs to the editor input.

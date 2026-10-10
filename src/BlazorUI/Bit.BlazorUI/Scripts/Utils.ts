@@ -638,7 +638,11 @@
         // surface around it. An element that leaves the key alone hands it to the next one out, whose handler
         // hears a key pressed anywhere inside it - up to the nearest surface the key was pressed in (isEscapeSurface):
         // that surface is the innermost thing the key closes, so nothing it is rendered inside of (a message, a
-        // dropdown's field) claims the key away from it. An IME composition is nobody's here (the key cancels the
+        // dropdown's field) claims the key away from it. The same goes for the two other things that close on the
+        // key without claiming it: a shown tooltip whose anchor the key was pressed in (setupTooltip), and a
+        // component whose popup is open (Callouts.componentContains) - so a date picker in a navigation drawer
+        // closes its calendar, and a tooltip on a button of a dialog goes away, while the drawer or the dialog
+        // around them waits for the next press. An IME composition is nobody's here (the key cancels the
         // candidate), and neither is an Escape with a modifier, which the components leave alone (IsPlainEscape)
         // so the surface around them closes on it.
         public static claimEscape(e: KeyboardEvent) {
@@ -646,16 +650,28 @@
             if (e.isComposing || e.keyCode === 229) return;
             if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
 
-            for (let element = e.target instanceof Element ? e.target : null; element; element = element.parentElement) {
+            const target = e.target instanceof Element ? e.target : null;
+
+            for (let element = target; element; element = element.parentElement) {
                 const claim = element.getAttribute('data-bit-esc');
                 if (claim === 'claim' || (claim === 'text' && (element as HTMLInputElement).value)) {
+                    // A component between the key and the claim whose popup is open closes that popup on it.
+                    if (Callouts.componentContains(target, element)) return;
+
                     Utils._escapeClaimers.set(e, element);
                     e.preventDefault();
                     return;
                 }
 
                 if (Utils.isEscapeSurface(element)) return;
+                if (Utils.showsDismissibleTooltip(element)) return;
             }
+        }
+
+        // Whether the element is the anchor of a tooltip that is shown and closes on Escape (see setupTooltip).
+        private static showsDismissibleTooltip(element: Element) {
+            return Utils._tooltipsByRoot.has(element as HTMLElement)
+                && !!element.querySelector(':scope > .bit-ttp-wrp.bit-ttp-vis[data-bit-ttp-esc]');
         }
 
         private static _escapeClaimers = new WeakMap<Event, Element>();
@@ -676,7 +692,8 @@
         // press with a modifier or during an IME composition is claimed by nobody, so it is not the root's either.
         // The listener is on the root, so it runs before Blazor's document-level delegation, and the answer is
         // queued ahead of the keydown Blazor dispatches right after it. It only answers while the root claims the
-        // key at all (data-bit-esc) - the same pattern a BitMessage goes by (Message.watchEscape).
+        // key at all (data-bit-esc). A BitMessage goes by it to dismiss itself, and the Extras' dialogs and panels
+        // through BitEscapeClaimWatch.
         public static watchEscapeClaim(id: string, root: HTMLElement, dotnetObj: DotNetObject) {
             Utils.unwatchEscapeClaim(id);
 

@@ -157,8 +157,9 @@ public partial class BitFcDateTimePicker : IDisposable
     private void OnKeyDown(KeyboardEventArgs e)
     {
         // Escape closes the popup rather than the surrounding dialog; the markup stops the event
-        // there while the popup is open so the two do not close together.
-        if (_isOpen && e.Key is "Escape" or "Esc")
+        // there while the popup is open so the two do not close together. Only the plain key, the one the picker
+        // claims (_EscapeClaim): an Escape with a modifier is left to the surface the calendar sits in.
+        if (_isOpen && e.IsPlainEscape())
             Close();
     }
 

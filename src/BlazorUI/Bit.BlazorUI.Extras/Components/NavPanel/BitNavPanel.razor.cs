@@ -49,10 +49,9 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     private BitNav<TItem>? _bitNavRef;
     private BitSearchBox? _searchBoxRef;
     private IList<TItem> _filteredNavItems = [];
-    private DotNetObjectReference<BitNavPanel<TItem>>? _dotnetObj;
-    // What the browser answered for the Escape Blazor is about to hand the key handler (see _OnEscapeVerdict): whether
-    // a part of the panel claimed it first, taken by the handler as it starts.
-    private bool _foreignEscape;
+    // Which Escapes a part of the panel claimed first (see _OnEscapeVerdict), for the key handler. Made on first use,
+    // so a panel disposed before it rendered never starts watching.
+    private BitEscapeClaimWatch<BitNavPanel<TItem>>? _escapeWatch;
 
 
 
@@ -672,7 +671,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [JSInvokable("OnEscapeVerdict")]
     public void _OnEscapeVerdict(bool foreign)
     {
-        _foreignEscape = foreign;
+        EscapeWatch.SetVerdict(foreign);
     }
 
 
@@ -794,9 +793,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
         // is the one that had it on the way in, which is no longer true once the panel has taken it.
         await UpdateModalState();
 
-        if (firstRender)
+        if (firstRender && IsDisposed is false)
         {
-            await WatchEscapeClaim();
+            // The root hears every key pressed inside the panel, so the browser tells it which Escapes a part of it
+            // claimed first (see _OnEscapeVerdict, Utils.watchEscapeClaim).
+            await EscapeWatch.WatchAsync(RootElement);
         }
 
         // The search box only exists once the panel has left its toggled state, so the focus is moved in the
@@ -899,9 +900,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
         // One Escape does one thing: a press a part of the panel claimed first (the search box, emptying its own
         // text) is that part's, so it neither empties the search a second time nor closes the drawer as well. The
         // verdict is read once, so it never outlives the press it was given for.
-        var foreign = _foreignEscape;
-        _foreignEscape = false;
-        if (foreign) return;
+        if (EscapeWatch.TakeForeign()) return;
 
         // The first Escape empties an active search - which is what the search box does on its own when the
         // focus is in it, and what the key is expected to do from anywhere else in the panel - and only the
@@ -1267,20 +1266,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
         }
     }
 
-    // The root hears every key pressed inside the panel, so the browser tells it which Escapes a part of it claimed
-    // first (see _OnEscapeVerdict, Utils.watchEscapeClaim).
-    private async Task WatchEscapeClaim()
-    {
-        if (IsDisposed) return;
-
-        _dotnetObj ??= DotNetObjectReference.Create(this);
-
-        try
-        {
-            await _js.BitUtilsWatchEscapeClaim(_Id, RootElement, _dotnetObj);
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-    }
+    private BitEscapeClaimWatch<BitNavPanel<TItem>> EscapeWatch => _escapeWatch ??= new(_js, this);
 
     private async Task SetupFocusTrap()
     {
@@ -1395,16 +1381,8 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
 
-        if (_dotnetObj is not null)
-        {
-            try
-            {
-                await _js.BitUtilsUnwatchEscapeClaim(_Id);
-            }
-            catch (JSDisconnectedException) { } // we can ignore this exception here
-
-            _dotnetObj.Dispose();
-        }
+        // Disposed even when it never started, so a first render still on its way does not start it afterwards.
+        await EscapeWatch.DisposeAsync();
 
         await base.DisposeAsync(disposing);
     }

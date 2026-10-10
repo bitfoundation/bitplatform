@@ -968,8 +968,10 @@ public partial class BitChart : BitComponentBase
 
     private async Task OnKeyDown(KeyboardEventArgs e)
     {
+        // IsNavigable holds an empty chart back as well, so EscapeClaim, which goes by it too, never claims a key
+        // this handler then ignores.
+        if (IsNavigable is false) return;
         int n = _scene.Elements.Count;
-        if (n == 0 || IsNavigable is false) return;
         switch (e.Key)
         {
             // Left/right walk the series the reader is on; up/down step between the series at the same
