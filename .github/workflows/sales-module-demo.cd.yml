@@ -76,7 +76,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new SalesModule --database PostgreSQL --module Sales --appInsights --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
+      run: bit new SalesModule --database PostgreSQL --module Sales --appInsights --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage S3 --notification --captcha reCaptcha --signalR --ads --brouter true --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --no-build --no-format --no-migration --no-trust
 
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2
@@ -191,7 +191,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new SalesModule --database PostgreSQL --module Sales --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage S3 --captcha reCaptcha --signalR --ads --brouter false --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms windows --no-build --no-format --no-migration --no-trust
+      run: bit new SalesModule --database PostgreSQL --module Sales --sentry --apiServerUrl ${{ env.SERVER_ADDRESS }} --webAppUrl ${{ env.SERVER_ADDRESS }} --filesStorage S3 --captcha reCaptcha --signalR --ads --brouter true --template-package "${{ env.BIT_TEMPLATE_PACKAGE }}" --yes --platforms windows --no-build --no-format --no-migration --no-trust
   
     - name: Update core appsettings.json
       uses: devops-actions/variable-substitution@ae7b1f3676ae374dc70282e6b9650bc50b611222 # v1.2

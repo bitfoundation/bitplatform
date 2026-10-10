@@ -120,7 +120,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new TestPostgreSQL --database PostgreSQL --module Sales --signalR --aspire --redis --advancedTests --template-package "$BIT_TEMPLATE_PACKAGE" --yes --no-trust
+      run: bit new TestPostgreSQL --database PostgreSQL --module Sales --signalR --aspire --redis --advancedTests --brouter true --template-package "$BIT_TEMPLATE_PACKAGE" --yes --no-trust
 
     - name: Create appsettings.json for Client.Web
       run: |
@@ -205,7 +205,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new TestMySql --database MySql --module Sales --signalR --aspire --redis --advancedTests --template-package "$BIT_TEMPLATE_PACKAGE" --yes --no-trust
+      run: bit new TestMySql --database MySql --module Sales --signalR --aspire --redis --advancedTests --brouter true --template-package "$BIT_TEMPLATE_PACKAGE" --yes --no-trust
 
     - name: Create appsettings.json for Client.Web
       run: |
@@ -290,7 +290,7 @@ jobs:
       uses: ./.github/actions/setup-bit-cli
 
     - name: Create project with bit new
-      run: bit new TestSqlServer --database SqlServer --module Admin --signalR --aspire false --api Standalone --advancedTests --template-package "$BIT_TEMPLATE_PACKAGE" --yes --no-trust
+      run: bit new TestSqlServer --database SqlServer --module Admin --signalR --aspire false --api Standalone --advancedTests --brouter true --template-package "$BIT_TEMPLATE_PACKAGE" --yes --no-trust
 
     - name: Create appsettings.json for Client.Web
       run: |
@@ -383,9 +383,9 @@ jobs:
       env:
         EnforceCodeStyleInBuild: true
       run: |
-        bit new TestStandalone --api Standalone --template-package "$BIT_TEMPLATE_PACKAGE" --yes --no-trust --no-format --no-browsers
+        bit new TestStandalone --api Standalone --brouter true --template-package "$BIT_TEMPLATE_PACKAGE" --yes --no-trust --no-format --no-browsers
         rm -r "TestStandalone"
-        bit new TestIntegrated --api Integrated --template-package "$BIT_TEMPLATE_PACKAGE" --yes --no-trust --no-format --no-browsers
+        bit new TestIntegrated --api Integrated --brouter true --template-package "$BIT_TEMPLATE_PACKAGE" --yes --no-trust --no-format --no-browsers
         rm -r "TestIntegrated"
 
     - name: Build sample configuration 1
@@ -404,7 +404,7 @@ jobs:
     - name: Build sample configuration 2
       working-directory: ${{ runner.temp }}
       run: |
-        bit new TestProject2 --database Other --filesStorage S3 --api Standalone --captcha None --pipeline None --module None --offlineDb false --appInsights false --sentry false --signalR false --notification false --cloudflare false --ads false --aspire true --redis false --multitenant false --brouter false --platforms web,android --template-package "$BIT_TEMPLATE_PACKAGE" --yes --no-trust --no-browsers -p:InvariantGlobalization=true -p:Environment=Development -p:EnforceCodeStyleInBuild=true
+        bit new TestProject2 --database Other --filesStorage S3 --api Standalone --captcha None --pipeline None --module None --offlineDb false --appInsights false --sentry false --signalR false --notification false --cloudflare false --ads false --aspire true --redis false --multitenant false --brouter true --platforms web,android --template-package "$BIT_TEMPLATE_PACKAGE" --yes --no-trust --no-browsers -p:InvariantGlobalization=true -p:Environment=Development -p:EnforceCodeStyleInBuild=true
         rm -r "TestProject2"
 
 
