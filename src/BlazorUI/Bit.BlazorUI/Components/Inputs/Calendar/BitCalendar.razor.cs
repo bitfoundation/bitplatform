@@ -1628,17 +1628,39 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     }
 
     // Whether the month picker takes the place of the day grid rather than sitting beside it - laid over it, or
-    // swapped in for it beside a time picker - the one rule DismissMonthPickerOverlay and MonthEscapeClaim both go by.
+    // swapped in for it beside a time picker - the one rule DismissMonthPickerOverlay and YearMonthPickerActsOnEscape
+    // both go by.
     private bool MonthPickerIsOverlay => ShowMonthPickerAsOverlay || (ShowTimePicker && ShowTimePickerAsOverlay is false);
 
-    // When HandleMonthKeyDown acts on Escape, written onto the month cells for Utils.claimEscape: a month picker in
-    // place of the day grid is left with the key, so a dialog around the calendar stays open on that press, while
-    // one beside the day grid does nothing with it and leaves it to the dialog.
-    private string? MonthEscapeClaim => Disabled is false && MonthPickerIsOverlay ? "claim" : null;
+    // Whether a plain Escape in the month and year picker does something, the one rule HandleYearMonthPickerKeyDown and
+    // YearMonthPickerEscapeClaim both go by: the year grid always goes back to the month grid, and the month grid is
+    // left only where it takes the place of the day grid (DismissMonthPickerOverlay).
+    private bool YearMonthPickerActsOnEscape => Disabled is false && (_showYearPicker || MonthPickerIsOverlay);
 
-    // When HandleYearKeyDown acts on Escape, written onto the year cells for Utils.claimEscape: the year grid always
-    // goes back to the month grid, so the key is the calendar's for as long as it answers keys at all.
-    private string? YearEscapeClaim => Disabled is false ? "claim" : null;
+    // When HandleYearMonthPickerKeyDown acts on Escape, written onto the picker's wrapper for Utils.claimEscape, so a
+    // dialog around the calendar stays open on that press, while a month picker beside the day grid leaves it to the
+    // dialog.
+    private string? YearMonthPickerEscapeClaim => YearMonthPickerActsOnEscape ? "claim" : null;
+
+    // Escape leaves the year grid the way it was reached: back to the months of the year it is showing, and from
+    // there - a second Escape - out of the overlay entirely. Answered on the wrapper rather than on the cells, so it
+    // does the same from the header's buttons, and once per press. Only the plain key, the one the wrapper claims
+    // (YearMonthPickerEscapeClaim): an Escape with a modifier is left to the surface around the calendar.
+    private void HandleYearMonthPickerKeyDown(KeyboardEventArgs e)
+    {
+        if (e.IsPlainEscape() is false) return;
+        if (YearMonthPickerActsOnEscape is false) return;
+
+        if (_showYearPicker)
+        {
+            ToggleBetweenMonthAndYearPicker();
+            FocusMonthCell(GetFocusableMonth());
+        }
+        else
+        {
+            DismissMonthPickerOverlay();
+        }
+    }
 
     // Whether a plain Escape in the time picker hides it, the one rule HandleTimePickerKeyDown and
     // TimePickerEscapeClaim both go by: only a time picker laid over the day grid is left with the key.
@@ -2155,13 +2177,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     {
         if (Disabled) return;
 
-        // Only the plain key, the one the month cells claim (MonthEscapeClaim): an Escape with a modifier is left to
-        // the surface around the calendar, and answers nothing below either.
-        if (e.IsPlainEscape())
-        {
-            DismissMonthPickerOverlay();
-            return;
-        }
+        // Escape is the wrapper's (HandleYearMonthPickerKeyDown), and answers nothing below either.
+        if (e.Key is "Escape") return;
 
         if (e.Key is "PageUp" or "PageDown")
         {
@@ -2235,15 +2252,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     {
         if (Disabled) return;
 
-        // Escape leaves the year grid the way it was reached: back to the months of the year it is showing,
-        // and from there - a second Escape - out of the overlay entirely. Only the plain key, the one the year cells
-        // claim (YearEscapeClaim): an Escape with a modifier is left to the surface around the calendar.
-        if (e.IsPlainEscape())
-        {
-            ToggleBetweenMonthAndYearPicker();
-            FocusMonthCell(GetFocusableMonth());
-            return;
-        }
+        // Escape is the wrapper's (HandleYearMonthPickerKeyDown), and answers nothing below either.
+        if (e.Key is "Escape") return;
 
         if (e.Key is "PageUp" or "PageDown")
         {

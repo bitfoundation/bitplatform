@@ -1126,10 +1126,11 @@ public class BitFullCalendarTests : BunitTestContext
     }
 
     // The dialogs claim the Escape they close on (data-bit-esc, read by Utils.claimEscape), so a surface the calendar
-    // sits in does not close on the same press - and only while they do close on it.
+    // sits in does not close on the same press - and go on claiming it while a save or a delete is in flight, when
+    // the press does nothing, so that surface does not take the dialog away mid-commit either.
 
     [TestMethod]
-    public async Task BitFullCalendarAddDialogShouldClaimEscapeUnlessASaveIsInFlight()
+    public async Task BitFullCalendarAddDialogShouldKeepClaimingEscapeWhileASaveIsInFlight()
     {
         var gate = new TaskCompletionSource();
         var component = RenderComponent<BitFullCalendar>(parameters =>
@@ -1148,8 +1149,9 @@ public class BitFullCalendarTests : BunitTestContext
         component.Find("input[id^='bfc-title-']").Change("Pending");
         var save = component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-primary").ClickAsync(new MouseEventArgs());
 
-        // A save in flight keeps the dialog open on Escape, so the press is not claimed from the surface around it.
-        component.WaitForAssertion(() => Assert.IsNull(component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc")));
+        // A save in flight keeps the dialog open on Escape, and the press stays claimed from the surface around it.
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-primary").HasAttribute("disabled")));
+        Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc"));
         component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
         Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog").Count);
 
@@ -1191,7 +1193,7 @@ public class BitFullCalendarTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitFullCalendarDetailsDialogShouldNotClaimEscapeWhileADeleteIsInFlight()
+    public async Task BitFullCalendarDetailsDialogShouldKeepClaimingEscapeWhileADeleteIsInFlight()
     {
         var gate = new TaskCompletionSource();
         var component = RenderComponent<BitFullCalendar>(parameters =>
@@ -1207,7 +1209,11 @@ public class BitFullCalendarTests : BunitTestContext
         component.Find(".bit-bfc-event-badge").Click();
         var delete = component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-danger").ClickAsync(new MouseEventArgs());
 
-        component.WaitForAssertion(() => Assert.IsNull(component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc")));
+        // A delete in flight keeps the dialog open on Escape, and the press stays claimed from the surface around it.
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-danger").HasAttribute("disabled")));
+        Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc"));
+        component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog").Count);
 
         gate.SetResult();
         await delete;

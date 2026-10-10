@@ -2323,20 +2323,18 @@ public class BitCalendarTests : BunitTestContext
         // The month toggle of the day picker's header, which swaps the day grid for the months.
         component.Find(".bit-cal-ptb").Click();
 
-        var months = component.FindAll(".bit-cal-pkb");
+        Assert.IsNotEmpty(component.FindAll(".bit-cal-pkb"));
 
-        // The month cells carry data-bit-esc (Utils.claimEscape) for the press that takes them away, so a dialog
-        // around the calendar stays open on that press.
-        Assert.IsNotEmpty(months);
-        Assert.IsTrue(months.All(m => m.GetAttribute("data-bit-esc") == "claim"));
+        // The picker's wrapper carries data-bit-esc (Utils.claimEscape) for the press that takes the months away, so
+        // a dialog around the calendar stays open on that press; the cells leave it to the wrapper.
+        Assert.AreEqual("claim", component.Find(".bit-cal-mwp").GetAttribute("data-bit-esc"));
+        Assert.IsTrue(component.FindAll(".bit-cal-pkb").All(m => m.HasAttribute("data-bit-esc") is false));
 
         // A disabled calendar answers no key, so it leaves the press to the dialog.
         component.Render(parameters => parameters.Add(p => p.Disabled, true));
 
-        months = component.FindAll(".bit-cal-pkb");
-
-        Assert.IsNotEmpty(months);
-        Assert.IsTrue(months.All(m => m.HasAttribute("data-bit-esc") is false));
+        Assert.IsNotEmpty(component.FindAll(".bit-cal-pkb"));
+        Assert.IsFalse(component.Find(".bit-cal-mwp").HasAttribute("data-bit-esc"));
     }
 
     [TestMethod]
@@ -2348,12 +2346,11 @@ public class BitCalendarTests : BunitTestContext
             parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
         });
 
-        var months = component.FindAll(".bit-cal-pkb");
-
         // A month picker beside the day grid does nothing with Escape (DismissMonthPickerOverlay), so the key goes
         // on to the dialog around the calendar.
-        Assert.IsNotEmpty(months);
-        Assert.IsTrue(months.All(m => m.HasAttribute("data-bit-esc") is false));
+        Assert.IsNotEmpty(component.FindAll(".bit-cal-pkb"));
+        Assert.IsFalse(component.Find(".bit-cal-mwp").HasAttribute("data-bit-esc"));
+        Assert.IsTrue(component.FindAll(".bit-cal-pkb").All(m => m.HasAttribute("data-bit-esc") is false));
     }
 
     [TestMethod]
@@ -2370,19 +2367,43 @@ public class BitCalendarTests : BunitTestContext
         // The year toggle of the month pane, which swaps the months for the years of the range.
         component.FindAll(".bit-cal-ptb").Last().Click();
 
-        var years = component.FindAll(".bit-cal-pkb");
-
-        // The year cells carry data-bit-esc (Utils.claimEscape) for the press that goes back to the months, even
-        // where the month picker beside the day grid leaves the key alone.
-        Assert.Contains("2026", years.Select(b => b.TextContent.Trim()).ToList());
-        Assert.IsTrue(years.All(y => y.GetAttribute("data-bit-esc") == "claim"));
+        // The picker's wrapper carries data-bit-esc (Utils.claimEscape) for the press that goes back to the months,
+        // even where the month picker beside the day grid leaves the key alone.
+        Assert.Contains("2026", component.FindAll(".bit-cal-pkb").Select(b => b.TextContent.Trim()).ToList());
+        Assert.AreEqual("claim", component.Find(".bit-cal-mwp").GetAttribute("data-bit-esc"));
 
         component.Render(parameters => parameters.Add(p => p.Disabled, true));
 
-        years = component.FindAll(".bit-cal-pkb");
+        Assert.Contains("2026", component.FindAll(".bit-cal-pkb").Select(b => b.TextContent.Trim()).ToList());
+        Assert.IsFalse(component.Find(".bit-cal-mwp").HasAttribute("data-bit-esc"));
+    }
 
-        Assert.Contains("2026", years.Select(b => b.TextContent.Trim()).ToList());
-        Assert.IsTrue(years.All(y => y.HasAttribute("data-bit-esc") is false));
+    [TestMethod]
+    public void BitCalendarEscapeOnTheMonthAndYearPickerHeaderShouldLeaveThemTheWayTheCellsDo()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.ShowMonthPickerAsOverlay, true);
+            parameters.Add(p => p.StartingValue, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeSpan.Zero));
+        });
+
+        // The month picker overlay, then its year grid through the year toggle of the month pane.
+        component.Find(".bit-cal-ptb").Click();
+        component.Find(".bit-cal-mwp .bit-cal-ptb").Click();
+        Assert.Contains("2026", component.FindAll(".bit-cal-pkb").Select(b => b.TextContent.Trim()).ToList());
+
+        // Escape is answered on the wrapper, so a press on a nav button of the header takes the year grid back to
+        // the months - once: the press does not go on to leave the month picker as well.
+        component.Find(".bit-cal-mwp .bit-cal-nbt").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.Contains("Jan", component.FindAll(".bit-cal-pkb").Select(b => b.TextContent.Trim()).ToList());
+
+        // And a second one leaves the overlay for the day grid.
+        component.Find(".bit-cal-mwp .bit-cal-nbt").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.IsEmpty(component.FindAll(".bit-cal-pkb"));
+        Assert.IsNotEmpty(component.FindAll(".bit-cal-dbt"));
     }
 
     [TestMethod]

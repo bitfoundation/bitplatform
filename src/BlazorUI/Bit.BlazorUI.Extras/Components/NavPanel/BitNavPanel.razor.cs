@@ -49,6 +49,10 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     private BitNav<TItem>? _bitNavRef;
     private BitSearchBox? _searchBoxRef;
     private IList<TItem> _filteredNavItems = [];
+    private DotNetObjectReference<BitNavPanel<TItem>>? _dotnetObj;
+    // What the browser answered for the Escape Blazor is about to hand the key handler (see _OnEscapeVerdict): whether
+    // a part of the panel claimed it first, taken by the handler as it starts.
+    private bool _foreignEscape;
 
 
 
@@ -658,6 +662,21 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
 
 
+    /// <summary>
+    /// Sent by the browser as each Escape goes down inside the panel while its root claims the key, ahead of the
+    /// keydown Blazor then dispatches, with whether a part of the panel claimed it first - the search box emptying its
+    /// own text - so the key handler that runs next leaves that press alone.
+    /// <br />
+    /// <strong>This method is intended for internal use and should not be called directly.</strong>
+    /// </summary>
+    [JSInvokable("OnEscapeVerdict")]
+    public void _OnEscapeVerdict(bool foreign)
+    {
+        _foreignEscape = foreign;
+    }
+
+
+
     protected override string RootElementClass => "bit-npn";
 
     protected override void RegisterCssClasses()
@@ -775,6 +794,11 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
         // is the one that had it on the way in, which is no longer true once the panel has taken it.
         await UpdateModalState();
 
+        if (firstRender)
+        {
+            await WatchEscapeClaim();
+        }
+
         // The search box only exists once the panel has left its toggled state, so the focus is moved in the
         // render that brought it back rather than after a guessed delay.
         if (_focusSearchBoxPending && _searchBoxRef is not null)
@@ -871,6 +895,13 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
         // Only the plain key, the one the root claims (_EscapeClaim): an Escape with a modifier is left to the
         // surface the panel sits in, and neither empties the search nor closes the drawer.
         if (e.IsPlainEscape() is false) return;
+
+        // One Escape does one thing: a press a part of the panel claimed first (the search box, emptying its own
+        // text) is that part's, so it neither empties the search a second time nor closes the drawer as well. The
+        // verdict is read once, so it never outlives the press it was given for.
+        var foreign = _foreignEscape;
+        _foreignEscape = false;
+        if (foreign) return;
 
         // The first Escape empties an active search - which is what the search box does on its own when the
         // focus is in it, and what the key is expected to do from anywhere else in the panel - and only the
@@ -1236,6 +1267,21 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
         }
     }
 
+    // The root hears every key pressed inside the panel, so the browser tells it which Escapes a part of it claimed
+    // first (see _OnEscapeVerdict, Utils.watchEscapeClaim).
+    private async Task WatchEscapeClaim()
+    {
+        if (IsDisposed) return;
+
+        _dotnetObj ??= DotNetObjectReference.Create(this);
+
+        try
+        {
+            await _js.BitUtilsWatchEscapeClaim(_Id, RootElement, _dotnetObj);
+        }
+        catch (JSDisconnectedException) { } // we can ignore this exception here
+    }
+
     private async Task SetupFocusTrap()
     {
         if (NoFocusTrap || _focusTrapped || IsDisposed || IsRendered is false) return;
@@ -1348,6 +1394,17 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+
+        if (_dotnetObj is not null)
+        {
+            try
+            {
+                await _js.BitUtilsUnwatchEscapeClaim(_Id);
+            }
+            catch (JSDisconnectedException) { } // we can ignore this exception here
+
+            _dotnetObj.Dispose();
+        }
 
         await base.DisposeAsync(disposing);
     }

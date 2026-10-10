@@ -762,6 +762,14 @@
                 if (el && el.classList && el.classList.contains("bit-pdv-search-input")) {
                     return null;
                 }
+                // Nor is one a part of the viewer claimed first (data-bit-esc, see
+                // Utils.claimEscape) - the properties or the password dialog closing on
+                // it - forwarded on top: one Escape does one thing. The root's own claim
+                // (EscapeClaim) is this shortcut's, so it is still forwarded.
+                const claimer = (BitBlazorUI as any).Utils?.escapeClaimer?.(e) as Element | null | undefined;
+                if (claimer && claimer !== root && root.contains(claimer)) {
+                    return null;
+                }
                 return { command: "escape", prevent: false };
             }
             if (typing || e.altKey) {

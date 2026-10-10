@@ -292,7 +292,13 @@
                 <div style="@Styles?.Divider" class="bit-cal-dvd @Classes?.Divider"></div>
             }
 
-            <div style="@Styles?.YearMonthPickerWrapper" class="bit-cal-mwp @Classes?.YearMonthPickerWrapper">
+            @* Escape is answered on the wrapper, so it does the same from the header's buttons as from the cells.
+               data-bit-esc claims it while it does something (see Utils.claimEscape), so a dialog around the
+               calendar stays open on that press; a month picker beside the day grid leaves the key to the dialog. *@
+            <div @onkeydown="HandleYearMonthPickerKeyDown"
+                 data-bit-esc="@YearMonthPickerEscapeClaim"
+                 style="@Styles?.YearMonthPickerWrapper"
+                 class="bit-cal-mwp @Classes?.YearMonthPickerWrapper">
                 @if (_showYearPicker is false)
                 {
                     var prevDisabled = CanChangeYear(false) is false;
@@ -390,13 +396,9 @@
 
                                     @* The current month and year are reported whether or not they are painted:
                                        HighlightCurrentMonth decides how the grid looks, not what a screen reader
-                                       is able to find in it.
-                                       data-bit-esc claims the Escape that leaves a month picker laid over the day
-                                       grid (see Utils.claimEscape), so a dialog around the calendar stays open on that
-                                       press; a month picker beside the day grid leaves the key to the dialog. *@
+                                       is able to find in it. *@
                                     <button @onclick="() => SelectMonth(month)"
                                             @onkeydown="e => HandleMonthKeyDown(e, month)"
-                                            data-bit-esc="@MonthEscapeClaim"
                                             type="button"
                                             role="gridcell"
                                             title="@monthName"
@@ -496,11 +498,8 @@
                                     var year = _yearPickerStartYear + (rowIndex * 4) + cellIndex;
                                     var disabled = Disabled || IsYearOutOfMinAndMaxDate(year);
                                     var selected = year == _currentYear;
-                                    @* data-bit-esc claims the Escape that takes the year grid back to the month grid
-                                       (see Utils.claimEscape), so a dialog around the calendar stays open on that press. *@
                                     <button @onclick="() => SelectYear(year)"
                                             @onkeydown="e => HandleYearKeyDown(e, year)"
-                                            data-bit-esc="@YearEscapeClaim"
                                             type="button"
                                             role="gridcell"
                                             id="@GetYearButtonId(year)"

@@ -47,6 +47,10 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     // Per-instance unique ids so multiple open dialogs don't collide on element ids, which would
     // break label-to-control association and the dialog's aria-labelledby reference.
     private readonly string _dialogTitleId = $"bfc-dlg-title-{Guid.NewGuid():N}";
+    private readonly string _escapeWatchId = $"bfc-dlg-esc-{Guid.NewGuid():N}";
+    private DotNetObjectReference<BitFcAddEditEventDialog>? _dotnetObj;
+    // What the browser answered for the Escape Blazor is about to hand OnDialogKeyDown (see _OnEscapeVerdict).
+    private bool _foreignEscape;
     private readonly string _titleInputId = $"bfc-title-{Guid.NewGuid():N}";
     private readonly string _colorSelectId = $"bfc-color-{Guid.NewGuid():N}";
     private readonly string _resourceSelectId = $"bfc-resource-{Guid.NewGuid():N}";
@@ -432,7 +436,10 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         // DisposeAsync restores focus to the element that was focused before it opened. Mirrors
         // BitFcEventDetailsDialog so the add/edit dialog behaves like a true modal.
         if (firstRender)
+        {
             await BitFcDialogInterop.SetupAsync(JS, _dialogRef);
+            await WatchEscapeClaim();
+        }
 
         // A refused save sends the focus to the field it has to be fixed in, once the message is rendered.
         if (_pendingFocusId is { } id)
@@ -467,19 +474,28 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
 
     private void RemoveAttendee(BitFullCalendarAttendee attendee) => _attendees.Remove(attendee);
 
-    // Whether Escape closes the dialog, the one rule OnDialogKeyDown and _EscapeClaim both go by: a save in flight
-    // is left alone so the dialog can't be dismissed out from under the change it is committing.
+    // Whether Escape closes the dialog: a save in flight is left alone so the dialog can't be dismissed out from
+    // under the change it is committing.
     private bool _ClosesOnEscape => _isSubmitting is false;
 
     // The Escape that closes the dialog, claimed on the dialog (see Utils.claimEscape) so a surface the calendar sits
-    // in does not close on the same press - and only while it does close it, so a press during a save still reaches
-    // that surface.
-    private string? _EscapeClaim => _ClosesOnEscape ? "claim" : null;
+    // in does not close on the same press. It stays claimed while a save is in flight too, when the press does
+    // nothing: a surface closing on it would take the dialog away mid-commit all the same.
+    private string? _EscapeClaim => "claim";
 
     private async Task OnDialogKeyDown(KeyboardEventArgs e)
     {
+        if (e.Key is not ("Escape" or "Esc")) return;
+
+        // One Escape does one thing: a press something inside the dialog claimed first (a field of an
+        // EventEditorTemplate clearing itself) is that field's, which Blazor still bubbles up to here. The verdict is
+        // read once, so it never outlives the press it was given for.
+        var foreign = _foreignEscape;
+        _foreignEscape = false;
+        if (foreign) return;
+
         // Escape is the standard way out of a modal.
-        if (e.Key is "Escape" or "Esc" && _ClosesOnEscape)
+        if (_ClosesOnEscape)
             await OnClose.InvokeAsync();
     }
 
@@ -683,9 +699,53 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         return await Notifier.CommitDetachAsync(master, updatedMaster, detached, BitFullCalendarChangeSource.Dialog);
     }
 
+    /// <summary>
+    /// Sent by the browser as each Escape goes down inside the dialog while it claims the key, ahead of the keydown
+    /// Blazor then dispatches, with whether something inside the dialog claimed it first - a field of an EventEditorTemplate
+    /// clearing itself - so the key handler that runs next leaves that press alone.
+    /// <br />
+    /// <strong>This method is intended for internal use and should not be called directly.</strong>
+    /// </summary>
+    [JSInvokable("OnEscapeVerdict")]
+    public void _OnEscapeVerdict(bool foreign)
+    {
+        _foreignEscape = foreign;
+    }
+
+    // The dialog hears every key pressed inside it, so the browser tells it which Escapes something inside it claimed
+    // first (see _OnEscapeVerdict, Utils.watchEscapeClaim).
+    private async Task WatchEscapeClaim()
+    {
+        _dotnetObj ??= DotNetObjectReference.Create(this);
+
+        try
+        {
+            await JS.BitUtilsWatchEscapeClaim(_escapeWatchId, _dialogRef, _dotnetObj);
+        }
+        catch (JSDisconnectedException) { }
+        catch (OperationCanceledException) { }
+    }
+
+    private async Task UnwatchEscapeClaim()
+    {
+        if (_dotnetObj is null) return;
+
+        try
+        {
+            await JS.BitUtilsUnwatchEscapeClaim(_escapeWatchId);
+        }
+        catch (JSDisconnectedException) { }
+        catch (OperationCanceledException) { }
+        catch (JSException) { }
+
+        _dotnetObj.Dispose();
+        _dotnetObj = null;
+    }
+
     public async ValueTask DisposeAsync()
     {
         State.OnStateChanged -= HandleStateChanged;
+        await UnwatchEscapeClaim();
         await BitFcDialogInterop.TeardownAsync(JS, _dialogRef);
     }
 }

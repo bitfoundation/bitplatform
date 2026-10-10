@@ -333,7 +333,9 @@
             const controller = new AbortController();
 
             root.addEventListener('keydown', e => {
-                if (e.key !== 'Escape') return;
+                // Only the plain key: an Escape with a modifier goes on to the surface around the tooltip, as it
+                // does past every component that acts on Escape (claimEscape).
+                if (e.key !== 'Escape' || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
                 if (!root.querySelector(':scope > .bit-ttp-wrp.bit-ttp-vis[data-bit-ttp-esc]')) return;
 
                 if (e.defaultPrevented) {
@@ -393,6 +395,7 @@
                 // A press a component claimed (see claimEscape) is that component's: the tooltip stays, and the key
                 // goes on to the component rather than being stopped here.
                 if (e.key !== 'Escape' || e.defaultPrevented) return;
+                if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
 
                 const target = e.target as Node | null;
                 let taken = false;
@@ -662,6 +665,41 @@
         // component or a surface inside it took first, which Blazor's dispatch goes on bubbling to it all the same.
         public static escapeClaimer(e: Event) {
             return Utils._escapeClaimers.get(e) ?? null;
+        }
+
+        private static _escapeClaimWatches = new Map<string, AbortController>();
+
+        // Tells a component whose .NET keydown handler on its root acts on Escape, through its OnEscapeVerdict
+        // callback, whether the Escape that handler is about to hear is its own: the one its root claimed (see
+        // claimEscape), rather than one a component inside it acted on and claimed first (a search box emptying
+        // itself, a field of a template clearing), which Blazor's dispatch bubbles up to the root all the same. A
+        // press with a modifier or during an IME composition is claimed by nobody, so it is not the root's either.
+        // The listener is on the root, so it runs before Blazor's document-level delegation, and the answer is
+        // queued ahead of the keydown Blazor dispatches right after it. It only answers while the root claims the
+        // key at all (data-bit-esc) - the same pattern a BitMessage goes by (Message.watchEscape).
+        public static watchEscapeClaim(id: string, root: HTMLElement, dotnetObj: DotNetObject) {
+            Utils.unwatchEscapeClaim(id);
+
+            if (!root || !(root instanceof Element)) return;
+
+            const controller = new AbortController();
+
+            root.addEventListener('keydown', e => {
+                if (e.key !== 'Escape' || !root.hasAttribute('data-bit-esc')) return;
+
+                dotnetObj.invokeMethodAsync('OnEscapeVerdict', Utils.escapeClaimer(e) !== root)
+                         .catch(err => console.error("BitBlazorUI.Utils.watchEscapeClaim:", err));
+            }, { signal: controller.signal });
+
+            Utils._escapeClaimWatches.set(id, controller);
+        }
+
+        public static unwatchEscapeClaim(id: string) {
+            const controller = Utils._escapeClaimWatches.get(id);
+            if (!controller) return;
+
+            Utils._escapeClaimWatches.delete(id);
+            controller.abort();
         }
 
         // The elements that close on an Escape pressed inside them, registered by the surfaces of the library as they
