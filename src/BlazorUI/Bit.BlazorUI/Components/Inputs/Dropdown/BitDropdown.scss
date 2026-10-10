@@ -197,11 +197,11 @@
 
     &.bit-inv {
         .bit-drp-wrp {
-            border-color: var(--bit-Dropdown-invalid-color, #{$clr-err});
+            border-color: var(--bit-drp-wrp-brd, var(--bit-Dropdown-invalid-color, #{$clr-err}));
 
             &:hover,
             &:active {
-                border-color: var(--bit-Dropdown-invalid-color, #{$clr-err});
+                --bit-drp-wrp-brd: var(--bit-Dropdown-invalid-color, #{$clr-err});
             }
 
             // :has() beside :focus - in the ComboBox mode the element the keyboard lands on is the input
@@ -283,19 +283,15 @@
 
 .bit-drp-hvl {
     .bit-drp-wrp {
-        color: var(--bit-Dropdown-color, #{$clr-fg-pri});
+        color: var(--bit-drp-wrp-clr, var(--bit-Dropdown-color, #{$clr-fg-pri}));
     }
 }
 
+// No hover rule of its own: the hover of the field only moves the variable its border color is read from,
+// which a field with no border never reads.
 .bit-drp-nbd {
     .bit-drp-wrp {
         border: none;
-
-        @media (hover: hover) {
-            &:hover {
-                border: none;
-            }
-        }
 
         &:focus,
         &:has(.bit-drp-inp:focus) {
@@ -417,7 +413,9 @@
     cursor: pointer;
     user-select: none;
     position: relative;
-    color: var(--bit-Dropdown-placeholder-color, #{$clr-fg-sec});
+    --bit-drp-wrp-clr: initial;
+    --bit-drp-wrp-brd: initial;
+    color: var(--bit-drp-wrp-clr, var(--bit-Dropdown-placeholder-color, #{$clr-fg-sec}));
 
     // Centers the content of Prefix/SuffixTemplate; the component's own children opt back
     // into the full height with align-self: stretch.
@@ -426,30 +424,34 @@
     box-sizing: border-box;
     border-radius: var(--bit-drp-radius);
     background-color: var(--bit-drp-bg, var(--bit-Dropdown-background, #{$clr-bg-pri}));
-    border: $shp-border-width $shp-border-style var(--bit-Dropdown-border-color, #{$clr-brd-pri});
+    border: $shp-border-width $shp-border-style var(--bit-drp-wrp-brd, var(--bit-Dropdown-border-color, #{$clr-brd-pri}));
     transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing;
 
     // Each state reads the public variable of the property it changes before its own default, so an author
     // who repaints the text or the glyphs once keeps that color through hover, press and focus instead of
     // watching the component take it back on the first interaction.
+    //
+    // The states change the variables the parts are painted from rather than their colors, here and in every
+    // part below, so only the rules at rest paint: a part the app paints through Classes keeps that paint under
+    // the pointer, through a press and while focused, instead of losing it to a state that outranks its class.
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-Dropdown-color, #{$clr-fg-pri-hover});
-            border-color: var(--bit-Dropdown-hover-border-color, #{$clr-brd-pri-hover});
+            --bit-drp-wrp-clr: var(--bit-Dropdown-color, #{$clr-fg-pri-hover});
+            --bit-drp-wrp-brd: var(--bit-Dropdown-hover-border-color, #{$clr-brd-pri-hover});
 
             .bit-drp-icn i {
-                color: var(--bit-Dropdown-icon-color, #{$clr-fg-pri-hover});
+                --bit-drp-icn-clr: var(--bit-Dropdown-icon-color, #{$clr-fg-pri-hover});
             }
         }
     }
 
     &:active {
-        color: var(--bit-Dropdown-color, #{$clr-fg-pri-active});
-        border-color: var(--bit-Dropdown-hover-border-color, #{$clr-brd-pri-active});
+        --bit-drp-wrp-clr: var(--bit-Dropdown-color, #{$clr-fg-pri-active});
+        --bit-drp-wrp-brd: var(--bit-Dropdown-hover-border-color, #{$clr-brd-pri-active});
 
         .bit-drp-icn {
             i {
-                color: var(--bit-Dropdown-icon-color, #{$clr-fg-pri-active});
+                --bit-drp-icn-clr: var(--bit-Dropdown-icon-color, #{$clr-fg-pri-active});
             }
         }
     }
@@ -461,10 +463,10 @@
     // button and the chip remove buttons draw for themselves.
     &:focus,
     &:has(.bit-drp-inp:focus) {
-        color: var(--bit-Dropdown-color, #{$clr-fg-pri});
+        --bit-drp-wrp-clr: var(--bit-Dropdown-color, #{$clr-fg-pri});
 
         .bit-drp-icn i {
-            color: var(--bit-Dropdown-icon-color, #{$clr-fg-pri});
+            --bit-drp-icn-clr: var(--bit-Dropdown-icon-color, #{$clr-fg-pri});
         }
 
         @include focus-ring-own(var(--bit-drp-clr-focus));
@@ -555,7 +557,6 @@
     border: none;
     display: flex;
     cursor: pointer;
-    color: inherit;
     align-items: center;
     align-self: stretch;
     justify-content: center;
@@ -563,6 +564,8 @@
     outline: transparent;
     border-radius: var(--bit-Dropdown-chip-radius, #{$shp-radius-chip});
     background-color: transparent;
+    --bit-drp-crb-clr: initial;
+    color: var(--bit-drp-crb-clr, inherit);
 
     i {
         font-size: $siz-icon-sm;
@@ -574,7 +577,7 @@
 
     @media (hover: hover) {
         &:hover {
-            color: $clr-fg-pri-hover;
+            --bit-drp-crb-clr: #{$clr-fg-pri-hover};
         }
     }
 }
@@ -592,7 +595,8 @@
         pointer-events: none;
         display: inline-block;
         font-size: var(--bit-drp-ico);
-        color: var(--bit-Dropdown-icon-color, #{$clr-fg-sec});
+        --bit-drp-icn-clr: initial;
+        color: var(--bit-drp-icn-clr, var(--bit-Dropdown-icon-color, #{$clr-fg-sec}));
     }
 }
 
@@ -609,21 +613,24 @@
     padding: 0 spacing(1);
     box-sizing: border-box;
     line-height: spacing(2.5);
-    background-color: transparent;
+    --bit-drp-row-bg: initial;
+    background-color: var(--bit-drp-row-bg, transparent);
     border: $shp-border-width $shp-border-style transparent;
 
     &.bit-drp-chd {
         color: var(--bit-drp-itm-sel-clr);
-        background-color: var(--bit-drp-itm-sel-bg);
+        background-color: var(--bit-drp-row-bg, var(--bit-drp-itm-sel-bg));
 
         .bit-drp-itx {
             color: var(--bit-drp-itm-sel-clr);
         }
 
         .bit-drp-chb {
-            border-color: var(--bit-drp-clr);
-            background-color: var(--bit-drp-clr);
+            border-color: var(--bit-drp-chb-brd, var(--bit-drp-clr));
+            background-color: var(--bit-drp-chb-bg, var(--bit-drp-clr));
 
+            // Painted outright rather than from the check mark's variable: this rule outranks the hover of
+            // the row below, so the mark of a selected row keeps the accent's text color under the pointer.
             .bit-drp-chm {
                 opacity: 1;
                 color: var(--bit-drp-clr-text);
@@ -634,11 +641,15 @@
             &:hover {
                 // Blended with the selected fill for the same reason a single select row is - see
                 // .bit-drp-sel - even though the check mark says as much here too.
-                background-color: color-mix(in srgb, var(--bit-drp-itm-sel-bg), var(--bit-drp-itm-hover-bg));
+                --bit-drp-row-bg: var(--bit-drp-itm-sel-bg);
+
+                @supports (color: color-mix(in srgb, red, blue)) {
+                    --bit-drp-row-bg: color-mix(in srgb, var(--bit-drp-itm-sel-bg), var(--bit-drp-itm-hover-bg));
+                }
 
                 .bit-drp-chb {
-                    border-color: var(--bit-drp-clr-hover);
-                    background-color: var(--bit-drp-clr-hover);
+                    --bit-drp-chb-brd: var(--bit-drp-clr-hover);
+                    --bit-drp-chb-bg: var(--bit-drp-clr-hover);
                 }
             }
         }
@@ -648,7 +659,7 @@
         cursor: default;
 
         .bit-drp-chb {
-            border-color: var(--bit-drp-itm-dis-clr);
+            border-color: var(--bit-drp-chb-brd, var(--bit-drp-itm-dis-clr));
         }
 
         .bit-drp-itx {
@@ -658,19 +669,19 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-drp-itm-hover-bg);
+            --bit-drp-row-bg: var(--bit-drp-itm-hover-bg);
 
             .bit-drp-chm {
                 opacity: 1;
-                color: $clr-fg-sec;
+                --bit-drp-chm-clr: #{$clr-fg-sec};
             }
 
             &.bit-drp-ids {
-                background-color: transparent;
+                --bit-drp-row-bg: transparent;
 
                 .bit-drp-chm {
                     opacity: 0;
-                    color: var(--bit-drp-itm-dis-clr);
+                    --bit-drp-chm-clr: var(--bit-drp-itm-dis-clr);
                 }
             }
         }
@@ -765,7 +776,9 @@
     border-radius: $shp-radius-selection;
     transition-property: background, border, border-color;
     transition-timing-function: $mot-easing;
-    border: $shp-border-width $shp-border-style $clr-brd-pri;
+    --bit-drp-chb-brd: initial;
+    --bit-drp-chb-bg: initial;
+    border: $shp-border-width $shp-border-style var(--bit-drp-chb-brd, #{$clr-brd-pri});
 
     .bit-drp-chm {
         opacity: 0;
@@ -779,6 +792,13 @@
         // class instead of shrinking inside the large one.
         font-size: calc(var(--bit-drp-sel) * 0.6);
     }
+}
+
+// The check mark inherits its color until the row it sits in is hovered. Read at no specificity at all, so a
+// color an app or an icon class gives the mark wins over it exactly as it won over the inherited one.
+:where(.bit-drp-chm) {
+    --bit-drp-chm-clr: initial;
+    color: var(--bit-drp-chm-clr);
 }
 
 .bit-drp-itx {
@@ -799,7 +819,8 @@
     font-size: var(--bit-drp-fs);
     color: var(--bit-Dropdown-color, #{$clr-fg-pri});
     border-style: $shp-border-style;
-    border-color: var(--bit-Dropdown-border-color, #{$clr-brd-pri});
+    --bit-drp-cbi-brd: initial;
+    border-color: var(--bit-drp-cbi-brd, var(--bit-Dropdown-border-color, #{$clr-brd-pri}));
     font-family: $tg-font-family;
     border-width: 0 0 $shp-border-width;
     background-color: var(--bit-drp-cal-bg);
@@ -811,11 +832,11 @@
 
     @media (hover: hover) {
         &:hover {
-            border-color: var(--bit-Dropdown-hover-border-color, #{$clr-brd-pri-hover});
+            --bit-drp-cbi-brd: var(--bit-Dropdown-hover-border-color, #{$clr-brd-pri-hover});
 
             .bit-drp-sic {
                 i {
-                    color: var(--bit-drp-clr-hover);
+                    --bit-drp-sic-icn-clr: var(--bit-drp-clr-hover);
                 }
             }
         }
@@ -835,7 +856,8 @@
     font-size: var(--bit-drp-fs);
     color: var(--bit-Dropdown-color, #{$clr-fg-pri});
     border-style: $shp-border-style;
-    border-color: var(--bit-Dropdown-border-color, #{$clr-brd-pri});
+    --bit-drp-sb-brd: initial;
+    border-color: var(--bit-drp-sb-brd, var(--bit-Dropdown-border-color, #{$clr-brd-pri}));
     font-family: $tg-font-family;
     border-width: 0 0 $shp-border-width;
     background-color: var(--bit-drp-cal-bg);
@@ -844,11 +866,11 @@
 
     @media (hover: hover) {
         &:hover {
-            border-color: var(--bit-Dropdown-hover-border-color, #{$clr-brd-pri-hover});
+            --bit-drp-sb-brd: var(--bit-Dropdown-hover-border-color, #{$clr-brd-pri-hover});
 
             .bit-drp-sic {
                 i {
-                    color: var(--bit-drp-clr-hover);
+                    --bit-drp-sic-icn-clr: var(--bit-drp-clr-hover);
                 }
             }
         }
@@ -859,7 +881,7 @@
             &:hover {
                 .bit-drp-sic {
                     width: spacing(0.5);
-                    color: var(--bit-drp-clr-hover);
+                    --bit-drp-sic-clr: var(--bit-drp-clr-hover);
 
                     i {
                         opacity: 0;
@@ -870,7 +892,7 @@
     }
 
     &.bit-drp-shf {
-        border-bottom: $shp-border-width-thick $shp-border-style var(--bit-drp-clr);
+        border-bottom: $shp-border-width-thick $shp-border-style var(--bit-drp-sb-brd, var(--bit-drp-clr));
 
         .bit-drp-sic {
             width: spacing(0.5);
@@ -880,10 +902,11 @@
             }
         }
 
+        // Only the color the hover of the box moves is taken back here: the width and the style of the
+        // underline are the ones the rule above already draws it with.
         @media (hover: hover) {
             &:hover {
-                border-width: 0 0 $shp-border-width;
-                border-bottom: $shp-border-width-thick $shp-border-style var(--bit-drp-clr);
+                --bit-drp-sb-brd: var(--bit-drp-clr);
             }
         }
     }
@@ -898,7 +921,8 @@
     flex-direction: column;
     justify-content: center;
     font-size: var(--bit-drp-ico);
-    color: var(--bit-drp-clr);
+    --bit-drp-sic-clr: initial;
+    color: var(--bit-drp-sic-clr, var(--bit-drp-clr));
     transition: width $mot-duration $mot-easing 0s;
 
     i {
@@ -907,7 +931,8 @@
         width: unset;
         height: unset;
         display: inline-block;
-        color: var(--bit-drp-clr);
+        --bit-drp-sic-icn-clr: initial;
+        color: var(--bit-drp-sic-icn-clr, var(--bit-drp-clr));
         transition: opacity $mot-duration $mot-easing 0s;
     }
 }
@@ -949,10 +974,10 @@
     @media (hover: hover) {
         &:hover {
             .bit-drp-sbc {
-                background-color: var(--bit-drp-itm-hover-bg);
+                --bit-drp-sbc-bg: var(--bit-drp-itm-hover-bg);
 
                 i {
-                    color: $clr-fg-pri-hover;
+                    --bit-drp-sbc-icn-clr: #{$clr-fg-pri-hover};
                 }
             }
         }
@@ -975,7 +1000,8 @@
     padding: 0 spacing(0.5);
     font-size: var(--bit-drp-fs);
     color: var(--bit-drp-clr);
-    background-color: transparent;
+    --bit-drp-sbc-bg: initial;
+    background-color: var(--bit-drp-sbc-bg, transparent);
     font-family: $tg-font-family;
 
     // Only the corners at the end of the search box are rounded, so they are named logically: in an
@@ -999,7 +1025,8 @@
         margin: 0 spacing(0.5);
         font-size: var(--bit-drp-ico);
         line-height: spacing(2);
-        color: $clr-fg-pri;
+        --bit-drp-sbc-icn-clr: initial;
+        color: var(--bit-drp-sbc-icn-clr, #{$clr-fg-pri});
     }
 
     &:focus-visible {
@@ -1028,11 +1055,12 @@
     height: var(--bit-drp-h);
     width: calc(var(--bit-drp-h) - #{spacing(0.25)});
     justify-content: center;
-    background-color: $clr-bg-sec;
+    --bit-drp-clb-bg: initial;
+    background-color: var(--bit-drp-clb-bg, #{$clr-bg-sec});
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-drp-itm-hover-bg);
+            --bit-drp-clb-bg: var(--bit-drp-itm-hover-bg);
         }
     }
 
@@ -1122,12 +1150,13 @@
     text-overflow: ellipsis;
     font-size: var(--bit-drp-itm-fs);
     line-height: spacing(2.5);
-    background-color: transparent;
+    --bit-drp-row-bg: initial;
+    background-color: var(--bit-drp-row-bg, transparent);
     border: $shp-border-width $shp-border-style transparent;
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-drp-itm-hover-bg);
+            --bit-drp-row-bg: var(--bit-drp-itm-hover-bg);
         }
     }
 
@@ -1160,7 +1189,7 @@
 .bit-drp-itm.bit-drp-ctg,
 .bit-drp-dyn.bit-drp-ctg,
 .bit-drp-iwr.bit-drp-ctg {
-    background-color: var(--bit-drp-itm-hover-bg);
+    background-color: var(--bit-drp-row-bg, var(--bit-drp-itm-hover-bg));
     box-shadow: inset $shp-border-width-thick 0 0 0 var(--bit-drp-clr);
 }
 
@@ -1185,7 +1214,7 @@
 
 .bit-drp-sel {
     color: var(--bit-drp-itm-sel-clr);
-    background-color: var(--bit-drp-itm-sel-bg);
+    background-color: var(--bit-drp-row-bg, var(--bit-drp-itm-sel-bg));
 
     .bit-drp-itx {
         color: var(--bit-drp-itm-sel-clr);
@@ -1196,9 +1225,14 @@
             // The two backgrounds blended rather than the hover one on its own: a single select row
             // carries no check mark, so its fill is the only thing saying it is the selected one, and
             // taking it away for as long as the pointer rests on it hides exactly the row being looked
-            // for. Where color-mix is not understood the declaration is dropped and the row simply
-            // keeps its selected fill, which is the same trade-off made the safe way round.
-            background-color: color-mix(in srgb, var(--bit-drp-itm-sel-bg), var(--bit-drp-itm-hover-bg));
+            // for. Where color-mix is not understood the row simply keeps its selected fill, which is the
+            // same trade-off made the safe way round - behind @supports, since a custom property keeps a
+            // value the browser cannot read and the fill reading it would come out transparent.
+            --bit-drp-row-bg: var(--bit-drp-itm-sel-bg);
+
+            @supports (color: color-mix(in srgb, red, blue)) {
+                --bit-drp-row-bg: color-mix(in srgb, var(--bit-drp-itm-sel-bg), var(--bit-drp-itm-hover-bg));
+            }
         }
     }
 }
@@ -1276,7 +1310,7 @@
     @media (hover: hover) {
         .bit-drp-itm:hover,
         .bit-drp-iwr:hover {
-            background-color: transparent;
+            --bit-drp-row-bg: transparent;
         }
 
         .bit-drp-iwr:hover .bit-drp-chm {
@@ -1284,7 +1318,7 @@
         }
 
         .bit-drp-iwr.bit-drp-chd:hover {
-            background-color: var(--bit-drp-itm-sel-bg);
+            --bit-drp-row-bg: var(--bit-drp-itm-sel-bg);
 
             .bit-drp-chm {
                 opacity: 1;
@@ -1292,7 +1326,7 @@
         }
 
         .bit-drp-sel:hover {
-            background-color: var(--bit-drp-itm-sel-bg);
+            --bit-drp-row-bg: var(--bit-drp-itm-sel-bg);
         }
     }
 }
@@ -1305,7 +1339,7 @@
 
 .bit-drp-sai {
     .bit-drp-chb {
-        border-color: var(--bit-drp-clr);
+        border-color: var(--bit-drp-chb-brd, var(--bit-drp-clr));
 
         .bit-drp-chm {
             opacity: 0;
@@ -1319,21 +1353,22 @@
             width: calc(var(--bit-drp-sel) * 0.5);
             height: calc(var(--bit-drp-sel) * 0.5);
             border-radius: $shp-radius-xs;
-            background-color: var(--bit-drp-clr);
+            --bit-drp-sai-bg: initial;
+            background-color: var(--bit-drp-sai-bg, var(--bit-drp-clr));
         }
     }
 
     @media (hover: hover) {
         &:hover {
             .bit-drp-chb {
-                border-color: var(--bit-drp-clr-hover);
+                --bit-drp-chb-brd: var(--bit-drp-clr-hover);
 
                 .bit-drp-chm {
                     opacity: 0;
                 }
 
                 &::after {
-                    background-color: var(--bit-drp-clr-hover);
+                    --bit-drp-sai-bg: var(--bit-drp-clr-hover);
                 }
             }
         }
@@ -1356,8 +1391,10 @@
     font-size: var(--bit-drp-fs);
     margin-inline-start: auto;
     border-radius: var(--bit-drp-radius);
-    background-color: transparent;
-    color: $clr-fg-pri;
+    --bit-drp-cls-bg: initial;
+    --bit-drp-cls-clr: initial;
+    background-color: var(--bit-drp-cls-bg, transparent);
+    color: var(--bit-drp-cls-clr, #{$clr-fg-pri});
 
     span {
         height: 100%;
@@ -1374,14 +1411,14 @@
 
     @media (hover: hover) {
         &:hover {
-            color: $clr-fg-pri-hover;
-            background-color: var(--bit-drp-itm-hover-bg);
+            --bit-drp-cls-clr: #{$clr-fg-pri-hover};
+            --bit-drp-cls-bg: var(--bit-drp-itm-hover-bg);
         }
     }
 
     &:active {
-        color: $clr-fg-pri-active;
-        background-color: $clr-bg-pri-active;
+        --bit-drp-cls-clr: #{$clr-fg-pri-active};
+        --bit-drp-cls-bg: #{$clr-bg-pri-active};
     }
 
     &:focus-visible {

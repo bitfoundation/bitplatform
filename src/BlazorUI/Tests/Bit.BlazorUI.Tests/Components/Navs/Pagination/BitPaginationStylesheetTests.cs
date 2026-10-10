@@ -127,8 +127,8 @@ public class BitPaginationStylesheetTests
         StringAssert.Contains(stylesheet, "--bit-pgn-clr-btn-txt: var(--bit-pgn-clr-txt, var(--bit-Pagination-button-color, #{$clr-pri-text}));");
         StringAssert.Contains(stylesheet, "--bit-pgn-clr-btn-bg: var(--bit-pgn-clr, var(--bit-Pagination-button-background, #{$clr-pri}));");
         StringAssert.Contains(stylesheet, "--bit-pgn-clr-btn-bg: var(--bit-Pagination-button-background, transparent);");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-pgn-clr-btn-bg-hover, var(--bit-Pagination-button-hover-background, #{$clr-pri-hover}));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-pgn-clr-btn-sel-bg, var(--bit-Pagination-selected-background, #{$clr-pri-dark}));");
+        StringAssert.Contains(stylesheet, "--bit-pgn-sbg: var(--bit-pgn-clr-btn-bg-hover, var(--bit-Pagination-button-hover-background, #{$clr-pri-hover}));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-pgn-sbg, var(--bit-pgn-clr-btn-sel-bg, var(--bit-Pagination-selected-background, #{$clr-pri-dark})));");
         StringAssert.Contains(stylesheet, "@include focus-ring-own(var(--bit-pgn-clr-fcs, var(--bit-Pagination-focus-color)));");
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Pagination-[a-z-]+, var\(--bit-pgn-"), "A public variable is read before the parameter it restyles the default of.");

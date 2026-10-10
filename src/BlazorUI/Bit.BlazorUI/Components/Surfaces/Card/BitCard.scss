@@ -81,6 +81,8 @@ $crd-gap: var(--bit-crd-gap, var(--bit-Card-gap, #{spacing(1.5)}));
     --bit-crd-dis-txt: initial;
     --bit-crd-dis-bg: initial;
     --bit-crd-dis-brd: initial;
+    // The surface the hover and press states below move the root to; the states set it rather than the background.
+    --bit-crd-sbg: initial;
     // The four the cover parameters write onto the style of the root; an inline declaration wins over these.
     --bit-crd-img-height: initial;
     --bit-crd-img-position: initial;
@@ -103,7 +105,7 @@ $crd-gap: var(--bit-crd-gap, var(--bit-Card-gap, #{spacing(1.5)}));
     // then the theme - so this stays the one rule painting the card, and a class passed through Classes.Root
     // still competes with it at equal weight.
     color: var(--bit-crd-dis-txt, var(--bit-crd-fg, var(--bit-Card-color, #{$clr-fg-pri})));
-    background-color: var(--bit-crd-dis-bg, #{$crd-bg});
+    background-color: var(--bit-crd-dis-bg, var(--bit-crd-sbg, #{$crd-bg}));
     border-width: var(--bit-crd-brd-wid, var(--bit-Card-border-width, 0));
     border-color: var(--bit-crd-dis-brd, var(--bit-crd-brd-clr, var(--bit-Card-border-color, #{$clr-brd-pri})));
     border-radius: var(--bit-crd-radius, var(--bit-Card-radius, #{$shp-radius-surface}));
@@ -736,6 +738,10 @@ button.bit-crd-lnk {
 // shadows (Cupertino) would leave it with no feedback at all. The shade is the text color washed over whatever the
 // card rests on, so it follows a Background, a --bit-Card-background and both schemes without a token per surface;
 // a Fill card steps to the hover and pressed shades of its role instead, like a button of that role.
+//
+// The states change the variable the surface is painted from rather than the background, so the one rule that paints
+// it is the root's at rest: a card the app paints through Classes.Root keeps that paint under the pointer and while it
+// is pressed, instead of losing it to a state that outranks the app's class.
 @media (hover: hover) {
     .bit-crd-int:hover,
     .bit-crd-hov:hover {
@@ -743,7 +749,7 @@ button.bit-crd-lnk {
     }
 
     .bit-crd-int:hover {
-        background-color: $crd-bg-hover;
+        --bit-crd-sbg: #{$crd-bg-hover};
     }
 }
 
@@ -755,7 +761,7 @@ button.bit-crd-lnk {
 // and the root that is a control would lose its press along with the rest.
 .bit-crd-btn:active {
     box-shadow: $crd-shd-active;
-    background-color: $crd-bg-active;
+    --bit-crd-sbg: #{$crd-bg-active};
 }
 
 // A linked card is pressed through its anchor alone, since :active on the root would also be the press of the menu in
@@ -763,7 +769,7 @@ button.bit-crd-lnk {
 // keyboard presses it.
 .bit-crd-int:has(> .bit-crd-lnk:active) {
     box-shadow: $crd-shd-active;
-    background-color: $crd-bg-active;
+    --bit-crd-sbg: #{$crd-bg-active};
 }
 
 // Pressing a control in the header actions, the footer or the floating actions of a card that is a button presses
@@ -771,10 +777,10 @@ button.bit-crd-lnk {
 // card is pressed along with the control, which is the lesser of the two ways to be wrong.
 .bit-crd-btn:active:has(> .bit-crd-fac:active, > .bit-crd-mai > .bit-crd-hdr > .bit-crd-act:active, > .bit-crd-mai > .bit-crd-ftr:active) {
     box-shadow: $crd-shd;
-    background-color: $crd-bg;
+    --bit-crd-sbg: #{$crd-bg};
 
     @media (hover: hover) {
-        background-color: $crd-bg-hover;
+        --bit-crd-sbg: #{$crd-bg-hover};
     }
 }
 

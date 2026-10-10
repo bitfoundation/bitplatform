@@ -22,10 +22,12 @@ public class BitRatingStylesheetTests
         StringAssert.Contains(stylesheet, "font-size: var(--bit-rtg-lbl-size, var(--bit-Rating-label-font-size, #{$tg-fs-sm}));");
         StringAssert.Contains(stylesheet, "font-size: var(--bit-rtg-dsc-size, var(--bit-Rating-description-font-size, #{$tg-fs-xs}));");
 
-        // So does an explicit Color, for the fill in every state and for the focus ring.
-        StringAssert.Contains(stylesheet, "color: var(--bit-rtg-clr, var(--bit-Rating-color, #{$clr-pri}));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-rtg-clr-hover, var(--bit-Rating-hover-color, #{$clr-pri-hover}));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-rtg-clr-active, var(--bit-Rating-active-color, #{$clr-pri-active}));");
+        // So does an explicit Color, for the fill in every state and for the focus ring. The hover and the press set the
+        // variable the fill is painted from, and the rule at rest reads it ahead of the resting color, so an app's class
+        // on the fill keeps its paint under the pointer.
+        StringAssert.Contains(stylesheet, "color: var(--bit-rtg-ifl-clr, var(--bit-rtg-clr, var(--bit-Rating-color, #{$clr-pri})));");
+        StringAssert.Contains(stylesheet, "--bit-rtg-ifl-clr: var(--bit-rtg-clr-hover, var(--bit-Rating-hover-color, #{$clr-pri-hover}));");
+        StringAssert.Contains(stylesheet, "--bit-rtg-ifl-clr: var(--bit-rtg-clr-active, var(--bit-Rating-active-color, #{$clr-pri-active}));");
         StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-rtg-clr-focus, var(--bit-Rating-focus-color)))");
 
         // The values the parameters publish are never read behind a public variable. The unfilled part is not the

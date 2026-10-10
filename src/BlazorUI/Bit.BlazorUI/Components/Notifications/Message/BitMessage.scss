@@ -234,19 +234,15 @@
 // A link is painted in the theme's link color, which is picked to sit on the page background rather than on
 // the amber or the red of a message. Inside one it takes the color already carrying the message and keeps the
 // underline, which is what tells it apart from the text around it without leaning on color at all. A disabled
-// link is left with the color that says so.
+// link is left with the color that says so. The rule already outranks every state of a BitLink (a single class
+// and a pseudo-class), so it keeps that color under the pointer, the focus and the press without restating it
+// in states of its own - which would outrank a class the app paints the link with as well.
 .bit-msg-ttl,
 .bit-msg-cnt {
     a:not(.bit-dis),
     .bit-lnk:not(.bit-dis) {
         color: inherit;
         text-decoration: underline;
-
-        &:hover,
-        &:focus,
-        &:active {
-            color: inherit;
-        }
     }
 }
 
@@ -287,19 +283,22 @@
     // rather than restating it, since a button does not inherit its color on its own.
     color: inherit;
     border-radius: $shp-radius-button;
-    background-color: transparent;
+    --bit-msg-btn-sbg: initial;
+    background-color: var(--bit-msg-btn-sbg, transparent);
     transition: background-color $mot-duration-short $mot-easing;
 
     // The buttons sit on the message's own fill, so the states are tinted from the color already on them
-    // rather than from a palette token - that keeps them legible on all three variants and every role.
+    // rather than from a palette token - that keeps them legible on all three variants and every role. They
+    // change the variable the button is painted from rather than its background, so a button the app paints
+    // through Classes keeps that paint under the pointer and while it is pressed.
     @media (hover: hover) {
         &:hover {
-            background-color: translucent(currentcolor, 12%);
+            --bit-msg-btn-sbg: #{translucent(currentcolor, 12%)};
         }
     }
 
     &:active {
-        background-color: translucent(currentcolor, 20%);
+        --bit-msg-btn-sbg: #{translucent(currentcolor, 20%)};
     }
 
     &:focus-visible {

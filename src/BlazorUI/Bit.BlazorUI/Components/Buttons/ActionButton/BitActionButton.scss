@@ -54,7 +54,11 @@
     --bit-acb-fontsize: initial;
     --bit-acb-ico-size: initial;
     --bit-acb-padding: initial;
-    color: var(--bit-ActionButton-color, #{$clr-fg-pri});
+    // The colors the hover and press states below move, unset at rest so an action button nested in another one
+    // never inherits the outer one's state.
+    --bit-acb-sfg: initial;
+    --bit-acb-sbg: initial;
+    color: var(--bit-acb-sfg, var(--bit-ActionButton-color, #{$clr-fg-pri}));
     // Every value an explicit Size or Color publishes is read first, then the public variable, then the medium
     // primary action button an unset one stands for.
     padding: var(--bit-acb-padding, var(--bit-ActionButton-padding, #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-sm}));
@@ -66,23 +70,26 @@
     min-height: var(--bit-acb-min-height, var(--bit-ActionButton-min-height, #{$siz-ctrl-md}));
     font-size: var(--bit-acb-fontsize, var(--bit-ActionButton-font-size, #{$tg-fs-sm}));
     border-radius: var(--bit-ActionButton-radius, #{$shp-radius-button});
-    background-color: var(--bit-ActionButton-background, transparent);
+    background-color: var(--bit-acb-sbg, var(--bit-ActionButton-background, transparent));
     // The one color the icon and the spinner read; every state below retargets it along with the text color.
     --bit-acb-ico: var(--bit-acb-clr-ico, var(--bit-ActionButton-icon-color, #{$clr-pri}));
     transition: color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
+    // The states change the variables the button is painted from rather than its colors, so the rule at rest is the
+    // only one that paints: an action button the app paints through Class keeps that paint under the pointer and
+    // while pressed, instead of losing it to a state that outranks the app's class.
     @media (hover: hover) {
         &:hover {
-            color: var(--bit-acb-clr-hover, var(--bit-ActionButton-hover-color, #{$clr-pri-hover}));
+            --bit-acb-sfg: var(--bit-acb-clr-hover, var(--bit-ActionButton-hover-color, #{$clr-pri-hover}));
             --bit-acb-ico: var(--bit-acb-clr-hover, var(--bit-ActionButton-hover-color, #{$clr-pri-hover}));
-            background-color: var(--bit-ActionButton-hover-background, var(--bit-ActionButton-background, transparent));
+            --bit-acb-sbg: var(--bit-ActionButton-hover-background, var(--bit-ActionButton-background, transparent));
         }
     }
 
     &:active {
-        color: var(--bit-acb-clr-active, var(--bit-ActionButton-active-color, #{$clr-pri-active}));
+        --bit-acb-sfg: var(--bit-acb-clr-active, var(--bit-ActionButton-active-color, #{$clr-pri-active}));
         --bit-acb-ico: var(--bit-acb-clr-active, var(--bit-ActionButton-active-color, #{$clr-pri-active}));
-        background-color: var(--bit-ActionButton-active-background, var(--bit-ActionButton-hover-background, var(--bit-ActionButton-background, transparent)));
+        --bit-acb-sbg: var(--bit-ActionButton-active-background, var(--bit-ActionButton-hover-background, var(--bit-ActionButton-background, transparent)));
     }
 
     &:focus-visible {

@@ -184,8 +184,9 @@
         text-decoration: none;
     }
 
+    // No background here: the items and the overflow button paint their own, and a button an item template puts
+    // in the trail keeps the one its app gives it.
     button {
-        background-color: transparent;
         // A button carries the font of the browser rather than the one of its page, so a step
         // rendered as one would read in another typeface than the steps rendered as links.
         font-family: inherit;
@@ -226,7 +227,13 @@
     padding: 0 spacing(0.5);
     // An icon button, so a square as tall as the items rather than a glyph with some room around it.
     min-width: var(--bit-brc-h);
-    color: var(--bit-brc-div-clr);
+    // The states change these rather than the colors, so the rules that declare the colors are the ones at rest:
+    // a part the app paints through Classes keeps that paint under the pointer and the press, instead of losing it
+    // to a state that outranks the app's class. They are unset at rest so a part never takes them from another one.
+    --bit-brc-sfg: initial;
+    --bit-brc-sbg: initial;
+    color: var(--bit-brc-sfg, var(--bit-brc-div-clr));
+    background-color: var(--bit-brc-sbg, transparent);
     font-size: var(--bit-brc-sz-obt, #{$siz-icon-md});
     line-height: var(--bit-brc-h);
     border-radius: var(--bit-Breadcrumb-item-radius, #{$shp-radius-control});
@@ -234,13 +241,13 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-brc-hover-bg);
-            color: var(--bit-brc-role-main, var(--bit-Breadcrumb-hover-color, var(--bit-brc-div-clr)));
+            --bit-brc-sbg: var(--bit-brc-hover-bg);
+            --bit-brc-sfg: var(--bit-brc-role-main, var(--bit-Breadcrumb-hover-color, var(--bit-brc-div-clr)));
         }
     }
 
     &:active {
-        background-color: var(--bit-brc-active-bg);
+        --bit-brc-sbg: var(--bit-brc-active-bg);
     }
 
     &:focus-visible {
@@ -256,7 +263,11 @@
     align-items: center;
     font-weight: $tg-fw-regular;
     --bit-brc-itm-clr: var(--bit-brc-clr);
-    color: var(--bit-brc-itm-clr);
+    // The state colors the hover and the press set (see .bit-brc-obt), read first by every color at rest.
+    --bit-brc-sfg: initial;
+    --bit-brc-sbg: initial;
+    color: var(--bit-brc-sfg, var(--bit-brc-itm-clr));
+    background-color: var(--bit-brc-sbg);
     font-size: var(--bit-brc-fs);
     line-height: var(--bit-brc-h);
     gap: var(--bit-Breadcrumb-item-gap, #{spacing(1)});
@@ -298,13 +309,13 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-brc-hover-bg);
-            color: var(--bit-brc-role-main, var(--bit-Breadcrumb-hover-color, var(--bit-brc-itm-clr)));
+            --bit-brc-sbg: var(--bit-brc-hover-bg);
+            --bit-brc-sfg: var(--bit-brc-role-main, var(--bit-Breadcrumb-hover-color, var(--bit-brc-itm-clr)));
         }
     }
 
     &:active {
-        background-color: var(--bit-brc-active-bg);
+        --bit-brc-sbg: var(--bit-brc-active-bg);
     }
 
     &:focus-visible {
@@ -383,11 +394,13 @@
     text-overflow: ellipsis;
     min-width: spacing(22.5);
     --bit-brc-itm-clr: var(--bit-brc-clr);
-    color: var(--bit-brc-itm-clr);
+    --bit-brc-sfg: initial;
+    --bit-brc-sbg: initial;
+    color: var(--bit-brc-sfg, var(--bit-brc-itm-clr));
     height: var(--bit-brc-ofi-h);
     font-size: var(--bit-brc-ofi-fs);
     line-height: var(--bit-brc-sz-ofi-lh, #{spacing(2.5)});
-    background-color: transparent;
+    background-color: var(--bit-brc-sbg, transparent);
     border: $shp-border-width $shp-border-style transparent;
     // The rows span the full width of the menu, so they follow its corners rather than a radius of their own.
     border-radius: var(--bit-Breadcrumb-callout-radius, #{$shp-radius-popup});
@@ -410,13 +423,13 @@
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-brc-hover-bg);
-            color: var(--bit-brc-role-main, var(--bit-Breadcrumb-hover-color, var(--bit-brc-itm-clr)));
+            --bit-brc-sbg: var(--bit-brc-hover-bg);
+            --bit-brc-sfg: var(--bit-brc-role-main, var(--bit-Breadcrumb-hover-color, var(--bit-brc-itm-clr)));
         }
     }
 
     &:active {
-        background-color: var(--bit-brc-active-bg);
+        --bit-brc-sbg: var(--bit-brc-active-bg);
     }
 }
 
@@ -434,7 +447,7 @@
 // The current page before the disabled state, so a disabled current page still reads as disabled.
 .bit-brc-sel {
     --bit-brc-itm-clr: var(--bit-brc-sel-clr);
-    color: var(--bit-brc-itm-clr);
+    color: var(--bit-brc-sfg, var(--bit-brc-itm-clr));
     font-weight: var(--bit-Breadcrumb-selected-font-weight, #{$tg-fw-semibold});
 }
 
