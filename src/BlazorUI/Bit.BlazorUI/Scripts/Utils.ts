@@ -115,10 +115,12 @@
 
             // A caller-supplied selector says where the focus belongs when the first focusable element is
             // not it. It is tried on its own so a selector that is invalid, or that matches nothing
-            // visible, falls through to the default rather than leaving the focus behind on the page.
+            // visible, falls through to the default rather than leaving the focus behind on the page. An
+            // element it names is focused even when a negative tabindex keeps it out of the tab sequence -
+            // a heading made programmatically focusable is a place the consumer asked for by name.
             if (selector) {
                 try {
-                    const preferred = Array.from(container.querySelectorAll<HTMLElement>(selector)).find(Utils.isFocusable);
+                    const preferred = Array.from(container.querySelectorAll<HTMLElement>(selector)).find(Utils.canHoldFocus);
                     if (preferred) {
                         preferred.focus();
                         return;
@@ -2069,7 +2071,8 @@
         // or footer template brings along are part of the container too, so the whole set of natively
         // focusable elements is listed rather than only the ones the components render themselves - a
         // disclosure's summary and a media player's controls included, which a trap that missed them would
-        // let the Tab out of the container from.
+        // let the Tab out of the container from. Only the first summary of a details element is its disclosure
+        // control; any other summary is plain content the browser never puts in the tab sequence.
         // This is the library's one definition of "what can hold the focus": every script asks it, through
         // the helpers below, rather than keeping a copy of its own that a fix here would not reach - the
         // scripts of Bit.BlazorUI.Extras included, which call these members through the ambient declaration
@@ -2077,7 +2080,7 @@
         public static readonly focusableSelector =
             'a[href]:not([tabindex="-1"]), button:not([disabled]):not([tabindex="-1"]), ' +
             'input:not([disabled]):not([tabindex="-1"]), select:not([disabled]):not([tabindex="-1"]), ' +
-            'textarea:not([disabled]):not([tabindex="-1"]), summary:not([tabindex="-1"]), ' +
+            'textarea:not([disabled]):not([tabindex="-1"]), details > summary:first-of-type:not([tabindex="-1"]), ' +
             'iframe:not([tabindex="-1"]), audio[controls]:not([tabindex="-1"]), video[controls]:not([tabindex="-1"]), ' +
             '[contenteditable]:not([contenteditable="false"]):not([tabindex="-1"]), ' +
             '[tabindex]:not([tabindex="-1"])';
@@ -2097,7 +2100,23 @@
         // hand its descendants a box the focus never reaches; checkVisibility sees both, and the box alone is
         // asked for only in the engines without it. visibility:hidden leaves a box the focus still cannot
         // land in, so it is asked about separately, and only for the elements that got past the measurement.
+        // A negative tabindex takes an element out of the tab sequence however it is written ("-2", " -1"), which
+        // the selector's exact match on "-1" cannot see, so the attribute is parsed the way the browser parses it.
         public static isFocusable(el: HTMLElement) {
+            return Utils.isInTabSequence(el) && Utils.canHoldFocus(el);
+        }
+
+        // The attribute rather than the tabIndex property, which also reads -1 for an element that carries no
+        // tabindex at all (an editing host in some engines), so only a value written on the element counts. An
+        // unparsable value is ignored, as it is by the browser.
+        private static isInTabSequence(el: HTMLElement) {
+            const tabindex = el.getAttribute('tabindex');
+
+            return tabindex === null || (parseInt(tabindex, 10) < 0) === false;
+        }
+
+        // Whether the focus can be moved onto the element at all, by the keyboard or by a script.
+        private static canHoldFocus(el: HTMLElement) {
             if (el.closest('[inert]') !== null || el.matches(':disabled') || el.parentElement?.isContentEditable === true) return false;
 
             const rendered = typeof el.checkVisibility === 'function'
