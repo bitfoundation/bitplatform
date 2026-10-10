@@ -63,6 +63,21 @@ $crd-private-properties:
     // and then the medium card.
     pad, gap, htx-gap, ttl-fontsize, sub-fontsize, icn-fontsize;
 
+// The ones of the list above that only the root itself reads - its shadow in each state and the width of its rule -
+// are also registered as properties that do not inherit, so a value set on an ancestor never reaches a card at all,
+// with the guaranteed-invalid value (no initial-value) leaving every var() of them to its fallback. The rest stay
+// inheriting: the parts inside the card read them off the root (its title size, its image height, its inset), and a
+// property that does not inherit cannot be read there. The root rule still resets these too, for a browser without
+// @property.
+$crd-root-only-properties: shd, shd-hov, shd-act, brd-wid;
+
+@each $name in $crd-root-only-properties {
+    @property --bit-crd-#{$name} {
+        syntax: "*";
+        inherits: false;
+    }
+}
+
 // Every rule below reads the card's own private variables, which the parameter classes set on the root. Custom
 // properties inherit, which would hand an outer card's paint, rule, corner or shadow to every card nested in it,
 // so each root starts them out unset - which leaves every var() reading them to its fallback.

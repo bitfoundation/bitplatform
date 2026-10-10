@@ -430,10 +430,22 @@ strict one: two names with no comma between them fail there, since Sass compiles
 space, which the browser drops. A variant rule giving one slot the value `initial`
 (`.bit-drm-otl { --bit-drm-rst-bg: initial; }`) is a value, not a reset, and stays written out.
 
-The lists reset with `initial` rather than registering the variables as `@property { inherits: false; }`
-(which only `BitIcon` does): a variable that does not inherit cannot be read by the parts inside the root
-that sets it, and nearly every component publishes on its root what its children read (a card's title size,
-its image height).
+The lists reset with `initial`, which every private variable gets. Registering one as
+`@property { syntax: "*"; inherits: false; }` (no `initial-value`, so the guaranteed-invalid value sends every
+`var()` of it to its fallback) goes further and keeps an ancestor's value away from the root altogether - but a
+variable that does not inherit cannot be read by the parts inside the root that sets it. So the line is drawn per
+variable, not per component:
+
+- **Read only by the root itself** (its shadow, its border width): registered as well as reset. The component
+  keeps a second list of those names - `$crd-root-only-properties` beside `$crd-private-properties` - and
+  registers it with `@each $name in $... { @property --bit-xxx-#{$name} { ... } }`; every name stays in the
+  private list too, whose `initial` reset is the fallback for a browser without `@property`. `BitIcon`
+  registers its whole list, since nothing inside an icon reads its variables.
+- **Read by a descendant** (a card's title size, its image height, its inset; a badge's offsets, which its
+  positioned indicator reads off the root): never registered, only reset - registering one would cut its own
+  parts off from it.
+
+A name moves to the root-only list only once no selector reading it matches anything but the root.
 
 A component that renders a core one and wants a default other than the core one's (BitMessageBox's neutral
 buttons) never passes it as the parameter, which would make it a choice that outranks an app's variables. It
