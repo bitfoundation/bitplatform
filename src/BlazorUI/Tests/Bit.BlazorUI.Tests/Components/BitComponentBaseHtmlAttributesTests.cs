@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -108,6 +109,74 @@ public class BitComponentBaseHtmlAttributesTests : BunitTestContext
     }
 
     [TestMethod]
+    public void AnExplicitHtmlAttributesDictionaryShouldOutliveAPassThatLeavesItOut()
+    {
+        var component = RenderComponent<BitButton>(parameters =>
+        {
+            parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object> { ["data-test"] = "x" });
+        });
+
+        // A pass that sets another parameter alone keeps every parameter it does not name, the dictionary included.
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
+
+        var button = component.Find("button");
+
+        Assert.IsTrue(button.ClassList.Contains("bit-dis"));
+        Assert.AreEqual("x", button.GetAttribute("data-test"));
+    }
+
+    [TestMethod]
+    public void AnyDictionaryTypeShouldBeTakenAsTheHtmlAttributesParameter()
+    {
+        var htmlAttributes = new ReadOnlyDictionary<string, object>(new Dictionary<string, object> { ["data-test"] = "x" });
+
+        // What a wrapper forwarding the attributes it captured passes under the name of the parameter.
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitButton>(0);
+            builder.AddAttribute(1, nameof(BitButton.HtmlAttributes), htmlAttributes);
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("x", component.Find("button").GetAttribute("data-test"));
+    }
+
+    [TestMethod]
+    public void AValueUnderTheNameOfTheParameterThatIsNoDictionaryShouldBeSplattedAsAnAttribute()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitButton>(0);
+            builder.AddAttribute(1, nameof(BitButton.HtmlAttributes), "text");
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("text", component.Find("button").GetAttribute(nameof(BitButton.HtmlAttributes)));
+    }
+
+    [TestMethod]
+    public void ADictionaryAssignedFromCodeShouldBeCopiedRatherThanTaken()
+    {
+        var htmlAttributes = new Dictionary<string, object> { ["data-test"] = "x" };
+
+        var component = RenderComponent<BitButton>();
+
+        // Assigned from outside on purpose: the setter is public, and what it does with the dictionary is under test.
+#pragma warning disable BL0005
+        component.Instance.HtmlAttributes = htmlAttributes;
+#pragma warning restore BL0005
+
+        Assert.AreNotSame(htmlAttributes, component.Instance.HtmlAttributes);
+        Assert.AreEqual("x", component.Instance.HtmlAttributes["data-test"]);
+
+        // Every pass clears the component's own dictionary, which leaves the one it was handed as it was.
+        component.Render();
+
+        Assert.HasCount(1, htmlAttributes);
+        Assert.AreEqual("x", htmlAttributes["data-test"]);
+    }
+
+    [TestMethod]
     public void AnExplicitHtmlAttributesDictionaryShouldWinOverTheOneOfAParamsObject()
     {
         var component = RenderComponent<BitParams>(builder =>
@@ -126,5 +195,32 @@ public class BitComponentBaseHtmlAttributesTests : BunitTestContext
 
         Assert.AreEqual("own", button.GetAttribute("data-shared"));
         Assert.AreEqual("cascaded", button.GetAttribute("data-cascaded"));
+    }
+
+    [TestMethod]
+    public void TheAttributesOfTheComponentShouldWinOverTheOnesOfAParamsObjectHoweverEitherCasesThem()
+    {
+        var component = RenderComponent<BitParams>(builder =>
+        {
+            builder.Add(p => p.Parameters, [new BitButtonParams
+            {
+                HtmlAttributes = new() { ["data-shared"] = "cascaded", ["title"] = "cascaded" }
+            }]);
+            builder.AddChildContent(child =>
+            {
+                child.OpenComponent<BitButton>(0);
+                child.AddAttribute(1, nameof(BitButton.HtmlAttributes), new Dictionary<string, object> { ["Data-Shared"] = "own" });
+                child.AddAttribute(2, "Title", "written");
+                child.CloseComponent();
+            });
+        });
+
+        var button = component.Find("button");
+        var instance = component.FindComponent<BitButton>().Instance;
+
+        Assert.AreEqual("own", button.GetAttribute("data-shared"));
+        Assert.AreEqual("written", button.GetAttribute("title"));
+        // Neither cascaded spelling reaches the component beside its own, so the component reads what it renders.
+        Assert.HasCount(2, instance.HtmlAttributes);
     }
 }

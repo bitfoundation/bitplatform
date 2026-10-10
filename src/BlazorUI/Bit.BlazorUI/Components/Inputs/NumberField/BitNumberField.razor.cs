@@ -1385,9 +1385,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
 
     private string? GetInputAttribute(string name)
     {
-        return InputHtmlAttributes is not null && InputHtmlAttributes.TryGetValue(name, out var value)
-                ? value?.ToString()
-                : null;
+        return TryFindAttribute(InputHtmlAttributes, name, out var value) ? value?.ToString() : null;
     }
 
     /// <summary>
