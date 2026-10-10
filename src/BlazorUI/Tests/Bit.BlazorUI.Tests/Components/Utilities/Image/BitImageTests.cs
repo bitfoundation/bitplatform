@@ -1498,11 +1498,11 @@ public class BitImageTests : BunitTestContext
         });
 
         // Its fade ending before the image has arrived is not the end of its job.
-        component.Find(".bit-img-plc").TriggerEvent("onanimationend", new EventArgs());
+        component.Find(".bit-img-plc").TriggerEvent("onanimationend", new BitAnimationEventArgs { AnimationName = "bit-img-fade-out" });
         Assert.AreEqual(1, component.FindAll(".bit-img-plc").Count);
 
         component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
-        component.Find(".bit-img-plc").TriggerEvent("onanimationend", new EventArgs());
+        component.Find(".bit-img-plc").TriggerEvent("onanimationend", new BitAnimationEventArgs { AnimationName = "bit-img-fade-out" });
 
         // Left in place it would stay laid over the image, invisible, for the life of the component.
         Assert.AreEqual(0, component.FindAll(".bit-img-plc").Count);
@@ -1517,6 +1517,44 @@ public class BitImageTests : BunitTestContext
 
         component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
         Assert.IsTrue(component.Find(".bit-img-plc").ClassList.Contains("bit-img-pfo"));
+    }
+
+    [TestMethod]
+    public void BitImageShouldKeepThePlaceholderThroughAnAnimationOtherThanItsFade()
+    {
+        var component = RenderComponent<BitImage>(parameters =>
+        {
+            parameters.Add(p => p.Src, "image.png");
+            parameters.Add(p => p.FadeIn, true);
+            parameters.Add(p => p.PlaceholderSrc, "placeholder.png");
+        });
+
+        component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
+
+        // An animation a restyle runs on the placeholder ending is not the cross-fade ending.
+        component.Find(".bit-img-plc").TriggerEvent("onanimationend", new BitAnimationEventArgs { AnimationName = "app-pulse" });
+        Assert.AreEqual(1, component.FindAll(".bit-img-plc").Count);
+
+        component.Find(".bit-img-plc").TriggerEvent("onanimationend", new BitAnimationEventArgs { AnimationName = "bit-img-fade-out" });
+        Assert.AreEqual(0, component.FindAll(".bit-img-plc").Count);
+    }
+
+    [TestMethod]
+    public void BitImageShouldRemoveThePlaceholderOnAnEndThatCarriesNoAnimationName()
+    {
+        var component = RenderComponent<BitImage>(parameters =>
+        {
+            parameters.Add(p => p.Src, "image.png");
+            parameters.Add(p => p.FadeIn, true);
+            parameters.Add(p => p.PlaceholderSrc, "placeholder.png");
+        });
+
+        component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
+
+        // An end that fired before the library's script registered the event's arguments has no name to check, and
+        // is taken for the fade rather than leaving the placeholder over the image for good.
+        component.Find(".bit-img-plc").TriggerEvent("onanimationend", new BitAnimationEventArgs());
+        Assert.AreEqual(0, component.FindAll(".bit-img-plc").Count);
     }
 
     [TestMethod]

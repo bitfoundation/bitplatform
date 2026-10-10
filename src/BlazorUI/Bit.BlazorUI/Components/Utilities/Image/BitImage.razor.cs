@@ -41,6 +41,11 @@ namespace Bit.BlazorUI;
 /// </remarks>
 public partial class BitImage : BitComponentBase
 {
+    /// <summary>
+    /// The @keyframes the placeholder fades out with (BitImage.scss), whose end is what takes it out of the DOM.
+    /// </summary>
+    private const string PlaceholderFadeOutAnimation = "bit-img-fade-out";
+
     private BitImageState _loadingState;
 
     /// <summary>
@@ -1179,10 +1184,14 @@ public partial class BitImage : BitComponentBase
 
     // The placeholder of an image that fades in is laid over it, fading out, and would otherwise stay there
     // at no opacity - with its blur and its scale still on it - for as long as the component lives, so it
-    // is let go the moment its fade has ended.
-    private void HandleOnPlaceholderAnimationEnd()
+    // is let go the moment its fade has ended. Only the end of its own fade counts, since a restyle may run an
+    // animation of its own on the placeholder. An end with no name is one that fired before the library's script had
+    // registered the event's arguments, and is taken for the fade: a placeholder kept over the image for good is the
+    // worse of the two mistakes.
+    private void HandleOnPlaceholderAnimationEnd(BitAnimationEventArgs e)
     {
         if (_isPlaceholderLeaving is false) return;
+        if (e.AnimationName.HasValue() && e.AnimationName != PlaceholderFadeOutAnimation) return;
 
         _placeholderFaded = true;
     }

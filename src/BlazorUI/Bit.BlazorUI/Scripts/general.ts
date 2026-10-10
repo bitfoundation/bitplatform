@@ -146,6 +146,8 @@ if (window.visualViewport) {
     window.visualViewport.addEventListener('scroll', onVisualViewportChange);
 }
 
+BitBlazorUI.Events.init();
+
 namespace BitBlazorUI {
     export class BitController {
         id: string = Utils.uuidv4();

@@ -32,8 +32,8 @@
         way. It is decorative by definition - the image it stands for carries the meaning - so it is
         hidden from assistive technologies rather than given an alt of its own. Under a FadeIn it outlives
         the load by the length of the fade, fading out as the image fades in, and is removed once that fade
-        has ended. Blazor has no directive for animationend, so the handler is the attribute's value itself,
-        which the renderer wires up as a listener for the event the attribute is named after. *@
+        has ended - which only the browser knows, the duration being the theme's and the reduced-motion
+        preference's as much as the component's (Bit.BlazorUI.Events registers the directive). *@
     @if (_placeholderSrc.HasValue())
     {
         <img alt=""
@@ -42,7 +42,7 @@
              draggable="false"
              style="@GetPlaceholderStyles()"
              class="@GetPlaceholderClasses()"
-             onanimationend="@EventCallback.Factory.Create(this, HandleOnPlaceholderAnimationEnd)" />
+             @onanimationend="HandleOnPlaceholderAnimationEnd" />
     }
 
     @if (_hasSources)
