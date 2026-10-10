@@ -70,7 +70,7 @@ $swp-private-properties:
     // same element, still win over the public variables.
     --bit-swp-gap: var(--bit-Swiper-gap, 0px);
     --bit-swp-peek: var(--bit-Swiper-peek, 0px);
-    --bit-swp-focus: var(--bit-swp-fcs, var(--bit-Swiper-focus-color, #{$clr-pri-focus}));
+    --bit-swp-focus: var(--bit-swp-fcs, var(--bit-Swiper-focus-color));
     --bit-swp-dot-size: var(--bit-swp-dotsz, var(--bit-Swiper-dot-size, #{spacing(1.25)}));
 
     // The axis the swiper scrolls on, which the snapping below is written in terms of so a single class
@@ -78,7 +78,7 @@ $swp-private-properties:
     --bit-swp-axis: x;
 
     &:focus-visible {
-        @include focus-ring(var(--bit-swp-focus));
+        @include focus-ring-own(var(--bit-swp-focus));
     }
 }
 
@@ -257,7 +257,7 @@ $swp-private-properties:
     &:focus-visible {
         opacity: 1;
 
-        @include focus-ring(var(--bit-swp-focus));
+        @include focus-ring-own(var(--bit-swp-focus));
     }
 }
 
@@ -285,7 +285,7 @@ $swp-private-properties:
     // would be cut off on three sides. The indicator is drawn inside the strip instead.
     &:focus-visible {
         opacity: 1;
-        outline: $shp-focus-ring-width solid var(--bit-swp-focus);
+        outline: $shp-focus-ring-width solid var(--bit-swp-focus, #{$clr-pri-focus});
         outline-offset: calc(-1 * #{$shp-focus-ring-width});
 
         @media (forced-colors: active) {
@@ -389,7 +389,7 @@ $swp-private-properties:
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-swp-focus));
+        @include focus-ring-own(var(--bit-swp-focus));
     }
 
     &:disabled {

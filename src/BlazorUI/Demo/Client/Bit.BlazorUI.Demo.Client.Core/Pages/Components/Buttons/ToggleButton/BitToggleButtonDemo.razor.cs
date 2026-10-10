@@ -568,7 +568,7 @@ public partial class BitToggleButtonDemo
         {
             Name = "--bit-ToggleButton-focus-color",
             DefaultValue = "--bit-clr-pri-focus",
-            Description = "Color of the keyboard focus ring. The Color parameter (or OnColor / OffColor) wins over it.",
+            Description = "Color of the keyboard focus ring. The Color parameter (or OnColor / OffColor) wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
         },
         new()
         {

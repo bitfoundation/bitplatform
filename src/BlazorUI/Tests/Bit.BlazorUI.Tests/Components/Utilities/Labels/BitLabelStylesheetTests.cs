@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -24,7 +25,11 @@ public partial class BitLabelStylesheetTests
 
         foreach (var name in documented)
         {
-            StringAssert.Contains(stylesheet, $"var({name}, ", $"{name} is documented but never read with a fallback.");
+            // The focus color alone is read without a fallback, on purpose: its absence is what hands the ring over
+            // to the global --bit-shd-focus-ring (see BitFocusRingStylesheetTests).
+            var read = name.EndsWith("-focus-color", StringComparison.Ordinal) ? $"var({name})" : $"var({name}, ";
+
+            StringAssert.Contains(stylesheet, read, $"{name} is documented but never read as it should be.");
         }
     }
 
@@ -117,7 +122,7 @@ public partial class BitLabelStylesheetTests
         var block = SourceFiles.GetScssBlock(ReadStylesheet(), "\n    &:focus-visible {");
 
         // The mixin draws the themed ring and brings a Highlight outline back in a forced-colors mode.
-        StringAssert.Contains(block, "@include focus-ring(var(--bit-Label-focus-color, #{$clr-pri-focus}));");
+        StringAssert.Contains(block, "@include focus-ring-own(var(--bit-Label-focus-color));");
     }
 
     [TestMethod]

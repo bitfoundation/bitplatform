@@ -245,20 +245,6 @@
                 {
                     <label style="@Styles?.ResponsiveLabel" class="bit-phi-rlb @Classes?.ResponsiveLabel">@Label</label>
                 }
-
-                <button @onclick="CloseCalloutAndRestoreFocus"
-                        type="button"
-                        title="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
-                        aria-label="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
-                        style="@Styles?.ResponsiveCloseButton"
-                        class="bit-phi-cls @Classes?.ResponsiveCloseButton">
-                    @{
-                        var responsiveCloseIcon = BitIconInfo.From(ResponsiveCloseIcon, ResponsiveCloseIconName ?? "Cancel");
-                    }
-                    <i aria-hidden="true"
-                       style="@Styles?.ResponsiveCloseIcon"
-                       class="@responsiveCloseIcon?.GetCssClasses() @Classes?.ResponsiveCloseIcon" />
-                </button>
             </div>
         }
 
@@ -285,6 +271,26 @@
                        class="bit-phi-srch"
                        placeholder="@(SearchBoxPlaceholder ?? "Search")" />
             </div>
+        }
+
+        @if (Responsive)
+        {
+            @* After the search box in the document, though it is drawn in the header above it: the list is driven
+               from its search box, which is what a Tab from the country button goes into and Shift+Tab goes back
+               from, so the close button is the next stop of the tab order rather than the one ahead of it. *@
+            <button @onclick="CloseCalloutAndRestoreFocus"
+                    type="button"
+                    title="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
+                    aria-label="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
+                    style="@Styles?.ResponsiveCloseButton"
+                    class="bit-phi-cls @Classes?.ResponsiveCloseButton">
+                @{
+                    var responsiveCloseIcon = BitIconInfo.From(ResponsiveCloseIcon, ResponsiveCloseIconName ?? "Cancel");
+                }
+                <i aria-hidden="true"
+                   style="@Styles?.ResponsiveCloseIcon"
+                   class="@responsiveCloseIcon?.GetCssClasses() @Classes?.ResponsiveCloseIcon" />
+            </button>
         }
 
         <div id="@_scrollContainerId" style="@Styles?.ScrollContainer" class="bit-phi-scn @Classes?.ScrollContainer">

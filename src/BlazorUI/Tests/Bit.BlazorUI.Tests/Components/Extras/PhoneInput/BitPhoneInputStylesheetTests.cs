@@ -31,7 +31,7 @@ public partial class BitPhoneInputStylesheetTests
         StringAssert.Contains(stylesheet, "--bit-phi-bg: var(--bit-phi-kind-bg, var(--bit-PhoneInput-background, #{$clr-bg-pri}));");
         StringAssert.Contains(stylesheet, "--bit-phi-brd: var(--bit-phi-kind-brd, var(--bit-phi-role-main, var(--bit-PhoneInput-border-color, #{$clr-brd-pri})));");
         StringAssert.Contains(stylesheet, "--bit-phi-brd-hover: var(--bit-phi-kind-brd-hover, var(--bit-phi-role-main, var(--bit-PhoneInput-hover-border-color, #{$clr-brd-pri-hover})));");
-        StringAssert.Contains(stylesheet, "--bit-phi-focus: var(--bit-phi-role-focus, var(--bit-PhoneInput-focus-color, #{$clr-pri-focus}));");
+        StringAssert.Contains(stylesheet, "--bit-phi-focus: var(--bit-phi-role-focus, var(--bit-PhoneInput-focus-color));");
 
         Assert.IsFalse(PublicBeforePrivate().IsMatch(stylesheet), "A public variable is read before the parameter it restyles the default of.");
     }

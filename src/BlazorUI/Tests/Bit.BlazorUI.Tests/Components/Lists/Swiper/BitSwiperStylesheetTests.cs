@@ -21,7 +21,7 @@ public class BitSwiperStylesheetTests
         StringAssert.Contains(stylesheet, "$swp-clr-hover: var(--bit-swp-clr-hover, var(--bit-Swiper-dot-current-hover-color, #{$clr-pri-hover}));");
         StringAssert.Contains(stylesheet, "$swp-btn: var(--bit-swp-btn, var(--bit-Swiper-button-color, #{$clr-fg-pri}));");
         StringAssert.Contains(stylesheet, "$swp-btn-hover: var(--bit-swp-btn-hover, var(--bit-Swiper-button-hover-color, #{$clr-fg-pri-hover}));");
-        StringAssert.Contains(stylesheet, "--bit-swp-focus: var(--bit-swp-fcs, var(--bit-Swiper-focus-color, #{$clr-pri-focus}));");
+        StringAssert.Contains(stylesheet, "--bit-swp-focus: var(--bit-swp-fcs, var(--bit-Swiper-focus-color));");
         StringAssert.Contains(stylesheet, "--bit-swp-dot-size: var(--bit-swp-dotsz, var(--bit-Swiper-dot-size, #{spacing(1.25)}));");
         StringAssert.Contains(stylesheet, "font-size: var(--bit-swp-btnsz, var(--bit-Swiper-button-size, #{spacing(3)}));");
 

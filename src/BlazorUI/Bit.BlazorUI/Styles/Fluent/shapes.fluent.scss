@@ -88,12 +88,14 @@
     --bit-shp-focus-ring-offset: 0.125rem; //2px
 }
 
-//global focus shadow used by the focus-ring mixin and the .bit-css-shd-focus utility.
+//global focus shadow: the ring of every focused control that has not been given a focus color of its own - the default
+//focus-ring() call, every focus-ring-own() call while its component's color is unset, and the .bit-css-shd-focus utility.
 //Inner ring uses the page background (--bit-clr-bg-pri, not the focus-state background token) to create a separator between the element and the colored ring (WCAG 2.4.11/2.4.13).
-//The mixin sets --bit-focus-ring-color/--bit-focus-ring-offset locally on the focused element, which is what forced-colors
-//mode reads the offset back off; the ring itself cannot be recolored through them, since the var()s below are substituted
-//here rather than where the token is used, so a focus-ring() call carrying its own color writes the shadow out inline instead.
-//In forced-colors (High Contrast) mode box-shadows are stripped entirely; the focus-ring mixin restores a real Highlight outline there instead.
+//The var()s below are substituted here rather than where the token is used, so a ring in a color of its own - a focus-ring()
+//call given a color or an offset, a focus-ring-own() call whose color is set - is composed on the element instead, from the
+//same recipe (focus-ring-layers in functions.scss). For the same reason BitThemeProvider and BitThemeManager.ApplyBitThemeAsync
+//re-declare this token wherever they re-value one of its inputs (BitThemeMapper.AugmentWithFocusRingReSubstitution).
+//In forced-colors (High Contrast) mode box-shadows are stripped entirely; the focus-ring mixins restore a real Highlight outline there instead.
 //
 //It is a composite of four other tokens, so - exactly as in semantic-tokens.scss and
 //family-tokens.scss - it carries a scoped-preset twin: a custom property's var() references are

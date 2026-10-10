@@ -43,6 +43,9 @@ $rte-background: var(--bit-RichTextEditor-background, #{$clr-bg-pri});
 $rte-border-color: var(--bit-RichTextEditor-border-color, #{$clr-brd-pri});
 $rte-divider: var(--bit-RichTextEditor-divider-color, #{$clr-brd-sec});
 $rte-focus: var(--bit-RichTextEditor-focus-color, #{$clr-pri-focus});
+// The same color less its fallback, for the focus rings: while it is unset they are the global
+// --bit-shd-focus-ring (see focus-ring-own and focus-ring-color).
+$rte-focus-ring: focus-ring-color($rte-focus);
 $rte-error: var(--bit-RichTextEditor-error-color, #{$clr-err});
 $rte-padding: var(--bit-RichTextEditor-padding, #{spacing(1.75) spacing(2)});
 $rte-bar-background: var(--bit-RichTextEditor-toolbar-background, #{$clr-bg-sec});
@@ -230,7 +233,7 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
     }
 
     &:focus-visible {
-        @include focus-ring($rte-focus);
+        @include focus-ring-own($rte-focus-ring);
     }
 }
 
@@ -265,7 +268,7 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
     }
 
     &:has(input:focus-visible) {
-        @include focus-ring($rte-focus);
+        @include focus-ring-own($rte-focus-ring);
     }
 
     svg {
@@ -315,7 +318,7 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
     border: $shp-border-width $shp-border-style $clr-brd-pri;
 
     &:focus-visible {
-        @include focus-ring($rte-focus);
+        @include focus-ring-own($rte-focus-ring);
     }
 
     // The color under the caret: a ring in the active color, clear of the swatch so the swatch itself still shows.
@@ -403,7 +406,7 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
     }
 
     &:focus-visible {
-        @include focus-ring($rte-focus);
+        @include focus-ring-own($rte-focus-ring);
     }
 }
 
@@ -439,7 +442,7 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
     border-radius: $shp-radius-control;
 
     &:focus-visible {
-        @include focus-ring($rte-focus);
+        @include focus-ring-own($rte-focus-ring);
     }
 }
 
@@ -904,7 +907,7 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
     }
 
     &:focus-visible {
-        @include focus-ring($rte-focus);
+        @include focus-ring-own($rte-focus-ring);
     }
 }
 

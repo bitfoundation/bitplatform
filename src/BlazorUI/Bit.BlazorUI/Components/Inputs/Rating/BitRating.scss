@@ -210,7 +210,7 @@ $rtg-private-properties: clr, clr-hover, clr-active, clr-focus, size, lbl-size, 
     border-radius: var(--bit-Rating-radius, #{$shp-radius-control});
 
     &:focus-visible {
-        @include focus-ring(var(--bit-rtg-clr-focus, var(--bit-Rating-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-rtg-clr-focus, var(--bit-Rating-focus-color)));
         // The ring is drawn with a box-shadow, which the neighbouring items would otherwise paint over.
         z-index: 1;
     }

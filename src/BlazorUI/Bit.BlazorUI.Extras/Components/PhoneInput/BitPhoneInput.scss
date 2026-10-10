@@ -126,7 +126,7 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
     --bit-phi-bg: var(--bit-phi-kind-bg, var(--bit-PhoneInput-background, #{$clr-bg-pri}));
     --bit-phi-brd: var(--bit-phi-kind-brd, var(--bit-phi-role-main, var(--bit-PhoneInput-border-color, #{$clr-brd-pri})));
     --bit-phi-brd-hover: var(--bit-phi-kind-brd-hover, var(--bit-phi-role-main, var(--bit-PhoneInput-hover-border-color, #{$clr-brd-pri-hover})));
-    --bit-phi-focus: var(--bit-phi-role-focus, var(--bit-PhoneInput-focus-color, #{$clr-pri-focus}));
+    --bit-phi-focus: var(--bit-phi-role-focus, var(--bit-PhoneInput-focus-color));
     --bit-phi-plc: var(--bit-PhoneInput-placeholder-color, #{$clr-fg-ter});
     --bit-phi-itm-clr: var(--bit-PhoneInput-item-color, #{$clr-fg-pri});
     --bit-phi-itm-hover-bg: var(--bit-PhoneInput-item-hover-background, #{$clr-bg-pri-hover});
@@ -138,7 +138,7 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
 // the box-shadow the ring of the whole field is drawn with. The library resets the outline of every button,
 // so without it the two halves of the field would share one ring with nothing saying which of them has focus.
 @mixin phi-focus-inset {
-    outline: $shp-focus-ring-width $shp-border-style var(--bit-phi-focus);
+    outline: $shp-focus-ring-width $shp-border-style var(--bit-phi-focus, #{$clr-pri-focus});
     outline-offset: calc(-1 * #{$shp-focus-ring-width});
 
     @media (forced-colors: active) {
@@ -202,12 +202,12 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
 }
 
 .bit-phi-fcs .bit-phi-fgp {
-    @include focus-ring(var(--bit-phi-focus));
+    @include focus-ring-own(var(--bit-phi-focus));
 
-    border-color: var(--bit-phi-focus);
+    border-color: var(--bit-phi-focus, #{$clr-pri-focus});
 
     @include phi-hover {
-        border-color: var(--bit-phi-focus);
+        border-color: var(--bit-phi-focus, #{$clr-pri-focus});
     }
 }
 
@@ -570,11 +570,13 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
     font-weight: var(--bit-PhoneInput-label-font-weight, #{$tg-field-label-font-weight});
 }
 
+// Rendered after the search box so it follows it in the tab order, and drawn back at the end of the header from
+// there (see .bit-phi-res); hidden with the header wherever the list is not a panel.
 .bit-phi-cls {
     margin: 0;
     padding: 0;
     border: none;
-    display: flex;
+    display: none;
     cursor: pointer;
     appearance: none;
     align-items: center;
@@ -585,7 +587,6 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
     width: $siz-ctrl-md;
     height: $siz-ctrl-md;
     font-size: $siz-icon-md;
-    margin-inline-start: auto;
     border-radius: $shp-radius-button;
 
     @include phi-hover {
@@ -618,6 +619,15 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
             align-items: center;
             box-sizing: border-box;
             padding: spacing(1.5) spacing(1.5);
+            min-height: calc(#{$siz-ctrl-md} + #{spacing(3)});
+            padding-inline-end: calc(#{$siz-ctrl-md} + #{spacing(2.5)});
+        }
+
+        .bit-phi-cls {
+            display: flex;
+            position: absolute;
+            top: spacing(1.5);
+            inset-inline-end: spacing(1.5);
         }
 
         .bit-phi-scn {

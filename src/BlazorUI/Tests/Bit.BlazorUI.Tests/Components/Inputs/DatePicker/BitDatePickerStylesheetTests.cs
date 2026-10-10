@@ -35,7 +35,7 @@ public class BitDatePickerStylesheetTests
         StringAssert.Contains(stylesheet, "var(--bit-dtp-clr-txt, var(--bit-DatePicker-today-color, #{$clr-pri-text}))");
         StringAssert.Contains(stylesheet, "var(--bit-dtp-clr-hover, var(--bit-DatePicker-today-hover-background, #{$clr-pri-hover}))");
         StringAssert.Contains(stylesheet, "var(--bit-dtp-clr-active, var(--bit-DatePicker-today-active-background, #{$clr-pri-active}))");
-        StringAssert.Contains(stylesheet, "var(--bit-dtp-clr-focus, var(--bit-DatePicker-focus-color, #{$clr-pri-focus}))");
+        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-dtp-clr-focus, var(--bit-DatePicker-focus-color)))");
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-DatePicker-[a-z-]+, var\(--bit-dtp-"), "A public variable is read before the parameter it restyles the default of.");
 

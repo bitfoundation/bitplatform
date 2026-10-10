@@ -54,7 +54,7 @@ public class BitPivotStylesheetTests
         // The accent is resolved once per pivot on its root: the role an explicit Color publishes first, then the
         // public variable, then the primary role an unset Color stands for.
         StringAssert.Contains(root, "--bit-pvt-clr: var(--bit-pvt-role-main, var(--bit-Pivot-color, #{$clr-pri}));");
-        StringAssert.Contains(root, "--bit-pvt-clr-focus: var(--bit-pvt-role-focus, var(--bit-Pivot-focus-color, #{$clr-pri-focus}));");
+        StringAssert.Contains(root, "--bit-pvt-clr-focus: var(--bit-pvt-role-focus, var(--bit-Pivot-focus-color));");
         StringAssert.Contains(root, "--bit-pvt-clr-dis: var(--bit-pvt-role-dis, var(--bit-Pivot-disabled-color, #{$clr-pri-dis}));");
         StringAssert.Contains(root, "--bit-pvt-clr-dis-text: var(--bit-pvt-role-dis-text, var(--bit-Pivot-disabled-text-color, #{$clr-pri-dis-text}));");
 
@@ -139,7 +139,7 @@ public class BitPivotStylesheetTests
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-mnc {"), "animation-timing-function: $mot-easing-decelerate;");
 
         // The menu scrolls, so a ring drawn around the outside of a row would be clipped to one edge of it.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-mni {"), "box-shadow: inset 0 0 0 #{$shp-focus-ring-width} var(--bit-pvt-clr-focus);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-mni {"), "box-shadow: inset 0 0 0 #{$shp-focus-ring-width} var(--bit-pvt-clr-focus, #{$clr-pri-focus});");
     }
 
     [TestMethod]
@@ -212,7 +212,7 @@ public class BitPivotStylesheetTests
         var block = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-pvt-mnu,\n.bit-pvt-sld,\n.bit-pvt-scr {");
 
         StringAssert.Contains(block, "#{$tab}:focus-visible");
-        StringAssert.Contains(block, "box-shadow: inset 0 0 0 #{$shp-focus-ring-width} var(--bit-pvt-clr-focus);");
+        StringAssert.Contains(block, "box-shadow: inset 0 0 0 #{$shp-focus-ring-width} var(--bit-pvt-clr-focus, #{$clr-pri-focus});");
         StringAssert.Contains(block, "outline-offset: calc(-1 * #{$shp-focus-ring-width});");
     }
 

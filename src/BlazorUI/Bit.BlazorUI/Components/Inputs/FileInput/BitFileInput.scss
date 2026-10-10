@@ -144,7 +144,7 @@ $fin-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, lbl-hei
     // buttons are stripped of their outline library-wide (see general.scss), so the keyboard indicator
     // has to be drawn back on - it is the only thing telling a Tab user where the focus has landed.
     &:focus-visible {
-        @include focus-ring(var(--bit-fin-clr-focus, var(--bit-FileInput-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-fin-clr-focus, var(--bit-FileInput-focus-color)));
     }
 }
 
@@ -292,7 +292,7 @@ $fin-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, lbl-hei
     // the list only takes a tab stop when nothing inside it can (see the markup), and a stop with no
     // indicator is a stop nobody can follow, so the ring is drawn on it as it is on the buttons.
     &:focus-visible {
-        @include focus-ring(var(--bit-fin-clr-focus, var(--bit-FileInput-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-fin-clr-focus, var(--bit-FileInput-focus-color)));
     }
 }
 

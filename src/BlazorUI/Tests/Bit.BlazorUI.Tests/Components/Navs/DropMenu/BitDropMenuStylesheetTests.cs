@@ -54,7 +54,7 @@ public class BitDropMenuStylesheetTests
         StringAssert.Contains(root, "--bit-drm-cur-bg: var(--bit-drm-rst-bg, var(--bit-DropMenu-background, var(--bit-drm-rst-bg-d)));");
         StringAssert.Contains(root, "--bit-drm-cur-bg: var(--bit-drm-hov-bg, var(--bit-DropMenu-hover-background, var(--bit-drm-hov-bg-d)));");
         StringAssert.Contains(root, "--bit-drm-cur-bg: var(--bit-drm-act-bg, var(--bit-DropMenu-active-background, var(--bit-drm-act-bg-d)));");
-        StringAssert.Contains(root, "@include focus-ring(var(--bit-drm-clr-focus, var(--bit-DropMenu-focus-color, #{$clr-pri-focus})));");
+        StringAssert.Contains(root, "@include focus-ring-own(var(--bit-drm-clr-focus, var(--bit-DropMenu-focus-color)));");
 
         // A look that paints no Color in a slot leaves the bare slot unset, so the variable keeps it.
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-drm-otl {"), "--bit-drm-rst-bg: initial;");

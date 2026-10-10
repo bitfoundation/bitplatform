@@ -119,7 +119,7 @@ $tgb-private-properties: clr-txt, clr, clr-hover, clr-active, clr-focus, clr-dar
     transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     &:focus-visible {
-        @include focus-ring(var(--bit-tgb-clr-focus, var(--bit-ToggleButton-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-tgb-clr-focus, var(--bit-ToggleButton-focus-color)));
     }
 
     // Left able to receive the pointer, unlike most inert things: the title is what a toggle button has to say

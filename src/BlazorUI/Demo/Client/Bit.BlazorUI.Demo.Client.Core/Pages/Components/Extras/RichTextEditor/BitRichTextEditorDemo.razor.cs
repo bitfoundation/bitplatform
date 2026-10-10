@@ -429,7 +429,7 @@ public partial class BitRichTextEditorDemo
         new() { Name = "--bit-RichTextEditor-border-width", DefaultValue = "var(--bit-shp-brd-width)", Description = "Width of the outer border." },
         new() { Name = "--bit-RichTextEditor-border-radius", DefaultValue = "var(--bit-shp-radius-surface)", Description = "Corner radius of the editor." },
         new() { Name = "--bit-RichTextEditor-divider-color", DefaultValue = "var(--bit-clr-brd-sec)", Description = "Lines between the toolbar, its panels, the surface and the footer, and between the toolbar groups." },
-        new() { Name = "--bit-RichTextEditor-focus-color", DefaultValue = "var(--bit-clr-pri-focus)", Description = "Every focus indicator of the editor." },
+        new() { Name = "--bit-RichTextEditor-focus-color", DefaultValue = "var(--bit-clr-pri-focus)", Description = "Every focus indicator of the editor. While it is unset, every focus ring held off its element is the library's own --bit-shd-focus-ring; the ones drawn flush against a cell or a field keep this color." },
         new() { Name = "--bit-RichTextEditor-error-color", DefaultValue = "var(--bit-clr-err)", Description = "Border of an invalid editor, the required asterisk, the error message, the inline error and the limit reached." },
         new() { Name = "--bit-RichTextEditor-height", DefaultValue = "spacing(37.5)", Description = "Height the editing surface starts at (the Height parameter sets it on the instance)." },
         new() { Name = "--bit-RichTextEditor-max-height", DefaultValue = "none", Description = "Height past which the surface scrolls (the MaxHeight parameter sets it on the instance)." },

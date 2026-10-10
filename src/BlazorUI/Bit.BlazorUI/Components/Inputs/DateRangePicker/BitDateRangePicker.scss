@@ -109,7 +109,7 @@ $dtrp-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-body, rl-focus
     --bit-dtrp-clr-hover: var(--bit-dtrp-rl-hover, var(--bit-DateRangePicker-hover-color, #{$clr-pri-hover}));
     --bit-dtrp-clr-active: var(--bit-dtrp-rl-active, var(--bit-DateRangePicker-active-color, #{$clr-pri-active}));
     --bit-dtrp-clr-body: var(--bit-dtrp-rl-body, var(--bit-DateRangePicker-range-background, #{$clr-pri-light}));
-    --bit-dtrp-clr-focus: var(--bit-dtrp-rl-focus, var(--bit-DateRangePicker-focus-color, #{$clr-pri-focus}));
+    --bit-dtrp-clr-focus: var(--bit-dtrp-rl-focus, var(--bit-DateRangePicker-focus-color));
 }
 
 // The root and the callout each carry their own disabled marker, so both dim the same content.
@@ -333,7 +333,7 @@ $dtrp-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-body, rl-focus
     // It sits inside the field, whose own ring is drawn around the border a pixel away, so this one
     // takes no offset of its own or the two would overlap.
     &:focus-visible {
-        @include focus-ring(var(--bit-dtrp-clr-focus), 0);
+        @include focus-ring(var(--bit-dtrp-clr-focus, #{$clr-pri-focus}), 0);
     }
 }
 
@@ -374,7 +374,7 @@ $dtrp-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-body, rl-focus
 
 .bit-dtrp-foc:not(.bit-dtrp-und) {
     .bit-dtrp-icn {
-        @include focus-ring(var(--bit-dtrp-clr-focus));
+        @include focus-ring-own(var(--bit-dtrp-clr-focus));
     }
 }
 
@@ -539,7 +539,7 @@ $dtrp-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-body, rl-focus
     // be filled with the background of the day next to it.
     &:focus-visible {
         z-index: 1;
-        @include focus-ring(var(--bit-dtrp-clr-focus), 0);
+        @include focus-ring(var(--bit-dtrp-clr-focus, #{$clr-pri-focus}), 0);
     }
 }
 
@@ -717,7 +717,7 @@ $dtrp-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-body, rl-focus
 
     &:focus-visible {
         z-index: 1;
-        @include focus-ring(var(--bit-dtrp-clr-focus), 0);
+        @include focus-ring(var(--bit-dtrp-clr-focus, #{$clr-pri-focus}), 0);
     }
 
     &:disabled {
@@ -766,7 +766,7 @@ $dtrp-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-body, rl-focus
 
     &:focus-visible {
         z-index: 1;
-        @include focus-ring(var(--bit-dtrp-clr-focus), 0);
+        @include focus-ring(var(--bit-dtrp-clr-focus, #{$clr-pri-focus}), 0);
     }
 
     &:disabled {
@@ -809,7 +809,7 @@ $dtrp-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-body, rl-focus
 
     &:focus-visible {
         z-index: 1;
-        @include focus-ring(var(--bit-dtrp-clr-focus), 0);
+        @include focus-ring(var(--bit-dtrp-clr-focus, #{$clr-pri-focus}), 0);
     }
 
     i {
@@ -892,7 +892,7 @@ $dtrp-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-body, rl-focus
     // The presets sit in a column with a gap between them, so nothing clips a ring drawn with its
     // regular offset here.
     &:focus-visible {
-        @include focus-ring(var(--bit-dtrp-clr-focus));
+        @include focus-ring-own(var(--bit-dtrp-clr-focus));
     }
 }
 
@@ -955,7 +955,7 @@ $dtrp-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-body, rl-focus
     // cell the keyboard is on has to say so.
     &:focus-visible {
         z-index: 1;
-        @include focus-ring(var(--bit-dtrp-clr-focus), 0);
+        @include focus-ring(var(--bit-dtrp-clr-focus, #{$clr-pri-focus}), 0);
     }
 
     &:disabled {
@@ -1061,7 +1061,7 @@ $dtrp-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-body, rl-focus
     }
 
     &:focus {
-        @include focus-underline-ring(var(--bit-dtrp-clr-focus));
+        @include focus-underline-ring(var(--bit-dtrp-clr-focus, #{$clr-pri-focus}));
         border: none;
     }
 
@@ -1154,7 +1154,7 @@ $dtrp-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-body, rl-focus
 
     // The same ring, in the same accent, as every other control of the calendar.
     &:focus-visible {
-        @include focus-ring(var(--bit-dtrp-clr-focus));
+        @include focus-ring-own(var(--bit-dtrp-clr-focus));
     }
 }
 
@@ -1225,7 +1225,7 @@ $dtrp-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-body, rl-focus
 
     &.bit-dtrp-foc {
         .bit-dtrp-icn {
-            @include focus-underline-ring(var(--bit-dtrp-clr-focus));
+            @include focus-underline-ring(var(--bit-dtrp-clr-focus, #{$clr-pri-focus}));
         }
     }
 

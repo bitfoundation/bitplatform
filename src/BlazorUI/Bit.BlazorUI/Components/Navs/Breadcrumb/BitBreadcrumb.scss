@@ -87,7 +87,7 @@ $brc-private-properties:
     --bit-brc-sel-clr: var(--bit-brc-role-main, var(--bit-Breadcrumb-selected-color, var(--bit-Breadcrumb-color, #{$clr-fg-pri})));
     --bit-brc-dis-clr: var(--bit-Breadcrumb-disabled-color, #{$clr-fg-dis});
     --bit-brc-div-clr: var(--bit-brc-role-main, var(--bit-Breadcrumb-divider-color, #{$clr-fg-sec}));
-    --bit-brc-fcs-clr: var(--bit-brc-role-focus, var(--bit-Breadcrumb-focus-color, #{$clr-pri-focus}));
+    --bit-brc-fcs-clr: var(--bit-brc-role-focus, var(--bit-Breadcrumb-focus-color));
     --bit-brc-hover-bg: var(--bit-Breadcrumb-hover-background, #{$clr-bg-pri-hover});
     --bit-brc-active-bg: var(--bit-Breadcrumb-active-background, #{$clr-bg-pri-active});
 }
@@ -243,7 +243,7 @@ $brc-private-properties:
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-brc-fcs-clr));
+        @include focus-ring-own(var(--bit-brc-fcs-clr));
     }
 }
 
@@ -307,7 +307,7 @@ $brc-private-properties:
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-brc-fcs-clr));
+        @include focus-ring-own(var(--bit-brc-fcs-clr));
     }
 }
 
@@ -394,7 +394,7 @@ $brc-private-properties:
     // The rows fill the width of a list that scrolls, which would clip the outward ring of focus-ring, so
     // the indicator is an outline drawn inwards instead - one a forced-colors palette keeps as well.
     &:focus-visible {
-        outline: $shp-focus-ring-width $shp-border-style var(--bit-brc-fcs-clr);
+        outline: $shp-focus-ring-width $shp-border-style var(--bit-brc-fcs-clr, #{$clr-pri-focus});
         outline-offset: calc(-1 * #{$shp-focus-ring-width});
     }
 }

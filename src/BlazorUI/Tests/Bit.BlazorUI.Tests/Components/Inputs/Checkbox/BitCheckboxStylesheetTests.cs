@@ -28,7 +28,7 @@ public class BitCheckboxStylesheetTests
         StringAssert.Contains(stylesheet, "--bit-chb-ico-clr: var(--bit-chb-clr-txt, var(--bit-Checkbox-check-color, #{$clr-pri-text}));");
         StringAssert.Contains(stylesheet, "--bit-chb-ico-clr-bg: var(--bit-chb-clr, var(--bit-Checkbox-indeterminate-color, #{$clr-pri}));");
         StringAssert.Contains(stylesheet, "--bit-chb-box-clr-bg: var(--bit-chb-clr-hover, var(--bit-Checkbox-checked-hover-background, #{$clr-pri-hover}));");
-        StringAssert.Contains(stylesheet, "var(--bit-chb-clr-focus, var(--bit-Checkbox-focus-color, #{$clr-pri-focus}))");
+        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-chb-clr-focus, var(--bit-Checkbox-focus-color)))");
         StringAssert.Contains(stylesheet, "--bit-chb-box-clr-brd: var(--bit-chb-clr-dis, var(--bit-Checkbox-disabled-color, #{$clr-pri-dis}));");
         StringAssert.Contains(stylesheet, "color: var(--bit-chb-clr-dis-text, var(--bit-Checkbox-disabled-text-color, #{$clr-pri-dis-text}));");
 

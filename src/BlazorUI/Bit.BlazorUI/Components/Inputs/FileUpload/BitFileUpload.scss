@@ -178,7 +178,7 @@ $upl-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-tin
     // The browse button is the only thing in the component that opens the file dialog, so a keyboard user
     // who cannot see where the focus is cannot upload anything at all (WCAG 2.4.7 / 2.4.11).
     &:focus-visible {
-        @include focus-ring(var(--bit-upl-clr-focus, var(--bit-FileUpload-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-upl-clr-focus, var(--bit-FileUpload-focus-color)));
     }
 
 }
@@ -634,7 +634,7 @@ $upl-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-tin
 
     &:focus-visible {
         outline: none;
-        @include focus-ring(var(--bit-upl-clr-focus, var(--bit-FileUpload-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-upl-clr-focus, var(--bit-FileUpload-focus-color)));
     }
 
     // an idle action keeps its place and its focus, and only reads as unavailable.

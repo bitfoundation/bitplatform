@@ -22,7 +22,7 @@ public class BitCircularTimePickerStylesheetTests
         // unset one stands for - for the accent itself and for every color that defaults to it.
         StringAssert.Contains(stylesheet, "--bit-ctp-clr: var(--bit-ctp-rl-clr, var(--bit-CircularTimePicker-color, #{$clr-pri}));");
         StringAssert.Contains(stylesheet, "--bit-ctp-clr-text: var(--bit-ctp-rl-text, var(--bit-CircularTimePicker-text-color, #{$clr-pri-text}));");
-        StringAssert.Contains(stylesheet, "--bit-ctp-clr-focus: var(--bit-ctp-rl-focus, var(--bit-CircularTimePicker-focus-color, #{$clr-pri-focus}));");
+        StringAssert.Contains(stylesheet, "--bit-ctp-clr-focus: var(--bit-ctp-rl-focus, var(--bit-CircularTimePicker-focus-color));");
         StringAssert.Contains(stylesheet, "var(--bit-ctp-rl-clr, var(--bit-CircularTimePicker-pointer-color, ");
         StringAssert.Contains(stylesheet, "var(--bit-ctp-rl-clr, var(--bit-CircularTimePicker-toolbar-background, ");
         StringAssert.Contains(stylesheet, "var(--bit-ctp-rl-text, var(--bit-CircularTimePicker-toolbar-color, ");

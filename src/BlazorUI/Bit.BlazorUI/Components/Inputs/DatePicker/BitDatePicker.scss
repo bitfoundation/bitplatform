@@ -333,7 +333,7 @@ $dtp-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, inp-h-s
 
 .bit-dtp-foc:not(.bit-dtp-und) {
     .bit-dtp-icn {
-        @include focus-ring(var(--bit-dtp-clr-focus, var(--bit-DatePicker-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-dtp-clr-focus, var(--bit-DatePicker-focus-color)));
     }
 }
 

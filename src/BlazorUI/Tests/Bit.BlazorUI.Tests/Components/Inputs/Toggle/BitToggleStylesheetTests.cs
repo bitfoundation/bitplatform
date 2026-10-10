@@ -32,7 +32,7 @@ public class BitToggleStylesheetTests
         StringAssert.Contains(stylesheet, "--bit-tgl-thb-clr: var(--bit-tgl-clr-text, var(--bit-Toggle-checked-thumb-color, #{$clr-pri-text}));");
         StringAssert.Contains(stylesheet, "--bit-tgl-cnn-clr: var(--bit-tgl-clr-text, var(--bit-Toggle-content-color, #{$clr-pri-text}));");
         StringAssert.Contains(stylesheet, "--bit-tgl-trk-clr-bg: var(--bit-tgl-clr-hover, var(--bit-Toggle-checked-hover-background, #{$clr-pri-hover}));");
-        StringAssert.Contains(stylesheet, "var(--bit-tgl-clr-focus, var(--bit-Toggle-focus-color, #{$clr-pri-focus}))");
+        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-tgl-clr-focus, var(--bit-Toggle-focus-color)))");
 
         // The values the parameters publish are never read behind a public variable. The glyph, the spinner and their
         // sizes follow the knob and the track rather than a parameter, so they stay the variables'.

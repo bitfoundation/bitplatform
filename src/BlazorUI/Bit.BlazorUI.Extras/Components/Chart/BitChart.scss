@@ -24,8 +24,8 @@
 //   --bit-Chart-tooltip-color          tooltip text                                   (default: $clr-tooltip-fg)
 //   --bit-Chart-tooltip-radius         tooltip corner radius                          (default: $shp-radius-popup)
 //   --bit-Chart-tooltip-shadow         tooltip elevation                              (default: $box-shadow-tooltip)
-//   --bit-Chart-focus-color            focus ring of the plot, the keyboard position
-//                                      and the legend items                           (default: $clr-pri-focus)
+//   --bit-Chart-focus-color            focus ring of the plot and the legend items    (default: --bit-shd-focus-ring)
+//                                      and the keyboard position                      (default: $clr-pri-focus)
 //   --bit-Chart-zoom-box-background    fill of the drag-to-zoom selection             (default: $clr-pri at 20%)
 //   --bit-Chart-zoom-box-border-color  border of the drag-to-zoom selection           (default: $clr-pri)
 //   --bit-Chart-inactive-opacity       the series faded behind a highlighted legend
@@ -43,7 +43,7 @@ $cht-private-properties: dur, ease;
     @each $name in $cht-private-properties {
         --bit-cht-#{$name}: initial;
     }
-    --bit-cht-clr-focus: var(--bit-Chart-focus-color, #{$clr-pri-focus});
+    --bit-cht-clr-focus: var(--bit-Chart-focus-color);
 
     display: flex;
     box-sizing: border-box;
@@ -113,7 +113,7 @@ $cht-private-properties: dur, ease;
 
     &:focus-visible {
         border-radius: $shp-radius-sm;
-        @include focus-ring(var(--bit-cht-clr-focus));
+        @include focus-ring-own(var(--bit-cht-clr-focus));
     }
 }
 
@@ -194,7 +194,7 @@ $cht-private-properties: dur, ease;
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-cht-clr-focus));
+        @include focus-ring-own(var(--bit-cht-clr-focus));
     }
 
     &:disabled,
@@ -450,7 +450,13 @@ $cht-private-properties: dur, ease;
     animation: bit-cht-fade var(--bit-cht-dur, 600ms) var(--bit-cht-ease, #{$mot-easing-decelerate}) both;
 }
 
+// The keyboard position: a dashed outline traced around the data element the arrow keys have reached, while the
+// focus itself - and its ring - stays on the plot. It is a stroke rather than a box-shadow, so it is drawn in the
+// chart's focus color, the primary focus color while that is unset, and never takes the shape of a replaced
+// --bit-shd-focus-ring. The color is the stylesheet's rather than a presentation attribute's, so it reads the
+// same chain as the chart's rings and a var() in it works in every engine.
 .bit-cht-focus-ring {
+    stroke: var(--bit-cht-clr-focus, #{$clr-pri-focus});
     stroke-dasharray: 3 2;
 }
 
@@ -483,6 +489,11 @@ $cht-private-properties: dur, ease;
     .bit-cht-lgd-box,
     .bit-cht-tt-swt {
         forced-color-adjust: none;
+    }
+
+    // The keyboard position marks what the focus is on, like the Highlight outline of the rings.
+    .bit-cht-focus-ring {
+        stroke: Highlight;
     }
 
     // Both halves of the ring would be repainted one color, which leaves a turning circle that does not look

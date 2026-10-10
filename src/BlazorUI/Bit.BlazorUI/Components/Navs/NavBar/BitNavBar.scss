@@ -206,7 +206,7 @@ $nbr-private-properties: clr, clr-ind, clr-dis, clr-fcs, clr-acc-hover, clr-acc-
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-nbr-clr-fcs, var(--bit-NavBar-focus-color, #{$clr-pri-focus})));
+        @include focus-ring-own(var(--bit-nbr-clr-fcs, var(--bit-NavBar-focus-color)));
     }
 }
 

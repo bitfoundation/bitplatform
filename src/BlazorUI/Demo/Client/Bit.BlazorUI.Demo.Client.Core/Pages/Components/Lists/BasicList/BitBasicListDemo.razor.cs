@@ -284,7 +284,7 @@ public partial class BitBasicListDemo
         {
             Name = "--bit-BasicList-focus-color",
             DefaultValue = "--bit-clr-pri-focus",
-            Description = "Focus ring of the list (when it is focusable) and of its LoadMore element.",
+            Description = "Focus ring of the list (when it is focusable) and of its LoadMore element. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
         },
         new()
         {

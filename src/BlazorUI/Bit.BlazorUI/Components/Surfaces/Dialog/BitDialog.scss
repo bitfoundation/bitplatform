@@ -32,12 +32,14 @@ $dlg-private-properties: wid, hei, mnw, mnh, mxw, mxh;
     }
     // The color of the action buttons, defaulted to the primary role and re-pointed by the role classes
     // below. They are declared on the root rather than on the buttons so a Dialog that is given a color
-    // paints the pair of them, the spinner between them and the ring around either, from one place.
+    // paints the pair of them, the spinner between them and the ring around either, from one place. The
+    // ring's is the one left unset by default: an uncolored Dialog's buttons take the library's global
+    // focus ring (see focus-ring-own).
     --bit-dlg-clr: #{$clr-pri};
     --bit-dlg-clr-txt: #{$clr-pri-text};
     --bit-dlg-clr-hover: #{$clr-pri-hover};
     --bit-dlg-clr-active: #{$clr-pri-active};
-    --bit-dlg-clr-focus: #{$clr-pri-focus};
+    --bit-dlg-clr-focus: initial;
     --bit-dlg-clr-spn: #{$clr-pri-dark};
     inset: 0;
     width: 100%;
@@ -395,7 +397,7 @@ $dlg-private-properties: wid, hei, mnw, mnh, mxw, mxh;
         // on every other control in the library, rather than left to whatever the browser draws. The ring
         // follows the color of the Dialog, so a destructive confirmation is not ringed in the accent.
         &:focus-visible {
-            @include focus-ring(var(--bit-dlg-clr-focus));
+            @include focus-ring-own(var(--bit-dlg-clr-focus));
         }
 
         &:disabled {

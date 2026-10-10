@@ -864,7 +864,7 @@ public partial class BitTagsInputDemo
         {
             Name = "--bit-TagsInput-focus-color",
             DefaultValue = "--bit-clr-pri-focus",
-            Description = "Color of the focus ring the field wears while anything inside it holds the focus. The Color parameter wins over it.",
+            Description = "Color of the focus ring the field wears while anything inside it holds the focus. The Color parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
         },
         new()
         {

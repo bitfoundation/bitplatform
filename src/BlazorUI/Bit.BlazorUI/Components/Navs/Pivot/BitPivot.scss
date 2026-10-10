@@ -103,7 +103,7 @@ $pvt-private-properties:
     // The accent is resolved here, once per pivot, so every rule below reads the same one: the role an explicit
     // Color picks, then the public variable, then the primary role an unset Color stands for.
     --bit-pvt-clr: var(--bit-pvt-role-main, var(--bit-Pivot-color, #{$clr-pri}));
-    --bit-pvt-clr-focus: var(--bit-pvt-role-focus, var(--bit-Pivot-focus-color, #{$clr-pri-focus}));
+    --bit-pvt-clr-focus: var(--bit-pvt-role-focus, var(--bit-Pivot-focus-color));
     --bit-pvt-clr-dis: var(--bit-pvt-role-dis, var(--bit-Pivot-disabled-color, #{$clr-pri-dis}));
     --bit-pvt-clr-dis-text: var(--bit-pvt-role-dis-text, var(--bit-Pivot-disabled-text-color, #{$clr-pri-dis-text}));
 
@@ -179,7 +179,7 @@ $pvt-private-properties:
     // The panel is a tab stop of its own (the WAI-ARIA tabs pattern asks for it when the content
     // holds nothing focusable), so it needs a focus ring like any other.
     &:focus-visible {
-        @include focus-ring(var(--bit-pvt-clr-focus));
+        @include focus-ring-own(var(--bit-pvt-clr-focus));
     }
 }
 
@@ -667,7 +667,7 @@ $pvt-private-properties:
     text-transform: $tg-ctrl-text-transform;
 
     &:focus-visible {
-        @include focus-ring(var(--bit-pvt-clr-focus));
+        @include focus-ring-own(var(--bit-pvt-clr-focus));
     }
 
     // The selection indicator lives on every item rather than only on the selected one: a pseudo
@@ -716,7 +716,7 @@ $pvt-private-properties:
 .bit-pvt-sld,
 .bit-pvt-scr {
     #{$tab}:focus-visible {
-        box-shadow: inset 0 0 0 #{$shp-focus-ring-width} var(--bit-pvt-clr-focus);
+        box-shadow: inset 0 0 0 #{$shp-focus-ring-width} var(--bit-pvt-clr-focus, #{$clr-pri-focus});
 
         @media (forced-colors: active) {
             outline-offset: calc(-1 * #{$shp-focus-ring-width});
@@ -839,7 +839,7 @@ $pvt-private-properties:
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-pvt-clr-focus));
+        @include focus-ring-own(var(--bit-pvt-clr-focus));
     }
 }
 
@@ -874,7 +874,7 @@ $pvt-private-properties:
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-pvt-clr-focus));
+        @include focus-ring-own(var(--bit-pvt-clr-focus));
     }
 
     &:disabled {
@@ -950,7 +950,7 @@ $pvt-private-properties:
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-pvt-clr-focus));
+        @include focus-ring-own(var(--bit-pvt-clr-focus));
     }
 
     &:disabled {
@@ -1055,7 +1055,7 @@ $pvt-private-properties:
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-pvt-clr-focus));
+        @include focus-ring-own(var(--bit-pvt-clr-focus));
     }
 
     &[disabled] {
@@ -1071,14 +1071,14 @@ $pvt-private-properties:
     // The item the aria-activedescendant of the menu points at: the real focus never leaves the menu,
     // so this is what stands in for the focus ring the item would otherwise draw for itself.
     &.bit-pvt-mni-act {
-        @include focus-ring(var(--bit-pvt-clr-focus));
+        @include focus-ring-own(var(--bit-pvt-clr-focus));
     }
 
     // The menu scrolls, and so clips anything drawn outside its rows: a ring around the outside of one would
     // show as a stray line along a single edge. It is drawn on the inside of the row instead, as on the tabs.
     &:focus-visible,
     &.bit-pvt-mni-act {
-        box-shadow: inset 0 0 0 #{$shp-focus-ring-width} var(--bit-pvt-clr-focus);
+        box-shadow: inset 0 0 0 #{$shp-focus-ring-width} var(--bit-pvt-clr-focus, #{$clr-pri-focus});
 
         @media (forced-colors: active) {
             outline-offset: calc(-1 * #{$shp-focus-ring-width});

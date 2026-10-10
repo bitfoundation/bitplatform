@@ -54,7 +54,7 @@ public partial class BitButtonGroupStylesheetTests
         StringAssert.Contains(stylesheet, "background-color: var(--bit-btg-itm-clr-bg-hover, var(--bit-ButtonGroup-hover-background, #{$clr-pri-hover}));");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-btg-clr-dark, var(--bit-ButtonGroup-selected-background, #{$clr-pri-dark}));");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-btg-itm-clr-bg-dis, var(--bit-ButtonGroup-disabled-background, var(--bit-btg-dfl-bg-dis)));");
-        StringAssert.Contains(stylesheet, "var(--bit-btg-clr-focus, var(--bit-ButtonGroup-focus-color, #{$clr-pri-focus}))");
+        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-btg-clr-focus, var(--bit-ButtonGroup-focus-color)))");
 
         // The default of each variant is the primary role, and what a Color does not paint - the transparent background
         // of Outline - has no value of the Color's in front of the variable.

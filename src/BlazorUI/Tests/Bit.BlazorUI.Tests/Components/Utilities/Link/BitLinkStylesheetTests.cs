@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -24,7 +25,11 @@ public partial class BitLinkStylesheetTests
 
         foreach (var name in documented)
         {
-            StringAssert.Contains(stylesheet, $"var({name}, ", $"{name} is documented but never read with a fallback.");
+            // The focus color alone is read without a fallback, on purpose: its absence is what hands the ring over
+            // to the global --bit-shd-focus-ring (see BitFocusRingStylesheetTests).
+            var read = name.EndsWith("-focus-color", StringComparison.Ordinal) ? $"var({name})" : $"var({name}, ";
+
+            StringAssert.Contains(stylesheet, read, $"{name} is documented but never read as it should be.");
         }
     }
 
@@ -140,7 +145,7 @@ public partial class BitLinkStylesheetTests
 
         // A link left in its hover color after a mouse click reads as stuck, so only :focus-visible is styled.
         Assert.IsFalse(Regex.IsMatch(rules, @"&:focus\b(?!-visible)"), "A bare :focus is styled.");
-        StringAssert.Contains(rules, "@include focus-ring(var(--bit-lnk-clr-focus, var(--bit-Link-focus-color, #{$clr-pri-focus})));");
+        StringAssert.Contains(rules, "@include focus-ring-own(var(--bit-lnk-clr-focus, var(--bit-Link-focus-color)));");
     }
 
     [TestMethod]

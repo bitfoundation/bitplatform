@@ -30,7 +30,7 @@ public partial class BitTextFieldStylesheetTests
         // So does an explicit Accent, Background and Border, for every color they paint.
         StringAssert.Contains(stylesheet, "var(--bit-tfl-clr, var(--bit-TextField-accent-color, #{$clr-pri}))");
         StringAssert.Contains(stylesheet, "var(--bit-tfl-clr, var(--bit-TextField-button-color, var(--bit-TextField-accent-color, #{$clr-pri})))");
-        StringAssert.Contains(stylesheet, "var(--bit-tfl-clr-focus, var(--bit-TextField-focus-color, #{$clr-pri-focus}))");
+        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-tfl-clr-focus, var(--bit-TextField-focus-color)))");
         StringAssert.Contains(stylesheet, "var(--bit-tfl-spn-clr, var(--bit-TextField-spinner-color, currentcolor))");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-tfl-clr-bg, var(--bit-TextField-background, #{$clr-bg-pri}));");
         StringAssert.Contains(stylesheet, "var(--bit-tfl-clr-brd, var(--bit-TextField-border-color, #{$clr-brd-pri}))");

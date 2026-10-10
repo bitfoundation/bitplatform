@@ -42,7 +42,8 @@ $ico-clr: var(--bit-ico-clr, var(--bit-Icon-color, #{$clr-pri}));
 $ico-clr-txt: var(--bit-ico-clr-txt, var(--bit-Icon-contrast-color, #{$clr-pri-text}));
 $ico-clr-hover: var(--bit-ico-clr-hover, var(--bit-Icon-hover-color, var(--bit-ico-pub-hover, #{$clr-pri-hover})));
 $ico-clr-active: var(--bit-ico-clr-active, var(--bit-Icon-active-color, var(--bit-ico-pub-active, #{$clr-pri-active})));
-$ico-clr-focus: var(--bit-ico-clr-focus, var(--bit-Icon-focus-color, #{$clr-pri-focus}));
+// The focus color has no fallback: while it is unset the ring is the global --bit-shd-focus-ring (see focus-ring-own).
+$ico-clr-focus: var(--bit-ico-clr-focus, var(--bit-Icon-focus-color));
 $ico-clr-dis: var(--bit-ico-clr-dis, #{$clr-pri-dis});
 $ico-clr-dis-text: var(--bit-ico-clr-dis-text, #{$clr-pri-dis-text});
 
@@ -96,7 +97,7 @@ $ico-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
     // tooltip - the keyboard sees the themed ring rather than the browser's own outline. It follows the
     // border radius of the variant the icon is drawn in.
     &:focus-visible {
-        @include focus-ring($ico-clr-focus);
+        @include focus-ring-own($ico-clr-focus);
     }
 }
 

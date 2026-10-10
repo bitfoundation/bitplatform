@@ -108,7 +108,7 @@ $clp-private-properties:
     // The two values every part of the panel resolves its own override through, computed once here so that a
     // border color or a focus color set on :root reaches the sliders, the fields and the swatches alike.
     --bit-clp-brd: var(--bit-ColorPicker-border-color, #{$clr-brd-pri});
-    --bit-clp-focus: var(--bit-ColorPicker-focus-color, #{$clr-pri-focus});
+    --bit-clp-focus: var(--bit-ColorPicker-focus-color);
 
     // No height is declared here on purpose: the panel is as tall as the rows it holds, so turning the
     // inputs or the presets on grows it instead of squeezing the gradient. An explicit height from a
@@ -259,7 +259,7 @@ $clp-private-properties:
     touch-action: none;
 
     &:focus-visible {
-        @include focus-ring(var(--bit-clp-focus));
+        @include focus-ring-own(var(--bit-clp-focus));
     }
 }
 
@@ -331,7 +331,7 @@ $clp-private-properties:
     // taller than the rail it sits on (see .bit-clp-inp): drawn on the input it would trace the hit area
     // instead of the control, and a keyboard user would be shown a box that is not what they are looking at.
     &:has(.bit-clp-inp:focus-visible) {
-        @include focus-ring(var(--bit-clp-focus));
+        @include focus-ring-own(var(--bit-clp-focus));
     }
 }
 
@@ -450,7 +450,7 @@ $clp-private-properties:
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-clp-focus));
+        @include focus-ring-own(var(--bit-clp-focus));
     }
 
     // A button the picker is refusing - one on a read-only panel - stays in the tab order so the panel can
@@ -543,7 +543,7 @@ $clp-private-properties:
     border: $shp-border-width $shp-border-style var(--bit-clp-brd);
 
     &:focus-visible {
-        @include focus-ring(var(--bit-clp-focus));
+        @include focus-ring-own(var(--bit-clp-focus));
     }
 
     // The spinners of the channel fields would take a third of their width for a control the arrow keys
@@ -616,7 +616,7 @@ $clp-private-properties:
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-clp-focus));
+        @include focus-ring-own(var(--bit-clp-focus));
     }
 
     // A swatch the picker is refusing keeps its color and its place in the tab order - the palette is still

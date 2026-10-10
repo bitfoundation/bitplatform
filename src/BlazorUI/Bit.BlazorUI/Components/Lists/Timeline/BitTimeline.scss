@@ -220,7 +220,7 @@ $tln-private-properties: clr, clr-fg, clr-focus, clr-dis-bg, clr-dis-text, dot-s
 
     &:focus-visible {
         outline: none;
-        @include focus-ring(var(--bit-tln-clr-focus, #{$clr-pri-focus}));
+        @include focus-ring-own(var(--bit-tln-clr-focus));
     }
 }
 
