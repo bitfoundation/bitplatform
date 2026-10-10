@@ -174,7 +174,6 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     {
         _assignedParameters.Clear();
         HtmlAttributes.Clear();
-        _disabledAwareHtmlAttributes = null;
         var parametersDictionary = ParametersCache ?? new Dictionary<string, object?>(parameters.ToDictionary());
         foreach (var parameter in parametersDictionary!)
         {
@@ -505,14 +504,6 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
         "onkeydown", "onkeyup", "onkeypress"
     }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
 
-    // The attributes of the last read of DisabledAwareHtmlAttributes while disabled, and the dictionary and the count
-    // they were read off, so a component re-rendered while it stays disabled does not filter and copy them again on
-    // every render. The parameters are the one thing that replaces them, so SetParametersAsync drops the cache, and a
-    // dictionary that was swapped or added to since is read again.
-    private Dictionary<string, object>? _disabledAwareHtmlAttributes;
-    private Dictionary<string, object>? _disabledAwareHtmlAttributesSource;
-    private int _disabledAwareHtmlAttributesCount;
-
     /// <summary>
     /// The attributes the page splatted on the component, less the handlers of the <see cref="ActivationEvents"/>
     /// while the component is <see cref="Disabled"/>. A component whose disabled state makes it unavailable splats its
@@ -535,16 +526,10 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
         {
             if (IsActivationDisabled is false || HtmlAttributes.Count == 0) return HtmlAttributes;
 
-            if (_disabledAwareHtmlAttributes is not null
-                && ReferenceEquals(_disabledAwareHtmlAttributesSource, HtmlAttributes)
-                && _disabledAwareHtmlAttributesCount == HtmlAttributes.Count)
-            {
-                return _disabledAwareHtmlAttributes;
-            }
-
-            _disabledAwareHtmlAttributesSource = HtmlAttributes;
-            _disabledAwareHtmlAttributesCount = HtmlAttributes.Count;
-            return _disabledAwareHtmlAttributes = LeaveActivationHandlersOut(HtmlAttributes);
+            // Read again on every render rather than cached: a component may replace a value of its own HtmlAttributes
+            // in place between two renders (BitSlider's aria-label, a BitParams ancestor's attributes), which leaves
+            // the dictionary and its count unchanged, and a copy kept from before would render the stale value.
+            return LeaveActivationHandlersOut(HtmlAttributes);
         }
     }
 
