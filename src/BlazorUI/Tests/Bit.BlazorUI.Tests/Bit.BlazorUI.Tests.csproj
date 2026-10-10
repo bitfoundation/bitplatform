@@ -41,6 +41,10 @@
       <!-- Compile-linked so BitPdfOpCodeTests can pin the internal enum's contiguous
            blocks without InternalsVisibleTo (same source the Extras assembly builds). -->
       <Compile Include="..\..\Bit.BlazorUI.Extras\Components\PdfViewer\Core\Content\BitPdfOpCode.cs" Link="Components\Extras\PdfViewer\BitPdfOpCode.cs" />
+      <!-- Compile-linked to test the internal byte-source contract without adding a public API. -->
+      <Compile Include="..\..\Bit.BlazorUI.Extras\Components\PdfViewer\Core\IBitPdfByteSource.cs" Link="Components\Extras\PdfViewer\IBitPdfByteSource.cs" />
+      <Compile Include="..\..\Bit.BlazorUI.Extras\Components\PdfViewer\Core\BitPdfMemoryByteSource.cs" Link="Components\Extras\PdfViewer\BitPdfMemoryByteSource.cs" />
+      <Compile Include="..\..\Bit.BlazorUI.Extras\Components\PdfViewer\Core\BitPdfByteSourceReader.cs" Link="Components\Extras\PdfViewer\BitPdfByteSourceReader.cs" />
       <!-- Compile-linked so DemoSharedEnumsTests can call every shared enum table of the demo pages and
            compare what it builds against the enum, rather than reading the tables out of the source.
            These files carry their own usings, since this project has no implicit ones. The generated

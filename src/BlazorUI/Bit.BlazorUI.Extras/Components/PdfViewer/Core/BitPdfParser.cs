@@ -159,21 +159,22 @@ public sealed class BitPdfParser
         return buf1;
     }
 
-    private BitPdfStream ParseStream(BitPdfDict dict)
+    private BitPdfBaseStream ParseStream(BitPdfDict dict)
     {
-        var source = (BitPdfStream)_lexer.Stream;
-        byte[] buffer = source.Buffer;
+        var source = _lexer.Stream.ByteSource
+            ?? throw new BitPdfFormatException("PDF stream objects require a random-access byte source.");
+        var reader = new BitPdfByteSourceReader(source);
 
         // The lexer has just produced the "stream" keyword as _buf2, so its
         // current character is the first byte after "stream".
         int i = _lexer.Pos - 1; // index of the lexer's current character
 
         // Skip the end-of-line marker (CRLF or LF) following "stream".
-        if (i < buffer.Length && buffer[i] == 0x0D)
+        if (i < reader.Length && reader.ReadByte(i) == 0x0D)
         {
             i++;
         }
-        if (i < buffer.Length && buffer[i] == 0x0A)
+        if (i < reader.Length && reader.ReadByte(i) == 0x0A)
         {
             i++;
         }
@@ -185,20 +186,21 @@ public sealed class BitPdfParser
         int declaredLength = lengthObj is double dl && IsInteger(dl) ? (int)dl : -1;
 
         if (declaredLength >= 0
-            && dataStart + declaredLength <= buffer.Length
-            && LooksLikeEndstream(buffer, dataStart + declaredLength))
+            && dataStart >= 0 && dataStart <= reader.Length
+            && declaredLength <= reader.Length - dataStart
+            && LooksLikeEndstream(reader, dataStart + declaredLength))
         {
             dataEnd = dataStart + declaredLength;
         }
         else
         {
-            dataEnd = FindEndstream(buffer, dataStart);
+            dataEnd = FindEndstream(reader, dataStart);
         }
 
-        var streamObj = new BitPdfStream(buffer, dataStart, dataEnd - dataStart, dict);
+        var streamObj = source.CreateStream(dataStart, dataEnd - dataStart, dict);
 
         // Resume tokenizing just past "endstream".
-        int resume = SkipPastEndstream(buffer, dataEnd);
+        int resume = SkipPastEndstream(reader, dataEnd);
         _lexer.Seek(resume);
         _buf1 = _lexer.GetObj();
         _buf2 = _lexer.GetObj();
@@ -214,60 +216,58 @@ public sealed class BitPdfParser
 
     private static readonly byte[] EndstreamKeyword = "endstream"u8.ToArray();
 
-    private static bool LooksLikeEndstream(byte[] buffer, int at)
+    private static bool LooksLikeEndstream(BitPdfByteSourceReader reader, int at)
     {
         int i = at;
-        while (i < buffer.Length && (buffer[i] == 0x0D || buffer[i] == 0x0A || buffer[i] == 0x20))
+        while (i < reader.Length && reader.ReadByte(i) is 0x0D or 0x0A or 0x20)
         {
             i++;
         }
-        return MatchesAt(buffer, i, EndstreamKeyword);
+        return MatchesAt(reader, i, EndstreamKeyword);
     }
 
-    private static int FindEndstream(byte[] buffer, int start)
+    private static int FindEndstream(BitPdfByteSourceReader reader, int start)
     {
-        for (int i = start; i <= buffer.Length - EndstreamKeyword.Length; i++)
+        int at = reader.IndexOf(EndstreamKeyword, start);
+        if (at >= 0)
         {
-            if (MatchesAt(buffer, i, EndstreamKeyword))
+            int end = at;
+            if (end > start && reader.ReadByte(end - 1) == 0x0A)
             {
-                int end = i;
-                if (end > start && buffer[end - 1] == 0x0A)
-                {
-                    end--;
-                }
-                if (end > start && buffer[end - 1] == 0x0D)
-                {
-                    end--;
-                }
-                return end;
+                end--;
             }
+            if (end > start && reader.ReadByte(end - 1) == 0x0D)
+            {
+                end--;
+            }
+            return end;
         }
-        return buffer.Length;
+        return reader.Length;
     }
 
-    private static int SkipPastEndstream(byte[] buffer, int dataEnd)
+    private static int SkipPastEndstream(BitPdfByteSourceReader reader, int dataEnd)
     {
         int i = dataEnd;
-        while (i < buffer.Length && (buffer[i] == 0x0D || buffer[i] == 0x0A || buffer[i] == 0x20))
+        while (i < reader.Length && reader.ReadByte(i) is 0x0D or 0x0A or 0x20)
         {
             i++;
         }
-        if (MatchesAt(buffer, i, EndstreamKeyword))
+        if (MatchesAt(reader, i, EndstreamKeyword))
         {
             i += EndstreamKeyword.Length;
         }
         return i;
     }
 
-    private static bool MatchesAt(byte[] buffer, int at, byte[] keyword)
+    private static bool MatchesAt(BitPdfByteSourceReader reader, int at, byte[] keyword)
     {
-        if (at < 0 || at + keyword.Length > buffer.Length)
+        if (at < 0 || at > reader.Length || keyword.Length > reader.Length - at)
         {
             return false;
         }
         for (int k = 0; k < keyword.Length; k++)
         {
-            if (buffer[at + k] != keyword[k])
+            if (reader.ReadByte(at + k) != keyword[k])
             {
                 return false;
             }

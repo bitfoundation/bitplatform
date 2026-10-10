@@ -145,12 +145,13 @@ public sealed class BitPdfDocument
     {
         ArgumentNullException.ThrowIfNull(bytes);
 
-        var xref = new BitPdfXRef(bytes) { Password = password };
+        var source = new BitPdfMemoryByteSource(bytes);
+        var xref = new BitPdfXRef(source) { Password = password };
         xref.Parse();
 
         var document = new BitPdfDocument(xref)
         {
-            Version = ReadHeaderVersion(bytes),
+            Version = ReadHeaderVersion(source),
         };
 
         document.Catalog = xref.Root
@@ -283,10 +284,11 @@ public sealed class BitPdfDocument
         return r;
     }
 
-    private static string? ReadHeaderVersion(byte[] bytes)
+    private static string? ReadHeaderVersion(IBitPdfByteSource source)
     {
         // Header looks like "%PDF-1.7" within the first bytes of the file.
-        int limit = Math.Min(bytes.Length, 1024);
+        int limit = Math.Min(source.Length, 1024);
+        ReadOnlySpan<byte> bytes = source.GetMemory(0, limit).Span;
         ReadOnlySpan<byte> prefix = "%PDF-"u8;
         for (int i = 0; i + prefix.Length < limit; i++)
         {
@@ -309,7 +311,7 @@ public sealed class BitPdfDocument
             {
                 end++;
             }
-            return System.Text.Encoding.ASCII.GetString(bytes, start, end - start);
+            return System.Text.Encoding.ASCII.GetString(bytes[start..end]);
         }
         return null;
     }

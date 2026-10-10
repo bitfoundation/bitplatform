@@ -10,6 +10,10 @@ namespace Bit.BlazorUI;
 /// </summary>
 public abstract class BitPdfBaseStream
 {
+    // Original-byte access for stream-boundary parsing; decoded/custom streams
+    // need not supply it. Kept internal so public stream contracts stay unchanged.
+    internal virtual IBitPdfByteSource? ByteSource => null;
+
     /// <summary>Inclusive lower bound of the readable window.</summary>
     public int Start { get; protected set; }
 
