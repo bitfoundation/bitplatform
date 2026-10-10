@@ -332,4 +332,49 @@ public class BitTimePickerParamsTests : BunitTestContext
         // What the instance wrote for itself is never replaced by the cascade.
         Assert.AreEqual("from-instance", callout.GetAttribute("data-both"));
     }
+
+    [TestMethod]
+    public void TheCalloutHtmlAttributesOfTheInstanceShouldWinHoweverEitherCasesThem()
+    {
+        var own = new Dictionary<string, object> { ["Data-Both"] = "from-instance" };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, [new BitTimePickerParams
+            {
+                CalloutHtmlAttributes = new Dictionary<string, object> { ["data-both"] = "from-cascade", ["data-cascaded"] = "yes" }
+            }]);
+            parameters.AddChildContent(RenderTimePicker(builder =>
+            {
+                builder.AddAttribute(1, nameof(BitTimePicker.CalloutHtmlAttributes), own);
+            }));
+        });
+
+        var callout = component.Find(".bit-tpc-cac");
+
+        Assert.AreEqual("from-instance", callout.GetAttribute("data-both"));
+        Assert.AreEqual("yes", callout.GetAttribute("data-cascaded"));
+        // The dictionary is the app's own, so the cascade is merged into a copy of it.
+        Assert.HasCount(1, own);
+    }
+
+    [TestMethod]
+    public void TheCalloutHtmlAttributesOfADroppedParamsObjectShouldGo()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, [new BitTimePickerParams
+            {
+                CalloutHtmlAttributes = new Dictionary<string, object> { ["data-cascaded"] = "yes" }
+            }]);
+            parameters.AddChildContent(RenderTimePicker());
+        });
+
+        Assert.AreEqual("yes", component.Find(".bit-tpc-cac").GetAttribute("data-cascaded"));
+
+        component.Render(parameters => parameters.Add(p => p.Parameters, [new BitTimePickerParams { Label = "Label" }]));
+
+        Assert.IsFalse(component.Find(".bit-tpc-cac").HasAttribute("data-cascaded"));
+        Assert.IsEmpty(component.FindComponent<BitTimePicker>().Instance.CalloutHtmlAttributes);
+    }
 }

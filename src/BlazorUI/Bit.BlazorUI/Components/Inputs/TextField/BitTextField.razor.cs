@@ -1242,9 +1242,7 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     private string? GetInputAttribute(string name)
     {
-        return InputHtmlAttributes is not null && InputHtmlAttributes.TryGetValue(name, out var value)
-                ? value?.ToString()
-                : null;
+        return TryFindAttribute(InputHtmlAttributes, name, out var value) ? value?.ToString() : null;
     }
 
     private string CountText => MaxLength >= 0 ? $"{_charCount}/{MaxLength}" : _charCount.ToString();

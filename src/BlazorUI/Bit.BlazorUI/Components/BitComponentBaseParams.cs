@@ -118,15 +118,7 @@ public abstract class BitComponentBaseParams
             bitComponentBase.TakeFromCascade(nameof(ForceAnimation), ForceAnimation.Value, static c => c.ForceAnimation, static (c, v) => c.ForceAnimation = v);
         }
 
-        if (HtmlAttributes is not null)
-        {
-            foreach (var attr in HtmlAttributes)
-            {
-                if (bitComponentBase.HtmlAttributes.ContainsKey(attr.Key)) continue;
-
-                bitComponentBase.HtmlAttributes[attr.Key] = attr.Value;
-            }
-        }
+        bitComponentBase.AddMissingHtmlAttributes(HtmlAttributes);
 
         if (Id.HasValue())
         {

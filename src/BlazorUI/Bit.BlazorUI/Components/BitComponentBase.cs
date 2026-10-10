@@ -5,6 +5,10 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     private BitDir? _dir;
     private readonly string _uniqueId = BitShortId.NewId();
     private readonly HashSet<string> _assignedParameters = [];
+    private readonly Dictionary<string, object> _htmlAttributes = [];
+
+    // The dictionary last passed as the HtmlAttributes parameter, which every pass reads and none changes.
+    private IEnumerable<KeyValuePair<string, object>>? _htmlAttributesParameter;
 
 
 
@@ -108,20 +112,41 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 
     /// <summary>
     /// Captures additional HTML attributes to be applied to the rendered element, in addition to the component's parameters.
-    /// <br />
-    /// <strong>This parameter should not be assigned directly.</strong>
     /// </summary>
     /// <remarks>
     /// Each entry in the dictionary represents an attribute name and its corresponding value. This
     /// allows customization of the rendered element with other HTML attributes such as alt, title, data-* attributes, and
     /// more.
     /// <br />
+    /// Every HTML attribute written on the component lands here. A dictionary passed to this parameter adds its entries
+    /// to those, and an attribute written on the component wins over an entry of the same name, however either of them
+    /// cases it. The dictionary passed is only read, never changed: its entries are copied in on every render, and so
+    /// are those of one assigned to this property from code.
+    /// <br />
     /// This dictionary will be used as the value of the <strong>"@attributes"</strong> blazor directive when rendering the root element of the component.
     /// <br />
     /// If an attribute in the dictionary matches a property already set by the component, the value in the
     /// dictionary may override the default.
     /// </remarks>
-    [Parameter] public Dictionary<string, object> HtmlAttributes { get; set; } = [];
+    [Parameter]
+    public Dictionary<string, object> HtmlAttributes
+    {
+        get => _htmlAttributes;
+        set
+        {
+            // The component's own dictionary is cleared on every pass, so one handed to it is copied, never taken as it.
+            if (ReferenceEquals(value, _htmlAttributes)) return;
+
+            _htmlAttributes.Clear();
+
+            if (value is null) return;
+
+            foreach (var attribute in value)
+            {
+                _htmlAttributes[attribute.Key] = attribute.Value;
+            }
+        }
+    }
 
     /// <summary>
     /// Gets or sets the unique identifier for the component's root element.
@@ -171,7 +196,7 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     public override Task SetParametersAsync(ParameterView parameters)
     {
         _assignedParameters.Clear();
-        HtmlAttributes.Clear();
+        _htmlAttributes.Clear();
         var parametersDictionary = ParametersCache ?? new Dictionary<string, object?>(parameters.ToDictionary());
         foreach (var parameter in parametersDictionary!)
         {
@@ -223,6 +248,14 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
+                // Merged into the splatted attributes once every other one is in, never taken as the dictionary
+                // itself: HtmlAttributes is cleared on every pass, which would empty the caller's own dictionary. Any
+                // other value under that name - a wrapper splatting one it captured - is an attribute like the rest.
+                case nameof(HtmlAttributes) when parameter.Value is null or IEnumerable<KeyValuePair<string, object>>:
+                    _htmlAttributesParameter = (IEnumerable<KeyValuePair<string, object>>?)parameter.Value;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
                 case nameof(Id):
                     _assignedParameters.Add(nameof(Id));
                     Id = (string?)parameter.Value;
@@ -258,6 +291,9 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
             }
         }
 
+        // A pass that leaves the parameter out keeps the dictionary passed before, as it keeps every other parameter.
+        AddMissingHtmlAttributes(_htmlAttributesParameter);
+
         ParametersCache = null;
 
         var restore = RestoreDroppedCascadeParameters();
@@ -270,6 +306,71 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
         await restore;
 
         await base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    /// <summary>
+    /// Adds every attribute of the given set the component does not hold yet - the HtmlAttributes parameter, the set a
+    /// params object cascades - to its splatted attributes, which win over an entry of the same name however either of
+    /// them cases it: the render tree treats differently cased names as one attribute, so both would otherwise reach it
+    /// and the last one would win.
+    /// </summary>
+    internal void AddMissingHtmlAttributes(IEnumerable<KeyValuePair<string, object>>? attributes)
+    {
+        if (attributes is null) return;
+
+        foreach (var attribute in attributes)
+        {
+            if (TryFindAttribute(_htmlAttributes, attribute.Key, out _)) continue;
+
+            _htmlAttributes[attribute.Key] = attribute.Value;
+        }
+    }
+
+    /// <summary>
+    /// The attributes a component splats on one of its parts: its own, plus every cascaded one it holds under no casing
+    /// of the name. The own dictionary is handed back as it is when nothing is added and copied otherwise, so neither
+    /// of the two is ever changed.
+    /// </summary>
+    private protected static Dictionary<string, object>? MergeAttributes(Dictionary<string, object>? own,
+                                                                        IEnumerable<KeyValuePair<string, object>>? cascaded)
+    {
+        if (cascaded is null) return own;
+
+        Dictionary<string, object>? merged = null;
+
+        foreach (var attribute in cascaded)
+        {
+            if (TryFindAttribute(own, attribute.Key, out _)) continue;
+
+            merged ??= own is null ? [] : new(own);
+            merged[attribute.Key] = attribute.Value;
+        }
+
+        return merged ?? own;
+    }
+
+    /// <summary>
+    /// Looks an attribute up by its name the way the render tree matches names, case insensitively, taking the last of
+    /// several differently cased spellings as the render tree does - an exact match included. The one definition of
+    /// what makes two attribute names the same name, for every set of attributes a component splats.
+    /// </summary>
+    private protected static bool TryFindAttribute(IEnumerable<KeyValuePair<string, object>>? attributes, string name, out object? value)
+    {
+        value = null;
+
+        if (attributes is null) return false;
+
+        var found = false;
+
+        foreach (var attribute in attributes)
+        {
+            if (string.Equals(attribute.Key, name, StringComparison.OrdinalIgnoreCase) is false) continue;
+
+            value = attribute.Value;
+            found = true;
+        }
+
+        return found;
     }
 
 
@@ -455,22 +556,7 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     {
         value = null;
 
-        if (HtmlAttributes.Count == 0) return false;
-
-        // The render tree keeps the last of several differently cased spellings, so the last one in render order wins
-        // here too, an exact match included.
-        var found = false;
-        object? selected = null;
-
-        foreach (var attribute in HtmlAttributes)
-        {
-            if (string.Equals(attribute.Key, name, StringComparison.OrdinalIgnoreCase) is false) continue;
-
-            selected = attribute.Value;
-            found = true;
-        }
-
-        if (found is false) return false;
+        if (TryFindAttribute(_htmlAttributes, name, out var selected) is false) return false;
 
         value = StringifyAttributeValue(selected);
         return true;
