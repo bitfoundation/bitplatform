@@ -344,19 +344,22 @@ namespace BitBlazorUI {
             if (overlay) {
                 el.setAttribute(ATTR_THEME_OVERLAY, overlay);
                 Theme._appliedOverlays.add(el);
-            } else if (Theme._appliedOverlays.has(el)) {
+            } else {
+                Theme.clearAppliedOverlay(el);
+            }
+        }
+
+        // Removes the overlay marker applyTheme wrote on the element, and only one it wrote.
+        private static clearAppliedOverlay(el: HTMLElement) {
+            if (Theme._appliedOverlays.delete(el)) {
                 el.removeAttribute(ATTR_THEME_OVERLAY);
-                Theme._appliedOverlays.delete(el);
             }
         }
 
         /** Removes --bit-* properties previously applied by applyTheme on the target (default document.body), and its overlay marker. */
         public static clearAppliedTheme(element?: HTMLElement) {
             const el = element || document.body;
-            if (Theme._appliedOverlays.has(el)) {
-                el.removeAttribute(ATTR_THEME_OVERLAY);
-                Theme._appliedOverlays.delete(el);
-            }
+            Theme.clearAppliedOverlay(el);
             const keys = Theme._appliedVarKeys.get(el);
             if (!keys || keys.length === 0) return;
             keys.forEach(k => el.style.removeProperty(k));

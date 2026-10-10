@@ -358,7 +358,11 @@ of `Styles/theme-overlay.scss`, so the aliases follow the overlay as the active 
 core default under a preset that decided otherwise. So a group's declarations live in one mixin per theme
 (`material-shadow-aliases`, `fluent-dark-shadow-aliases`, ...), included by the theme's main block and by its
 overlay rule; a family alias added to a theme block without the overlay rule fails
-`BitThemeFamilyAliasReSubstitutionTests` against the compiled bundles. A new input a theme builds an alias
+`BitThemeFamilyAliasReSubstitutionTests` against the compiled bundles. A group's mixin carries every alias
+any theme re-declares for that group, literals included, and the core one in `family-tokens.scss` carries
+them all: the document theme's overlay rule also matches inside a scoped region of another theme, where only
+the core rule's scoped twins outrank it, so an alias the core rule leaves out carries the document theme's
+recipe into the region (the same test fails on one). A new input a theme builds an alias
 from is a new entry in the group table, and a new group is a row in that table, a rule in `family-tokens.scss`
 and a rule per theme that decides it.
 

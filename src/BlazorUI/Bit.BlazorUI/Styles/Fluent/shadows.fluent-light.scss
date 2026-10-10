@@ -28,6 +28,17 @@
     --bit-shd-dialog: 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.22), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.18); //depth64
     --bit-shd-sheet: 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.22), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.18); //depth64
     --bit-shd-tooltip: 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.132), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.108); //depth8
+    // A snackbar has no Fabric counterpart; it is a floating notification, so it takes the floating
+    // surface's own depth rather than the flat "none" the alias tier falls back to.
+    --bit-shd-snackbar: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108); //depth16
+
+    // App bars cast towards the content they cover - downwards for the header, upwards for the
+    // footer - at the depth Fabric's own CommandBar sits at. They are declared here rather than
+    // left to family-tokens.scss, whose fallback tints them with the FOREGROUND color so that a
+    // theme which says nothing still gets a visible edge on a dark surface; a real Fluent shadow is
+    // black in both schemes, and the dark file pairs it with a hairline instead.
+    --bit-shd-appbar-top: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108); //depth4
+    --bit-shd-appbar-bottom: 0 -1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 -0.3px 0.9px 0 rgba(0, 0, 0, 0.108); //depth4, mirrored
 }
 
 :root,
@@ -42,18 +53,8 @@
     --bit-shd-cal: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108); //depth16
     --bit-shd-cal2: 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.22), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.18); //depth64
 
+    // Per surface family, the snackbar and the app bars included.
     @include fluent-light-shadow-aliases;
-    // A snackbar has no Fabric counterpart; it is a floating notification, so it takes the floating
-    // surface's own depth rather than the flat "none" the alias tier falls back to.
-    --bit-shd-snackbar: 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.132), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.108); //depth16
-
-    // App bars cast towards the content they cover - downwards for the header, upwards for the
-    // footer - at the depth Fabric's own CommandBar sits at. They are declared here rather than
-    // left to family-tokens.scss, whose fallback tints them with the FOREGROUND color so that a
-    // theme which says nothing still gets a visible edge on a dark surface; a real Fluent shadow is
-    // black in both schemes, and the dark file pairs it with a hairline instead.
-    --bit-shd-appbar-top: 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.108); //depth4
-    --bit-shd-appbar-bottom: 0 -1.6px 3.6px 0 rgba(0, 0, 0, 0.132), 0 -0.3px 0.9px 0 rgba(0, 0, 0, 0.108); //depth4, mirrored
 
     // shadow sizes - the generic ramp the .bit-css-shd-* utilities and a handful of components read,
     // mapped onto six steps of the same depth formula.

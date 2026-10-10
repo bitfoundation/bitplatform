@@ -38,7 +38,7 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
 
     private static readonly string[] Roles = ["pri", "sec", "ter", "inf", "suc", "wrn", "swr", "err"];
 
-    private static readonly string[] ControlRadii = ["--bit-shp-radius-button", "--bit-shp-radius-chip", "--bit-shp-radius-selection"];
+    private static readonly string[] ControlRadii = ["--bit-shp-radius-button", "--bit-shp-radius-chip", "--bit-shp-radius-selection", "--bit-shp-radius-tab-indicator"];
 
     /// <summary>The aliases each overlay group re-declares, as family-tokens.scss groups them.</summary>
     private static readonly Dictionary<string, string[]> GroupAliases = BuildGroupAliases();
@@ -49,7 +49,8 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
         {
             ["radius"] = ["--bit-shp-radius-control", "--bit-shp-radius-surface", "--bit-shp-radius-popup", "--bit-shp-radius-dialog", .. ControlRadii],
             ["radius-control"] = ControlRadii,
-            ["shadow"] = ["--bit-shd-card", "--bit-shd-card-hover", "--bit-shd-popup", "--bit-shd-dialog", "--bit-shd-sheet", "--bit-shd-tooltip"],
+            ["shadow"] = ["--bit-shd-card", "--bit-shd-card-hover", "--bit-shd-popup", "--bit-shd-dialog", "--bit-shd-sheet", "--bit-shd-tooltip",
+                          "--bit-shd-snackbar", "--bit-shd-appbar-top", "--bit-shd-appbar-bottom"],
             ["tooltip"] = ["--bit-clr-tooltip-bg", "--bit-clr-tooltip-fg"],
             ["foreground"] = [.. Roles.Select(r => $"--bit-clr-{r}-fg")],
         };
@@ -251,6 +252,40 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
     }
 
     [TestMethod]
+    public void NoThemeReDeclaresAnAliasOutsideItsGroupForAnOverlay()
+    {
+        // The overlay rule of the document's theme matches inside a scoped region of another theme as well,
+        // and only the core rule's scoped twins outrank it there. So an alias a theme re-declares for a group
+        // has to be one the core rule re-declares for that group too: one it does not would carry the
+        // document theme's recipe into the region (Fluent dark's ring under a Cupertino snackbar).
+        var checkedRules = 0;
+
+        foreach (var (bundle, rules) in Bundles())
+        {
+            foreach (var rule in rules)
+            {
+                var groups = rule.Selectors.SelectMany(s => OverlayGroup.Matches(s).Select(m => m.Groups[1].Value)).Distinct().ToArray();
+
+                if (groups.Length == 0) continue;
+
+                foreach (var group in groups)
+                {
+                    foreach (var (alias, _) in rule.Declarations)
+                    {
+                        CollectionAssert.Contains(GroupAliases[group], alias,
+                            $"{bundle}: '{string.Join(", ", rule.Selectors)}' re-declares {alias} for the {group} group, which the core " +
+                            $"stylesheet's rule for that group does not - add it to the group's mixin in family-tokens.scss.");
+                    }
+                }
+
+                checkedRules++;
+            }
+        }
+
+        Assert.IsTrue(checkedRules > 20, $"Only {checkedRules} overlay rules were found; the bundles no longer look like theme stylesheets.");
+    }
+
+    [TestMethod]
     public void ForcedColorsReachTheOverlayElement()
     {
         // Every theme re-declares its elevations on the overlay element, which would bring the shadows back in
@@ -270,6 +305,7 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
             ("the full radius", t => t.Shape.Radius.Full = "100rem", "radius-control"),
             ("the callout shadow", t => t.BoxShadow.Callout = "0 2px 4px #0003", "shadow"),
             ("the tertiary border", t => t.Color.Border.Tertiary = "#CCCCCC", "shadow"),
+            ("the border width", t => t.Shape.BorderWidth = "0.125rem", "shadow"),
             ("the primary background", t => t.Color.Background.Primary = "#FFFFFF", "tooltip"),
             ("the secondary background", t => t.Color.Background.Secondary = "#EEEEEE", "tooltip"),
             ("the primary foreground", t => t.Color.Foreground.Primary = "#111111", "tooltip foreground"),

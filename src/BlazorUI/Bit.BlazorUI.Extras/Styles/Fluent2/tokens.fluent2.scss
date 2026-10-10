@@ -32,11 +32,13 @@ $fluent2-names: "fluent2", "fluent2-light", "fluent2-dark";
 }
 
 // A Fluent 2 button, tag and in-field chip are all the control corner; only the checkbox box is
-// shaped apart, at borderRadiusSmall.
+// shaped apart, at borderRadiusSmall. The TabList selection indicator is a capsule
+// (borderRadiusCircular), so it is re-declared with them for an overlay of the full radius.
 @mixin fluent2-control-radius-aliases {
     --bit-shp-radius-button: var(--bit-shp-radius-control);
     --bit-shp-radius-chip: var(--bit-shp-radius-control);
     --bit-shp-radius-selection: 0.125rem; //2px - Checkbox indicator
+    --bit-shp-radius-tab-indicator: var(--bit-shp-radius-full);
 }
 
 // A Fluent 2 tooltip (its "normal" appearance) is colorNeutralBackground1 with colorNeutralForeground1
@@ -65,10 +67,8 @@ $fluent2-names: "fluent2", "fluent2-light", "fluent2-dark";
     --bit-shp-radius-xl: 0.75rem; //12px
     --bit-shp-radius-2xl: 1rem; //16px
     --bit-shp-radius-full: 9999px; //borderRadiusCircular
-    // Per family and per control sub-family.
+    // Per family and per control sub-family, and the capsule TabList selection indicator.
     @include fluent2-radius-aliases;
-    // The TabList selection indicator is a capsule (borderRadiusCircular).
-    --bit-shp-radius-tab-indicator: var(--bit-shp-radius-full);
     // The ProgressBar is rounded by default (shape="rounded"), which is borderRadiusMedium on the track and
     // the bar - round ends on its 2px/4px tracks, but a 4px corner rather than a pill on a thicker one.
     --bit-shp-radius-progress: 0.25rem; //4px - borderRadiusMedium

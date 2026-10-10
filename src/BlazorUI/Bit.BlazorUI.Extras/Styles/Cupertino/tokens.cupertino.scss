@@ -45,6 +45,16 @@ $cupertino-names: "cupertino", "cupertino-light", "cupertino-dark";
     --bit-shd-dialog: 0 10px 40px rgba(0, 0, 0, 0.2);
     --bit-shd-sheet: 0 10px 40px rgba(0, 0, 0, 0.2);
     --bit-shd-tooltip: 0 0 10px rgba(0, 0, 0, 0.25);
+    --bit-shd-snackbar: 0 3px 8px rgba(0, 0, 0, 0.15);
+    // App bars separate with the hairline, drawn as a half-pixel shadow toward the content.
+    --bit-shd-appbar-top: 0 0.5px 0 rgba(0, 0, 0, 0.3);
+    --bit-shd-appbar-bottom: 0 -0.5px 0 rgba(0, 0, 0, 0.3);
+}
+
+// The dark scheme redraws the hairline app-bar shadows in white, matching the iOS dark separators.
+@mixin cupertino-dark-shadow-aliases {
+    --bit-shd-appbar-top: 0 0.5px 0 rgba(255, 255, 255, 0.16);
+    --bit-shd-appbar-bottom: 0 -0.5px 0 rgba(255, 255, 255, 0.16);
 }
 
 :root[bit-theme="cupertino"],
@@ -319,10 +329,6 @@ $cupertino-names: "cupertino", "cupertino-light", "cupertino-dark";
     --bit-shd-cal: 0 0 10px rgba(0, 0, 0, 0.25);
     --bit-shd-cal2: 0 10px 40px rgba(0, 0, 0, 0.2);
     @include cupertino-shadow-aliases;
-    --bit-shd-snackbar: 0 3px 8px rgba(0, 0, 0, 0.15);
-    // App bars separate with the hairline, drawn as a half-pixel shadow toward the content.
-    --bit-shd-appbar-top: 0 0.5px 0 rgba(0, 0, 0, 0.3);
-    --bit-shd-appbar-bottom: 0 -0.5px 0 rgba(0, 0, 0, 0.3);
 
     // The generic size ramp and the inset shadow. iOS has no elevation ladder of its own, so this is
     // one continuous soft ascent in the platform's idiom - low offsets, wide blur, thin alpha -
@@ -368,11 +374,9 @@ $cupertino-names: "cupertino", "cupertino-light", "cupertino-dark";
     --bit-shd-24: 0 20px 50px rgba(0, 0, 0, 0.2);
 }
 
-// The dark scheme redraws the hairline app-bar shadows in white, matching the iOS dark separators.
 :root[bit-theme="cupertino-dark"],
 :root [bit-theme="cupertino-dark"] {
-    --bit-shd-appbar-top: 0 0.5px 0 rgba(255, 255, 255, 0.16);
-    --bit-shd-appbar-bottom: 0 -0.5px 0 rgba(255, 255, 255, 0.16);
+    @include cupertino-dark-shadow-aliases;
 }
 
 // The family aliases again, on the element of an inline theme overlay that re-values what each group
@@ -388,4 +392,9 @@ $cupertino-names: "cupertino", "cupertino-light", "cupertino-dark";
 
 @include theme-overlay("shadow", $cupertino-names) {
     @include cupertino-shadow-aliases;
+}
+
+// After the rule above, which it outranks on source order alone.
+@include theme-overlay("shadow", ("cupertino-dark",)) {
+    @include cupertino-dark-shadow-aliases;
 }

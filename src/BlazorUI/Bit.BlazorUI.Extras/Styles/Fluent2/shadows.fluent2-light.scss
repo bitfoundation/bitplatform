@@ -16,6 +16,11 @@
     --bit-shd-dialog: 0 0 8px rgba(0, 0, 0, 0.12), 0 32px 64px rgba(0, 0, 0, 0.14); //shadow64
     --bit-shd-sheet: 0 0 8px rgba(0, 0, 0, 0.12), 0 32px 64px rgba(0, 0, 0, 0.14); //shadow64
     --bit-shd-tooltip: 0 0 2px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.14); //shadow8
+    // A Toast sits at shadow8, like the Tooltip; app bars cast the card shadow towards the content
+    // they cover.
+    --bit-shd-snackbar: 0 0 2px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.14); //shadow8
+    --bit-shd-appbar-top: 0 0 2px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.14); //shadow4
+    --bit-shd-appbar-bottom: 0 0 2px rgba(0, 0, 0, 0.12), 0 -2px 4px rgba(0, 0, 0, 0.14); //shadow4, mirrored
 }
 
 :root[bit-theme="fluent2"],
@@ -34,12 +39,8 @@
     --bit-shd-xl: 0 0 8px rgba(0, 0, 0, 0.12), 0 14px 28px rgba(0, 0, 0, 0.14); //shadow28
     --bit-shd-2xl: 0 0 8px rgba(0, 0, 0, 0.12), 0 32px 64px rgba(0, 0, 0, 0.14); //shadow64
 
-    // Per surface family. A Toast sits at shadow8, like the Tooltip; app bars cast the card shadow
-    // towards the content they cover.
+    // Per surface family, the snackbar and the app bars included.
     @include fluent2-light-shadow-aliases;
-    --bit-shd-snackbar: 0 0 2px rgba(0, 0, 0, 0.12), 0 4px 8px rgba(0, 0, 0, 0.14); //shadow8
-    --bit-shd-appbar-top: 0 0 2px rgba(0, 0, 0, 0.12), 0 2px 4px rgba(0, 0, 0, 0.14); //shadow4
-    --bit-shd-appbar-bottom: 0 0 2px rgba(0, 0, 0, 0.12), 0 -2px 4px rgba(0, 0, 0, 0.14); //shadow4, mirrored
 
     // The inset shadow of the generic ramp: shadow4, turned inward.
     --bit-shd-inner: inset 0 0 2px rgba(0, 0, 0, 0.12), inset 0 2px 4px rgba(0, 0, 0, 0.14);

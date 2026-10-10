@@ -53,6 +53,12 @@
     --bit-shp-radius-button: var(--bit-shp-radius-control);
     --bit-shp-radius-chip: var(--bit-shp-radius-control);
     --bit-shp-radius-selection: var(--bit-shp-radius-control);
+    // The corners of the selection indicator of a tab strip, which Fluent draws square. A literal rather
+    // than an alias here, but a design system may build it from the full radius (Fluent 2's pill), so it
+    // is one of the group: re-declared for every overlay of it, it keeps that recipe out of the region of
+    // a theme that left it square. The corners on the edge it stands on
+    // (--bit-shp-radius-tab-indicator-base) follow it unless a preset sets them.
+    --bit-shp-radius-tab-indicator: 0;
 }
 
 // elevation per surface family - the FALLBACK tier: every family points at the callout shadow, so
@@ -68,6 +74,15 @@
     --bit-shd-dialog: var(--bit-shd-cal);
     --bit-shd-sheet: var(--bit-shd-cal);
     --bit-shd-tooltip: var(--bit-shd-cal);
+    // A toast stays flat, and the app bars are decided here for every theme: they cast a
+    // foreground-tinted shadow towards the content they cover so it stays visible on a dark surface,
+    // downwards for the header and upwards for the footer. None of the three is built from the callout
+    // shadow, but a design system may draw them with the surface stroke (Fluent dark's hairline), so
+    // they are of the group all the same: re-declared for every overlay of it, they keep that recipe out
+    // of the region of a theme that draws them otherwise.
+    --bit-shd-snackbar: none;
+    --bit-shd-appbar-top: 0 #{rem2(2px)} #{rem2(4px)} #{rem2(-1px)} #{translucent($clr-fg-pri, 20%)}, 0 #{rem2(4px)} #{rem2(6px)} #{rem2(-4px)} #{translucent($clr-fg-pri, 14%)};
+    --bit-shd-appbar-bottom: 0 #{rem2(-2px)} #{rem2(4px)} #{rem2(-1px)} #{translucent($clr-fg-pri, 20%)}, 0 #{rem2(-4px)} #{rem2(6px)} #{rem2(-4px)} #{translucent($clr-fg-pri, 14%)};
 }
 
 // the tooltip surface - the one popup whose FILL design systems disagree on: Fluent lifts a light
@@ -116,13 +131,6 @@ $family-roles: pri, sec, ter, inf, suc, wrn, swr, err;
     --bit-shp-radius-sheet: 0;
 
     @include family-shadow-aliases;
-    // A toast stays flat, and the app bars are decided here for every theme: they cast a
-    // foreground-tinted shadow towards the content they cover so it stays visible on a dark surface,
-    // downwards for the header and upwards for the footer. None of the three is an alias of the
-    // callout shadow, so none is re-declared for an overlay of it.
-    --bit-shd-snackbar: none;
-    --bit-shd-appbar-top: 0 #{rem2(2px)} #{rem2(4px)} #{rem2(-1px)} #{translucent($clr-fg-pri, 20%)}, 0 #{rem2(4px)} #{rem2(6px)} #{rem2(-4px)} #{translucent($clr-fg-pri, 14%)};
-    --bit-shd-appbar-bottom: 0 #{rem2(-2px)} #{rem2(4px)} #{rem2(-1px)} #{translucent($clr-fg-pri, 20%)}, 0 #{rem2(-4px)} #{rem2(6px)} #{rem2(-4px)} #{translucent($clr-fg-pri, 14%)};
 
     @include family-tooltip-aliases;
 
@@ -137,7 +145,10 @@ $family-roles: pri, sec, ter, inf, suc, wrn, swr, err;
 
 // The inline-overlay rules (theme-overlay.scss): the defaults above, re-declared on an element whose
 // inline theme re-values the input each group is built from. A theme that decides a group differently
-// re-declares its own values for the same group, from a selector that outranks these.
+// re-declares its own values for the same group, from a selector that outranks these. Each rule here
+// declares every alias any theme re-declares for its group, literals included: the rule of the
+// document's theme matches inside a scoped region of another theme too, and only these scoped twins
+// outrank it there, so an alias they left out would carry the document theme's recipe into the region.
 @include theme-overlay("radius", $document: true, $any-scope: true) {
     @include family-radius-aliases;
 }

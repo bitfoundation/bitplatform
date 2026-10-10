@@ -26,8 +26,9 @@ $dark-surface-ring: 0 0 0 #{$shp-border-width} #{$clr-brd-ter};
 @import "../theme-overlay.scss";
 
 // Per surface family - the same depths the light scheme assigns, each behind the ring. An inline
-// overlay of the callout shadow or of the tertiary border re-declares them (the rule at the end of
-// this file): the depths stay, the ring follows the overlay's stroke.
+// overlay of the callout shadow, the tertiary border or the border width re-declares them (the rule
+// at the end of this file): the depths stay, the ring follows the overlay's stroke. The snackbar and
+// the app bars are drawn with the same stroke, so they are re-declared with the rest.
 @mixin fluent-dark-shadow-aliases {
     --bit-shd-card: #{$dark-surface-ring}, 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.264), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.216); //depth4
     --bit-shd-card-hover: #{$dark-surface-ring}, 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.264), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.216); //depth8
@@ -35,6 +36,13 @@ $dark-surface-ring: 0 0 0 #{$shp-border-width} #{$clr-brd-ter};
     --bit-shd-dialog: #{$dark-surface-ring}, 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.44), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.36); //depth64
     --bit-shd-sheet: #{$dark-surface-ring}, 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.44), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.36); //depth64
     --bit-shd-tooltip: #{$dark-surface-ring}, 0 3.2px 7.2px 0 rgba(0, 0, 0, 0.264), 0 0.6px 1.8px 0 rgba(0, 0, 0, 0.216); //depth8
+    --bit-shd-snackbar: #{$dark-surface-ring}, 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.264), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.216); //depth16
+
+    // App bars take a DIRECTIONAL hairline rather than the ring - a line under the header and over
+    // the footer, which is the edge the bar is separated by - ahead of the same black depth4 the
+    // light scheme casts.
+    --bit-shd-appbar-top: 0 #{$shp-border-width} 0 0 #{$clr-brd-ter}, 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.264), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.216); //depth4
+    --bit-shd-appbar-bottom: 0 calc(-1 * #{$shp-border-width}) 0 0 #{$clr-brd-ter}, 0 -1.6px 3.6px 0 rgba(0, 0, 0, 0.264), 0 -0.3px 0.9px 0 rgba(0, 0, 0, 0.216); //depth4, mirrored
 }
 
 :root[bit-theme="dark"],
@@ -45,15 +53,8 @@ $dark-surface-ring: 0 0 0 #{$shp-border-width} #{$clr-brd-ter};
     --bit-shd-cal: #{$dark-surface-ring}, 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.264), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.216); //depth16
     --bit-shd-cal2: #{$dark-surface-ring}, 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.44), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.36); //depth64
 
-    // Per surface family.
+    // Per surface family, the snackbar and the app bars included.
     @include fluent-dark-shadow-aliases;
-    --bit-shd-snackbar: #{$dark-surface-ring}, 0 6.4px 14.4px 0 rgba(0, 0, 0, 0.264), 0 1.2px 3.6px 0 rgba(0, 0, 0, 0.216); //depth16
-
-    // App bars take a DIRECTIONAL hairline rather than the ring - a line under the header and over
-    // the footer, which is the edge the bar is separated by - ahead of the same black depth4 the
-    // light scheme casts.
-    --bit-shd-appbar-top: 0 #{$shp-border-width} 0 0 #{$clr-brd-ter}, 0 1.6px 3.6px 0 rgba(0, 0, 0, 0.264), 0 0.3px 0.9px 0 rgba(0, 0, 0, 0.216); //depth4
-    --bit-shd-appbar-bottom: 0 calc(-1 * #{$shp-border-width}) 0 0 #{$clr-brd-ter}, 0 -1.6px 3.6px 0 rgba(0, 0, 0, 0.264), 0 -0.3px 0.9px 0 rgba(0, 0, 0, 0.216); //depth4, mirrored
 
     // shadow sizes
     --bit-shd-sm: #{$dark-surface-ring}, 0 0.8px 1.8px 0 rgba(0, 0, 0, 0.264), 0 0.15px 0.45px 0 rgba(0, 0, 0, 0.216); //depth2
@@ -91,7 +92,7 @@ $dark-surface-ring: 0 0 0 #{$shp-border-width} #{$clr-brd-ter};
     --bit-shd-24: #{$dark-surface-ring}, 0 25.6px 57.6px 0 rgba(0, 0, 0, 0.44), 0 4.8px 14.4px 0 rgba(0, 0, 0, 0.36);
 }
 
-// Inline overlays of the callout shadow or the tertiary border (theme-overlay.scss).
+// Inline overlays of the callout shadow, the tertiary border or the border width (theme-overlay.scss).
 @include theme-overlay("shadow", ("dark", "fluent-dark")) {
     @include fluent-dark-shadow-aliases;
 }

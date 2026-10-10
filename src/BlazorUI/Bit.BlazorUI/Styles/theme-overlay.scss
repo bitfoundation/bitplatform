@@ -16,7 +16,8 @@
 //
 //   radius          --bit-shp-brd-radius            the per-family radii and the control sub-families
 //   radius-control  --bit-shp-radius-control/-full  the control sub-families (button, chip, selection)
-//   shadow          --bit-shd-cal, --bit-clr-brd-ter the per-family elevations (the Fluent dark ring)
+//   shadow          --bit-shd-cal, --bit-clr-brd-ter the per-family elevations (the Fluent dark ring,
+//                   --bit-shp-brd-width              drawn in the tertiary border at the border width)
 //   tooltip         --bit-clr-bg-pri/-bg-sec/-fg-pri the tooltip fill and text
 //   foreground      --bit-clr-fg-pri                every role foreground
 //   pri ... err     --bit-clr-<role>                that role's foreground and tint

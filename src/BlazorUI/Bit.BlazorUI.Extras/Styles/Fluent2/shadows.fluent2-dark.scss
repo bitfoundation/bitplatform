@@ -11,6 +11,9 @@
     --bit-shd-dialog: 0 0 8px rgba(0, 0, 0, 0.24), 0 32px 64px rgba(0, 0, 0, 0.28); //shadow64
     --bit-shd-sheet: 0 0 8px rgba(0, 0, 0, 0.24), 0 32px 64px rgba(0, 0, 0, 0.28); //shadow64
     --bit-shd-tooltip: 0 0 2px rgba(0, 0, 0, 0.24), 0 4px 8px rgba(0, 0, 0, 0.28); //shadow8
+    --bit-shd-snackbar: 0 0 2px rgba(0, 0, 0, 0.24), 0 4px 8px rgba(0, 0, 0, 0.28); //shadow8
+    --bit-shd-appbar-top: 0 0 2px rgba(0, 0, 0, 0.24), 0 2px 4px rgba(0, 0, 0, 0.28); //shadow4
+    --bit-shd-appbar-bottom: 0 0 2px rgba(0, 0, 0, 0.24), 0 -2px 4px rgba(0, 0, 0, 0.28); //shadow4, mirrored
 }
 
 :root[bit-theme="fluent2-dark"],
@@ -26,9 +29,6 @@
     --bit-shd-2xl: 0 0 8px rgba(0, 0, 0, 0.24), 0 32px 64px rgba(0, 0, 0, 0.28); //shadow64
 
     @include fluent2-dark-shadow-aliases;
-    --bit-shd-snackbar: 0 0 2px rgba(0, 0, 0, 0.24), 0 4px 8px rgba(0, 0, 0, 0.28); //shadow8
-    --bit-shd-appbar-top: 0 0 2px rgba(0, 0, 0, 0.24), 0 2px 4px rgba(0, 0, 0, 0.28); //shadow4
-    --bit-shd-appbar-bottom: 0 0 2px rgba(0, 0, 0, 0.24), 0 -2px 4px rgba(0, 0, 0, 0.28); //shadow4, mirrored
 
     // The inset shadow of the generic ramp: shadow4, turned inward.
     --bit-shd-inner: inset 0 0 2px rgba(0, 0, 0, 0.24), inset 0 2px 4px rgba(0, 0, 0, 0.28);
