@@ -17,6 +17,24 @@ namespace BitBlazorUI {
     // Written by applyTheme on its target: the family alias groups the applied theme re-values, for the
     // stylesheets to re-declare the active theme's own aliases of there (Styles/theme-overlay.scss).
     const ATTR_THEME_OVERLAY = 'bit-theme-overlay';
+    // The groups of family aliases ATTR_THEME_OVERLAY names, each with the custom properties it is built
+    // from - kept aligned with BitThemeMapper.FamilyAliasOverlayGroups in C#, which a BitThemeProvider
+    // renders the attribute from (a contract test pins the two to each other).
+    const FAMILY_ALIAS_OVERLAY_GROUPS: [string, string[]][] = [
+        ['radius', ['--bit-shp-brd-radius']],
+        ['radius-control', ['--bit-shp-radius-control', '--bit-shp-radius-full']],
+        ['shadow', ['--bit-shd-cal', '--bit-clr-brd-ter', '--bit-shp-brd-width', '--bit-clr-fg-pri']],
+        ['tooltip', ['--bit-clr-bg-pri', '--bit-clr-bg-sec', '--bit-clr-fg-pri']],
+        ['foreground', ['--bit-clr-fg-pri']],
+        ['pri', ['--bit-clr-pri']],
+        ['sec', ['--bit-clr-sec']],
+        ['ter', ['--bit-clr-ter']],
+        ['inf', ['--bit-clr-inf']],
+        ['suc', ['--bit-clr-suc']],
+        ['wrn', ['--bit-clr-wrn']],
+        ['swr', ['--bit-clr-swr']],
+        ['err', ['--bit-clr-err']],
+    ];
     // The page's own background - what a status bar sits above in nearly every app.
     const THEME_COLOR_VARIABLE = '--bit-clr-bg-pri';
     const STORAGE_KEY = 'bit-current-theme';
@@ -113,8 +131,9 @@ namespace BitBlazorUI {
 
         private static _appliedVarKeys = new WeakMap<HTMLElement, string[]>();
 
-        // The targets applyTheme wrote ATTR_THEME_OVERLAY on, so clearing one removes only a marker it wrote.
-        private static _appliedOverlays = new WeakSet<HTMLElement>();
+        // The targets applyTheme wrote ATTR_THEME_OVERLAY on: the value it wrote, and the one the target carried
+        // before (a BitThemeProvider's, or the app's markup), which it merges its groups into and puts back.
+        private static _appliedOverlays = new WeakMap<HTMLElement, { base: string | null, written: string | null }>();
 
         public static init(options: ThemeOptions) {
             Object.assign(Theme._initOptions, options);
@@ -331,7 +350,7 @@ namespace BitBlazorUI {
             return Theme.set(Theme.SYSTEM_THEME);
         }
 
-        public static applyTheme(theme: Record<string, string>, element?: HTMLElement, overlay?: string | null) {
+        public static applyTheme(theme: Record<string, string>, element?: HTMLElement) {
             const el = element || document.body;
             const keys = Object.keys(theme);
             const prev = Theme._appliedVarKeys.get(el) || [];
@@ -339,20 +358,54 @@ namespace BitBlazorUI {
             keys.forEach(key => el.style.setProperty(key, theme[key]));
             Theme._appliedVarKeys.set(el, keys);
 
-            // The family alias groups these variables re-value (BitThemeMapper.GetFamilyAliasOverlay): every
-            // theme stylesheet re-declares its own aliases of each named group on the element carrying it.
-            if (overlay) {
-                el.setAttribute(ATTR_THEME_OVERLAY, overlay);
-                Theme._appliedOverlays.add(el);
+            // The family alias groups these variables re-value: every theme stylesheet re-declares its own
+            // aliases of each named group on the element carrying them (Styles/theme-overlay.scss).
+            Theme.writeAppliedOverlay(el, FAMILY_ALIAS_OVERLAY_GROUPS
+                .filter(([, inputs]) => inputs.some(input => keys.includes(input)))
+                .map(([group]) => group));
+        }
+
+        // Marks the element with the groups applyTheme re-values, merged into the value it carried before, and
+        // puts that value back once applyTheme re-values none. A value written over applyTheme's own since (a
+        // re-render of a BitThemeProvider on the same element) is the new one to merge into and put back.
+        private static writeAppliedOverlay(el: HTMLElement, groups: string[]) {
+            const current = el.getAttribute(ATTR_THEME_OVERLAY);
+            const applied = Theme._appliedOverlays.get(el);
+            const base = applied && applied.written === current ? applied.base : current;
+
+            if (groups.length === 0) {
+                Theme._appliedOverlays.delete(el);
+                Theme.setOverlayAttribute(el, base);
+                return;
+            }
+
+            const merged = (base || '').split(/\s+/).filter(group => group);
+            groups.forEach(group => merged.includes(group) || merged.push(group));
+            const written = merged.join(' ');
+
+            Theme._appliedOverlays.set(el, { base, written });
+            Theme.setOverlayAttribute(el, written);
+        }
+
+        private static setOverlayAttribute(el: HTMLElement, value: string | null) {
+            if (value === el.getAttribute(ATTR_THEME_OVERLAY)) return;
+
+            if (value === null) {
+                el.removeAttribute(ATTR_THEME_OVERLAY);
             } else {
-                Theme.clearAppliedOverlay(el);
+                el.setAttribute(ATTR_THEME_OVERLAY, value);
             }
         }
 
-        // Removes the overlay marker applyTheme wrote on the element, and only one it wrote.
+        // Puts back the overlay marker the element carried before applyTheme, unless something else has written
+        // over applyTheme's own since.
         private static clearAppliedOverlay(el: HTMLElement) {
-            if (Theme._appliedOverlays.delete(el)) {
-                el.removeAttribute(ATTR_THEME_OVERLAY);
+            const applied = Theme._appliedOverlays.get(el);
+            if (!applied) return;
+
+            Theme._appliedOverlays.delete(el);
+            if (el.getAttribute(ATTR_THEME_OVERLAY) === applied.written) {
+                Theme.setOverlayAttribute(el, applied.base);
             }
         }
 

@@ -129,9 +129,10 @@ public class BitThemeManager : IAsyncDisposable
 
         var cssVariables = BitThemeMapper.MapToCssVariables(bitTheme ?? new BitTheme());
         BitThemeMapper.AugmentWithSemanticAliasReSubstitution(cssVariables);
-        var familyAliasOverlay = BitThemeMapper.GetFamilyAliasOverlay(cssVariables);
 
-        await _js.BitThemeApplyBitTheme(cssVariables, familyAliasOverlay, element);
+        // The client script marks the element with the family alias groups these re-value itself
+        // (BitThemeMapper.GetFamilyAliasOverlay's twin in BitTheme.ts), so a theme applied from JS is too.
+        await _js.BitThemeApplyBitTheme(cssVariables, element);
     }
 
     /// <summary>

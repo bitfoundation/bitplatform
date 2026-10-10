@@ -1452,9 +1452,11 @@
         }
 
         // The attributes an element of the chain is watched for: every one it carries that a link copies, and
-        // the ones a page adds later to switch a theme, a direction or a language under an open callout.
+        // the ones a page adds later to switch a theme, a direction or a language under an open callout - the
+        // overlay marker among them, which a BitThemeProvider writes once its theme starts re-valuing what a
+        // family alias is built from.
         private static observedAttributes(source: Element) {
-            const names = ['class', 'style', 'dir', 'lang', 'bit-theme', Callouts.POPUP_STYLE_ATTRIBUTE,
+            const names = ['class', 'style', 'dir', 'lang', 'bit-theme', 'bit-theme-overlay', Callouts.POPUP_STYLE_ATTRIBUTE,
                 'data-theme', 'data-bs-theme', 'data-color-scheme', 'data-scheme', 'data-mode'];
             const own = source.getAttributeNames();
             for (let i = 0; i < own.length; i++) {

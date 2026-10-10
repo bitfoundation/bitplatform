@@ -17,7 +17,8 @@
 //   radius          --bit-shp-brd-radius            the per-family radii and the control sub-families
 //   radius-control  --bit-shp-radius-control/-full  the control sub-families (button, chip, selection)
 //   shadow          --bit-shd-cal, --bit-clr-brd-ter the per-family elevations (the Fluent dark ring,
-//                   --bit-shp-brd-width              drawn in the tertiary border at the border width)
+//                   --bit-shp-brd-width,             drawn in the tertiary border at the border width;
+//                   --bit-clr-fg-pri                 the core app bars, tinted with the text color)
 //   tooltip         --bit-clr-bg-pri/-bg-sec/-fg-pri the tooltip fill and text
 //   foreground      --bit-clr-fg-pri                every role foreground
 //   pri ... err     --bit-clr-<role>                that role's foreground and tint
@@ -36,8 +37,14 @@
 // exactly as their main blocks do (a pinned scheme over the bare-:root default, a later bundle over an
 // earlier one at equal weight). The scoped twins carry a doubled :root on top of that: an overlay
 // inside an always-dark region of a page pinned to "light" has to take the region's recipe, not the
-// document's, and both of those name a bit-theme. Two scoped regions of different themes nested in one
-// another still meet at equal weight, and the later bundle wins there.
+// document's, and both of those name a bit-theme.
+//
+// Scoped regions of different themes nested in one another all meet at that same weight, so a named
+// twin also steps aside for every region nearer to the overlay than its own (theme-overlay-nearest):
+// what the overlay takes is the recipe of its NEAREST region, as it would by inheritance without one,
+// never the one of whichever bundle happens to come later. The core's `[bit-theme]` twins are the
+// fallback for any region and step aside for none; the nearest region's own twin outranks them on
+// source order, as its main block outranks the core one.
 @mixin theme-overlay($group, $names: (), $document: false, $any-scope: false) {
     $overlay: '[bit-theme-overlay~="#{$group}"]';
     $selectors: ();
@@ -52,12 +59,49 @@
     }
 
     @each $name in $names {
-        $selectors: list.append($selectors, string.unquote(':root[bit-theme="#{$name}"] #{$overlay}'), $separator: comma);
-        $selectors: list.append($selectors, string.unquote(':root:root [bit-theme="#{$name}"] #{$overlay}'), $separator: comma);
-        $selectors: list.append($selectors, string.unquote(':root:root [bit-theme="#{$name}"]#{$overlay}'), $separator: comma);
+        $region: '[bit-theme="#{$name}"]';
+        $selectors: list.append($selectors, string.unquote(':root#{$region} #{$overlay}'), $separator: comma);
+        $selectors: list.append($selectors, string.unquote(':root:root #{$region} #{$overlay}#{theme-overlay-nearest($region, $overlay)}'), $separator: comma);
+        $selectors: list.append($selectors, string.unquote(':root:root #{$region}#{$overlay}'), $separator: comma);
     }
 
     #{$selectors} {
         @content;
     }
+}
+
+// How many regions of other themes, alternating with $region's own, theme-overlay-nearest tells apart
+// between a region and the overlay. Nestings deeper than that (an overlay four alternations below a
+// region of its own name) meet at equal weight again, and the later bundle wins there.
+$theme-overlay-nesting-depth: 3;
+
+// The condition, of zero specificity, under which the twin of the scoped region $region matches only an
+// overlay whose nearest region (itself included) is one of that name: the overlay element is not a region
+// of another theme, and the regions above it do not end in one. Selectors cannot ask for the nearest
+// ancestor, but they can count alternations: below the outermost $region, a chain $region / other /
+// $region / other ... reaching the overlay ends in $region exactly when its longest such chain is of odd
+// length - not (A1 and not (A2 and not A3)), where An is a chain of n alternations.
+@function theme-overlay-nearest($region, $overlay) {
+    $other: '[bit-theme]:not(#{$region})';
+    $nested: null;
+
+    @for $depth from $theme-overlay-nesting-depth through 1 {
+        $chain: $region;
+
+        @for $i from 1 through $depth {
+            @if $i % 2 == 1 {
+                $chain: '#{$chain} #{$other}';
+            } @else {
+                $chain: '#{$chain} #{$region}';
+            }
+        }
+
+        @if $nested {
+            $nested: '#{$chain} #{$overlay}:not(#{$nested})';
+        } @else {
+            $nested: '#{$chain} #{$overlay}';
+        }
+    }
+
+    @return ':where(:not(#{$other}#{$overlay})):where(:not(#{$nested}))';
 }

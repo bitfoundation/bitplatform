@@ -51,19 +51,22 @@ internal static class BitThemeMapper
     /// is built from: the value of the <see cref="BitThemeAttributeNames.ThemeOverlay"/> attribute is the
     /// space-separated names of the groups whose inputs the overlay re-values (<see cref="GetFamilyAliasOverlay"/>).
     /// Mirrors <c>Styles/theme-overlay.scss</c>, and the groups are what every theme stylesheet keys its
-    /// overlay rules on (pinned by a contract test).
+    /// overlay rules on, and the inputs what those rules read (pinned by contract tests). The client script's
+    /// <c>applyTheme</c> derives the same value from the same table (<c>FAMILY_ALIAS_OVERLAY_GROUPS</c> in
+    /// <c>Utils/Theme/BitTheme.ts</c>, pinned to this one by a contract test).
     /// </summary>
     /// <remarks>
     /// The inputs are every token a packaged theme builds a family alias from - a Material button is the full
     /// radius rather than the control one, a Fluent 2 tooltip the primary background rather than the
-    /// secondary, a Fluent dark elevation rings its surface in the tertiary border at the border width - so the list names what
-    /// any of them reads, and a theme that does not read one simply re-declares its own value for it.
+    /// secondary, a Fluent dark elevation rings its surface in the tertiary border at the border width, the
+    /// core app-bar shadows are tinted with the primary foreground - so the list names what any of them reads,
+    /// and a theme that does not read one simply re-declares its own value for it.
     /// </remarks>
     internal static readonly IReadOnlyList<KeyValuePair<string, string[]>> FamilyAliasOverlayGroups =
     [
         new("radius", [BitCss.Var.Shape.BorderRadius]),
         new("radius-control", [BitCss.Var.Shape.Radius.Control, BitCss.Var.Shape.Radius.Full]),
-        new("shadow", [BitCss.Var.Shadow.Callout, BitCss.Var.Color.Border.Tertiary.Main, BitCss.Var.Shape.BorderWidth]),
+        new("shadow", [BitCss.Var.Shadow.Callout, BitCss.Var.Color.Border.Tertiary.Main, BitCss.Var.Shape.BorderWidth, BitCss.Var.Color.Foreground.Primary.Main]),
         new("tooltip", [BitCss.Var.Color.Background.Primary.Main, BitCss.Var.Color.Background.Secondary.Main, BitCss.Var.Color.Foreground.Primary.Main]),
         new("foreground", [BitCss.Var.Color.Foreground.Primary.Main]),
         new("pri", [BitCss.Var.Color.Primary.Main]),

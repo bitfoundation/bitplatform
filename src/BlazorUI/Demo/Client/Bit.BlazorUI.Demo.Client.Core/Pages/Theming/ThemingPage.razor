@@ -838,7 +838,7 @@ BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
                 </BitText>
 
                 <BitText>
-                    <b>Re-declare your family aliases for an inline overlay.</b> A <code>BitThemeProvider</code>, or <code>ApplyBitThemeAsync</code> on an element, that re-values a primitive marks its element with <code>bit-theme-overlay</code>, naming the groups of family aliases built from what it re-valued: <code>radius</code> (the global radius: every per-family radius), <code>radius-control</code> (the control or full radius: the button, chip and selection radii), <code>shadow</code> (the callout shadow, the tertiary border or the border width: the per-family elevations), <code>tooltip</code> (the primary or secondary background or the primary foreground: the tooltip's fill and text), <code>foreground</code> and <code>pri</code> ... <code>err</code> (the role foregrounds and tints). The core stylesheet re-declares its defaults for each group there, which is what makes the aliases follow the overlay - so a preset that decides one of them differently re-declares its own value for that group on the same element, or an overlay puts the default back: a callout shadow under a flat tooltip, the field radius on a pill button. Three selectors per group, each one notch above the selector of your block it mirrors, which is how the packaged presets do it:
+                    <b>Re-declare your family aliases for an inline overlay.</b> A <code>BitThemeProvider</code>, or <code>ApplyBitThemeAsync</code> on an element, that re-values a primitive marks its element with <code>bit-theme-overlay</code>, naming the groups of family aliases built from what it re-valued: <code>radius</code> (the global radius: every per-family radius), <code>radius-control</code> (the control or full radius: the button, chip and selection radii), <code>shadow</code> (the callout shadow, the tertiary border, the border width or the primary foreground: the per-family elevations), <code>tooltip</code> (the primary or secondary background or the primary foreground: the tooltip's fill and text), <code>foreground</code> and <code>pri</code> ... <code>err</code> (the role foregrounds and tints). The core stylesheet re-declares its defaults for each group there, which is what makes the aliases follow the overlay - so a preset that decides one of them differently re-declares its own value for that group on the same element, or an overlay puts the default back: a callout shadow under a flat tooltip, the field radius on a pill button. Three selectors per group, each one notch above the selector of your block it mirrors, which is how the packaged presets do it:
                 </BitText>
 
                 <CodeBox Language="css">/* acme-material.css, after the main block: the aliases above, again for an overlay of what they are built from */
@@ -855,6 +855,10 @@ BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
 /* ...and likewise [bit-theme-overlay~="radius"] (every per-family radius you declare),
    [bit-theme-overlay~="radius-control"] (button, chip, selection) and
    [bit-theme-overlay~="tooltip"] (its fill and text), if you declare those */</CodeBox>
+
+                <BitText>
+                    The middle selector is all a page with one scoped region needs. Scoped regions of different themes nested in one another meet at that same weight, so the packaged presets add a condition of zero specificity to it that lets an overlay take the recipe of its nearest region rather than of the stylesheet linked last (built by the <code>theme-overlay</code> mixin of the library's <code>Styles/theme-overlay.scss</code>; the compiled stylesheets show it written out).
+                </BitText>
 
                 <BitText>
                     The same knobs are reachable from C# for runtime composition, so a tenant can pick a design system the way it picks a brand color:
@@ -1537,6 +1541,10 @@ BitBlazorUI.Theme.applyTheme(
 
 // Remove only the variables we set above
 BitBlazorUI.Theme.clearAppliedTheme(document.body);</CodeBox>
+
+            <BitText>
+                Like <code>ApplyBitThemeAsync</code>, <code>applyTheme</code> marks its target with <code>bit-theme-overlay</code>, naming the groups of family aliases the variables feed (above, <code>radius</code> and <code>pri</code>), so the per-family radii and the primary role's foreground and tint follow them as the active theme builds them; <code>clearAppliedTheme</code> puts back whatever value the target carried before.
+            </BitText>
 
             <BitText><b>onChange / isSystemDark / getPersisted</b> - observation helpers.</BitText>
 

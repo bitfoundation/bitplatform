@@ -362,9 +362,14 @@ overlay rule; a family alias added to a theme block without the overlay rule fai
 any theme re-declares for that group, literals included, and the core one in `family-tokens.scss` carries
 them all: the document theme's overlay rule also matches inside a scoped region of another theme, where only
 the core rule's scoped twins outrank it, so an alias the core rule leaves out carries the document theme's
-recipe into the region (the same test fails on one). A new input a theme builds an alias
-from is a new entry in the group table, and a new group is a row in that table, a rule in `family-tokens.scss`
-and a rule per theme that decides it.
+recipe into the region (the same test fails on one). The mixin's named scoped twins also step aside for any
+region of another theme nearer to the overlay (`theme-overlay-nearest`, a `:where(:not(...))` of zero
+specificity), so nested regions hand an overlay the NEAREST region's recipe rather than the later bundle's. A
+new input a theme builds an alias from is a new entry in the group table - in C# and in its twin
+`FAMILY_ALIAS_OVERLAY_GROUPS` in `BitTheme.ts`, from which the client's `applyTheme` derives the attribute
+itself (the tests pin the two to each other, and every token an overlay rule reads to the inputs of its
+groups) - and a new group is a row in that table, a rule in `family-tokens.scss` and a rule per theme that
+decides it.
 
 A component's own `--bit-<Component>-*` properties (the public surface its demo page documents as
 `componentCssVariables`) are read off its root **with a fallback and never declared**, so they
