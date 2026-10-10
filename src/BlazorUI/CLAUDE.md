@@ -391,6 +391,23 @@ the calendar of a `Standalone` date picker or date range picker, the dial of a `
 picker - which get no chain, so they still have the public declarations of `Style` / `Styles.Root`
 copied onto them (`BitPublicCssVariables`, `GetStandaloneStyles` / `GetCalloutStyle`).
 
+**A public variable set on an instance reaches every instance nested inside it, and that is the rule.**
+The public variables are the cascading tier: `:root`, a `[bit-theme]` scope, an ancestor and one
+instance's `Style` all set them the same way, so a Card in a Card, an Element in an Element, a Text in a
+Text inherits the outer one's value like any inherited property. Neither way of stopping that is used:
+re-declaring them at the component boundary (`.bit-x .bit-x { --bit-X-foo: initial; }`) or registering
+them with `@property { inherits: false; }` cuts off `:root` and every ancestor along with the outer
+instance, and so global theming with it - `inherits: false` is for private variables only (BitIcon's
+`--bit-ico-*`, `--bit-focus-ring-own`, `--bit-stk-zin`). What is meant for one instance alone goes through
+the per-instance tier, which never inherits: a parameter (published as a private variable the root
+resets, below) or the real property on `Style` / `Styles.X` / `Classes.X` - `Style="opacity: 1"` keeps
+one disabled BitElement undimmed without reaching a disabled one inside it, where
+`--bit-Element-disabled-opacity: 1` would reach both. The docs say so where it matters: a stylesheet header
+or demo page says a value on an instance's `Style` restyles "that one alone" only for a component that
+cannot contain another of its kind; a nestable one says the value also reaches the instances inside it;
+and a `componentCssVariables` row whose typical value means "for me only" (a `disabled-opacity` of 1, a
+Grid's column count) names the per-instance way.
+
 **A parameter written on the component wins over the public variable that restyles what it sets** -
 the variables restyle the default, never a choice, so `:root { --bit-Badge-background: gray }` leaves
 `<BitBadge Color="BitColor.Error">` red. Three things make that hold:

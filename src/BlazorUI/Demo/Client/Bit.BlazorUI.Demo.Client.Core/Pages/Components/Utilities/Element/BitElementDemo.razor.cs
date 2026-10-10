@@ -71,7 +71,7 @@ public partial class BitElementDemo
         {
             Name = "--bit-Element-disabled-opacity",
             DefaultValue = "--bit-opa-dis",
-            Description = "Opacity of a disabled element. Set it to 1 to keep the tag's own look, for a wrapper whose content shows its own disabled state. It inherits, so the value also reaches every element inside: a disabled element nested in a wrapper set to 1 needs a value of its own (e.g. var(--bit-opa-dis)) to dim again.",
+            Description = "Opacity of a disabled element. Set it to 1 to keep the tag's own look, for a wrapper whose content shows its own disabled state. It inherits, so the value also reaches every element inside: a disabled element nested in a wrapper set to 1 is not dimmed either. To keep one wrapper alone at full opacity, set opacity: 1 on its Style instead, which is not inherited.",
         }
     ];
 

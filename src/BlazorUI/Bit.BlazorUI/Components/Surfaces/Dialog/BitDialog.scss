@@ -2,7 +2,8 @@
 @import "../../../Styles/color-role-maps.scss";
 
 // Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every
-// dialog, one set on an ancestor the dialogs inside it, and one set on the Style of an instance that one alone:
+// dialog, one set on an ancestor the dialogs inside it, and one set on the Style of an instance that one and the
+// dialogs nested in it:
 //   --bit-Dialog-z-index                   stacking order of the dialog                   (default: $zindex-modal; not read by AbsolutePosition)
 //   --bit-Dialog-margin                    space kept between the surface and its area    (default: 0, e.g. 16px for a gutter on phones)
 //   --bit-Dialog-overlay-background        color of the overlay behind the surface        (default: $clr-bg-overlay)

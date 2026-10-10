@@ -1,7 +1,8 @@
 ﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
 
 // Public CSS variables, read with a fallback and never declared here, so a value set on :root (or on an
-// ancestor) re-tunes every list under it and one set on the Style of an instance that one alone:
+// ancestor) re-tunes every list under it and one set on the Style of an instance that one and the lists nested
+// in it:
 //   --bit-InfiniteScrolling-status-color          text of the loading, empty and end blocks   (default: $clr-fg-sec)
 //   --bit-InfiniteScrolling-status-font-size      size of the text of every status block      (default: $tg-fs-sm)
 //   --bit-InfiniteScrolling-status-padding        padding of every status block               (default: spacing(1))

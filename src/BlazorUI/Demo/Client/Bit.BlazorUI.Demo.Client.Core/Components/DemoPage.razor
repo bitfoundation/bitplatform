@@ -254,7 +254,8 @@ else
                     <BitText Typography="BitTypography.Body2" Class="css-vars-intro">
                         Every variable is read with a fallback and never declared by the component, so it inherits like any other custom property:
                         set one on <code>:root</code> (or in a <code>[bit-theme]</code> block) to restyle every instance, on any ancestor to restyle the ones inside it,
-                        or on the <b>Style</b> of one instance to restyle that one alone. Leave a variable unset and the component falls back to the theme token beside it.
+                        or on the <b>Style</b> of one instance to restyle it - and any instance nested inside it, which inherits the value too; a parameter or the
+                        instance's <b>Styles</b> changes one alone. Leave a variable unset and the component falls back to the theme token beside it.
                     </BitText>
 
                     <DemoCssVariablesTable Name="@($"Bit{Name}")" Variables="CssVariables" />
