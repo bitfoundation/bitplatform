@@ -279,11 +279,12 @@
 // The toggled header is painted with the darker end of the role, the way BitToggleButton's checked state is,
 // rather than with the pressed color: pressed is a lighter step of the role in the dark scheme, so a sustained
 // state drawn with it made the button that is ON read as the lighter - and so the weaker - of the two. The
-// hovered and the pressed steps are restated here because `.bit-mnb-opb:hover` weighs the same as this rule
-// and would otherwise be settled by source order, leaving a toggled header inert under the pointer. The state
-// is the rule's, but the colors it shows are still the role's, so an explicit Color outranks the toggled
-// variables here just as it outranks the resting ones.
-.bit-mnb-tgl {
+// hovered and the pressed steps are restated here because the ones `.bit-mnb-opb:hover` sets are the role's
+// resting steps, which a toggled header under the pointer would otherwise read. The state is the rule's, but the
+// colors it shows are still the role's, so an explicit Color outranks the toggled variables here just as it
+// outranks the resting ones. The toggled state is held in :where() so the rule weighs no more than the header's
+// own, and a class an app hands the header still paints it while it is toggled.
+:where(.bit-mnb-tgl) {
     > .bit-mnb-opb {
         color: var(--bit-mnb-hlf-sfg, var(--bit-mnb-clr-txt, var(--bit-MenuButton-toggled-color, #{$clr-pri-text})));
         background-color: var(--bit-mnb-hlf-sbg, var(--bit-mnb-clr-dark, var(--bit-MenuButton-toggled-background, #{$clr-pri-dark})));

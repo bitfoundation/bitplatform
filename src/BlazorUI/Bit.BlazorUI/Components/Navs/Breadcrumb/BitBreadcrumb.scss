@@ -184,11 +184,9 @@
         text-decoration: none;
     }
 
+    // No background here: the items and the overflow button paint their own, and a button an item template puts
+    // in the trail keeps the one its app gives it.
     button {
-        // Outweighs the background the items and the overflow button read their state from, so it reads it too, and
-        // unsets it for any other button an item template puts in the trail.
-        --bit-brc-sbg: initial;
-        background-color: var(--bit-brc-sbg, transparent);
         // A button carries the font of the browser rather than the one of its page, so a step
         // rendered as one would read in another typeface than the steps rendered as links.
         font-family: inherit;

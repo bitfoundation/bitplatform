@@ -26,8 +26,14 @@ namespace Bit.BlazorUI.Tests.Utils.Theme;
 public sealed class BitComponentStatePaintTests
 {
     // The interaction states. A :not() of one is the opposite of the state, and is cut out before this is matched.
-    private static readonly Regex StatePseudoClass = new(
+    private static readonly Regex InteractionState = new(
         @":(?:hover|active|focus|focus-visible|focus-within)(?![a-z-])",
+        RegexOptions.Compiled);
+
+    // Only the active forced-colors mode, where the browser forces the colors; under forced-colors: none (or a not()
+    // of the active one) the author's colors are the ones drawn, so a state rule there is checked like any other.
+    private static readonly Regex ForcedColorsActive = new(
+        @"(?<!\bnot\s*\(\s*)forced-colors\s*:\s*active",
         RegexOptions.Compiled);
 
     private static readonly Regex DisabledSelector = new(
@@ -57,25 +63,17 @@ public sealed class BitComponentStatePaintTests
             {
                 var headers = rule.Ancestors.Append(rule.Header).ToArray();
 
-                if (headers.Any(header => header.Contains("forced-colors", StringComparison.Ordinal))) continue;
+                if (headers.Any(ForcedColorsActive.IsMatch)) continue;
 
-                // The selector the declarations apply to: every rule header around them, less the at-rules (@media,
-                // @include, @if, ...), which apply to the selector they are written in.
-                var selector = string.Join(" ", headers.Where(header => header.StartsWith('@') is false));
+                // Each selector the declarations apply to, every rule header around them resolved the way Sass nests
+                // them, less the at-rules (@media, @include, @if, ...), which apply to the selector they are written in.
+                // A selector list is judged one alternative at a time, so an exception one of them earns is not handed
+                // to the others written beside it.
+                var offending = ResolveSelectors(headers.Where(header => header.StartsWith('@') is false))
+                    .Where(PaintsAtAnInteractionState)
+                    .ToArray();
 
-                if (selector.Length == 0) continue;
-
-                var withoutNegations = RemoveNegations(selector);
-
-                if (StatePseudoClass.IsMatch(withoutNegations) is false) continue;
-                if (DisabledSelector.IsMatch(withoutNegations)) continue;
-
-                // The browser's own scrollbar is no part an app's Class or Classes names.
-                if (selector.Contains("::-webkit-scrollbar", StringComparison.Ordinal)) continue;
-
-                // Nor are the controls a map provider draws, and its stylesheet - loaded after ours - paints their
-                // states at the same weight, so a state of ours that only moved a variable would lose to it.
-                if (ThirdPartyControl.IsMatch(selector)) continue;
+                if (offending.Length == 0) continue;
 
                 var declarations = SourceFiles.GetScssDeclarations(stylesheet[rule.Index..], rule.Header);
 
@@ -83,13 +81,72 @@ public sealed class BitComponentStatePaintTests
                 {
                     var line = stylesheet.AsSpan(0, rule.Index).Count('\n') + 1;
 
-                    offenders.Add($"{Path.GetFileName(file)}:{line} {paint.Groups["property"].Value} in {Squash(selector)}");
+                    offenders.Add($"{Path.GetFileName(file)}:{line} {paint.Groups["property"].Value} in {string.Join(", ", offending.Select(Squash))}");
                 }
             }
         }
 
         CollectionAssert.AreEqual(Array.Empty<string>(), offenders,
             $"A state rule paints a part directly, which outranks an app's class on it; move a private variable the rule at rest paints from instead:{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+    }
+
+    // Whether a state rule written for this one selector would paint over an app's class: it names an interaction state,
+    // and is none of the parts left out by design.
+    private static bool PaintsAtAnInteractionState(string selector)
+    {
+        var withoutNegations = RemoveNegations(selector);
+
+        if (InteractionState.IsMatch(withoutNegations) is false) return false;
+        if (DisabledSelector.IsMatch(withoutNegations)) return false;
+
+        // The browser's own scrollbar is no part an app's Class or Classes names.
+        if (selector.Contains("::-webkit-scrollbar", StringComparison.Ordinal)) return false;
+
+        // Nor are the controls a map provider draws, and its stylesheet - loaded after ours - paints their states at
+        // the same weight, so a state of ours that only moved a variable would lose to it.
+        if (ThirdPartyControl.IsMatch(selector)) return false;
+
+        return true;
+    }
+
+    // The selectors a chain of nested rule headers stands for: each header's list crossed with the selectors of the
+    // rule around it, an & standing for the outer selector and a header without one being a descendant of it.
+    private static IEnumerable<string> ResolveSelectors(IEnumerable<string> headers)
+    {
+        IEnumerable<string> selectors = [""];
+
+        foreach (var header in headers)
+        {
+            var alternatives = SplitSelectorList(header);
+
+            selectors = selectors.SelectMany(outer => alternatives.Select(inner =>
+                inner.Contains('&') ? inner.Replace("&", outer) : (outer.Length == 0 ? inner : $"{outer} {inner}"))).ToArray();
+        }
+
+        return selectors.Where(selector => selector.Length > 0);
+    }
+
+    // The alternatives of a selector list, split on the commas outside of any parentheses (:is(a, b) stays whole).
+    private static List<string> SplitSelectorList(string selectorList)
+    {
+        var alternatives = new List<string>();
+        var depth = 0;
+        var start = 0;
+
+        for (var i = 0; i < selectorList.Length; i++)
+        {
+            if (selectorList[i] == '(') depth++;
+            else if (selectorList[i] == ')') depth--;
+            else if (selectorList[i] == ',' && depth == 0)
+            {
+                alternatives.Add(selectorList[start..i].Trim());
+                start = i + 1;
+            }
+        }
+
+        alternatives.Add(selectorList[start..].Trim());
+
+        return alternatives;
     }
 
     // The selector less every :not(...) in it, nested parentheses and all.
