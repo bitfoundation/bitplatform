@@ -36,6 +36,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     private int? _typedDigit;
     private int _typedDigitCount;
     private TimeUnit? _focusedUnit;
+    private Dictionary<string, object>? _calloutHtmlAttributes;
 
 
     private enum TimeUnit { Hour, Minute, Second }
@@ -265,6 +266,11 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     /// Capture and render additional attributes in addition to the main callout's parameters
     /// </summary>
     [Parameter] public Dictionary<string, object> CalloutHtmlAttributes { get; set; } = [];
+
+    // The callout attributes the BitTimePickerParams of this pass cascades, which those of CalloutHtmlAttributes win
+    // over. Held apart from that dictionary, which is the app's own and never written into, and dropped on every pass
+    // so a params object that stops supplying one leaves nothing of it behind.
+    internal Dictionary<string, object>? CascadedCalloutHtmlAttributes { get; set; }
 
     /// <summary>
     /// Custom CSS classes for different parts of the BitTimePicker component.
@@ -1016,7 +1022,11 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTimePickerParams))]
     protected override void OnParametersSet()
     {
+        CascadedCalloutHtmlAttributes = null;
+
         CascadingParameters?.UpdateParameters(this);
+
+        _calloutHtmlAttributes = MergeAttributes(CalloutHtmlAttributes, CascadedCalloutHtmlAttributes);
 
         base.OnParametersSet();
     }

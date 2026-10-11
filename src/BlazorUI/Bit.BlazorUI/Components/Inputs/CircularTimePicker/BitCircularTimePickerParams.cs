@@ -395,15 +395,7 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
             bitCircularTimePicker.TakeFromCascade(nameof(CalloutHeaderTemplate), CalloutHeaderTemplate, static c => c.CalloutHeaderTemplate, static (c, v) => c.CalloutHeaderTemplate = v);
         }
 
-        if (CalloutHtmlAttributes is not null)
-        {
-            foreach (var attr in CalloutHtmlAttributes)
-            {
-                if (bitCircularTimePicker.CalloutHtmlAttributes.ContainsKey(attr.Key)) continue;
-
-                bitCircularTimePicker.CalloutHtmlAttributes[attr.Key] = attr.Value;
-            }
-        }
+        bitCircularTimePicker.CascadedCalloutHtmlAttributes = CalloutHtmlAttributes;
 
         if (Classes is not null)
         {

@@ -1696,9 +1696,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         if (_invalidReason != BitTagsInputInvalidReason.None) return "true";
 
-        return InputHtmlAttributes is not null && InputHtmlAttributes.TryGetValue("aria-invalid", out var value)
-            ? value?.ToString()
-            : null;
+        return TryFindAttribute(InputHtmlAttributes, "aria-invalid", out var value) ? value?.ToString() : null;
     }
 
     /// <summary>

@@ -368,15 +368,7 @@ public class BitTimePickerParams : BitComponentBaseParams, IBitComponentParams
             bitTimePicker.TakeFromCascade(nameof(CalloutHeaderTemplate), CalloutHeaderTemplate, static t => t.CalloutHeaderTemplate, static (t, v) => t.CalloutHeaderTemplate = v);
         }
 
-        if (CalloutHtmlAttributes is not null)
-        {
-            foreach (var attr in CalloutHtmlAttributes)
-            {
-                if (bitTimePicker.CalloutHtmlAttributes.ContainsKey(attr.Key)) continue;
-
-                bitTimePicker.CalloutHtmlAttributes[attr.Key] = attr.Value;
-            }
-        }
+        bitTimePicker.CascadedCalloutHtmlAttributes = CalloutHtmlAttributes;
 
         if (Classes is not null)
         {

@@ -172,7 +172,7 @@
              class="bit-tpc-cac @Classes?.CalloutContainer"
              role="@(Standalone ? "group" : "dialog")"
              aria-modal="@(Standalone ? null : "true")"
-             @attributes=@CalloutHtmlAttributes
+             @attributes="_calloutHtmlAttributes"
              aria-label="@(StandaloneHasLabel ? null : CalloutAriaLabel)"
              aria-labelledby="@(StandaloneHasLabel ? _labelId : null)">
 

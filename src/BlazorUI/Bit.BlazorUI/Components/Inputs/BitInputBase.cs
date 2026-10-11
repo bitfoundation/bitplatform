@@ -29,6 +29,10 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     private ValidationMessageStore? _parsingValidationMessages;
     private readonly EventHandler<ValidationStateChangedEventArgs> _validationStateChangedHandler;
 
+    // Whether InputHtmlAttributes is a copy of the app's dictionary that the aria-invalid of a failed validation was
+    // added to, which is then the one aria-invalid taken off again once the field is valid.
+    private bool _hasAddedAriaInvalid;
+
     // The parameters of this class are taken out of the ParameterView below before it reaches
     // BitComponentBase, so the set that BitComponentBase tracks never sees them, and the one the source
     // generator writes only ever holds the parameters that the component itself declares. A cascade filling
@@ -197,6 +201,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase
                 case nameof(InputHtmlAttributes):
                     _assignedInputParameters.Add(nameof(InputHtmlAttributes));
                     InputHtmlAttributes = (Dictionary<string, object>?)parameter.Value;
+                    _hasAddedAriaInvalid = false;
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
@@ -480,72 +485,36 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     {
         if (EditContext is null || NoValidate) return;
 
-        var hasAriaInvalidAttribute = InputHtmlAttributes is not null && InputHtmlAttributes.ContainsKey("aria-invalid");
-
+        // The dictionary is the app's own, possibly shared by several inputs, so the attribute is added to and taken off
+        // a copy of it, never the dictionary itself.
         if (EditContext.GetValidationMessages(FieldIdentifier).Any())
         {
-            if (hasAriaInvalidAttribute) return; // Do not overwrite the attribute value
+            ValueInvalid = true;
 
-            if (TryConvertingToDictionary(InputHtmlAttributes, out var inputHtmlAttributes))
-            {
-                InputHtmlAttributes = inputHtmlAttributes;
-            }
+            if (_hasAddedAriaInvalid) return;
+
+            // Do not overwrite the attribute value the app wrote itself, however it cased its name.
+            if (TryFindAttribute(InputHtmlAttributes, "aria-invalid", out _)) return;
 
             // To make the `Input` components accessible by default
             // we will automatically render the `aria-invalid` attribute when the validation fails
             // value must be "true" see https://www.w3.org/TR/wai-aria-1.1/#aria-invalid
-            inputHtmlAttributes["aria-invalid"] = "true";
-
-            ValueInvalid = true;
+            InputHtmlAttributes = new(InputHtmlAttributes ?? []) { ["aria-invalid"] = "true" };
+            _hasAddedAriaInvalid = true;
         }
         else
         {
             ValueInvalid = false;
 
-            if (hasAriaInvalidAttribute is false) return;
+            // No validation errors. Need to remove `aria-invalid` if it was rendered already, and only the one added here.
+            if (_hasAddedAriaInvalid is false) return;
 
-            // No validation errors. Need to remove `aria-invalid` if it was rendered already
+            var inputHtmlAttributes = new Dictionary<string, object>(InputHtmlAttributes!);
+            inputHtmlAttributes.Remove("aria-invalid");
 
-            if (InputHtmlAttributes!.Count == 1)
-            {
-                // Only aria-invalid argument is present which we don't need any more
-                InputHtmlAttributes = null;
-            }
-            else
-            {
-                if (TryConvertingToDictionary(InputHtmlAttributes, out var inputHtmlAttributes))
-                {
-                    InputHtmlAttributes = inputHtmlAttributes;
-                }
-
-                inputHtmlAttributes.Remove("aria-invalid");
-            }
+            InputHtmlAttributes = inputHtmlAttributes.Count == 0 ? null : inputHtmlAttributes;
+            _hasAddedAriaInvalid = false;
         }
-    }
-
-    private static bool TryConvertingToDictionary(IReadOnlyDictionary<string, object>? source, out Dictionary<string, object> result)
-    {
-        var newDictionaryCreated = true;
-
-        if (source is null)
-        {
-            result = [];
-        }
-        else if (source is Dictionary<string, object> currentDictionary)
-        {
-            result = currentDictionary;
-            newDictionaryCreated = false;
-        }
-        else
-        {
-            result = [];
-            foreach (var item in source)
-            {
-                result.Add(item.Key, item.Value);
-            }
-        }
-
-        return newDictionaryCreated;
     }
 
 
