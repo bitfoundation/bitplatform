@@ -328,6 +328,68 @@ public class BitEscapeClaimBrowserTests : PerformanceTestBase
         await Expect(tooltip).ToHaveCountAsync(0);
     }
 
+    // An Escape pressed to cancel what an input method editor is composing is dispatched by hand: no engine driven here
+    // has an IME to compose with. The engines that report the real key during a composition set isComposing, and the
+    // ones that predate it report the legacy 229 key code instead, so both are pinned for every surface.
+    [TestMethod,
+        DataRow("dialog", "isComposing"), DataRow("dialog", "keyCode"),
+        DataRow("modal", "isComposing"), DataRow("modal", "keyCode"),
+        DataRow("panel", "isComposing"), DataRow("panel", "keyCode"),
+        DataRow("overlay", "isComposing"), DataRow("overlay", "keyCode"),
+        DataRow("callout", "isComposing"), DataRow("callout", "keyCode")]
+    public async Task EscapeCancellingAnImeComposition_LeavesTheSurfaceOpenAndTheNextPressClosesIt(string surface, string flag)
+    {
+        await OpenSurface(surface);
+
+        await Page.Locator("#ime-input").FocusAsync();
+
+        await DispatchComposingEscape("#ime-input", flag);
+
+        // Give a wrongly routed press the time to have closed the surface.
+        await Page.WaitForTimeoutAsync(300);
+        await Expect(Page.Locator("#surface-state")).ToHaveTextAsync("open");
+
+        // The composition has ended, and the next press is the surface's.
+        await PressEscapeAndExpectClosed();
+    }
+
+    [TestMethod,
+        DataRow("dialog", "isComposing"), DataRow("modal", "keyCode"), DataRow("panel", "isComposing"),
+        DataRow("overlay", "keyCode"), DataRow("callout", "isComposing")]
+    public async Task Tooltip_EscapeCancellingAnImeCompositionInItsAnchor_LeavesTheTooltipAndTheSurface(string surface, string flag)
+    {
+        await OpenSurface(surface);
+
+        await Page.Locator("#w-tpf input").FocusAsync();
+        var tooltip = Page.Locator("#w-tpf .bit-ttp-wrp.bit-ttp-vis");
+        await Expect(tooltip).ToHaveCountAsync(1);
+
+        await DispatchComposingEscape("#w-tpf input", flag);
+
+        await Page.WaitForTimeoutAsync(300);
+        await Expect(tooltip).ToHaveCountAsync(1);
+        await Expect(Page.Locator("#surface-state")).ToHaveTextAsync("open");
+
+        // The press after the composition is the tooltip's, as it always was.
+        await PressEscapeAndExpectOpen();
+        await Expect(tooltip).ToHaveCountAsync(0);
+    }
+
+    private async Task DispatchComposingEscape(string selector, string flag)
+    {
+        await Page.Locator(selector).EvaluateAsync(
+            """
+            (element, flag) => {
+                const e = new KeyboardEvent('keydown', {
+                    key: 'Escape', code: 'Escape', bubbles: true, cancelable: true, composed: true,
+                    isComposing: flag === 'isComposing'
+                });
+                if (flag === 'keyCode') Object.defineProperty(e, 'keyCode', { get: () => 229 });
+                element.dispatchEvent(e);
+            }
+            """, flag);
+    }
+
     private async Task OpenPage(string? surface = null)
     {
         await Page.GotoAsync($"{BaseUrl}/regression/escape-claim{(surface is null ? "" : $"?surface={surface}")}");

@@ -90,6 +90,93 @@ public sealed class BitEscapeClaimContractTests
         }
     }
 
+    [TestMethod]
+    public void TheCompositionOfAnEscapeShouldBeReadInOnePlace()
+    {
+        var script = SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts");
+        var check = GetMethod(script, "isComposingKey");
+
+        // The engines that report the real key during a composition set isComposing, and the ones that predate it
+        // report the legacy 229 key code instead - so a check of one of them alone leaves a dialog closing in the other.
+        StringAssert.Contains(check, "e.isComposing");
+        StringAssert.Contains(check, "e.keyCode === 229");
+
+        var copies = script.Split('\n')
+                           .Where(line => line.TrimStart().StartsWith("//") is false)
+                           .Where(line => Regex.IsMatch(line, @"\.isComposing\b|=== 229"))
+                           .Where(line => check.Contains(line) is false)
+                           .ToList();
+
+        Assert.AreEqual(0, copies.Count, $"Utils.ts reads the composition of a key outside Utils.isComposingKey: {string.Join(" | ", copies.Select(l => l.Trim()))}");
+    }
+
+    [TestMethod,
+        DataRow("claimEscape"),
+        DataRow("setupSurfaceEscape"),
+        DataRow("setupEscapeGuard"),
+        DataRow("watchEscape"),
+        DataRow("watchLayerEscape"),
+        DataRow("setupEscape"),
+        DataRow("setupTooltip"),
+        DataRow("dismissTooltipsOnEscape"),
+        DataRow("watchEscapeComposition")
+    ]
+    public void EverySurfaceShouldLeaveTheEscapeOfAnImeCompositionAlone(string method)
+    {
+        var body = GetMethod(SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts"), method);
+
+        // Escape cancels the candidate an input method editor is composing, so the press is nobody's: a surface that
+        // closed on it would take away the text the user was typing along with it.
+        StringAssert.Contains(body, "Utils.isComposingKey(e)", $"Utils.{method} does not leave the Escape of an IME composition alone.");
+    }
+
+    [TestMethod,
+        DataRow("setupSurfaceEscape"),
+        DataRow("setupEscapeGuard"),
+        DataRow("setupEscape"),
+        DataRow("setupTooltip")
+    ]
+    public void EveryListenerThatAnswersTheKeyShouldReadTheCompositionItself(string method)
+    {
+        var body = GetMethod(SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts"), method);
+
+        // As with a claim, one listener of the method reading it does not keep another one from closing the surface.
+        // (watchEscape and watchLayerEscape record it in a listener of their own, which the answering one reads.)
+        var listeners = body.Split("addEventListener(").Skip(1)
+                            .Where(listener => listener.StartsWith("'keydown'"))
+                            .Where(listener => listener.Contains("invokeMethodAsync"))
+                            .ToList();
+
+        Assert.IsTrue(listeners.Count > 0, $"Utils.{method} has no keydown listener that answers the key.");
+
+        foreach (var listener in listeners)
+        {
+            StringAssert.Contains(listener, "Utils.isComposingKey(e)", $"A keydown listener of Utils.{method} answers the Escape of an IME composition.");
+        }
+    }
+
+    [TestMethod]
+    public void TheCalloutShouldBeToldWhichEscapesCancelAComposition()
+    {
+        // A BitCallout dismisses itself in .NET, on its root and on its content, where KeyboardEventArgs carries no key
+        // code (and no composition state before .NET 9), so the browser answers every Escape it is about to hear.
+        var callouts = SourceFiles.Read("Bit.BlazorUI", "Scripts", "Callouts.ts");
+
+        StringAssert.Contains(GetMethod(callouts, "setupKeyboard", "Callouts"), "Utils.watchEscapeComposition(calloutId, [compositionRootId, calloutId], dotnetObj)");
+        StringAssert.Contains(GetMethod(callouts, "disposeKeyboard", "Callouts"), "Utils.unwatchEscapeComposition(calloutId)");
+        StringAssert.Contains(GetMethod(SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts"), "watchEscapeComposition"), "'OnEscapeComposition'");
+    }
+
+    [TestMethod]
+    public void TheTooltipShouldTellItsKeyHandlerWhichEscapesCancelAComposition()
+    {
+        // The tooltip leaves the Escape of a composition to the field it is in, so the key reaches its own .NET handler
+        // too - the fallback for a press the script has not taken - which has to be told it is not a dismissal.
+        var tooltip = GetMethod(SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts"), "setupTooltip");
+
+        StringAssert.Contains(tooltip, "invokeMethodAsync('OnEscapeComposition', true)");
+    }
+
     [TestMethod,
         DataRow("setupSurfaceEscape"),
         DataRow("setupEscapeGuard"),

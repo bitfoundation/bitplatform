@@ -8,7 +8,9 @@
    with a modifier) is the surface's straight away. The page-level section covers the claims that have to stop at a
    surface rendered inside the claimer (a Modal inside a Message), and the listeners that hear the key from anywhere
    (a Tooltip shown on hover). A Tooltip inside the surface takes a press nothing in its anchor acts on, and goes
-   along with one a field claims or a popup of its anchor closes on - the surface waiting for the next press either way. *@
+   along with one a field claims or a popup of its anchor closes on - the surface waiting for the next press either way.
+   An Escape cancelling an IME composition is nobody's: the surface (a Callout as well, whose own handlers answer the
+   key in .NET) and a Tooltip shown in it both stay. *@
 <div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
     <h3>Escape Claim Regression (@Surface)</h3>
     <button @onclick="Open" id="btn-open">Open</button>
@@ -42,6 +44,10 @@
 
     case "overlay":
         <BitOverlay @bind-IsOpen="_isOpen">@Content</BitOverlay>
+        break;
+
+    case "callout":
+        <BitCallout @bind-IsOpen="_isOpen" Anchor="@CalloutAnchor" Content="@Content" />
         break;
 
     default:
@@ -98,8 +104,12 @@
     // interactive render moves it on, which is what the test waits for before it drives the page.
     private string _status = "Loading";
 
+    private RenderFragment CalloutAnchor => @<button id="callout-anchor">Callout anchor</button>;
+
     private RenderFragment Content => @<div id="surface-content" style="display: flex; flex-direction: column; gap: 8px; padding: 16px; max-height: 80vh; overflow: auto;">
         <button id="surface-btn">Surface button</button>
+        @* A field of the page's own, with no guard of its own against an IME's keys. *@
+        <input id="ime-input" />
         <div id="w-tf"><BitTextField ClearOnEscape Immediate @bind-Value="_tf" OnClear="Cleared" /></div>
         <div id="w-tf1"><BitTextField ClearOnEscape Value="locked" OnClear="Cleared" /></div>
         <div id="w-sb"><BitSearchBox Immediate @bind-Value="_sb" OnClear="Cleared" /></div>

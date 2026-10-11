@@ -28,6 +28,10 @@ public partial class BitCallout : BitComponentBase
     private bool _focusTrapped;
     private bool _focusOriginCaptured;
     private bool _escapeRegistered;
+    private bool _escapeCompositionWatched;
+    // Whether the Escape the key handlers are about to hear cancels an IME composition, as the browser answered it
+    // (see _OnEscapeComposition), taken by the handler as it starts.
+    private bool _composingEscape;
     private bool _tabOutRegistered;
     private bool _scrollLocked;
     private bool _hoverInside;
@@ -646,6 +650,15 @@ public partial class BitCallout : BitComponentBase
         await InvokeAsync(StateHasChanged);
     }
 
+    [JSInvokable("OnEscapeComposition")]
+    public void _OnEscapeComposition(bool composing)
+    {
+        // Sent for every Escape that goes through the root or the callout while it is open, ahead of the keydown
+        // Blazor dispatches for it (see Utils.watchEscapeComposition): KeyboardEventArgs cannot say whether the key
+        // cancelled an IME composition - it carries no key code, and no composition state before .NET 9.
+        _composingEscape = composing;
+    }
+
     [JSInvokable("OnTabOut")]
     public async Task _OnTabOut()
     {
@@ -886,6 +899,8 @@ public partial class BitCallout : BitComponentBase
     // listener leaves the anchor out, so this is the one place the key is answered for it.
     private async Task HandleOnRootKeyDown(KeyboardEventArgs e)
     {
+        if (TakeComposingEscape(e)) return;
+
         if (Disabled || IsOpen is false) return;
 
         if (e.Key is not "Escape" || NoDismissOnEscape) return;
@@ -900,6 +915,8 @@ public partial class BitCallout : BitComponentBase
 
     private async Task HandleOnCalloutKeyDown(KeyboardEventArgs e)
     {
+        if (TakeComposingEscape(e)) return;
+
         if (Disabled || IsOpen is false) return;
 
         if (e.Key is not "Escape" || NoDismissOnEscape) return;
@@ -913,6 +930,19 @@ public partial class BitCallout : BitComponentBase
         // The close runs on the callout's own event, which does not re-render the anchor, so refresh the
         // open-state classes and aria-expanded here.
         StateHasChanged();
+    }
+
+    // Whether the key is an Escape that cancels what an IME was composing in a field of the anchor or of the callout:
+    // the press is the composition's, never a dismissal. The browser's answer is read once, so it never outlives the
+    // press it was given for.
+    private bool TakeComposingEscape(KeyboardEventArgs e)
+    {
+        if (e.Key is not "Escape") return false;
+
+        var composing = _composingEscape;
+        _composingEscape = false;
+
+        return composing;
     }
 
     private async Task HandleOnMouseEnter()
@@ -1321,6 +1351,8 @@ public partial class BitCallout : BitComponentBase
     // - The element the focus is on is remembered, by a callout without an anchor of its own - an external one,
     //   or a point: the one it renders is otherwise where the focus goes back to.
     // - Escape is listened for on the page (see ListensForEscapeOnPage).
+    // - The Escapes the key handlers of the root and of the callout hear are told apart from the ones cancelling an
+    //   IME composition (see _OnEscapeComposition).
     // - Tab and Shift+Tab are kept inside a callout that keeps the focus, or the content of one that does not is
     //   put into the tab order right after its trigger (see GetTabOutTriggerId).
     private async Task SetupKeyboard()
@@ -1329,18 +1361,21 @@ public partial class BitCallout : BitComponentBase
 
         var captureFocusOrigin = HasOwnAnchor is false && _focusOriginCaptured is false;
         var escape = ListensForEscapeOnPage && _escapeRegistered is false;
+        var escapeComposition = _escapeCompositionWatched is false;
         var focusTrap = KeepsFocus && _focusTrapped is false;
         var tabOutTriggerId = _tabOutRegistered ? null : GetTabOutTriggerId();
 
-        if ((captureFocusOrigin || escape || focusTrap || tabOutTriggerId is not null) is false) return;
+        if ((captureFocusOrigin || escape || escapeComposition || focusTrap || tabOutTriggerId is not null) is false) return;
 
         _escapeRegistered |= escape;
+        _escapeCompositionWatched |= escapeComposition;
         _focusTrapped |= focusTrap;
         _tabOutRegistered |= tabOutTriggerId is not null;
 
         try
         {
-            var captured = await _js.BitCalloutSetupKeyboard(_contentId, _dotnetObj, captureFocusOrigin, escape, _Id, focusTrap, tabOutTriggerId);
+            var captured = await _js.BitCalloutSetupKeyboard(_contentId, _dotnetObj, captureFocusOrigin, escape, _Id, focusTrap, tabOutTriggerId,
+                                                         escapeComposition ? _Id : null);
 
             // A focus that was on the body leaves nothing to hand back to, which ReturnFocus has to know to fall
             // back to the anchor instead.
@@ -1358,9 +1393,11 @@ public partial class BitCallout : BitComponentBase
     {
         var forget = forgetFocusOrigin && _focusOriginCaptured;
 
-        if ((_escapeRegistered || _focusTrapped || _tabOutRegistered || forget) is false) return;
+        if ((_escapeRegistered || _escapeCompositionWatched || _focusTrapped || _tabOutRegistered || forget) is false) return;
 
         _escapeRegistered = false;
+        _escapeCompositionWatched = false;
+        _composingEscape = false;
         _focusTrapped = false;
         _tabOutRegistered = false;
 

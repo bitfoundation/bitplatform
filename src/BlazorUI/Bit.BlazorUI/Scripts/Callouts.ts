@@ -1684,9 +1684,11 @@
         // Hands the keyboard over to an opening BitCallout in one call rather than one per piece, since each
         // is a round trip of its own on a server-rendered page and all of them stand between the click and the
         // focus moving into the callout: the element the focus is on is remembered (to be handed back to on
-        // close), Escape is listened for on the page, Tab and Shift+Tab are kept inside the callout, or the
-        // callout is put into the tab order after its trigger. Each is asked for on its own, and the ones the
-        // component has already set up are not asked for again. Reports whether a focus origin was remembered.
+        // close), Escape is listened for on the page, the Escapes the component's own handlers hear on the root
+        // and on the callout are told apart from the ones cancelling an IME composition, Tab and Shift+Tab are
+        // kept inside the callout, or the callout is put into the tab order after its trigger. Each is asked for
+        // on its own, and the ones the component has already set up are not asked for again. Reports whether a
+        // focus origin was remembered.
         public static setupKeyboard(
             calloutId: string,
             dotnetObj: DotNetObject,
@@ -1694,11 +1696,16 @@
             escape: boolean,
             escapeTriggerId: string | null,
             focusTrap: boolean,
-            tabOutTriggerId: string | null) {
+            tabOutTriggerId: string | null,
+            compositionRootId: string | null) {
             const captured = captureFocusOrigin && Utils.captureFocusOrigin(calloutId);
 
             if (escape) {
                 Utils.setupEscape(calloutId, dotnetObj, escapeTriggerId);
+            }
+
+            if (compositionRootId) {
+                Utils.watchEscapeComposition(calloutId, [compositionRootId, calloutId], dotnetObj);
             }
 
             if (focusTrap) {
@@ -1719,6 +1726,7 @@
             Utils.disposeFocusTrap(calloutId);
             Utils.disposeTabOut(calloutId);
             Utils.disposeEscape(calloutId);
+            Utils.unwatchEscapeComposition(calloutId);
 
             if (forgetFocusOrigin) {
                 Utils.disposeFocusOrigin(calloutId);

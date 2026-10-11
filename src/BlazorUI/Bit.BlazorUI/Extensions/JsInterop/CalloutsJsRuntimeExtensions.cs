@@ -135,9 +135,10 @@ internal static class CalloutsJsRuntimeExtensions
     }
 
     // Hands the keyboard over to an opening BitCallout in one round trip: remembers the element the focus is on,
-    // listens for Escape on the page, traps the focus, or puts the callout in the tab order after its trigger -
-    // each only where asked for (a null trigger id asks for no tab-out). Returns whether a focus origin was
-    // remembered, which it is not for a focus that was on the body.
+    // listens for Escape on the page, tells the Escapes of an IME composition apart on the root named by
+    // compositionRootId and on the callout, traps the focus, or puts the callout in the tab order after its
+    // trigger - each only where asked for (a null id asks for no composition watch, a null trigger id for no
+    // tab-out). Returns whether a focus origin was remembered, which it is not for a focus that was on the body.
     internal static ValueTask<bool> BitCalloutSetupKeyboard<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
         this IJSRuntime jsRuntime,
         string calloutId,
@@ -146,10 +147,11 @@ internal static class CalloutsJsRuntimeExtensions
         bool escape,
         string? escapeTriggerId,
         bool focusTrap,
-        string? tabOutTriggerId) where T : class
+        string? tabOutTriggerId,
+        string? compositionRootId) where T : class
     {
         return jsRuntime.Invoke<bool>("BitBlazorUI.Callouts.setupKeyboard",
-                                      calloutId, dotnetObj, captureFocusOrigin, escape, escapeTriggerId, focusTrap, tabOutTriggerId);
+                                      calloutId, dotnetObj, captureFocusOrigin, escape, escapeTriggerId, focusTrap, tabOutTriggerId, compositionRootId);
     }
 
     // Takes back everything BitCalloutSetupKeyboard may have set up, in one round trip.

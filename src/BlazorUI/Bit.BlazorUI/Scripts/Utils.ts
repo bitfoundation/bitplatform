@@ -350,9 +350,20 @@
             const controller = new AbortController();
 
             root.addEventListener('keydown', e => {
+                if (e.key !== 'Escape') return;
+
+                // A press cancelling an IME composition in a field of the anchor is the composition's: it goes on to
+                // the field and the page untaken, and the tooltip's own .NET key handler, which hears it on the way and
+                // cannot tell it apart itself, is told so ahead of it.
+                if (Utils.isComposingKey(e)) {
+                    dotnetObj.invokeMethodAsync('OnEscapeComposition', true)
+                             .catch(err => console.error("BitBlazorUI.Utils.setupTooltip:", err));
+                    return;
+                }
+
                 // Only the plain key: an Escape with a modifier goes on to the surface around the tooltip, as it
                 // does past every component that acts on Escape (claimEscape).
-                if (e.key !== 'Escape' || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+                if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
                 if (!root.querySelector(':scope > .bit-ttp-wrp.bit-ttp-vis[data-bit-ttp-esc]')) return;
 
                 if (e.defaultPrevented) {
@@ -417,6 +428,8 @@
             // on to the component rather than being stopped here.
             if (e.key !== 'Escape' || e.defaultPrevented) return;
             if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+            // A press cancelling an IME composition is the composition's, wherever the pointer rests.
+            if (Utils.isComposingKey(e)) return;
 
             if (Utils._tooltipsByRoot.size === 0) return;
 
@@ -698,7 +711,7 @@
         // so the surface around them closes on it.
         public static claimEscape(e: KeyboardEvent) {
             if (e.key !== 'Escape' || e.defaultPrevented) return;
-            if (e.isComposing || e.keyCode === 229) return;
+            if (Utils.isComposingKey(e)) return;
             if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
 
             const target = e.target instanceof Element ? e.target : null;
@@ -723,6 +736,15 @@
         private static showsDismissibleTooltip(element: Element) {
             return Utils._tooltipsByRoot.has(element as HTMLElement)
                 && !!element.querySelector(':scope > .bit-ttp-wrp.bit-ttp-vis[data-bit-ttp-esc]');
+        }
+
+        // Whether the key was pressed while an input method editor (Pinyin, Kana, Hangul, ...) was composing, where
+        // Escape cancels the candidate rather than meaning anything to the page: such a press is nobody's, and every
+        // listener that closes something on Escape leaves it alone. Most engines report those keydowns as the
+        // "Process" key, which no listener is looking for anyway; the ones that report the real key set isComposing,
+        // and the ones that predate it report the legacy 229 key code instead.
+        public static isComposingKey(e: KeyboardEvent) {
+            return e.isComposing || e.keyCode === 229;
         }
 
         private static _escapeClaimers = new WeakMap<Event, Element>();
@@ -823,7 +845,7 @@
                 if (event.__bitSurfaceEscape) return;
                 event.__bitSurfaceEscape = true;
 
-                if (e.isComposing || e.keyCode === 229 || e.defaultPrevented) return;
+                if (Utils.isComposingKey(e) || e.defaultPrevented) return;
 
                 if (Callouts.componentContains(e.target as Node | null, element)) return;
 
@@ -1014,6 +1036,9 @@
             element.addEventListener('keydown', e => {
                 if (e.key !== 'Escape' || e.defaultPrevented) return;
 
+                // An IME cancelling what it was composing is not dismissing the callout the field is in.
+                if (Utils.isComposingKey(e)) return;
+
                 if (Callouts.current.calloutId !== elementId) return;
 
                 dotnetObj.invokeMethodAsync('OnEscape');
@@ -1026,8 +1051,9 @@
                 // open callouts is read before Blazor's document-level delegation lets a popup the key belongs to
                 // (a dropdown list relocated to the body, holding the focus in its search box) close itself.
                 document.addEventListener('keydown', e => {
-                    // A press a component claimed (see claimEscape) is that component's, wherever its focus is.
-                    if (e.key !== 'Escape' || e.defaultPrevented) return;
+                    // A press a component claimed (see claimEscape) is that component's, wherever its focus is, and
+                    // one cancelling an IME composition is the composition's.
+                    if (e.key !== 'Escape' || e.defaultPrevented || Utils.isComposingKey(e)) return;
 
                     if (Callouts.current.calloutId !== elementId) return;
 
@@ -1050,6 +1076,40 @@
             controller.abort();
             Utils._escapes.delete(elementId);
             Utils.forgetEscapeSurface(elementId);
+        }
+
+        private static _escapeCompositionWatches = new Map<string, AbortController>();
+
+        // Tells a component whose .NET keydown handlers dismiss it on Escape (a callout, on its anchor and on its
+        // content) whether the Escape a handler is about to hear was pressed to cancel what an input method editor was
+        // composing (see isComposingKey) - which .NET cannot read for itself: KeyboardEventArgs carries no key code,
+        // and no composition state before .NET 9. Every Escape is answered, through the OnEscapeComposition callback,
+        // so an answer never outlives the press it was given for. The listeners are on the elements the handlers are
+        // on, so they run before Blazor's document-level delegation, and the answer is queued ahead of the keydown
+        // Blazor dispatches right after it.
+        public static watchEscapeComposition(id: string, elementIds: string[], dotnetObj: DotNetObject) {
+            Utils.unwatchEscapeComposition(id);
+
+            const controller = new AbortController();
+
+            for (const elementId of elementIds) {
+                document.getElementById(elementId)?.addEventListener('keydown', e => {
+                    if (e.key !== 'Escape') return;
+
+                    dotnetObj.invokeMethodAsync('OnEscapeComposition', Utils.isComposingKey(e))
+                             .catch(err => console.error("BitBlazorUI.Utils.watchEscapeComposition:", err));
+                }, { signal: controller.signal });
+            }
+
+            Utils._escapeCompositionWatches.set(id, controller);
+        }
+
+        public static unwatchEscapeComposition(id: string) {
+            const controller = Utils._escapeCompositionWatches.get(id);
+            if (!controller) return;
+
+            controller.abort();
+            Utils._escapeCompositionWatches.delete(id);
         }
 
         // The callouts that answer an Escape pressed anywhere in the page (setupEscape with a trigger), not only
@@ -1091,7 +1151,7 @@
 
                 const foreign = Utils._claimedEscapes.has(e)
                     || e.defaultPrevented
-                    || e.isComposing || e.keyCode === 229 // the engines that predate isComposing report 229
+                    || Utils.isComposingKey(e)
                     || Utils.isEscapeOfOpenCallout(e.target);
 
                 // A closed surface is inert, so an Escape reaches it only while it is open - and from then on the
@@ -1167,7 +1227,7 @@
             element.addEventListener('keydown', e => {
                 if (e.key !== 'Escape') return;
 
-                if (e.isComposing || Callouts.isOpenedFrom(element)) {
+                if (Utils.isComposingKey(e) || Callouts.isOpenedFrom(element)) {
                     claimed.add(e);
                 }
             }, { signal: controller.signal, capture: true });
@@ -1232,7 +1292,7 @@
             window.addEventListener('keydown', e => {
                 if (e.key !== 'Escape') return;
 
-                if (e.isComposing || Callouts.current.calloutId) {
+                if (Utils.isComposingKey(e) || Callouts.current.calloutId) {
                     claimed.add(e);
                 }
             }, { signal: controller.signal, capture: true });
