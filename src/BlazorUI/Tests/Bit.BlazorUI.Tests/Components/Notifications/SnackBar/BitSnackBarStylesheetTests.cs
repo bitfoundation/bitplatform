@@ -196,7 +196,7 @@ public class BitSnackBarStylesheetTests
     {
         var rules = GetRules(ReadStylesheet());
 
-        StringAssert.Contains(rules, ".bit-snb-prb:dir(rtl) {\n    transform-origin: right center;");
+        StringAssert.Contains(rules, ".bit-snb-prb:is(:dir(rtl), .bit-snb.bit-rtl > .bit-snb-itm > *) {\n    transform-origin: right center;");
     }
 
     /// <summary>

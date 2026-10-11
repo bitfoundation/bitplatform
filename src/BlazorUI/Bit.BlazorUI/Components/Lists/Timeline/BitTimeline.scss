@@ -443,14 +443,9 @@ $tln-private-properties: clr, clr-fg, clr-focus, clr-dis-bg, clr-dis-text, dot-s
     --bit-tln-dvd-dir-e: to right;
 
     // Both halves still run from the dot outwards once the inline axis is mirrored, so the directions
-    // of the repetition swap with it. Kept in its own rule so a browser without :dir() drops only this, and
-    // still gets the swap from the class an explicit Dir renders.
-    &.bit-rtl {
-        --bit-tln-dvd-dir-s: to right;
-        --bit-tln-dvd-dir-e: to left;
-    }
-
-    &:dir(rtl) {
+    // of the repetition swap with it. :is() keeps the class an explicit Dir renders where an engine without :dir()
+    // drops the other one, since its list is forgiving.
+    &:is(.bit-rtl, :dir(rtl)) {
         --bit-tln-dvd-dir-s: to right;
         --bit-tln-dvd-dir-e: to left;
     }

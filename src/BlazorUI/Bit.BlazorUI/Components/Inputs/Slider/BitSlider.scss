@@ -458,23 +458,9 @@ $sld-private-properties:
 // two cuts change sides. A vertical one is left alone: its input is pinned to ltr and then turned, so its own
 // axis runs the same way whichever direction the page is read in.
 //
-// The two selectors are kept apart rather than listed together, so that a browser without :dir() drops only
-// the rule it cannot parse and still gets the mirroring from the class the component sets itself.
-.bit-rtl.bit-sld-rgd:not(.bit-sld-vrt) {
-    .bit-sld-inp-near {
-        clip-path: inset(0 0 0 calc(100% - var(--bit-sld-inp-cut)));
-    }
-
-    .bit-sld-inp-far {
-        clip-path: inset(0 var(--bit-sld-inp-cut) 0 0);
-    }
-
-    .bit-sld-inp-bar {
-        clip-path: inset(0 var(--bit-sld-bar-a) 0 calc(100% - var(--bit-sld-bar-b)));
-    }
-}
-
-.bit-sld-rgd:not(.bit-sld-vrt):dir(rtl) {
+// The class the component sets itself is read beside :dir(), and :is() keeps it where an engine without :dir()
+// drops the other one, since its list is forgiving.
+.bit-sld-rgd:not(.bit-sld-vrt):is(.bit-rtl, :dir(rtl)) {
     .bit-sld-inp-near {
         clip-path: inset(0 0 0 calc(100% - var(--bit-sld-inp-cut)));
     }

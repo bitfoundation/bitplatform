@@ -275,13 +275,10 @@ $snb-itm-private-properties: bg, fg, clr-txt, gap, pad, hdr-gap, ttl-fs, bdy-fs,
 }
 
 // The bar grows away from the edge the item starts at, which is the other one in a right-to-left reading order.
-// :dir() also catches a page that is right to left as a whole while the snack bar sets no Dir of its own; it is a
-// rule of its own so a browser that does not know it still keeps the one above.
-.bit-rtl .bit-snb-prb {
-    transform-origin: right center;
-}
-
-.bit-snb-prb:dir(rtl) {
+// :dir() also catches a page that is right to left as a whole while the snack bar sets no Dir of its own; :is()
+// keeps the class an explicit Dir renders where an engine without :dir() drops the other one, since its list is
+// forgiving. The class is reached through child combinators only, so it never reaches past the item's own bar.
+.bit-snb-prb:is(:dir(rtl), .bit-snb.bit-rtl > .bit-snb-itm > *) {
     transform-origin: right center;
 }
 
@@ -609,21 +606,13 @@ $snb-itm-private-properties: bg, fg, clr-txt, gap, pad, hdr-gap, ttl-fs, bdy-fs,
     --bit-snb-ent: bit-snb-ent-r;
 }
 
-// Kept apart like the slider's, so a browser without :dir() drops only the rule it cannot parse and still gets
-// the turn from the class the component sets itself.
-.bit-rtl.bit-snb-cst {
+// The class the component sets itself is read beside :dir(), and :is() keeps it where an engine without :dir()
+// drops the other one, since its list is forgiving.
+.bit-snb-cst:is(.bit-rtl, :dir(rtl)) {
     --bit-snb-ent: bit-snb-ent-r;
 }
 
-.bit-rtl.bit-snb-cen {
-    --bit-snb-ent: bit-snb-ent-l;
-}
-
-.bit-snb-cst:dir(rtl) {
-    --bit-snb-ent: bit-snb-ent-r;
-}
-
-.bit-snb-cen:dir(rtl) {
+.bit-snb-cen:is(.bit-rtl, :dir(rtl)) {
     --bit-snb-ent: bit-snb-ent-l;
 }
 

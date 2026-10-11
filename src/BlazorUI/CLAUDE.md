@@ -174,17 +174,22 @@ runs in can be older, and an engine that does not know a selector drops the whol
 its list too. An explicit `Dir="BitDir.Rtl"` renders the `bit-rtl` class (and `dir="rtl"`), and that has to keep
 working there:
 
-- **A `:dir(rtl)` rule stands in a list of its own**, never beside a selector without it.
-- **It has a counterpart that reads the class, with the same declarations, in the same at-rules.** When the class
-  is on the element the rule styles or on its parent, write it beside the `:dir()` rule (`.bit-rtl.bit-mdl-tlf`,
-  `.bit-ttp.bit-rtl > .bit-ttp-wrp`). When it is further up, put the counterpart inside
-  `@supports not selector(:dir(rtl))` (`.bit-crd.bit-rtl .bit-crd-skb::after`): a descendant selector would also
-  reach into a nested instance that reads the other way, which `:dir()` gets right wherever it is supported.
-- **Not covered**: a `:dir()` inside `:is()` / `:where()`, whose lists are forgiving (`.bit-tsh:is(.bit-rtl, :dir(rtl))`),
-  and one inside `@supports selector(:dir(...))` (BitIcon).
+- **Write the two in one forgiving `:is()`**: `.bit-mdl-tlf:is(.bit-rtl, :dir(rtl))`. An engine without `:dir()` drops
+  only that alternative and keeps the class, and `:is()` (Chromium 88, Safari 14) is older than `:dir()`, so one rule
+  covers both and nothing is written twice. When the class is on an ancestor, the alternative reaches it through child
+  combinators only (`.bit-ttp-wrp:is(:dir(rtl), .bit-ttp.bit-rtl > *)`,
+  `.bit-msg-prb:is(:dir(rtl), .bit-msg.bit-rtl > .bit-msg-prg > *)`): a descendant combinator would also reach into a
+  nested instance that reads the other way, which `:dir()` gets right.
+- **A class behind a descendant combinator goes inside `@supports not selector(:dir(rtl))`**, as a rule of its own with
+  the same declarations, in the same at-rules (`.bit-crd.bit-rtl .bit-crd-skb::after`): there, where nothing better is
+  known, reaching a nested instance is the lesser loss.
+- **A `:dir()` outside `:is()` / `:where()` stands in a list of its own**, never beside a selector without it, and
+  then needs one of the counterparts above as a separate rule.
+- **Not covered**: what is inside `@supports selector(:dir(...))` (BitIcon), which only an engine knowing `:dir()` reads.
 
-`BitComponentDirFallbackTests` checks this for every stylesheet. A rule whose explicit `Dir` is handled some other way
-(the root class setting a variable the part reads, or the C# doing the turn) goes in its `CoveredOtherwise` list.
+`BitComponentDirFallbackTests` checks this for every stylesheet of every package, mixins included (a mixin's
+counterpart is looked for in the mixin itself). A rule whose explicit `Dir` is handled some other way (the root class
+setting a variable the part reads, or the C# doing the turn) goes in its `CoveredOtherwise` list.
 
 ## Demo pages
 

@@ -85,13 +85,9 @@ $cht-private-properties: dur-full, ease;
 
 // The titles and the legend beside the plot are placed by the physical Left and Right, which stay on the side
 // they are named for in both reading directions, so the row is turned back around in a right-to-left chart.
-// Kept apart, so a browser without :dir() drops only the rule it cannot parse and still gets the turn from the
-// class the component sets itself.
-.bit-rtl > .bit-cht-mid {
-    flex-direction: row-reverse;
-}
-
-.bit-cht-mid:dir(rtl) {
+// The class the component sets on its root, the row's parent, is read beside :dir(), and :is() keeps it where an
+// engine without :dir() drops the other one, since its list is forgiving.
+.bit-cht-mid:is(:dir(rtl), .bit-cht.bit-rtl > *) {
     flex-direction: row-reverse;
 }
 

@@ -163,7 +163,7 @@ public partial class BitCollapseStylesheetTests
         // Only a closed peek is masked, along the axis it collapses on, and the sideways one follows the direction.
         StringAssert.Contains(stylesheet, ".bit-col-pek.bit-col-col > .bit-col-con {\n    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - var(--bit-col-fade)), transparent);");
         StringAssert.Contains(stylesheet, "linear-gradient(to right, #000 calc(100% - var(--bit-col-fade)), transparent)");
-        StringAssert.Contains(stylesheet, "&.bit-col-pek.bit-col-col:dir(rtl) > .bit-col-con {");
+        StringAssert.Contains(stylesheet, "&.bit-col-pek.bit-col-col:is(.bit-rtl, :dir(rtl)) > .bit-col-con {");
 
         // A section printed open prints its peek in full.
         var print = SourceFiles.GetScssBlock(stylesheet, "\n@media print {");
