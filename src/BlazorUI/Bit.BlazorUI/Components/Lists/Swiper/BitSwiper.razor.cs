@@ -125,8 +125,8 @@ public partial class BitSwiper : BitComponentBase
     /// scrolled by the browser, which brings the timing of the platform with it.
     /// <br />
     /// The animation also collapses to nothing when the operating system or the browser reports
-    /// 'prefers-reduced-motion: reduce', unless <see cref="BitComponentBase.ForceAnimation"/> opts the
-    /// swiper out of it.
+    /// 'prefers-reduced-motion: reduce', the way the motion tokens of the theme do, so
+    /// <see cref="BitComponentBase.ForceAnimation"/>, or an app restoring those tokens, brings it back.
     /// </remarks>
     [Parameter] public double AnimationDuration { get; set; } = 0.5;
 

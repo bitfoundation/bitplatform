@@ -12,8 +12,8 @@
 // frame. It is hidden rather than removed, and a hidden element takes neither the clicks of the page nor
 // a place in the accessibility tree, so a closed Overlay leaves the page untouched - and while it is still
 // fading out, the inert the markup puts on a closed Overlay already hands both back. The durations
-// collapse to nothing under reduced motion, which the motion tokens take care of - unless a duration of the
-// consumer's own is set through --bit-Overlay-transition-duration, which is then theirs to honour.
+// collapse to nothing under reduced motion, which the motion tokens take care of - a duration of the
+// consumer's own set through --bit-Overlay-transition-duration as well, since it is scaled by their factor.
 // The layer is a flex container: what it hosts stretches over the whole of it unless Position places it.
 // The layer is made programmatically focusable so that a press on it has somewhere inside the Overlay to
 // put the focus it takes off an input.
@@ -33,7 +33,7 @@
     padding: var(--bit-Overlay-padding, 0px);
     backdrop-filter: var(--bit-Overlay-backdrop-filter, none);
     z-index: var(--bit-Overlay-z-index, #{$zindex-overlay});
-    --bit-ovl-duration: var(--bit-Overlay-transition-duration, #{$mot-duration-short});
+    --bit-ovl-duration: #{mot-scaled-duration(var(--bit-Overlay-transition-duration, #{$mot-duration-short}))};
     transition: opacity var(--bit-ovl-duration) $mot-easing-accelerate, visibility 0s linear var(--bit-ovl-duration);
 
     @include focus-anchor;

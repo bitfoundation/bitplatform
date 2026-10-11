@@ -91,6 +91,11 @@ $sld-private-properties:
     --bit-sld-font-size: var(--bit-sld-sz-font-size, var(--bit-Slider-font-size, #{$tg-fs-sm}));
     --bit-sld-clr-rail: var(--bit-Slider-rail-color, #{$clr-bg-sec});
 
+    // How long the fill, the thumbs and the thumb label take to follow a value that arrives in one jump. A pace
+    // set through the public variable is scaled by the shared motion factor, so the reduced motion preference
+    // collapses it along with the theme's own (and ForceAnimation brings both back).
+    --bit-sld-dur: #{mot-scaled-duration(var(--bit-Slider-transition-duration, #{$mot-duration-short}))};
+
     // The smallest pointer target a thumb is given, whatever its drawn size: the native input is laid out
     // this tall and centred on the rail, so a Small slider is still grabbable with a finger and clears the
     // 24px minimum pointer target of WCAG 2.2 (SC 2.5.8). A thumb already larger than that keeps its size.
@@ -233,11 +238,11 @@ $sld-private-properties:
     --bit-sld-fil-bg: initial;
     background-color: var(--bit-sld-fil-bg, var(--bit-sld-clr, var(--bit-Slider-color, #{$clr-pri})));
     transform: translateY(calc(var(--bit-sld-rail) / -2));
-    transition: background-color var(--bit-Slider-transition-duration, #{$mot-duration-short}) $mot-easing,
-                inset-inline-start var(--bit-Slider-transition-duration, #{$mot-duration-short}) $mot-easing,
-                width var(--bit-Slider-transition-duration, #{$mot-duration-short}) $mot-easing,
-                bottom var(--bit-Slider-transition-duration, #{$mot-duration-short}) $mot-easing,
-                height var(--bit-Slider-transition-duration, #{$mot-duration-short}) $mot-easing;
+    transition: background-color var(--bit-sld-dur) $mot-easing,
+                inset-inline-start var(--bit-sld-dur) $mot-easing,
+                width var(--bit-sld-dur) $mot-easing,
+                bottom var(--bit-sld-dur) $mot-easing,
+                height var(--bit-sld-dur) $mot-easing;
 }
 
 // inset-inline-start places the thumb from whichever end the direction starts at, and the negative
@@ -258,10 +263,10 @@ $sld-private-properties:
     --bit-sld-thb-brd: initial;
     border-color: var(--bit-sld-thb-brd, var(--bit-sld-clr, var(--bit-Slider-color, #{$clr-pri})));
     border-width: var(--bit-Slider-thumb-border-width, #{$shp-border-width-thick});
-    transition: border-color var(--bit-Slider-transition-duration, #{$mot-duration-short}) $mot-easing,
-                box-shadow var(--bit-Slider-transition-duration, #{$mot-duration-short}) $mot-easing,
-                inset-inline-start var(--bit-Slider-transition-duration, #{$mot-duration-short}) $mot-easing,
-                bottom var(--bit-Slider-transition-duration, #{$mot-duration-short}) $mot-easing;
+    transition: border-color var(--bit-sld-dur) $mot-easing,
+                box-shadow var(--bit-sld-dur) $mot-easing,
+                inset-inline-start var(--bit-sld-dur) $mot-easing,
+                bottom var(--bit-sld-dur) $mot-easing;
 }
 
 // While a thumb is under the pointer it has to follow it exactly, so the easing that smooths a jump is taken
@@ -588,7 +593,7 @@ $sld-private-properties:
     border-radius: var(--bit-Slider-thumb-label-radius, #{$shp-radius-popup});
     padding: var(--bit-Slider-thumb-label-padding, #{spacing(0.25)} #{spacing(0.75)});
     font-size: var(--bit-sld-sz-font-size-sub, var(--bit-Slider-thumb-label-font-size, #{$tg-fs-xs}));
-    transition: opacity var(--bit-Slider-transition-duration, #{$mot-duration-short}) $mot-easing;
+    transition: opacity var(--bit-sld-dur) $mot-easing;
 
     // Centred over the thumb and lifted clear of it.
     left: 50%;

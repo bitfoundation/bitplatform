@@ -534,15 +534,22 @@
 
         // #region animation
 
-        // The duration the swiper actually moves with. It collapses to nothing when the operating system
-        // or the browser asks for reduced motion, unless the swiper (or a subtree it sits in) opted out
-        // of that with ForceAnimation, which is what the shared bit-fam class marks.
+        // The duration the swiper actually moves with. It is scaled by the shared motion factor the root
+        // inherits (--bit-mot-duration-factor), the one every page-set duration of the stylesheets is scaled
+        // by, so it collapses to nothing when the operating system or the browser asks for reduced motion and
+        // comes back wherever the motion tokens are restored: ForceAnimation (the shared bit-fam class, on the
+        // swiper or a subtree it sits in) or an app restoring them at :root. A page without the token - a
+        // consumer theme that never declares it - falls back to reading the preference and bit-fam directly.
         private effectiveDuration(): number {
             const duration = this.options.duration;
 
             if (!(duration > 0)) return 0;
 
             try {
+                const factor = parseFloat(getComputedStyle(this.root).getPropertyValue('--bit-mot-duration-factor'));
+
+                if (isFinite(factor)) return duration * Math.max(0, factor);
+
                 if (window.matchMedia('(prefers-reduced-motion: reduce)').matches &&
                     this.root.classList.contains('bit-fam') === false &&
                     this.root.closest('.bit-fam') === null) {

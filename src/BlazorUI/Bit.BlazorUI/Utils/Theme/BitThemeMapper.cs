@@ -660,6 +660,7 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Motion.Duration, bitTheme.Motion.Duration);
         addCssVar(BitCss.Var.Motion.DurationShort, bitTheme.Motion.DurationShort);
         addCssVar(BitCss.Var.Motion.DurationLong, bitTheme.Motion.DurationLong);
+        addCssVar(BitCss.Var.Motion.DurationFactor, bitTheme.Motion.DurationFactor);
         addCssVar(BitCss.Var.Motion.Easing, bitTheme.Motion.EasingStandard);
         addCssVar(BitCss.Var.Motion.EasingDecelerate, bitTheme.Motion.EasingDecelerate);
         addCssVar(BitCss.Var.Motion.EasingAccelerate, bitTheme.Motion.EasingAccelerate);
@@ -1571,6 +1572,7 @@ internal static class BitThemeMapper
         result.Motion.Duration = bitTheme.Motion.Duration ?? other.Motion.Duration;
         result.Motion.DurationShort = bitTheme.Motion.DurationShort ?? other.Motion.DurationShort;
         result.Motion.DurationLong = bitTheme.Motion.DurationLong ?? other.Motion.DurationLong;
+        result.Motion.DurationFactor = bitTheme.Motion.DurationFactor ?? other.Motion.DurationFactor;
         result.Motion.EasingStandard = bitTheme.Motion.EasingStandard ?? other.Motion.EasingStandard;
         result.Motion.EasingDecelerate = bitTheme.Motion.EasingDecelerate ?? other.Motion.EasingDecelerate;
         result.Motion.EasingAccelerate = bitTheme.Motion.EasingAccelerate ?? other.Motion.EasingAccelerate;

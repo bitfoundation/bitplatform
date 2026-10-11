@@ -110,6 +110,10 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
     // The row height of the input has no public variable to compete with, so the medium one sits on the root
     // itself instead of only on .bit-tfl-md.
     --bit-tfl-inp-min-height: #{spacing(3.75)};
+    // How long the frame takes to repaint between rest, hover and focus. A pace set through the public variable
+    // is scaled by the shared motion factor, so the reduced motion preference collapses it along with the theme's
+    // own (and ForceAnimation brings both back).
+    --bit-tfl-dur: #{mot-scaled-duration(var(--bit-TextField-transition-duration, #{$mot-duration-short}))};
 
     &.bit-dis {
         .bit-tfl-cnt {
@@ -264,8 +268,8 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
     border: var(--bit-TextField-border-width, #{$shp-border-width}) $shp-border-style var(--bit-tfl-fgp-brd, var(--bit-tfl-clr-brd, var(--bit-TextField-border-color, #{$clr-brd-pri})));
     // Rest, hover and focus repaint the same two properties, so they cross-fade instead of snapping. The
     // duration comes from the motion tokens, which collapse to near zero under prefers-reduced-motion.
-    transition: border-color var(--bit-TextField-transition-duration, #{$mot-duration-short}) $mot-easing,
-                background-color var(--bit-TextField-transition-duration, #{$mot-duration-short}) $mot-easing;
+    transition: border-color var(--bit-tfl-dur) $mot-easing,
+                background-color var(--bit-tfl-dur) $mot-easing;
 }
 
 // A frame that darkens under the pointer is what tells a mouse user the whole box is the target, not only
@@ -765,7 +769,7 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
         display: flex;
         --bit-tfl-wrp-brd: initial;
         border-bottom: var(--bit-TextField-border-width, #{$shp-border-width}) $shp-border-style var(--bit-tfl-wrp-brd, var(--bit-tfl-clr-brd, var(--bit-TextField-border-color, #{$clr-brd-pri})));
-        transition: border-color var(--bit-TextField-transition-duration, #{$mot-duration-short}) $mot-easing;
+        transition: border-color var(--bit-tfl-dur) $mot-easing;
     }
 
     .bit-tfl-lbl {

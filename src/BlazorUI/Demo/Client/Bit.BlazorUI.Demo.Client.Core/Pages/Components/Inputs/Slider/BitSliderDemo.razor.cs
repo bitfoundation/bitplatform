@@ -620,7 +620,7 @@ public partial class BitSliderDemo
         {
             Name = "--bit-Slider-transition-duration",
             DefaultValue = "--bit-mot-duration-short",
-            Description = "How long the fill and the thumbs take to follow a value that arrives in one jump - a key, a press on the rail, a change made elsewhere on the page. A thumb held under the pointer is never eased, whatever this is set to.",
+            Description = "How long the fill and the thumbs take to follow a value that arrives in one jump - a key, a press on the rail, a change made elsewhere on the page. A thumb held under the pointer is never eased, whatever this is set to. Reduced motion collapses it unless ForceAnimation is set.",
         }
     ];
 

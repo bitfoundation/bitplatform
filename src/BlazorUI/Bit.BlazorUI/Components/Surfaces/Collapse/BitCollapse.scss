@@ -33,14 +33,17 @@ $col-private-properties: dur-full, del-full, eas, csz;
         --bit-col-#{$name}: initial;
     }
     // The pace of the transition. The Duration and Delay parameters arrive inline as the -full tokens and
-    // the transitions read these derived ones, following the -full pattern of motion.fluent.scss, so the
-    // reduced-motion query below can still collapse a pace that was set inline or through the public variable.
+    // the transitions read these derived ones, which scale them by the shared motion factor, so the reduced
+    // motion preference still collapses a pace that was set inline or through the public variable - and
+    // ForceAnimation, or an app restoring the motion tokens, still brings it back - with no query of the
+    // collapse's own. The delay goes with the duration: a transition that no longer plays has nothing to
+    // postpone, and leaving it would hold the section where it is for as long as the delay before it jumped.
     // The fallbacks are the motion theme, so a collapse that sets neither animates exactly like every other
     // transition in the library. The component reads the resolved values back off the root to time the end
     // of the transition, so whatever decides them - a parameter, the public variable, a theme preset or the
     // reduced motion preference - is what the callbacks and the deferred behaviors wait for.
-    --bit-col-duration: var(--bit-col-dur-full, var(--bit-Collapse-duration, #{$mot-duration-long}));
-    --bit-col-delay: var(--bit-col-del-full, 0ms);
+    --bit-col-duration: #{mot-scaled-duration(var(--bit-col-dur-full, var(--bit-Collapse-duration, #{$mot-duration-long})))};
+    --bit-col-delay: #{mot-scaled-delay(var(--bit-col-del-full, 0ms))};
     // The easing is not something reduced motion has an opinion about - it shapes the transition rather than
     // lengthening it - so it is read straight from the parameter.
     --bit-col-easing: var(--bit-col-eas, var(--bit-Collapse-easing, #{$mot-easing}));
@@ -65,26 +68,6 @@ $col-private-properties: dur-full, del-full, eas, csz;
         color: $clr-fg-dis;
         background-color: $clr-bg-dis;
     }
-}
-
-// 0.01ms instead of 0ms for the same reason as in motion.fluent.scss: a zero-duration transition never fires
-// its transitionend event. The delay goes with it: a transition that no longer plays has nothing to postpone,
-// and leaving it would hold the section where it is for as long as the delay before it jumped to the new one.
-@media (prefers-reduced-motion: reduce) {
-    .bit-col {
-        --bit-col-duration: 0.01ms;
-        --bit-col-delay: 0ms;
-    }
-}
-
-// The shared .bit-fam opt-out (BitComponentBase.ForceAnimation) only re-points the --bit-mot-* tokens, so the
-// collapse's own tokens are restored here, both for a collapse that sets ForceAnimation itself and for one
-// sitting inside an opted-out subtree. ForceAnimation is the only thing that takes a collapse out of the
-// reduced-motion collapse above - setting a Duration is a matter of pace, not of consent.
-.bit-col.bit-fam,
-.bit-fam .bit-col {
-    --bit-col-duration: var(--bit-col-dur-full, var(--bit-Collapse-duration, #{$mot-duration-long}));
-    --bit-col-delay: var(--bit-col-del-full, 0ms);
 }
 
 

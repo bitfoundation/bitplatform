@@ -12,6 +12,14 @@
     --bit-mot-duration-short-full: 100ms;
     --bit-mot-duration-long-full: 300ms;
 
+    // Scales a duration the PAGE sets on a component (a public --bit-<Component>-*-duration
+    // variable, a duration parameter written inline), which no token above can reach. It is what
+    // the mot-scaled-duration / mot-scaled-delay functions in functions.scss multiply by: 1 keeps the
+    // page's pace, and the reduced-motion query below drops it to 0, which collapses that pace along
+    // with the theme's own - so no component writes a reduced-motion query of its own for a duration,
+    // and whatever restores the tokens (.bit-fam, an app's :root) restores the page's pace with them.
+    --bit-mot-duration-factor-full: 1;
+
     --bit-mot-easing: cubic-bezier(0.33, 0, 0.67, 1);
     // Entry / exit curves for popups, callouts and sheets (Fluent's decelerate-max and
     // accelerate-max). Standard easing above is for state changes on an element that stays put.
@@ -46,6 +54,7 @@
     --bit-mot-duration: var(--bit-mot-duration-full);
     --bit-mot-duration-short: var(--bit-mot-duration-short-full);
     --bit-mot-duration-long: var(--bit-mot-duration-long-full);
+    --bit-mot-duration-factor: var(--bit-mot-duration-factor-full);
 
     --bit-mot-duration-spinner: var(--bit-mot-duration-spinner-full);
     --bit-mot-easing-spinner: var(--bit-mot-easing-spinner-full);
@@ -62,6 +71,9 @@
         --bit-mot-duration: 0.01ms;
         --bit-mot-duration-short: 0.01ms;
         --bit-mot-duration-long: 0.01ms;
+        // A page-set duration collapses to the same 0.01ms (mot-scaled-duration adds it back in
+        // for exactly this case), and a page-set delay to nothing.
+        --bit-mot-duration-factor: 0;
 
         // Calmed rather than collapsed - see above. The spinner also drops its eased timing function,
         // whose speeding up and slowing down is the part that draws the eye. Stopping a loader

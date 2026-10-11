@@ -5,6 +5,15 @@ public class BitThemeMotion
     public string? Duration { get; set; }
     public string? DurationShort { get; set; }
     public string? DurationLong { get; set; }
+
+    /// <summary>
+    /// Multiplies every duration a page sets on a component itself - a public
+    /// <c>--bit-&lt;Component&gt;-*-duration</c> variable or a duration parameter - which none of the durations
+    /// above reach. It is a unitless number: 1 keeps the pace the page asked for, and reduced motion drops it
+    /// to 0 so those durations collapse along with the theme's own (<c>--bit-mot-duration-factor</c>).
+    /// </summary>
+    public string? DurationFactor { get; set; }
+
     public string? EasingStandard { get; set; }
 
     /// <summary>The entry curve of popups, callouts and sheets (<c>--bit-mot-easing-decelerate</c>).</summary>
