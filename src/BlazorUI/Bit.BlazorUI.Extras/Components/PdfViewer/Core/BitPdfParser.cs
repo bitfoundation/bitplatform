@@ -13,6 +13,7 @@ public sealed class BitPdfParser
     private readonly BitPdfLexer _lexer;
     private readonly IBitPdfXRef? _xref;
     private readonly bool _allowStreams;
+    private BitPdfByteSourceReader? _byteReader;
 
     private object _buf1;
     private object _buf2;
@@ -30,6 +31,12 @@ public sealed class BitPdfParser
         _allowStreams = allowStreams;
         _buf1 = _lexer.GetObj();
         _buf2 = _lexer.GetObj();
+    }
+
+    internal BitPdfParser(BitPdfLexer lexer, IBitPdfXRef xref, BitPdfByteSourceReader byteReader, bool allowStreams = true)
+        : this(lexer, xref, allowStreams)
+    {
+        _byteReader = byteReader;
     }
 
     private void Shift()
@@ -161,9 +168,9 @@ public sealed class BitPdfParser
 
     private BitPdfBaseStream ParseStream(BitPdfDict dict)
     {
-        var source = _lexer.Stream.ByteSource
-            ?? throw new BitPdfFormatException("PDF stream objects require a random-access byte source.");
-        var reader = new BitPdfByteSourceReader(source);
+        var reader = _byteReader ??= new BitPdfByteSourceReader(_lexer.Stream.ByteSource
+            ?? throw new BitPdfFormatException("PDF stream objects require a random-access byte source."));
+        var source = reader.Source;
 
         // The lexer has just produced the "stream" keyword as _buf2, so its
         // current character is the first byte after "stream".
@@ -197,7 +204,8 @@ public sealed class BitPdfParser
             dataEnd = FindEndstream(reader, dataStart);
         }
 
-        var streamObj = source.CreateStream(dataStart, dataEnd - dataStart, dict);
+        var streamObj = source.CreateStream(dataStart, dataEnd - dataStart);
+        streamObj.Dict = dict;
 
         // Resume tokenizing just past "endstream".
         int resume = SkipPastEndstream(reader, dataEnd);

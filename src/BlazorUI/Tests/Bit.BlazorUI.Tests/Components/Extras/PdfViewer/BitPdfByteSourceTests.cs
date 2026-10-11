@@ -31,15 +31,16 @@ public class BitPdfByteSourceTests
     }
 
     [TestMethod]
-    public void MemorySourceShouldReadBytesAndEofWithoutACursor()
+    public void MemorySourceShouldExposeItsCompleteBufferWithoutCopying()
     {
         var source = new BitPdfMemoryByteSource([10, 20, 30]);
 
         Assert.AreEqual(3, source.Length);
-        Assert.AreEqual(30, source.ReadByte(2));
-        Assert.AreEqual(10, source.ReadByte(0));
-        Assert.AreEqual(-1, source.ReadByte(3));
-        Assert.AreEqual(-1, new BitPdfMemoryByteSource([]).ReadByte(0));
+        Assert.IsTrue(source.TryGetContiguous(out var memory));
+        Assert.AreEqual(30, memory.Span[2]);
+        Assert.AreEqual(10, memory.Span[0]);
+        Assert.IsTrue(new BitPdfMemoryByteSource([]).TryGetContiguous(out var empty));
+        Assert.IsTrue(empty.IsEmpty);
     }
 
     [TestMethod]
@@ -51,25 +52,22 @@ public class BitPdfByteSourceTests
     {
         var source = new BitPdfMemoryByteSource([10, 20, 30]);
 
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => source.ReadByte(offset));
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => source.Read(offset, new byte[1]));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => source.GetMemory(offset, 0));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => source.CreateStream(offset));
     }
 
     [TestMethod]
-    public void MemorySourceShouldClampCopiedReadsAtEofAndLeaveTheRestUntouched()
+    public void MemorySourceCursorShouldClampCopiedReadsAtEofAndLeaveTheSourceUntouched()
     {
         byte[] original = [10, 20, 30];
         var source = new BitPdfMemoryByteSource(original);
-        byte[] destination = [99, 99, 99, 99];
-
-        Assert.AreEqual(2, source.Read(1, destination));
-        CollectionAssert.AreEqual(new byte[] { 20, 30, 99, 99 }, destination);
-        destination[0] = 77;
-        Assert.AreEqual(20, source.ReadByte(1));
-        Assert.AreEqual(0, source.Read(3, destination));
-        Assert.AreEqual(0, source.Read(0, Span<byte>.Empty));
+        var cursor = source.CreateStream(1);
+        byte[] copied = cursor.GetBytes(10);
+        CollectionAssert.AreEqual(new byte[] { 20, 30 }, copied);
+        copied[0] = 77;
+        Assert.AreEqual(20, source.GetMemory(1, 1).Span[0]);
+        Assert.IsTrue(cursor.GetBytes(10).Length == 0);
+        Assert.AreEqual(-1, cursor.GetByte());
     }
 
     [TestMethod]
@@ -106,7 +104,8 @@ public class BitPdfByteSourceTests
         byte[] original = [10, 20, 30, 40];
         var source = new BitPdfMemoryByteSource(original);
         var dict = new BitPdfDict();
-        var first = source.CreateStream(1, 2, dict);
+        var first = source.CreateStream(1, 2);
+        first.Dict = dict;
         var second = source.CreateStream(1);
 
         Assert.IsInstanceOfType<BitPdfStream>(first);
@@ -219,6 +218,43 @@ public class BitPdfByteSourceTests
         }
     }
 
+    [TestMethod]
+    public void ReaderShouldRespectTheOriginAndLengthOfAContiguousSlice()
+    {
+        byte[] bytes = [255, 255, (byte)'a', (byte)'b', (byte)'c', 255];
+        var source = new ContiguousSource(bytes.AsMemory(2, 3));
+        var reader = new BitPdfByteSourceReader(source);
+
+        Assert.AreEqual((int)'a', reader.ReadByte(0));
+        Assert.AreEqual((int)'c', reader.ReadByte(2));
+        Assert.AreEqual(-1, reader.ReadByte(3));
+        Assert.AreEqual(1, reader.IndexOf("bc"u8, 0));
+        Assert.AreEqual(-1, reader.IndexOf(new byte[] { 255 }, 0));
+        Assert.AreSame(source, reader.Source);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => reader.ReadByte(4));
+    }
+
+    [TestMethod]
+    public void ReaderShouldRejectAContiguousBufferWithAnInconsistentLength()
+    {
+        Assert.ThrowsExactly<ArgumentException>(() => new BitPdfByteSourceReader(
+            new ContiguousSource(new byte[3], declaredLength: 4)));
+    }
+
+    private sealed class ContiguousSource(ReadOnlyMemory<byte> memory, int? declaredLength = null) : IBitPdfByteSource
+    {
+        public int Length => declaredLength ?? memory.Length;
+        public bool TryGetContiguous(out ReadOnlyMemory<byte> result)
+        {
+            result = memory;
+            return true;
+        }
+        public ReadOnlyMemory<byte> GetMemory(int offset, int length)
+            => throw new AssertFailedException("The contiguous fast path must not fetch blocks.");
+        public BitPdfBaseStream CreateStream(int start = 0, int? length = null)
+            => throw new AssertFailedException("Unexpected stream creation.");
+    }
+
     private sealed class CountingSource(int length) : IBitPdfByteSource
     {
         public int Length { get; } = length;
@@ -247,9 +283,13 @@ public class BitPdfByteSourceTests
             return bytes;
         }
 
-        public int ReadByte(int offset) => throw new AssertFailedException("Unexpected per-byte source dispatch.");
-        public int Read(int offset, Span<byte> destination) => throw new AssertFailedException("Unexpected copy.");
-        public BitPdfBaseStream CreateStream(int start = 0, int? length = null, BitPdfDict? dict = null)
+        public bool TryGetContiguous(out ReadOnlyMemory<byte> memory)
+        {
+            memory = default;
+            return false;
+        }
+
+        public BitPdfBaseStream CreateStream(int start = 0, int? length = null)
             => throw new AssertFailedException("Unexpected stream creation.");
     }
 }

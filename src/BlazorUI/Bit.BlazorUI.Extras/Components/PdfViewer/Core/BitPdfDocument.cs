@@ -145,7 +145,12 @@ public sealed class BitPdfDocument
     {
         ArgumentNullException.ThrowIfNull(bytes);
 
-        var source = new BitPdfMemoryByteSource(bytes);
+        return Load(new BitPdfMemoryByteSource(bytes), password);
+    }
+
+    internal static BitPdfDocument Load(IBitPdfByteSource source, string? password)
+    {
+        ArgumentNullException.ThrowIfNull(source);
         var xref = new BitPdfXRef(source) { Password = password };
         xref.Parse();
 

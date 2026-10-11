@@ -292,15 +292,15 @@ public sealed class BitPdfXRef : IBitPdfXRef
         }
 
         // After the "trailer" keyword the dictionary follows.
-        var parser = new BitPdfParser(lexer, this, allowStreams: false);
+        var parser = new BitPdfParser(lexer, this, _reader, allowStreams: false);
         return parser.GetObj() as BitPdfDict
             ?? throw new BitPdfFormatException("Trailer is not a dictionary.");
     }
 
     private BitPdfDict ReadXRefStream(int offset)
     {
-        var parser = new BitPdfParser(new BitPdfLexer(_source.CreateStream(offset + _startOffset)), this);
-        if (parser.GetObj() is not BitPdfStream stream || stream.Dict is null)
+        var parser = new BitPdfParser(new BitPdfLexer(_source.CreateStream(offset + _startOffset)), this, _reader);
+        if (parser.GetObj() is not BitPdfBaseStream stream || stream.Dict is null)
         {
             throw new BitPdfFormatException("Expected an xref stream object.");
         }
@@ -451,7 +451,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
             }
         }
 
-        var parser = new BitPdfParser(new BitPdfLexer(_source.CreateStream(entry.Field2)), this);
+        var parser = new BitPdfParser(new BitPdfLexer(_source.CreateStream(entry.Field2)), this, _reader);
         object? obj = parser.GetObj();
 
         if (_security is not null && reference.Num != _encryptRefNum)
@@ -479,7 +479,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
                 DecryptDictStrings(dict, num, gen);
                 return dict;
 
-            case BitPdfStream stream when stream.Dict is not null:
+            case BitPdfBaseStream stream when stream.Dict is not null:
                 DecryptDictStrings(stream.Dict, num, gen);
                 // Cross-reference streams are never encrypted.
                 if (BitPdfPrimitives.IsName(stream.Dict.Get("Type"), "XRef"))
@@ -585,7 +585,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
         var result = new List<object?>();
         _objStmCache[streamNum] = result; // guard re-entrancy
 
-        if (Fetch(new BitPdfRef(streamNum, 0)) is not BitPdfStream stream || stream.Dict is null)
+        if (Fetch(new BitPdfRef(streamNum, 0)) is not BitPdfBaseStream stream || stream.Dict is null)
         {
             return result;
         }
@@ -714,7 +714,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
             {
                 continue;
             }
-            if (obj is not BitPdfStream s || s.Dict is null || !BitPdfPrimitives.IsName(s.Dict.Get("Type"), "ObjStm"))
+            if (obj is not BitPdfBaseStream s || s.Dict is null || !BitPdfPrimitives.IsName(s.Dict.Get("Type"), "ObjStm"))
             {
                 continue;
             }
@@ -802,7 +802,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
             start = i + 1;
             try
             {
-                var parser = new BitPdfParser(new BitPdfLexer(_source.CreateStream(i + kw.Length)), this, allowStreams: false);
+                var parser = new BitPdfParser(new BitPdfLexer(_source.CreateStream(i + kw.Length)), this, _reader, allowStreams: false);
                 if (parser.GetObj() is BitPdfDict d)
                 {
                     result = d; // keep the last (most recent) trailer

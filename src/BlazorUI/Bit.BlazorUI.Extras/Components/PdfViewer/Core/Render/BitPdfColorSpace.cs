@@ -64,7 +64,7 @@ public abstract class BitPdfColorSpace
             switch (kind)
             {
                 case "ICCBased":
-                    if (xref.FetchIfRef(arr[1]) is BitPdfStream icc && icc.Dict is not null)
+                    if (xref.FetchIfRef(arr[1]) is BitPdfBaseStream icc && icc.Dict is not null)
                     {
                         int n = icc.Dict.Get("N") is double dn ? (int)dn : 3;
                         return n switch { 1 => Gray, 4 => Cmyk, _ => Rgb };

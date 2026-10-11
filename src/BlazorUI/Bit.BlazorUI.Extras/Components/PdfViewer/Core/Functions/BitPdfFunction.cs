@@ -33,7 +33,7 @@ public abstract class BitPdfFunction
             return parts.Count > 0 ? new ArrayFunction(parts) : null;
         }
 
-        BitPdfDict? dict = obj as BitPdfDict ?? (obj as BitPdfStream)?.Dict;
+        BitPdfDict? dict = obj as BitPdfDict ?? (obj as BitPdfBaseStream)?.Dict;
         if (dict is null)
         {
             return null;
@@ -42,10 +42,10 @@ public abstract class BitPdfFunction
         int type = ToInt(dict.Get("FunctionType"), -1);
         return type switch
         {
-            0 when obj is BitPdfStream stream => BitPdfSampledFunction.Build(stream, xref),
+            0 when obj is BitPdfBaseStream stream => BitPdfSampledFunction.Build(stream, xref),
             2 => BitPdfExponentialFunction.Build(dict, xref),
             3 => BitPdfStitchingFunction.Build(dict, xref),
-            4 when obj is BitPdfStream calc => BitPdfPostScriptFunction.Build(calc),
+            4 when obj is BitPdfBaseStream calc => BitPdfPostScriptFunction.Build(calc),
             _ => null,
         };
     }

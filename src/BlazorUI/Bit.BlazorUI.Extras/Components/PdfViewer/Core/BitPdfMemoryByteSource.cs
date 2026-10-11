@@ -18,18 +18,10 @@ internal sealed class BitPdfMemoryByteSource : IBitPdfByteSource
 
     public int Length => _bytes.Length;
 
-    public int ReadByte(int offset)
+    public bool TryGetContiguous(out ReadOnlyMemory<byte> memory)
     {
-        ValidateOffset(offset);
-        return offset == Length ? -1 : _bytes[offset];
-    }
-
-    public int Read(int offset, Span<byte> destination)
-    {
-        ValidateOffset(offset);
-        int count = Math.Min(destination.Length, Length - offset);
-        _bytes.AsSpan(offset, count).CopyTo(destination);
-        return count;
+        memory = _bytes;
+        return true;
     }
 
     public ReadOnlyMemory<byte> GetMemory(int offset, int length)
@@ -38,12 +30,12 @@ internal sealed class BitPdfMemoryByteSource : IBitPdfByteSource
         return _bytes.AsMemory(offset, length);
     }
 
-    public BitPdfBaseStream CreateStream(int start = 0, int? length = null, BitPdfDict? dict = null)
+    public BitPdfBaseStream CreateStream(int start = 0, int? length = null)
     {
         ValidateOffset(start);
         int count = length ?? Length - start;
         ValidateRange(start, count);
-        return new BitPdfStream(_bytes, start, count, dict);
+        return new BitPdfStream(_bytes, start, count);
     }
 
     private void ValidateOffset(int offset)

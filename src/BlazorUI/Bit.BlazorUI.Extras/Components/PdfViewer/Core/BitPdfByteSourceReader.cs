@@ -15,6 +15,7 @@ internal sealed class BitPdfByteSourceReader
     private const int BlockSize = 64 * 1024;
     private readonly IBitPdfByteSource _source;
     private readonly byte[]? _memoryBytes;
+    private readonly int _memoryOffset;
     private ReadOnlyMemory<byte> _block;
     private int _blockStart;
 
@@ -22,21 +23,30 @@ internal sealed class BitPdfByteSourceReader
     {
         _source = source ?? throw new ArgumentNullException(nameof(source));
         Length = source.Length;
-        if (source is BitPdfMemoryByteSource)
+        if (source.TryGetContiguous(out var memory))
         {
-            MemoryMarshal.TryGetArray(source.GetMemory(0, Length), out var buffer);
-            _memoryBytes = buffer.Array;
+            if (memory.Length != Length)
+            {
+                throw new ArgumentException("The contiguous buffer must cover the complete source.", nameof(source));
+            }
+            if (MemoryMarshal.TryGetArray(memory, out var buffer))
+            {
+                _memoryBytes = buffer.Array;
+                _memoryOffset = buffer.Offset;
+            }
         }
     }
 
     public int Length { get; }
+
+    internal IBitPdfByteSource Source => _source;
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public int ReadByte(int offset)
     {
         if (_memoryBytes is { } bytes)
         {
-            return (uint)offset < (uint)bytes.Length ? bytes[offset] : ReadNextBlock(offset);
+            return (uint)offset < (uint)Length ? bytes[_memoryOffset + offset] : ReadNextBlock(offset);
         }
         int index = offset - _blockStart;
         return (uint)index < (uint)_block.Length ? _block.Span[index] : ReadNextBlock(offset);
@@ -63,7 +73,7 @@ internal sealed class BitPdfByteSourceReader
         }
         if (_memoryBytes is { } bytes)
         {
-            int index = bytes.AsSpan(start).IndexOf(keyword);
+            int index = bytes.AsSpan(_memoryOffset + start, Length - start).IndexOf(keyword);
             return index < 0 ? -1 : start + index;
         }
 
