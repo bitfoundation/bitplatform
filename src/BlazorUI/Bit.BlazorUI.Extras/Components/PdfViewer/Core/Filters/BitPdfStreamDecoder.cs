@@ -20,6 +20,9 @@ public static class BitPdfStreamDecoder
     /// <paramref name="inline"/> is <c>true</c> (1.7).
     /// </summary>
     public static byte[] Decode(BitPdfStream stream, bool inline = false)
+        => Decode((BitPdfBaseStream)stream, inline);
+
+    internal static byte[] Decode(BitPdfBaseStream stream, bool inline = false)
     {
         BitPdfDict dict = stream.Dict ?? throw new BitPdfFormatException("Stream has no dictionary.");
 
