@@ -20,6 +20,10 @@
 //   --bit-MarkdownEditor-line-height               line height of the textarea                 (default: 1.6)
 //   --bit-MarkdownEditor-padding                   padding of the textarea                     (default: spacing(1.5) spacing(1.75))
 //   --bit-MarkdownEditor-placeholder-color         placeholder of the textarea                 (default: $clr-fg-sec)
+//   --bit-MarkdownEditor-label-color               text of the label                           (default: --bit-MarkdownEditor-color)
+//   --bit-MarkdownEditor-label-font-size           size of the label                           (default: $tg-fs-sm)
+//   --bit-MarkdownEditor-label-font-weight         weight of the label                         (default: $tg-field-label-font-weight)
+//   --bit-MarkdownEditor-label-letter-spacing      tracking of the label                       (default: $tg-ctrl-letter-spacing)
 //   --bit-MarkdownEditor-preview-padding           padding of the preview pane                 (default: spacing(1.5) spacing(2))
 //   --bit-MarkdownEditor-preview-background        background of the preview pane              (default: transparent)
 //   --bit-MarkdownEditor-toolbar-background        background of the toolbar and find panel    (default: $clr-bg-sec)
@@ -33,6 +37,9 @@
 //   --bit-MarkdownEditor-button-active-background  background of a pressed (active) button     (default: $clr-pri)
 //   --bit-MarkdownEditor-statusbar-color           text of the status bar                      (default: $clr-fg-sec)
 //   --bit-MarkdownEditor-statusbar-background      background of the status bar                (default: $clr-bg-sec)
+//
+// Everything but the textarea and the shortcuts of the help dialog is set in the theme's font ($tg-font-family,
+// $tg-fw-regular), which the root sets and its own buttons and inputs take from it.
 
 $mde-color: var(--bit-MarkdownEditor-color, #{$clr-fg-pri});
 $mde-background: var(--bit-MarkdownEditor-background, #{$clr-bg-pri});
@@ -69,6 +76,8 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
     box-sizing: border-box;
     flex-direction: column;
     color: $mde-color;
+    font-family: $tg-font-family;
+    font-weight: $tg-fw-regular;
     background: $mde-background;
     border-radius: $mde-radius;
     border: $mde-border-width $shp-border-style $mde-border-color;
@@ -146,9 +155,13 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
     border-bottom: $shp-border-width $shp-border-style $mde-divider;
 }
 
+// A <button> or an <input> takes its font from the browser rather than from its parent, so every one of the
+// editor's own reads the root's.
 .bit-mde-btn {
     padding: 0;
     cursor: pointer;
+    font-family: inherit;
+    font-weight: inherit;
     align-items: center;
     display: inline-flex;
     --bit-mde-btn-sfg: initial;
@@ -317,6 +330,8 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
 
 .bit-mde-fni {
     min-width: 0;
+    font-family: inherit;
+    font-weight: inherit;
     flex: 1 1 spacing(15);
     color: $clr-fg-pri;
     font-size: $tg-fs-sm;
@@ -334,6 +349,8 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
 
 .bit-mde-fnb {
     cursor: pointer;
+    font-family: inherit;
+    font-weight: inherit;
     color: $clr-fg-pri;
     --bit-mde-fnb-sbg: initial;
     background: var(--bit-mde-fnb-sbg, #{$clr-bg-pri});
@@ -502,10 +519,10 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
 .bit-mde-lbl {
     display: block;
     cursor: pointer;
-    color: inherit;
-    font-size: $tg-fs-sm;
-    font-weight: $tg-fw-semibold;
-    letter-spacing: $tg-ctrl-letter-spacing;
+    color: var(--bit-MarkdownEditor-label-color, #{$mde-color});
+    font-size: var(--bit-MarkdownEditor-label-font-size, #{$tg-fs-sm});
+    font-weight: var(--bit-MarkdownEditor-label-font-weight, #{$tg-field-label-font-weight});
+    letter-spacing: var(--bit-MarkdownEditor-label-letter-spacing, #{$tg-ctrl-letter-spacing});
     padding: spacing(0.75) spacing(1) 0;
 }
 
@@ -593,8 +610,8 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
 
     h2 {
         margin: 0;
-        font-size: $tg-fs-md;
-        font-weight: $tg-fw-semibold;
+        font-size: $tg-dialog-title-font-size;
+        font-weight: $tg-dialog-title-font-weight;
     }
 
     dl {
@@ -628,6 +645,7 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
 
 .bit-mde-hcl {
     padding: 0;
+    font-family: inherit;
     border: none;
     line-height: 1;
     cursor: pointer;

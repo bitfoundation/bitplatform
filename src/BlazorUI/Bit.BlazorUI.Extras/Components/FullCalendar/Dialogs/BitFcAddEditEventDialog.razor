@@ -281,7 +281,7 @@
                 <div class="bit-bfc-field-error" role="alert">@_errors["overlap"]</div>
             }
             <button type="button" class="bit-bfc-btn" @onclick="OnClose">@Texts.CancelButton</button>
-            <button type="button" class="bit-bfc-btn bit-bfc-btn-primary" @onclick="Submit" disabled="@_isSubmitting">
+            <button type="button" class="bit-bfc-btn bit-bfc-btn-primary" @onclick="Submit" disabled="@_isSubmitting" aria-disabled="@(_isSubmitting ? "true" : null)">
                 @(_isEditing ? Texts.SaveChangesButton : Texts.CreateEventButton)
             </button>
         </div>

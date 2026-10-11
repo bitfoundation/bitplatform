@@ -41,6 +41,7 @@
                         aria-controls="@_ContainerId"
                         aria-label="@(IsPaused ? PlayButtonAriaLabel : PauseButtonAriaLabel)"
                         disabled="@(Disabled)"
+                        aria-disabled="@(Disabled ? "true" : null)"
                         class="bit-csl-ppb @Classes?.PlayPauseButton"
                         style="@Styles?.PlayPauseButton">
                     <i aria-hidden="true"
@@ -65,6 +66,7 @@
                                 aria-label="@($"{DotAriaLabel} {index + 1}")"
                                 aria-current="@(_currentPage == index ? "true" : null)"
                                 disabled="@(Disabled)"
+                                aria-disabled="@(Disabled ? "true" : null)"
                                 style="@Styles?.Dots @(_currentPage == index ? Styles?.CurrentDot : null)"
                                 class="bit-csl-dot @(DotTemplate is null ? null : "bit-csl-dtt") @((_currentPage == index ? $"bit-csl-cud {Classes?.CurrentDot}" : "").Trim()) @Classes?.Dots">@DotTemplate?.Invoke(index)</button>
                     }
@@ -109,6 +111,7 @@
                          aria-controls="@_ContainerId"
                          aria-label="@GetGoLeftAriaLabel()"
                          disabled="@(Disabled)"
+                         aria-disabled="@(Disabled ? "true" : null)"
                          class="bit-csl-lbt @Classes?.Buttons @Classes?.GoLeftButton"
                          style="@_goLeftButtonStyle @Styles?.Buttons @Styles?.GoLeftButton">
                     <i aria-hidden="true"
@@ -124,6 +127,7 @@
                          aria-controls="@_ContainerId"
                          aria-label="@GetGoRightAriaLabel()"
                          disabled="@(Disabled)"
+                         aria-disabled="@(Disabled ? "true" : null)"
                          class="bit-csl-rbt @Classes?.Buttons @Classes?.GoRightButton"
                          style="@_goRightButtonStyle @Styles?.Buttons @Styles?.GoRightButton">
                     <i aria-hidden="true"

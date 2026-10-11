@@ -90,6 +90,7 @@
                    autocorrect="@GetAutoCorrect()"
                    aria-labelledby="@LabelledBy"
                    disabled="@(Disabled)"
+                   aria-disabled="@GetInputAriaDisabled(Disabled)"
                    autocapitalize="@AutoCapitalize"
                    aria-describedby="@DescribedBy"
                    class="bit-srb-inp @Classes?.Input"
@@ -140,6 +141,7 @@
                         style="@Styles?.ClearButton"
                         aria-label="@ClearButtonAriaLabel"
                         disabled="@(Disabled)"
+                        aria-disabled="@(Disabled ? "true" : null)"
                         class="bit-srb-cbt @Classes?.ClearButton">
                     @if (ClearButtonTemplate is not null)
                     {
@@ -164,6 +166,7 @@
                     type="button"
                     style="@Styles?.SearchButton"
                     disabled="@(Disabled)"
+                    aria-disabled="@(Disabled ? "true" : null)"
                     class="bit-srb-sbn @Classes?.SearchButton"
                     title="@(hasSearchButtonLabel ? null : SearchButtonAriaLabel)"
                     aria-label="@(hasSearchButtonLabel ? null : SearchButtonAriaLabel)">

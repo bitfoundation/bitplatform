@@ -59,6 +59,7 @@
                                     aria-label="@(isSelected ? $"{cell.Date.ToString("D", State.Culture)}, {Texts.PickerSelectedDayAriaLabel}" : cell.Date.ToString("D", State.Culture))"
                                     aria-current="@(isToday ? "date" : null)"
                                     disabled="@isOutOfRange"
+                                    aria-disabled="@(isOutOfRange ? "true" : null)"
                                     @onkeydown="args => OnDayKeyDown(cell.Date, args)"
                                     @onclick="() => SelectDate(cell.Date)">
                                 @cell.Day

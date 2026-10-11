@@ -18,7 +18,8 @@
        arrow-key navigation of menu items that arbitrary content does not have (BitMenuButton is the
        one that renders a real menu).
        A loading button stays enabled and says it is unavailable through aria-disabled instead: the
-       native attribute would drop the focus of a keyboard user to the body the moment it applies. *@
+       native attribute would drop the focus of a keyboard user to the body the moment it applies. A
+       disabled one writes both, as every disabled native control of the library does. *@
     <button @ref="_buttonRef"
             @onclick="HandleOnClick"
             @onkeydown="HandleOnButtonKeyDown"
@@ -33,7 +34,7 @@
             style="@Styles?.Button"
             aria-describedby="@descriptionId"
             aria-busy="@(IsLoading ? "true" : null)"
-            aria-disabled="@(IsLoading && Disabled is false ? "true" : null)"
+            aria-disabled="@(IsLoading || Disabled ? "true" : null)"
             disabled="@(Disabled)"
             aria-expanded="@(IsOpen ? "true" : "false")"
             class="bit-drm-btn @Classes?.Button">

@@ -32,7 +32,7 @@ internal sealed class BitPdfIndexedColorSpace : BitPdfColorSpace
         {
             lookup = s.Bytes;
         }
-        else if (lookupObj is BitPdfStream stream)
+        else if (lookupObj is BitPdfBaseStream stream)
         {
             lookup = BitPdfStreamDecoder.Decode(stream);
         }

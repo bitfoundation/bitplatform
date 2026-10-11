@@ -36,6 +36,8 @@
     // The three states below say "true" or leave the attribute to whatever the page wrote, rather than
     // writing a null that would take the page's own value down with it.
     var ariaDisabled = Disabled || IsLoading ? "true" : GetSplattedInputAttribute("aria-disabled");
+    // Out of reach natively unless AllowDisabledFocus keeps it in the tab order, where aria-disabled carries the state alone.
+    var nativeDisabled = Disabled && AllowDisabledFocus is false;
     var ariaBusy = IsLoading ? "true" : GetSplattedInputAttribute("aria-busy");
     var ariaReadOnly = ReadOnly ? "true" : GetSplattedInputAttribute("aria-readonly");
 
@@ -99,7 +101,7 @@
            required="@required"
            tabindex="@TabIndex"
            autofocus="@autoFocus"
-           disabled="@(Disabled && AllowDisabledFocus is false)"
+           disabled="@nativeDisabled"
            aria-label="@ariaLabel"
            aria-checked="@ariaChecked"
            aria-required="@ariaRequired"

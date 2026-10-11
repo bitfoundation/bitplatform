@@ -91,7 +91,7 @@ public static class BitPdfTextExtractor
                         // Recurse into a form XObject so its text is captured too.
                         if (op.Operands.Count > 0 && op.Operands[0] is BitPdfName xn
                             && resources?.Get("XObject") is BitPdfDict xobjs
-                            && xobjs.Get(xn.Value) is BitPdfStream xs && xs.Dict is not null
+                            && xobjs.Get(xn.Value) is BitPdfBaseStream xs && xs.Dict is not null
                             && (xs.Dict.Get("Subtype") as BitPdfName)?.Value == "Form")
                         {
                             try

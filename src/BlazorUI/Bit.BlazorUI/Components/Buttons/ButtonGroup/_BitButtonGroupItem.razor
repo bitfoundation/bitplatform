@@ -8,7 +8,10 @@
     // the toggled items is un-toggled, so it says so rather than answering a click with silence. It is not given
     // the disabled attribute, since it is not disabled but temporarily out of reach - and a disabled button is
     // not focusable, which would leave a hole in the group's keyboard navigation.
-    var isInteractive = isDisabled is false && isLoading is false && ButtonGroup.GetIsToggleCapped(Item) is false;
+    var unavailable = isDisabled || isLoading || ButtonGroup.GetIsToggleCapped(Item);
+    var isInteractive = unavailable is false;
+    // A disabled group kept interactive stays focusable, so aria-disabled carries its state alone.
+    var nativeDisabled = isDisabled && ButtonGroup.DisabledInteractive is false;
     var template = ButtonGroup.GetTemplate(Item);
     var href = ButtonGroup.GetHref(Item);
     // A disabled or loading link loses its href, and with it the implicit link role, so the role is put back -
@@ -24,8 +27,8 @@
             role="@ButtonGroup.GetItemRole()"
             tabindex="@ButtonGroup.GetItemTabIndex(Item)"
             autofocus="@ButtonGroup.GetItemAutoFocus(Item)"
-            disabled="@(isDisabled && ButtonGroup.DisabledInteractive is false)"
-            aria-disabled="@(isInteractive ? null : "true")"
+            disabled="@nativeDisabled"
+            aria-disabled="@(unavailable ? "true" : null)"
             aria-busy="@(isLoading ? "true" : null)"
             aria-label="@ButtonGroup.GetItemAriaLabel(Item)"
             aria-pressed="@ButtonGroup.GetItemAriaPressed(Item)"
@@ -47,7 +50,7 @@ else
        role="@anchorRole"
        tabindex="@ButtonGroup.GetItemTabIndex(Item)"
        autofocus="@ButtonGroup.GetItemAutoFocus(Item)"
-       aria-disabled="@(isInteractive ? null : "true")"
+       aria-disabled="@(unavailable ? "true" : null)"
        aria-busy="@(isLoading ? "true" : null)"
        aria-label="@ButtonGroup.GetItemAriaLabel(Item)"
        aria-current="@ButtonGroup.GetItemAriaCurrent(Item)"

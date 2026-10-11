@@ -273,7 +273,7 @@ public sealed class BitPdfFont
 
         // CIDToGIDMap: /Identity (gid == CID) or a stream of 2-byte gids per CID.
         Func<int, int> gidForCid = static cid => cid;
-        if (xref.FetchIfRef(cidFont.Get("CIDToGIDMap")) is BitPdfStream mapStream)
+        if (xref.FetchIfRef(cidFont.Get("CIDToGIDMap")) is BitPdfBaseStream mapStream)
         {
             byte[] d = BitPdfStreamDecoder.Decode(mapStream);
             gidForCid = cid => cid >= 0 && cid * 2 + 1 < d.Length ? (d[cid * 2] << 8) | d[cid * 2 + 1] : 0;
@@ -369,13 +369,13 @@ public sealed class BitPdfFont
         {
             // TrueType / CIDFontType2 program. Sanitizing (with a synthetic cmap)
             // happens in Create once the font's encoding is known.
-            if (descriptor.Get("FontFile2") is BitPdfStream ttf)
+            if (descriptor.Get("FontFile2") is BitPdfBaseStream ttf)
             {
                 return (BitPdfStreamDecoder.Decode(ttf), "truetype");
             }
             // FontFile3: OpenType passes through; Type1C/CIDFontType0C is bare CFF,
             // wrapped in Create once the encoding is known.
-            if (descriptor.Get("FontFile3") is BitPdfStream ff3 && ff3.Dict is not null)
+            if (descriptor.Get("FontFile3") is BitPdfBaseStream ff3 && ff3.Dict is not null)
             {
                 byte[] data = BitPdfStreamDecoder.Decode(ff3);
                 return (ff3.Dict.Get("Subtype") as BitPdfName)?.Value == "OpenType"
@@ -385,7 +385,7 @@ public sealed class BitPdfFont
             // Type1 program (/FontFile): parse it and build an OpenType/CFF font the
             // browser can load. On any failure fall through to a substitute font -
             // a rejected @font-face simply falls back to the generic family.
-            if (descriptor.Get("FontFile") is BitPdfStream t1Stream)
+            if (descriptor.Get("FontFile") is BitPdfBaseStream t1Stream)
             {
                 byte[] raw = BitPdfStreamDecoder.Decode(t1Stream);
                 if (BitPdfType1Font.Parse(raw) is { } t1)
@@ -620,7 +620,7 @@ public sealed class BitPdfFont
         // The Type0 /Encoding maps character codes to CIDs: Identity-H/V map
         // directly, an embedded CMap stream supplies explicit ranges.
         object? enc = fontDict.Get("Encoding");
-        if (enc is BitPdfStream cmapStream)
+        if (enc is BitPdfBaseStream cmapStream)
         {
             try
             {
@@ -676,7 +676,7 @@ public sealed class BitPdfFont
 
     private static BitPdfToUnicodeCMap? ReadToUnicode(BitPdfDict fontDict)
     {
-        if (fontDict.Get("ToUnicode") is BitPdfStream stream)
+        if (fontDict.Get("ToUnicode") is BitPdfBaseStream stream)
         {
             try
             {

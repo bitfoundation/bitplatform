@@ -109,13 +109,13 @@ public sealed class BitPdfPage
 
         switch (contents)
         {
-            case BitPdfStream stream:
+            case BitPdfBaseStream stream:
                 Append(output, stream);
                 break;
             case List<object?> array:
                 foreach (var item in array)
                 {
-                    if (_xref.FetchIfRef(item) is BitPdfStream s)
+                    if (_xref.FetchIfRef(item) is BitPdfBaseStream s)
                     {
                         Append(output, s);
                         output.WriteByte((byte)'\n');
@@ -127,7 +127,7 @@ public sealed class BitPdfPage
         return output.ToArray();
     }
 
-    private static void Append(MemoryStream output, BitPdfStream stream)
+    private static void Append(MemoryStream output, BitPdfBaseStream stream)
     {
         byte[] decoded = BitPdfStreamDecoder.Decode(stream);
         output.Write(decoded, 0, decoded.Length);
