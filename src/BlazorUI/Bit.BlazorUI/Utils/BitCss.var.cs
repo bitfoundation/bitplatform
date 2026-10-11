@@ -614,7 +614,7 @@ public static partial class BitCss
         }
 
         /// <summary>
-        /// The motion tokens. The durations, the spinner pair and the loop factor come in two forms: the plain
+        /// The motion tokens. The durations and their factor, the spinner pair and the loop factor come in two forms: the plain
         /// one is what a style reads, and what <c>prefers-reduced-motion</c> collapses (or calms) and
         /// <c>ForceAnimation</c> restores; the <c>...Full</c> one holds the unreduced value the plain one aliases,
         /// and is the one to set - setting the plain one, on an element above all, would outrank the
@@ -625,9 +625,11 @@ public static partial class BitCss
             public const string Duration = "--bit-mot-duration";
             public const string DurationShort = "--bit-mot-duration-short";
             public const string DurationLong = "--bit-mot-duration-long";
+            public const string DurationFactor = "--bit-mot-duration-factor";
             public const string DurationFull = "--bit-mot-duration-full";
             public const string DurationShortFull = "--bit-mot-duration-short-full";
             public const string DurationLongFull = "--bit-mot-duration-long-full";
+            public const string DurationFactorFull = "--bit-mot-duration-factor-full";
             public const string Easing = "--bit-mot-easing";
             public const string EasingDecelerate = "--bit-mot-easing-decelerate";
             public const string EasingAccelerate = "--bit-mot-easing-accelerate";

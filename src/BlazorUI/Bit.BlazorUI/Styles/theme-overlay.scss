@@ -22,6 +22,7 @@
 //   tooltip         --bit-clr-bg-pri/-bg-sec/-fg-pri the tooltip fill and text
 //   foreground      --bit-clr-fg-pri                every role foreground
 //   pri ... err     --bit-clr-<role>                that role's foreground and tint
+//   typography      --bit-tpg-fs-*, --bit-tpg-fw-*  the dialog title's size and weight, the field caption's weight
 //   motion          --bit-mot-*-full                the plain motion tokens, which alias the -full ones
 //                                                   (motion.fluent.scss, not this mixin: every theme builds
 //                                                   them alike, so one zero-specificity rule serves all,

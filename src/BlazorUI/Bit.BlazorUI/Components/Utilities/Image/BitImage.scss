@@ -21,7 +21,8 @@
 // Bordered, Shadow), and the hover and press ones where OnClick makes the image a control, so a global value
 // restyles those images without rounding, raising or tinting every other one. The fade's default pace is
 // the theme's long motion token, which the reduced motion preference collapses (unless ForceAnimation opts
-// out) the way it collapses every other component's; a pace set through the variable is the page's own.
+// out) the way it collapses every other component's, and a pace set through the variable is scaled by the
+// shared motion factor, so the preference collapses it all the same.
 
 // The frame. Everything inside it is positioned against it, which is what lets a centered fit and an
 // overlay be placed without either of them knowing what is around the component; and it clips, which
@@ -143,7 +144,7 @@
     &.bit-img-pfo {
         animation-fill-mode: both;
         animation-name: bit-img-fade-out;
-        animation-duration: var(--bit-Image-fade-duration, #{$mot-duration-long});
+        animation-duration: mot-scaled-duration(var(--bit-Image-fade-duration, #{$mot-duration-long}));
         animation-timing-function: var(--bit-Image-fade-easing, #{$mot-easing});
     }
 }
@@ -300,7 +301,7 @@
 .bit-img-img.bit-img-vis.bit-img-fde {
     animation-fill-mode: both;
     animation-name: bit-img-fade-in;
-    animation-duration: var(--bit-Image-fade-duration, #{$mot-duration-long});
+    animation-duration: mot-scaled-duration(var(--bit-Image-fade-duration, #{$mot-duration-long}));
     animation-timing-function: var(--bit-Image-fade-easing, #{$mot-easing});
 }
 

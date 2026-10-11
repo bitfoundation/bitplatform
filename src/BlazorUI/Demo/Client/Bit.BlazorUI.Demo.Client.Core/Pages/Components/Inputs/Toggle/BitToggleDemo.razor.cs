@@ -740,7 +740,7 @@ public partial class BitToggleDemo
         {
             Name = "--bit-Toggle-transition-duration",
             DefaultValue = "$mot-duration-short",
-            Description = "How long the knob takes to cross the track, and every color with it. Already collapsed to zero wherever reduced motion is asked for.",
+            Description = "How long the knob takes to cross the track, and every color with it. Reduced motion collapses it - the default and a value set here alike - unless ForceAnimation is set.",
         },
     ];
 

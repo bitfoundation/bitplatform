@@ -111,7 +111,7 @@ public sealed class BitMotionTokenTests
 
     private static readonly (string Plain, string Reduced, string Full)[] Aliases =
     [
-        .. new[] { "duration", "duration-short", "duration-long", "duration-spinner", "easing-spinner", "loop-factor" }
+        .. new[] { "duration", "duration-short", "duration-long", "duration-factor", "duration-spinner", "easing-spinner", "loop-factor" }
             .Select(n => ($"--bit-mot-{n}", $"--bit-mot-{n}-reduced", $"--bit-mot-{n}-full"))
     ];
 

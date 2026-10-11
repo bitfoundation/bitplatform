@@ -42,6 +42,7 @@ public sealed class BitThemeMapperContractTests
         theme.Motion.Duration = "250ms";
         theme.Motion.DurationShort = "120ms";
         theme.Motion.DurationLong = "400ms";
+        theme.Motion.DurationFactor = "0.5";
         theme.Motion.DurationSpinner = "2s";
         theme.Motion.EasingSpinner = "linear";
         theme.Motion.LoopFactor = "2";
@@ -51,11 +52,13 @@ public sealed class BitThemeMapperContractTests
         Assert.AreEqual("250ms", mapped[BitCss.Var.Motion.DurationFull]);
         Assert.AreEqual("120ms", mapped[BitCss.Var.Motion.DurationShortFull]);
         Assert.AreEqual("400ms", mapped[BitCss.Var.Motion.DurationLongFull]);
+        Assert.AreEqual("0.5", mapped[BitCss.Var.Motion.DurationFactorFull]);
         Assert.AreEqual("2s", mapped[BitCss.Var.Motion.DurationSpinnerFull]);
         Assert.AreEqual("linear", mapped[BitCss.Var.Motion.EasingSpinnerFull]);
         Assert.AreEqual("2", mapped[BitCss.Var.Motion.LoopFactorFull]);
 
         foreach (var plain in new[] { BitCss.Var.Motion.Duration, BitCss.Var.Motion.DurationShort, BitCss.Var.Motion.DurationLong,
+                                      BitCss.Var.Motion.DurationFactor,
                                       BitCss.Var.Motion.DurationSpinner, BitCss.Var.Motion.EasingSpinner, BitCss.Var.Motion.LoopFactor })
         {
             Assert.IsFalse(mapped.ContainsKey(plain), $"{plain} is an alias the reduced-motion query collapses; the theme must not set it.");

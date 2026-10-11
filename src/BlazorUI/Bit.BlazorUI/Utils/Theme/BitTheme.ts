@@ -34,7 +34,9 @@ namespace BitBlazorUI {
         ['wrn', ['--bit-clr-wrn']],
         ['swr', ['--bit-clr-swr']],
         ['err', ['--bit-clr-err']],
-        ['motion', ['--bit-mot-duration-full', '--bit-mot-duration-short-full', '--bit-mot-duration-long-full',
+        ['typography', ['--bit-tpg-fs-2xs', '--bit-tpg-fs-xs', '--bit-tpg-fs-sm', '--bit-tpg-fs-md', '--bit-tpg-fs-lg', '--bit-tpg-fs-xl', '--bit-tpg-fs-2xl', '--bit-tpg-fs-3xl', '--bit-tpg-fs-4xl',
+                        '--bit-tpg-fw-light', '--bit-tpg-fw-regular', '--bit-tpg-fw-medium', '--bit-tpg-fw-semibold', '--bit-tpg-fw-bold']],
+        ['motion', ['--bit-mot-duration-full', '--bit-mot-duration-short-full', '--bit-mot-duration-long-full', '--bit-mot-duration-factor-full',
             '--bit-mot-duration-spinner-full', '--bit-mot-easing-spinner-full', '--bit-mot-loop-factor-full']],
     ];
     // The page's own background - what a status bar sits above in nearly every app.

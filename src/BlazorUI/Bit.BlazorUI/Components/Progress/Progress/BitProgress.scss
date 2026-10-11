@@ -75,7 +75,7 @@ $prb-private-properties:
     // How long a vertical bar is when nothing asked for a length. A horizontal one takes the width of
     // whatever it is put in, so it needs no equivalent.
     --bit-prb-length: var(--bit-Progress-length, #{spacing(20)});
-    --bit-prb-duration: var(--bit-Progress-transition-duration, #{$mot-duration});
+    --bit-prb-duration: #{mot-scaled-duration(var(--bit-Progress-transition-duration, #{$mot-duration}))};
 
     // The sweep is moved by its logical inset alone: a translateX is physical, so in a right-to-left bar it
     // would push the sweep further off the edge it enters from and leave the bar empty for half the cycle.

@@ -53,7 +53,8 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
                           "--bit-shd-snackbar", "--bit-shd-appbar-top", "--bit-shd-appbar-bottom"],
             ["tooltip"] = ["--bit-clr-tooltip-bg", "--bit-clr-tooltip-fg"],
             ["foreground"] = [.. Roles.Select(r => $"--bit-clr-{r}-fg")],
-            ["motion"] = ["--bit-mot-duration", "--bit-mot-duration-short", "--bit-mot-duration-long",
+            ["typography"] = ["--bit-tpg-dialog-title-font-size", "--bit-tpg-dialog-title-font-weight", "--bit-tpg-field-label-font-weight"],
+            ["motion"] = ["--bit-mot-duration", "--bit-mot-duration-short", "--bit-mot-duration-long", "--bit-mot-duration-factor",
                           "--bit-mot-duration-spinner", "--bit-mot-easing-spinner", "--bit-mot-loop-factor"],
         };
 
@@ -379,7 +380,24 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
             ("the primary foreground", t => t.Color.Foreground.Primary = "#111111", "shadow tooltip foreground"),
             ("the warning role", t => t.Color.Warning.Main = "#FFB900", "wrn"),
             ("the primary role", t => t.Color.Primary.Main = "#0F6CBD", "pri"),
+            // Every step of both ramps, not only the ones the packaged presets build the type aliases from: an
+            // app's own preset may title a dialog in the 3xl step or caption a field in the medium weight.
+            ("the 2xs font size", t => t.Typography.FontSize.Xxs = "0.5rem", "typography"),
+            ("the xs font size", t => t.Typography.FontSize.Xs = "0.6875rem", "typography"),
+            ("the sm font size", t => t.Typography.FontSize.Sm = "0.9375rem", "typography"),
+            ("the md font size", t => t.Typography.FontSize.Md = "1.0625rem", "typography"),
+            ("the lg font size", t => t.Typography.FontSize.Lg = "1.25rem", "typography"),
+            ("the xl font size", t => t.Typography.FontSize.Xl = "1.5rem", "typography"),
+            ("the 2xl font size", t => t.Typography.FontSize.Xxl = "1.75rem", "typography"),
+            ("the 3xl font size", t => t.Typography.FontSize.Xxxl = "2rem", "typography"),
+            ("the 4xl font size", t => t.Typography.FontSize.Xxxxl = "2.5rem", "typography"),
+            ("the light weight", t => t.Typography.FontWeights.Light = "200", "typography"),
+            ("the regular weight", t => t.Typography.FontWeights.Regular = "300", "typography"),
+            ("the medium weight", t => t.Typography.FontWeights.Medium = "550", "typography"),
+            ("the semibold weight", t => t.Typography.FontWeights.SemiBold = "700", "typography"),
+            ("the bold weight", t => t.Typography.FontWeights.Bold = "800", "typography"),
             ("the duration", t => t.Motion.Duration = "250ms", "motion"),
+            ("the duration factor", t => t.Motion.DurationFactor = "0.5", "motion"),
             ("the spinner easing", t => t.Motion.EasingSpinner = "linear", "motion"),
             ("the loop factor", t => t.Motion.LoopFactor = "2", "motion"),
         };
@@ -410,6 +428,7 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
         theme.Color.Warning.Main = "#EDAE12";
         theme.Color.SevereWarning.Main = "#CE4207";
         theme.Color.Error.Main = "#D2393B";
+        theme.Typography.FontWeights.SemiBold = "700";
         theme.Motion.DurationLong = "400ms";
 
         Assert.AreEqual(string.Join(' ', OverlayGroupNames()), RenderOverlay(theme));
@@ -420,6 +439,8 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
     {
         var theme = new BitTheme();
         theme.Typography.FontFamily = "Georgia, serif";
+        theme.Typography.FontWeight = "500";
+        theme.Typography.LineHeight = "1.5rem";
         theme.Shape.Radius.Surface = "2rem";
         theme.Motion.EasingStandard = "linear";
 
@@ -463,6 +484,24 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
         StringAssert.Contains(style, "--bit-shp-radius-surface:2rem");
         StringAssert.Contains(style, "--bit-clr-tooltip-bg:#222222");
         Assert.AreEqual("radius tooltip", div.GetAttribute(BitThemeAttributeNames.ThemeOverlay));
+    }
+
+    [TestMethod]
+    public void ExplicitFieldLabelWeightStaysInlineBesideTheTypographyMarker()
+    {
+        // A caption weight set on the theme is inline, so it outranks the type aliases the stylesheets
+        // re-declare for an overlay of the semibold step it would otherwise be built from.
+        var theme = new BitTheme();
+        theme.Typography.FontWeights.SemiBold = "700";
+        theme.Typography.FieldLabel.FontWeight = "500";
+
+        var div = RenderProvider(theme).Find("div");
+        var style = div.GetAttribute("style") ?? string.Empty;
+
+        StringAssert.Contains(style, "--bit-tpg-fw-semibold:700");
+        StringAssert.Contains(style, "--bit-tpg-field-label-font-weight:500");
+        Assert.IsFalse(style.Contains("--bit-tpg-dialog-title-font-weight:", StringComparison.Ordinal), $"Only what the theme sets is inline. Actual: {style}");
+        Assert.AreEqual("typography", div.GetAttribute(BitThemeAttributeNames.ThemeOverlay));
     }
 
     [TestMethod]

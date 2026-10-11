@@ -213,17 +213,17 @@
 // change of color is not the motion the preference asks to be spared, so it runs on the untouched duration.
 // A Modal asked to animate regardless (ForceAnimation, or inside a subtree that is) keeps its pulse.
 @media (prefers-reduced-motion: reduce) {
-    .bit-mdl-bna:not(.bit-fam *),
-    .bit-mdl-bnb:not(.bit-fam *) {
+    .bit-mdl-bna:not(.bit-fam):not(.bit-fam *),
+    .bit-mdl-bnb:not(.bit-fam):not(.bit-fam *) {
         animation-duration: $mot-duration-long-full;
         animation-timing-function: steps(1, end);
     }
 
-    .bit-mdl-bna:not(.bit-fam *) {
+    .bit-mdl-bna:not(.bit-fam):not(.bit-fam *) {
         animation-name: bit-mdl-refuse-ring-a;
     }
 
-    .bit-mdl-bnb:not(.bit-fam *) {
+    .bit-mdl-bnb:not(.bit-fam):not(.bit-fam *) {
         animation-name: bit-mdl-refuse-ring-b;
     }
 }

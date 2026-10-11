@@ -348,7 +348,7 @@
                 </BitText>
 
                 <ul>
-                    <li><code>--bit-mot-duration</code>, <code>--bit-mot-duration-short</code>, <code>--bit-mot-duration-long</code>, <code>--bit-mot-easing</code> - the state-transition set</li>
+                    <li><code>--bit-mot-duration</code>, <code>--bit-mot-duration-short</code>, <code>--bit-mot-duration-long</code>, <code>--bit-mot-duration-factor</code>, <code>--bit-mot-easing</code> - the state-transition set</li>
                     <li><code>--bit-mot-easing-decelerate</code> / <code>--bit-mot-easing-accelerate</code> - the entry / exit curves</li>
                     <li><code>--bit-mot-duration-spinner</code>, <code>--bit-mot-easing-spinner</code>, <code>--bit-mot-loop-factor</code> - the looping set</li>
                     <li>the unreduced <code>*-full</code> sources of both (see <i>Motion and accessibility</i>)</li>
@@ -506,7 +506,12 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
 
 /* the tooltip surface */
 --bit-clr-tooltip-bg       /* &rarr; var(--bit-clr-bg-sec) */
---bit-clr-tooltip-fg       /* &rarr; var(--bit-clr-fg-pri) */</CodeBox>
+--bit-clr-tooltip-fg       /* &rarr; var(--bit-clr-fg-pri) */
+
+/* the type of a dialog's title and a field's caption - each a step of the type ramps */
+--bit-tpg-dialog-title-font-size   /* &rarr; var(--bit-tpg-fs-xl) */
+--bit-tpg-dialog-title-font-weight /* &rarr; var(--bit-tpg-fw-semibold) */
+--bit-tpg-field-label-font-weight  /* &rarr; var(--bit-tpg-fw-semibold) */</CodeBox>
 
                 <BitText>
                     Under Fluent every family points at the same primitive, so overriding <code>--bit-shp-brd-radius</code> still re-rounds everything exactly as before - except the sheet radius, which stays square until a preset rounds the inner corners of its panels on purpose. The families exist for the design systems that disagree: Material rounds a button (pill), a chip (8px), a card (12px), a menu (4px) and a dialog (28px) differently and lifts a menu, a dialog and a snackbar to different elevation levels; Cupertino capsules its buttons and chips over 8px fields, and separates hairlines from shadows. Those become one token per family instead of a fork of the component CSS - exactly what the packaged Material and Cupertino presets do; see <i>Authoring your own preset</i> below. Themable from C# via <code>BitTheme.Shape.Radius.*</code> and <code>BitTheme.BoxShadow.{Card,Popup,Dialog,Sheet,Tooltip,Snackbar,AppBarTop,AppBarBottom}</code>.
@@ -522,6 +527,10 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
 
                 <BitText>
                     The tooltip surface is the one popup whose fill design systems disagree on: Fluent lifts a light surface off the page with a shadow, Material paints its plain tooltip in the inverse surface and casts none. <code>--bit-clr-tooltip-bg</code> and <code>--bit-clr-tooltip-fg</code> carry that choice - the Material preset points them at <code>--bit-clr-fg-pri</code> / <code>--bit-clr-bg-pri</code>, Fluent 2 at the page surface - and are themable from C# via <code>BitTheme.Color.TooltipBackground</code> / <code>TooltipForeground</code>.
+                </BitText>
+
+                <BitText>
+                    The type aliases pick the step of the size and weight ramps a design system titles a dialog and captions a form field in: Fabric's 20px semibold title and semibold caption by default, Material's 24px regular title and regular caption, Cupertino's 17px semibold headline. Aliases rather than values, so a theme that retunes a step of the ramp retunes the titles and captions built from it; themable from C# via <code>BitTheme.Typography.Dialog</code> / <code>FieldLabel</code>.
                 </BitText>
             </DocSection>
 
@@ -838,7 +847,7 @@ BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
                 </BitText>
 
                 <BitText>
-                    <b>Re-declare your family aliases for an inline overlay.</b> A <code>BitThemeProvider</code>, or <code>ApplyBitThemeAsync</code> on an element, that re-values a primitive marks its element with <code>bit-theme-overlay</code>, naming the groups of family aliases built from what it re-valued: <code>radius</code> (the global radius: every per-family radius), <code>radius-control</code> (the control or full radius: the button, chip and selection radii), <code>shadow</code> (the callout shadow, the tertiary border, the border width or the primary foreground: the per-family elevations), <code>tooltip</code> (the primary or secondary background or the primary foreground: the tooltip's fill and text), <code>foreground</code> and <code>pri</code> ... <code>err</code> (the role foregrounds and tints), and <code>motion</code> (a <code>-full</code> motion source: the effective durations, which every theme builds alike, so a preset has nothing to re-declare for it). The core stylesheet re-declares its defaults for each group there, which is what makes the aliases follow the overlay - so a preset that decides one of them differently re-declares its own value for that group on the same element, or an overlay puts the default back: a callout shadow under a flat tooltip, the field radius on a pill button. Three selectors per group, each one notch above the selector of your block it mirrors, which is how the packaged presets do it:
+                    <b>Re-declare your family aliases for an inline overlay.</b> A <code>BitThemeProvider</code>, or <code>ApplyBitThemeAsync</code> on an element, that re-values a primitive marks its element with <code>bit-theme-overlay</code>, naming the groups of family aliases built from what it re-valued: <code>radius</code> (the global radius: every per-family radius), <code>radius-control</code> (the control or full radius: the button, chip and selection radii), <code>shadow</code> (the callout shadow, the tertiary border, the border width or the primary foreground: the per-family elevations), <code>tooltip</code> (the primary or secondary background or the primary foreground: the tooltip's fill and text), <code>foreground</code> and <code>pri</code> ... <code>err</code> (the role foregrounds and tints), <code>typography</code> (any step of the font-size or font-weight ramp: the dialog title's size and weight and the field caption's weight), and <code>motion</code> (a <code>-full</code> motion source: the effective durations, which every theme builds alike, so a preset has nothing to re-declare for it). The core stylesheet re-declares its defaults for each group there, which is what makes the aliases follow the overlay - so a preset that decides one of them differently re-declares its own value for that group on the same element, or an overlay puts the default back: a callout shadow under a flat tooltip, the field radius on a pill button. Three selectors per group, each one notch above the selector of your block it mirrors, which is how the packaged presets do it:
                 </BitText>
 
                 <CodeBox Language="css">/* acme-material.css, after the main block: the aliases above, again for an overlay of what they are built from */
@@ -853,8 +862,9 @@ BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
 }
 
 /* ...and likewise [bit-theme-overlay~="radius"] (every per-family radius you declare),
-   [bit-theme-overlay~="radius-control"] (button, chip, selection) and
-   [bit-theme-overlay~="tooltip"] (its fill and text), if you declare those */</CodeBox>
+   [bit-theme-overlay~="radius-control"] (button, chip, selection),
+   [bit-theme-overlay~="tooltip"] (its fill and text) and
+   [bit-theme-overlay~="typography"] (dialog title, field caption), if you declare those */</CodeBox>
 
                 <BitText>
                     The middle selector is all a page with one scoped region needs. Scoped regions of different themes nested in one another meet at that same weight, so the packaged presets add a condition of zero specificity to it (and to the first one) that lets an overlay take the recipe of its nearest region rather than of the stylesheet linked last (built by the <code>theme-overlay</code> mixin of the library's <code>Styles/theme-overlay.scss</code>; the compiled stylesheets show it written out).
@@ -1157,6 +1167,11 @@ await BitThemeManager.ApplyBitThemeAsync(dense);</CodeBox>
         DurationLong    = "300ms",                              // --bit-mot-duration-long-full
         EasingStandard  = "cubic-bezier(0.33, 0, 0.67, 1)",     // --bit-mot-easing
 
+        // Multiplies the durations a page sets on a component itself (--bit-Collapse-duration,
+        // a TransitionDuration parameter, ...), which the tokens above do not reach. Reduced
+        // motion drops it to 0, which is what collapses those durations as well.
+        DurationFactor  = "1",                                  // --bit-mot-duration-factor-full
+
         // Looping animations (spinners, loaders, indeterminate bars) cannot use the durations
         // above: those collapse to a near-zero value under reduced motion, which renders as
         // flicker rather than as stillness. They have their own tokens, which slow down instead.
@@ -1174,6 +1189,7 @@ await BitThemeManager.ApplyBitThemeAsync(dense);</CodeBox>
     --bit-mot-duration-full: 200ms;
     --bit-mot-duration-short-full: 100ms;
     --bit-mot-duration-long-full: 300ms;
+    --bit-mot-duration-factor-full: 1;
 }</CodeBox>
             </DocSection>
 
@@ -1188,6 +1204,9 @@ await BitThemeManager.ApplyBitThemeAsync(dense);</CodeBox>
                         <b>Reduced motion.</b> Under <code>prefers-reduced-motion: reduce</code>, all <code>--bit-mot-duration*</code> tokens collapse to <code>0.01ms</code>, so transitions effectively disable.
                         The unreduced values stay available in the matching <code>--bit-mot-duration*-full</code> tokens, which is also where you change a duration since it feeds both states.
                         A single component can opt out with the <code>ForceAnimation</code> parameter (it renders the <code>bit-fam</code> class, which restores the full durations for that element and its content). The reduction itself is declared on <code>:root</code> as the <code>--bit-mot-*-reduced</code> tokens (<code>--bit-mot-duration-reduced</code>&hellip;), which the effective tokens read while they are set: an app that ignores the preference everywhere resets them to <code>initial</code> on <code>:root</code> in its own stylesheet, after the library's, and one that re-applies it to a subtree declares them there.
+                    </li>
+                    <li>
+                        <b>A duration you set on a component follows the same preference.</b> A pace given through a component's own variable (<code>--bit-Collapse-duration</code>, <code>--bit-Toggle-transition-duration</code>&hellip;) or parameter (<code>TransitionDuration</code>, <code>AnimationDuration</code>&hellip;) is multiplied by <code>--bit-mot-duration-factor</code>, which is <code>1</code> normally and <code>0</code> under reduced motion, so it collapses with the theme's own durations. <code>ForceAnimation</code> restores it along with them, and so does an app that turns reduced motion back off for a whole page by resetting the <code>-reduced</code> tokens at <code>:root</code> - this one's is <code>--bit-mot-duration-factor-reduced</code>.
                     </li>
                     <li>
                         <b>Looping animations are slowed, not stopped.</b> A spinner or a loader is the only thing telling the user that work is still in progress, so it keeps running under reduced motion - and collapsing it to <code>0.01ms</code> would render as flicker rather than as stillness. Instead <code>--bit-mot-duration-spinner</code> goes to <code>4s</code> and <code>--bit-mot-easing-spinner</code> to <code>linear</code>, while <code>--bit-mot-loop-factor</code> rises to <code>3</code>, stretching every other looping animation (the indeterminate <code>BitProgress</code> bar, the staggered <code>BitLoading</code> variants) as a whole so the phase offsets between their parts survive. All three have <code>-full</code> sources and are restored by <code>ForceAnimation</code>, exactly like the durations above. The exception is a shimmer or skeleton - a placeholder for content that has not arrived rather than a progress signal - which stops outright.

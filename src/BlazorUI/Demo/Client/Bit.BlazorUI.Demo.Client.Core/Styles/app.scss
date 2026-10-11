@@ -65,6 +65,7 @@
         --bit-mot-duration-reduced: initial;
         --bit-mot-duration-short-reduced: initial;
         --bit-mot-duration-long-reduced: initial;
+        --bit-mot-duration-factor-reduced: initial;
         --bit-mot-duration-spinner-reduced: initial;
         --bit-mot-easing-spinner-reduced: initial;
         --bit-mot-loop-factor-reduced: initial;
@@ -94,6 +95,7 @@
         --bit-mot-duration-reduced: 0.01ms;
         --bit-mot-duration-short-reduced: 0.01ms;
         --bit-mot-duration-long-reduced: 0.01ms;
+        --bit-mot-duration-factor-reduced: 0;
         --bit-mot-duration-spinner-reduced: 4s;
         --bit-mot-easing-spinner-reduced: linear;
         --bit-mot-loop-factor-reduced: 3;
@@ -101,6 +103,7 @@
         --bit-mot-duration: var(--bit-mot-duration-reduced, var(--bit-mot-duration-full));
         --bit-mot-duration-short: var(--bit-mot-duration-short-reduced, var(--bit-mot-duration-short-full));
         --bit-mot-duration-long: var(--bit-mot-duration-long-reduced, var(--bit-mot-duration-long-full));
+        --bit-mot-duration-factor: var(--bit-mot-duration-factor-reduced, var(--bit-mot-duration-factor-full));
         --bit-mot-duration-spinner: var(--bit-mot-duration-spinner-reduced, var(--bit-mot-duration-spinner-full));
         --bit-mot-easing-spinner: var(--bit-mot-easing-spinner-reduced, var(--bit-mot-easing-spinner-full));
         --bit-mot-loop-factor: var(--bit-mot-loop-factor-reduced, var(--bit-mot-loop-factor-full));

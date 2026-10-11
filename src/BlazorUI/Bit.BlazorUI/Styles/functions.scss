@@ -30,6 +30,35 @@ $html-font-size: 16px;
 }
 
 /*
+ * mot-scaled-duration($duration) / mot-scaled-delay($delay)
+ * --------------------------------------------------
+ * The one way a component reads a duration the PAGE can set - a public --bit-<Component>-*-duration
+ * variable, a duration parameter the component writes inline as a private token - so that it follows
+ * the reduced-motion preference exactly like the theme's --bit-mot-duration* tokens do: it is scaled
+ * by $mot-duration-factor, which is 1 normally, 0 under prefers-reduced-motion, and 1 again inside a
+ * ForceAnimation (.bit-fam) subtree or wherever an app restores the --bit-mot-* tokens. A component
+ * that reads its durations through these writes no reduced-motion query and no .bit-fam restore of
+ * its own for them.
+ *
+ *     --bit-tgl-dur: mot-scaled-duration(var(--bit-Toggle-transition-duration, #{$mot-duration-short}));
+ *
+ * A collapsed duration lands on 0.01ms rather than 0ms, for the reason motion.fluent.scss gives (a
+ * zero-length transition never fires its transitionend), while a 0 the page asked for stays 0 as long
+ * as motion is on. A delay collapses to nothing: a transition that no longer plays has nothing left to
+ * postpone. The theme default named as the fallback already collapses by itself, and scaling it again
+ * changes nothing. Looping animations are not read through these - they scale by $mot-loop-factor.
+ * The factor is inherited, so the result reads the same whether it is written into the property itself
+ * or into a private token of the root that the parts read.
+ */
+@function mot-scaled-duration($duration) {
+    @return calc($duration * $mot-duration-factor + 0.01ms * (1 - $mot-duration-factor));
+}
+
+@function mot-scaled-delay($delay) {
+    @return calc($delay * $mot-duration-factor);
+}
+
+/*
  * translucent($color, $percent)
  * --------------------------------------------------
  * Applies alpha to ANY color expression - a var() token reference, currentcolor, a system color,
