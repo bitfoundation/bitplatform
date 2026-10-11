@@ -393,6 +393,19 @@ the whole library from one `:root[bit-theme="..."]` block.
   `$box-shadow-callout` directly.
 - **Motion**: `$mot-easing` for state transitions, `$mot-easing-decelerate` / `-accelerate` for popup
   entry / exit; never a literal `ease` or `cubic-bezier` outside a looping loader keyframe.
+  **Reduced motion is the tokens' job alone, and a duration the page sets follows it too.** The
+  `--bit-mot-duration*` tokens collapse under `prefers-reduced-motion` and `.bit-fam` (ForceAnimation)
+  or an app's `:root` restores them; a duration the page sets on a component - a public
+  `--bit-<Component>-*-duration` variable, a duration parameter written inline as a private token - is
+  read through `mot-scaled-duration(...)` (a delay through `mot-scaled-delay(...)`) from
+  `Styles/functions.scss`, which scales it by `--bit-mot-duration-factor` (1, 0 under the query, restored
+  with the rest), so it collapses and comes back with them. A component therefore writes **no
+  `prefers-reduced-motion` query and no `.bit-fam` restore for a duration** - the per-component pair missed
+  an app restoring the tokens at `:root` and had to be kept in step by hand. A JS-driven duration reads the
+  same factor off its root (`BitSwiper.effectiveDuration`). What a duration cannot express stays a query of
+  its own, guarded with `:not(.bit-fam):not(.bit-fam *)`: a placeholder loop that stops rather than slows
+  (BitShimmer, BitTextShimmer, a skeleton), a `scroll-behavior`. `BitReducedMotionDurationContractTests`
+  pins it for every stylesheet at once.
 - **Opacity**: a disabled element that keeps its own colors dims with `$opa-dis`; text-bearing
   controls use the `$clr-*-dis` color tokens instead.
 - **Density**: a size or inset measured in spacing units is never computed in a theme scope - one
@@ -448,7 +461,8 @@ global token tier: add the token, let the component read it, and keep the preset
 **A family alias a theme declares is declared again for an inline overlay, from the same mixin.** A
 `BitThemeProvider` / `ApplyBitThemeAsync` writes only the primitives it was given, plus a
 `bit-theme-overlay` attribute naming the alias groups those feed (`BitThemeMapper.FamilyAliasOverlayGroups`:
-`radius`, `radius-control`, `shadow`, `tooltip`, `foreground`, the eight roles); every theme stylesheet
+`radius`, `radius-control`, `shadow`, `tooltip`, `foreground`, the eight roles, `typography` - the dialog
+title and field caption, built from any step of the type ramps); every theme stylesheet
 re-declares its OWN aliases of each group on that element through the `theme-overlay($group, $names)` mixin
 of `Styles/theme-overlay.scss`, so the aliases follow the overlay as the active theme builds them - never the
 core default under a preset that decided otherwise. So a group's declarations live in one mixin per theme

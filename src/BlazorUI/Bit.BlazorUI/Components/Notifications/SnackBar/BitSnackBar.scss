@@ -51,10 +51,11 @@ $snb-private-properties:
     max-width: calc(100% - var(--bit-snb-off-left) - var(--bit-snb-off-right));
 
     // The duration of the enter/exit animation of the items. TransitionDuration arrives inline as the -full
-    // token and the animations read this derived one, following the -full pattern of motion.fluent.scss, so
-    // the reduced-motion query below can still collapse a duration that was set inline. The fallback is the
-    // default of the parameter.
-    --bit-snb-dur: var(--bit-snb-dur-full, 200ms);
+    // token and the animations read this derived one, which scales it by the shared motion factor, so the
+    // reduced motion preference still collapses a duration that was set inline - and ForceAnimation, or an app
+    // restoring the motion tokens, still brings it back - with no query of the snack bar's own. The fallback is
+    // the default of the parameter.
+    --bit-snb-dur: #{mot-scaled-duration(var(--bit-snb-dur-full, 200ms))};
 
     // The direction an item enters from, so a snack bar at the top of the screen slides down out of the edge
     // it is pinned to and one at the bottom slides up out of its own. Re-pointed by the position classes.
@@ -85,22 +86,6 @@ $snb-private-properties:
     .bit-snb {
         --bit-snb-min-w: 100%;
     }
-}
-
-// 0.01ms instead of 0ms for the same reason as in motion.fluent.scss: a zero-duration animation never fires
-// its animationend event.
-@media (prefers-reduced-motion: reduce) {
-    .bit-snb {
-        --bit-snb-dur: 0.01ms;
-    }
-}
-
-// The shared .bit-fam opt-out (BitComponentBase.ForceAnimation) only re-points the --bit-mot-* tokens, so the
-// snack bar's own token is restored here, both for a snack bar that sets ForceAnimation itself and for one
-// sitting inside an opted-out subtree.
-.bit-snb.bit-fam,
-.bit-fam .bit-snb {
-    --bit-snb-dur: var(--bit-snb-dur-full, 200ms);
 }
 
 $snb-itm-private-properties: bg, fg, clr-txt, gap, pad, hdr-gap, ttl-fs, bdy-fs, ico-fs, cbt-size;

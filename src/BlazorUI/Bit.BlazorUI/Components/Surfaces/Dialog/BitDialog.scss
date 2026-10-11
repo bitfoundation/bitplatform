@@ -620,9 +620,10 @@ $dlg-private-properties: wid, hei, mnw, mnh, mxw, mxh;
 // prefers-reduced-motion its duration collapses to nothing - which would leave the gesture unanswered for
 // exactly the readers least able to guess why. The surface is ringed in the Dialog's own color for as long
 // as the class is on it instead, which says the same thing without moving anything. It overrides the
-// outline:none the surface carries because it comes later, at the same specificity.
+// outline:none the surface carries because it comes later, at the same specificity. A Dialog asked to animate
+// regardless (ForceAnimation, or inside a subtree that is) keeps its shake, and so needs no ring.
 @media (prefers-reduced-motion: reduce) {
-    .bit-dlg-prv {
+    .bit-dlg-prv:not(.bit-fam):not(.bit-fam *) {
         outline: $shp-border-width-thick $shp-border-style var(--bit-dlg-clr);
         outline-offset: calc(-1 * #{$shp-border-width-thick});
     }

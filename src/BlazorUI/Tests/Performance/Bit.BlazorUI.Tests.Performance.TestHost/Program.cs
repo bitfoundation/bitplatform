@@ -11,6 +11,9 @@ builder.Services.AddScoped(_ => new HttpClient());
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+// The services some components inject (BitCarousel's page visibility, ...), as an app registers them.
+builder.Services.AddBitBlazorUIServices();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

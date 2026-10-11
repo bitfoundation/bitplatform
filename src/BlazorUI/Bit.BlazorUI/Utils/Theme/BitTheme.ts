@@ -34,6 +34,8 @@ namespace BitBlazorUI {
         ['wrn', ['--bit-clr-wrn']],
         ['swr', ['--bit-clr-swr']],
         ['err', ['--bit-clr-err']],
+        ['typography', ['--bit-tpg-fs-2xs', '--bit-tpg-fs-xs', '--bit-tpg-fs-sm', '--bit-tpg-fs-md', '--bit-tpg-fs-lg', '--bit-tpg-fs-xl', '--bit-tpg-fs-2xl', '--bit-tpg-fs-3xl', '--bit-tpg-fs-4xl',
+                        '--bit-tpg-fw-light', '--bit-tpg-fw-regular', '--bit-tpg-fw-medium', '--bit-tpg-fw-semibold', '--bit-tpg-fw-bold']],
     ];
     // The page's own background - what a status bar sits above in nearly every app.
     const THEME_COLOR_VARIABLE = '--bit-clr-bg-pri';

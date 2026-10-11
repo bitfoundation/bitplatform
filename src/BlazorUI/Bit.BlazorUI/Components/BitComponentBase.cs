@@ -1,4 +1,5 @@
 ﻿using System.Collections.Frozen;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -195,6 +196,12 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 
 
     protected internal Dictionary<string, object?>? ParametersCache { get; set; }
+
+    // The arguments of the events Bit.BlazorUI.Events registers are filled in by System.Text.Json, through setters
+    // nothing else calls, so a trimmed app would otherwise lose them and hand every handler empty fields. They are
+    // kept from here since every app that uses the library renders at least one of its components.
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BitAnimationEventArgs))]
+    [DynamicDependency(DynamicallyAccessedMemberTypes.PublicProperties | DynamicallyAccessedMemberTypes.PublicParameterlessConstructor, typeof(BitTransitionEventArgs))]
     public override Task SetParametersAsync(ParameterView parameters)
     {
         _assignedParameters.Clear();

@@ -169,7 +169,7 @@ public partial class BitOverlayDemo
         {
             Name = "--bit-Overlay-transition-duration",
             DefaultValue = "--bit-mot-duration-short",
-            Description = "How long the layer takes to fade in and out. The default collapses under reduced motion; a value set here does not.",
+            Description = "How long the layer takes to fade in and out. Reduced motion collapses it - the default and a value set here alike - unless ForceAnimation is set.",
         },
     ];
 

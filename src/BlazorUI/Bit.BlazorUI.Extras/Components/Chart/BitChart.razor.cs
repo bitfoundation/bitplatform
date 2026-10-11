@@ -1376,11 +1376,13 @@ public partial class BitChart : BitComponentBase
             if (_scene.PlotArea is { Width: > 0 } pa)
                 frac = Math.Clamp((_scene.Elements[index].CenterX - pa.Left) / pa.Width, 0, 1);
             double pDelay = frac * Math.Max(0, dur - elDur);
-            return $"{cursor};animation-delay:{BitChartSvg.N(pDelay)}ms;animation-duration:{BitChartSvg.N(elDur)}ms";
+            // Handed to the stylesheet as tokens rather than written into the animation, so it can scale them by
+            // the shared motion factor and the reduced motion preference collapse them along with the rest.
+            return $"{cursor};--bit-cht-el-del-full:{BitChartSvg.N(pDelay)}ms;--bit-cht-el-dur-full:{BitChartSvg.N(elDur)}ms";
         }
         if (!Staggered) return cursor;
         double delay = index * _config.Options.Animation.DelayBetween;
-        string s = $"{cursor};animation-delay:{BitChartSvg.N(delay)}ms";
+        string s = $"{cursor};--bit-cht-el-del-full:{BitChartSvg.N(delay)}ms";
         if (_scene.HasBars)
         {
             // bit-cht-anim-bars-* use transform-box: view-box, so the origin must be given in view-box
@@ -1393,9 +1395,12 @@ public partial class BitChart : BitComponentBase
         return s;
     }
 
+    // The duration is handed to the stylesheet as the -full token rather than written into the animations directly,
+    // so the stylesheet can still scale it by the shared motion factor and the reduced motion preference collapse it
+    // (an inline duration would be out of reach of the motion tokens).
     private string AnimStyle => _config.Options.Animation.Easing.HasValue()
-        ? $"--bit-cht-dur:{_config.Options.Animation.Duration}ms;--bit-cht-ease:{_config.Options.Animation.Easing}"
-        : $"--bit-cht-dur:{_config.Options.Animation.Duration}ms";
+        ? $"--bit-cht-dur-full:{_config.Options.Animation.Duration}ms;--bit-cht-ease:{_config.Options.Animation.Easing}"
+        : $"--bit-cht-dur-full:{_config.Options.Animation.Duration}ms";
 
     /// <summary>Whether a click on the data does anything, which is what the pointer cursor promises.</summary>
     private bool IsClickable => Disabled is false && OnElementClick.HasDelegate;

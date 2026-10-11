@@ -618,6 +618,7 @@ public static partial class BitCss
             public const string Duration = "--bit-mot-duration";
             public const string DurationShort = "--bit-mot-duration-short";
             public const string DurationLong = "--bit-mot-duration-long";
+            public const string DurationFactor = "--bit-mot-duration-factor";
             public const string Easing = "--bit-mot-easing";
             public const string EasingDecelerate = "--bit-mot-easing-decelerate";
             public const string EasingAccelerate = "--bit-mot-easing-accelerate";
