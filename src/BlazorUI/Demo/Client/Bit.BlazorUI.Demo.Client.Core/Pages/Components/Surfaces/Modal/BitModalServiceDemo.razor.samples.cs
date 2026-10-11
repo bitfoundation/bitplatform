@@ -555,11 +555,56 @@ private async Task ShowCascadedOwnModal()
     });
 }";
 
+    private const string demoModalContainerCode = @"
+@inherits BitModalContainer
+
+<div>Open in this container: [@ModalReferences.Count(m => m.IsClosed is false)]</div>
+
+@(RenderModals(item => @<div class=""demo-modal-slot"" data-modal-id=""@item.Reference.Id"">@item.Modal</div>))";
+
     private readonly string example11RazorCode = @"
+<BitButton OnClick=""ShowCustomContainerModal"">Show at the start</BitButton>
+<BitButton Variant=""BitVariant.Outline"" OnClick=""ShowOtherCustomContainerModal"">Show at the end</BitButton>
+
+@* in an app, in the layout in place of the BitModalContainer, handed the service registered in DI *@
+<DemoModalContainer Service=""customModalService"" />";
+    private readonly string example11CsharpCode = @"
+private readonly BitModalService customModalService = new();
+
+private async Task ShowCustomContainerModal()
+{
+    await customModalService.Show<ModalBodyContent>(new BitModalParameters
+    {
+        MaxWidth = ""24rem"",
+        HeaderText = ""At the start"",
+        ShowCloseButton = true,
+        Modeless = true,
+        Position = BitPosition.TopStart
+    });
+}
+
+private async Task ShowOtherCustomContainerModal()
+{
+    await customModalService.Show<ModalBodyContent>(new BitModalParameters
+    {
+        MaxWidth = ""24rem"",
+        HeaderText = ""At the end"",
+        ShowCloseButton = true,
+        Modeless = true,
+        Position = BitPosition.TopEnd
+    });
+}";
+
+    private readonly DemoCodeFile[] example11CodeFiles =
+    [
+        new("DemoModalContainer.razor", demoModalContainerCode),
+    ];
+
+    private readonly string example12RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitButton OnClick=""ShowExternalIconModal"">External close icon</BitButton>";
-    private readonly string example11CsharpCode = @"
+    private readonly string example12CsharpCode = @"
 [AutoInject] private BitModalService modalService = default!;
 
 private async Task ShowExternalIconModal()
@@ -573,13 +618,13 @@ private async Task ShowExternalIconModal()
     });
 }";
 
-    private readonly string example12RazorCode = @"
+    private readonly string example13RazorCode = @"
 @* in the layout: the house style of every modal
 <BitModalContainer ModalParameters=""houseStyle"" /> *@
 
 <BitButton OnClick=""ShowCssVariablesModal"">CSS variables</BitButton>
 <BitButton Variant=""BitVariant.Outline"" OnClick=""ShowStyledPartsModal"">Styles</BitButton>";
-    private readonly string example12CsharpCode = @"
+    private readonly string example13CsharpCode = @"
 [AutoInject] private BitModalService modalService = default!;
 
 // in the layout
@@ -614,11 +659,11 @@ private async Task ShowStyledPartsModal()
     });
 }";
 
-    private readonly string example13RazorCode = @"
+    private readonly string example14RazorCode = @"
 <div dir=""rtl"">
     <BitButton Dir=""BitDir.Rtl"" OnClick=""ShowRtlModal"">باز کردن مُدال</BitButton>
 </div>";
-    private readonly string example13CsharpCode = @"
+    private readonly string example14CsharpCode = @"
 [AutoInject] private BitModalService modalService = default!;
 
 private async Task ShowRtlModal()
