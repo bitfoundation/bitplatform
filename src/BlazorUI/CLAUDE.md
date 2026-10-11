@@ -126,6 +126,46 @@ state also follows another component's (a `BitPivotItem` of a disabled `BitPivot
   disabled and enabled, and with an enabled control in its content, and every content host keeping
   them; a new one goes in one of its lists.
 
+## A disabled component says so the same way everywhere
+
+An app's stylesheets, scripts and test locators are written against the markup a disabled component
+renders, so it is one contract for the whole library, and the ThemingPage's "Styling a disabled
+component" section is where consumers read it:
+
+- **The root carries `bit-dis`** while `Disabled` is set, from `BitComponentBase`'s root classes - the one
+  hook for "this component is disabled", whatever element the root is.
+- **A native control rendered disabled writes `disabled` and `aria-disabled="true"`**, both
+  (`button`, `input`, `select`, `textarea`, `fieldset`, `option`, `optgroup`): `:disabled` and
+  `[aria-disabled="true"]` each find it. The aria-disabled expression covers everything the disabled one
+  does, never less (`@(X ? "true" : null)` beside `disabled="@X"`) - a string, since a bool would render
+  as an empty attribute. An input the page splats `InputHtmlAttributes` onto writes
+  `aria-disabled="@GetInputAriaDisabled(X)"`, which keeps the page's own value while enabled (read
+  through `GetSplattedInputAttribute`, the one lookup of a splatted input attribute). A
+  `type="hidden"` input is left out: nothing reaches it.
+- **Both attributes read one name.** `X` is a parameter, a property or a local - negated or compared with
+  `is true` / `is false` at most - never a condition written out in the tag: a compound or a call computed
+  once into a local (`@{ var hideDisabled = Disabled || !CanHideColumn(col); }`, or a plain `var` in a code
+  block) or a private property (`NoPages`, `PreviousPagesDisabled`) is evaluated once per control, which
+  matters when it calls an app's delegate per row, and cannot drift between the two copies. aria-disabled
+  may say more than that name (`(okDisabled || _isLoading) ? "true" : null`).
+- **Markup built in C# follows the same rule**: a RenderTreeBuilder that writes `disabled` writes
+  `aria-disabled` into the same element (`BitRichTextEditor.Toolbar.cs`, the markdown task checkbox).
+- **A control kept focusable while unavailable writes `aria-disabled="true"` alone** - a loading button,
+  `AllowDisabledFocus` / `DisabledInteractive`, a link, which has no `disabled` - since the native
+  attribute would drop the focus to the body.
+- **Never `disabled` on any other element** (HTML defines it on the form controls only), and never
+  `aria-disabled` on a structural wrapper just because it is the root: the state goes on the element
+  that stands for what is unavailable. `BitElement` is that element rather than a wrapper of one, so it
+  writes `aria-disabled` on whatever tag it renders.
+- **SCSS keys a part on both** (`&:disabled, &[aria-disabled="true"]`), the second being what reaches
+  the focusable-but-unavailable controls; a whole disabled component is styled from `.bit-dis`.
+- `BitDisabledMarkupContractTests` reads every package's markup - `.razor` and RenderTreeBuilder `.cs` -
+  for the native-control rule, the one name and that aria-disabled covers it (resolving the locals and
+  the properties a condition is computed from), and renders every component of the activation contract's
+  lists, disabled and enabled, for the root class and the pairing. `BitDisabledStateBrowserTests`
+  (`Tests/Performance`, one `?part=` of `/regression/disabled-state` per component) reads the live DOM
+  of every engine for the same, through a runtime toggle of `Disabled` and back.
+
 ## Demo pages
 
 A component's demo page is

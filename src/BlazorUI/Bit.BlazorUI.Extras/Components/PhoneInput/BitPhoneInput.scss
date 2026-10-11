@@ -561,10 +561,12 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
     display: none;
 }
 
+// The label again, at the top of the responsive panel: it reads the same size as the one above the field (an
+// explicit Size first, then the label and font variables), which phi-vars resolves on the callout as on the root.
 .bit-phi-rlb {
     display: block;
     box-sizing: border-box;
-    font-size: $tg-fs-sm;
+    font-size: var(--bit-phi-lbl-fs);
     letter-spacing: $tg-ctrl-letter-spacing;
     color: var(--bit-PhoneInput-label-color, #{$clr-fg-pri});
     font-weight: var(--bit-PhoneInput-label-font-weight, #{$tg-field-label-font-weight});

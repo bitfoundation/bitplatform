@@ -781,6 +781,20 @@ public partial class BitPdfViewer : BitComponentBase
     /// </summary>
     public byte[]? GetBytes() => _bytes;
 
+    // The conditions the toolbar's controls are disabled by, each read by both the disabled and the aria-disabled
+    // attribute of every control it disables.
+    private bool NoPages => _pages.Count == 0;
+
+    private bool OnFirstPage => CurrentPage <= 1;
+
+    private bool OnLastPage => CurrentPage >= _pages.Count;
+
+    private bool NoSearchMatches => _searchTotal <= 0;
+
+    private bool DownloadDisabled => _bytes is null || CanDownload is false;
+
+    private bool PrintDisabled => _pages.Count == 0 || CanPrint is false;
+
     /// <summary>
     /// Navigates to the next page.
     /// </summary>

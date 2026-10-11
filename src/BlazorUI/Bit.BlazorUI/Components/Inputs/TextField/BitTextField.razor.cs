@@ -1148,7 +1148,7 @@ public partial class BitTextField : BitTextInputBase<string?>
             // own would otherwise lose it the moment the component has anything to reference.
             var ids = string.Join(' ', new[]
             {
-                GetInputAttribute("aria-describedby"),
+                GetSplattedInputAttribute("aria-describedby"),
                 HasErrorMessage ? _errorId : null,
                 HasDescription ? _descriptionId : null,
                 AriaDescription.HasValue() ? _ariaDescriptionId : null,
@@ -1162,9 +1162,9 @@ public partial class BitTextField : BitTextInputBase<string?>
     // The forced invalid state and the one the EditContext produces end up on the same attribute, and the
     // base class writes the latter into the splatted attributes, so the value of the consumer is read back
     // here instead of being overwritten by the explicit attribute of the input.
-    private string? AriaInvalid => HasError ? "true" : GetInputAttribute("aria-invalid");
+    private string? AriaInvalid => HasError ? "true" : GetSplattedInputAttribute("aria-invalid");
 
-    private string? AriaBusy => Loading ? "true" : GetInputAttribute("aria-busy");
+    private string? AriaBusy => Loading ? "true" : GetSplattedInputAttribute("aria-busy");
 
     // The tooltip is written on the frame so that it also covers the affixes and the icon around the input,
     // and on the input itself so that it reaches a keyboard: a title on a div is shown on hover and nothing
@@ -1172,7 +1172,7 @@ public partial class BitTextField : BitTextInputBase<string?>
     // back to when the field carries no other description. The value of the consumer is read back here for
     // the same reason the other attributes below are - the explicit attribute of the input wins over the
     // splatted ones, so a null written over a splatted title would take that title away.
-    private string? InputTitle => Title ?? GetInputAttribute("title");
+    private string? InputTitle => Title ?? GetSplattedInputAttribute("title");
 
     // What the state of the field has to say out loud. The rejection wins over the other two, which say what
     // the field is doing rather than what is wrong with it.
@@ -1226,10 +1226,10 @@ public partial class BitTextField : BitTextInputBase<string?>
     // aria-labelledby takes precedence over aria-label in turn, so pointing at the visible label while a name
     // of its own was given would quietly throw that name away. The visible label keeps naming the input
     // through the for/id pair either way, which is what the label element is for.
-    private string? LabelledBy => GetInputAttribute("aria-labelledby")
+    private string? LabelledBy => GetSplattedInputAttribute("aria-labelledby")
                                   ?? (HasLabel && AriaLabel.HasNoValue() ? _labelId : null);
 
-    private string? InputAriaLabel => AriaLabel ?? GetInputAttribute("aria-label");
+    private string? InputAriaLabel => AriaLabel ?? GetSplattedInputAttribute("aria-label");
 
     // A button holding nothing but a hidden glyph is named by its aria-label, or else by its title, and one with
     // neither is announced as a bare "button". So, with neither given, it falls back to the name of the built-in
@@ -1239,11 +1239,6 @@ public partial class BitTextField : BitTextInputBase<string?>
                                             : IconTitle.HasValue()
                                                 ? null
                                                 : (IconName.HasValue() && Icon is null ? IconName : "Field action");
-
-    private string? GetInputAttribute(string name)
-    {
-        return TryFindAttribute(InputHtmlAttributes, name, out var value) ? value?.ToString() : null;
-    }
 
     private string CountText => MaxLength >= 0 ? $"{_charCount}/{MaxLength}" : _charCount.ToString();
 

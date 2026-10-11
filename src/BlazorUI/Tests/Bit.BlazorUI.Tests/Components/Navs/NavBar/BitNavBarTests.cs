@@ -552,10 +552,10 @@ public class BitNavBarTests : BunitTestContext
 
         var disabled = component.FindAll(".bit-nbr-itm")[1];
 
-        // An item without a URL is a button, whose native disabled attribute already reports the state.
+        // An item without a URL is a button: disabled natively, with the aria-disabled every disabled native control repeats.
         Assert.AreEqual("BUTTON", disabled.TagName);
         Assert.IsTrue(disabled.HasAttribute("disabled"));
-        Assert.IsFalse(disabled.HasAttribute("aria-disabled"));
+        Assert.AreEqual("true", disabled.GetAttribute("aria-disabled"));
         Assert.IsFalse(disabled.HasAttribute("tabindex"));
     }
 

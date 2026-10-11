@@ -105,6 +105,7 @@
                     type="button"
                     title="@uploadTitle"
                     disabled="@(FileUpload.Disabled)"
+                    aria-disabled="@(FileUpload.Disabled ? "true" : null)"
                     aria-label="@($"{uploadTitle} {Item.Name}")"
                     style="@FileUpload.Styles?.UploadButton"
                     class="bit-upl-usi @FileUpload.Classes?.UploadButton">
@@ -122,6 +123,7 @@
                     type="button"
                     title="@pauseTitle"
                     disabled="@(FileUpload.Disabled)"
+                    aria-disabled="@(FileUpload.Disabled ? "true" : null)"
                     aria-label="@($"{pauseTitle} {Item.Name}")"
                     style="@FileUpload.Styles?.PauseButton"
                     class="bit-upl-usi @FileUpload.Classes?.PauseButton">
@@ -141,6 +143,7 @@
                     type="button"
                     title="@cancelTitle"
                     disabled="@(FileUpload.Disabled)"
+                    aria-disabled="@(FileUpload.Disabled ? "true" : null)"
                     aria-label="@($"{cancelTitle} {Item.Name}")"
                     style="@FileUpload.Styles?.CancelButton"
                     class="bit-upl-usi @FileUpload.Classes?.CancelButton">
@@ -169,6 +172,7 @@
                         type="button"
                         title="@removeTitle"
                         disabled="@(FileUpload.Disabled)"
+                        aria-disabled="@(FileUpload.Disabled ? "true" : null)"
                         aria-label="@($"{removeTitle} {Item.Name}")"
                         style="@FileUpload.Styles?.RemoveButton"
                         class="bit-upl-usi @FileUpload.Classes?.RemoveButton">

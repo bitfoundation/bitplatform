@@ -661,7 +661,7 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     // value at all while it is true and left out altogether while it is false, which is what an attribute splatted
     // onto a plain element does. So the two are resolved into the same thing here rather than into the "True" and
     // "False" that ToString would give an attribute the component writes itself.
-    private static string? StringifyAttributeValue(object? value)
+    private protected static string? StringifyAttributeValue(object? value)
     {
         if (value is bool boolean) return boolean ? string.Empty : null;
 

@@ -1,0 +1,440 @@
+﻿@page "/regression/disabled-state"
+@inject IWebHostEnvironment Env
+
+<PageTitle>Disabled State Regression</PageTitle>
+
+@* How a disabled component says so in its markup (#13549): the bit-dis class on its root, and on every native control
+   it renders disabled the disabled attribute together with aria-disabled="true". ?part= picks the component, so each
+   page carries one of them, and ?disabled=0 renders it enabled; #btn-toggle flips Disabled at runtime, which is what
+   shows that the renderer's diff takes both attributes away again and puts them back. Every component is rendered with
+   data-case-root splatted on its root and an onclick of the page counted in #v-clicks. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>Disabled State Regression (@Part)</h3>
+    <button @onclick="Toggle" id="btn-toggle">Toggle Disabled</button>
+    <div id="metrics" style="font-family: monospace;">
+        <p>Disabled: <span id="v-disabled">@(_disabled ? "true" : "false")</span></p>
+        <p>Clicks: <span id="v-clicks">@_clicks</span></p>
+        <p>Selection checks: <span id="v-selection-checks">@_selectionChecks</span></p>
+        <p>Status: <span id="status">@_status</span></p>
+    </div>
+</div>
+
+<div id="case" data-part="@Part" style="padding: 16px; min-width: 760px;">
+    @switch (Part)
+    {
+        // ---- Buttons ----
+
+        case "actionbutton":
+            <BitActionButton data-case-root Disabled="_disabled" OnClick="Hit" IconName="@BitIconName.Add">Action</BitActionButton>
+            break;
+
+        case "button":
+            <BitButton data-case-root Disabled="_disabled" OnClick="Hit">Button</BitButton>
+            break;
+
+        case "button-adf":
+            <BitButton data-case-root Disabled="_disabled" AllowDisabledFocus @onclick="Hit">Focusable</BitButton>
+            break;
+
+        case "button-loading":
+            <BitButton data-case-root Disabled="_disabled" IsLoading @onclick="Hit">Loading</BitButton>
+            break;
+
+        case "buttongroup":
+            <BitButtonGroup data-case-root TItem="BitButtonGroupItem" Disabled="_disabled" Items="_buttonGroupItems" @onclick="Hit" />
+            break;
+
+        case "buttongroup-di":
+            <BitButtonGroup data-case-root TItem="BitButtonGroupItem" Disabled="_disabled" DisabledInteractive Items="_buttonGroupItems" />
+            break;
+
+        case "menubutton":
+            <BitMenuButton data-case-root TItem="BitMenuButtonItem" Disabled="_disabled" Text="Menu" Split Items="_menuButtonItems" @onclick="Hit" />
+            break;
+
+        case "togglebutton":
+            <BitToggleButton data-case-root Disabled="_disabled" Text="Toggle" OnClick="Hit" />
+            break;
+
+        // ---- Inputs ----
+
+        case "calendar":
+            <BitCalendar data-case-root Disabled="_disabled" ShowTimePicker ShowGoToToday ShowNowButton @onclick="Hit" />
+            break;
+
+        case "calendar-range":
+            @* Enabled, the days outside the range and the month buttons past it are disabled on their own. *@
+            <BitCalendar data-case-root Disabled="_disabled" MinDate="DateTimeOffset.Now.AddDays(-2)" MaxDate="DateTimeOffset.Now.AddDays(2)" />
+            break;
+
+        case "checkbox":
+            <BitCheckbox data-case-root Disabled="_disabled" Label="Check" @onclick="Hit" />
+            break;
+
+        case "checkbox-adf":
+            <BitCheckbox data-case-root Disabled="_disabled" AllowDisabledFocus Label="Check" />
+            break;
+
+        case "choicegroup":
+            <BitChoiceGroup data-case-root TItem="BitChoiceGroupItem<string>" TValue="string" Disabled="_disabled" Items="_choiceItems" @onclick="Hit" />
+            break;
+
+        case "circulartimepicker":
+            <BitCircularTimePicker data-case-root Disabled="_disabled" Standalone ShowNowButton ShowClearButton @onclick="Hit" />
+            break;
+
+        case "colorpicker":
+            <BitColorPicker data-case-root Disabled="_disabled" ShowEyeDropper ShowInputs ShowPreview Presets="_presets" @onclick="Hit" />
+            break;
+
+        case "datepicker":
+            <BitDatePicker data-case-root Disabled="_disabled" Standalone ShowGoToToday ShowClearButton @onclick="Hit" />
+            break;
+
+        case "datepicker-input":
+            <BitDatePicker data-case-root Disabled="_disabled" AllowTextInput @onclick="Hit" />
+            break;
+
+        case "daterangepicker":
+            <BitDateRangePicker data-case-root Disabled="_disabled" Standalone ShowGoToToday ShowClearButton @onclick="Hit" />
+            break;
+
+        case "dropdown":
+            <BitDropdown data-case-root TItem="BitDropdownItem<string>" TValue="string" Disabled="_disabled" Items="_dropdownItems" MultiSelect Label="Pick" @onclick="Hit" />
+            break;
+
+        case "fileinput":
+            <BitFileInput data-case-root Disabled="_disabled" Multiple @onclick="Hit" />
+            break;
+
+        case "fileupload":
+            <BitFileUpload data-case-root Disabled="_disabled" Multiple UploadUrl="/upload" @onclick="Hit" />
+            break;
+
+        case "numberfield":
+            <BitNumberField data-case-root TValue="int" Disabled="_disabled" Mode="BitSpinButtonMode.Inline" Max="5" DefaultValue="5" ShowClearButton @onclick="Hit" />
+            break;
+
+        case "otpinput":
+            <BitOtpInput data-case-root Disabled="_disabled" Length="4" @onclick="Hit" />
+            break;
+
+        case "rating":
+            <BitRating data-case-root Disabled="_disabled" @onclick="Hit" />
+            break;
+
+        case "searchbox":
+            <BitSearchBox data-case-root Disabled="_disabled" DefaultValue="query" @onclick="Hit" />
+            break;
+
+        case "slider":
+            <BitSlider data-case-root Disabled="_disabled" @onclick="Hit" />
+            break;
+
+        case "slider-ranged":
+            <BitSlider data-case-root Disabled="_disabled" IsRanged DefaultLowerValue="2" DefaultUpperValue="7" Max="10" />
+            break;
+
+        case "tagsinput":
+            <BitTagsInput data-case-root Disabled="_disabled" DefaultValue="_tags" ShowClearButton @onclick="Hit" />
+            break;
+
+        case "textfield":
+            <BitTextField data-case-root Disabled="_disabled" DefaultValue="text" ShowClearButton CanRevealPassword @onclick="Hit" />
+            break;
+
+        case "textfield-splat-bool-true":
+            <BitTextField data-case-root Disabled="_disabled" InputHtmlAttributes="_splatTrue" />
+            break;
+
+        case "textfield-splat-bool-false":
+            <BitTextField data-case-root Disabled="_disabled" InputHtmlAttributes="_splatFalse" />
+            break;
+
+        case "textfield-splat-string":
+            <BitTextField data-case-root Disabled="_disabled" InputHtmlAttributes="_splatString" />
+            break;
+
+        case "timepicker":
+            <BitTimePicker data-case-root Disabled="_disabled" Standalone ShowNowButton ShowClearButton @onclick="Hit" />
+            break;
+
+        case "toggle":
+            <BitToggle data-case-root Disabled="_disabled" Label="Toggle" @onclick="Hit" />
+            break;
+
+        case "toggle-adf":
+            <BitToggle data-case-root Disabled="_disabled" AllowDisabledFocus Label="Toggle" />
+            break;
+
+        // ---- Lists ----
+
+        case "basiclist":
+            <BitBasicList data-case-root TItem="string" Disabled="_disabled" Items="_listItems" LoadMore LoadMoreSize="2" @onclick="Hit">
+                <RowTemplate Context="item"><div>@item</div></RowTemplate>
+            </BitBasicList>
+            break;
+
+        case "carousel":
+            <div style="width: 400px; height: 200px;">
+                <BitCarousel data-case-root Disabled="_disabled" ShowPlayPause AutoPlay>
+                    <BitCarouselItem>One</BitCarouselItem>
+                    <BitCarouselItem>Two</BitCarouselItem>
+                    <BitCarouselItem>Three</BitCarouselItem>
+                </BitCarousel>
+            </div>
+            break;
+
+        case "swiper":
+            <div style="width: 300px;">
+                <BitSwiper data-case-root Disabled="_disabled" ShowDots ShowPlayPause>
+                    @for (var i = 0; i < 8; i++)
+                    {
+                        var n = i;
+                        <BitSwiperItem><div style="width: 120px; height: 80px;">Item @n</div></BitSwiperItem>
+                    }
+                </BitSwiper>
+            </div>
+            break;
+
+        // ---- Navs ----
+
+        case "breadcrumb":
+            <BitBreadcrumb data-case-root TItem="BitBreadcrumbItem" Disabled="_disabled" Items="_breadcrumbItems" MaxDisplayedItems="2" @onclick="Hit" />
+            break;
+
+        case "dropmenu":
+            <BitDropMenu data-case-root Disabled="_disabled" Text="Drop" @onclick="Hit"><div>Body</div></BitDropMenu>
+            break;
+
+        case "nav":
+            <BitNav data-case-root TItem="BitNavItem" Disabled="_disabled" Items="_navItems" @onclick="Hit" />
+            break;
+
+        case "navbar":
+            <BitNavBar data-case-root TItem="BitNavBarItem" Disabled="_disabled" Items="_navBarItems" @onclick="Hit" />
+            break;
+
+        case "pagination":
+            <BitPagination data-case-root Disabled="_disabled" Count="5" ShowFirstButton ShowLastButton ShowPreviousButton ShowNextButton ShowPageSizeSelector ShowGoToPage @onclick="Hit" />
+            break;
+
+        case "pivot":
+            <div style="width: 220px;">
+                <BitPivot data-case-root Disabled="_disabled" OverflowBehavior="BitPivotOverflowBehavior.Slide">
+                    @for (var i = 0; i < 8; i++)
+                    {
+                        var n = i;
+                        <BitPivotItem HeaderText="@($"Tab {n}")">Panel @n</BitPivotItem>
+                    }
+                </BitPivot>
+            </div>
+            break;
+
+        // ---- Notifications ----
+
+        case "badge":
+            <BitBadge data-case-root Disabled="_disabled" Content="5" OnClick="Hit"><span>Inbox</span></BitBadge>
+            break;
+
+        case "message":
+            <BitMessage data-case-root Disabled="_disabled" Dismissible OnDismiss="Hit" Truncate>
+                A long message that is truncated so that it has an expander button of its own beside the dismiss button, which is
+                long enough to need one even on a wide screen, so it goes on and on for a while longer than the line it is on.
+            </BitMessage>
+            break;
+
+        case "persona":
+            <BitPersona data-case-root Disabled="_disabled" PrimaryText="Ada Lovelace" OnActionClick="Hit" />
+            break;
+
+        case "tag":
+            <BitTag data-case-root Disabled="_disabled" Text="Tag" OnDismiss="Hit" />
+            break;
+
+        // ---- Surfaces ----
+
+        case "card":
+            <BitCard data-case-root Disabled="_disabled" OnClick="Hit">Card body</BitCard>
+            break;
+
+        case "dialog":
+            <BitDialog data-case-root Disabled="_disabled" DefaultIsOpen Title="Dialog" ShowCloseButton ShowOkButton ShowCancelButton AutoFocus="false">Body</BitDialog>
+            break;
+
+        case "dialog-ok-off":
+            <BitDialog data-case-root Disabled="_disabled" DefaultIsOpen Title="Dialog" ShowOkButton ShowCancelButton IsOkButtonEnabled="false" AutoFocus="false">Body</BitDialog>
+            break;
+
+        case "modal":
+            <BitModal data-case-root Disabled="_disabled" DefaultIsOpen ShowCloseButton HeaderText="Modal">Body</BitModal>
+            break;
+
+        case "panel":
+            <BitPanel data-case-root Disabled="_disabled" IsOpen="true" ShowCloseButton HeaderText="Panel">Body</BitPanel>
+            break;
+
+        // ---- Utilities ----
+
+        case "link":
+            <BitLink data-case-root Disabled="_disabled" OnClick="Hit">Link</BitLink>
+            break;
+
+        case "element-div":
+            <BitElement data-case-root Disabled="_disabled" @onclick="Hit">A div</BitElement>
+            break;
+
+        // ---- Extras ----
+
+        case "accentcolorswitcher":
+            <BitAccentColorSwitcher data-case-root Disabled="_disabled" @onclick="Hit" />
+            break;
+
+        case "themeswitcher":
+            <BitThemeSwitcher data-case-root Disabled="_disabled" @onclick="Hit" />
+            break;
+
+        case "chart":
+            <div style="width: 600px; height: 300px;">
+                <BitChart data-case-root Disabled="_disabled" Type="BitChartType.Bar" Data="_chartData" />
+            </div>
+            break;
+
+        case "datagrid":
+            <BitDataGrid data-case-root TItem="GridRow" Disabled="_disabled" Items="_gridRows" Editable ShowColumnChooser
+                         SelectionMode="BitSelectionMode.Multiple" IsRowSelectionDisabled="IsRowSelectionDisabled"
+                         Pageable PageSize="2" ShowRowNumbers>
+                <BitDataGridColumn TItem="GridRow" Field="@nameof(GridRow.Id)" Title="ID" Editable="false" />
+                <BitDataGridColumn TItem="GridRow" Field="@nameof(GridRow.Name)" Title="Name" />
+            </BitDataGrid>
+            break;
+
+        case "fullcalendar":
+            <div style="height: 640px;">
+                <BitFullCalendar data-case-root Disabled="_disabled" DefaultView="BitFullCalendarView.Month" DefaultDate="DateTime.Today" Settings="_fcSettings" />
+            </div>
+            break;
+
+        case "fullcalendar-week":
+            <div style="height: 640px;">
+                <BitFullCalendar data-case-root Disabled="_disabled" DefaultView="BitFullCalendarView.Week" DefaultDate="DateTime.Today" Settings="_fcSettings" />
+            </div>
+            break;
+
+        case "markdowneditor":
+            <BitMarkdownEditor data-case-root Disabled="_disabled" @bind-Value="_md" />
+            break;
+
+        case "markdownviewer":
+            <BitMarkdownViewer data-case-root Disabled="_disabled" Markdown="@("- [ ] open\n- [x] done\n")" Pipeline="BitMarkdownPipelines.GitHub" />
+            break;
+
+        case "pdfviewer-empty":
+            @* No document: every control that needs a page is disabled, enabled or not. *@
+            <BitPdfViewer data-case-root Disabled="_disabled" Height="480px" />
+            break;
+
+        case "pdfviewer":
+            <BitPdfViewer data-case-root Disabled="_disabled" Source="_pdf" Height="480px" />
+            break;
+
+        case "phoneinput":
+            <BitPhoneInput data-case-root Disabled="_disabled" ShowClearButton @onclick="Hit" />
+            break;
+
+        case "richtexteditor":
+            <BitRichTextEditor data-case-root Disabled="_disabled" @bind-Value="_html" Toolbar="BitRichTextEditorToolbar.AllExtended" />
+            break;
+
+        case "richtexteditor-readonly":
+            <BitRichTextEditor data-case-root Disabled="_disabled" ReadOnly @bind-Value="_html" Toolbar="BitRichTextEditorToolbar.AllExtended" />
+            break;
+    }
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "part")] public string? Part { get; set; }
+    [SupplyParameterFromQuery(Name = "disabled")] public string? DisabledQuery { get; set; }
+
+    private bool _disabled;
+    private int _clicks;
+    private int _selectionChecks;
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
+    // interactive render moves it on, which is what the test waits for before it drives the page.
+    private string _status = "Loading";
+
+    private readonly List<BitButtonGroupItem> _buttonGroupItems = [new() { Text = "One" }, new() { Text = "Two" }];
+    private readonly List<BitMenuButtonItem> _menuButtonItems = [new() { Text = "First", Key = "a" }, new() { Text = "Second", Key = "b" }];
+    private readonly List<BitChoiceGroupItem<string>> _choiceItems = [new() { Text = "A", Value = "a" }, new() { Text = "B", Value = "b" }];
+    private readonly List<BitDropdownItem<string>> _dropdownItems = [new() { Text = "A", Value = "a" }, new() { Text = "B", Value = "b" }];
+    private readonly List<string> _presets = ["#ff0000", "#00ff00"];
+    private readonly ICollection<string> _tags = ["one", "two"];
+    private readonly List<string> _listItems = ["a", "b", "c", "d", "e", "f"];
+    private readonly List<BitBreadcrumbItem> _breadcrumbItems =
+    [
+        new() { Text = "One", OnClick = _ => { } },
+        new() { Text = "Two", OnClick = _ => { } },
+        new() { Text = "Three", OnClick = _ => { } },
+        new() { Text = "Four", OnClick = _ => { } },
+    ];
+    private readonly List<BitNavItem> _navItems =
+    [
+        new() { Text = "Group", ChildItems = [new() { Text = "Child", Url = "#child" }] },
+        new() { Text = "Other group", ChildItems = [new() { Text = "Leaf", Url = "#leaf" }] },
+    ];
+    private readonly List<BitNavBarItem> _navBarItems = [new() { Text = "One" }, new() { Text = "Two" }];
+
+    private readonly Dictionary<string, object> _splatTrue = new() { ["aria-disabled"] = true };
+    private readonly Dictionary<string, object> _splatFalse = new() { ["aria-disabled"] = false };
+    private readonly Dictionary<string, object> _splatString = new() { ["aria-disabled"] = "true" };
+
+    private readonly BitChartData _chartData = new()
+    {
+        Labels = ["A", "B", "C"],
+        Datasets = [new() { Label = "S1", Data = [3, 5, 2] }, new() { Label = "S2", Data = [1, 2, 3] }]
+    };
+
+    public class GridRow { public int Id { get; set; } public string Name { get; set; } = ""; }
+    private readonly List<GridRow> _gridRows = [new() { Id = 1, Name = "one" }, new() { Id = 2, Name = "two" }, new() { Id = 3, Name = "three" }];
+
+    private readonly BitFullCalendarSettings _fcSettings = new() { NavLinks = true, ShowWeekNumbers = true };
+
+    private string? _md = "hello";
+    private string? _html = "<p>hello</p>";
+    private BitPdfSource? _pdf;
+
+    private void Hit() => _clicks++;
+
+    // Counted, so the test can tell how many times a render asks the app's delegate.
+    private bool IsRowSelectionDisabled(GridRow row)
+    {
+        _selectionChecks++;
+        return row.Id == 2;
+    }
+
+    protected override void OnInitialized()
+    {
+        _disabled = DisabledQuery is not "0";
+
+        if (Part is "pdfviewer")
+        {
+            var path = Path.GetFullPath(Path.Combine(Env.ContentRootPath, "..", "..", "..", "Demo", "Client",
+                                                     "Bit.BlazorUI.Demo.Client.Core", "wwwroot", "samples", "sample-pdf.pdf"));
+            _pdf = BitPdfSource.FromBytes(File.ReadAllBytes(path), "sample-pdf.pdf");
+        }
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+
+    private void Toggle()
+    {
+        _disabled = _disabled is false;
+        _status = _disabled ? "Disabled" : "Enabled";
+    }
+}

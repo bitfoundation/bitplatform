@@ -168,6 +168,7 @@
                     aria-label="@(_isLoadingMore ? LoadMoreText : null)"
                     aria-busy="@(_isLoadingMore ? "true" : null)"
                     disabled="@(Disabled)"
+                    aria-disabled="@(Disabled ? "true" : null)"
                     @onclick="() => LoadMoreItems(false)"
                     style="@Styles?.LoadMoreButton"
                     class="bit-bsl-lmb @Classes?.LoadMoreButton">

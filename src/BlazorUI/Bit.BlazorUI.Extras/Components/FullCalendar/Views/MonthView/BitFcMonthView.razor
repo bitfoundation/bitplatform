@@ -41,9 +41,11 @@
                    puts on the rail - and stays a plain label otherwise. *@
                 @if (State.NavLinks)
                 {
+                    var outOfRange = State.IsDateInAllowedRange(weekDate) is false;
                     <button type="button" class="bit-bfc-weeknum-cell bit-bfc-navlink"
                             aria-label="@string.Format(State.Culture, Texts.NavLinkWeekAriaLabelFormat, weekNumber)"
-                            disabled="@(State.IsDateInAllowedRange(weekDate) is false)"
+                            disabled="@outOfRange"
+                            aria-disabled="@(outOfRange ? "true" : null)"
                             @onclick="() => GoToWeek(weekDate)">
                         @string.Format(State.Culture, Texts.WeekNumberFormat, weekNumber)
                     </button>

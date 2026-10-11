@@ -562,7 +562,7 @@ public class BitBreadcrumbTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitBreadcrumbShouldLeaveTheDisabledStateOfADisabledButtonToTheNativeAttribute()
+    public void BitBreadcrumbShouldDisableADisabledButtonNativelyAndThroughAriaDisabled()
     {
         var items = new List<BitBreadcrumbItem>
         {
@@ -578,7 +578,7 @@ public class BitBreadcrumbTests : BunitTestContext
         var button = component.Find(".bit-brc-icn button.bit-brc-dis");
 
         Assert.IsTrue(button.HasAttribute("disabled"));
-        Assert.IsFalse(button.HasAttribute("aria-disabled"));
+        Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
     }
 
     [TestMethod]

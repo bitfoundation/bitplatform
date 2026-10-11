@@ -77,7 +77,8 @@
                         aria-expanded="@(Expanded ? "true" : "false")"
                         aria-describedby="@_ButtonDescribedBy"
                         aria-controls="@($"{_Id}-cnt")"
-                        disabled="@(Disabled)">
+                        disabled="@(Disabled)"
+                        aria-disabled="@(Disabled ? "true" : null)">
                     @{
                         var expanderIcon = Expanded
                             ? BitIconInfo.From(CollapseIcon, CollapseIconName ?? "DoubleChevronUp")
@@ -102,7 +103,8 @@
                         title="@DismissAriaLabel"
                         aria-label="@DismissAriaLabel"
                         aria-describedby="@_ButtonDescribedBy"
-                        disabled="@(Disabled)">
+                        disabled="@(Disabled)"
+                        aria-disabled="@(Disabled ? "true" : null)">
                     @{
                         var dismissIcon = BitIconInfo.From(DismissIcon, DismissIconName ?? "Cancel");
                     }

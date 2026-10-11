@@ -7,6 +7,9 @@
     @* Autofocus must not pull the focus onto a control that cannot take it: a disabled toggle is out of the
        tab order altogether unless AllowDisabledFocus keeps it in. *@
     var autoFocus = AutoFocus && (Disabled is false || AllowDisabledFocus);
+
+    @* Out of reach natively unless AllowDisabledFocus keeps it in the tab order, where aria-disabled carries the state alone. *@
+    var nativeDisabled = Disabled && AllowDisabledFocus is false;
 }
 
 @* stopping propagation on the root covers both the button click and the click a label forwards to it *@
@@ -60,7 +63,7 @@
                 tabindex="@TabIndex"
                 data-ktp-target="true"
                 data-is-focusable="true"
-                disabled="@(Disabled && AllowDisabledFocus is false)"
+                disabled="@nativeDisabled"
                 aria-label="@AriaLabel"
                 aria-checked="@_ariaChecked"
                 aria-controls="@AriaControls"
@@ -181,5 +184,6 @@
            class="bit-input-hidden"
            checked="@CurrentValue"
            value="@CurrentValueAsString"
-           disabled="@(Disabled)" />
+           disabled="@(Disabled)"
+           aria-disabled="@GetInputAriaDisabled(Disabled)" />
 </div>

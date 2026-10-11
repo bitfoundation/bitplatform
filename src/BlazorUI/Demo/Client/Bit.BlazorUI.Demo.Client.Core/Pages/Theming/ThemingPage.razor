@@ -1150,7 +1150,7 @@ await BitThemeManager.ApplyBitThemeAsync(dense);</CodeBox>
         </DocSection>
 
         <DocSection Id="motion-accessibility" Title="Motion and accessibility"
-                    Description="The motion tokens, how a themed duration still honours reduced motion, and the safety nets the stylesheets carry on their own.">
+                    Description="The motion tokens, how a themed duration still honours reduced motion, the safety nets the stylesheets carry on their own, and the markup a disabled component styles from.">
 
             <DocSection Level="3" Id="motion-tokens" Title="Motion tokens">
 
@@ -1224,6 +1224,35 @@ await BitThemeManager.ApplyBitThemeAsync(dense);</CodeBox>
                         Disabled and muted colors are deliberately <i>not</i> promoted: their meaning depends on staying subdued.
                     </li>
                 </ul>
+            </DocSection>
+
+            <DocSection Level="3" Id="disabled-state" Title="Styling a disabled component">
+
+                <BitText>
+                    Every component marks its disabled state in its markup the same way, so one selector or test locator finds it whatever the component is:
+                </BitText>
+
+                <ul>
+                    <li>
+                        <b>The component.</b> The root of a component whose <code>Disabled</code> is set carries the <code>bit-dis</code> class. It is the hook for styling a disabled component as a whole, and it is there on every component, whatever element its root is.
+                    </li>
+                    <li>
+                        <b>A control inside it.</b> A native control (a button, an input, a select) that is disabled carries the <code>disabled</code> attribute <i>and</i> <code>aria-disabled="true"</code>, so it matches both <code>:disabled</code> and <code>[aria-disabled="true"]</code>.
+                    </li>
+                    <li>
+                        <b>A control that stays focusable.</b> Some controls are unavailable but are kept in the tab order: a loading button, a component with <code>AllowDisabledFocus</code>, a link (which has no <code>disabled</code> attribute). These carry <code>aria-disabled="true"</code> alone, because the native attribute would move the keyboard focus off them.
+                    </li>
+                </ul>
+
+                <BitText>
+                    So <code>.bit-dis</code> matches every disabled component, and <code>[aria-disabled="true"]</code> matches every unavailable control inside one. Use <code>:disabled</code> only when a rule is meant for native controls alone. The root of a component never carries <code>aria-disabled</code> just because it is the root: a plain wrapper has no role for the state to apply to. The one exception is <code>BitElement</code>, whose root is not a wrapper but the element itself: a disabled one writes <code>aria-disabled="true"</code> whatever tag it renders, a <code>div</code> or a <code>span</code> included, so the rule below matches it as a whole.
+                </BitText>
+
+                <CodeBox Language="css">/* A disabled component, whatever it is */
+.my-form .bit-dis { opacity: .6; }
+
+/* Every unavailable control inside it, focusable or not */
+.my-form [aria-disabled="true"] { outline: 1px dashed GrayText; }</CodeBox>
             </DocSection>
         </DocSection>
 
