@@ -33,7 +33,9 @@
         hidden from assistive technologies rather than given an alt of its own. Under a FadeIn it outlives
         the load by the length of the fade, fading out as the image fades in, and is removed once that fade
         has ended - which only the browser knows, the duration being the theme's and the reduced-motion
-        preference's as much as the component's (Bit.BlazorUI.Events registers the directive). *@
+        preference's as much as the component's, and the animation itself a restyle's to replace
+        (Bit.BlazorUI.Events registers the directives). A canceled fade lets it go as well: it has nothing
+        left to show over the image. *@
     @if (_placeholderSrc.HasValue())
     {
         <img alt=""
@@ -42,7 +44,9 @@
              draggable="false"
              style="@GetPlaceholderStyles()"
              class="@GetPlaceholderClasses()"
-             @onanimationend="HandleOnPlaceholderAnimationEnd" />
+             @onanimationstart="HandleOnPlaceholderAnimationStart"
+             @onanimationend="HandleOnPlaceholderAnimationEnd"
+             @onanimationcancel="HandleOnPlaceholderAnimationEnd" />
     }
 
     @if (_hasSources)

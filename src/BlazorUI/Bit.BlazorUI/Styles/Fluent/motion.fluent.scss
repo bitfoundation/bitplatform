@@ -52,8 +52,9 @@
     --bit-mot-loop-factor: var(--bit-mot-loop-factor-full);
 }
 
-// 0.01ms instead of 0ms: a zero-duration transition/animation never fires its
-// transitionend/animationend event, which would hang any JS awaiting it.
+// 0.01ms instead of 0ms: a zero-duration transition is never run, so it never fires its
+// transitionend event, which would hang anything awaiting it (a zero-duration animation still
+// fires animationend; the one value keeps both kinds of wait working alike).
 // Twinned like the block above, and for the same reason in reverse: without the twin the collapse
 // would never reach a scoped preset region, whose durations are re-substituted on its own element.
 @media (prefers-reduced-motion: reduce) {

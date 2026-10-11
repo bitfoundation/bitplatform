@@ -1,0 +1,127 @@
+﻿@page "/regression/css-events"
+@using System.Globalization
+@using Bit.BlazorUI.Events
+
+<PageTitle>CSS Animation And Transition Events Regression</PageTitle>
+
+@* The CSS animation and transition directives Bit.BlazorUI.Events registers, driven by what the browser actually
+   plays: the arguments come from bit.blazorui.js, which reads them off the browser's event and hands them to Blazor,
+   so a field it misnames or drops reaches every handler empty. The tests start each animation or transition by
+   adding the "run" class from inside the page, which Blazor leaves alone, and read what .NET received off #log. *@
+<style>
+    @@keyframes css-events-pulse {
+        from { opacity: 1; }
+        to { opacity: 0.5; }
+    }
+
+    @@keyframes css-events-crossfade {
+        from { opacity: 1; }
+        to { opacity: 0; }
+    }
+
+    .css-events-box { width: 40px; height: 40px; background: steelblue; margin: 4px; }
+
+    #ev-animated.run { animation: css-events-pulse 200ms linear 2; }
+    #ev-pseudo.run::before { content: ""; display: block; width: 10px; height: 10px; animation: css-events-pulse 100ms linear; }
+    #ev-zero-animation.run { animation: css-events-pulse 0s; }
+    #ev-cancel.run { animation: css-events-pulse 10s linear; }
+    #ev-stopped.run > #ev-stopped-inner { animation: css-events-pulse 100ms linear; }
+
+    #ev-transitioned, #ev-app, #ev-zero-transition { transition: opacity 150ms linear; }
+    #ev-zero-transition { transition-duration: 0s; }
+    #ev-transitioned.run, #ev-app.run, #ev-zero-transition.run { opacity: 0.3; }
+
+    /* A restyle of the leaving placeholder that replaces its fade with a cross-fade of its own. */
+    .css-events-restyled .bit-img-plc.bit-img-pfo { animation-name: css-events-crossfade; }
+</style>
+
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>CSS Animation And Transition Events Regression</h3>
+    <p>Status: <span id="status">@_status</span></p>
+    <button id="btn-images" @onclick="ShowImages">Show images</button>
+</div>
+
+<div id="ev-outer"
+     @onanimationend="@(e => Log("ev-outer", "animationend", e))"
+     @ontransitionend="@(e => Log("ev-outer", "transitionend", e))">
+    <div id="ev-animated" class="css-events-box"
+         @onanimationstart="@(e => Log("ev-animated", "animationstart", e))"
+         @onanimationiteration="@(e => Log("ev-animated", "animationiteration", e))"
+         @onanimationend="@(e => Log("ev-animated", "animationend", e))"></div>
+
+    <div id="ev-stopped" class="css-events-box"
+         @onanimationend="@(e => Log("ev-stopped", "animationend", e))"
+         @onanimationend:stopPropagation="true">
+        <div id="ev-stopped-inner" style="width: 10px; height: 10px;"></div>
+    </div>
+
+    <div id="ev-pseudo" class="css-events-box"
+         @onanimationend="@(e => Log("ev-pseudo", "animationend", e))"></div>
+
+    <div id="ev-zero-animation" class="css-events-box"
+         @onanimationstart="@(e => Log("ev-zero-animation", "animationstart", e))"
+         @onanimationend="@(e => Log("ev-zero-animation", "animationend", e))"></div>
+
+    <div id="ev-cancel" class="css-events-box"
+         @onanimationcancel="@(e => Log("ev-cancel", "animationcancel", e))"></div>
+
+    <div id="ev-transitioned" class="css-events-box"
+         @ontransitionrun="@(e => Log("ev-transitioned", "transitionrun", e))"
+         @ontransitionstart="@(e => Log("ev-transitioned", "transitionstart", e))"
+         @ontransitionend="@(e => Log("ev-transitioned", "transitionend", e))"
+         @ontransitioncancel="@(e => Log("ev-transitioned", "transitioncancel", e))"></div>
+
+    <div id="ev-zero-transition" class="css-events-box"
+         @ontransitionrun="@(e => Log("ev-zero-transition", "transitionrun", e))"
+         @ontransitionend="@(e => Log("ev-zero-transition", "transitionend", e))"></div>
+
+    <div id="ev-app" class="css-events-box"
+         @ontransitionrun="@(e => Log("ev-app", "transitionrun", e))"></div>
+</div>
+
+@* Rendered only once the page is interactive, so each image arrives as the component's own and cross-fades with its
+   placeholder rather than being taken over from a prerender the browser had already painted. *@
+@if (_showImages)
+{
+    <div style="display: flex; gap: 8px;">
+        <BitImage Id="img-fade" Src="@ImageSrc" PlaceholderSrc="@PlaceholderSrc" FadeIn
+                  Width="100px" Height="100px" Style="--bit-Image-fade-duration: 600ms;" />
+
+        <BitImage Id="img-restyled" Class="css-events-restyled" Src="@ImageSrc" PlaceholderSrc="@PlaceholderSrc" FadeIn
+                  Width="100px" Height="100px" Style="--bit-Image-fade-duration: 600ms;" />
+
+        <BitImage Id="img-default" Src="@ImageSrc" PlaceholderSrc="@PlaceholderSrc" FadeIn
+                  Width="100px" Height="100px" />
+    </div>
+}
+
+<pre id="log">@string.Join("\n", _log)</pre>
+
+@code {
+    private const string ImageSrc = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100'%3E%3Crect width='100' height='100' fill='teal'/%3E%3C/svg%3E";
+    private const string PlaceholderSrc = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10'%3E%3Crect width='10' height='10' fill='orange'/%3E%3C/svg%3E";
+
+    private readonly List<string> _log = [];
+    private bool _showImages;
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
+    // interactive render moves it on, which is what the test waits for before it drives the page.
+    private string _status = "Loading";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+
+    private void ShowImages() => _showImages = true;
+
+    private static string Seconds(double value) => value.ToString("0.###", CultureInfo.InvariantCulture);
+
+    private void Log(string element, string eventName, BitAnimationEventArgs e)
+        => _log.Add($"{element} {eventName} name={e.AnimationName} target={e.TargetId} pseudo={e.PseudoElement} elapsed={Seconds(e.ElapsedTime)}");
+
+    private void Log(string element, string eventName, BitTransitionEventArgs e)
+        => _log.Add($"{element} {eventName} property={e.PropertyName} target={e.TargetId} pseudo={e.PseudoElement} elapsed={Seconds(e.ElapsedTime)}");
+}

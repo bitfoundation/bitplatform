@@ -73,6 +73,12 @@ public partial class BitImage : BitComponentBase
     private bool _placeholderFaded;
 
     /// <summary>
+    /// The animations that have started on the placeholder since it began to leave and not yet ended - its fade, or
+    /// whatever a restyle of the leaving placeholder runs in its place - the last of which ending is what lets it go.
+    /// </summary>
+    private readonly HashSet<string> _placeholderLeaveAnimations = [];
+
+    /// <summary>
     /// Whether the image is the browser's until the first render in the browser takes it over (see
     /// <see cref="_isLeftToBrowser"/>): a prerendered or a statically rendered one, which never gets that far, and
     /// the one of the interactive render that replaces a prerendered one (see <see cref="BitPrerender"/>). An image
@@ -1184,14 +1190,31 @@ public partial class BitImage : BitComponentBase
 
     // The placeholder of an image that fades in is laid over it, fading out, and would otherwise stay there
     // at no opacity - with its blur and its scale still on it - for as long as the component lives, so it
-    // is let go the moment its fade has ended. Only the end of its own fade counts, since a restyle may run an
-    // animation of its own on the placeholder. An end with no name is one that fired before the library's script had
-    // registered the event's arguments, and is taken for the fade: a placeholder kept over the image for good is the
-    // worse of the two mistakes.
+    // is let go the moment its fade has ended. The leaving class replaces whatever the placeholder was animating
+    // with the fade, so what starts on it from then on is the fade, or what a restyle of the leaving placeholder runs
+    // in its place under another name; it is let go once the last of those has ended or been canceled. An animation
+    // that was already running when the leaving started is not waited for. An end that comes with no start seen is
+    // taken for the fade when it carries its name or none at all - one fired before the library's script had
+    // registered the event's arguments - since a placeholder kept over the image for good is the worse mistake.
+    private void HandleOnPlaceholderAnimationStart(BitAnimationEventArgs e)
+    {
+        if (_isPlaceholderLeaving is false) return;
+
+        _placeholderLeaveAnimations.Add(e.AnimationName);
+    }
+
     private void HandleOnPlaceholderAnimationEnd(BitAnimationEventArgs e)
     {
         if (_isPlaceholderLeaving is false) return;
-        if (e.AnimationName.HasValue() && e.AnimationName != PlaceholderFadeOutAnimation) return;
+
+        if (_placeholderLeaveAnimations.Remove(e.AnimationName))
+        {
+            if (_placeholderLeaveAnimations.Count > 0) return;
+        }
+        else if (e.AnimationName.HasValue() && e.AnimationName != PlaceholderFadeOutAnimation)
+        {
+            return;
+        }
 
         _placeholderFaded = true;
     }
@@ -1228,6 +1251,7 @@ public partial class BitImage : BitComponentBase
             if (state is BitImageState.Loaded)
             {
                 _placeholderFaded = arrivedOnScreen;
+                _placeholderLeaveAnimations.Clear();
             }
         }
 
