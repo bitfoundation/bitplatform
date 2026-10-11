@@ -399,10 +399,12 @@ re-declaring them at the component boundary (`.bit-x .bit-x { --bit-X-foo: initi
 them with `@property { inherits: false; }` cuts off `:root` and every ancestor along with the outer
 instance, and so global theming with it - `inherits: false` is for private variables only (BitIcon's
 `--bit-ico-*`, `--bit-focus-ring-own`, `--bit-stk-zin`). What is meant for one instance alone goes through
-the per-instance tier, which never inherits: a parameter (published as a private variable the root
-resets, below) or the real property on `Style` / `Styles.X` / `Classes.X` - `Style="opacity: 1"` keeps
-one disabled BitElement undimmed without reaching a disabled one inside it, where
-`--bit-Element-disabled-opacity: 1` would reach both. The docs say so where it matters: a stylesheet header
+the per-instance tier: a parameter (published as a private variable the root resets, below), which never
+inherits, or the real property on `Style` / `Styles.X` / `Classes.X`, which stays on that one instance only
+when the property itself does not inherit - `Style="opacity: 1"` keeps one disabled BitElement undimmed
+without reaching a disabled one inside it, where `--bit-Element-disabled-opacity: 1` would reach both, while
+an inherited property (`color`, `font-family`, `line-height`) set there reaches the nested instances that do
+not set it themselves, exactly as the variable would. The docs say so where it matters: a stylesheet header
 or demo page says a value on an instance's `Style` restyles "that one alone" only for a component that
 cannot contain another of its kind; a nestable one says the value also reaches the instances inside it;
 and a `componentCssVariables` row whose typical value means "for me only" (a `disabled-opacity` of 1, a

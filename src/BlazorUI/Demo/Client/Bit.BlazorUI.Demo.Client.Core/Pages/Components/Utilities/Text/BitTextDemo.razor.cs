@@ -381,7 +381,7 @@ public partial class BitTextDemo
         {
             Name = "--bit-Text-disabled-opacity",
             DefaultValue = "--bit-opa-dis",
-            Description = "Opacity of a text whose Disabled is true. It inherits, so a value set on a text also reaches every disabled text nested in it; to change one text alone, set opacity on its Style instead, which is not inherited.",
+            Description = "Opacity of a text whose Disabled is true. The variable inherits, so a value set on a text also becomes the disabled opacity of every disabled text nested in it. To change one text alone, set opacity on its Style instead: the opacity property is not inherited, so a nested disabled text keeps its own disabled opacity, though like any opacity it still fades everything rendered inside the text along with it.",
         },
     ];
 
