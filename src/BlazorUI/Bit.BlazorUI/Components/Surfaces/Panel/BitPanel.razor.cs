@@ -909,12 +909,6 @@ public partial class BitPanel : BitComponentBase
         StateHasChanged();
     }
 
-    // Whether the Escape key is the panel's to act on, which is also whether it stops at the panel rather
-    // than carrying on up to whatever the panel was opened from. A panel that refuses the key lets every key
-    // through to the handlers of the page around it; one opened from inside another panel still keeps an
-    // Escape it refuses from that one, which the escape guard tells to leave it alone.
-    private bool DismissesOnEscape => IsOpen && Disabled is false && NoDismissOnEscape is false;
-
     // The scroller the panel holds while it is open, as an element where one is to be had. A selector the
     // consumer named beats the shell's scroller, since a panel inside a shell that names a region of its own
     // means that region; naming neither inside a shell means the shell, whose scroller is the only thing on

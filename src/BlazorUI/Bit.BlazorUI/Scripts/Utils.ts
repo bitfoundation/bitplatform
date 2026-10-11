@@ -818,10 +818,12 @@
                 if (e.key !== 'Escape') return;
 
                 // The nearest surface owns the key whatever it goes on to do with it, so an outer one never
-                // answers an Escape an inner one has already seen.
+                // answers an Escape an inner one has already seen - nor do the surfaces around it whose .NET
+                // handlers hear the key next (see _claimedEscapes).
                 const event = e as KeyboardEvent & { __bitSurfaceEscape?: boolean };
                 if (event.__bitSurfaceEscape) return;
                 event.__bitSurfaceEscape = true;
+                Utils._claimedEscapes.add(e);
 
                 if (e.isComposing || e.keyCode === 229 || e.defaultPrevented) return;
 
@@ -1058,9 +1060,56 @@
 
         private static _escapeGuards = new Map<string, AbortController>();
 
-        // The Escapes a guarded surface nested inside another one has already spoken for, so the surfaces it
-        // sits in leave them alone.
+        // The Escapes a surface nested inside another one has already spoken for, so the surfaces it sits in leave
+        // them alone: a dialog (setupSurfaceEscape), a panel (setupEscapeGuard), a modal (watchEscape) and an open
+        // callout (watchNestedEscape) each add the Escape pressed inside them as it bubbles through their root. None
+        // of them stops a key from bubbling on to Blazor's handlers around it - the page's own keyboard shortcuts
+        // keep working while one is open - so this is what tells an outer surface's .NET handler that the press it
+        // is about to hear was an inner one's.
         private static _claimedEscapes = new WeakSet<Event>();
+
+        private static _nestedEscapeWatches = new Map<string, AbortController>();
+
+        // Tells a surface whose .NET keydown handler acts on Escape, through its OnEscapeVerdict callback, whether the
+        // Escape that handler is about to hear was pressed inside a surface nested in it (see _claimedEscapes), and
+        // speaks for the key itself so the surfaces around it leave it alone in turn. Every element is listened on in
+        // the bubbling phase, so the innermost surface's listener runs first, and all of them run before Blazor's
+        // document-level delegation: the answer is queued ahead of the keydown Blazor dispatches right after it, and
+        // each keydown carries its own. A BitCallout watches its root (the anchor) and the callout while it is open.
+        public static watchNestedEscape(id: string, elementIds: string[], dotnetObj: DotNetObject) {
+            Utils.unwatchNestedEscape(id);
+
+            const controller = new AbortController();
+
+            for (const elementId of elementIds) {
+                const element = document.getElementById(elementId);
+                if (!element) continue;
+
+                Utils.listenForNestedEscape(element, dotnetObj, controller.signal);
+            }
+
+            Utils._nestedEscapeWatches.set(id, controller);
+        }
+
+        public static unwatchNestedEscape(id: string) {
+            const controller = Utils._nestedEscapeWatches.get(id);
+            if (!controller) return;
+
+            Utils._nestedEscapeWatches.delete(id);
+            controller.abort();
+        }
+
+        private static listenForNestedEscape(element: Element, dotnetObj: DotNetObject, signal: AbortSignal) {
+            element.addEventListener('keydown', e => {
+                if ((e as KeyboardEvent).key !== 'Escape') return;
+
+                const nested = Utils._claimedEscapes.has(e);
+                Utils._claimedEscapes.add(e);
+
+                dotnetObj.invokeMethodAsync('OnEscapeVerdict', nested)
+                         .catch(err => console.error("BitBlazorUI.Utils.watchNestedEscape:", err));
+            }, { signal });
+        }
 
         // Tells a surface that dismisses itself on Escape through a Blazor keydown handler, through its
         // OnEscapeVerdict callback, whether the Escape it is about to hear belongs to something inside it
@@ -1070,7 +1119,8 @@
         //   the panel the user was filling in along with the list they meant to close;
         // - a handler that already prevented the key's default;
         // - an IME composition the key cancels;
-        // - a guarded surface nested inside this one, which answers the key itself (or refuses it).
+        // - a surface nested inside this one - a panel, a dialog, a modal, an open callout's anchor - which answers
+        //   the key itself (or refuses it), see _claimedEscapes.
         // The answer has to be taken while the key is still going down: this listener is on the element, so it
         // runs before Blazor's document-level delegation lets the nested component close its popup. It is sent
         // for every Escape rather than read back later, so each keydown carries its own answer: the callback is
@@ -1152,7 +1202,8 @@
         // ask about later, so two quick presses cannot overwrite each other's answer, and .NET is only called
         // for a press that is the surface's.
         // A surface nested inside another one - a modal opened from inside a modal, rendered inside its
-        // content - takes the presses made inside it, and the outer one leaves them alone.
+        // content - takes the presses made inside it, and the outer one leaves them alone. The modal's own
+        // handler, which reports the key, is told the same through OnEscapeVerdict (listenForNestedEscape).
         public static watchEscape(elementId: string, dotnetObj: DotNetObject) {
             Utils.unwatchEscape(elementId);
 
@@ -1171,6 +1222,8 @@
                     claimed.add(e);
                 }
             }, { signal: controller.signal, capture: true });
+
+            Utils.listenForNestedEscape(element, dotnetObj, controller.signal);
 
             window.addEventListener('keydown', e => {
                 if (e.key !== 'Escape') return;

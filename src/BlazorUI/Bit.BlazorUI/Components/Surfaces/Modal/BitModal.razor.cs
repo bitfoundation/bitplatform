@@ -60,6 +60,7 @@ public partial class BitModal : BitComponentBase
     private string? _dragElementSelectorOnSetup;
     private bool _dragSetup;
     private bool _escapeWatched;
+    private bool _nestedEscape;
     private DotNetObjectReference<BitModal>? _dotnetObj;
 
     // Which of the two interchangeable "refused" animations the content is carrying, 0 for none. Two
@@ -499,7 +500,9 @@ public partial class BitModal : BitComponentBase
     /// place to react to a dismissal that was turned down, or to close a Modal on terms of its own.
     /// <br/>
     /// That includes the Escapes a layer inside the Modal answered first - a dropdown opened from inside it closing
-    /// its list, an input method cancelling what it was composing - which do not dismiss the Modal.
+    /// its list, an input method cancelling what it was composing - which do not dismiss the Modal. It leaves out the
+    /// ones pressed inside a surface nested in the Modal (another Modal, a dialog, a panel, an open callout's anchor),
+    /// which are that surface's to report.
     /// </remarks>
     [Parameter] public EventCallback<KeyboardEventArgs> OnEscapeKeyDown { get; set; }
 
@@ -1029,13 +1032,31 @@ public partial class BitModal : BitComponentBase
 
     // Every Escape pressed inside the Modal is reported here, including the ones a layer inside it answered first.
     // The key is only seen while the focus is inside the Modal, which is where it is put when the Modal opens.
+    // No key is stopped from bubbling on to the page's handlers around the Modal, so the Escape of a surface nested
+    // inside it - a Modal opened from inside this one, a dialog, a panel, an open callout's anchor - reaches this
+    // handler too; that one is the nested surface's to report, never this Modal's (see _OnEscapeVerdict).
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (_params.Disabled is true) return;
-
         if (e.Key is not "Escape") return;
 
+        // Taken before anything is decided, and whether or not the Modal goes on to report it, so the answer that
+        // was sent for this key is the one read and is gone before the next one's comes in.
+        var nested = _nestedEscape;
+        _nestedEscape = false;
+
+        if (nested || _params.Disabled is true) return;
+
         await _params.OnEscapeKeyDown.InvokeAsync(e);
+    }
+
+    // Sent by the script as each Escape goes down inside the Modal, ahead of the keydown Blazor then dispatches,
+    // saying whether it was pressed inside a surface nested in it that has spoken for it first (see
+    // Utils.watchNestedEscape). It is written for every Escape, so one that never reaches the handler leaves
+    // nothing behind that the next one could be mistaken for.
+    [JSInvokable("OnEscapeVerdict")]
+    public void _OnEscapeVerdict(bool nested)
+    {
+        _nestedEscape = nested;
     }
 
     /// <summary>
@@ -1455,6 +1476,7 @@ public partial class BitModal : BitComponentBase
         if (_escapeWatched is false) return;
 
         _escapeWatched = false;
+        _nestedEscape = false;
 
         try
         {

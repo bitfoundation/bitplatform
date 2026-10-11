@@ -176,21 +176,22 @@ public class BitCalloutTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCalloutShouldOnlyStopTheKeysOfItsAnchorWhileItIsOpen()
+    public void BitCalloutShouldNeverStopTheKeysOfItsAnchor()
     {
         var component = RenderComponent<BitCallout>(parameters =>
         {
             parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
         });
 
-        // A closed callout has nothing to dismiss, so the keys pressed on its anchor carry on to whatever it sits
-        // in - a toolbar moving between its buttons with the arrow keys, or the callout it is nested in.
+        // The keys pressed on the anchor carry on to whatever it sits in - a toolbar moving between its buttons with
+        // the arrow keys, the page's keyboard shortcuts, the callout it is nested in - closed or open. An open one
+        // keeps its Escape from also dismissing the callout it is nested in through the JS side's verdict instead.
         Assert.IsFalse(component.Markup.Contains("onkeydown:stoppropagation", StringComparison.OrdinalIgnoreCase));
 
         component.Find(".bit-clo-acn").Click();
 
-        // An open one keeps its Escape from also dismissing the callout it is nested in.
-        Assert.IsTrue(component.Find(".bit-clo").OuterHtml.Contains("onkeydown:stoppropagation", StringComparison.OrdinalIgnoreCase));
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.IsFalse(component.Markup.Contains("onkeydown:stoppropagation", StringComparison.OrdinalIgnoreCase));
     }
 
     [TestMethod]
@@ -824,12 +825,56 @@ public class BitCalloutTests : BunitTestContext
         Assert.IsTrue(component.Instance.Outer.IsOpen);
         Assert.IsTrue(component.Instance.Inner.IsOpen);
 
-        // The anchor of the nested callout sits inside the content of the one it is nested in, so an
-        // Escape left to carry on up would dismiss both at once.
+        // The anchor of the nested callout sits inside the content of the one it is nested in, and no key is
+        // stopped there, so the Escape reaches the outer one's handler too. What Utils.watchNestedEscape sends the
+        // outer one as the key goes down through its callout, after the inner one's root has spoken for it.
+        component.Instance.Outer._OnEscapeVerdict(true);
+
         component.Find(".inner-callout").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.IsFalse(component.Instance.Inner.IsOpen);
         Assert.IsTrue(component.Instance.Outer.IsOpen);
+    }
+
+    [TestMethod]
+    public void BitCalloutShouldReadEachNestedEscapeVerdictOnce()
+    {
+        var component = RenderComponent<BitCalloutNestedTest>();
+
+        component.Find(".outer-callout .bit-clo-acn").Click();
+
+        // A verdict answers the one key it was sent for, so the next Escape - pressed in the outer callout itself -
+        // is the outer one's again.
+        // The outer callout is the first of the two in the page; the inner one sits inside it.
+        component.Instance.Outer._OnEscapeVerdict(true);
+        component.FindAll(".bit-clo-cal")[0].KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsTrue(component.Instance.Outer.IsOpen);
+
+        component.FindAll(".bit-clo-cal")[0].KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsFalse(component.Instance.Outer.IsOpen);
+    }
+
+    [TestMethod]
+    public void BitCalloutShouldWatchItsRootAndCalloutForNestedEscapesWhileItIsOpen()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+        });
+
+        component.Find(".bit-clo-acn").Click();
+
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.Callouts.setupKeyboard"][^1].Arguments;
+
+        Assert.AreEqual(component.Find(".bit-clo-cal").Id, setup[0]);
+        Assert.AreEqual(component.Find(".bit-clo").Id, setup[7]);
+
+        component.Find(".bit-clo-acn").Click();
+
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Callouts.disposeKeyboard"].Count);
     }
 
     [TestMethod]

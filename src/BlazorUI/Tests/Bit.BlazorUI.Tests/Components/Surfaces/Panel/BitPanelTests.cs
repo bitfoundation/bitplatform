@@ -1900,8 +1900,8 @@ public class BitPanelTests : BunitTestContext
         Assert.IsTrue(outerOpen);
     }
 
-    // A panel that refuses the Escape has no reason to keep any key from the page around it, whose keyboard
-    // shortcuts keep working while it is open.
+    // A panel keeps no key from the page around it, whose keyboard shortcuts keep working while it is open -
+    // one that refuses the Escape included (BitSurfaceKeyPropagationContractTests has one that acts on it).
     [TestMethod]
     public void BitPanelThatRefusesTheEscapeShouldLetTheKeysThroughToThePage()
     {
@@ -1924,26 +1924,36 @@ public class BitPanelTests : BunitTestContext
         Assert.AreEqual(2, keys);
     }
 
-    // A panel that acts on the Escape keeps the keys, so the one it closes on does not also dismiss whatever
-    // it was opened from.
+    // The Escape a panel nested in another one closes on bubbles on to the outer one's handler too, since no key
+    // is stopped at a panel; the escape guard tells the outer one the press was the inner one's, so one press
+    // closes one panel.
     [TestMethod]
-    public void BitPanelThatActsOnTheEscapeShouldKeepTheKeys()
+    public void BitPanelShouldLeaveTheEscapeAPanelNestedInItClosesOnAlone()
     {
-        var keys = 0;
+        var outerOpen = true;
+        var innerOpen = true;
 
-        var com = Context.Render(builder =>
+        var com = RenderComponent<BitPanel>(parameters =>
         {
-            builder.OpenElement(0, "div");
-            builder.AddAttribute(1, "onkeydown", EventCallback.Factory.Create<KeyboardEventArgs>(this, () => keys++));
-            builder.OpenComponent<BitPanel>(2);
-            builder.AddAttribute(3, nameof(BitPanel.IsOpen), true);
-            builder.CloseComponent();
-            builder.CloseElement();
+            parameters.Bind(p => p.IsOpen, outerOpen, v => outerOpen = v);
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitPanel>(0);
+                builder.AddAttribute(1, nameof(BitPanel.IsOpen), innerOpen);
+                builder.AddAttribute(2, nameof(BitPanel.IsOpenChanged), EventCallback.Factory.Create<bool>(this, v => innerOpen = v));
+                builder.AddAttribute(3, nameof(BitPanel.Class), "inner-panel");
+                builder.CloseComponent();
+            }));
         });
 
-        com.Find(".bit-pnl-cnt").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        // What Utils.setupEscapeGuard sends the outer panel as the key goes down through its root, after the
+        // inner panel's guard has spoken for it.
+        com.Instance._OnEscapeVerdict(true);
 
-        Assert.AreEqual(0, keys);
+        com.Find(".inner-panel .bit-pnl-cnt").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsFalse(innerOpen);
+        Assert.IsTrue(outerOpen);
     }
 
     [TestMethod]

@@ -28,6 +28,8 @@ public partial class BitCallout : BitComponentBase
     private bool _focusTrapped;
     private bool _focusOriginCaptured;
     private bool _escapeRegistered;
+    private bool _nestedEscapeWatched;
+    private bool _nestedEscape;
     private bool _tabOutRegistered;
     private bool _scrollLocked;
     private bool _hoverInside;
@@ -646,6 +648,16 @@ public partial class BitCallout : BitComponentBase
         await InvokeAsync(StateHasChanged);
     }
 
+    // Sent by the JS side as each Escape goes down inside the root or the callout while it is open, ahead of the keydown
+    // Blazor then dispatches, saying whether it was pressed inside a surface nested there - another callout's anchor, a
+    // dialog, a modal, a panel - that has spoken for it first (see Utils.watchNestedEscape). It is written for every
+    // Escape, so one that never reaches a handler leaves nothing behind that the next one could be mistaken for.
+    [JSInvokable("OnEscapeVerdict")]
+    public void _OnEscapeVerdict(bool nested)
+    {
+        _nestedEscape = nested;
+    }
+
     [JSInvokable("OnTabOut")]
     public async Task _OnTabOut()
     {
@@ -886,6 +898,8 @@ public partial class BitCallout : BitComponentBase
     // listener leaves the anchor out, so this is the one place the key is answered for it.
     private async Task HandleOnRootKeyDown(KeyboardEventArgs e)
     {
+        if (e.Key is "Escape" && TakeNestedEscape()) return;
+
         if (Disabled || IsOpen is false) return;
 
         if (e.Key is not "Escape" || NoDismissOnEscape) return;
@@ -900,6 +914,8 @@ public partial class BitCallout : BitComponentBase
 
     private async Task HandleOnCalloutKeyDown(KeyboardEventArgs e)
     {
+        if (e.Key is "Escape" && TakeNestedEscape()) return;
+
         if (Disabled || IsOpen is false) return;
 
         if (e.Key is not "Escape" || NoDismissOnEscape) return;
@@ -913,6 +929,17 @@ public partial class BitCallout : BitComponentBase
         // The close runs on the callout's own event, which does not re-render the anchor, so refresh the
         // open-state classes and aria-expanded here.
         StateHasChanged();
+    }
+
+    // Taken before anything else is decided, and whether or not the callout goes on to act, so the answer that was sent
+    // for this key is the one read and is gone before the next one's comes in. The keys of the root and the callout are
+    // not stopped from bubbling - the page's own handlers around the anchor hear every key - so an Escape pressed on the
+    // anchor of a callout nested in this one's content, which closes that one, reaches this one's handlers too.
+    private bool TakeNestedEscape()
+    {
+        var nested = _nestedEscape;
+        _nestedEscape = false;
+        return nested;
     }
 
     private async Task HandleOnMouseEnter()
@@ -1323,6 +1350,8 @@ public partial class BitCallout : BitComponentBase
     // - Escape is listened for on the page (see ListensForEscapeOnPage).
     // - Tab and Shift+Tab are kept inside a callout that keeps the focus, or the content of one that does not is
     //   put into the tab order right after its trigger (see GetTabOutTriggerId).
+    // - The Escapes pressed inside a surface nested in the root or the callout are told apart from its own (see
+    //   _OnEscapeVerdict).
     private async Task SetupKeyboard()
     {
         if (IsDisposed || _dotnetObj is null) return;
@@ -1331,16 +1360,18 @@ public partial class BitCallout : BitComponentBase
         var escape = ListensForEscapeOnPage && _escapeRegistered is false;
         var focusTrap = KeepsFocus && _focusTrapped is false;
         var tabOutTriggerId = _tabOutRegistered ? null : GetTabOutTriggerId();
+        var nestedEscapeRootId = _nestedEscapeWatched ? null : _Id;
 
-        if ((captureFocusOrigin || escape || focusTrap || tabOutTriggerId is not null) is false) return;
+        if ((captureFocusOrigin || escape || focusTrap || tabOutTriggerId is not null || nestedEscapeRootId is not null) is false) return;
 
         _escapeRegistered |= escape;
         _focusTrapped |= focusTrap;
         _tabOutRegistered |= tabOutTriggerId is not null;
+        _nestedEscapeWatched = true;
 
         try
         {
-            var captured = await _js.BitCalloutSetupKeyboard(_contentId, _dotnetObj, captureFocusOrigin, escape, _Id, focusTrap, tabOutTriggerId);
+            var captured = await _js.BitCalloutSetupKeyboard(_contentId, _dotnetObj, captureFocusOrigin, escape, _Id, focusTrap, tabOutTriggerId, nestedEscapeRootId);
 
             // A focus that was on the body leaves nothing to hand back to, which ReturnFocus has to know to fall
             // back to the anchor instead.
@@ -1358,11 +1389,13 @@ public partial class BitCallout : BitComponentBase
     {
         var forget = forgetFocusOrigin && _focusOriginCaptured;
 
-        if ((_escapeRegistered || _focusTrapped || _tabOutRegistered || forget) is false) return;
+        if ((_escapeRegistered || _focusTrapped || _tabOutRegistered || _nestedEscapeWatched || forget) is false) return;
 
         _escapeRegistered = false;
         _focusTrapped = false;
         _tabOutRegistered = false;
+        _nestedEscapeWatched = false;
+        _nestedEscape = false;
 
         if (forget)
         {

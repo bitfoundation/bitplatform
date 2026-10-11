@@ -1685,8 +1685,10 @@
         // is a round trip of its own on a server-rendered page and all of them stand between the click and the
         // focus moving into the callout: the element the focus is on is remembered (to be handed back to on
         // close), Escape is listened for on the page, Tab and Shift+Tab are kept inside the callout, or the
-        // callout is put into the tab order after its trigger. Each is asked for on its own, and the ones the
-        // component has already set up are not asked for again. Reports whether a focus origin was remembered.
+        // callout is put into the tab order after its trigger, and the Escapes pressed in a surface nested in the
+        // root or the callout are told apart from the component's own (Utils.watchNestedEscape, a null root asking
+        // for none). Each is asked for on its own, and the ones the component has already set up are not asked
+        // for again. Reports whether a focus origin was remembered.
         public static setupKeyboard(
             calloutId: string,
             dotnetObj: DotNetObject,
@@ -1694,8 +1696,13 @@
             escape: boolean,
             escapeTriggerId: string | null,
             focusTrap: boolean,
-            tabOutTriggerId: string | null) {
+            tabOutTriggerId: string | null,
+            nestedEscapeRootId: string | null) {
             const captured = captureFocusOrigin && Utils.captureFocusOrigin(calloutId);
+
+            if (nestedEscapeRootId) {
+                Utils.watchNestedEscape(calloutId, [nestedEscapeRootId, calloutId], dotnetObj);
+            }
 
             if (escape) {
                 Utils.setupEscape(calloutId, dotnetObj, escapeTriggerId);
@@ -1719,6 +1726,7 @@
             Utils.disposeFocusTrap(calloutId);
             Utils.disposeTabOut(calloutId);
             Utils.disposeEscape(calloutId);
+            Utils.unwatchNestedEscape(calloutId);
 
             if (forgetFocusOrigin) {
                 Utils.disposeFocusOrigin(calloutId);

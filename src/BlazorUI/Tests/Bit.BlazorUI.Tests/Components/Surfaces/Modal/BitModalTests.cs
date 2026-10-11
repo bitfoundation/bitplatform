@@ -1914,6 +1914,42 @@ public class BitModalTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitModalShouldNotReportTheEscapeOfAModalNestedInIt()
+    {
+        var outerEscapes = 0;
+        var innerEscapes = 0;
+
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.OnEscapeKeyDown, EventCallback.Factory.Create<KeyboardEventArgs>(this, () => outerEscapes++));
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitModal>(0);
+                builder.AddAttribute(1, nameof(BitModal.IsOpen), true);
+                builder.AddAttribute(2, nameof(BitModal.Class), "inner-modal");
+                builder.AddAttribute(3, nameof(BitModal.OnEscapeKeyDown), EventCallback.Factory.Create<KeyboardEventArgs>(this, () => innerEscapes++));
+                builder.CloseComponent();
+            }));
+        });
+
+        // No key is stopped at the inner Modal, so its Escape reaches the outer one's handler too. What
+        // Utils.watchEscape sends the outer one as the key goes down through its root, after the inner one has
+        // spoken for it.
+        com.Instance._OnEscapeVerdict(true);
+
+        com.Find(".inner-modal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(1, innerEscapes);
+        Assert.AreEqual(0, outerEscapes);
+
+        // A verdict answers the one key it was sent for: the next Escape, pressed in the outer Modal itself, is its own.
+        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(1, outerEscapes);
+    }
+
+    [TestMethod]
     public void BitModalShouldHoldThePageOnceForEachOfTwoNestedModals()
     {
         // The holds are counted rather than toggled: both Modals hold the page and it is only handed back

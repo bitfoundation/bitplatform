@@ -92,6 +92,12 @@ the callouts, BitTooltip, BitMessage - the listeners in `Scripts/Utils.ts`) leav
 - **One shared watch per claiming root.** A component whose own .NET keydown on its root acts on the key it
   claims there hears the presses a part inside it claimed first, too; it tells them apart through
   `BitEscapeClaimWatch` (`Utils.watchEscapeClaim`), never a copy of it.
+- **No surface stops a key.** BitDialog, BitModal, BitPanel and BitCallout put no `@onkeydown:stopPropagation` on
+  their roots, so the page's own Blazor handlers around one (an app's Ctrl+S) keep hearing every key while it is
+  open. An outer surface tells a nested one's Escape from its own through `Utils._claimedEscapes` instead: each
+  surface adds the Escape pressed inside it as the key bubbles through its root, and the ones whose .NET handler
+  acts on Escape read that back through `OnEscapeVerdict` (`setupEscapeGuard`, `watchEscape`, `watchNestedEscape`).
+  `BitSurfaceKeyPropagationContractTests` pins the keys reaching the page.
 - **Nothing guesses from what the target looks like.** No selector of inputs, roles or `aria-expanded`
   decides who owns the key; a component the claim and the open popup do not cover is fixed by claiming,
   never by teaching a surface a new selector. A consumer's own control opts in the same way.

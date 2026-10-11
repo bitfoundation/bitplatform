@@ -13,9 +13,9 @@
        (or that a control inside it took) from one meant for the Dialog itself, and it answers from anywhere
        inside it - the surface, the overlay, whichever part of it the keyboard happens to be in. A Dialog
        opened from inside another one answers the key first and the outer one leaves it alone.
-       The keys stop here for the handlers of the page around the Dialog, which have no business reacting to
-       what is typed inside it. It stops only Blazor's own bubbling, so native listeners (the focus trap and
-       the Escape key among them) still see the key.
+       No key stops here: the page's keyboard shortcuts around the Dialog keep working while it is open. The
+       Escape it answers is spoken for as it goes by (Utils.setupSurfaceEscape), so the key handler of a surface
+       the Dialog was opened from - a panel, a modal, a callout - leaves that press alone.
        tabindex="-1" makes the root programmatically focusable so that a press on the overlay lands the focus
        inside the Dialog rather than on the body. The root only catches it: the focus trap passes it straight
        on into the surface below, where the dialog role is (Utils.setupFocusTrap has the whole of it). It is
@@ -23,7 +23,6 @@
     <div @ref="RootElement"
          tabindex="@(TabIndex ?? "-1")"
          @attributes="HtmlAttributes"
-         @onkeydown:stopPropagation="true"
          id="@_Id"
          style="@StyleBuilder.Value"
          class="@ClassBuilder.Value"
