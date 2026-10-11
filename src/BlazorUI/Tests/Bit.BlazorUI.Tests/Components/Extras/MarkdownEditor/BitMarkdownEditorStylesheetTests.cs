@@ -20,7 +20,7 @@ public partial class BitMarkdownEditorStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.AreEqual(30, documented.Length, "The stylesheet does not document the thirty public variables.");
+        Assert.AreEqual(31, documented.Length, "The stylesheet does not document the thirty-one public variables.");
 
         foreach (var name in documented)
         {
@@ -75,6 +75,16 @@ public partial class BitMarkdownEditorStylesheetTests
         var textArea = SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-txa {");
         StringAssert.Contains(textArea, "flex: 1 1 auto;");
         Assert.IsFalse(textArea.Contains("height: 100%"), "The textarea still fills its pane by a percentage height.");
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorLabelShouldReadTheFieldLabelWeight()
+    {
+        // The presets set the field-label weight to regular, so a hard-coded semibold caption would stand out
+        // beside a BitTextField's.
+        var label = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-mde-lbl {");
+
+        StringAssert.Contains(label, "font-weight: var(--bit-MarkdownEditor-label-font-weight, #{$tg-field-label-font-weight});");
     }
 
     [TestMethod]

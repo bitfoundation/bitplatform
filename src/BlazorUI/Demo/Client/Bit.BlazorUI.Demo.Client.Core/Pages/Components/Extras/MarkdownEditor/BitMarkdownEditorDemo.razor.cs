@@ -513,6 +513,7 @@ public partial class BitMarkdownEditorDemo
         new() { Name = "--bit-MarkdownEditor-button-active-background", DefaultValue = "var(--bit-clr-pri)", Description = "Background of a pressed button." },
         new() { Name = "--bit-MarkdownEditor-statusbar-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Text of the status bar." },
         new() { Name = "--bit-MarkdownEditor-statusbar-background", DefaultValue = "var(--bit-clr-bg-sec)", Description = "Background of the status bar." },
+        new() { Name = "--bit-MarkdownEditor-label-font-weight", DefaultValue = "var(--bit-tpg-field-label-font-weight)", Description = "Weight of the label." },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =

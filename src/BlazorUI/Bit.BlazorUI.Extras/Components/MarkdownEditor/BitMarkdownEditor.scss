@@ -33,6 +33,7 @@
 //   --bit-MarkdownEditor-button-active-background  background of a pressed (active) button     (default: $clr-pri)
 //   --bit-MarkdownEditor-statusbar-color           text of the status bar                      (default: $clr-fg-sec)
 //   --bit-MarkdownEditor-statusbar-background      background of the status bar                (default: $clr-bg-sec)
+//   --bit-MarkdownEditor-label-font-weight         weight of the label                         (default: $tg-field-label-font-weight)
 
 $mde-color: var(--bit-MarkdownEditor-color, #{$clr-fg-pri});
 $mde-background: var(--bit-MarkdownEditor-background, #{$clr-bg-pri});
@@ -504,7 +505,7 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
     cursor: pointer;
     color: inherit;
     font-size: $tg-fs-sm;
-    font-weight: $tg-fw-semibold;
+    font-weight: var(--bit-MarkdownEditor-label-font-weight, #{$tg-field-label-font-weight});
     letter-spacing: $tg-ctrl-letter-spacing;
     padding: spacing(0.75) spacing(1) 0;
 }
