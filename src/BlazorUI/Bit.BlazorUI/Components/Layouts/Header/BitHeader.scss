@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// header and one set on the Style of an instance re-skins that one alone:
+// header and one set on the Style of an instance re-skins that one and the headers nested in it:
 //   --bit-Header-background             fill of the Fill variant                     (default: $clr-bg-pri)
 //   --bit-Header-color                  color of the content                         (default: $clr-fg-pri)
 //   --bit-Header-border-color           border of the Outline variant, and the

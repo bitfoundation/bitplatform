@@ -208,13 +208,18 @@
         <div class="example-desc">
             The <BitLink Href="#css-variables-section">CSS variables</BitLink> inherit, so they can be set on
             <code>:root</code>, on an ancestor, or on the <b>Style</b> of one element - and a value set on an element
-            also reaches every element inside it.
+            also reaches every element inside it. To change one element alone, set the real property on its
+            <b>Style</b> instead: an inline <code>opacity</code> is not inherited, so the disabled element inside still dims.
         </div>
         <div class="example-content">
             <BitElement Element="button" Disabled Style="--bit-Element-disabled-opacity: 0.2;">Disabled, dimmed further</BitElement>
             <BitElement Element="fieldset" Disabled Style="--bit-Element-disabled-opacity: 1;">
                 <BitElement Element="legend">A disabled fieldset, not dimmed</BitElement>
                 <BitElement Element="input" placeholder="Its input shows its own disabled look" AriaLabel="Fieldset input" />
+            </BitElement>
+            <BitElement Element="fieldset" Disabled Style="opacity: 1;">
+                <BitElement Element="legend">A disabled fieldset, not dimmed on its own</BitElement>
+                <BitElement Element="div" role="button" Disabled>A disabled div inside it, still dimmed</BitElement>
             </BitElement>
         </div>
     </DemoExample>

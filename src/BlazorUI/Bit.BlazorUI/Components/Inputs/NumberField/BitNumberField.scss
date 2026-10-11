@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// number field and one set on the Style of an instance re-skins that one alone:
+// number field and one set on the Style of an instance re-skins that one and the number fields nested in it:
 //   --bit-NumberField-color                     color of the value text                      (default: $clr-fg-pri)
 //   --bit-NumberField-placeholder-color         color of the placeholder                     (default: $clr-fg-sec)
 //   --bit-NumberField-background                fill of the field                            (default: $clr-bg-pri)

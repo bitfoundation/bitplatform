@@ -1051,10 +1051,10 @@
             For the look rather than the layout there are the public <b>--bit-TextField-*</b> custom properties listed in the
             <BitLink Href="#css-variables-section">CSS variables</BitLink> table. They are read off the element and inherited, so the same name set
             on <code>:root</code> re-skins every field of the app, set on an ancestor re-skins the fields inside it, and set on
-            the <b>Style</b> of one field re-skins that one alone - without a selector, a scoped stylesheet or a
-            <code>::deep</code> anywhere. Anything left unset keeps the value the theme gives it, so a single property can be
-            swapped without restating the rest. They restyle the default, not a choice: an explicit <b>Accent</b>,
-            <b>Background</b>, <b>Border</b> or <b>Size</b> wins over the variables for what it sets.
+            the <b>Style</b> of one field re-skins that one and any field nested in it - without a selector, a scoped
+            stylesheet or a <code>::deep</code> anywhere. Anything left unset keeps the value the theme gives it, so a single
+            property can be swapped without restating the rest. They restyle the default, not a choice: an explicit
+            <b>Accent</b>, <b>Background</b>, <b>Border</b> or <b>Size</b> wins over the variables for what it sets.
         </div>
         <br /><br />
         <div class="example-box">

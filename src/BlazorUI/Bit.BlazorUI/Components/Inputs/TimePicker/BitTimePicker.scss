@@ -5,7 +5,7 @@
 // Public CSS variables, read off the root (and off the callout, which is rendered inside the root and, while
 // it is open, relocated into a copy of the chain of ancestors it leaves - the root among them - so they reach
 // it like any inherited value) and never declared here, so a value set on :root re-skins every time picker and one set
-// on the Style of an instance re-skins that one alone:
+// on the Style of an instance re-skins that one and the time pickers nested in it:
 //   --bit-TimePicker-color                    accent: the selected AM/PM button and the text of the
 //                                             now/clear buttons                    (default: $clr-pri)
 //   --bit-TimePicker-on-color                 text over that accent                (default: $clr-pri-text)

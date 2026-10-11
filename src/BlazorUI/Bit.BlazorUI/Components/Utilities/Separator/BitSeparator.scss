@@ -1,7 +1,8 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// separator, one set on an ancestor every separator inside it, and one set on the Style of an instance that one:
+// separator, one set on an ancestor every separator inside it, and one set on the Style of an instance that one and the
+// separators nested in it:
 //   --bit-Separator-color                 color of the line                              (default: $clr-brd-sec)
 //   --bit-Separator-thickness             weight of the line                             (default: $siz-divider)
 //   --bit-Separator-line-style            style of the line: solid, dashed, dotted, ...  (default: solid)

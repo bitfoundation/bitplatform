@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// checkbox and one set on the Style of an instance re-skins that one alone:
+// checkbox and one set on the Style of an instance re-skins that one and the checkboxes nested in it:
 //   --bit-Checkbox-color                     label text color at rest                     (default: inherited from the page)
 //   --bit-Checkbox-description-color         the description line under the label         (default: $clr-fg-sec)
 //   --bit-Checkbox-disabled-color            box stroke and fill when disabled            (default: $clr-pri-dis)

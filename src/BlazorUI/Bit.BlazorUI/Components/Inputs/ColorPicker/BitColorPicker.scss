@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// color picker and one set on the Style of an instance re-skins that one alone:
+// color picker and one set on the Style of an instance re-skins that one and the color pickers nested in it:
 //   --bit-ColorPicker-width                     width of the whole panel                       (default: spacing(33.5))
 //   --bit-ColorPicker-background                background behind the panel                    (default: transparent)
 //   --bit-ColorPicker-padding                   padding around the panel                       (default: 0)

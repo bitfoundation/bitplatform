@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// file upload and one set on the Style of an instance re-skins that one alone:
+// file upload and one set on the Style of an instance re-skins that one and the file uploads nested in it:
 //   --bit-FileUpload-max-width                  widest the whole control grows                 (default: spacing(43.75))
 //   --bit-FileUpload-gap                        room between the browse button, the
 //                                               description and the file list                 (default: spacing(0.5))

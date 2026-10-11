@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// rating and one set on the Style of an instance re-skins that one alone:
+// rating and one set on the Style of an instance re-skins that one and the ratings nested in it:
 //   --bit-Rating-color              color of the filled part of the items          (default: $clr-pri)
 //   --bit-Rating-unselected-color   color of the unfilled part of the items        (default: $clr-fg-ter)
 //   --bit-Rating-hover-color        color of the filled part while the pointer is
