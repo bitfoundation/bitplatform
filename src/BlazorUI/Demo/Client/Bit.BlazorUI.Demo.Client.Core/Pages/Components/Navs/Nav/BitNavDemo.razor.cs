@@ -312,13 +312,13 @@ public partial class BitNavDemo
         {
             Name = "--bit-Nav-icon-color",
             DefaultValue = "--bit-clr-pri",
-            Description = "Icon color of an item at rest, and of a hovered, pressed or selected one its own variable leaves unset. The Color parameter wins over it.",
+            Description = "Icon color of an item at rest, and of a hovered, pressed or selected one its own variable leaves unset (and of one under an explicit surface Accent). The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Nav-description-color",
             DefaultValue = "--bit-clr-fg-ter",
-            Description = "Description color of an item at rest, and of a hovered, pressed or selected one its own variable leaves unset.",
+            Description = "Description color of an item at rest, and of a hovered, pressed or selected one its own variable leaves unset (and of one under an explicit surface Accent).",
         },
         new()
         {
@@ -341,14 +341,14 @@ public partial class BitNavDemo
         new()
         {
             Name = "--bit-Nav-hover-icon-color",
-            DefaultValue = "--bit-Nav-icon-color",
-            Description = "Icon color of a hovered item. A semantic Accent and the Color parameter win over it.",
+            DefaultValue = "--bit-Nav-icon-color, then --bit-clr-pri",
+            Description = "Icon color of a hovered item (pointer devices only). The Accent and Color parameters win over it.",
         },
         new()
         {
             Name = "--bit-Nav-hover-description-color",
-            DefaultValue = "--bit-Nav-description-color",
-            Description = "Description color of a hovered item. A semantic Accent wins over it.",
+            DefaultValue = "--bit-Nav-description-color, then --bit-clr-fg-ter",
+            Description = "Description color of a hovered item (pointer devices only). The Accent parameter wins over it.",
         },
         new()
         {
@@ -359,20 +359,20 @@ public partial class BitNavDemo
         new()
         {
             Name = "--bit-Nav-pressed-color",
-            DefaultValue = "--bit-Nav-hover-color, then --bit-clr-fg-pri",
-            Description = "Text and chevron color of an item while it is pressed. The Accent parameter wins over it.",
+            DefaultValue = "--bit-Nav-hover-color, then --bit-clr-fg-pri (on a touch screen --bit-clr-fg-pri)",
+            Description = "Text and chevron color of an item while it is pressed. Where the pointer can hover it falls back on the hovered color; on a touch screen, where no hover applies, on the default. The Accent parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Nav-pressed-icon-color",
-            DefaultValue = "--bit-Nav-hover-icon-color, then --bit-Nav-icon-color",
-            Description = "Icon color of an item while it is pressed. A semantic Accent and the Color parameter win over it.",
+            DefaultValue = "--bit-Nav-hover-icon-color, then --bit-Nav-icon-color, then --bit-clr-pri (on a touch screen --bit-Nav-icon-color, then --bit-clr-pri)",
+            Description = "Icon color of an item while it is pressed. Where the pointer can hover it falls back on the hovered icon color; on a touch screen, where no hover applies, on the one at rest. The Accent and Color parameters win over it.",
         },
         new()
         {
             Name = "--bit-Nav-pressed-description-color",
-            DefaultValue = "--bit-Nav-hover-description-color, then --bit-Nav-description-color",
-            Description = "Description color of an item while it is pressed. A semantic Accent wins over it.",
+            DefaultValue = "--bit-Nav-hover-description-color, then --bit-Nav-description-color, then --bit-clr-fg-ter (on a touch screen --bit-Nav-description-color, then --bit-clr-fg-ter)",
+            Description = "Description color of an item while it is pressed. Where the pointer can hover it falls back on the hovered description color; on a touch screen, where no hover applies, on the one at rest. The Accent parameter wins over it.",
         },
         new()
         {
@@ -389,14 +389,14 @@ public partial class BitNavDemo
         new()
         {
             Name = "--bit-Nav-selected-icon-color",
-            DefaultValue = "--bit-Nav-icon-color",
-            Description = "Icon color of the selected item, and of a collapsed branch that holds it - the one to move with --bit-Nav-selected-background when that is a vivid fill. A semantic Accent and the Color parameter win over it.",
+            DefaultValue = "--bit-Nav-icon-color, then --bit-clr-pri",
+            Description = "Icon color of the selected item, and of a collapsed branch that holds it - the one to move with --bit-Nav-selected-background when that is a vivid fill. The Accent and Color parameters win over it: an explicit Accent draws the icon in its own colors on its own fill (a semantic one in its on-color, a surface one in the icon color at rest), so a value set for the theme's fill never lands on the Accent's.",
         },
         new()
         {
             Name = "--bit-Nav-selected-description-color",
-            DefaultValue = "--bit-Nav-description-color",
-            Description = "Description color of the selected item, and of a collapsed branch that holds it. A semantic Accent wins over it.",
+            DefaultValue = "--bit-Nav-description-color, then --bit-clr-fg-ter",
+            Description = "Description color of the selected item, and of a collapsed branch that holds it. The Accent parameter wins over it.",
         },
         new()
         {

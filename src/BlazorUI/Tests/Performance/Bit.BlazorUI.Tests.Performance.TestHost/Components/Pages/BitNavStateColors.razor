@@ -1,0 +1,77 @@
+﻿@page "/regression/nav-state-colors"
+
+<PageTitle>BitNav State Colors Regression</PageTitle>
+
+@* A theme that gives the hovered and the selected item a vivid fill, and moves the text, the icon and the description of
+   each with it through the per-state variables, set once on the wrapper so every nav below inherits it. Each section
+   is one nav under that theme with one parameter changed: none, a surface Accent, a semantic Accent, an explicit
+   Color, and a theme that sets the pressed colors too. Every color is a distinct rgb() so a test can tell which
+   variable painted a part. The pressed background is left light, the case of a theme that only made the hover vivid. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>BitNav State Colors Regression</h3>
+    <p>Status: <span id="status">@_status</span></p>
+</div>
+
+<div id="theme" style="@ThemeStyle">
+    <section id="theme-default">
+        <BitNav TItem="BitNavItem" Items="_items" DefaultSelectedItem="_items[0]" Mode="BitNavMode.Manual" />
+    </section>
+
+    <section id="theme-surface">
+        <BitNav TItem="BitNavItem" Items="_items" DefaultSelectedItem="_items[0]" Mode="BitNavMode.Manual" Accent="BitColor.SecondaryBackground" />
+    </section>
+
+    <section id="theme-semantic">
+        <BitNav TItem="BitNavItem" Items="_items" DefaultSelectedItem="_items[0]" Mode="BitNavMode.Manual" Accent="BitColor.Primary" />
+    </section>
+
+    <section id="theme-color">
+        <BitNav TItem="BitNavItem" Items="_items" DefaultSelectedItem="_items[0]" Mode="BitNavMode.Manual" Color="BitColor.Error" />
+    </section>
+
+    <section id="theme-pressed" style="@PressedStyle">
+        <BitNav TItem="BitNavItem" Items="_items" DefaultSelectedItem="_items[0]" Mode="BitNavMode.Manual" />
+    </section>
+</div>
+
+@* No theme at all: every state falls back on the defaults it had before the per-state variables existed. *@
+<section id="plain">
+    <BitNav TItem="BitNavItem" Items="_items" DefaultSelectedItem="_items[0]" Mode="BitNavMode.Manual" />
+</section>
+
+@code {
+    private const string ThemeStyle =
+        "--bit-Nav-icon-color: rgb(10, 20, 30);" +
+        "--bit-Nav-description-color: rgb(40, 50, 60);" +
+        "--bit-Nav-hover-background: rgb(0, 0, 200);" +
+        "--bit-Nav-hover-color: rgb(255, 255, 255);" +
+        "--bit-Nav-hover-icon-color: rgb(255, 255, 1);" +
+        "--bit-Nav-hover-description-color: rgb(255, 255, 2);" +
+        "--bit-Nav-pressed-background: rgb(230, 230, 230);" +
+        "--bit-Nav-selected-background: rgb(0, 100, 0);" +
+        "--bit-Nav-selected-color: rgb(255, 255, 3);" +
+        "--bit-Nav-selected-icon-color: rgb(255, 255, 4);" +
+        "--bit-Nav-selected-description-color: rgb(255, 255, 5);";
+
+    private const string PressedStyle =
+        "--bit-Nav-pressed-background: rgb(0, 0, 100);" +
+        "--bit-Nav-pressed-color: rgb(255, 255, 6);" +
+        "--bit-Nav-pressed-icon-color: rgb(255, 255, 7);" +
+        "--bit-Nav-pressed-description-color: rgb(255, 255, 8);";
+
+    private readonly List<BitNavItem> _items =
+    [
+        new() { Key = "selected", Text = "Selected", IconName = BitIconName.Home, Description = "The selected item" },
+        new() { Key = "other", Text = "Other", IconName = BitIconName.Mail, Description = "An item at rest" },
+    ];
+
+    private string _status = "Loading";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+}
