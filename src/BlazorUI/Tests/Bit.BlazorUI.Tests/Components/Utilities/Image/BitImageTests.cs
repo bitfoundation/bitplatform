@@ -1601,6 +1601,29 @@ public class BitImageTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitImageShouldKeepThePlaceholderUntilEveryRunOfARepeatedLeavingAnimationHasEnded()
+    {
+        var component = RenderComponent<BitImage>(parameters =>
+        {
+            parameters.Add(p => p.Src, "image.png");
+            parameters.Add(p => p.FadeIn, true);
+            parameters.Add(p => p.PlaceholderSrc, "placeholder.png");
+        });
+
+        component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
+
+        // A restyle running the same keyframes twice (animation: app-glow 1s, app-glow 2s) starts two of one name.
+        component.Find(".bit-img-plc").TriggerEvent("onanimationstart", new BitAnimationEventArgs { AnimationName = "app-glow" });
+        component.Find(".bit-img-plc").TriggerEvent("onanimationstart", new BitAnimationEventArgs { AnimationName = "app-glow" });
+
+        component.Find(".bit-img-plc").TriggerEvent("onanimationend", new BitAnimationEventArgs { AnimationName = "app-glow" });
+        Assert.AreEqual(1, component.FindAll(".bit-img-plc").Count);
+
+        component.Find(".bit-img-plc").TriggerEvent("onanimationend", new BitAnimationEventArgs { AnimationName = "app-glow" });
+        Assert.AreEqual(0, component.FindAll(".bit-img-plc").Count);
+    }
+
+    [TestMethod]
     public void BitImageShouldRemoveThePlaceholderWhenItsFadeIsCanceled()
     {
         var component = RenderComponent<BitImage>(parameters =>

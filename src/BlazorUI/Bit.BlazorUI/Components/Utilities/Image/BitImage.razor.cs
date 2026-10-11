@@ -75,8 +75,9 @@ public partial class BitImage : BitComponentBase
     /// <summary>
     /// The animations that have started on the placeholder since it began to leave and not yet ended - its fade, or
     /// whatever a restyle of the leaving placeholder runs in its place - the last of which ending is what lets it go.
+    /// Counted per name, since one name can run more than once at a time (<c>animation: fade 1s, fade 2s</c>).
     /// </summary>
-    private readonly HashSet<string> _placeholderLeaveAnimations = [];
+    private readonly Dictionary<string, int> _placeholderLeaveAnimations = [];
 
     /// <summary>
     /// Whether the image is the browser's until the first render in the browser takes it over (see
@@ -1200,15 +1201,28 @@ public partial class BitImage : BitComponentBase
     {
         if (_isPlaceholderLeaving is false) return;
 
-        _placeholderLeaveAnimations.Add(e.AnimationName);
+        var name = e.AnimationName ?? string.Empty;
+
+        _placeholderLeaveAnimations[name] = _placeholderLeaveAnimations.GetValueOrDefault(name) + 1;
     }
 
     private void HandleOnPlaceholderAnimationEnd(BitAnimationEventArgs e)
     {
         if (_isPlaceholderLeaving is false) return;
 
-        if (_placeholderLeaveAnimations.Remove(e.AnimationName))
+        var name = e.AnimationName ?? string.Empty;
+
+        if (_placeholderLeaveAnimations.TryGetValue(name, out var running))
         {
+            if (running > 1)
+            {
+                _placeholderLeaveAnimations[name] = running - 1;
+            }
+            else
+            {
+                _placeholderLeaveAnimations.Remove(name);
+            }
+
             if (_placeholderLeaveAnimations.Count > 0) return;
         }
         else if (e.AnimationName.HasValue() && e.AnimationName != PlaceholderFadeOutAnimation)
