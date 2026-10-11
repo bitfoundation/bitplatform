@@ -59,10 +59,6 @@ public partial class BitTooltip : BitComponentBase
     // two apart for a tooltip a click opened: a Tab away dismisses it, a press on its own text does not.
     private bool _isPressWithin;
 
-    // Whether the Escape the key handler is about to hear cancels an IME composition in a field of the anchor, as the
-    // browser answered it (see _OnEscapeComposition), taken by the handler as it starts.
-    private bool _composingEscape;
-
     // The relationship last mirrored onto the anchor, so that the round trip to the DOM is made when what
     // it would write has actually changed rather than once per render.
     private string _syncedAria = string.Empty;
@@ -583,17 +579,6 @@ public partial class BitTooltip : BitComponentBase
     }
 
     /// <summary>
-    /// An Escape pressed in the anchor to cancel what an IME was composing, which the JS side leaves to the field and
-    /// tells the key handler about ahead of the keydown Blazor dispatches for it: KeyboardEventArgs cannot say so - it
-    /// carries no key code, and no composition state before .NET 9.
-    /// </summary>
-    [JSInvokable("OnEscapeComposition")]
-    public void _OnEscapeComposition(bool composing)
-    {
-        _composingEscape = composing;
-    }
-
-    /// <summary>
     /// A press the JS side saw land outside the component while a press of the anchor held the tooltip open.
     /// Safari and every touch browser leave a pressed button unfocused, so the focus leaving it - which is what
     /// dismisses such a tooltip elsewhere - never arrives there, and neither does it for an anchor that is not
@@ -930,14 +915,11 @@ public partial class BitTooltip : BitComponentBase
         // The JS side takes an Escape that dismisses a shown tooltip before it reaches this handler, so this is
         // only the answer while that side is not set up yet - and a repeat of it, which finds the tooltip
         // already hidden, for a key it let through to a component inside the anchor that answers Escape itself.
-        // A key cancelling an IME composition, which it lets through as well, is the composition's alone; that answer
-        // is read once, so it never outlives the press it was given for.
+        // Only the plain key, as on the JS side: an Escape with a modifier goes on to the surface around the tooltip.
+        // A key cancelling an IME composition never gets here (see Utils.stopComposingEscape).
         if (e.Key is "Escape")
         {
-            var composing = _composingEscape;
-            _composingEscape = false;
-
-            if (composing) return;
+            if (e.IsPlainEscape() is false) return;
 
             await DismissByEscape();
 

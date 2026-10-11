@@ -1684,11 +1684,12 @@
         // Hands the keyboard over to an opening BitCallout in one call rather than one per piece, since each
         // is a round trip of its own on a server-rendered page and all of them stand between the click and the
         // focus moving into the callout: the element the focus is on is remembered (to be handed back to on
-        // close), Escape is listened for on the page, the Escapes the component's own handlers hear on the root
-        // and on the callout are told apart from the ones cancelling an IME composition, Tab and Shift+Tab are
-        // kept inside the callout, or the callout is put into the tab order after its trigger. Each is asked for
-        // on its own, and the ones the component has already set up are not asked for again. Reports whether a
-        // focus origin was remembered.
+        // close), Escape is listened for on the page, the elements the component's own .NET handlers dismiss it
+        // from on Escape are guarded (see Utils.setupEscapeGuard), so that those handlers leave alone a press that
+        // a part inside them claimed or a popup opened from inside them closes, Tab and Shift+Tab are kept inside
+        // the callout, or the callout is put into the tab order after its trigger. Each is asked for on its own,
+        // and the ones the component has already set up are not asked for again. Reports whether a focus origin
+        // was remembered.
         public static setupKeyboard(
             calloutId: string,
             dotnetObj: DotNetObject,
@@ -1697,15 +1698,23 @@
             escapeTriggerId: string | null,
             focusTrap: boolean,
             tabOutTriggerId: string | null,
-            compositionRootId: string | null) {
+            escapeGuardIds: string[] | null) {
             const captured = captureFocusOrigin && Utils.captureFocusOrigin(calloutId);
+
+            // Ahead of the page's Escape listener, whose registration of the callout as a surface a guard taken back
+            // here would forget along with its own.
+            if (escapeGuardIds?.length) {
+                Callouts.disposeEscapeGuards(calloutId);
+
+                for (const id of escapeGuardIds) {
+                    Utils.setupEscapeGuard(id, dotnetObj, calloutId);
+                }
+
+                Callouts._escapeGuardIds.set(calloutId, escapeGuardIds);
+            }
 
             if (escape) {
                 Utils.setupEscape(calloutId, dotnetObj, escapeTriggerId);
-            }
-
-            if (compositionRootId) {
-                Utils.watchEscapeComposition(calloutId, [compositionRootId, calloutId], dotnetObj);
             }
 
             if (focusTrap) {
@@ -1726,11 +1735,23 @@
             Utils.disposeFocusTrap(calloutId);
             Utils.disposeTabOut(calloutId);
             Utils.disposeEscape(calloutId);
-            Utils.unwatchEscapeComposition(calloutId);
+            Callouts.disposeEscapeGuards(calloutId);
 
             if (forgetFocusOrigin) {
                 Utils.disposeFocusOrigin(calloutId);
             }
+        }
+
+        // The elements setupKeyboard guarded for each callout, by the id of the callout, so that the disposal takes
+        // them all back without being told which they were.
+        private static _escapeGuardIds = new Map<string, string[]>();
+
+        private static disposeEscapeGuards(calloutId: string) {
+            const ids = Callouts._escapeGuardIds.get(calloutId);
+            if (!ids) return;
+
+            ids.forEach(id => Utils.disposeEscapeGuard(id));
+            Callouts._escapeGuardIds.delete(calloutId);
         }
 
         // Whether the callout about to be opened belongs to a component that sits inside the innermost open

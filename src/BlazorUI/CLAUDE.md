@@ -92,6 +92,16 @@ the callouts, BitTooltip, BitMessage - the listeners in `Scripts/Utils.ts`) leav
 - **One shared watch per claiming root.** A component whose own .NET keydown on its root acts on the key it
   claims there hears the presses a part inside it claimed first, too; it tells them apart through
   `BitEscapeClaimWatch` (`Utils.watchEscapeClaim`), never a copy of it.
+- **A surface that dismisses itself in its own .NET keydown handler asks the escape guard first.** `BitPanel` and
+  `BitCallout` (its anchor and its content) go by `Utils.setupEscapeGuard`'s per-press `OnEscapeVerdict`, which
+  folds a claim, a prevented default, an open popup opened from inside and an IME composition into one answer -
+  never a channel of their own for one of them. A callout names itself to the guard, since it is the innermost
+  open callout the key closes.
+- **The Escape of an IME composition is nobody's.** Every script of both packages reads it through
+  `Utils.isComposingKey` (the one reading of `isComposing` and the legacy 229 key code), every listener that closes
+  something leaves it alone, and `Utils.stopComposingEscape` stops it on the document element, ahead of Blazor's
+  delegation, so no .NET handler hears it in any engine - a component never tests for it in C#.
+  `BitEscapeClaimContractTests` pins both.
 - **Nothing guesses from what the target looks like.** No selector of inputs, roles or `aria-expanded`
   decides who owns the key; a component the claim and the open popup do not cover is fixed by claiming,
   never by teaching a surface a new selector. A consumer's own control opts in the same way.

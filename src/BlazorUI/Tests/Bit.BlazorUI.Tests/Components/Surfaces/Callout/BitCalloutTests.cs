@@ -814,7 +814,7 @@ public class BitCalloutTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCalloutShouldWatchItsRootAndItselfForTheEscapesOfAnImeCompositionAsItOpens()
+    public void BitCalloutShouldGuardItsRootAndItselfAsItOpens()
     {
         var component = RenderComponent<BitCallout>(parameters =>
         {
@@ -823,16 +823,55 @@ public class BitCalloutTests : BunitTestContext
 
         component.Find(".bit-clo-acn").Click();
 
-        // KeyboardEventArgs cannot say whether an Escape cancelled what an IME was composing, so the browser tells the
-        // key handlers of the root and of the callout, in the same round trip as the rest of the keyboard.
+        // The key handlers of the root and of the callout hear the presses a part inside them claimed, or a popup
+        // opened from inside them closes, as well, so the browser answers each Escape - in the same round trip as the
+        // rest of the keyboard.
         var setup = Context.JSInterop.Invocations["BitBlazorUI.Callouts.setupKeyboard"][^1].Arguments;
 
         Assert.AreEqual(component.Find(".bit-clo-cal").Id, setup[0]);
-        Assert.AreEqual(component.Find(".bit-clo").Id, setup[7]);
+        CollectionAssert.AreEqual(new[] { component.Find(".bit-clo").Id, component.Find(".bit-clo-cal").Id }, (string[])setup[7]!);
     }
 
     [TestMethod]
-    public void BitCalloutShouldNotCloseOnAnEscapeThatCancelsAnImeCompositionInsideIt()
+    public void BitCalloutThatListensForEscapeOnThePageShouldGuardOnlyItsRoot()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isHoverDevice").SetResult(true);
+
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.OpenOnHover, true);
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+        });
+
+        component.Find(".bit-clo").MouseEnter();
+
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        // The page's listener answers the keys pressed inside the callout, and the handler there leaves them to it.
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.Callouts.setupKeyboard"][^1].Arguments;
+
+        CollectionAssert.AreEqual(new[] { component.Find(".bit-clo").Id }, (string[])setup[7]!);
+    }
+
+    [TestMethod]
+    public void BitCalloutThatDoesNotDismissOnEscapeShouldGuardNothing()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+            parameters.Add(p => p.NoDismissOnEscape, true);
+        });
+
+        component.Find(".bit-clo-acn").Click();
+
+        // Nothing would act on the answer, so no Escape costs a round trip.
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.Callouts.setupKeyboard"][^1].Arguments;
+
+        Assert.IsNull(setup[7]);
+    }
+
+    [TestMethod]
+    public void BitCalloutShouldNotCloseOnAnEscapeAnotherOwnsInsideIt()
     {
         var component = RenderComponent<BitCallout>(parameters =>
         {
@@ -841,20 +880,21 @@ public class BitCalloutTests : BunitTestContext
 
         component.Find(".bit-clo-acn").Click();
 
-        component.InvokeAsync(() => component.Instance._OnEscapeComposition(true));
+        // A field inside the callout clearing, a dropdown inside it closing its list, an IME cancelling a candidate.
+        component.InvokeAsync(() => component.Instance._OnEscapeVerdict(true));
         component.Find(".bit-clo-cal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.IsTrue(component.Instance.IsOpen);
 
-        // The composition has ended, and the next press is the callout's.
-        component.InvokeAsync(() => component.Instance._OnEscapeComposition(false));
+        // The next press is the callout's.
+        component.InvokeAsync(() => component.Instance._OnEscapeVerdict(false));
         component.Find(".bit-clo-cal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.IsFalse(component.Instance.IsOpen);
     }
 
     [TestMethod]
-    public void BitCalloutShouldNotCloseOnAnEscapeThatCancelsAnImeCompositionInItsAnchor()
+    public void BitCalloutShouldNotCloseOnAnEscapeAnotherOwnsInItsAnchor()
     {
         var component = RenderComponent<BitCallout>(parameters =>
         {
@@ -864,19 +904,19 @@ public class BitCalloutTests : BunitTestContext
         component.Find(".bit-clo-acn").Click();
 
         // A field in the anchor that the callout opens from, the way suggestions open under a search field.
-        component.InvokeAsync(() => component.Instance._OnEscapeComposition(true));
+        component.InvokeAsync(() => component.Instance._OnEscapeVerdict(true));
         component.Find(".bit-clo").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.IsTrue(component.Instance.IsOpen);
 
-        component.InvokeAsync(() => component.Instance._OnEscapeComposition(false));
+        component.InvokeAsync(() => component.Instance._OnEscapeVerdict(false));
         component.Find(".bit-clo").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.IsFalse(component.Instance.IsOpen);
     }
 
     [TestMethod]
-    public void BitCalloutShouldReadTheCompositionOfAnEscapeOnlyOnce()
+    public void BitCalloutShouldReadTheVerdictOfAnEscapeOnlyOnce()
     {
         var component = RenderComponent<BitCallout>(parameters =>
         {
@@ -885,7 +925,7 @@ public class BitCalloutTests : BunitTestContext
 
         component.Find(".bit-clo-acn").Click();
 
-        component.InvokeAsync(() => component.Instance._OnEscapeComposition(true));
+        component.InvokeAsync(() => component.Instance._OnEscapeVerdict(true));
         component.Find(".bit-clo-cal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.IsTrue(component.Instance.IsOpen);

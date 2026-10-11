@@ -73,7 +73,7 @@
                     // Enter commits the candidate of an input method editor, so it must keep its meaning
                     // while a composition session is running. The keyCode check covers the browsers that
                     // report the legacy 229 instead of setting isComposing.
-                    if (e.isComposing || e.keyCode === 229) return;
+                    if (Utils.isComposingKey(e)) return;
 
                     if (e.key === 'Enter' && !e.shiftKey) {
                         e.preventDefault();
@@ -189,7 +189,7 @@
             let isComposing = false;
 
             const composing = (e: KeyboardEvent | InputEvent) =>
-                isComposing || e.isComposing || (e as KeyboardEvent).keyCode === 229;
+                isComposing || Utils.isComposingKey(e);
 
             inputElement.addEventListener('compositionstart', () => {
                 isComposing = true;
@@ -406,7 +406,7 @@
             inputElement.addEventListener('keydown', e => {
                 // Tab and Enter belong to the input method editor while a composition session is running:
                 // they move through and commit its candidates, so the suggestion is left alone.
-                if (e.isComposing || e.keyCode === 229) return;
+                if (Utils.isComposingKey(e)) return;
 
                 const isAcceptKey = e.key === 'Tab' || e.key === 'Enter';
 

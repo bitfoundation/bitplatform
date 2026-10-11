@@ -91,23 +91,36 @@ public sealed class BitEscapeClaimContractTests
     }
 
     [TestMethod]
-    public void TheCompositionOfAnEscapeShouldBeReadInOnePlace()
+    public void TheCompositionOfAKeyShouldBeReadInOnePlace()
     {
-        var script = SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts");
-        var check = GetMethod(script, "isComposingKey");
+        var check = GetMethod(SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts"), "isComposingKey");
 
         // The engines that report the real key during a composition set isComposing, and the ones that predate it
         // report the legacy 229 key code instead - so a check of one of them alone leaves a dialog closing in the other.
         StringAssert.Contains(check, "e.isComposing");
-        StringAssert.Contains(check, "e.keyCode === 229");
+        StringAssert.Contains(check, "keyCode === 229");
 
-        var copies = script.Split('\n')
-                           .Where(line => line.TrimStart().StartsWith("//") is false)
-                           .Where(line => Regex.IsMatch(line, @"\.isComposing\b|=== 229"))
-                           .Where(line => check.Contains(line) is false)
-                           .ToList();
+        // Every script of both packages: the components' own (a text field holding back the keys of a composition, a
+        // search box, a chart's tooltip) as well as the library's surfaces. The Extras ones call the core helper
+        // through its declaration, which is no copy of it.
+        string[] packages = [SourceFiles.GetDirectory("Bit.BlazorUI"), SourceFiles.GetDirectory("Bit.BlazorUI.Extras")];
 
-        Assert.AreEqual(0, copies.Count, $"Utils.ts reads the composition of a key outside Utils.isComposingKey: {string.Join(" | ", copies.Select(l => l.Trim()))}");
+        var scripts = packages.SelectMany(folder => Directory.EnumerateFiles(folder, "*.ts", SearchOption.AllDirectories))
+                              .Where(file => file.EndsWith(".d.ts") is false)
+                              .Where(file => file.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                                                 .Any(part => part is "node_modules" or "wwwroot" or "bin" or "obj") is false)
+                              .ToList();
+
+        Assert.IsTrue(scripts.Count > 1, "No script of the packages was found.");
+
+        var copies = scripts.SelectMany(file => SourceFiles.ReadFullPath(file).Split('\n')
+                                                           .Where(line => line.TrimStart().StartsWith("//") is false)
+                                                           .Where(line => Regex.IsMatch(line, @"\.isComposing\b|=== 229"))
+                                                           .Where(line => check.Contains(line.Trim()) is false)
+                                                           .Select(line => $"{Path.GetFileName(file)}: {line.Trim()}"))
+                            .ToList();
+
+        Assert.AreEqual(0, copies.Count, $"A script reads the composition of a key outside Utils.isComposingKey: {string.Join(" | ", copies)}");
     }
 
     [TestMethod,
@@ -119,7 +132,7 @@ public sealed class BitEscapeClaimContractTests
         DataRow("setupEscape"),
         DataRow("setupTooltip"),
         DataRow("dismissTooltipsOnEscape"),
-        DataRow("watchEscapeComposition")
+        DataRow("stopComposingEscape")
     ]
     public void EverySurfaceShouldLeaveTheEscapeOfAnImeCompositionAlone(string method)
     {
@@ -156,25 +169,35 @@ public sealed class BitEscapeClaimContractTests
     }
 
     [TestMethod]
-    public void TheCalloutShouldBeToldWhichEscapesCancelAComposition()
+    public void TheEscapeOfAnImeCompositionShouldNeverReachDotNet()
     {
-        // A BitCallout dismisses itself in .NET, on its root and on its content, where KeyboardEventArgs carries no key
-        // code (and no composition state before .NET 9), so the browser answers every Escape it is about to hear.
-        var callouts = SourceFiles.Read("Bit.BlazorUI", "Scripts", "Callouts.ts");
+        // KeyboardEventArgs cannot tell it from any other Escape (no key code, and no composition state before .NET 9),
+        // so it is stopped on the document element in the bubble phase: after every listener of the page's elements,
+        // and ahead of Blazor's delegation, which listens on the document.
+        var general = SourceFiles.Read("Bit.BlazorUI", "Scripts", "general.ts");
 
-        StringAssert.Contains(GetMethod(callouts, "setupKeyboard", "Callouts"), "Utils.watchEscapeComposition(calloutId, [compositionRootId, calloutId], dotnetObj)");
-        StringAssert.Contains(GetMethod(callouts, "disposeKeyboard", "Callouts"), "Utils.unwatchEscapeComposition(calloutId)");
-        StringAssert.Contains(GetMethod(SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts"), "watchEscapeComposition"), "'OnEscapeComposition'");
+        StringAssert.Contains(general, "document.documentElement.addEventListener('keydown', (e: KeyboardEvent) => BitBlazorUI.Utils.stopComposingEscape(e));");
+
+        var stop = GetMethod(SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts"), "stopComposingEscape");
+
+        StringAssert.Contains(stop, "e.key !== 'Escape'");
+        StringAssert.Contains(stop, "e.stopPropagation()");
+        Assert.IsFalse(stop.Contains("preventDefault"), "Utils.stopComposingEscape takes the key away from the IME it belongs to.");
     }
 
     [TestMethod]
-    public void TheTooltipShouldTellItsKeyHandlerWhichEscapesCancelAComposition()
+    public void TheCalloutShouldGuardTheElementsItsOwnHandlersDismissItFrom()
     {
-        // The tooltip leaves the Escape of a composition to the field it is in, so the key reaches its own .NET handler
-        // too - the fallback for a press the script has not taken - which has to be told it is not a dismissal.
-        var tooltip = GetMethod(SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts"), "setupTooltip");
+        // A BitCallout dismisses itself in .NET, on its root and on its content, which hear a press a part inside them
+        // claimed and one a popup opened from inside them closes, too - so each is guarded the way a panel is, and the
+        // guard is told which callout is asking: that one is the innermost open callout the key closes, never another.
+        var callouts = SourceFiles.Read("Bit.BlazorUI", "Scripts", "Callouts.ts");
+        var utils = SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts");
 
-        StringAssert.Contains(tooltip, "invokeMethodAsync('OnEscapeComposition', true)");
+        StringAssert.Contains(GetMethod(callouts, "setupKeyboard", "Callouts"), "Utils.setupEscapeGuard(id, dotnetObj, calloutId)");
+        StringAssert.Contains(GetMethod(callouts, "disposeKeyboard", "Callouts"), "Callouts.disposeEscapeGuards(calloutId)");
+        StringAssert.Contains(GetMethod(utils, "setupEscapeGuard"), "Utils.isEscapeOfOpenCallout(e.target, calloutId)");
+        StringAssert.Contains(GetMethod(utils, "isEscapeOfOpenCallout"), "current.calloutId === ownCalloutId");
     }
 
     [TestMethod,

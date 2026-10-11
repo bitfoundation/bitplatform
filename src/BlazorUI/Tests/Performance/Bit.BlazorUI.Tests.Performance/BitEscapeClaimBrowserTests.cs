@@ -17,7 +17,7 @@ namespace Bit.BlazorUI.Tests.Performance;
 [RequiresBrowser] // opt-in: RUN_BROWSER_TESTS=1 dotnet test --filter FullyQualifiedName~BitEscapeClaimBrowserTests
 public class BitEscapeClaimBrowserTests : PerformanceTestBase
 {
-    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay")]
+    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay"), DataRow("callout")]
     public async Task TextField_ClearOnEscape_ClearsFirstAndTheSurfaceClosesOnTheNextPress(string surface)
     {
         await OpenSurface(surface);
@@ -31,7 +31,7 @@ public class BitEscapeClaimBrowserTests : PerformanceTestBase
         await PressEscapeAndExpectClosed();
     }
 
-    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay")]
+    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay"), DataRow("callout")]
     public async Task TextField_ClearOnEscape_OneWayBinding_LeavesTheKeyToTheSurface(string surface)
     {
         await OpenSurface(surface);
@@ -42,7 +42,7 @@ public class BitEscapeClaimBrowserTests : PerformanceTestBase
         await Expect(Page.Locator("#clears")).ToHaveTextAsync("0");
     }
 
-    [TestMethod, DataRow("dialog", "Shift+Escape"), DataRow("modal", "Control+Escape"), DataRow("panel", "Alt+Escape"), DataRow("overlay", "Shift+Escape")]
+    [TestMethod, DataRow("dialog", "Shift+Escape"), DataRow("modal", "Control+Escape"), DataRow("panel", "Alt+Escape"), DataRow("overlay", "Shift+Escape"), DataRow("callout", "Control+Escape")]
     public async Task TextField_ClearOnEscape_ModifiedEscape_ClosesTheSurfaceAndClearsNothing(string surface, string key)
     {
         await OpenSurface(surface);
@@ -57,7 +57,7 @@ public class BitEscapeClaimBrowserTests : PerformanceTestBase
         await Expect(Page.Locator("#clears")).ToHaveTextAsync("0");
     }
 
-    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay")]
+    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay"), DataRow("callout")]
     public async Task SearchBox_ClearsFirstAndTheSurfaceClosesOnTheNextPress(string surface)
     {
         await OpenSurface(surface);
@@ -71,7 +71,7 @@ public class BitEscapeClaimBrowserTests : PerformanceTestBase
         await PressEscapeAndExpectClosed();
     }
 
-    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay")]
+    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay"), DataRow("callout")]
     public async Task SearchBox_OneWayBinding_LeavesTheKeyToTheSurface(string surface)
     {
         await OpenSurface(surface);
@@ -82,7 +82,7 @@ public class BitEscapeClaimBrowserTests : PerformanceTestBase
         await Expect(Page.Locator("#clears")).ToHaveTextAsync("0");
     }
 
-    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay")]
+    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay"), DataRow("callout")]
     public async Task NumberField_ClearsFirstAndTheSurfaceClosesOnTheNextPress(string surface)
     {
         await OpenSurface(surface);
@@ -96,7 +96,7 @@ public class BitEscapeClaimBrowserTests : PerformanceTestBase
         await PressEscapeAndExpectClosed();
     }
 
-    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay")]
+    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay"), DataRow("callout")]
     public async Task TagsInput_TakesBackTheTextThenTheTagsAndTheSurfaceClosesOnTheNextPress(string surface)
     {
         await OpenSurface(surface);
@@ -113,7 +113,7 @@ public class BitEscapeClaimBrowserTests : PerformanceTestBase
         await PressEscapeAndExpectClosed();
     }
 
-    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay")]
+    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay"), DataRow("callout")]
     public async Task TagsInput_OneWayBinding_LeavesTheKeyToTheSurface(string surface)
     {
         await OpenSurface(surface);
@@ -124,7 +124,7 @@ public class BitEscapeClaimBrowserTests : PerformanceTestBase
         await Expect(Page.Locator("#clears")).ToHaveTextAsync("0");
     }
 
-    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay")]
+    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay"), DataRow("callout")]
     public async Task Dropdown_ClearOnEscape_ClearsFirstAndTheSurfaceClosesOnTheNextPress(string surface)
     {
         await OpenSurface(surface);
@@ -138,7 +138,7 @@ public class BitEscapeClaimBrowserTests : PerformanceTestBase
         await PressEscapeAndExpectClosed();
     }
 
-    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay")]
+    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay"), DataRow("callout")]
     public async Task Dropdown_ClosesItsListFirstAndKeepsTheSelection(string surface)
     {
         await OpenSurface(surface);
@@ -152,7 +152,7 @@ public class BitEscapeClaimBrowserTests : PerformanceTestBase
         await Expect(Page.Locator("#v-drp")).ToHaveTextAsync("a");
     }
 
-    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay")]
+    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay"), DataRow("callout")]
     public async Task Dropdown_ClearOnEscape_OneWayBinding_LeavesTheKeyToTheSurface(string surface)
     {
         await OpenSurface(surface);
@@ -163,7 +163,7 @@ public class BitEscapeClaimBrowserTests : PerformanceTestBase
         await Expect(Page.Locator("#clears")).ToHaveTextAsync("0");
     }
 
-    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay")]
+    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay"), DataRow("callout")]
     public async Task Dropdown_ModifiedEscape_ClosesTheSurfaceAndKeepsTheSelection(string surface)
     {
         await OpenSurface(surface);
@@ -177,7 +177,7 @@ public class BitEscapeClaimBrowserTests : PerformanceTestBase
         await Expect(Page.Locator("#clears")).ToHaveTextAsync("0");
     }
 
-    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay")]
+    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay"), DataRow("callout")]
     public async Task Combo_DropsTheTermThenTheSelectionAndTheSurfaceClosesOnTheNextPress(string surface)
     {
         await OpenSurface(surface);
@@ -197,7 +197,7 @@ public class BitEscapeClaimBrowserTests : PerformanceTestBase
         await PressEscapeAndExpectClosed();
     }
 
-    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay")]
+    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay"), DataRow("callout")]
     public async Task Message_DismissesFirstAndTheSurfaceClosesOnTheNextPress(string surface)
     {
         await OpenSurface(surface);
@@ -213,7 +213,7 @@ public class BitEscapeClaimBrowserTests : PerformanceTestBase
         await PressEscapeAndExpectClosed();
     }
 
-    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay")]
+    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay"), DataRow("callout")]
     public async Task Message_AFieldInsideItClearsAndTheMessageStays(string surface)
     {
         await OpenSurface(surface);
@@ -274,7 +274,7 @@ public class BitEscapeClaimBrowserTests : PerformanceTestBase
         await Expect(tooltip).ToHaveCountAsync(0);
     }
 
-    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay")]
+    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay"), DataRow("callout")]
     public async Task Tooltip_AroundAFieldThatClaimsTheKey_GoesAlongAndTheSurfaceClosesOnTheNextPress(string surface)
     {
         await OpenSurface(surface);
@@ -292,7 +292,7 @@ public class BitEscapeClaimBrowserTests : PerformanceTestBase
         await PressEscapeAndExpectClosed();
     }
 
-    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay")]
+    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay"), DataRow("callout")]
     public async Task Tooltip_AroundAFieldThatLeavesTheKeyAlone_TakesItAndTheSurfaceClosesOnTheNextPress(string surface)
     {
         await OpenSurface(surface);
@@ -308,7 +308,7 @@ public class BitEscapeClaimBrowserTests : PerformanceTestBase
         await PressEscapeAndExpectClosed();
     }
 
-    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay")]
+    [TestMethod, DataRow("dialog"), DataRow("modal"), DataRow("panel"), DataRow("overlay"), DataRow("callout")]
     public async Task Tooltip_AroundAnOpenPopup_GoesAlongAsThePopupClosesAndTheSurfaceStays(string surface)
     {
         await OpenSurface(surface);
@@ -326,6 +326,78 @@ public class BitEscapeClaimBrowserTests : PerformanceTestBase
         await PressEscapeAndExpectOpen();
         await Expect(Page.Locator("#w-tdp .bit-dtp-inp")).ToHaveAttributeAsync("aria-expanded", "false");
         await Expect(tooltip).ToHaveCountAsync(0);
+    }
+
+    [TestMethod]
+    public async Task Callout_AFieldInItsAnchorClearsFirstAndTheCalloutClosesOnTheNextPress()
+    {
+        await OpenPage();
+
+        await Page.Locator("#w-actf input").ClickAsync();
+        await Expect(Page.Locator("#anchor-callout-state")).ToHaveTextAsync("open");
+        await Settle();
+
+        await FocusAndType("#w-actf input", "abc");
+        await Expect(Page.Locator("#v-actf")).ToHaveTextAsync("abc");
+
+        await Page.Keyboard.PressAsync("Escape");
+
+        await Expect(Page.Locator("#v-actf")).ToHaveTextAsync("");
+
+        // Give a wrongly routed press the time to have closed the callout.
+        await Page.WaitForTimeoutAsync(300);
+        await Expect(Page.Locator("#anchor-callout-state")).ToHaveTextAsync("open");
+
+        // The field holds nothing now, so the next press is the callout's.
+        await Page.Keyboard.PressAsync("Escape");
+
+        await Expect(Page.Locator("#anchor-callout-state")).ToHaveTextAsync("closed");
+    }
+
+    [TestMethod, DataRow("Shift+Escape"), DataRow("Control+Escape"), DataRow("Alt+Escape")]
+    public async Task Tooltip_LeavesAModifiedEscapeToThePage(string key)
+    {
+        await OpenPage();
+
+        await Page.Locator("#tooltip-btn").FocusAsync();
+        var tooltip = Page.Locator("#w-pbt .bit-ttp-wrp.bit-ttp-vis");
+        await Expect(tooltip).ToHaveCountAsync(1);
+        await Settle();
+
+        await Page.Keyboard.PressAsync(key);
+
+        // Give a wrongly routed press the time to have hidden the tooltip.
+        await Page.WaitForTimeoutAsync(300);
+        await Expect(tooltip).ToHaveCountAsync(1);
+
+        await Page.Keyboard.PressAsync("Escape");
+
+        await Expect(tooltip).ToHaveCountAsync(0);
+    }
+
+    [TestMethod, DataRow("isComposing"), DataRow("keyCode")]
+    public async Task Dropdown_EscapeCancellingAnImeCompositionInItsSearchBox_LeavesTheListOpen(string flag)
+    {
+        await OpenPage();
+
+        var trigger = Page.Locator("#w-pdrp .bit-drp-wrp");
+        await trigger.ClickAsync();
+        await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "true");
+        await Settle();
+
+        var searchBox = Page.Locator("input.bit-drp-sin");
+        await searchBox.FocusAsync();
+
+        await DispatchComposingEscape("input.bit-drp-sin", flag);
+
+        // Give a wrongly routed press the time to have closed the list.
+        await Page.WaitForTimeoutAsync(300);
+        await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "true");
+
+        // The composition has ended, and the next press is the list's.
+        await Page.Keyboard.PressAsync("Escape");
+
+        await Expect(trigger).ToHaveAttributeAsync("aria-expanded", "false");
     }
 
     // An Escape pressed to cancel what an input method editor is composing is dispatched by hand: no engine driven here

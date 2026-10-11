@@ -9,8 +9,10 @@
    surface rendered inside the claimer (a Modal inside a Message), and the listeners that hear the key from anywhere
    (a Tooltip shown on hover). A Tooltip inside the surface takes a press nothing in its anchor acts on, and goes
    along with one a field claims or a popup of its anchor closes on - the surface waiting for the next press either way.
-   An Escape cancelling an IME composition is nobody's: the surface (a Callout as well, whose own handlers answer the
-   key in .NET) and a Tooltip shown in it both stay. *@
+   A Callout is one of those surfaces too, its own .NET handlers guarded like the others (Utils.setupEscapeGuard), and
+   the page-level one opened from a field in its anchor waits while that field clears. An Escape cancelling an IME
+   composition is nobody's: the surface and a Tooltip shown in it both stay, and so does the list of a Dropdown whose
+   search box it was pressed in, which .NET never hears it from (Utils.stopComposingEscape). *@
 <div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
     <h3>Escape Claim Regression (@Surface)</h3>
     <button @onclick="Open" id="btn-open">Open</button>
@@ -25,6 +27,8 @@
         <p>Message: <span id="msg-state">@(_msgDismissed ? "dismissed" : "shown")</span></p>
         <p>Message field: <span id="v-mtf">@_mtf</span></p>
         <p>Tooltip field: <span id="v-ttf">@_ttf</span></p>
+        <p>Anchor callout: <span id="anchor-callout-state">@(_anchorCalloutOpen ? "open" : "closed")</span></p>
+        <p>Anchor field: <span id="v-actf">@_actf</span></p>
         <p>Clears: <span id="clears">@_clears</span></p>
         <p>Status: <span id="status">@_status</span></p>
     </div>
@@ -73,6 +77,23 @@
     </BitTooltip>
     <div id="w-ptf"><BitTextField ClearOnEscape Immediate @bind-Value="_ptf" /></div>
     <p>Page field: <span id="v-ptf">@_ptf</span></p>
+
+    @* A Callout opened from a field in its anchor, the way suggestions open under a search field: the Escape the field
+       clears itself with is the field's, and the callout closes on the next press. *@
+    <BitCallout @bind-IsOpen="_anchorCalloutOpen">
+        <Anchor>
+            <div id="w-actf"><BitTextField ClearOnEscape Immediate @bind-Value="_actf" /></div>
+        </Anchor>
+        <Content>
+            <div id="anchor-callout-content" style="padding: 16px;">Suggestions</div>
+        </Content>
+    </BitCallout>
+
+    @* A Tooltip shown by the focus on its anchor leaves an Escape with a modifier to the page around it. *@
+    <div id="w-pbt"><BitTooltip Text="Button tip"><button id="tooltip-btn">Tip button</button></BitTooltip></div>
+
+    @* A Dropdown whose list holds a search box, which .NET answers the keys of. *@
+    <div id="w-pdrp"><BitDropdown ShowSearchBox @bind-Value="_pdrp" Items="_items" /></div>
 </div>
 
 @code {
@@ -98,6 +119,9 @@
     private string? _ptf;
     private string? _ttf;
     private bool _outerMsgDismissed;
+    private bool _anchorCalloutOpen;
+    private string? _actf;
+    private string? _pdrp = "a";
     private bool _innerModalOpen;
     private int _clears;
     // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first

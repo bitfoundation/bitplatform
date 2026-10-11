@@ -350,20 +350,12 @@
             const controller = new AbortController();
 
             root.addEventListener('keydown', e => {
-                if (e.key !== 'Escape') return;
-
-                // A press cancelling an IME composition in a field of the anchor is the composition's: it goes on to
-                // the field and the page untaken, and the tooltip's own .NET key handler, which hears it on the way and
-                // cannot tell it apart itself, is told so ahead of it.
-                if (Utils.isComposingKey(e)) {
-                    dotnetObj.invokeMethodAsync('OnEscapeComposition', true)
-                             .catch(err => console.error("BitBlazorUI.Utils.setupTooltip:", err));
-                    return;
-                }
-
                 // Only the plain key: an Escape with a modifier goes on to the surface around the tooltip, as it
                 // does past every component that acts on Escape (claimEscape).
-                if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+                if (e.key !== 'Escape' || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+                // A press cancelling an IME composition in a field of the anchor is the composition's: it goes on to the
+                // field untaken, and no further than the page's own elements (see stopComposingEscape).
+                if (Utils.isComposingKey(e)) return;
                 if (!root.querySelector(':scope > .bit-ttp-wrp.bit-ttp-vis[data-bit-ttp-esc]')) return;
 
                 if (e.defaultPrevented) {
@@ -743,8 +735,22 @@
         // listener that closes something on Escape leaves it alone. Most engines report those keydowns as the
         // "Process" key, which no listener is looking for anyway; the ones that report the real key set isComposing,
         // and the ones that predate it report the legacy 229 key code instead.
-        public static isComposingKey(e: KeyboardEvent) {
-            return e.isComposing || e.keyCode === 229;
+        public static isComposingKey(e: KeyboardEvent | InputEvent) {
+            return e.isComposing || (e as KeyboardEvent).keyCode === 229;
+        }
+
+        // Keeps an Escape that cancels an IME composition (see isComposingKey) away from .NET. KeyboardEventArgs cannot
+        // tell such a press from any other - it carries no key code, and no composition state before .NET 9 - and the
+        // engines that report the real key for it (WebKit) would have every .NET handler that acts on Escape - a
+        // dropdown's search box, a picker's field, a callout around a field of the consumer's own - act on the press
+        // the user made to put a candidate back. general.ts calls it on the document element in the bubble phase, so
+        // every listener of the page's own elements has heard the key by then - the field's, the surfaces', which
+        // leave it alone themselves - and only Blazor's delegation on the document, and the listeners after it, do
+        // not: such a press then reaches .NET in no engine, where the others report it as the "Process" key anyway.
+        public static stopComposingEscape(e: KeyboardEvent) {
+            if (e.key !== 'Escape' || !Utils.isComposingKey(e)) return;
+
+            e.stopPropagation();
         }
 
         private static _escapeClaimers = new WeakMap<Event, Element>();
@@ -1078,40 +1084,6 @@
             Utils.forgetEscapeSurface(elementId);
         }
 
-        private static _escapeCompositionWatches = new Map<string, AbortController>();
-
-        // Tells a component whose .NET keydown handlers dismiss it on Escape (a callout, on its anchor and on its
-        // content) whether the Escape a handler is about to hear was pressed to cancel what an input method editor was
-        // composing (see isComposingKey) - which .NET cannot read for itself: KeyboardEventArgs carries no key code,
-        // and no composition state before .NET 9. Every Escape is answered, through the OnEscapeComposition callback,
-        // so an answer never outlives the press it was given for. The listeners are on the elements the handlers are
-        // on, so they run before Blazor's document-level delegation, and the answer is queued ahead of the keydown
-        // Blazor dispatches right after it.
-        public static watchEscapeComposition(id: string, elementIds: string[], dotnetObj: DotNetObject) {
-            Utils.unwatchEscapeComposition(id);
-
-            const controller = new AbortController();
-
-            for (const elementId of elementIds) {
-                document.getElementById(elementId)?.addEventListener('keydown', e => {
-                    if (e.key !== 'Escape') return;
-
-                    dotnetObj.invokeMethodAsync('OnEscapeComposition', Utils.isComposingKey(e))
-                             .catch(err => console.error("BitBlazorUI.Utils.watchEscapeComposition:", err));
-                }, { signal: controller.signal });
-            }
-
-            Utils._escapeCompositionWatches.set(id, controller);
-        }
-
-        public static unwatchEscapeComposition(id: string) {
-            const controller = Utils._escapeCompositionWatches.get(id);
-            if (!controller) return;
-
-            controller.abort();
-            Utils._escapeCompositionWatches.delete(id);
-        }
-
         // The callouts that answer an Escape pressed anywhere in the page (setupEscape with a trigger), not only
         // one pressed inside them or on their trigger.
         private static _escapesFromAnywhere = new Set<string>();
@@ -1131,12 +1103,15 @@
         // - a handler that already prevented the key's default;
         // - an IME composition the key cancels;
         // - a guarded surface nested inside this one, which answers the key itself (or refuses it).
+        // A callout guards the anchor and the content its own handlers dismiss it from (Callouts.setupKeyboard), and
+        // names itself as `calloutId`: it is the innermost open callout the key closes then, which is never foreign to
+        // it - only another one, opened from a component inside it, is.
         // The answer has to be taken while the key is still going down: this listener is on the element, so it
         // runs before Blazor's document-level delegation lets the nested component close its popup. It is sent
         // for every Escape rather than read back later, so each keydown carries its own answer: the callback is
         // queued ahead of the keydown Blazor dispatches right after it, and one Escape can never be answered
         // with what was recorded for the next - however slow the connection.
-        public static setupEscapeGuard(elementId: string, dotnetObj: DotNetObject) {
+        public static setupEscapeGuard(elementId: string, dotnetObj: DotNetObject, calloutId?: string | null) {
             Utils.disposeEscapeGuard(elementId);
 
             const element = document.getElementById(elementId);
@@ -1152,7 +1127,7 @@
                 const foreign = Utils._claimedEscapes.has(e)
                     || e.defaultPrevented
                     || Utils.isComposingKey(e)
-                    || Utils.isEscapeOfOpenCallout(e.target);
+                    || Utils.isEscapeOfOpenCallout(e.target, calloutId);
 
                 // A closed surface is inert, so an Escape reaches it only while it is open - and from then on the
                 // key is this surface's to answer or to refuse, never the one's it was opened from.
@@ -1160,7 +1135,8 @@
                     Utils._claimedEscapes.add(e);
                 }
 
-                dotnetObj.invokeMethodAsync('OnEscapeVerdict', foreign);
+                dotnetObj.invokeMethodAsync('OnEscapeVerdict', foreign)
+                         .catch(err => console.error("BitBlazorUI.Utils.setupEscapeGuard:", err));
             }, { signal: controller.signal });
 
             Utils._escapeGuards.set(elementId, controller);
@@ -1178,10 +1154,11 @@
         // Whether the innermost open callout is the one the key closes: it was pressed inside the callout or on
         // the component that opened it, or the callout answers an Escape from anywhere (one opened by hovering).
         // A callout that is only left open - one the focus has moved away from - does not close on an Escape
-        // pressed somewhere else, so it does not take that Escape away from the surface either.
-        private static isEscapeOfOpenCallout(target: EventTarget | null) {
+        // pressed somewhere else, so it does not take that Escape away from the surface either. The callout that is
+        // asking (`ownCalloutId`, see setupEscapeGuard) is never one the key belongs to instead of it.
+        private static isEscapeOfOpenCallout(target: EventTarget | null, ownCalloutId?: string | null) {
             const current = Callouts.current;
-            if (!current.calloutId) return false;
+            if (!current.calloutId || current.calloutId === ownCalloutId) return false;
 
             if (Utils._escapesFromAnywhere.has(current.calloutId)) return true;
 

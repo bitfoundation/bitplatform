@@ -627,8 +627,12 @@ public class BitTooltipTests : BunitTestContext
         Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
     }
 
-    [TestMethod]
-    public void BitTooltipShouldNotBeDismissedByAnEscapeThatCancelsAnImeCompositionInItsAnchor()
+    [TestMethod,
+        DataRow(true, false, false, false),
+        DataRow(false, true, false, false),
+        DataRow(false, false, true, false),
+        DataRow(false, false, false, true)]
+    public void BitTooltipShouldNotBeDismissedByAModifiedEscape(bool shift, bool ctrl, bool alt, bool meta)
     {
         var component = RenderComponent<BitTooltip>(parameters =>
         {
@@ -636,13 +640,11 @@ public class BitTooltipTests : BunitTestContext
             parameters.Add(p => p.DefaultIsShown, true);
         });
 
-        // The JS side leaves the key to the field the IME is composing in, and tells the key handler so ahead of it.
-        component.InvokeAsync(() => component.Instance._OnEscapeComposition(true));
-        component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Escape" });
+        // An Escape with a modifier goes on to the surface around the tooltip, as the JS side leaves it.
+        component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Escape", ShiftKey = shift, CtrlKey = ctrl, AltKey = alt, MetaKey = meta });
 
         Assert.IsTrue(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
 
-        // The answer was given for that one press: the next one dismisses the tooltip as before.
         component.Find(".bit-ttp").TriggerEvent("onkeydown", new KeyboardEventArgs { Key = "Escape" });
 
         Assert.IsFalse(component.Find(".bit-ttp-wrp").ClassList.Contains("bit-ttp-vis"));
