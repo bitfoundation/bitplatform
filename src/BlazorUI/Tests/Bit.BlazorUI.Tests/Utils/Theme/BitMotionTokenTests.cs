@@ -8,9 +8,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.BlazorUI.Tests.Utils.Theme;
 
 /// <summary>
-/// Pins how the motion tokens reach a component: the plain <c>--bit-mot-*</c> ones alias the unreduced <c>-full</c>
-/// ones, the reduced-motion query collapses the aliases wherever they are declared, and a component reads the
-/// unreduced values only through the <c>$mot-duration-*-full</c> aliases of <c>theme-variables.scss</c>.
+/// Pins how the motion tokens reach a component: the plain <c>--bit-mot-*</c> ones alias the inherited reduction (the
+/// <c>-reduced</c> tokens) or else the unreduced <c>-full</c> ones, wherever they are declared, and a component reads
+/// the unreduced values only through the <c>$mot-*-full</c> aliases of <c>theme-variables.scss</c>.
 /// </summary>
 [TestClass]
 public sealed class BitMotionTokenTests
@@ -36,39 +36,87 @@ public sealed class BitMotionTokenTests
     }
 
     [TestMethod]
-    public void TheUnreducedDurationsHaveThemeAliases()
+    public void TheUnreducedTokensHaveThemeAliases()
     {
+        // Each falls back to its plain token, for a consumer theme that declares only the plain ones by hand.
         var scss = SourceFiles.ReadThemeStylesheet("theme-variables.scss");
 
-        StringAssert.Contains(scss, "$mot-duration-full: var(--bit-mot-duration-full);");
-        StringAssert.Contains(scss, "$mot-duration-short-full: var(--bit-mot-duration-short-full);");
-        StringAssert.Contains(scss, "$mot-duration-long-full: var(--bit-mot-duration-long-full);");
+        StringAssert.Contains(scss, "$mot-duration-full: var(--bit-mot-duration-full, var(--bit-mot-duration));");
+        StringAssert.Contains(scss, "$mot-duration-short-full: var(--bit-mot-duration-short-full, var(--bit-mot-duration-short));");
+        StringAssert.Contains(scss, "$mot-duration-long-full: var(--bit-mot-duration-long-full, var(--bit-mot-duration-long));");
+        StringAssert.Contains(scss, "$mot-duration-spinner-full: var(--bit-mot-duration-spinner-full, var(--bit-mot-duration-spinner));");
+        StringAssert.Contains(scss, "$mot-easing-spinner-full: var(--bit-mot-easing-spinner-full, var(--bit-mot-easing-spinner));");
+        StringAssert.Contains(scss, "$mot-loop-factor-full: var(--bit-mot-loop-factor-full, var(--bit-mot-loop-factor, 1));");
     }
 
     [TestMethod]
-    public void AnOverlayOfTheMotionTokensIsCollapsedUnderReducedMotion()
+    public void EveryPlaceThatSubstitutesTheAliasesReadsTheInheritedReduction()
     {
-        // A theme overlay writes the -full tokens on its own element, where the motion rule re-declares the aliases, so
-        // the reduced-motion query has to collapse them on that element as well - and after it, to win at equal weight.
-        var css = Regex.Replace(SourceFiles.Read("Bit.BlazorUI", "wwwroot", "styles", "bit.blazorui.css"), @"\s+", " ").Replace("\"", string.Empty);
+        // Whether motion is reduced is the inherited -reduced tokens, so every rule that substitutes the plain aliases
+        // again - :root, a scoped preset, a motion overlay (at no weight, so a consumer's own rule on that element still
+        // wins), and .bit-fam - reads it off its ancestors instead of deciding it anew: an overlay or a scoped preset
+        // inside a ForceAnimation subtree, or below an app that withdraws the reduction on :root, stays unreduced.
+        var css = CompiledCoreCss();
 
-        var overlay = Regex.Escape(":root [bit-theme-overlay~=motion]");
-        var aliasing = Regex.Match(css, overlay + @" ?\{ ?--bit-mot-duration: ?var\(--bit-mot-duration-full\);");
-        var reduced = Regex.Match(css, @"@media ?\(prefers-reduced-motion: ?reduce\) ?\{[^@]*?" + overlay + @" ?\{ ?--bit-mot-duration: ?0\.01ms;");
+        var aliasing = Regex.Match(css, Regex.Escape(":root,:where(:root [bit-theme]),:where(:root [bit-theme-overlay~=motion]){") + "[^}]*");
+        var forced = Regex.Match(css, @"(?<![\w-])\.bit-fam\{[^}]*");
 
-        Assert.IsTrue(aliasing.Success, "The core stylesheet has no rule re-declaring the motion aliases on a motion overlay.");
-        Assert.IsTrue(reduced.Success, "The reduced-motion query does not collapse the motion aliases on a motion overlay.");
-        Assert.IsTrue(reduced.Index > aliasing.Index, "The reduced-motion rule of the overlay must come after the rule it collapses.");
+        Assert.IsTrue(aliasing.Success, "The motion aliases are not declared on :root, the scoped presets and the motion overlays by one rule.");
+        Assert.IsTrue(forced.Success, "There is no .bit-fam rule of the motion tokens.");
+
+        foreach (var (plain, reduced, full) in Aliases)
+        {
+            StringAssert.Contains(aliasing.Value, $"{plain}: var({reduced},var({full}))");
+            StringAssert.Contains(forced.Value, $"{reduced}: initial", ".bit-fam does not withdraw the reduction.");
+            StringAssert.Contains(forced.Value, $"{plain}: var({reduced},var({full}))", ".bit-fam does not substitute the aliases again.");
+        }
     }
 
     [TestMethod]
-    public void ForceAnimationOutranksAMotionOverlayOnTheSameElement()
+    public void TheReducedMotionQueryDeclaresOnlyTheReductionOnTheRoot()
     {
-        // The overlay's rule weighs (0,2,0), above .bit-fam alone, so the opt-out names that element at a weight above it.
-        var general = SourceFiles.ReadThemeStylesheet("general.scss").Replace("\r\n", "\n");
+        // A plain alias declared under the query would be the reduction decided anew on that element, which is what left an
+        // overlay inside a ForceAnimation subtree collapsed. The query declares the -reduced tokens on :root and nothing
+        // else, and .bit-fam comes after it, so it still withdraws them on the root element itself.
+        var css = CompiledCoreCss();
 
-        StringAssert.Contains(general, ".bit-fam,\n:root .bit-fam[bit-theme-overlay~=\"motion\"] {");
+        var query = Regex.Match(css, @"@media ?\(prefers-reduced-motion: ?reduce\) ?\{:root\{(?<body>--bit-mot-[^}]*)\}\}");
+
+        Assert.IsTrue(query.Success, "The reduced-motion query of the motion tokens is no longer a :root rule of its own.");
+        CollectionAssert.AreEquivalent(Aliases.Select(a => a.Reduced).ToArray(),
+            Regex.Matches(query.Groups["body"].Value, @"(--bit-[a-z-]+):").Select(m => m.Groups[1].Value).ToArray());
+        StringAssert.Contains(query.Groups["body"].Value, "--bit-mot-duration-reduced: 0.01ms");
+        StringAssert.Contains(query.Groups["body"].Value, "--bit-mot-duration-spinner-reduced: 4s");
+        StringAssert.Contains(query.Groups["body"].Value, "--bit-mot-easing-spinner-reduced: linear");
+        StringAssert.Contains(query.Groups["body"].Value, "--bit-mot-loop-factor-reduced: 3");
+
+        Assert.IsTrue(Regex.Match(css, @"(?<![\w-])\.bit-fam\{").Index > query.Index, ".bit-fam must come after the query to win on the root element.");
     }
+
+    [TestMethod]
+    public void OnlyTheMotionTierDeclaresTheReduction()
+    {
+        // The -reduced tokens are set only while the reduction is in force; a preset or a component declaring one would
+        // reduce, or un-reduce, motion regardless of the preference.
+        var declared = new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras" }
+            .SelectMany(project => Directory.EnumerateFiles(SourceFiles.GetDirectory(project), "*.scss", SearchOption.AllDirectories))
+            .Where(file => file.Contains($"{Path.DirectorySeparatorChar}node_modules{Path.DirectorySeparatorChar}", StringComparison.Ordinal) is false)
+            .Where(file => Path.GetFileName(file) != "motion.fluent.scss")
+            .SelectMany(file => Regex.Matches(SourceFiles.StripScssComments(SourceFiles.ReadFullPath(file)), @"--bit-mot-[a-z-]+-reduced\s*:")
+                                     .Select(m => $"{Path.GetFileName(file)}: {m.Value}"))
+            .ToArray();
+
+        CollectionAssert.AreEqual(Array.Empty<string>(), declared, $"Declared outside motion.fluent.scss: {string.Join(", ", declared)}");
+    }
+
+    private static readonly (string Plain, string Reduced, string Full)[] Aliases =
+    [
+        .. new[] { "duration", "duration-short", "duration-long", "duration-spinner", "easing-spinner", "loop-factor" }
+            .Select(n => ($"--bit-mot-{n}", $"--bit-mot-{n}-reduced", $"--bit-mot-{n}-full"))
+    ];
+
+    private static string CompiledCoreCss()
+        => Regex.Replace(SourceFiles.Read("Bit.BlazorUI", "wwwroot", "styles", "bit.blazorui.css"), @"\s*([{};,])\s*", "$1").Replace("\"", string.Empty);
 
     private static IEnumerable<string> EnumerateComponentStylesheets()
         => new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras" }

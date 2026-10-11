@@ -37,26 +37,6 @@ button {
     }
 }
 
-// Opts a subtree out of the reduced-motion collapse in motion.fluent.scss (BitComponentBase.ForceAnimation).
-// The durations are inherited custom properties, so re-pointing them at the -full tokens here restores the
-// unreduced values for this element and everything under it, without touching the document root. The
-// literal fallbacks keep this working for a consumer theme that defines --bit-mot-duration* by hand and
-// therefore has no -full tokens to fall back on.
-// The second selector is the same opt-out on an element that also carries an inline theme overlay of the
-// motion tokens, whose rule in motion.fluent.scss would otherwise outrank .bit-fam there.
-.bit-fam,
-:root .bit-fam[bit-theme-overlay~="motion"] {
-    --bit-mot-duration: var(--bit-mot-duration-full, 200ms);
-    --bit-mot-duration-short: var(--bit-mot-duration-short-full, 100ms);
-    --bit-mot-duration-long: var(--bit-mot-duration-long-full, 300ms);
-
-    // The looping tokens slow down rather than collapse under reduced motion, but they are restored
-    // here the same way, so a spinner inside a ForceAnimation subtree turns at full speed again.
-    --bit-mot-duration-spinner: var(--bit-mot-duration-spinner-full, 1.3s);
-    --bit-mot-easing-spinner: var(--bit-mot-easing-spinner-full, cubic-bezier(0.53, 0.21, 0.29, 0.67));
-    --bit-mot-loop-factor: var(--bit-mot-loop-factor-full, 1);
-}
-
 // The chain of `display: contents` copies a relocated callout is moved into (Callouts.moveCalloutToBody) carries
 // the classes of the ancestors it stands for, so that what they declare still inherits into the callout. A
 // display: contents element still generates its ::before and ::after, which would draw the decorations of

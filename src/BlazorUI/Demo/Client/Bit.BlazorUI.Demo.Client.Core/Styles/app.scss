@@ -54,18 +54,20 @@
 // the demonstration. Everywhere else, on the marketing and guide pages whose motion is a handful of
 // 200ms hovers, the setting is ignored rather than leaving the site feeling broken.
 //
-// The mechanics: the library collapses its --bit-mot-* tokens under the query below, and its own
-// .bit-fam class (BitComponentBase.ForceAnimation) points them back at the untouched -full values.
-// This restores them at :root, which this stylesheet can do because it is linked after the library's;
-// the demo pages then opt back IN to the reduction through .demo-reduced-motion.
+// The mechanics: under the query below the library declares its --bit-mot-*-reduced tokens on :root,
+// and every plain --bit-mot-* token reads the reduced value from them while they are set and the
+// untouched -full one otherwise - on :root and wherever it is substituted again (a scoped preset, a
+// theme overlay, and the .bit-fam class of BitComponentBase.ForceAnimation, which withdraws them).
+// This withdraws them at :root, which this stylesheet can do because it is linked after the
+// library's; the demo pages then opt back IN to the reduction through .demo-reduced-motion.
 @media (prefers-reduced-motion: reduce) {
     :root {
-        --bit-mot-duration: var(--bit-mot-duration-full, 200ms);
-        --bit-mot-duration-short: var(--bit-mot-duration-short-full, 100ms);
-        --bit-mot-duration-long: var(--bit-mot-duration-long-full, 300ms);
-        --bit-mot-duration-spinner: var(--bit-mot-duration-spinner-full, 1.3s);
-        --bit-mot-easing-spinner: var(--bit-mot-easing-spinner-full, cubic-bezier(0.53, 0.21, 0.29, 0.67));
-        --bit-mot-loop-factor: var(--bit-mot-loop-factor-full, 1);
+        --bit-mot-duration-reduced: initial;
+        --bit-mot-duration-short-reduced: initial;
+        --bit-mot-duration-long-reduced: initial;
+        --bit-mot-duration-spinner-reduced: initial;
+        --bit-mot-easing-spinner-reduced: initial;
+        --bit-mot-loop-factor-reduced: initial;
 
         // The bar's own height, which the sticky pivot bar under it offsets itself by. It holds a
         // single BitToggle on a doc surface, so it is that toggle's switch track plus the surface's
@@ -81,17 +83,27 @@
         --demo-motion-bar-height: calc(max(var(--bit-siz-switch-h-md, calc(var(--bit-spa-scaling-factor, #{rem2(8px)}) * var(--bit-layout-density-scale, 1) * var(--bit-siz-switch-h-md-steps, 3))), #{rem2(24px)}) + #{$doc-space-2xs} * 2 + #{rem2(2px)});
     }
 
-    // A component demo page with its ForceAnimation toggle off: exactly the library's own reduced
-    // values, re-applied to this subtree. Mirrors the block in Styles/Fluent/motion.fluent.scss -
-    // 0.01ms rather than 0ms, because a zero-duration transition never fires transitionend, and the
-    // looping tokens calmed rather than collapsed, because a near-zero loop renders as flicker.
+    // A component demo page with its ForceAnimation toggle off: exactly the library's own reduction,
+    // re-applied to this subtree. Mirrors Styles/Fluent/motion.fluent.scss - 0.01ms rather than 0ms,
+    // because a zero-duration transition never fires transitionend, and the looping tokens calmed
+    // rather than collapsed, because a near-zero loop renders as flicker. The plain tokens are
+    // substituted again here, as the library's .bit-fam does, because what this element inherits was
+    // already substituted unreduced at :root; a scoped preset or a theme overlay inside the page
+    // reads the reduction off this element by itself.
     .demo-reduced-motion {
-        --bit-mot-duration: 0.01ms;
-        --bit-mot-duration-short: 0.01ms;
-        --bit-mot-duration-long: 0.01ms;
-        --bit-mot-duration-spinner: 4s;
-        --bit-mot-easing-spinner: linear;
-        --bit-mot-loop-factor: 3;
+        --bit-mot-duration-reduced: 0.01ms;
+        --bit-mot-duration-short-reduced: 0.01ms;
+        --bit-mot-duration-long-reduced: 0.01ms;
+        --bit-mot-duration-spinner-reduced: 4s;
+        --bit-mot-easing-spinner-reduced: linear;
+        --bit-mot-loop-factor-reduced: 3;
+
+        --bit-mot-duration: var(--bit-mot-duration-reduced, var(--bit-mot-duration-full));
+        --bit-mot-duration-short: var(--bit-mot-duration-short-reduced, var(--bit-mot-duration-short-full));
+        --bit-mot-duration-long: var(--bit-mot-duration-long-reduced, var(--bit-mot-duration-long-full));
+        --bit-mot-duration-spinner: var(--bit-mot-duration-spinner-reduced, var(--bit-mot-duration-spinner-full));
+        --bit-mot-easing-spinner: var(--bit-mot-easing-spinner-reduced, var(--bit-mot-easing-spinner-full));
+        --bit-mot-loop-factor: var(--bit-mot-loop-factor-reduced, var(--bit-mot-loop-factor-full));
     }
 }
 

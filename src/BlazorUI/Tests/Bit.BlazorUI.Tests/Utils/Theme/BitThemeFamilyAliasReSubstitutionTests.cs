@@ -283,11 +283,40 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
 
         foreach (var (group, aliases) in GroupAliases)
         {
-            var rule = rules.FirstOrDefault(r => r.Selectors.Contains($":root [bit-theme-overlay~={group}]", StringComparer.Ordinal));
+            // The motion aliases are built alike by every theme, so their one rule re-declares them at no weight.
+            var rule = rules.FirstOrDefault(r => r.Selectors.Contains($":root [bit-theme-overlay~={group}]", StringComparer.Ordinal) ||
+                                                 r.Selectors.Contains($":where(:root [bit-theme-overlay~={group}])", StringComparer.Ordinal));
 
             Assert.IsNotNull(rule, $"The core stylesheet has no overlay rule for the {group} group.");
             CollectionAssert.AreEquivalent(aliases, rule.Declarations.Select(d => d.Key).ToArray(), $"The core overlay rule for the {group} group.");
         }
+    }
+
+    [TestMethod]
+    public void NoThemeDeclaresTheMotionAliasesOutsideTheRuleItsOverlaysShare()
+    {
+        // The motion group has no per-theme overlay rule for EveryThemeReDeclaresItsOwnFamilyAliasesForAnOverlay to pin:
+        // every theme builds the aliases alike, from the -full tokens a preset re-values, so the one core rule declaring
+        // them on :root, on every scoped region and on every motion overlay is all of them. That holds only while no
+        // theme declares an alias of its own: one that did would be the core recipe again under an overlay.
+        string[] shared = [":root", ":where(:root [bit-theme])", ":where(:root [bit-theme-overlay~=motion])"];
+        var checkedRules = 0;
+
+        foreach (var (bundle, rules) in Bundles())
+        {
+            foreach (var rule in rules.Where(r => r.Declarations.Any(d => GroupAliases["motion"].Contains(d.Key))))
+            {
+                // .bit-fam (ForceAnimation) substitutes them again too, from the same mixin, for the subtree it opts out.
+                if (rule.Selectors is [".bit-fam"]) continue;
+
+                CollectionAssert.AreEqual(shared, rule.Selectors,
+                    $"{bundle}: '{string.Join(", ", rule.Selectors)}' declares a motion alias; a theme re-values the -full tokens instead.");
+                CollectionAssert.AreEquivalent(GroupAliases["motion"], rule.Declarations.Select(d => d.Key).ToArray(), $"{bundle}: the motion alias rule.");
+                checkedRules++;
+            }
+        }
+
+        Assert.AreEqual(1, checkedRules, "The motion aliases are declared by one rule, in the core stylesheet.");
     }
 
     [TestMethod]

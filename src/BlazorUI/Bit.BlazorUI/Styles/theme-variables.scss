@@ -564,10 +564,11 @@ $mot-duration-short: var(--bit-mot-duration-short);
 $mot-duration-long: var(--bit-mot-duration-long);
 //The unreduced durations: never collapsed by prefers-reduced-motion. Only for motion that stays
 //meaningful under the preference - a change of color, not a movement (BitModal's refusal ring) - or
-//for the default a component restores itself under ForceAnimation (BitAccordion's transition).
-$mot-duration-full: var(--bit-mot-duration-full);
-$mot-duration-short-full: var(--bit-mot-duration-short-full);
-$mot-duration-long-full: var(--bit-mot-duration-long-full);
+//for the default a component restores itself under ForceAnimation (BitAccordion's transition). Each
+//falls back to its plain token, for a consumer theme that declares only the plain ones by hand.
+$mot-duration-full: var(--bit-mot-duration-full, var(--bit-mot-duration));
+$mot-duration-short-full: var(--bit-mot-duration-short-full, var(--bit-mot-duration-short));
+$mot-duration-long-full: var(--bit-mot-duration-long-full, var(--bit-mot-duration-long));
 $mot-easing: var(--bit-mot-easing);
 //Entry (decelerate) and exit (accelerate) curves for popups, callouts and sheets. Standard easing
 //is for state transitions on an element that stays; these are for elements arriving and leaving.
@@ -593,6 +594,11 @@ $mot-easing-spinner: var(--bit-mot-easing-spinner);
 //the loop factor multiplies literal durations inside calc(), so it carries a fallback of 1 to keep
 //those animations valid for consumer-defined themes that never set the token.
 $mot-loop-factor: var(--bit-mot-loop-factor, 1);
+//The unreduced looping tokens, which the reduced-motion query never calms - for the same narrow uses
+//as the unreduced durations above, with the same fallback to the plain token.
+$mot-duration-spinner-full: var(--bit-mot-duration-spinner-full, var(--bit-mot-duration-spinner));
+$mot-easing-spinner-full: var(--bit-mot-easing-spinner-full, var(--bit-mot-easing-spinner));
+$mot-loop-factor-full: var(--bit-mot-loop-factor-full, var(--bit-mot-loop-factor, 1));
 
 /*---- Typography ----*/
 $tg-font-family: var(--bit-tpg-font-family);

@@ -355,7 +355,9 @@ the whole library from one `:root[bit-theme="..."]` block.
   entry / exit; never a literal `ease` or `cubic-bezier` outside a looping loader keyframe. A duration
   that must survive `prefers-reduced-motion` (a color flash rather than a movement, BitModal's refusal ring)
   reads `$mot-duration-full` / `-short-full` / `-long-full`, never `--bit-mot-*-full` itself
-  (`BitMotionTokenTests`).
+  (`BitMotionTokenTests`). Whether motion is reduced is inherited state, the `--bit-mot-*-reduced` tokens: declared on `:root`
+  under the query, withdrawn (`initial`) by `.bit-fam`, and read by every rule that substitutes the plain
+  aliases again (`:root`, a scoped preset, a motion overlay, `.bit-fam`), so none of them decides it anew.
 - **Opacity**: a disabled element that keeps its own colors dims with `$opa-dis`; text-bearing
   controls use the `$clr-*-dis` color tokens instead.
 - **Density**: a size or inset measured in spacing units is never computed in a theme scope - one
@@ -413,7 +415,8 @@ global token tier: add the token, let the component read it, and keep the preset
 `bit-theme-overlay` attribute naming the alias groups those feed (`BitThemeMapper.FamilyAliasOverlayGroups`:
 `radius`, `radius-control`, `shadow`, `tooltip`, `foreground`, the eight roles, and `motion` - the plain
 `--bit-mot-*` aliases of the `-full` sources `BitTheme.Motion` writes, built alike by every theme and so
-re-declared by one rule of `motion.fluent.scss`, with its reduced-motion twin); every theme stylesheet
+re-declared by one zero-specificity rule of `motion.fluent.scss`, reading whether motion is reduced off the
+inherited `--bit-mot-*-reduced` tokens that `.bit-fam` withdraws); every theme stylesheet
 re-declares its OWN aliases of each group on that element through the `theme-overlay($group, $names)` mixin
 of `Styles/theme-overlay.scss`, so the aliases follow the overlay as the active theme builds them - never the
 core default under a preset that decided otherwise. So a group's declarations live in one mixin per theme
