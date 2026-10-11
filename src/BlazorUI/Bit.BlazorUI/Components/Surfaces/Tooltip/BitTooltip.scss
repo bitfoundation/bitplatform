@@ -228,13 +228,19 @@ $arrow-clip-bl: polygon(-#{$arrow-clip-room} -#{$arrow-clip-room}, calc(100% + #
 // The sign of the reading direction, which every logical placement below is multiplied by: the inline insets
 // turn around with the direction on their own, but a translate and a turn are physical, so those are flipped
 // with this. It is read off :dir() rather than told by C#, so a tooltip given no direction of its own is drawn
-// the way the page (or the box) around it actually reads.
+// the way the page (or the box) around it actually reads. The class Dir renders on the root is read as well, for
+// the engines without :dir(), where an explicit right-to-left still has to be drawn right to left; the two are
+// separate rules because an engine without :dir() drops a whole list.
 .bit-ttp-wrp {
     --bit-ttp-dir: 1;
 
     &:dir(rtl) {
         --bit-ttp-dir: -1;
     }
+}
+
+.bit-ttp.bit-rtl > .bit-ttp-wrp {
+    --bit-ttp-dir: -1;
 }
 
 // THE SIDE. Each one holds the surface and the arrow off the anchor by the gap, turns the arrow to point back

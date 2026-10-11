@@ -213,6 +213,16 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
         transform: scaleX(-1);
     }
 
+    // An engine without :dir() drops the rule above, so it reads the class an explicit Dir renders on the editor
+    // instead. Only there: the buttons are deep inside the editor, so a descendant selector would also turn the
+    // icons of an editor nested in this one that reads the other way, which :dir() gets right wherever it is
+    // supported.
+    @supports not selector(:dir(rtl)) {
+        .bit-rte.bit-rtl & svg.bit-rte-flip {
+            transform: scaleX(-1);
+        }
+    }
+
     // The states move the variable the button is painted from rather than its background, so a button the app
     // paints through a class keeps that paint under the pointer and while pressed. Every rule that paints the button
     // at rest and that the states outrank (the toggled look, the panels' text buttons) reads it.

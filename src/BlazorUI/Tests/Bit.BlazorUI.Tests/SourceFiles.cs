@@ -390,6 +390,50 @@ internal static class SourceFiles
         return rules;
     }
 
+    /// <summary>
+    /// The selectors a chain of nested rule headers stands for, the outermost first: each header's list crossed with
+    /// the selectors of the rule around it, an &amp; standing for the outer selector and a header without one being a
+    /// descendant of it. The at-rules (@media, @supports, ...) are left for the caller to drop, since they apply to the
+    /// selector they are written in.
+    /// </summary>
+    public static IEnumerable<string> ResolveScssSelectors(IEnumerable<string> headers)
+    {
+        IEnumerable<string> selectors = [""];
+
+        foreach (var header in headers)
+        {
+            var alternatives = SplitScssSelectorList(header);
+
+            selectors = selectors.SelectMany(outer => alternatives.Select(inner =>
+                inner.Contains('&') ? inner.Replace("&", outer) : (outer.Length == 0 ? inner : $"{outer} {inner}"))).ToArray();
+        }
+
+        return selectors.Where(selector => selector.Length > 0);
+    }
+
+    /// <summary>The alternatives of a selector list, split on the commas outside of any parentheses (:is(a, b) stays whole).</summary>
+    public static List<string> SplitScssSelectorList(string selectorList)
+    {
+        var alternatives = new List<string>();
+        var depth = 0;
+        var start = 0;
+
+        for (var i = 0; i < selectorList.Length; i++)
+        {
+            if (selectorList[i] == '(') depth++;
+            else if (selectorList[i] == ')') depth--;
+            else if (selectorList[i] == ',' && depth == 0)
+            {
+                alternatives.Add(selectorList[start..i].Trim());
+                start = i + 1;
+            }
+        }
+
+        alternatives.Add(selectorList[start..].Trim());
+
+        return alternatives;
+    }
+
     private static (int Index, int Open, int Close, ScssChar[] Kinds) FindBlock(string stylesheet, string start, string? message)
     {
         var kinds = Classify(stylesheet);

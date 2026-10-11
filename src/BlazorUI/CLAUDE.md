@@ -166,6 +166,26 @@ component" section is where consumers read it:
   (`Tests/Performance`, one `?part=` of `/regression/disabled-state` per component) reads the live DOM
   of every engine for the same, through a runtime toggle of `Disabled` and back.
 
+## Right-to-left rules work without `:dir()`
+
+`:dir(rtl)` is how a stylesheet reads the direction an element is actually laid out in, inherited or not, so it
+is the selector to reach for. But it arrived late (Chromium 120, Safari 16.4), the WebViews a Blazor Hybrid app
+runs in can be older, and an engine that does not know a selector drops the whole rule - every other selector in
+its list too. An explicit `Dir="BitDir.Rtl"` renders the `bit-rtl` class (and `dir="rtl"`), and that has to keep
+working there:
+
+- **A `:dir(rtl)` rule stands in a list of its own**, never beside a selector without it.
+- **It has a counterpart that reads the class, with the same declarations, in the same at-rules.** When the class
+  is on the element the rule styles or on its parent, write it beside the `:dir()` rule (`.bit-rtl.bit-mdl-tlf`,
+  `.bit-ttp.bit-rtl > .bit-ttp-wrp`). When it is further up, put the counterpart inside
+  `@supports not selector(:dir(rtl))` (`.bit-crd.bit-rtl .bit-crd-skb::after`): a descendant selector would also
+  reach into a nested instance that reads the other way, which `:dir()` gets right wherever it is supported.
+- **Not covered**: a `:dir()` inside `:is()` / `:where()`, whose lists are forgiving (`.bit-tsh:is(.bit-rtl, :dir(rtl))`),
+  and one inside `@supports selector(:dir(...))` (BitIcon).
+
+`BitComponentDirFallbackTests` checks this for every stylesheet. A rule whose explicit `Dir` is handled some other way
+(the root class setting a variable the part reads, or the C# doing the turn) goes in its `CoveredOtherwise` list.
+
 ## Demo pages
 
 A component's demo page is

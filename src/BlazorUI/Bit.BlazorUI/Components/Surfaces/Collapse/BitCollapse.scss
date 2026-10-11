@@ -227,6 +227,13 @@ $col-private-properties: dur-full, del-full, eas, csz;
         mask-image: linear-gradient(to right, #000 calc(100% - var(--bit-col-fade)), transparent);
     }
 
+    // The class covers a Dir set on the collapse and :dir() a direction it inherits; they are separate rules
+    // because an engine without :dir() drops a whole list.
+    &.bit-col-pek.bit-col-col.bit-rtl > .bit-col-con {
+        -webkit-mask-image: linear-gradient(to left, #000 calc(100% - var(--bit-col-fade)), transparent);
+        mask-image: linear-gradient(to left, #000 calc(100% - var(--bit-col-fade)), transparent);
+    }
+
     &.bit-col-pek.bit-col-col:dir(rtl) > .bit-col-con {
         -webkit-mask-image: linear-gradient(to left, #000 calc(100% - var(--bit-col-fade)), transparent);
         mask-image: linear-gradient(to left, #000 calc(100% - var(--bit-col-fade)), transparent);
