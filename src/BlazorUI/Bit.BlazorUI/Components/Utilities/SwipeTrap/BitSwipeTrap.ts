@@ -112,12 +112,17 @@
                 throttledMove.cancel();
                 element.classList.remove('bit-stp-swp');
                 window.removeEventListener('keydown', onEscape, true);
+                Utils.removeEscapeGesture(takesEscape);
             };
 
             // A touch gesture whose end can no longer reach the trap: the node under the finger was removed from the
             // page, so its touchend went with it. Such a gesture holds nothing any more - the keys it would take are
             // given back, and it is called off the moment anything asks about it.
             const isStale = () => active && activeTouch && startTarget instanceof Node && startTarget !== element && !startTarget.isConnected;
+
+            // Whether an Escape is the swipe's to take (see onEscape), asked by the listeners that would otherwise take
+            // it ahead of the swipe's own - a tooltip the pointer rests on (Utils.dismissTooltipsOnEscape).
+            const takesEscape = () => trapped && !isStale();
 
             const onStart = async (e: TouchEvent | PointerEvent): Promise<void> => {
                 if (active) {
@@ -265,6 +270,7 @@
                         // on the window, since the focus is wherever it was before the press, and only once the gesture
                         // is a swipe: a press that has not moved is not one, and its Escape is the page's.
                         window.addEventListener('keydown', onEscape, true);
+                        Utils.addEscapeGesture(takesEscape);
                     }
 
                     trapped = true;

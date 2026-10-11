@@ -1,0 +1,91 @@
+﻿@page "/regression/tooltip-escape"
+
+<PageTitle>BitTooltip Escape Regression</PageTitle>
+
+@* An Escape pressed anywhere while the pointer rests on a shown tooltip dismisses the tooltip and nothing else - not
+   the hover-opened DropMenu or the Overlay the tooltip sits in - while a swipe in progress under the tooltip is put
+   back instead, and a listener of the app's own on the window still hears the press. Each case is rendered on its
+   own (?case=), so the tooltip in it is the first one the page registers, after the surface around it has started
+   listening: the order the listeners of the library end up in must not depend on which of them registered first. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>BitTooltip Escape Regression (@Case)</h3>
+    <button id="btn-open-overlay" @onclick="() => _overlayOpen = true">Open overlay</button>
+    <div id="metrics" style="font-family: monospace;">
+        <p>Menu: <span id="menu-state">@(_menuOpen ? "open" : "closed")</span></p>
+        <p>Overlay: <span id="overlay-state">@(_overlayOpen ? "open" : "closed")</span></p>
+        <p>Swipe end: <span id="end">@_end</span></p>
+        <p>Status: <span id="status">@_status</span></p>
+    </div>
+</div>
+
+@switch (Case)
+{
+    case "menu":
+        <div style="padding: 20px;">
+            <BitDropMenu Id="menu" Text="Menu" OpenOnHover @bind-IsOpen="_menuOpen">
+                <Body>
+                    <div style="padding: 16px;">
+                        <BitTooltip Text="Menu tooltip">
+                            <span id="menu-tip-anchor" style="display: inline-block; padding: 8px; border: 1px solid;">Hover me</span>
+                        </BitTooltip>
+                    </div>
+                </Body>
+            </BitDropMenu>
+        </div>
+        break;
+
+    case "overlay":
+        <BitOverlay @bind-IsOpen="_overlayOpen">
+            @if (_overlayOpen)
+            {
+                <div style="padding: 16px; background: white;">
+                    <BitTooltip Text="Overlay tooltip">
+                        <span id="overlay-tip-anchor" style="display: inline-block; padding: 8px; border: 1px solid;">Hover me</span>
+                    </BitTooltip>
+                </div>
+            }
+        </BitOverlay>
+        break;
+
+    case "swipe":
+        <div style="padding: 20px;">
+            <BitTooltip Text="Swipe tooltip">
+                <BitSwipeTrap Id="trap" Trigger="50m" OrientationLock="BitSwipeOrientation.Horizontal" OnEnd="HandleOnEnd">
+                    <div id="trap-content" style="width: 300px; height: 120px; border: 1px solid gray;">swipe</div>
+                </BitSwipeTrap>
+            </BitTooltip>
+        </div>
+        break;
+
+    default:
+        <div style="padding: 20px;">
+            <BitTooltip Text="Page tooltip">
+                <span id="page-tip-anchor" style="display: inline-block; padding: 8px; border: 1px solid;">Hover me</span>
+            </BitTooltip>
+        </div>
+        break;
+}
+
+@code {
+    [SupplyParameterFromQuery(Name = "case")] public string? Case { get; set; }
+
+    private bool _menuOpen;
+    private bool _overlayOpen;
+    private string _end = "none";
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
+    // interactive render moves it on, which is what the test waits for before it drives the page.
+    private string _status = "Loading";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+
+    private void HandleOnEnd(BitSwipeTrapEventArgs args)
+    {
+        _end = args.IsCanceled ? "canceled" : "released";
+    }
+}

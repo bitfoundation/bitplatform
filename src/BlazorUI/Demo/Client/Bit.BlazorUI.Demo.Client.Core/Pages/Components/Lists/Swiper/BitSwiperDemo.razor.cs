@@ -634,7 +634,7 @@ public partial class BitSwiperDemo
         new() { Name = "--bit-Swiper-gap", DefaultValue = "0", Description = "Space between the items. The Gap parameter wins over it, and VisibleItemsCount takes it into account." },
         new() { Name = "--bit-Swiper-peek", DefaultValue = "0", Description = "Room at both ends of the swiper the neighboring items peek into. The Peek parameter wins over it." },
         new() { Name = "--bit-Swiper-vertical-height", DefaultValue = "25 spacing units", Description = "Height of a vertical swiper that was not given one through Style or a class." },
-        new() { Name = "--bit-Swiper-focus-color", DefaultValue = "--bit-clr-pri-focus", Description = "Color of every keyboard focus indicator: the root, the buttons and the dots. The Color parameter wins over it." },
+        new() { Name = "--bit-Swiper-focus-color", DefaultValue = "--bit-clr-pri-focus", Description = "Color of every keyboard focus indicator: the root, the buttons and the dots. The Color parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too." },
         new() { Name = "--bit-Swiper-button-color", DefaultValue = "--bit-clr-fg-pri", Description = "Glyph color of the next/prev and play/pause buttons, and the text of templated dots. The Color parameter wins over it." },
         new() { Name = "--bit-Swiper-button-hover-color", DefaultValue = "--bit-clr-fg-pri-hover", Description = "Glyph color of those buttons on hover. The Color parameter wins over it." },
         new() { Name = "--bit-Swiper-button-background", DefaultValue = "transparent", Description = "Background of the next/prev strips, for buttons that have to stand out over busy items." },

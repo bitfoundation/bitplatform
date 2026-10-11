@@ -22,7 +22,7 @@ public class BitCarouselStylesheetTests
         StringAssert.Contains(stylesheet, "$csl-clr-hover: var(--bit-csl-clr-hover, var(--bit-Carousel-dot-current-hover-color, #{$clr-pri-hover}));");
         StringAssert.Contains(stylesheet, "$csl-btn: var(--bit-csl-btn, var(--bit-Carousel-button-color, #{$clr-fg-pri}));");
         StringAssert.Contains(stylesheet, "$csl-btn-hover: var(--bit-csl-btn-hover, var(--bit-Carousel-button-hover-color, #{$clr-fg-pri-hover}));");
-        StringAssert.Contains(stylesheet, "--bit-csl-focus: var(--bit-csl-fcs, var(--bit-Carousel-focus-color, #{$clr-pri-focus}));");
+        StringAssert.Contains(stylesheet, "--bit-csl-focus: var(--bit-csl-fcs, var(--bit-Carousel-focus-color));");
         StringAssert.Contains(stylesheet, "--bit-csl-dotsz: var(--bit-csl-dot-size, var(--bit-Carousel-dot-size, #{spacing(1.25)}));");
         StringAssert.Contains(stylesheet, "font-size: var(--bit-csl-btn-size, var(--bit-Carousel-button-size, calc(#{$siz-icon-md} * 1.5)));");
         StringAssert.Contains(stylesheet, "font-size: var(--bit-csl-ppb-size, #{$siz-icon-md});");
@@ -49,5 +49,5 @@ public class BitCarouselStylesheetTests
         }
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Lists", "Carousel", "BitCarousel.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Lists", "Carousel", "BitCarousel.scss");
 }

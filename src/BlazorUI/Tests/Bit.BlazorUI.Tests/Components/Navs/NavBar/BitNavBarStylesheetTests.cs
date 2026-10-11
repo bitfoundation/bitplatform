@@ -36,7 +36,7 @@ public class BitNavBarStylesheetTests
         StringAssert.Contains(stylesheet, "color: var(--bit-nbr-clr-acc-text, var(--bit-nbr-clr, var(--bit-NavBar-selected-color, var(--bit-nbr-fil-text, #{$clr-pri}))));");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-nbr-clr-acc-hover, var(--bit-NavBar-item-hover-background, var(--bit-nbr-fil-hover, transparent)));");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-nbr-clr-ind, var(--bit-NavBar-indicator-color, var(--bit-nbr-fil-text, #{$clr-pri})));");
-        StringAssert.Contains(stylesheet, "@include focus-ring(var(--bit-nbr-clr-fcs, var(--bit-NavBar-focus-color, #{$clr-pri-focus})));");
+        StringAssert.Contains(stylesheet, "@include focus-ring-own(var(--bit-nbr-clr-fcs, var(--bit-NavBar-focus-color)));");
         StringAssert.Contains(stylesheet, "color: var(--bit-nbr-clr-dis, var(--bit-NavBar-disabled-color, #{$clr-pri-dis-text}));");
 
         // Filled only switches the default (--bit-nbr-fil-*), which the variables are read ahead of; nothing else a
@@ -67,5 +67,5 @@ public class BitNavBarStylesheetTests
         Assert.IsTrue(rootAt < stylesheet.IndexOf("\n.bit-nbr-fil {", System.StringComparison.Ordinal), "The filled class is declared ahead of the root that resets it.");
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Navs", "NavBar", "BitNavBar.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Navs", "NavBar", "BitNavBar.scss");
 }

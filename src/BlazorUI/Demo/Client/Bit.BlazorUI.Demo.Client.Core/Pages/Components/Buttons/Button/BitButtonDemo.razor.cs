@@ -535,7 +535,7 @@ public partial class BitButtonDemo
         {
             Name = "--bit-Button-focus-color",
             DefaultValue = "--bit-clr-pri-focus",
-            Description = "Color of the focus ring drawn around the button on keyboard focus. The Color parameter wins over it.",
+            Description = "Color of the focus ring drawn around the button on keyboard focus. The Color parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
         },
         new()
         {

@@ -29,19 +29,17 @@
 // The line the title is set on, which the leading glyph beside it is centered against.
 $msb-ttl-line-height: 1.4;
 
+$msb-private-properties: pad, min-width, fontsize, ttl-fontsize, ico-fontsize, cls-size, clr;
+
 .bit-msb {
     // The values the Size and Color classes publish, unset on every root - rather than inherited from a message box
     // this one sits inside - and won back by those classes, declared further down at the same weight, on the root
     // that carries them. Left unset, each sends the var() reading it on to the public variable and then to the medium
     // message box an unset Size stands for (or the text color an unset Color leaves the icon in), which is what lets
     // an explicit parameter outrank the variable while an unset one leaves the variable in charge.
-    --bit-msb-pad: initial;
-    --bit-msb-min-width: initial;
-    --bit-msb-fontsize: initial;
-    --bit-msb-ttl-fontsize: initial;
-    --bit-msb-ico-fontsize: initial;
-    --bit-msb-cls-size: initial;
-    --bit-msb-clr: initial;
+    @each $name in $msb-private-properties {
+        --bit-msb-#{$name}: initial;
+    }
     // Resolved once here so the title, the glyph beside it and the body all read the same value.
     --bit-msb-ttl-size: var(--bit-msb-ttl-fontsize, var(--bit-MessageBox-title-font-size, #{$tg-dialog-title-font-size}));
     --bit-msb-text-align: var(--bit-MessageBox-text-align, #{$layout-dialog-text-align});

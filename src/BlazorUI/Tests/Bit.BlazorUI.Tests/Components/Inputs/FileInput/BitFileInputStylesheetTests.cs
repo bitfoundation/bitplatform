@@ -12,7 +12,7 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.FileInput;
 [TestClass]
 public class BitFileInputStylesheetTests
 {
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Inputs", "FileInput", "BitFileInput.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "FileInput", "BitFileInput.scss");
 
     [TestMethod]
     public void BitFileInputShouldLetAParameterWinOverItsPublicVariable()
@@ -24,7 +24,7 @@ public class BitFileInputStylesheetTests
         StringAssert.Contains(stylesheet, "--bit-fin-c-txt: var(--bit-fin-clr-txt, var(--bit-FileInput-text-color, #{$clr-pri-text}));");
         StringAssert.Contains(stylesheet, "--bit-fin-c-hover: var(--bit-fin-clr-hover, var(--bit-FileInput-hover-color, #{$clr-pri-hover}));");
         StringAssert.Contains(stylesheet, "--bit-fin-c-active: var(--bit-fin-clr-active, var(--bit-FileInput-active-color, #{$clr-pri-active}));");
-        StringAssert.Contains(stylesheet, "var(--bit-fin-clr-focus, var(--bit-FileInput-focus-color, #{$clr-pri-focus}))");
+        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-fin-clr-focus, var(--bit-FileInput-focus-color)))");
 
         // The drop indicator's own variables come after an explicit Color too.
         StringAssert.Contains(stylesheet, "var(--bit-fin-clr-txt, var(--bit-FileInput-drop-color, var(--bit-fin-c-txt)))");

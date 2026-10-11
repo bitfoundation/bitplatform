@@ -29,7 +29,7 @@ public partial class BitNumberFieldStylesheetTests
         StringAssert.Contains(stylesheet, "var(--bit-nfl-spn-size, var(--bit-NumberField-spinner-size, calc(var(--bit-NumberField-icon-size, #{$siz-icon-md}) + 2 * #{$siz-spinner-stroke})))");
 
         // So do an explicit Accent, Background and Border, for every color they paint.
-        StringAssert.Contains(stylesheet, "var(--bit-nfl-clr-focus, var(--bit-NumberField-focus-color, #{$clr-pri-focus}))");
+        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-nfl-clr-focus, var(--bit-NumberField-focus-color)))");
         StringAssert.Contains(stylesheet, "var(--bit-nfl-clr, var(--bit-NumberField-icon-color, #{$clr-pri}))");
         StringAssert.Contains(stylesheet, "var(--bit-nfl-clr, var(--bit-NumberField-affix-color, #{$clr-pri}))");
         StringAssert.Contains(stylesheet, "var(--bit-nfl-clr, var(--bit-NumberField-loading-color, #{$clr-pri}))");
@@ -62,7 +62,7 @@ public partial class BitNumberFieldStylesheetTests
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n    &.bit-dis {"), "--bit-nfl-spn-clr: currentcolor;");
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Inputs", "NumberField", "BitNumberField.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "NumberField", "BitNumberField.scss");
 
     [GeneratedRegex(@"var\(--bit-NumberField-[a-z-]+, (var\(|calc\(var\()--bit-nfl-")]
     private static partial Regex PublicBeforePrivate();

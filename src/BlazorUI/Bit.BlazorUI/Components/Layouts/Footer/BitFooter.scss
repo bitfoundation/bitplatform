@@ -30,6 +30,8 @@ $ftr-brd: var(--bit-ftr-brd, var(--bit-Footer-border-color, #{$clr-brd-pri}));
 $ftr-bg-dis: var(--bit-ftr-bg-dis, #{$clr-bg-pri});
 $ftr-fg-dis: var(--bit-ftr-fg-dis, #{$clr-fg-dis});
 
+$ftr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, padding, gap, max-width, wrap, align, justify;
+
 .bit-ftr {
     display: flex;
     flex-shrink: 0;
@@ -50,18 +52,9 @@ $ftr-fg-dis: var(--bit-ftr-fg-dis, #{$clr-fg-dis});
     // the public variable and then to the default (see $ftr-bg and the rest at the top): the plain page surface
     // an uncolored footer always had - so a footer with no Color set never turns invisible - and the medium
     // spacing.
-    --bit-ftr-bg: initial;
-    --bit-ftr-on: initial;
-    --bit-ftr-fg: initial;
-    --bit-ftr-brd: initial;
-    --bit-ftr-bg-dis: initial;
-    --bit-ftr-fg-dis: initial;
-    --bit-ftr-padding: initial;
-    --bit-ftr-gap: initial;
-    --bit-ftr-max-width: initial;
-    --bit-ftr-wrap: initial;
-    --bit-ftr-align: initial;
-    --bit-ftr-justify: initial;
+    @each $name in $ftr-private-properties {
+        --bit-ftr-#{$name}: initial;
+    }
 }
 
 // The content sits in its own box so the paddings can be themed, removed (NoGutter) and targeted by

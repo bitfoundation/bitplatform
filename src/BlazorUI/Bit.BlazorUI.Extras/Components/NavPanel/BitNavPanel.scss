@@ -141,7 +141,14 @@ $npn-fallback-breakpoints: (
     }
 }
 
+$npn-private-properties: w, tw;
+
 .bit-npn {
+    // What the component writes into an inline style starts out unset on every root, so an instance nested in
+    // another one never takes the outer one's value for its own; the inline declaration still wins on its element.
+    @each $name in $npn-private-properties {
+        --bit-npn-#{$name}: initial;
+    }
     top: 0;
     position: sticky;
     padding: var(--bit-NavPanel-padding, #{spacing(2)});

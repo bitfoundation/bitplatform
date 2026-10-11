@@ -353,7 +353,7 @@ public partial class BitNavBarDemo
         new() { Name = "--bit-NavBar-badge-color", DefaultValue = "--bit-clr-err-text", Description = "Text color of a badge." },
         new() { Name = "--bit-NavBar-badge-background", DefaultValue = "--bit-clr-err", Description = "Fill of a badge and a dot." },
         new() { Name = "--bit-NavBar-disabled-color", DefaultValue = "--bit-clr-pri-dis-text", Description = "Content color of a disabled item. The Color parameter wins over it." },
-        new() { Name = "--bit-NavBar-focus-color", DefaultValue = "--bit-clr-pri-focus", Description = "Color of the focus ring of an item. The Color parameter wins over it." },
+        new() { Name = "--bit-NavBar-focus-color", DefaultValue = "--bit-clr-pri-focus", Description = "Color of the focus ring of an item. The Color parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too." },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =

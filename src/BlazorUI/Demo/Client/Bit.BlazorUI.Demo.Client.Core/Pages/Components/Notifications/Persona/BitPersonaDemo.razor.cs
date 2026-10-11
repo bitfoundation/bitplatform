@@ -563,7 +563,7 @@ public partial class BitPersonaDemo
         {
             Name = "--bit-Persona-focus-color",
             DefaultValue = "--bit-clr-pri-focus",
-            Description = "Focus ring of a clickable or link coin and of the action button.",
+            Description = "Focus ring of a clickable or link coin and of the action button. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
         },
         new()
         {

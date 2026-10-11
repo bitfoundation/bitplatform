@@ -248,5 +248,5 @@ public class BitSplitterStylesheetTests
                                             || header.Contains("@media (forced-colors: active)", StringComparison.Ordinal));
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Surfaces", "Splitter", "BitSplitter.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Surfaces", "Splitter", "BitSplitter.scss");
 }

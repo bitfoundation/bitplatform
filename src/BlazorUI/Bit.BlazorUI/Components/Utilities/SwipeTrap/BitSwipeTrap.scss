@@ -19,7 +19,7 @@
 
     // Only a trap the keyboard can reach (KeyboardTrigger, or a TabIndex of the page's own) is ever focused.
     &:focus-visible {
-        @include focus-ring(var(--bit-SwipeTrap-focus-color, #{$clr-pri-focus}));
+        @include focus-ring-own(var(--bit-SwipeTrap-focus-color));
     }
 
     // The locked axis is the trap's, the free axis stays the browser's.

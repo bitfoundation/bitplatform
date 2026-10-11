@@ -184,6 +184,6 @@ public class BitLoadingStylesheetTests
 
         Assert.HasCount(19, files);
 
-        return [.. files.Select(f => (Path.GetFileName(f), SourceFiles.ReadFullPath(f)))];
+        return [.. files.Select(f => (Path.GetFileName(f), SourceFiles.ReadStylesheet(f)))];
     }
 }

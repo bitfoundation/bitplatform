@@ -949,7 +949,7 @@ public partial class BitNumberFieldDemo
         {
             Name = "--bit-NumberField-focus-color",
             DefaultValue = "--bit-clr-pri-focus",
-            Description = "Color of the keyboard focus indicator - the ring, or the thicker bottom rule of the Underlined variant. The Accent parameter wins over it.",
+            Description = "Color of the keyboard focus indicator - the ring, or the thicker bottom rule of the Underlined variant. The Accent parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
         },
         new()
         {

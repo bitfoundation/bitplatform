@@ -104,6 +104,11 @@ document.addEventListener('pointerdown', (e: PointerEvent) => {
 // a panel, an overlay, a tooltip - so none of them closes on the press the component has taken.
 window.addEventListener('keydown', (e: KeyboardEvent) => BitBlazorUI.Utils.claimEscape(e), true);
 
+// An Escape that dismisses the tooltips under the pointer (see Utils.dismissTooltipsOnEscape) is taken right after the
+// claim and ahead of every other listener of the library: added here, as the page loads, its place among the listeners
+// on the window does not depend on when the first tooltip, a menu or an overlay happened to register.
+window.addEventListener('keydown', (e: KeyboardEvent) => BitBlazorUI.Utils.dismissTooltipsOnEscape(e), true);
+
 // A click on the overlay of a callout opened from inside another one, outside the callouts under it as well,
 // dismisses them all (see Callouts.dismissOnOverlayClick). On the window in the capture phase, ahead of Blazor's
 // own delegation, so that the overlay's handler does not dismiss the innermost callout a second time.

@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -23,7 +24,11 @@ public partial class BitIconStylesheetTests
 
         foreach (var name in documented)
         {
-            StringAssert.Contains(stylesheet, $"var({name}, ", $"{name} is documented but never read with a fallback.");
+            // The focus color alone is read without a fallback, on purpose: its absence is what hands the ring over
+            // to the global --bit-shd-focus-ring (see BitFocusRingStylesheetTests).
+            var read = name.EndsWith("-focus-color", StringComparison.Ordinal) ? $"var({name})" : $"var({name}, ";
+
+            StringAssert.Contains(stylesheet, read, $"{name} is documented but never read as it should be.");
         }
     }
 
@@ -60,8 +65,8 @@ public partial class BitIconStylesheetTests
         StringAssert.Contains(stylesheet, "$ico-clr-txt: var(--bit-ico-clr-txt, var(--bit-Icon-contrast-color, #{$clr-pri-text}));");
         StringAssert.Contains(stylesheet, "$ico-clr-hover: var(--bit-ico-clr-hover, var(--bit-Icon-hover-color, var(--bit-ico-pub-hover, #{$clr-pri-hover})));");
         StringAssert.Contains(stylesheet, "$ico-clr-active: var(--bit-ico-clr-active, var(--bit-Icon-active-color, var(--bit-ico-pub-active, #{$clr-pri-active})));");
-        StringAssert.Contains(stylesheet, "$ico-clr-focus: var(--bit-ico-clr-focus, var(--bit-Icon-focus-color, #{$clr-pri-focus}));");
-        StringAssert.Contains(stylesheet, "@include focus-ring($ico-clr-focus);");
+        StringAssert.Contains(stylesheet, "$ico-clr-focus: var(--bit-ico-clr-focus, var(--bit-Icon-focus-color));");
+        StringAssert.Contains(stylesheet, "@include focus-ring-own($ico-clr-focus);");
 
         // So does an explicit Size, for the size of the glyph.
         StringAssert.Contains(stylesheet, "font-size: var(--bit-ico-size, var(--bit-Icon-size, #{$siz-icon-md}));");
@@ -117,7 +122,7 @@ public partial class BitIconStylesheetTests
         var root = Block(ReadStylesheet(), ".bit-ico");
 
         StringAssert.Contains(root, "&:focus-visible {");
-        StringAssert.Contains(root, "@include focus-ring($ico-clr-focus);");
+        StringAssert.Contains(root, "@include focus-ring-own($ico-clr-focus);");
         StringAssert.DoesNotMatch(Block(ReadStylesheet(), ".bit-ico-int"), new Regex("focus-ring"));
     }
 

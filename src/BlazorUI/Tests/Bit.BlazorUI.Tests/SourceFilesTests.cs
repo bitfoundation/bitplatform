@@ -112,4 +112,54 @@ public class SourceFilesTests
 
         Assert.AreEqual(".a {\n    --x: #{$y};\n    color: var(--x);\n}", SourceFiles.GetScssDeclarations(stylesheet, ".a {"));
     }
+
+    [TestMethod]
+    public void GetPrivatePropertyListsShouldReadTheNamesAndWhereEachListIsReset()
+    {
+        var stylesheet = "$a-private-properties:\n    x, y, // the inline ones; or so\n    z;\n.bit-a {\n    @each $name in $a-private-properties { --bit-a-#{$name}: initial; }\n}\n@mixin b {\n    @each $n in $a-private-properties {\n        --bit-a-#{$n}: initial;\n    }\n}";
+
+        var list = SourceFiles.GetPrivatePropertyLists(stylesheet).Single();
+
+        Assert.AreEqual("a-private-properties", list.Name);
+        CollectionAssert.AreEqual(new[] { "x", "y", "z" }, list.Names.ToArray());
+        CollectionAssert.AreEqual(new[] { ".bit-a", "@mixin b" }, list.Resets.Select(r => r.Rule).ToArray());
+        Assert.IsTrue(list.Resets.All(r => r.Prefix == "bit-a"));
+    }
+
+    [TestMethod]
+    public void GetPrivatePropertyListsShouldFailOnTwoNamesWithNoCommaBetweenThem()
+    {
+        // Sass compiles "b\n    c" to the one name "b c", a declaration the browser drops: neither is reset.
+        var stylesheet = "$a-private-properties: a, b\n    c, d;\n.bit-a {\n    @each $name in $a-private-properties {\n        --bit-a-#{$name}: initial;\n    }\n}";
+
+        var failure = Assert.ThrowsExactly<AssertFailedException>(() => SourceFiles.GetPrivatePropertyLists(stylesheet));
+
+        StringAssert.Contains(failure.Message, "\"b c\"");
+    }
+
+    [TestMethod]
+    public void GetPrivatePropertyListsShouldFailOnAnEachThatIsNotAReset()
+    {
+        var stylesheet = "$a-private-properties: a;\n.bit-a {\n    @each $name in $a-private-properties {\n        --bit-a-#{$name}: 0;\n    }\n}";
+
+        Assert.ThrowsExactly<AssertFailedException>(() => SourceFiles.GetPrivatePropertyLists(stylesheet));
+    }
+
+    [TestMethod]
+    public void GetPrivatePropertyListsShouldLeaveAnEachThatDeclaresNothingAlone()
+    {
+        // BitIcon registers its list with @property as well as resetting it.
+        var stylesheet = "$a-private-properties: a;\n@each $name in $a-private-properties {\n    @property --bit-a-#{$name} {\n        inherits: false;\n    }\n}";
+
+        Assert.AreEqual(0, SourceFiles.GetPrivatePropertyLists(stylesheet).Single().Resets.Count);
+    }
+
+    [TestMethod]
+    public void ExpandPrivatePropertyResetsShouldWriteOutEveryResetWhateverItsLayout()
+    {
+        var stylesheet = "$a-private-properties: x, y;\n.bit-a {\n    @each $name in $a-private-properties { --bit-a-#{$name}: initial; }\n    color: red;\n}\n.bit-a-cal {\n        @each $name in $a-private-properties {\n            --bit-a-#{$name}: initial;\n        }\n}";
+
+        Assert.AreEqual("$a-private-properties: x, y;\n.bit-a {\n    --bit-a-x: initial;\n    --bit-a-y: initial;\n    color: red;\n}\n.bit-a-cal {\n        --bit-a-x: initial;\n        --bit-a-y: initial;\n}",
+                        SourceFiles.ExpandPrivatePropertyResets(stylesheet));
+    }
 }

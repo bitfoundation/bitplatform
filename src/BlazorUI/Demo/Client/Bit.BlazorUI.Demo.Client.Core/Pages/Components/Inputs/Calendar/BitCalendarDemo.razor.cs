@@ -1516,7 +1516,7 @@ public partial class BitCalendarDemo
         {
             Name = "--bit-Calendar-focus-color",
             DefaultValue = "--bit-clr-pri-focus",
-            Description = "Color of the keyboard focus ring drawn around every cell and button of the calendar. The Color parameter wins over it, and so does an invalid value, which draws the ring in --bit-clr-err-focus.",
+            Description = "Color of the keyboard focus ring drawn around every cell and button of the calendar. The Color parameter wins over it, and so does an invalid value, which draws the ring in --bit-clr-err-focus. While it is unset, every focus ring held off its element is the library's own --bit-shd-focus-ring; the ones drawn flush against a cell or a field keep this color.",
         },
         new()
         {

@@ -39,12 +39,10 @@ public class BitScrollablePaneStylesheetTests
     [TestMethod]
     public void BitScrollablePaneFocusRingShouldBeTheGlobalOneUnlessAColorIsSet()
     {
-        var ring = SourceFiles.GetScssBlock(ReadStylesheet(), "&:focus-visible {\n        @include focus-ring;", "The focus ring is not the default one of the library.");
-
-        // An unset focus color leaves --bit-scp-fcr invalid, which is what makes box-shadow fall back to the global
-        // composite - so an app that re-shapes --bit-shd-focus-ring re-shapes this ring too.
-        StringAssert.Contains(ring, "var(--bit-ScrollablePane-focus-color);");
-        StringAssert.Contains(ring, "box-shadow: var(--bit-scp-fcr, var(--bit-shd-focus-ring,");
+        // An unset focus color leaves the ring focus-ring-own composes invalid, which is what makes box-shadow fall back
+        // to the global composite - so an app that re-shapes --bit-shd-focus-ring re-shapes this ring too.
+        SourceFiles.GetScssBlock(ReadStylesheet(), "&:focus-visible {\n        @include focus-ring-own(var(--bit-ScrollablePane-focus-color));",
+            "The focus ring does not give the global one back while no focus color is set.");
     }
 
     [TestMethod]

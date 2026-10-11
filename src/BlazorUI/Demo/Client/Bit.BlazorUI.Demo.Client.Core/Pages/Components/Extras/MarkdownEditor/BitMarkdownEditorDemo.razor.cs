@@ -489,7 +489,7 @@ public partial class BitMarkdownEditorDemo
         new() { Name = "--bit-MarkdownEditor-border-width", DefaultValue = "var(--bit-shp-brd-width)", Description = "Width of the outer border." },
         new() { Name = "--bit-MarkdownEditor-border-radius", DefaultValue = "var(--bit-shp-radius-surface)", Description = "Corner radius of the editor." },
         new() { Name = "--bit-MarkdownEditor-divider-color", DefaultValue = "var(--bit-clr-brd-sec)", Description = "Lines between the toolbar, panes and status bar, and the toolbar separators." },
-        new() { Name = "--bit-MarkdownEditor-focus-color", DefaultValue = "var(--bit-clr-pri-focus)", Description = "Every focus indicator of the editor, and the drop-target frame." },
+        new() { Name = "--bit-MarkdownEditor-focus-color", DefaultValue = "var(--bit-clr-pri-focus)", Description = "Every focus indicator of the editor, and the drop-target frame. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too." },
         new() { Name = "--bit-MarkdownEditor-error-color", DefaultValue = "var(--bit-clr-err)", Description = "Border of an invalid editor, the required asterisk and the counter at its limit." },
         new() { Name = "--bit-MarkdownEditor-height", DefaultValue = "spacing(40)", Description = "Height of the panes (the Height parameter sets it on the instance)." },
         new() { Name = "--bit-MarkdownEditor-min-height", DefaultValue = "spacing(15)", Description = "Smallest height of the panes (the MinHeight parameter sets it on the instance)." },

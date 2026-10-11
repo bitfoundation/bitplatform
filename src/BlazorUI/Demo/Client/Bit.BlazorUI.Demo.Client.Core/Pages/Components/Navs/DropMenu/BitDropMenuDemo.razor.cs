@@ -477,7 +477,7 @@ public partial class BitDropMenuDemo
         {
             Name = "--bit-DropMenu-focus-color",
             DefaultValue = "--bit-clr-pri-focus",
-            Description = "Focus ring color of the button. The Color parameter wins over it.",
+            Description = "Focus ring color of the button. The Color parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
         },
         new()
         {

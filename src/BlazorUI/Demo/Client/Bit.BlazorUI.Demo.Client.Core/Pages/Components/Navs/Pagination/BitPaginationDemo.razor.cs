@@ -771,7 +771,7 @@ public partial class BitPaginationDemo
         {
             Name = "--bit-Pagination-focus-color",
             DefaultValue = "--bit-clr-pri-focus",
-            Description = "Color of the keyboard focus ring of every control. The Color parameter wins over it.",
+            Description = "Color of the keyboard focus ring of every control. The Color parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
         },
         new()
         {

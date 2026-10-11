@@ -216,5 +216,5 @@ public class BitTagStylesheetTests
     }
 
     // The header documents the variables in comments; only the rules are what the browser reads.
-    private static string ReadStylesheet() => SourceFiles.StripScssComments(SourceFiles.Read("Bit.BlazorUI", "Components", "Notifications", "Tag", "BitTag.scss"));
+    private static string ReadStylesheet() => SourceFiles.StripScssComments(SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Notifications", "Tag", "BitTag.scss"));
 }

@@ -836,7 +836,7 @@ public partial class BitPdfViewerDemo
         new() { Name = "--bit-PdfViewer-border-width", DefaultValue = "var(--bit-shp-brd-width)", Description = "Width of the outer border." },
         new() { Name = "--bit-PdfViewer-border-radius", DefaultValue = "var(--bit-shp-radius-surface)", Description = "Corner radius of the viewer." },
         new() { Name = "--bit-PdfViewer-divider-color", DefaultValue = "var(--bit-clr-brd-sec)", Description = "Lines between the toolbar, the sidebars and the pages." },
-        new() { Name = "--bit-PdfViewer-focus-color", DefaultValue = "var(--bit-clr-pri-focus)", Description = "Every focus indicator of the viewer, and the drop-target frame." },
+        new() { Name = "--bit-PdfViewer-focus-color", DefaultValue = "var(--bit-clr-pri-focus)", Description = "Every focus indicator of the viewer, and the drop-target frame. While it is unset, every focus ring held off its element is the library's own --bit-shd-focus-ring; the ones drawn flush against a cell or a field keep this color." },
         new() { Name = "--bit-PdfViewer-font-family", DefaultValue = "var(--bit-tpg-font-family)", Description = "Font of the chrome (page text keeps the document's own fonts)." },
         new() { Name = "--bit-PdfViewer-height", DefaultValue = "min(780px, 85dvh)", Description = "Height of the viewer (the Height parameter sets it on the instance)." },
         new() { Name = "--bit-PdfViewer-width", DefaultValue = "auto", Description = "Width of the viewer (the Width parameter sets it on the instance)." },

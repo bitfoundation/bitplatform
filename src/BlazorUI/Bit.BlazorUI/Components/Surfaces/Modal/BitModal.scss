@@ -344,7 +344,8 @@
     display: flex;
     flex-shrink: 0;
     cursor: pointer;
-    color: inherit;
+    --bit-mdl-cls-clr: initial;
+    color: var(--bit-mdl-cls-clr, inherit);
     width: $siz-ctrl-md;
     height: $siz-ctrl-md;
     align-items: center;
@@ -352,19 +353,23 @@
     font-size: $siz-icon-md;
     font-family: inherit;
     border-radius: $shp-radius-button;
-    background-color: transparent;
+    --bit-mdl-cls-bg: initial;
+    background-color: var(--bit-mdl-cls-bg, transparent);
     transition: background-color $mot-duration-short $mot-easing, color $mot-duration-short $mot-easing;
 
+    // The states change the variables the button is painted from rather than its colors, so the one rule that
+    // paints is the one at rest: a close button the app paints through Classes keeps that paint under the
+    // pointer and while it is pressed, instead of losing it to a state that outranks the app's class.
     @media (hover: hover) {
         &:hover:not(:disabled) {
-            color: $clr-fg-pri-hover;
-            background-color: $clr-bg-pri-hover;
+            --bit-mdl-cls-clr: #{$clr-fg-pri-hover};
+            --bit-mdl-cls-bg: #{$clr-bg-pri-hover};
         }
     }
 
     &:active:not(:disabled) {
-        color: $clr-fg-pri-active;
-        background-color: $clr-bg-pri-active;
+        --bit-mdl-cls-clr: #{$clr-fg-pri-active};
+        --bit-mdl-cls-bg: #{$clr-bg-pri-active};
     }
 
     &:focus-visible {

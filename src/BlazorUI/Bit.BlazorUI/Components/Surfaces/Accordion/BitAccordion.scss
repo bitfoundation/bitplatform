@@ -35,6 +35,12 @@
 // carried the default would be indistinguishable from one that was asked for. NoBorder asks for no fill in
 // particular, so the variables still win over the secondary fill it falls back to; an open header's own fill
 // (--bit-Accordion-header-expanded-background) is a state of its own and wins over the shades of any Background.
+
+$acd-private-properties:
+    pad, ttl-fontsize, fontsize, icn-fontsize,
+    // What the component writes into an inline style, which wins over this on the element it is written on.
+    max-h;
+
 .bit-acd {
     width: 100%;
     display: flex;
@@ -66,10 +72,9 @@
     // The values the Size classes publish, unset here - rather than inherited from an accordion this one sits in the
     // panel of - and won back by those classes, declared further down at the same weight, on the root that carries
     // them. Left unset, each sends the var() reading it on to the public variable and then to the medium size.
-    --bit-acd-pad: initial;
-    --bit-acd-ttl-fontsize: initial;
-    --bit-acd-fontsize: initial;
-    --bit-acd-icn-fontsize: initial;
+    @each $name in $acd-private-properties {
+        --bit-acd-#{$name}: initial;
+    }
 
     // The duration of the expand/collapse transition. TransitionDuration arrives inline as the -full token and
     // everything below reads this derived one, following the -full pattern of motion.fluent.scss, so the
@@ -143,7 +148,7 @@
 .bit-acd-exp > .bit-acd-hwr {
     border-end-start-radius: 0;
     border-end-end-radius: 0;
-    background-color: var(--bit-Accordion-header-expanded-background, transparent);
+    background-color: var(--bit-acd-hwr-sbg, var(--bit-Accordion-header-expanded-background, transparent));
 }
 
 // The text of the open header is set on the header line rather than left to a variable on the root, which would
@@ -243,6 +248,8 @@
 .bit-acd-hwr {
     display: flex;
     align-items: center;
+    --bit-acd-hwr-sbg: initial;
+    background-color: var(--bit-acd-hwr-sbg);
     transition: background-color $mot-duration-short $mot-easing 0ms;
 }
 
@@ -285,15 +292,19 @@
 // The rule is chained down from the root rather than reaching for a descendant, so that the disabled state of an
 // outer accordion does not take the hover away from the headers of the accordions nested in its panel. A busy
 // header answers no click, so it is left unpainted too, the way a read-only one is.
+//
+// The states change the variable the header line is painted from rather than its background, so the rules that
+// paint it are the ones at rest: a header line the app paints through Classes keeps that paint under the pointer
+// and while it is pressed, instead of losing it to a state that outranks the app's class.
 .bit-acd:not(.bit-dis, .bit-acd-rdo) > .bit-acd-hwr {
     @media (hover: hover) {
         &:has(> .bit-acd-hed > .bit-acd-hdr:not(.bit-acd-bsy):hover) {
-            background-color: var(--bit-acd-hov);
+            --bit-acd-hwr-sbg: var(--bit-acd-hov);
         }
     }
 
     &:has(> .bit-acd-hed > .bit-acd-hdr:not(.bit-acd-bsy):active) {
-        background-color: var(--bit-acd-prs);
+        --bit-acd-hwr-sbg: var(--bit-acd-prs);
     }
 }
 
@@ -303,12 +314,12 @@
 .bit-acd-exp:not(.bit-dis, .bit-acd-rdo) > .bit-acd-hwr {
     @media (hover: hover) {
         &:has(> .bit-acd-hed > .bit-acd-hdr:not(.bit-acd-bsy):hover) {
-            background-color: var(--bit-Accordion-header-expanded-background, var(--bit-acd-hov));
+            --bit-acd-hwr-sbg: var(--bit-Accordion-header-expanded-background, var(--bit-acd-hov));
         }
     }
 
     &:has(> .bit-acd-hed > .bit-acd-hdr:not(.bit-acd-bsy):active) {
-        background-color: var(--bit-Accordion-header-expanded-background, var(--bit-acd-prs));
+        --bit-acd-hwr-sbg: var(--bit-Accordion-header-expanded-background, var(--bit-acd-prs));
     }
 }
 

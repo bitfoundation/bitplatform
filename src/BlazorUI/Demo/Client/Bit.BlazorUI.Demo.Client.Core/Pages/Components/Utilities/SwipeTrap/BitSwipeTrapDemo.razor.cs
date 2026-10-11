@@ -262,7 +262,7 @@ public partial class BitSwipeTrapDemo
         {
             Name = "--bit-SwipeTrap-focus-color",
             DefaultValue = "--bit-clr-pri-focus",
-            Description = "Focus ring color of a trap the keyboard can reach (KeyboardTrigger).",
+            Description = "Focus ring color of a trap the keyboard can reach (KeyboardTrigger). While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
         },
     ];
 

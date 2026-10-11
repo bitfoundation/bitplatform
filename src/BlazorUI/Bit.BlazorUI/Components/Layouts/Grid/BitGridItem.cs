@@ -576,30 +576,30 @@ public partial class BitGridItem : BitComponentBase
         // Every one of these is the base of a mobile first chain the stylesheet carries upwards: a breakpoint that
         // is not declared here inherits the value of the breakpoint below it, and the base of the span chain is
         // inherited from the grid itself when the item does not set one.
-        StyleBuilder.Register(() => GetVar("span", ColumnSpan));
-        StyleBuilder.Register(() => GetVar("xs", Xs));
-        StyleBuilder.Register(() => GetVar("sm", Sm));
-        StyleBuilder.Register(() => GetVar("md", Md));
-        StyleBuilder.Register(() => GetVar("lg", Lg));
-        StyleBuilder.Register(() => GetVar("xl", Xl));
-        StyleBuilder.Register(() => GetVar("xxl", Xxl));
+        StyleBuilder.Register(() => GetVar("--bit-grd-span", ColumnSpan));
+        StyleBuilder.Register(() => GetVar("--bit-grd-xs", Xs));
+        StyleBuilder.Register(() => GetVar("--bit-grd-sm", Sm));
+        StyleBuilder.Register(() => GetVar("--bit-grd-md", Md));
+        StyleBuilder.Register(() => GetVar("--bit-grd-lg", Lg));
+        StyleBuilder.Register(() => GetVar("--bit-grd-xl", Xl));
+        StyleBuilder.Register(() => GetVar("--bit-grd-xxl", Xxl));
 
-        StyleBuilder.Register(() => GetVar("off", Offset));
-        StyleBuilder.Register(() => GetVar("off-xs", OffsetXs));
-        StyleBuilder.Register(() => GetVar("off-sm", OffsetSm));
-        StyleBuilder.Register(() => GetVar("off-md", OffsetMd));
-        StyleBuilder.Register(() => GetVar("off-lg", OffsetLg));
-        StyleBuilder.Register(() => GetVar("off-xl", OffsetXl));
-        StyleBuilder.Register(() => GetVar("off-xxl", OffsetXxl));
+        StyleBuilder.Register(() => GetVar("--bit-grd-off", Offset));
+        StyleBuilder.Register(() => GetVar("--bit-grd-off-xs", OffsetXs));
+        StyleBuilder.Register(() => GetVar("--bit-grd-off-sm", OffsetSm));
+        StyleBuilder.Register(() => GetVar("--bit-grd-off-md", OffsetMd));
+        StyleBuilder.Register(() => GetVar("--bit-grd-off-lg", OffsetLg));
+        StyleBuilder.Register(() => GetVar("--bit-grd-off-xl", OffsetXl));
+        StyleBuilder.Register(() => GetVar("--bit-grd-off-xxl", OffsetXxl));
 
         // An order can be negative, which is how a single item is moved ahead of the ones that left it alone.
-        StyleBuilder.Register(() => GetVar("ord", Order, allowNegative: true));
-        StyleBuilder.Register(() => GetVar("ord-xs", OrderXs, allowNegative: true));
-        StyleBuilder.Register(() => GetVar("ord-sm", OrderSm, allowNegative: true));
-        StyleBuilder.Register(() => GetVar("ord-md", OrderMd, allowNegative: true));
-        StyleBuilder.Register(() => GetVar("ord-lg", OrderLg, allowNegative: true));
-        StyleBuilder.Register(() => GetVar("ord-xl", OrderXl, allowNegative: true));
-        StyleBuilder.Register(() => GetVar("ord-xxl", OrderXxl, allowNegative: true));
+        StyleBuilder.Register(() => GetVar("--bit-grd-ord", Order, allowNegative: true));
+        StyleBuilder.Register(() => GetVar("--bit-grd-ord-xs", OrderXs, allowNegative: true));
+        StyleBuilder.Register(() => GetVar("--bit-grd-ord-sm", OrderSm, allowNegative: true));
+        StyleBuilder.Register(() => GetVar("--bit-grd-ord-md", OrderMd, allowNegative: true));
+        StyleBuilder.Register(() => GetVar("--bit-grd-ord-lg", OrderLg, allowNegative: true));
+        StyleBuilder.Register(() => GetVar("--bit-grd-ord-xl", OrderXl, allowNegative: true));
+        StyleBuilder.Register(() => GetVar("--bit-grd-ord-xxl", OrderXxl, allowNegative: true));
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitGridItemParams))]
@@ -802,6 +802,6 @@ public partial class BitGridItem : BitComponentBase
 
         // The invariant culture is what keeps a negative order readable as CSS: the minus sign of the
         // current culture is not always the hyphen the browser is looking for.
-        return $"--bit-grd-{name}:{number.ToString(CultureInfo.InvariantCulture)}";
+        return $"{name}:{number.ToString(CultureInfo.InvariantCulture)}";
     }
 }

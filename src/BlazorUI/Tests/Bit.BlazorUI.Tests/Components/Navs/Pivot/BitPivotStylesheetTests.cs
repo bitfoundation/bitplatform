@@ -54,14 +54,15 @@ public class BitPivotStylesheetTests
         // The accent is resolved once per pivot on its root: the role an explicit Color publishes first, then the
         // public variable, then the primary role an unset Color stands for.
         StringAssert.Contains(root, "--bit-pvt-clr: var(--bit-pvt-role-main, var(--bit-Pivot-color, #{$clr-pri}));");
-        StringAssert.Contains(root, "--bit-pvt-clr-focus: var(--bit-pvt-role-focus, var(--bit-Pivot-focus-color, #{$clr-pri-focus}));");
+        StringAssert.Contains(root, "--bit-pvt-clr-focus: var(--bit-pvt-role-focus, var(--bit-Pivot-focus-color));");
         StringAssert.Contains(root, "--bit-pvt-clr-dis: var(--bit-pvt-role-dis, var(--bit-Pivot-disabled-color, #{$clr-pri-dis}));");
         StringAssert.Contains(root, "--bit-pvt-clr-dis-text: var(--bit-pvt-role-dis-text, var(--bit-Pivot-disabled-text-color, #{$clr-pri-dis-text}));");
 
         // The indicator and the colors of a Tab item are the Color's as well, ahead of their own variables.
         StringAssert.Contains(stylesheet, "background-color: var(--bit-pvt-role-main, var(--bit-Pivot-indicator-color, var(--bit-Pivot-color, #{$clr-pri})));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-pvt-role-text, var(--bit-Pivot-item-selected-color, #{$clr-pri-text}));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-pvt-role-hover, var(--bit-Pivot-item-hover-background, #{$clr-pri-hover}));");
+        // (A hovered item is painted from the state variable its hover sets, read first by the rule at rest.)
+        StringAssert.Contains(stylesheet, "color: var(--bit-pvt-itm-clr, var(--bit-pvt-role-text, var(--bit-Pivot-item-selected-color, #{$clr-pri-text})));");
+        StringAssert.Contains(stylesheet, "--bit-pvt-itm-bg: var(--bit-pvt-role-hover, var(--bit-Pivot-item-hover-background, #{$clr-pri-hover}));");
 
         // An explicit Size publishes the font size and the item height, which an unset one leaves to the variables.
         StringAssert.Contains(stylesheet, "font-size: var(--bit-pvt-fs, var(--bit-Pivot-font-size, #{$tg-fs-sm}));");
@@ -139,7 +140,7 @@ public class BitPivotStylesheetTests
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-mnc {"), "animation-timing-function: $mot-easing-decelerate;");
 
         // The menu scrolls, so a ring drawn around the outside of a row would be clipped to one edge of it.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-mni {"), "box-shadow: inset 0 0 0 #{$shp-focus-ring-width} var(--bit-pvt-clr-focus);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-mni {"), "box-shadow: inset 0 0 0 #{$shp-focus-ring-width} var(--bit-pvt-clr-focus, #{$clr-pri-focus});");
     }
 
     [TestMethod]
@@ -212,7 +213,7 @@ public class BitPivotStylesheetTests
         var block = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-pvt-mnu,\n.bit-pvt-sld,\n.bit-pvt-scr {");
 
         StringAssert.Contains(block, "#{$tab}:focus-visible");
-        StringAssert.Contains(block, "box-shadow: inset 0 0 0 #{$shp-focus-ring-width} var(--bit-pvt-clr-focus);");
+        StringAssert.Contains(block, "box-shadow: inset 0 0 0 #{$shp-focus-ring-width} var(--bit-pvt-clr-focus, #{$clr-pri-focus});");
         StringAssert.Contains(block, "outline-offset: calc(-1 * #{$shp-focus-ring-width});");
     }
 
@@ -248,5 +249,5 @@ public class BitPivotStylesheetTests
         return (documented, body);
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Navs", "Pivot", "BitPivot.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Navs", "Pivot", "BitPivot.scss");
 }

@@ -214,5 +214,5 @@ public class BitProgressStylesheetTests
         Assert.IsFalse(hold.Contains("animation"), "The prerender hold reveals itself, which the interactive render then replays.");
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Progress", "Progress", "BitProgress.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Progress", "Progress", "BitProgress.scss");
 }

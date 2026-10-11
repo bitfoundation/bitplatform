@@ -6,6 +6,15 @@
 @import "components.scss";
 @import "fabric.mdl2.bit.blazoui.scss";
 
+// The ring a focus-ring-own() call composes in a component's own focus color (functions.scss). It does not
+// inherit, so a recolored ring never reaches a focusable nested inside the element that draws it: a nested
+// element whose own color is unset is left with no value at all - not its ancestor's - and falls back to the
+// global ring, whichever rule an engine follows for a custom property that is invalid at computed-value time.
+@property --bit-focus-ring-own {
+    syntax: "*";
+    inherits: false;
+}
+
 button {
     border: none;
     outline: none;

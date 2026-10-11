@@ -528,7 +528,7 @@ public partial class BitOtpInputDemo
         {
             Name = "--bit-OtpInput-focus-color",
             DefaultValue = "--bit-clr-pri-focus",
-            Description = "Color of the keyboard focus ring. The Accent parameter wins over it.",
+            Description = "Color of the keyboard focus ring. The Accent parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
         },
         new()
         {

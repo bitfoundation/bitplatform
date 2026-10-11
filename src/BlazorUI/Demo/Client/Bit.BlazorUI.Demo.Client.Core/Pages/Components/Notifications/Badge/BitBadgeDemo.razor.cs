@@ -381,7 +381,7 @@ public partial class BitBadgeDemo
         {
             Name = "--bit-Badge-focus-color",
             DefaultValue = "--bit-clr-pri-focus",
-            Description = "Keyboard focus ring color of a clickable badge. The Color parameter wins over it.",
+            Description = "Keyboard focus ring color of a clickable badge. The Color parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
         },
         new()
         {

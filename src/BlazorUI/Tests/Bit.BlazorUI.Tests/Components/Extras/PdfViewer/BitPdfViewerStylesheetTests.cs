@@ -70,10 +70,11 @@ public partial class BitPdfViewerStylesheetTests
         var stylesheet = ReadStylesheet();
 
         StringAssert.Contains(stylesheet, "$pdv-focus: var(--bit-PdfViewer-focus-color, #{$clr-pri-focus});");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-btn {"), "@include focus-ring($pdv-focus);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-opt {"), "@include focus-ring($pdv-focus);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-thumb {"), "@include focus-ring($pdv-focus);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-dialog-btn {"), "@include focus-ring($pdv-focus);");
+        StringAssert.Contains(stylesheet, "$pdv-focus-ring: focus-ring-color($pdv-focus);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-btn {"), "@include focus-ring-own($pdv-focus-ring);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-opt {"), "@include focus-ring-own($pdv-focus-ring);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-thumb {"), "@include focus-ring-own($pdv-focus-ring);");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-dialog-btn {"), "@include focus-ring-own($pdv-focus-ring);");
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pdv-search-input,"), "@include focus-ring($pdv-focus, 0);");
 
         // The parts that fill (or sit in) a scroll container draw their ring inside, where it cannot be clipped.

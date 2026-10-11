@@ -169,7 +169,7 @@ public partial class BitMessageBoxStylesheetTests
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "MessageBox", "BitMessageBox.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI.Extras", "Components", "MessageBox", "BitMessageBox.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-MessageBox-[a-z-]+)\s", RegexOptions.Multiline)]
     private static partial Regex DocumentedVariable();

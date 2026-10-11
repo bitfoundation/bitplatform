@@ -919,8 +919,6 @@ public partial class BitChart : BitComponentBase
                 _hoverNodes.Add(hs);
     }
 
-    private const string FocusRingColor = "var(--bit-Chart-focus-color, var(--bit-clr-pri-focus))";
-
     /// <summary>
     /// Draws the active index in a chip where the crosshair meets the index axis. It reuses the tooltip
     /// colors so the two read as one piece of chrome, and is clamped into the plot so it cannot spill
@@ -1099,15 +1097,15 @@ public partial class BitChart : BitComponentBase
     /// <summary>
     /// The ring drawn around the keyboard position. It traces the element's own outline rather than a
     /// stand-in shape: a rounded bar and an arc are both paths, and a circle around an arc's centroid
-    /// would sit inside the ring it is supposed to be marking.
+    /// would sit inside the ring it is supposed to be marking. Its color is the stylesheet's (.bit-cht-focus-ring).
     /// </summary>
     private static BitChartSvgNode FocusOutline(BitChartDataElement el) => el.Shape switch
     {
-        BitChartSvgRect r => new BitChartSvgRect { X = r.X - 2, Y = r.Y - 2, Width = r.Width + 4, Height = r.Height + 4, Fill = "none", Stroke = FocusRingColor, StrokeWidth = 2, CssClass = "bit-cht-focus-ring" },
-        BitChartSvgCircle c => new BitChartSvgCircle { Cx = c.Cx, Cy = c.Cy, R = c.R + 5, Fill = "none", Stroke = FocusRingColor, StrokeWidth = 2, CssClass = "bit-cht-focus-ring" },
-        BitChartSvgPath p => new BitChartSvgPath { D = p.D, Fill = "none", Stroke = FocusRingColor, StrokeWidth = 2, CssClass = "bit-cht-focus-ring" },
-        BitChartSvgPolygon poly => new BitChartSvgPolygon { Points = [.. poly.Points], Closed = poly.Closed, Fill = "none", Stroke = FocusRingColor, StrokeWidth = 2, CssClass = "bit-cht-focus-ring" },
-        _ => new BitChartSvgCircle { Cx = el.CenterX, Cy = el.CenterY, R = 8, Fill = "none", Stroke = FocusRingColor, StrokeWidth = 2, CssClass = "bit-cht-focus-ring" }
+        BitChartSvgRect r => new BitChartSvgRect { X = r.X - 2, Y = r.Y - 2, Width = r.Width + 4, Height = r.Height + 4, Fill = "none", StrokeWidth = 2, CssClass = "bit-cht-focus-ring" },
+        BitChartSvgCircle c => new BitChartSvgCircle { Cx = c.Cx, Cy = c.Cy, R = c.R + 5, Fill = "none", StrokeWidth = 2, CssClass = "bit-cht-focus-ring" },
+        BitChartSvgPath p => new BitChartSvgPath { D = p.D, Fill = "none", StrokeWidth = 2, CssClass = "bit-cht-focus-ring" },
+        BitChartSvgPolygon poly => new BitChartSvgPolygon { Points = [.. poly.Points], Closed = poly.Closed, Fill = "none", StrokeWidth = 2, CssClass = "bit-cht-focus-ring" },
+        _ => new BitChartSvgCircle { Cx = el.CenterX, Cy = el.CenterY, R = 8, Fill = "none", StrokeWidth = 2, CssClass = "bit-cht-focus-ring" }
     };
 
     /// <summary>

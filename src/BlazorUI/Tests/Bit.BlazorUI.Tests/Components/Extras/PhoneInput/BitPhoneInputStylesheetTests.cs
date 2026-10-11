@@ -31,7 +31,7 @@ public partial class BitPhoneInputStylesheetTests
         StringAssert.Contains(stylesheet, "--bit-phi-bg: var(--bit-phi-kind-bg, var(--bit-PhoneInput-background, #{$clr-bg-pri}));");
         StringAssert.Contains(stylesheet, "--bit-phi-brd: var(--bit-phi-kind-brd, var(--bit-phi-role-main, var(--bit-PhoneInput-border-color, #{$clr-brd-pri})));");
         StringAssert.Contains(stylesheet, "--bit-phi-brd-hover: var(--bit-phi-kind-brd-hover, var(--bit-phi-role-main, var(--bit-PhoneInput-hover-border-color, #{$clr-brd-pri-hover})));");
-        StringAssert.Contains(stylesheet, "--bit-phi-focus: var(--bit-phi-role-focus, var(--bit-PhoneInput-focus-color, #{$clr-pri-focus}));");
+        StringAssert.Contains(stylesheet, "--bit-phi-focus: var(--bit-phi-role-focus, var(--bit-PhoneInput-focus-color));");
 
         Assert.IsFalse(PublicBeforePrivate().IsMatch(stylesheet), "A public variable is read before the parameter it restyles the default of.");
     }
@@ -53,7 +53,7 @@ public partial class BitPhoneInputStylesheetTests
         StringAssert.Contains(SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-phi-cal {"), "@include phi-resets;");
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "PhoneInput", "BitPhoneInput.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI.Extras", "Components", "PhoneInput", "BitPhoneInput.scss");
 
     [GeneratedRegex(@"var\(--bit-PhoneInput-[a-z-]+, (0 )?var\(--bit-phi-(sz-[a-z-]+|role-[a-z]+|kind-[a-z-]+|fs|h|pad-x|icon)\b")]
     private static partial Regex PublicBeforePrivate();

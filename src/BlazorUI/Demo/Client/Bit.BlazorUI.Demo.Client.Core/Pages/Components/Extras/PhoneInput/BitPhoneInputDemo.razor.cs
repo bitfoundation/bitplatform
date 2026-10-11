@@ -715,7 +715,7 @@ public partial class BitPhoneInputDemo
         new() { Name = "--bit-PhoneInput-min-height", DefaultValue = "--bit-siz-ctrl-md", Description = "Smallest height of the frame. The Size parameter wins over it." },
         new() { Name = "--bit-PhoneInput-font-size", DefaultValue = "--bit-tpg-fs-sm", Description = "Text size of the field and of the country list. The Size parameter wins over it." },
         new() { Name = "--bit-PhoneInput-padding", DefaultValue = "0 --bit-siz-ctrl-pad-x-md", Description = "Padding of the number input. The Size parameter wins over it." },
-        new() { Name = "--bit-PhoneInput-focus-color", DefaultValue = "--bit-clr-pri-focus", Description = "Focused frame and focus ring, and the keyboard cues of the selector, the clear button and the active row of the list. The Color parameter wins over it." },
+        new() { Name = "--bit-PhoneInput-focus-color", DefaultValue = "--bit-clr-pri-focus", Description = "Focused frame and focus ring, and the keyboard cues of the selector, the clear button and the active row of the list. The Color parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too." },
         new() { Name = "--bit-PhoneInput-invalid-color", DefaultValue = "--bit-clr-err / --bit-clr-err-focus", Description = "Frame, focus ring and error message of a rejected value." },
         new() { Name = "--bit-PhoneInput-disabled-color", DefaultValue = "--bit-clr-fg-dis", Description = "Text and glyphs when disabled." },
         new() { Name = "--bit-PhoneInput-disabled-background", DefaultValue = "--bit-clr-bg-dis", Description = "Fill when disabled." },

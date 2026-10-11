@@ -54,7 +54,10 @@ public class BitChartStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(stylesheet, "--bit-cht-clr-focus: var(--bit-Chart-focus-color, #{$clr-pri-focus});");
+        StringAssert.Contains(stylesheet, "--bit-cht-clr-focus: var(--bit-Chart-focus-color);");
+        // The keyboard position is a stroke, so it cannot be the global ring: it reads the rings' own chain, with the
+        // primary focus color as its default.
+        StringAssert.Contains(stylesheet, ".bit-cht-focus-ring {\n    stroke: var(--bit-cht-clr-focus, #{$clr-pri-focus});");
         StringAssert.Contains(stylesheet, "border-radius: var(--bit-Chart-tooltip-radius, #{$shp-radius-popup});");
         StringAssert.Contains(stylesheet, "box-shadow: var(--bit-Chart-tooltip-shadow, #{$box-shadow-tooltip});");
         StringAssert.Contains(stylesheet, "font-family: var(--bit-Chart-font-family, #{$tg-font-family});");

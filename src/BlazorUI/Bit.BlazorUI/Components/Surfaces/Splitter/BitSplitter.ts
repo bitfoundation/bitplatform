@@ -61,14 +61,6 @@
         // sits on, and the two presses that make it up are not a double-click on the gutter either.
         private static readonly COLLAPSE_BUTTON_SELECTOR = '.bit-spl-cbt';
 
-        // What can take the focus that a folded panel drops, where the gutter cannot (see rescueFocus).
-        private static readonly FOCUSABLE_SELECTOR =
-            'a[href]:not([tabindex="-1"]), button:not([disabled]):not([tabindex="-1"]), ' +
-            'input:not([disabled]):not([tabindex="-1"]), select:not([disabled]):not([tabindex="-1"]), ' +
-            'textarea:not([disabled]):not([tabindex="-1"]), ' +
-            '[contenteditable]:not([contenteditable="false"]):not([tabindex="-1"]), ' +
-            '[tabindex]:not([tabindex="-1"])';
-
         // Dragging the first panel below this share of its own minimum snaps it shut instead of leaving it
         // as a sliver nobody can read. It only applies to a splitter that was made collapsible; every other
         // one simply stops at the minimum.
@@ -966,9 +958,7 @@
 
             const standing = folded === entry.first ? entry.second : entry.first;
 
-            const target = Array.from(standing.querySelectorAll<HTMLElement>(Splitter.FOCUSABLE_SELECTOR))
-                                .find(el => el.closest('[inert]') === null
-                                         && (el.offsetWidth > 0 || el.offsetHeight > 0 || el.getClientRects().length > 0));
+            const target = Utils.firstFocusable(standing);
 
             if (target) {
                 target.focus({ preventScroll: true });

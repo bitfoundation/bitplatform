@@ -427,7 +427,7 @@ public partial class BitPivotDemo
         {
             Name = "--bit-Pivot-focus-color",
             DefaultValue = "--bit-clr-pri-focus",
-            Description = "Focus ring of the items, the panel and the header buttons. The Color parameter wins over it.",
+            Description = "Focus ring of the items, the panel and the header buttons. The Color parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
         },
         new()
         {

@@ -1995,7 +1995,7 @@ public partial class BitDatePickerDemo
         {
             Name = "--bit-DatePicker-focus-color",
             DefaultValue = "--bit-clr-pri-focus",
-            Description = "Color of every focus ring the component draws - on the field and on the cells and buttons inside the callout. The Color parameter wins over it, and so does an invalid value, which draws the field's ring in --bit-clr-err-focus.",
+            Description = "Color of every focus ring the component draws - on the field and on the cells and buttons inside the callout. The Color parameter wins over it, and so does an invalid value, which draws the field's ring in --bit-clr-err-focus. While it is unset, every focus ring held off its element is the library's own --bit-shd-focus-ring; the ones drawn flush against a cell or a field keep this color.",
         },
         new()
         {

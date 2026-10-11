@@ -240,7 +240,7 @@
             const header = root?.querySelector<HTMLElement>(`.bit-dtg-header-row .bit-dtg-hcell[data-col="${CSS.escape(columnId)}"]`);
             if (!header) return;
             const target = header.querySelector<HTMLElement>('button.bit-dtg-htext')
-                ?? header.querySelector<HTMLElement>('button, [tabindex]:not([tabindex="-1"])');
+                ?? Utils.firstFocusable(header);
             target?.focus();
         }
 
@@ -257,7 +257,7 @@
             const cells = Array.from(root.querySelectorAll<HTMLElement>('[data-bit-dtg-edit]'))
                 .filter(c => c.closest('.bit-dtg') === root);
             const cell = (columnId ? cells.find(c => c.dataset.bitDtgEdit === columnId) : undefined) ?? cells[0];
-            const target = cell ? focusableControls(cell)[0] : undefined;
+            const target = cell ? Utils.firstFocusable(cell) : undefined;
             if (!target) return;
             target.focus();
             if (!(target instanceof HTMLInputElement) || !['text', 'search', 'number', 'email', 'tel', 'url'].includes(target.type)) return;
@@ -291,7 +291,7 @@
                 } catch {
                     continue;
                 }
-                const target = matches.find(el => el.closest('.bit-dtg') === root && isFocusable(el));
+                const target = matches.find(el => el.closest('.bit-dtg') === root && Utils.isFocusableElement(el));
                 if (target) {
                     target.focus();
                     return;
@@ -633,13 +633,6 @@
             : root.hasAttribute('data-bit-dtg-select-all');
     }
 
-    // The controls of an editor that can actually take the focus, in DOM order: enabled, not a hidden input,
-    // not hidden themselves or inside a hidden/inert subtree, and rendered (display:none leaves no client
-    // rects). Opening an editor focuses the first; Cell-mode Tab treats the first and last as the boundaries.
-    const focusableSelector = 'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled]), [tabindex]:not([tabindex="-1"])';
-    function focusableControls(container: HTMLElement): HTMLElement[] {
-        return Array.from(container.querySelectorAll<HTMLElement>(focusableSelector)).filter(isFocusable);
-    }
     // Whether a node sits in a popup the container opened: inside an element that a control in the container names
     // with aria-controls or aria-owns - the one tie a popup moved to the body keeps with its opener - or, a few levels
     // deep, in a popup opened from such a popup (a submenu).
@@ -653,13 +646,6 @@
             if (container.contains(opener) || isOwnedBy(container, opener, depth + 1)) return true;
         }
         return false;
-    }
-    function isFocusable(el: HTMLElement): boolean {
-        return el.matches(focusableSelector)
-            && !(el instanceof HTMLInputElement && el.type === 'hidden')
-            && !el.closest('[hidden], [inert]')
-            && el.getClientRects().length > 0
-            && getComputedStyle(el).visibility !== 'hidden';
     }
 
     // Typing into a focused cell opens its editor (see BitDataGrid.OpensEditorByTyping), but the editor exists only
@@ -722,7 +708,8 @@
             if (e.key === 'Tab') {
                 const editingCell = target.closest<HTMLElement>('.bit-dtg-cell-editing');
                 if (!editingCell) return;
-                const controls = focusableControls(editingCell);
+                // The editor's controls that can take the focus, in DOM order: the first and last are the boundaries.
+                const controls = Utils.getFocusables(editingCell);
                 const index = controls.indexOf(target);
                 const staysInside = e.shiftKey ? index > 0 : index >= 0 && index < controls.length - 1;
                 if (staysInside) e.stopPropagation();

@@ -45,6 +45,11 @@ $swp-btn-hover: var(--bit-swp-btn-hover, var(--bit-Swiper-button-hover-color, #{
 // is grown around them and the row spaces them at least this far apart.
 $swp-target: 24px;
 
+$swp-private-properties:
+    dotsz, btnsz, clr, clr-hover, btn, btn-hover, fcs,
+    // What the component writes into an inline style, which wins over this on the element it is written on.
+    isz;
+
 .bit-swp {
     margin: auto;
     display: flex;
@@ -56,20 +61,16 @@ $swp-target: 24px;
     // the items of another one never inherits the outer one's choice; the classes - declared further down at the
     // same weight - still win on the root that carries them. Left unset, each var() reading them moves on to the
     // public variable and then to the default (see $swp-clr and the rest at the top).
-    --bit-swp-dotsz: initial;
-    --bit-swp-btnsz: initial;
-    --bit-swp-clr: initial;
-    --bit-swp-clr-hover: initial;
-    --bit-swp-btn: initial;
-    --bit-swp-btn-hover: initial;
-    --bit-swp-fcs: initial;
+    @each $name in $swp-private-properties {
+        --bit-swp-#{$name}: initial;
+    }
 
     // Declared here rather than read with a fallback where they are used, so a swiper nested in another does not
     // inherit the gap and the peek of the outer one, while the Gap and Peek parameters, which arrive inline on this
     // same element, still win over the public variables.
     --bit-swp-gap: var(--bit-Swiper-gap, 0px);
     --bit-swp-peek: var(--bit-Swiper-peek, 0px);
-    --bit-swp-focus: var(--bit-swp-fcs, var(--bit-Swiper-focus-color, #{$clr-pri-focus}));
+    --bit-swp-focus: var(--bit-swp-fcs, var(--bit-Swiper-focus-color));
     --bit-swp-dot-size: var(--bit-swp-dotsz, var(--bit-Swiper-dot-size, #{spacing(1.25)}));
 
     // The axis the swiper scrolls on, which the snapping below is written in terms of so a single class
@@ -77,7 +78,7 @@ $swp-target: 24px;
     --bit-swp-axis: x;
 
     &:focus-visible {
-        @include focus-ring(var(--bit-swp-focus));
+        @include focus-ring-own(var(--bit-swp-focus));
     }
 }
 
@@ -231,18 +232,23 @@ $swp-target: 24px;
     text-align: center;
     align-items: center;
     justify-content: center;
-    color: $swp-btn;
+    --bit-swp-btn-sfg: initial;
+    --bit-swp-btn-sbg: initial;
+    color: var(--bit-swp-btn-sfg, #{$swp-btn});
 
     // The resting glyph stays opaque enough to keep the 3:1 contrast of a control (WCAG 1.4.11) against the
     // background it sits on; the hover brings it to full strength.
     opacity: var(--bit-Swiper-button-opacity, .7);
     transition: opacity $mot-duration $mot-easing, color $mot-duration $mot-easing, background-color $mot-duration $mot-easing;
 
+    // The states change the variables the controls are painted from rather than their colors, so the rules that
+    // paint are the ones at rest: a button or a dot the app paints through Classes keeps that paint under the
+    // pointer, instead of losing it to a state that outranks the app's class.
     @media (hover: hover) {
         &:hover {
             opacity: 1;
             text-decoration: none;
-            color: $swp-btn-hover;
+            --bit-swp-btn-sfg: #{$swp-btn-hover};
         }
     }
 
@@ -256,7 +262,7 @@ $swp-target: 24px;
     &:focus-visible {
         opacity: 1;
 
-        @include focus-ring(var(--bit-swp-focus));
+        @include focus-ring-own(var(--bit-swp-focus));
     }
 }
 
@@ -272,11 +278,11 @@ $swp-target: 24px;
     // A percentage of a narrow swiper is less than a pointer target, so the strip never gets narrower than one.
     min-width: $swp-target;
     font-size: var(--bit-swp-btnsz, var(--bit-Swiper-button-size, #{spacing(3)}));
-    background-color: var(--bit-Swiper-button-background, transparent);
+    background-color: var(--bit-swp-btn-sbg, var(--bit-Swiper-button-background, transparent));
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-Swiper-button-hover-background, var(--bit-Swiper-button-background, transparent));
+            --bit-swp-btn-sbg: var(--bit-Swiper-button-hover-background, var(--bit-Swiper-button-background, transparent));
         }
     }
 
@@ -284,7 +290,7 @@ $swp-target: 24px;
     // would be cut off on three sides. The indicator is drawn inside the strip instead.
     &:focus-visible {
         opacity: 1;
-        outline: $shp-focus-ring-width solid var(--bit-swp-focus);
+        outline: $shp-focus-ring-width solid var(--bit-swp-focus, #{$clr-pri-focus});
         outline-offset: calc(-1 * #{$shp-focus-ring-width});
 
         @media (forced-colors: active) {
@@ -371,7 +377,9 @@ $swp-target: 24px;
     width: var(--bit-swp-dot-size);
     height: var(--bit-swp-dot-size);
     border-radius: var(--bit-Swiper-dot-radius, #{$shp-radius-full});
-    background-color: var(--bit-Swiper-dot-color, #{$clr-brd-pri});
+    --bit-swp-dot-sbg: initial;
+    --bit-swp-dot-sfg: initial;
+    background-color: var(--bit-swp-dot-sbg, var(--bit-Swiper-dot-color, #{$clr-brd-pri}));
     transition: background-color $mot-duration-long $mot-easing, width $mot-duration-long $mot-easing;
 
     // The hit area is grown to the WCAG pointer target around the drawn dot, without changing how it looks.
@@ -383,12 +391,12 @@ $swp-target: 24px;
 
     @media (hover: hover) {
         &:hover {
-            background-color: var(--bit-Swiper-dot-hover-color, #{$clr-brd-pri-hover});
+            --bit-swp-dot-sbg: var(--bit-Swiper-dot-hover-color, #{$clr-brd-pri-hover});
         }
     }
 
     &:focus-visible {
-        @include focus-ring(var(--bit-swp-focus));
+        @include focus-ring-own(var(--bit-swp-focus));
     }
 
     &:disabled {
@@ -409,8 +417,8 @@ $swp-target: 24px;
     align-items: center;
     justify-content: center;
     border-radius: $shp-radius-button;
-    background-color: transparent;
-    color: $swp-btn;
+    background-color: var(--bit-swp-dot-sbg, transparent);
+    color: var(--bit-swp-dot-sfg, #{$swp-btn});
     transition: color $mot-duration-long $mot-easing;
 
     &::after {
@@ -419,8 +427,8 @@ $swp-target: 24px;
 
     @media (hover: hover) {
         &:hover {
-            background-color: transparent;
-            color: $swp-btn-hover;
+            --bit-swp-dot-sbg: transparent;
+            --bit-swp-dot-sfg: #{$swp-btn-hover};
         }
     }
 
@@ -432,24 +440,24 @@ $swp-target: 24px;
 
 .bit-swp-cud {
     width: var(--bit-Swiper-dot-current-width, var(--bit-swp-dot-size));
-    background-color: $swp-clr;
+    background-color: var(--bit-swp-dot-sbg, #{$swp-clr});
 
     @media (hover: hover) {
         &:hover {
-            background-color: $swp-clr-hover;
+            --bit-swp-dot-sbg: #{$swp-clr-hover};
         }
     }
 }
 
 .bit-swp-dtt.bit-swp-cud {
     width: auto;
-    background-color: transparent;
-    color: $swp-clr;
+    background-color: var(--bit-swp-dot-sbg, transparent);
+    color: var(--bit-swp-dot-sfg, #{$swp-clr});
 
     @media (hover: hover) {
         &:hover {
-            background-color: transparent;
-            color: $swp-clr-hover;
+            --bit-swp-dot-sbg: transparent;
+            --bit-swp-dot-sfg: #{$swp-clr-hover};
         }
     }
 }

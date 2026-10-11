@@ -119,7 +119,9 @@ public class BitThemeManager : IAsyncDisposable
     /// and elevations, the tooltip colors, the per-role foregrounds and tints) need the same, as the active
     /// theme builds them, so the element is marked with <see cref="BitThemeAttributeNames.ThemeOverlay"/>,
     /// naming the groups the theme re-values, and every theme stylesheet re-declares its own aliases for
-    /// them there. Explicitly-set alias values always win over both. A re-valued density scale or spacing
+    /// them there. So is the global focus ring (<c>--bit-shd-focus-ring</c>), a composite of the page background,
+    /// the primary focus color and the ring's width and offset, whenever the theme re-values one of them.
+    /// Explicitly-set alias values always win over all of these. A re-valued density scale or spacing
     /// unit needs no such help: the insets and sizes derived from them are computed where a component uses them.
     /// </remarks>
     /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>
@@ -128,6 +130,7 @@ public class BitThemeManager : IAsyncDisposable
         await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
 
         var cssVariables = BitThemeMapper.MapToCssVariables(bitTheme ?? new BitTheme());
+        BitThemeMapper.AugmentWithFocusRingReSubstitution(cssVariables);
         BitThemeMapper.AugmentWithSemanticAliasReSubstitution(cssVariables);
 
         // The client script marks the element with the family alias groups these re-value itself

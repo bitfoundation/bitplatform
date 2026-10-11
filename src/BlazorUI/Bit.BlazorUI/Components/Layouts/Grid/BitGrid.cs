@@ -619,8 +619,8 @@ public partial class BitGrid : BitComponentBase
         StyleBuilder.Register(() => GetColumnsVar(null, Columns));
         // A grid that was told nothing about its spacing declares none, and the stylesheet resolves the gap from
         // the public variables and the spacing unit of the theme instead.
-        StyleBuilder.Register(() => GetSpacingVar("cgap", HorizontalSpacing));
-        StyleBuilder.Register(() => GetSpacingVar("rgap", VerticalSpacing));
+        StyleBuilder.Register(() => GetSpacingVar("--bit-grd-cgap", HorizontalSpacing));
+        StyleBuilder.Register(() => GetSpacingVar("--bit-grd-rgap", VerticalSpacing));
 
         StyleBuilder.Register(() => MinItemWidth.HasValue() ? $"--bit-grd-mnw:{GetLength(MinItemWidth!)}" : string.Empty);
 
@@ -732,7 +732,7 @@ public partial class BitGrid : BitComponentBase
     {
         var value = axisSpacing.HasValue() ? axisSpacing : Spacing;
 
-        return value.HasValue() ? $"--bit-grd-{name}:{GetLength(value!)}" : string.Empty;
+        return value.HasValue() ? $"{name}:{GetLength(value!)}" : string.Empty;
     }
 
     private static string GetLength(string value)

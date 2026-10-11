@@ -90,6 +90,11 @@
     --bit-phi-sz-itm-h: #{$itm-h};
 }
 
+// Every private variable the mixin below starts out unset, so an instance never inherits one from an instance
+// it is nested in. A private variable added to the component goes in this list.
+$phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role-focus, kind-bg, kind-brd,
+                         kind-brd-hover;
+
 // The values the Size, Color, Background and Border classes publish start out unset on the root and on the
 // callout, so a field rendered inside another one's template never inherits the outer field's choice; the
 // classes - declared further down at the same weight - still win on the element that carries them. Left
@@ -97,16 +102,9 @@
 // medium size, the primary role, the primary background and border), which is what lets an explicit parameter
 // outrank the variable while an unset one leaves the variable in charge.
 @mixin phi-resets {
-    --bit-phi-sz-fs: initial;
-    --bit-phi-sz-h: initial;
-    --bit-phi-sz-pad: initial;
-    --bit-phi-sz-icon: initial;
-    --bit-phi-sz-itm-h: initial;
-    --bit-phi-role-main: initial;
-    --bit-phi-role-focus: initial;
-    --bit-phi-kind-bg: initial;
-    --bit-phi-kind-brd: initial;
-    --bit-phi-kind-brd-hover: initial;
+    @each $name in $phi-private-properties {
+        --bit-phi-#{$name}: initial;
+    }
 }
 
 // The one place the public variables meet the parameters and the defaults: the value an explicit parameter
@@ -128,7 +126,7 @@
     --bit-phi-bg: var(--bit-phi-kind-bg, var(--bit-PhoneInput-background, #{$clr-bg-pri}));
     --bit-phi-brd: var(--bit-phi-kind-brd, var(--bit-phi-role-main, var(--bit-PhoneInput-border-color, #{$clr-brd-pri})));
     --bit-phi-brd-hover: var(--bit-phi-kind-brd-hover, var(--bit-phi-role-main, var(--bit-PhoneInput-hover-border-color, #{$clr-brd-pri-hover})));
-    --bit-phi-focus: var(--bit-phi-role-focus, var(--bit-PhoneInput-focus-color, #{$clr-pri-focus}));
+    --bit-phi-focus: var(--bit-phi-role-focus, var(--bit-PhoneInput-focus-color));
     --bit-phi-plc: var(--bit-PhoneInput-placeholder-color, #{$clr-fg-ter});
     --bit-phi-itm-clr: var(--bit-PhoneInput-item-color, #{$clr-fg-pri});
     --bit-phi-itm-hover-bg: var(--bit-PhoneInput-item-hover-background, #{$clr-bg-pri-hover});
@@ -140,7 +138,7 @@
 // the box-shadow the ring of the whole field is drawn with. The library resets the outline of every button,
 // so without it the two halves of the field would share one ring with nothing saying which of them has focus.
 @mixin phi-focus-inset {
-    outline: $shp-focus-ring-width $shp-border-style var(--bit-phi-focus);
+    outline: $shp-focus-ring-width $shp-border-style var(--bit-phi-focus, #{$clr-pri-focus});
     outline-offset: calc(-1 * #{$shp-focus-ring-width});
 
     @media (forced-colors: active) {
@@ -204,12 +202,12 @@
 }
 
 .bit-phi-fcs .bit-phi-fgp {
-    @include focus-ring(var(--bit-phi-focus));
+    @include focus-ring-own(var(--bit-phi-focus));
 
-    border-color: var(--bit-phi-focus);
+    border-color: var(--bit-phi-focus, #{$clr-pri-focus});
 
     @include phi-hover {
-        border-color: var(--bit-phi-focus);
+        border-color: var(--bit-phi-focus, #{$clr-pri-focus});
     }
 }
 

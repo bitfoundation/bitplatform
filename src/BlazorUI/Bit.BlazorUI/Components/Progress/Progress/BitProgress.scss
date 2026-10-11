@@ -31,6 +31,11 @@
 // paints the buffer - its default is only derived from the bar color, which Color and BarColor replace - so the
 // variable keeps it, the way the Outline background of a badge stays the badge's variable under an explicit Color.
 
+$prb-private-properties:
+    fs, des-fs, clr, clr-on, thk, dia, ring-stroke,
+    // What the component writes into an inline style, which wins over this on the element it is written on.
+    segments, segment-gap, gap, delay, percent, buffer;
+
 .bit-prb {
     font-weight: $tg-fw-regular;
     position: relative;
@@ -40,13 +45,9 @@
     // label of another one never inherits the outer one's choice; the classes - declared further down at the same
     // weight - still win on the root that carries them. Left unset, each var() reading them moves on to the public
     // variable and then to the default an unset Color or Size stands for: the primary role, and the sizes below.
-    --bit-prb-fs: initial;
-    --bit-prb-des-fs: initial;
-    --bit-prb-clr: initial;
-    --bit-prb-clr-on: initial;
-    --bit-prb-thk: initial;
-    --bit-prb-dia: initial;
-    --bit-prb-ring-stroke: initial;
+    @each $name in $prb-private-properties {
+        --bit-prb-#{$name}: initial;
+    }
     --bit-prb-bar-color: var(--bit-prb-clr, var(--bit-Progress-bar-color, #{$clr-pri}));
     --bit-prb-bar-on-color: var(--bit-prb-clr-on, var(--bit-Progress-bar-text-color, #{$clr-pri-text}));
     // The unfilled part of every shape reads one token, so a custom track color reaches the linear track,

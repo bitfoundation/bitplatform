@@ -11,7 +11,7 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.TimePicker;
 [TestClass]
 public class BitTimePickerStylesheetTests
 {
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Inputs", "TimePicker", "BitTimePicker.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Inputs", "TimePicker", "BitTimePicker.scss");
 
     [TestMethod]
     public void BitTimePickerShouldLetAParameterWinOverItsPublicVariable()
@@ -25,7 +25,7 @@ public class BitTimePickerStylesheetTests
         StringAssert.Contains(resolution, "--bit-tpc-clr-txt: var(--bit-tpc-rl-txt, var(--bit-TimePicker-on-color, #{$clr-pri-text}));");
         StringAssert.Contains(resolution, "--bit-tpc-clr-hover: var(--bit-tpc-rl-hover, var(--bit-TimePicker-hover-color, #{$clr-pri-hover}));");
         StringAssert.Contains(resolution, "--bit-tpc-clr-active: var(--bit-tpc-rl-active, var(--bit-TimePicker-active-color, #{$clr-pri-active}));");
-        StringAssert.Contains(resolution, "--bit-tpc-clr-focus: var(--bit-tpc-rl-focus, var(--bit-TimePicker-focus-color, #{$clr-pri-focus}));");
+        StringAssert.Contains(resolution, "--bit-tpc-clr-focus: var(--bit-tpc-rl-focus, var(--bit-TimePicker-focus-color));");
         Assert.IsFalse(SourceFiles.GetScssBlock(stylesheet, "\n    .bit-tpc-#{$role} {").Contains("--bit-TimePicker-"), "A role class reads a public variable ahead of its own color.");
 
         // So does an explicit Size, for every size a variable restyles; the size classes name no variable either.

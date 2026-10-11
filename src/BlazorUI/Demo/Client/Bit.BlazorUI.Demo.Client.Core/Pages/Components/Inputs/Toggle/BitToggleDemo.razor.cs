@@ -614,7 +614,7 @@ public partial class BitToggleDemo
         {
             Name = "--bit-Toggle-focus-color",
             DefaultValue = "$clr-pri-focus",
-            Description = "Focus ring color. The Color parameter wins over it.",
+            Description = "Focus ring color. The Color parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
         },
         new()
         {

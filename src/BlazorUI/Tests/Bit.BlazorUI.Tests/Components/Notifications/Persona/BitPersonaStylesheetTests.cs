@@ -55,6 +55,14 @@ public class BitPersonaStylesheetTests
 
         foreach (var name in _publicVariables)
         {
+            // The focus color alone is read without a fallback, on purpose: its absence is what hands the ring over
+            // to the global --bit-shd-focus-ring (see BitFocusRingStylesheetTests).
+            if (name == "--bit-Persona-focus-color")
+            {
+                StringAssert.Contains(rules, $"var({name})", $"{name} is not read without a fallback.");
+                continue;
+            }
+
             Assert.IsTrue(Regex.IsMatch(rules, $@"var\({Regex.Escape(name)},\s*[^)\s]"), $"{name} is not read with a fallback.");
         }
     }
@@ -177,11 +185,12 @@ public class BitPersonaStylesheetTests
 
         var rule = GetRule(rules, "abt");
 
-        StringAssert.Contains(rule, "background-color: var(--bit-Persona-action-background, #{$clr-bg-pri});");
+        StringAssert.Contains(rule, "background-color: var(--bit-prs-abt-sbg, var(--bit-Persona-action-background, #{$clr-bg-pri}));");
         Assert.IsFalse(rule.Contains("transparent"), "The action button is hidden by painting it transparent, which leaves no surface under it once shown.");
 
-        // A custom surface is kept on hover rather than snapped back to the light default under a glyph paired with it.
-        StringAssert.Contains(rule, "background-color: var(--bit-Persona-action-hover-background, var(--bit-Persona-action-background, #{$clr-bg-pri-hover}));");
+        // A custom surface is kept on hover rather than snapped back to the light default under a glyph paired with it;
+        // the hover only moves the variable the rule at rest paints from, so a Classes paint is not outranked by it.
+        StringAssert.Contains(rule, "--bit-prs-abt-sbg: var(--bit-Persona-action-hover-background, var(--bit-Persona-action-background, #{$clr-bg-pri-hover}));");
     }
 
     [TestMethod]
@@ -237,10 +246,10 @@ public class BitPersonaStylesheetTests
         StringAssert.Contains(SourceFiles.GetScssBlock(rules, "\n.bit-prs {"), "--bit-prs-ring-width: initial;");
         Assert.IsTrue(rules.IndexOf("\n.bit-prs-s120 {") < rules.IndexOf("\n.bit-prs-ssz {"), "The explicit size comes before a size class it reads.");
 
-        var colors = rules[rules.IndexOf("\n.bit-prs {\n    --bit-prs-coin-clr-bg: initial;")..];
-        StringAssert.Contains(colors, "--bit-prs-coin-clr-txt: initial;");
-        Assert.IsTrue(colors.IndexOf("--bit-prs-coin-clr-bg: initial;") < colors.IndexOf("\n.bit-prs-pri {"), "A color class comes before the reset it has to win over.");
-        Assert.IsTrue(rules.IndexOf("\n.bit-prs {") < rules.IndexOf("\n.bit-prs-cir {"), "A shape class comes before the reset it has to win over.");
+        StringAssert.Contains(SourceFiles.GetScssBlock(rules, "\n.bit-prs {"), "--bit-prs-coin-clr-bg: initial;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(rules, "\n.bit-prs {"), "--bit-prs-coin-clr-txt: initial;");
+        Assert.IsTrue(rules.IndexOf("\n.bit-prs {") < rules.IndexOf("\n.bit-prs-pri {"), "The reset comes before the color class that has to win over it.");
+        Assert.IsTrue(rules.IndexOf("\n.bit-prs {") < rules.IndexOf("\n.bit-prs-cir {"), "The reset comes before the shape class that has to win over it.");
     }
 
     /// <summary>
@@ -256,5 +265,5 @@ public class BitPersonaStylesheetTests
 
     private static string GetHeader(string stylesheet) => stylesheet[..stylesheet.IndexOf("\n.bit-prs {")];
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Notifications", "Persona", "BitPersona.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Notifications", "Persona", "BitPersona.scss");
 }

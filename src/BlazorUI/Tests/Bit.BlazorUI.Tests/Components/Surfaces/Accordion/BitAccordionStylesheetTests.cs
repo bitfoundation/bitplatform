@@ -105,8 +105,11 @@ public class BitAccordionStylesheetTests
         var expandedHover = stylesheet.IndexOf("\n.bit-acd-exp:not(.bit-dis, .bit-acd-rdo) > .bit-acd-hwr {", System.StringComparison.Ordinal);
 
         Assert.IsTrue(expandedHover > stylesheet.IndexOf("\n.bit-acd:not(.bit-dis, .bit-acd-rdo) > .bit-acd-hwr {", System.StringComparison.Ordinal));
-        StringAssert.Contains(stylesheet[expandedHover..], "background-color: var(--bit-Accordion-header-expanded-background, var(--bit-acd-hov));");
-        StringAssert.Contains(stylesheet[expandedHover..], "background-color: var(--bit-Accordion-header-expanded-background, var(--bit-acd-prs));");
+        StringAssert.Contains(stylesheet[expandedHover..], "--bit-acd-hwr-sbg: var(--bit-Accordion-header-expanded-background, var(--bit-acd-hov));");
+        StringAssert.Contains(stylesheet[expandedHover..], "--bit-acd-hwr-sbg: var(--bit-Accordion-header-expanded-background, var(--bit-acd-prs));");
+
+        // The states only move the variable; the open header line at rest is the rule that paints it.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-acd-exp > .bit-acd-hwr {"),"background-color: var(--bit-acd-hwr-sbg, var(--bit-Accordion-header-expanded-background, transparent));");
     }
 
     [TestMethod]
@@ -216,6 +219,6 @@ public class BitAccordionStylesheetTests
 
     private static string ReadStylesheet()
     {
-        return SourceFiles.Read("Bit.BlazorUI", "Components", "Surfaces", "Accordion", "BitAccordion.scss");
+        return SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Surfaces", "Accordion", "BitAccordion.scss");
     }
 }

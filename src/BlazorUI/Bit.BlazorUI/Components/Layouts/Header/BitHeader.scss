@@ -39,6 +39,8 @@ $hdr-fg-dis: var(--bit-hdr-fg-dis, var(--bit-Header-disabled-color, #{$clr-fg-di
 $hdr-pad-y: var(--bit-hdr-pad-y, var(--bit-Header-padding-block, #{spacing(1)}));
 $hdr-pad-x: var(--bit-hdr-pad-x, var(--bit-Header-padding-inline, #{spacing(3)}));
 
+$hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
+
 // The z-index is left without a position of its own on purpose: it only takes effect once one of the
 // position modifiers below applies it, so a header in the normal flow never becomes a stacking context
 // that would clamp an overlay opened from inside it.
@@ -62,14 +64,9 @@ $hdr-pad-x: var(--bit-hdr-pad-x, var(--bit-Header-padding-inline, #{spacing(3)})
     // win on the root that carries them. Left unset, each var() reading them moves on to the public variable and
     // then to the default (see $hdr-bg and the rest at the top): the plain page surface an uncolored header always
     // had - so a header with no Color set never turns invisible - and the medium spacing.
-    --bit-hdr-bg: initial;
-    --bit-hdr-on: initial;
-    --bit-hdr-fg: initial;
-    --bit-hdr-brd: initial;
-    --bit-hdr-bg-dis: initial;
-    --bit-hdr-fg-dis: initial;
-    --bit-hdr-pad-y: initial;
-    --bit-hdr-pad-x: initial;
+    @each $name in $hdr-private-properties {
+        --bit-hdr-#{$name}: initial;
+    }
 
     // Every internal variable the rows read is declared on each root, so a header nested in another one
     // (a toolbar inside a card inside the page header) starts from its own defaults rather than inheriting
@@ -342,6 +339,13 @@ $hdr-pad-x: var(--bit-hdr-pad-x, var(--bit-Header-padding-inline, #{spacing(3)})
     inset-inline-start: 0;
     clip-path: inset(50%);
     clip: rect(0 0 0 0);
+    // The link is only drawn while it has the focus, and the focus changes the variables it is painted from rather
+    // than its colors: a link the app paints through Classes.SkipLink keeps that paint once it is shown, instead
+    // of losing it to the focus rule that outranks the app's class. Unset, they leave the hidden link inheriting.
+    --bit-hdr-skp-clr: initial;
+    --bit-hdr-skp-bg: initial;
+    color: var(--bit-hdr-skp-clr);
+    background-color: var(--bit-hdr-skp-bg);
 
     &:focus {
         // z-index keeps the focused link above the content of the header it lands on top of.
@@ -352,8 +356,8 @@ $hdr-pad-x: var(--bit-hdr-pad-x, var(--bit-Header-padding-inline, #{spacing(3)})
         overflow: visible;
         clip-path: none;
         border-radius: $shp-radius-control;
-        color: var(--bit-Header-skip-link-color, #{$clr-pri-text});
-        background-color: var(--bit-Header-skip-link-background, #{$clr-pri});
+        --bit-hdr-skp-clr: var(--bit-Header-skip-link-color, #{$clr-pri-text});
+        --bit-hdr-skp-bg: var(--bit-Header-skip-link-background, #{$clr-pri});
         padding: #{spacing(1)} #{spacing(2)};
     }
 

@@ -297,7 +297,7 @@ public partial class BitBreadcrumbDemo
         {
             Name = "--bit-Breadcrumb-focus-color",
             DefaultValue = "--bit-clr-pri-focus",
-            Description = "Focus indicator color. The Color parameter wins over it.",
+            Description = "Focus indicator color. The Color parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
         },
         new()
         {

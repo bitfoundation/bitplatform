@@ -110,5 +110,5 @@ public class BitTimelineStylesheetTests : BunitTestContext
         }
     }
 
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Lists", "Timeline", "BitTimeline.scss");
+    private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Lists", "Timeline", "BitTimeline.scss");
 }

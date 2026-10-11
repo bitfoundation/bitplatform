@@ -42,7 +42,7 @@ public class BitSwipeTrapStylesheetTests
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(stylesheet, "focus-ring(var(--bit-SwipeTrap-focus-color, #{$clr-pri-focus}))");
+        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-SwipeTrap-focus-color))");
         StringAssert.Contains(stylesheet, "cursor: var(--bit-SwipeTrap-swiping-cursor, grabbing);");
     }
 

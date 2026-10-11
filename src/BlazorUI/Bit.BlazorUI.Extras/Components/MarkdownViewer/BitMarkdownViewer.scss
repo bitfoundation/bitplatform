@@ -148,12 +148,15 @@ $_block-spacing: var(--bit-MarkdownViewer-block-spacing, 1em);
     // color it is legible in, so the pointer is answered with a heavier line rather than a lighter color.
     @include own('a') {
         border-radius: $shp-radius-xs;
-        color: var(--bit-MarkdownViewer-link-color, #{$clr-pri-fg});
+        --bit-mdv-lnk-clr: initial;
+        color: var(--bit-mdv-lnk-clr, var(--bit-MarkdownViewer-link-color, #{$clr-pri-fg}));
         text-decoration-line: var(--bit-MarkdownViewer-link-decoration, underline);
         text-underline-offset: 0.2em;
 
+        // The hover moves the variable the link is painted from rather than its color, so a link an author paints
+        // through a class of their own keeps that paint under the pointer.
         &:hover {
-            color: var(--bit-MarkdownViewer-link-hover-color, var(--bit-MarkdownViewer-link-color, #{$clr-pri-fg}));
+            --bit-mdv-lnk-clr: var(--bit-MarkdownViewer-link-hover-color, var(--bit-MarkdownViewer-link-color, #{$clr-pri-fg}));
             text-decoration-line: underline;
             text-decoration-thickness: $shp-border-width-thick;
         }

@@ -1178,7 +1178,7 @@ public partial class BitDateRangePickerDemo
         {
             Name = "--bit-DateRangePicker-focus-color",
             DefaultValue = "--bit-clr-pri-focus",
-            Description = "Color of the focus ring, around the field and around every cell and button of the calendar. An invalid value overrides it with the error focus color, so the field never shows two states at once. The Color parameter wins over it.",
+            Description = "Color of the focus ring, around the field and around every cell and button of the calendar. An invalid value overrides it with the error focus color, so the field never shows two states at once. The Color parameter wins over it. While it is unset, every focus ring held off its element is the library's own --bit-shd-focus-ring; the ones drawn flush against a cell or a field keep this color.",
         },
         new()
         {

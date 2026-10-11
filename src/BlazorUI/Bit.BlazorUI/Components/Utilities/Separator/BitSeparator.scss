@@ -26,19 +26,16 @@
 // opaque patch. That is what keeps a labeled separator right on a gradient, a picture or a surface tier other than
 // the one it was configured for, and what lets the offset of a start- or end-aligned label be a percentage of the
 // length of the line whichever way it runs.
-//
+
+$spr-private-properties: brd, siz, stl, bg, ofs, ins, dis-brd, dis-fg;
+
 // Every rule below reads the separator's own private variables, which the parameter classes set on the root and the
 // length parameters write onto its style. Custom properties inherit, which would hand the line of a separator to one
 // nested in its content, so each root starts them out unset - which leaves every var() reading them to its fallback.
 .bit-spr {
-    --bit-spr-brd: initial;
-    --bit-spr-siz: initial;
-    --bit-spr-stl: initial;
-    --bit-spr-bg: initial;
-    --bit-spr-ofs: initial;
-    --bit-spr-ins: initial;
-    --bit-spr-dis-brd: initial;
-    --bit-spr-dis-fg: initial;
+    @each $name in $spr-private-properties {
+        --bit-spr-#{$name}: initial;
+    }
     display: flex;
     position: relative;
     // The inset is padding, and a separator is sized against its container, so the two have to add up
