@@ -315,12 +315,7 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
     border-start-end-radius: var(--bit-phi-radius);
     border-end-end-radius: var(--bit-phi-radius);
 
-    // Firefox dims a placeholder with an opacity of its own on top of its color, which would darken the
-    // themed one below the 4.5:1 of text again.
-    &::placeholder {
-        opacity: 1;
-        color: var(--bit-phi-plc);
-    }
+    @include input-placeholder(var(--bit-phi-plc));
 
     &:disabled {
         cursor: default;
@@ -385,8 +380,8 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
         opacity: $opa-dis;
     }
 
-    .bit-phi-inp::placeholder {
-        color: var(--bit-PhoneInput-disabled-color, #{$clr-fg-dis});
+    .bit-phi-inp {
+        @include input-placeholder(var(--bit-PhoneInput-disabled-color, #{$clr-fg-dis}));
     }
 }
 
@@ -469,11 +464,7 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
     color: var(--bit-phi-itm-clr);
     letter-spacing: $tg-ctrl-letter-spacing;
     padding: spacing(1) spacing(1.5);
-
-    &::placeholder {
-        opacity: 1;
-        color: var(--bit-phi-plc);
-    }
+    @include input-placeholder(var(--bit-phi-plc));
 }
 
 .bit-phi-scn {

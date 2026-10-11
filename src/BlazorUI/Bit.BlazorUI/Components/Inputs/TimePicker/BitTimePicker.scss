@@ -142,6 +142,7 @@ $tpc-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-focus, inp-h, i
             cursor: default;
             color: var(--bit-TimePicker-disabled-color, #{$clr-fg-dis});
             background: none var(--bit-TimePicker-disabled-background, #{$clr-bg-dis});
+            @include input-placeholder(var(--bit-TimePicker-disabled-color, #{$clr-fg-dis}));
         }
     }
 
@@ -296,10 +297,7 @@ $tpc-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-focus, inp-h, i
 
     // A placeholder is a hint and not the value, so it is told apart from a time that has been picked -
     // which the browser default (a shade of the text color it picks itself) does not reliably do.
-    &::placeholder {
-        color: var(--bit-TimePicker-placeholder-color, #{$clr-fg-sec});
-        opacity: 1; // Firefox dims it a second time on its own.
-    }
+    @include input-placeholder(var(--bit-TimePicker-placeholder-color, #{$clr-fg-sec}));
 }
 
 // An input that takes a typed time is a text field, so it carries the caret of one rather than the

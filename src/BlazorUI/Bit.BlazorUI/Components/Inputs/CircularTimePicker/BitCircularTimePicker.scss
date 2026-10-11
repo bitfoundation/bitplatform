@@ -218,10 +218,7 @@ $ctp-private-properties: rl-clr, rl-text, rl-focus, inp-h, inp-fs, lbl-fs, clk-s
                 cursor: default;
                 color: var(--bit-ctp-clr-dis);
                 background: none var(--bit-ctp-bg-dis);
-
-                &::placeholder {
-                    color: var(--bit-ctp-clr-dis);
-                }
+                @include input-placeholder(var(--bit-ctp-clr-dis));
             }
         }
     }
@@ -369,14 +366,7 @@ $ctp-private-properties: rl-clr, rl-text, rl-focus, inp-h, inp-fs, lbl-fs, clk-s
     font-family: $tg-font-family;
     font-size: var(--bit-ctp-inp-fs, var(--bit-CircularTimePicker-input-font-size, #{$tg-fs-sm}));
     color: var(--bit-CircularTimePicker-input-color, #{$clr-fg-pri});
-
-    // Left to the browser, the placeholder keeps a grey that is not derived from the theme and misses the
-    // 4.5:1 of WCAG 1.4.3 on most surfaces, dark ones above all. Firefox also dims it with an opacity of its
-    // own, which would darken the themed color again, so that is reset here.
-    &::placeholder {
-        opacity: 1;
-        color: var(--bit-CircularTimePicker-placeholder-color, #{$clr-fg-sec});
-    }
+    @include input-placeholder(var(--bit-CircularTimePicker-placeholder-color, #{$clr-fg-sec}));
 }
 
 .bit-ctp-ein {

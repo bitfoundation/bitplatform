@@ -499,7 +499,7 @@ public partial class BitMarkdownEditorDemo
         new() { Name = "--bit-MarkdownEditor-font-size", DefaultValue = "--bit-tpg-fs-sm", Description = "Font size of the textarea." },
         new() { Name = "--bit-MarkdownEditor-line-height", DefaultValue = "1.6", Description = "Line height of the textarea." },
         new() { Name = "--bit-MarkdownEditor-padding", DefaultValue = "spacing(1.5) spacing(1.75)", Description = "Padding of the textarea." },
-        new() { Name = "--bit-MarkdownEditor-placeholder-color", DefaultValue = "--bit-clr-fg-sec", Description = "Placeholder text of the textarea." },
+        new() { Name = "--bit-MarkdownEditor-placeholder-color", DefaultValue = "--bit-clr-fg-sec", Description = "Placeholder text of the textarea and of the find and replace boxes." },
         new() { Name = "--bit-MarkdownEditor-label-color", DefaultValue = "--bit-MarkdownEditor-color", Description = "Text of the label." },
         new() { Name = "--bit-MarkdownEditor-label-font-size", DefaultValue = "--bit-tpg-fs-sm", Description = "Size of the label." },
         new() { Name = "--bit-MarkdownEditor-label-font-weight", DefaultValue = "--bit-tpg-field-label-font-weight", Description = "Weight of the label." },

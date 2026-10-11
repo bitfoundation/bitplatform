@@ -206,13 +206,7 @@ $otp-private-properties: size, fontsize, dsc-fontsize, clr, clr-focus;
     background-color: var(--bit-otp-inp-sbg, var(--bit-OtpInput-background, var(--bit-otp-bg)));
     transition: border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
-    //the secondary foreground rather than the tertiary one: a hint is text, held to the 4.5:1 of text, which the
-    //tertiary one misses on the tertiary surface. Firefox dims a placeholder with an opacity of its own on top
-    //of its color, so that is reset.
-    &::placeholder {
-        opacity: 1;
-        color: var(--bit-OtpInput-placeholder-color, #{$clr-fg-sec});
-    }
+    @include input-placeholder(var(--bit-OtpInput-placeholder-color, #{$clr-fg-sec}));
 
     //a box that already holds a character, which is the hook for a row that shows its own progress. Both
     //of its colors fall back to the ones of the rest state, so nothing changes until one of the two is set.
@@ -487,9 +481,7 @@ $otp-private-properties: size, fontsize, dsc-fontsize, clr, clr-focus;
 
         //the hint of an empty box is a part of the field, so it has to be dimmed along with it instead of
         //staying the only thing in the component that still reads as enabled.
-        &::placeholder {
-            color: var(--bit-OtpInput-disabled-color, #{$clr-fg-dis});
-        }
+        @include input-placeholder(var(--bit-OtpInput-disabled-color, #{$clr-fg-dis}));
     }
 
     //a disabled component is out of the flow the wait belongs to, so the bar is dimmed along with the rest

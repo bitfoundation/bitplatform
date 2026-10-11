@@ -56,6 +56,9 @@ $pdv-button-active-background: var(--bit-PdfViewer-button-active-background, #{$
 $pdv-button-active-hover-background: var(--bit-PdfViewer-button-active-hover-background, #{$clr-pri-hover});
 $pdv-field-background: var(--bit-PdfViewer-field-background, #{$clr-bg-pri});
 $pdv-field-border: var(--bit-PdfViewer-field-border-color, #{$clr-brd-pri});
+// A field's, named with the field family rather than as the --bit-<Component>-placeholder-color of the inputs:
+// here a placeholder is also the page that has not painted yet (--bit-PdfViewer-placeholder-background).
+$pdv-field-placeholder: var(--bit-PdfViewer-field-placeholder-color, #{$clr-fg-sec});
 $pdv-sidebar-background: var(--bit-PdfViewer-sidebar-background, #{$clr-bg-sec});
 $pdv-sidebar-width: var(--bit-PdfViewer-sidebar-width, #{spacing(29)});
 $pdv-item-hover-background: var(--bit-PdfViewer-item-hover-background, #{$clr-bg-sec-hover});
@@ -300,21 +303,12 @@ $pdv-private-properties: scale;
         @include focus-ring($pdv-focus, 0);
     }
 
-    // Left to the browser, the placeholder keeps a grey that is not derived from the theme and misses the 4.5:1
-    // of WCAG 1.4.3 on most surfaces, dark ones above all. Firefox also dims it with an opacity of its own, which
-    // would darken the themed color again, so that is reset here.
-    &::placeholder {
-        opacity: 1;
-        color: var(--bit-PdfViewer-field-placeholder-color, #{$clr-fg-sec});
-    }
+    @include input-placeholder($pdv-field-placeholder);
 
     &:disabled {
         cursor: default;
         color: $clr-fg-dis;
-
-        &::placeholder {
-            color: $clr-fg-dis;
-        }
+        @include input-placeholder($clr-fg-dis);
     }
 }
 

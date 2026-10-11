@@ -916,7 +916,7 @@ public partial class BitFullCalendarDemo
         new() { Name = "--bit-FullCalendar-secondary-background", DefaultValue = "var(--bit-clr-bg-sec)", Description = "Secondary surfaces: the tab strips, the day-view sidebar, sticky group titles, the timeline gutter." },
         new() { Name = "--bit-FullCalendar-hover-background", DefaultValue = "var(--bit-clr-bg-pri-hover)", Description = "Background of a hovered cell, slot, row or control." },
         new() { Name = "--bit-FullCalendar-color", DefaultValue = "var(--bit-clr-fg-pri)", Description = "Text color." },
-        new() { Name = "--bit-FullCalendar-secondary-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Secondary text: weekday headers, group titles, descriptions." },
+        new() { Name = "--bit-FullCalendar-secondary-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Secondary text: weekday headers, group titles, descriptions, and the placeholders of the search box and the event dialog's fields." },
         new() { Name = "--bit-FullCalendar-muted-color", DefaultValue = "var(--bit-clr-fg-ter)", Description = "Muted text: hour labels, week numbers, days of the neighbouring months." },
         new() { Name = "--bit-FullCalendar-border-color", DefaultValue = "var(--bit-clr-brd-ter)", Description = "Grid lines and the border of the calendar." },
         new() { Name = "--bit-FullCalendar-control-border-color", DefaultValue = "var(--bit-clr-brd-pri)", Description = "Edges of the fields, selects, search box and switch tracks (kept at 3:1 against the surface)." },

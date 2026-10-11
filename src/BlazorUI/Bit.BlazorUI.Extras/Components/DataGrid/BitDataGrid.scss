@@ -784,18 +784,12 @@ button.bit-dtg-htext {
     cursor: default;
 }
 
-// Left to the browser, the placeholder of the search and filter boxes keeps a grey that is not derived from the
-// theme and misses the 4.5:1 of WCAG 1.4.3 on most surfaces, dark ones above all. Firefox also dims it with an
-// opacity of its own, which would darken the themed color again, so that is reset here.
 .bit-dtg-search-input,
 .bit-dtg-filter-input {
-    &::placeholder {
-        opacity: 1;
-        color: var(--bit-DataGrid-placeholder-color, #{$clr-fg-sec});
-    }
+    @include input-placeholder(var(--bit-DataGrid-placeholder-color, #{$clr-fg-sec}));
 
-    &:disabled::placeholder {
-        color: $clr-fg-dis;
+    &:disabled {
+        @include input-placeholder(var(--bit-DataGrid-disabled-color, #{$clr-fg-dis}));
     }
 }
 

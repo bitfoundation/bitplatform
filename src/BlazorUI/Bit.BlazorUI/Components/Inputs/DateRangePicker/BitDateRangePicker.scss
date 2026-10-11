@@ -164,10 +164,7 @@ $dtrp-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-body, rl-focus
             cursor: default;
             color: var(--bit-DateRangePicker-disabled-color, #{$clr-fg-dis});
             background: none $clr-bg-dis;
-
-            &::placeholder {
-                color: var(--bit-DateRangePicker-disabled-color, #{$clr-fg-dis});
-            }
+            @include input-placeholder(var(--bit-DateRangePicker-disabled-color, #{$clr-fg-dis}));
         }
 
         @include dtrp-disabled-content;
@@ -363,14 +360,7 @@ $dtrp-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-body, rl-focus
     font-size: var(--bit-dtrp-inp-fs, var(--bit-DateRangePicker-input-font-size, #{$tg-fs-sm}));
     background: none transparent;
     font-family: $tg-font-family;
-
-    // Left to the browser, the placeholder keeps a grey that is not derived from the theme and misses the
-    // 4.5:1 of WCAG 1.4.3 on most surfaces, dark ones above all. Firefox also dims it with an opacity of its
-    // own, which would darken the themed color again, so that is reset here.
-    &::placeholder {
-        opacity: 1;
-        color: var(--bit-DateRangePicker-placeholder-color, #{$clr-fg-sec});
-    }
+    @include input-placeholder(var(--bit-DateRangePicker-placeholder-color, #{$clr-fg-sec}));
 }
 
 .bit-dtrp-ein {

@@ -526,13 +526,7 @@ $tgi-private-properties: clr, clr-txt, clr-hover, clr-focus, gap, fontsize, icon
     //with no tag in it yet is exactly as tall as the same field once the first one is added.
     min-height: var(--bit-tgi-tagminheight, var(--bit-TagsInput-tag-min-height, #{$siz-chip-sm}));
 
-    //the secondary foreground rather than the tertiary one: a placeholder is text, held to the 4.5:1 of text,
-    //which the tertiary one misses on the tertiary surface. Firefox dims a placeholder with an opacity of its
-    //own on top of its color, so that is reset.
-    &::placeholder {
-        opacity: 1;
-        color: var(--bit-TagsInput-placeholder-color, #{$clr-fg-sec});
-    }
+    @include input-placeholder(var(--bit-TagsInput-placeholder-color, #{$clr-fg-sec}));
 }
 
 
@@ -723,10 +717,7 @@ $tgi-private-properties: clr, clr-txt, clr-hover, clr-focus, gap, fontsize, icon
 
     .bit-tgi-inp {
         color: var(--bit-TagsInput-disabled-color, #{$clr-fg-dis});
-
-        &::placeholder {
-            color: var(--bit-TagsInput-disabled-color, #{$clr-fg-dis});
-        }
+        @include input-placeholder(var(--bit-TagsInput-disabled-color, #{$clr-fg-dis}));
     }
 }
 
