@@ -52,7 +52,8 @@
                                 aria-controls="@GetMenuId(index)"
                                 data-cmd="@item.Name"
                                 tabindex="-1"
-                                disabled="@IsToolbarItemDisabled(item)">
+                                disabled="@IsToolbarItemDisabled(item)"
+                                aria-disabled="@(IsToolbarItemDisabled(item) ? "true" : null)">
                             @RenderItemContent(item)
                         </button>
                         <div id="@GetMenuId(index)" class="bit-mde-ddm" role="menu" aria-label="@GetToolbarItemLabel(item)">
@@ -80,6 +81,7 @@
                                             data-cmd="@child.Name"
                                             data-bit-mde-upload="@(child.Type is BitMarkdownEditorToolbarItemType.ImageUpload ? "" : null)"
                                             disabled="@IsToolbarItemDisabled(child)"
+                                            aria-disabled="@(IsToolbarItemDisabled(child) ? "true" : null)"
                                             @onclick="() => OnToolbarItemClick(child)">
                                         @RenderItemContent(child)
                                     </button>
@@ -101,6 +103,7 @@
                             data-bit-mde-upload="@(item.Type is BitMarkdownEditorToolbarItemType.ImageUpload ? "" : null)"
                             tabindex="-1"
                             disabled="@IsToolbarItemDisabled(item)"
+                            aria-disabled="@(IsToolbarItemDisabled(item) ? "true" : null)"
                             @onclick="() => OnToolbarItemClick(item)">
                         @RenderItemContent(item)
                     </button>
@@ -140,13 +143,14 @@
             <button type="button" class="bit-mde-fnb" title="@ActiveTexts.FindPreviousAriaLabel" aria-label="@ActiveTexts.FindPreviousAriaLabel" @onclick="FindPreviousMatch">&uarr;</button>
             <button type="button" class="bit-mde-fnb" title="@ActiveTexts.FindNextAriaLabel" aria-label="@ActiveTexts.FindNextAriaLabel" @onclick="FindNextMatch">&darr;</button>
             <span class="bit-mde-fns" aria-live="polite">@FindStatusText</span>
-            <button type="button" class="bit-mde-fnb" @onclick="ReplaceOne" disabled="@(ReadOnly || Disabled)">@ActiveTexts.ReplaceButton</button>
+            <button type="button" class="bit-mde-fnb" @onclick="ReplaceOne" disabled="@(ReadOnly || Disabled)" aria-disabled="@((ReadOnly || Disabled) ? "true" : null)">@ActiveTexts.ReplaceButton</button>
             <button type="button"
                     class="bit-mde-fnb"
                     title="@ActiveTexts.ReplaceAllAriaLabel"
                     aria-label="@ActiveTexts.ReplaceAllAriaLabel"
                     @onclick="ReplaceAll"
-                    disabled="@(ReadOnly || Disabled)">@ActiveTexts.ReplaceAllButton</button>
+                    disabled="@(ReadOnly || Disabled)"
+                    aria-disabled="@((ReadOnly || Disabled) ? "true" : null)">@ActiveTexts.ReplaceAllButton</button>
             <button type="button" class="bit-mde-hcl" @onclick="CloseFind" aria-label="@ActiveTexts.CloseAriaLabel">&times;</button>
         </div>
     }
@@ -172,6 +176,7 @@
                       spellcheck="@(SpellCheck ? "true" : "false")"
                       readonly="@(ReadOnly || Disabled)"
                       disabled="@(Disabled)"
+                      aria-disabled="@GetInputAriaDisabled(Disabled)"
                       required="@(Required && Mode is not BitMarkdownEditorMode.Preview)"
                       aria-required="@(Required ? "true" : null)"
                       autocomplete="off"

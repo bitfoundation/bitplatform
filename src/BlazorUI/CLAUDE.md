@@ -100,6 +100,33 @@ state also follows another component's (a `BitPivotItem` of a disabled `BitPivot
   disabled and enabled, and with an enabled control in its content, and every content host keeping
   them; a new one goes in one of its lists.
 
+## A disabled component says so the same way everywhere
+
+An app's stylesheets, scripts and test locators are written against the markup a disabled component
+renders, so it is one contract for the whole library, and the ThemingPage's "Styling a disabled
+component" section is where consumers read it:
+
+- **The root carries `bit-dis`** while `Disabled` is set, from `BitComponentBase`'s root classes - the one
+  hook for "this component is disabled", whatever element the root is.
+- **A native control rendered disabled writes `disabled` and `aria-disabled="true"`**, both
+  (`button`, `input`, `select`, `textarea`, `fieldset`, `option`, `optgroup`): `:disabled` and
+  `[aria-disabled="true"]` each find it. The aria-disabled expression covers everything the disabled one
+  does, never less (`@(X ? "true" : null)` beside `disabled="@X"`) - a string, since a bool would render
+  as an empty attribute. An input the page splats `InputHtmlAttributes` onto writes
+  `aria-disabled="@GetInputAriaDisabled(X)"`, which keeps the page's own value while enabled. A
+  `type="hidden"` input is left out: nothing reaches it.
+- **A control kept focusable while unavailable writes `aria-disabled="true"` alone** - a loading button,
+  `AllowDisabledFocus` / `DisabledInteractive`, a link, which has no `disabled` - since the native
+  attribute would drop the focus to the body.
+- **Never `disabled` on any other element** (HTML defines it on the form controls only), and never
+  `aria-disabled` on a structural wrapper just because it is the root: the state goes on the element
+  that stands for what is unavailable.
+- **SCSS keys a part on both** (`&:disabled, &[aria-disabled="true"]`), the second being what reaches
+  the focusable-but-unavailable controls; a whole disabled component is styled from `.bit-dis`.
+- `BitDisabledMarkupContractTests` reads every component's markup for the native-control rule and
+  renders every component of the activation contract's lists, disabled and enabled, for the root class
+  and the pairing.
+
 ## Demo pages
 
 A component's demo page is

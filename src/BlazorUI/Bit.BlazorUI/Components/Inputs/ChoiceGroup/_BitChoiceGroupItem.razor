@@ -78,7 +78,8 @@
            aria-label="@ariaLabel"
            aria-describedby="@ariaDescribedBy"
            value="@ChoiceGroup.GetValue(Item)?.ToString()"
-           disabled="@(ChoiceGroup.GetIsItemDisabled(Item))" />
+           disabled="@(ChoiceGroup.GetIsItemDisabled(Item))"
+           aria-disabled="@ChoiceGroup.GetInputAriaDisabled(ChoiceGroup.GetIsItemDisabled(Item))" />
 
     <label for="@inputId" style="@ChoiceGroup.Styles?.ItemLabel" class="bit-chg-itl @ChoiceGroup.GetItemLabelCssClasses(Item) @ChoiceGroup.Classes?.ItemLabel">
         @if (template is not null)

@@ -52,6 +52,7 @@
                                 aria-current="@(isToday ? "date" : null)"
                                 aria-label="@string.Format(State.Culture, Texts.NavLinkDayAriaLabelFormat, d.ToString("D", State.Culture))"
                                 disabled="@(State.IsDateInAllowedRange(d) is false)"
+                                aria-disabled="@((State.IsDateInAllowedRange(d) is false) ? "true" : null)"
                                 @onclick="() => GoToDayView(d)">
                             <span class="bit-bfc-week-header-day-name">@d.ToString("ddd", State.Culture)</span>
                             <span class="bit-bfc-week-header-day-num @(isToday ? "today" : "")">@BitFullCalendarHelpers.GetCulturalDayOfMonth(d, State.Culture)</span>

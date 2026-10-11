@@ -74,6 +74,7 @@
                        placeholder="@Placeholder"
                        value="@CurrentValueAsString"
                        disabled="@(Disabled)"
+                       aria-disabled="@GetInputAriaDisabled(Disabled)"
                        readonly="@(AllowTextInput is false || ReadOnly)"
                        aria-readonly="@(ReadOnly ? "true" : null)"
                        aria-expanded="@(IsOpen ? "true" : "false")"
@@ -97,7 +98,8 @@
                             aria-label="@ClearButtonTitle"
                             style="@Styles?.InputClearButton"
                             class="bit-tpc-clr @Classes?.InputClearButton"
-                            disabled="@(IsInteractive is false)">
+                            disabled="@(IsInteractive is false)"
+                            aria-disabled="@((IsInteractive is false) ? "true" : null)">
                         <i style="@Styles?.InputClearButtonIcon" class="@clearIcon?.GetCssClasses() @Classes?.InputClearButtonIcon" aria-hidden="true" />
                     </button>
                 }
@@ -142,6 +144,7 @@
                class="bit-input-hidden"
                value="@CurrentValueAsString"
                disabled="@(Disabled)"
+               aria-disabled="@GetInputAriaDisabled(Disabled)"
                readonly="@(AllowTextInput is false || ReadOnly)" />
     }
 
@@ -200,7 +203,8 @@
                             aria-label="@IncreaseHourTitle"
                             style="@Styles?.IncreaseHourButton"
                             class="bit-tpc-tbt @Classes?.IncreaseHourButton"
-                            disabled="@(IsInteractive is false)">
+                            disabled="@(IsInteractive is false)"
+                            aria-disabled="@((IsInteractive is false) ? "true" : null)">
                         <i style="@Styles?.IncreaseHourIcon" class="@increaseHourIcon?.GetCssClasses() @Classes?.IncreaseHourIcon" aria-hidden="true" />
                     </button>
                     @*
@@ -231,7 +235,8 @@
                            style="@Styles?.HourInput"
                            class="bit-tpc-tin @Classes?.HourInput"
                            autocomplete="@BitAutoCompleteValue.NewPassword"
-                           disabled="@(Disabled)" />
+                           disabled="@(Disabled)"
+                           aria-disabled="@(Disabled ? "true" : null)" />
                     <button @onpointerup="HandleOnPointerUpOrOut"
                             @onpointerout="HandleOnPointerUpOrOut"
                             @onpointerdown="() => HandleOnPointerDown(false, TimeUnit.Hour)"
@@ -242,7 +247,8 @@
                             aria-label="@DecreaseHourTitle"
                             style="@Styles?.DecreaseHourButton"
                             class="bit-tpc-tbt @Classes?.DecreaseHourButton"
-                            disabled="@(IsInteractive is false)">
+                            disabled="@(IsInteractive is false)"
+                            aria-disabled="@((IsInteractive is false) ? "true" : null)">
                         <i style="@Styles?.DecreaseHourIcon" class="@decreaseHourIcon?.GetCssClasses() @Classes?.DecreaseHourIcon" aria-hidden="true" />
                     </button>
                 </div>
@@ -258,7 +264,8 @@
                             aria-label="@IncreaseMinuteTitle"
                             style="@Styles?.IncreaseMinuteButton"
                             class="bit-tpc-tbt @Classes?.IncreaseMinuteButton"
-                            disabled="@(IsInteractive is false)">
+                            disabled="@(IsInteractive is false)"
+                            aria-disabled="@((IsInteractive is false) ? "true" : null)">
                         <i style="@Styles?.IncreaseMinuteIcon" class="@increaseMinuteIcon?.GetCssClasses() @Classes?.IncreaseMinuteIcon" aria-hidden="true" />
                     </button>
                     <input @ref="_inputMinuteRef"
@@ -279,7 +286,8 @@
                            style="@Styles?.MinuteInput"
                            class="bit-tpc-tin @Classes?.MinuteInput"
                            autocomplete="@BitAutoCompleteValue.NewPassword"
-                           disabled="@(Disabled)" />
+                           disabled="@(Disabled)"
+                           aria-disabled="@(Disabled ? "true" : null)" />
                     <button @onpointerup="HandleOnPointerUpOrOut"
                             @onpointerout="HandleOnPointerUpOrOut"
                             @onpointerdown="() => HandleOnPointerDown(false, TimeUnit.Minute)"
@@ -290,7 +298,8 @@
                             aria-label="@DecreaseMinuteTitle"
                             style="@Styles?.DecreaseMinuteButton"
                             class="bit-tpc-tbt @Classes?.DecreaseMinuteButton"
-                            disabled="@(IsInteractive is false)">
+                            disabled="@(IsInteractive is false)"
+                            aria-disabled="@((IsInteractive is false) ? "true" : null)">
                         <i style="@Styles?.DecreaseMinuteIcon" class="@decreaseMinuteIcon?.GetCssClasses() @Classes?.DecreaseMinuteIcon" aria-hidden="true" />
                     </button>
                 </div>
@@ -308,7 +317,8 @@
                                 aria-label="@IncreaseSecondTitle"
                                 style="@Styles?.IncreaseSecondButton"
                                 class="bit-tpc-tbt @Classes?.IncreaseSecondButton"
-                                disabled="@(IsInteractive is false)">
+                                disabled="@(IsInteractive is false)"
+                                aria-disabled="@((IsInteractive is false) ? "true" : null)">
                             <i style="@Styles?.IncreaseSecondIcon" class="@increaseSecondIcon?.GetCssClasses() @Classes?.IncreaseSecondIcon" aria-hidden="true" />
                         </button>
                         <input @ref="_inputSecondRef"
@@ -329,7 +339,8 @@
                                style="@Styles?.SecondInput"
                                class="bit-tpc-tin @Classes?.SecondInput"
                                autocomplete="@BitAutoCompleteValue.NewPassword"
-                               disabled="@(Disabled)" />
+                               disabled="@(Disabled)"
+                               aria-disabled="@(Disabled ? "true" : null)" />
                         <button @onpointerup="HandleOnPointerUpOrOut"
                                 @onpointerout="HandleOnPointerUpOrOut"
                                 @onpointerdown="() => HandleOnPointerDown(false, TimeUnit.Second)"
@@ -340,7 +351,8 @@
                                 aria-label="@DecreaseSecondTitle"
                                 style="@Styles?.DecreaseSecondButton"
                                 class="bit-tpc-tbt @Classes?.DecreaseSecondButton"
-                                disabled="@(IsInteractive is false)">
+                                disabled="@(IsInteractive is false)"
+                                aria-disabled="@((IsInteractive is false) ? "true" : null)">
                             <i style="@Styles?.DecreaseSecondIcon" class="@decreaseSecondIcon?.GetCssClasses() @Classes?.DecreaseSecondIcon" aria-hidden="true" />
                         </button>
                     </div>
@@ -358,7 +370,8 @@
                             aria-pressed="@(isAm is true ? "true" : "false")"
                             style="@Styles?.AmButton"
                             class="bit-tpc-tbt bit-tpc-bam @(isAm is true ? "bit-tpc-bns" : string.Empty) @Classes?.AmButton"
-                            disabled="@(IsInteractive is false)">
+                            disabled="@(IsInteractive is false)"
+                            aria-disabled="@((IsInteractive is false) ? "true" : null)">
                         @_culture.DateTimeFormat.AMDesignator
                     </button>
 
@@ -367,7 +380,8 @@
                             aria-pressed="@(isAm is false ? "true" : "false")"
                             style="@Styles?.PmButton"
                             class="bit-tpc-tbt bit-tpc-bpm @(isAm is false ? "bit-tpc-bns" : string.Empty) @Classes?.PmButton"
-                            disabled="@(IsInteractive is false)">
+                            disabled="@(IsInteractive is false)"
+                            aria-disabled="@((IsInteractive is false) ? "true" : null)">
                         @_culture.DateTimeFormat.PMDesignator
                     </button>
                 </div>
@@ -382,7 +396,8 @@
                                 type="button"
                                 style="@Styles?.NowButton"
                                 class="bit-tpc-abn @Classes?.NowButton"
-                                disabled="@(IsInteractive is false)">
+                                disabled="@(IsInteractive is false)"
+                                aria-disabled="@((IsInteractive is false) ? "true" : null)">
                             @NowButtonText
                         </button>
                     }
@@ -392,7 +407,8 @@
                                 type="button"
                                 style="@Styles?.ClearButton"
                                 class="bit-tpc-abn @Classes?.ClearButton"
-                                disabled="@(IsInteractive is false || HasValueToClear is false)">
+                                disabled="@(IsInteractive is false || HasValueToClear is false)"
+                                aria-disabled="@((IsInteractive is false || HasValueToClear is false) ? "true" : null)">
                             @ClearButtonText
                         </button>
                     }

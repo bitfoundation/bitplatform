@@ -94,6 +94,7 @@
                                     class="bit-dlg-cls @Classes?.CloseButton"
                                     type="button"
                                     disabled="@(Disabled || _isLoading)"
+                                    aria-disabled="@((Disabled || _isLoading) ? "true" : null)"
                                     title="@closeTitle"
                                     aria-label="@closeTitle">
                                 <span>
@@ -129,7 +130,7 @@
                             <button @ref="_okButtonRef" @onclick="HandleOnOkClick"
                                     type="button"
                                     disabled="@(Disabled || IsOkButtonEnabled is false)"
-                                    aria-disabled="@(_isLoading ? "true" : null)"
+                                    aria-disabled="@((Disabled || IsOkButtonEnabled is false || _isLoading) ? "true" : null)"
                                     aria-busy="@(_isLoading ? "true" : null)"
                                     aria-label="@(_isLoading ? OkText : null)"
                                     style="@Styles?.OkButton"
@@ -153,6 +154,7 @@
                             <button @ref="_cancelButtonRef" @onclick="HandleOnCancelClick"
                                     type="button"
                                     disabled="@(Disabled || IsCancelButtonEnabled is false || _isLoading)"
+                                    aria-disabled="@((Disabled || IsCancelButtonEnabled is false || _isLoading) ? "true" : null)"
                                     style="@Styles?.CancelButton"
                                     class="bit-dlg-cnb @Classes?.CancelButton">
                                 @CancelText

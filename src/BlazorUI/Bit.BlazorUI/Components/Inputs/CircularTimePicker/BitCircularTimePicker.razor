@@ -50,6 +50,7 @@
                        placeholder="@Placeholder"
                        value="@CurrentValueAsString"
                        disabled=@(Disabled)
+                       aria-disabled="@GetInputAriaDisabled(Disabled)"
                        readonly=@(AllowTextInput is false || ReadOnly)
                        aria-readonly="@(ReadOnly ? "true" : null)"
                        aria-expanded="@(IsOpen ? "true" : "false")"
@@ -88,6 +89,7 @@
                class="bit-input-hidden"
                value="@CurrentValueAsString"
                disabled="@(Disabled)"
+               aria-disabled="@GetInputAriaDisabled(Disabled)"
                readonly="@(AllowTextInput is false || ReadOnly)" />
     }
 
@@ -161,6 +163,7 @@
                         aria-pressed="@(isAm ? "true" : "false")"
                         style="@GetAmButtonStyle(isAm)"
                         disabled="@(IsMeridiemEnabled is false)"
+                        aria-disabled="@((IsMeridiemEnabled is false) ? "true" : null)"
                         class="bit-ctp-apb @(isAm ? $"bit-ctp-aps {Classes?.SelectedButtons}" : "bit-ctp-ina") @Classes?.AmButton">
                     @_culture.DateTimeFormat.AMDesignator
                 </button>
@@ -170,6 +173,7 @@
                         aria-pressed="@(isAm ? "false" : "true")"
                         style="@GetPmButtonStyle(isAm)"
                         disabled="@(IsMeridiemEnabled is false)"
+                        aria-disabled="@((IsMeridiemEnabled is false) ? "true" : null)"
                         class="bit-ctp-apb @(isAm ? "bit-ctp-ina" : $"bit-ctp-aps {Classes?.SelectedButtons}") @Classes?.PmButton">
                     @_culture.DateTimeFormat.PMDesignator
                 </button>
@@ -195,6 +199,7 @@
                             aria-pressed="@(IsHourView ? "true" : "false")"
                             style="@GetHourButtonStyle()"
                             disabled="@(Disabled)"
+                            aria-disabled="@(Disabled ? "true" : null)"
                             class="bit-ctp-txt @(IsHourView ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.HourButton">
                         @GetHourString()
                     </button>
@@ -208,6 +213,7 @@
                             aria-pressed="@(IsMinuteView ? "true" : "false")"
                             style="@GetMinuteButtonStyle()"
                             disabled="@(Disabled)"
+                            aria-disabled="@(Disabled ? "true" : null)"
                             class="bit-ctp-txt @(IsMinuteView ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.MinuteButton">
                         @GetMinuteString()
                     </button>
@@ -223,6 +229,7 @@
                                 aria-pressed="@(IsSecondView ? "true" : "false")"
                                 style="@GetSecondButtonStyle()"
                                 disabled="@(Disabled)"
+                                aria-disabled="@(Disabled ? "true" : null)"
                                 class="bit-ctp-txt @(IsSecondView ? Classes?.SelectedButtons : "bit-ctp-ina") @Classes?.SecondButton">
                             @GetSecondString()
                         </button>
@@ -365,7 +372,8 @@
                                 type="button"
                                 style="@Styles?.NowButton"
                                 class="bit-ctp-abn @Classes?.NowButton"
-                                disabled="@(IsInteractive is false)">
+                                disabled="@(IsInteractive is false)"
+                                aria-disabled="@((IsInteractive is false) ? "true" : null)">
                             @NowButtonText
                         </button>
                     }
@@ -375,7 +383,8 @@
                                 type="button"
                                 style="@Styles?.ClearButton"
                                 class="bit-ctp-abn @Classes?.ClearButton"
-                                disabled="@(IsInteractive is false || CurrentValue.HasValue is false)">
+                                disabled="@(IsInteractive is false || CurrentValue.HasValue is false)"
+                                aria-disabled="@((IsInteractive is false || CurrentValue.HasValue is false) ? "true" : null)">
                             @ClearButtonText
                         </button>
                     }

@@ -106,6 +106,7 @@
                     aria-checked="@(ReadOnly ? null : (isChecked ? "true" : "false"))"
                     data-is-current="@(isCurrent ? "true" : "false")"
                     disabled="@(Disabled || ReadOnly)"
+                    aria-disabled="@((Disabled || ReadOnly) ? "true" : null)"
                     tabindex="@(ReadOnly ? "-1" : (index == tabbableIndex ? (TabIndex ?? "0") : "-1"))">
 
                 @* A radio whose only content is a decorative glyph has no accessible name at all, so every item
@@ -209,6 +210,7 @@
            readonly="@ReadOnly"
            class="bit-input-hidden"
            disabled="@(Disabled)"
+           aria-disabled="@GetInputAriaDisabled(Disabled)"
            min="@_MinAttribute"
            step="@_StepAttribute"
            value="@CurrentValueAsString" />

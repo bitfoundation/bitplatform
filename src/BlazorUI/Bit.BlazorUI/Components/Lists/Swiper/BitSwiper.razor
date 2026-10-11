@@ -39,6 +39,7 @@
                         aria-controls="@_ContainerId"
                         aria-label="@(IsPaused ? PlayButtonAriaLabel : PauseButtonAriaLabel)"
                         disabled="@(Disabled)"
+                        aria-disabled="@(Disabled ? "true" : null)"
                         class="bit-swp-ppb @Classes?.PlayPauseButton"
                         style="@Styles?.PlayPauseButton">
                     <i aria-hidden="true"
@@ -60,6 +61,7 @@
                                 aria-label="@($"{DotAriaLabel} {index + 1}")"
                                 aria-current="@(_page == index ? "true" : null)"
                                 disabled="@(Disabled)"
+                                aria-disabled="@(Disabled ? "true" : null)"
                                 style="@Styles?.Dots @(_page == index ? Styles?.CurrentDot : null)"
                                 class="bit-swp-dot @(DotTemplate is null ? null : "bit-swp-dtt") @((_page == index ? $"bit-swp-cud {Classes?.CurrentDot}" : "").Trim()) @Classes?.Dots">@DotTemplate?.Invoke(index)</button>
                     }
@@ -84,6 +86,7 @@
                     aria-controls="@_ContainerId"
                     aria-label="@(PrevAriaLabel.HasValue() ? PrevAriaLabel : "Previous slide")"
                     disabled="@(Disabled)"
+                    aria-disabled="@(Disabled ? "true" : null)"
                     class="bit-swp-lbt @Classes?.Buttons @Classes?.PrevButton"
                     style="@_prevButtonStyle @Styles?.Buttons @Styles?.PrevButton">
                 <i aria-hidden="true"
@@ -96,6 +99,7 @@
                     aria-controls="@_ContainerId"
                     aria-label="@(NextAriaLabel.HasValue() ? NextAriaLabel : "Next slide")"
                     disabled="@(Disabled)"
+                    aria-disabled="@(Disabled ? "true" : null)"
                     class="bit-swp-rbt @Classes?.Buttons @Classes?.NextButton"
                     style="@_nextButtonStyle @Styles?.Buttons @Styles?.NextButton">
                 <i aria-hidden="true"

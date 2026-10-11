@@ -181,5 +181,6 @@
            class="bit-input-hidden"
            checked="@CurrentValue"
            value="@CurrentValueAsString"
-           disabled="@(Disabled)" />
+           disabled="@(Disabled)"
+           aria-disabled="@GetInputAriaDisabled(Disabled)" />
 </div>

@@ -5,6 +5,27 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## vNext (after 10.6.2)
 
+### A disabled native control now carries `aria-disabled="true"` beside `disabled` ([#13549](https://github.com/bitfoundation/bitplatform/issues/13549))
+
+Components marked a disabled control in different ways: some wrote the native `disabled` attribute alone, some
+`aria-disabled="true"` alone, some both - the date picker's calendar buttons wrote both while the identical ones
+of the date range picker wrote `disabled` only - so no one selector or test locator found a disabled control. Every
+native control a component renders disabled (`button`, `input`, `select`, `textarea`, `option`, ...) now writes
+both, so `:disabled` and `[aria-disabled="true"]` each find it, and a control kept focusable while unavailable (a
+loading button, `AllowDisabledFocus`, a link) goes on writing `aria-disabled="true"` alone. The root of every
+disabled component carries the `bit-dis` class, as it already did, which is the hook for a disabled component as a
+whole.
+
+What changes in the markup: about three hundred controls across the inputs, pickers, navs, lists, surfaces and the
+`Bit.BlazorUI.Extras` components (`BitDataGrid`, `BitRichTextEditor`, `BitPdfViewer`, `BitMarkdownEditor`,
+`BitPhoneInput`, `BitFullCalendar`, ...) and the paginator of the `Bit.BlazorUI.Legacy` data grid gain
+`aria-disabled="true"` while disabled; and a few that wrote `aria-disabled` for another state only (loading,
+read-only, nothing to act on) now also write it while disabled - the Ok button of `BitDialog`, the batch actions of
+`BitFileUpload`, the time buttons of `BitCalendar`, the eye dropper and presets of `BitColorPicker`, the button of
+`BitDropMenu` and of `BitTag`. **A rule or locator meant for the controls
+that are only `aria-disabled`** - the focusable ones - now matches the natively disabled ones too: add
+`:not(:disabled)` to it. One that expected no `aria-disabled` on a disabled control checks `disabled` instead.
+
 ### A disabled component no longer runs the activation handlers written on it ([#13547](https://github.com/bitfoundation/bitplatform/issues/13547))
 
 An HTML event handler written straight on a component (`<BitToggle Disabled="true" @onclick="...">`) lands on

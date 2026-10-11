@@ -79,6 +79,7 @@
                     aria-label="@DropdownLabel"
                     title="@DropdownTitle"
                     disabled="@(Disabled)"
+                    aria-disabled="@(Disabled ? "true" : null)"
                     tabindex="@(Disabled is false && ReadOnly is false ? (TabIndex ?? "0") : "-1")"
                     style="@Styles?.Dropdown"
                     class="bit-phi-drp @Classes?.Dropdown">
@@ -127,6 +128,7 @@
                autocorrect="off"
                autocapitalize="off"
                disabled="@(Disabled)"
+               aria-disabled="@GetInputAriaDisabled(Disabled)"
                title="@InputTitle"
                placeholder="@InputPlaceholder"
                inputmode="@InputModeValue"
@@ -151,7 +153,8 @@
                     style="@Styles?.ClearButton"
                     class="bit-phi-cbt @Classes?.ClearButton"
                     aria-label="@(ClearButtonAriaLabel ?? "Clear number")"
-                    disabled="@(Disabled || ReadOnly)">
+                    disabled="@(Disabled || ReadOnly)"
+                    aria-disabled="@((Disabled || ReadOnly) ? "true" : null)">
                 @if (ClearButtonTemplate is not null)
                 {
                     @ClearButtonTemplate

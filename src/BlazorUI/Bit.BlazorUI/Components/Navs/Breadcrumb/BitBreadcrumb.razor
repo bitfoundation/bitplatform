@@ -49,7 +49,8 @@
                             aria-controls="@(ExpandOverflow ? null : _calloutId)"
                             aria-expanded="@(ExpandOverflow ? null : _isCalloutOpen.ToString().ToLower())"
                             aria-label="@(OverflowAriaLabel ?? "More items")"
-                            disabled="@(Disabled)">
+                            disabled="@(Disabled)"
+                            aria-disabled="@(Disabled ? "true" : null)">
                         @if (OverflowIconTemplate is not null)
                         {
                             @OverflowIconTemplate
@@ -132,13 +133,15 @@
                     }
                     else if (HasClickHandler(item))
                     {
-                        @* The native disabled attribute already tells assistive technologies the button is
-                           unavailable, so no aria-disabled is repeated on it. *@
+                        @* The native disabled attribute tells assistive technologies the button is unavailable;
+                           aria-disabled repeats it, as on every disabled native control of the library, so one
+                           [aria-disabled="true"] selector finds a disabled step whatever element it is. *@
                         <button type="button"
                                 title="@GetItemTitle(item)"
                                 aria-label="@GetItemAriaLabel(item)"
                                 aria-current="@(GetIsSelected(item) ? "page" : null)"
                                 disabled="@(GetIsDisabled(item))"
+                                aria-disabled="@(GetIsDisabled(item) ? "true" : null)"
                                 style="@GetStyles(item, false)"
                                 class="bit-brc-itm @GetClasses(item, false)" @onclick="() => HandleOnItemClick(item)">
                             @if (template is not null)

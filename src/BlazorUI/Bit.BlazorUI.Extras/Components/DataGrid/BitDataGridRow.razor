@@ -30,6 +30,7 @@
             <button type="button" class="bit-dtg-drag-handle"
                     draggable="@(!Editing && Grid.Disabled is false ? "true" : null)"
                     disabled="@(Editing || Grid.Disabled)"
+                    aria-disabled="@((Editing || Grid.Disabled) ? "true" : null)"
                     @ondragstart="() => Grid.StartRowDrag(Item)"
                     title="@(Editing ? null : Grid.Strings.ReorderRowTitle)"
                     aria-label="@(Editing ? null : Grid.Strings.ReorderRowLabel)"
@@ -41,7 +42,7 @@
     {
         specialColIndex++;
         <div class="bit-dtg-cell bit-dtg-cell-detail bit-dtg-sticky" style="@Grid.DetailStickyStyle" role="gridcell" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
-            <button disabled="@(Grid.Disabled)" type="button" class="bit-dtg-icon-btn" tabindex="@CellControlTabIndex"
+            <button disabled="@(Grid.Disabled)" aria-disabled="@(Grid.Disabled ? "true" : null)" type="button" class="bit-dtg-icon-btn" tabindex="@CellControlTabIndex"
                     @onclick="() => Grid.ToggleDetailAsync(Item)" aria-label="@Grid.Strings.ToggleDetailsLabel" aria-expanded="@Grid.IsDetailExpanded(Item)">
                 <span class="@(Grid.IsDetailExpanded(Item) ? null : "bit-dtg-dir-glyph")" aria-hidden="true">@(Grid.IsDetailExpanded(Item) ? "▾" : "▸")</span>
             </button>
@@ -55,7 +56,7 @@
             @* Shift+click extends the selection from the last plainly-clicked row. The modifier is read
                on mousedown because the change event that carries the new value exposes no modifier
                keys, and mousedown is dispatched before it. *@
-            <input type="checkbox" checked="@Selected" disabled="@(Grid.Disabled || !Grid.CanSelectRow(Item))"
+            <input type="checkbox" checked="@Selected" disabled="@(Grid.Disabled || !Grid.CanSelectRow(Item))" aria-disabled="@((Grid.Disabled || !Grid.CanSelectRow(Item)) ? "true" : null)"
                    tabindex="@CellControlTabIndex" aria-label="@SelectRowLabel"
                    @onmousedown="e => Grid.SetRangeSelectPending(Item, e.ShiftKey)"
                    @onchange="e => Grid.ToggleRowSelectionAsync(Item, (bool)e.Value!)" />
@@ -92,17 +93,17 @@
             @if (Grid.IsCellEditMode)
             {
                 @* A cell opens and commits on its own (Enter, F2, a double-click; Enter or leaving it), so the row keeps only Delete. *@
-                <button disabled="@(Grid.Disabled)" type="button" class="bit-dtg-btn bit-dtg-btn-danger" tabindex="@CellControlTabIndex" @onclick="() => Grid.DeleteRowAsync(Item)">@Grid.Strings.DeleteText</button>
+                <button disabled="@(Grid.Disabled)" aria-disabled="@(Grid.Disabled ? "true" : null)" type="button" class="bit-dtg-btn bit-dtg-btn-danger" tabindex="@CellControlTabIndex" @onclick="() => Grid.DeleteRowAsync(Item)">@Grid.Strings.DeleteText</button>
             }
             else if (Editing)
             {
-                <button type="button" class="bit-dtg-btn bit-dtg-btn-primary" disabled="@(Grid.Disabled || Grid.HasEditErrors)" @onclick="() => Grid.CommitEditFromCommandAsync(Item)">@Grid.Strings.SaveText</button>
-                <button disabled="@(Grid.Disabled)" type="button" class="bit-dtg-btn" @onclick="() => Grid.CancelEditFromCommandAsync(Item)">@Grid.Strings.CancelText</button>
+                <button type="button" class="bit-dtg-btn bit-dtg-btn-primary" disabled="@(Grid.Disabled || Grid.HasEditErrors)" aria-disabled="@((Grid.Disabled || Grid.HasEditErrors) ? "true" : null)" @onclick="() => Grid.CommitEditFromCommandAsync(Item)">@Grid.Strings.SaveText</button>
+                <button disabled="@(Grid.Disabled)" aria-disabled="@(Grid.Disabled ? "true" : null)" type="button" class="bit-dtg-btn" @onclick="() => Grid.CancelEditFromCommandAsync(Item)">@Grid.Strings.CancelText</button>
             }
             else
             {
-                <button disabled="@(Grid.Disabled)" type="button" class="bit-dtg-btn" tabindex="@CellControlTabIndex" @onclick="() => Grid.BeginEditFromCommand(Item)">@Grid.Strings.EditText</button>
-                <button disabled="@(Grid.Disabled)" type="button" class="bit-dtg-btn bit-dtg-btn-danger" tabindex="@CellControlTabIndex" @onclick="() => Grid.DeleteRowAsync(Item)">@Grid.Strings.DeleteText</button>
+                <button disabled="@(Grid.Disabled)" aria-disabled="@(Grid.Disabled ? "true" : null)" type="button" class="bit-dtg-btn" tabindex="@CellControlTabIndex" @onclick="() => Grid.BeginEditFromCommand(Item)">@Grid.Strings.EditText</button>
+                <button disabled="@(Grid.Disabled)" aria-disabled="@(Grid.Disabled ? "true" : null)" type="button" class="bit-dtg-btn bit-dtg-btn-danger" tabindex="@CellControlTabIndex" @onclick="() => Grid.DeleteRowAsync(Item)">@Grid.Strings.DeleteText</button>
             }
         </div>
     }
@@ -179,6 +180,7 @@
                         @onclick="() => Grid.ToggleTreeNodeAsync(Item)" @onclick:stopPropagation="true"
                         @onkeydown:stopPropagation="true"
                         disabled="@(Grid.Disabled || Grid.IsTreeNodeLoading(Item))"
+                        aria-disabled="@((Grid.Disabled || Grid.IsTreeNodeLoading(Item)) ? "true" : null)"
                         aria-label="@Grid.Strings.ToggleChildrenLabel" aria-expanded="@Grid.IsTreeRowExpanded(Item)"
                         aria-busy="@(Grid.IsTreeNodeLoading(Item) ? "true" : null)">
                     <span class="@(Grid.IsTreeNodeLoading(Item) || Grid.IsTreeRowExpanded(Item) ? null : "bit-dtg-dir-glyph")" aria-hidden="true">@(Grid.IsTreeNodeLoading(Item) ? "…" : Grid.IsTreeRowExpanded(Item) ? "▾" : "▸")</span>

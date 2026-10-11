@@ -382,6 +382,31 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     protected abstract bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out TValue result, [NotNullWhen(false)] out string? parsingErrorMessage);
 
     /// <summary>
+    /// The aria-disabled of a native control the <see cref="InputHtmlAttributes"/> are splatted onto: "true" while it
+    /// is disabled, beside its disabled attribute, and otherwise whatever the page wrote there itself.
+    /// </summary>
+    /// <remarks>
+    /// The control writes it after the splat, and a null written over a splatted attribute does not leave that
+    /// attribute alone - it removes it. HTML attribute names are case insensitive, and so is the deduplication the
+    /// render tree does, which is why a differently cased spelling has to be found here too.
+    /// </remarks>
+    internal string? GetInputAriaDisabled(bool disabled)
+    {
+        if (disabled) return "true";
+
+        if (InputHtmlAttributes is null || InputHtmlAttributes.Count == 0) return null;
+
+        if (InputHtmlAttributes.TryGetValue("aria-disabled", out var value)) return value?.ToString();
+
+        foreach (var attribute in InputHtmlAttributes)
+        {
+            if (string.Equals(attribute.Key, "aria-disabled", StringComparison.OrdinalIgnoreCase)) return attribute.Value?.ToString();
+        }
+
+        return null;
+    }
+
+    /// <summary>
     /// Initializes the value of the input from the <see cref="DefaultValue"/> parameter when the
     /// <see cref="Value"/> is not bound (uncontrolled mode).
     /// </summary>

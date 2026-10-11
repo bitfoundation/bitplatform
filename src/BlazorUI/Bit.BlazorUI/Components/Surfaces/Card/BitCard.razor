@@ -164,6 +164,7 @@
                 style="@Styles?.Link"
                 class="bit-crd-lnk @Classes?.Link"
                 disabled="@(Disabled)"
+                aria-disabled="@(Disabled ? "true" : null)"
                 tabindex="@tabIndex"
                 aria-pressed="@selectedState"
                 aria-labelledby="@stretchedLabelledBy"

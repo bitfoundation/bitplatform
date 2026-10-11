@@ -51,6 +51,7 @@
                         id="@($"{_Id}-pss")"
                         value="@_PageSize"
                         disabled="@(Disabled)"
+                        aria-disabled="@(Disabled ? "true" : null)"
                         aria-label="@(PageSizeText.HasValue() ? null : PageSizeAriaLabel)"
                         @onchange="HandlePageSizeChange"
                         style="@Styles?.PageSizeSelect"
@@ -104,6 +105,7 @@
                                 title="@(FirstButtonText.HasValue() ? null : FirstButtonAriaLabel)"
                                 aria-label="@FirstButtonAriaLabel"
                                 disabled="@_IsFirstDisabled"
+                                aria-disabled="@(_IsFirstDisabled ? "true" : null)"
                                 style="@JoinStyles(Styles?.Button, Styles?.FirstButton)"
                                 class="@firstClass">
                             <i aria-hidden="true" style="@Styles?.FirstButtonIcon" class="@firstIcon?.GetCssClasses() @Classes?.FirstButtonIcon" />
@@ -149,6 +151,7 @@
                                 title="@(PreviousButtonText.HasValue() ? null : PreviousButtonAriaLabel)"
                                 aria-label="@PreviousButtonAriaLabel"
                                 disabled="@_IsPreviousDisabled"
+                                aria-disabled="@(_IsPreviousDisabled ? "true" : null)"
                                 style="@JoinStyles(Styles?.Button, Styles?.PreviousButton)"
                                 class="@previousClass">
                             <i aria-hidden="true" style="@Styles?.PreviousButtonIcon" class="@previousIcon?.GetCssClasses() @Classes?.PreviousButtonIcon" />
@@ -210,6 +213,7 @@
                                             title="@ellipsisLabel"
                                             aria-label="@ellipsisLabel"
                                             disabled="@(Disabled)"
+                                            aria-disabled="@(Disabled ? "true" : null)"
                                             style="@Styles?.Ellipsis"
                                             class="@ellipsisClass">
                                         @EllipsisText
@@ -244,6 +248,7 @@
                                         @onclick="@(() => ChangePage(pageNumber))"
                                         type="button"
                                         disabled="@(Disabled)"
+                                        aria-disabled="@(Disabled ? "true" : null)"
                                         aria-current="@(isSelected ? "page" : null)"
                                         aria-label="@GetPageLabel(pageNumber, isSelected)"
                                         style="@JoinStyles(Styles?.Button, isSelected ? Styles?.SelectedButton : null)"
@@ -289,6 +294,7 @@
                                 title="@(NextButtonText.HasValue() ? null : NextButtonAriaLabel)"
                                 aria-label="@NextButtonAriaLabel"
                                 disabled="@_IsNextDisabled"
+                                aria-disabled="@(_IsNextDisabled ? "true" : null)"
                                 style="@JoinStyles(Styles?.Button, Styles?.NextButton)"
                                 class="@nextClass">
                             @if (NextButtonText.HasValue())
@@ -333,6 +339,7 @@
                                 title="@(LastButtonText.HasValue() ? null : LastButtonAriaLabel)"
                                 aria-label="@LastButtonAriaLabel"
                                 disabled="@_IsLastDisabled"
+                                aria-disabled="@(_IsLastDisabled ? "true" : null)"
                                 style="@JoinStyles(Styles?.Button, Styles?.LastButton)"
                                 class="@lastClass">
                             @if (LastButtonText.HasValue())
@@ -368,6 +375,7 @@
                        value="@_goToPageText"
                        autocomplete="off"
                        disabled="@(Disabled)"
+                       aria-disabled="@(Disabled ? "true" : null)"
                        aria-label="@(GoToPageText.HasValue() ? null : GoToPageAriaLabel)"
                        @oninput="HandleGoToPageInput"
                        @onchange="HandleGoToPageChange"

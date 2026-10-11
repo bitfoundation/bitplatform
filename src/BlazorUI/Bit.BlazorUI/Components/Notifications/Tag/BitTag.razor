@@ -44,10 +44,11 @@
     var focusable = Disabled is false || AllowDisabledFocus;
     var rootTabIndex = tabIndexOnRoot && focusable ? tabIndex : null;
 
-    @* A disabled control that keeps its focus reports the state through aria-disabled instead of the native
-       disabled attribute, which would take it out of the tab order along with the pointer. *@
+    @* A disabled control that keeps its focus reports the state through aria-disabled alone, leaving out the
+       native disabled attribute, which would take it out of the tab order along with the pointer. One that is
+       natively disabled writes both, as every disabled native control of the library does. *@
     var nativeDisabled = Disabled && AllowDisabledFocus is false;
-    var ariaDisabled = Disabled is false || nativeDisabled ? null : "true";
+    var ariaDisabled = Disabled ? "true" : null;
 
     @* A natively disabled button never fires a click, but one that only says so through aria-disabled still
        does when Enter or Space presses it - and that click would bubble on to whatever holds the tag. The
