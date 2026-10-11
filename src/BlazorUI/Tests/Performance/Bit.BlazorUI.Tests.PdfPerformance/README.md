@@ -1,4 +1,4 @@
-# Buffered PDF engine benchmark
+﻿# Buffered PDF engine benchmark
 
 This console benchmark measures parsing, page-tree construction, first-page HTML/canvas builds, and direct stream/lexer reads. It records every elapsed-time/allocation sample and output hashes as JSON. It uses the native C# engine; file I/O, browser painting, HTTP transfer, and forced GC between samples are outside the timings. Rendering metrics over the reference model have warm resource caches; `loadAndFirstPage*` creates a fresh document for each sample.
 
