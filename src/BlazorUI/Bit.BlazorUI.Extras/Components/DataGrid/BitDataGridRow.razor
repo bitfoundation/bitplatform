@@ -27,10 +27,11 @@
     {
         specialColIndex++;
         <div class="bit-dtg-cell bit-dtg-cell-reorder bit-dtg-sticky" style="@Grid.ReorderStickyStyle" role="gridcell" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
+            @{ var reorderDisabled = Editing || Grid.Disabled; }
             <button type="button" class="bit-dtg-drag-handle"
                     draggable="@(!Editing && Grid.Disabled is false ? "true" : null)"
-                    disabled="@(Editing || Grid.Disabled)"
-                    aria-disabled="@((Editing || Grid.Disabled) ? "true" : null)"
+                    disabled="@reorderDisabled"
+                    aria-disabled="@(reorderDisabled ? "true" : null)"
                     @ondragstart="() => Grid.StartRowDrag(Item)"
                     title="@(Editing ? null : Grid.Strings.ReorderRowTitle)"
                     aria-label="@(Editing ? null : Grid.Strings.ReorderRowLabel)"
@@ -56,7 +57,8 @@
             @* Shift+click extends the selection from the last plainly-clicked row. The modifier is read
                on mousedown because the change event that carries the new value exposes no modifier
                keys, and mousedown is dispatched before it. *@
-            <input type="checkbox" checked="@Selected" disabled="@(Grid.Disabled || !Grid.CanSelectRow(Item))" aria-disabled="@((Grid.Disabled || !Grid.CanSelectRow(Item)) ? "true" : null)"
+            @{ var selectDisabled = Grid.Disabled || !Grid.CanSelectRow(Item); }
+            <input type="checkbox" checked="@Selected" disabled="@selectDisabled" aria-disabled="@(selectDisabled ? "true" : null)"
                    tabindex="@CellControlTabIndex" aria-label="@SelectRowLabel"
                    @onmousedown="e => Grid.SetRangeSelectPending(Item, e.ShiftKey)"
                    @onchange="e => Grid.ToggleRowSelectionAsync(Item, (bool)e.Value!)" />
@@ -97,7 +99,8 @@
             }
             else if (Editing)
             {
-                <button type="button" class="bit-dtg-btn bit-dtg-btn-primary" disabled="@(Grid.Disabled || Grid.HasEditErrors)" aria-disabled="@((Grid.Disabled || Grid.HasEditErrors) ? "true" : null)" @onclick="() => Grid.CommitEditFromCommandAsync(Item)">@Grid.Strings.SaveText</button>
+                var saveDisabled = Grid.Disabled || Grid.HasEditErrors;
+                <button type="button" class="bit-dtg-btn bit-dtg-btn-primary" disabled="@saveDisabled" aria-disabled="@(saveDisabled ? "true" : null)" @onclick="() => Grid.CommitEditFromCommandAsync(Item)">@Grid.Strings.SaveText</button>
                 <button disabled="@(Grid.Disabled)" aria-disabled="@(Grid.Disabled ? "true" : null)" type="button" class="bit-dtg-btn" @onclick="() => Grid.CancelEditFromCommandAsync(Item)">@Grid.Strings.CancelText</button>
             }
             else
@@ -176,11 +179,12 @@
             <span class="bit-dtg-tree-indent" style="--bit-dtg-tree-level:@Grid.TreeLevel(Item);"></span>
             @if (Grid.TreeHasChildren(Item))
             {
+                var toggleDisabled = Grid.Disabled || Grid.IsTreeNodeLoading(Item);
                 <button type="button" class="bit-dtg-icon-btn bit-dtg-tree-toggle" tabindex="@CellControlTabIndex"
                         @onclick="() => Grid.ToggleTreeNodeAsync(Item)" @onclick:stopPropagation="true"
                         @onkeydown:stopPropagation="true"
-                        disabled="@(Grid.Disabled || Grid.IsTreeNodeLoading(Item))"
-                        aria-disabled="@((Grid.Disabled || Grid.IsTreeNodeLoading(Item)) ? "true" : null)"
+                        disabled="@toggleDisabled"
+                        aria-disabled="@(toggleDisabled ? "true" : null)"
                         aria-label="@Grid.Strings.ToggleChildrenLabel" aria-expanded="@Grid.IsTreeRowExpanded(Item)"
                         aria-busy="@(Grid.IsTreeNodeLoading(Item) ? "true" : null)">
                     <span class="@(Grid.IsTreeNodeLoading(Item) || Grid.IsTreeRowExpanded(Item) ? null : "bit-dtg-dir-glyph")" aria-hidden="true">@(Grid.IsTreeNodeLoading(Item) ? "…" : Grid.IsTreeRowExpanded(Item) ? "▾" : "▸")</span>

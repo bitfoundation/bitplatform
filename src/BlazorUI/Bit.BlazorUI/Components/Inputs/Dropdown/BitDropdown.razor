@@ -617,14 +617,15 @@
                 @* Reached with the arrow keys like the options below it, so it stays out of the tab order too.
                    It sits outside the listbox it commands, so nothing but its aria-controls says which
                    list it is the select all of. *@
+                @{ var selectAllDisabled = Disabled || ReadOnly; }
                 <button @onclick="HandleOnSelectAllClick"
                         type="button"
                         role="checkbox"
                         tabindex="-1"
                         style="@Styles?.SelectAllButton"
                         class="bit-drp-mcn bit-drp-sab @Classes?.SelectAllButton"
-                        disabled="@(Disabled || ReadOnly)"
-                        aria-disabled="@((Disabled || ReadOnly) ? "true" : null)"
+                        disabled="@selectAllDisabled"
+                        aria-disabled="@(selectAllDisabled ? "true" : null)"
                         aria-checked="@selectAllAriaChecked"
                         aria-controls="@_scrollContainerId">
                     <div style="@Styles?.SelectAllCheckBox"

@@ -802,7 +802,7 @@ public partial class BitOtpInput : BitInputBase<string?>
     {
         if (IsInvalid) return "true";
 
-        return TryFindAttribute(InputHtmlAttributes, "aria-invalid", out var ariaInvalid) ? ariaInvalid?.ToString() : null;
+        return GetSplattedInputAttribute("aria-invalid");
     }
 
     // The tab order of a group of inputs holding a single value is decided by two things at once: the

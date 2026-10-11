@@ -385,26 +385,21 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     /// The aria-disabled of a native control the <see cref="InputHtmlAttributes"/> are splatted onto: "true" while it
     /// is disabled, beside its disabled attribute, and otherwise whatever the page wrote there itself.
     /// </summary>
+    internal string? GetInputAriaDisabled(bool disabled) => disabled ? "true" : GetSplattedInputAttribute("aria-disabled");
+
+    /// <summary>
+    /// The value of an attribute the page splatted onto the input through <see cref="InputHtmlAttributes"/>, as the
+    /// renderer would have written it there: a boolean as an attribute with no value while it is true and as no
+    /// attribute at all while it is false, anything else as its text.
+    /// </summary>
     /// <remarks>
-    /// The control writes it after the splat, and a null written over a splatted attribute does not leave that
-    /// attribute alone - it removes it. HTML attribute names are case insensitive, and so is the deduplication the
-    /// render tree does, which is why a differently cased spelling has to be found here too.
+    /// The input writes its own attributes after the splat, and a null written over a splatted attribute does not leave
+    /// that attribute alone - it removes it. So every name the component also writes is resolved against what the page
+    /// wrote instead of being overwritten with the parameter's null. HTML attribute names are case insensitive, and so
+    /// is the deduplication the render tree does, which is why a differently cased spelling is found here too.
     /// </remarks>
-    internal string? GetInputAriaDisabled(bool disabled)
-    {
-        if (disabled) return "true";
-
-        if (InputHtmlAttributes is null || InputHtmlAttributes.Count == 0) return null;
-
-        if (InputHtmlAttributes.TryGetValue("aria-disabled", out var value)) return value?.ToString();
-
-        foreach (var attribute in InputHtmlAttributes)
-        {
-            if (string.Equals(attribute.Key, "aria-disabled", StringComparison.OrdinalIgnoreCase)) return attribute.Value?.ToString();
-        }
-
-        return null;
-    }
+    private protected string? GetSplattedInputAttribute(string name)
+        => TryFindAttribute(InputHtmlAttributes, name, out var value) ? StringifyAttributeValue(value) : null;
 
     /// <summary>
     /// Initializes the value of the input from the <see cref="DefaultValue"/> parameter when the

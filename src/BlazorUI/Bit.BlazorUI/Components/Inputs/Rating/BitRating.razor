@@ -91,6 +91,7 @@
             var itemSelectedIcon = GetSelectedIcon?.Invoke(index) ?? selectedIcon;
             var itemUnselectedIcon = GetUnselectedIcon?.Invoke(index) ?? unselectedIcon;
 
+            var itemDisabled = Disabled || ReadOnly;
             <button @ref="_itemRefs[index - 1]"
                     @onclick="() => HandleOnClick(index)"
                     @onmouseover="() => HandleOnHover(index)"
@@ -105,8 +106,8 @@
                     aria-posinset="@(ReadOnly ? null : index.ToString())"
                     aria-checked="@(ReadOnly ? null : (isChecked ? "true" : "false"))"
                     data-is-current="@(isCurrent ? "true" : "false")"
-                    disabled="@(Disabled || ReadOnly)"
-                    aria-disabled="@((Disabled || ReadOnly) ? "true" : null)"
+                    disabled="@itemDisabled"
+                    aria-disabled="@(itemDisabled ? "true" : null)"
                     tabindex="@(ReadOnly ? "-1" : (index == tabbableIndex ? (TabIndex ?? "0") : "-1"))">
 
                 @* A radio whose only content is a decorative glyph has no accessible name at all, so every item

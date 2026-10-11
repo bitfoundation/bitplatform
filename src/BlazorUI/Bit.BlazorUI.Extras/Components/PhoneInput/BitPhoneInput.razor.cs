@@ -1422,7 +1422,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     // The tooltip is written on the root, so it also covers the selector, and on the input itself, so it reaches
     // a keyboard as well as a pointer. A title the consumer put on the input is kept, since the explicit
     // attribute of the input would otherwise write a null over it.
-    private string? InputTitle => Title ?? GetInputAttribute("title");
+    private string? InputTitle => Title ?? GetSplattedInputAttribute("title");
 
     private bool ShowClear => ShowClearButton && Number.HasValue();
 
@@ -1443,11 +1443,11 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         {
             var describesCountry = NoDropdown || ReadOnly;
 
-            if (HasErrorMessage is false && HasDescription is false && describesCountry is false) return GetInputAttribute("aria-describedby");
+            if (HasErrorMessage is false && HasDescription is false && describesCountry is false) return GetSplattedInputAttribute("aria-describedby");
 
             var ids = string.Join(' ', new[]
             {
-                GetInputAttribute("aria-describedby"),
+                GetSplattedInputAttribute("aria-describedby"),
                 describesCountry ? _dropdownId : null,
                 HasErrorMessage ? _errorId : null,
                 HasDescription ? _descriptionId : null
@@ -1457,15 +1457,10 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         }
     }
 
-    private string? GetInputAttribute(string name)
-    {
-        return TryFindAttribute(InputHtmlAttributes, name, out var value) ? value?.ToString() : null;
-    }
-
     // The forced invalid state and the one the EditContext produces end up on the same attribute, and
     // the base class writes the latter into the splatted attributes, so the value of the consumer is
     // read back here instead of being overwritten by the explicit attribute of the input.
-    private string? AriaInvalid => IsInvalid ? "true" : GetInputAttribute("aria-invalid");
+    private string? AriaInvalid => IsInvalid ? "true" : GetSplattedInputAttribute("aria-invalid");
 
     // The list is only put in the document once the callout has been opened. A phone input renders
     // every country it offers - around 240 of them, each with a flag image - so a page holding

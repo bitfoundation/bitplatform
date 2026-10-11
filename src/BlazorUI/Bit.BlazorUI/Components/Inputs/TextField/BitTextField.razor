@@ -170,14 +170,15 @@
 
             @if (ShowClear)
             {
+                var clearDisabled = Disabled || ReadOnly;
                 <button @onclick="HandleOnClearButtonClick"
                         type="button"
                         tabindex="@TabIndex"
                         style="@Styles?.ClearButton"
                         class="bit-tfl-cbt @Classes?.ClearButton"
                         aria-label="@(ClearButtonAriaLabel ?? "Clear text")"
-                        disabled="@(Disabled || ReadOnly)"
-                        aria-disabled="@((Disabled || ReadOnly) ? "true" : null)">
+                        disabled="@clearDisabled"
+                        aria-disabled="@(clearDisabled ? "true" : null)">
                     @if (ClearButtonTemplate is not null)
                     {
                         @ClearButtonTemplate

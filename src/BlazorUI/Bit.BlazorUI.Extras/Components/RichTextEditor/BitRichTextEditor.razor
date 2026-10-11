@@ -621,7 +621,7 @@
     private RenderFragment LinkGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
         <button type="button" class="bit-rte-btn @Classes?.Button @(_state.InLink ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("link", "Insert/edit link (Ctrl+K)")" aria-label="@Loc("link-label", "Insert or edit link")" aria-keyshortcuts="@ShortcutFor("link")" aria-pressed="@(_state.InLink ? "true" : "false")" aria-expanded="@(_showLinkInput ? "true" : "false")" aria-controls="@(_showLinkInput ? $"{UniqueId}-link-panel" : null)" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="ToggleLinkInput">@BitRichTextEditorIcons.Link</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("remove-link", "Remove link (Ctrl+Shift+K)")" aria-label="@Loc("remove-link", "Remove link")" aria-keyshortcuts="@ShortcutFor("unlink")" disabled="@(ControlsDisabled || _state.InLink is false)" aria-disabled="@((ControlsDisabled || _state.InLink is false) ? "true" : null)"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("remove-link", "Remove link (Ctrl+Shift+K)")" aria-label="@Loc("remove-link", "Remove link")" aria-keyshortcuts="@ShortcutFor("unlink")" disabled="@UnlinkDisabled" aria-disabled="@(UnlinkDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="RemoveLinkAsync">@BitRichTextEditorIcons.Unlink</button>
     </div>;
 
@@ -700,7 +700,7 @@
     </div>;
 
     private RenderFragment SourceGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_inSourceView ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("source", "HTML source")" aria-label="@Loc("source-label", "HTML source view")" aria-pressed="@(_inSourceView ? "true" : "false")" disabled="@(Disabled || (EffectiveReadOnly && _inSourceView is false))" aria-disabled="@((Disabled || (EffectiveReadOnly && _inSourceView is false)) ? "true" : null)"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_inSourceView ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("source", "HTML source")" aria-label="@Loc("source-label", "HTML source view")" aria-pressed="@(_inSourceView ? "true" : "false")" disabled="@SourceToggleDisabled" aria-disabled="@(SourceToggleDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="OnSourceToggleClick">@BitRichTextEditorIcons.Source</button>
     </div>;
 

@@ -136,12 +136,13 @@
                         @* The native disabled attribute tells assistive technologies the button is unavailable;
                            aria-disabled repeats it, as on every disabled native control of the library, so one
                            [aria-disabled="true"] selector finds a disabled step whatever element it is. *@
+                        var isDisabled = GetIsDisabled(item);
                         <button type="button"
                                 title="@GetItemTitle(item)"
                                 aria-label="@GetItemAriaLabel(item)"
                                 aria-current="@(GetIsSelected(item) ? "page" : null)"
-                                disabled="@(GetIsDisabled(item))"
-                                aria-disabled="@(GetIsDisabled(item) ? "true" : null)"
+                                disabled="@isDisabled"
+                                aria-disabled="@(isDisabled ? "true" : null)"
                                 style="@GetStyles(item, false)"
                                 class="bit-brc-itm @GetClasses(item, false)" @onclick="() => HandleOnItemClick(item)">
                             @if (template is not null)
@@ -308,14 +309,15 @@
                 }
                 else if (HasClickHandler(item))
                 {
+                    var isDisabled = GetIsDisabled(item);
                     <button type="button"
                             role="menuitem"
-                            tabindex="@(GetIsDisabled(item) ? -1 : 0)"
+                            tabindex="@(isDisabled ? -1 : 0)"
                             title="@GetItemTitle(item, true)"
                             aria-label="@GetItemAriaLabel(item)"
                             aria-current="@(GetIsSelected(item) ? "page" : null)"
-                            aria-disabled="@(GetIsDisabled(item) ? "true" : null)"
-                            disabled="@(GetIsDisabled(item))"
+                            aria-disabled="@(isDisabled ? "true" : null)"
+                            disabled="@isDisabled"
                             style="@GetStyles(item, true)"
                             class="bit-brc-ofi @GetClasses(item, true)" @onclick="() => HandleOnOverflowItemClick(item)">
                         @if (overflowTemplate is not null)

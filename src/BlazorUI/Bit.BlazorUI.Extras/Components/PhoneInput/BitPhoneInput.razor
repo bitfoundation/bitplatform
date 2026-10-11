@@ -145,6 +145,7 @@
 
         @if (ShowClear)
         {
+            var clearDisabled = Disabled || ReadOnly;
             <button @onclick="HandleOnClearButtonClick"
                     @onfocusin="HandleOnFocusIn"
                     @onfocusout="HandleOnFocusOut"
@@ -153,8 +154,8 @@
                     style="@Styles?.ClearButton"
                     class="bit-phi-cbt @Classes?.ClearButton"
                     aria-label="@(ClearButtonAriaLabel ?? "Clear number")"
-                    disabled="@(Disabled || ReadOnly)"
-                    aria-disabled="@((Disabled || ReadOnly) ? "true" : null)">
+                    disabled="@clearDisabled"
+                    aria-disabled="@(clearDisabled ? "true" : null)">
                 @if (ClearButtonTemplate is not null)
                 {
                     @ClearButtonTemplate

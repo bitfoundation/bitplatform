@@ -379,12 +379,13 @@
                     }
                     @if (ShowClearButton)
                     {
+                        var clearDisabled = IsInteractive is false || CurrentValue.HasValue is false;
                         <button @onclick="HandleOnClearClick"
                                 type="button"
                                 style="@Styles?.ClearButton"
                                 class="bit-ctp-abn @Classes?.ClearButton"
-                                disabled="@(IsInteractive is false || CurrentValue.HasValue is false)"
-                                aria-disabled="@((IsInteractive is false || CurrentValue.HasValue is false) ? "true" : null)">
+                                disabled="@clearDisabled"
+                                aria-disabled="@(clearDisabled ? "true" : null)">
                             @ClearButtonText
                         </button>
                     }

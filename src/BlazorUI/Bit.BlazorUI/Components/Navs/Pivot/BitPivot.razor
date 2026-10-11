@@ -22,9 +22,10 @@
             @if (_ShowSlideButtons)
             {
                 var prevIcon = BitIconInfo.From(PreviousIcon, PreviousIconName ?? (_isVertical ? "ChevronUp" : "ChevronLeft"));
+                var prevDisabled = Disabled || _slideAtStart || _slideHasOverflow is false;
                 <button type="button"
-                        disabled="@(Disabled || _slideAtStart || _slideHasOverflow is false)"
-                        aria-disabled="@((Disabled || _slideAtStart || _slideHasOverflow is false) ? "true" : null)"
+                        disabled="@prevDisabled"
+                        aria-disabled="@(prevDisabled ? "true" : null)"
                         style="@Styles?.SlideButton"
                         aria-label="@(PreviousAriaLabel ?? "Previous")"
                         @onclick="() => Slide(false)"
@@ -78,9 +79,10 @@
             @if (_ShowSlideButtons)
             {
                 var nextIcon = BitIconInfo.From(NextIcon, NextIconName ?? (_isVertical ? "ChevronDown" : "ChevronRight"));
+                var nextDisabled = Disabled || _slideAtEnd || _slideHasOverflow is false;
                 <button type="button"
-                        disabled="@(Disabled || _slideAtEnd || _slideHasOverflow is false)"
-                        aria-disabled="@((Disabled || _slideAtEnd || _slideHasOverflow is false) ? "true" : null)"
+                        disabled="@nextDisabled"
+                        aria-disabled="@(nextDisabled ? "true" : null)"
                         style="@Styles?.SlideButton"
                         aria-label="@(NextAriaLabel ?? "Next")"
                         @onclick="() => Slide(true)"

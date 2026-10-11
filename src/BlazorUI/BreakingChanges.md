@@ -26,6 +26,11 @@ read-only, nothing to act on) now also write it while disabled - the Ok button o
 that are only `aria-disabled`** - the focusable ones - now matches the natively disabled ones too: add
 `:not(:disabled)` to it. One that expected no `aria-disabled` on a disabled control checks `disabled` instead.
 
+A boolean written into an input's `InputHtmlAttributes` for an attribute the input also writes itself
+(`aria-disabled`, `aria-invalid`, `aria-label`, `spellcheck`, ...) is now rendered the way Blazor renders any
+splatted boolean - with no value while it is `true`, left out while it is `false` - rather than as the text `True`
+or `False`. Write the string (`["aria-disabled"] = "true"`) for a value of its own.
+
 ### A disabled component no longer runs the activation handlers written on it ([#13547](https://github.com/bitfoundation/bitplatform/issues/13547))
 
 An HTML event handler written straight on a component (`<BitToggle Disabled="true" @onclick="...">`) lands on

@@ -1226,7 +1226,7 @@ await BitThemeManager.ApplyBitThemeAsync(dense);</CodeBox>
                 </ul>
 
                 <BitText>
-                    So <code>.bit-dis</code> matches every disabled component, and <code>[aria-disabled="true"]</code> matches every unavailable control inside one. Use <code>:disabled</code> only when a rule is meant for native controls alone. The root of a component never carries <code>aria-disabled</code> just because it is the root: a plain wrapper has no role for the state to apply to.
+                    So <code>.bit-dis</code> matches every disabled component, and <code>[aria-disabled="true"]</code> matches every unavailable control inside one. Use <code>:disabled</code> only when a rule is meant for native controls alone. The root of a component never carries <code>aria-disabled</code> just because it is the root: a plain wrapper has no role for the state to apply to. The one exception is <code>BitElement</code>, whose root is not a wrapper but the element itself: a disabled one writes <code>aria-disabled="true"</code> whatever tag it renders, a <code>div</code> or a <code>span</code> included, so the rule below matches it as a whole.
                 </BitText>
 
                 <CodeBox Language="css">/* A disabled component, whatever it is */

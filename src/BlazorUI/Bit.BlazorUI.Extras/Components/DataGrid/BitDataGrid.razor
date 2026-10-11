@@ -103,7 +103,8 @@
                 @* Keyed, so an item follows its column when the column moves rather than being re-used for its neighbour. *@
                 <div @key="col" class="bit-dtg-chooser-item" data-col-id="@col.Id">
                     <label class="bit-dtg-chooser-label">
-                        <input type="checkbox" checked="@col.Visible" disabled="@(Disabled || !CanHideColumn(col))" aria-disabled="@((Disabled || !CanHideColumn(col)) ? "true" : null)"
+                        @{ var hideDisabled = Disabled || !CanHideColumn(col); }
+                        <input type="checkbox" checked="@col.Visible" disabled="@hideDisabled" aria-disabled="@(hideDisabled ? "true" : null)"
                                @onchange="e => SetColumnVisibility(col, (bool)e.Value!)" />
                         @col.DisplayTitle
                     </label>
@@ -112,14 +113,16 @@
                     {
                         var earlier = string.Format(Strings.MoveColumnEarlierFormat, col.DisplayTitle);
                         var later = string.Format(Strings.MoveColumnLaterFormat, col.DisplayTitle);
+                        var earlierDisabled = !CanMoveColumn(col, -1);
+                        var laterDisabled = !CanMoveColumn(col, 1);
                         <button type="button" class="bit-dtg-icon-btn bit-dtg-chooser-move" title="@earlier" aria-label="@earlier" data-move="-1"
-                                disabled="@(!CanMoveColumn(col, -1))"
-                                aria-disabled="@(!CanMoveColumn(col, -1) ? "true" : null)" @onclick="() => MoveColumnFromChooserAsync(col, -1)">
+                                disabled="@earlierDisabled"
+                                aria-disabled="@(earlierDisabled ? "true" : null)" @onclick="() => MoveColumnFromChooserAsync(col, -1)">
                             <span aria-hidden="true">‹</span>
                         </button>
                         <button type="button" class="bit-dtg-icon-btn bit-dtg-chooser-move" title="@later" aria-label="@later" data-move="1"
-                                disabled="@(!CanMoveColumn(col, 1))"
-                                aria-disabled="@(!CanMoveColumn(col, 1) ? "true" : null)" @onclick="() => MoveColumnFromChooserAsync(col, 1)">
+                                disabled="@laterDisabled"
+                                aria-disabled="@(laterDisabled ? "true" : null)" @onclick="() => MoveColumnFromChooserAsync(col, 1)">
                             <span aria-hidden="true">›</span>
                         </button>
                     }
@@ -1072,11 +1075,11 @@
         </div>
         <div class="bit-dtg-pager-buttons">
             @* The arrows are bidi-mirrored characters, so a right-to-left grid already points them the way its pages run. *@
-            <button type="button" class="bit-dtg-btn bit-dtg-pager-btn" aria-label="@Strings.FirstPageLabel" disabled="@(Disabled || CurrentPage <= 1)" aria-disabled="@((Disabled || CurrentPage <= 1) ? "true" : null)" @onclick="() => GoToPageAsync(1)"><span aria-hidden="true">«</span></button>
-            <button type="button" class="bit-dtg-btn bit-dtg-pager-btn" aria-label="@Strings.PreviousPageLabel" disabled="@(Disabled || CurrentPage <= 1)" aria-disabled="@((Disabled || CurrentPage <= 1) ? "true" : null)" @onclick="() => GoToPageAsync(CurrentPage - 1)"><span aria-hidden="true">‹</span></button>
+            <button type="button" class="bit-dtg-btn bit-dtg-pager-btn" aria-label="@Strings.FirstPageLabel" disabled="@PreviousPagesDisabled" aria-disabled="@(PreviousPagesDisabled ? "true" : null)" @onclick="() => GoToPageAsync(1)"><span aria-hidden="true">«</span></button>
+            <button type="button" class="bit-dtg-btn bit-dtg-pager-btn" aria-label="@Strings.PreviousPageLabel" disabled="@PreviousPagesDisabled" aria-disabled="@(PreviousPagesDisabled ? "true" : null)" @onclick="() => GoToPageAsync(CurrentPage - 1)"><span aria-hidden="true">‹</span></button>
             <span class="bit-dtg-pager-current">@string.Format(Strings.PagerPageFormat, CurrentPage, TotalPages)</span>
-            <button type="button" class="bit-dtg-btn bit-dtg-pager-btn" aria-label="@Strings.NextPageLabel" disabled="@(Disabled || CurrentPage >= TotalPages)" aria-disabled="@((Disabled || CurrentPage >= TotalPages) ? "true" : null)" @onclick="() => GoToPageAsync(CurrentPage + 1)"><span aria-hidden="true">›</span></button>
-            <button type="button" class="bit-dtg-btn bit-dtg-pager-btn" aria-label="@Strings.LastPageLabel" disabled="@(Disabled || CurrentPage >= TotalPages)" aria-disabled="@((Disabled || CurrentPage >= TotalPages) ? "true" : null)" @onclick="() => GoToPageAsync(TotalPages)"><span aria-hidden="true">»</span></button>
+            <button type="button" class="bit-dtg-btn bit-dtg-pager-btn" aria-label="@Strings.NextPageLabel" disabled="@NextPagesDisabled" aria-disabled="@(NextPagesDisabled ? "true" : null)" @onclick="() => GoToPageAsync(CurrentPage + 1)"><span aria-hidden="true">›</span></button>
+            <button type="button" class="bit-dtg-btn bit-dtg-pager-btn" aria-label="@Strings.LastPageLabel" disabled="@NextPagesDisabled" aria-disabled="@(NextPagesDisabled ? "true" : null)" @onclick="() => GoToPageAsync(TotalPages)"><span aria-hidden="true">»</span></button>
         </div>
     </div>;
 }
