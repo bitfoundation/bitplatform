@@ -23,7 +23,7 @@
 //   --bit-Rating-active-scale       how much the pressed item dips                 (default: 0.9; 1 turns it off)
 //   --bit-Rating-label-color        text color of the label                        (default: $clr-fg-pri)
 //   --bit-Rating-label-font-size    text size of the label                         (default: $tg-fs-sm)
-//   --bit-Rating-label-font-weight  text weight of the label                       (default: $tg-fw-semibold)
+//   --bit-Rating-label-font-weight  text weight of the label                       (default: $tg-field-label-font-weight)
 //   --bit-Rating-label-gap          room between the label and the items, and
 //                                   between the items and the description         (default: spacing(1))
 //   --bit-Rating-description-color  text color of the description                  (default: $clr-fg-sec)
@@ -161,7 +161,7 @@ $rtg-private-properties: clr, clr-hover, clr-active, clr-focus, size, lbl-size, 
     letter-spacing: $tg-ctrl-letter-spacing;
     color: var(--bit-Rating-label-color, #{$clr-fg-pri});
     font-size: var(--bit-rtg-lbl-size, var(--bit-Rating-label-font-size, #{$tg-fs-sm}));
-    font-weight: var(--bit-Rating-label-font-weight, #{$tg-fw-semibold});
+    font-weight: var(--bit-Rating-label-font-weight, #{$tg-field-label-font-weight});
 }
 
 // The hint that sits under the items, pointed at by aria-describedby rather than read as part of the
