@@ -12,7 +12,7 @@ namespace Bit.BlazorUI;
 /// </summary>
 internal static class BitPdfImage
 {
-    public static string? BuildDataUri(BitPdfStream stream, IBitPdfXRef xref, BitPdfDict? resources, (byte R, byte G, byte B) fillColor, bool inline = false)
+    public static string? BuildDataUri(BitPdfBaseStream stream, IBitPdfXRef xref, BitPdfDict? resources, (byte R, byte G, byte B) fillColor, bool inline = false)
     {
         BitPdfDict dict = stream.Dict!;
         int width = GetInt(dict, "Width", "W");
@@ -53,7 +53,7 @@ internal static class BitPdfImage
             // non-default /Decode all need the pixels in hand - decode in C# then.
             BitPdfColorSpace jcs = BitPdfColorSpace.Create(dict.Get("ColorSpace", "CS"), xref, resources);
             bool needsCSharp = jcs.Components == 4
-                || dict.Get("SMask") is BitPdfStream
+                || dict.Get("SMask") is BitPdfBaseStream
                 || xref.FetchIfRef(dict.Get("Mask")) is not null
                 || dict.Get("Decode", "D") is List<object?>;
 
@@ -63,7 +63,7 @@ internal static class BitPdfImage
                 if (jrgba is not null)
                 {
                     ApplySoftMask(dict, xref, resources, jpeg.Width, jpeg.Height, jrgba);
-                    if (xref.FetchIfRef(dict.Get("Mask")) is BitPdfStream jstencil)
+                    if (xref.FetchIfRef(dict.Get("Mask")) is BitPdfBaseStream jstencil)
                     {
                         ApplyStencilMask(jstencil, xref, jpeg.Width, jpeg.Height, jrgba);
                     }
@@ -123,7 +123,7 @@ internal static class BitPdfImage
                 int[]? colorKey = maskObj is List<object?> ck ? ReadColorKey(ck, cs.Components) : null;
                 DecodeColorImage(data, width, height, bpc, cs, rgba, decode, colorKey);
                 ApplySoftMask(dict, xref, resources, width, height, rgba);
-                if (maskObj is BitPdfStream stencil)
+                if (maskObj is BitPdfBaseStream stencil)
                 {
                     ApplyStencilMask(stencil, xref, width, height, rgba);
                 }
@@ -393,7 +393,7 @@ internal static class BitPdfImage
 
     private static void ApplySoftMask(BitPdfDict dict, IBitPdfXRef xref, BitPdfDict? resources, int width, int height, byte[] rgba)
     {
-        if (dict.Get("SMask") is not BitPdfStream smask || smask.Dict is null)
+        if (dict.Get("SMask") is not BitPdfBaseStream smask || smask.Dict is null)
         {
             return;
         }
@@ -567,7 +567,7 @@ internal static class BitPdfImage
 
     /// <summary>Applies an explicit stencil-mask stream (1-bpc): masked samples
     /// become fully transparent (PDF 32000-1 §8.9.6.3).</summary>
-    private static void ApplyStencilMask(BitPdfStream mask, IBitPdfXRef xref, int width, int height, byte[] rgba)
+    private static void ApplyStencilMask(BitPdfBaseStream mask, IBitPdfXRef xref, int width, int height, byte[] rgba)
     {
         if (mask.Dict is null)
         {

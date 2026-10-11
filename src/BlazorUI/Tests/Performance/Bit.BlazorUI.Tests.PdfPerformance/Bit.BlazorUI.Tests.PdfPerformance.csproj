@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <IsPackable>false</IsPackable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <PdfExtrasProject Condition=" '$(PdfExtrasProject)' == '' ">../../../Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj</PdfExtrasProject>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(PdfExtrasProject)" />
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+</Project>

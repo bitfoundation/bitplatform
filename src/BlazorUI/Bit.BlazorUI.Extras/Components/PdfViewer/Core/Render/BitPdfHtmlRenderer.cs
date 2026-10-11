@@ -770,7 +770,7 @@ public sealed class BitPdfHtmlRenderer
             return;
         }
         object? shadingObj = shadings.Get(name.Value);
-        BitPdfDict? shading = shadingObj as BitPdfDict ?? (shadingObj as BitPdfStream)?.Dict;
+        BitPdfDict? shading = shadingObj as BitPdfDict ?? (shadingObj as BitPdfBaseStream)?.Dict;
         if (shading is null)
         {
             return;
@@ -844,7 +844,7 @@ public sealed class BitPdfHtmlRenderer
         {
             return;
         }
-        if (_resources?.Get("XObject") is not BitPdfDict xobjects || xobjects.Get(name.Value) is not BitPdfStream stream
+        if (_resources?.Get("XObject") is not BitPdfDict xobjects || xobjects.Get(name.Value) is not BitPdfBaseStream stream
             || stream.Dict is null)
         {
             return;
@@ -861,7 +861,7 @@ public sealed class BitPdfHtmlRenderer
         }
     }
 
-    private void DrawImage(BitPdfStream stream)
+    private void DrawImage(BitPdfBaseStream stream)
     {
         var fill = ParseRgb(_state.FillColor);
         string? uri = BitPdfImage.BuildDataUri(stream, _xref, _resources, fill);
@@ -1040,7 +1040,7 @@ public sealed class BitPdfHtmlRenderer
         return raw is BitPdfRef rf && _ocgOff.Contains(rf.ToRefString());
     }
 
-    private void DrawForm(BitPdfStream stream)
+    private void DrawForm(BitPdfBaseStream stream)
     {
         if (_formDepth >= MaxFormDepth)
         {
@@ -1205,7 +1205,7 @@ public sealed class BitPdfHtmlRenderer
         {
             return;
         }
-        BitPdfStream? appearance = ResolveAppearance(annot);
+        BitPdfBaseStream? appearance = ResolveAppearance(annot);
         if (appearance?.Dict is null)
         {
             return;
@@ -1232,14 +1232,14 @@ public sealed class BitPdfHtmlRenderer
         CloseGroupsTo(0);
     }
 
-    private BitPdfStream? ResolveAppearance(BitPdfDict annot)
+    private BitPdfBaseStream? ResolveAppearance(BitPdfDict annot)
     {
         if (annot.Get("AP") is not BitPdfDict ap)
         {
             return null;
         }
         object? normal = ap.Get("N");
-        if (normal is BitPdfStream stream)
+        if (normal is BitPdfBaseStream stream)
         {
             return stream;
         }
@@ -1247,13 +1247,13 @@ public sealed class BitPdfHtmlRenderer
         if (normal is BitPdfDict states)
         {
             string? state = (annot.Get("AS") as BitPdfName)?.Value;
-            if (state is not null && states.Get(state) is BitPdfStream selected)
+            if (state is not null && states.Get(state) is BitPdfBaseStream selected)
             {
                 return selected;
             }
             foreach (var key in states.Keys)
             {
-                if (states.Get(key) is BitPdfStream first)
+                if (states.Get(key) is BitPdfBaseStream first)
                 {
                     return first;
                 }
@@ -1595,7 +1595,7 @@ public sealed class BitPdfHtmlRenderer
 
         foreach (ref readonly var g in CollectionsMarshal.AsSpan(glyphs))
         {
-            if (visible && font.Type3.GetGlyphProcedure(g.Code) is { } proc)
+            if (visible && font.Type3.GetGlyphProcedureStream(g.Code) is { } proc)
             {
                 RenderType3Glyph(proc, fontMatrix, font.Type3.Resources);
             }
@@ -1607,7 +1607,7 @@ public sealed class BitPdfHtmlRenderer
         }
     }
 
-    private void RenderType3Glyph(BitPdfStream proc, in BitPdfMatrix fontMatrix, BitPdfDict? glyphResources)
+    private void RenderType3Glyph(BitPdfBaseStream proc, in BitPdfMatrix fontMatrix, BitPdfDict? glyphResources)
     {
         if (_formDepth >= MaxFormDepth)
         {
@@ -2253,7 +2253,7 @@ public sealed class BitPdfHtmlRenderer
             return null;
         }
         object? obj = patterns.Get(name);
-        BitPdfDict? patDict = obj as BitPdfDict ?? (obj as BitPdfStream)?.Dict;
+        BitPdfDict? patDict = obj as BitPdfDict ?? (obj as BitPdfBaseStream)?.Dict;
         if (patDict is null)
         {
             return null;
@@ -2269,7 +2269,7 @@ public sealed class BitPdfHtmlRenderer
         if (patternType == 2)
         {
             object? shadingObj = patDict.Get("Shading");
-            BitPdfDict? shading = shadingObj as BitPdfDict ?? (shadingObj as BitPdfStream)?.Dict;
+            BitPdfDict? shading = shadingObj as BitPdfDict ?? (shadingObj as BitPdfBaseStream)?.Dict;
             if (shading is null)
             {
                 return null;
@@ -2294,7 +2294,7 @@ public sealed class BitPdfHtmlRenderer
     private bool TryRenderTilingFill(string clipData, bool evenOdd)
     {
         if (_resources?.Get("Pattern") is not BitPdfDict patterns
-            || patterns.Get(_state.FillPattern!) is not BitPdfStream patStream
+            || patterns.Get(_state.FillPattern!) is not BitPdfBaseStream patStream
             || patStream.Dict is null)
         {
             return false;
@@ -2397,7 +2397,7 @@ public sealed class BitPdfHtmlRenderer
     }
 
     /// <summary>Replays a single tiling-pattern cell at <paramref name="cellCtm"/>, clipped to its BBox.</summary>
-    private void RunPatternCell(BitPdfStream patStream, in BitPdfMatrix cellCtm, BitPdfDict? patRes, double[] bbox)
+    private void RunPatternCell(BitPdfBaseStream patStream, in BitPdfMatrix cellCtm, BitPdfDict? patRes, double[] bbox)
     {
         if (_formDepth >= MaxFormDepth)
         {

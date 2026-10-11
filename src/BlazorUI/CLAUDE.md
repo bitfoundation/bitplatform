@@ -417,12 +417,17 @@ the whole library from one `:root[bit-theme="..."]` block.
   surface family (plus `$box-shadow-card-hover`, the lift of a card under the pointer), never
   `$box-shadow-callout` directly.
 - **Motion**: `$mot-easing` for state transitions, `$mot-easing-decelerate` / `-accelerate` for popup
-  entry / exit; never a literal `ease` or `cubic-bezier` outside a looping loader keyframe.
+  entry / exit; never a literal `ease` or `cubic-bezier` outside a looping loader keyframe. A duration
+  that must survive `prefers-reduced-motion` (a color flash rather than a movement, BitModal's refusal ring)
+  reads `$mot-duration-full` / `-short-full` / `-long-full`, never `--bit-mot-*-full` itself
+  (`BitMotionTokenTests`). Whether motion is reduced is inherited state, the `--bit-mot-*-reduced` tokens: declared on `:root`
+  under the query, withdrawn (`initial`) by `.bit-fam`, and read by every rule that substitutes the plain
+  aliases again (`:root`, a scoped preset, a motion overlay, `.bit-fam`), so none of them decides it anew.
   **Reduced motion is the tokens' job alone, and a duration the page sets follows it too.** The
   `--bit-mot-duration*` tokens collapse under `prefers-reduced-motion` and `.bit-fam` (ForceAnimation)
-  or an app's `:root` restores them; a duration the page sets on a component - a public
-  `--bit-<Component>-*-duration` variable, a duration parameter written inline as a private token - is
-  read through `mot-scaled-duration(...)` (a delay through `mot-scaled-delay(...)`) from
+  or an app withdrawing the `-reduced` tokens at `:root` restores them; a duration the page sets on a
+  component - a public `--bit-<Component>-*-duration` variable, a duration parameter written inline as a
+  private token - is read through `mot-scaled-duration(...)` (a delay through `mot-scaled-delay(...)`) from
   `Styles/functions.scss`, which scales it by `--bit-mot-duration-factor` (1, 0 under the query, restored
   with the rest), so it collapses and comes back with them. A component therefore writes **no
   `prefers-reduced-motion` query and no `.bit-fam` restore for a duration** - the per-component pair missed
@@ -487,7 +492,10 @@ global token tier: add the token, let the component read it, and keep the preset
 `BitThemeProvider` / `ApplyBitThemeAsync` writes only the primitives it was given, plus a
 `bit-theme-overlay` attribute naming the alias groups those feed (`BitThemeMapper.FamilyAliasOverlayGroups`:
 `radius`, `radius-control`, `shadow`, `tooltip`, `foreground`, the eight roles, `typography` - the dialog
-title and field caption, built from any step of the type ramps); every theme stylesheet
+title and field caption, built from any step of the type ramps - and `motion` - the plain `--bit-mot-*`
+aliases of the `-full` sources `BitTheme.Motion` writes, built alike by every theme and so re-declared by one
+zero-specificity rule of `motion.fluent.scss`, reading whether motion is reduced off the inherited
+`--bit-mot-*-reduced` tokens that `.bit-fam` withdraws); every theme stylesheet
 re-declares its OWN aliases of each group on that element through the `theme-overlay($group, $names)` mixin
 of `Styles/theme-overlay.scss`, so the aliases follow the overlay as the active theme builds them - never the
 core default under a preset that decided otherwise. So a group's declarations live in one mixin per theme

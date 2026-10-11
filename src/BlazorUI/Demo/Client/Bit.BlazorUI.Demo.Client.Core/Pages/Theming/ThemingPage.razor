@@ -847,7 +847,7 @@ BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
                 </BitText>
 
                 <BitText>
-                    <b>Re-declare your family aliases for an inline overlay.</b> A <code>BitThemeProvider</code>, or <code>ApplyBitThemeAsync</code> on an element, that re-values a primitive marks its element with <code>bit-theme-overlay</code>, naming the groups of family aliases built from what it re-valued: <code>radius</code> (the global radius: every per-family radius), <code>radius-control</code> (the control or full radius: the button, chip and selection radii), <code>shadow</code> (the callout shadow, the tertiary border, the border width or the primary foreground: the per-family elevations), <code>tooltip</code> (the primary or secondary background or the primary foreground: the tooltip's fill and text), <code>foreground</code> and <code>pri</code> ... <code>err</code> (the role foregrounds and tints), <code>typography</code> (any step of the font-size or font-weight ramp: the dialog title's size and weight and the field caption's weight). The core stylesheet re-declares its defaults for each group there, which is what makes the aliases follow the overlay - so a preset that decides one of them differently re-declares its own value for that group on the same element, or an overlay puts the default back: a callout shadow under a flat tooltip, the field radius on a pill button. Three selectors per group, each one notch above the selector of your block it mirrors, which is how the packaged presets do it:
+                    <b>Re-declare your family aliases for an inline overlay.</b> A <code>BitThemeProvider</code>, or <code>ApplyBitThemeAsync</code> on an element, that re-values a primitive marks its element with <code>bit-theme-overlay</code>, naming the groups of family aliases built from what it re-valued: <code>radius</code> (the global radius: every per-family radius), <code>radius-control</code> (the control or full radius: the button, chip and selection radii), <code>shadow</code> (the callout shadow, the tertiary border, the border width or the primary foreground: the per-family elevations), <code>tooltip</code> (the primary or secondary background or the primary foreground: the tooltip's fill and text), <code>foreground</code> and <code>pri</code> ... <code>err</code> (the role foregrounds and tints), <code>typography</code> (any step of the font-size or font-weight ramp: the dialog title's size and weight and the field caption's weight), and <code>motion</code> (a <code>-full</code> motion source: the effective durations, which every theme builds alike, so a preset has nothing to re-declare for it). The core stylesheet re-declares its defaults for each group there, which is what makes the aliases follow the overlay - so a preset that decides one of them differently re-declares its own value for that group on the same element, or an overlay puts the default back: a callout shadow under a flat tooltip, the field radius on a pill button. Three selectors per group, each one notch above the selector of your block it mirrors, which is how the packaged presets do it:
                 </BitText>
 
                 <CodeBox Language="css">/* acme-material.css, after the main block: the aliases above, again for an overlay of what they are built from */
@@ -1150,7 +1150,7 @@ await BitThemeManager.ApplyBitThemeAsync(dense);</CodeBox>
         </DocSection>
 
         <DocSection Id="motion-accessibility" Title="Motion and accessibility"
-                    Description="The motion tokens, the one trap when theming durations, the safety nets the stylesheets carry on their own, and the markup a disabled component styles from.">
+                    Description="The motion tokens, how a themed duration still honours reduced motion, the safety nets the stylesheets carry on their own, and the markup a disabled component styles from.">
 
             <DocSection Level="3" Id="motion-tokens" Title="Motion tokens">
 
@@ -1162,29 +1162,27 @@ await BitThemeManager.ApplyBitThemeAsync(dense);</CodeBox>
 {
     Motion =
     {
-        Duration        = "200ms",                              // --bit-mot-duration
-        DurationShort   = "100ms",                              // --bit-mot-duration-short
-        DurationLong    = "300ms",                              // --bit-mot-duration-long
+        Duration        = "200ms",                              // --bit-mot-duration-full
+        DurationShort   = "100ms",                              // --bit-mot-duration-short-full
+        DurationLong    = "300ms",                              // --bit-mot-duration-long-full
         EasingStandard  = "cubic-bezier(0.33, 0, 0.67, 1)",     // --bit-mot-easing
 
         // Multiplies the durations a page sets on a component itself (--bit-Collapse-duration,
         // a TransitionDuration parameter, ...), which the tokens above do not reach. Reduced
-        // motion drops it to 0, which is what collapses those durations as well - so a value
-        // set here would keep them running for those readers (see the caveat below). Scale
-        // them with --bit-mot-duration-factor-full in CSS instead.
-        // DurationFactor = "1",                                // --bit-mot-duration-factor
+        // motion drops it to 0, which is what collapses those durations as well.
+        DurationFactor  = "1",                                  // --bit-mot-duration-factor-full
 
         // Looping animations (spinners, loaders, indeterminate bars) cannot use the durations
         // above: those collapse to a near-zero value under reduced motion, which renders as
         // flicker rather than as stillness. They have their own tokens, which slow down instead.
-        DurationSpinner = "1.3s",                               // --bit-mot-duration-spinner
-        EasingSpinner   = "cubic-bezier(0.53, 0.21, 0.29, 0.67)", // --bit-mot-easing-spinner
-        LoopFactor      = "1",                                  // --bit-mot-loop-factor
+        DurationSpinner = "1.3s",                               // --bit-mot-duration-spinner-full
+        EasingSpinner   = "cubic-bezier(0.53, 0.21, 0.29, 0.67)", // --bit-mot-easing-spinner-full
+        LoopFactor      = "1",                                  // --bit-mot-loop-factor-full
     }
 };</CodeBox>
 
                 <BitText>
-                    <b>One caveat when theming durations.</b> <code>BitTheme.Motion.*</code> writes the <i>effective</i> tokens (<code>--bit-mot-duration</code>&hellip;, <code>--bit-mot-duration-factor</code>), and those are exactly the tokens the reduced-motion media query collapses to <code>0.01ms</code> - but it does so on <code>:root</code>, while <code>ApplyBitThemeAsync</code> / <code>BitThemeProvider</code> write inline on the body or a subtree, and inline wins. A duration set through the C# theme therefore also applies for users who asked for reduced motion. To theme durations <i>and</i> keep the opt-out working, set the <code>--bit-mot-duration*-full</code> sources in CSS instead - they feed the effective tokens in both states:
+                    <b>A themed duration still honours reduced motion.</b> <code>BitTheme.Motion.*</code> writes the unreduced <code>-full</code> sources (<code>--bit-mot-duration-full</code>&hellip;), exactly as a preset declares them, never the effective tokens (<code>--bit-mot-duration</code>&hellip;) components read: those alias the sources, and they are what the reduced-motion media query collapses to <code>0.01ms</code> and <code>ForceAnimation</code> restores. Where <code>ApplyBitThemeAsync</code> / <code>BitThemeProvider</code> write the sources inline on the body or a subtree, they also mark that element with <code>bit-theme-overlay="motion"</code>, and the stylesheet re-declares the effective tokens there - reduced or not exactly as the content around that element is, so a provider inside a <code>ForceAnimation</code> subtree still animates. The same sources are what you set in CSS:
                 </BitText>
 
                 <CodeBox Language="css">:root {
@@ -1205,10 +1203,10 @@ await BitThemeManager.ApplyBitThemeAsync(dense);</CodeBox>
                     <li>
                         <b>Reduced motion.</b> Under <code>prefers-reduced-motion: reduce</code>, all <code>--bit-mot-duration*</code> tokens collapse to <code>0.01ms</code>, so transitions effectively disable.
                         The unreduced values stay available in the matching <code>--bit-mot-duration*-full</code> tokens, which is also where you change a duration since it feeds both states.
-                        A single component can opt out with the <code>ForceAnimation</code> parameter (it renders the <code>bit-fam</code> class, which restores the full durations for that element and its content).
+                        A single component can opt out with the <code>ForceAnimation</code> parameter (it renders the <code>bit-fam</code> class, which restores the full durations for that element and its content). The reduction itself is declared on <code>:root</code> as the <code>--bit-mot-*-reduced</code> tokens (<code>--bit-mot-duration-reduced</code>&hellip;), which the effective tokens read while they are set: an app that ignores the preference everywhere resets them to <code>initial</code> on <code>:root</code> in its own stylesheet, after the library's, and one that re-applies it to a subtree declares them there.
                     </li>
                     <li>
-                        <b>A duration you set on a component follows the same preference.</b> A pace given through a component's own variable (<code>--bit-Collapse-duration</code>, <code>--bit-Toggle-transition-duration</code>&hellip;) or parameter (<code>TransitionDuration</code>, <code>AnimationDuration</code>&hellip;) is multiplied by <code>--bit-mot-duration-factor</code>, which is <code>1</code> normally and <code>0</code> under reduced motion, so it collapses with the theme's own durations. <code>ForceAnimation</code> restores it along with them, and so does an app that turns reduced motion back off for a whole page by restoring the tokens at <code>:root</code> - as long as it restores this one too (<code>--bit-mot-duration-factor: var(--bit-mot-duration-factor-full, 1)</code>).
+                        <b>A duration you set on a component follows the same preference.</b> A pace given through a component's own variable (<code>--bit-Collapse-duration</code>, <code>--bit-Toggle-transition-duration</code>&hellip;) or parameter (<code>TransitionDuration</code>, <code>AnimationDuration</code>&hellip;) is multiplied by <code>--bit-mot-duration-factor</code>, which is <code>1</code> normally and <code>0</code> under reduced motion, so it collapses with the theme's own durations. <code>ForceAnimation</code> restores it along with them, and so does an app that turns reduced motion back off for a whole page by resetting the <code>-reduced</code> tokens at <code>:root</code> - this one's is <code>--bit-mot-duration-factor-reduced</code>.
                     </li>
                     <li>
                         <b>Looping animations are slowed, not stopped.</b> A spinner or a loader is the only thing telling the user that work is still in progress, so it keeps running under reduced motion - and collapsing it to <code>0.01ms</code> would render as flicker rather than as stillness. Instead <code>--bit-mot-duration-spinner</code> goes to <code>4s</code> and <code>--bit-mot-easing-spinner</code> to <code>linear</code>, while <code>--bit-mot-loop-factor</code> rises to <code>3</code>, stretching every other looping animation (the indeterminate <code>BitProgress</code> bar, the staggered <code>BitLoading</code> variants) as a whole so the phase offsets between their parts survive. All three have <code>-full</code> sources and are restored by <code>ForceAnimation</code>, exactly like the durations above. The exception is a shimmer or skeleton - a placeholder for content that has not arrived rather than a progress signal - which stops outright.

@@ -10,8 +10,10 @@
 /// shared between modals. A Modal stops the cascade at its content, so a Modal declared inside a modal the service
 /// shows is never mistaken for that modal.
 /// <br/>
-/// Only a container that cascades one keeps a closed modal in the page: one that does not (a container a consumer
-/// wrote by hand) has nothing to hear the modal out through, and takes it out of the page at once, as it always has.
+/// Only a container that cascades one keeps a closed modal in the page, which is every container that renders its
+/// modals through <see cref="BitModalContainerBase{TReference, TParameters}.RenderModals()"/> or its overload taking a
+/// template: one that cascades the reference and the parameters by hand has nothing to hear the modal out through,
+/// and takes it out of the page at once.
 /// </remarks>
 internal sealed class BitModalExit
 {

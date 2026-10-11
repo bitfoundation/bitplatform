@@ -85,10 +85,10 @@ internal static class BitPdfEmbeddedFiles
             return;
         }
 
-        BitPdfStream? stream = null;
+        BitPdfBaseStream? stream = null;
         foreach (string key in new[] { "UF", "F", "DOS", "Mac", "Unix" })
         {
-            if (xref.FetchIfRef(ef.Get(key)) is BitPdfStream s)
+            if (xref.FetchIfRef(ef.Get(key)) is BitPdfBaseStream s)
             {
                 stream = s;
                 break;

@@ -26,6 +26,8 @@ Performance/
 
 ## Prerequisites
 
+The [buffered PDF engine benchmark](Bit.BlazorUI.Tests.PdfPerformance/README.md) is a separate console diagnostic for parsing/rendering and before/after byte-reading costs. It does not need Playwright or a test host.
+
 1. .NET 10.0 SDK
 2. Playwright browsers installed
 
