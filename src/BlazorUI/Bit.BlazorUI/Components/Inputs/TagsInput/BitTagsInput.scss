@@ -4,7 +4,7 @@
 // tags input and one set on the Style of an instance re-skins that one and the tags inputs nested in it:
 //   --bit-TagsInput-font-size               text size of the field                            (default: $tg-fs-sm)
 //   --bit-TagsInput-color                   color of the typed text                           (default: $clr-fg-pri)
-//   --bit-TagsInput-placeholder-color       color of the placeholder                          (default: $clr-fg-ter)
+//   --bit-TagsInput-placeholder-color       color of the placeholder                          (default: $clr-fg-sec)
 //   --bit-TagsInput-label-color             color of the label above the field                (default: $clr-fg-pri)
 //   --bit-TagsInput-required-color          color of the asterisk a Required label carries    (default: $clr-req)
 //   --bit-TagsInput-description-color       color of the helper text under the field          (default: $clr-fg-sec)
@@ -526,8 +526,12 @@ $tgi-private-properties: clr, clr-txt, clr-hover, clr-focus, gap, fontsize, icon
     //with no tag in it yet is exactly as tall as the same field once the first one is added.
     min-height: var(--bit-tgi-tagminheight, var(--bit-TagsInput-tag-min-height, #{$siz-chip-sm}));
 
+    //the secondary foreground rather than the tertiary one: a placeholder is text, held to the 4.5:1 of text,
+    //which the tertiary one misses on the tertiary surface. Firefox dims a placeholder with an opacity of its
+    //own on top of its color, so that is reset.
     &::placeholder {
-        color: var(--bit-TagsInput-placeholder-color, #{$clr-fg-ter});
+        opacity: 1;
+        color: var(--bit-TagsInput-placeholder-color, #{$clr-fg-sec});
     }
 }
 

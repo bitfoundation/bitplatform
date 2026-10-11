@@ -1218,6 +1218,12 @@ public partial class BitDateRangePickerDemo
         },
         new()
         {
+            Name = "--bit-DateRangePicker-placeholder-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Text color of the placeholder. It replaces the grey the browser picks on its own, which is not derived from the theme and drops below the contrast floor on most surfaces.",
+        },
+        new()
+        {
             Name = "--bit-DateRangePicker-input-background",
             DefaultValue = "--bit-clr-bg-pri",
             Description = "Background of the field.",

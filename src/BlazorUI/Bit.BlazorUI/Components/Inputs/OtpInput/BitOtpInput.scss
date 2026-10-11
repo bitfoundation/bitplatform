@@ -24,7 +24,7 @@
 //   --bit-OtpInput-filled-border-color     rule of a box that holds a character          (default: the rest rule)
 //   --bit-OtpInput-focus-border-color      box rule while focused                        (default: $clr-pri)
 //   --bit-OtpInput-focus-color             focus ring color                              (default: $clr-pri-focus)
-//   --bit-OtpInput-placeholder-color       hint character of an empty box                (default: $clr-fg-ter)
+//   --bit-OtpInput-placeholder-color       hint character of an empty box                (default: $clr-fg-sec)
 //   --bit-OtpInput-label-color             label above the boxes                         (default: $clr-fg-pri)
 //   --bit-OtpInput-description-color       helper text under the boxes                   (default: $clr-fg-sec)
 //   --bit-OtpInput-separator-color         text drawn between the groups                 (default: $clr-fg-sec)
@@ -206,8 +206,12 @@ $otp-private-properties: size, fontsize, dsc-fontsize, clr, clr-focus;
     background-color: var(--bit-otp-inp-sbg, var(--bit-OtpInput-background, var(--bit-otp-bg)));
     transition: border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
+    //the secondary foreground rather than the tertiary one: a hint is text, held to the 4.5:1 of text, which the
+    //tertiary one misses on the tertiary surface. Firefox dims a placeholder with an opacity of its own on top
+    //of its color, so that is reset.
     &::placeholder {
-        color: var(--bit-OtpInput-placeholder-color, #{$clr-fg-ter});
+        opacity: 1;
+        color: var(--bit-OtpInput-placeholder-color, #{$clr-fg-sec});
     }
 
     //a box that already holds a character, which is the hook for a row that shows its own progress. Both

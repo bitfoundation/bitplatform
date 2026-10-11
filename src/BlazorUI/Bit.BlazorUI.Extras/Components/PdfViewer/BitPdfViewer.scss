@@ -23,6 +23,7 @@
 //   --bit-PdfViewer-button-active-hover-background ... under the pointer                        (default: $clr-pri-hover)
 //   --bit-PdfViewer-field-background               the page box, find box and dropdowns         (default: $clr-bg-pri)
 //   --bit-PdfViewer-field-border-color             ... their border                             (default: $clr-brd-pri)
+//   --bit-PdfViewer-field-placeholder-color        ... the placeholder of the find box          (default: $clr-fg-sec)
 //   --bit-PdfViewer-sidebar-background             background of the side panels                (default: $clr-bg-sec)
 //   --bit-PdfViewer-sidebar-width                  width of the bookmarks/attachments/layers panel (default: spacing(29))
 //   --bit-PdfViewer-item-hover-background          a sidebar row under the pointer              (default: $clr-bg-sec-hover)
@@ -299,9 +300,21 @@ $pdv-private-properties: scale;
         @include focus-ring($pdv-focus, 0);
     }
 
+    // Left to the browser, the placeholder keeps a grey that is not derived from the theme and misses the 4.5:1
+    // of WCAG 1.4.3 on most surfaces, dark ones above all. Firefox also dims it with an opacity of its own, which
+    // would darken the themed color again, so that is reset here.
+    &::placeholder {
+        opacity: 1;
+        color: var(--bit-PdfViewer-field-placeholder-color, #{$clr-fg-sec});
+    }
+
     &:disabled {
         cursor: default;
         color: $clr-fg-dis;
+
+        &::placeholder {
+            color: $clr-fg-dis;
+        }
     }
 }
 

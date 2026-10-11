@@ -15,6 +15,7 @@
 //   --bit-DatePicker-input-height            height of the field                            (default: $siz-ctrl-md)
 //   --bit-DatePicker-input-font-size         text size of the field                         (default: $tg-fs-sm)
 //   --bit-DatePicker-input-color             text color of the field                        (default: $clr-fg-pri)
+//   --bit-DatePicker-placeholder-color       text color of the placeholder                  (default: $clr-fg-sec)
 //   --bit-DatePicker-input-background        background of the field                        (default: $clr-bg-pri)
 //   --bit-DatePicker-input-border-color      border color of the field at rest, which the
 //                                            open and the invalid states override           (default: $clr-brd-pri)
@@ -155,6 +156,10 @@ $dtp-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, inp-h-s
             cursor: default;
             color: var(--bit-DatePicker-disabled-color, #{$clr-fg-dis});
             background: none $clr-bg-dis;
+
+            &::placeholder {
+                color: var(--bit-DatePicker-disabled-color, #{$clr-fg-dis});
+            }
         }
 
         .bit-dtp-pkt,
@@ -320,6 +325,14 @@ $dtp-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, inp-h-s
     background: none transparent;
     color: var(--bit-DatePicker-input-color, #{$clr-fg-pri});
     font-family: $tg-font-family;
+
+    // Left to the browser, the placeholder keeps a grey that is not derived from the theme and misses the
+    // 4.5:1 of WCAG 1.4.3 on most surfaces, dark ones above all. Firefox also dims it with an opacity of its
+    // own, which would darken the themed color again, so that is reset here.
+    &::placeholder {
+        opacity: 1;
+        color: var(--bit-DatePicker-placeholder-color, #{$clr-fg-sec});
+    }
 }
 
 .bit-dtp-ein {

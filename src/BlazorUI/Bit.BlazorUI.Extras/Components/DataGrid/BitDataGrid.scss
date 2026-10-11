@@ -33,6 +33,7 @@
 //   --bit-DataGrid-detail-background    background of the expanded detail rows      (default: $clr-bg-sec)
 //   --bit-DataGrid-footer-background    background of the footer row                (default: $clr-bg-sec)
 //   --bit-DataGrid-disabled-color       text color of a disabled grid               (default: $clr-fg-dis)
+//   --bit-DataGrid-placeholder-color    placeholder of the search and filter boxes  (default: $clr-fg-sec)
 // The row height is the RowHeight parameter (it also drives virtualization); the cell padding and the line height
 // set the density around it.
 
@@ -781,6 +782,21 @@ button.bit-dtg-htext {
     background: $clr-bg-dis;
     border-color: $clr-brd-dis;
     cursor: default;
+}
+
+// Left to the browser, the placeholder of the search and filter boxes keeps a grey that is not derived from the
+// theme and misses the 4.5:1 of WCAG 1.4.3 on most surfaces, dark ones above all. Firefox also dims it with an
+// opacity of its own, which would darken the themed color again, so that is reset here.
+.bit-dtg-search-input,
+.bit-dtg-filter-input {
+    &::placeholder {
+        opacity: 1;
+        color: var(--bit-DataGrid-placeholder-color, #{$clr-fg-sec});
+    }
+
+    &:disabled::placeholder {
+        color: $clr-fg-dis;
+    }
 }
 
 /* Touch drag-and-drop: without touch-action none the browser turns the drag into a scroll and fires

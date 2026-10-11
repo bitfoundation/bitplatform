@@ -26,6 +26,7 @@
 //   --bit-DateRangePicker-input-height             height of the field             (default: $siz-ctrl-md)
 //   --bit-DateRangePicker-input-font-size          text size of the field          (default: $tg-fs-sm)
 //   --bit-DateRangePicker-input-color              text color of the field                    (default: $clr-fg-pri)
+//   --bit-DateRangePicker-placeholder-color        text color of the placeholder              (default: $clr-fg-sec)
 //   --bit-DateRangePicker-input-background         background of the field                    (default: $clr-bg-pri)
 //   --bit-DateRangePicker-input-border-color       border of the field                        (default: $clr-brd-pri)
 //   --bit-DateRangePicker-input-border-width       border stroke of the field           (default: $shp-border-width)
@@ -163,6 +164,10 @@ $dtrp-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-body, rl-focus
             cursor: default;
             color: var(--bit-DateRangePicker-disabled-color, #{$clr-fg-dis});
             background: none $clr-bg-dis;
+
+            &::placeholder {
+                color: var(--bit-DateRangePicker-disabled-color, #{$clr-fg-dis});
+            }
         }
 
         @include dtrp-disabled-content;
@@ -358,6 +363,14 @@ $dtrp-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-body, rl-focus
     font-size: var(--bit-dtrp-inp-fs, var(--bit-DateRangePicker-input-font-size, #{$tg-fs-sm}));
     background: none transparent;
     font-family: $tg-font-family;
+
+    // Left to the browser, the placeholder keeps a grey that is not derived from the theme and misses the
+    // 4.5:1 of WCAG 1.4.3 on most surfaces, dark ones above all. Firefox also dims it with an opacity of its
+    // own, which would darken the themed color again, so that is reset here.
+    &::placeholder {
+        opacity: 1;
+        color: var(--bit-DateRangePicker-placeholder-color, #{$clr-fg-sec});
+    }
 }
 
 .bit-dtrp-ein {

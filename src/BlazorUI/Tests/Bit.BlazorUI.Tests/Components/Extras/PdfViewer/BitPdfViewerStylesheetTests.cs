@@ -20,7 +20,7 @@ public partial class BitPdfViewerStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.AreEqual(38, documented.Length, "The stylesheet does not document the thirty-eight public variables.");
+        Assert.AreEqual(39, documented.Length, "The stylesheet does not document the thirty-nine public variables.");
 
         foreach (var name in documented)
         {

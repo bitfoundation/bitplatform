@@ -11,7 +11,7 @@
 //   --bit-PhoneInput-background              fill of the field                        (default: $clr-bg-pri)
 //   --bit-PhoneInput-color                   text of the number                       (default: $clr-fg-pri)
 //   --bit-PhoneInput-placeholder-color       placeholder of the number input, of the
-//                                            selector and of the search box           (default: $clr-fg-ter)
+//                                            selector and of the search box           (default: $clr-fg-sec)
 //   --bit-PhoneInput-border-color            frame at rest                            (default: $clr-brd-pri)
 //   --bit-PhoneInput-hover-border-color      frame under a pointer                    (default: $clr-brd-pri-hover)
 //   --bit-PhoneInput-border-width            thickness of the frame                   (default: $shp-border-width)
@@ -127,7 +127,7 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
     --bit-phi-brd: var(--bit-phi-kind-brd, var(--bit-phi-role-main, var(--bit-PhoneInput-border-color, #{$clr-brd-pri})));
     --bit-phi-brd-hover: var(--bit-phi-kind-brd-hover, var(--bit-phi-role-main, var(--bit-PhoneInput-hover-border-color, #{$clr-brd-pri-hover})));
     --bit-phi-focus: var(--bit-phi-role-focus, var(--bit-PhoneInput-focus-color));
-    --bit-phi-plc: var(--bit-PhoneInput-placeholder-color, #{$clr-fg-ter});
+    --bit-phi-plc: var(--bit-PhoneInput-placeholder-color, #{$clr-fg-sec});
     --bit-phi-itm-clr: var(--bit-PhoneInput-item-color, #{$clr-fg-pri});
     --bit-phi-itm-hover-bg: var(--bit-PhoneInput-item-hover-background, #{$clr-bg-pri-hover});
 }
@@ -315,7 +315,10 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
     border-start-end-radius: var(--bit-phi-radius);
     border-end-end-radius: var(--bit-phi-radius);
 
+    // Firefox dims a placeholder with an opacity of its own on top of its color, which would darken the
+    // themed one below the 4.5:1 of text again.
     &::placeholder {
+        opacity: 1;
         color: var(--bit-phi-plc);
     }
 
@@ -468,6 +471,7 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
     padding: spacing(1) spacing(1.5);
 
     &::placeholder {
+        opacity: 1;
         color: var(--bit-phi-plc);
     }
 }

@@ -178,6 +178,7 @@ public partial class BitDataGridDemo
         new() { Name = "--bit-DataGrid-detail-background", DefaultValue = "--bit-clr-bg-sec", Description = "Background of the expanded detail rows." },
         new() { Name = "--bit-DataGrid-footer-background", DefaultValue = "--bit-clr-bg-sec", Description = "Background of the footer row." },
         new() { Name = "--bit-DataGrid-disabled-color", DefaultValue = "--bit-clr-fg-dis", Description = "Text color of a disabled grid." },
+        new() { Name = "--bit-DataGrid-placeholder-color", DefaultValue = "--bit-clr-fg-sec", Description = "Placeholder of the search box and of the filter boxes." },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
