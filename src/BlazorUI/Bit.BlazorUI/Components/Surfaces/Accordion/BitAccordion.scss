@@ -84,7 +84,11 @@ $acd-private-properties:
     // The -full token is re-declared here rather than only read, because custom properties inherit: an accordion
     // nested in the panel of one that was given a TransitionDuration would otherwise animate at its parent's
     // duration. The inline declaration sits on the element itself, so it still wins over this one.
-    --bit-acd-dur-full: #{$mot-duration-long};
+    // The default is read from the theme's -full duration rather than from the derived one it feeds: the derived
+    // token is substituted where it is declared (on :root) and inherited as that value, so a -full duration set on
+    // the accordion itself or on any ancestor short of a theme scope would never reach it. The shared factor still
+    // collapses it under reduced motion, as it does a duration set inline.
+    --bit-acd-dur-full: var(--bit-mot-duration-long-full, #{$mot-duration-long});
     --bit-acd-dur: #{mot-scaled-duration(var(--bit-acd-dur-full))};
 
     // Every rule that reaches from the root into a part of the accordion is chained down through the header line

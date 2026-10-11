@@ -380,7 +380,7 @@ i.bit-crd-hic {
 // A placeholder rather than the signal that work is in progress - the bars themselves already say that - so
 // reduced motion stops the wave outright, the way BitShimmer does, unless ForceAnimation asks for it back.
 @media (prefers-reduced-motion: reduce) {
-    .bit-crd-skb:not(.bit-fam *)::after {
+    .bit-crd-skb:not(.bit-fam):not(.bit-fam *)::after {
         animation: none;
     }
 }

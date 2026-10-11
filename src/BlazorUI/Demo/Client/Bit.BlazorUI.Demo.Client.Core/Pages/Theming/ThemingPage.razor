@@ -1159,8 +1159,10 @@ await BitThemeManager.ApplyBitThemeAsync(dense);</CodeBox>
 
         // Multiplies the durations a page sets on a component itself (--bit-Collapse-duration,
         // a TransitionDuration parameter, ...), which the tokens above do not reach. Reduced
-        // motion drops it to 0, which is what collapses those durations as well.
-        DurationFactor  = "1",                                  // --bit-mot-duration-factor
+        // motion drops it to 0, which is what collapses those durations as well - so a value
+        // set here would keep them running for those readers (see the caveat below). Scale
+        // them with --bit-mot-duration-factor-full in CSS instead.
+        // DurationFactor = "1",                                // --bit-mot-duration-factor
 
         // Looping animations (spinners, loaders, indeterminate bars) cannot use the durations
         // above: those collapse to a near-zero value under reduced motion, which renders as
@@ -1172,13 +1174,14 @@ await BitThemeManager.ApplyBitThemeAsync(dense);</CodeBox>
 };</CodeBox>
 
                 <BitText>
-                    <b>One caveat when theming durations.</b> <code>BitTheme.Motion.*</code> writes the <i>effective</i> tokens (<code>--bit-mot-duration</code>&hellip;), and those are exactly the tokens the reduced-motion media query collapses to <code>0.01ms</code> - but it does so on <code>:root</code>, while <code>ApplyBitThemeAsync</code> / <code>BitThemeProvider</code> write inline on the body or a subtree, and inline wins. A duration set through the C# theme therefore also applies for users who asked for reduced motion. To theme durations <i>and</i> keep the opt-out working, set the <code>--bit-mot-duration*-full</code> sources in CSS instead - they feed the effective tokens in both states:
+                    <b>One caveat when theming durations.</b> <code>BitTheme.Motion.*</code> writes the <i>effective</i> tokens (<code>--bit-mot-duration</code>&hellip;, <code>--bit-mot-duration-factor</code>), and those are exactly the tokens the reduced-motion media query collapses to <code>0.01ms</code> - but it does so on <code>:root</code>, while <code>ApplyBitThemeAsync</code> / <code>BitThemeProvider</code> write inline on the body or a subtree, and inline wins. A duration set through the C# theme therefore also applies for users who asked for reduced motion. To theme durations <i>and</i> keep the opt-out working, set the <code>--bit-mot-duration*-full</code> sources in CSS instead - they feed the effective tokens in both states:
                 </BitText>
 
                 <CodeBox Language="css">:root {
     --bit-mot-duration-full: 200ms;
     --bit-mot-duration-short-full: 100ms;
     --bit-mot-duration-long-full: 300ms;
+    --bit-mot-duration-factor-full: 1;
 }</CodeBox>
             </DocSection>
 

@@ -539,25 +539,22 @@
         // by, so it collapses to nothing when the operating system or the browser asks for reduced motion and
         // comes back wherever the motion tokens are restored: ForceAnimation (the shared bit-fam class, on the
         // swiper or a subtree it sits in) or an app restoring them at :root. A page without the token - a
-        // consumer theme that never declares it - falls back to reading the preference and bit-fam directly.
+        // consumer theme that never declares it - keeps the pace it asked for, exactly as the stylesheets do
+        // ($mot-duration-factor falls back to 1). It is read when a move starts, never per frame.
         private effectiveDuration(): number {
             const duration = this.options.duration;
 
             if (!(duration > 0)) return 0;
 
+            let factor = 1;
+
             try {
-                const factor = parseFloat(getComputedStyle(this.root).getPropertyValue('--bit-mot-duration-factor'));
+                const value = parseFloat(getComputedStyle(this.root).getPropertyValue('--bit-mot-duration-factor'));
 
-                if (isFinite(factor)) return duration * Math.max(0, factor);
-
-                if (window.matchMedia('(prefers-reduced-motion: reduce)').matches &&
-                    this.root.classList.contains('bit-fam') === false &&
-                    this.root.closest('.bit-fam') === null) {
-                    return 0;
-                }
+                if (isFinite(value)) factor = Math.max(0, value);
             } catch (e) { }
 
-            return duration;
+            return duration * factor;
         }
 
         private cancelAnimation() {
@@ -810,10 +807,12 @@
 
             // A single flick of a trackpad fires a long tail of events, which would run through the
             // whole swiper at once without a quiet period between the moves.
+            // The floor is checked first, so the long tail of events inside it never reads the duration (a
+            // computed style) at all.
             const now = e.timeStamp;
-            const quiet = Math.max(200, this.effectiveDuration() * 1000);
 
-            if (now - this.lastWheel < quiet) return;
+            if (now - this.lastWheel < 200) return;
+            if (now - this.lastWheel < this.effectiveDuration() * 1000) return;
 
             this.lastWheel = now;
 

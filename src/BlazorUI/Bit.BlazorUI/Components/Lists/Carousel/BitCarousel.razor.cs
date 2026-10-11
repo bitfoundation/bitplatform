@@ -1112,7 +1112,8 @@ public partial class BitCarousel : BitComponentBase
 
     // Only the transform is animated, so the move stays on the compositor and the size a slide is given
     // by a re-layout still lands at once. The duration lives in a CSS variable (fed from AnimationDuration
-    // in RegisterCssStyles), so the stylesheet can collapse it under 'prefers-reduced-motion: reduce'.
+    // in RegisterCssStyles), so the stylesheet can scale it by the shared motion factor, which the
+    // 'prefers-reduced-motion: reduce' preference collapses.
     private string Transition()
     {
         return "transition:transform var(--bit-csl-dur) var(--bit-csl-ease)";

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace Bit.BlazorUI.Tests.Utils.Theme;
 /// <summary>
 /// Pins the one way a duration follows the reduced-motion preference (#13552): the <c>--bit-mot-duration*</c> tokens
 /// collapse under <c>prefers-reduced-motion</c>, and a duration the PAGE sets on a component - a public
-/// <c>--bit-&lt;Component&gt;-*-duration</c> variable, a duration parameter written inline as a private <c>-full</c>
+/// <c>--bit-&lt;Component&gt;-*-duration</c> variable, a duration parameter written inline as a private
 /// token - is read through <c>mot-scaled-duration</c> / <c>mot-scaled-delay</c>, which scale it by the shared
 /// <c>--bit-mot-duration-factor</c>.
 /// </summary>
@@ -30,12 +31,24 @@ public sealed class BitReducedMotionDurationContractTests
         @"var\(--bit-[A-Z][A-Za-z]+-(?:[a-z]+-)*(?:duration|delay)(?![a-z-])",
         RegexOptions.Compiled);
 
-    // A read of the private token a duration or delay PARAMETER arrives inline as (--bit-col-dur-full, ...).
-    private static readonly Regex InlineDurationRead = new(
-        @"var\(--bit-[a-z0-9]+-(?:dur|del)-full(?![a-z0-9-])",
-        RegexOptions.Compiled);
+    // A private property the C# or the markup beside a stylesheet gives a value inline, with the value written after it:
+    // what a duration or delay PARAMETER arrives as (--bit-col-dur-full:{...}ms, --bit-cht-dur-full:{...}ms, ...).
+    private static readonly Regex InlineDeclaration = new(
+        @"(?<![a-zA-Z0-9-])(--bit-[a-z]+-[a-z0-9-]+)\s*:(?:\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}|[^;""{}]*?)(?<unit>m?s(?![a-z]))?(?=[;""]|$)",
+        RegexOptions.Compiled | RegexOptions.Multiline);
 
-    private static readonly Regex ScaledRead = new(@"mot-scaled-(?:duration|delay)\(", RegexOptions.Compiled);
+    // A name that says it holds a time, whatever unit the C# writes the value in (--bit-ico-anm-dur, --bit-col-del-full).
+    private static readonly Regex TimeName = new(@"-(?:dur|del|dly|duration|delay)(?:-|$)", RegexOptions.Compiled);
+
+    // The scaled reads, by the name of the function that opens them.
+    private static readonly Regex ScaledCall = new(@"mot-scaled-(?:duration|delay)$", RegexOptions.Compiled);
+
+    // The private tokens of a looping animation's delay: a wait before a loop that reduced motion slows rather than
+    // collapses, which is not motion (see BitIcon.AnimationDelay). The loop's own duration is read through
+    // $mot-loop-factor, which the declaration says by itself.
+    private static readonly string[] LoopDelays = ["--bit-ico-anm-dly"];
+
+    private static readonly ConcurrentDictionary<string, string> ComponentSourceCache = new(StringComparer.Ordinal);
 
     // The looping placeholders, whose page-set pace is not one the factor can scale: reduced motion STOPS them rather
     // than shortening them, which a query of their own does (see theme-variables.scss).
@@ -50,22 +63,76 @@ public sealed class BitReducedMotionDurationContractTests
         {
             if (StoppedLoops.Contains(Path.GetFileName(file), StringComparer.Ordinal)) continue;
 
-            var lines = SourceFiles.StripScssComments(SourceFiles.ReadFullPath(file)).Replace("\r\n", "\n").Split('\n');
+            var stylesheet = SourceFiles.StripScssComments(SourceFiles.ReadFullPath(file)).Replace("\r\n", "\n");
 
-            for (var i = 0; i < lines.Length; i++)
+            // The tokens a duration or delay parameter arrives inline as are found where they are written - the C#
+            // and the markup beside the stylesheet - rather than by a naming convention, so a parameter written under
+            // any name is held to the same scale.
+            var inline = InlineTimeTokens(file).Except(LoopDelays, StringComparer.Ordinal).ToArray();
+
+            var reads = PublicDurationRead.Matches(stylesheet)
+                                          .Concat(inline.SelectMany(token => Regex.Matches(stylesheet, $@"var\({Regex.Escape(token)}(?![a-z0-9-])")));
+
+            foreach (var match in reads)
             {
-                foreach (var match in PublicDurationRead.Matches(lines[i]).Concat(InlineDurationRead.Matches(lines[i])))
-                {
-                    if (IsScaled(lines[i], match.Index)) continue;
+                if (IsScaled(stylesheet, match.Index) || IsLoop(stylesheet, match.Index)) continue;
 
-                    offenders.Add($"{Path.GetFileName(file)}:{i + 1}: {lines[i].Trim()}");
-                }
+                var line = stylesheet[..match.Index].Count(c => c == '\n');
+
+                offenders.Add($"{Path.GetFileName(file)}:{line + 1}: {stylesheet.Split('\n')[line].Trim()}");
             }
         }
 
         Assert.AreEqual(0, offenders.Count,
             "A duration the page sets is read without mot-scaled-duration / mot-scaled-delay, so the reduced motion " +
             "preference never collapses it:\n" + string.Join("\n", offenders));
+    }
+
+    [TestMethod]
+    public void TheInlineTimeTokensAreFoundWhereTheyAreWritten()
+    {
+        // The discovery the test above relies on, pinned on the tokens it has to find: a -full token, one under a name
+        // of its own, a delay, a value written without a unit, and the element tokens the chart writes.
+        var collapse = InlineTimeTokens(SourceFiles.GetPath("Bit.BlazorUI", "Components", "Surfaces", "Collapse", "BitCollapse.scss")).ToArray();
+        CollectionAssert.IsSubsetOf(new[] { "--bit-col-dur-full", "--bit-col-del-full" }, collapse);
+
+        var chart = InlineTimeTokens(SourceFiles.GetPath("Bit.BlazorUI.Extras", "Components", "Chart", "BitChart.scss")).ToArray();
+        CollectionAssert.IsSubsetOf(new[] { "--bit-cht-dur-full", "--bit-cht-el-dur-full", "--bit-cht-el-del-full" }, chart);
+        CollectionAssert.DoesNotContain(chart, "--bit-cht-ease");
+
+        var icon = InlineTimeTokens(SourceFiles.GetPath("Bit.BlazorUI", "Components", "Utilities", "Icon", "BitIcon.scss")).ToArray();
+        CollectionAssert.IsSubsetOf(new[] { "--bit-ico-anm-dur", "--bit-ico-anm-dly" }, icon);
+        CollectionAssert.DoesNotContain(icon, "--bit-ico-anm-itr");
+    }
+
+    [TestMethod]
+    public void EveryReducedMotionQueryStepsAsideForForceAnimation()
+    {
+        // What stays a query of its own (a loop that stops, a scroll-behavior, a cue standing in for a motion) still
+        // gives way to ForceAnimation, on the component that carries it as well as inside a subtree that does: every
+        // selector it styles carries both halves of the guard, itself or through the rule it is nested in.
+        var offenders = new List<string>();
+
+        foreach (var (file, rule, declarations) in EnumerateDeclarations())
+        {
+            var chain = rule.Ancestors.Append(rule.Header).ToArray();
+
+            if (chain.Any(h => h.StartsWith("@media", StringComparison.Ordinal) && h.Contains("prefers-reduced-motion")) is false) continue;
+
+            // Only a rule that declares something applies anything.
+            var body = declarations[(declarations.IndexOf('{') + 1)..].TrimEnd('}');
+            if (string.IsNullOrWhiteSpace(body)) continue;
+
+            var selectors = chain.Where(h => h.StartsWith('@') is false).ToArray();
+
+            if (selectors.Any(h => h.Split(',').All(part => part.Contains(":not(.bit-fam):not(.bit-fam *)", StringComparison.Ordinal)))) continue;
+
+            offenders.Add($"{Path.GetFileName(file)}: {string.Join(" ", chain)}");
+        }
+
+        Assert.AreEqual(0, offenders.Count,
+            "A rule under prefers-reduced-motion applies inside a ForceAnimation subtree, or on the component that " +
+            "sets it; guard every selector with :not(.bit-fam):not(.bit-fam *):\n" + string.Join("\n", offenders));
     }
 
     [TestMethod]
@@ -155,24 +222,77 @@ public sealed class BitReducedMotionDurationContractTests
         StringAssert.Contains(script, "getPropertyValue('--bit-mot-duration-factor')");
     }
 
-    private static bool IsScaled(string line, int index)
+    // Whether the read sits inside an open mot-scaled-*( call, however many lines and parentheses lie between them:
+    // walking back out of the declaration, one of the parentheses still open where the read starts is that call's.
+    private static bool IsScaled(string stylesheet, int index)
+        => EnclosingParentheses(stylesheet, index).Any(open => ScaledCall.IsMatch(stylesheet[NameStart(stylesheet, open)..open]));
+
+    private static int NameStart(string stylesheet, int end)
     {
-        // The read sits inside an open mot-scaled-*( call: the nearest one before it on the line, with its parenthesis
-        // still open where the read starts.
-        foreach (Match call in ScaledRead.Matches(line[..index]).Reverse())
+        while (end > 0 && (char.IsAsciiLetterLower(stylesheet[end - 1]) || stylesheet[end - 1] == '-')) end--;
+
+        return end;
+    }
+
+    // Whether the read belongs to a looping animation, which reduced motion slows by $mot-loop-factor rather than
+    // collapsing: the declaration it is in multiplies by that factor.
+    private static bool IsLoop(string stylesheet, int index)
+    {
+        var start = stylesheet.LastIndexOfAny([';', '{', '}'], index) + 1;
+        var end = stylesheet.IndexOfAny([';', '}'], index);
+
+        return stylesheet[start..(end < 0 ? stylesheet.Length : end)].Contains("$mot-loop-factor", StringComparison.Ordinal);
+    }
+
+    // The positions of the parentheses still open at an index, the innermost first, back to the start of its statement.
+    // A Sass interpolation (#{...}) is part of the statement rather than the end of it.
+    private static IEnumerable<int> EnclosingParentheses(string stylesheet, int index)
+    {
+        var depth = 0;
+        var interpolation = 0;
+
+        for (var i = index - 1; i >= 0; i--)
         {
-            var depth = 0;
+            var c = stylesheet[i];
 
-            for (var i = call.Index + call.Length - 1; i < index; i++)
+            if (c == '}' && IsInterpolationClose(stylesheet, i)) interpolation++;
+            else if (c == '{' && i > 0 && stylesheet[i - 1] == '#' && interpolation > 0) interpolation--;
+            else if (c == ')') depth++;
+            else if (c == '(')
             {
-                if (line[i] == '(') depth++;
-                else if (line[i] == ')') depth--;
+                if (depth == 0) yield return i;
+                else depth--;
             }
+            else if (interpolation == 0 && depth == 0 && (c == ';' || c == '{' || c == '}')) yield break;
+        }
+    }
 
-            if (depth > 0) return true;
+    private static bool IsInterpolationClose(string stylesheet, int close)
+    {
+        var depth = 0;
+
+        for (var i = close; i >= 0; i--)
+        {
+            if (stylesheet[i] == '}') depth++;
+            else if (stylesheet[i] == '{' && --depth == 0) return i > 0 && stylesheet[i - 1] == '#';
         }
 
         return false;
+    }
+
+    // The private properties the C# and the markup beside a stylesheet give a time inline: a value written with a time
+    // unit after it, or a name that says it is one.
+    private static HashSet<string> InlineTimeTokens(string stylesheet)
+    {
+        var source = ComponentSourceCache.GetOrAdd(Path.GetDirectoryName(stylesheet)!, folder =>
+            string.Join("\n", Directory.EnumerateFiles(folder, "*.*", SearchOption.AllDirectories)
+                                       .Where(path => path.EndsWith(".cs", StringComparison.Ordinal) || path.EndsWith(".razor", StringComparison.Ordinal))
+                                       .Select(SourceFiles.ReadFullPath)));
+
+        return InlineDeclaration.Matches(source)
+                                .Where(m => m.Groups["unit"].Success || TimeName.IsMatch(m.Groups[1].Value))
+                                .Select(m => m.Groups[1].Value)
+                                .ToHashSet(StringComparer.Ordinal);
     }
 
     private static string StripNot(string selector)
