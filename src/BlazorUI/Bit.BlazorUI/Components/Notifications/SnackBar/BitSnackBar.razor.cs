@@ -480,7 +480,8 @@ public partial class BitSnackBar : BitComponentBase
     /// skip both animations.
     /// <br />
     /// The duration reaches the stylesheet as a token, so it still collapses under
-    /// <c>prefers-reduced-motion: reduce</c> unless the snack bar opts out with <c>ForceAnimation</c>.
+    /// <c>prefers-reduced-motion: reduce</c> the way the motion tokens of the theme do, and <c>ForceAnimation</c>,
+    /// or an app restoring those tokens, brings it back.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public int TransitionDuration { get; set; } = 200;
@@ -973,8 +974,8 @@ public partial class BitSnackBar : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
 
         // The duration is handed to the stylesheet as the -full token rather than written into the animations
-        // directly, so the reduced-motion collapse in the stylesheet can still shorten it (an inline duration
-        // would be out of reach of any media query).
+        // directly, so the stylesheet can still scale it by the shared motion factor and the reduced motion
+        // preference collapse it (an inline duration would be out of reach of the motion tokens).
         StyleBuilder.Register(() => FormattableString.Invariant($"--bit-snb-dur-full:{Math.Max(0, TransitionDuration)}ms"));
 
         StyleBuilder.Register(() => Offset.HasValue() ? $"--bit-snb-off:{Offset}" : string.Empty);

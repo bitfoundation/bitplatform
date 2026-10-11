@@ -119,11 +119,15 @@ public partial class BitCollapseStylesheetTests
     [TestMethod]
     public void BitCollapseShouldCollapseTheTransitionUnderReducedMotionUnlessAnimationIsForced()
     {
+        // The pace and the delay - whether a parameter, the public variable or the theme decided them - are scaled
+        // by the shared motion factor, which is what collapses them under reduced motion and what ForceAnimation and
+        // an app restoring the motion tokens bring back; the collapse keeps no query or restore of its own for them.
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(stylesheet, "@media (prefers-reduced-motion: reduce)");
-        StringAssert.Contains(stylesheet, "--bit-col-duration: 0.01ms;");
-        StringAssert.Contains(stylesheet, ".bit-col.bit-fam,\n.bit-fam .bit-col {");
+        StringAssert.Contains(stylesheet, "--bit-col-duration: #{mot-scaled-duration(var(--bit-col-dur-full, var(--bit-Collapse-duration, #{$mot-duration-long})))};");
+        StringAssert.Contains(stylesheet, "--bit-col-delay: #{mot-scaled-delay(var(--bit-col-del-full, 0ms))};");
+        Assert.IsFalse(stylesheet.Contains("prefers-reduced-motion"), "The collapse collapses its own motion.");
+        Assert.IsFalse(stylesheet.Contains("bit-fam"), "The collapse restores its own motion.");
     }
 
     [TestMethod]

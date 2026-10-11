@@ -399,6 +399,8 @@ $bit-semantic-focus-color: var(--bit-sem-focus-color);
 $bit-motion-duration: var(--bit-mot-duration);
 $bit-motion-duration-short: var(--bit-mot-duration-short);
 $bit-motion-duration-long: var(--bit-mot-duration-long);
+//scales the durations a page sets on a component itself; 0 under reduced motion
+$bit-motion-duration-factor: var(--bit-mot-duration-factor);
 $bit-motion-easing: var(--bit-mot-easing);
 $bit-motion-easing-decelerate: var(--bit-mot-easing-decelerate);
 $bit-motion-easing-accelerate: var(--bit-mot-easing-accelerate);

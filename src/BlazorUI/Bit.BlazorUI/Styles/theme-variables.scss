@@ -562,6 +562,14 @@ $box-shadow-focus-ring: var(--bit-shd-focus-ring);
 $mot-duration: var(--bit-mot-duration);
 $mot-duration-short: var(--bit-mot-duration-short);
 $mot-duration-long: var(--bit-mot-duration-long);
+//A duration the PAGE sets on a component (a public --bit-<Component>-*-duration variable, a duration
+//parameter written inline) is none of the tokens above, so it is scaled by this factor instead - 1
+//normally, 0 under prefers-reduced-motion, 1 again wherever the tokens are restored (.bit-fam, an app's
+//:root). A component never multiplies by it by hand: it reads the duration through mot-scaled-duration
+//(and a delay through mot-scaled-delay) from functions.scss, and writes no reduced-motion query or
+//.bit-fam restore of its own. The fallback of 1 keeps a consumer-defined theme that never sets the
+//token at the page's pace.
+$mot-duration-factor: var(--bit-mot-duration-factor, 1);
 $mot-easing: var(--bit-mot-easing);
 //Entry (decelerate) and exit (accelerate) curves for popups, callouts and sheets. Standard easing
 //is for state transitions on an element that stays; these are for elements arriving and leaving.

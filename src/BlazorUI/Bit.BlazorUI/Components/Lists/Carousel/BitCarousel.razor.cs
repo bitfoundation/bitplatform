@@ -143,8 +143,8 @@ public partial class BitCarousel : BitComponentBase
     /// <see cref="Fade"/> effect. A value of 0 moves the slides at once, with no animation at all.
     /// <br />
     /// The animation also collapses to a near-zero duration when the operating system or the browser
-    /// reports 'prefers-reduced-motion: reduce', unless <see cref="BitComponentBase.ForceAnimation"/>
-    /// opts the carousel out of it.
+    /// reports 'prefers-reduced-motion: reduce', the way the motion tokens of the theme do, so
+    /// <see cref="BitComponentBase.ForceAnimation"/>, or an app restoring those tokens, brings it back.
     /// </remarks>
     [Parameter, ResetStyleBuilder]
     public double AnimationDuration { get; set; } = 0.5;
@@ -819,8 +819,8 @@ public partial class BitCarousel : BitComponentBase
         StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-csl-gap:{Gap}" : string.Empty);
 
         // The duration is handed to the stylesheet as the -full token rather than written into the
-        // transitions directly, so the reduced-motion collapse in the stylesheet can still shorten it
-        // (an inline duration would be out of reach of any media query).
+        // transitions directly, so the stylesheet can still scale it by the shared motion factor and the
+        // reduced motion preference collapse it (an inline duration would be out of reach of the tokens).
         StyleBuilder.Register(() => FormattableString.Invariant($"--bit-csl-dur-full:{Math.Max(0, AnimationDuration)}s"));
     }
 
@@ -1112,7 +1112,8 @@ public partial class BitCarousel : BitComponentBase
 
     // Only the transform is animated, so the move stays on the compositor and the size a slide is given
     // by a re-layout still lands at once. The duration lives in a CSS variable (fed from AnimationDuration
-    // in RegisterCssStyles), so the stylesheet can collapse it under 'prefers-reduced-motion: reduce'.
+    // in RegisterCssStyles), so the stylesheet can scale it by the shared motion factor, which the
+    // 'prefers-reduced-motion: reduce' preference collapses.
     private string Transition()
     {
         return "transition:transform var(--bit-csl-dur) var(--bit-csl-ease)";

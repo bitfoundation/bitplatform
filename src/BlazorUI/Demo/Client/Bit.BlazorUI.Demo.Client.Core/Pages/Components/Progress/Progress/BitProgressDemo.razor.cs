@@ -366,7 +366,7 @@ public partial class BitProgressDemo
         {
             Name = "--bit-Progress-transition-duration",
             DefaultValue = "--bit-mot-duration",
-            Description = "How long the fill takes to follow a new value. Set it to 0s for a bar fed many times a second.",
+            Description = "How long the fill takes to follow a new value. Set it to 0s for a bar fed many times a second. Reduced motion collapses it unless ForceAnimation is set.",
         },
         new()
         {

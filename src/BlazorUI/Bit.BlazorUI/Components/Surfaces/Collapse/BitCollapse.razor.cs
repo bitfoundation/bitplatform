@@ -251,8 +251,9 @@ public partial class BitCollapse : BitComponentBase
     /// Leaving it unset keeps the duration the motion theme gives a transition of this length, so prefer the
     /// theme unless the pace of this particular collapse carries meaning. A value set here is still collapsed
     /// to nothing when the reader asks for reduced motion: the pace of a transition is a matter of design and
-    /// the reduced motion preference is not, and <see cref="BitComponentBase.ForceAnimation"/> is the one
-    /// thing that overrides it. Negative values are clamped away.
+    /// the reduced motion preference is not. It follows the preference the way the motion tokens of the theme
+    /// do, so <see cref="BitComponentBase.ForceAnimation"/>, or an app restoring the <c>--bit-mot-*</c>
+    /// tokens, brings it back. Negative values are clamped away.
     /// <br />
     /// It applies to both directions, and <see cref="ExpandDuration"/> and <see cref="CollapseDuration"/>
     /// retune one of them on its own.

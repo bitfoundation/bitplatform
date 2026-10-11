@@ -386,8 +386,8 @@ public partial class BitAccordion : BitComponentBase
 
     /// <summary>
     /// Gets or sets the duration of the expand/collapse transition in milliseconds, overriding the duration
-    /// the theme provides. A reduced-motion preference still collapses it, unless the ForceAnimation
-    /// parameter opts out of that.
+    /// the theme provides. A reduced-motion preference still collapses it the way it collapses the motion
+    /// tokens of the theme, so the ForceAnimation parameter, or an app restoring those tokens, brings it back.
     /// </summary>
     [Parameter, ResetStyleBuilder]
     public int? TransitionDuration { get; set; }
@@ -557,8 +557,8 @@ public partial class BitAccordion : BitComponentBase
         StyleBuilder.Register(() => IsExpanded ? Styles?.Expanded : string.Empty);
 
         // The duration is handed to the stylesheet as the -full token rather than written into the transitions
-        // directly, so the reduced-motion collapse in the stylesheet can still shorten it (an inline duration
-        // would be out of reach of any media query).
+        // directly, so the stylesheet can still scale it by the shared motion factor and the reduced motion
+        // preference collapse it (an inline duration would be out of reach of the motion tokens).
         StyleBuilder.Register(() => TransitionDuration.HasValue
                                     ? FormattableString.Invariant($"--bit-acd-dur-full:{Math.Max(0, TransitionDuration.Value)}ms")
                                     : string.Empty);
