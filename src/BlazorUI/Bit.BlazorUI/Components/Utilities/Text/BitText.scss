@@ -1,9 +1,9 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every text and
-// one set on the Style of an instance - or of any element around a group of them - re-skins those alone. A parameter
-// always wins over its variable: Color and Foreground over the color, Typography="Inherit" and Monospace over the
-// families.
+// one set on the Style of an instance - or of any element around a group of them - re-skins those and the texts
+// nested in them. A parameter always wins over its variable: Color and Foreground over the color,
+// Typography="Inherit" and Monospace over the families.
 //   --bit-Text-color                     text color when no Color or Foreground is set   (default: the color around it)
 //   --bit-Text-font-family               font family of every variant but Inherit        (default: $tg-font-family)
 //   --bit-Text-heading-font-family       font family of the H1 to H6 variants            (default: --bit-Text-font-family)

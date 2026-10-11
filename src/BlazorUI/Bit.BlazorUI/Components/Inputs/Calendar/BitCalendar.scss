@@ -2,7 +2,7 @@
 @import "../../../Styles/color-role-maps.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// calendar and one set on the Style of an instance re-skins that one alone:
+// calendar and one set on the Style of an instance re-skins that one and the calendars nested in it:
 //   --bit-Calendar-background                background behind the whole calendar          (default: transparent)
 //   --bit-Calendar-radius                    corner radius of the calendar and of the
 //                                            overlay of the event dialog                  (default: $shp-radius-control)

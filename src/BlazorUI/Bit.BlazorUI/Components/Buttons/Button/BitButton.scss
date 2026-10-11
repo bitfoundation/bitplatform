@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// button and one set on the Style of an instance re-skins that one alone:
+// button and one set on the Style of an instance re-skins that one and the buttons nested in it:
 //   --bit-Button-color                     foreground (text and icon) at rest             (default: per variant - $clr-pri-text filled, $clr-pri otherwise)
 //   --bit-Button-background                background at rest                             (default: $clr-pri filled, transparent otherwise)
 //   --bit-Button-border-color              border color at rest                           (default: $clr-pri filled and outlined, transparent otherwise)

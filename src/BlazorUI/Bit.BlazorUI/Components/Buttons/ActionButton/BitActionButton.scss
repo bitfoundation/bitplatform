@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// action button and one set on the Style of an instance re-skins that one alone:
+// action button and one set on the Style of an instance re-skins that one and the action buttons nested in it:
 //   --bit-ActionButton-color               text color at rest                            (default: $clr-fg-pri)
 //   --bit-ActionButton-icon-color          icon and spinner color at rest                (default: $clr-pri)
 //   --bit-ActionButton-hover-color         text and icon color on hover                  (default: $clr-pri-hover)

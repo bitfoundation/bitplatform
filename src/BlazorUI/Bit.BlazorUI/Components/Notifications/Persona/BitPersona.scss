@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// persona and one set on the Style of an instance re-skins that one alone:
+// persona and one set on the Style of an instance re-skins that one and the personas nested in it:
 //   --bit-Persona-surface-color            surface the persona sits on: the active ring's gap and the inside of the hollow presence dots (default: $clr-bg-pri)
 //   --bit-Persona-gap                      room between the coin and the details        (default: spacing(1.5), per size)
 //   --bit-Persona-primary-color            text of the primary row                      (default: $clr-fg-pri)

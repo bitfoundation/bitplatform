@@ -14,13 +14,13 @@
 
 /*
  * Public CSS variables, read off the element and never declared here, so a value set on :root re-skins every
- * circular time picker and one set on the Style of an instance (or through Styles.Root) re-skins that one
- * alone. A non-standalone callout is rendered beside the root and relocated to the body while it is open -
- * that is what keeps it clear of the clipping and stacking contexts of the page - and Callouts.ts carries
- * what the root and its ancestors declare into it, so a variable set on an ancestor or through its class, in
- * Style or in Styles.Root reaches the dial like any inherited value; Styles.Callout sets one for the dial
- * alone. A standalone dial is never relocated, so it gets no such chain; it still inherits what its ancestors
- * declare, and the public declarations of Style and Styles.Root are copied onto it by the component:
+ * circular time picker and one set on the Style of an instance (or through Styles.Root) re-skins that one and the
+ * circular time pickers nested in it. A non-standalone callout is rendered beside the root and relocated to the body
+ * while it is open - that is what keeps it clear of the clipping and stacking contexts of the page - and Callouts.ts
+ * carries what the root and its ancestors declare into it, so a variable set on an ancestor or through its class, in
+ * Style or in Styles.Root reaches the dial like any inherited value; Styles.Callout sets one for the dial alone. A
+ * standalone dial is never relocated, so it gets no such chain; it still inherits what its ancestors declare, and the
+ * public declarations of Style and Styles.Root are copied onto it by the component:
  *   --bit-CircularTimePicker-color                        accent of the picker: the toolbar, the hand,
  *                                                         the pin, the selected number and the actions
  *                                                                                  (default: $clr-pri)

@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// carousel and one set on the Style of an instance re-skins that one alone:
+// carousel and one set on the Style of an instance re-skins that one and the carousels nested in it:
 //   --bit-Carousel-height                      height of the carousel                              (default: spacing(25))
 //   --bit-Carousel-gap                         space between the slides; the Gap parameter wins    (default: 0)
 //   --bit-Carousel-easing                      timing function of the slide and fade motion        (default: $mot-easing)
