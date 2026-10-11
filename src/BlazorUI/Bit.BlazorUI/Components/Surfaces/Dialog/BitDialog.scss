@@ -4,44 +4,66 @@
 // Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every
 // dialog, one set on an ancestor the dialogs inside it, and one set on the Style of an instance that one and the
 // dialogs nested in it:
-//   --bit-Dialog-z-index                   stacking order of the dialog                   (default: $zindex-modal; not read by AbsolutePosition)
-//   --bit-Dialog-margin                    space kept between the surface and its area    (default: 0, e.g. 16px for a gutter on phones)
-//   --bit-Dialog-overlay-background        color of the overlay behind the surface        (default: $clr-bg-overlay)
-//   --bit-Dialog-overlay-backdrop-filter   filter over the page behind the overlay        (default: none, e.g. blur(4px))
-//   --bit-Dialog-background                background of the surface                      (default: $clr-bg-pri)
-//   --bit-Dialog-color                     text color of the surface and its content      (default: $clr-fg-pri)
-//   --bit-Dialog-border-width              thickness of the border of the surface         (default: 0)
-//   --bit-Dialog-border-color              color of the border of the surface             (default: transparent)
-//   --bit-Dialog-radius                    corner radius of the surface                   (default: $shp-radius-dialog)
-//   --bit-Dialog-shadow                    elevation of the surface                       (default: $box-shadow-dialog)
-//   --bit-Dialog-padding                   inset of the header, message and buttons       (default: $spa-dialog)
-//   --bit-Dialog-max-width                 width the surface stops growing at on its own  (default: $siz-dialog-max-width, read by the C# side)
-//   --bit-Dialog-text-align                alignment of the title, subtitle and message   (default: $layout-dialog-text-align)
-//   --bit-Dialog-title-color               color of the title                             (default: the surface's text color)
-//   --bit-Dialog-title-font-size           size of the title                              (default: $tg-dialog-title-font-size)
-//   --bit-Dialog-title-font-weight         weight of the title                            (default: $tg-dialog-title-font-weight)
-//   --bit-Dialog-subtitle-color            color of the subtitle                          (default: $clr-fg-sec)
-//   --bit-Dialog-message-color             color of the message                           (default: $clr-fg-sec)
+//   --bit-Dialog-z-index                           stacking order of the dialog                      (default: $zindex-modal; not read by AbsolutePosition)
+//   --bit-Dialog-margin                            space kept between the surface and its area       (default: 0, e.g. 16px for a gutter on phones)
+//   --bit-Dialog-overlay-background                color of the overlay behind the surface           (default: $clr-bg-overlay)
+//   --bit-Dialog-overlay-backdrop-filter           filter over the page behind the overlay           (default: none, e.g. blur(4px))
+//   --bit-Dialog-background                        background of the surface                         (default: $clr-bg-pri)
+//   --bit-Dialog-color                             text color of the surface and its content         (default: $clr-fg-pri)
+//   --bit-Dialog-border-width                      thickness of the border of the surface            (default: 0)
+//   --bit-Dialog-border-color                      color of the border of the surface                (default: transparent)
+//   --bit-Dialog-radius                            corner radius of the surface                      (default: $shp-radius-dialog)
+//   --bit-Dialog-shadow                            elevation of the surface                          (default: $box-shadow-dialog)
+//   --bit-Dialog-padding                           inset of the header, message and buttons          (default: $spa-dialog)
+//   --bit-Dialog-max-width                         width the surface stops growing at on its own     (default: $siz-dialog-max-width, read by the C# side)
+//   --bit-Dialog-text-align                        alignment of the title, subtitle and message      (default: $layout-dialog-text-align)
+//   --bit-Dialog-title-color                       color of the title                                (default: the surface's text color)
+//   --bit-Dialog-title-font-size                   size of the title                                 (default: $tg-dialog-title-font-size)
+//   --bit-Dialog-title-font-weight                 weight of the title                               (default: $tg-dialog-title-font-weight)
+//   --bit-Dialog-subtitle-color                    color of the subtitle                             (default: $clr-fg-sec)
+//   --bit-Dialog-message-color                     color of the message                              (default: $clr-fg-sec)
+//   --bit-Dialog-ok-button-background              background of the Ok button                       (default: $clr-pri)
+//   --bit-Dialog-ok-button-color                   text color of the Ok button and its spinner       (default: $clr-pri-text; the spinner $clr-pri-dark)
+//   --bit-Dialog-ok-button-border-color            border color of the Ok button, in every state     (default: the background of the state)
+//   --bit-Dialog-ok-button-hover-background        background of the Ok button on hover              (default: the background when it is set, otherwise $clr-pri-hover)
+//   --bit-Dialog-ok-button-hover-color             text color of the Ok button on hover              (default: the text color)
+//   --bit-Dialog-ok-button-active-background       background of the Ok button while pressed         (default: the hover background, then the background, when either is set, otherwise $clr-pri-active)
+//   --bit-Dialog-ok-button-active-color            text color of the Ok button while pressed         (default: the hover text color, then the text color)
+//   --bit-Dialog-ok-button-radius                  corner radius of the Ok button                    (default: $shp-radius-button)
+//   --bit-Dialog-cancel-button-background          background of the Cancel button                   (default: transparent)
+//   --bit-Dialog-cancel-button-color               text color of the Cancel button                   (default: $clr-pri)
+//   --bit-Dialog-cancel-button-border-color        border color of the Cancel button, in every state (default: the text color at rest, the background of the state on hover and press)
+//   --bit-Dialog-cancel-button-hover-background    background of the Cancel button on hover          (default: the background when it is set, otherwise $clr-pri-hover)
+//   --bit-Dialog-cancel-button-hover-color         text color of the Cancel button on hover          (default: the text color when it is set, otherwise $clr-pri-text)
+//   --bit-Dialog-cancel-button-active-background   background of the Cancel button while pressed     (default: the hover background, then the background, when either is set, otherwise $clr-pri-active)
+//   --bit-Dialog-cancel-button-active-color        text color of the Cancel button while pressed     (default: the hover text color, then the text color, when either is set, otherwise $clr-pri-text)
+//   --bit-Dialog-cancel-button-radius              corner radius of the Cancel button                (default: $shp-radius-button)
+//
+// An explicit Color wins over every button variable above that it paints: the text, border and background of the
+// Ok button, the text and border of the Cancel button at rest, and the fill the Cancel button takes on hover and
+// press. The variables restyle the default, not a choice - which is why Color publishes nothing while it is left
+// unset. What a Color leaves alone stays the variables', so the background of the Cancel button at rest (transparent
+// by default) and both radii still follow them under an explicit Color.
+//
+// The hover and pressed values fall back to the ones at rest once those are set, so a button re-skinned at rest is
+// not handed back the primary colors under the pointer: give the states values of their own to keep a visible
+// feedback. A disabled button keeps whatever colors it has and dims with $opa-dis.
 
-$dlg-private-properties: wid, hei, mnw, mnh, mxw, mxh;
+$dlg-private-properties:
+    wid, hei, mnw, mnh, mxw, mxh,
+    // The color of the action buttons, which the role classes below publish only while Color is set. Left unset,
+    // each sends the var() reading it on to the public variables of the button and then to the primary role, which
+    // is what lets an explicit Color outrank those variables while an unset one leaves them in charge.
+    clr, clr-txt, clr-hover, clr-active, clr-focus, clr-spn;
 
 .bit-dlg {
-    // What the component writes into an inline style starts out unset on every root, so an instance nested in
-    // another one never takes the outer one's value for its own; the inline declaration still wins on its element.
+    // What the component writes into an inline style or a role class publishes starts out unset on every root, so
+    // an instance nested in another one never takes the outer one's value for its own; the inline declaration and
+    // the role class, declared further down at the same weight, still win on the root that carries them. An
+    // uncolored Dialog's buttons take the library's global focus ring (see focus-ring-own).
     @each $name in $dlg-private-properties {
         --bit-dlg-#{$name}: initial;
     }
-    // The color of the action buttons, defaulted to the primary role and re-pointed by the role classes
-    // below. They are declared on the root rather than on the buttons so a Dialog that is given a color
-    // paints the pair of them, the spinner between them and the ring around either, from one place. The
-    // ring's is the one left unset by default: an uncolored Dialog's buttons take the library's global
-    // focus ring (see focus-ring-own).
-    --bit-dlg-clr: #{$clr-pri};
-    --bit-dlg-clr-txt: #{$clr-pri-text};
-    --bit-dlg-clr-hover: #{$clr-pri-hover};
-    --bit-dlg-clr-active: #{$clr-pri-active};
-    --bit-dlg-clr-focus: initial;
-    --bit-dlg-clr-spn: #{$clr-pri-dark};
     inset: 0;
     width: 100%;
     height: 100%;
@@ -383,10 +405,6 @@ $dlg-private-properties: wid, hei, mnw, mnh, mxw, mxh;
         padding: $siz-ctrl-pad-y-sm $siz-ctrl-pad-x-md;
         border-width: $shp-border-width;
         border-style: $shp-border-style;
-
-        // The actions are buttons, so they take the corner of the button family rather than the
-        // plain control one - a preset that pills its buttons pills these along with them.
-        border-radius: $shp-radius-button;
         font-family: $tg-font-family;
         font-weight: $tg-font-weight;
         letter-spacing: $tg-ctrl-letter-spacing;
@@ -415,59 +433,91 @@ $dlg-private-properties: wid, hei, mnw, mnh, mxw, mxh;
     }
 }
 
+// What each action button is painted from in each state when the Dialog is given no Color: its public variables,
+// each state falling back to the one before it once that is set, then the primary role. Every read below ranks the
+// private color an explicit Color publishes (--bit-dlg-clr*, unset otherwise - see .bit-dlg) before these.
+$dlg-okb-color: var(--bit-Dialog-ok-button-color, #{$clr-pri-text});
+$dlg-okb-hover-color: var(--bit-Dialog-ok-button-hover-color, #{$dlg-okb-color});
+$dlg-okb-active-color: var(--bit-Dialog-ok-button-active-color, #{$dlg-okb-hover-color});
+$dlg-okb-background: var(--bit-Dialog-ok-button-background, #{$clr-pri});
+$dlg-okb-hover-background: var(--bit-Dialog-ok-button-hover-background, var(--bit-Dialog-ok-button-background, #{$clr-pri-hover}));
+$dlg-okb-active-background: var(--bit-Dialog-ok-button-active-background, var(--bit-Dialog-ok-button-hover-background, var(--bit-Dialog-ok-button-background, #{$clr-pri-active})));
+
+$dlg-cnb-color: var(--bit-Dialog-cancel-button-color, #{$clr-pri});
+$dlg-cnb-hover-color: var(--bit-Dialog-cancel-button-hover-color, var(--bit-Dialog-cancel-button-color, #{$clr-pri-text}));
+$dlg-cnb-active-color: var(--bit-Dialog-cancel-button-active-color, var(--bit-Dialog-cancel-button-hover-color, var(--bit-Dialog-cancel-button-color, #{$clr-pri-text})));
+$dlg-cnb-hover-background: var(--bit-Dialog-cancel-button-hover-background, var(--bit-Dialog-cancel-button-background, #{$clr-pri-hover}));
+$dlg-cnb-active-background: var(--bit-Dialog-cancel-button-active-background, var(--bit-Dialog-cancel-button-hover-background, var(--bit-Dialog-cancel-button-background, #{$clr-pri-active})));
+
 .bit-dlg-okb {
+    --bit-dlg-okb-clr: initial;
     --bit-dlg-okb-brd: initial;
     --bit-dlg-okb-bg: initial;
-    color: var(--bit-dlg-clr-txt);
-    border-color: var(--bit-dlg-okb-brd, var(--bit-dlg-clr));
-    background-color: var(--bit-dlg-okb-bg, var(--bit-dlg-clr));
+    color: var(--bit-dlg-okb-clr, var(--bit-dlg-clr-txt, #{$dlg-okb-color}));
+    border-color: var(--bit-dlg-okb-brd, var(--bit-dlg-clr, var(--bit-Dialog-ok-button-border-color, #{$dlg-okb-background})));
+    background-color: var(--bit-dlg-okb-bg, var(--bit-dlg-clr, #{$dlg-okb-background}));
+
+    // The actions are buttons, so they take the corner of the button family rather than the plain control one - a
+    // preset that pills its buttons pills these along with them. It is set here rather than on the buttons of the
+    // band, so a single class passed through Classes.OkButton competes with it at equal weight.
+    border-radius: var(--bit-Dialog-ok-button-radius, #{$shp-radius-button});
 
     // The states change the variables the button is painted from rather than its colors, so the one rule that
     // paints is the one at rest: an action the app paints through Classes keeps that paint under the pointer
     // and while it is pressed, instead of losing it to a state that outranks the app's class.
     @media (hover: hover) {
         &:hover:not(:disabled):not([aria-disabled="true"]) {
-            --bit-dlg-okb-brd: var(--bit-dlg-clr-hover);
-            --bit-dlg-okb-bg: var(--bit-dlg-clr-hover);
+            --bit-dlg-okb-clr: var(--bit-dlg-clr-txt, #{$dlg-okb-hover-color});
+            --bit-dlg-okb-brd: var(--bit-dlg-clr-hover, var(--bit-Dialog-ok-button-border-color, #{$dlg-okb-hover-background}));
+            --bit-dlg-okb-bg: var(--bit-dlg-clr-hover, #{$dlg-okb-hover-background});
         }
     }
 
     &:active:not(:disabled):not([aria-disabled="true"]) {
-        --bit-dlg-okb-brd: var(--bit-dlg-clr-active);
-        --bit-dlg-okb-bg: var(--bit-dlg-clr-active);
+        --bit-dlg-okb-clr: var(--bit-dlg-clr-txt, #{$dlg-okb-active-color});
+        --bit-dlg-okb-brd: var(--bit-dlg-clr-active, var(--bit-Dialog-ok-button-border-color, #{$dlg-okb-active-background}));
+        --bit-dlg-okb-bg: var(--bit-dlg-clr-active, #{$dlg-okb-active-background});
     }
 }
 
+// The spinner sits on the Ok button in place of its label, so a button given a text color of its own turns its
+// spinner along with it rather than leaving the primary arc on a background it was never meant for.
 .bit-dlg-spn {
-    @include spinner-ring(spacing(2.5), var(--bit-dlg-clr-spn), $clr-brd-sec, $box-sizing: null);
+    @include spinner-ring(spacing(2.5), var(--bit-dlg-clr-spn, var(--bit-Dialog-ok-button-color, #{$clr-pri-dark})), $clr-brd-sec, $box-sizing: null);
 }
 
 .bit-dlg-cnb {
     --bit-dlg-cnb-clr: initial;
     --bit-dlg-cnb-brd: initial;
     --bit-dlg-cnb-bg: initial;
-    color: var(--bit-dlg-cnb-clr, var(--bit-dlg-clr));
-    border-color: var(--bit-dlg-cnb-brd, var(--bit-dlg-clr));
-    background-color: var(--bit-dlg-cnb-bg, transparent);
+    color: var(--bit-dlg-cnb-clr, var(--bit-dlg-clr, #{$dlg-cnb-color}));
+    border-color: var(--bit-dlg-cnb-brd, var(--bit-dlg-clr, var(--bit-Dialog-cancel-button-border-color, #{$dlg-cnb-color})));
+
+    // The transparent background of the outline at rest is the button's recipe rather than the Dialog's color,
+    // so it stays the variable's under an explicit Color too.
+    background-color: var(--bit-dlg-cnb-bg, var(--bit-Dialog-cancel-button-background, transparent));
+    border-radius: var(--bit-Dialog-cancel-button-radius, #{$shp-radius-button});
 
     @media (hover: hover) {
         &:hover:not(:disabled) {
-            --bit-dlg-cnb-clr: var(--bit-dlg-clr-txt);
-            --bit-dlg-cnb-brd: var(--bit-dlg-clr-hover);
-            --bit-dlg-cnb-bg: var(--bit-dlg-clr-hover);
+            --bit-dlg-cnb-clr: var(--bit-dlg-clr-txt, #{$dlg-cnb-hover-color});
+            --bit-dlg-cnb-brd: var(--bit-dlg-clr-hover, var(--bit-Dialog-cancel-button-border-color, #{$dlg-cnb-hover-background}));
+            --bit-dlg-cnb-bg: var(--bit-dlg-clr-hover, #{$dlg-cnb-hover-background});
         }
     }
 
     &:active:not(:disabled) {
-        --bit-dlg-cnb-clr: var(--bit-dlg-clr-txt);
-        --bit-dlg-cnb-brd: var(--bit-dlg-clr-active);
-        --bit-dlg-cnb-bg: var(--bit-dlg-clr-active);
+        --bit-dlg-cnb-clr: var(--bit-dlg-clr-txt, #{$dlg-cnb-active-color});
+        --bit-dlg-cnb-brd: var(--bit-dlg-clr-active, var(--bit-Dialog-cancel-button-border-color, #{$dlg-cnb-active-background}));
+        --bit-dlg-cnb-bg: var(--bit-dlg-clr-active, #{$dlg-cnb-active-background});
     }
 }
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). They sit on
 // the root of the Dialog and only re-point the tokens the two action buttons read, which is what keeps a
-// colored Dialog a Dialog with colored actions rather than a colored surface.
+// colored Dialog a Dialog with colored actions rather than a colored surface. They are emitted only for an
+// explicit Color, and come after the reset on the root at the same weight, so they win on the root carrying
+// them and over the public variables of the buttons.
 @each $role, $tokens in $bit-color-roles {
     .bit-dlg-#{$role} {
         --bit-dlg-clr: #{role($tokens, main)};
@@ -624,7 +674,7 @@ $dlg-private-properties: wid, hei, mnw, mnh, mxw, mxh;
 // regardless (ForceAnimation, or inside a subtree that is) keeps its shake, and so needs no ring.
 @media (prefers-reduced-motion: reduce) {
     .bit-dlg-prv:not(.bit-fam):not(.bit-fam *) {
-        outline: $shp-border-width-thick $shp-border-style var(--bit-dlg-clr);
+        outline: $shp-border-width-thick $shp-border-style var(--bit-dlg-clr, #{$clr-pri});
         outline-offset: calc(-1 * #{$shp-border-width-thick});
     }
 }
