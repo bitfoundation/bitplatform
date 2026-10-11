@@ -4,14 +4,18 @@
 @* The panel is dismissed by Escape and by a click anywhere outside it, so it never stays stuck open
    behind the rest of the calendar. focusout is deferred so moving between the panel's own controls
    does not close it. It is a non-modal dialog of form controls - switches, a number, a select and a
-   radio group - which a role="menu" (menu items only) could not hold. *@
-<div class="bit-bfc-dropdown" @onkeydown="OnKeyDown" @onfocusout="OnFocusOut" @onfocusin="OnFocusIn">
+   radio group - which a role="menu" (menu items only) could not hold. data-bit-esc claims the Escape that
+   closes it (see Utils.claimEscape), so a surface the calendar sits in (a BitModal, a BitPanel) does not close
+   on the same press. *@
+<div class="bit-bfc-dropdown" data-bit-esc="@_EscapeClaim" @onkeydown="OnKeyDown" @onfocusout="OnFocusOut" @onfocusin="OnFocusIn">
     <button type="button" id="@_buttonId" class="bit-bfc-btn bit-bfc-btn-icon bit-bfc-btn-sm" @onclick="Toggle" title="@Texts.SettingsButtonTitle" aria-label="@Texts.SettingsButtonTitle" aria-haspopup="dialog" aria-expanded="@(_open ? "true" : "false")" aria-controls="@(_open ? _menuId : null)">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
     </button>
     @if (_open)
     {
-        <div class="bit-bfc-dropdown-menu" id="@_menuId" role="dialog" aria-labelledby="@_titleId" tabindex="-1">
+        @* The panel claims the key as well: it is a dialog, the nearest surface to a press made inside it, and
+           Utils.claimEscape stops looking there rather than reading the dropdown's root. *@
+        <div class="bit-bfc-dropdown-menu" id="@_menuId" role="dialog" data-bit-esc="@_EscapeClaim" aria-labelledby="@_titleId" tabindex="-1">
             <div class="bit-bfc-dropdown-label" id="@_titleId">@Texts.CalendarSettingsLabel</div>
 
             @* An on/off preference is a switch: its state is read as on/off rather than as a pressed button. *@

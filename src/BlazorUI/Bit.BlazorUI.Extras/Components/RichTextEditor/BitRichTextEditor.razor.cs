@@ -563,7 +563,9 @@ public partial class BitRichTextEditor : BitComponentBase
     /// </summary>
     private static async Task OnPanelKeyDown(KeyboardEventArgs e, Func<Task> close)
     {
-        if (e.Key == "Escape") await close();
+        // Only the plain key, the one the panel claims (data-bit-esc): an Escape with a modifier is the surrounding
+        // surface's.
+        if (e.IsPlainEscape()) await close();
     }
 
     /// <summary>Sends the focus back to the text on the next render (a panel or a menu is closing under it).</summary>

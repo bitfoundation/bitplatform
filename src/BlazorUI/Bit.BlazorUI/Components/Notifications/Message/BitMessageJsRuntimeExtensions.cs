@@ -15,17 +15,4 @@ internal static class BitMessageJsRuntimeExtensions
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Message.dispose", id);
     }
-
-    internal static ValueTask BitMessageWatchEscape(this IJSRuntime jsRuntime,
-                                                    string id,
-                                                    ElementReference root,
-                                                    DotNetObjectReference<BitMessage> dotnetObj)
-    {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Message.watchEscape", id, root, dotnetObj);
-    }
-
-    internal static ValueTask BitMessageUnwatchEscape(this IJSRuntime jsRuntime, string id)
-    {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Message.unwatchEscape", id);
-    }
 }

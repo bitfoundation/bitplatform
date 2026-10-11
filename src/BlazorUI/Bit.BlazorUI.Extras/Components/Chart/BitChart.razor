@@ -38,10 +38,13 @@
         }
 
         <div class="bit-cht-plot @Classes?.Plot" style="@Styles?.Plot" @ref="_plotEl">
+            @* data-bit-esc claims the Escape OnKeyDown lets go of the keyboard position or a tooltip with (see
+               Utils.claimEscape), only while there is one to let go of. *@
             <svg class="bit-cht-svg" viewBox="@ViewBox" preserveAspectRatio="xMidYMid meet" role="@SvgRole"
                  aria-roledescription="@ActiveTexts.RoleDescription"
                  aria-label="@ChartAriaLabel" aria-describedby="@DescribedBy"
                  style="@AnimStyle" tabindex="@SvgTabIndex"
+                 data-bit-esc="@EscapeClaim"
                  @onkeydown="OnKeyDown" @onblur="OnBlur">
                 <defs>
                     @if (_scene.PlotArea is { } pa)

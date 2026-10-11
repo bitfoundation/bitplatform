@@ -207,6 +207,21 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // Reports, through the OnEscapeVerdict callback, as each Escape goes down inside the root while it claims the key
+    // (data-bit-esc), whether it was claimed by something inside the root rather than by the root itself; see
+    // Utils.watchEscapeClaim.
+    internal static ValueTask BitUtilsWatchEscapeClaim<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime, string id, ElementReference root, DotNetObjectReference<T> dotnetObj) where T : class
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.watchEscapeClaim", id, root, dotnetObj);
+    }
+
+    internal static ValueTask BitUtilsUnwatchEscapeClaim(this IJSRuntime jsRuntime, string id)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.unwatchEscapeClaim", id);
+    }
+
+
     // Calls OnEscape for each Escape pressed inside the element that nothing inside it had the better claim to -
     // an open dropdown or menu opened from inside it, an input method composing, a control that prevented the
     // key's default; see Utils.watchEscape.

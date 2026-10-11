@@ -751,6 +751,76 @@ public class BitSnackBarTests : BunitTestContext
         Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
     }
 
+    [TestMethod,
+         DataRow(false, false, "claim"),
+         DataRow(true, false, null),
+         DataRow(false, true, null)
+    ]
+    public async Task BitSnackBarEscapeKeyIsClaimedByTheItemsItDismissesTest(bool persistent, bool itemPersistent, string? claim)
+    {
+        // The item carries data-bit-esc (Utils.claimEscape) for the press that dismisses it, so a dialog around the
+        // snack bar stays open on that press, and only for that press: a persistent item leaves the key to the dialog.
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.Persistent, persistent));
+
+        await com.Instance.Show("title", persistent: itemPersistent);
+
+        Assert.AreEqual(claim, com.Find(".bit-snb-itm").GetAttribute("data-bit-esc"));
+    }
+
+    [TestMethod,
+         DataRow(true, false, false, false),
+         DataRow(false, true, false, false),
+         DataRow(false, false, true, false),
+         DataRow(false, false, false, true)
+    ]
+    public async Task BitSnackBarEscapeKeyWithAModifierLeavesTheItemTest(bool shift, bool ctrl, bool alt, bool meta)
+    {
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.TransitionDuration, 0));
+
+        await com.Instance.Show("title");
+
+        // Only a plain Escape is claimed from the surface around the snack bar, so only a plain one dismisses the
+        // item: one with a modifier goes on to that surface alone.
+        com.Find(".bit-snb-itm").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape", ShiftKey = shift, CtrlKey = ctrl, AltKey = alt, MetaKey = meta });
+
+        await Task.Delay(50);
+
+        Assert.AreEqual(1, com.FindAll(".bit-snb-itm").Count);
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarEscapeKeyIsClaimedPerItemTest()
+    {
+        var com = RenderComponent<BitSnackBar>();
+
+        await com.Instance.Show("dismissible");
+        await com.Instance.Show("persistent", persistent: true);
+
+        var items = com.FindAll(".bit-snb-itm");
+
+        Assert.AreEqual("claim", items[0].GetAttribute("data-bit-esc"));
+        Assert.IsFalse(items[1].HasAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public async Task BitSnackBarEscapeKeyIsNotClaimedByAnItemOnItsWayOutTest()
+    {
+        var com = RenderComponent<BitSnackBar>(parameters => parameters.Add(p => p.TransitionDuration, 400));
+
+        var item = await com.Instance.Show("title");
+
+        Assert.AreEqual("claim", com.Find(".bit-snb-itm").GetAttribute("data-bit-esc"));
+
+        var closing = com.Instance.Close(item);
+
+        // An item that is already leaving does nothing with another Escape (DismissAsync leaves it alone), so the
+        // key goes on to the dialog around the snack bar while the exit animation plays.
+        com.WaitForAssertion(() => Assert.IsTrue(com.Find(".bit-snb-itm").ClassList.Contains("bit-snb-dsm")));
+        Assert.IsFalse(com.Find(".bit-snb-itm").HasAttribute("data-bit-esc"));
+
+        await closing;
+    }
+
     [TestMethod]
     public async Task BitSnackBarOtherKeysDoNotDismissTest()
     {

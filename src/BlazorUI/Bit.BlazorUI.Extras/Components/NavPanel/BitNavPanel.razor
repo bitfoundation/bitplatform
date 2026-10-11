@@ -256,9 +256,12 @@
 }
 
 @* Every listener of the panel's own is added to the splatted attributes rather than written out beside them,
-   where one of the same name silently replaces what the caller passed. *@
+   where one of the same name silently replaces what the caller passed.
+   data-bit-esc claims the Escape the root's keydown listener acts on (see Utils.claimEscape): the one that empties
+   an active search and the one that closes the drawer. *@
 <div @ref="RootElement" @attributes="GetRootAttributes()"
      id="@_Id"
+     data-bit-esc="@_EscapeClaim"
      role="@(isModal ? "dialog" : null)"
      aria-modal="@(_IsTrappingDrawer ? "true" : null)"
      tabindex="@(_IsTrappingDrawer ? "-1" : null)"

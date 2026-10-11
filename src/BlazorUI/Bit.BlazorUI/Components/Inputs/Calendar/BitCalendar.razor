@@ -292,7 +292,13 @@
                 <div style="@Styles?.Divider" class="bit-cal-dvd @Classes?.Divider"></div>
             }
 
-            <div style="@Styles?.YearMonthPickerWrapper" class="bit-cal-mwp @Classes?.YearMonthPickerWrapper">
+            @* Escape is answered on the wrapper, so it does the same from the header's buttons as from the cells.
+               data-bit-esc claims it while it does something (see Utils.claimEscape), so a dialog around the
+               calendar stays open on that press; a month picker beside the day grid leaves the key to the dialog. *@
+            <div @onkeydown="HandleYearMonthPickerKeyDown"
+                 data-bit-esc="@YearMonthPickerEscapeClaim"
+                 style="@Styles?.YearMonthPickerWrapper"
+                 class="bit-cal-mwp @Classes?.YearMonthPickerWrapper">
                 @if (_showYearPicker is false)
                 {
                     var prevDisabled = CanChangeYear(false) is false;
@@ -529,7 +535,11 @@
                 <div style="@Styles?.Divider" class="bit-cal-dvd @Classes?.Divider"></div>
             }
 
+            @* data-bit-esc claims the Escape that hides a time picker laid over the day grid (see
+               Utils.claimEscape), so a dialog around the calendar stays open on that press; a time picker beside
+               the day grid leaves the key to the dialog. *@
             <div @onkeydown="HandleTimePickerKeyDown"
+                 data-bit-esc="@TimePickerEscapeClaim"
                  style="@Styles?.TimePickerWrapper"
                  class="bit-cal-twp @Classes?.TimePickerWrapper">
                 <div style="@Styles?.TimePickerHeader" class="bit-cal-pkh bit-cal-tph @Classes?.TimePickerHeader">
@@ -709,6 +719,9 @@
         <div class="bit-cal-eov @Classes?.EventModalOverlay"
              style="@Styles?.EventModalOverlay"
              @onclick="CloseEventModal">
+            @* data-bit-esc claims the Escape that closes the dialog (see Utils.claimEscape), so a dialog of the
+               library around the calendar does not close on the same press as well. It is only rendered while the
+               dialog is open, and the dialog closes on every press it hears. *@
             <div id="@_eventDialogId"
                  role="dialog"
                  tabindex="-1"
@@ -717,6 +730,7 @@
                  class="bit-cal-emc @Classes?.EventModalContainer"
                  style="@Styles?.EventModalContainer"
                  @onkeydown="HandleEventDialogKeyDown"
+                 data-bit-esc="claim"
                  @onclick:stopPropagation="true">
                 <div class="bit-cal-emh @Classes?.EventModalHeader"
                      style="@Styles?.EventModalHeader">

@@ -968,8 +968,10 @@ public partial class BitChart : BitComponentBase
 
     private async Task OnKeyDown(KeyboardEventArgs e)
     {
+        // IsNavigable holds an empty chart back as well, so EscapeClaim, which goes by it too, never claims a key
+        // this handler then ignores.
+        if (IsNavigable is false) return;
         int n = _scene.Elements.Count;
-        if (n == 0 || IsNavigable is false) return;
         switch (e.Key)
         {
             // Left/right walk the series the reader is on; up/down step between the series at the same
@@ -1009,7 +1011,9 @@ public partial class BitChart : BitComponentBase
             case "0" when IsKeyboardZoomable && IsPlainKey(e):
                 ResetZoom();
                 break;
-            case "Escape":
+            // Only the plain key, the one the plot claims (EscapeClaim): an Escape with a modifier is the
+            // surrounding surface's.
+            case "Escape" when e.IsPlainEscape() && ReleasesOnEscape:
                 _focusIndex = -1;
                 _focusKey = null;
                 ClearHover();
@@ -1020,6 +1024,16 @@ public partial class BitChart : BitComponentBase
     }
 
     private bool IsKeyboardZoomable => _config.Options.Zoom.Enabled && Disabled is false && _scene.IsRadialOrCircular is false;
+
+    // Whether Escape on the plot has anything to let go of, the one rule OnKeyDown and EscapeClaim both go by: the
+    // keyboard position (with the live message describing it), or a tooltip the pointer opened. With neither there
+    // is nothing for the press to do, and it is left to whatever the chart sits in.
+    private bool ReleasesOnEscape => _focusIndex >= 0 || _hoverAnchor is not null;
+
+    // When OnKeyDown acts on Escape, written onto the plot's svg for Utils.claimEscape: read off the same state it
+    // decides on, so the press that lets go of the keyboard position or the tooltip is the chart's alone, and a
+    // dialog the chart sits in closes on the next one.
+    private string? EscapeClaim => IsNavigable && ReleasesOnEscape ? "claim" : null;
 
     private static bool IsPlainKey(KeyboardEventArgs e) => e.CtrlKey is false && e.MetaKey is false && e.AltKey is false;
 

@@ -41,10 +41,13 @@
            compatibility mouseenter with no mouseleave to match it, which would hold the countdown of a tapped item
            for good, while a touch pointer leaves as soon as the finger is lifted.
            The pointerdown notes that the next thing to happen in the item is the pointer's doing, so an item closed
-           by a click does not move the focus the way one closed from the keyboard does. *@
+           by a click does not move the focus the way one closed from the keyboard does.
+           data-bit-esc claims the Escape that dismisses the item (see Utils.claimEscape), so a dialog around the snack
+           bar stays open on that press; a persistent item leaves the key to the dialog. *@
         <div @key="item.Id"
              role="@GetRenderedRole(item)"
              data-bit-snb-id="@(IsDismissible(item) ? item.Id.ToString() : null)"
+             data-bit-esc="@EscapeClaim(item)"
              aria-live="off"
              aria-labelledby="@GetItemLabelledBy(item)"
              aria-describedby="@GetItemDescribedBy(item)"
