@@ -22,12 +22,14 @@
                     class="bit-dgp-fst"
                     @onclick="GoFirstAsync"
                     disabled="@(!CanGoBack)"
+                    aria-disabled="@(!CanGoBack ? "true" : null)"
                     title="@GoToFirstButtonTitle"
                     aria-label="@GoToFirstButtonTitle" />
             <button type="button"
                     class="bit-dgp-prv"
                     @onclick="GoPreviousAsync"
                     disabled="@(!CanGoBack)"
+                    aria-disabled="@(!CanGoBack ? "true" : null)"
                     title="@GoToPrevButtonTitle"
                     aria-label="@GoToPrevButtonTitle" />
             <div class="bit-dgp-txt">
@@ -48,12 +50,14 @@
                     class="bit-dgp-nex"
                     @onclick="GoNextAsync"
                     disabled="@(!CanGoForwards)"
+                    aria-disabled="@(!CanGoForwards ? "true" : null)"
                     title="@GoToNextButtonTitle"
                     aria-label="@GoToNextButtonTitle" />
             <button type="button"
                     class="bit-dgp-lst"
                     @onclick="GoLastAsync"
                     disabled="@(!CanGoForwards)"
+                    aria-disabled="@(!CanGoForwards ? "true" : null)"
                     title="@GoToLastButtonTitle"
                     aria-label="@GoToLastButtonTitle" />
         </nav>

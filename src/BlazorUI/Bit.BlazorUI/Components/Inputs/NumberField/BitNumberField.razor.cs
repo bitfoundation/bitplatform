@@ -1301,11 +1301,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     // A number is never a word, so the text-editing helpers of a soft keyboard have nothing to correct here
     // and only get in the way: a red squiggle under a perfectly good figure, or a capital letter offered for
     // a field that accepts no letters. A consumer who wants them back writes them into InputHtmlAttributes.
-    private string SpellCheck => GetInputAttribute("spellcheck") ?? "false";
+    private string SpellCheck => GetSplattedInputAttribute("spellcheck") ?? "false";
 
-    private string AutoCorrect => GetInputAttribute("autocorrect") ?? "off";
+    private string AutoCorrect => GetSplattedInputAttribute("autocorrect") ?? "off";
 
-    private string AutoCapitalize => GetInputAttribute("autocapitalize") ?? "off";
+    private string AutoCapitalize => GetSplattedInputAttribute("autocapitalize") ?? "off";
 
     private bool HasDescription => Description.HasValue() || DescriptionTemplate is not null;
 
@@ -1327,7 +1327,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         {
             var ids = string.Join(' ', new[]
             {
-                GetInputAttribute("aria-describedby"),
+                GetSplattedInputAttribute("aria-describedby"),
                 HasErrorMessage ? _errorId : null,
                 HasDescription ? _descriptionId : null,
                 AriaDescription.HasValue() ? _ariaDescriptionId : null,
@@ -1345,7 +1345,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     // The forced invalid state and the one the base class derives from the EditContext are the same thing to
     // a screen reader; the base class writes the latter into the splatted attributes, so the value of the
     // consumer is read back here instead of being overwritten by the explicit attribute of the input.
-    private string? AriaInvalid => HasError ? "true" : GetInputAttribute("aria-invalid");
+    private string? AriaInvalid => HasError ? "true" : GetSplattedInputAttribute("aria-invalid");
 
     // A live region only announces what changes inside it after it is already on the page: one that arrives
     // with its text already in it is regularly missed altogether. The region is therefore always rendered and
@@ -1360,21 +1360,21 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
                               : HideInput || _announceValue ? GetDisplayValueAsString()
                               : null;
 
-    private string? AriaBusy => Loading ? "true" : GetInputAttribute("aria-busy");
+    private string? AriaBusy => Loading ? "true" : GetSplattedInputAttribute("aria-busy");
 
     // The spinbutton role replaces the native role of the input, and with it the readonly attribute's own
     // mapping into the accessibility tree, so the state is written out - the same reasoning that writes out
     // aria-required. IsInputReadOnly is deliberately not included: it only stops the text being typed into,
     // while the arrows and the buttons go on changing the value, so the widget is not read-only at all.
-    private string? AriaReadOnly => ReadOnly ? "true" : GetInputAttribute("aria-readonly");
+    private string? AriaReadOnly => ReadOnly ? "true" : GetSplattedInputAttribute("aria-readonly");
 
-    private string? AriaRequired => Required ? "true" : GetInputAttribute("aria-required");
+    private string? AriaRequired => Required ? "true" : GetSplattedInputAttribute("aria-required");
 
-    private string? AriaDisabled => Disabled ? "true" : GetInputAttribute("aria-disabled");
+    private string? AriaDisabled => GetInputAriaDisabled(Disabled);
 
     // The parameter is the hint of the component, but the attribute is one a consumer may just as well have
     // splatted in through InputHtmlAttributes; an unset parameter reads theirs back rather than erasing it.
-    private string? EffectiveEnterKeyHint => EnterKeyHint ?? GetInputAttribute("enterkeyhint");
+    private string? EffectiveEnterKeyHint => EnterKeyHint ?? GetSplattedInputAttribute("enterkeyhint");
 
     // aria-labelledby takes precedence over aria-label, so pointing at the visible label while a name of
     // its own was given would quietly throw that name away. The visible label keeps naming the input
@@ -1382,11 +1382,6 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private string? LabelledBy => (Label.HasValue() || LabelTemplate is not null) && AriaLabel.HasNoValue()
                                     ? _labelId
                                     : null;
-
-    private string? GetInputAttribute(string name)
-    {
-        return TryFindAttribute(InputHtmlAttributes, name, out var value) ? value?.ToString() : null;
-    }
 
     /// <summary>
     /// The effective range, with the bounds ordered so that a misconfigured Min greater than Max

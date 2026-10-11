@@ -181,6 +181,7 @@
                                         class="bit-map-marker-table-action @Classes?.MarkerListButton"
                                         style="@Styles?.MarkerListButton"
                                         disabled="@(Disabled)"
+                                        aria-disabled="@(Disabled ? "true" : null)"
                                         aria-label="@($"{MarkerListActionHeader}: {DescribeMarker(marker)}")"
                                         @onclick="() => ShowMarker(marker.Id)">
                                     @MarkerListActionHeader

@@ -915,9 +915,9 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
     // The base class writes the aria-invalid of a failing validation into the splatted attributes, so the
     // value a consumer set is read back here instead of being overwritten by the explicit attribute below.
-    private string? AriaInvalid => IsInvalid ? "true" : GetInputAttribute("aria-invalid");
+    private string? AriaInvalid => IsInvalid ? "true" : GetSplattedInputAttribute("aria-invalid");
 
-    private string? AriaBusy => Loading ? "true" : GetInputAttribute("aria-busy");
+    private string? AriaBusy => Loading ? "true" : GetSplattedInputAttribute("aria-busy");
 
     /// <summary>
     /// Everything the input is described by, in reading order. A describedby of the consumer's own comes
@@ -931,7 +931,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         {
             var ids = string.Join(' ', new[]
             {
-                GetInputAttribute("aria-describedby"),
+                GetSplattedInputAttribute("aria-describedby"),
                 HasErrorMessage ? _errorId : null,
                 HasDescription ? _descriptionId : null,
                 AriaDescription.HasValue() ? _ariaDescriptionId : null
@@ -948,11 +948,6 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     private string? LiveText => ErrorMessage.HasValue()
                                     ? ErrorMessage
                                     : Loading ? LoadingAriaLabel : null;
-
-    private string? GetInputAttribute(string name)
-    {
-        return TryFindAttribute(InputHtmlAttributes, name, out var value) ? value?.ToString() : null;
-    }
 
     private string? GetAutoCorrect() => AutoCorrect.HasValue ? (AutoCorrect.Value ? "on" : "off") : null;
 

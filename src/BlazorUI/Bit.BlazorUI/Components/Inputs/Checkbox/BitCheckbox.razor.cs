@@ -502,31 +502,6 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// </remarks>
     private bool IsInteractive => Disabled is false && ReadOnly is false && IsLoading is false && _isChanging is false;
 
-    /// <summary>
-    /// The value of an attribute the page wrote into <see cref="BitInputBase{TValue}.InputHtmlAttributes"/>
-    /// rather than as a parameter of the component.
-    /// </summary>
-    /// <remarks>
-    /// Those attributes are splatted onto the very input the component writes its own aria-* onto, and a null
-    /// written over a splatted attribute does not leave that attribute alone - it removes it. So every name
-    /// that is also reachable by hand is resolved against what the page wrote instead of being overwritten
-    /// with the parameter's null. HTML attribute names are case insensitive, and so is the deduplication the
-    /// render tree does, which is why a differently cased spelling has to be found here too.
-    /// </remarks>
-    private string? GetSplattedInputAttribute(string name)
-    {
-        if (InputHtmlAttributes is null || InputHtmlAttributes.Count == 0) return null;
-
-        if (InputHtmlAttributes.TryGetValue(name, out var value)) return value?.ToString();
-
-        foreach (var attribute in InputHtmlAttributes)
-        {
-            if (string.Equals(attribute.Key, name, StringComparison.OrdinalIgnoreCase)) return attribute.Value?.ToString();
-        }
-
-        return null;
-    }
-
     private BitIconInfo? GetStateIcon()
     {
         if (Indeterminate)

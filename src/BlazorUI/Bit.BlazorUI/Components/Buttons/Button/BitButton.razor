@@ -24,7 +24,9 @@
     // so - it says that something is in progress, not that the press will do nothing. So the state is conveyed
     // the way the disabled one is, with aria-disabled. A Reclickable button is left out of it: it is still there
     // to be clicked.
-    var ariaDisabled = Disabled is false && (IsLoading is false || Reclickable) ? GetSplattedAttribute("aria-disabled") : "true";
+    var ariaDisabled = Disabled || (IsLoading && Reclickable is false) ? "true" : GetSplattedAttribute("aria-disabled");
+    // Out of reach natively unless AllowDisabledFocus keeps it in the tab order, where aria-disabled carries the state alone.
+    var nativeDisabled = Disabled && AllowDisabledFocus is false;
     // aria-describedby is a list of ids, so the author's are kept beside the component's rather than replaced by it.
     var describedBy = string.Join(' ', new[] { GetSplattedAttribute("aria-describedby"), descriptionId }.Where(id => id.HasValue()));
     // An anchor loses its href when it is disabled or loading, and with it the implicit link role, so the role is put
@@ -153,7 +155,7 @@
             type="@_buttonType.GetValue()"
             form="@formId"
             dir="@dir"
-            disabled="@(Disabled && AllowDisabledFocus is false)"
+            disabled="@nativeDisabled"
             autofocus="@autoFocus"
             title="@title"
             tabindex="@tabIndex"

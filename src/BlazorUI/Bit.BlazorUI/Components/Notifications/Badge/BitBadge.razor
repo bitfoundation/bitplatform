@@ -113,6 +113,7 @@
                         title="@_titleText"
                         tabindex="@TabIndex"
                         disabled="@(Disabled)"
+                        aria-disabled="@(Disabled ? "true" : null)"
                         aria-label="@(labelOnBadge ? AriaLabel : null)"
                         aria-describedby="@descriptionId"
                         aria-live="@(Live ? "polite" : null)"

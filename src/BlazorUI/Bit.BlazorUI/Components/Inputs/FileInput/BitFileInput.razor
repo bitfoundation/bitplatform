@@ -20,6 +20,7 @@
                 title="@Title"
                 tabindex="@TabIndex"
                 disabled="@(Disabled)"
+                aria-disabled="@(Disabled ? "true" : null)"
                 aria-label="@AriaLabel"
                 aria-describedby="@(_HasDescription ? _descriptionId : null)"
                 style="@Styles?.Label"
@@ -63,6 +64,7 @@
            multiple="@Multiple"
            webkitdirectory="@Directory"
            disabled="@(Disabled)"
+           aria-disabled="@(Disabled ? "true" : null)"
            aria-label="@AriaLabel"
            aria-labelledby="@(AriaLabel is null && LabelTemplate is null && HideLabel is false ? _buttonId : null)"
            accept="@GetAcceptValue()" />
@@ -168,6 +170,7 @@
                                     title="@removeTitle"
                                     tabindex="@TabIndex"
                                     disabled="@(Disabled)"
+                                    aria-disabled="@(Disabled ? "true" : null)"
                                     aria-label="@($"{removeTitle} {(folder.HasValue() ? file.RelativePath : file.Name)}")"
                                     aria-describedby="@(file.IsValid ? null : GetMessageId(file))"
                                     style="@Styles?.RemoveButton"
