@@ -408,7 +408,8 @@ global token tier: add the token, let the component read it, and keep the preset
 **A family alias a theme declares is declared again for an inline overlay, from the same mixin.** A
 `BitThemeProvider` / `ApplyBitThemeAsync` writes only the primitives it was given, plus a
 `bit-theme-overlay` attribute naming the alias groups those feed (`BitThemeMapper.FamilyAliasOverlayGroups`:
-`radius`, `radius-control`, `shadow`, `tooltip`, `foreground`, the eight roles); every theme stylesheet
+`radius`, `radius-control`, `shadow`, `tooltip`, `foreground`, the eight roles, `typography` - the dialog
+title and field caption, built from any step of the type ramps); every theme stylesheet
 re-declares its OWN aliases of each group on that element through the `theme-overlay($group, $names)` mixin
 of `Styles/theme-overlay.scss`, so the aliases follow the overlay as the active theme builds them - never the
 core default under a preset that decided otherwise. So a group's declarations live in one mixin per theme
