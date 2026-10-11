@@ -562,6 +562,12 @@ $box-shadow-focus-ring: var(--bit-shd-focus-ring);
 $mot-duration: var(--bit-mot-duration);
 $mot-duration-short: var(--bit-mot-duration-short);
 $mot-duration-long: var(--bit-mot-duration-long);
+//The unreduced durations: never collapsed by prefers-reduced-motion. Only for motion that stays
+//meaningful under the preference - a change of color, not a movement (BitModal's refusal ring) - or
+//for the default a component restores itself under ForceAnimation (BitAccordion's transition).
+$mot-duration-full: var(--bit-mot-duration-full);
+$mot-duration-short-full: var(--bit-mot-duration-short-full);
+$mot-duration-long-full: var(--bit-mot-duration-long-full);
 $mot-easing: var(--bit-mot-easing);
 //Entry (decelerate) and exit (accelerate) curves for popups, callouts and sheets. Standard easing
 //is for state transitions on an element that stays; these are for elements arriving and leaving.

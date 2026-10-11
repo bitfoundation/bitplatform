@@ -42,7 +42,10 @@ button {
 // unreduced values for this element and everything under it, without touching the document root. The
 // literal fallbacks keep this working for a consumer theme that defines --bit-mot-duration* by hand and
 // therefore has no -full tokens to fall back on.
-.bit-fam {
+// The second selector is the same opt-out on an element that also carries an inline theme overlay of the
+// motion tokens, whose rule in motion.fluent.scss would otherwise outrank .bit-fam there.
+.bit-fam,
+:root .bit-fam[bit-theme-overlay~="motion"] {
     --bit-mot-duration: var(--bit-mot-duration-full, 200ms);
     --bit-mot-duration-short: var(--bit-mot-duration-short-full, 100ms);
     --bit-mot-duration-long: var(--bit-mot-duration-long-full, 300ms);

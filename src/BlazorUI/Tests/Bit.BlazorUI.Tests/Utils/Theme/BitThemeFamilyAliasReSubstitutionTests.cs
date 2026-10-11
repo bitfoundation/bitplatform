@@ -53,6 +53,8 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
                           "--bit-shd-snackbar", "--bit-shd-appbar-top", "--bit-shd-appbar-bottom"],
             ["tooltip"] = ["--bit-clr-tooltip-bg", "--bit-clr-tooltip-fg"],
             ["foreground"] = [.. Roles.Select(r => $"--bit-clr-{r}-fg")],
+            ["motion"] = ["--bit-mot-duration", "--bit-mot-duration-short", "--bit-mot-duration-long",
+                          "--bit-mot-duration-spinner", "--bit-mot-easing-spinner", "--bit-mot-loop-factor"],
         };
 
         foreach (var role in Roles)
@@ -348,6 +350,9 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
             ("the primary foreground", t => t.Color.Foreground.Primary = "#111111", "shadow tooltip foreground"),
             ("the warning role", t => t.Color.Warning.Main = "#FFB900", "wrn"),
             ("the primary role", t => t.Color.Primary.Main = "#0F6CBD", "pri"),
+            ("the duration", t => t.Motion.Duration = "250ms", "motion"),
+            ("the spinner easing", t => t.Motion.EasingSpinner = "linear", "motion"),
+            ("the loop factor", t => t.Motion.LoopFactor = "2", "motion"),
         };
 
         foreach (var (what, set, expected) in cases)
@@ -376,6 +381,7 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
         theme.Color.Warning.Main = "#EDAE12";
         theme.Color.SevereWarning.Main = "#CE4207";
         theme.Color.Error.Main = "#D2393B";
+        theme.Motion.DurationLong = "400ms";
 
         Assert.AreEqual(string.Join(' ', OverlayGroupNames()), RenderOverlay(theme));
     }
@@ -386,6 +392,7 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
         var theme = new BitTheme();
         theme.Typography.FontFamily = "Georgia, serif";
         theme.Shape.Radius.Surface = "2rem";
+        theme.Motion.EasingStandard = "linear";
 
         Assert.IsNull(RenderOverlay(theme));
     }

@@ -22,6 +22,9 @@
 //   tooltip         --bit-clr-bg-pri/-bg-sec/-fg-pri the tooltip fill and text
 //   foreground      --bit-clr-fg-pri                every role foreground
 //   pri ... err     --bit-clr-<role>                that role's foreground and tint
+//   motion          --bit-mot-*-full                the plain motion tokens, which alias the -full ones
+//                                                   (motion.fluent.scss: one rule, as every theme builds
+//                                                   them alike, with a reduced-motion twin)
 //
 // This mixin emits the selectors a theme block re-declares a group on, mirroring the selectors of the
 // block itself:

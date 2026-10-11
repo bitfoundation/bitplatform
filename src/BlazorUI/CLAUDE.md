@@ -352,7 +352,10 @@ the whole library from one `:root[bit-theme="..."]` block.
   surface family (plus `$box-shadow-card-hover`, the lift of a card under the pointer), never
   `$box-shadow-callout` directly.
 - **Motion**: `$mot-easing` for state transitions, `$mot-easing-decelerate` / `-accelerate` for popup
-  entry / exit; never a literal `ease` or `cubic-bezier` outside a looping loader keyframe.
+  entry / exit; never a literal `ease` or `cubic-bezier` outside a looping loader keyframe. A duration
+  that must survive `prefers-reduced-motion` (a color flash rather than a movement, BitModal's refusal ring)
+  reads `$mot-duration-full` / `-short-full` / `-long-full`, never `--bit-mot-*-full` itself
+  (`BitMotionTokenTests`).
 - **Opacity**: a disabled element that keeps its own colors dims with `$opa-dis`; text-bearing
   controls use the `$clr-*-dis` color tokens instead.
 - **Density**: a size or inset measured in spacing units is never computed in a theme scope - one
@@ -408,7 +411,9 @@ global token tier: add the token, let the component read it, and keep the preset
 **A family alias a theme declares is declared again for an inline overlay, from the same mixin.** A
 `BitThemeProvider` / `ApplyBitThemeAsync` writes only the primitives it was given, plus a
 `bit-theme-overlay` attribute naming the alias groups those feed (`BitThemeMapper.FamilyAliasOverlayGroups`:
-`radius`, `radius-control`, `shadow`, `tooltip`, `foreground`, the eight roles); every theme stylesheet
+`radius`, `radius-control`, `shadow`, `tooltip`, `foreground`, the eight roles, and `motion` - the plain
+`--bit-mot-*` aliases of the `-full` sources `BitTheme.Motion` writes, built alike by every theme and so
+re-declared by one rule of `motion.fluent.scss`, with its reduced-motion twin); every theme stylesheet
 re-declares its OWN aliases of each group on that element through the `theme-overlay($group, $names)` mixin
 of `Styles/theme-overlay.scss`, so the aliases follow the overlay as the active theme builds them - never the
 core default under a preset that decided otherwise. So a group's declarations live in one mixin per theme
