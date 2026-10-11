@@ -74,7 +74,7 @@
 }
 
 @* stopping propagation on the root covers both the original label click and the click the label forwards to the input *@
-<div @ref="RootElement" @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      @onclick:stopPropagation="StopPropagation"
      id="@_Id"
      style="@StyleBuilder.Value"

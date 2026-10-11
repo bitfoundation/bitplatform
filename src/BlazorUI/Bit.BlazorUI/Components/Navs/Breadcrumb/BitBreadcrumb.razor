@@ -23,7 +23,7 @@
    the dir stay after it and keep the ones the component renders. *@
 <nav @ref="RootElement"
      aria-label="@(AriaLabel ?? "Breadcrumb")"
-     @attributes="HtmlAttributes"
+     @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"

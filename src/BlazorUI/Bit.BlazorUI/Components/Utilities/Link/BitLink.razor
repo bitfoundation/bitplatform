@@ -88,7 +88,7 @@
 
 @if (isAnchor)
 {
-    <a @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleClick"
+    <a @ref="RootElement" @attributes="DisabledAwareHtmlAttributes" @onclick="HandleClick"
        @onclick:stopPropagation="StopPropagation"
        @onclick:preventDefault="@(isHash || PreventDefault || Disabled)"
        id="@_Id"
@@ -113,7 +113,7 @@
 }
 else
 {
-    <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleClick" @onclick:stopPropagation="StopPropagation"
+    <button @ref="RootElement" @attributes="DisabledAwareHtmlAttributes" @onclick="HandleClick" @onclick:stopPropagation="StopPropagation"
             id="@_Id"
             dir="@dir"
             type="button"

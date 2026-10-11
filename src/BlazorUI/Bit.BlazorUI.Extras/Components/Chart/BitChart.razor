@@ -3,7 +3,7 @@
 
 @* A null written over a splatted attribute removes it, so an idle chart writes back the aria-busy the page splatted on
    (see BitComponentBase.GetSplattedAttribute) rather than wiping it. *@
-<div @ref="RootElement" @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      class="@ClassBuilder.Value"
      style="@StyleBuilder.Value"

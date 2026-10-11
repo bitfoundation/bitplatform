@@ -1,7 +1,7 @@
 ﻿@namespace Bit.BlazorUI
 @inherits BitTextInputBase<string?>
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      data-bit-popup-style="@(GetPopupStyle(_inputHasFocus, Styles?.Focused, Styles?.Root))"

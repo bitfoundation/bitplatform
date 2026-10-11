@@ -2,7 +2,7 @@
 @using System.Globalization
 @inherits BitInputBase<TimeSpan?>
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      data-bit-popup-style="@(GetPopupStyle(HasFocus, Styles?.Focused, Styles?.Root))"

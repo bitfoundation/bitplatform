@@ -83,7 +83,7 @@
     </text>;
 }
 
-<button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick"
+<button @ref="RootElement" @attributes="DisabledAwareHtmlAttributes" @onclick="HandleOnClick"
         @onclick:stopPropagation="StopPropagation"
         @onclick:preventDefault="clickRefused"
         id="@_Id"

@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Collections.Frozen;
+
+namespace Bit.BlazorUI;
 
 public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 {
@@ -484,6 +486,83 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     /// removes it, so the parameter is resolved against what the page wrote by hand rather than written over it.
     /// </remarks>
     private protected string? ResolveAriaLabel() => AriaLabel ?? GetSplattedAttribute("aria-label");
+
+    /// <summary>
+    /// The events an element is activated through: by the pointer, by touch, by the keyboard, and by the click an
+    /// assistive technology dispatches. The ones that only follow the pointer or the focus around (a hover, a focus)
+    /// are not among them.
+    /// </summary>
+    /// <remarks>
+    /// Matched without regard to case, the way the renderer matches an attribute name, and frozen so the list every
+    /// disabled component filters by cannot be changed under it.
+    /// </remarks>
+    private protected static readonly FrozenSet<string> ActivationEvents = new[]
+    {
+        "onclick", "ondblclick", "onauxclick", "oncontextmenu",
+        "onmousedown", "onmouseup", "onpointerdown", "onpointerup",
+        "ontouchstart", "ontouchend",
+        "onkeydown", "onkeyup", "onkeypress"
+    }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// The attributes the page splatted on the component, less the handlers of the <see cref="ActivationEvents"/>
+    /// while the component is <see cref="Disabled"/>. A component whose disabled state makes it unavailable splats its
+    /// root with this rather than with <see cref="HtmlAttributes"/>. One whose disabled state also follows another
+    /// component's (a tab of a disabled pivot) says so through <see cref="IsActivationDisabled"/>.
+    /// </summary>
+    /// <remarks>
+    /// The pointer-events a disabled class turns off are only one of the ways an event reaches an element: a screen
+    /// reader activates what it announces by dispatching a click on it, and an event of an enabled control inside a
+    /// disabled container - a click, a key, a press - bubbles up to it. A form element the browser disables is out of
+    /// reach of the pointer and the keyboard both, so a disabled component drops the page's handlers of the events
+    /// that activate an element rather than run them for a state it announces as unavailable. A component whose
+    /// disabled state only switches one of its behaviours off while the content it hosts stays live (a badge on a
+    /// button, a tooltip on its anchor, a pane) keeps splatting <see cref="HtmlAttributes"/>, since what bubbles up
+    /// to it there is an enabled control's own event.
+    /// </remarks>
+    private protected Dictionary<string, object> DisabledAwareHtmlAttributes
+    {
+        get
+        {
+            if (IsActivationDisabled is false || HtmlAttributes.Count == 0) return HtmlAttributes;
+
+            // Read again on every render rather than cached: a component may replace a value of its own HtmlAttributes
+            // in place between two renders (BitSlider's aria-label, a BitParams ancestor's attributes), which leaves
+            // the dictionary and its count unchanged, and a copy kept from before would render the stale value.
+            return LeaveActivationHandlersOut(HtmlAttributes);
+        }
+    }
+
+    /// <summary>
+    /// Whether the component is unavailable to the page's activation handlers (see <see cref="DisabledAwareHtmlAttributes"/>).
+    /// It is <see cref="Disabled"/> unless the component's disabled state also follows another one's.
+    /// </summary>
+    private protected virtual bool IsActivationDisabled => Disabled;
+
+    // The dictionary itself while it holds no handler of an activation event, so the common case allocates nothing.
+    private static Dictionary<string, object> LeaveActivationHandlersOut(Dictionary<string, object> htmlAttributes)
+    {
+        var hasActivationEvent = false;
+        foreach (var name in htmlAttributes.Keys)
+        {
+            if (ActivationEvents.Contains(name) is false) continue;
+
+            hasActivationEvent = true;
+            break;
+        }
+
+        if (hasActivationEvent is false) return htmlAttributes;
+
+        Dictionary<string, object> attributes = new(htmlAttributes.Count);
+        foreach (var attribute in htmlAttributes)
+        {
+            if (ActivationEvents.Contains(attribute.Key)) continue;
+
+            attributes.Add(attribute.Key, attribute.Value);
+        }
+
+        return attributes;
+    }
 
     // A boolean is the one attribute value the renderer does not write as its text: an attribute is written with no
     // value at all while it is true and left out altogether while it is false, which is what an attribute splatted

@@ -5,7 +5,7 @@
 @* data-bit-esc on the root claims the Escape the shortcut listener forwards to .NET while that press closes something
    (EscapeClaim, see Utils.claimEscape), so a dialog around the viewer does not close on that same press. *@
 <div @ref="RootElement"
-     @attributes="HtmlAttributes"
+     @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"

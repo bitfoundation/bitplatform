@@ -23,7 +23,7 @@
     var decreaseSecondIconCss = BitIconInfo.From(TimePickerDecreaseSecondIcon, TimePickerDecreaseSecondIconName ?? "ChevronDownSmall")?.GetCssClasses();
 }
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      data-bit-popup-style="@(GetPopupStyle(_hasFocus, Styles?.Focused, Styles?.Root))"

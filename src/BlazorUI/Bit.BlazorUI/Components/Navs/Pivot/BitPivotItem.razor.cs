@@ -140,6 +140,9 @@ public partial class BitPivotItem : BitComponentBase
     // A tab of a disabled pivot cannot be activated either, so it says so like one disabled on its own.
     private bool _IsDisabled => Disabled || Parent?.Disabled is true;
 
+    // Nor does it run the page's activation handlers: the tab is the pivot's control, not a host of live content.
+    private protected override bool IsActivationDisabled => _IsDisabled;
+
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Parent?.Classes?.HeaderItem);
