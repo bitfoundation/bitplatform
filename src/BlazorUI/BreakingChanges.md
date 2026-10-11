@@ -5,6 +5,29 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## vNext (after 10.6.2)
 
+### A modal container of an app's own reads its modals through `ModalReferences` ([#13558](https://github.com/bitfoundation/bitplatform/issues/13558))
+
+The list of modals `BitModalContainerBase<TReference, TParameters>` kept is no longer a `protected` field:
+`_modalRefs` is now the read-only `ModalReferences`, since a container that changed the list itself left the
+container's own record of each modal (its exit animation, its merged parameters) out of step with it.
+**A container that derived from the base and read `_modalRefs`** reads `ModalReferences` instead. One that
+rendered its modals by cascading the reference and the parameters itself renders them through
+`RenderModals()` - or `RenderModals(template)` to put markup of its own around each modal - which is the only
+way a closed modal plays its exit animation; a container for a `BitModalService` is simplest derived from
+`BitModalContainer`, which already names the service, merges the parameters and honours `CloseOnNavigation`:
+
+```razor
+@inherits BitModalContainer
+
+@(RenderModals(item => @<div class="modal-frame">@item.Modal</div>))
+```
+
+The modals a container renders also render only when something of their own changes - their parameters
+(`Update`, `Refresh`, the container's `ModalParameters`) or their closing - rather than whenever any modal is
+shown or closed. Content that reads its `BitModalReference` is still handed it again on each of those changes,
+so it follows the reference's `Parameters` and `IsClosed`; content that relied on being rendered again because
+another modal came or went calls `StateHasChanged` itself.
+
 ### A disabled component no longer runs the activation handlers written on it ([#13547](https://github.com/bitfoundation/bitplatform/issues/13547))
 
 An HTML event handler written straight on a component (`<BitToggle Disabled="true" @onclick="...">`) lands on

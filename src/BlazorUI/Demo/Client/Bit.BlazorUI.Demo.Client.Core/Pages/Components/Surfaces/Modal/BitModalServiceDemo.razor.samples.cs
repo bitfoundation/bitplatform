@@ -556,28 +556,11 @@ private async Task ShowCascadedOwnModal()
 }";
 
     private const string demoModalContainerCode = @"
-@inherits BitModalContainerBase<BitModalReference, BitModalParameters>
+@inherits BitModalContainer
 
-<div>Open in this container: [@_modalRefs.Count(m => m.IsClosed is false)]</div>
+<div>Open in this container: [@ModalReferences.Count(m => m.IsClosed is false)]</div>
 
-@foreach (var modalRef in _modalRefs)
-{
-    @* Keyed by the modal, so that one closing ahead of another leaves that one as it was. *@
-    <div @key=""modalRef.Id"">
-        @RenderModal(modalRef)
-    </div>
-}
-
-@code {
-    [Parameter, EditorRequired] public BitModalService Service { get; set; } = default!;
-
-    protected override BitModalServiceBase<BitModalReference, BitModalParameters> ModalService => Service;
-
-    protected override BitModalParameters? MergeParameters(BitModalParameters? modalParameters, BitModalParameters? containerParameters)
-    {
-        return BitModalParameters.Merge(modalParameters, containerParameters);
-    }
-}";
+@(RenderModals(item => @<div class=""demo-modal-slot"" data-modal-id=""@item.Reference.Id"">@item.Modal</div>))";
 
     private readonly string example11RazorCode = @"
 <BitButton OnClick=""ShowCustomContainerModal"">Show at the start</BitButton>

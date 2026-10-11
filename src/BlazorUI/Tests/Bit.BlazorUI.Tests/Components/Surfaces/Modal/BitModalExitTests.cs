@@ -267,17 +267,17 @@ public class BitModalExitTests : BunitTestContext
 
         await modalRef.Close();
 
-        // A container that cascades by hand rather than through RenderModal hands the modal no BitModalExit, so it has
-        // no way of hearing that the modal played its way out: the modal goes at once, and the application closing it
-        // is still not reported as a dismissal.
+        // A container that cascades by hand rather than through RenderModals hands the modal no BitModalExit, so it
+        // has no way of hearing that the modal played its way out: the modal goes at once, and the application
+        // closing it is still not reported as a dismissal.
         container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-mdl").Count));
         Assert.AreEqual(0, dismissed);
         Assert.AreEqual(0, Context.JSInterop.Invocations[WaitForAnimations].Count);
         Assert.AreEqual(0, ModalService.OpenModals.Count);
     }
 
-    // A container that cascades by hand instead of rendering through RenderModal: it can cascade the reference and the
-    // parameters, but not the BitModalExit, which is internal to the library.
+    // A container that cascades by hand instead of rendering through RenderModals: it can cascade the reference and
+    // the parameters, but not the BitModalExit, which is internal to the library.
     private sealed class HandWrittenModalContainer : BitModalContainerBase<BitModalReference, BitModalParameters>
     {
         [Inject] private BitModalService _modalService { get; set; } = default!;
@@ -291,7 +291,7 @@ public class BitModalExitTests : BunitTestContext
 
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            foreach (var modalRef in _modalRefs)
+            foreach (var modalRef in ModalReferences)
             {
                 builder.OpenComponent<CascadingValue<BitModalReference>>(0);
                 builder.SetKey(modalRef.Id);
@@ -309,46 +309,64 @@ public class BitModalExitTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitModalServiceShouldKeepAClosedModalInThePageOfAContainerRenderingThroughTheHelper()
+    public async Task BitModalServiceShouldKeepAClosedModalInThePageOfAContainerRenderingThroughATemplate()
     {
         var animation = Context.JSInterop.SetupVoid(WaitForAnimations, _ => true);
 
         var dismissed = 0;
 
-        var container = RenderComponent<HelperModalContainer>();
+        var container = RenderComponent<TemplateModalContainer>();
 
         var modalRef = await ModalService.Show<TestModalContent>(new BitModalParameters
         {
             OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(this, () => dismissed++),
         });
 
-        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".helper-modal .bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".template-modal .bit-mdl").Count));
+        Assert.AreEqual("false", container.Find(".template-modal").GetAttribute("data-closed"));
 
         await modalRef.Close();
 
         container.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations[WaitForAnimations].Count));
 
-        // A container a consumer wrote hears the modal out the way the built-in one does, once it renders it through
-        // RenderModal: closed, no longer one of the open modals, still in the page on its way out.
+        // A container of an app's own hears the modal out the way the built-in one does, once it renders it through
+        // RenderModals: closed, no longer one of the open modals, still in the page on its way out.
         Assert.IsTrue(modalRef.IsClosed);
         Assert.AreEqual(0, ModalService.OpenModals.Count);
-        var root = container.Find(".helper-modal .bit-mdl");
+        var root = container.Find(".template-modal .bit-mdl");
         Assert.IsTrue(root.ClassList.Contains("bit-mdl-lvg"));
         Assert.IsTrue(root.HasAttribute("inert"));
+
+        // The markup around the modal follows the container, which renders it again as the modal closes.
+        Assert.AreEqual("true", container.Find(".template-modal").GetAttribute("data-closed"));
 
         // The application closed it, which is not a dismissal.
         Assert.AreEqual(0, dismissed);
 
         await container.InvokeAsync(() => animation.SetVoidResult());
 
-        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-mdl").Count));
+        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".template-modal").Count));
     }
 
     [TestMethod]
     public async Task BitModalContainerShouldKeepTheModalsAfterOneThatLeavesAsTheyWere()
     {
-        var container = RenderComponent<BitModalContainer>();
+        await AssertTheModalsAfterOneThatLeavesAreKept(RenderComponent<BitModalContainer>());
+    }
 
+    [TestMethod]
+    public async Task BitModalContainerRenderingThroughATemplateShouldKeepTheModalsAfterOneThatLeavesAsTheyWere()
+    {
+        var container = RenderComponent<TemplateModalContainer>();
+
+        await AssertTheModalsAfterOneThatLeavesAreKept(container);
+
+        // The markup around each modal is keyed with it, so it went with the modal that left.
+        Assert.AreEqual(2, container.FindAll(".template-modal").Count);
+    }
+
+    private async Task AssertTheModalsAfterOneThatLeavesAreKept<TContainer>(IRenderedComponent<TContainer> container) where TContainer : IComponent
+    {
         var logs = new[] { new List<string>(), new List<string>(), new List<string>() };
         var modalRefs = new List<BitModalReference>();
 
@@ -371,7 +389,7 @@ public class BitModalExitTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitModalContainerShouldHandTheContentItsReferenceOnce()
+    public async Task BitModalContainerShouldLeaveAModalAloneWhileOthersComeAndGo()
     {
         var container = RenderComponent<BitModalContainer>();
 
@@ -384,8 +402,8 @@ public class BitModalExitTests : BunitTestContext
 
         var parametersSetCount = content.ParametersSetCount;
 
-        // Every modal shown or closed re-renders the container; the reference of a modal already on the screen has not
-        // changed, so its content is not handed it over again.
+        // Every modal shown or closed re-renders the container, but nothing of a modal already on the screen changed,
+        // so neither it nor its content is handed anything again.
         var other = await ModalService.Show<TestModalContent>();
 
         container.WaitForAssertion(() => Assert.AreEqual(2, container.FindAll(".bit-mdl").Count));
@@ -397,29 +415,76 @@ public class BitModalExitTests : BunitTestContext
         Assert.AreEqual(parametersSetCount, content.ParametersSetCount);
     }
 
-    // A container written the way a consumer outside the library writes one that puts markup of its own around each
-    // modal: the modal itself is rendered through RenderModal, inside an element keyed by the modal's id.
-    private sealed class HelperModalContainer : BitModalContainerBase<BitModalReference, BitModalParameters>
+    [TestMethod]
+    public async Task BitModalContainerShouldHandTheContentItsReferenceAgainWhenItsModalChanges()
     {
-        [Inject] private BitModalService _modalService { get; set; } = default!;
+        var container = RenderComponent<BitModalContainer>();
 
-        protected override BitModalServiceBase<BitModalReference, BitModalParameters> ModalService => _modalService;
+        var modalRef = await ModalService.Show<TestModalReferenceContent>(new BitModalParameters { HeaderText = "Step 1" });
 
-        protected override BitModalParameters? MergeParameters(BitModalParameters? modalParameters, BitModalParameters? containerParameters)
+        container.WaitForAssertion(() => Assert.AreEqual("Step 1", container.Find(".test-modal-reference-header").TextContent));
+
+        // Content reading the state of its reference follows it: an update of its own modal hands it the reference again.
+        await modalRef.Update(p => p.HeaderText = "Step 2");
+
+        container.WaitForAssertion(() => Assert.AreEqual("Step 2", container.Find(".test-modal-reference-header").TextContent));
+        Assert.AreEqual("Step 2", container.Find(".bit-mdl-hdr").TextContent);
+    }
+
+    [TestMethod]
+    public async Task BitModalContainerShouldRenderARefreshedModalAgainWhenTheMergeHandsBackTheSameParameters()
+    {
+        // With no container-level parameters the merge hands back the modal's own, so the refresh of a set changed in
+        // place hands the modal the very object it already has.
+        var container = RenderComponent<BitModalContainer>(parameters =>
         {
-            return BitModalParameters.Merge(modalParameters, containerParameters);
-        }
+            parameters.Add(p => p.ModalParameters, (BitModalParameters)null!);
+        });
 
+        var modalParameters = new BitModalParameters { HeaderText = "before" };
+
+        var modalRef = await ModalService.Show<TestModalContent>(modalParameters);
+
+        container.WaitForAssertion(() => Assert.AreEqual("before", container.Find(".bit-mdl-hdr").TextContent));
+
+        modalParameters.HeaderText = "after";
+
+        await ModalService.Refresh(modalRef);
+
+        container.WaitForAssertion(() => Assert.AreEqual("after", container.Find(".bit-mdl-hdr").TextContent));
+    }
+
+    [TestMethod]
+    public async Task BitModalContainerOfAnAppsOwnShouldCloseItsModalsOnNavigationAsTheyAsk()
+    {
+        var container = RenderComponent<TemplateModalContainer>();
+
+        var staying = await ModalService.Show<TestModalContent>(new BitModalParameters { CloseOnNavigation = false });
+        var leaving = await ModalService.Show<TestModalContent>();
+
+        container.WaitForAssertion(() => Assert.AreEqual(2, container.FindAll(".bit-mdl").Count));
+
+        Services.GetRequiredService<NavigationManager>().NavigateTo("/elsewhere");
+
+        // Derived from BitModalContainer, it reads CloseOnNavigation the way the built-in one does.
+        container.WaitForAssertion(() => Assert.IsTrue(leaving.IsClosed));
+        Assert.IsFalse(staying.IsClosed);
+    }
+
+    // A container of an app's own the way the demo writes one: derived from BitModalContainer, which names the service,
+    // merges the parameters and reads CloseOnNavigation, with markup of its own around each modal through a template.
+    private sealed class TemplateModalContainer : BitModalContainer
+    {
         protected override void BuildRenderTree(RenderTreeBuilder builder)
         {
-            foreach (var modalRef in _modalRefs)
+            builder.AddContent(0, RenderModals(item => b =>
             {
-                builder.OpenElement(0, "div");
-                builder.SetKey(modalRef.Id);
-                builder.AddAttribute(1, "class", "helper-modal");
-                builder.AddContent(2, RenderModal(modalRef));
-                builder.CloseElement();
-            }
+                b.OpenElement(0, "div");
+                b.AddAttribute(1, "class", "template-modal");
+                b.AddAttribute(2, "data-closed", item.Reference.IsClosed ? "true" : "false");
+                b.AddContent(3, item.Modal);
+                b.CloseElement();
+            }));
         }
     }
 

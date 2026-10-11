@@ -181,12 +181,12 @@
         <DemoExample Title="Custom container" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode"
                      CodeFiles="@example11CodeFiles" Id="example11">
             <div>
-                A container of your own derives from <b>BitModalContainerBase&lt;BitModalReference, BitModalParameters&gt;</b>,
-                names its <b>ModalService</b> and how the parameters merge, and renders each modal through
-                <b>RenderModal</b> - inside an element keyed by the modal's <b>Id</b> - or all of them through
-                <b>RenderModals</b>. Either one hands the modal what it expects from its container, including what lets
-                it play its exit animation: a container that cascades the reference and the parameters by hand takes a
-                closed modal out of the page at once.
+                A container of your own derives from <b>BitModalContainer</b> - which keeps its <b>Service</b>, the
+                merging of the parameters and <b>CloseOnNavigation</b> - and writes only its markup, rendering the
+                modals through <b>RenderModals</b>: all of them, or each inside markup of its own through a template
+                that renders the modal it is handed (<b>item.Modal</b>). Either one keys each modal by its <b>Id</b> and hands it what it
+                expects from its container, including what lets it play its exit animation: a container that cascades
+                the reference and the parameters by hand takes a closed modal out of the page at once.
             </div>
             <br />
             <div class="example-box">
