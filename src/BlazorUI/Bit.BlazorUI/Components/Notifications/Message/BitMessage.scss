@@ -5,6 +5,17 @@
 //   --bit-Message-color                    text, glyph and button color                   (default: per variant - $clr-inf-text filled, $clr-inf-fg otherwise)
 //   --bit-Message-background               background of the surface                     (default: $clr-inf filled, $clr-inf-tint when Tinted, transparent otherwise)
 //   --bit-Message-border-color             border color                                   (default: $clr-inf filled and outlined, transparent otherwise)
+//                                          Each color above has a twin per variant, read ahead of it, so a theme
+//                                          can set one look apart from the other two (Color still wins over both):
+//   --bit-Message-fill-color               text, glyph and button color, Fill variant     (default: --bit-Message-color)
+//   --bit-Message-fill-background          background of the surface, Fill variant       (default: --bit-Message-background)
+//   --bit-Message-fill-border-color        border color, Fill variant                     (default: --bit-Message-border-color)
+//   --bit-Message-outline-color            text, glyph and button color, Outline variant  (default: --bit-Message-color)
+//   --bit-Message-outline-background       background of the surface, Outline variant    (default: --bit-Message-background)
+//   --bit-Message-outline-border-color     border color, Outline variant                  (default: --bit-Message-border-color)
+//   --bit-Message-text-color               text, glyph and button color, Text variant     (default: --bit-Message-color)
+//   --bit-Message-text-background          background of the surface, Text variant       (default: --bit-Message-background)
+//   --bit-Message-text-border-color        border color, Text variant                     (default: --bit-Message-border-color)
 //   --bit-Message-border-width             thickness of the border                        (default: $shp-border-width)
 //   --bit-Message-radius                   corner radius of the surface and its countdown (default: $shp-radius-surface, none when Square)
 //   --bit-Message-shadow                   elevation of the surface                       (default: none, the Elevation parameter wins)
@@ -395,28 +406,38 @@ $msg-private-properties:
 // .bit-msg) - then from the public variables, then from the Info role an unset Color stands for; a color the role
 // leaves alone (the transparent background of Outline and Text, the transparent border of Text) is the variables'
 // alone.
+//
+// Every color variable is read in two tiers: the variant's own (--bit-Message-fill-*, -outline-*, -text-*) ahead of
+// the shared one, so a theme can give the three looks different colors from :root - a neutral hairline around the
+// outlined messages without a border on every filled one - while a shared variable still re-skins all three at once.
+// Both tiers sit between the role and the default, so an explicit Color still wins over them.
 .bit-msg-fil {
-    --bit-msg-fg: var(--bit-msg-clr, var(--bit-Message-color, #{$clr-inf-text}));
-    --bit-msg-bg: var(--bit-msg-clr-bg, var(--bit-Message-background, #{$clr-inf}));
-    --bit-msg-brd: var(--bit-msg-clr-bg, var(--bit-Message-border-color, #{$clr-inf}));
-}
-
-.bit-msg-otl {
-    --bit-msg-fg: var(--bit-msg-clr-txt, var(--bit-Message-color, #{$clr-inf-fg}));
-    --bit-msg-bg: var(--bit-Message-background, transparent);
-    --bit-msg-brd: var(--bit-msg-clr-bg, var(--bit-Message-border-color, #{$clr-inf}));
-}
-
-.bit-msg-txt {
-    --bit-msg-fg: var(--bit-msg-clr-txt, var(--bit-Message-color, #{$clr-inf-fg}));
-    --bit-msg-bg: var(--bit-Message-background, transparent);
-    --bit-msg-brd: var(--bit-Message-border-color, transparent);
+    --bit-msg-fg: var(--bit-msg-clr, var(--bit-Message-fill-color, var(--bit-Message-color, #{$clr-inf-text})));
+    --bit-msg-bg: var(--bit-msg-clr-bg, var(--bit-Message-fill-background, var(--bit-Message-background, #{$clr-inf})));
+    --bit-msg-brd: var(--bit-msg-clr-bg, var(--bit-Message-fill-border-color, var(--bit-Message-border-color, #{$clr-inf})));
 }
 
 // Tinted: the surface the two unfilled variants leave to the page is washed with the role instead, and the
-// text stays on the foreground shade, which is picked to be read on that wash. Only rendered on those two.
-.bit-msg-tnt {
-    --bit-msg-bg: var(--bit-msg-clr-tint, var(--bit-Message-background, #{$clr-inf-tint}));
+// text stays on the foreground shade, which is picked to be read on that wash. Only rendered on those two, so it
+// is written inside each of them, where the wash is read through that variant's own background first.
+.bit-msg-otl {
+    --bit-msg-fg: var(--bit-msg-clr-txt, var(--bit-Message-outline-color, var(--bit-Message-color, #{$clr-inf-fg})));
+    --bit-msg-bg: var(--bit-Message-outline-background, var(--bit-Message-background, transparent));
+    --bit-msg-brd: var(--bit-msg-clr-bg, var(--bit-Message-outline-border-color, var(--bit-Message-border-color, #{$clr-inf})));
+
+    &.bit-msg-tnt {
+        --bit-msg-bg: var(--bit-msg-clr-tint, var(--bit-Message-outline-background, var(--bit-Message-background, #{$clr-inf-tint})));
+    }
+}
+
+.bit-msg-txt {
+    --bit-msg-fg: var(--bit-msg-clr-txt, var(--bit-Message-text-color, var(--bit-Message-color, #{$clr-inf-fg})));
+    --bit-msg-bg: var(--bit-Message-text-background, var(--bit-Message-background, transparent));
+    --bit-msg-brd: var(--bit-Message-text-border-color, var(--bit-Message-border-color, transparent));
+
+    &.bit-msg-tnt {
+        --bit-msg-bg: var(--bit-msg-clr-tint, var(--bit-Message-text-background, var(--bit-Message-background, #{$clr-inf-tint})));
+    }
 }
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). Published only by an

@@ -13,6 +13,21 @@
 //   --bit-SnackBar-color             text color of an item                        (default: $clr-inf-text filled, $clr-inf-fg otherwise)
 //   --bit-SnackBar-border-color      border color of an item                      (default: $clr-inf, transparent on Text)
 //   --bit-SnackBar-border-width      border width of an item                      (default: $shp-border-width on Outline, 0 otherwise)
+//                                    Each of the four above has a twin per variant, read ahead of it, so a theme
+//                                    can set one look apart from the other two (where the Color of an item
+//                                    paints, it still wins over both):
+//   --bit-SnackBar-fill-background       fill of an item, Fill variant                (default: --bit-SnackBar-background)
+//   --bit-SnackBar-fill-color            text color of an item, Fill variant          (default: --bit-SnackBar-color)
+//   --bit-SnackBar-fill-border-color     border color of an item, Fill variant        (default: --bit-SnackBar-border-color)
+//   --bit-SnackBar-fill-border-width     border width of an item, Fill variant        (default: --bit-SnackBar-border-width)
+//   --bit-SnackBar-outline-background    fill of an item, Outline variant             (default: --bit-SnackBar-background)
+//   --bit-SnackBar-outline-color         text color of an item, Outline variant       (default: --bit-SnackBar-color)
+//   --bit-SnackBar-outline-border-color  border color of an item, Outline variant     (default: --bit-SnackBar-border-color)
+//   --bit-SnackBar-outline-border-width  border width of an item, Outline variant     (default: --bit-SnackBar-border-width)
+//   --bit-SnackBar-text-background       fill of an item, Text variant                (default: --bit-SnackBar-background)
+//   --bit-SnackBar-text-color            text color of an item, Text variant          (default: --bit-SnackBar-color)
+//   --bit-SnackBar-text-border-color     border color of an item, Text variant        (default: --bit-SnackBar-border-color)
+//   --bit-SnackBar-text-border-width     border width of an item, Text variant        (default: --bit-SnackBar-border-width)
 //   --bit-SnackBar-radius            corner radius of an item                     (default: $shp-radius-popup)
 //   --bit-SnackBar-shadow            elevation of an item                         (default: $box-shadow-snackbar)
 //   --bit-SnackBar-padding           inner padding of an item                     (default: spacing(1.25))
@@ -112,7 +127,8 @@ $snb-itm-private-properties: bg, fg, clr-txt, gap, pad, hdr-gap, ttl-fs, bdy-fs,
     padding: var(--bit-snb-pad, var(--bit-SnackBar-padding, #{spacing(1.25)}));
     box-shadow: var(--bit-SnackBar-shadow, #{$box-shadow-snackbar});
     border-radius: var(--bit-SnackBar-radius, #{$shp-radius-popup});
-    border-width: var(--bit-SnackBar-border-width, var(--bit-snb-brd-w));
+    // Resolved per variant as well, since the three default to different widths (see .bit-snb-fil).
+    border-width: var(--bit-snb-brd-w);
     border-color: var(--bit-snb-clr-brd);
     background-color: var(--bit-snb-clr-bg);
     animation: var(--bit-snb-ent) var(--bit-snb-dur) $mot-easing-decelerate;
@@ -416,28 +432,34 @@ $snb-itm-private-properties: bg, fg, clr-txt, gap, pad, hdr-gap, ttl-fs, bdy-fs,
 // published only by an explicit Color (see .bit-snb-itm) - then from the public variables, then from the Info role
 // an unset Color stands for; a color the role leaves alone (the page surface of Outline and Text, the transparent
 // border of Text) is the variables' alone.
+//
+// Every color variable, and the border width each variant decides on, is read in two tiers: the variant's own
+// (--bit-SnackBar-fill-*, -outline-*, -text-*) ahead of the shared one, so a theme can give the three looks different
+// colors from :root - a neutral hairline around the outlined items without a border on every filled one - while a
+// shared variable still re-skins all three at once. Both tiers sit between the role and the default, so the explicit
+// Color of an item still wins over them.
 .bit-snb-fil {
-    --bit-snb-brd-w: 0px;
-    --bit-snb-clr: var(--bit-snb-fg, var(--bit-SnackBar-color, #{$clr-inf-text}));
-    --bit-snb-clr-bg: var(--bit-snb-bg, var(--bit-SnackBar-background, #{$clr-inf}));
-    --bit-snb-clr-brd: var(--bit-snb-bg, var(--bit-SnackBar-border-color, #{$clr-inf}));
+    --bit-snb-brd-w: var(--bit-SnackBar-fill-border-width, var(--bit-SnackBar-border-width, 0px));
+    --bit-snb-clr: var(--bit-snb-fg, var(--bit-SnackBar-fill-color, var(--bit-SnackBar-color, #{$clr-inf-text})));
+    --bit-snb-clr-bg: var(--bit-snb-bg, var(--bit-SnackBar-fill-background, var(--bit-SnackBar-background, #{$clr-inf})));
+    --bit-snb-clr-brd: var(--bit-snb-bg, var(--bit-SnackBar-fill-border-color, var(--bit-SnackBar-border-color, #{$clr-inf})));
 }
 
 // A snack bar floats over whatever the page is showing, so the two variants that give up the filled
 // background take the neutral surface rather than transparency - the text of a notification has to stay
 // readable over the content it covers.
 .bit-snb-otl {
-    --bit-snb-clr: var(--bit-snb-clr-txt, var(--bit-SnackBar-color, #{$clr-inf-fg}));
-    --bit-snb-clr-bg: var(--bit-SnackBar-background, #{$clr-bg-pri});
-    --bit-snb-clr-brd: var(--bit-snb-bg, var(--bit-SnackBar-border-color, #{$clr-inf}));
-    --bit-snb-brd-w: #{$shp-border-width};
+    --bit-snb-clr: var(--bit-snb-clr-txt, var(--bit-SnackBar-outline-color, var(--bit-SnackBar-color, #{$clr-inf-fg})));
+    --bit-snb-clr-bg: var(--bit-SnackBar-outline-background, var(--bit-SnackBar-background, #{$clr-bg-pri}));
+    --bit-snb-clr-brd: var(--bit-snb-bg, var(--bit-SnackBar-outline-border-color, var(--bit-SnackBar-border-color, #{$clr-inf})));
+    --bit-snb-brd-w: var(--bit-SnackBar-outline-border-width, var(--bit-SnackBar-border-width, #{$shp-border-width}));
 }
 
 .bit-snb-txt {
-    --bit-snb-brd-w: 0px;
-    --bit-snb-clr: var(--bit-snb-clr-txt, var(--bit-SnackBar-color, #{$clr-inf-fg}));
-    --bit-snb-clr-bg: var(--bit-SnackBar-background, #{$clr-bg-pri});
-    --bit-snb-clr-brd: var(--bit-SnackBar-border-color, transparent);
+    --bit-snb-brd-w: var(--bit-SnackBar-text-border-width, var(--bit-SnackBar-border-width, 0px));
+    --bit-snb-clr: var(--bit-snb-clr-txt, var(--bit-SnackBar-text-color, var(--bit-SnackBar-color, #{$clr-inf-fg})));
+    --bit-snb-clr-bg: var(--bit-SnackBar-text-background, var(--bit-SnackBar-background, #{$clr-bg-pri}));
+    --bit-snb-clr-brd: var(--bit-SnackBar-text-border-color, var(--bit-SnackBar-border-color, transparent));
 }
 
 // forced-colors: the fill that tells a snack bar apart from the page it floats over is stripped in High Contrast

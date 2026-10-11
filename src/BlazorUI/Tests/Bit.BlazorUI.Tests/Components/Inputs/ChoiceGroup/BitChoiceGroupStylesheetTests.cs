@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Inputs.ChoiceGroup;
@@ -33,10 +34,11 @@ public class BitChoiceGroupStylesheetTests
         StringAssert.Contains(stylesheet, "var(--bit-chg-clr-dis, var(--bit-ChoiceGroup-disabled-color, #{$clr-pri-dis}))");
         StringAssert.Contains(stylesheet, "var(--bit-chg-clr-dis-text, var(--bit-ChoiceGroup-disabled-text-color, #{$clr-pri-dis-text}))");
         StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-chg-clr-focus, var(--bit-ChoiceGroup-focus-color)))");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-chg-clr-bg, var(--bit-ChoiceGroup-item-background, #{$clr-bg-sec}));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-chg-clr-bg, var(--bit-ChoiceGroup-text-item-background, var(--bit-ChoiceGroup-item-background, #{$clr-bg-sec})));");
         // The checked card at rest reads the variable its hover moves first, then the Color as everywhere else.
         StringAssert.Contains(stylesheet, "border-color: var(--bit-chg-itl-brd, var(--bit-chg-clr, var(--bit-ChoiceGroup-item-checked-border-color, var(--bit-ChoiceGroup-color, #{$clr-pri}))));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-chg-itl-bg, var(--bit-chg-card-tint, var(--bit-ChoiceGroup-item-checked-background, var(--bit-chg-card-bg-checked))));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-chg-itl-bg, var(--bit-chg-card-tint, var(--bit-chg-card-bg-checked)));");
+        StringAssert.Contains(stylesheet, "--bit-chg-card-bg-checked: var(--bit-ChoiceGroup-outline-item-checked-background, var(--bit-ChoiceGroup-item-checked-background, #{translucent(var(--bit-chg-acc), 8%)}));");
 
         // A role class publishes the role's tokens alone, never a public variable ahead of them.
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-chg-err {"), "--bit-chg-clr: #{$clr-err};");
@@ -48,6 +50,31 @@ public class BitChoiceGroupStylesheetTests
                        "A public variable is read before the parameter it restyles the default of.");
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"\n    --bit-chg-[a-z-]+: var\(--bit-ChoiceGroup-[a-z-]+, #\{\$[a-z-]+\}\);"),
                        "A Color or Size class reads a public variable ahead of the value it publishes.");
+    }
+
+    [TestMethod,
+        DataRow("fill", ".bit-chg-fil", "item-background"),
+        DataRow("fill", ".bit-chg-fil", "item-hover-background"),
+        DataRow("fill", ".bit-chg-fil", "item-checked-background"),
+        DataRow("fill", ".bit-chg-fil", "item-border-color"),
+        DataRow("outline", ".bit-chg-otl", "item-background"),
+        DataRow("outline", ".bit-chg-otl", "item-hover-background"),
+        DataRow("outline", ".bit-chg-otl", "item-checked-background"),
+        DataRow("outline", ".bit-chg-otl", "item-border-color"),
+        DataRow("text", ".bit-chg-txt .bit-chg-ihi", "item-background")]
+    public void BitChoiceGroupShouldReadTheVariablesOfItsVariantAheadOfTheSharedOnes(string variant, string selector, string name)
+    {
+        // The variant's own rule, not the card rule the Outline and Fill variants share (".bit-chg-otl,\n.bit-chg-fil {").
+        var stylesheet = ReadStylesheet();
+        var own = SourceFiles.GetScssRules(stylesheet).Single(r => r.Header == selector && r.Ancestors.Count == 0);
+        var block = SourceFiles.GetScssBlock(stylesheet[own.Index..], $"{selector} {{");
+
+        // Each variant reads a tier of its own ahead of the shared item variables, so a theme can set outline and
+        // filled cards apart on :root - and the card rules both variants share read only what each variant resolved.
+        StringAssert.Contains(block, $"var(--bit-ChoiceGroup-{variant}-{name}, var(--bit-ChoiceGroup-{name}, ",
+                              $"{selector} does not read --bit-ChoiceGroup-{variant}-{name} ahead of --bit-ChoiceGroup-{name}.");
+        Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-ChoiceGroup-(?!{variant}-)(?:fill|outline|text)-"),
+                       $"{selector} reads the variables of another variant.");
     }
 
     [TestMethod]

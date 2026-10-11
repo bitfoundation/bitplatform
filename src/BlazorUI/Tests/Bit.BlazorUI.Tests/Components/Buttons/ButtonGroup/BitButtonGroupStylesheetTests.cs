@@ -49,11 +49,11 @@ public partial class BitButtonGroupStylesheetTests
         // Style of a single button arrives, with the default of the variant after it. The hover and press states set the
         // variables the rules at rest paint from (--bit-btg-itm-sfg / -sbg / -sbr), never the colors themselves, so the
         // state's value is read ahead of the rest value it stands in for.
-        StringAssert.Contains(stylesheet, "color: var(--bit-btg-itm-sfg, var(--bit-btg-itm-clr-txt, var(--bit-ButtonGroup-color, var(--bit-btg-dfl-txt))));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-btg-itm-sbg, var(--bit-btg-itm-clr-bg, var(--bit-ButtonGroup-background, var(--bit-btg-dfl-bg))));");
-        StringAssert.Contains(stylesheet, "border-color: var(--bit-btg-clr-outer, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-outer)));");
-        StringAssert.Contains(stylesheet, "--bit-btg-sep: var(--bit-btg-itm-clr-brd, var(--bit-ButtonGroup-separator-color, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-brd))));");
-        StringAssert.Contains(stylesheet, "--bit-btg-itm-sbg: var(--bit-btg-itm-clr-bg-hover, var(--bit-ButtonGroup-hover-background, #{$clr-pri-hover}));");
+        StringAssert.Contains(stylesheet, "color: var(--bit-btg-itm-sfg, var(--bit-btg-itm-clr-txt, var(--bit-ButtonGroup-fill-color, var(--bit-ButtonGroup-color, var(--bit-btg-dfl-txt)))));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-btg-itm-sbg, var(--bit-btg-itm-clr-bg, var(--bit-ButtonGroup-fill-background, var(--bit-ButtonGroup-background, var(--bit-btg-dfl-bg)))));");
+        StringAssert.Contains(stylesheet, "border-color: var(--bit-btg-clr-outer, var(--bit-ButtonGroup-fill-border-color, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-outer))));");
+        StringAssert.Contains(stylesheet, "--bit-btg-sep-lin: var(--bit-btg-itm-clr-brd, var(--bit-ButtonGroup-fill-separator-color, var(--bit-ButtonGroup-separator-color, var(--bit-ButtonGroup-fill-border-color, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-brd))))));");
+        StringAssert.Contains(stylesheet, "--bit-btg-itm-sbg: var(--bit-btg-itm-clr-bg-hover, var(--bit-ButtonGroup-fill-hover-background, var(--bit-ButtonGroup-hover-background, #{$clr-pri-hover})));");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-btg-itm-sbg, var(--bit-btg-clr-dark, var(--bit-ButtonGroup-selected-background, #{$clr-pri-dark})));");
 
         // The variables the states move start out unset on each button, so one nested in another never inherits its state.
@@ -61,7 +61,7 @@ public partial class BitButtonGroupStylesheetTests
         StringAssert.Contains(item, "--bit-btg-itm-sfg: initial;");
         StringAssert.Contains(item, "--bit-btg-itm-sbg: initial;");
         StringAssert.Contains(item, "--bit-btg-itm-sbr: initial;");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-btg-itm-clr-bg-dis, var(--bit-ButtonGroup-disabled-background, var(--bit-btg-dfl-bg-dis)));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-btg-itm-clr-bg-dis, var(--bit-ButtonGroup-fill-disabled-background, var(--bit-ButtonGroup-disabled-background, var(--bit-btg-dfl-bg-dis))));");
         StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-btg-clr-focus, var(--bit-ButtonGroup-focus-color)))");
 
         // The default of each variant is the primary role, and what a Color does not paint - the transparent background
@@ -74,6 +74,50 @@ public partial class BitButtonGroupStylesheetTests
         StringAssert.Contains(outline, "--bit-btg-dfl-bg: transparent;");
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-ButtonGroup-[a-z-]+, var\(--bit-btg-(?!dfl-)"), "A public variable is read before the parameter it restyles the default of.");
+    }
+
+    [TestMethod,
+        DataRow("fill", "bit-btg-fil"),
+        DataRow("outline", "bit-btg-otl"),
+        DataRow("text", "bit-btg-txt")]
+    public void BitButtonGroupShouldReadTheVariablesOfItsVariantAheadOfTheSharedOnes(string variant, string variantClass)
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The group's outer border and the colors its separators pick between are read on the group, by the variant's
+        // own rule; the colors of the buttons on each button, by the variant's rule for them - one that weighs no more
+        // than .bit-btg-itm and reaches only the group's own buttons, so a variable set on the Style of a single button
+        // still arrives and a group nested in a button is painted by its own variant.
+        var group = SourceFiles.GetScssBlock(stylesheet, $"\n.{variantClass} {{");
+        var buttons = SourceFiles.GetScssBlock(stylesheet, $"\n:where(.{variantClass}) > .bit-btg-itm {{");
+
+        foreach (var name in new[] { "border-color", "separator-color", "disabled-border-color" })
+        {
+            StringAssert.Contains(group, $"var(--bit-ButtonGroup-{variant}-{name}, var(--bit-ButtonGroup-{name}, ",
+                                  $".{variantClass} does not read --bit-ButtonGroup-{variant}-{name} ahead of --bit-ButtonGroup-{name}.");
+        }
+
+        foreach (var name in new[] { "color", "background", "hover-color", "hover-background", "active-background",
+                                     "disabled-background", "disabled-border-color" })
+        {
+            StringAssert.Contains(buttons, $"var(--bit-ButtonGroup-{variant}-{name}, var(--bit-ButtonGroup-{name}, ",
+                                  $"The buttons of .{variantClass} do not read --bit-ButtonGroup-{variant}-{name} ahead of --bit-ButtonGroup-{name}.");
+        }
+
+        // A variant reads a shared color variable only right behind its own twin, and never the tier of another variant.
+        foreach (var block in new[] { group, buttons })
+        {
+            Assert.IsFalse(Regex.IsMatch(block, $@"(?<!var\(--bit-ButtonGroup-{variant}-[a-z-]+, )var\(--bit-ButtonGroup-(?:hover-|active-|disabled-|separator-)?(?:color|background|border-color)\b"),
+                           $".{variantClass} reads a shared color variable without its own tier ahead of it.");
+            Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-ButtonGroup-(?!{variant}-)(?:fill|outline|text)-"),
+                           $".{variantClass} reads the variables of another variant.");
+        }
+
+        // No rule shared by the three variants reads a color they each have a tier of: the group and the buttons read
+        // only what their variant resolved.
+        var shared = SourceFiles.StripScssComments(SourceFiles.GetScssBlock(stylesheet, "\n.bit-btg {") + SourceFiles.GetScssBlock(stylesheet, "\n.bit-btg-itm {"));
+        Assert.IsFalse(Regex.IsMatch(shared, @"var\(--bit-ButtonGroup-(?:hover-|active-|separator-)?(?:color|background|border-color)\b|var\(--bit-ButtonGroup-disabled-(?:background|border-color)\b"),
+                       "A rule shared by the variants reads a color variable that has a tier per variant.");
     }
 
     [TestMethod]

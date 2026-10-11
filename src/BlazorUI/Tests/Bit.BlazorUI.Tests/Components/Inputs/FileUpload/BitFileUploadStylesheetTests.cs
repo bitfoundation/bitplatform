@@ -32,10 +32,10 @@ public class BitFileUploadStylesheetTests
         // So does an explicit Color, for every color it paints - the drag state and the tints included. The browse
         // button's rest rules read the variables its hover and press states set first, so the states move the
         // variables rather than outranking an app's class with paint of their own.
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-upl-lbl-sbg, var(--bit-upl-clr, var(--bit-FileUpload-label-background, #{$clr-pri})));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr-txt, var(--bit-FileUpload-label-color, #{$clr-pri-text})));");
-        StringAssert.Contains(stylesheet, "--bit-upl-lbl-sbg: var(--bit-upl-clr-hover, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover}));");
-        StringAssert.Contains(stylesheet, "var(--bit-upl-clr-hover, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover}))");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-upl-lbl-sbg, var(--bit-upl-clr, var(--bit-FileUpload-fill-label-background, var(--bit-FileUpload-label-background, #{$clr-pri}))));");
+        StringAssert.Contains(stylesheet, "color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr-txt, var(--bit-FileUpload-fill-label-color, var(--bit-FileUpload-label-color, #{$clr-pri-text}))));");
+        StringAssert.Contains(stylesheet, "--bit-upl-lbl-sbg: var(--bit-upl-clr-hover, var(--bit-FileUpload-fill-label-hover-background, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover})));");
+        StringAssert.Contains(stylesheet, "var(--bit-upl-clr-hover, var(--bit-FileUpload-outline-label-hover-background, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover})))");
         StringAssert.Contains(stylesheet, "var(--bit-upl-clr-hover, var(--bit-FileUpload-drop-background, #{$clr-pri-hover}))");
         StringAssert.Contains(stylesheet, "var(--bit-upl-clr-tint-8, var(--bit-FileUpload-drop-area-hover-background, #{translucent($clr-pri, 8%)}))");
         StringAssert.Contains(stylesheet, "var(--bit-upl-clr-tint-10, var(--bit-FileUpload-action-hover-background, #{translucent($clr-pri, 10%)}))");
@@ -43,9 +43,37 @@ public class BitFileUploadStylesheetTests
         StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-upl-clr-focus, var(--bit-FileUpload-focus-color)))");
 
         // What a Color does not paint - the transparent fill of Outline and Text - stays the variable's alone.
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-upl-lbl-sbg, var(--bit-FileUpload-label-background, transparent));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-upl-lbl-sbg, var(--bit-FileUpload-outline-label-background, var(--bit-FileUpload-label-background, transparent)));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-upl-lbl-sbg, var(--bit-FileUpload-text-label-background, var(--bit-FileUpload-label-background, transparent)));");
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-FileUpload-[a-z-]+, var\(--bit-upl-"), "A public variable is read before the parameter it restyles the default of.");
+    }
+
+    [TestMethod,
+        DataRow("fill", ".bit-upl-fil"),
+        DataRow("outline", ".bit-upl-otl"),
+        DataRow("text", ".bit-upl-txt")]
+    public void BitFileUploadShouldReadTheVariablesOfItsVariantAheadOfTheSharedOnes(string variant, string selector)
+    {
+        var stylesheet = ReadStylesheet();
+        var block = SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
+
+        // Each variant reads a tier of its own ahead of every shared browse button color, so a theme can set one look
+        // apart from the other two on :root.
+        foreach (var name in new[] { "label-color", "label-background", "label-border-color", "label-hover-color", "label-hover-background",
+                                     "label-active-background", "disabled-background", "disabled-border-color" })
+        {
+            StringAssert.Contains(block, $"var(--bit-FileUpload-{variant}-{name}, var(--bit-FileUpload-{name}, ",
+                                  $"{selector} does not read --bit-FileUpload-{variant}-{name} ahead of --bit-FileUpload-{name}.");
+        }
+
+        Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-FileUpload-(?!{variant}-)(?:fill|outline|text)-"),
+                       $"{selector} reads the variables of another variant.");
+
+        // The ShowDropArea panel, drawn the same in every variant, reads the disabled colors its variant resolved.
+        var dropArea = SourceFiles.GetScssBlock(stylesheet, "\n.bit-upl.bit-upl-dra {");
+        StringAssert.Contains(dropArea, "border-color: var(--bit-upl-dis-brd, #{$clr-brd-dis});");
+        StringAssert.Contains(dropArea, "background-color: var(--bit-upl-dis-bg, #{$clr-bg-dis});");
     }
 
     [TestMethod]

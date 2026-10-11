@@ -14,6 +14,44 @@
 //   --bit-Button-disabled-color            foreground when disabled                       (default: $clr-pri-dis-text)
 //   --bit-Button-disabled-background       background when disabled                       (default: $clr-pri-dis filled, transparent otherwise)
 //   --bit-Button-disabled-border-color     border color when disabled                     (default: as the disabled background)
+//                                          Each color above has a twin per variant, read ahead of it, so a theme
+//                                          can set one look apart from the other two (Color still wins over both):
+//   --bit-Button-fill-color                      foreground at rest, Fill variant               (default: --bit-Button-color)
+//   --bit-Button-fill-background                 background at rest, Fill variant               (default: --bit-Button-background)
+//   --bit-Button-fill-border-color               border color at rest, Fill variant             (default: --bit-Button-border-color)
+//   --bit-Button-fill-hover-color                foreground on hover, Fill variant              (default: --bit-Button-hover-color)
+//   --bit-Button-fill-hover-background           background on hover, Fill variant              (default: --bit-Button-hover-background)
+//   --bit-Button-fill-hover-border-color         border color on hover, Fill variant            (default: --bit-Button-hover-border-color)
+//   --bit-Button-fill-active-color               foreground while pressed, Fill variant         (default: --bit-Button-active-color)
+//   --bit-Button-fill-active-background          background while pressed, Fill variant         (default: --bit-Button-active-background)
+//   --bit-Button-fill-active-border-color        border color while pressed, Fill variant       (default: --bit-Button-active-border-color)
+//   --bit-Button-fill-disabled-color             foreground when disabled, Fill variant         (default: --bit-Button-disabled-color)
+//   --bit-Button-fill-disabled-background        background when disabled, Fill variant         (default: --bit-Button-disabled-background)
+//   --bit-Button-fill-disabled-border-color      border color when disabled, Fill variant       (default: --bit-Button-disabled-border-color)
+//   --bit-Button-outline-color                   foreground at rest, Outline variant            (default: --bit-Button-color)
+//   --bit-Button-outline-background              background at rest, Outline variant            (default: --bit-Button-background)
+//   --bit-Button-outline-border-color            border color at rest, Outline variant          (default: --bit-Button-border-color)
+//   --bit-Button-outline-hover-color             foreground on hover, Outline variant           (default: --bit-Button-hover-color)
+//   --bit-Button-outline-hover-background        background on hover, Outline variant           (default: --bit-Button-hover-background)
+//   --bit-Button-outline-hover-border-color      border color on hover, Outline variant         (default: --bit-Button-hover-border-color)
+//   --bit-Button-outline-active-color            foreground while pressed, Outline variant      (default: --bit-Button-active-color)
+//   --bit-Button-outline-active-background       background while pressed, Outline variant      (default: --bit-Button-active-background)
+//   --bit-Button-outline-active-border-color     border color while pressed, Outline variant    (default: --bit-Button-active-border-color)
+//   --bit-Button-outline-disabled-color          foreground when disabled, Outline variant      (default: --bit-Button-disabled-color)
+//   --bit-Button-outline-disabled-background     background when disabled, Outline variant      (default: --bit-Button-disabled-background)
+//   --bit-Button-outline-disabled-border-color   border color when disabled, Outline variant    (default: --bit-Button-disabled-border-color)
+//   --bit-Button-text-color                      foreground at rest, Text variant               (default: --bit-Button-color)
+//   --bit-Button-text-background                 background at rest, Text variant               (default: --bit-Button-background)
+//   --bit-Button-text-border-color               border color at rest, Text variant             (default: --bit-Button-border-color)
+//   --bit-Button-text-hover-color                foreground on hover, Text variant              (default: --bit-Button-hover-color)
+//   --bit-Button-text-hover-background           background on hover, Text variant              (default: --bit-Button-hover-background)
+//   --bit-Button-text-hover-border-color         border color on hover, Text variant            (default: --bit-Button-hover-border-color)
+//   --bit-Button-text-active-color               foreground while pressed, Text variant         (default: --bit-Button-active-color)
+//   --bit-Button-text-active-background          background while pressed, Text variant         (default: --bit-Button-active-background)
+//   --bit-Button-text-active-border-color        border color while pressed, Text variant       (default: --bit-Button-active-border-color)
+//   --bit-Button-text-disabled-color             foreground when disabled, Text variant         (default: --bit-Button-disabled-color)
+//   --bit-Button-text-disabled-background        background when disabled, Text variant         (default: --bit-Button-disabled-background)
+//   --bit-Button-text-disabled-border-color      border color when disabled, Text variant       (default: --bit-Button-disabled-border-color)
 //   --bit-Button-focus-color               focus ring color                               (default: $clr-pri-focus)
 //   --bit-Button-radius                    corner radius of the box and its focus ring    (default: $shp-radius-button)
 //   --bit-Button-border-width              thickness of the border on every variant       (default: $shp-border-width)
@@ -86,7 +124,6 @@ $btn-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
     // Every value an explicit Size, Color or Rounded publishes is read first, then the public variable, then the
     // medium primary button with the button corner that an unset one stands for.
     gap: var(--bit-btn-gap, var(--bit-Button-gap, #{spacing(1)}));
-    color: var(--bit-btn-sfg, var(--bit-btn-clr-txt, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text}))));
     font-weight: var(--bit-Button-font-weight, #{$tg-font-weight});
     padding: var(--bit-btn-padding, var(--bit-Button-padding, #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-md}));
     min-width: var(--bit-Button-min-width, #{$siz-ctrl-min-width});
@@ -111,15 +148,10 @@ $btn-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
     // disabled button inside a clickable row would activate the row. The click itself is already refused in
     // the component - and by the native disabled attribute when AllowDisabledFocus is off - and every
     // hover and press rule below excludes this class, so none of them paint a disabled button.
+    // The ring a disabled button keeps in the tab order is drawn by its variant (see .bit-btn-fil), in the
+    // disabled foreground the variant reads.
     &.bit-dis {
         cursor: default;
-
-        // AllowDisabledFocus - the default here - keeps a disabled button in the tab order, so the indicator has
-        // to stay visible, but drawn in the disabled color: the vivid role ring of the enabled state contradicts
-        // the inert look and reads as actionable.
-        &:focus-visible {
-            @include focus-ring(var(--bit-btn-clr-dis-text, var(--bit-Button-disabled-color, var(--bit-btn-dft-clr-dis-text, #{$clr-pri-dis-text}))));
-        }
     }
 }
 
@@ -320,85 +352,106 @@ $btn-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
 // - then from the public variables, then from the primary role an unset Color stands for; a color the role leaves
 // alone (the transparent background of Outline and Text, the transparent border of Text) is the variables' alone.
 //
+// Every color variable is read in two tiers: the variant's own (--bit-Button-fill-*, -outline-*, -text-*) ahead of
+// the shared one, so a theme can give the three looks different colors from :root - an outline button's neutral
+// hairline without a ring around every filled button - while a shared variable still re-skins all three at once.
+// Both tiers sit between the role and the default, so an explicit Color still wins over them.
+//
 // The states change the variables the button is painted from (--bit-btn-sfg / -sbg / -sbr, reset on .bit-btn) rather
 // than its colors, so the rules at rest are the only ones that paint: a button the app paints through Class keeps
 // that paint under the pointer and while pressed, instead of losing it to a state that outranks the app's class.
 .bit-btn-fil {
-    background-color: var(--bit-btn-sbg, var(--bit-btn-clr, var(--bit-Button-background, var(--bit-btn-dft-clr, #{$clr-pri}))));
-    border-color: var(--bit-btn-sbr, var(--bit-btn-clr, var(--bit-Button-border-color, var(--bit-Button-background, var(--bit-btn-dft-clr, #{$clr-pri})))));
+    color: var(--bit-btn-sfg, var(--bit-btn-clr-txt, var(--bit-Button-fill-color, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})))));
+    background-color: var(--bit-btn-sbg, var(--bit-btn-clr, var(--bit-Button-fill-background, var(--bit-Button-background, var(--bit-btn-dft-clr, #{$clr-pri})))));
+    border-color: var(--bit-btn-sbr, var(--bit-btn-clr, var(--bit-Button-fill-border-color, var(--bit-Button-border-color, var(--bit-Button-fill-background, var(--bit-Button-background, var(--bit-btn-dft-clr, #{$clr-pri})))))));
 
     @media (hover: hover) {
         &:not(.bit-dis, .bit-btn-lnc):hover {
             // Filled buttons keep their foreground through hover and press, so these resolve to the rest color
             // until an author sets the state variable - the point is that the variable reaches this variant too.
-            --bit-btn-sfg: var(--bit-btn-clr-txt, var(--bit-Button-hover-color, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text}))));
-            --bit-btn-sbg: var(--bit-btn-clr-hover, var(--bit-Button-hover-background, var(--bit-btn-dft-clr-hover, #{$clr-pri-hover})));
-            --bit-btn-sbr: var(--bit-btn-clr-hover, var(--bit-Button-hover-border-color, var(--bit-Button-hover-background, var(--bit-btn-dft-clr-hover, #{$clr-pri-hover}))));
+            --bit-btn-sfg: var(--bit-btn-clr-txt, var(--bit-Button-fill-hover-color, var(--bit-Button-hover-color, var(--bit-Button-fill-color, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text}))))));
+            --bit-btn-sbg: var(--bit-btn-clr-hover, var(--bit-Button-fill-hover-background, var(--bit-Button-hover-background, var(--bit-btn-dft-clr-hover, #{$clr-pri-hover}))));
+            --bit-btn-sbr: var(--bit-btn-clr-hover, var(--bit-Button-fill-hover-border-color, var(--bit-Button-hover-border-color, var(--bit-Button-fill-hover-background, var(--bit-Button-hover-background, var(--bit-btn-dft-clr-hover, #{$clr-pri-hover}))))));
         }
     }
 
     &:not(.bit-dis, .bit-btn-lnc):active {
-        --bit-btn-sfg: var(--bit-btn-clr-txt, var(--bit-Button-active-color, var(--bit-Button-hover-color, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})))));
-        --bit-btn-sbg: var(--bit-btn-clr-active, var(--bit-Button-active-background, var(--bit-btn-dft-clr-active, #{$clr-pri-active})));
-        --bit-btn-sbr: var(--bit-btn-clr-active, var(--bit-Button-active-border-color, var(--bit-Button-active-background, var(--bit-btn-dft-clr-active, #{$clr-pri-active}))));
+        --bit-btn-sfg: var(--bit-btn-clr-txt, var(--bit-Button-fill-active-color, var(--bit-Button-active-color, var(--bit-Button-fill-hover-color, var(--bit-Button-hover-color, var(--bit-Button-fill-color, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text}))))))));
+        --bit-btn-sbg: var(--bit-btn-clr-active, var(--bit-Button-fill-active-background, var(--bit-Button-active-background, var(--bit-btn-dft-clr-active, #{$clr-pri-active}))));
+        --bit-btn-sbr: var(--bit-btn-clr-active, var(--bit-Button-fill-active-border-color, var(--bit-Button-active-border-color, var(--bit-Button-fill-active-background, var(--bit-Button-active-background, var(--bit-btn-dft-clr-active, #{$clr-pri-active}))))));
     }
 
     &.bit-dis {
-        color: var(--bit-btn-clr-dis-text, var(--bit-Button-disabled-color, var(--bit-btn-dft-clr-dis-text, #{$clr-pri-dis-text})));
-        background-color: var(--bit-btn-clr-dis, var(--bit-Button-disabled-background, var(--bit-btn-dft-clr-dis, #{$clr-pri-dis})));
-        border-color: var(--bit-btn-clr-dis, var(--bit-Button-disabled-border-color, var(--bit-Button-disabled-background, var(--bit-btn-dft-clr-dis, #{$clr-pri-dis}))));
+        color: var(--bit-btn-clr-dis-text, var(--bit-Button-fill-disabled-color, var(--bit-Button-disabled-color, var(--bit-btn-dft-clr-dis-text, #{$clr-pri-dis-text}))));
+        background-color: var(--bit-btn-clr-dis, var(--bit-Button-fill-disabled-background, var(--bit-Button-disabled-background, var(--bit-btn-dft-clr-dis, #{$clr-pri-dis}))));
+        border-color: var(--bit-btn-clr-dis, var(--bit-Button-fill-disabled-border-color, var(--bit-Button-disabled-border-color, var(--bit-Button-fill-disabled-background, var(--bit-Button-disabled-background, var(--bit-btn-dft-clr-dis, #{$clr-pri-dis}))))));
+
+        // AllowDisabledFocus - the default here - keeps a disabled button in the tab order, so the indicator has
+        // to stay visible, but drawn in the disabled foreground of its variant: the vivid role ring of the enabled
+        // state contradicts the inert look and reads as actionable.
+        &:focus-visible {
+            @include focus-ring(var(--bit-btn-clr-dis-text, var(--bit-Button-fill-disabled-color, var(--bit-Button-disabled-color, var(--bit-btn-dft-clr-dis-text, #{$clr-pri-dis-text})))));
+        }
     }
 }
 
 .bit-btn-otl {
-    color: var(--bit-btn-sfg, var(--bit-btn-clr, var(--bit-Button-color, var(--bit-btn-dft-clr, #{$clr-pri}))));
-    background-color: var(--bit-btn-sbg, var(--bit-Button-background, transparent));
-    border-color: var(--bit-btn-sbr, var(--bit-btn-clr, var(--bit-Button-border-color, var(--bit-btn-dft-clr, #{$clr-pri}))));
+    color: var(--bit-btn-sfg, var(--bit-btn-clr, var(--bit-Button-outline-color, var(--bit-Button-color, var(--bit-btn-dft-clr, #{$clr-pri})))));
+    background-color: var(--bit-btn-sbg, var(--bit-Button-outline-background, var(--bit-Button-background, transparent)));
+    border-color: var(--bit-btn-sbr, var(--bit-btn-clr, var(--bit-Button-outline-border-color, var(--bit-Button-border-color, var(--bit-btn-dft-clr, #{$clr-pri})))));
 
     @media (hover: hover) {
         &:not(.bit-dis, .bit-btn-lnc):hover {
-            --bit-btn-sfg: var(--bit-btn-clr-txt, var(--bit-Button-hover-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})));
-            --bit-btn-sbg: var(--bit-btn-clr-hover, var(--bit-Button-hover-background, var(--bit-btn-dft-clr-hover, #{$clr-pri-hover})));
-            --bit-btn-sbr: var(--bit-btn-clr, var(--bit-Button-hover-border-color, var(--bit-Button-border-color, var(--bit-btn-dft-clr, #{$clr-pri}))));
+            --bit-btn-sfg: var(--bit-btn-clr-txt, var(--bit-Button-outline-hover-color, var(--bit-Button-hover-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text}))));
+            --bit-btn-sbg: var(--bit-btn-clr-hover, var(--bit-Button-outline-hover-background, var(--bit-Button-hover-background, var(--bit-btn-dft-clr-hover, #{$clr-pri-hover}))));
+            --bit-btn-sbr: var(--bit-btn-clr, var(--bit-Button-outline-hover-border-color, var(--bit-Button-hover-border-color, var(--bit-Button-outline-border-color, var(--bit-Button-border-color, var(--bit-btn-dft-clr, #{$clr-pri}))))));
         }
     }
 
     &:not(.bit-dis, .bit-btn-lnc):active {
-        --bit-btn-sfg: var(--bit-btn-clr-txt, var(--bit-Button-active-color, var(--bit-Button-hover-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text}))));
-        --bit-btn-sbg: var(--bit-btn-clr-active, var(--bit-Button-active-background, var(--bit-btn-dft-clr-active, #{$clr-pri-active})));
-        --bit-btn-sbr: var(--bit-btn-clr, var(--bit-Button-active-border-color, var(--bit-Button-border-color, var(--bit-btn-dft-clr, #{$clr-pri}))));
+        --bit-btn-sfg: var(--bit-btn-clr-txt, var(--bit-Button-outline-active-color, var(--bit-Button-active-color, var(--bit-Button-outline-hover-color, var(--bit-Button-hover-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text}))))));
+        --bit-btn-sbg: var(--bit-btn-clr-active, var(--bit-Button-outline-active-background, var(--bit-Button-active-background, var(--bit-btn-dft-clr-active, #{$clr-pri-active}))));
+        --bit-btn-sbr: var(--bit-btn-clr, var(--bit-Button-outline-active-border-color, var(--bit-Button-active-border-color, var(--bit-Button-outline-border-color, var(--bit-Button-border-color, var(--bit-btn-dft-clr, #{$clr-pri}))))));
     }
 
     &.bit-dis {
-        color: var(--bit-btn-clr-dis-text, var(--bit-Button-disabled-color, var(--bit-btn-dft-clr-dis-text, #{$clr-pri-dis-text})));
-        background-color: var(--bit-Button-disabled-background, transparent);
-        border-color: var(--bit-btn-clr-dis, var(--bit-Button-disabled-border-color, var(--bit-btn-dft-clr-dis, #{$clr-pri-dis})));
+        color: var(--bit-btn-clr-dis-text, var(--bit-Button-outline-disabled-color, var(--bit-Button-disabled-color, var(--bit-btn-dft-clr-dis-text, #{$clr-pri-dis-text}))));
+        background-color: var(--bit-Button-outline-disabled-background, var(--bit-Button-disabled-background, transparent));
+        border-color: var(--bit-btn-clr-dis, var(--bit-Button-outline-disabled-border-color, var(--bit-Button-disabled-border-color, var(--bit-btn-dft-clr-dis, #{$clr-pri-dis}))));
+
+        &:focus-visible {
+            @include focus-ring(var(--bit-btn-clr-dis-text, var(--bit-Button-outline-disabled-color, var(--bit-Button-disabled-color, var(--bit-btn-dft-clr-dis-text, #{$clr-pri-dis-text})))));
+        }
     }
 }
 
 .bit-btn-txt {
-    color: var(--bit-btn-sfg, var(--bit-btn-clr, var(--bit-Button-color, var(--bit-btn-dft-clr, #{$clr-pri}))));
-    background-color: var(--bit-btn-sbg, var(--bit-Button-background, transparent));
-    border-color: var(--bit-btn-sbr, var(--bit-Button-border-color, transparent));
+    color: var(--bit-btn-sfg, var(--bit-btn-clr, var(--bit-Button-text-color, var(--bit-Button-color, var(--bit-btn-dft-clr, #{$clr-pri})))));
+    background-color: var(--bit-btn-sbg, var(--bit-Button-text-background, var(--bit-Button-background, transparent)));
+    border-color: var(--bit-btn-sbr, var(--bit-Button-text-border-color, var(--bit-Button-border-color, transparent)));
 
     @media (hover: hover) {
         &:not(.bit-dis, .bit-btn-lnc):hover {
-            --bit-btn-sfg: var(--bit-btn-clr-txt, var(--bit-Button-hover-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})));
-            --bit-btn-sbg: var(--bit-btn-clr-hover, var(--bit-Button-hover-background, var(--bit-btn-dft-clr-hover, #{$clr-pri-hover})));
-            --bit-btn-sbr: var(--bit-Button-hover-border-color, var(--bit-Button-border-color, transparent));
+            --bit-btn-sfg: var(--bit-btn-clr-txt, var(--bit-Button-text-hover-color, var(--bit-Button-hover-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text}))));
+            --bit-btn-sbg: var(--bit-btn-clr-hover, var(--bit-Button-text-hover-background, var(--bit-Button-hover-background, var(--bit-btn-dft-clr-hover, #{$clr-pri-hover}))));
+            --bit-btn-sbr: var(--bit-Button-text-hover-border-color, var(--bit-Button-hover-border-color, var(--bit-Button-text-border-color, var(--bit-Button-border-color, transparent))));
         }
     }
 
     &:not(.bit-dis, .bit-btn-lnc):active {
-        --bit-btn-sfg: var(--bit-btn-clr-txt, var(--bit-Button-active-color, var(--bit-Button-hover-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text}))));
-        --bit-btn-sbg: var(--bit-btn-clr-active, var(--bit-Button-active-background, var(--bit-btn-dft-clr-active, #{$clr-pri-active})));
-        --bit-btn-sbr: var(--bit-Button-active-border-color, var(--bit-Button-border-color, transparent));
+        --bit-btn-sfg: var(--bit-btn-clr-txt, var(--bit-Button-text-active-color, var(--bit-Button-active-color, var(--bit-Button-text-hover-color, var(--bit-Button-hover-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text}))))));
+        --bit-btn-sbg: var(--bit-btn-clr-active, var(--bit-Button-text-active-background, var(--bit-Button-active-background, var(--bit-btn-dft-clr-active, #{$clr-pri-active}))));
+        --bit-btn-sbr: var(--bit-Button-text-active-border-color, var(--bit-Button-active-border-color, var(--bit-Button-text-border-color, var(--bit-Button-border-color, transparent))));
     }
 
     &.bit-dis {
-        color: var(--bit-btn-clr-dis-text, var(--bit-Button-disabled-color, var(--bit-btn-dft-clr-dis-text, #{$clr-pri-dis-text})));
-        background-color: var(--bit-Button-disabled-background, transparent);
-        border-color: var(--bit-Button-disabled-border-color, transparent);
+        color: var(--bit-btn-clr-dis-text, var(--bit-Button-text-disabled-color, var(--bit-Button-disabled-color, var(--bit-btn-dft-clr-dis-text, #{$clr-pri-dis-text}))));
+        background-color: var(--bit-Button-text-disabled-background, var(--bit-Button-disabled-background, transparent));
+        border-color: var(--bit-Button-text-disabled-border-color, var(--bit-Button-disabled-border-color, transparent));
+
+        &:focus-visible {
+            @include focus-ring(var(--bit-btn-clr-dis-text, var(--bit-Button-text-disabled-color, var(--bit-Button-disabled-color, var(--bit-btn-dft-clr-dis-text, #{$clr-pri-dis-text})))));
+        }
     }
 }
 
@@ -586,25 +639,37 @@ $btn-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
 // important: these need to be here at the end!
 
 // FixedColor has to outrank the hover and press rules of all three variants, each of which is a class, a state
-// guard and a pseudo-class, so it is written against the root class as well - and kept away from the disabled state, whose
-// muted foreground is not something a fixed color should hold on to.
+// guard and a pseudo-class, so it is written against the variant class as well - and kept away from the disabled
+// state, whose muted foreground is not something a fixed color should hold on to.
 // The color it fixes is the on-color of the role - the one the hover and press states paint, because those fill the
 // box with the role's own color. An Outline or Text button given the color of the surface it sits on is the case this
 // is for: its resting foreground is that surface's color and would be invisible against it, so the button wears the
-// on-color from the start and never shifts. An explicit Color's on-color is read before the public foreground, as
-// everywhere else on the button.
-.bit-btn.bit-btn-fxc:not(.bit-dis) {
-    color: var(--bit-btn-sfg, var(--bit-btn-clr-txt, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text}))));
+// on-color from the start and never shifts. An explicit Color's on-color is read before the public foreground of the
+// variant and the shared one, as everywhere else on the button.
+@mixin btn-fixed-color($color) {
+    color: var(--bit-btn-sfg, #{$color});
 
     @media (hover: hover) {
         &:hover {
-            --bit-btn-sfg: var(--bit-btn-clr-txt, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})));
+            --bit-btn-sfg: #{$color};
         }
     }
 
     &:active {
-        --bit-btn-sfg: var(--bit-btn-clr-txt, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})));
+        --bit-btn-sfg: #{$color};
     }
+}
+
+.bit-btn-fil.bit-btn-fxc:not(.bit-dis) {
+    @include btn-fixed-color(var(--bit-btn-clr-txt, var(--bit-Button-fill-color, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})))));
+}
+
+.bit-btn-otl.bit-btn-fxc:not(.bit-dis) {
+    @include btn-fixed-color(var(--bit-btn-clr-txt, var(--bit-Button-outline-color, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})))));
+}
+
+.bit-btn-txt.bit-btn-fxc:not(.bit-dis) {
+    @include btn-fixed-color(var(--bit-btn-clr-txt, var(--bit-Button-text-color, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})))));
 }
 
 // An icon-only button is a square, the way every icon button in the library is: the side padding drops to the

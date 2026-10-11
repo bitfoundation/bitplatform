@@ -607,6 +607,28 @@ variable, not per component:
 
 A name moves to the root-only list only once no selector reading it matches anything but the root.
 
+**A variant reads its own tier of the public variables ahead of the shared one.** Filled, outlined and text
+looks are styled apart by nearly every design system, so a variable all three read cannot re-skin one of them
+from `:root` without the others: a neutral hairline for outline buttons would ring every filled one too. So every
+public variable a component reads in the rules of one variant has a twin for it - `--bit-<Component>-fill-X`,
+`-outline-X`, `-text-X`, whatever the variant class is called (`bit-drm-tex`, `bit-crd-vot`) - read right ahead
+of it there and falling back to it at once:
+`var(--bit-btn-clr, var(--bit-Button-outline-border-color, var(--bit-Button-border-color, <default>)))`. The
+twin sits between the private variable a parameter publishes and the shared one, so an explicit `Color` still
+wins over both; a chain falling back from one public variable to another (hover to rest) puts the twin ahead of
+each. A part with a variant axis of its own names its twins the same way (`--bit-TagsInput-outline-tag-background`).
+A rule of two variants, or of none (the root, a mixin body), never reads a shared variable that has twins - it
+is split per variant, or the literal `var()` chain is passed into the mixin from each variant's rule, since a
+name put together with Sass interpolation is invisible to the contract tests. A variable whose meaning is the
+same in every variant - a role input the variants all derive from (`--bit-FileInput-color`) - is no variant's
+and stays shared; one that a variant rule reads all the same (`--bit-Card-border-width`, the one rule every card
+draws whoever asks for it) is named in the test's `SharedByEveryLook`, never hidden from it behind a Sass variable.
+A component whose unset `Variant` renders no class (`BitDropMenu`) owns a fourth look in its root rules: each
+variant hands its twins in through a private slot the root reads ahead of the shared variable
+(`var(--bit-drm-rst-brd-p, var(--bit-DropMenu-border-color, ...))`), and the test's `RootOwnsTheUnsetLook` names it. `BitButton` is the reference; `BitComponentVariantVariablesContractTests` fails on a variant
+read without its twin, a twin not falling back to its shared variable, and a shared rule reading one with
+twins, for every stylesheet at once (the variant classes are read off the `BitVariant` arms of the C#).
+
 **A state moves a variable, never the paint.** A `:hover` / `:active` / `:focus*` rule outranks the single class
 an app hands a part through `Class` / `Classes`, so one that set `color`, `background`, `border-color`, `fill`
 or `stroke` itself would take the part back exactly while the user is pointing at it. The state rule keeps its

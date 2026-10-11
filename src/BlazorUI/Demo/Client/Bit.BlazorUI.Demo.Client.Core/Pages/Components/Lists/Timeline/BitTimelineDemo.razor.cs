@@ -187,13 +187,49 @@ public partial class BitTimelineDemo
         {
             Name = "--bit-Timeline-dot-background",
             DefaultValue = "--bit-clr-pri (Fill), transparent (Outline, Text)",
-            Description = "Fill of the dot. A disabled item keeps its disabled fill. The Color parameter wins over it in Fill; the transparent dot of Outline and Text is its alone.",
+            Description = "Fill of the dot. A disabled item keeps its disabled fill. The Color parameter wins over it in Fill; the transparent dot of Outline and Text is its alone. Shared by the three variants: --bit-Timeline-fill-dot-background, --bit-Timeline-outline-dot-background and --bit-Timeline-text-dot-background are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-fill-dot-background",
+            DefaultValue = "--bit-Timeline-dot-background",
+            Description = "Fill of the dot of a Fill timeline or item alone, read ahead of --bit-Timeline-dot-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-outline-dot-background",
+            DefaultValue = "--bit-Timeline-dot-background",
+            Description = "Fill of the dot of an Outline timeline or item alone, read ahead of --bit-Timeline-dot-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-text-dot-background",
+            DefaultValue = "--bit-Timeline-dot-background",
+            Description = "Fill of the dot of a Text timeline or item alone, read ahead of --bit-Timeline-dot-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone. It also fills the plate the icon of a Text dot sits on.",
         },
         new()
         {
             Name = "--bit-Timeline-dot-border-color",
             DefaultValue = "--bit-clr-pri, transparent (Text)",
-            Description = "Border color of the dot. A disabled item keeps its disabled border. The Color parameter wins over it, except over the transparent border of Text.",
+            Description = "Border color of the dot. A disabled item keeps its disabled border. The Color parameter wins over it, except over the transparent border of Text. Shared by the three variants: --bit-Timeline-fill-dot-border-color, --bit-Timeline-outline-dot-border-color and --bit-Timeline-text-dot-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-fill-dot-border-color",
+            DefaultValue = "--bit-Timeline-dot-border-color",
+            Description = "Border color of the dot of a Fill timeline or item alone, read ahead of --bit-Timeline-dot-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-outline-dot-border-color",
+            DefaultValue = "--bit-Timeline-dot-border-color",
+            Description = "Border color of the dot of an Outline timeline or item alone, read ahead of --bit-Timeline-dot-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-text-dot-border-color",
+            DefaultValue = "--bit-Timeline-dot-border-color",
+            Description = "Border color of the dot of a Text timeline or item alone, read ahead of --bit-Timeline-dot-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
         },
         new()
         {
@@ -217,7 +253,25 @@ public partial class BitTimelineDemo
         {
             Name = "--bit-Timeline-icon-color",
             DefaultValue = "--bit-clr-pri-text (Fill), --bit-clr-pri (Outline, Text)",
-            Description = "Color of the icon inside the dot. A disabled item keeps its disabled color. The Color parameter wins over it.",
+            Description = "Color of the icon inside the dot. A disabled item keeps its disabled color. The Color parameter wins over it. Shared by the three variants: --bit-Timeline-fill-icon-color, --bit-Timeline-outline-icon-color and --bit-Timeline-text-icon-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-fill-icon-color",
+            DefaultValue = "--bit-Timeline-icon-color",
+            Description = "Color of the icon inside the dot of a Fill timeline or item alone, read ahead of --bit-Timeline-icon-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-outline-icon-color",
+            DefaultValue = "--bit-Timeline-icon-color",
+            Description = "Color of the icon inside the dot of an Outline timeline or item alone, read ahead of --bit-Timeline-icon-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Timeline-text-icon-color",
+            DefaultValue = "--bit-Timeline-icon-color",
+            Description = "Color of the icon inside the dot of a Text timeline or item alone, read ahead of --bit-Timeline-icon-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
         },
         new()
         {

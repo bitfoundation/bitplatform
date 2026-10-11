@@ -758,13 +758,43 @@ public partial class BitFileInputDemo
         {
             Name = "--bit-FileInput-disabled-background",
             DefaultValue = "--bit-clr-bg-dis",
-            Description = "Background of the browse button and of the remove buttons when Disabled is true.",
+            Description = "Background of the browse button and of the remove buttons when Disabled is true. Shared by the variants: --bit-FileInput-fill-disabled-background, --bit-FileInput-outline-disabled-background and --bit-FileInput-text-disabled-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-FileInput-disabled-border-color",
             DefaultValue = "--bit-clr-brd-dis",
-            Description = "Border color of the browse button when Disabled is true.",
+            Description = "Border color of the browse button when Disabled is true. Shared by the variants: --bit-FileInput-fill-disabled-border-color and --bit-FileInput-outline-disabled-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-fill-disabled-background",
+            DefaultValue = "--bit-FileInput-disabled-background",
+            Description = "Background of the browse button and of the remove buttons when Disabled is true of a Fill file input alone, read ahead of --bit-FileInput-disabled-background so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-fill-disabled-border-color",
+            DefaultValue = "--bit-FileInput-disabled-border-color",
+            Description = "Border color of the browse button when Disabled is true of a Fill file input alone, read ahead of --bit-FileInput-disabled-border-color so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-outline-disabled-background",
+            DefaultValue = "--bit-FileInput-disabled-background",
+            Description = "Background of the remove buttons when Disabled is true (the browse button stays transparent) of an Outline file input alone, read ahead of --bit-FileInput-disabled-background so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-outline-disabled-border-color",
+            DefaultValue = "--bit-FileInput-disabled-border-color",
+            Description = "Border color of the browse button when Disabled is true of an Outline file input alone, read ahead of --bit-FileInput-disabled-border-color so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-FileInput-text-disabled-background",
+            DefaultValue = "--bit-FileInput-disabled-background",
+            Description = "Background of the remove buttons when Disabled is true (the browse button stays transparent) of a Text file input alone, read ahead of --bit-FileInput-disabled-background so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
         },
         new()
         {

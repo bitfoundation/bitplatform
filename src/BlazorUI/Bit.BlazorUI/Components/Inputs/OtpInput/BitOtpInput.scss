@@ -37,6 +37,32 @@
 //   --bit-OtpInput-loader-color            the sweep of the IsLoading bar                (default: $clr-pri)
 //   --bit-OtpInput-loader-background       the track of the IsLoading bar                (default: $clr-bg-sec)
 //   --bit-OtpInput-loader-height           thickness of the IsLoading bar                (default: $siz-track-sm)
+//                                          The box colors and focus rings have a twin per variant, read ahead of
+//                                          the shared one, so a theme can set one look apart from the other two:
+//   --bit-OtpInput-fill-background                  box background at rest, Fill variant           (default: --bit-OtpInput-background)
+//   --bit-OtpInput-fill-hover-background            box background on hover, Fill variant          (default: --bit-OtpInput-hover-background)
+//   --bit-OtpInput-fill-filled-background           background of a filled box, Fill variant       (default: --bit-OtpInput-filled-background)
+//   --bit-OtpInput-fill-border-color                box rule at rest, Fill variant                 (default: --bit-OtpInput-border-color)
+//   --bit-OtpInput-fill-hover-border-color          box rule on hover, Fill variant                (default: --bit-OtpInput-hover-border-color)
+//   --bit-OtpInput-fill-filled-border-color         rule of a filled box, Fill variant             (default: --bit-OtpInput-filled-border-color)
+//   --bit-OtpInput-fill-focus-color                 focus ring color, Fill variant                 (default: --bit-OtpInput-focus-color)
+//   --bit-OtpInput-fill-invalid-focus-color         focus ring in the error state, Fill variant    (default: --bit-OtpInput-invalid-focus-color)
+//   --bit-OtpInput-outline-background               box background at rest, Outline variant        (default: --bit-OtpInput-background)
+//   --bit-OtpInput-outline-hover-background         box background on hover, Outline variant       (default: --bit-OtpInput-hover-background)
+//   --bit-OtpInput-outline-filled-background        background of a filled box, Outline variant    (default: --bit-OtpInput-filled-background)
+//   --bit-OtpInput-outline-border-color             box rule at rest, Outline variant              (default: --bit-OtpInput-border-color)
+//   --bit-OtpInput-outline-hover-border-color       box rule on hover, Outline variant             (default: --bit-OtpInput-hover-border-color)
+//   --bit-OtpInput-outline-filled-border-color      rule of a filled box, Outline variant          (default: --bit-OtpInput-filled-border-color)
+//   --bit-OtpInput-outline-focus-color              focus ring color, Outline variant              (default: --bit-OtpInput-focus-color)
+//   --bit-OtpInput-outline-invalid-focus-color      focus ring in the error state, Outline variant (default: --bit-OtpInput-invalid-focus-color)
+//   --bit-OtpInput-text-background                  box background at rest, Text variant           (default: --bit-OtpInput-background)
+//   --bit-OtpInput-text-hover-background            box background on hover, Text variant          (default: --bit-OtpInput-hover-background)
+//   --bit-OtpInput-text-filled-background           background of a filled box, Text variant       (default: --bit-OtpInput-filled-background)
+//   --bit-OtpInput-text-border-color                box rule at rest, Text variant                 (default: --bit-OtpInput-border-color)
+//   --bit-OtpInput-text-hover-border-color          box rule on hover, Text variant                (default: --bit-OtpInput-hover-border-color)
+//   --bit-OtpInput-text-filled-border-color         rule of a filled box, Text variant             (default: --bit-OtpInput-filled-border-color)
+//   --bit-OtpInput-text-focus-color                 focus ring color, Text variant                 (default: --bit-OtpInput-focus-color)
+//   --bit-OtpInput-text-invalid-focus-color         focus ring in the error state, Text variant    (default: --bit-OtpInput-invalid-focus-color)
 //
 // A parameter written on the component wins over the variable that restyles what it sets: an explicit Accent over
 // the focused box rule, the focus ring and the loader sweep, and an explicit Size over the box size (the width and
@@ -194,16 +220,17 @@ $otp-private-properties: size, fontsize, dsc-fontsize, clr, clr-focus;
     border-width: var(--bit-OtpInput-border-width, #{$shp-border-width});
     width: var(--bit-otp-size, var(--bit-OtpInput-input-width, var(--bit-OtpInput-input-size, #{$siz-ctrl-md})));
     height: var(--bit-otp-size, var(--bit-OtpInput-input-height, var(--bit-OtpInput-input-size, #{$siz-ctrl-md})));
-    //the two colors of a box are read from a single pair of variables here, and every variant declares what
-    //that pair holds, so a consumer overriding one of the public variables below re-skins every variant
-    //instead of having to repeat the override once per variant class.
+    //the two colors of a box are read from private variables here, which every variant resolves on the root
+    //from its own tier of the public variables (--bit-OtpInput-outline-*, -fill-*, -text-*) ahead of the
+    //shared one: a shared variable still re-skins every variant at once, and a variant's own one sets that
+    //look apart from the other two.
     //the states below set the two variables read ahead of them rather than the colors themselves, so only the
     //rules at rest paint the box: a box the app paints through Classes keeps that paint under the pointer and
     //while it is focused, instead of losing it to a state that outranks the app's class.
     --bit-otp-inp-sbr: initial;
     --bit-otp-inp-sbg: initial;
-    border-color: var(--bit-otp-inp-sbr, var(--bit-OtpInput-border-color, var(--bit-otp-brd)));
-    background-color: var(--bit-otp-inp-sbg, var(--bit-OtpInput-background, var(--bit-otp-bg)));
+    border-color: var(--bit-otp-inp-sbr, var(--bit-otp-brd));
+    background-color: var(--bit-otp-inp-sbg, var(--bit-otp-bg));
     transition: border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
     &::placeholder {
@@ -213,15 +240,15 @@ $otp-private-properties: size, fontsize, dsc-fontsize, clr, clr-focus;
     //a box that already holds a character, which is the hook for a row that shows its own progress. Both
     //of its colors fall back to the ones of the rest state, so nothing changes until one of the two is set.
     &.bit-otp-fld {
-        border-color: var(--bit-otp-inp-sbr, var(--bit-OtpInput-filled-border-color, var(--bit-OtpInput-border-color, var(--bit-otp-brd))));
-        background-color: var(--bit-otp-inp-sbg, var(--bit-OtpInput-filled-background, var(--bit-OtpInput-background, var(--bit-otp-bg))));
+        border-color: var(--bit-otp-inp-sbr, var(--bit-otp-brd-filled));
+        background-color: var(--bit-otp-inp-sbg, var(--bit-otp-bg-filled));
     }
 
     //the hover rule is qualified so that it lights up nothing but a box the user can actually type in:
     //never a disabled or a read-only component, and never over the accent color of the focused input.
     &:enabled:read-write:hover:not(:focus-visible) {
-        --bit-otp-inp-sbr: var(--bit-OtpInput-hover-border-color, var(--bit-otp-brd-hover));
-        --bit-otp-inp-sbg: var(--bit-OtpInput-hover-background, var(--bit-otp-bg-hover));
+        --bit-otp-inp-sbr: var(--bit-otp-brd-hover);
+        --bit-otp-inp-sbg: var(--bit-otp-bg-hover);
     }
 
     //the accent of the focused box goes into the variable the filled block reads first as well, so it is never
@@ -257,33 +284,47 @@ $otp-private-properties: size, fontsize, dsc-fontsize, clr, clr-focus;
     }
 }
 
+//every variant resolves the colors of its boxes here, each public variable read behind the variant's own twin of
+//it, so a theme can give one look colors of its own from :root without re-skinning the other two. The state
+//colors fall back to the rest ones of the same variant, its own tier included.
+
 //Outline - the default: each input is a box drawn with the border color, filled with the page surface.
 .bit-otp-otl {
-    --bit-otp-bg: #{$clr-bg-pri};
-    --bit-otp-bg-hover: var(--bit-OtpInput-background, var(--bit-otp-bg));
-    --bit-otp-brd: #{$clr-brd-pri};
-    --bit-otp-brd-hover: #{$clr-brd-pri-hover};
+    --bit-otp-bg: var(--bit-OtpInput-outline-background, var(--bit-OtpInput-background, #{$clr-bg-pri}));
+    --bit-otp-bg-hover: var(--bit-OtpInput-outline-hover-background, var(--bit-OtpInput-hover-background, var(--bit-otp-bg)));
+    --bit-otp-bg-filled: var(--bit-OtpInput-outline-filled-background, var(--bit-OtpInput-filled-background, var(--bit-otp-bg)));
+    --bit-otp-brd: var(--bit-OtpInput-outline-border-color, var(--bit-OtpInput-border-color, #{$clr-brd-pri}));
+    --bit-otp-brd-hover: var(--bit-OtpInput-outline-hover-border-color, var(--bit-OtpInput-hover-border-color, #{$clr-brd-pri-hover}));
+    --bit-otp-brd-filled: var(--bit-OtpInput-outline-filled-border-color, var(--bit-OtpInput-filled-border-color, var(--bit-otp-brd)));
 }
 
 //Fill: the box is painted with the secondary surface and carries no rule of its own, for a softer
 //looking field that still reads as a single character slot.
 .bit-otp-fil {
-    --bit-otp-bg: #{$clr-bg-sec};
-    --bit-otp-bg-hover: #{$clr-bg-sec-hover};
-    --bit-otp-brd: transparent;
-    --bit-otp-brd-hover: var(--bit-OtpInput-border-color, var(--bit-otp-brd));
+    --bit-otp-bg: var(--bit-OtpInput-fill-background, var(--bit-OtpInput-background, #{$clr-bg-sec}));
+    --bit-otp-bg-hover: var(--bit-OtpInput-fill-hover-background, var(--bit-OtpInput-hover-background, #{$clr-bg-sec-hover}));
+    --bit-otp-bg-filled: var(--bit-OtpInput-fill-filled-background, var(--bit-OtpInput-filled-background, var(--bit-otp-bg)));
+    --bit-otp-brd: var(--bit-OtpInput-fill-border-color, var(--bit-OtpInput-border-color, transparent));
+    --bit-otp-brd-hover: var(--bit-OtpInput-fill-hover-border-color, var(--bit-OtpInput-hover-border-color, var(--bit-otp-brd)));
+    --bit-otp-brd-filled: var(--bit-OtpInput-fill-filled-border-color, var(--bit-OtpInput-filled-border-color, var(--bit-otp-brd)));
 }
 
 //Text: only an underline is painted, for a code entry that should not outweigh the content around it.
 .bit-otp-txt {
-    --bit-otp-bg: transparent;
-    --bit-otp-bg-hover: var(--bit-OtpInput-background, var(--bit-otp-bg));
-    --bit-otp-brd: #{$clr-brd-pri};
-    --bit-otp-brd-hover: #{$clr-brd-pri-hover};
+    --bit-otp-bg: var(--bit-OtpInput-text-background, var(--bit-OtpInput-background, transparent));
+    --bit-otp-bg-hover: var(--bit-OtpInput-text-hover-background, var(--bit-OtpInput-hover-background, var(--bit-otp-bg)));
+    --bit-otp-bg-filled: var(--bit-OtpInput-text-filled-background, var(--bit-OtpInput-filled-background, var(--bit-otp-bg)));
+    --bit-otp-brd: var(--bit-OtpInput-text-border-color, var(--bit-OtpInput-border-color, #{$clr-brd-pri}));
+    --bit-otp-brd-hover: var(--bit-OtpInput-text-hover-border-color, var(--bit-OtpInput-hover-border-color, #{$clr-brd-pri-hover}));
+    --bit-otp-brd-filled: var(--bit-OtpInput-text-filled-border-color, var(--bit-OtpInput-filled-border-color, var(--bit-otp-brd)));
 
+    //the other three sides are taken away, which leaves the bottom one at the thickness the rule of the box
+    //reads in every variant - drawn here as the underline.
     .bit-otp-inp {
         border-radius: 0;
-        border-width: 0 0 var(--bit-OtpInput-border-width, #{$shp-border-width}) 0;
+        border-top-width: 0;
+        border-right-width: 0;
+        border-left-width: 0;
     }
 }
 
@@ -440,18 +481,25 @@ $otp-private-properties: size, fontsize, dsc-fontsize, clr, clr-focus;
 //the focus ring and the disabled/invalid overrides are declared after the variants on purpose: they are
 //as specific as the variant rules, so only the source order keeps a focused input from painting the
 //accent color over an error, or a disabled component from keeping its variant colors.
-//the Text variant is excluded so that it gets the underline treatment below instead: a ring drawn around a box
-//that is only an underline would bring back the very frame the variant is there to leave out, and applying
-//the ring only to take its shadow away again would still leave its forced-colors outline behind.
-.bit-otp:not(.bit-otp-txt) .bit-otp-inp {
+//the Text variant is left out of the ring so that it gets the underline treatment below instead: a ring drawn
+//around a box that is only an underline would bring back the very frame the variant is there to leave out, and
+//applying the ring only to take its shadow away again would still leave its forced-colors outline behind. Each
+//variant reads its own tier of the focus color ahead of the shared one.
+.bit-otp.bit-otp-otl .bit-otp-inp {
     &:focus-visible {
-        @include focus-ring-own(var(--bit-otp-clr-focus, var(--bit-OtpInput-focus-color)));
+        @include focus-ring-own(var(--bit-otp-clr-focus, var(--bit-OtpInput-outline-focus-color, var(--bit-OtpInput-focus-color))));
+    }
+}
+
+.bit-otp.bit-otp-fil .bit-otp-inp {
+    &:focus-visible {
+        @include focus-ring-own(var(--bit-otp-clr-focus, var(--bit-OtpInput-fill-focus-color, var(--bit-OtpInput-focus-color))));
     }
 }
 
 .bit-otp.bit-otp-txt .bit-otp-inp {
     &:focus-visible {
-        @include focus-underline-ring(var(--bit-otp-clr-focus, var(--bit-OtpInput-focus-color, #{$clr-pri-focus})));
+        @include focus-underline-ring(var(--bit-otp-clr-focus, var(--bit-OtpInput-text-focus-color, var(--bit-OtpInput-focus-color, #{$clr-pri-focus}))));
     }
 }
 
@@ -521,12 +569,16 @@ $otp-private-properties: size, fontsize, dsc-fontsize, clr, clr-focus;
         }
     }
 
-    &:not(.bit-otp-txt) .bit-otp-inp:focus-visible {
-        @include focus-ring(var(--bit-OtpInput-invalid-focus-color, #{$clr-err-focus}));
+    &.bit-otp-otl .bit-otp-inp:focus-visible {
+        @include focus-ring(var(--bit-OtpInput-outline-invalid-focus-color, var(--bit-OtpInput-invalid-focus-color, #{$clr-err-focus})));
+    }
+
+    &.bit-otp-fil .bit-otp-inp:focus-visible {
+        @include focus-ring(var(--bit-OtpInput-fill-invalid-focus-color, var(--bit-OtpInput-invalid-focus-color, #{$clr-err-focus})));
     }
 
     &.bit-otp-txt .bit-otp-inp:focus-visible {
-        @include focus-underline-ring(var(--bit-OtpInput-invalid-focus-color, #{$clr-err-focus}));
+        @include focus-underline-ring(var(--bit-OtpInput-text-invalid-focus-color, var(--bit-OtpInput-invalid-focus-color, #{$clr-err-focus})));
     }
 }
 

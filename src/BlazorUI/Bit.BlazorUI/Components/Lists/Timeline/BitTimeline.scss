@@ -18,6 +18,18 @@
 //   --bit-Timeline-item-radius            corner radius of a clickable item            (default: $shp-radius-control)
 //   --bit-Timeline-item-hover-background  hover plate of a clickable item              (default: $clr-bg-pri-hover)
 //   --bit-Timeline-item-active-background pressed plate of a clickable item            (default: $clr-bg-pri-active)
+//                                         Each dot color above has a twin per variant (of the timeline or of an
+//                                         item), read ahead of it, so a theme can set one look apart from the other
+//                                         two (Color still wins over both):
+//   --bit-Timeline-fill-dot-background       fill of the dot, Fill variant                  (default: --bit-Timeline-dot-background)
+//   --bit-Timeline-fill-dot-border-color     border color of the dot, Fill variant          (default: --bit-Timeline-dot-border-color)
+//   --bit-Timeline-fill-icon-color           icon color, Fill variant                       (default: --bit-Timeline-icon-color)
+//   --bit-Timeline-outline-dot-background    fill of the dot, Outline variant               (default: --bit-Timeline-dot-background)
+//   --bit-Timeline-outline-dot-border-color  border color of the dot, Outline variant       (default: --bit-Timeline-dot-border-color)
+//   --bit-Timeline-outline-icon-color        icon color, Outline variant                    (default: --bit-Timeline-icon-color)
+//   --bit-Timeline-text-dot-background       fill of the dot and its icon plate, Text variant (default: --bit-Timeline-dot-background)
+//   --bit-Timeline-text-dot-border-color     border color of the dot, Text variant          (default: --bit-Timeline-dot-border-color)
+//   --bit-Timeline-text-icon-color           icon color, Text variant                       (default: --bit-Timeline-icon-color)
 // The dot colors never override a disabled item, which keeps its disabled palette.
 //
 // A parameter wins over the variable that restyles what it sets: an explicit Color - of the timeline or of an item -
@@ -36,12 +48,19 @@
  * Each color the Color role paints is read from the role first - published only by an explicit Color, of the
  * timeline or of the item - then from the public variables, then from the primary role an unset Color stands for;
  * a color the role leaves alone (the transparent dot of Outline and Text) is the variables' alone.
+ *
+ * Every dot color variable is read in two tiers: the variant's own (--bit-Timeline-fill-*, -outline-*, -text-*) ahead
+ * of the shared one, so a theme can give the three looks different dots from :root - a neutral ring around the
+ * outlined dots without one around every filled dot - while a shared variable still re-skins all three at once. Both
+ * tiers sit between the Color and the default, so an explicit Color still wins over them. A variant of an item reads
+ * the same tier as that variant of a timeline. The chains are handed to these mixins by the variant rules (see
+ * .bit-tln-fil > .bit-tln-itm), which are the only rules a tier of one variant may be read in.
  */
-@mixin timeline-variant-fill {
+@mixin timeline-variant-fill($dot-background, $dot-border-color, $icon-color) {
     --bit-tln-dot-clr: var(--bit-tln-clr-fg, #{$clr-pri-text});
-    --bit-tln-dot-clr-bg: var(--bit-tln-clr, var(--bit-Timeline-dot-background, #{$clr-pri}));
-    --bit-tln-dot-clr-brd: var(--bit-tln-clr, var(--bit-Timeline-dot-border-color, #{$clr-pri}));
-    --bit-tln-dot-ico-clr: var(--bit-tln-clr-fg, var(--bit-Timeline-icon-color, #{$clr-pri-text}));
+    --bit-tln-dot-clr-bg: #{$dot-background};
+    --bit-tln-dot-clr-brd: #{$dot-border-color};
+    --bit-tln-dot-ico-clr: #{$icon-color};
     --bit-tln-dot-ico-clr-bg: transparent;
     --bit-tln-dot-ico-width: auto;
     --bit-tln-dot-ico-height: auto;
@@ -53,11 +72,11 @@
     --bit-tln-dot-ico-clr: var(--bit-tln-clr-dis);
 }
 
-@mixin timeline-variant-outline {
+@mixin timeline-variant-outline($dot-background, $dot-border-color, $icon-color) {
     --bit-tln-dot-clr: var(--bit-tln-clr-fg, #{$clr-pri-text});
-    --bit-tln-dot-clr-bg: var(--bit-Timeline-dot-background, transparent);
-    --bit-tln-dot-clr-brd: var(--bit-tln-clr, var(--bit-Timeline-dot-border-color, #{$clr-pri}));
-    --bit-tln-dot-ico-clr: var(--bit-tln-clr, var(--bit-Timeline-icon-color, #{$clr-pri}));
+    --bit-tln-dot-clr-bg: #{$dot-background};
+    --bit-tln-dot-clr-brd: #{$dot-border-color};
+    --bit-tln-dot-ico-clr: #{$icon-color};
     --bit-tln-dot-ico-clr-bg: transparent;
     --bit-tln-dot-ico-width: auto;
     --bit-tln-dot-ico-height: auto;
@@ -69,11 +88,11 @@
     --bit-tln-dot-ico-clr: var(--bit-tln-clr-dis);
 }
 
-@mixin timeline-variant-text {
+@mixin timeline-variant-text($dot-background, $dot-border-color, $icon-color) {
     --bit-tln-dot-clr: var(--bit-tln-clr-fg, #{$clr-pri-text});
-    --bit-tln-dot-clr-bg: var(--bit-Timeline-dot-background, transparent);
-    --bit-tln-dot-clr-brd: var(--bit-Timeline-dot-border-color, transparent);
-    --bit-tln-dot-ico-clr: var(--bit-tln-clr, var(--bit-Timeline-icon-color, #{$clr-pri}));
+    --bit-tln-dot-clr-bg: #{$dot-background};
+    --bit-tln-dot-clr-brd: #{$dot-border-color};
+    --bit-tln-dot-ico-clr: #{$icon-color};
     --bit-tln-dot-ico-clr-bg: transparent;
     --bit-tln-dot-ico-width: var(--bit-tln-dot-size);
     --bit-tln-dot-ico-height: var(--bit-tln-dot-size);
@@ -661,29 +680,53 @@ $tln-private-properties: clr, clr-fg, clr-focus, clr-dis-bg, clr-dis-text, dot-s
 }
 
 .bit-tln-fil > .bit-tln-itm {
-    @include timeline-variant-fill;
+    @include timeline-variant-fill(
+        var(--bit-tln-clr, var(--bit-Timeline-fill-dot-background, var(--bit-Timeline-dot-background, #{$clr-pri}))),
+        var(--bit-tln-clr, var(--bit-Timeline-fill-dot-border-color, var(--bit-Timeline-dot-border-color, #{$clr-pri}))),
+        var(--bit-tln-clr-fg, var(--bit-Timeline-fill-icon-color, var(--bit-Timeline-icon-color, #{$clr-pri-text})))
+    );
 }
 
 .bit-tln-otl > .bit-tln-itm {
-    @include timeline-variant-outline;
+    @include timeline-variant-outline(
+        var(--bit-Timeline-outline-dot-background, var(--bit-Timeline-dot-background, transparent)),
+        var(--bit-tln-clr, var(--bit-Timeline-outline-dot-border-color, var(--bit-Timeline-dot-border-color, #{$clr-pri}))),
+        var(--bit-tln-clr, var(--bit-Timeline-outline-icon-color, var(--bit-Timeline-icon-color, #{$clr-pri})))
+    );
 }
 
 .bit-tln-txt > .bit-tln-itm {
-    @include timeline-variant-text;
+    @include timeline-variant-text(
+        var(--bit-Timeline-text-dot-background, var(--bit-Timeline-dot-background, transparent)),
+        var(--bit-Timeline-text-dot-border-color, var(--bit-Timeline-dot-border-color, transparent)),
+        var(--bit-tln-clr, var(--bit-Timeline-text-icon-color, var(--bit-Timeline-icon-color, #{$clr-pri})))
+    );
 }
 
 // The item-level variant is declared after the timeline-level one, with the same specificity, so an
 // item can render a different dot style than the rest of the timeline.
 .bit-tln-itm.bit-tln-ivf {
-    @include timeline-variant-fill;
+    @include timeline-variant-fill(
+        var(--bit-tln-clr, var(--bit-Timeline-fill-dot-background, var(--bit-Timeline-dot-background, #{$clr-pri}))),
+        var(--bit-tln-clr, var(--bit-Timeline-fill-dot-border-color, var(--bit-Timeline-dot-border-color, #{$clr-pri}))),
+        var(--bit-tln-clr-fg, var(--bit-Timeline-fill-icon-color, var(--bit-Timeline-icon-color, #{$clr-pri-text})))
+    );
 }
 
 .bit-tln-itm.bit-tln-ivo {
-    @include timeline-variant-outline;
+    @include timeline-variant-outline(
+        var(--bit-Timeline-outline-dot-background, var(--bit-Timeline-dot-background, transparent)),
+        var(--bit-tln-clr, var(--bit-Timeline-outline-dot-border-color, var(--bit-Timeline-dot-border-color, #{$clr-pri}))),
+        var(--bit-tln-clr, var(--bit-Timeline-outline-icon-color, var(--bit-Timeline-icon-color, #{$clr-pri})))
+    );
 }
 
 .bit-tln-itm.bit-tln-ivt {
-    @include timeline-variant-text;
+    @include timeline-variant-text(
+        var(--bit-Timeline-text-dot-background, var(--bit-Timeline-dot-background, transparent)),
+        var(--bit-Timeline-text-dot-border-color, var(--bit-Timeline-dot-border-color, transparent)),
+        var(--bit-tln-clr, var(--bit-Timeline-text-icon-color, var(--bit-Timeline-icon-color, #{$clr-pri})))
+    );
 }
 
 .bit-tln-fil.bit-dis > .bit-tln-itm,
@@ -739,7 +782,9 @@ $tln-private-properties: clr, clr-fg, clr-focus, clr-dis-bg, clr-dis-text, dot-s
 }
 
 // The icon of the text variant sits on a plate of the size and the shape of a dot, transparent by default, which is
-// the only fill a text dot has: the public dot background paints it.
+// the only fill a text dot has: the public dot background paints it, the tier of the Text variant first. The plate
+// takes the corners of the dot it sits in rather than reading the radius again, so it keeps the shape of the dot
+// wherever that was set - and the radius stays one variable for every variant: the shape of a dot, whatever its look.
 .bit-tln-txt .bit-tln-ico,
 .bit-tln-itm.bit-tln-ivt .bit-tln-ico {
     display: flex;
@@ -747,8 +792,8 @@ $tln-private-properties: clr, clr-fg, clr-focus, clr-dis-bg, clr-dis-text, dot-s
     justify-content: center;
     width: var(--bit-tln-dot-ico-width);
     height: var(--bit-tln-dot-ico-height);
-    border-radius: var(--bit-Timeline-dot-radius, #{$shp-radius-full});
-    background-color: var(--bit-Timeline-dot-background, var(--bit-tln-dot-ico-clr-bg));
+    border-radius: inherit;
+    background-color: var(--bit-Timeline-text-dot-background, var(--bit-Timeline-dot-background, var(--bit-tln-dot-ico-clr-bg)));
 }
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss), published only by an

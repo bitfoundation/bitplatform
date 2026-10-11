@@ -43,6 +43,28 @@ public class BitFileInputStylesheetTests
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-FileInput-[a-z-]+, var\(--bit-fin-(?!c\b)"), "A public variable is read before the parameter it restyles the default of.");
     }
 
+    [TestMethod,
+        DataRow("fill", ".bit-fin-fil", "disabled-background"),
+        DataRow("fill", ".bit-fin-fil", "disabled-border-color"),
+        DataRow("outline", ".bit-fin-otl", "disabled-background"),
+        DataRow("outline", ".bit-fin-otl", "disabled-border-color"),
+        DataRow("text", ".bit-fin-txt", "disabled-background")]
+    public void BitFileInputShouldReadTheVariablesOfItsVariantAheadOfTheSharedOnes(string variant, string selector, string name)
+    {
+        var stylesheet = ReadStylesheet();
+        var block = SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
+
+        // Each variant reads a tier of its own ahead of the shared disabled colors, so a theme can set one look apart
+        // from the others on :root. The role colors stay shared: every variant derives its look from the same role.
+        StringAssert.Contains(block, $"var(--bit-FileInput-{variant}-{name}, var(--bit-FileInput-{name}, ",
+                              $"{selector} does not read --bit-FileInput-{variant}-{name} ahead of --bit-FileInput-{name}.");
+        Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-FileInput-(?!{variant}-|text-color\b)(?:fill|outline|text)-"),
+                       $"{selector} reads the variables of another variant.");
+
+        // The remove buttons, which every variant draws alike, read the disabled background their variant resolved.
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-fin-rbt {"), "background-color: var(--bit-fin-dis-bg, #{$clr-bg-dis});");
+    }
+
     [TestMethod]
     public void BitFileInputShouldPublishItsColorAndSizeOnlyWhereTheyAreSet()
     {

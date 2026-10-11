@@ -14,6 +14,16 @@
 //   --bit-Footer-shadow        shadow of an Elevated footer                (default: $box-shadow-appbar-bottom)
 //   --bit-Footer-blur          backdrop blur of a Translucent footer       (default: 12px)
 //   --bit-Footer-z-index       stacking order of a Fixed/Sticky/Absolute footer (default: $zindex-base)
+//                              Each variant reads a twin of every one above that it draws with, ahead of it,
+//                              so a theme can set one look apart from the other two (Color still wins):
+//   --bit-Footer-fill-background       background, Fill variant              (default: --bit-Footer-background)
+//   --bit-Footer-fill-color            text color, Fill variant              (default: --bit-Footer-color)
+//   --bit-Footer-fill-border-color     Bordered divider color, Fill variant  (default: --bit-Footer-border-color)
+//   --bit-Footer-fill-blur             Translucent blur, Fill variant        (default: --bit-Footer-blur)
+//   --bit-Footer-outline-color         text color, Outline variant           (default: --bit-Footer-color)
+//   --bit-Footer-outline-border-color  border color, Outline variant         (default: --bit-Footer-border-color)
+//   --bit-Footer-text-color            text color, Text variant              (default: --bit-Footer-color)
+//   --bit-Footer-text-border-color     Bordered divider color, Text variant  (default: --bit-Footer-border-color)
 //
 // A parameter written on the footer wins over the variable that restyles what it sets: an explicit Color over the
 // background, the color and the border color, an explicit Size over the padding, NoGutter over the padding as well,
@@ -21,12 +31,8 @@
 // publish nothing while they are left unset: a class that always carried the default would be indistinguishable
 // from one that was asked for. A disabled footer keeps the disabled colors whatever the variables say.
 
-// Each of these reads the value an explicit Color or Size publishes first, then the public variable, then the
-// default an unset one stands for: the plain page surface of an uncolored footer, and the medium spacing.
-$ftr-bg: var(--bit-ftr-bg, var(--bit-Footer-background, #{$clr-bg-pri}));
-$ftr-on: var(--bit-ftr-on, var(--bit-Footer-color, #{$clr-fg-pri}));
-$ftr-fg: var(--bit-ftr-fg, var(--bit-Footer-color, #{$clr-fg-pri}));
-$ftr-brd: var(--bit-ftr-brd, var(--bit-Footer-border-color, #{$clr-brd-pri}));
+// The disabled colors read the value an explicit Color publishes first, then the disabled default of the page
+// surface; the other colors are read per variant (see .bit-ftr-fil).
 $ftr-bg-dis: var(--bit-ftr-bg-dis, #{$clr-bg-pri});
 $ftr-fg-dis: var(--bit-ftr-fg-dis, #{$clr-fg-dis});
 
@@ -49,7 +55,7 @@ $ftr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, padding, gap, max-widt
     // Every value a parameter publishes starts out unset on every root, so a footer nested in another one never
     // inherits the outer one's choice; the classes - declared further down at the same weight - and the inline
     // Gap and MaxWidth still win on the root that carries them. Left unset, each var() reading them moves on to
-    // the public variable and then to the default (see $ftr-bg and the rest at the top): the plain page surface
+    // the public variable and then to the default (see .bit-ftr-fil and .bit-ftr-gut): the plain page surface
     // an uncolored footer always had - so a footer with no Color set never turns invisible - and the medium
     // spacing.
     @each $name in $ftr-private-properties {
@@ -84,9 +90,22 @@ $ftr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, padding, gap, max-widt
 }
 
 
+// Each color reads the value an explicit Color publishes first, then the public variables, then the default an
+// unset one stands for: the plain page surface of an uncolored footer. Every public variable is read in two tiers:
+// the variant's own (--bit-Footer-fill-*, -outline-*, -text-*) ahead of the shared one, so a theme can give the three
+// looks different colors from :root - a neutral hairline around the outlined footers without a divider over every
+// filled one - while a shared variable still re-skins all three at once. Both tiers sit between the Color and the
+// default, so an explicit Color still wins over them.
+//
+// The divider of a Bordered footer is drawn by its variant for the same reason. Outline draws none of its own: its
+// border already runs along that edge in the same width and color, and its disabled state recolors the whole border.
 .bit-ftr-fil {
-    color: $ftr-on;
-    background-color: $ftr-bg;
+    color: var(--bit-ftr-on, var(--bit-Footer-fill-color, var(--bit-Footer-color, #{$clr-fg-pri})));
+    background-color: var(--bit-ftr-bg, var(--bit-Footer-fill-background, var(--bit-Footer-background, #{$clr-bg-pri})));
+
+    &.bit-ftr-brd {
+        border-block-start: $shp-border-width $shp-border-style var(--bit-ftr-brd, var(--bit-Footer-fill-border-color, var(--bit-Footer-border-color, #{$clr-brd-pri})));
+    }
 
     &.bit-dis {
         color: $ftr-fg-dis;
@@ -95,9 +114,9 @@ $ftr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, padding, gap, max-widt
 }
 
 .bit-ftr-otl {
-    color: $ftr-fg;
+    color: var(--bit-ftr-fg, var(--bit-Footer-outline-color, var(--bit-Footer-color, #{$clr-fg-pri})));
     background-color: transparent;
-    border: $shp-border-width $shp-border-style $ftr-brd;
+    border: $shp-border-width $shp-border-style var(--bit-ftr-brd, var(--bit-Footer-outline-border-color, var(--bit-Footer-border-color, #{$clr-brd-pri})));
 
     &.bit-dis {
         color: $ftr-fg-dis;
@@ -106,8 +125,12 @@ $ftr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, padding, gap, max-widt
 }
 
 .bit-ftr-txt {
-    color: $ftr-fg;
+    color: var(--bit-ftr-fg, var(--bit-Footer-text-color, var(--bit-Footer-color, #{$clr-fg-pri})));
     background-color: transparent;
+
+    &.bit-ftr-brd {
+        border-block-start: $shp-border-width $shp-border-style var(--bit-ftr-brd, var(--bit-Footer-text-border-color, var(--bit-Footer-border-color, #{$clr-brd-pri})));
+    }
 
     &.bit-dis {
         color: $ftr-fg-dis;
@@ -120,9 +143,9 @@ $ftr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, padding, gap, max-widt
 // this ahead of the plain variant rule. Where backdrop-filter is unsupported the background simply
 // stays translucent, which still reads as intended.
 .bit-ftr-trs.bit-ftr-fil {
-    backdrop-filter: blur(var(--bit-Footer-blur, #{rem2(12px)}));
-    -webkit-backdrop-filter: blur(var(--bit-Footer-blur, #{rem2(12px)}));
-    background-color: translucent($ftr-bg, 72%);
+    backdrop-filter: blur(var(--bit-Footer-fill-blur, var(--bit-Footer-blur, #{rem2(12px)})));
+    -webkit-backdrop-filter: blur(var(--bit-Footer-fill-blur, var(--bit-Footer-blur, #{rem2(12px)})));
+    background-color: translucent(var(--bit-ftr-bg, var(--bit-Footer-fill-background, var(--bit-Footer-background, #{$clr-bg-pri}))), 72%);
 
     &.bit-dis {
         background-color: translucent($ftr-bg-dis, 72%);
@@ -256,10 +279,6 @@ $ftr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, padding, gap, max-widt
     position: absolute;
 }
 
-
-.bit-ftr-brd {
-    border-block-start: $shp-border-width $shp-border-style $ftr-brd;
-}
 
 // The shadow is cast upwards, towards the content the footer covers, which is the opposite of the
 // downward elevation shadows of the theme.

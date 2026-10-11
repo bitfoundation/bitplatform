@@ -21,6 +21,24 @@
 //   --bit-Header-disabled-background    fill of a disabled Fill header               (default: $clr-bg-pri)
 //   --bit-Header-skip-link-color        text color of the focused skip link          (default: $clr-pri-text)
 //   --bit-Header-skip-link-background   fill of the focused skip link                (default: $clr-pri)
+//                                       Each variant reads a twin of every one above that it draws with, ahead of
+//                                       it, so a theme can set one look apart from the other two (Color still wins):
+//   --bit-Header-fill-background             fill, Fill variant                            (default: --bit-Header-background)
+//   --bit-Header-fill-color                  content color, Fill variant                   (default: --bit-Header-color)
+//   --bit-Header-fill-border-color           Bordered divider, Fill variant                (default: --bit-Header-border-color)
+//   --bit-Header-fill-border-width           Bordered divider thickness, Fill variant      (default: --bit-Header-border-width)
+//   --bit-Header-fill-backdrop-blur          Translucent blur, Fill variant                (default: --bit-Header-backdrop-blur)
+//   --bit-Header-fill-translucent-opacity    Translucent fill share, Fill variant          (default: --bit-Header-translucent-opacity)
+//   --bit-Header-fill-disabled-color         disabled content color, Fill variant          (default: --bit-Header-disabled-color)
+//   --bit-Header-fill-disabled-background    disabled fill, Fill variant                   (default: --bit-Header-disabled-background)
+//   --bit-Header-outline-color               content color, Outline variant                (default: --bit-Header-color)
+//   --bit-Header-outline-border-color        border, Outline variant                       (default: --bit-Header-border-color)
+//   --bit-Header-outline-border-width        border thickness, Outline variant             (default: --bit-Header-border-width)
+//   --bit-Header-outline-disabled-color      disabled content and border, Outline variant  (default: --bit-Header-disabled-color)
+//   --bit-Header-text-color                  content color, Text variant                   (default: --bit-Header-color)
+//   --bit-Header-text-border-color           Bordered divider, Text variant                (default: --bit-Header-border-color)
+//   --bit-Header-text-border-width           Bordered divider thickness, Text variant      (default: --bit-Header-border-width)
+//   --bit-Header-text-disabled-color         disabled content color, Text variant          (default: --bit-Header-disabled-color)
 //
 // A parameter written on the header wins over the variable that restyles what it sets: an explicit Color over the
 // background, color, border color and the two disabled colors, an explicit Size over the two paddings, NoGutter
@@ -28,14 +46,8 @@
 // why Color and Size publish nothing while they are left unset: a class that always carried the default would be
 // indistinguishable from one that was asked for.
 
-// Each of these reads the value an explicit Color or Size publishes first, then the public variable, then the
-// default an unset one stands for: the plain page surface of an uncolored header, and the medium spacing.
-$hdr-bg: var(--bit-hdr-bg, var(--bit-Header-background, #{$clr-bg-pri}));
-$hdr-on: var(--bit-hdr-on, var(--bit-Header-color, #{$clr-fg-pri}));
-$hdr-fg: var(--bit-hdr-fg, var(--bit-Header-color, #{$clr-fg-pri}));
-$hdr-brd: var(--bit-hdr-brd, var(--bit-Header-border-color, #{$clr-brd-pri}));
-$hdr-bg-dis: var(--bit-hdr-bg-dis, var(--bit-Header-disabled-background, #{$clr-bg-pri}));
-$hdr-fg-dis: var(--bit-hdr-fg-dis, var(--bit-Header-disabled-color, #{$clr-fg-dis}));
+// Each of these reads the value an explicit Size publishes first, then the public variable, then the medium
+// spacing an unset one stands for. The colors are read the same way, but per variant (see .bit-hdr-fil).
 $hdr-pad-y: var(--bit-hdr-pad-y, var(--bit-Header-padding-block, #{spacing(1)}));
 $hdr-pad-x: var(--bit-hdr-pad-x, var(--bit-Header-padding-inline, #{spacing(3)}));
 
@@ -62,7 +74,7 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
     // The values the Color and Size classes publish start out unset on every root, so a header nested in another
     // one never inherits the outer one's choice; the classes - declared further down at the same weight - still
     // win on the root that carries them. Left unset, each var() reading them moves on to the public variable and
-    // then to the default (see $hdr-bg and the rest at the top): the plain page surface an uncolored header always
+    // then to the default (see .bit-hdr-fil and $hdr-pad-y): the plain page surface an uncolored header always
     // had - so a header with no Color set never turns invisible - and the medium spacing.
     @each $name in $hdr-private-properties {
         --bit-hdr-#{$name}: initial;
@@ -120,33 +132,50 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
 }
 
 
+// Each color reads the value an explicit Color publishes first, then the public variables, then the default an
+// unset one stands for: the plain page surface of an uncolored header. Every public variable is read in two tiers:
+// the variant's own (--bit-Header-fill-*, -outline-*, -text-*) ahead of the shared one, so a theme can give the three
+// looks different colors from :root - a neutral hairline around the outlined headers without a divider under every
+// filled one - while a shared variable still re-skins all three at once. Both tiers sit between the Color and the
+// default, so an explicit Color still wins over them.
+//
+// The divider of a Bordered header is drawn by its variant for the same reason. Outline draws none of its own: its
+// border already runs along that edge in the same width and color, and its disabled state recolors the whole border.
 .bit-hdr-fil {
-    color: $hdr-on;
-    background-color: $hdr-bg;
+    color: var(--bit-hdr-on, var(--bit-Header-fill-color, var(--bit-Header-color, #{$clr-fg-pri})));
+    background-color: var(--bit-hdr-bg, var(--bit-Header-fill-background, var(--bit-Header-background, #{$clr-bg-pri})));
+
+    &.bit-hdr-brd {
+        border-block-end: var(--bit-Header-fill-border-width, var(--bit-Header-border-width, #{$shp-border-width})) $shp-border-style var(--bit-hdr-brd, var(--bit-Header-fill-border-color, var(--bit-Header-border-color, #{$clr-brd-pri})));
+    }
 
     &.bit-dis {
-        color: $hdr-fg-dis;
-        background-color: $hdr-bg-dis;
+        color: var(--bit-hdr-fg-dis, var(--bit-Header-fill-disabled-color, var(--bit-Header-disabled-color, #{$clr-fg-dis})));
+        background-color: var(--bit-hdr-bg-dis, var(--bit-Header-fill-disabled-background, var(--bit-Header-disabled-background, #{$clr-bg-pri})));
     }
 }
 
 .bit-hdr-otl {
-    color: $hdr-fg;
+    color: var(--bit-hdr-fg, var(--bit-Header-outline-color, var(--bit-Header-color, #{$clr-fg-pri})));
     background-color: transparent;
-    border: var(--bit-Header-border-width, #{$shp-border-width}) $shp-border-style $hdr-brd;
+    border: var(--bit-Header-outline-border-width, var(--bit-Header-border-width, #{$shp-border-width})) $shp-border-style var(--bit-hdr-brd, var(--bit-Header-outline-border-color, var(--bit-Header-border-color, #{$clr-brd-pri})));
 
     &.bit-dis {
-        color: $hdr-fg-dis;
-        border-color: $hdr-fg-dis;
+        color: var(--bit-hdr-fg-dis, var(--bit-Header-outline-disabled-color, var(--bit-Header-disabled-color, #{$clr-fg-dis})));
+        border-color: var(--bit-hdr-fg-dis, var(--bit-Header-outline-disabled-color, var(--bit-Header-disabled-color, #{$clr-fg-dis})));
     }
 }
 
 .bit-hdr-txt {
-    color: $hdr-fg;
+    color: var(--bit-hdr-fg, var(--bit-Header-text-color, var(--bit-Header-color, #{$clr-fg-pri})));
     background-color: transparent;
 
+    &.bit-hdr-brd {
+        border-block-end: var(--bit-Header-text-border-width, var(--bit-Header-border-width, #{$shp-border-width})) $shp-border-style var(--bit-hdr-brd, var(--bit-Header-text-border-color, var(--bit-Header-border-color, #{$clr-brd-pri})));
+    }
+
     &.bit-dis {
-        color: $hdr-fg-dis;
+        color: var(--bit-hdr-fg-dis, var(--bit-Header-text-disabled-color, var(--bit-Header-disabled-color, #{$clr-fg-dis})));
     }
 }
 
@@ -156,12 +185,12 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
 // this ahead of the plain variant rule. Where backdrop-filter is unsupported the background simply
 // stays translucent, which still reads as intended.
 .bit-hdr-trs.bit-hdr-fil {
-    backdrop-filter: blur(var(--bit-Header-backdrop-blur, #{rem2(12px)}));
-    -webkit-backdrop-filter: blur(var(--bit-Header-backdrop-blur, #{rem2(12px)}));
-    background-color: translucent($hdr-bg, var(--bit-Header-translucent-opacity, 72%));
+    backdrop-filter: blur(var(--bit-Header-fill-backdrop-blur, var(--bit-Header-backdrop-blur, #{rem2(12px)})));
+    -webkit-backdrop-filter: blur(var(--bit-Header-fill-backdrop-blur, var(--bit-Header-backdrop-blur, #{rem2(12px)})));
+    background-color: translucent(var(--bit-hdr-bg, var(--bit-Header-fill-background, var(--bit-Header-background, #{$clr-bg-pri}))), var(--bit-Header-fill-translucent-opacity, var(--bit-Header-translucent-opacity, 72%)));
 
     &.bit-dis {
-        background-color: translucent($hdr-bg-dis, var(--bit-Header-translucent-opacity, 72%));
+        background-color: translucent(var(--bit-hdr-bg-dis, var(--bit-Header-fill-disabled-background, var(--bit-Header-disabled-background, #{$clr-bg-pri}))), var(--bit-Header-fill-translucent-opacity, var(--bit-Header-translucent-opacity, 72%)));
     }
 }
 
@@ -289,10 +318,6 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
 }
 
 
-.bit-hdr-brd {
-    border-block-end: var(--bit-Header-border-width, #{$shp-border-width}) $shp-border-style $hdr-brd;
-}
-
 // The shadow is cast downwards, towards the content the header covers. It is tinted with the primary
 // foreground color so it stays readable in a dark theme, where a black shadow over a dark surface is
 // invisible.
@@ -388,10 +413,10 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
     .bit-hdr-trs.bit-hdr-fil {
         backdrop-filter: none;
         -webkit-backdrop-filter: none;
-        background-color: $hdr-bg;
+        background-color: var(--bit-hdr-bg, var(--bit-Header-fill-background, var(--bit-Header-background, #{$clr-bg-pri})));
 
         &.bit-dis {
-            background-color: $hdr-bg-dis;
+            background-color: var(--bit-hdr-bg-dis, var(--bit-Header-fill-disabled-background, var(--bit-Header-disabled-background, #{$clr-bg-pri})));
         }
     }
 }

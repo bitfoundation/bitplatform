@@ -816,19 +816,73 @@ public partial class BitTagsInputDemo
         {
             Name = "--bit-TagsInput-background",
             DefaultValue = "Per Variant",
-            Description = "Fill of the field: the page surface in Outline, the secondary surface in Fill, transparent in Text.",
+            Description = "Fill of the field: the page surface in Outline, the secondary surface in Fill, transparent in Text. Shared by the variants: --bit-TagsInput-fill-background, --bit-TagsInput-outline-background and --bit-TagsInput-text-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-TagsInput-border-color",
             DefaultValue = "Per Variant",
-            Description = "Rule around the field at rest.",
+            Description = "Rule around the field at rest. Shared by the variants: --bit-TagsInput-fill-border-color, --bit-TagsInput-outline-border-color and --bit-TagsInput-text-border-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-TagsInput-hover-border-color",
             DefaultValue = "Per Variant",
-            Description = "Rule around the hovered field (pointer devices only).",
+            Description = "Rule around the hovered field (pointer devices only). Shared by the variants: --bit-TagsInput-fill-hover-border-color, --bit-TagsInput-outline-hover-border-color and --bit-TagsInput-text-hover-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-fill-background",
+            DefaultValue = "--bit-TagsInput-background",
+            Description = "Fill of the field of a Fill tags input alone, read ahead of --bit-TagsInput-background so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-fill-border-color",
+            DefaultValue = "--bit-TagsInput-border-color",
+            Description = "Rule around the field at rest of a Fill tags input alone, read ahead of --bit-TagsInput-border-color so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-fill-hover-border-color",
+            DefaultValue = "--bit-TagsInput-hover-border-color",
+            Description = "Rule around the hovered field (pointer devices only) of a Fill tags input alone, read ahead of --bit-TagsInput-hover-border-color so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-outline-background",
+            DefaultValue = "--bit-TagsInput-background",
+            Description = "Fill of the field of an Outline tags input alone, read ahead of --bit-TagsInput-background so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-outline-border-color",
+            DefaultValue = "--bit-TagsInput-border-color",
+            Description = "Rule around the field at rest of an Outline tags input alone, read ahead of --bit-TagsInput-border-color so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-outline-hover-border-color",
+            DefaultValue = "--bit-TagsInput-hover-border-color",
+            Description = "Rule around the hovered field (pointer devices only) of an Outline tags input alone, read ahead of --bit-TagsInput-hover-border-color so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-text-background",
+            DefaultValue = "--bit-TagsInput-background",
+            Description = "Fill of the field of a Text tags input alone, read ahead of --bit-TagsInput-background so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-text-border-color",
+            DefaultValue = "--bit-TagsInput-border-color",
+            Description = "Rule around the field at rest of a Text tags input alone, read ahead of --bit-TagsInput-border-color so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-text-hover-border-color",
+            DefaultValue = "--bit-TagsInput-hover-border-color",
+            Description = "Rule around the hovered field (pointer devices only) of a Text tags input alone, read ahead of --bit-TagsInput-hover-border-color so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
         },
         new()
         {
@@ -900,19 +954,73 @@ public partial class BitTagsInputDemo
         {
             Name = "--bit-TagsInput-tag-color",
             DefaultValue = "Per TagVariant, from the primary role",
-            Description = "Text of a chip, and of the chip that folds the tags away. The Color parameter wins over it.",
+            Description = "Text of a chip, and of the chip that folds the tags away. The Color parameter wins over it. Shared by the variants: --bit-TagsInput-fill-tag-color, --bit-TagsInput-outline-tag-color and --bit-TagsInput-text-tag-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-TagsInput-tag-background",
             DefaultValue = "Per TagVariant, from the primary role",
-            Description = "Fill of a chip. Setting it is how a field paints its chips apart from its accent. The Color parameter wins over it in the Fill tag variant; the transparent fill of Outline and Text is its alone.",
+            Description = "Fill of a chip. Setting it is how a field paints its chips apart from its accent. The Color parameter wins over it in the Fill tag variant; the transparent fill of Outline and Text is its alone. Shared by the variants: --bit-TagsInput-fill-tag-background, --bit-TagsInput-outline-tag-background and --bit-TagsInput-text-tag-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-TagsInput-tag-border-color",
             DefaultValue = "Per TagVariant, from the primary role",
-            Description = "Rule of a chip, drawn in every tag variant and transparent where it is not painted, so switching variants never moves the text in a chip. The Color parameter wins over it, except over the transparent rule of Text.",
+            Description = "Rule of a chip, drawn in every tag variant and transparent where it is not painted, so switching variants never moves the text in a chip. The Color parameter wins over it, except over the transparent rule of Text. Shared by the variants: --bit-TagsInput-fill-tag-border-color, --bit-TagsInput-outline-tag-border-color and --bit-TagsInput-text-tag-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-fill-tag-color",
+            DefaultValue = "--bit-TagsInput-tag-color",
+            Description = "Text of a chip, and of the chip that folds the tags away in the Fill tag variant alone, read ahead of --bit-TagsInput-tag-color so a theme can set this tag variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-fill-tag-background",
+            DefaultValue = "--bit-TagsInput-tag-background",
+            Description = "Fill of a chip in the Fill tag variant alone, read ahead of --bit-TagsInput-tag-background so a theme can set this tag variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-fill-tag-border-color",
+            DefaultValue = "--bit-TagsInput-tag-border-color",
+            Description = "Rule of a chip in the Fill tag variant alone, read ahead of --bit-TagsInput-tag-border-color so a theme can set this tag variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-outline-tag-color",
+            DefaultValue = "--bit-TagsInput-tag-color",
+            Description = "Text of a chip, and of the chip that folds the tags away in the Outline tag variant alone, read ahead of --bit-TagsInput-tag-color so a theme can set this tag variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-outline-tag-background",
+            DefaultValue = "--bit-TagsInput-tag-background",
+            Description = "Fill of a chip in the Outline tag variant alone, read ahead of --bit-TagsInput-tag-background so a theme can set this tag variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-outline-tag-border-color",
+            DefaultValue = "--bit-TagsInput-tag-border-color",
+            Description = "Rule of a chip in the Outline tag variant alone, read ahead of --bit-TagsInput-tag-border-color so a theme can set this tag variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-text-tag-color",
+            DefaultValue = "--bit-TagsInput-tag-color",
+            Description = "Text of a chip, and of the chip that folds the tags away in the Text tag variant alone, read ahead of --bit-TagsInput-tag-color so a theme can set this tag variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-text-tag-background",
+            DefaultValue = "--bit-TagsInput-tag-background",
+            Description = "Fill of a chip in the Text tag variant alone, read ahead of --bit-TagsInput-tag-background so a theme can set this tag variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-text-tag-border-color",
+            DefaultValue = "--bit-TagsInput-tag-border-color",
+            Description = "Rule of a chip in the Text tag variant alone, read ahead of --bit-TagsInput-tag-border-color so a theme can set this tag variant apart from the others. The Color parameter leaves it alone.",
         },
         new()
         {
@@ -960,19 +1068,73 @@ public partial class BitTagsInputDemo
         {
             Name = "--bit-TagsInput-tag-hover-color",
             DefaultValue = "Per TagVariant",
-            Description = "The text of a chip an OnTagClick opens, while the pointer is over it. A chip nothing opens does not react, a target that lights up without doing anything being a promise the field does not keep. The Color parameter wins over it.",
+            Description = "The text of a chip an OnTagClick opens, while the pointer is over it. A chip nothing opens does not react, a target that lights up without doing anything being a promise the field does not keep. The Color parameter wins over it. Shared by the variants: --bit-TagsInput-fill-tag-hover-color, --bit-TagsInput-outline-tag-hover-color and --bit-TagsInput-text-tag-hover-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-TagsInput-tag-hover-background",
             DefaultValue = "Per TagVariant",
-            Description = "The fill and the rule of that same chip while it is hovered. The Color parameter wins over it where the tag variant paints them.",
+            Description = "The fill and the rule of that same chip while it is hovered. The Color parameter wins over it where the tag variant paints them. Shared by the variants: --bit-TagsInput-fill-tag-hover-background, --bit-TagsInput-outline-tag-hover-background and --bit-TagsInput-text-tag-hover-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-TagsInput-tag-focus-color",
             DefaultValue = "Per TagVariant",
-            Description = "The inset ring of the focused chip, of the focused dismiss button and of the chip a dragged one would land on. The Color parameter wins over it.",
+            Description = "The inset ring of the focused chip, of the focused dismiss button and of the chip a dragged one would land on. The Color parameter wins over it. Shared by the variants: --bit-TagsInput-fill-tag-focus-color, --bit-TagsInput-outline-tag-focus-color and --bit-TagsInput-text-tag-focus-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-fill-tag-hover-color",
+            DefaultValue = "--bit-TagsInput-tag-hover-color",
+            Description = "The text of a chip an OnTagClick opens, while the pointer is over it in the Fill tag variant alone, read ahead of --bit-TagsInput-tag-hover-color so a theme can set this tag variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-fill-tag-hover-background",
+            DefaultValue = "--bit-TagsInput-tag-hover-background",
+            Description = "The fill and the rule of that same chip while it is hovered in the Fill tag variant alone, read ahead of --bit-TagsInput-tag-hover-background so a theme can set this tag variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-fill-tag-focus-color",
+            DefaultValue = "--bit-TagsInput-tag-focus-color",
+            Description = "The inset ring of the focused chip, of the focused dismiss button and of the chip a dragged one would land on in the Fill tag variant alone, read ahead of --bit-TagsInput-tag-focus-color so a theme can set this tag variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-outline-tag-hover-color",
+            DefaultValue = "--bit-TagsInput-tag-hover-color",
+            Description = "The text of a chip an OnTagClick opens, while the pointer is over it in the Outline tag variant alone, read ahead of --bit-TagsInput-tag-hover-color so a theme can set this tag variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-outline-tag-hover-background",
+            DefaultValue = "--bit-TagsInput-tag-hover-background",
+            Description = "The fill and the rule of that same chip while it is hovered in the Outline tag variant alone, read ahead of --bit-TagsInput-tag-hover-background so a theme can set this tag variant apart from the others. The Color parameter wins over it for the rule; the transparent fill is its alone.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-outline-tag-focus-color",
+            DefaultValue = "--bit-TagsInput-tag-focus-color",
+            Description = "The inset ring of the focused chip, of the focused dismiss button and of the chip a dragged one would land on in the Outline tag variant alone, read ahead of --bit-TagsInput-tag-focus-color so a theme can set this tag variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-text-tag-hover-color",
+            DefaultValue = "--bit-TagsInput-tag-hover-color",
+            Description = "The text of a chip an OnTagClick opens, while the pointer is over it in the Text tag variant alone, read ahead of --bit-TagsInput-tag-hover-color so a theme can set this tag variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-text-tag-hover-background",
+            DefaultValue = "--bit-TagsInput-tag-hover-background",
+            Description = "The fill and the rule of that same chip while it is hovered in the Text tag variant alone, read ahead of --bit-TagsInput-tag-hover-background so a theme can set this tag variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-text-tag-focus-color",
+            DefaultValue = "--bit-TagsInput-tag-focus-color",
+            Description = "The inset ring of the focused chip, of the focused dismiss button and of the chip a dragged one would land on in the Text tag variant alone, read ahead of --bit-TagsInput-tag-focus-color so a theme can set this tag variant apart from the others. The Color parameter wins over it.",
         },
         new()
         {
@@ -1026,13 +1188,49 @@ public partial class BitTagsInputDemo
         {
             Name = "--bit-TagsInput-toggle-hover-color",
             DefaultValue = "Per TagVariant",
-            Description = "Text of the hovered chip that folds and unfolds the tags MaxDisplayedTags put away. The Color parameter wins over it.",
+            Description = "Text of the hovered chip that folds and unfolds the tags MaxDisplayedTags put away. The Color parameter wins over it. Shared by the variants: --bit-TagsInput-fill-toggle-hover-color, --bit-TagsInput-outline-toggle-hover-color and --bit-TagsInput-text-toggle-hover-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-TagsInput-toggle-hover-background",
             DefaultValue = "Per TagVariant",
-            Description = "Fill and rule of that same chip while it is hovered. The Color parameter wins over it where the tag variant paints them.",
+            Description = "Fill and rule of that same chip while it is hovered. The Color parameter wins over it where the tag variant paints them. Shared by the variants: --bit-TagsInput-fill-toggle-hover-background, --bit-TagsInput-outline-toggle-hover-background and --bit-TagsInput-text-toggle-hover-background are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-fill-toggle-hover-color",
+            DefaultValue = "--bit-TagsInput-toggle-hover-color",
+            Description = "Text of the hovered chip that folds and unfolds the tags in the Fill tag variant alone, read ahead of --bit-TagsInput-toggle-hover-color so a theme can set this tag variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-fill-toggle-hover-background",
+            DefaultValue = "--bit-TagsInput-toggle-hover-background",
+            Description = "Fill and rule of that same chip while it is hovered in the Fill tag variant alone, read ahead of --bit-TagsInput-toggle-hover-background so a theme can set this tag variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-outline-toggle-hover-color",
+            DefaultValue = "--bit-TagsInput-toggle-hover-color",
+            Description = "Text of the hovered chip that folds and unfolds the tags in the Outline tag variant alone, read ahead of --bit-TagsInput-toggle-hover-color so a theme can set this tag variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-outline-toggle-hover-background",
+            DefaultValue = "--bit-TagsInput-toggle-hover-background",
+            Description = "Fill and rule of that same chip while it is hovered in the Outline tag variant alone, read ahead of --bit-TagsInput-toggle-hover-background so a theme can set this tag variant apart from the others. The Color parameter wins over it for the rule; the transparent fill is its alone.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-text-toggle-hover-color",
+            DefaultValue = "--bit-TagsInput-toggle-hover-color",
+            Description = "Text of the hovered chip that folds and unfolds the tags in the Text tag variant alone, read ahead of --bit-TagsInput-toggle-hover-color so a theme can set this tag variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-TagsInput-text-toggle-hover-background",
+            DefaultValue = "--bit-TagsInput-toggle-hover-background",
+            Description = "Fill and rule of that same chip while it is hovered in the Text tag variant alone, read ahead of --bit-TagsInput-toggle-hover-background so a theme can set this tag variant apart from the others. The Color parameter leaves it alone.",
         },
     ];
 

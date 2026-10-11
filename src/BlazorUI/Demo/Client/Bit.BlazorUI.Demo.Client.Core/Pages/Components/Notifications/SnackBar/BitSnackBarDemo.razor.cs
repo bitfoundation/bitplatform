@@ -927,25 +927,97 @@ public partial class BitSnackBarDemo
         {
             Name = "--bit-SnackBar-background",
             DefaultValue = "--bit-clr-inf (Fill), --bit-clr-bg-pri (Outline, Text)",
-            Description = "Fill of an item. The Color of the item wins over it in Fill; the page surface of Outline and Text is its alone.",
+            Description = "Fill of an item. The Color of the item wins over it in Fill; the page surface of Outline and Text is its alone. Shared by the three variants: --bit-SnackBar-fill-background, --bit-SnackBar-outline-background and --bit-SnackBar-text-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-SnackBar-color",
             DefaultValue = "--bit-clr-inf-text (Fill), --bit-clr-inf-fg (Outline, Text)",
-            Description = "Text color of an item, which the icon, the dismiss button and the countdown bar follow. The Color of the item wins over it.",
+            Description = "Text color of an item, which the icon, the dismiss button and the countdown bar follow. The Color of the item wins over it. Shared by the three variants: --bit-SnackBar-fill-color, --bit-SnackBar-outline-color and --bit-SnackBar-text-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-SnackBar-border-color",
             DefaultValue = "--bit-clr-inf, transparent (Text)",
-            Description = "Border color of an item. The Color of the item wins over it, except over the transparent border of Text.",
+            Description = "Border color of an item. The Color of the item wins over it, except over the transparent border of Text. Shared by the three variants: --bit-SnackBar-fill-border-color, --bit-SnackBar-outline-border-color and --bit-SnackBar-text-border-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-SnackBar-border-width",
             DefaultValue = "--bit-shp-brd-width on Outline, 0 otherwise",
-            Description = "Border width of an item.",
+            Description = "Border width of an item. Shared by the three variants: --bit-SnackBar-fill-border-width, --bit-SnackBar-outline-border-width and --bit-SnackBar-text-border-width are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-fill-background",
+            DefaultValue = "--bit-SnackBar-background",
+            Description = "Fill of an item of a Fill snack bar alone, read ahead of --bit-SnackBar-background so a theme can set this variant apart from the other two. The Color of the item wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-fill-color",
+            DefaultValue = "--bit-SnackBar-color",
+            Description = "Text color of an item of a Fill snack bar alone, which the icon, the dismiss button and the countdown bar follow, read ahead of --bit-SnackBar-color so a theme can set this variant apart from the other two. The Color of the item wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-fill-border-color",
+            DefaultValue = "--bit-SnackBar-border-color",
+            Description = "Border color of an item of a Fill snack bar alone, read ahead of --bit-SnackBar-border-color so a theme can set this variant apart from the other two. The Color of the item wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-fill-border-width",
+            DefaultValue = "--bit-SnackBar-border-width",
+            Description = "Border width of an item of a Fill snack bar alone, read ahead of --bit-SnackBar-border-width so a theme can set this variant apart from the other two.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-outline-background",
+            DefaultValue = "--bit-SnackBar-background",
+            Description = "Fill of an item of an Outline snack bar alone, read ahead of --bit-SnackBar-background so a theme can set this variant apart from the other two. The Color of the item leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-outline-color",
+            DefaultValue = "--bit-SnackBar-color",
+            Description = "Text color of an item of an Outline snack bar alone, which the icon, the dismiss button and the countdown bar follow, read ahead of --bit-SnackBar-color so a theme can set this variant apart from the other two. The Color of the item wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-outline-border-color",
+            DefaultValue = "--bit-SnackBar-border-color",
+            Description = "Border color of an item of an Outline snack bar alone, read ahead of --bit-SnackBar-border-color so a theme can set this variant apart from the other two. The Color of the item wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-outline-border-width",
+            DefaultValue = "--bit-SnackBar-border-width",
+            Description = "Border width of an item of an Outline snack bar alone, read ahead of --bit-SnackBar-border-width so a theme can set this variant apart from the other two.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-text-background",
+            DefaultValue = "--bit-SnackBar-background",
+            Description = "Fill of an item of a Text snack bar alone, read ahead of --bit-SnackBar-background so a theme can set this variant apart from the other two. The Color of the item leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-text-color",
+            DefaultValue = "--bit-SnackBar-color",
+            Description = "Text color of an item of a Text snack bar alone, which the icon, the dismiss button and the countdown bar follow, read ahead of --bit-SnackBar-color so a theme can set this variant apart from the other two. The Color of the item wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-text-border-color",
+            DefaultValue = "--bit-SnackBar-border-color",
+            Description = "Border color of an item of a Text snack bar alone, read ahead of --bit-SnackBar-border-color so a theme can set this variant apart from the other two. The Color of the item leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-SnackBar-text-border-width",
+            DefaultValue = "--bit-SnackBar-border-width",
+            Description = "Border width of an item of a Text snack bar alone, read ahead of --bit-SnackBar-border-width so a theme can set this variant apart from the other two.",
         },
         new()
         {

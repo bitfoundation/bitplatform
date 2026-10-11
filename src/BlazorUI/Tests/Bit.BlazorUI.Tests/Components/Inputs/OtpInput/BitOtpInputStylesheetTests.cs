@@ -26,12 +26,39 @@ public partial class BitOtpInputStylesheetTests
         // So does an explicit Accent, for every color it paints - the focused rule through the variable the box is
         // painted from at rest, so an app's class on the box keeps its paint while it is focused.
         StringAssert.Contains(stylesheet, "--bit-otp-inp-sbr: var(--bit-otp-clr, var(--bit-OtpInput-focus-border-color, #{$clr-pri}));");
-        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-otp-clr-focus, var(--bit-OtpInput-focus-color)))");
+        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-otp-clr-focus, var(--bit-OtpInput-outline-focus-color, var(--bit-OtpInput-focus-color))))");
+        StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-otp-clr-focus, var(--bit-OtpInput-fill-focus-color, var(--bit-OtpInput-focus-color))))");
+        StringAssert.Contains(stylesheet, "focus-underline-ring(var(--bit-otp-clr-focus, var(--bit-OtpInput-text-focus-color, var(--bit-OtpInput-focus-color, #{$clr-pri-focus}))))");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-otp-clr, var(--bit-OtpInput-loader-color, #{$clr-pri}));");
 
         // The colors of the boxes are the Variant's recipe, which the public background and border variables re-skin
         // in every variant - only the values of the Accent and the Size are pinned here.
         Assert.IsFalse(PublicBeforePrivate().IsMatch(stylesheet), "A public variable is read before the parameter it restyles the default of.");
+    }
+
+    [TestMethod,
+        DataRow("fill", ".bit-otp-fil"),
+        DataRow("outline", ".bit-otp-otl"),
+        DataRow("text", ".bit-otp-txt")]
+    public void BitOtpInputShouldReadTheVariablesOfItsVariantAheadOfTheSharedOnes(string variant, string selector)
+    {
+        var stylesheet = SourceFiles.StripScssComments(ReadStylesheet());
+        var block = SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
+
+        // Each variant resolves the colors of its boxes from a tier of its own ahead of every shared variable, so a theme
+        // can set one look apart from the other two on :root - and the box reads only what its variant resolved.
+        foreach (var name in new[] { "background", "hover-background", "filled-background", "border-color", "hover-border-color", "filled-border-color" })
+        {
+            StringAssert.Contains(block, $"var(--bit-OtpInput-{variant}-{name}, var(--bit-OtpInput-{name}, ",
+                                  $"{selector} does not read --bit-OtpInput-{variant}-{name} ahead of --bit-OtpInput-{name}.");
+        }
+
+        Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-OtpInput-(?!{variant}-)(?:fill|outline|text)-"),
+                       $"{selector} reads the variables of another variant.");
+
+        // So do the focus rings, which the variants draw apart (a ring, or an underline for Text).
+        StringAssert.Contains(stylesheet, $"var(--bit-OtpInput-{variant}-focus-color, var(--bit-OtpInput-focus-color");
+        StringAssert.Contains(stylesheet, $"var(--bit-OtpInput-{variant}-invalid-focus-color, var(--bit-OtpInput-invalid-focus-color, #{{$clr-err-focus}})");
     }
 
     [TestMethod]

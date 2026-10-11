@@ -529,19 +529,19 @@ public partial class BitTagDemo
         {
             Name = "--bit-Tag-color",
             DefaultValue = "Per Variant, from the primary role",
-            Description = "Text and glyphs at rest. The Color parameter wins over it.",
+            Description = "Text and glyphs at rest. The Color parameter wins over it. Shared by the three variants: --bit-Tag-fill-color, --bit-Tag-outline-color and --bit-Tag-text-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Tag-background",
             DefaultValue = "Per Variant, from the primary role",
-            Description = "Background at rest. The Color parameter wins over it in Fill; the transparent background of Outline and Text is its alone.",
+            Description = "Background at rest. The Color parameter wins over it in Fill; the transparent background of Outline and Text is its alone. Shared by the three variants: --bit-Tag-fill-background, --bit-Tag-outline-background and --bit-Tag-text-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Tag-border-color",
             DefaultValue = "Per Variant, from the primary role",
-            Description = "Rule at rest. The Color parameter wins over it, except over the transparent rule of Text.",
+            Description = "Rule at rest. The Color parameter wins over it, except over the transparent rule of Text. Shared by the three variants: --bit-Tag-fill-border-color, --bit-Tag-outline-border-color and --bit-Tag-text-border-color are read ahead of it.",
         },
         new()
         {
@@ -553,31 +553,31 @@ public partial class BitTagDemo
         {
             Name = "--bit-Tag-hover-background",
             DefaultValue = "Per Variant, a step deeper while selected",
-            Description = "Background of a hovered clickable content or dismiss button. The Color parameter wins over it in Outline and Text; the overlay a Fill tag hovers with is its alone.",
+            Description = "Background of a hovered clickable content or dismiss button. The Color parameter wins over it in Outline and Text; the overlay a Fill tag hovers with is its alone. Shared by the three variants: --bit-Tag-fill-hover-background, --bit-Tag-outline-hover-background and --bit-Tag-text-hover-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Tag-active-background",
             DefaultValue = "Per Variant, a step deeper while selected",
-            Description = "Background of a pressed clickable content or dismiss button. The Color parameter wins over it in Outline and Text; the overlay a Fill tag is pressed with is its alone.",
+            Description = "Background of a pressed clickable content or dismiss button. The Color parameter wins over it in Outline and Text; the overlay a Fill tag is pressed with is its alone. Shared by the three variants: --bit-Tag-fill-active-background, --bit-Tag-outline-active-background and --bit-Tag-text-active-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Tag-selected-color",
             DefaultValue = "--bit-Tag-color",
-            Description = "Text and glyphs of a selected tag. The Color parameter wins over it.",
+            Description = "Text and glyphs of a selected tag. The Color parameter wins over it. Shared by the three variants: --bit-Tag-fill-selected-color, --bit-Tag-outline-selected-color and --bit-Tag-text-selected-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Tag-selected-background",
             DefaultValue = "Per Variant, from the primary role",
-            Description = "Background of a selected tag. The Color parameter wins over it.",
+            Description = "Background of a selected tag. The Color parameter wins over it. Shared by the three variants: --bit-Tag-fill-selected-background, --bit-Tag-outline-selected-background and --bit-Tag-text-selected-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Tag-selected-border-color",
             DefaultValue = "Per Variant, from the primary role",
-            Description = "Rule of a selected tag. The Color parameter wins over it, except over the transparent rule of Text.",
+            Description = "Rule of a selected tag. The Color parameter wins over it, except over the transparent rule of Text. Shared by the three variants: --bit-Tag-fill-selected-border-color, --bit-Tag-outline-selected-border-color and --bit-Tag-text-selected-border-color are read ahead of it.",
         },
         new()
         {
@@ -589,13 +589,193 @@ public partial class BitTagDemo
         {
             Name = "--bit-Tag-disabled-background",
             DefaultValue = "Per Variant, from the primary role",
-            Description = "Background of a disabled tag. The Color parameter wins over it in Fill; the transparent background of Outline and Text is its alone.",
+            Description = "Background of a disabled tag. The Color parameter wins over it in Fill; the transparent background of Outline and Text is its alone. Shared by the three variants: --bit-Tag-fill-disabled-background, --bit-Tag-outline-disabled-background and --bit-Tag-text-disabled-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Tag-disabled-border-color",
             DefaultValue = "Per Variant, from the primary role",
-            Description = "Rule of a disabled tag. The Color parameter wins over it, except over the transparent rule of Text.",
+            Description = "Rule of a disabled tag. The Color parameter wins over it, except over the transparent rule of Text. Shared by the three variants: --bit-Tag-fill-disabled-border-color, --bit-Tag-outline-disabled-border-color and --bit-Tag-text-disabled-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-fill-color",
+            DefaultValue = "--bit-Tag-color",
+            Description = "Text and glyphs at rest of a Fill tag alone, read ahead of --bit-Tag-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-fill-background",
+            DefaultValue = "--bit-Tag-background",
+            Description = "Background at rest of a Fill tag alone, read ahead of --bit-Tag-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-fill-border-color",
+            DefaultValue = "--bit-Tag-border-color",
+            Description = "Rule at rest of a Fill tag alone, read ahead of --bit-Tag-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-fill-hover-background",
+            DefaultValue = "--bit-Tag-hover-background",
+            Description = "Background of a hovered clickable content or dismiss button of a Fill tag alone, read ahead of --bit-Tag-hover-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-fill-active-background",
+            DefaultValue = "--bit-Tag-active-background",
+            Description = "Background of a pressed clickable content or dismiss button of a Fill tag alone, read ahead of --bit-Tag-active-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-fill-selected-color",
+            DefaultValue = "--bit-Tag-selected-color",
+            Description = "Text and glyphs while selected of a Fill tag alone, read ahead of --bit-Tag-selected-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-fill-selected-background",
+            DefaultValue = "--bit-Tag-selected-background",
+            Description = "Background while selected of a Fill tag alone, read ahead of --bit-Tag-selected-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-fill-selected-border-color",
+            DefaultValue = "--bit-Tag-selected-border-color",
+            Description = "Rule while selected of a Fill tag alone, read ahead of --bit-Tag-selected-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-fill-disabled-background",
+            DefaultValue = "--bit-Tag-disabled-background",
+            Description = "Background when disabled of a Fill tag alone, read ahead of --bit-Tag-disabled-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-fill-disabled-border-color",
+            DefaultValue = "--bit-Tag-disabled-border-color",
+            Description = "Rule when disabled of a Fill tag alone, read ahead of --bit-Tag-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-outline-color",
+            DefaultValue = "--bit-Tag-color",
+            Description = "Text and glyphs at rest of an Outline tag alone, read ahead of --bit-Tag-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-outline-background",
+            DefaultValue = "--bit-Tag-background",
+            Description = "Background at rest of an Outline tag alone, read ahead of --bit-Tag-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-outline-border-color",
+            DefaultValue = "--bit-Tag-border-color",
+            Description = "Rule at rest of an Outline tag alone, read ahead of --bit-Tag-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-outline-hover-background",
+            DefaultValue = "--bit-Tag-hover-background",
+            Description = "Background of a hovered clickable content or dismiss button of an Outline tag alone, read ahead of --bit-Tag-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-outline-active-background",
+            DefaultValue = "--bit-Tag-active-background",
+            Description = "Background of a pressed clickable content or dismiss button of an Outline tag alone, read ahead of --bit-Tag-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-outline-selected-color",
+            DefaultValue = "--bit-Tag-selected-color",
+            Description = "Text and glyphs while selected of an Outline tag alone, read ahead of --bit-Tag-selected-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-outline-selected-background",
+            DefaultValue = "--bit-Tag-selected-background",
+            Description = "Background while selected of an Outline tag alone, read ahead of --bit-Tag-selected-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-outline-selected-border-color",
+            DefaultValue = "--bit-Tag-selected-border-color",
+            Description = "Rule while selected of an Outline tag alone, read ahead of --bit-Tag-selected-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-outline-disabled-background",
+            DefaultValue = "--bit-Tag-disabled-background",
+            Description = "Background when disabled of an Outline tag alone, read ahead of --bit-Tag-disabled-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-outline-disabled-border-color",
+            DefaultValue = "--bit-Tag-disabled-border-color",
+            Description = "Rule when disabled of an Outline tag alone, read ahead of --bit-Tag-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-text-color",
+            DefaultValue = "--bit-Tag-color",
+            Description = "Text and glyphs at rest of a Text tag alone, read ahead of --bit-Tag-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-text-background",
+            DefaultValue = "--bit-Tag-background",
+            Description = "Background at rest of a Text tag alone, read ahead of --bit-Tag-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-text-border-color",
+            DefaultValue = "--bit-Tag-border-color",
+            Description = "Rule at rest of a Text tag alone, read ahead of --bit-Tag-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-text-hover-background",
+            DefaultValue = "--bit-Tag-hover-background",
+            Description = "Background of a hovered clickable content or dismiss button of a Text tag alone, read ahead of --bit-Tag-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-text-active-background",
+            DefaultValue = "--bit-Tag-active-background",
+            Description = "Background of a pressed clickable content or dismiss button of a Text tag alone, read ahead of --bit-Tag-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-text-selected-color",
+            DefaultValue = "--bit-Tag-selected-color",
+            Description = "Text and glyphs while selected of a Text tag alone, read ahead of --bit-Tag-selected-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-text-selected-background",
+            DefaultValue = "--bit-Tag-selected-background",
+            Description = "Background while selected of a Text tag alone, read ahead of --bit-Tag-selected-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-text-selected-border-color",
+            DefaultValue = "--bit-Tag-selected-border-color",
+            Description = "Rule while selected of a Text tag alone, read ahead of --bit-Tag-selected-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-text-disabled-background",
+            DefaultValue = "--bit-Tag-disabled-background",
+            Description = "Background when disabled of a Text tag alone, read ahead of --bit-Tag-disabled-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Tag-text-disabled-border-color",
+            DefaultValue = "--bit-Tag-disabled-border-color",
+            Description = "Rule when disabled of a Text tag alone, read ahead of --bit-Tag-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
         },
         new()
         {

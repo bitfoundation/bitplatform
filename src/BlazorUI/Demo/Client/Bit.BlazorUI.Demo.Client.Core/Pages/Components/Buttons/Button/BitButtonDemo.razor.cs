@@ -463,73 +463,289 @@ public partial class BitButtonDemo
         {
             Name = "--bit-Button-color",
             DefaultValue = "Per variant: --bit-clr-pri-text when filled, --bit-clr-pri otherwise",
-            Description = "Foreground (text and icon) in the rest state. FixedColor holds this color through hover and press as well. The Color parameter wins over it.",
+            Description = "Foreground (text and icon) in the rest state. FixedColor holds this color through hover and press as well. The Color parameter wins over it. Shared by the three variants: --bit-Button-fill-color, --bit-Button-outline-color and --bit-Button-text-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Button-background",
             DefaultValue = "--bit-clr-pri when filled, transparent otherwise",
-            Description = "Background in the rest state. The Color parameter wins over it in Fill; the transparent background of Outline and Text is its alone.",
+            Description = "Background in the rest state. The Color parameter wins over it in Fill; the transparent background of Outline and Text is its alone. Shared by the three variants: --bit-Button-fill-background, --bit-Button-outline-background and --bit-Button-text-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Button-border-color",
             DefaultValue = "--bit-clr-pri when filled or outlined, transparent otherwise",
-            Description = "Border color in the rest state. The border is drawn on every variant, so a Text button can take one without changing its size. The Color parameter wins over it, except over the transparent border of Text.",
+            Description = "Border color in the rest state. The border is drawn on every variant, so a Text button can take one without changing its size. The Color parameter wins over it, except over the transparent border of Text. Shared by the three variants: --bit-Button-fill-border-color, --bit-Button-outline-border-color and --bit-Button-text-border-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Button-hover-color",
             DefaultValue = "--bit-clr-pri-text, and the rest color for the Fill variant",
-            Description = "Foreground while hovered (pointer devices only). The Color parameter wins over it.",
+            Description = "Foreground while hovered (pointer devices only). The Color parameter wins over it. Shared by the three variants: --bit-Button-fill-hover-color, --bit-Button-outline-hover-color and --bit-Button-text-hover-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Button-hover-background",
             DefaultValue = "--bit-clr-pri-hover",
-            Description = "Background while hovered (pointer devices only). The Color parameter wins over it.",
+            Description = "Background while hovered (pointer devices only). The Color parameter wins over it. Shared by the three variants: --bit-Button-fill-hover-background, --bit-Button-outline-hover-background and --bit-Button-text-hover-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Button-hover-border-color",
             DefaultValue = "The rest border color, and the hover background for the Fill variant",
-            Description = "Border color while hovered (pointer devices only). The Color parameter wins over it, except over the transparent border of Text.",
+            Description = "Border color while hovered (pointer devices only). The Color parameter wins over it, except over the transparent border of Text. Shared by the three variants: --bit-Button-fill-hover-border-color, --bit-Button-outline-hover-border-color and --bit-Button-text-hover-border-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Button-active-color",
             DefaultValue = "As the hover foreground",
-            Description = "Foreground while pressed. The Color parameter wins over it.",
+            Description = "Foreground while pressed. The Color parameter wins over it. Shared by the three variants: --bit-Button-fill-active-color, --bit-Button-outline-active-color and --bit-Button-text-active-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Button-active-background",
             DefaultValue = "--bit-clr-pri-active",
-            Description = "Background while pressed. The Color parameter wins over it.",
+            Description = "Background while pressed. The Color parameter wins over it. Shared by the three variants: --bit-Button-fill-active-background, --bit-Button-outline-active-background and --bit-Button-text-active-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Button-active-border-color",
             DefaultValue = "As the hover border color",
-            Description = "Border color while pressed. The Color parameter wins over it, except over the transparent border of Text.",
+            Description = "Border color while pressed. The Color parameter wins over it, except over the transparent border of Text. Shared by the three variants: --bit-Button-fill-active-border-color, --bit-Button-outline-active-border-color and --bit-Button-text-active-border-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Button-disabled-color",
             DefaultValue = "--bit-clr-pri-dis-text",
-            Description = "Foreground when disabled. It also draws the focus ring of a disabled button that AllowDisabledFocus keeps in the tab order. The Color parameter wins over it.",
+            Description = "Foreground when disabled. It also draws the focus ring of a disabled button that AllowDisabledFocus keeps in the tab order. The Color parameter wins over it. Shared by the three variants: --bit-Button-fill-disabled-color, --bit-Button-outline-disabled-color and --bit-Button-text-disabled-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Button-disabled-background",
             DefaultValue = "--bit-clr-pri-dis when filled, transparent otherwise",
-            Description = "Background when disabled. The Color parameter wins over it in Fill; the transparent background of Outline and Text is its alone.",
+            Description = "Background when disabled. The Color parameter wins over it in Fill; the transparent background of Outline and Text is its alone. Shared by the three variants: --bit-Button-fill-disabled-background, --bit-Button-outline-disabled-background and --bit-Button-text-disabled-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Button-disabled-border-color",
             DefaultValue = "As the disabled background",
-            Description = "Border color when disabled. The Color parameter wins over it, except over the transparent border of Text.",
+            Description = "Border color when disabled. The Color parameter wins over it, except over the transparent border of Text. Shared by the three variants: --bit-Button-fill-disabled-border-color, --bit-Button-outline-disabled-border-color and --bit-Button-text-disabled-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-color",
+            DefaultValue = "--bit-Button-color",
+            Description = "Foreground (text and icon) in the rest state of a Fill button alone, read ahead of --bit-Button-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-background",
+            DefaultValue = "--bit-Button-background",
+            Description = "Background in the rest state of a Fill button alone, read ahead of --bit-Button-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-border-color",
+            DefaultValue = "--bit-Button-border-color",
+            Description = "Border color in the rest state of a Fill button alone, read ahead of --bit-Button-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-hover-color",
+            DefaultValue = "--bit-Button-hover-color",
+            Description = "Foreground while hovered (pointer devices only) of a Fill button alone, read ahead of --bit-Button-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-hover-background",
+            DefaultValue = "--bit-Button-hover-background",
+            Description = "Background while hovered (pointer devices only) of a Fill button alone, read ahead of --bit-Button-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-hover-border-color",
+            DefaultValue = "--bit-Button-hover-border-color",
+            Description = "Border color while hovered (pointer devices only) of a Fill button alone, read ahead of --bit-Button-hover-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-active-color",
+            DefaultValue = "--bit-Button-active-color",
+            Description = "Foreground while pressed of a Fill button alone, read ahead of --bit-Button-active-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-active-background",
+            DefaultValue = "--bit-Button-active-background",
+            Description = "Background while pressed of a Fill button alone, read ahead of --bit-Button-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-active-border-color",
+            DefaultValue = "--bit-Button-active-border-color",
+            Description = "Border color while pressed of a Fill button alone, read ahead of --bit-Button-active-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-disabled-color",
+            DefaultValue = "--bit-Button-disabled-color",
+            Description = "Foreground when disabled of a Fill button alone, read ahead of --bit-Button-disabled-color so a theme can set this variant apart from the other two. It also draws the focus ring of such a button while AllowDisabledFocus keeps it in the tab order. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-disabled-background",
+            DefaultValue = "--bit-Button-disabled-background",
+            Description = "Background when disabled of a Fill button alone, read ahead of --bit-Button-disabled-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-fill-disabled-border-color",
+            DefaultValue = "--bit-Button-disabled-border-color",
+            Description = "Border color when disabled of a Fill button alone, read ahead of --bit-Button-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-color",
+            DefaultValue = "--bit-Button-color",
+            Description = "Foreground (text and icon) in the rest state of an Outline button alone, read ahead of --bit-Button-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-background",
+            DefaultValue = "--bit-Button-background",
+            Description = "Background in the rest state of an Outline button alone, read ahead of --bit-Button-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-border-color",
+            DefaultValue = "--bit-Button-border-color",
+            Description = "Border color in the rest state of an Outline button alone, read ahead of --bit-Button-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-hover-color",
+            DefaultValue = "--bit-Button-hover-color",
+            Description = "Foreground while hovered (pointer devices only) of an Outline button alone, read ahead of --bit-Button-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-hover-background",
+            DefaultValue = "--bit-Button-hover-background",
+            Description = "Background while hovered (pointer devices only) of an Outline button alone, read ahead of --bit-Button-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-hover-border-color",
+            DefaultValue = "--bit-Button-hover-border-color",
+            Description = "Border color while hovered (pointer devices only) of an Outline button alone, read ahead of --bit-Button-hover-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-active-color",
+            DefaultValue = "--bit-Button-active-color",
+            Description = "Foreground while pressed of an Outline button alone, read ahead of --bit-Button-active-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-active-background",
+            DefaultValue = "--bit-Button-active-background",
+            Description = "Background while pressed of an Outline button alone, read ahead of --bit-Button-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-active-border-color",
+            DefaultValue = "--bit-Button-active-border-color",
+            Description = "Border color while pressed of an Outline button alone, read ahead of --bit-Button-active-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-disabled-color",
+            DefaultValue = "--bit-Button-disabled-color",
+            Description = "Foreground when disabled of an Outline button alone, read ahead of --bit-Button-disabled-color so a theme can set this variant apart from the other two. It also draws the focus ring of such a button while AllowDisabledFocus keeps it in the tab order. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-disabled-background",
+            DefaultValue = "--bit-Button-disabled-background",
+            Description = "Background when disabled of an Outline button alone, read ahead of --bit-Button-disabled-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Button-outline-disabled-border-color",
+            DefaultValue = "--bit-Button-disabled-border-color",
+            Description = "Border color when disabled of an Outline button alone, read ahead of --bit-Button-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-color",
+            DefaultValue = "--bit-Button-color",
+            Description = "Foreground (text and icon) in the rest state of a Text button alone, read ahead of --bit-Button-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-background",
+            DefaultValue = "--bit-Button-background",
+            Description = "Background in the rest state of a Text button alone, read ahead of --bit-Button-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-border-color",
+            DefaultValue = "--bit-Button-border-color",
+            Description = "Border color in the rest state of a Text button alone, read ahead of --bit-Button-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-hover-color",
+            DefaultValue = "--bit-Button-hover-color",
+            Description = "Foreground while hovered (pointer devices only) of a Text button alone, read ahead of --bit-Button-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-hover-background",
+            DefaultValue = "--bit-Button-hover-background",
+            Description = "Background while hovered (pointer devices only) of a Text button alone, read ahead of --bit-Button-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-hover-border-color",
+            DefaultValue = "--bit-Button-hover-border-color",
+            Description = "Border color while hovered (pointer devices only) of a Text button alone, read ahead of --bit-Button-hover-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-active-color",
+            DefaultValue = "--bit-Button-active-color",
+            Description = "Foreground while pressed of a Text button alone, read ahead of --bit-Button-active-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-active-background",
+            DefaultValue = "--bit-Button-active-background",
+            Description = "Background while pressed of a Text button alone, read ahead of --bit-Button-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-active-border-color",
+            DefaultValue = "--bit-Button-active-border-color",
+            Description = "Border color while pressed of a Text button alone, read ahead of --bit-Button-active-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-disabled-color",
+            DefaultValue = "--bit-Button-disabled-color",
+            Description = "Foreground when disabled of a Text button alone, read ahead of --bit-Button-disabled-color so a theme can set this variant apart from the other two. It also draws the focus ring of such a button while AllowDisabledFocus keeps it in the tab order. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-disabled-background",
+            DefaultValue = "--bit-Button-disabled-background",
+            Description = "Background when disabled of a Text button alone, read ahead of --bit-Button-disabled-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Button-text-disabled-border-color",
+            DefaultValue = "--bit-Button-disabled-border-color",
+            Description = "Border color when disabled of a Text button alone, read ahead of --bit-Button-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
         },
         new()
         {
