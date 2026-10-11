@@ -841,7 +841,7 @@ public partial class BitMessage : BitComponentBase
     }
 
     // The key handler hears every Escape pressed inside the message, the ones a component or a surface inside it took
-    // first included, so the browser tells it which are its own (Message.watchEscape) for as long as it claims the
+    // first included, so the browser tells it which are its own (Utils.watchEscapeClaim) for as long as it claims the
     // key at all. A message that comes back is a new element, so it is watched afresh.
     private async Task SyncEscapeWatch()
     {
@@ -858,11 +858,11 @@ public partial class BitMessage : BitComponentBase
             {
                 _dotnetObj ??= DotNetObjectReference.Create(this);
 
-                await _js.BitMessageWatchEscape(UniqueId, RootElement, _dotnetObj);
+                await _js.BitUtilsWatchEscapeClaim(UniqueId, RootElement, _dotnetObj);
             }
             else
             {
-                await _js.BitMessageUnwatchEscape(UniqueId);
+                await _js.BitUtilsUnwatchEscapeClaim(UniqueId);
             }
         }
         catch (JSDisconnectedException) { } // the circuit is gone, and the listener with it
@@ -1479,7 +1479,7 @@ public partial class BitMessage : BitComponentBase
         {
             try
             {
-                await _js.BitMessageUnwatchEscape(UniqueId);
+                await _js.BitUtilsUnwatchEscapeClaim(UniqueId);
             }
             catch (JSDisconnectedException) { } // the circuit is gone, and the listener with it
             catch (JSException) { } // the .NET reference below is released regardless

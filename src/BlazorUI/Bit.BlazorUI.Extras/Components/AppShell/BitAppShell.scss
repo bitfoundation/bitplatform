@@ -2,7 +2,8 @@
 @import '../../../Bit.BlazorUI/Styles/functions.scss';
 
 // Public CSS variables, read off the root and the bars and never declared here, so a value set on :root (or on
-// an ancestor) re-tunes every app shell under it and one set on the Style of an instance that one alone:
+// an ancestor) re-tunes every app shell under it and one set on the Style of an instance that one and the app
+// shells nested in it:
 //   --bit-AppShell-background                 background of the shell, and of the bars   (default: $clr-bg-pri)
 //   --bit-AppShell-color                      text color the content inherits            (default: $clr-fg-pri)
 //   --bit-AppShell-inset-background           background of the four inset bars          (default: the shell's)

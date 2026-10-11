@@ -519,6 +519,70 @@ public class BitRichTextEditorAccessibilityTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow(BitRichTextEditorToolbar.Link, "Insert or edit link", "link")]
+    [DataRow(BitRichTextEditorToolbar.Image, "Insert image", "image")]
+    [DataRow(BitRichTextEditorToolbar.Media, "Embed media", "media")]
+    [DataRow(BitRichTextEditorToolbar.Table, "Insert table", "table")]
+    [DataRow(BitRichTextEditorToolbar.Find, "Find and replace", "find")]
+    [DataRow(BitRichTextEditorToolbar.Emoji, "Insert emoji", "emoji")]
+    [DataRow(BitRichTextEditorToolbar.Color, "Text color", "color")]
+    public async Task BitRichTextEditorPanelShouldClaimTheEscapeThatClosesIt(BitRichTextEditorToolbar toolbar, string toggle, string panel)
+    {
+        // A tool panel carries data-bit-esc (Utils.claimEscape) for the press that closes it, so a dialog around the
+        // editor stays open on that press - and nothing claims the key while no panel is open.
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.Toolbar, toolbar);
+            parameters.Add(p => p.ColorPalette, [new("#fff3a3", "Soft yellow")]);
+        });
+
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+
+        await ButtonByLabel(component, toggle).ClickAsync(new());
+
+        var claimed = component.Find("[data-bit-esc]");
+        Assert.IsTrue(claimed.Id!.EndsWith($"-{panel}-panel"), claimed.Id);
+        Assert.AreEqual("claim", claimed.GetAttribute("data-bit-esc"));
+
+        await claimed.KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorHelpShouldClaimTheEscapeThatClosesIt()
+    {
+        var component = RenderComponent<BitRichTextEditor>();
+
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+
+        await component.InvokeAsync(() => component.Instance._OnHelpRequested());
+
+        Assert.AreEqual("claim", component.Find(".bit-rte-help").GetAttribute("data-bit-esc"));
+
+        await component.Find(".bit-rte-help-scroll").KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+    }
+
+    [TestMethod]
+    public async Task BitRichTextEditorSlashMenuShouldClaimTheEscapeThatDismissesIt()
+    {
+        var component = RenderComponent<BitRichTextEditor>();
+
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+
+        await component.InvokeAsync(() => component.Instance._OnSlashTrigger());
+
+        var filter = component.Find(".bit-rte-slash input");
+        Assert.AreEqual("claim", filter.GetAttribute("data-bit-esc"));
+
+        await filter.KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+    }
+
+    [TestMethod]
     public async Task BitRichTextEditorImageWidthShouldBeTheKeyboardWayToResize()
     {
         var component = RenderComponent<BitRichTextEditor>(parameters => parameters.Add(p => p.Toolbar, BitRichTextEditorToolbar.Image));

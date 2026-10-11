@@ -1,6 +1,6 @@
 ﻿// Public CSS variables, shared by all eighteen loaders. They are read with a fallback and never declared here, so
 // a value set on :root re-skins every loader, one set on an ancestor the loaders inside it, and one set on the
-// Style of a loader that loader alone.
+// Style of a loader that loader and the loaders nested in it.
 //   --bit-Loading-color               color of the drawing                          (default: $clr-pri)
 //   --bit-Loading-track-color         full circle under the moving arcs of the Ring,
 //                                     DualRing and Xbox loaders                    (default: transparent)

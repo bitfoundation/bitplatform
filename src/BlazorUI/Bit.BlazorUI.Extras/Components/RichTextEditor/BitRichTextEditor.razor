@@ -32,12 +32,16 @@
     @* The tool panels are not part of the toolbar: they are opened by a shortcut or the floating
        selection toolbar just as often as by a toolbar button, so a chrome-free surface
        (ShowToolbar="false") can still link, embed or search. Each one still requires its own
-       toolbar group to be enabled. *@
+       toolbar group to be enabled.
+       data-bit-esc on each panel claims the Escape that closes it (OnPanelKeyDown, see Utils.claimEscape), so a
+       dialog around the editor does not close on that same press. A panel is only rendered while it is open, and
+       its handler closes it on every plain Escape pressed in it, so the claim is unconditional. *@
     @if (_showLinkInput && Has(BitRichTextEditorToolbar.Link) && ControlsDisabled is false)
     {
         <div class="bit-rte-bar @Classes?.Panel" style="@Styles?.Panel" id="@($"{UniqueId}-link-panel")"
              role="group" aria-label="@Loc("link-label", "Insert or edit link")"
-             @onkeydown="e => OnPanelKeyDown(e, CloseLinkInput)">
+             @onkeydown="e => OnPanelKeyDown(e, CloseLinkInput)"
+             data-bit-esc="claim">
             <input type="url" class="bit-rte-inp" aria-label="@Loc("link-url", "Link URL")"
                    placeholder="@Loc("link-url-placeholder", "https://example.com")"
                    @ref="_linkInputRef"
@@ -73,7 +77,8 @@
     {
         <div class="bit-rte-bar @Classes?.Panel" style="@Styles?.Panel" id="@($"{UniqueId}-image-panel")"
              role="group" aria-label="@(_state.ImageSelected ? Loc("edit-image", "Edit image") : Loc("insert-image", "Insert image"))"
-             @onkeydown="e => OnPanelKeyDown(e, CloseImageInput)">
+             @onkeydown="e => OnPanelKeyDown(e, CloseImageInput)"
+             data-bit-esc="claim">
             <input type="url" class="bit-rte-inp" aria-label="@Loc("image-url", "Image URL")"
                    placeholder="@Loc("image-url-placeholder", "https://example.com/image.png")"
                    @ref="_imageInputRef"
@@ -99,7 +104,8 @@
     {
         <div class="bit-rte-bar @Classes?.Panel" style="@Styles?.Panel" id="@($"{UniqueId}-media-panel")"
              role="group" aria-label="@Loc("embed-media", "Embed media")"
-             @onkeydown="e => OnPanelKeyDown(e, CloseMediaInput)">
+             @onkeydown="e => OnPanelKeyDown(e, CloseMediaInput)"
+             data-bit-esc="claim">
             <input type="url" class="bit-rte-inp" aria-label="@Loc("media-url", "Media URL")"
                    placeholder="@Loc("media-url-placeholder", "https://youtube.com/watch?v=...")"
                    @ref="_mediaInputRef"
@@ -114,7 +120,8 @@
     {
         <div class="bit-rte-bar @Classes?.Panel" style="@Styles?.Panel" id="@($"{UniqueId}-table-panel")"
              role="group" aria-label="@Loc("insert-table-label", "Insert table")"
-             @onkeydown="e => OnPanelKeyDown(e, CloseTableInput)">
+             @onkeydown="e => OnPanelKeyDown(e, CloseTableInput)"
+             data-bit-esc="claim">
             <label class="bit-rte-opt">
                 @Loc("rows", "Rows")
                 <input type="number" class="bit-rte-num" min="1" max="50"
@@ -141,7 +148,8 @@
     {
         <div class="bit-rte-bar @Classes?.Panel" style="@Styles?.Panel" id="@($"{UniqueId}-find-panel")"
              role="search" aria-label="@Loc("find-replace-label", "Find and replace")"
-             @onkeydown="e => OnPanelKeyDown(e, CloseFind)">
+             @onkeydown="e => OnPanelKeyDown(e, CloseFind)"
+             data-bit-esc="claim">
             <input type="text" class="bit-rte-inp" aria-label="@Loc("find", "Find")" placeholder="@Loc("find", "Find")"
                    @ref="_findInputRef"
                    @bind="_findTerm" @bind:event="oninput" @bind:after="RunFindAsync"
@@ -170,7 +178,8 @@
     {
         <div @ref="_emojiPanelRef" class="bit-rte-emoji-panel @Classes?.Panel" style="@Styles?.Panel" id="@($"{UniqueId}-emoji-panel")"
              role="group" aria-label="@Loc("emoji-label", "Insert emoji")"
-             @onkeydown="e => OnPanelKeyDown(e, CloseEmoji)">
+             @onkeydown="e => OnPanelKeyDown(e, CloseEmoji)"
+             data-bit-esc="claim">
             <input type="text" class="bit-rte-inp" aria-label="@Loc("search-emoji", "Search emoji")"
                    placeholder="@Loc("search", "Search")"
                    @ref="_emojiSearchRef"
@@ -202,7 +211,8 @@
     {
         <div @ref="_colorPanelRef" class="bit-rte-bar @Classes?.Panel" style="@Styles?.Panel" id="@($"{UniqueId}-color-panel")"
              role="group" aria-label="@ColorPanelLabel"
-             @onkeydown="e => OnPanelKeyDown(e, CloseColor)">
+             @onkeydown="e => OnPanelKeyDown(e, CloseColor)"
+             data-bit-esc="claim">
             <div class="bit-rte-swatches">
                 @* The first swatch is where the focus lands as the panel opens; only it is captured. *@
                 @for (var i = 0; i < ColorPalette!.Count; i++)
@@ -235,7 +245,8 @@
         @* The list is a scrolling region that takes the focus as the panel opens: a screen reader starts reading it,
            and the arrow keys scroll it. *@
         <div class="bit-rte-help @Classes?.Panel" style="@Styles?.Panel" id="@($"{UniqueId}-help-panel")"
-             @onkeydown="e => OnPanelKeyDown(e, CloseHelp)">
+             @onkeydown="e => OnPanelKeyDown(e, CloseHelp)"
+             data-bit-esc="claim">
             <div class="bit-rte-help-head">
                 <span class="bit-rte-help-ttl" id="@($"{UniqueId}-help-title")">@Loc("keyboard-help", "Keyboard shortcuts")</span>
                 <button type="button" class="bit-rte-btn bit-rte-pbt @Classes?.Button" style="@Styles?.Button" @onclick="CloseHelp">@Loc("close", "Close")</button>
@@ -286,6 +297,9 @@
     @if (_showSlash && ControlsDisabled is false)
     {
         <div class="bit-rte-slash @Classes?.Menu" style="@Styles?.Menu">
+            @* data-bit-esc on the filter claims the Escape that dismisses the menu (OnSlashKeyDownAsync, see
+               Utils.claimEscape), so a dialog around the editor does not close on that same press. The filter is
+               only rendered while the menu is open, which is when its handler acts on the key. *@
             <input type="text" class="bit-rte-inp" aria-label="@Loc("filter-commands", "Filter commands")"
                    placeholder="@Loc("filter-commands", "Filter commands…")"
                    @ref="_slashInputRef"
@@ -295,7 +309,8 @@
                    aria-controls="@($"{UniqueId}-slash-list")"
                    aria-activedescendant="@(FilteredSlash().Any() ? $"{UniqueId}-slash-item-{_slashIndex}" : null)"
                    value="@_slashFilter" @oninput="OnSlashFilterInput"
-                   @onkeydown="OnSlashKeyDownAsync" />
+                   @onkeydown="OnSlashKeyDownAsync"
+                   data-bit-esc="claim" />
             <div class="bit-rte-slash-list" role="listbox" id="@($"{UniqueId}-slash-list")" aria-label="@Loc("filter-commands", "Filter commands")">
                 @{ var _slashItemIndex = 0; }
                 @foreach (var c in FilteredSlash())
@@ -319,6 +334,9 @@
     @if (_showMention && ControlsDisabled is false)
     {
         <div class="bit-rte-slash bit-rte-mention-menu @Classes?.Menu" style="@Styles?.Menu">
+            @* data-bit-esc on the search box claims the Escape that dismisses the suggestions (OnMentionKeyDownAsync,
+               see Utils.claimEscape), so a dialog around the editor does not close on that same press. The box is
+               only rendered while the suggestions are open, which is when its handler acts on the key. *@
             <input type="text" class="bit-rte-inp" aria-label="@Loc("mention-filter", "Search people")"
                    placeholder="@Loc("mention-filter-placeholder", "Search people…")"
                    @ref="_mentionInputRef"
@@ -328,7 +346,8 @@
                    aria-controls="@($"{UniqueId}-mention-list")"
                    aria-activedescendant="@(_mentionItems.Count > 0 ? $"{UniqueId}-mention-item-{_mentionIndex}" : null)"
                    value="@_mentionFilter" @oninput="OnMentionFilterInput"
-                   @onkeydown="OnMentionKeyDownAsync" />
+                   @onkeydown="OnMentionKeyDownAsync"
+                   data-bit-esc="claim" />
             <div class="bit-rte-slash-list" role="listbox" id="@($"{UniqueId}-mention-list")" aria-label="@Loc("mention-filter", "Search people")">
                 @for (var i = 0; i < _mentionItems.Count; i++)
                 {

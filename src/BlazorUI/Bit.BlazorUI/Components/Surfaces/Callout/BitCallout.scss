@@ -2,7 +2,7 @@
 @import "../../../Styles/media-queries.scss";
 
 // Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every
-// callout and one set on the Style of an instance re-skins that one alone.
+// callout and one set on the Style of an instance re-skins that one and the callouts nested in it.
 // The callout, its arrow and its overlay are rendered outside the root element and relocated to the body while
 // the callout is open, and Callouts.ts carries what the root and its ancestors declare (a variable set on an
 // ancestor or through its class, in Style or Styles.Root) into all three of them, so they reach them like any

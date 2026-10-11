@@ -1125,6 +1125,139 @@ public class BitFullCalendarTests : BunitTestContext
         Assert.AreEqual(0, component.FindAll(".bit-bfc-field").Count);
     }
 
+    // The dialogs claim the Escape they close on (data-bit-esc, read by Utils.claimEscape), so a surface the calendar
+    // sits in does not close on the same press - and go on claiming it while a save or a delete is in flight, when
+    // the press does nothing, so that surface does not take the dialog away mid-commit either.
+
+    [TestMethod]
+    public async Task BitFullCalendarAddDialogShouldKeepClaimingEscapeWhileASaveIsInFlight()
+    {
+        var gate = new TaskCompletionSource();
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.OnChanging, async (BitFullCalendarChangingEventArgs args) =>
+            {
+                await gate.Task;
+                args.Cancel = true;
+            });
+        });
+
+        component.Find(AddButtonSelector).Click();
+        Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc"));
+
+        component.Find("input[id^='bfc-title-']").Change("Pending");
+        var save = component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-primary").ClickAsync(new MouseEventArgs());
+
+        // A save in flight keeps the dialog open on Escape, and the press stays claimed from the surface around it.
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-primary").HasAttribute("disabled")));
+        Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc"));
+        component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog").Count);
+
+        gate.SetResult();
+        await save;
+
+        component.WaitForAssertion(() => Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc")));
+    }
+
+    [TestMethod]
+    public void BitFullCalendarDetailsDialogShouldLeaveEscapeToItsEditOverlay()
+    {
+        var component = RenderCalendar();
+        component.Find(".bit-bfc-event-badge").Click();
+        Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc"));
+
+        component.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn")[0].Click();
+
+        var dialogs = component.FindAll(".bit-bfc-dialog");
+        Assert.AreEqual(2, dialogs.Count);
+        Assert.IsNull(dialogs[0].GetAttribute("data-bit-esc"), "the details dialog leaves the key to the edit overlay");
+        Assert.AreEqual("claim", dialogs[1].GetAttribute("data-bit-esc"), "the edit overlay claims the key it closes on");
+    }
+
+    [TestMethod]
+    public void BitFullCalendarDetailsDialogShouldLeaveEscapeToTheScopePrompt()
+    {
+        var component = RenderSeries();
+        component.FindAll(".bit-bfc-event-badge")[1].Click();
+        component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-danger").Click();
+
+        Assert.AreEqual("claim", component.Find(".bit-bfc-scope-dialog").GetAttribute("data-bit-esc"));
+        Assert.IsNull(component.Find(".bit-bfc-dialog:not(.bit-bfc-scope-dialog)").GetAttribute("data-bit-esc"));
+
+        component.Find(".bit-bfc-scope-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, component.FindAll(".bit-bfc-scope-dialog").Count);
+        Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public async Task BitFullCalendarDetailsDialogShouldKeepClaimingEscapeWhileADeleteIsInFlight()
+    {
+        var gate = new TaskCompletionSource();
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.OnChanging, async (BitFullCalendarChangingEventArgs args) =>
+            {
+                await gate.Task;
+                args.Cancel = true;
+            });
+        });
+
+        component.Find(".bit-bfc-event-badge").Click();
+        var delete = component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-danger").ClickAsync(new MouseEventArgs());
+
+        // A delete in flight keeps the dialog open on Escape, and the press stays claimed from the surface around it.
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-bfc-dialog-footer .bit-bfc-btn-danger").HasAttribute("disabled")));
+        Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc"));
+        component.Find(".bit-bfc-dialog").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.AreEqual(1, component.FindAll(".bit-bfc-dialog").Count);
+
+        gate.SetResult();
+        await delete;
+
+        component.WaitForAssertion(() => Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc")));
+    }
+
+    [TestMethod]
+    public void BitFullCalendarEventListDialogShouldLeaveEscapeToItsDetailsOverlay()
+    {
+        var component = RenderCalendar(defaultView: BitFullCalendarView.Year);
+        component.FindAll(".bit-bfc-year-day.has-events")[0].Click();
+        Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc"));
+
+        component.Find(".bit-bfc-dialog .bit-bfc-agenda-item").Click();
+
+        var dialogs = component.FindAll(".bit-bfc-dialog");
+        Assert.AreEqual(2, dialogs.Count);
+        Assert.IsNull(dialogs[0].GetAttribute("data-bit-esc"), "the event list leaves the key to the details overlay");
+        Assert.AreEqual("claim", dialogs[1].GetAttribute("data-bit-esc"), "the details overlay claims the key it closes on");
+    }
+
+    [TestMethod]
+    public void BitFullCalendarDateTimePickerShouldClaimEscapeOnlyWhileOpen()
+    {
+        var component = RenderCalendar();
+        component.Find(AddButtonSelector).Click();
+        Assert.IsTrue(component.FindAll(".bit-bfc-dtp").All(p => p.GetAttribute("data-bit-esc") is null));
+
+        component.FindAll(".bit-bfc-dtp-trigger")[0].Click();
+
+        // Both the picker and its panel: the panel is a dialog, where Utils.claimEscape stops looking.
+        var pickers = component.FindAll(".bit-bfc-dtp");
+        Assert.AreEqual("claim", pickers[0].GetAttribute("data-bit-esc"));
+        Assert.AreEqual("claim", component.Find(".bit-bfc-dtp-panel").GetAttribute("data-bit-esc"));
+        Assert.IsNull(pickers[1].GetAttribute("data-bit-esc"), "a closed picker leaves the key to the dialog");
+
+        component.FindAll(".bit-bfc-dtp")[0].KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, component.FindAll(".bit-bfc-dtp-panel").Count);
+        Assert.IsNull(component.FindAll(".bit-bfc-dtp")[0].GetAttribute("data-bit-esc"));
+        Assert.AreEqual("claim", component.Find(".bit-bfc-dialog").GetAttribute("data-bit-esc"), "the dialog is still open and claims the next press");
+    }
+
     [TestMethod]
     public void BitFullCalendarAddDialogShouldOfferAResourcePickerOnlyWithResources()
     {

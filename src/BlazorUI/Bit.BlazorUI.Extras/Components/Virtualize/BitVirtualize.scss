@@ -1,7 +1,8 @@
 ﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
 
 // Public CSS variables, read with a fallback and never declared here, so a value set on :root (or on an
-// ancestor) re-tunes every list under it and one set on the Style of an instance that one alone:
+// ancestor) re-tunes every list under it and one set on the Style of an instance that one and the lists nested
+// in it:
 //   --bit-Virtualize-focus-color          focus indicator of the list and of its items  (default: $clr-pri-focus)
 //   --bit-Virtualize-sticky-background    background of the pinned sticky item         (default: $clr-bg-pri)
 //   --bit-Virtualize-sticky-shadow        shadow under the pinned sticky item           (default: none)

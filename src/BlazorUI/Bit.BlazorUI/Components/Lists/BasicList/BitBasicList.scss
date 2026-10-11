@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// list and one set on the Style of an instance re-skins that one alone:
+// list and one set on the Style of an instance re-skins that one and the lists nested in it:
 //   --bit-BasicList-height                         height of a vertical list                       (default: spacing(62.5))
 //   --bit-BasicList-focus-color                    focus ring of the list and its LoadMore button  (default: $clr-pri-focus)
 //   --bit-BasicList-disabled-color                 text of the LoadMore button when disabled       (default: $clr-fg-dis)

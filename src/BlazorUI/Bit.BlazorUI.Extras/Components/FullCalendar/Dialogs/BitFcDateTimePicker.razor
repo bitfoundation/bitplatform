@@ -3,8 +3,10 @@
 @inject IJSRuntime JS
 
 @* Escape closes the picker's own popup first and stops there, so it never dismisses the dialog the
-   picker sits in while the popup is still open. *@
-<div class="bit-bfc-dtp" tabindex="-1" @onkeydown="OnKeyDown" @onkeydown:stopPropagation="_isOpen" @onfocusout="OnFocusOut" @onfocusin="OnFocusIn">
+   picker sits in while the popup is still open. The stopPropagation only stops Blazor's own dispatch, so the
+   press is also claimed (data-bit-esc, see Utils.claimEscape) from a surface of the library the calendar sits
+   in (a BitModal, a BitPanel), whose listener would hear it all the same. *@
+<div class="bit-bfc-dtp" tabindex="-1" data-bit-esc="@_EscapeClaim" @onkeydown="OnKeyDown" @onkeydown:stopPropagation="_isOpen" @onfocusout="OnFocusOut" @onfocusin="OnFocusIn">
     <button type="button" id="@_TriggerId" class="bit-bfc-dtp-trigger" @onclick="ToggleOpen" aria-haspopup="dialog" aria-expanded="@(_isOpen ? "true" : "false")" aria-controls="@(_isOpen ? _PanelId : null)" aria-label="@GetTriggerAriaLabel()"
             aria-invalid="@(Invalid ? "true" : null)" aria-describedby="@DescribedBy">
         <span>@GetDisplayText()</span>
@@ -13,7 +15,9 @@
 
     @if (_isOpen)
     {
-        <div id="@_PanelId" class="bit-bfc-dtp-panel" role="dialog" aria-label="@(TriggerAriaLabel ?? GetMonthYearLabel(_visibleMonthAnchor))">
+        @* The panel claims the key as well: it is a dialog, the nearest surface to a press made inside it, and
+           Utils.claimEscape stops looking there rather than reading the picker's root. *@
+        <div id="@_PanelId" class="bit-bfc-dtp-panel" role="dialog" data-bit-esc="@_EscapeClaim" aria-label="@(TriggerAriaLabel ?? GetMonthYearLabel(_visibleMonthAnchor))">
             <div class="bit-bfc-dtp-header">
                 <button type="button" class="bit-bfc-dtp-nav-btn" @onclick="ShowPreviousMonth" aria-label="@PreviousMonthAriaLabel">
                     &#8249;

@@ -76,9 +76,9 @@
     --bit-shp-radius-2xl: 1rem; //16px
     --bit-shp-radius-full: 9999px;
 
-    //shape - the corners of the selection indicator of a tab strip, which Fluent draws square. The corners on
-    //the edge it stands on (--bit-shp-radius-tab-indicator-base) follow these unless a preset sets them.
-    --bit-shp-radius-tab-indicator: 0;
+    //shape - the corners of the selection indicator of a tab strip (--bit-shp-radius-tab-indicator), which
+    //Fluent draws square, are declared with the control radii in family-tokens.scss: an inline overlay of the
+    //control radius re-declares them with the rest.
 
     //shape - the corners of a linear progress track and its bar, which Fluent draws square.
     --bit-shp-radius-progress: 0;

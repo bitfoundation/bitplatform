@@ -716,6 +716,80 @@ public class BitMarkdownEditorTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitMarkdownEditorFindPanelShouldClaimTheEscapeThatClosesIt()
+    {
+        // The find boxes, and the panes whose Escape the script hands to .NET, carry data-bit-esc (Utils.claimEscape)
+        // while the panel is open, so a dialog around the editor stays open on the press that closes it - and only
+        // then: with nothing to close, the key is the dialog's.
+        var component = RenderComponent<BitMarkdownEditor>();
+
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+
+        await component.Instance._OnShortcut("find");
+
+        Assert.AreEqual("claim", component.Find(".bit-mde-txa").GetAttribute("data-bit-esc"));
+        Assert.AreEqual("claim", component.Find(".bit-mde-ppn").GetAttribute("data-bit-esc"));
+        Assert.IsTrue(component.FindAll(".bit-mde-fni").All(i => i.GetAttribute("data-bit-esc") == "claim"));
+
+        await component.FindAll(".bit-mde-fni")[1].KeyDownAsync(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, component.FindAll(".bit-mde-fnd").Count);
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorHelpDialogShouldClaimTheEscapeThatClosesIt()
+    {
+        var component = RenderComponent<BitMarkdownEditor>();
+
+        component.Find("[data-cmd=help]").Click();
+
+        Assert.AreEqual("claim", component.Find(".bit-mde-hcr").GetAttribute("data-bit-esc"));
+        Assert.AreEqual("claim", component.Find(".bit-mde-txa").GetAttribute("data-bit-esc"));
+
+        component.Find(".bit-mde-hcr").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, component.FindAll(".bit-mde-hcr").Count);
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorShouldClaimTheEscapeThatLeavesFullScreen()
+    {
+        var fullScreen = true;
+
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Bind(p => p.FullScreen, fullScreen, v => fullScreen = v);
+        });
+
+        Assert.AreEqual("claim", component.Find(".bit-mde-txa").GetAttribute("data-bit-esc"));
+        Assert.AreEqual("claim", component.Find(".bit-mde-ppn").GetAttribute("data-bit-esc"));
+
+        await component.Instance._OnEscape();
+
+        Assert.IsFalse(component.Instance.FullScreen);
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorShouldNotClaimTheEscapeOfAOneWayFullScreen()
+    {
+        // A FullScreen bound one way cannot be left (the Escape changes nothing), so the key is left to a dialog
+        // around the editor.
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.FullScreen, true);
+        });
+
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+
+        await component.Instance._OnEscape();
+
+        Assert.IsTrue(component.Instance.FullScreen);
+    }
+
+    [TestMethod]
     public async Task BitMarkdownEditorShouldReportTheMatchCountInTheFindPanel()
     {
         Context.JSInterop.Setup<BitMarkdownEditorFindResult>("BitBlazorUI.MarkdownEditor.find", _ => true).SetResult(new(4, 2));

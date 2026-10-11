@@ -150,11 +150,16 @@ public partial class BitFcDateTimePicker : IDisposable
         _pendingFocusId = _TriggerId;
     }
 
+    // The Escape that closes the popup, claimed on the picker and its panel (see Utils.claimEscape) - read off the
+    // same state OnKeyDown decides on, so a closed picker leaves the key to the dialog it sits in.
+    private string? _EscapeClaim => _isOpen ? "claim" : null;
+
     private void OnKeyDown(KeyboardEventArgs e)
     {
         // Escape closes the popup rather than the surrounding dialog; the markup stops the event
-        // there while the popup is open so the two do not close together.
-        if (_isOpen && e.Key is "Escape" or "Esc")
+        // there while the popup is open so the two do not close together. Only the plain key, the one the picker
+        // claims (_EscapeClaim): an Escape with a modifier is left to the surface the calendar sits in.
+        if (_isOpen && e.IsPlainEscape())
             Close();
     }
 

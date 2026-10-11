@@ -34,6 +34,7 @@ public sealed class BitThemeAttributeNamesContractTests
             ["ATTR_THEME_LIGHT"] = BitThemeAttributeNames.ThemeLight,
             ["ATTR_THEME_VIEW_TRANSITION"] = BitThemeAttributeNames.ThemeViewTransition,
             ["ATTR_THEME_COLOR_META"] = BitThemeAttributeNames.ThemeColorMeta,
+            ["ATTR_THEME_OVERLAY"] = BitThemeAttributeNames.ThemeOverlay,
             // Not an attribute but the custom property the theme-color sync falls back to. It is
             // documented in C# (and by the demo / template host pages that name their own), so a
             // change to the client's default has to be a deliberate change to both.

@@ -2610,6 +2610,30 @@ public class BitRichTextEditorTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitRichTextEditorMentionMenuShouldClaimTheEscapeThatDismissesIt()
+    {
+        SetupJsInterop();
+
+        // The search box carries data-bit-esc (Utils.claimEscape) while the suggestions are open, so a dialog around
+        // the editor stays open on the press that dismisses them.
+        var component = RenderComponent<BitRichTextEditor>(parameters =>
+        {
+            parameters.Add(p => p.OnMentionSearch, People("Ada"));
+        });
+
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+
+        await component.InvokeAsync(() => component.Instance._OnMentionTrigger());
+
+        var input = component.Find(".bit-rte-mention-menu input");
+        Assert.AreEqual("claim", input.GetAttribute("data-bit-esc"));
+
+        await input.KeyDownAsync(Key.Escape);
+
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+    }
+
+    [TestMethod]
     public async Task BitRichTextEditorShouldReportAFailingMentionLookup()
     {
         SetupJsInterop();
