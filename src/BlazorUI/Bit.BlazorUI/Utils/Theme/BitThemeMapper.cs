@@ -99,7 +99,10 @@ internal static class BitThemeMapper
     /// radius rather than the control one, a Fluent 2 tooltip the primary background rather than the
     /// secondary, a Fluent dark elevation rings its surface in the tertiary border at the border width, the
     /// core app-bar shadows are tinted with the primary foreground - so the list names what any of them reads,
-    /// and a theme that does not read one simply re-declares its own value for it.
+    /// and a theme that does not read one simply re-declares its own value for it. The type aliases are the
+    /// exception that names more than the packaged themes read: a design system picks the step of the size and
+    /// weight ramps it titles a dialog and captions a field in, and an app's own preset may pick any of them,
+    /// so the group takes every step of both ramps.
     /// </remarks>
     internal static readonly IReadOnlyList<KeyValuePair<string, string[]>> FamilyAliasOverlayGroups =
     [
@@ -116,6 +119,12 @@ internal static class BitThemeMapper
         new("wrn", [BitCss.Var.Color.Warning.Main]),
         new("swr", [BitCss.Var.Color.SevereWarning.Main]),
         new("err", [BitCss.Var.Color.Error.Main]),
+        new("typography", [BitCss.Var.Typography.FontSize.Xxs, BitCss.Var.Typography.FontSize.Xs, BitCss.Var.Typography.FontSize.Sm,
+                           BitCss.Var.Typography.FontSize.Md, BitCss.Var.Typography.FontSize.Lg, BitCss.Var.Typography.FontSize.Xl,
+                           BitCss.Var.Typography.FontSize.Xxl, BitCss.Var.Typography.FontSize.Xxxl, BitCss.Var.Typography.FontSize.Xxxxl,
+                           BitCss.Var.Typography.FontWeights.Light, BitCss.Var.Typography.FontWeights.Regular,
+                           BitCss.Var.Typography.FontWeights.Medium, BitCss.Var.Typography.FontWeights.SemiBold,
+                           BitCss.Var.Typography.FontWeights.Bold]),
     ];
 
     /// <summary>

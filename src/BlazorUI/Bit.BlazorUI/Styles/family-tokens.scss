@@ -11,6 +11,8 @@
  *   tint       - pri/sec/ter/inf/suc/wrn/swr/err: the role laid over a surface as a faint wash (the
  *                soft surface of a tinted variant) instead of a fill
  *   tooltip    - the fill and the text of the tooltip surface
+ *   type       - the size and weight of a dialog's title and the weight of a field's caption, each a
+ *                step of the type ramps (Styles/Fluent/typography.fluent.scss) a design system picks
  *
  * Components consume THESE (via $shp-radius-control, $box-shadow-popup, $clr-wrn-fg, ... in
  * theme-variables.scss) instead of the single --bit-shp-brd-radius / --bit-shd-cal primitives or a
@@ -26,9 +28,10 @@
  * system overrides the family tokens in its own :root[bit-theme="..."] block; that block is loaded
  * after this file and wins on source order.
  *
- * Themable from C# via BitTheme.Shape.Radius.*, BitTheme.BoxShadow.* and
- * BitTheme.Color.<Role>.Foreground / .Tint (the mapper emits the same names). The mapper contract tests pin
- * this file, theme-variables.scss and the model to each other.
+ * Themable from C# via BitTheme.Shape.Radius.*, BitTheme.BoxShadow.*,
+ * BitTheme.Color.<Role>.Foreground / .Tint and BitTheme.Typography.Dialog / .FieldLabel (the mapper emits
+ * the same names). The mapper contract tests pin this file, theme-variables.scss and the model to each
+ * other.
  *
  * Each group of aliases that one input feeds is a mixin, included by the main block below and again by
  * the inline-overlay rules at the end of the file (see theme-overlay.scss): a theme that declares its own
@@ -93,6 +96,16 @@
     --bit-clr-tooltip-fg: var(--bit-clr-fg-pri);
 }
 
+// the type of the two captions design systems set apart from the ramp's plain steps - a dialog's title
+// and a field's label. Each one an alias of a ramp step rather than a copy of its value, so a theme that
+// retunes the ramp retunes them with it. The defaults are Fabric's: a dialog is titled in its 20px
+// semibold (ms-Dialog-title), the xl step, and a field is captioned semibold (ms-Label).
+@mixin family-typography-aliases {
+    --bit-tpg-dialog-title-font-size: var(--bit-tpg-fs-xl); //20px
+    --bit-tpg-dialog-title-font-weight: var(--bit-tpg-fw-semibold);
+    --bit-tpg-field-label-font-weight: var(--bit-tpg-fw-semibold);
+}
+
 $family-roles: pri, sec, ter, inf, suc, wrn, swr, err;
 
 // foreground per accent role - a role's main color is picked to FILL a surface rather than to be
@@ -134,6 +147,8 @@ $family-roles: pri, sec, ter, inf, suc, wrn, swr, err;
 
     @include family-tooltip-aliases;
 
+    @include family-typography-aliases;
+
     @each $role in $family-roles {
         @include family-role-foreground($role);
     }
@@ -163,6 +178,10 @@ $family-roles: pri, sec, ter, inf, suc, wrn, swr, err;
 
 @include theme-overlay("tooltip", $document: true, $any-scope: true) {
     @include family-tooltip-aliases;
+}
+
+@include theme-overlay("typography", $document: true, $any-scope: true) {
+    @include family-typography-aliases;
 }
 
 // The page's text color is mixed into every role foreground, so re-valuing it re-shades all eight;
