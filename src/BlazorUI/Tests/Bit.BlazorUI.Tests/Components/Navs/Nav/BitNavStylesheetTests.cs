@@ -96,6 +96,28 @@ public class BitNavStylesheetTests
     }
 
     [TestMethod]
+    public void BitNavShouldLetEveryStateRecolorTheIconAndTheDescriptionOfItsItem()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // A theme that gives a state a vivid fill moves the text with --bit-Nav-*-color; without a variable of their own
+        // the icon and the description stayed in their colors at rest, unreadable on that fill. Each falls back on the
+        // one at rest (the press on the hover's first), so a nav that sets none of them looks as it did.
+        StringAssert.Contains(stylesheet, "var(--bit-Nav-hover-icon-color, var(--bit-Nav-icon-color, #{$clr-pri}))");
+        StringAssert.Contains(stylesheet, "var(--bit-Nav-hover-description-color, var(--bit-Nav-description-color, #{$clr-fg-ter}))");
+        StringAssert.Contains(stylesheet, "var(--bit-nav-clr-text, var(--bit-Nav-pressed-color, var(--bit-Nav-hover-color, #{$clr-fg-pri})))");
+        StringAssert.Contains(stylesheet, "var(--bit-Nav-pressed-icon-color, var(--bit-Nav-hover-icon-color, var(--bit-Nav-icon-color, #{$clr-pri})))");
+        StringAssert.Contains(stylesheet, "var(--bit-Nav-pressed-description-color, var(--bit-Nav-hover-description-color, var(--bit-Nav-description-color, #{$clr-fg-ter})))");
+        StringAssert.Contains(stylesheet, "var(--bit-Nav-selected-icon-color, var(--bit-Nav-icon-color, #{$clr-pri}))");
+        StringAssert.Contains(stylesheet, "var(--bit-Nav-selected-description-color, var(--bit-Nav-description-color, #{$clr-fg-ter}))");
+
+        // A semantic Accent and an explicit Color still win over them: the mixin reads its own private variables first.
+        var mixin = SourceFiles.GetScssBlock(stylesheet, "@mixin accented-item-content(");
+        StringAssert.Contains(mixin, "$icon: var(--bit-nav-clr-icon, var(--bit-nav-clr, #{$icon-color}));");
+        StringAssert.Contains(mixin, "$des: var(--bit-nav-clr-des, #{$description-color});");
+    }
+
+    [TestMethod]
     public void BitNavShouldPublishItsColorAccentAndSizeOnlyWhereTheyAreSet()
     {
         var stylesheet = ReadStylesheet();
