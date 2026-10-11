@@ -252,7 +252,7 @@ public partial class BitModalServiceDemo : IDisposable
         {
             Id = "modal-container",
             Title = "BitModalContainer",
-            Description = "The component that renders the modals of the service. Mount one, in the layout.",
+            Description = "The component that renders the modals of the service. Mount one, in the layout - or a container of your own, derived from BitModalContainerBase.",
             Parameters =
             [
                 new()
@@ -270,6 +270,64 @@ public partial class BitModalServiceDemo : IDisposable
                     Type = "BitModalService?",
                     DefaultValue = "null",
                     Description = "The service this container renders the modals of, in place of the one registered in DI - for a region with modals of its own. Read when the container initializes; give the container a @key to switch it."
+                }
+            ]
+        },
+        new()
+        {
+            Id = "modal-container-base",
+            Title = "BitModalContainerBase<TReference, TParameters>",
+            Description = "The base of BitModalContainer, and of a container of your own (BitModalContainerBase<BitModalReference, BitModalParameters>): it attaches to the service, keeps the list of modals, closes them on navigation and when it goes away, and keeps a closed modal in the page until its exit animation has played. What a derived container writes:",
+            Parameters =
+            [
+                new()
+                {
+                    Name = "ModalService",
+                    Type = "BitModalServiceBase<TReference, TParameters>",
+                    DefaultValue = "",
+                    Description = "Abstract: the service this container renders the modals of. Read when the container initializes and not to be changed afterwards."
+                },
+                new()
+                {
+                    Name = "MergeParameters",
+                    Type = "TParameters? (TParameters? modalParameters, TParameters? containerParameters)",
+                    DefaultValue = "",
+                    Description = "Abstract: merges the parameters of one showing, which win, with the container's ModalParameters - BitModalParameters.Merge for a BitModalService."
+                },
+                new()
+                {
+                    Name = "GetCloseOnNavigation",
+                    Type = "bool? (TReference modalRef)",
+                    DefaultValue = "null",
+                    Description = "Virtual: whether the given modal closes when the path changes, or null for the default, which closes every modal but a persistent one."
+                },
+                new()
+                {
+                    Name = "_modalRefs",
+                    Type = "List<TReference>",
+                    DefaultValue = "",
+                    Description = "The modals this container renders, in the order they were opened - a closed one still playing its exit animation included."
+                },
+                new()
+                {
+                    Name = "RenderModal",
+                    Type = "RenderFragment (TReference modalRef)",
+                    DefaultValue = "",
+                    Description = "Renders one modal with everything it expects from its container: the reference, the merged parameters and what lets it play its exit animation. Render it inside an element keyed by the modal's Id, so that one closing ahead of another leaves that one as it was. A container that cascades the reference and the parameters by hand instead takes a closed modal out of the page at once, with no exit animation."
+                },
+                new()
+                {
+                    Name = "RenderModals",
+                    Type = "RenderFragment ()",
+                    DefaultValue = "",
+                    Description = "Renders every modal through RenderModal, each keyed by its Id - all a container with no markup of its own around each modal renders."
+                },
+                new()
+                {
+                    Name = "GetMergedParameters",
+                    Type = "TParameters? (TReference modalRef)",
+                    DefaultValue = "",
+                    Description = "The merged parameters of the given modal, cached until the container's ModalParameters change or Refresh is called."
                 }
             ]
         },
@@ -627,6 +685,35 @@ public partial class BitModalServiceDemo : IDisposable
         {
             HeaderText = "Own position",
             Position = BitPosition.BottomCenter
+        });
+    }
+
+
+    // The custom container renders a service of the example's own, like the persistent one: an app mounts one
+    // container, so its own goes in the layout in place of the BitModalContainer.
+    private readonly BitModalService customModalService = new();
+
+    private async Task ShowCustomContainerModal()
+    {
+        await customModalService.Show<ModalBodyContent>(new BitModalParameters
+        {
+            MaxWidth = "24rem",
+            HeaderText = "At the start",
+            ShowCloseButton = true,
+            Modeless = true,
+            Position = BitPosition.TopStart
+        });
+    }
+
+    private async Task ShowOtherCustomContainerModal()
+    {
+        await customModalService.Show<ModalBodyContent>(new BitModalParameters
+        {
+            MaxWidth = "24rem",
+            HeaderText = "At the end",
+            ShowCloseButton = true,
+            Modeless = true,
+            Position = BitPosition.TopEnd
         });
     }
 

@@ -178,7 +178,26 @@
             </BitParams>
         </DemoExample>
 
-        <DemoExample Title="External Icons" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode" Id="example11">
+        <DemoExample Title="Custom container" RazorCode="@example11RazorCode" CsharpCode="@example11CsharpCode"
+                     CodeFiles="@example11CodeFiles" Id="example11">
+            <div>
+                A container of your own derives from <b>BitModalContainerBase&lt;BitModalReference, BitModalParameters&gt;</b>,
+                names its <b>ModalService</b> and how the parameters merge, and renders each modal through
+                <b>RenderModal</b> - inside an element keyed by the modal's <b>Id</b> - or all of them through
+                <b>RenderModals</b>. Either one hands the modal what it expects from its container, including what lets
+                it play its exit animation: a container that cascades the reference and the parameters by hand takes a
+                closed modal out of the page at once.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitButton OnClick="ShowCustomContainerModal">Show at the start</BitButton>
+                <BitButton Variant="BitVariant.Outline" OnClick="ShowOtherCustomContainerModal">Show at the end</BitButton>
+            </div>
+
+            <DemoModalContainer Service="customModalService" />
+        </DemoExample>
+
+        <DemoExample Title="External Icons" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
             <div>
                 <b>CloseIcon</b> takes the close button's icon from an external library (FontAwesome, Bootstrap Icons,
                 ...) and wins over <b>CloseIconName</b>, a built-in Fluent UI icon.
@@ -188,7 +207,7 @@
             <BitButton OnClick="ShowExternalIconModal">External close icon</BitButton>
         </DemoExample>
 
-        <DemoExample Title="Style &amp; Class" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
+        <DemoExample Title="Style &amp; Class" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
                 <b>Style</b> and <b>Class</b> reach the root of the modal; <b>Styles</b> and <b>Classes</b> reach each
                 part. The public <b>--bit-Modal-*</b> variables (see the <BitLink Href="/components/modal#css-variables-section">BitModal</BitLink>
@@ -202,7 +221,7 @@
             </div>
         </DemoExample>
 
-        <DemoExample Title="RTL" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
+        <DemoExample Title="RTL" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
             <div>
                 <b>Dir = BitDir.Rtl</b> lays the modal out right-to-left, chrome included; <b>Start</b>/<b>End</b>
                 positions follow along.

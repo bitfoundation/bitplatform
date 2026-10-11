@@ -1833,11 +1833,12 @@ public partial class BitModal : BitComponentBase
         // page, the drag handlers, the overflow it took off its scroller - are taken back here instead, and
         // the focus is handed back here too. That is the case of a Modal whose container goes away with it
         // still open, of one inside a page the app navigated away from, and of one shown through the service
-        // by a container that does not hand it a BitModalExit (one a consumer wrote), which takes it out of the
-        // page instead of rendering it closed - dropping the stored focus here would leave every keyboard user
-        // who closed one standing on the body instead of back on whatever opened it. The built-in container
-        // renders a closed service Modal closed and waits for it to report its exit (BitModalExit), so that one
-        // gets the close sequence every other Modal gets and arrives here with nothing left to take back.
+        // by a container that does not hand it a BitModalExit (one that cascades by hand rather than through
+        // RenderModal), which takes it out of the page instead of rendering it closed - dropping the stored
+        // focus here would leave every keyboard user who closed one standing on the body instead of back on
+        // whatever opened it. A container rendering through RenderModal renders a closed service Modal closed
+        // and waits for it to report its exit (BitModalExit), so that one gets the close sequence every other
+        // Modal gets and arrives here with nothing left to take back.
         if (_escapeWatched || _focusTrapped || _focusStored || _scrollLocked || _scrollForwarded || _dragSetup || _scrollToggledOnOpen)
         {
             var watched = _escapeWatched;
