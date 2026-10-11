@@ -116,6 +116,10 @@ internal static class BitThemeMapper
         new("wrn", [BitCss.Var.Color.Warning.Main]),
         new("swr", [BitCss.Var.Color.SevereWarning.Main]),
         new("err", [BitCss.Var.Color.Error.Main]),
+        // Not a family alias, but declared on :root from the ramps the same way: the dialog title and the field caption.
+        new("typography", [BitCss.Var.Typography.FontWeights.Regular, BitCss.Var.Typography.FontWeights.SemiBold,
+                           BitCss.Var.Typography.FontSize.Md, BitCss.Var.Typography.FontSize.Lg,
+                           BitCss.Var.Typography.FontSize.Xl, BitCss.Var.Typography.FontSize.Xxl]),
     ];
 
     /// <summary>

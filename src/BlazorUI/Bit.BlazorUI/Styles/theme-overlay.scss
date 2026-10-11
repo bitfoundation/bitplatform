@@ -22,6 +22,8 @@
 //   tooltip         --bit-clr-bg-pri/-bg-sec/-fg-pri the tooltip fill and text
 //   foreground      --bit-clr-fg-pri                every role foreground
 //   pri ... err     --bit-clr-<role>                that role's foreground and tint
+//   typography      --bit-tpg-fw-regular/-semibold, the dialog title's size and weight and the field
+//                   --bit-tpg-fs-md/-lg/-xl/-2xl     caption's weight (Styles/Fluent/typography.fluent.scss)
 //
 // This mixin emits the selectors a theme block re-declares a group on, mirroring the selectors of the
 // block itself:
