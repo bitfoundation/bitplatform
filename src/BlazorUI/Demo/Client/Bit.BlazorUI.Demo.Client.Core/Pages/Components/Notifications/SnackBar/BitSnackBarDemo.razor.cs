@@ -312,7 +312,7 @@ public partial class BitSnackBarDemo
             Name = "TransitionDuration",
             Type = "int",
             DefaultValue = "200",
-            Description = "The duration in milliseconds of the enter and exit animations of the snack bar items. A dismissed item is kept in the DOM for this long so its exit animation can play. Set it to zero to remove the item at once.",
+            Description = "The duration in milliseconds of the enter and exit animations of the snack bar items. A dismissed item is kept in the DOM for this long so its exit animation can play. Set it to zero to remove the item at once. Reduced motion collapses it unless ForceAnimation is set.",
         },
         new()
         {

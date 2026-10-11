@@ -1,8 +1,13 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+﻿using Bit.BlazorUI;
+
+var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+// The services some components inject (BitCarousel's page visibility, ...), as an app registers them.
+builder.Services.AddBitBlazorUIServices();
 
 var app = builder.Build();
 

@@ -123,7 +123,7 @@ $tgl-private-properties: clr, clr-hover, clr-text, clr-focus, gap, trk-w-base, t
     --bit-tgl-spn-width: #{$siz-spinner-stroke};
     // Every transition of the toggle runs off this one duration, so a theme that wants a slower slide - or
     // none at all - says so once. It already collapses to zero wherever reduced motion is asked for.
-    --bit-tgl-dur: var(--bit-Toggle-transition-duration, #{$mot-duration-short});
+    --bit-tgl-dur: #{mot-scaled-duration(var(--bit-Toggle-transition-duration, #{$mot-duration-short}))};
 
     // The unchecked track stays neutral whatever the Color is, so it keeps reading as "off" instead of
     // as a second, dimmer accent.

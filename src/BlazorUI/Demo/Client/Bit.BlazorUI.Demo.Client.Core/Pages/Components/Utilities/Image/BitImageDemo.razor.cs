@@ -744,7 +744,7 @@ public partial class BitImageDemo
         {
             Name = "--bit-Image-fade-duration",
             DefaultValue = "--bit-mot-duration-long",
-            Description = "Pace of the FadeIn. Reduced motion collapses the default (the theme's motion token) unless ForceAnimation is set; a pace set here is the page's own.",
+            Description = "Pace of the FadeIn. Reduced motion collapses it - the default (the theme's motion token) and a pace set here alike - unless ForceAnimation is set.",
         },
         new()
         {
