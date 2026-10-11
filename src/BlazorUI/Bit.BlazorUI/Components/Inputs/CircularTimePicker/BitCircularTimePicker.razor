@@ -2,7 +2,7 @@
 @using System.Globalization
 @inherits BitInputBase<TimeSpan?>
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      data-bit-popup-style="@(GetPopupStyle(HasFocus, Styles?.Focused, Styles?.Root))"
@@ -118,7 +118,7 @@
         holds the focus - the toolbar, an action button, anything a template put inside - and not only from
         the one control that happens to own a key handler of its own.
     *@
-    <div @attributes=@CalloutHtmlAttributes
+    <div @attributes="_calloutHtmlAttributes"
          @onkeydown="HandleOnCalloutKeyDown"
          role="@(Standalone ? "group" : "dialog")"
          aria-modal="@(Standalone ? null : "true")"

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Collections.Frozen;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -7,6 +8,10 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     private BitDir? _dir;
     private readonly string _uniqueId = BitShortId.NewId();
     private readonly HashSet<string> _assignedParameters = [];
+    private readonly Dictionary<string, object> _htmlAttributes = [];
+
+    // The dictionary last passed as the HtmlAttributes parameter, which every pass reads and none changes.
+    private IEnumerable<KeyValuePair<string, object>>? _htmlAttributesParameter;
 
 
 
@@ -110,20 +115,41 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 
     /// <summary>
     /// Captures additional HTML attributes to be applied to the rendered element, in addition to the component's parameters.
-    /// <br />
-    /// <strong>This parameter should not be assigned directly.</strong>
     /// </summary>
     /// <remarks>
     /// Each entry in the dictionary represents an attribute name and its corresponding value. This
     /// allows customization of the rendered element with other HTML attributes such as alt, title, data-* attributes, and
     /// more.
     /// <br />
+    /// Every HTML attribute written on the component lands here. A dictionary passed to this parameter adds its entries
+    /// to those, and an attribute written on the component wins over an entry of the same name, however either of them
+    /// cases it. The dictionary passed is only read, never changed: its entries are copied in on every render, and so
+    /// are those of one assigned to this property from code.
+    /// <br />
     /// This dictionary will be used as the value of the <strong>"@attributes"</strong> blazor directive when rendering the root element of the component.
     /// <br />
     /// If an attribute in the dictionary matches a property already set by the component, the value in the
     /// dictionary may override the default.
     /// </remarks>
-    [Parameter] public Dictionary<string, object> HtmlAttributes { get; set; } = [];
+    [Parameter]
+    public Dictionary<string, object> HtmlAttributes
+    {
+        get => _htmlAttributes;
+        set
+        {
+            // The component's own dictionary is cleared on every pass, so one handed to it is copied, never taken as it.
+            if (ReferenceEquals(value, _htmlAttributes)) return;
+
+            _htmlAttributes.Clear();
+
+            if (value is null) return;
+
+            foreach (var attribute in value)
+            {
+                _htmlAttributes[attribute.Key] = attribute.Value;
+            }
+        }
+    }
 
     /// <summary>
     /// Gets or sets the unique identifier for the component's root element.
@@ -179,7 +205,7 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     public override Task SetParametersAsync(ParameterView parameters)
     {
         _assignedParameters.Clear();
-        HtmlAttributes.Clear();
+        _htmlAttributes.Clear();
         var parametersDictionary = ParametersCache ?? new Dictionary<string, object?>(parameters.ToDictionary());
         foreach (var parameter in parametersDictionary!)
         {
@@ -231,6 +257,14 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
                     parametersDictionary.Remove(parameter.Key);
                     break;
 
+                // Merged into the splatted attributes once every other one is in, never taken as the dictionary
+                // itself: HtmlAttributes is cleared on every pass, which would empty the caller's own dictionary. Any
+                // other value under that name - a wrapper splatting one it captured - is an attribute like the rest.
+                case nameof(HtmlAttributes) when parameter.Value is null or IEnumerable<KeyValuePair<string, object>>:
+                    _htmlAttributesParameter = (IEnumerable<KeyValuePair<string, object>>?)parameter.Value;
+                    parametersDictionary.Remove(parameter.Key);
+                    break;
+
                 case nameof(Id):
                     _assignedParameters.Add(nameof(Id));
                     Id = (string?)parameter.Value;
@@ -266,6 +300,9 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
             }
         }
 
+        // A pass that leaves the parameter out keeps the dictionary passed before, as it keeps every other parameter.
+        AddMissingHtmlAttributes(_htmlAttributesParameter);
+
         ParametersCache = null;
 
         var restore = RestoreDroppedCascadeParameters();
@@ -278,6 +315,71 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
         await restore;
 
         await base.SetParametersAsync(ParameterView.Empty);
+    }
+
+    /// <summary>
+    /// Adds every attribute of the given set the component does not hold yet - the HtmlAttributes parameter, the set a
+    /// params object cascades - to its splatted attributes, which win over an entry of the same name however either of
+    /// them cases it: the render tree treats differently cased names as one attribute, so both would otherwise reach it
+    /// and the last one would win.
+    /// </summary>
+    internal void AddMissingHtmlAttributes(IEnumerable<KeyValuePair<string, object>>? attributes)
+    {
+        if (attributes is null) return;
+
+        foreach (var attribute in attributes)
+        {
+            if (TryFindAttribute(_htmlAttributes, attribute.Key, out _)) continue;
+
+            _htmlAttributes[attribute.Key] = attribute.Value;
+        }
+    }
+
+    /// <summary>
+    /// The attributes a component splats on one of its parts: its own, plus every cascaded one it holds under no casing
+    /// of the name. The own dictionary is handed back as it is when nothing is added and copied otherwise, so neither
+    /// of the two is ever changed.
+    /// </summary>
+    private protected static Dictionary<string, object>? MergeAttributes(Dictionary<string, object>? own,
+                                                                        IEnumerable<KeyValuePair<string, object>>? cascaded)
+    {
+        if (cascaded is null) return own;
+
+        Dictionary<string, object>? merged = null;
+
+        foreach (var attribute in cascaded)
+        {
+            if (TryFindAttribute(own, attribute.Key, out _)) continue;
+
+            merged ??= own is null ? [] : new(own);
+            merged[attribute.Key] = attribute.Value;
+        }
+
+        return merged ?? own;
+    }
+
+    /// <summary>
+    /// Looks an attribute up by its name the way the render tree matches names, case insensitively, taking the last of
+    /// several differently cased spellings as the render tree does - an exact match included. The one definition of
+    /// what makes two attribute names the same name, for every set of attributes a component splats.
+    /// </summary>
+    private protected static bool TryFindAttribute(IEnumerable<KeyValuePair<string, object>>? attributes, string name, out object? value)
+    {
+        value = null;
+
+        if (attributes is null) return false;
+
+        var found = false;
+
+        foreach (var attribute in attributes)
+        {
+            if (string.Equals(attribute.Key, name, StringComparison.OrdinalIgnoreCase) is false) continue;
+
+            value = attribute.Value;
+            found = true;
+        }
+
+        return found;
     }
 
 
@@ -463,22 +565,7 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     {
         value = null;
 
-        if (HtmlAttributes.Count == 0) return false;
-
-        // The render tree keeps the last of several differently cased spellings, so the last one in render order wins
-        // here too, an exact match included.
-        var found = false;
-        object? selected = null;
-
-        foreach (var attribute in HtmlAttributes)
-        {
-            if (string.Equals(attribute.Key, name, StringComparison.OrdinalIgnoreCase) is false) continue;
-
-            selected = attribute.Value;
-            found = true;
-        }
-
-        if (found is false) return false;
+        if (TryFindAttribute(_htmlAttributes, name, out var selected) is false) return false;
 
         value = StringifyAttributeValue(selected);
         return true;
@@ -492,6 +579,83 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     /// removes it, so the parameter is resolved against what the page wrote by hand rather than written over it.
     /// </remarks>
     private protected string? ResolveAriaLabel() => AriaLabel ?? GetSplattedAttribute("aria-label");
+
+    /// <summary>
+    /// The events an element is activated through: by the pointer, by touch, by the keyboard, and by the click an
+    /// assistive technology dispatches. The ones that only follow the pointer or the focus around (a hover, a focus)
+    /// are not among them.
+    /// </summary>
+    /// <remarks>
+    /// Matched without regard to case, the way the renderer matches an attribute name, and frozen so the list every
+    /// disabled component filters by cannot be changed under it.
+    /// </remarks>
+    private protected static readonly FrozenSet<string> ActivationEvents = new[]
+    {
+        "onclick", "ondblclick", "onauxclick", "oncontextmenu",
+        "onmousedown", "onmouseup", "onpointerdown", "onpointerup",
+        "ontouchstart", "ontouchend",
+        "onkeydown", "onkeyup", "onkeypress"
+    }.ToFrozenSet(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// The attributes the page splatted on the component, less the handlers of the <see cref="ActivationEvents"/>
+    /// while the component is <see cref="Disabled"/>. A component whose disabled state makes it unavailable splats its
+    /// root with this rather than with <see cref="HtmlAttributes"/>. One whose disabled state also follows another
+    /// component's (a tab of a disabled pivot) says so through <see cref="IsActivationDisabled"/>.
+    /// </summary>
+    /// <remarks>
+    /// The pointer-events a disabled class turns off are only one of the ways an event reaches an element: a screen
+    /// reader activates what it announces by dispatching a click on it, and an event of an enabled control inside a
+    /// disabled container - a click, a key, a press - bubbles up to it. A form element the browser disables is out of
+    /// reach of the pointer and the keyboard both, so a disabled component drops the page's handlers of the events
+    /// that activate an element rather than run them for a state it announces as unavailable. A component whose
+    /// disabled state only switches one of its behaviours off while the content it hosts stays live (a badge on a
+    /// button, a tooltip on its anchor, a pane) keeps splatting <see cref="HtmlAttributes"/>, since what bubbles up
+    /// to it there is an enabled control's own event.
+    /// </remarks>
+    private protected Dictionary<string, object> DisabledAwareHtmlAttributes
+    {
+        get
+        {
+            if (IsActivationDisabled is false || HtmlAttributes.Count == 0) return HtmlAttributes;
+
+            // Read again on every render rather than cached: a component may replace a value of its own HtmlAttributes
+            // in place between two renders (BitSlider's aria-label, a BitParams ancestor's attributes), which leaves
+            // the dictionary and its count unchanged, and a copy kept from before would render the stale value.
+            return LeaveActivationHandlersOut(HtmlAttributes);
+        }
+    }
+
+    /// <summary>
+    /// Whether the component is unavailable to the page's activation handlers (see <see cref="DisabledAwareHtmlAttributes"/>).
+    /// It is <see cref="Disabled"/> unless the component's disabled state also follows another one's.
+    /// </summary>
+    private protected virtual bool IsActivationDisabled => Disabled;
+
+    // The dictionary itself while it holds no handler of an activation event, so the common case allocates nothing.
+    private static Dictionary<string, object> LeaveActivationHandlersOut(Dictionary<string, object> htmlAttributes)
+    {
+        var hasActivationEvent = false;
+        foreach (var name in htmlAttributes.Keys)
+        {
+            if (ActivationEvents.Contains(name) is false) continue;
+
+            hasActivationEvent = true;
+            break;
+        }
+
+        if (hasActivationEvent is false) return htmlAttributes;
+
+        Dictionary<string, object> attributes = new(htmlAttributes.Count);
+        foreach (var attribute in htmlAttributes)
+        {
+            if (ActivationEvents.Contains(attribute.Key)) continue;
+
+            attributes.Add(attribute.Key, attribute.Value);
+        }
+
+        return attributes;
+    }
 
     // A boolean is the one attribute value the renderer does not write as its text: an attribute is written with no
     // value at all while it is true and left out altogether while it is false, which is what an attribute splatted

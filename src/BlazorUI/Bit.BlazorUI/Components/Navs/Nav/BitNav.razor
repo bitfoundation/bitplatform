@@ -2,7 +2,7 @@
 @inherits BitComponentBase
 @typeparam TItem
 
-<nav @ref="RootElement" @attributes="HtmlAttributes"
+<nav @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      aria-label="@ResolveAriaLabel()"
      style="@StyleBuilder.Value"

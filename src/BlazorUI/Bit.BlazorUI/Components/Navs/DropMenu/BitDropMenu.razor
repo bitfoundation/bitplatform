@@ -4,7 +4,7 @@
 @{
     var descriptionId = AriaDescription.HasValue() ? $"{_Id}-dsc" : null;
 }
-<div @ref="RootElement" @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      @onmouseenter="HandleOnMouseEnter"
      @onmouseleave="HandleOnMouseLeave"
      id="@_Id"

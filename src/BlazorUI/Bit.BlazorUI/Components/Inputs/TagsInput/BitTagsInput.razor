@@ -76,7 +76,7 @@
     var reorderIcon = AllowReorder ? BitIconInfo.From(ReorderIcon, ReorderIconName ?? "GripperBarVertical") : null;
 }
 
-<div @ref="RootElement" @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"

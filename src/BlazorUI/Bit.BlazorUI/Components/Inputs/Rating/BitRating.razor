@@ -35,7 +35,7 @@
    is ever rendered: the visible label names the group when there is one, the explicit strings when not.
    OnFocusIn and OnFocusOut are raised from Ratings.setup rather than from @onfocusin and @onfocusout, which
    would also report every move of the focus from one item to the next. *@
-<div @ref="RootElement" @attributes="HtmlAttributes"
+<div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
      @onkeydown="HandleOnKeyDown"
      id="@_Id"
      class="@ClassBuilder.Value"

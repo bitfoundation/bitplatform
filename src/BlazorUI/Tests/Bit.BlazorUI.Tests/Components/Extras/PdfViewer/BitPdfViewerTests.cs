@@ -2400,6 +2400,98 @@ public class BitPdfViewerTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitPdfViewerRootShouldClaimTheEscapeOnlyWhileTheShortcutListenerActsOnIt()
+    {
+        // The shortcut listener forwards an Escape from anywhere in the root without preventing its default, so the
+        // root carries data-bit-esc (Utils.claimEscape) while that press closes something - and only then: with
+        // nothing open, the key is left to a dialog around the viewer.
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        Assert.IsFalse(component.Find(".bit-pdv").HasAttribute("data-bit-esc"));
+
+        await component.InvokeAsync(() => component.Instance.OnShortcut("find"));
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-pdv-search-input").Count));
+        Assert.AreEqual("claim", component.Find(".bit-pdv").GetAttribute("data-bit-esc"));
+        Assert.AreEqual("claim", component.Find(".bit-pdv-search-input").GetAttribute("data-bit-esc"));
+
+        await component.InvokeAsync(() => component.Instance.OnShortcut("escape"));
+        Assert.IsFalse(component.Find(".bit-pdv").HasAttribute("data-bit-esc"));
+
+        await component.InvokeAsync(() => component.Instance.EnterPresentationMode());
+        component.WaitForAssertion(() => Assert.AreEqual("claim", component.Find(".bit-pdv").GetAttribute("data-bit-esc")));
+
+        await component.InvokeAsync(() => component.Instance.OnShortcut("escape"));
+        Assert.IsFalse(component.Instance.IsPresenting);
+        component.WaitForAssertion(() => Assert.IsFalse(component.Find(".bit-pdv").HasAttribute("data-bit-esc")));
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerShouldLeaveTheEscapeToItsOwnHandlersWithoutTheShortcutListener()
+    {
+        // With the shortcuts off nothing on the root acts on the key, so the root claims nothing - while the find box
+        // and the properties dialog, whose own handlers close them, still claim theirs.
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
+            parameters.Add(p => p.EnableKeyboardShortcuts, false);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+
+        await component.InvokeAsync(() => component.Instance.OnShortcut("find"));
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-pdv-search-input").Count));
+        Assert.AreEqual("claim", component.Find(".bit-pdv-search-input").GetAttribute("data-bit-esc"));
+        Assert.IsFalse(component.Find(".bit-pdv").HasAttribute("data-bit-esc"));
+
+        await component.InvokeAsync(() => component.Instance.ToggleProperties());
+        Assert.AreEqual("claim", component.Find("[role='dialog']").GetAttribute("data-bit-esc"));
+        Assert.IsFalse(component.Find(".bit-pdv").HasAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public async Task BitPdfViewerPropertiesDialogShouldClaimTheEscapeThatClosesIt()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+
+        await component.InvokeAsync(() => component.Instance.ToggleProperties());
+
+        var dialog = component.Find("[role='dialog']");
+        Assert.AreEqual("claim", dialog.GetAttribute("data-bit-esc"));
+        Assert.AreEqual("claim", component.Find(".bit-pdv").GetAttribute("data-bit-esc"));
+
+        dialog.KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count));
+    }
+
+    [TestMethod]
+    public void BitPdfViewerPasswordDialogShouldClaimTheEscapeThatCancelsIt()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.Encrypted("hunter2")));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, component.FindAll(".bit-pdv-password").Count));
+        Assert.AreEqual("claim", component.Find(".bit-pdv-password").GetAttribute("data-bit-esc"));
+
+        component.Find(".bit-pdv-password").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll(".bit-pdv-password").Count));
+        Assert.AreEqual(0, component.FindAll("[data-bit-esc]").Count);
+    }
+
+    [TestMethod]
     public async Task BitPdfViewerShouldReadAndClearTheReaderSelection()
     {
         var component = RenderComponent<BitPdfViewer>(parameters =>

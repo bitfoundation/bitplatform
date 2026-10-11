@@ -11,7 +11,7 @@
 
 @* stopping propagation on the root covers both the button click and the click a label forwards to it *@
 <div @ref="RootElement"
-     @attributes="HtmlAttributes"
+     @attributes="DisabledAwareHtmlAttributes"
      @onclick:stopPropagation="StopPropagation"
      id="@_Id"
      style="@StyleBuilder.Value"

@@ -70,6 +70,62 @@ components' markup, defaults and accessibility behaviour as well.
 - **`Bit.BlazorUI.Extras` is the composition layer**: its components are built out of core ones (BitMessageBox
   renders a BitTextField), which is exactly what keeps the core ones from having to be.
 
+## One Escape does one thing
+
+A field inside a dialog clears on Escape, and the dialog waits for the next press. Whoever acts on the key
+claims it by preventing its default, and every surface that closes on Escape (BitDialog, BitModal, BitPanel,
+the callouts, BitTooltip, BitMessage - the listeners in `Scripts/Utils.ts`) leaves a claimed key alone.
+
+- **A component that acts on Escape in .NET says so in its markup.** A Blazor `@onkeydown:preventDefault`
+  holds for every key, and the handler runs too late for any listener to read its answer, so the component
+  renders `data-bit-esc="claim"` on the element its `@onkeydown` listens on (or `"text"`: it acts while the
+  input it is on holds text). `Utils.claimEscape` reads it on the window in the capture phase, ahead of every
+  surface, and prevents the default. The value comes from one `EscapeClaim` member computed from the very state
+  the handler decides on, so the key is claimed exactly when the press does something and left to the surface
+  around the component otherwise (an empty field, a one-way binding, a closed list, a modified Escape).
+  `BitEscapeClaimContractTests` pins the values and the surfaces; each component's tests pin its states.
+- **A popup opened through `Callouts` needs no claim.** The surfaces ask `Callouts.componentContains` whether
+  the key was pressed in a component whose popup is open, and leave it to that component - and so does
+  `claimEscape`, so a claiming root around it (a NavPanel drawer, a dialog of the Extras) does not take the
+  key away from it either. A shown tooltip is the same: `claimEscape` stops at its anchor, the way it stops at
+  the nearest surface, so a claim outside the anchor never takes the tooltip's Escape.
+- **One shared watch per claiming root.** A component whose own .NET keydown on its root acts on the key it
+  claims there hears the presses a part inside it claimed first, too; it tells them apart through
+  `BitEscapeClaimWatch` (`Utils.watchEscapeClaim`), never a copy of it.
+- **Nothing guesses from what the target looks like.** No selector of inputs, roles or `aria-expanded`
+  decides who owns the key; a component the claim and the open popup do not cover is fixed by claiming,
+  never by teaching a surface a new selector. A consumer's own control opts in the same way.
+
+## A disabled component runs none of the page's activation handlers
+
+`pointer-events: none` is not a disable: a screen reader activates what it announces by dispatching a
+`click`, which ignores it, and a click or key of an enabled control inside a disabled component bubbles
+up to its root. A natively disabled form control runs none of these, so a component whose `Disabled`
+makes it unavailable splats its root with **`@attributes="DisabledAwareHtmlAttributes"`**, never
+`HtmlAttributes`: while disabled it drops the page's handlers of the events an element is activated
+through (`BitComponentBase.ActivationEvents` - click, dblclick, auxclick, contextmenu, mouse/pointer
+down and up, touchstart/end, key down/up/press) and keeps the ones that only follow the pointer or the
+focus (a hover, a focus). `BitElement` splats the same dictionary in its builder. A part whose disabled
+state also follows another component's (a `BitPivotItem` of a disabled `BitPivot`) overrides
+`IsActivationDisabled`, never filters by hand.
+
+- **Its own handlers still guard `Disabled` in C#**, a group's handler checking the group's `Disabled`
+  as well as the item's (`BitButtonGroup.HandleOnItemClick`): a key press, a screen reader or a script
+  still delivers a click to a button that `DisabledInteractive` / `AllowDisabledFocus` keeps out of the
+  `disabled` attribute, and to every link.
+- **Not covered**: a component whose `Disabled` only switches one behaviour off while the content it
+  hosts stays live - `BitBadge` on its host, `BitTooltip` and `BitCallout` on their anchor,
+  `BitAccordion` / `BitAccordionList` (the panel stays live), `BitCarousel` / `BitSwiper` (the slides),
+  `BitPivot` (the open tab's panel - its tabs are covered), `BitMap` (the overlay), a pane, panel,
+  dialog (`BitMessageBox`, `BitNavPanel`) or layout - keeps `HtmlAttributes`, since what bubbles up to
+  it there is an enabled control's own event. The test is whether page content inside the root is still
+  usable while disabled: `BitCard`'s `pointer-events: none` on its whole root, `BitNavBar`'s on its header
+  and footer, the `BitDataGrid`'s disabled controls and the `BitPdfViewer`'s `inert` regions say it is
+  not, so those are covered.
+- `BitDisabledActivationContractTests` renders every component that uses it with splatted handlers,
+  disabled and enabled, and with an enabled control in its content, and every content host keeping
+  them; a new one goes in one of its lists.
+
 ## Demo pages
 
 A component's demo page is
@@ -349,6 +405,29 @@ restyle `.bit-<cmp>-*` from a preset is the signal that a design-system decision
 global token tier: add the token, let the component read it, and keep the preset a pure
 `:root[bit-theme="..."]` block.
 
+**A family alias a theme declares is declared again for an inline overlay, from the same mixin.** A
+`BitThemeProvider` / `ApplyBitThemeAsync` writes only the primitives it was given, plus a
+`bit-theme-overlay` attribute naming the alias groups those feed (`BitThemeMapper.FamilyAliasOverlayGroups`:
+`radius`, `radius-control`, `shadow`, `tooltip`, `foreground`, the eight roles); every theme stylesheet
+re-declares its OWN aliases of each group on that element through the `theme-overlay($group, $names)` mixin
+of `Styles/theme-overlay.scss`, so the aliases follow the overlay as the active theme builds them - never the
+core default under a preset that decided otherwise. So a group's declarations live in one mixin per theme
+(`material-shadow-aliases`, `fluent-dark-shadow-aliases`, ...), included by the theme's main block and by its
+overlay rule; a family alias added to a theme block without the overlay rule fails
+`BitThemeFamilyAliasReSubstitutionTests` against the compiled bundles. A group's mixin carries every alias
+any theme re-declares for that group, literals included, and the core one in `family-tokens.scss` carries
+them all: the bare-`:root` document theme's overlay rule also matches inside a scoped region of another theme,
+where only the core rule's scoped twins outrank it, so an alias the core rule leaves out carries the document
+theme's recipe into the region (the same test fails on one). Every NAMED selector of the mixin - the document's
+`:root[bit-theme="x"]` one and the scoped twins - also steps aside for any region of another theme nearer to the
+overlay (`theme-overlay-nearest`, a `:where(:not(...))` of zero specificity), so nested regions hand an overlay
+the NEAREST region's recipe rather than the later bundle's or the heavier selector's. A
+new input a theme builds an alias from is a new entry in the group table - in C# and in its twin
+`FAMILY_ALIAS_OVERLAY_GROUPS` in `BitTheme.ts`, from which the client's `applyTheme` derives the attribute
+itself (the tests pin the two to each other, and every token an overlay rule reads to the inputs of its
+groups) - and a new group is a row in that table, a rule in `family-tokens.scss` and a rule per theme that
+decides it.
+
 A component's own `--bit-<Component>-*` properties (the public surface its demo page documents as
 `componentCssVariables`) are read off its root **with a fallback and never declared**, so they
 inherit. A component whose popup is rendered outside that root - a callout, a menu, a panel - renders
@@ -471,7 +550,7 @@ Adding a preset means touching all of: its `Styles/<Name>/` folder and bundle en
 `BitExtraThemeRegistration` (the surfaces), `BitThemeSwitcher.DefaultDesignSystems`, the tests' `SourceFiles.ExtrasPresetFolders`
 and the palette/derivation test `DataRow`s, the demo host pages
 (`Demo/Bit.BlazorUI.Demo.Server/Components/App.razor`, the MAUI `index.html`), `ScssCompilerService`,
-and the ThemingPage docs.
+its `theme-overlay` rules for every family alias group it declares, and the ThemingPage docs.
 
 Adding a global token means touching all of: `theme-variables.scss` (the `$` alias), a
 `Styles/Fluent/*.scss` default (or `family-tokens.scss` for an alias), the `BitTheme` model class,

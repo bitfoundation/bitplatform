@@ -456,7 +456,7 @@ public partial class DemoPage
             Name = "HtmlAttributes",
             Type = "Dictionary<string, object>",
             DefaultValue = "new Dictionary<string, object>()",
-            Description = "Captures additional HTML attributes to be applied to the rendered element, in addition to the component's parameters.",
+            Description = "Captures additional HTML attributes to be applied to the rendered element, in addition to the component's parameters. An attribute written on the component wins over an entry of the same name.",
         },
         new()
         {

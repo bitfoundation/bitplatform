@@ -70,7 +70,7 @@
 
 @if (Href.HasNoValue())
 {
-    <button @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick" @onclick:stopPropagation="StopPropagation"
+    <button @ref="RootElement" @attributes="DisabledAwareHtmlAttributes" @onclick="HandleOnClick" @onclick:stopPropagation="StopPropagation"
             @onclick:preventDefault="suppressDefault"
             id="@_Id"
             style="@StyleBuilder.Value"
@@ -94,7 +94,7 @@
 }
 else
 {
-    <a @ref="RootElement" @attributes="HtmlAttributes" @onclick="HandleOnClick" @onclick:stopPropagation="StopPropagation"
+    <a @ref="RootElement" @attributes="DisabledAwareHtmlAttributes" @onclick="HandleOnClick" @onclick:stopPropagation="StopPropagation"
        @onclick:preventDefault="suppressDefault"
        id="@_Id"
        rel="@_rel"

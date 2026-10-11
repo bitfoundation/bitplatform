@@ -2469,7 +2469,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// </summary>
     private async Task HandlePopupKeyDown(KeyboardEventArgs e)
     {
-        if (e.Key != "Escape") return;
+        // Only the plain key, the one the popup claims: an Escape with a modifier is the surrounding surface's.
+        if (e.IsPlainEscape() is false) return;
         await ClosePopup(restoreFocus: true);
     }
 

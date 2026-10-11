@@ -49,6 +49,9 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     private BitNav<TItem>? _bitNavRef;
     private BitSearchBox? _searchBoxRef;
     private IList<TItem> _filteredNavItems = [];
+    // Which Escapes a part of the panel claimed first (see _OnEscapeVerdict), for the key handler. Made on first use,
+    // so a panel disposed before it rendered never starts watching.
+    private BitEscapeClaimWatch<BitNavPanel<TItem>>? _escapeWatch;
 
 
 
@@ -658,6 +661,21 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
 
 
+    /// <summary>
+    /// Sent by the browser as each Escape goes down inside the panel while its root claims the key, ahead of the
+    /// keydown Blazor then dispatches, with whether a part of the panel claimed it first - the search box emptying its
+    /// own text - so the key handler that runs next leaves that press alone.
+    /// <br />
+    /// <strong>This method is intended for internal use and should not be called directly.</strong>
+    /// </summary>
+    [JSInvokable("OnEscapeVerdict")]
+    public void _OnEscapeVerdict(bool foreign)
+    {
+        EscapeWatch.SetVerdict(foreign);
+    }
+
+
+
     protected override string RootElementClass => "bit-npn";
 
     protected override void RegisterCssClasses()
@@ -775,6 +793,13 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
         // is the one that had it on the way in, which is no longer true once the panel has taken it.
         await UpdateModalState();
 
+        if (firstRender && IsDisposed is false)
+        {
+            // The root hears every key pressed inside the panel, so the browser tells it which Escapes a part of it
+            // claimed first (see _OnEscapeVerdict, Utils.watchEscapeClaim).
+            await EscapeWatch.WatchAsync(RootElement);
+        }
+
         // The search box only exists once the panel has left its toggled state, so the focus is moved in the
         // render that brought it back rather than after a guessed delay.
         if (_focusSearchBoxPending && _searchBoxRef is not null)
@@ -868,7 +893,14 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
         if (Disabled) return;
-        if (e.Key is not "Escape") return;
+        // Only the plain key, the one the root claims (_EscapeClaim): an Escape with a modifier is left to the
+        // surface the panel sits in, and neither empties the search nor closes the drawer.
+        if (e.IsPlainEscape() is false) return;
+
+        // One Escape does one thing: a press a part of the panel claimed first (the search box, emptying its own
+        // text) is that part's, so it neither empties the search a second time nor closes the drawer as well. The
+        // verdict is read once, so it never outlives the press it was given for.
+        if (EscapeWatch.TakeForeign()) return;
 
         // The first Escape empties an active search - which is what the search box does on its own when the
         // focus is in it, and what the key is expected to do from anywhere else in the panel - and only the
@@ -879,15 +911,23 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
             return;
         }
 
-        if (IsOpen is false) return;
-
-        // Only the drawer of a small screen is dismissed by the key: the column of a wide one is not a surface
-        // over the page, and closing it there would flip the open state - and report it - with nothing on
-        // screen to show for it.
-        if (_isDrawer is false) return;
+        if (_ClosesOnEscape is false) return;
 
         await ClosePanel();
     }
+
+    // Whether an Escape with no search to empty closes the panel, read by HandleOnKeyDown and _EscapeClaim alike.
+    // Only the open drawer of a small screen is dismissed by the key: the column of a wide one is not a surface
+    // over the page, and closing it there would flip the open state - and report it - with nothing on screen to
+    // show for it.
+    private bool _ClosesOnEscape => IsOpen && _isDrawer;
+
+    // When HandleOnKeyDown acts on Escape, written onto the root for Utils.claimEscape: read off the same state it
+    // decides on - an active search, which the press empties, or else the open drawer, which it closes - so a
+    // surface the panel sits in (a dialog, a BitPanel) closes on neither press. The root hears every key pressed
+    // inside the panel; a part of it that acts on the key itself (the search box, emptying its own text) claims
+    // it first. A column with no search to empty leaves the key alone.
+    private string? _EscapeClaim => Disabled is false && (_searchText.HasValue() || _ClosesOnEscape) ? "claim" : null;
 
     // The attributes of the root element: the ones the caller passed, plus the listeners of the panel itself.
     // Those are added to the splatted set rather than written out beside it in the markup, where an attribute
@@ -1226,6 +1266,8 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
         }
     }
 
+    private BitEscapeClaimWatch<BitNavPanel<TItem>> EscapeWatch => _escapeWatch ??= new(_js, this);
+
     private async Task SetupFocusTrap()
     {
         if (NoFocusTrap || _focusTrapped || IsDisposed || IsRendered is false) return;
@@ -1338,6 +1380,9 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
+
+        // Disposed even when it never started, so a first render still on its way does not start it afterwards.
+        await EscapeWatch.DisposeAsync();
 
         await base.DisposeAsync(disposing);
     }

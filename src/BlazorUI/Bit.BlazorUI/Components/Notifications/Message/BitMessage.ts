@@ -29,40 +29,6 @@
             delete Message._observers[id];
             observer.dispose();
         }
-
-        private static _escapes: Record<string, AbortController> = {};
-
-        // Tells a message that dismisses itself on Escape, through its OnEscapeVerdict callback, whether the Escape
-        // its keydown handler is about to hear is its own: the one its root claimed (Utils.claimEscape), rather than
-        // one a component inside it acted on (a field clearing itself) or one pressed in a surface rendered inside it
-        // (a modal), which Blazor's dispatch bubbles up to the root all the same. A press with a modifier or during an
-        // IME composition is claimed by nobody, so it is not the message's either. The listener is on the root, so
-        // it runs before Blazor's document-level delegation, and the answer is queued ahead of the keydown Blazor
-        // dispatches right after it. It only answers while the root claims the key at all (data-bit-esc).
-        public static watchEscape(id: string, root: HTMLElement, dotnetObj: DotNetObject) {
-            if (!root || !(root instanceof Element)) return;
-
-            Message.unwatchEscape(id);
-
-            const controller = new AbortController();
-
-            root.addEventListener('keydown', e => {
-                if (e.key !== 'Escape' || !root.hasAttribute('data-bit-esc')) return;
-
-                dotnetObj.invokeMethodAsync('OnEscapeVerdict', Utils.escapeClaimer(e) !== root)
-                         .catch(err => console.error("BitBlazorUI.Message.watchEscape:", err));
-            }, { signal: controller.signal });
-
-            Message._escapes[id] = controller;
-        }
-
-        public static unwatchEscape(id: string) {
-            const controller = Message._escapes[id];
-            if (!controller) return;
-
-            delete Message._escapes[id];
-            controller.abort();
-        }
     }
 
     class MessageOverflowObserver {

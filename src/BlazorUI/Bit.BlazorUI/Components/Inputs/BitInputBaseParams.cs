@@ -11,8 +11,8 @@
 /// <see cref="BitInputBase{TValue}.DefaultValue"/>, its <see cref="BitInputBase{TValue}.Name"/> and its
 /// <see cref="BitInputBase{TValue}.DisplayName"/> - is deliberately left out, since a value shared by every
 /// input under the cascade is never what a consumer means. So is
-/// <see cref="BitInputBase{TValue}.InputHtmlAttributes"/>, a dictionary the components write into, which they
-/// would end up sharing a single instance of, and <see cref="BitInputBase{TValue}.NoValidate"/>, which is read
+/// <see cref="BitInputBase{TValue}.InputHtmlAttributes"/>, the attributes of one field's own input element -
+/// its id, the ids its aria-describedby points at - and <see cref="BitInputBase{TValue}.NoValidate"/>, which is read
 /// while the parameters are still being set and so before a cascade has been applied.
 /// </remarks>
 public abstract class BitInputBaseParams<TValue> : BitComponentBaseParams
