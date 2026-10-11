@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// swiper and one set on the Style of an instance re-skins that one alone:
+// swiper and one set on the Style of an instance re-skins that one and the swipers nested in it:
 //   --bit-Swiper-gap                         space between the items                        (default: 0, the Gap parameter wins)
 //   --bit-Swiper-peek                        room at both ends the neighboring items peek
 //                                            into                                           (default: 0, the Peek parameter wins)

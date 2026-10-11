@@ -2,7 +2,7 @@
 
 // Public CSS variables, read off the root with a fallback and never declared here, so they inherit: a value set
 // on :root re-skins every nav, one set on an ancestor every nav below it, and one on the Style of an instance
-// that nav alone:
+// that nav and the navs nested in it:
 //   --bit-Nav-color                  item text and chevron color                    (default: $clr-fg-pri)
 //   --bit-Nav-icon-color             item icon color                                (default: $clr-pri)
 //   --bit-Nav-description-color      item description color                         (default: $clr-fg-ter)

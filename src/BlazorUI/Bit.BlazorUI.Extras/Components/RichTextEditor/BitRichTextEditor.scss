@@ -1,8 +1,8 @@
 ﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
 
 // Public CSS variables, read with a fallback and never declared here, so a value set on :root (or on an
-// ancestor) re-tunes every editor under it and one set on the Style of an instance that one alone. The
-// floating parts (the selection toolbar, the slash and mention menus) are rendered inside the root, so they
+// ancestor) re-tunes every editor under it and one set on the Style of an instance that one and the editors nested in
+// it. The floating parts (the selection toolbar, the slash and mention menus) are rendered inside the root, so they
 // inherit them too:
 //   --bit-RichTextEditor-color                     text of the editor                              (default: $clr-fg-pri)
 //   --bit-RichTextEditor-background                background of the editor                        (default: $clr-bg-pri)

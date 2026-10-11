@@ -2,10 +2,11 @@
 @import "../../../Styles/media-queries.scss";
 
 // Public CSS variables, read off the elements and never declared here, so a value set on :root re-skins every
-// drop menu and one set on the Style of an instance re-skins that one alone. The callout and the overlay are
-// rendered outside the root element and relocated to the body while open, and Callouts.ts carries what the root
-// and its ancestors declare (a variable set on an ancestor or through its class, in Style, Styles.Root or
-// Styles.Opened) into them, so they reach them like any inherited value; Styles.Callout still wins on the callout.
+// drop menu and one set on the Style of an instance re-skins that one and the drop menus nested in it. The
+// callout and the overlay are rendered outside the root element and relocated to the body while open, and
+// Callouts.ts carries what the root and its ancestors declare (a variable set on an ancestor or through its
+// class, in Style, Styles.Root or Styles.Opened) into them, so they reach them like any inherited value;
+// Styles.Callout still wins on the callout.
 //   --bit-DropMenu-color                     text and icon color of the button at rest   (default: $clr-fg-pri)
 //   --bit-DropMenu-background                background of the button at rest           (default: $clr-bg-pri, transparent for
 //                                                                                         Outline, Text and Transparent)

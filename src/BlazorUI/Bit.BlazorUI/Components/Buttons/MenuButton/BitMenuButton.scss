@@ -20,10 +20,10 @@ $mnb-private-properties: clr, clr-txt, clr-hover, clr-active, clr-dark, clr-dark
 
 // Public CSS variables, read off the elements and never declared here, so a value set on :root re-skins every
 // menu button and one set on the Style of an instance (or through Styles.Root, or on Styles.Callout for the
-// callout half alone) re-skins that one alone. The callout is rendered beside the root element and relocated to
-// the body while it is open; Callouts.ts carries what the root and its ancestors declare into it, so the callout
-// and item groups read a variable set on an ancestor or through its class, in Style or in Styles.Root like any
-// inherited value.
+// callout half alone) re-skins that one and the menu buttons nested in it. The callout is rendered beside the root
+// element and relocated to the body while it is open; Callouts.ts carries what the root and its ancestors declare into
+// it, so the callout and item groups read a variable set on an ancestor or through its class, in Style or in
+// Styles.Root like any inherited value.
 //   --bit-MenuButton-color                     text and icon color at rest                     (default: per variant, $clr-pri-text or $clr-pri)
 //   --bit-MenuButton-background                background of the button at rest                (default: per variant, $clr-pri or transparent)
 //   --bit-MenuButton-border-color              border color of the button                      (default: the background, or transparent)

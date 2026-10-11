@@ -1,7 +1,7 @@
 ﻿@import "../../../Styles/functions.scss";
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// choice group and one set on the Style of an instance re-skins that one alone:
+// choice group and one set on the Style of an instance re-skins that one and the choice groups nested in it:
 //   --bit-ChoiceGroup-color                      accent of the checked state: the radio ring and dot,
 //                                                and the border of a checked card              (default: $clr-pri)
 //   --bit-ChoiceGroup-hover-color                accent while hovered                          (default: $clr-pri-hover)

@@ -14,7 +14,7 @@ $crd-pad: var(--bit-crd-pad, var(--bit-Card-padding, #{$spa-card-md}));
 $crd-gap: var(--bit-crd-gap, var(--bit-Card-gap, #{spacing(1.5)}));
 
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
-// card and one set on the Style of an instance re-skins that one alone:
+// card and one set on the Style of an instance re-skins that one and the cards nested in it:
 //   --bit-Card-color                 text color                                     (default: $clr-fg-pri)
 //   --bit-Card-background            background                                     (default: $clr-bg-sec)
 //   --bit-Card-border-color          border color                                   (default: $clr-brd-pri)
