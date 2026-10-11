@@ -57,6 +57,18 @@ public static class BitThemeAttributeNames
     /// </summary>
     public const string ThemeColorVariable = "--bit-clr-bg-pri";
 
+    /// <summary>
+    /// Marker attribute on the element of an inline theme overlay - a <see cref="BitThemeProvider"/>
+    /// wrapper, or <see cref="BitThemeManager.ApplyBitThemeAsync"/>'s target - naming, space-separated,
+    /// the groups of family aliases whose inputs the overlay re-values (<c>radius</c>, <c>radius-control</c>,
+    /// <c>shadow</c>, <c>tooltip</c>, <c>foreground</c> and the eight roles <c>pri</c> ... <c>err</c>). Every
+    /// theme stylesheet re-declares its own aliases for each named group on that element, so they follow
+    /// the overlay's values as that theme builds them (<c>Styles/theme-overlay.scss</c>). Written by the
+    /// library; a preset of an app's own selects it (<c>[bit-theme-overlay~="shadow"]</c>) to re-declare a
+    /// family alias it decides differently from the core stylesheet.
+    /// </summary>
+    public const string ThemeOverlay = "bit-theme-overlay";
+
     /// <summary><c>localStorage</c> key used by the client script when persistence is enabled.</summary>
     public const string ThemeStorageKey = "bit-current-theme";
 }

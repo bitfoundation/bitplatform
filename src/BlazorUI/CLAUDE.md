@@ -379,6 +379,29 @@ restyle `.bit-<cmp>-*` from a preset is the signal that a design-system decision
 global token tier: add the token, let the component read it, and keep the preset a pure
 `:root[bit-theme="..."]` block.
 
+**A family alias a theme declares is declared again for an inline overlay, from the same mixin.** A
+`BitThemeProvider` / `ApplyBitThemeAsync` writes only the primitives it was given, plus a
+`bit-theme-overlay` attribute naming the alias groups those feed (`BitThemeMapper.FamilyAliasOverlayGroups`:
+`radius`, `radius-control`, `shadow`, `tooltip`, `foreground`, the eight roles); every theme stylesheet
+re-declares its OWN aliases of each group on that element through the `theme-overlay($group, $names)` mixin
+of `Styles/theme-overlay.scss`, so the aliases follow the overlay as the active theme builds them - never the
+core default under a preset that decided otherwise. So a group's declarations live in one mixin per theme
+(`material-shadow-aliases`, `fluent-dark-shadow-aliases`, ...), included by the theme's main block and by its
+overlay rule; a family alias added to a theme block without the overlay rule fails
+`BitThemeFamilyAliasReSubstitutionTests` against the compiled bundles. A group's mixin carries every alias
+any theme re-declares for that group, literals included, and the core one in `family-tokens.scss` carries
+them all: the bare-`:root` document theme's overlay rule also matches inside a scoped region of another theme,
+where only the core rule's scoped twins outrank it, so an alias the core rule leaves out carries the document
+theme's recipe into the region (the same test fails on one). Every NAMED selector of the mixin - the document's
+`:root[bit-theme="x"]` one and the scoped twins - also steps aside for any region of another theme nearer to the
+overlay (`theme-overlay-nearest`, a `:where(:not(...))` of zero specificity), so nested regions hand an overlay
+the NEAREST region's recipe rather than the later bundle's or the heavier selector's. A
+new input a theme builds an alias from is a new entry in the group table - in C# and in its twin
+`FAMILY_ALIAS_OVERLAY_GROUPS` in `BitTheme.ts`, from which the client's `applyTheme` derives the attribute
+itself (the tests pin the two to each other, and every token an overlay rule reads to the inputs of its
+groups) - and a new group is a row in that table, a rule in `family-tokens.scss` and a rule per theme that
+decides it.
+
 A component's own `--bit-<Component>-*` properties (the public surface its demo page documents as
 `componentCssVariables`) are read off its root **with a fallback and never declared**, so they
 inherit. A component whose popup is rendered outside that root - a callout, a menu, a panel - renders
@@ -501,7 +524,7 @@ Adding a preset means touching all of: its `Styles/<Name>/` folder and bundle en
 `BitExtraThemeRegistration` (the surfaces), `BitThemeSwitcher.DefaultDesignSystems`, the tests' `SourceFiles.ExtrasPresetFolders`
 and the palette/derivation test `DataRow`s, the demo host pages
 (`Demo/Bit.BlazorUI.Demo.Server/Components/App.razor`, the MAUI `index.html`), `ScssCompilerService`,
-and the ThemingPage docs.
+its `theme-overlay` rules for every family alias group it declares, and the ThemingPage docs.
 
 Adding a global token means touching all of: `theme-variables.scss` (the `$` alias), a
 `Styles/Fluent/*.scss` default (or `family-tokens.scss` for an alias), the `BitTheme` model class,
