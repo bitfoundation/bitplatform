@@ -31,10 +31,10 @@ public class BitReducedMotionBrowserTests : PerformanceTestBase
     private const double Collapsed = 1;
 
     private const string RestoreTokensAtRoot = @":root {
-        --bit-mot-duration: var(--bit-mot-duration-full, 200ms);
-        --bit-mot-duration-short: var(--bit-mot-duration-short-full, 100ms);
-        --bit-mot-duration-long: var(--bit-mot-duration-long-full, 300ms);
-        --bit-mot-duration-factor: var(--bit-mot-duration-factor-full, 1);
+        --bit-mot-duration-reduced: initial;
+        --bit-mot-duration-short-reduced: initial;
+        --bit-mot-duration-long-reduced: initial;
+        --bit-mot-duration-factor-reduced: initial;
     }";
 
     private static readonly string[] Probes =

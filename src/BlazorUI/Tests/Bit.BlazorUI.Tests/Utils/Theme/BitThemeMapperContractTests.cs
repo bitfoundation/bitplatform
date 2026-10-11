@@ -26,8 +26,43 @@ public sealed class BitThemeMapperContractTests
 
         var mapped = BitThemeUtilities.ToCssVariables(theme);
 
-        var missing = expectedKeys.Where(k => !mapped.ContainsKey(k)).ToArray();
+        // A plain motion token is an alias of its unreduced -full token, which the reduced-motion query collapses and
+        // ForceAnimation restores, so BitTheme sets it through the -full one it aliases and never itself.
+        var missing = expectedKeys.Where(k => !mapped.ContainsKey(k) && !(k.StartsWith("--bit-mot-", StringComparison.Ordinal) && mapped.ContainsKey($"{k}-full"))).ToArray();
         CollectionAssert.AreEqual(Array.Empty<string>(), missing, $"Mapper missing keys referenced in theme-variables.scss: {string.Join(", ", missing)}");
+    }
+
+    [TestMethod]
+    public void ThemeMotionIsWrittenToTheUnreducedTokens()
+    {
+        // Written inline, a plain duration would outrank the prefers-reduced-motion query that collapses it, and inside
+        // a ForceAnimation subtree .bit-fam would restore it to the -full token the theme never set. The mapper writes
+        // the -full tokens, as a preset does, and leaves the plain aliases to the stylesheets.
+        var theme = new BitTheme();
+        theme.Motion.Duration = "250ms";
+        theme.Motion.DurationShort = "120ms";
+        theme.Motion.DurationLong = "400ms";
+        theme.Motion.DurationFactor = "0.5";
+        theme.Motion.DurationSpinner = "2s";
+        theme.Motion.EasingSpinner = "linear";
+        theme.Motion.LoopFactor = "2";
+
+        var mapped = BitThemeUtilities.ToCssVariables(theme);
+
+        Assert.AreEqual("250ms", mapped[BitCss.Var.Motion.DurationFull]);
+        Assert.AreEqual("120ms", mapped[BitCss.Var.Motion.DurationShortFull]);
+        Assert.AreEqual("400ms", mapped[BitCss.Var.Motion.DurationLongFull]);
+        Assert.AreEqual("0.5", mapped[BitCss.Var.Motion.DurationFactorFull]);
+        Assert.AreEqual("2s", mapped[BitCss.Var.Motion.DurationSpinnerFull]);
+        Assert.AreEqual("linear", mapped[BitCss.Var.Motion.EasingSpinnerFull]);
+        Assert.AreEqual("2", mapped[BitCss.Var.Motion.LoopFactorFull]);
+
+        foreach (var plain in new[] { BitCss.Var.Motion.Duration, BitCss.Var.Motion.DurationShort, BitCss.Var.Motion.DurationLong,
+                                      BitCss.Var.Motion.DurationFactor,
+                                      BitCss.Var.Motion.DurationSpinner, BitCss.Var.Motion.EasingSpinner, BitCss.Var.Motion.LoopFactor })
+        {
+            Assert.IsFalse(mapped.ContainsKey(plain), $"{plain} is an alias the reduced-motion query collapses; the theme must not set it.");
+        }
     }
 
     [TestMethod]

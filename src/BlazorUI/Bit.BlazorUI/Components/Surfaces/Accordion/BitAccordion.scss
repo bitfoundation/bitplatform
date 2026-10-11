@@ -88,7 +88,7 @@ $acd-private-properties:
     // token is substituted where it is declared (on :root) and inherited as that value, so a -full duration set on
     // the accordion itself or on any ancestor short of a theme scope would never reach it. The shared factor still
     // collapses it under reduced motion, as it does a duration set inline.
-    --bit-acd-dur-full: var(--bit-mot-duration-long-full, #{$mot-duration-long});
+    --bit-acd-dur-full: #{$mot-duration-long-full};
     --bit-acd-dur: #{mot-scaled-duration(var(--bit-acd-dur-full))};
 
     // Every rule that reaches from the root into a part of the accordion is chained down through the header line
