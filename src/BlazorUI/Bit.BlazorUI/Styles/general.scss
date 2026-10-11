@@ -46,6 +46,9 @@ button {
     --bit-mot-duration: var(--bit-mot-duration-full, 200ms);
     --bit-mot-duration-short: var(--bit-mot-duration-short-full, 100ms);
     --bit-mot-duration-long: var(--bit-mot-duration-long-full, 300ms);
+    // Which is what restores a duration the page set on a component as well: every one of them is
+    // scaled by this factor (mot-scaled-duration), so none needs a restore of its own.
+    --bit-mot-duration-factor: var(--bit-mot-duration-factor-full, 1);
 
     // The looping tokens slow down rather than collapse under reduced motion, but they are restored
     // here the same way, so a spinner inside a ForceAnimation subtree turns at full speed again.

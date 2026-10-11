@@ -99,9 +99,10 @@ public partial class BitImageStylesheetTests
     [TestMethod]
     public void BitImageShouldLeaveReducedMotionToTheMotionTokens()
     {
-        // The fade reads the theme's motion token like every other component, so the library-wide mechanism -
-        // the tokens collapsing under the preference, .bit-fam and an app's :root restoring them - is the only
-        // one: the image keeps no reduced motion query, and no ForceAnimation restore, of its own.
+        // The fade reads the theme's motion token like every other component, and a pace set through the public
+        // variable is scaled by the shared motion factor, so the library-wide mechanism - the tokens collapsing
+        // under the preference, .bit-fam and an app's :root restoring them - is the only one: the image keeps no
+        // reduced motion query, and no ForceAnimation restore, of its own.
         var stylesheet = ReadStylesheet();
 
         Assert.AreEqual(2, Regex.Matches(stylesheet, Regex.Escape(FadeDuration)).Count);
@@ -203,7 +204,7 @@ public partial class BitImageStylesheetTests
         StringAssert.Contains(stylesheet, "@supports selector(:has(a)) {\n        .bit-img-img:focus-visible {\n            outline: none;");
     }
 
-    private const string FadeDuration = "animation-duration: var(--bit-Image-fade-duration, #{$mot-duration-long});";
+    private const string FadeDuration = "animation-duration: mot-scaled-duration(var(--bit-Image-fade-duration, #{$mot-duration-long}));";
 
     private static string[] DocumentedVariables(string stylesheet)
     {

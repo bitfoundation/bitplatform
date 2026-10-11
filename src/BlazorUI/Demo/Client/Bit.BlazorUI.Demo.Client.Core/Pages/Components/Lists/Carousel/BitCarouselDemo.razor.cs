@@ -18,7 +18,7 @@ public partial class BitCarouselDemo
             Name = "AnimationDuration",
             Type = "double",
             DefaultValue = "0.5",
-            Description = "Sets the duration of the scrolling animation in seconds (the default value is 0.5)."
+            Description = "Sets the duration of the scrolling animation in seconds (the default value is 0.5). Reduced motion collapses it unless ForceAnimation is set."
         },
         new()
         {

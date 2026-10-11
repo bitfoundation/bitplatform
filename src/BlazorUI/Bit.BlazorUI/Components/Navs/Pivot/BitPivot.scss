@@ -925,8 +925,12 @@ $pvt-private-properties:
             display: none;
         }
 
+        // The force-animation class opts a whole SUBTREE out of the preference, so a pivot carrying it, or sitting
+        // in a subtree that does, keeps its smooth scrolling - the way every other animated component treats it.
         @media (prefers-reduced-motion: reduce) {
-            scroll-behavior: auto;
+            &:not(.bit-fam):not(.bit-fam *) {
+                scroll-behavior: auto;
+            }
         }
     }
 

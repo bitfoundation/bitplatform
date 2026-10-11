@@ -35,7 +35,7 @@
 //   --bit-Chart-loading-color          the loading label                              (default: $clr-fg-sec)
 //   --bit-Chart-loading-spinner-color  the turning arc of the loading spinner         (default: $clr-pri)
 
-$cht-private-properties: dur, ease;
+$cht-private-properties: dur-full, ease;
 
 .bit-cht {
     // What the component writes into an inline style starts out unset on every root, so an instance nested in
@@ -403,9 +403,26 @@ $cht-private-properties: dur, ease;
     }
 }
 
+// The entry animations take their pace from the chart's own options, which arrive inline as private -full tokens:
+// the duration of the whole drawing on the SVG, and the pace and the wait of one element (a staggered bar, a point
+// a progressive line reaches) on that element. They are read through the shared motion scale, so the reduced
+// motion preference collapses them - every element then stands drawn in its final state at once - and
+// ForceAnimation, or an app restoring the motion tokens, brings them back, with no query of the chart's own.
+// The element's two are reset on every part that reads them, since an inline declaration is inherited by what is
+// inside the element; the declaration on the element itself still wins.
+$cht-el-private-properties: el-dur-full, el-del-full;
+
+.bit-cht-anim,
+.bit-cht-el-anim {
+    @each $name in $cht-el-private-properties {
+        --bit-cht-#{$name}: initial;
+    }
+}
+
 .bit-cht-anim {
     animation-fill-mode: both;
-    animation-duration: var(--bit-cht-dur, 600ms);
+    animation-duration: mot-scaled-duration(var(--bit-cht-el-dur-full, var(--bit-cht-dur-full, 600ms)));
+    animation-delay: mot-scaled-delay(var(--bit-cht-el-del-full, 0ms));
     animation-timing-function: var(--bit-cht-ease, #{$mot-easing-decelerate});
 }
 
@@ -436,7 +453,8 @@ $cht-private-properties: dur, ease;
 .bit-cht-el-anim {
     transform-box: fill-box;
     animation-fill-mode: both;
-    animation-duration: var(--bit-cht-dur, 600ms);
+    animation-duration: mot-scaled-duration(var(--bit-cht-el-dur-full, var(--bit-cht-dur-full, 600ms)));
+    animation-delay: mot-scaled-delay(var(--bit-cht-el-del-full, 0ms));
     animation-timing-function: var(--bit-cht-ease, #{$mot-easing-decelerate});
 }
 
@@ -447,11 +465,11 @@ $cht-private-properties: dur, ease;
 
 .bit-cht-draw {
     stroke-dasharray: 1;
-    animation: bit-cht-draw var(--bit-cht-dur, 600ms) var(--bit-cht-ease, #{$mot-easing-decelerate}) both;
+    animation: bit-cht-draw mot-scaled-duration(var(--bit-cht-dur-full, 600ms)) var(--bit-cht-ease, #{$mot-easing-decelerate}) both;
 }
 
 .bit-cht-fade {
-    animation: bit-cht-fade var(--bit-cht-dur, 600ms) var(--bit-cht-ease, #{$mot-easing-decelerate}) both;
+    animation: bit-cht-fade mot-scaled-duration(var(--bit-cht-dur-full, 600ms)) var(--bit-cht-ease, #{$mot-easing-decelerate}) both;
 }
 
 // The keyboard position: a dashed outline traced around the data element the arrow keys have reached, while the
@@ -462,19 +480,6 @@ $cht-private-properties: dur, ease;
 .bit-cht-focus-ring {
     stroke: var(--bit-cht-clr-focus, #{$clr-pri-focus});
     stroke-dasharray: 3 2;
-}
-
-// The entry animations take their duration from the chart's own options rather than from the
-// --bit-mot-duration* tokens, so they opt out of reduced motion here instead: the keyframes are taken
-// out and every element is left drawn in its final state. .bit-fam is the shared opt-out class
-// rendered by ForceAnimation, honored on an ancestor as well as on the chart itself, so opting a whole
-// subtree back in behaves the same here as it does for the token-driven animations.
-@media (prefers-reduced-motion: reduce) {
-    .bit-cht:not(.bit-fam):not(.bit-fam *) {
-        :is(.bit-cht-anim, .bit-cht-el-anim, .bit-cht-draw, .bit-cht-fade) {
-            animation: none;
-        }
-    }
 }
 
 // forced-colors: Windows High Contrast repaints every box out of the one system pair. The tooltip loses the

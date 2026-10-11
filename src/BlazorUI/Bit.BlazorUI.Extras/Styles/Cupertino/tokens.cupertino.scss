@@ -57,6 +57,14 @@ $cupertino-names: "cupertino", "cupertino-light", "cupertino-dark";
     --bit-shd-appbar-bottom: 0 -0.5px 0 rgba(255, 255, 255, 0.16);
 }
 
+@mixin cupertino-typography-aliases {
+    // An alert is titled in the 17px semibold headline: the body size, set semibold.
+    --bit-tpg-dialog-title-font-size: var(--bit-tpg-fs-md); //17px
+    --bit-tpg-dialog-title-font-weight: var(--bit-tpg-fw-semibold);
+    // The caption of a form row is set in the regular body weight; semibold is the headline's.
+    --bit-tpg-field-label-font-weight: var(--bit-tpg-fw-regular);
+}
+
 :root[bit-theme="cupertino"],
 :root [bit-theme="cupertino"],
 :root[bit-theme="cupertino-light"],
@@ -238,11 +246,8 @@ $cupertino-names: "cupertino", "cupertino-light", "cupertino-dark";
     // SF tracks its text sizes slightly tight; buttons are sentence-case, never uppercase.
     --bit-tpg-ctrl-letter-spacing: -0.024em;
     --bit-tpg-ctrl-text-transform: none;
-    // An alert is titled in the 17px semibold headline: the body size, set semibold.
-    --bit-tpg-dialog-title-font-size: var(--bit-tpg-fs-md); //17px
-    --bit-tpg-dialog-title-font-weight: var(--bit-tpg-fw-semibold);
-    // The caption of a form row is set in the regular body weight; semibold is the headline's.
-    --bit-tpg-field-label-font-weight: var(--bit-tpg-fw-regular);
+    // The dialog title and the field caption.
+    @include cupertino-typography-aliases;
     // BitText variants mapped onto the SF text styles. Unlike the Fluent and Material ramps these
     // do NOT step down below 600px, and the absence of an lt-sm block here is the decision rather
     // than an omission: the SF text styles ARE the phone sizes - iOS renders the same 34pt large
@@ -397,4 +402,10 @@ $cupertino-names: "cupertino", "cupertino-light", "cupertino-dark";
 // After the rule above, which it outranks on source order alone.
 @include theme-overlay("shadow", ("cupertino-dark",)) {
     @include cupertino-dark-shadow-aliases;
+}
+
+// The type aliases, on an overlay that re-values a ramp step: the core rule would put back the xl
+// step for the title and the semibold caption.
+@include theme-overlay("typography", $cupertino-names) {
+    @include cupertino-typography-aliases;
 }

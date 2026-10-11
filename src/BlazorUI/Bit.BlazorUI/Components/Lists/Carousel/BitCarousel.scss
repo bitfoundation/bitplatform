@@ -68,10 +68,11 @@ $csl-private-properties:
     --bit-csl-focus: var(--bit-csl-fcs, var(--bit-Carousel-focus-color));
 
     // The duration of the slide/fade of the pages. The AnimationDuration parameter arrives inline as
-    // the -full token and the transitions read this derived one, following the -full pattern of
-    // motion.fluent.scss, so the reduced-motion query below can still collapse a duration that was
-    // set inline. The fallback is the default of the parameter.
-    --bit-csl-dur: var(--bit-csl-dur-full, 0.5s);
+    // the -full token and the transitions read this derived one, which scales it by the shared motion
+    // factor, so the reduced motion preference still collapses a duration that was set inline - and
+    // ForceAnimation, or an app restoring the motion tokens, still brings it back - with no query of
+    // the carousel's own. The fallback is the default of the parameter.
+    --bit-csl-dur: #{mot-scaled-duration(var(--bit-csl-dur-full, 0.5s))};
 
     // The timing function of the slide and fade motion, read by the transitions the carousel writes inline.
     --bit-csl-ease: var(--bit-Carousel-easing, #{$mot-easing});
@@ -83,22 +84,6 @@ $csl-private-properties:
     &:focus-visible {
         @include focus-ring-own(var(--bit-csl-focus));
     }
-}
-
-// 0.01ms instead of 0ms for the same reason as in motion.fluent.scss: a zero-duration transition
-// never fires its transitionend event.
-@media (prefers-reduced-motion: reduce) {
-    .bit-csl {
-        --bit-csl-dur: 0.01ms;
-    }
-}
-
-// The shared .bit-fam opt-out (BitComponentBase.ForceAnimation) only re-points the --bit-mot-* tokens,
-// so the carousel's own token is restored here, both for a carousel that sets ForceAnimation itself
-// and for one sitting inside an opted-out subtree.
-.bit-csl.bit-fam,
-.bit-fam .bit-csl {
-    --bit-csl-dur: var(--bit-csl-dur-full, 0.5s);
 }
 
 .bit-crsi {

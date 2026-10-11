@@ -18,7 +18,7 @@ public partial class BitSwiperDemo
             Name = "AnimationDuration",
             Type = "double",
             DefaultValue = "0.5",
-            Description = "Sets the duration of the scrolling animation in seconds (the default value is 0.5). A value of 0 moves the items at once."
+            Description = "Sets the duration of the scrolling animation in seconds (the default value is 0.5). A value of 0 moves the items at once. Reduced motion collapses it unless ForceAnimation is set."
         },
         new()
         {

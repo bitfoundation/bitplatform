@@ -353,7 +353,7 @@ public partial class BitAccordionListDemo
             Name = "TransitionDuration",
             Type = "int?",
             DefaultValue = "null",
-            Description = "The duration of the expand/collapse transition of every item in milliseconds, overriding the duration the theme provides.",
+            Description = "The duration of the expand/collapse transition of every item in milliseconds, overriding the duration the theme provides. Reduced motion collapses it unless ForceAnimation is set.",
         },
         new()
         {

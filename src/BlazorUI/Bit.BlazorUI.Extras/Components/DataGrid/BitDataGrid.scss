@@ -705,7 +705,7 @@ button.bit-dtg-htext {
     // stops it outright the way BitTextShimmer does, leaving the static gradient. ForceAnimation
     // (bit-fam on the root, or on an ancestor) opts back in.
     @media (prefers-reduced-motion: reduce) {
-        &:not(.bit-fam *) {
+        &:not(.bit-fam):not(.bit-fam *) {
             animation: none;
         }
     }
