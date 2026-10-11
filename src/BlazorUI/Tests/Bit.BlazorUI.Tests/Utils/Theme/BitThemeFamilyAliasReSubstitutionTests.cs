@@ -349,12 +349,22 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
             ("the primary foreground", t => t.Color.Foreground.Primary = "#111111", "shadow tooltip foreground"),
             ("the warning role", t => t.Color.Warning.Main = "#FFB900", "wrn"),
             ("the primary role", t => t.Color.Primary.Main = "#0F6CBD", "pri"),
-            ("the semibold weight", t => t.Typography.FontWeights.SemiBold = "700", "typography"),
-            ("the regular weight", t => t.Typography.FontWeights.Regular = "300", "typography"),
+            // Every step of both ramps, not only the ones the packaged presets build the type aliases from: an
+            // app's own preset may title a dialog in the 3xl step or caption a field in the medium weight.
+            ("the 2xs font size", t => t.Typography.FontSize.Xxs = "0.5rem", "typography"),
+            ("the xs font size", t => t.Typography.FontSize.Xs = "0.6875rem", "typography"),
+            ("the sm font size", t => t.Typography.FontSize.Sm = "0.9375rem", "typography"),
             ("the md font size", t => t.Typography.FontSize.Md = "1.0625rem", "typography"),
             ("the lg font size", t => t.Typography.FontSize.Lg = "1.25rem", "typography"),
             ("the xl font size", t => t.Typography.FontSize.Xl = "1.5rem", "typography"),
             ("the 2xl font size", t => t.Typography.FontSize.Xxl = "1.75rem", "typography"),
+            ("the 3xl font size", t => t.Typography.FontSize.Xxxl = "2rem", "typography"),
+            ("the 4xl font size", t => t.Typography.FontSize.Xxxxl = "2.5rem", "typography"),
+            ("the light weight", t => t.Typography.FontWeights.Light = "200", "typography"),
+            ("the regular weight", t => t.Typography.FontWeights.Regular = "300", "typography"),
+            ("the medium weight", t => t.Typography.FontWeights.Medium = "550", "typography"),
+            ("the semibold weight", t => t.Typography.FontWeights.SemiBold = "700", "typography"),
+            ("the bold weight", t => t.Typography.FontWeights.Bold = "800", "typography"),
         };
 
         foreach (var (what, set, expected) in cases)
@@ -393,8 +403,8 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
     {
         var theme = new BitTheme();
         theme.Typography.FontFamily = "Georgia, serif";
-        theme.Typography.FontSize.Sm = "0.9375rem";
-        theme.Typography.FontWeights.Bold = "800";
+        theme.Typography.FontWeight = "500";
+        theme.Typography.LineHeight = "1.5rem";
         theme.Shape.Radius.Surface = "2rem";
 
         Assert.IsNull(RenderOverlay(theme));

@@ -506,7 +506,12 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
 
 /* the tooltip surface */
 --bit-clr-tooltip-bg       /* &rarr; var(--bit-clr-bg-sec) */
---bit-clr-tooltip-fg       /* &rarr; var(--bit-clr-fg-pri) */</CodeBox>
+--bit-clr-tooltip-fg       /* &rarr; var(--bit-clr-fg-pri) */
+
+/* the type of a dialog's title and a field's caption - each a step of the type ramps */
+--bit-tpg-dialog-title-font-size   /* &rarr; var(--bit-tpg-fs-xl) */
+--bit-tpg-dialog-title-font-weight /* &rarr; var(--bit-tpg-fw-semibold) */
+--bit-tpg-field-label-font-weight  /* &rarr; var(--bit-tpg-fw-semibold) */</CodeBox>
 
                 <BitText>
                     Under Fluent every family points at the same primitive, so overriding <code>--bit-shp-brd-radius</code> still re-rounds everything exactly as before - except the sheet radius, which stays square until a preset rounds the inner corners of its panels on purpose. The families exist for the design systems that disagree: Material rounds a button (pill), a chip (8px), a card (12px), a menu (4px) and a dialog (28px) differently and lifts a menu, a dialog and a snackbar to different elevation levels; Cupertino capsules its buttons and chips over 8px fields, and separates hairlines from shadows. Those become one token per family instead of a fork of the component CSS - exactly what the packaged Material and Cupertino presets do; see <i>Authoring your own preset</i> below. Themable from C# via <code>BitTheme.Shape.Radius.*</code> and <code>BitTheme.BoxShadow.{Card,Popup,Dialog,Sheet,Tooltip,Snackbar,AppBarTop,AppBarBottom}</code>.
@@ -522,6 +527,10 @@ await BitThemeManager.ApplyBitThemeAsync(theme);</CodeBox>
 
                 <BitText>
                     The tooltip surface is the one popup whose fill design systems disagree on: Fluent lifts a light surface off the page with a shadow, Material paints its plain tooltip in the inverse surface and casts none. <code>--bit-clr-tooltip-bg</code> and <code>--bit-clr-tooltip-fg</code> carry that choice - the Material preset points them at <code>--bit-clr-fg-pri</code> / <code>--bit-clr-bg-pri</code>, Fluent 2 at the page surface - and are themable from C# via <code>BitTheme.Color.TooltipBackground</code> / <code>TooltipForeground</code>.
+                </BitText>
+
+                <BitText>
+                    The type aliases pick the step of the size and weight ramps a design system titles a dialog and captions a form field in: Fabric's 20px semibold title and semibold caption by default, Material's 24px regular title and regular caption, Cupertino's 17px semibold headline. Aliases rather than values, so a theme that retunes a step of the ramp retunes the titles and captions built from it; themable from C# via <code>BitTheme.Typography.Dialog</code> / <code>FieldLabel</code>.
                 </BitText>
             </DocSection>
 
@@ -838,7 +847,7 @@ BitAccentColorPresets.Rose;    // #C239B3</CodeBox>
                 </BitText>
 
                 <BitText>
-                    <b>Re-declare your family aliases for an inline overlay.</b> A <code>BitThemeProvider</code>, or <code>ApplyBitThemeAsync</code> on an element, that re-values a primitive marks its element with <code>bit-theme-overlay</code>, naming the groups of family aliases built from what it re-valued: <code>radius</code> (the global radius: every per-family radius), <code>radius-control</code> (the control or full radius: the button, chip and selection radii), <code>shadow</code> (the callout shadow, the tertiary border, the border width or the primary foreground: the per-family elevations), <code>tooltip</code> (the primary or secondary background or the primary foreground: the tooltip's fill and text), <code>foreground</code> and <code>pri</code> ... <code>err</code> (the role foregrounds and tints), <code>typography</code> (the regular or semibold weight, or the md, lg, xl or 2xl font size: the dialog title's size and weight and the field caption's weight). The core stylesheet re-declares its defaults for each group there, which is what makes the aliases follow the overlay - so a preset that decides one of them differently re-declares its own value for that group on the same element, or an overlay puts the default back: a callout shadow under a flat tooltip, the field radius on a pill button. Three selectors per group, each one notch above the selector of your block it mirrors, which is how the packaged presets do it:
+                    <b>Re-declare your family aliases for an inline overlay.</b> A <code>BitThemeProvider</code>, or <code>ApplyBitThemeAsync</code> on an element, that re-values a primitive marks its element with <code>bit-theme-overlay</code>, naming the groups of family aliases built from what it re-valued: <code>radius</code> (the global radius: every per-family radius), <code>radius-control</code> (the control or full radius: the button, chip and selection radii), <code>shadow</code> (the callout shadow, the tertiary border, the border width or the primary foreground: the per-family elevations), <code>tooltip</code> (the primary or secondary background or the primary foreground: the tooltip's fill and text), <code>foreground</code> and <code>pri</code> ... <code>err</code> (the role foregrounds and tints), <code>typography</code> (any step of the font-size or font-weight ramp: the dialog title's size and weight and the field caption's weight). The core stylesheet re-declares its defaults for each group there, which is what makes the aliases follow the overlay - so a preset that decides one of them differently re-declares its own value for that group on the same element, or an overlay puts the default back: a callout shadow under a flat tooltip, the field radius on a pill button. Three selectors per group, each one notch above the selector of your block it mirrors, which is how the packaged presets do it:
                 </BitText>
 
                 <CodeBox Language="css">/* acme-material.css, after the main block: the aliases above, again for an overlay of what they are built from */
