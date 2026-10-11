@@ -9,7 +9,7 @@ namespace Bit.BlazorUI.Tests.Utils;
 /// <summary>
 /// Pins that the surfaces which close on Escape stop no key from bubbling on to the Blazor handlers of the page around
 /// them, so an app's keyboard shortcuts (Ctrl+S on a layout) keep working while one is open. Telling a nested surface's
-/// Escape from an outer one's own is done in the browser instead (Utils._claimedEscapes, read back by each surface's
+/// Escape from an outer one's own is done in the browser instead (Utils._escapeSurfaceOwners, read back by each surface's
 /// OnEscapeVerdict), which none of these renders runs; the component tests pin how each surface reads the verdict.
 /// </summary>
 [TestClass]

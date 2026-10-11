@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -1947,6 +1948,26 @@ public class BitModalTests : BunitTestContext
         com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
 
         Assert.AreEqual(1, outerEscapes);
+    }
+
+    // Nothing stops a key at the Modal, so until the script tells its handler which Escapes a surface nested in it
+    // answered, the handler would report theirs as its own: the watch goes first, ahead of every other round trip of
+    // the opening.
+    [TestMethod]
+    public void BitModalShouldWatchItsEscapesFirstWhenItOpens()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"].Count));
+
+        var order = Context.JSInterop.Invocations.Select(i => i.Identifier).ToList();
+        var watch = order.IndexOf("BitBlazorUI.Utils.watchEscape");
+
+        Assert.IsTrue(watch >= 0);
+        Assert.IsTrue(watch < order.IndexOf("BitBlazorUI.Utils.storeFocus"));
     }
 
     [TestMethod]

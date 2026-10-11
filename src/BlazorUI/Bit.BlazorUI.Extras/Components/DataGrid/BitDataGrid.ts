@@ -364,6 +364,14 @@
             };
         }
 
+        // Has the grid's cells, rows and headers told which keys were pressed inside a surface rendered in their
+        // content (see reportNestedSurfaceKey), which the cell key guard works out for every key it sees.
+        public static watchNestedSurfaceKeys(root: HTMLElement, dotNetRef: DotNetObject) {
+            if (!root) return;
+
+            nestedSurfaceKeyWatches.set(root, { dotNetRef, nested: false });
+        }
+
         // Measures an element's rendered width. Used when a column resize starts so the drag begins
         // from the column's real on-screen width even when its Width is expressed in %/fr units
         // (which .NET cannot resolve to pixels on its own).
@@ -677,6 +685,28 @@
         return true;
     }
 
+    // A dialog, a panel or a modal rendered in a cell's or a header's template - a confirmation, a lookup - is a surface
+    // of its own, and the keys pressed in it are its own and the page's: the surfaces stop no key, so the page's
+    // shortcuts keep working while one is open. The cell's, the row's and the header's .NET keydown handlers would
+    // hear them on the way out too, and cancel the edit on its Escape, delete the row on its Delete, move the focus
+    // out of it on its arrows. So the grids the key bubbles through are told whether it was pressed in such a surface
+    // ahead of the keydown Blazor dispatches - only when that changes, which a grid without a surface in it never sees
+    // - and their handlers leave it alone (BitDataGrid.KeyInNestedSurface). Each grid around the key is told on its own,
+    // as a grid in a dialog in another grid's cell is that surface's, not the outer grid's.
+    const nestedSurfaceKeyWatches = new WeakMap<HTMLElement, { dotNetRef: DotNetObject, nested: boolean }>();
+    function reportNestedSurfaceKey(target: HTMLElement): boolean {
+        let innermost: boolean | null = null;
+        for (let root = target.closest<HTMLElement>('.bit-dtg'); root; root = root.parentElement?.closest<HTMLElement>('.bit-dtg') ?? null) {
+            const nested = Utils.isInNestedSurface(target, root);
+            innermost ??= nested;
+            const watch = nestedSurfaceKeyWatches.get(root);
+            if (!watch || watch.nested === nested) continue;
+            watch.nested = nested;
+            watch.dotNetRef.invokeMethodAsync('OnNestedSurfaceKey', nested).catch(() => { });
+        }
+        return innermost === true;
+    }
+
     let cellKeyGuardInstalled = false;
     function installCellKeyGuard() {
         if (cellKeyGuardInstalled || typeof document === 'undefined') return;
@@ -684,6 +714,9 @@
         document.addEventListener('keydown', (e: KeyboardEvent) => {
             const target = e.target as HTMLElement | null;
             if (!target) return;
+
+            // A key pressed in a surface rendered in the grid's content is that surface's: nothing below applies to it.
+            if (target instanceof Element && reportNestedSurfaceKey(target)) return;
 
             // A self-managed interactive control (button/select/textarea/link/contenteditable) can be
             // focused *inside* a navigable or editing cell via a custom cell/edit template. The cell's

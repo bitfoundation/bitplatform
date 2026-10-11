@@ -3888,7 +3888,7 @@ public class BitSearchBoxTests : BunitTestContext
         component.WaitForAssertion(() =>
         {
             var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
-            Assert.AreEqual(rootId, toggle.Arguments[^1]);
+            Assert.AreEqual(rootId, toggle.Arguments[^2]);
         });
     }
 

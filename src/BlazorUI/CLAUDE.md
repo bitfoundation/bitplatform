@@ -94,9 +94,14 @@ the callouts, BitTooltip, BitMessage - the listeners in `Scripts/Utils.ts`) leav
   `BitEscapeClaimWatch` (`Utils.watchEscapeClaim`), never a copy of it.
 - **No surface stops a key.** BitDialog, BitModal, BitPanel and BitCallout put no `@onkeydown:stopPropagation` on
   their roots, so the page's own Blazor handlers around one (an app's Ctrl+S) keep hearing every key while it is
-  open. An outer surface tells a nested one's Escape from its own through `Utils._claimedEscapes` instead: each
-  surface adds the Escape pressed inside it as the key bubbles through its root, and the ones whose .NET handler
-  acts on Escape read that back through `OnEscapeVerdict` (`setupEscapeGuard`, `watchEscape`, `watchNestedEscape`).
+  open. An outer surface tells a nested one's Escape from its own through `Utils._escapeSurfaceOwners` instead: the
+  innermost surface records itself as the key bubbles through its root (`claimSurfaceEscape`), the outer ones read
+  that (`isNestedSurfaceEscape`), and the ones whose .NET handler acts on Escape are told through `OnEscapeVerdict`,
+  sent by the one `Utils.sendEscapeVerdicts` and taken once by a `BitEscapeVerdict` - never a copy of either. It
+  answers only the presses that are not the handler's own, and the one after them, so an own press costs no round
+  trip. What a watch registered after the render cannot cover - the press between a BitCallout's open render and the
+  round trip that registers its popup - is claimed from the render (`data-bit-esc` on its root). A component whose .NET keydown handlers hear every key of its content leaves the keys of a surface rendered
+  there alone through `Utils.isInNestedSurface` (BitDataGrid's cells, rows and headers, BitSwiper, BitCarousel).
   `BitSurfaceKeyPropagationContractTests` pins the keys reaching the page.
 - **Nothing guesses from what the target looks like.** No selector of inputs, roles or `aria-expanded`
   decides who owns the key; a component the claim and the open popup do not cover is fixed by claiming,

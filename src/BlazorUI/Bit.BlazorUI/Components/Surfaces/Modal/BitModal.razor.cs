@@ -60,7 +60,8 @@ public partial class BitModal : BitComponentBase
     private string? _dragElementSelectorOnSetup;
     private bool _dragSetup;
     private bool _escapeWatched;
-    private bool _nestedEscape;
+    // What the script answered for the Escape Blazor is about to hand the key handler (see _OnEscapeVerdict).
+    private readonly BitEscapeVerdict _escapeVerdict = new();
     private DotNetObjectReference<BitModal>? _dotnetObj;
 
     // Which of the two interchangeable "refused" animations the content is carrying, 0 for none. Two
@@ -907,12 +908,14 @@ public partial class BitModal : BitComponentBase
         // already stood down everything the steps below would otherwise go on to register.
         bool Overtaken() => _lifecycle != generation;
 
+        // The Escapes are watched first: nothing stops a key at the Modal, so until the script tells its handler
+        // which presses a surface nested in it answered (see _OnEscapeVerdict), the handler would report theirs too.
+        await WatchEscape();
+        if (Overtaken()) return;
+
         // The focus is recorded before anything is done with it, while it is still on whatever opened the
         // Modal: this is the element it goes back to once the Modal closes.
         await StoreFocus();
-        if (Overtaken()) return;
-
-        await WatchEscape();
         if (Overtaken()) return;
 
         await SetupFocusTrap();
@@ -1041,22 +1044,21 @@ public partial class BitModal : BitComponentBase
 
         // Taken before anything is decided, and whether or not the Modal goes on to report it, so the answer that
         // was sent for this key is the one read and is gone before the next one's comes in.
-        var nested = _nestedEscape;
-        _nestedEscape = false;
+        var nested = _escapeVerdict.Take();
 
         if (nested || _params.Disabled is true) return;
 
         await _params.OnEscapeKeyDown.InvokeAsync(e);
     }
 
-    // Sent by the script as each Escape goes down inside the Modal, ahead of the keydown Blazor then dispatches,
+    // Sent by the script as an Escape goes down inside the Modal, ahead of the keydown Blazor then dispatches,
     // saying whether it was pressed inside a surface nested in it that has spoken for it first (see
-    // Utils.watchNestedEscape). It is written for every Escape, so one that never reaches the handler leaves
-    // nothing behind that the next one could be mistaken for.
+    // Utils.watchEscape). Only those presses are answered, and the one after them, so one that never reaches the
+    // handler is overwritten before the next one is read (BitEscapeVerdict).
     [JSInvokable("OnEscapeVerdict")]
     public void _OnEscapeVerdict(bool nested)
     {
-        _nestedEscape = nested;
+        _escapeVerdict.Set(nested);
     }
 
     /// <summary>
@@ -1476,7 +1478,7 @@ public partial class BitModal : BitComponentBase
         if (_escapeWatched is false) return;
 
         _escapeWatched = false;
-        _nestedEscape = false;
+        _escapeVerdict.Reset();
 
         try
         {

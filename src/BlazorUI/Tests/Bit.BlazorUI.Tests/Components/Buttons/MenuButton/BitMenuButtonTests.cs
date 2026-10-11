@@ -1747,7 +1747,7 @@ public class BitMenuButtonTests : BunitTestContext
         // for what the root declares to go on reaching the callout once it is relocated to the body.
         var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
 
-        Assert.AreEqual(com.Find(".bit-mnb").Id, toggle.Arguments[^1]);
+        Assert.AreEqual(com.Find(".bit-mnb").Id, toggle.Arguments[^2]);
         Assert.IsFalse((com.Find(".bit-mnb-cal").GetAttribute("style") ?? "").Contains("--bit-MenuButton-"));
     }
 

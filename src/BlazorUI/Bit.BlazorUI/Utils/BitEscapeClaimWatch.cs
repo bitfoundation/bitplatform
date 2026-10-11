@@ -7,7 +7,8 @@ namespace Bit.BlazorUI;
 /// (data-bit-esc, see Utils.claimEscape): the handler hears every key pressed inside the root, the ones a part of it
 /// acted on and claimed first included, so the browser tells it which press is the root's own (Utils.watchEscapeClaim)
 /// through the owner's <c>OnEscapeVerdict</c> callback, which hands the answer to <see cref="SetVerdict"/>.
-/// The verdict is read once (<see cref="TakeForeign"/>), so it never outlives the press it was given for.
+/// The verdict is read once (<see cref="TakeForeign"/>, a <see cref="BitEscapeVerdict"/>), so it never outlives the
+/// press it was given for.
 /// </summary>
 internal sealed class BitEscapeClaimWatch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>
     : IAsyncDisposable where T : class
@@ -16,8 +17,9 @@ internal sealed class BitEscapeClaimWatch<[DynamicallyAccessedMembers(Dynamicall
     private readonly T _owner;
     private readonly string _id = $"bit-esc-{Guid.NewGuid():N}";
 
+    private readonly BitEscapeVerdict _verdict = new();
+
     private DotNetObjectReference<T>? _dotnetObj;
-    private bool _foreign;
     private bool _disposed;
 
     public BitEscapeClaimWatch(IJSRuntime js, T owner)
@@ -27,15 +29,10 @@ internal sealed class BitEscapeClaimWatch<[DynamicallyAccessedMembers(Dynamicall
     }
 
     /// <summary>What the browser answered for the Escape the owner's key handler is about to hear.</summary>
-    public void SetVerdict(bool foreign) => _foreign = foreign;
+    public void SetVerdict(bool foreign) => _verdict.Set(foreign);
 
     /// <summary>Whether the press the key handler is hearing was claimed by a part of the root first.</summary>
-    public bool TakeForeign()
-    {
-        var foreign = _foreign;
-        _foreign = false;
-        return foreign;
-    }
+    public bool TakeForeign() => _verdict.Take();
 
     /// <summary>Starts listening on the root. One disposed while it was being set up is never left registered.</summary>
     public async Task WatchAsync(ElementReference root)

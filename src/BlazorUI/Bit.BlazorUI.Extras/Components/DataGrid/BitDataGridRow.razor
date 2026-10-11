@@ -280,6 +280,8 @@
     private async Task HandleRowKeyDown(KeyboardEventArgs e)
     {
         if (!RowKeyboardToggle) return;
+        // A key pressed in a dialog, a panel or a modal of a cell's template is that surface's.
+        if (Grid.KeyInNestedSurface) return;
         if (e.Key != "Enter" && e.Key != " ") return;
         await Grid.HandleRowClickAsync(Item);
     }

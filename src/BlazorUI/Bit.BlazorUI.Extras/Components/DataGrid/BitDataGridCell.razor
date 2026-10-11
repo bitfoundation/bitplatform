@@ -78,6 +78,9 @@
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
     {
+        // A key pressed in a dialog, a panel or a modal of the cell's template is that surface's.
+        if (Grid.KeyInNestedSurface) return;
+
         if (!Grid.CellNavigationActive)
         {
             // Without cell navigation Escape is still the way out of the row's editors (CancelsEditOnEscape). There

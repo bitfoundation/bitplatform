@@ -175,6 +175,27 @@ public class BitCalloutTests : BunitTestContext
         Assert.AreEqual(true, Context.JSInterop.Invocations["BitBlazorUI.Utils.syncAriaPopup"][^1].Arguments[2]);
     }
 
+    // The root claims the Escape it closes an open callout on (Utils.claimEscape) from the render that opens it, ahead of
+    // the round trip that registers the popup with the JS side, so whatever the anchor sits in leaves that press alone.
+    [TestMethod,
+        DataRow(false, false, false, null),
+        DataRow(true, false, false, "claim"),
+        DataRow(true, true, false, null),
+        DataRow(true, false, true, null)
+    ]
+    public void BitCalloutShouldClaimTheEscapeExactlyWhileItClosesOnIt(bool open, bool noDismissOnEscape, bool disabled, string? claim)
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+            parameters.Add(p => p.IsOpen, open);
+            parameters.Add(p => p.NoDismissOnEscape, noDismissOnEscape);
+            parameters.Add(p => p.Disabled, disabled);
+        });
+
+        Assert.AreEqual(claim, component.Find(".bit-clo").GetAttribute("data-bit-esc"));
+    }
+
     [TestMethod]
     public void BitCalloutShouldNeverStopTheKeysOfItsAnchor()
     {
@@ -866,15 +887,19 @@ public class BitCalloutTests : BunitTestContext
 
         component.Find(".bit-clo-acn").Click();
 
-        var setup = Context.JSInterop.Invocations["BitBlazorUI.Callouts.setupKeyboard"][^1].Arguments;
+        // The watch rides on the open itself (Callouts.toggle), so it costs no round trip of its own, and goes with
+        // the close in the same way.
+        var open = Context.JSInterop.Invocations["BitBlazorUI.Callouts.toggle"][^1].Arguments;
 
-        Assert.AreEqual(component.Find(".bit-clo-cal").Id, setup[0]);
-        Assert.AreEqual(component.Find(".bit-clo").Id, setup[7]);
+        Assert.AreEqual(component.Find(".bit-clo-cal").Id, open[3]);
+        Assert.AreEqual(true, open[6]);
+        Assert.AreEqual(component.Find(".bit-clo").Id, open[^2]);
+        Assert.AreEqual(true, open[^1]);
 
         component.Find(".bit-clo-acn").Click();
 
         Assert.IsFalse(component.Instance.IsOpen);
-        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Callouts.disposeKeyboard"].Count);
+        Assert.AreEqual(false, Context.JSInterop.Invocations["BitBlazorUI.Callouts.toggle"][^1].Arguments[6]);
     }
 
     [TestMethod]
@@ -3034,7 +3059,7 @@ public class BitCalloutTests : BunitTestContext
         // what it declares, Styles.Opened included, to go on reaching the callout once it is relocated to the body.
         var toggle = Context.JSInterop.Invocations["BitBlazorUI.Callouts.toggle"][^1];
 
-        Assert.AreEqual(root.Id, toggle.Arguments[^1]);
+        Assert.AreEqual(root.Id, toggle.Arguments[^2]);
 
         component.Find(".bit-clo-ovl").Click();
 

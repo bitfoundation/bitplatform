@@ -632,6 +632,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     private DotNetObjectReference<BitDataGrid<TItem>>? _gridSelfRef;
     private IJSObjectReference? _pointerReorderHandle;
     private bool _pointerReorderAttached;
+    private bool _nestedSurfaceKeysWatched;
 
     // select-all indeterminate state ("some but not all selected") is a DOM property, not an HTML
     // attribute, so Blazor markup can't express it; it is synced via a small JS call after render.
@@ -2036,6 +2037,21 @@ public partial class BitDataGrid<TItem> : BitComponentBase
             catch (JSDisconnectedException) { }
         }
 
+        // The keys pressed in a surface rendered in a cell's or a header's template reach their handlers too, which the
+        // script tells apart for them (see KeyInNestedSurface).
+        if (!_nestedSurfaceKeysWatched)
+        {
+            _gridSelfRef ??= DotNetObjectReference.Create(this);
+            try
+            {
+                await JS.InvokeVoidAsync("BitBlazorUI.DataGrid.watchNestedSurfaceKeys", RootElement, _gridSelfRef);
+                // Only marked watched on success so a failed call retries on a later render.
+                _nestedSurfaceKeysWatched = true;
+            }
+            catch (JSException) { }
+            catch (JSDisconnectedException) { }
+        }
+
         if (!_stickyBandsAttached)
         {
             try
@@ -3059,6 +3075,17 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     // cancels its own edit, and any other cell the one that is open, so the key is the grid's while an edit is.
     internal bool CancelsEditOnEscape => _editItem is not null;
 
+    // Whether the key the cells, the rows and the headers are about to hear was pressed inside a surface rendered in
+    // their content - a dialog, a panel or a modal of a template - rather than in the grid itself. No surface stops a
+    // key, so the page's shortcuts keep working while one is open, and the grid's handlers hear its keys on their way
+    // out too; they leave them to it. The script reports it ahead of the keydown, whenever it changes.
+    internal bool KeyInNestedSurface { get; private set; }
+
+    /// <summary>Invoked from JavaScript ahead of a keydown when whether it was pressed inside a surface rendered in the
+    /// grid's content changes (see <c>KeyInNestedSurface</c>).</summary>
+    [JSInvokable]
+    public void OnNestedSurfaceKey(bool nested) => KeyInNestedSurface = nested;
+
     internal int EditVersion => _editVersion;
 
     /// <summary>The column of the cell open for editing in <see cref="BitDataGridEditMode.Cell"/> mode, or <c>null</c>.</summary>
@@ -3653,6 +3680,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     /// right-to-left grid, and keeps the focus on the moved header.</summary>
     internal async Task OnHeaderKeyDownAsync(BitDataGridColumn<TItem> column, KeyboardEventArgs e)
     {
+        if (KeyInNestedSurface) return;
         if (!e.CtrlKey || e.AltKey || e.MetaKey || e.ShiftKey) return;
         if (e.Key is not ("ArrowLeft" or "ArrowRight")) return;
         if (!ColumnReorderable(column)) return;

@@ -51,7 +51,7 @@ public partial class BitPanel : BitComponentBase
     private DotNetObjectReference<BitPanel>? _swipesDotnetObj;
     // What the escape guard answered for the Escape Blazor is about to hand the key handler (see
     // _OnEscapeVerdict), taken by the handler as it starts.
-    private bool _foreignEscape;
+    private readonly BitEscapeVerdict _escapeVerdict = new();
 
 
 
@@ -620,13 +620,13 @@ public partial class BitPanel : BitComponentBase
     }
 
     // Sent by the escape guard as each Escape goes down inside the panel, ahead of the keydown Blazor then
-    // dispatches, so the key handler that runs next reads the answer that was taken for its own key. It is
-    // written for every Escape, so one that never reaches the handler - a component in between stopped it -
-    // leaves nothing behind that the next one could be mistaken for.
+    // dispatches, so the key handler that runs next reads the answer that was taken for its own key. Only the
+    // presses that are not the panel's are answered, and the one after them, so one that never reaches the
+    // handler - a component in between stopped it - is overwritten before the next one is read (BitEscapeVerdict).
     [JSInvokable("OnEscapeVerdict")]
     public void _OnEscapeVerdict(bool foreign)
     {
-        _foreignEscape = foreign;
+        _escapeVerdict.Set(foreign);
     }
 
 
@@ -888,8 +888,7 @@ public partial class BitPanel : BitComponentBase
 
         // Taken before anything is awaited, and whether or not the panel goes on to act, so the answer that
         // was sent for this key is the one read and is gone before the next one's comes in.
-        var foreign = _foreignEscape;
-        _foreignEscape = false;
+        var foreign = _escapeVerdict.Take();
 
         if (IsOpen is false || Disabled) return;
 
