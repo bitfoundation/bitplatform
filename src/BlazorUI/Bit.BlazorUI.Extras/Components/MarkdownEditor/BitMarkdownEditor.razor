@@ -41,6 +41,7 @@
                     @* A menu holding the active command says so on its trigger, so the caret's
                        heading level can be read off the closed toolbar. *@
                     <div class="bit-mde-dd">
+                        @{ var itemDisabled = IsToolbarItemDisabled(item); }
                         <button type="button"
                                 style="@Styles?.ToolbarButton"
                                 class="bit-mde-btn @(item.Text is null ? null : "bit-mde-btx") @Classes?.ToolbarButton @(IsToolbarItemActive(item) ? "bit-mde-act" : null)"
@@ -52,7 +53,8 @@
                                 aria-controls="@GetMenuId(index)"
                                 data-cmd="@item.Name"
                                 tabindex="-1"
-                                disabled="@IsToolbarItemDisabled(item)">
+                                disabled="@itemDisabled"
+                                aria-disabled="@(itemDisabled ? "true" : null)">
                             @RenderItemContent(item)
                         </button>
                         <div id="@GetMenuId(index)" class="bit-mde-ddm" role="menu" aria-label="@GetToolbarItemLabel(item)">
@@ -69,6 +71,7 @@
                                     @* A menu item that reports a state is a radio: the heading picker's
                                        entries exclude one another, which "checked" says and "pressed"
                                        does not. Everything else is a plain command. *@
+                                    var childDisabled = IsToolbarItemDisabled(child);
                                     <button type="button"
                                             role="@(IsToolbarItemToggle(child) ? "menuitemradio" : "menuitem")"
                                             tabindex="-1"
@@ -79,7 +82,8 @@
                                             aria-checked="@(IsToolbarItemToggle(child) ? (IsToolbarItemActive(child) ? "true" : "false") : null)"
                                             data-cmd="@child.Name"
                                             data-bit-mde-upload="@(child.Type is BitMarkdownEditorToolbarItemType.ImageUpload ? "" : null)"
-                                            disabled="@IsToolbarItemDisabled(child)"
+                                            disabled="@childDisabled"
+                                            aria-disabled="@(childDisabled ? "true" : null)"
                                             @onclick="() => OnToolbarItemClick(child)">
                                         @RenderItemContent(child)
                                     </button>
@@ -90,6 +94,7 @@
                 }
                 else
                 {
+                    var itemDisabled = IsToolbarItemDisabled(item);
                     <button type="button"
                             style="@Styles?.ToolbarButton"
                             class="bit-mde-btn @(item.Text is null ? null : "bit-mde-btx") @Classes?.ToolbarButton @(IsToolbarItemActive(item) ? "bit-mde-act" : null)"
@@ -100,7 +105,8 @@
                             data-cmd="@item.Name"
                             data-bit-mde-upload="@(item.Type is BitMarkdownEditorToolbarItemType.ImageUpload ? "" : null)"
                             tabindex="-1"
-                            disabled="@IsToolbarItemDisabled(item)"
+                            disabled="@itemDisabled"
+                            aria-disabled="@(itemDisabled ? "true" : null)"
                             @onclick="() => OnToolbarItemClick(item)">
                         @RenderItemContent(item)
                     </button>
@@ -145,13 +151,15 @@
             <button type="button" class="bit-mde-fnb" title="@ActiveTexts.FindPreviousAriaLabel" aria-label="@ActiveTexts.FindPreviousAriaLabel" @onclick="FindPreviousMatch">&uarr;</button>
             <button type="button" class="bit-mde-fnb" title="@ActiveTexts.FindNextAriaLabel" aria-label="@ActiveTexts.FindNextAriaLabel" @onclick="FindNextMatch">&darr;</button>
             <span class="bit-mde-fns" aria-live="polite">@FindStatusText</span>
-            <button type="button" class="bit-mde-fnb" @onclick="ReplaceOne" disabled="@(ReadOnly || Disabled)">@ActiveTexts.ReplaceButton</button>
+            @{ var replaceDisabled = ReadOnly || Disabled; }
+            <button type="button" class="bit-mde-fnb" @onclick="ReplaceOne" disabled="@replaceDisabled" aria-disabled="@(replaceDisabled ? "true" : null)">@ActiveTexts.ReplaceButton</button>
             <button type="button"
                     class="bit-mde-fnb"
                     title="@ActiveTexts.ReplaceAllAriaLabel"
                     aria-label="@ActiveTexts.ReplaceAllAriaLabel"
                     @onclick="ReplaceAll"
-                    disabled="@(ReadOnly || Disabled)">@ActiveTexts.ReplaceAllButton</button>
+                    disabled="@replaceDisabled"
+                    aria-disabled="@(replaceDisabled ? "true" : null)">@ActiveTexts.ReplaceAllButton</button>
             <button type="button" class="bit-mde-hcl" @onclick="CloseFind" aria-label="@ActiveTexts.CloseAriaLabel">&times;</button>
         </div>
     }
@@ -180,6 +188,7 @@
                       spellcheck="@(SpellCheck ? "true" : "false")"
                       readonly="@(ReadOnly || Disabled)"
                       disabled="@(Disabled)"
+                      aria-disabled="@GetInputAriaDisabled(Disabled)"
                       required="@(Required && Mode is not BitMarkdownEditorMode.Preview)"
                       aria-required="@(Required ? "true" : null)"
                       data-bit-esc="@EscapeClaim"

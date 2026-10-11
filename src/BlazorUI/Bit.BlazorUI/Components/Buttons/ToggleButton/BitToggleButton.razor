@@ -28,6 +28,8 @@
     // activating it now does nothing. Reclickable is the loading state that still takes clicks, and it is left alone.
     var clickRefused = Disabled || (IsLoading && Reclickable is false);
     var ariaDisabled = clickRefused ? "true" : GetSplattedAttribute("aria-disabled");
+    // Out of reach natively unless AllowDisabledFocus keeps it in the tab order, where aria-disabled carries the state alone.
+    var nativeDisabled = Disabled && AllowDisabledFocus is false;
     var ariaControls = AriaControls ?? GetSplattedAttribute("aria-controls");
     var ariaLabelledBy = AriaLabelledBy ?? GetSplattedAttribute("aria-labelledby");
     // aria-describedby is a list of ids, so the author's are kept beside the component's rather than replaced by it.
@@ -93,7 +95,7 @@
         type="button"
         role="@role"
         title="@title"
-        disabled="@(Disabled && AllowDisabledFocus is false)"
+        disabled="@nativeDisabled"
         autofocus="@autoFocus"
         tabindex="@GetTabIndex(ariaHidden)"
         aria-label="@ariaLabel"

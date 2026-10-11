@@ -114,7 +114,8 @@
                    aria-label="@GetInputAriaLabel(index)"
                    aria-invalid="@GetAriaInvalid()"
                    tabindex="@GetTabIndex(index)"
-                   disabled="@(Disabled)" />
+                   disabled="@(Disabled)"
+                   aria-disabled="@GetInputAriaDisabled(Disabled)" />
         }
     </div>
 

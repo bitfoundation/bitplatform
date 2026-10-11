@@ -364,6 +364,11 @@ public partial class BitRichTextEditor : BitComponentBase
 
     private bool ControlsDisabled => EffectiveReadOnly || _inSourceView;
 
+    private bool UnlinkDisabled => ControlsDisabled || _state.InLink is false;
+
+    // The source toggle is the one control still live in the source view, which is how a read-only editor leaves it.
+    private bool SourceToggleDisabled => Disabled || (EffectiveReadOnly && _inSourceView is false);
+
     private string LabelId => $"{UniqueId}-label";
 
     private string ErrorMessageId => $"{UniqueId}-error-message";

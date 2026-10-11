@@ -18,6 +18,7 @@
                 type="button"
                 id="@_buttonId"
                 disabled="@(Disabled)"
+                aria-disabled="@(Disabled ? "true" : null)"
                 aria-label="@AriaLabel"
                 aria-describedby="@(_HasDescription ? _descriptionId : null)"
                 style="@Styles?.Label"
@@ -56,6 +57,7 @@
            multiple="@Multiple"
            webkitdirectory="@Directory"
            disabled="@(Disabled)"
+           aria-disabled="@(Disabled ? "true" : null)"
            aria-label="@AriaLabel"
            aria-labelledby="@(AriaLabel is null && _ShowLabelButton ? _buttonId : null)"
            aria-describedby="@(_HasDescription ? _descriptionId : null)"
@@ -105,7 +107,7 @@
                 <button @onclick="HandleUploadAll"
                         type="button"
                         disabled="@(Disabled)"
-                        aria-disabled="@(canUploadAll ? null : "true")"
+                        aria-disabled="@(Disabled || canUploadAll is false ? "true" : null)"
                         style="@Styles?.BatchActionButton"
                         class="bit-upl-bab @Classes?.BatchActionButton">
                     @UploadAllText
@@ -114,7 +116,7 @@
             <button @onclick="HandleCancelAll"
                     type="button"
                     disabled="@(Disabled)"
-                    aria-disabled="@(canCancelAll ? null : "true")"
+                    aria-disabled="@(Disabled || canCancelAll is false ? "true" : null)"
                     style="@Styles?.BatchActionButton"
                     class="bit-upl-bab @Classes?.BatchActionButton">
                 @CancelAllText
@@ -122,7 +124,7 @@
             <button @onclick="HandleClear"
                     type="button"
                     disabled="@(Disabled)"
-                    aria-disabled="@(canClear ? null : "true")"
+                    aria-disabled="@(Disabled || canClear is false ? "true" : null)"
                     style="@Styles?.BatchActionButton"
                     class="bit-upl-bab @Classes?.BatchActionButton">
                 @ClearText

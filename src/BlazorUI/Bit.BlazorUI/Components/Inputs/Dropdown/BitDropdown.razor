@@ -300,7 +300,8 @@
                        aria-controls="@(comboboxOnFieldInput && IsOpen ? _scrollContainerId : null)"
                        placeholder="@(_selectedItems.Count > 0 ? "" : Placeholder)"
                        autocomplete="@BitAutoCompleteValue.NewPassword"
-                       disabled="@(Disabled)" />
+                       disabled="@(Disabled)"
+                       aria-disabled="@(Disabled ? "true" : null)" />
             }
         </span>
 
@@ -358,7 +359,8 @@
             aria-hidden="true"
             class="bit-input-hidden"
             multiple="@MultiSelect"
-            disabled="@(Disabled)">
+            disabled="@(Disabled)"
+            aria-disabled="@GetInputAriaDisabled(Disabled)">
         @foreach (var item in _selectedItems)
         {
             <option value="@GetValue(item)" selected>@GetText(item)</option>
@@ -582,7 +584,8 @@
                    aria-controls="@(IsOpen ? _scrollContainerId : null)"
                    placeholder="@Placeholder"
                    autocomplete="@BitAutoCompleteValue.NewPassword"
-                   disabled="@(Disabled)" />
+                   disabled="@(Disabled)"
+                   aria-disabled="@(Disabled ? "true" : null)" />
 
             <button @onclick="HandleOnAddItemComboClick" @onclick:stopPropagation
                     type="button"
@@ -614,13 +617,15 @@
                 @* Reached with the arrow keys like the options below it, so it stays out of the tab order too.
                    It sits outside the listbox it commands, so nothing but its aria-controls says which
                    list it is the select all of. *@
+                @{ var selectAllDisabled = Disabled || ReadOnly; }
                 <button @onclick="HandleOnSelectAllClick"
                         type="button"
                         role="checkbox"
                         tabindex="-1"
                         style="@Styles?.SelectAllButton"
                         class="bit-drp-mcn bit-drp-sab @Classes?.SelectAllButton"
-                        disabled="@(Disabled || ReadOnly)"
+                        disabled="@selectAllDisabled"
+                        aria-disabled="@(selectAllDisabled ? "true" : null)"
                         aria-checked="@selectAllAriaChecked"
                         aria-controls="@_scrollContainerId">
                     <div style="@Styles?.SelectAllCheckBox"

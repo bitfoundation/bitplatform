@@ -32,6 +32,7 @@
                 type="button"
                 title="@item.Name"
                 disabled="@(Disabled)"
+                aria-disabled="@(Disabled ? "true" : null)"
                 bit-accent-swatch="@(tokenMarked ? token : null)"
                 class="@GetSwatchClass(isActive, classMarked)"
                 style="@GetSwatchStyle(item, isActive, classMarked)"

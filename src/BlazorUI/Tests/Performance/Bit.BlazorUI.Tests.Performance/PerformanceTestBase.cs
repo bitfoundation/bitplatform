@@ -16,6 +16,8 @@ namespace Bit.BlazorUI.Tests.Performance;
 /// The browser is picked from environment variables, which the Microsoft.Testing.Platform runner passes through
 /// where it does not pass runsettings: <c>BROWSER</c> (<c>chromium</c> by default, <c>edge</c>, <c>firefox</c> or
 /// <c>webkit</c>) and <c>HEADED=1</c> to watch the run.
+/// <c>TEST_HOST_URL</c> moves the test host off <c>http://localhost:5280</c>, for a machine where another checkout's
+/// host already holds that port - a host found answering there is reused rather than started.
 /// </remarks>
 public abstract class PerformanceTestBase
 {
@@ -30,7 +32,9 @@ public abstract class PerformanceTestBase
     private static IBrowser? _browser;
     private IBrowserContext? _context;
 
-    protected const string BaseUrl = "http://localhost:5280";
+    protected static readonly string BaseUrl = Environment.GetEnvironmentVariable("TEST_HOST_URL") is { Length: > 0 } url
+                                                    ? url.TrimEnd('/')
+                                                    : "http://localhost:5280";
     protected const int DefaultTimeout = 30000;
 
     protected IPage Page { get; private set; } = null!;

@@ -200,7 +200,8 @@
                         type="button"
                         tabindex="-1"
                         aria-label="@(ClearButtonAriaLabel ?? "Clear value")"
-                        disabled="@(Disabled)">
+                        disabled="@(Disabled)"
+                        aria-disabled="@(Disabled ? "true" : null)">
                     @if (ClearButtonTemplate is not null)
                     {
                         @ClearButtonTemplate

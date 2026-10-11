@@ -433,6 +433,7 @@
                   spellcheck="false"
                   readonly="@EffectiveReadOnly"
                   disabled="@(Disabled)"
+                  aria-disabled="@(Disabled ? "true" : null)"
                   value="@_sourceText" @oninput="OnSourceTextChanged"></textarea>
     }
 
@@ -501,14 +502,14 @@
     };
 
     private RenderFragment HistoryGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("undo", "Undo (Ctrl+Z)")" aria-label="@Loc("undo-label", "Undo")" aria-keyshortcuts="@ShortcutFor("undo")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("undo", "Undo (Ctrl+Z)")" aria-label="@Loc("undo-label", "Undo")" aria-keyshortcuts="@ShortcutFor("undo")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="UndoAsync">@BitRichTextEditorIcons.Undo</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("redo", "Redo (Ctrl+Y)")" aria-label="@Loc("redo-label", "Redo")" aria-keyshortcuts="@ShortcutFor("redo")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("redo", "Redo (Ctrl+Y)")" aria-label="@Loc("redo-label", "Redo")" aria-keyshortcuts="@ShortcutFor("redo")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="RedoAsync">@BitRichTextEditorIcons.Redo</button>
     </div>;
 
     private RenderFragment BlockFormatGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <select class="bit-rte-sel" title="@Loc("paragraph-format", "Paragraph format")" aria-label="@Loc("paragraph-format", "Paragraph format")" disabled="@ControlsDisabled"
+        <select class="bit-rte-sel" title="@Loc("paragraph-format", "Paragraph format")" aria-label="@Loc("paragraph-format", "Paragraph format")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 value="@SelectedBlockFormat" @onchange="OnBlockFormatChanged">
             <option value="p">@Loc("block-normal", "Normal")</option>
             <option value="h1">@Loc("heading-1", "Heading 1")</option>
@@ -523,7 +524,7 @@
     </div>;
 
     private RenderFragment FontGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <select class="bit-rte-sel" title="@Loc("font-family", "Font family")" aria-label="@Loc("font-family", "Font family")" disabled="@ControlsDisabled"
+        <select class="bit-rte-sel" title="@Loc("font-family", "Font family")" aria-label="@Loc("font-family", "Font family")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 value="@SelectedOption(_state.FontName, EffectiveFontFamilies)" @onchange="@(e => ApplyFontAsync("name", e))">
             <option value="">@Loc("font", "Font")</option>
             @foreach (var f in EffectiveFontFamilies)
@@ -531,7 +532,7 @@
                 <option value="@f">@f</option>
             }
         </select>
-        <select class="bit-rte-sel" title="@Loc("font-size", "Font size")" aria-label="@Loc("font-size", "Font size")" disabled="@ControlsDisabled"
+        <select class="bit-rte-sel" title="@Loc("font-size", "Font size")" aria-label="@Loc("font-size", "Font size")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 value="@SelectedOption(_state.FontSize, EffectiveFontSizes)" @onchange="@(e => ApplyFontAsync("size", e))">
             <option value="">@Loc("size", "Size")</option>
             @foreach (var s in EffectiveFontSizes)
@@ -542,15 +543,15 @@
     </div>;
 
     private RenderFragment InlineGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Bold ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("bold", "Bold (Ctrl+B)")" aria-label="@Loc("bold-label", "Bold")" aria-keyshortcuts="@ShortcutFor("bold")" aria-pressed="@(_state.Bold ? "true" : "false")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Bold ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("bold", "Bold (Ctrl+B)")" aria-label="@Loc("bold-label", "Bold")" aria-keyshortcuts="@ShortcutFor("bold")" aria-pressed="@(_state.Bold ? "true" : "false")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => ExecAsync("bold")'>@BitRichTextEditorIcons.Bold</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Italic ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("italic", "Italic (Ctrl+I)")" aria-label="@Loc("italic-label", "Italic")" aria-keyshortcuts="@ShortcutFor("italic")" aria-pressed="@(_state.Italic ? "true" : "false")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Italic ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("italic", "Italic (Ctrl+I)")" aria-label="@Loc("italic-label", "Italic")" aria-keyshortcuts="@ShortcutFor("italic")" aria-pressed="@(_state.Italic ? "true" : "false")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => ExecAsync("italic")'>@BitRichTextEditorIcons.Italic</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Underline ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("underline", "Underline (Ctrl+U)")" aria-label="@Loc("underline-label", "Underline")" aria-keyshortcuts="@ShortcutFor("underline")" aria-pressed="@(_state.Underline ? "true" : "false")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Underline ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("underline", "Underline (Ctrl+U)")" aria-label="@Loc("underline-label", "Underline")" aria-keyshortcuts="@ShortcutFor("underline")" aria-pressed="@(_state.Underline ? "true" : "false")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => ExecAsync("underline")'>@BitRichTextEditorIcons.Underline</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.StrikeThrough ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("strikethrough", "Strikethrough (Ctrl+Shift+X)")" aria-label="@Loc("strikethrough", "Strikethrough")" aria-keyshortcuts="@ShortcutFor("strikeThrough")" aria-pressed="@(_state.StrikeThrough ? "true" : "false")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.StrikeThrough ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("strikethrough", "Strikethrough (Ctrl+Shift+X)")" aria-label="@Loc("strikethrough", "Strikethrough")" aria-keyshortcuts="@ShortcutFor("strikeThrough")" aria-pressed="@(_state.StrikeThrough ? "true" : "false")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => ExecAsync("strikeThrough")'>@BitRichTextEditorIcons.Strikethrough</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.InlineCode ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("inline-code", "Inline code (Ctrl+E)")" aria-label="@Loc("inline-code-label", "Inline code")" aria-keyshortcuts="@ShortcutFor("inlineCode")" aria-pressed="@(_state.InlineCode ? "true" : "false")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.InlineCode ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("inline-code", "Inline code (Ctrl+E)")" aria-label="@Loc("inline-code-label", "Inline code")" aria-keyshortcuts="@ShortcutFor("inlineCode")" aria-pressed="@(_state.InlineCode ? "true" : "false")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => ExecAsync("inlineCode")'>@BitRichTextEditorIcons.InlineCode</button>
     </div>;
 
@@ -558,148 +559,148 @@
 
     // With a palette each color opens the panel of its swatches; the remove buttons stay beside them.
     private RenderFragment PaletteColorGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_showColor && _colorKind == "fore" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("text-color", "Text color")" aria-label="@Loc("text-color", "Text color")" aria-expanded="@(_showColor && _colorKind == "fore" ? "true" : "false")" aria-controls="@(_showColor && _colorKind == "fore" ? $"{UniqueId}-color-panel" : null)" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_showColor && _colorKind == "fore" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("text-color", "Text color")" aria-label="@Loc("text-color", "Text color")" aria-expanded="@(_showColor && _colorKind == "fore" ? "true" : "false")" aria-controls="@(_showColor && _colorKind == "fore" ? $"{UniqueId}-color-panel" : null)" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => ToggleColor("fore")'>@BitRichTextEditorIcons.TextColor</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("remove-text-color", "Remove text color")" aria-label="@Loc("remove-text-color", "Remove text color")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("remove-text-color", "Remove text color")" aria-label="@Loc("remove-text-color", "Remove text color")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => ClearColorAsync("fore")'>@BitRichTextEditorIcons.RemoveTextColor</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_showColor && _colorKind == "back" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("highlight-color", "Highlight color")" aria-label="@Loc("highlight-color", "Highlight color")" aria-expanded="@(_showColor && _colorKind == "back" ? "true" : "false")" aria-controls="@(_showColor && _colorKind == "back" ? $"{UniqueId}-color-panel" : null)" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_showColor && _colorKind == "back" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("highlight-color", "Highlight color")" aria-label="@Loc("highlight-color", "Highlight color")" aria-expanded="@(_showColor && _colorKind == "back" ? "true" : "false")" aria-controls="@(_showColor && _colorKind == "back" ? $"{UniqueId}-color-panel" : null)" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => ToggleColor("back")'>@BitRichTextEditorIcons.Highlight</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("remove-highlight", "Remove highlight")" aria-label="@Loc("remove-highlight", "Remove highlight")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("remove-highlight", "Remove highlight")" aria-label="@Loc("remove-highlight", "Remove highlight")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => ClearColorAsync("back")'>@BitRichTextEditorIcons.RemoveHighlight</button>
     </div>;
 
     private RenderFragment NativeColorGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
         <label class="bit-rte-color" title="@Loc("text-color", "Text color")">
             @BitRichTextEditorIcons.TextColor
-            <input type="color" aria-label="@Loc("text-color", "Text color")" disabled="@ControlsDisabled"
+            <input type="color" aria-label="@Loc("text-color", "Text color")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                    value="@(_state.ForeColor ?? "#000000")"
                    @onchange="@(e => ApplyColorAsync("fore", e))" />
         </label>
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("remove-text-color", "Remove text color")" aria-label="@Loc("remove-text-color", "Remove text color")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("remove-text-color", "Remove text color")" aria-label="@Loc("remove-text-color", "Remove text color")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => ClearColorAsync("fore")'>@BitRichTextEditorIcons.RemoveTextColor</button>
         <label class="bit-rte-color bit-rte-color-bg" title="@Loc("highlight-color", "Highlight color")">
             @BitRichTextEditorIcons.Highlight
-            <input type="color" aria-label="@Loc("highlight-color", "Highlight color")" disabled="@ControlsDisabled"
+            <input type="color" aria-label="@Loc("highlight-color", "Highlight color")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                    value="@(_state.BackColor ?? "#ffff00")"
                    @onchange="@(e => ApplyColorAsync("back", e))" />
         </label>
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("remove-highlight", "Remove highlight")" aria-label="@Loc("remove-highlight", "Remove highlight")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("remove-highlight", "Remove highlight")" aria-label="@Loc("remove-highlight", "Remove highlight")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => ClearColorAsync("back")'>@BitRichTextEditorIcons.RemoveHighlight</button>
     </div>;
 
     private RenderFragment ScriptGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Subscript ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("subscript", "Subscript")" aria-label="@Loc("subscript", "Subscript")" aria-pressed="@(_state.Subscript ? "true" : "false")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Subscript ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("subscript", "Subscript")" aria-label="@Loc("subscript", "Subscript")" aria-pressed="@(_state.Subscript ? "true" : "false")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="SubscriptAsync">@BitRichTextEditorIcons.Subscript</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Superscript ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("superscript", "Superscript")" aria-label="@Loc("superscript", "Superscript")" aria-pressed="@(_state.Superscript ? "true" : "false")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Superscript ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("superscript", "Superscript")" aria-label="@Loc("superscript", "Superscript")" aria-pressed="@(_state.Superscript ? "true" : "false")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="SuperscriptAsync">@BitRichTextEditorIcons.Superscript</button>
     </div>;
 
     private RenderFragment ListsGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.UnorderedList ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("bullet-list", "Bullet list (Ctrl+Shift+8)")" aria-label="@Loc("bullet-list", "Bullet list")" aria-keyshortcuts="@ShortcutFor("insertUnorderedList")" aria-pressed="@(_state.UnorderedList ? "true" : "false")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.UnorderedList ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("bullet-list", "Bullet list (Ctrl+Shift+8)")" aria-label="@Loc("bullet-list", "Bullet list")" aria-keyshortcuts="@ShortcutFor("insertUnorderedList")" aria-pressed="@(_state.UnorderedList ? "true" : "false")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => ExecAsync("insertUnorderedList")'>@BitRichTextEditorIcons.UnorderedList</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.OrderedList ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("numbered-list", "Numbered list (Ctrl+Shift+7)")" aria-label="@Loc("numbered-list", "Numbered list")" aria-keyshortcuts="@ShortcutFor("insertOrderedList")" aria-pressed="@(_state.OrderedList ? "true" : "false")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.OrderedList ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("numbered-list", "Numbered list (Ctrl+Shift+7)")" aria-label="@Loc("numbered-list", "Numbered list")" aria-keyshortcuts="@ShortcutFor("insertOrderedList")" aria-pressed="@(_state.OrderedList ? "true" : "false")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => ExecAsync("insertOrderedList")'>@BitRichTextEditorIcons.OrderedList</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.TaskList ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("task-list", "Task list (Ctrl+Shift+9)")" aria-label="@Loc("task-list", "Task list")" aria-keyshortcuts="@ShortcutFor("insertTaskList")" aria-pressed="@(_state.TaskList ? "true" : "false")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.TaskList ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("task-list", "Task list (Ctrl+Shift+9)")" aria-label="@Loc("task-list", "Task list")" aria-keyshortcuts="@ShortcutFor("insertTaskList")" aria-pressed="@(_state.TaskList ? "true" : "false")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => ExecAsync("insertTaskList")'>@BitRichTextEditorIcons.TaskList</button>
     </div>;
 
     private RenderFragment IndentGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("decrease-indent", "Decrease indent")" aria-label="@Loc("decrease-indent", "Decrease indent")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("decrease-indent", "Decrease indent")" aria-label="@Loc("decrease-indent", "Decrease indent")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="OutdentAsync">@BitRichTextEditorIcons.Outdent</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("increase-indent", "Increase indent")" aria-label="@Loc("increase-indent", "Increase indent")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("increase-indent", "Increase indent")" aria-label="@Loc("increase-indent", "Increase indent")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="IndentAsync">@BitRichTextEditorIcons.Indent</button>
     </div>;
 
     private RenderFragment BlocksGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Block == "blockquote" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("quote", "Quote")" aria-label="@Loc("block-quote", "Block quote")" aria-pressed="@((_state.Block == "blockquote") ? "true" : "false")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Block == "blockquote" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("quote", "Quote")" aria-label="@Loc("block-quote", "Block quote")" aria-pressed="@((_state.Block == "blockquote") ? "true" : "false")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => FormatBlockToggleAsync("blockquote")'>@BitRichTextEditorIcons.Quote</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Block == "pre" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("code-block", "Code block")" aria-label="@Loc("code-block", "Code block")" aria-pressed="@((_state.Block == "pre") ? "true" : "false")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Block == "pre" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("code-block", "Code block")" aria-label="@Loc("code-block", "Code block")" aria-pressed="@((_state.Block == "pre") ? "true" : "false")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => FormatBlockToggleAsync("pre")'>@BitRichTextEditorIcons.CodeBlock</button>
     </div>;
 
     private RenderFragment LinkGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.InLink ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("link", "Insert/edit link (Ctrl+K)")" aria-label="@Loc("link-label", "Insert or edit link")" aria-keyshortcuts="@ShortcutFor("link")" aria-pressed="@(_state.InLink ? "true" : "false")" aria-expanded="@(_showLinkInput ? "true" : "false")" aria-controls="@(_showLinkInput ? $"{UniqueId}-link-panel" : null)" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.InLink ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("link", "Insert/edit link (Ctrl+K)")" aria-label="@Loc("link-label", "Insert or edit link")" aria-keyshortcuts="@ShortcutFor("link")" aria-pressed="@(_state.InLink ? "true" : "false")" aria-expanded="@(_showLinkInput ? "true" : "false")" aria-controls="@(_showLinkInput ? $"{UniqueId}-link-panel" : null)" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="ToggleLinkInput">@BitRichTextEditorIcons.Link</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("remove-link", "Remove link (Ctrl+Shift+K)")" aria-label="@Loc("remove-link", "Remove link")" aria-keyshortcuts="@ShortcutFor("unlink")" disabled="@(ControlsDisabled || _state.InLink is false)"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("remove-link", "Remove link (Ctrl+Shift+K)")" aria-label="@Loc("remove-link", "Remove link")" aria-keyshortcuts="@ShortcutFor("unlink")" disabled="@UnlinkDisabled" aria-disabled="@(UnlinkDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="RemoveLinkAsync">@BitRichTextEditorIcons.Unlink</button>
     </div>;
 
     private RenderFragment MediaGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_showMediaInput ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("embed-media", "Embed media")" aria-label="@Loc("embed-media", "Embed media")" aria-expanded="@(_showMediaInput ? "true" : "false")" aria-controls="@(_showMediaInput ? $"{UniqueId}-media-panel" : null)" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_showMediaInput ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("embed-media", "Embed media")" aria-label="@Loc("embed-media", "Embed media")" aria-expanded="@(_showMediaInput ? "true" : "false")" aria-controls="@(_showMediaInput ? $"{UniqueId}-media-panel" : null)" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="ToggleMediaInput">@BitRichTextEditorIcons.Media</button>
     </div>;
 
     private RenderFragment ImageGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_showImageInput ? "bit-rte-act" : "")" style="@Styles?.Button" title="@(_state.ImageSelected ? Loc("edit-image", "Edit image") : Loc("insert-image", "Insert image"))" aria-label="@(_state.ImageSelected ? Loc("edit-image", "Edit image") : Loc("insert-image", "Insert image"))" aria-expanded="@(_showImageInput ? "true" : "false")" aria-controls="@(_showImageInput ? $"{UniqueId}-image-panel" : null)" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_showImageInput ? "bit-rte-act" : "")" style="@Styles?.Button" title="@(_state.ImageSelected ? Loc("edit-image", "Edit image") : Loc("insert-image", "Insert image"))" aria-label="@(_state.ImageSelected ? Loc("edit-image", "Edit image") : Loc("insert-image", "Insert image"))" aria-expanded="@(_showImageInput ? "true" : "false")" aria-controls="@(_showImageInput ? $"{UniqueId}-image-panel" : null)" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="ToggleImageInput">@BitRichTextEditorIcons.Image</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.ImageAlign == "left" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("image-align-left", "Float image left")" aria-label="@Loc("image-align-left", "Float image left")" aria-pressed="@(_state.ImageAlign == "left" ? "true" : "false")" disabled="@ImageOpsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.ImageAlign == "left" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("image-align-left", "Float image left")" aria-label="@Loc("image-align-left", "Float image left")" aria-pressed="@(_state.ImageAlign == "left" ? "true" : "false")" disabled="@ImageOpsDisabled" aria-disabled="@(ImageOpsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => AlignImageAsync("left")'>@BitRichTextEditorIcons.ImageLeft</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.ImageAlign == "center" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("image-align-center", "Center image")" aria-label="@Loc("image-align-center", "Center image")" aria-pressed="@(_state.ImageAlign == "center" ? "true" : "false")" disabled="@ImageOpsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.ImageAlign == "center" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("image-align-center", "Center image")" aria-label="@Loc("image-align-center", "Center image")" aria-pressed="@(_state.ImageAlign == "center" ? "true" : "false")" disabled="@ImageOpsDisabled" aria-disabled="@(ImageOpsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => AlignImageAsync("center")'>@BitRichTextEditorIcons.ImageCenter</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.ImageAlign == "right" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("image-align-right", "Float image right")" aria-label="@Loc("image-align-right", "Float image right")" aria-pressed="@(_state.ImageAlign == "right" ? "true" : "false")" disabled="@ImageOpsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.ImageAlign == "right" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("image-align-right", "Float image right")" aria-label="@Loc("image-align-right", "Float image right")" aria-pressed="@(_state.ImageAlign == "right" ? "true" : "false")" disabled="@ImageOpsDisabled" aria-disabled="@(ImageOpsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => AlignImageAsync("right")'>@BitRichTextEditorIcons.ImageRight</button>
     </div>;
 
     private RenderFragment TableGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_showTableInput ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("insert-table", "Insert table")" aria-label="@Loc("insert-table-label", "Insert table")" aria-expanded="@(_showTableInput ? "true" : "false")" aria-controls="@(_showTableInput ? $"{UniqueId}-table-panel" : null)" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_showTableInput ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("insert-table", "Insert table")" aria-label="@Loc("insert-table-label", "Insert table")" aria-expanded="@(_showTableInput ? "true" : "false")" aria-controls="@(_showTableInput ? $"{UniqueId}-table-panel" : null)" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="ToggleTableInput">@BitRichTextEditorIcons.Table</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("add-row-above", "Insert row above")" aria-label="@Loc("add-row-above", "Insert row above")" disabled="@TableOpsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("add-row-above", "Insert row above")" aria-label="@Loc("add-row-above", "Insert row above")" disabled="@TableOpsDisabled" aria-disabled="@(TableOpsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => TableOpAsync("addRowBefore")'>@BitRichTextEditorIcons.TableRowAbove</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("add-row", "Insert row below")" aria-label="@Loc("add-row", "Insert row below")" disabled="@TableOpsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("add-row", "Insert row below")" aria-label="@Loc("add-row", "Insert row below")" disabled="@TableOpsDisabled" aria-disabled="@(TableOpsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => TableOpAsync("addRow")'>@BitRichTextEditorIcons.TableRowBelow</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("add-column-before", "Insert column before")" aria-label="@Loc("add-column-before", "Insert column before")" disabled="@TableOpsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("add-column-before", "Insert column before")" aria-label="@Loc("add-column-before", "Insert column before")" disabled="@TableOpsDisabled" aria-disabled="@(TableOpsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => TableOpAsync("addColBefore")'>@BitRichTextEditorIcons.TableColumnBefore</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("add-column", "Insert column after")" aria-label="@Loc("add-column", "Insert column after")" disabled="@TableOpsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("add-column", "Insert column after")" aria-label="@Loc("add-column", "Insert column after")" disabled="@TableOpsDisabled" aria-disabled="@(TableOpsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => TableOpAsync("addCol")'>@BitRichTextEditorIcons.TableColumnAfter</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("delete-row", "Delete row")" aria-label="@Loc("delete-row", "Delete row")" disabled="@TableOpsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("delete-row", "Delete row")" aria-label="@Loc("delete-row", "Delete row")" disabled="@TableOpsDisabled" aria-disabled="@(TableOpsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => TableOpAsync("delRow")'>@BitRichTextEditorIcons.TableRowDelete</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("delete-column", "Delete column")" aria-label="@Loc("delete-column", "Delete column")" disabled="@TableOpsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("delete-column", "Delete column")" aria-label="@Loc("delete-column", "Delete column")" disabled="@TableOpsDisabled" aria-disabled="@(TableOpsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => TableOpAsync("delCol")'>@BitRichTextEditorIcons.TableColumnDelete</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("header-row", "Toggle header row")" aria-label="@Loc("header-row", "Toggle header row")" disabled="@TableOpsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("header-row", "Toggle header row")" aria-label="@Loc("header-row", "Toggle header row")" disabled="@TableOpsDisabled" aria-disabled="@(TableOpsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => TableOpAsync("headerRow")'>@BitRichTextEditorIcons.TableHeaderRow</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("merge-cells", "Merge cells")" aria-label="@Loc("merge-cells", "Merge cells")" disabled="@TableOpsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("merge-cells", "Merge cells")" aria-label="@Loc("merge-cells", "Merge cells")" disabled="@TableOpsDisabled" aria-disabled="@(TableOpsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => TableOpAsync("merge")'>@BitRichTextEditorIcons.TableMerge</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("split-cell", "Split cell")" aria-label="@Loc("split-cell", "Split cell")" disabled="@TableOpsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("split-cell", "Split cell")" aria-label="@Loc("split-cell", "Split cell")" disabled="@TableOpsDisabled" aria-disabled="@(TableOpsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => TableOpAsync("split")'>@BitRichTextEditorIcons.TableSplit</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("delete-table", "Delete table")" aria-label="@Loc("delete-table", "Delete table")" disabled="@TableOpsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("delete-table", "Delete table")" aria-label="@Loc("delete-table", "Delete table")" disabled="@TableOpsDisabled" aria-disabled="@(TableOpsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => TableOpAsync("delTable")'>@BitRichTextEditorIcons.TableDelete</button>
     </div>;
 
     private RenderFragment RuleGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("horizontal-rule", "Horizontal rule")" aria-label="@Loc("horizontal-rule", "Horizontal rule")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("horizontal-rule", "Horizontal rule")" aria-label="@Loc("horizontal-rule", "Horizontal rule")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="InsertRuleAsync">@BitRichTextEditorIcons.HorizontalRule</button>
     </div>;
 
     private RenderFragment AlignmentGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.JustifyLeft ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("align-left", "Align left")" aria-label="@Loc("align-left", "Align left")" aria-pressed="@(_state.JustifyLeft ? "true" : "false")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.JustifyLeft ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("align-left", "Align left")" aria-label="@Loc("align-left", "Align left")" aria-pressed="@(_state.JustifyLeft ? "true" : "false")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => ExecAsync("justifyLeft")'>@BitRichTextEditorIcons.AlignLeft</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.JustifyCenter ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("align-center", "Align center")" aria-label="@Loc("align-center", "Align center")" aria-pressed="@(_state.JustifyCenter ? "true" : "false")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.JustifyCenter ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("align-center", "Align center")" aria-label="@Loc("align-center", "Align center")" aria-pressed="@(_state.JustifyCenter ? "true" : "false")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => ExecAsync("justifyCenter")'>@BitRichTextEditorIcons.AlignCenter</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.JustifyRight ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("align-right", "Align right")" aria-label="@Loc("align-right", "Align right")" aria-pressed="@(_state.JustifyRight ? "true" : "false")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.JustifyRight ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("align-right", "Align right")" aria-label="@Loc("align-right", "Align right")" aria-pressed="@(_state.JustifyRight ? "true" : "false")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => ExecAsync("justifyRight")'>@BitRichTextEditorIcons.AlignRight</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.JustifyFull ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("align-justify", "Justify")" aria-label="@Loc("align-justify", "Justify")" aria-pressed="@(_state.JustifyFull ? "true" : "false")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.JustifyFull ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("align-justify", "Justify")" aria-label="@Loc("align-justify", "Justify")" aria-pressed="@(_state.JustifyFull ? "true" : "false")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => ExecAsync("justifyFull")'>@BitRichTextEditorIcons.AlignJustify</button>
     </div>;
 
     private RenderFragment DirectionGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Direction == "ltr" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("ltr", "Left-to-right")" aria-label="@Loc("ltr-label", "Left to right")" aria-pressed="@(_state.Direction == "ltr" ? "true" : "false")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Direction == "ltr" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("ltr", "Left-to-right")" aria-label="@Loc("ltr-label", "Left to right")" aria-pressed="@(_state.Direction == "ltr" ? "true" : "false")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => SetDirectionAsync("ltr")'>@BitRichTextEditorIcons.LeftToRight</button>
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Direction == "rtl" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("rtl", "Right-to-left")" aria-label="@Loc("rtl-label", "Right to left")" aria-pressed="@(_state.Direction == "rtl" ? "true" : "false")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_state.Direction == "rtl" ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("rtl", "Right-to-left")" aria-label="@Loc("rtl-label", "Right to left")" aria-pressed="@(_state.Direction == "rtl" ? "true" : "false")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick='() => SetDirectionAsync("rtl")'>@BitRichTextEditorIcons.RightToLeft</button>
     </div>;
 
     private RenderFragment EmojiGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_showEmoji ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("emoji", "Emoji")" aria-label="@Loc("emoji-label", "Insert emoji")" aria-expanded="@(_showEmoji ? "true" : "false")" aria-controls="@(_showEmoji ? $"{UniqueId}-emoji-panel" : null)" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_showEmoji ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("emoji", "Emoji")" aria-label="@Loc("emoji-label", "Insert emoji")" aria-expanded="@(_showEmoji ? "true" : "false")" aria-controls="@(_showEmoji ? $"{UniqueId}-emoji-panel" : null)" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="ToggleEmoji">@BitRichTextEditorIcons.Emoji</button>
     </div>;
 
     private RenderFragment FindGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_showFind ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("find-replace", "Find & replace")" aria-label="@Loc("find-replace-label", "Find and replace")" aria-expanded="@(_showFind ? "true" : "false")" aria-controls="@(_showFind ? $"{UniqueId}-find-panel" : null)" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_showFind ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("find-replace", "Find & replace")" aria-label="@Loc("find-replace-label", "Find and replace")" aria-expanded="@(_showFind ? "true" : "false")" aria-controls="@(_showFind ? $"{UniqueId}-find-panel" : null)" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="ToggleFind">@BitRichTextEditorIcons.Find</button>
     </div>;
 
     private RenderFragment SourceGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_inSourceView ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("source", "HTML source")" aria-label="@Loc("source-label", "HTML source view")" aria-pressed="@(_inSourceView ? "true" : "false")" disabled="@(Disabled || (EffectiveReadOnly && _inSourceView is false))"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_inSourceView ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("source", "HTML source")" aria-label="@Loc("source-label", "HTML source view")" aria-pressed="@(_inSourceView ? "true" : "false")" disabled="@SourceToggleDisabled" aria-disabled="@(SourceToggleDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="OnSourceToggleClick">@BitRichTextEditorIcons.Source</button>
     </div>;
 
@@ -709,12 +710,12 @@
     </div>;
 
     private RenderFragment ClearGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("clear-formatting", "Clear formatting")" aria-label="@Loc("clear-formatting", "Clear formatting")" aria-keyshortcuts="@ShortcutFor("removeFormat")" disabled="@ControlsDisabled"
+        <button type="button" class="bit-rte-btn @Classes?.Button" style="@Styles?.Button" title="@Loc("clear-formatting", "Clear formatting")" aria-label="@Loc("clear-formatting", "Clear formatting")" aria-keyshortcuts="@ShortcutFor("removeFormat")" disabled="@ControlsDisabled" aria-disabled="@(ControlsDisabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="ClearFormattingAsync">@BitRichTextEditorIcons.ClearFormatting</button>
     </div>;
 
     private RenderFragment HelpGroup => @<div class="bit-rte-grp @Classes?.Group" style="@Styles?.Group">
-        <button type="button" class="bit-rte-btn @Classes?.Button @(_showHelp ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("keyboard-help-title", "Keyboard shortcuts (Alt+0)")" aria-label="@Loc("keyboard-help", "Keyboard shortcuts")" aria-keyshortcuts="Alt+0" aria-expanded="@(_showHelp ? "true" : "false")" aria-controls="@(_showHelp ? $"{UniqueId}-help-panel" : null)" disabled="@(Disabled)"
+        <button type="button" class="bit-rte-btn @Classes?.Button @(_showHelp ? "bit-rte-act" : "")" style="@Styles?.Button" title="@Loc("keyboard-help-title", "Keyboard shortcuts (Alt+0)")" aria-label="@Loc("keyboard-help", "Keyboard shortcuts")" aria-keyshortcuts="Alt+0" aria-expanded="@(_showHelp ? "true" : "false")" aria-controls="@(_showHelp ? $"{UniqueId}-help-panel" : null)" disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)"
                 @onmousedown:preventDefault="true" @onclick="ToggleHelp">@BitRichTextEditorIcons.Keyboard</button>
     </div>;
 }

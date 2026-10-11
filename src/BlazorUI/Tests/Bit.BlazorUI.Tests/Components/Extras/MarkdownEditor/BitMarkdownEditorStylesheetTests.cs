@@ -20,7 +20,7 @@ public partial class BitMarkdownEditorStylesheetTests
 
         var documented = DocumentedVariables(stylesheet);
 
-        Assert.AreEqual(30, documented.Length, "The stylesheet does not document the thirty public variables.");
+        Assert.AreEqual(34, documented.Length, "The stylesheet does not document the thirty-four public variables.");
 
         foreach (var name in documented)
         {
@@ -75,6 +75,55 @@ public partial class BitMarkdownEditorStylesheetTests
         var textArea = SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-txa {");
         StringAssert.Contains(textArea, "flex: 1 1 auto;");
         Assert.IsFalse(textArea.Contains("height: 100%"), "The textarea still fills its pane by a percentage height.");
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorLabelShouldReadTheFieldLabelTokens()
+    {
+        // The presets set the field-label weight to regular, so a hard-coded semibold caption would stand out
+        // beside a BitTextField's; every part of the label is a public variable over its token, as theirs is.
+        var label = SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-mde-lbl {");
+
+        Assert.IsFalse(Regex.IsMatch(label, @"font-weight:\s*\$tg-fw-"), "The label hard-codes a weight instead of reading the field-label token.");
+        Assert.IsTrue(Regex.IsMatch(label, @"font-weight:[^;]*\$tg-field-label-font-weight\}?\);"), "The label weight does not fall back to the field-label token.");
+
+        foreach (var (property, variable) in new[] { ("color", "label-color"), ("font-size", "label-font-size"),
+                                                     ("font-weight", "label-font-weight"), ("letter-spacing", "label-letter-spacing") })
+        {
+            Assert.IsTrue(Regex.IsMatch(label, $@"(^|\n)\s*{property}:\s*var\(--bit-MarkdownEditor-{variable}, "), $"The label's {property} is not read through --bit-MarkdownEditor-{variable}.");
+        }
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorShouldSetItsChromeInTheThemeFont()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The root sets the theme's family at the regular weight, which the label, the status bar and the preview
+        // inherit.
+        var root = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-mde {");
+        StringAssert.Contains(root, "font-family: $tg-font-family;");
+        StringAssert.Contains(root, "font-weight: $tg-fw-regular;");
+
+        // A <button> or an <input> does not inherit a font, so each of the editor's own takes the root's.
+        foreach (var control in new[] { ".bit-mde-btn", ".bit-mde-fni", ".bit-mde-fnb", ".bit-mde-hcl" })
+        {
+            StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, $"\n{control} {{"), "font-family: inherit;", $"{control} keeps the browser's control font.");
+        }
+
+        foreach (var control in new[] { ".bit-mde-btn", ".bit-mde-fni", ".bit-mde-fnb" })
+        {
+            StringAssert.Contains(SourceFiles.GetScssDeclarations(stylesheet, $"\n{control} {{"), "font-weight: inherit;", $"{control} keeps the browser's control weight.");
+        }
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorHelpTitleShouldReadTheDialogTitleTokens()
+    {
+        var help = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-mde-hcr {");
+
+        StringAssert.Contains(help, "font-size: $tg-dialog-title-font-size;");
+        StringAssert.Contains(help, "font-weight: $tg-dialog-title-font-weight;");
     }
 
     [TestMethod]
