@@ -1564,24 +1564,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         return string.Format(_culture, DateFormatAriaDescription, DateFormat ?? GetDefaultDateFormat());
     }
 
-    // An attribute the application splatted onto the input. The input writes its own aria-* after the splat,
-    // and a null written over a splatted attribute does not leave it alone - it removes it - so a name the
-    // component also writes is resolved against what the page wrote rather than overwritten with a null.
-    // HTML attribute names are case insensitive, and so is the deduplication the render tree does.
-    private string? GetSplattedInputAttribute(string name)
-    {
-        if (InputHtmlAttributes is null || InputHtmlAttributes.Count == 0) return null;
-
-        if (InputHtmlAttributes.TryGetValue(name, out var value)) return value?.ToString();
-
-        foreach (var attribute in InputHtmlAttributes)
-        {
-            if (string.Equals(attribute.Key, name, StringComparison.OrdinalIgnoreCase)) return attribute.Value?.ToString();
-        }
-
-        return null;
-    }
-
     private bool HasDescription => DescriptionTemplate is not null || Description.HasValue();
 
     private bool HasErrorMessage => ErrorMessage.HasValue() || ErrorMessageTemplate is not null;

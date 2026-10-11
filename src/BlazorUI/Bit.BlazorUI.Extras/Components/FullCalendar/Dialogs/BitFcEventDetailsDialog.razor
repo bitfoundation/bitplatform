@@ -131,7 +131,7 @@
                     }
                     @if (CanDelete)
                     {
-                        <button type="button" class="bit-bfc-btn bit-bfc-btn-danger" @onclick="Delete" disabled="@_isDeleting">@Texts.DeleteButton</button>
+                        <button type="button" class="bit-bfc-btn bit-bfc-btn-danger" @onclick="Delete" disabled="@_isDeleting" aria-disabled="@(_isDeleting ? "true" : null)">@Texts.DeleteButton</button>
                     }
                 </div>
             }

@@ -200,11 +200,9 @@ public sealed class BitReducedMotionDurationContractTests
         var motion = SourceFiles.StripScssComments(SourceFiles.ReadThemeStylesheet("Fluent", "motion.fluent.scss")).Replace("\r\n", "\n");
 
         StringAssert.Contains(motion, "--bit-mot-duration-factor-full: 1;");
-        StringAssert.Contains(motion, "--bit-mot-duration-factor: var(--bit-mot-duration-factor-full);");
-        StringAssert.Contains(SourceFiles.GetScssBlock(motion, "@media (prefers-reduced-motion: reduce) {"), "--bit-mot-duration-factor: 0;");
-
-        var general = SourceFiles.StripScssComments(SourceFiles.ReadThemeStylesheet("general.scss"));
-        StringAssert.Contains(SourceFiles.GetScssBlock(general, ".bit-fam {"), "--bit-mot-duration-factor: var(--bit-mot-duration-factor-full, 1);");
+        StringAssert.Contains(motion, "--bit-mot-duration-factor: var(--bit-mot-duration-factor-reduced, var(--bit-mot-duration-factor-full));");
+        StringAssert.Contains(SourceFiles.GetScssBlock(motion, "@media (prefers-reduced-motion: reduce) {"), "--bit-mot-duration-factor-reduced: 0;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(motion, ".bit-fam {"), "--bit-mot-duration-factor-reduced: initial;");
 
         var variables = SourceFiles.ReadThemeStylesheet("theme-variables.scss");
         StringAssert.Contains(variables, "$mot-duration-factor: var(--bit-mot-duration-factor, 1);");

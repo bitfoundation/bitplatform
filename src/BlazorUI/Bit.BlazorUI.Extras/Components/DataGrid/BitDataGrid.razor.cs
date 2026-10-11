@@ -806,6 +806,12 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     /// <summary>The 1-based current page.</summary>
     public int CurrentPage => _currentPage;
 
+    // The pager's first / previous and next / last buttons, each pair disabled by the one condition both of its
+    // attributes read.
+    private bool PreviousPagesDisabled => Disabled || CurrentPage <= 1;
+
+    private bool NextPagesDisabled => Disabled || CurrentPage >= TotalPages;
+
     /// <summary>
     /// The page sizes the pager dropdown offers. The size actually in effect is always among them:
     /// a <c>PageSize</c> that isn't one of the declared <see cref="PageSizeOptions"/> would otherwise

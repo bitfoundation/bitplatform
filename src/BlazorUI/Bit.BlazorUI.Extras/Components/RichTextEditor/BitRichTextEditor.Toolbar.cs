@@ -132,12 +132,13 @@ public partial class BitRichTextEditor
         builder.AddAttribute(7, "title", accessibleName);
         builder.AddAttribute(8, "aria-label", accessibleName);
         builder.AddAttribute(9, "disabled", ControlsDisabled);
-        if (active.HasValue) builder.AddAttribute(10, "aria-pressed", active.Value ? "true" : "false");
+        builder.AddAttribute(10, "aria-disabled", ControlsDisabled ? "true" : null);
+        if (active.HasValue) builder.AddAttribute(11, "aria-pressed", active.Value ? "true" : "false");
         // Like every built-in button, a press leaves the focus and the selection in the text the action works on.
-        builder.AddEventPreventDefaultAttribute(11, "onmousedown", true);
-        builder.AddAttribute(12, "onclick", EventCallback.Factory.Create(this, () => InvokeCustomItemAsync(item)));
-        if (item.Icon is not null) builder.AddContent(13, item.Icon);
-        else builder.AddContent(14, item.Label ?? item.Id);
+        builder.AddEventPreventDefaultAttribute(12, "onmousedown", true);
+        builder.AddAttribute(13, "onclick", EventCallback.Factory.Create(this, () => InvokeCustomItemAsync(item)));
+        if (item.Icon is not null) builder.AddContent(14, item.Icon);
+        else builder.AddContent(15, item.Label ?? item.Id);
         builder.CloseElement();
         builder.CloseElement();
     }

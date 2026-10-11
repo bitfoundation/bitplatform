@@ -10,6 +10,7 @@
     var isChecked = ChoiceGroup.GetIsCheckedItem(Item);
     var description = ChoiceGroup.GetDescription(Item);
     var descriptionId = $"{inputId}-description";
+    var isDisabled = ChoiceGroup.GetIsItemDisabled(Item);
 
     // The description element belongs to the built-in item content, so a template that takes the content
     // over also takes the description over. The description id only joins aria-describedby when the element
@@ -78,7 +79,8 @@
            aria-label="@ariaLabel"
            aria-describedby="@ariaDescribedBy"
            value="@ChoiceGroup.GetValue(Item)?.ToString()"
-           disabled="@(ChoiceGroup.GetIsItemDisabled(Item))" />
+           disabled="@isDisabled"
+           aria-disabled="@ChoiceGroup.GetInputAriaDisabled(isDisabled)" />
 
     <label for="@inputId" style="@ChoiceGroup.Styles?.ItemLabel" class="bit-chg-itl @ChoiceGroup.GetItemLabelCssClasses(Item) @ChoiceGroup.Classes?.ItemLabel">
         @if (template is not null)

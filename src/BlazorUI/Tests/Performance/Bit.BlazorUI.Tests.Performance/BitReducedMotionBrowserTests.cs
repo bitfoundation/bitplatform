@@ -31,10 +31,10 @@ public class BitReducedMotionBrowserTests : PerformanceTestBase
     private const double Collapsed = 1;
 
     private const string RestoreTokensAtRoot = @":root {
-        --bit-mot-duration: var(--bit-mot-duration-full, 200ms);
-        --bit-mot-duration-short: var(--bit-mot-duration-short-full, 100ms);
-        --bit-mot-duration-long: var(--bit-mot-duration-long-full, 300ms);
-        --bit-mot-duration-factor: var(--bit-mot-duration-factor-full, 1);
+        --bit-mot-duration-reduced: initial;
+        --bit-mot-duration-short-reduced: initial;
+        --bit-mot-duration-long-reduced: initial;
+        --bit-mot-duration-factor-reduced: initial;
     }";
 
     private static readonly string[] Probes =
@@ -233,11 +233,16 @@ public class BitReducedMotionBrowserTests : PerformanceTestBase
             document.querySelectorAll('[data-probe=snackbar] .bit-snb-itm').length === 3 &&
             document.querySelectorAll('[data-probe=image] .bit-img-fde').length === 3", null, new() { Timeout = DefaultTimeout });
 
-        // A carousel writes the transition of its slides only once it moves.
-        await Page.EvaluateAsync(@"() => document.querySelectorAll('[data-probe=carousel] :is(.bit-csl-lbt, .bit-csl-rbt)')
-            .forEach(b => getComputedStyle(b).display !== 'none' && b.click())");
-        await Page.WaitForFunctionAsync(@"() =>
-            document.querySelectorAll('[data-probe=carousel] .bit-crsi[style*=""transition""]').length >= 6", null, new() { Timeout = DefaultTimeout });
+        // A carousel writes the transition of its slides only once it moves. A press that lands before it has measured
+        // itself moves nothing, so every carousel that has not moved yet is pressed again until all of them have.
+        await Page.WaitForFunctionAsync(@"() => {
+            let moved = 0;
+            for (const carousel of document.querySelectorAll('[data-probe=carousel]')) {
+                if (carousel.querySelector('.bit-crsi[style*=""transition""]')) { moved++; continue; }
+                carousel.querySelectorAll(':is(.bit-csl-lbt, .bit-csl-rbt)').forEach(b => getComputedStyle(b).display !== 'none' && b.click());
+            }
+            return moved === 3;
+        }", null, new() { Timeout = DefaultTimeout, PollingInterval = 250 });
     }
 
     // Every probe of a set paced as expected: the page's own pace, or collapsed (null).

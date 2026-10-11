@@ -164,6 +164,7 @@
                             style="@GetImageContainerStyle()"
                             class="@GetImageContainerClass()"
                             disabled="@(Disabled)"
+                            aria-disabled="@(Disabled ? "true" : null)"
                             tabindex="@TabIndex"
                             aria-label="@GetCoinButtonLabel()"
                             @onclick="HandleImageClick">
@@ -197,6 +198,7 @@
                                 title="@ActionButtonTitle"
                                 aria-label="@ActionButtonTitle"
                                 disabled="@(Disabled)"
+                                aria-disabled="@(Disabled ? "true" : null)"
                                 style="@Styles?.ActionButton"
                                 class="bit-prs-abt @Classes?.ActionButton">
                             @if (actionIcon is not null)

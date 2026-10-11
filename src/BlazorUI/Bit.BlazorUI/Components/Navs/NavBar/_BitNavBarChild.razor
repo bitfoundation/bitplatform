@@ -29,7 +29,8 @@
 }
 else
 {
-    @* The native disabled attribute already reports the state, so no aria-disabled is repeated on it. *@
+    @* The native disabled attribute reports the state; aria-disabled repeats it, as on every disabled native control
+       of the library, so one [aria-disabled="true"] selector finds a disabled item whatever element it is. *@
     <button @ref="Element"
             @onclick="OnClick"
             @onfocusin="OnFocusIn"
@@ -39,6 +40,7 @@ else
             class="@Class"
             style="@Style"
             disabled="@Disabled"
+            aria-disabled="@(Disabled ? "true" : null)"
             tabindex="@TabIndex"
             aria-label="@AriaLabel"
             aria-current="@AriaCurrent">

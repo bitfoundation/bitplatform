@@ -26,6 +26,8 @@ Performance/
 
 ## Prerequisites
 
+The [buffered PDF engine benchmark](Bit.BlazorUI.Tests.PdfPerformance/README.md) is a separate console diagnostic for parsing/rendering and before/after byte-reading costs. It does not need Playwright or a test host.
+
 1. .NET 10.0 SDK
 2. Playwright browsers installed
 
@@ -145,7 +147,7 @@ Adjust as needed based on your performance requirements.
 
 ### Test Host Doesn't Start
 
-1. Check if port 5280 is available
+1. Check if port 5280 is available - a host already answering there (another checkout's) is reused, so set `TEST_HOST_URL` (e.g. `http://localhost:5281`) to run against a host of your own
 2. Verify the TestHost project builds successfully
 3. Check the test output for error messages
 

@@ -613,18 +613,32 @@ public static partial class BitCss
             }
         }
 
+        /// <summary>
+        /// The motion tokens. The durations and their factor, the spinner pair and the loop factor come in two forms: the plain
+        /// one is what a style reads, and what <c>prefers-reduced-motion</c> collapses (or calms) and
+        /// <c>ForceAnimation</c> restores; the <c>...Full</c> one holds the unreduced value the plain one aliases,
+        /// and is the one to set - setting the plain one, on an element above all, would outrank the
+        /// reduced-motion query. <see cref="BitThemeMotion"/> writes the <c>...Full</c> ones.
+        /// </summary>
         public static class Motion
         {
             public const string Duration = "--bit-mot-duration";
             public const string DurationShort = "--bit-mot-duration-short";
             public const string DurationLong = "--bit-mot-duration-long";
             public const string DurationFactor = "--bit-mot-duration-factor";
+            public const string DurationFull = "--bit-mot-duration-full";
+            public const string DurationShortFull = "--bit-mot-duration-short-full";
+            public const string DurationLongFull = "--bit-mot-duration-long-full";
+            public const string DurationFactorFull = "--bit-mot-duration-factor-full";
             public const string Easing = "--bit-mot-easing";
             public const string EasingDecelerate = "--bit-mot-easing-decelerate";
             public const string EasingAccelerate = "--bit-mot-easing-accelerate";
             public const string DurationSpinner = "--bit-mot-duration-spinner";
             public const string EasingSpinner = "--bit-mot-easing-spinner";
             public const string LoopFactor = "--bit-mot-loop-factor";
+            public const string DurationSpinnerFull = "--bit-mot-duration-spinner-full";
+            public const string EasingSpinnerFull = "--bit-mot-easing-spinner-full";
+            public const string LoopFactorFull = "--bit-mot-loop-factor-full";
         }
 
         public static class Layout

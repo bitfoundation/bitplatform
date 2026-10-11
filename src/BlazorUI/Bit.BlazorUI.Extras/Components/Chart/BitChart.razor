@@ -376,6 +376,7 @@
                     <button type="button"
                             class="bit-cht-lgd-itm @(item.Hidden ? "bit-cht-hdn" : "") @Classes?.LegendItem"
                             disabled="@(Disabled)"
+                            aria-disabled="@(Disabled ? "true" : null)"
                             aria-pressed="@(legend.OnClickToggle ? (!item.Hidden).ToString().ToLowerInvariant() : null)"
                             style="@itemStyle"
                             @onclick="() => ToggleLegend(item)"

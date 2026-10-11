@@ -125,6 +125,9 @@ internal static class BitThemeMapper
                            BitCss.Var.Typography.FontWeights.Light, BitCss.Var.Typography.FontWeights.Regular,
                            BitCss.Var.Typography.FontWeights.Medium, BitCss.Var.Typography.FontWeights.SemiBold,
                            BitCss.Var.Typography.FontWeights.Bold]),
+        new("motion", [BitCss.Var.Motion.DurationFull, BitCss.Var.Motion.DurationShortFull, BitCss.Var.Motion.DurationLongFull,
+                       BitCss.Var.Motion.DurationFactorFull,
+                       BitCss.Var.Motion.DurationSpinnerFull, BitCss.Var.Motion.EasingSpinnerFull, BitCss.Var.Motion.LoopFactorFull]),
     ];
 
     /// <summary>
@@ -666,16 +669,21 @@ internal static class BitThemeMapper
         addCssVar(BitCss.Var.Typography.Subtitle2.LineHeight, bitTheme.Typography.Subtitle2.LineHeight);
         addCssVar(BitCss.Var.Typography.Subtitle2.LetterSpacing, bitTheme.Typography.Subtitle2.LetterSpacing);
 
-        addCssVar(BitCss.Var.Motion.Duration, bitTheme.Motion.Duration);
-        addCssVar(BitCss.Var.Motion.DurationShort, bitTheme.Motion.DurationShort);
-        addCssVar(BitCss.Var.Motion.DurationLong, bitTheme.Motion.DurationLong);
-        addCssVar(BitCss.Var.Motion.DurationFactor, bitTheme.Motion.DurationFactor);
+        // The durations and their factor, the spinner pair and the loop factor go to their unreduced -full tokens, as a
+        // preset's do: the plain ones alias them and are what the reduced-motion query collapses and ForceAnimation
+        // restores, so a plain one written inline would outrank the user's preference and be restored to the default
+        // theme's value inside a ForceAnimation subtree (the motion group of FamilyAliasOverlayGroups re-substitutes the
+        // aliases on the overlay's element).
+        addCssVar(BitCss.Var.Motion.DurationFull, bitTheme.Motion.Duration);
+        addCssVar(BitCss.Var.Motion.DurationShortFull, bitTheme.Motion.DurationShort);
+        addCssVar(BitCss.Var.Motion.DurationLongFull, bitTheme.Motion.DurationLong);
+        addCssVar(BitCss.Var.Motion.DurationFactorFull, bitTheme.Motion.DurationFactor);
         addCssVar(BitCss.Var.Motion.Easing, bitTheme.Motion.EasingStandard);
         addCssVar(BitCss.Var.Motion.EasingDecelerate, bitTheme.Motion.EasingDecelerate);
         addCssVar(BitCss.Var.Motion.EasingAccelerate, bitTheme.Motion.EasingAccelerate);
-        addCssVar(BitCss.Var.Motion.DurationSpinner, bitTheme.Motion.DurationSpinner);
-        addCssVar(BitCss.Var.Motion.EasingSpinner, bitTheme.Motion.EasingSpinner);
-        addCssVar(BitCss.Var.Motion.LoopFactor, bitTheme.Motion.LoopFactor);
+        addCssVar(BitCss.Var.Motion.DurationSpinnerFull, bitTheme.Motion.DurationSpinner);
+        addCssVar(BitCss.Var.Motion.EasingSpinnerFull, bitTheme.Motion.EasingSpinner);
+        addCssVar(BitCss.Var.Motion.LoopFactorFull, bitTheme.Motion.LoopFactor);
 
         addCssVar(BitCss.Var.Layout.DensityScale, bitTheme.Layout.DensityScale);
         addCssVar(BitCss.Var.Layout.DialogActionsDirection, bitTheme.Layout.DialogActionsDirection);

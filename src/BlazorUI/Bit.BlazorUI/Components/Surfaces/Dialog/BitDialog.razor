@@ -88,11 +88,13 @@
                             var closeIcon = BitIconInfo.From(CloseIcon, CloseIconName ?? "Cancel");
                             var closeTitle = CloseButtonTitle ?? DefaultCloseButtonTitle;
 
+                            var closeDisabled = Disabled || _isLoading;
                             <button @ref="_closeButtonRef" @onclick="HandleOnCloseClick"
                                     style="@Styles?.CloseButton"
                                     class="bit-dlg-cls @Classes?.CloseButton"
                                     type="button"
-                                    disabled="@(Disabled || _isLoading)"
+                                    disabled="@closeDisabled"
+                                    aria-disabled="@(closeDisabled ? "true" : null)"
                                     title="@closeTitle"
                                     aria-label="@closeTitle">
                                 <span>
@@ -125,10 +127,11 @@
                                waits: it is the element the focus is on when it is pressed, and a button
                                that turns disabled drops the focus onto the page behind the Dialog. The
                                click handler refuses a second press on its own. *@
+                            var okDisabled = Disabled || IsOkButtonEnabled is false;
                             <button @ref="_okButtonRef" @onclick="HandleOnOkClick"
                                     type="button"
-                                    disabled="@(Disabled || IsOkButtonEnabled is false)"
-                                    aria-disabled="@(_isLoading ? "true" : null)"
+                                    disabled="@okDisabled"
+                                    aria-disabled="@((okDisabled || _isLoading) ? "true" : null)"
                                     aria-busy="@(_isLoading ? "true" : null)"
                                     aria-label="@(_isLoading ? OkText : null)"
                                     style="@Styles?.OkButton"
@@ -149,9 +152,11 @@
                             @* Disabled while the Ok callback is running: a Cancel let through there would
                                answer a showing the Ok has already answered, and hand that second answer to
                                an awaiter while the first one is still doing its work. *@
+                            var cancelDisabled = Disabled || IsCancelButtonEnabled is false || _isLoading;
                             <button @ref="_cancelButtonRef" @onclick="HandleOnCancelClick"
                                     type="button"
-                                    disabled="@(Disabled || IsCancelButtonEnabled is false || _isLoading)"
+                                    disabled="@cancelDisabled"
+                                    aria-disabled="@(cancelDisabled ? "true" : null)"
                                     style="@Styles?.CancelButton"
                                     class="bit-dlg-cnb @Classes?.CancelButton">
                                 @CancelText

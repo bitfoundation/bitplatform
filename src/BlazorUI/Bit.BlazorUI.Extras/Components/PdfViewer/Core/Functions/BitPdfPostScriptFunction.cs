@@ -25,7 +25,7 @@ internal sealed class BitPdfPostScriptFunction : BitPdfFunction
         _range = range;
     }
 
-    public static BitPdfPostScriptFunction? Build(BitPdfStream stream)
+    public static BitPdfPostScriptFunction? Build(BitPdfBaseStream stream)
     {
         BitPdfDict dict = stream.Dict!;
         double[] domain = ReadNumbers(dict.Get("Domain"));

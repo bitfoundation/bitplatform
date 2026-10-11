@@ -161,6 +161,7 @@
                         type="button"
                         title="@(title is not null ? title : text)"
                         disabled="@isDisabled"
+                        aria-disabled="@(isDisabled ? "true" : null)"
                         style="@Nav.Styles?.Header"
                         class="bit-nav-gcb @(isSelectedAncestor ? "bit-nav-sca" : null) @Nav.Classes?.Header"
                         aria-expanded="@ariaExpanded"

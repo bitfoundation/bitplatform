@@ -554,7 +554,7 @@ public partial class BitRatingDemo
         new()
         {
             Name = "--bit-Rating-label-font-weight",
-            DefaultValue = "--bit-tpg-fw-semibold",
+            DefaultValue = "--bit-tpg-field-label-font-weight",
             Description = "Text weight of the label.",
         },
         new()

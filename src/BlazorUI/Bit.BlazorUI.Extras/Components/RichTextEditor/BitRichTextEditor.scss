@@ -139,7 +139,7 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
     display: block;
     color: inherit;
     font-size: $tg-fs-sm;
-    font-weight: $tg-fw-semibold;
+    font-weight: $tg-field-label-font-weight;
     letter-spacing: $tg-ctrl-letter-spacing;
     padding: spacing(0.75) spacing(1) spacing(0.5);
 }

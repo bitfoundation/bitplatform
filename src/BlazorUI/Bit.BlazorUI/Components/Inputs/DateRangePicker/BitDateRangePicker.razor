@@ -64,6 +64,7 @@
                        placeholder="@Placeholder"
                        value="@CurrentValueAsString"
                        disabled="@(Disabled)"
+                       aria-disabled="@GetInputAriaDisabled(Disabled)"
                        readonly="@(AllowTextInput is false || ReadOnly)"
                        aria-invalid="@(ValueInvalid is true ? "true" : null)"
                        aria-expanded="@(IsOpen ? "true" : "false")"
@@ -110,6 +111,7 @@
                class="bit-input-hidden"
                value="@CurrentValueAsString"
                disabled="@(Disabled)"
+               aria-disabled="@GetInputAriaDisabled(Disabled)"
                readonly="@(AllowTextInput is false || ReadOnly)" />
     }
 
@@ -173,6 +175,7 @@
                         <button @onclick="() => SelectPreset(preset)"
                                 type="button"
                                 disabled="@presetDisabled"
+                                aria-disabled="@(presetDisabled ? "true" : null)"
                                 title="@(preset.Title ?? preset.Text)"
                                 aria-pressed="@(presetSelected ? "true" : "false")"
                                 style="@($"{Styles?.PresetButton?.Trim(';')};{preset.Style}".Trim(';'))"
@@ -213,6 +216,7 @@
                                         aria-label="@title"
                                         style="@Styles?.DayPickerMonth"
                                         disabled="@(Disabled)"
+                                        aria-disabled="@(Disabled ? "true" : null)"
                                         class="bit-dtrp-ptb @Classes?.DayPickerMonth">
                                     @monthTitle
                                 </button>
@@ -233,6 +237,7 @@
                                     <button @onclick="() => HandleMonthChange(false)"
                                             type="button"
                                             disabled="@prevDisabled"
+                                            aria-disabled="@(prevDisabled ? "true" : null)"
                                             title="@GoToPrevMonthTitle"
                                             aria-label="@GoToPrevMonthTitle"
                                             style="@Styles?.PrevMonthNavButton"
@@ -251,6 +256,7 @@
                                             title="@GoToTodayTitle"
                                             aria-label="@GoToTodayTitle"
                                             disabled="@goToTodayDisabled"
+                                            aria-disabled="@(goToTodayDisabled ? "true" : null)"
                                             style="@Styles?.GoToTodayButton"
                                             class="bit-dtrp-gtb @Classes?.GoToTodayButton">
                                         <i aria-hidden="true"
@@ -263,6 +269,7 @@
                                     <button @onclick="() => HandleMonthChange(true)"
                                             type="button"
                                             disabled="@nextDisabled"
+                                            aria-disabled="@(nextDisabled ? "true" : null)"
                                             title="@GoToNextMonthTitle"
                                             aria-label="@GoToNextMonthTitle"
                                             style="@Styles?.NextMonthNavButton"
@@ -291,6 +298,7 @@
                                             type="button"
                                             title="@ShowTimePickerTitle"
                                             disabled="@(Disabled)"
+                                            aria-disabled="@(Disabled ? "true" : null)"
                                             aria-label="@ShowTimePickerTitle"
                                             style="@Styles?.ShowTimePickerButton"
                                             class="bit-dtrp-nbt @Classes?.ShowTimePickerButton">
@@ -380,6 +388,7 @@
                                                 style="@style @Styles?.DayButton"
                                                 class="bit-dtrp-dbt@(klass) @Classes?.DayButton"
                                                 disabled="@disabled"
+                                                aria-disabled="@(disabled ? "true" : null)"
                                                 tabindex="@(isInMonth && date == focusableDay ? 0 : -1)"
                                                 aria-selected="@(isSelected ? "true" : "false")">
                                             @if (DayCellTemplate is not null)
@@ -423,6 +432,7 @@
                                     title="@toggleTitle"
                                     aria-label="@toggleTitle"
                                     disabled="@(Disabled)"
+                                    aria-disabled="@(Disabled ? "true" : null)"
                                     style="@Styles?.YearPickerToggleButton"
                                     class="bit-dtrp-ptb @Classes?.YearPickerToggleButton">
                                 @_currentYear
@@ -433,6 +443,7 @@
                                         title="@prevTitle"
                                         aria-label="@prevTitle"
                                         disabled="@prevDisabled"
+                                        aria-disabled="@(prevDisabled ? "true" : null)"
                                         style="@Styles?.PrevYearNavButton"
                                         class="bit-dtrp-nbt @Classes?.PrevYearNavButton">
                                     <i aria-hidden="true"
@@ -448,6 +459,7 @@
                                             title="@GoToTodayTitle"
                                             aria-label="@GoToTodayTitle"
                                             disabled="@goToTodayDisabled"
+                                            aria-disabled="@(goToTodayDisabled ? "true" : null)"
                                             style="@Styles?.GoToTodayButton"
                                             class="bit-dtrp-gtb @Classes?.GoToTodayButton">
                                         <i aria-hidden="true"
@@ -460,6 +472,7 @@
                                         title="@nextTitle"
                                         aria-label="@nextTitle"
                                         disabled="@nextDisabled"
+                                        aria-disabled="@(nextDisabled ? "true" : null)"
                                         style="@Styles?.NextYearNavButton"
                                         class="bit-dtrp-nbt @Classes?.NextYearNavButton">
                                     <i aria-hidden="true"
@@ -472,6 +485,7 @@
                                             type="button"
                                             title="@ShowTimePickerTitle"
                                             disabled="@(Disabled)"
+                                            aria-disabled="@(Disabled ? "true" : null)"
                                             aria-label="@ShowTimePickerTitle"
                                             style="@Styles?.ShowTimePickerButton"
                                             class="bit-dtrp-nbt @Classes?.ShowTimePickerButton">
@@ -508,6 +522,7 @@
                                                 aria-readonly="@(ReadOnly ? "true" : null)"
                                                 aria-label="@monthName"
                                                 disabled="@disabled"
+                                                aria-disabled="@(disabled ? "true" : null)"
                                                 tabindex="@(month == focusableMonth ? 0 : -1)"
                                                 aria-selected="@(selected ? "true" : "false")"
                                                 style="@Styles?.MonthButton"
@@ -541,6 +556,7 @@
                                     title="@toggleTitle"
                                     aria-label="@toggleTitle"
                                     disabled="@(Disabled)"
+                                    aria-disabled="@(Disabled ? "true" : null)"
                                     style="@Styles?.MonthPickerToggleButton"
                                     class="bit-dtrp-ptb @Classes?.MonthPickerToggleButton">
                                 @_yearPickerStartYear - @_yearPickerEndYear
@@ -551,6 +567,7 @@
                                         title="@prevTitle"
                                         aria-label="@prevTitle"
                                         disabled="@prevDisabled"
+                                        aria-disabled="@(prevDisabled ? "true" : null)"
                                         style="@Styles?.PrevYearRangeNavButton"
                                         class="bit-dtrp-nbt @Classes?.PrevYearRangeNavButton">
                                     <i aria-hidden="true"
@@ -566,6 +583,7 @@
                                             title="@GoToTodayTitle"
                                             aria-label="@GoToTodayTitle"
                                             disabled="@goToTodayDisabled"
+                                            aria-disabled="@(goToTodayDisabled ? "true" : null)"
                                             style="@Styles?.GoToTodayButton"
                                             class="bit-dtrp-gtb @Classes?.GoToTodayButton">
                                         <i aria-hidden="true"
@@ -578,6 +596,7 @@
                                         title="@nextTitle"
                                         aria-label="@nextTitle"
                                         disabled="@nextDisabled"
+                                        aria-disabled="@(nextDisabled ? "true" : null)"
                                         style="@Styles?.NextYearRangeNavButton"
                                         class="bit-dtrp-nbt @Classes?.NextYearRangeNavButton">
                                     <i aria-hidden="true"
@@ -604,6 +623,7 @@
                                                 role="gridcell"
                                                 id="@GetYearButtonId(year)"
                                                 disabled="@disabled"
+                                                aria-disabled="@(disabled ? "true" : null)"
                                                 tabindex="@(year == focusableYear ? 0 : -1)"
                                                 aria-readonly="@(ReadOnly ? "true" : null)"
                                                 aria-selected="@(selected ? "true" : "false")"
@@ -653,6 +673,7 @@
                                         title="@HideTimePickerTitle"
                                         aria-label="@HideTimePickerTitle"
                                         disabled="@(Disabled)"
+                                        aria-disabled="@(Disabled ? "true" : null)"
                                         style="@Styles?.HideTimePickerButton"
                                         class="bit-dtrp-nbt @Classes?.HideTimePickerButton">
                                     <i aria-hidden="true"
@@ -673,7 +694,8 @@
                                         aria-label="@StartTimeIncreaseHourTitle"
                                         style="@Styles?.StartTimeIncreaseHourButton"
                                         class="bit-dtrp-tbt @Classes?.StartTimeIncreaseHourButton"
-                                        disabled="@startTimeIncreaseHourDisabled">
+                                        disabled="@startTimeIncreaseHourDisabled"
+                                        aria-disabled="@(startTimeIncreaseHourDisabled ? "true" : null)">
                                     <i aria-hidden="true"
                                        style="@Styles?.StartTimeIncreaseHourIcon"
                                        class="bit-dtrp-cic @startIncreaseHourIconCss @Classes?.StartTimeIncreaseHourIcon" />
@@ -689,6 +711,7 @@
                                        inputmode="numeric"
                                        readonly="@ReadOnly"
                                        disabled="@(Disabled)"
+                                       aria-disabled="@(Disabled ? "true" : null)"
                                        style="@Styles?.StartTimeHourInput"
                                        aria-label="@StartTimeHourInputAriaLabel"
                                        class="bit-dtrp-tin @Classes?.StartTimeHourInput"
@@ -701,7 +724,8 @@
                                         aria-label="@StartTimeDecreaseHourTitle"
                                         style="@Styles?.StartTimeDecreaseHourButton"
                                         class="bit-dtrp-tbt @Classes?.StartTimeDecreaseHourButton"
-                                        disabled="@startTimeDecreaseHourDisabled">
+                                        disabled="@startTimeDecreaseHourDisabled"
+                                        aria-disabled="@(startTimeDecreaseHourDisabled ? "true" : null)">
                                     <i aria-hidden="true"
                                        style="@Styles?.StartTimeDecreaseHourIcon"
                                        class="bit-dtrp-cic @startDecreaseHourIconCss @Classes?.StartTimeDecreaseHourIcon" />
@@ -717,7 +741,8 @@
                                         aria-label="@StartTimeIncreaseMinuteTitle"
                                         style="@Styles?.StartTimeIncreaseMinuteButton"
                                         class="bit-dtrp-tbt @Classes?.StartTimeIncreaseMinuteButton"
-                                        disabled="@startTimeIncreaseMinuteDisabled">
+                                        disabled="@startTimeIncreaseMinuteDisabled"
+                                        aria-disabled="@(startTimeIncreaseMinuteDisabled ? "true" : null)">
                                     <i aria-hidden="true"
                                        style="@Styles?.StartTimeIncreaseMinuteIcon"
                                        class="bit-dtrp-cic @startIncreaseMinuteIconCss @Classes?.StartTimeIncreaseMinuteIcon" />
@@ -733,6 +758,7 @@
                                        inputmode="numeric"
                                        readonly="@ReadOnly"
                                        disabled="@(Disabled)"
+                                       aria-disabled="@(Disabled ? "true" : null)"
                                        aria-label="@StartTimeMinuteInputAriaLabel"
                                        style="@Styles?.StartTimeMinuteInput"
                                        class="bit-dtrp-tin @Classes?.StartTimeMinuteInput"
@@ -745,7 +771,8 @@
                                         aria-label="@StartTimeDecreaseMinuteTitle"
                                         style="@Styles?.StartTimeDecreaseMinuteButton"
                                         class="bit-dtrp-tbt @Classes?.StartTimeDecreaseMinuteButton"
-                                        disabled="@startTimeDecreaseMinuteDisabled">
+                                        disabled="@startTimeDecreaseMinuteDisabled"
+                                        aria-disabled="@(startTimeDecreaseMinuteDisabled ? "true" : null)">
                                     <i aria-hidden="true"
                                        style="@Styles?.StartTimeDecreaseMinuteIcon"
                                        class="bit-dtrp-cic @startDecreaseMinuteIconCss @Classes?.StartTimeDecreaseMinuteIcon" />
@@ -763,6 +790,7 @@
                                             type="button"
                                             aria-pressed="@(IsAm(_startTimeHour) is true ? "true" : "false")"
                                             disabled="@amDisabled"
+                                            aria-disabled="@(amDisabled ? "true" : null)"
                                             style="@Styles?.StartTimeAmButton"
                                             class="bit-dtrp-tbt bit-dtrp-bam @(IsAm(_startTimeHour) is true ? "bit-dtrp-bns" : string.Empty) @Classes?.StartTimeAmButton">
                                         @_culture.DateTimeFormat.AMDesignator
@@ -772,6 +800,7 @@
                                             type="button"
                                             aria-pressed="@(IsAm(_startTimeHour) is false ? "true" : "false")"
                                             disabled="@pmDisabled"
+                                            aria-disabled="@(pmDisabled ? "true" : null)"
                                             style="@Styles?.StartTimePmButton"
                                             class="bit-dtrp-tbt bit-dtrp-bpm @(IsAm(_startTimeHour) is false ? "bit-dtrp-bns" : string.Empty) @Classes?.StartTimePmButton">
                                         @_culture.DateTimeFormat.PMDesignator
@@ -790,7 +819,8 @@
                                         aria-label="@EndTimeIncreaseHourTitle"
                                         style="@Styles?.EndTimeIncreaseHourButton"
                                         class="bit-dtrp-tbt @Classes?.EndTimeIncreaseHourButton"
-                                        disabled="@endTimeIncreaseHourDisabled">
+                                        disabled="@endTimeIncreaseHourDisabled"
+                                        aria-disabled="@(endTimeIncreaseHourDisabled ? "true" : null)">
                                     <i aria-hidden="true"
                                        style="@Styles?.EndTimeIncreaseHourIcon"
                                        class="bit-dtrp-cic @endIncreaseHourIconCss @Classes?.EndTimeIncreaseHourIcon" />
@@ -806,6 +836,7 @@
                                        inputmode="numeric"
                                        readonly="@ReadOnly"
                                        disabled="@(Disabled)"
+                                       aria-disabled="@(Disabled ? "true" : null)"
                                        style="@Styles?.EndTimeHourInput"
                                        aria-label="@EndTimeHourInputAriaLabel"
                                        class="bit-dtrp-tin @Classes?.EndTimeHourInput"
@@ -818,7 +849,8 @@
                                         aria-label="@EndTimeDecreaseHourTitle"
                                         style="@Styles?.EndTimeDecreaseHourButton"
                                         class="bit-dtrp-tbt @Classes?.EndTimeDecreaseHourButton"
-                                        disabled="@endTimeDecreaseHourDisabled">
+                                        disabled="@endTimeDecreaseHourDisabled"
+                                        aria-disabled="@(endTimeDecreaseHourDisabled ? "true" : null)">
                                     <i aria-hidden="true"
                                        style="@Styles?.EndTimeDecreaseHourIcon"
                                        class="bit-dtrp-cic @endDecreaseHourIconCss @Classes?.EndTimeDecreaseHourIcon" />
@@ -834,7 +866,8 @@
                                         aria-label="@EndTimeIncreaseMinuteTitle"
                                         style="@Styles?.EndTimeIncreaseMinuteButton"
                                         class="bit-dtrp-tbt @Classes?.EndTimeIncreaseMinuteButton"
-                                        disabled="@endTimeIncreaseMinuteDisabled">
+                                        disabled="@endTimeIncreaseMinuteDisabled"
+                                        aria-disabled="@(endTimeIncreaseMinuteDisabled ? "true" : null)">
                                     <i aria-hidden="true"
                                        style="@Styles?.EndTimeIncreaseMinuteIcon"
                                        class="bit-dtrp-cic @endIncreaseMinuteIconCss @Classes?.EndTimeIncreaseMinuteIcon" />
@@ -850,6 +883,7 @@
                                        inputmode="numeric"
                                        readonly="@ReadOnly"
                                        disabled="@(Disabled)"
+                                       aria-disabled="@(Disabled ? "true" : null)"
                                        style="@Styles?.EndTimeMinuteInput"
                                        aria-label="@EndTimeMinuteInputAriaLabel"
                                        class="bit-dtrp-tin @Classes?.EndTimeMinuteInput"
@@ -862,7 +896,8 @@
                                         aria-label="@EndTimeDecreaseMinuteTitle"
                                         style="@Styles?.EndTimeDecreaseMinuteButton"
                                         class="bit-dtrp-tbt @Classes?.EndTimeDecreaseMinuteButton"
-                                        disabled="@endTimeDecreaseMinuteDisabled">
+                                        disabled="@endTimeDecreaseMinuteDisabled"
+                                        aria-disabled="@(endTimeDecreaseMinuteDisabled ? "true" : null)">
                                     <i aria-hidden="true"
                                        style="@Styles?.EndTimeDecreaseMinuteIcon"
                                        class="bit-dtrp-cic @endDecreaseMinuteIconCss @Classes?.EndTimeDecreaseMinuteIcon" />
@@ -879,6 +914,7 @@
                                             type="button"
                                             aria-pressed="@(IsAm(_endTimeHour) is true ? "true" : "false")"
                                             disabled="@amDisabled"
+                                            aria-disabled="@(amDisabled ? "true" : null)"
                                             style="@Styles?.EndTimeAmButton"
                                             class="bit-dtrp-tbt bit-dtrp-bam @(IsAm(_endTimeHour) is true ? "bit-dtrp-bns" : string.Empty) @Classes?.EndTimeAmButton">
                                         @_culture.DateTimeFormat.AMDesignator
@@ -888,6 +924,7 @@
                                             type="button"
                                             aria-pressed="@(IsAm(_endTimeHour) is false ? "true" : "false")"
                                             disabled="@pmDisabled"
+                                            aria-disabled="@(pmDisabled ? "true" : null)"
                                             style="@Styles?.EndTimePmButton"
                                             class="bit-dtrp-tbt bit-dtrp-bpm @(IsAm(_endTimeHour) is false ? "bit-dtrp-bns" : string.Empty) @Classes?.EndTimePmButton">
                                         @_culture.DateTimeFormat.PMDesignator
@@ -913,6 +950,7 @@
                 <button @onclick="HandleOnCancelButtonClick"
                         type="button"
                         disabled="@(Disabled)"
+                        aria-disabled="@(Disabled ? "true" : null)"
                         style="@Styles?.CancelButton"
                         class="bit-dtrp-acb bit-dtrp-cnb @Classes?.CancelButton">
                     @CancelButtonText
@@ -920,6 +958,7 @@
                 <button @onclick="HandleOnApplyButtonClick"
                         type="button"
                         disabled="@applyDisabled"
+                        aria-disabled="@(applyDisabled ? "true" : null)"
                         style="@Styles?.ApplyButton"
                         class="bit-dtrp-acb bit-dtrp-apb @Classes?.ApplyButton">
                     @ApplyButtonText
