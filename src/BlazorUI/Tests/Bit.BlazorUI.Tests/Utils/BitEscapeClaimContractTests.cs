@@ -97,6 +97,112 @@ public sealed class BitEscapeClaimContractTests
         }
     }
 
+    [TestMethod]
+    public void TheCompositionOfAKeyShouldBeReadInOnePlace()
+    {
+        var check = GetMethod(SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts"), "isComposingKey");
+
+        // The engines that report the real key during a composition set isComposing, and the ones that predate it
+        // report the legacy 229 key code instead - so a check of one of them alone leaves a dialog closing in the other.
+        StringAssert.Contains(check, "e.isComposing");
+        StringAssert.Contains(check, "keyCode === 229");
+
+        // Every script of both packages: the components' own (a text field holding back the keys of a composition, a
+        // search box, a chart's tooltip) as well as the library's surfaces. The Extras ones call the core helper
+        // through its declaration, which is no copy of it.
+        string[] packages = [SourceFiles.GetDirectory("Bit.BlazorUI"), SourceFiles.GetDirectory("Bit.BlazorUI.Extras")];
+
+        var scripts = packages.SelectMany(folder => Directory.EnumerateFiles(folder, "*.ts", SearchOption.AllDirectories))
+                              .Where(file => file.EndsWith(".d.ts") is false)
+                              .Where(file => file.Split(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar)
+                                                 .Any(part => part is "node_modules" or "wwwroot" or "bin" or "obj") is false)
+                              .ToList();
+
+        Assert.IsTrue(scripts.Count > 1, "No script of the packages was found.");
+
+        var copies = scripts.SelectMany(file => SourceFiles.ReadFullPath(file).Split('\n')
+                                                           .Where(line => line.TrimStart().StartsWith("//") is false)
+                                                           .Where(line => Regex.IsMatch(line, @"\.isComposing\b|=== 229"))
+                                                           .Where(line => check.Contains(line.Trim()) is false)
+                                                           .Select(line => $"{Path.GetFileName(file)}: {line.Trim()}"))
+                            .ToList();
+
+        Assert.AreEqual(0, copies.Count, $"A script reads the composition of a key outside Utils.isComposingKey: {string.Join(" | ", copies)}");
+    }
+
+    [TestMethod,
+        DataRow("claimEscape"),
+        DataRow("setupSurfaceEscape"),
+        DataRow("setupEscapeGuard"),
+        DataRow("watchEscape"),
+        DataRow("watchLayerEscape"),
+        DataRow("setupEscape"),
+        DataRow("setupTooltip"),
+        DataRow("dismissTooltipsOnEscape"),
+        DataRow("stopComposingEscape")
+    ]
+    public void EverySurfaceShouldLeaveTheEscapeOfAnImeCompositionAlone(string method)
+    {
+        var body = GetMethod(SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts"), method);
+
+        // Escape cancels the candidate an input method editor is composing, so the press is nobody's: a surface that
+        // closed on it would take away the text the user was typing along with it.
+        StringAssert.Contains(body, "Utils.isComposingKey(e)", $"Utils.{method} does not leave the Escape of an IME composition alone.");
+    }
+
+    [TestMethod,
+        DataRow("setupSurfaceEscape"),
+        DataRow("setupEscape"),
+        DataRow("setupTooltip")
+    ]
+    public void EveryListenerThatAnswersTheKeyShouldReadTheCompositionItself(string method)
+    {
+        var body = GetMethod(SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts"), method);
+
+        // As with a claim, one listener of the method reading it does not keep another one from closing the surface.
+        // (watchEscape and watchLayerEscape record it in a listener of their own, which the answering one reads.)
+        var listeners = body.Split("addEventListener(").Skip(1)
+                            .Where(listener => listener.StartsWith("'keydown'"))
+                            .Where(listener => listener.Contains("invokeMethodAsync"))
+                            .ToList();
+
+        Assert.IsTrue(listeners.Count > 0, $"Utils.{method} has no keydown listener that answers the key.");
+
+        foreach (var listener in listeners)
+        {
+            StringAssert.Contains(listener, "Utils.isComposingKey(e)", $"A keydown listener of Utils.{method} answers the Escape of an IME composition.");
+        }
+    }
+
+    [TestMethod]
+    public void TheEscapeOfAnImeCompositionShouldNeverReachDotNet()
+    {
+        // KeyboardEventArgs cannot tell it from any other Escape (no key code, and no composition state before .NET 9),
+        // so it is stopped on the document element in the bubble phase: after every listener of the page's elements,
+        // and ahead of Blazor's delegation, which listens on the document.
+        var general = SourceFiles.Read("Bit.BlazorUI", "Scripts", "general.ts");
+
+        StringAssert.Contains(general, "document.documentElement.addEventListener('keydown', (e: KeyboardEvent) => BitBlazorUI.Utils.stopComposingEscape(e));");
+
+        var stop = GetMethod(SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts"), "stopComposingEscape");
+
+        StringAssert.Contains(stop, "e.key !== 'Escape'");
+        StringAssert.Contains(stop, "e.stopPropagation()");
+        Assert.IsFalse(stop.Contains("preventDefault"), "Utils.stopComposingEscape takes the key away from the IME it belongs to.");
+    }
+
+    [TestMethod]
+    public void TheCalloutShouldLeaveAnEscapeOfAPopupOpenedFromInsideItAlone()
+    {
+        // A BitCallout dismisses itself in .NET, on its root and on its content, which hear a press a popup opened from
+        // inside them closes, too - so the watch on its Escapes asks about the open callouts as a panel's guard does, and
+        // is told which callout is asking: that one is the innermost open callout the key closes, never another.
+        var utils = SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts");
+
+        StringAssert.Contains(GetMethod(utils, "watchNestedEscape"), "Utils.isEscapeOfOpenCallout(e.target, id)");
+        StringAssert.Contains(GetMethod(utils, "isEscapeOfOpenCallout"), "current.calloutId === ownCalloutId");
+    }
+
     [TestMethod,
         DataRow("setupSurfaceEscape"),
         DataRow("setupEscapeGuard"),

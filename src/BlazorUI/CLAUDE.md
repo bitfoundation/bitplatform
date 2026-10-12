@@ -103,6 +103,16 @@ the callouts, BitTooltip, BitMessage - the listeners in `Scripts/Utils.ts`) leav
   round trip that registers its popup - is claimed from the render (`data-bit-esc` on its root). A component whose .NET keydown handlers hear every key of its content leaves the keys of a surface rendered
   there alone through `Utils.isInNestedSurface` (BitDataGrid's cells, rows and headers, BitSwiper, BitCarousel).
   `BitSurfaceKeyPropagationContractTests` pins the keys reaching the page.
+- **A surface that dismisses itself in its own .NET keydown handler asks the JS side first.** `BitPanel`
+  (`Utils.setupEscapeGuard`) and `BitCallout` (its anchor and its content, `Utils.watchNestedEscape`) go by one
+  per-press `OnEscapeVerdict`, which folds a nested surface, a claim, an open popup opened from inside (and, for the
+  panel, a prevented default and an IME composition) into one answer - never a channel of their own for one of them.
+  A callout names itself to `Utils.isEscapeOfOpenCallout`, since it is the innermost open callout the key closes.
+- **The Escape of an IME composition is nobody's.** Every script of both packages reads it through
+  `Utils.isComposingKey` (the one reading of `isComposing` and the legacy 229 key code), every listener that closes
+  something leaves it alone, and `Utils.stopComposingEscape` stops it on the document element, ahead of Blazor's
+  delegation, so no .NET handler hears it in any engine - a component never tests for it in C#.
+  `BitEscapeClaimContractTests` pins both.
 - **Nothing guesses from what the target looks like.** No selector of inputs, roles or `aria-expanded`
   decides who owns the key; a component the claim and the open popup do not cover is fixed by claiming,
   never by teaching a surface a new selector. A consumer's own control opts in the same way.

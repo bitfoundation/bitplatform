@@ -43,7 +43,7 @@
             // surface around the chart, or an input method is composing.
             function onDocumentKeyDown(e: KeyboardEvent) {
                 if (e.key !== 'Escape' || e.defaultPrevented) return;
-                if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || e.isComposing || e.keyCode === 229) return;
+                if (e.altKey || e.ctrlKey || e.metaKey || e.shiftKey || Utils.isComposingKey(e)) return;
                 if (e.target instanceof Node && element.contains(e.target)) return;
                 // Only a tooltip the pointer opened: one the keyboard position shows goes with the plot's focus.
                 if (!element.querySelector('.bit-cht-tt') || !element.matches(':hover')) return;

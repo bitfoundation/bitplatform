@@ -28,7 +28,7 @@
                 // the browsers that do not set isComposing at all. Blazor listens for the keydown on
                 // the document, so stopping the propagation here is what keeps the component from
                 // reacting to a key that the IME is still using.
-                if (isComposing || e.isComposing || e.keyCode === 229) {
+                if (isComposing || Utils.isComposingKey(e)) {
                     if (SearchBox.imeKeys.indexOf(e.key) > -1) {
                         e.stopPropagation();
                     }
@@ -83,7 +83,7 @@
             if (combos.length === 0) return;
 
             const handler = (e: KeyboardEvent) => {
-                if (e.defaultPrevented || e.isComposing || e.keyCode === 229) return;
+                if (e.defaultPrevented || Utils.isComposingKey(e)) return;
 
                 const key = (e.key || '').toLowerCase();
                 const match = combos.find(c => c.key === key &&

@@ -5,6 +5,7 @@
 // BitFocusablesContractTests fails on a member declared here that the core Utils no longer has.
 declare namespace BitBlazorUI {
     class Utils {
+        static isComposingKey(e: KeyboardEvent | InputEvent): boolean;
         static isFocusableElement(el: HTMLElement): boolean;
         static getFocusables(container: ParentNode): HTMLElement[];
         static firstFocusable(container: ParentNode, skip?: (el: HTMLElement) => boolean): HTMLElement | null;
