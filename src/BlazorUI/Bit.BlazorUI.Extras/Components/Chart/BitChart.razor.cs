@@ -1556,15 +1556,32 @@ public partial class BitChart : BitComponentBase
     }
 
     /// <summary>
-    /// The side a title or subtitle actually renders on. Left and right ones run down the side of the plot
-    /// (rotated); anything that is not one of the four sides falls back to the top.
+    /// The side a title or subtitle actually renders on. Left, Right, Start and End ones run down the side of the
+    /// plot (rotated), Bottom ones across its foot; every other value falls back to the top.
     /// </summary>
     private static BitPlacement TitleSide(BitChartTitleModel title) => title.Placement switch
     {
         BitPlacement.Bottom => BitPlacement.Bottom,
         BitPlacement.Left => BitPlacement.Left,
         BitPlacement.Right => BitPlacement.Right,
+        BitPlacement.Start => BitPlacement.Start,
+        BitPlacement.End => BitPlacement.End,
         _ => BitPlacement.Top
+    };
+
+    /// <summary>
+    /// The class naming which side of the plot a title, subtitle or legend beside it sits on, which places it in the
+    /// row around the plot and turns a title or subtitle over where it is on the left (see BitChart.scss). Start and End
+    /// are named apart from Left and Right, since only they follow the reading direction. A value with no side of its
+    /// own beside the plot has no class, so it is never placed there by mistake.
+    /// </summary>
+    private static string SideClass(BitPlacement side) => side switch
+    {
+        BitPlacement.Left => "bit-cht-lft",
+        BitPlacement.Right => "bit-cht-rgt",
+        BitPlacement.Start => "bit-cht-sta",
+        BitPlacement.End => "bit-cht-end",
+        _ => string.Empty
     };
 
     // Each value is written as the CSS keyword that means what it says: the logical pair as the keywords that

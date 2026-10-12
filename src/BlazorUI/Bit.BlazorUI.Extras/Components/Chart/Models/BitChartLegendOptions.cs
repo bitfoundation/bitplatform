@@ -8,8 +8,9 @@ public sealed class BitChartLegendOptions
     /// Which edge of the chart the legend is drawn against (default is the top).
     /// </summary>
     /// <remarks>
-    /// A chart is laid out physically, so only Top, Bottom, Left and Right are meaningful here; any other side
-    /// leaves the legend at the top.
+    /// Only Top, Bottom, Left, Right, Start and End are meaningful here. Left and Right stay on the side they are named
+    /// for in both reading directions, while Start and End follow it: a legend at the End sits on the right of a
+    /// left-to-right chart and on the left of a right-to-left one. Every other value leaves the legend at the top.
     /// </remarks>
     public BitPlacement Placement { get; set; } = BitPlacement.Top;
     /// <summary>

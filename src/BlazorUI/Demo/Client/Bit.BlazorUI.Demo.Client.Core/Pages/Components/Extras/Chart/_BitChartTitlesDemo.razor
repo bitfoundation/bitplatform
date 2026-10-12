@@ -10,8 +10,9 @@
 
 <DemoExample Title="Placement" RazorCode="@placementRazorCode" CsharpCode="@placementCsharpCode" Id="titles-placement">
     <div class="example-desc">
-        <code>Position</code> puts the title on any side (left and right run vertically), <code>Align</code> pins
-        it to the start, center or end, and a newline in the text breaks it over two lines.
+        <code>Placement</code> puts the title on any side (the ones beside the plot run vertically; <code>Start</code>
+        and <code>End</code> follow the reading direction where <code>Left</code> and <code>Right</code> stay put),
+        <code>Align</code> pins it to the start, center or end, and a newline in the text breaks it over two lines.
     </div>
     <div class="controls">
         <label>
@@ -21,6 +22,8 @@
                 <option value="@BitPlacement.Bottom">Bottom</option>
                 <option value="@BitPlacement.Left">Left</option>
                 <option value="@BitPlacement.Right">Right</option>
+                <option value="@BitPlacement.Start">Start</option>
+                <option value="@BitPlacement.End">End</option>
             </select>
         </label>
         <label>

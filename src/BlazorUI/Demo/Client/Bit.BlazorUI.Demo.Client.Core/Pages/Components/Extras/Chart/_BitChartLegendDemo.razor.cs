@@ -59,7 +59,7 @@ public partial class _BitChartLegendDemo
 
 
     private readonly string liveRazorCode = @"@* Bind controls to legend options; the chart recomputes on each change. *@
-<select @bind=""_position"">...Top/Bottom/Left/Right...</select>
+<select @bind=""_position"">...Top/Bottom/Left/Right/Start/End...</select>
 <select @bind=""_align"">...Start/Center/End...</select>
 <input type=""checkbox"" @bind=""_usePointStyle"" /> Point style
 <input type=""checkbox"" @bind=""_reverse"" /> Reverse
@@ -133,7 +133,7 @@ private BitChartData Markers() => new()
     {
         Plugins = new BitChartPluginOptions
         {
-            Legend = new BitChartLegendOptions { Placement = BitPlacement.Right, MaxHeight = 120 }
+            Legend = new BitChartLegendOptions { Placement = BitPlacement.End, MaxHeight = 120 }
         }
     };
 
@@ -157,7 +157,7 @@ private readonly BitChartOptions _capped = new()
     Plugins = new BitChartPluginOptions
     {
         // Past 120px the legend scrolls instead of pushing the plot out of the way.
-        Legend = new BitChartLegendOptions { Placement = BitPlacement.Right, MaxHeight = 120 }
+        Legend = new BitChartLegendOptions { Placement = BitPlacement.End, MaxHeight = 120 }
     }
 };
 

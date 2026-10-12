@@ -82,6 +82,31 @@ public class BitChartStylesheetTests
         StringAssert.Contains(forced, "border: 1px solid CanvasText;");
     }
 
+    [TestMethod]
+    public void BitChartShouldPlaceThePartsBesideThePlotByTheirSide()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The row around the plot follows the reading direction, so Start and End need no right-to-left rule of their
+        // own; only Left and Right, which keep their side, are moved back in one (#13714).
+        Assert.DoesNotContain("row-reverse", stylesheet);
+        StringAssert.Contains(stylesheet, ".bit-cht-#{$part}:where(.bit-cht-lft, .bit-cht-sta) {\n        order: -$step;");
+        StringAssert.Contains(stylesheet, ".bit-cht-#{$part}:where(.bit-cht-rgt, .bit-cht-end) {\n        order: $step;");
+        StringAssert.Contains(stylesheet, ".bit-cht-#{$part}:where(.bit-cht-lft):where(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {\n        order: $step;");
+        StringAssert.Contains(stylesheet, ".bit-cht-#{$part}:where(.bit-cht-rgt):where(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {\n        order: -$step;");
+
+        // A title or subtitle on the left is turned over: Left always, Start reading left to right, End reading right
+        // to left.
+        StringAssert.Contains(stylesheet, ".bit-cht-ttl-v:where(.bit-cht-lft, .bit-cht-sta) {\n    rotate: 180deg;");
+        StringAssert.Contains(stylesheet, ".bit-cht-ttl-v:where(.bit-cht-sta):where(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {\n    rotate: none;");
+        StringAssert.Contains(stylesheet, ".bit-cht-ttl-v:where(.bit-cht-end):where(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {\n    rotate: 180deg;");
+
+        // The side is read through :where() alone, so these rules weigh what the part's own class weighs and a single
+        // class an app hands the part through Classes still moves or turns it.
+        var sideCompound = new Regex(@"\.bit-cht-[a-z#{}$]+\.bit-cht-(lft|rgt|sta|end)\b");
+        CollectionAssert.AreEqual(Array.Empty<string>(), sideCompound.Matches(stylesheet).Select(m => m.Value).ToArray());
+    }
+
     private static string Normalize(string name)
         => name.StartsWith("--bit-Chart-series-color-", StringComparison.Ordinal) ? "--bit-Chart-series-color-N" : name;
 

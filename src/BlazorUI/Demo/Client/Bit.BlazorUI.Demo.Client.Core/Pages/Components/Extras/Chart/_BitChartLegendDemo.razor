@@ -2,8 +2,9 @@
 
 <DemoExample Title="Interactive legend controls" RazorCode="@liveRazorCode" CsharpCode="@liveCsharpCode" Id="legend-live">
     <div class="example-desc">
-        The legend sits on any side, aligned to its start, center or end; <code>Reverse</code> flips the entry
-        order. Hovering or focusing an entry fades the other series (<code>HighlightOnHover</code>); clicking it hides
+        The legend sits on any side, aligned to its start, center or end. <code>Left</code> and <code>Right</code>
+        stay put in a right-to-left page, while <code>Start</code> and <code>End</code> follow the reading direction.
+        <code>Reverse</code> flips the entry order. Hovering or focusing an entry fades the other series (<code>HighlightOnHover</code>); clicking it hides
         its dataset and re-scales the axes. Set <code>OnClickToggle</code> to false for a label-only legend.
     </div>
     <div class="controls">
@@ -14,6 +15,8 @@
                 <option value="@BitPlacement.Bottom">Bottom</option>
                 <option value="@BitPlacement.Left">Left</option>
                 <option value="@BitPlacement.Right">Right</option>
+                <option value="@BitPlacement.Start">Start</option>
+                <option value="@BitPlacement.End">End</option>
             </select>
         </label>
         <label>
