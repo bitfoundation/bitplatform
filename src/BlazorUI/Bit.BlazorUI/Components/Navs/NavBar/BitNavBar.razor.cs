@@ -87,7 +87,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
 
     internal void UnregisterOption(BitNavBarOption option)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         var item = (option as TItem)!;
 

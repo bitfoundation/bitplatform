@@ -401,6 +401,10 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     internal void UnregisterOption(BitButtonGroupOption option)
     {
+        // The options unregister while they are being disposed, which also happens when the group goes away with
+        // them: clearing the toggle state they held would raise ToggleKeyChanged for a choice nobody made.
+        if (IsDisposing) return;
+
         var item = (option as TItem)!;
 
         // When the removed option is the currently toggled one, clear the toggle state and the bound

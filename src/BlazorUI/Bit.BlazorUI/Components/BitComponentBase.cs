@@ -18,6 +18,12 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     protected bool IsRendered;
     protected bool IsDisposed;
 
+    // Set the moment the disposal starts, ahead of whatever an override awaits before the base class sets IsDisposed.
+    // The renderer starts disposing a component before the ones it rendered, and runs their disposal while the
+    // component is still awaiting its own (a JS call), so this is what a child unregistering from it reads to tell
+    // a component that is going away with it from one that stays, and leave its state and its callbacks alone.
+    protected bool IsDisposing;
+
 
 
     internal string _Id => Id ?? _uniqueId;
@@ -836,6 +842,8 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     /// </returns>
     public async ValueTask DisposeAsync()
     {
+        IsDisposing = true;
+
         try
         {
             await DisposeAsync(true);
@@ -867,6 +875,7 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     /// </returns>
     protected virtual ValueTask DisposeAsync(bool disposing)
     {
+        IsDisposing = true;
         IsDisposed = true;
         return ValueTask.CompletedTask;
     }

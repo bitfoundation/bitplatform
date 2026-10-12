@@ -768,7 +768,7 @@ public partial class BitCarousel : BitComponentBase
             _allItems[i].Index = i;
         }
 
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         _needsReset = true;
 

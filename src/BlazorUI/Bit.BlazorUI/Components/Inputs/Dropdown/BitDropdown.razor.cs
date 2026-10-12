@@ -1204,7 +1204,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     internal void UnregisterOption(BitDropdownOption<TValue> option)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         var item = (option as TItem)!;
         Items!.Remove(item);

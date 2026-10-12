@@ -361,4 +361,32 @@ public class BitAccordionListTests : BunitTestContext
         // A label on a plain container is dropped by a screen reader, so a splatted one makes the list a group too.
         Assert.AreEqual("group", root.GetAttribute("role"));
     }
+
+    [TestMethod]
+    public void BitAccordionListShouldLeaveItsExpandedKeysAloneWhileItIsDisposedTogetherWithItsOptions()
+    {
+        var component = RenderComponent<BitAccordionListTeardownTest>();
+
+        component.Render(parameters => parameters.Add(p => p.Show, false));
+
+        Assert.AreEqual(0, component.Instance.ExpandedKeyChanges.Count);
+        Assert.AreEqual(0, component.Instance.ExpandedKeysChanges.Count);
+        Assert.AreEqual("first", component.Instance.ExpandedKey);
+        CollectionAssert.AreEqual(new[] { "first" }, component.Instance.ExpandedKeys!.ToArray());
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldStillCollapseTheExpandedKeysWhenTheExpandedOptionIsRemovedFromAListThatStays()
+    {
+        var component = RenderComponent<BitAccordionListTeardownTest>();
+
+        component.Render(parameters => parameters.Add(p => p.ShowFirst, false));
+
+        component.WaitForAssertion(() =>
+        {
+            CollectionAssert.AreEqual(new string?[] { null }, component.Instance.ExpandedKeyChanges);
+            Assert.AreEqual(1, component.Instance.ExpandedKeysChanges.Count);
+            Assert.AreEqual(0, component.Instance.ExpandedKeysChanges[0]!.Count());
+        });
+    }
 }

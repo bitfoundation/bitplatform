@@ -372,7 +372,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
     internal void UnregisterOptions(BitBreadcrumbOption option)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         _items.Remove((option as TItem)!);
         _optionsOrderDirty = true;

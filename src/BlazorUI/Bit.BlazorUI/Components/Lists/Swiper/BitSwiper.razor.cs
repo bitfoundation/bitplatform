@@ -882,7 +882,7 @@ public partial class BitSwiper : BitComponentBase
             _allItems[i].Index = i;
         }
 
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         StateHasChanged();
     }

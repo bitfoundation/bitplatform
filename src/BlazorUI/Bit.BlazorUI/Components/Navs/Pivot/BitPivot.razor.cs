@@ -1021,6 +1021,10 @@ public partial class BitPivot : BitComponentBase
 
     internal void UnregisterItem(BitPivotItem item)
     {
+        // The items unregister while they are being disposed, which also happens when the pivot goes away with
+        // them: moving the selection off each one in turn would raise SelectedKeyChanged for a choice nobody made.
+        if (IsDisposing) return;
+
         var index = _allItems.IndexOf(item);
 
         _allItems.Remove(item);
