@@ -224,15 +224,21 @@ public class BitDialogStylesheetTests
     }
 
     [TestMethod]
-    public void BitDialogButtonStatesShouldFallBackToTheValuesAtRest()
+    public void BitDialogButtonStatesShouldFallBackOnlyWhereTheyStayReadable()
     {
         var rules = GetRules(ReadStylesheet());
 
-        // A button restyled at rest is not handed back the primary colors under the pointer or while pressed.
+        // The filled Ok button restyled at rest is not handed back the primary colors under the pointer or while pressed.
         StringAssert.Contains(rules, "$dlg-okb-hover-background: var(--bit-Dialog-ok-button-hover-background, var(--bit-Dialog-ok-button-background, #{$clr-pri-hover}));");
         StringAssert.Contains(rules, "$dlg-okb-active-background: var(--bit-Dialog-ok-button-active-background, var(--bit-Dialog-ok-button-hover-background, var(--bit-Dialog-ok-button-background, #{$clr-pri-active})));");
-        StringAssert.Contains(rules, "$dlg-cnb-hover-background: var(--bit-Dialog-cancel-button-hover-background, var(--bit-Dialog-cancel-button-background, #{$clr-pri-hover}));");
-        StringAssert.Contains(rules, "$dlg-cnb-hover-color: var(--bit-Dialog-cancel-button-hover-color, var(--bit-Dialog-cancel-button-color, #{$clr-pri-text}));");
+
+        // The Cancel button is an outline that fills under the pointer, so its states take the primary fill and text
+        // until they are given values of their own: a color or background meant for the outline at rest would be
+        // unreadable on that fill.
+        StringAssert.Contains(rules, "$dlg-cnb-hover-background: var(--bit-Dialog-cancel-button-hover-background, #{$clr-pri-hover});");
+        StringAssert.Contains(rules, "$dlg-cnb-hover-color: var(--bit-Dialog-cancel-button-hover-color, #{$clr-pri-text});");
+        StringAssert.Contains(rules, "$dlg-cnb-active-background: var(--bit-Dialog-cancel-button-active-background, var(--bit-Dialog-cancel-button-hover-background, #{$clr-pri-active}));");
+        StringAssert.Contains(rules, "$dlg-cnb-active-color: var(--bit-Dialog-cancel-button-active-color, var(--bit-Dialog-cancel-button-hover-color, #{$clr-pri-text}));");
 
         // The states move the private variables the rule at rest paints from, the role color of an explicit Color first.
         StringAssert.Contains(GetRule(rules, "okb"), "--bit-dlg-okb-bg: var(--bit-dlg-clr-hover, #{$dlg-okb-hover-background});");

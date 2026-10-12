@@ -898,25 +898,25 @@ public partial class BitDialogDemo
         {
             Name = "--bit-Dialog-cancel-button-hover-background",
             DefaultValue = "--bit-clr-pri-hover",
-            Description = "Background of the Cancel button on hover. Falls back to --bit-Dialog-cancel-button-background when that is set. The Color parameter wins over it.",
+            Description = "Background of the Cancel button on hover. It does not fall back to --bit-Dialog-cancel-button-background: the outline fills under the pointer, so set it along with --bit-Dialog-cancel-button-hover-color. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Dialog-cancel-button-hover-color",
             DefaultValue = "--bit-clr-pri-text",
-            Description = "Text color of the Cancel button on hover. Falls back to --bit-Dialog-cancel-button-color when that is set. The Color parameter wins over it.",
+            Description = "Text color of the Cancel button on hover, on the hover background. It does not fall back to --bit-Dialog-cancel-button-color, which is meant for the outline at rest. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Dialog-cancel-button-active-background",
             DefaultValue = "--bit-clr-pri-active",
-            Description = "Background of the Cancel button while pressed. Falls back to the hover background, then the background, when either is set. The Color parameter wins over it.",
+            Description = "Background of the Cancel button while pressed. Falls back to the hover background when that is set. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Dialog-cancel-button-active-color",
             DefaultValue = "--bit-clr-pri-text",
-            Description = "Text color of the Cancel button while pressed. Falls back to the hover text color, then the text color, when either is set. The Color parameter wins over it.",
+            Description = "Text color of the Cancel button while pressed. Falls back to the hover text color when that is set. The Color parameter wins over it.",
         },
         new()
         {

@@ -33,10 +33,10 @@
 //   --bit-Dialog-cancel-button-background          background of the Cancel button                   (default: transparent)
 //   --bit-Dialog-cancel-button-color               text color of the Cancel button                   (default: $clr-pri)
 //   --bit-Dialog-cancel-button-border-color        border color of the Cancel button, in every state (default: the text color at rest, the background of the state on hover and press)
-//   --bit-Dialog-cancel-button-hover-background    background of the Cancel button on hover          (default: the background when it is set, otherwise $clr-pri-hover)
-//   --bit-Dialog-cancel-button-hover-color         text color of the Cancel button on hover          (default: the text color when it is set, otherwise $clr-pri-text)
-//   --bit-Dialog-cancel-button-active-background   background of the Cancel button while pressed     (default: the hover background, then the background, when either is set, otherwise $clr-pri-active)
-//   --bit-Dialog-cancel-button-active-color        text color of the Cancel button while pressed     (default: the hover text color, then the text color, when either is set, otherwise $clr-pri-text)
+//   --bit-Dialog-cancel-button-hover-background    background of the Cancel button on hover          (default: $clr-pri-hover)
+//   --bit-Dialog-cancel-button-hover-color         text color of the Cancel button on hover          (default: $clr-pri-text)
+//   --bit-Dialog-cancel-button-active-background   background of the Cancel button while pressed     (default: the hover background when it is set, otherwise $clr-pri-active)
+//   --bit-Dialog-cancel-button-active-color        text color of the Cancel button while pressed     (default: the hover text color when it is set, otherwise $clr-pri-text)
 //   --bit-Dialog-cancel-button-radius              corner radius of the Cancel button                (default: $shp-radius-button)
 //
 // An explicit Color wins over every button variable above that it paints: the text, border and background of the
@@ -45,9 +45,11 @@
 // unset. What a Color leaves alone stays the variables', so the background of the Cancel button at rest (transparent
 // by default) and both radii still follow them under an explicit Color.
 //
-// The hover and pressed values fall back to the ones at rest once those are set, so a button re-skinned at rest is
-// not handed back the primary colors under the pointer: give the states values of their own to keep a visible
-// feedback. A disabled button keeps whatever colors it has and dims with $opa-dis.
+// The hover and pressed values of the Ok button fall back to the ones at rest once those are set, so a filled button
+// re-skinned at rest is not handed back the primary colors under the pointer: give the states values of their own to
+// keep a visible feedback. The Cancel button's do not: it is an outline that fills under the pointer, so a text color
+// or background meant for its outline at rest would be unreadable on that fill - its states take the primary fill
+// until they are given values of their own. A disabled button keeps whatever colors it has and dims with $opa-dis.
 
 $dlg-private-properties:
     wid, hei, mnw, mnh, mxw, mxh,
@@ -443,11 +445,14 @@ $dlg-okb-background: var(--bit-Dialog-ok-button-background, #{$clr-pri});
 $dlg-okb-hover-background: var(--bit-Dialog-ok-button-hover-background, var(--bit-Dialog-ok-button-background, #{$clr-pri-hover}));
 $dlg-okb-active-background: var(--bit-Dialog-ok-button-active-background, var(--bit-Dialog-ok-button-hover-background, var(--bit-Dialog-ok-button-background, #{$clr-pri-active})));
 
+// The Cancel button is an outline that fills under the pointer, so its states never fall back to the values at rest
+// (the way BitButton's Outline variant does not): a text color meant for the transparent outline would land on the
+// primary fill, and the outline's own fill under the primary text, each unreadable on the other.
 $dlg-cnb-color: var(--bit-Dialog-cancel-button-color, #{$clr-pri});
-$dlg-cnb-hover-color: var(--bit-Dialog-cancel-button-hover-color, var(--bit-Dialog-cancel-button-color, #{$clr-pri-text}));
-$dlg-cnb-active-color: var(--bit-Dialog-cancel-button-active-color, var(--bit-Dialog-cancel-button-hover-color, var(--bit-Dialog-cancel-button-color, #{$clr-pri-text})));
-$dlg-cnb-hover-background: var(--bit-Dialog-cancel-button-hover-background, var(--bit-Dialog-cancel-button-background, #{$clr-pri-hover}));
-$dlg-cnb-active-background: var(--bit-Dialog-cancel-button-active-background, var(--bit-Dialog-cancel-button-hover-background, var(--bit-Dialog-cancel-button-background, #{$clr-pri-active})));
+$dlg-cnb-hover-color: var(--bit-Dialog-cancel-button-hover-color, #{$clr-pri-text});
+$dlg-cnb-active-color: var(--bit-Dialog-cancel-button-active-color, var(--bit-Dialog-cancel-button-hover-color, #{$clr-pri-text}));
+$dlg-cnb-hover-background: var(--bit-Dialog-cancel-button-hover-background, #{$clr-pri-hover});
+$dlg-cnb-active-background: var(--bit-Dialog-cancel-button-active-background, var(--bit-Dialog-cancel-button-hover-background, #{$clr-pri-active}));
 
 .bit-dlg-okb {
     --bit-dlg-okb-clr: initial;
