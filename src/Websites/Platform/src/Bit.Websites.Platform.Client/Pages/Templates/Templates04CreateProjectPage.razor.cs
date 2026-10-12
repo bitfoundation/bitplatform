@@ -55,11 +55,16 @@ public partial class Templates04CreateProjectPage
     {
         get
         {
-            if (string.IsNullOrWhiteSpace(setup.Name))
+            var name = setup.Name;
+
+            if (string.IsNullOrWhiteSpace(name))
                 return "Your project needs a name.";
 
-            if (setup.Name.Any(char.IsWhiteSpace))
-                return "Leave out spaces, for example MyShop.";
+            if (name.Length > 50)
+                return "Keep it under 50 characters.";
+
+            if (name.Split('.').All(part => part.Length > 0 && (char.IsLetter(part[0]) || part[0] is '_') && part.All(c => char.IsLetterOrDigit(c) || c is '_')) is false)
+                return "Use letters, numbers and dots, and start each part with a letter, for example MyShop or Contoso.Shop.";
 
             return null;
         }
@@ -142,6 +147,11 @@ public partial class Templates04CreateProjectPage
         foreach (var key in purposeKeys.Where(k => touched.Contains(k) is false))
         {
             CopyValue(ProjectOptionCatalog.Get(key), pageDefaults, setup);
+        }
+
+        if (setup.Redis is false)
+        {
+            setup.Api = pageDefaults.Api;
         }
 
         purposeKeys.Clear();
@@ -353,7 +363,7 @@ public partial class Templates04CreateProjectPage
             Key = "name",
             Label = "Project name",
             Question = "What's your project called?",
-            Help = "Use letters and numbers, starting with a letter, like MyShop. It names the project's folder and its code.",
+            Help = "Use letters and numbers, starting with a letter, like MyShop or Contoso.Shop. It names the project's folder and its code.",
             Faqs =
             [
                 new("Can I rename the project later?",
