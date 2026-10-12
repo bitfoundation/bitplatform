@@ -140,7 +140,23 @@ public class BitForcedColorsBrowserTests : PerformanceTestBase
         AssertReadable([.. await ReadUnreadableText()], $"with reduced transparency, {scheme} contrast theme");
     }
 
+    // A focus ring drawn by the keyboard is a state of its own (:focus-visible), which neither the pointer nor a scripted
+    // focus brings up, so the first button is reached with Tab.
+    [DataTestMethod]
+    [DataRow("dark")]
+    [DataRow("light")]
+    public async Task BitButton_UnderForcedColors_KeepsItsLabelReadableUnderKeyboardFocus(string scheme)
+    {
+        await Open("button", scheme);
 
+        var button = Page.Locator("#case .bit-btn").First;
+        await Page.Keyboard.PressAsync("Tab");
+
+        Assert.IsTrue(await button.EvaluateAsync<bool>("e => e === document.activeElement"), "Tab did not reach the first button.");
+        Assert.IsTrue(await button.EvaluateAsync<bool>("e => e.matches(':focus-visible')"), "The first button is focused but not :focus-visible.");
+
+        AssertReadable([.. await ReadUnreadableText()], $"under keyboard focus, {scheme} contrast theme");
+    }
 
     // A part that cannot be brought up is a failure of its own, reported with the others rather than ending the run.
     private async Task<bool> TryOpen(string part, string scheme, List<string> failures)
