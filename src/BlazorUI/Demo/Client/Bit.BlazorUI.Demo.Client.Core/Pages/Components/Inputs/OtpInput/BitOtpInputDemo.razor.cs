@@ -486,37 +486,145 @@ public partial class BitOtpInputDemo
         {
             Name = "--bit-OtpInput-background",
             DefaultValue = "Per Variant: --bit-clr-bg-pri (Outline), --bit-clr-bg-sec (Fill), transparent (Text)",
-            Description = "Input background at rest, and the fallback of the hover and filled backgrounds below.",
+            Description = "Input background at rest, and the fallback of the hover and filled backgrounds below. Shared by the variants: --bit-OtpInput-fill-background, --bit-OtpInput-outline-background and --bit-OtpInput-text-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-OtpInput-hover-background",
             DefaultValue = "Per Variant: the rest background (Outline, Text), --bit-clr-bg-sec-hover (Fill)",
-            Description = "Input background while hovered, on an input that is neither disabled nor read-only.",
+            Description = "Input background while hovered, on an input that is neither disabled nor read-only. Shared by the variants: --bit-OtpInput-fill-hover-background, --bit-OtpInput-outline-hover-background and --bit-OtpInput-text-hover-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-OtpInput-border-color",
             DefaultValue = "Per Variant: --bit-clr-brd-pri (Outline, Text), transparent (Fill)",
-            Description = "Input rule at rest, and the fallback of the hover and filled rules below.",
+            Description = "Input rule at rest, and the fallback of the hover and filled rules below. Shared by the variants: --bit-OtpInput-fill-border-color, --bit-OtpInput-outline-border-color and --bit-OtpInput-text-border-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-OtpInput-hover-border-color",
             DefaultValue = "Per Variant: --bit-clr-brd-pri-hover (Outline, Text), the rest rule (Fill)",
-            Description = "Input rule while hovered.",
+            Description = "Input rule while hovered. Shared by the variants: --bit-OtpInput-fill-hover-border-color, --bit-OtpInput-outline-hover-border-color and --bit-OtpInput-text-hover-border-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-OtpInput-filled-background",
             DefaultValue = "--bit-OtpInput-background",
-            Description = "Background of an input that already holds a character, which is what turns the row into its own progress indicator. It has no parameter behind it.",
+            Description = "Background of an input that already holds a character, which is what turns the row into its own progress indicator. It has no parameter behind it. Shared by the variants: --bit-OtpInput-fill-filled-background, --bit-OtpInput-outline-filled-background and --bit-OtpInput-text-filled-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-OtpInput-filled-border-color",
             DefaultValue = "--bit-OtpInput-border-color",
-            Description = "Rule of an input that already holds a character.",
+            Description = "Rule of an input that already holds a character. Shared by the variants: --bit-OtpInput-fill-filled-border-color, --bit-OtpInput-outline-filled-border-color and --bit-OtpInput-text-filled-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-fill-background",
+            DefaultValue = "--bit-OtpInput-background",
+            Description = "Input background at rest of a Fill otp input alone, read ahead of --bit-OtpInput-background so a theme can set this variant apart from the others. The Accent parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-fill-hover-background",
+            DefaultValue = "--bit-OtpInput-hover-background",
+            Description = "Input background while hovered of a Fill otp input alone, read ahead of --bit-OtpInput-hover-background so a theme can set this variant apart from the others. The Accent parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-fill-filled-background",
+            DefaultValue = "--bit-OtpInput-filled-background",
+            Description = "Background of an input that already holds a character of a Fill otp input alone, read ahead of --bit-OtpInput-filled-background so a theme can set this variant apart from the others. The Accent parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-fill-border-color",
+            DefaultValue = "--bit-OtpInput-border-color",
+            Description = "Input rule at rest of a Fill otp input alone, read ahead of --bit-OtpInput-border-color so a theme can set this variant apart from the others. The Accent parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-fill-hover-border-color",
+            DefaultValue = "--bit-OtpInput-hover-border-color",
+            Description = "Input rule while hovered of a Fill otp input alone, read ahead of --bit-OtpInput-hover-border-color so a theme can set this variant apart from the others. The Accent parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-fill-filled-border-color",
+            DefaultValue = "--bit-OtpInput-filled-border-color",
+            Description = "Rule of an input that already holds a character of a Fill otp input alone, read ahead of --bit-OtpInput-filled-border-color so a theme can set this variant apart from the others. The Accent parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-outline-background",
+            DefaultValue = "--bit-OtpInput-background",
+            Description = "Input background at rest of an Outline otp input alone, read ahead of --bit-OtpInput-background so a theme can set this variant apart from the others. The Accent parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-outline-hover-background",
+            DefaultValue = "--bit-OtpInput-hover-background",
+            Description = "Input background while hovered of an Outline otp input alone, read ahead of --bit-OtpInput-hover-background so a theme can set this variant apart from the others. The Accent parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-outline-filled-background",
+            DefaultValue = "--bit-OtpInput-filled-background",
+            Description = "Background of an input that already holds a character of an Outline otp input alone, read ahead of --bit-OtpInput-filled-background so a theme can set this variant apart from the others. The Accent parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-outline-border-color",
+            DefaultValue = "--bit-OtpInput-border-color",
+            Description = "Input rule at rest of an Outline otp input alone, read ahead of --bit-OtpInput-border-color so a theme can set this variant apart from the others. The Accent parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-outline-hover-border-color",
+            DefaultValue = "--bit-OtpInput-hover-border-color",
+            Description = "Input rule while hovered of an Outline otp input alone, read ahead of --bit-OtpInput-hover-border-color so a theme can set this variant apart from the others. The Accent parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-outline-filled-border-color",
+            DefaultValue = "--bit-OtpInput-filled-border-color",
+            Description = "Rule of an input that already holds a character of an Outline otp input alone, read ahead of --bit-OtpInput-filled-border-color so a theme can set this variant apart from the others. The Accent parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-text-background",
+            DefaultValue = "--bit-OtpInput-background",
+            Description = "Input background at rest of a Text otp input alone, read ahead of --bit-OtpInput-background so a theme can set this variant apart from the others. The Accent parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-text-hover-background",
+            DefaultValue = "--bit-OtpInput-hover-background",
+            Description = "Input background while hovered of a Text otp input alone, read ahead of --bit-OtpInput-hover-background so a theme can set this variant apart from the others. The Accent parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-text-filled-background",
+            DefaultValue = "--bit-OtpInput-filled-background",
+            Description = "Background of an input that already holds a character of a Text otp input alone, read ahead of --bit-OtpInput-filled-background so a theme can set this variant apart from the others. The Accent parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-text-border-color",
+            DefaultValue = "--bit-OtpInput-border-color",
+            Description = "Input rule at rest of a Text otp input alone, read ahead of --bit-OtpInput-border-color so a theme can set this variant apart from the others. The Accent parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-text-hover-border-color",
+            DefaultValue = "--bit-OtpInput-hover-border-color",
+            Description = "Input rule while hovered of a Text otp input alone, read ahead of --bit-OtpInput-hover-border-color so a theme can set this variant apart from the others. The Accent parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-text-filled-border-color",
+            DefaultValue = "--bit-OtpInput-filled-border-color",
+            Description = "Rule of an input that already holds a character of a Text otp input alone, read ahead of --bit-OtpInput-filled-border-color so a theme can set this variant apart from the others. The Accent parameter leaves it alone.",
         },
         new()
         {
@@ -528,7 +636,25 @@ public partial class BitOtpInputDemo
         {
             Name = "--bit-OtpInput-focus-color",
             DefaultValue = "--bit-clr-pri-focus",
-            Description = "Color of the keyboard focus ring. The Accent parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too.",
+            Description = "Color of the keyboard focus ring. The Accent parameter wins over it. While it is unset, the focus ring is the library's own --bit-shd-focus-ring, so replacing that token re-shapes it too. Shared by the variants: --bit-OtpInput-fill-focus-color, --bit-OtpInput-outline-focus-color and --bit-OtpInput-text-focus-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-fill-focus-color",
+            DefaultValue = "--bit-OtpInput-focus-color",
+            Description = "Color of the keyboard focus ring of a Fill otp input alone, read ahead of --bit-OtpInput-focus-color so a theme can set this variant apart from the others. The Accent parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-outline-focus-color",
+            DefaultValue = "--bit-OtpInput-focus-color",
+            Description = "Color of the keyboard focus ring of an Outline otp input alone, read ahead of --bit-OtpInput-focus-color so a theme can set this variant apart from the others. The Accent parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-text-focus-color",
+            DefaultValue = "--bit-OtpInput-focus-color",
+            Description = "Color of the keyboard focus ring (drawn as an underline) of a Text otp input alone, read ahead of --bit-OtpInput-focus-color so a theme can set this variant apart from the others. The Accent parameter wins over it.",
         },
         new()
         {
@@ -564,7 +690,25 @@ public partial class BitOtpInputDemo
         {
             Name = "--bit-OtpInput-invalid-focus-color",
             DefaultValue = "--bit-clr-err-focus",
-            Description = "Focus ring color in the error state.",
+            Description = "Focus ring color in the error state. Shared by the variants: --bit-OtpInput-fill-invalid-focus-color, --bit-OtpInput-outline-invalid-focus-color and --bit-OtpInput-text-invalid-focus-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-fill-invalid-focus-color",
+            DefaultValue = "--bit-OtpInput-invalid-focus-color",
+            Description = "Focus ring color in the error state of a Fill otp input alone, read ahead of --bit-OtpInput-invalid-focus-color so a theme can set this variant apart from the others. The Accent parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-outline-invalid-focus-color",
+            DefaultValue = "--bit-OtpInput-invalid-focus-color",
+            Description = "Focus ring color in the error state of an Outline otp input alone, read ahead of --bit-OtpInput-invalid-focus-color so a theme can set this variant apart from the others. The Accent parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-OtpInput-text-invalid-focus-color",
+            DefaultValue = "--bit-OtpInput-invalid-focus-color",
+            Description = "Focus ring color in the error state of a Text otp input alone, read ahead of --bit-OtpInput-invalid-focus-color so a theme can set this variant apart from the others. The Accent parameter leaves it alone.",
         },
         new()
         {

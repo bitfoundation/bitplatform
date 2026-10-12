@@ -233,19 +233,61 @@ public partial class BitFooterDemo
         {
             Name = "--bit-Footer-background",
             DefaultValue = "--bit-clr-bg-pri",
-            Description = "Background of the Fill variant, softened by Translucent. The Color parameter wins over it.",
+            Description = "Background of the Fill variant, softened by Translucent. The Color parameter wins over it. The Fill variant, the only one reading it, reads --bit-Footer-fill-background ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-fill-background",
+            DefaultValue = "--bit-Footer-background",
+            Description = "Background of a Fill footer alone, read ahead of --bit-Footer-background, like every variable a variant reads. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Footer-color",
             DefaultValue = "--bit-clr-fg-pri",
-            Description = "Text color. The Color parameter wins over it.",
+            Description = "Text color. The Color parameter wins over it. Shared by the three variants: --bit-Footer-fill-color, --bit-Footer-outline-color and --bit-Footer-text-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-fill-color",
+            DefaultValue = "--bit-Footer-color",
+            Description = "Text color of a Fill footer alone, read ahead of --bit-Footer-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-outline-color",
+            DefaultValue = "--bit-Footer-color",
+            Description = "Text color of an Outline footer alone, read ahead of --bit-Footer-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-text-color",
+            DefaultValue = "--bit-Footer-color",
+            Description = "Text color of a Text footer alone, read ahead of --bit-Footer-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Footer-border-color",
             DefaultValue = "--bit-clr-brd-pri",
-            Description = "Color of the Outline border and of the Bordered divider. The Color parameter wins over it.",
+            Description = "Color of the Outline border and of the Bordered divider. The Color parameter wins over it. Shared by the three variants: --bit-Footer-fill-border-color, --bit-Footer-outline-border-color and --bit-Footer-text-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-fill-border-color",
+            DefaultValue = "--bit-Footer-border-color",
+            Description = "Color of the divider of a Bordered Fill footer alone, read ahead of --bit-Footer-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-outline-border-color",
+            DefaultValue = "--bit-Footer-border-color",
+            Description = "Color of the border of an Outline footer alone, read ahead of --bit-Footer-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-text-border-color",
+            DefaultValue = "--bit-Footer-border-color",
+            Description = "Color of the divider of a Bordered Text footer alone, read ahead of --bit-Footer-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
         },
         new()
         {
@@ -293,7 +335,13 @@ public partial class BitFooterDemo
         {
             Name = "--bit-Footer-blur",
             DefaultValue = "12px",
-            Description = "Backdrop blur of a Translucent footer.",
+            Description = "Backdrop blur of a Translucent footer. The Fill variant, the only one reading it, reads --bit-Footer-fill-blur ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Footer-fill-blur",
+            DefaultValue = "--bit-Footer-blur",
+            Description = "Backdrop blur of a Translucent Fill footer alone, read ahead of --bit-Footer-blur, like every variable a variant reads.",
         },
         new()
         {

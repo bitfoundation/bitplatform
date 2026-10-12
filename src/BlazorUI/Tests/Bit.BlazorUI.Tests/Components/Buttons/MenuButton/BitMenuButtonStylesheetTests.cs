@@ -30,15 +30,17 @@ public partial class BitMenuButtonStylesheetTests
 
         // So does an explicit Color, for every color the role paints - the toggled header, the divider and the
         // focus ring and check mark of the items included.
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-mnb-clr, var(--bit-MenuButton-background, #{$clr-pri}));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-mnb-clr-txt, var(--bit-MenuButton-color, #{$clr-pri-text}));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-mnb-clr, var(--bit-MenuButton-fill-background, var(--bit-MenuButton-background, #{$clr-pri})));");
+        StringAssert.Contains(stylesheet, "color: var(--bit-mnb-clr-txt, var(--bit-MenuButton-fill-color, var(--bit-MenuButton-color, #{$clr-pri-text})));");
         // The hover and press states of the two halves set the variables the rules at rest paint from, never the
-        // colors themselves, so the state's value is read ahead of the rest value it stands in for.
-        StringAssert.Contains(stylesheet, "--bit-mnb-hlf-sbg: var(--bit-mnb-clr-hover, var(--bit-MenuButton-hover-background, #{$clr-pri-hover}));");
+        // colors themselves, so the state's value is read ahead of the rest value it stands in for. The colors of the states
+        // are resolved per variant on the root the halves inherit them from, the role ahead of the variant's own variable.
+        StringAssert.Contains(stylesheet, "--bit-mnb-hlf-sbg: var(--bit-mnb-hov-bg);");
+        StringAssert.Contains(stylesheet, "--bit-mnb-hov-bg: var(--bit-mnb-clr-hover, var(--bit-MenuButton-fill-hover-background, var(--bit-MenuButton-hover-background, #{$clr-pri-hover})));");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-mnb-hlf-sbg, var(--bit-mnb-clr-dark, var(--bit-MenuButton-toggled-background, #{$clr-pri-dark})));");
-        StringAssert.Contains(stylesheet, "--bit-mnb-sbr: var(--bit-mnb-clr-hover, var(--bit-MenuButton-hover-background, #{$clr-pri-hover}));");
+        StringAssert.Contains(stylesheet, "--bit-mnb-sbr: var(--bit-mnb-hov-bg);");
         StringAssert.Contains(stylesheet, "--bit-mnb-dis-clr: var(--bit-mnb-clr-dis-text, var(--bit-MenuButton-disabled-color, #{$clr-pri-dis-text}));");
-        StringAssert.Contains(stylesheet, "--bit-mnb-clr-spb: var(--bit-mnb-clr-txt, var(--bit-MenuButton-divider-color, var(--bit-MenuButton-color, #{$clr-pri-text})));");
+        StringAssert.Contains(stylesheet, "--bit-mnb-clr-spb: var(--bit-mnb-clr-txt, var(--bit-MenuButton-fill-divider-color, var(--bit-MenuButton-divider-color, var(--bit-MenuButton-fill-color, var(--bit-MenuButton-color, #{$clr-pri-text})))));");
         StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-mnb-clr-focus, var(--bit-MenuButton-focus-color)))");
         StringAssert.Contains(stylesheet, "var(--bit-mnb-clr-focus, var(--bit-MenuButton-item-focus-color, #{$clr-pri-focus}))");
         StringAssert.Contains(stylesheet, "color: var(--bit-mnb-clr, var(--bit-MenuButton-item-checked-color, #{$clr-pri}));");
@@ -47,9 +49,50 @@ public partial class BitMenuButtonStylesheetTests
         StringAssert.Contains(stylesheet, "background-color: var(--bit-mnb-cal-bg, var(--bit-MenuButton-callout-background, #{$clr-bg-pri}));");
 
         // What a Color does not paint stays the variables' alone: the transparent background of Outline and Text.
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-MenuButton-background, transparent);");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-MenuButton-outline-background, var(--bit-MenuButton-background, transparent));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-MenuButton-text-background, var(--bit-MenuButton-background, transparent));");
 
         Assert.IsFalse(PublicBeforePrivate().IsMatch(SourceFiles.StripScssComments(stylesheet)), "A public variable is read before the parameter it restyles the default of.");
+    }
+
+    [TestMethod,
+        DataRow("fill", ".bit-mnb-fil"),
+        DataRow("outline", ".bit-mnb-otl"),
+        DataRow("text", ".bit-mnb-txt")]
+    public void BitMenuButtonShouldReadTheVariablesOfItsVariantAheadOfTheSharedOnes(string variant, string selector)
+    {
+        var stylesheet = ReadStylesheet();
+        // The hovered and pressed colors are resolved by a rule of the variant's own that also reaches each half, so a
+        // public variable set on Styles.OperatorButton or Styles.ChevronDownButton reaches the half it was set on.
+        var states = SourceFiles.GetScssBlock(stylesheet, $"\n{selector},\n{selector} > .bit-mnb-opb,\n{selector} > .bit-mnb-chb {{");
+        var block = SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{") + states;
+
+        foreach (var name in new[] { "hov-fg", "hov-bg", "act-fg", "act-bg" })
+        {
+            StringAssert.Contains(states, $"--bit-mnb-{name}: ", $"{selector} does not resolve --bit-mnb-{name} on the halves.");
+        }
+
+        // Each variant reads a tier of its own ahead of every shared color variable of the button, so a theme can set
+        // one look apart from the other two on :root - an outline menu button's neutral hairline without a ring around
+        // every filled one.
+        foreach (var name in new[] { "color", "background", "border-color",
+                                     "hover-color", "hover-background", "active-color", "active-background",
+                                     "disabled-background", "disabled-border-color", "divider-color" })
+        {
+            StringAssert.Contains(block, $"var(--bit-MenuButton-{variant}-{name}, var(--bit-MenuButton-{name}, ",
+                                  $"{selector} does not read --bit-MenuButton-{variant}-{name} ahead of --bit-MenuButton-{name}.");
+        }
+
+        // A variant reads a shared color variable only right behind its own twin, and never the tier of another variant.
+        Assert.IsFalse(Regex.IsMatch(block, $@"(?<!var\(--bit-MenuButton-{variant}-[a-z-]+, )var\(--bit-MenuButton-(?:hover-|active-|disabled-|divider-)?(?:color|background|border-color)\b"),
+                       $"{selector} reads a shared color variable without its own tier ahead of it.");
+        Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-MenuButton-(?!{variant}-)(?:fill|outline|text)-"),
+                       $"{selector} reads the variables of another variant.");
+
+        // The halves are painted in the hovered and pressed colors their variant resolves on them, so no rule shared by
+        // the three variants reads those variables itself.
+        var halves = SourceFiles.StripScssComments(SourceFiles.GetScssBlock(stylesheet, "\n.bit-mnb-opb,\n.bit-mnb-chb {"));
+        Assert.IsFalse(Regex.IsMatch(halves, @"var\(--bit-MenuButton-(?:hover|active)-"), "The halves read the shared hover or active variables past their variant's tier.");
     }
 
     [TestMethod]

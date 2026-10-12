@@ -1077,7 +1077,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
     internal string? GetItemClass(TItem item)
     {
-        List<string> classes = ["bit-btg-itm"];
+        List<string> classes = ["bit-btg-itm", GetItemVariantClass()];
 
         // The first/last buttons are marked explicitly instead of relying on :first-child/:last-child,
         // which break as soon as a button is wrapped by another element.
@@ -1124,6 +1124,17 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
         return string.Join(' ', classes);
     }
+
+    // The group's variant again, on each button: the stylesheet reads a button's colors on the button, so a variable
+    // set on its Style reaches it, and a class of the button's own is what finds it there whatever element an app
+    // wraps an option in, while weighing no more than the button's own class.
+    private string GetItemVariantClass() => Variant switch
+    {
+        BitVariant.Fill => "bit-btg-ifl",
+        BitVariant.Outline => "bit-btg-iol",
+        BitVariant.Text => "bit-btg-itx",
+        _ => "bit-btg-ifl"
+    };
 
     internal string? GetItemStyle(TItem item)
     {

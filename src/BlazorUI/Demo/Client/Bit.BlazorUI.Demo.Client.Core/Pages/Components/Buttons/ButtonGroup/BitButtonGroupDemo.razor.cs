@@ -271,43 +271,169 @@ public partial class BitButtonGroupDemo
         {
             Name = "--bit-ButtonGroup-color",
             DefaultValue = "Per Variant: --bit-clr-pri-text (Fill), --bit-clr-pri (Outline, Text)",
-            Description = "Text and icon color of a button at rest. The Color parameter wins over it.",
+            Description = "Text and icon color of a button at rest. The Color parameter wins over it. Shared by the three variants: --bit-ButtonGroup-fill-color, --bit-ButtonGroup-outline-color and --bit-ButtonGroup-text-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-ButtonGroup-background",
             DefaultValue = "Per Variant: --bit-clr-pri (Fill), transparent (Outline, Text)",
-            Description = "Background of a button at rest. The Color parameter wins over it in Fill; the transparent background of Outline and Text is its alone.",
+            Description = "Background of a button at rest. The Color parameter wins over it in Fill; the transparent background of Outline and Text is its alone. Shared by the three variants: --bit-ButtonGroup-fill-background, --bit-ButtonGroup-outline-background and --bit-ButtonGroup-text-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-ButtonGroup-border-color",
             DefaultValue = "--bit-clr-pri (the group; transparent in Text) and --bit-clr-pri-dark (the separators)",
-            Description = "Color of the group's outer border and of the separators between its buttons. While the Color is unset it wins over the hover and pressed states, which otherwise repaint the border along with the buttons. The Color parameter wins over it, except over the transparent outer border of Text.",
+            Description = "Color of the group's outer border and of the separators between its buttons. While the Color is unset it wins over the hover and pressed states, which otherwise repaint the border along with the buttons. The Color parameter wins over it, except over the transparent outer border of Text. Shared by the three variants: --bit-ButtonGroup-fill-border-color, --bit-ButtonGroup-outline-border-color and --bit-ButtonGroup-text-border-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-ButtonGroup-separator-color",
             DefaultValue = "--bit-ButtonGroup-border-color",
-            Description = "Color of the separators between the buttons alone, leaving the group's outer border to the variable above - which is what a segmented control whose dividers are lighter than its outline needs. In the Detached and Wrap layouts every button draws the whole outline itself, so there are no separators of their own there and the border color paints all of it. The Color parameter wins over it.",
+            Description = "Color of the separators between the buttons alone, leaving the group's outer border to the variable above - which is what a segmented control whose dividers are lighter than its outline needs. In the Detached and Wrap layouts every button draws the whole outline itself, so there are no separators of their own there and the border color paints all of it. The Color parameter wins over it. Shared by the three variants: --bit-ButtonGroup-fill-separator-color, --bit-ButtonGroup-outline-separator-color and --bit-ButtonGroup-text-separator-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-ButtonGroup-hover-color",
             DefaultValue = "--bit-clr-pri-text",
-            Description = "Text and icon color while hovered (pointer devices only). The Color parameter wins over it.",
+            Description = "Text and icon color while hovered (pointer devices only). The Color parameter wins over it. Shared by the three variants: --bit-ButtonGroup-fill-hover-color, --bit-ButtonGroup-outline-hover-color and --bit-ButtonGroup-text-hover-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-ButtonGroup-hover-background",
             DefaultValue = "--bit-clr-pri-hover",
-            Description = "Background while hovered, and the fallback of the pressed background below. The Color parameter wins over it.",
+            Description = "Background while hovered, and the fallback of the pressed background below. The Color parameter wins over it. Shared by the three variants: --bit-ButtonGroup-fill-hover-background, --bit-ButtonGroup-outline-hover-background and --bit-ButtonGroup-text-hover-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-ButtonGroup-active-background",
             DefaultValue = "--bit-ButtonGroup-hover-background, then --bit-clr-pri-active",
-            Description = "Background while pressed. The Color parameter wins over it.",
+            Description = "Background while pressed. The Color parameter wins over it. Shared by the three variants: --bit-ButtonGroup-fill-active-background, --bit-ButtonGroup-outline-active-background and --bit-ButtonGroup-text-active-background are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-fill-color",
+            DefaultValue = "--bit-ButtonGroup-color",
+            Description = "Text and icon color at rest of the buttons of a Fill button group alone, read ahead of --bit-ButtonGroup-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-fill-background",
+            DefaultValue = "--bit-ButtonGroup-background",
+            Description = "Background at rest of the buttons of a Fill button group alone, read ahead of --bit-ButtonGroup-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-fill-border-color",
+            DefaultValue = "--bit-ButtonGroup-border-color",
+            Description = "Color of the outer border and of the separators of a Fill button group alone, read ahead of --bit-ButtonGroup-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-fill-separator-color",
+            DefaultValue = "--bit-ButtonGroup-separator-color",
+            Description = "Color of the separators alone of a Fill button group alone, read ahead of --bit-ButtonGroup-separator-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-fill-hover-color",
+            DefaultValue = "--bit-ButtonGroup-hover-color",
+            Description = "Text and icon color while hovered (pointer devices only) of a Fill button group alone, read ahead of --bit-ButtonGroup-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-fill-hover-background",
+            DefaultValue = "--bit-ButtonGroup-hover-background",
+            Description = "Background while hovered, and the fallback of the pressed one, of a Fill button group alone, read ahead of --bit-ButtonGroup-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-fill-active-background",
+            DefaultValue = "--bit-ButtonGroup-active-background",
+            Description = "Background while pressed of a Fill button group alone, read ahead of --bit-ButtonGroup-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-outline-color",
+            DefaultValue = "--bit-ButtonGroup-color",
+            Description = "Text and icon color at rest of the buttons of an Outline button group alone, read ahead of --bit-ButtonGroup-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-outline-background",
+            DefaultValue = "--bit-ButtonGroup-background",
+            Description = "Background at rest of the buttons of an Outline button group alone, read ahead of --bit-ButtonGroup-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-outline-border-color",
+            DefaultValue = "--bit-ButtonGroup-border-color",
+            Description = "Color of the outer border and of the separators of an Outline button group alone, read ahead of --bit-ButtonGroup-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-outline-separator-color",
+            DefaultValue = "--bit-ButtonGroup-separator-color",
+            Description = "Color of the separators alone of an Outline button group alone, read ahead of --bit-ButtonGroup-separator-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-outline-hover-color",
+            DefaultValue = "--bit-ButtonGroup-hover-color",
+            Description = "Text and icon color while hovered (pointer devices only) of an Outline button group alone, read ahead of --bit-ButtonGroup-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-outline-hover-background",
+            DefaultValue = "--bit-ButtonGroup-hover-background",
+            Description = "Background while hovered, and the fallback of the pressed one, of an Outline button group alone, read ahead of --bit-ButtonGroup-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-outline-active-background",
+            DefaultValue = "--bit-ButtonGroup-active-background",
+            Description = "Background while pressed of an Outline button group alone, read ahead of --bit-ButtonGroup-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-text-color",
+            DefaultValue = "--bit-ButtonGroup-color",
+            Description = "Text and icon color at rest of the buttons of a Text button group alone, read ahead of --bit-ButtonGroup-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-text-background",
+            DefaultValue = "--bit-ButtonGroup-background",
+            Description = "Background at rest of the buttons of a Text button group alone, read ahead of --bit-ButtonGroup-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-text-border-color",
+            DefaultValue = "--bit-ButtonGroup-border-color",
+            Description = "Color of the outer border and of the separators of a Text button group alone, read ahead of --bit-ButtonGroup-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it on the separators; the transparent outer border is its alone.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-text-separator-color",
+            DefaultValue = "--bit-ButtonGroup-separator-color",
+            Description = "Color of the separators alone of a Text button group alone, read ahead of --bit-ButtonGroup-separator-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-text-hover-color",
+            DefaultValue = "--bit-ButtonGroup-hover-color",
+            Description = "Text and icon color while hovered (pointer devices only) of a Text button group alone, read ahead of --bit-ButtonGroup-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-text-hover-background",
+            DefaultValue = "--bit-ButtonGroup-hover-background",
+            Description = "Background while hovered, and the fallback of the pressed one, of a Text button group alone, read ahead of --bit-ButtonGroup-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-text-active-background",
+            DefaultValue = "--bit-ButtonGroup-active-background",
+            Description = "Background while pressed of a Text button group alone, read ahead of --bit-ButtonGroup-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
         },
         new()
         {
@@ -343,13 +469,49 @@ public partial class BitButtonGroupDemo
         {
             Name = "--bit-ButtonGroup-disabled-background",
             DefaultValue = "Per Variant: --bit-clr-pri-dis (Fill), transparent (Outline, Text)",
-            Description = "Background of a disabled button. The Color parameter wins over it in Fill; the transparent background of Outline and Text is its alone.",
+            Description = "Background of a disabled button. The Color parameter wins over it in Fill; the transparent background of Outline and Text is its alone. Shared by the three variants: --bit-ButtonGroup-fill-disabled-background, --bit-ButtonGroup-outline-disabled-background and --bit-ButtonGroup-text-disabled-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-ButtonGroup-disabled-border-color",
             DefaultValue = "--bit-clr-pri-dis",
-            Description = "Border and separators of a disabled group. The Color parameter wins over it, except over the transparent outer border of Text.",
+            Description = "Border and separators of a disabled group. The Color parameter wins over it, except over the transparent outer border of Text. Shared by the three variants: --bit-ButtonGroup-fill-disabled-border-color, --bit-ButtonGroup-outline-disabled-border-color and --bit-ButtonGroup-text-disabled-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-fill-disabled-background",
+            DefaultValue = "--bit-ButtonGroup-disabled-background",
+            Description = "Background of a disabled button of a Fill button group alone, read ahead of --bit-ButtonGroup-disabled-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-fill-disabled-border-color",
+            DefaultValue = "--bit-ButtonGroup-disabled-border-color",
+            Description = "Border and separators when disabled of a Fill button group alone, read ahead of --bit-ButtonGroup-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-outline-disabled-background",
+            DefaultValue = "--bit-ButtonGroup-disabled-background",
+            Description = "Background of a disabled button of an Outline button group alone, read ahead of --bit-ButtonGroup-disabled-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-outline-disabled-border-color",
+            DefaultValue = "--bit-ButtonGroup-disabled-border-color",
+            Description = "Border and separators when disabled of an Outline button group alone, read ahead of --bit-ButtonGroup-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-text-disabled-background",
+            DefaultValue = "--bit-ButtonGroup-disabled-background",
+            Description = "Background of a disabled button of a Text button group alone, read ahead of --bit-ButtonGroup-disabled-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-ButtonGroup-text-disabled-border-color",
+            DefaultValue = "--bit-ButtonGroup-disabled-border-color",
+            Description = "Border and separators when disabled of a Text button group alone, read ahead of --bit-ButtonGroup-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it on a disabled button; the transparent outer border of a disabled group is its alone.",
         },
         new()
         {

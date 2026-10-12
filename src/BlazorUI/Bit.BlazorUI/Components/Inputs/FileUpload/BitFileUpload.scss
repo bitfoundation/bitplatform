@@ -93,6 +93,33 @@
 //   --bit-FileUpload-disabled-background        fill of a disabled browse button                (default: $clr-bg-dis)
 //   --bit-FileUpload-disabled-border-color      rule of a disabled browse button                (default: $clr-brd-dis)
 //
+//   The browse button colors and the disabled ones have a twin per variant, read ahead of the shared one, so a
+//   theme can set one look apart from the other two (Color still wins over both where it paints):
+//   --bit-FileUpload-fill-label-color                 browse button text at rest, Fill                      (default: --bit-FileUpload-label-color)
+//   --bit-FileUpload-fill-label-background            browse button fill at rest, Fill                      (default: --bit-FileUpload-label-background)
+//   --bit-FileUpload-fill-label-border-color          browse button rule at rest, Fill                      (default: --bit-FileUpload-label-border-color)
+//   --bit-FileUpload-fill-label-hover-color           browse button text on hover, Fill                     (default: --bit-FileUpload-label-hover-color)
+//   --bit-FileUpload-fill-label-hover-background      browse button fill and rule on hover, Fill            (default: --bit-FileUpload-label-hover-background)
+//   --bit-FileUpload-fill-label-active-background     browse button fill and rule while pressed, Fill       (default: --bit-FileUpload-label-active-background)
+//   --bit-FileUpload-fill-disabled-background         disabled browse button and drop area fill, Fill       (default: --bit-FileUpload-disabled-background)
+//   --bit-FileUpload-fill-disabled-border-color       disabled browse button and drop area rule, Fill       (default: --bit-FileUpload-disabled-border-color)
+//   --bit-FileUpload-outline-label-color              browse button text at rest, Outline                   (default: --bit-FileUpload-label-color)
+//   --bit-FileUpload-outline-label-background         browse button fill, also when disabled, Outline       (default: --bit-FileUpload-label-background)
+//   --bit-FileUpload-outline-label-border-color       browse button rule at rest, Outline                   (default: --bit-FileUpload-label-border-color)
+//   --bit-FileUpload-outline-label-hover-color        browse button text on hover and press, Outline        (default: --bit-FileUpload-label-hover-color)
+//   --bit-FileUpload-outline-label-hover-background   browse button fill on hover, Outline                  (default: --bit-FileUpload-label-hover-background)
+//   --bit-FileUpload-outline-label-active-background  browse button fill while pressed, Outline             (default: --bit-FileUpload-label-active-background)
+//   --bit-FileUpload-outline-disabled-background      fill of a disabled drop area, Outline                 (default: --bit-FileUpload-disabled-background)
+//   --bit-FileUpload-outline-disabled-border-color    disabled browse button and drop area rule, Outline    (default: --bit-FileUpload-disabled-border-color)
+//   --bit-FileUpload-text-label-color                 browse button text at rest, Text                      (default: --bit-FileUpload-label-color)
+//   --bit-FileUpload-text-label-background            browse button fill, also when disabled, Text          (default: --bit-FileUpload-label-background)
+//   --bit-FileUpload-text-label-border-color          browse button rule, also when disabled, Text          (default: --bit-FileUpload-label-border-color)
+//   --bit-FileUpload-text-label-hover-color           browse button text on hover and press, Text           (default: --bit-FileUpload-label-hover-color)
+//   --bit-FileUpload-text-label-hover-background      browse button fill on hover, Text                     (default: --bit-FileUpload-label-hover-background)
+//   --bit-FileUpload-text-label-active-background     browse button fill while pressed, Text                (default: --bit-FileUpload-label-active-background)
+//   --bit-FileUpload-text-disabled-background         fill of a disabled drop area, Text                    (default: --bit-FileUpload-disabled-background)
+//   --bit-FileUpload-text-disabled-border-color       rule of a disabled drop area, Text                    (default: --bit-FileUpload-disabled-border-color)
+//
 // A parameter written on the file upload wins over the variable that restyles what it sets: an explicit Color
 // over every color above that it paints (the browse button, the drag and drop indicator, the drop area's hover
 // rule, tint and icon, the paused status, the progress bar, the hovered action buttons, the spinner, the batch
@@ -200,87 +227,107 @@ $upl-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-tin
     flex-direction: row-reverse;
 }
 
+//Every color variable of the browse button is read in two tiers: the variant's own (--bit-FileUpload-fill-*,
+//-outline-*, -text-*) ahead of the shared one, so a theme can give the three looks different colors from :root
+//while a shared variable still re-skins all three at once. Both tiers sit after the role, so an explicit Color
+//still wins over them. Each variant also resolves its tier of the disabled background and rule into
+//--bit-upl-dis-bg / -brd on the label, which the ShowDropArea panel - drawn the same in every variant - reads as well.
+
 //Fill - the default: a solid block of the role color labelled in the role's on-color. Every color the role
 //paints is read from the role first - published only by an explicit Color (see .bit-upl) - then from the
 //public variables, then from the primary role an unset Color stands for; the same holds in every block below.
 .bit-upl-fil {
     .bit-upl-lbl {
-        color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr-txt, var(--bit-FileUpload-label-color, #{$clr-pri-text})));
-        border-color: var(--bit-upl-lbl-sbr, var(--bit-upl-clr, var(--bit-FileUpload-label-border-color, var(--bit-FileUpload-label-background, #{$clr-pri}))));
-        background-color: var(--bit-upl-lbl-sbg, var(--bit-upl-clr, var(--bit-FileUpload-label-background, #{$clr-pri})));
+        // Resolved on the label that reads them rather than on the root, so a public variable set on the label's
+        // own style still reaches it.
+        --bit-upl-dis-bg: var(--bit-FileUpload-fill-disabled-background, var(--bit-FileUpload-disabled-background, #{$clr-bg-dis}));
+        --bit-upl-dis-brd: var(--bit-FileUpload-fill-disabled-border-color, var(--bit-FileUpload-disabled-border-color, #{$clr-brd-dis}));
+        color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr-txt, var(--bit-FileUpload-fill-label-color, var(--bit-FileUpload-label-color, #{$clr-pri-text}))));
+        border-color: var(--bit-upl-lbl-sbr, var(--bit-upl-clr, var(--bit-FileUpload-fill-label-border-color, var(--bit-FileUpload-label-border-color, var(--bit-FileUpload-fill-label-background, var(--bit-FileUpload-label-background, #{$clr-pri}))))));
+        background-color: var(--bit-upl-lbl-sbg, var(--bit-upl-clr, var(--bit-FileUpload-fill-label-background, var(--bit-FileUpload-label-background, #{$clr-pri}))));
 
         @media (hover: hover) {
             &:hover {
-                --bit-upl-lbl-sfg: var(--bit-upl-clr-txt, var(--bit-FileUpload-label-hover-color, var(--bit-FileUpload-label-color, #{$clr-pri-text})));
-                --bit-upl-lbl-sbr: var(--bit-upl-clr-hover, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover}));
-                --bit-upl-lbl-sbg: var(--bit-upl-clr-hover, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover}));
+                --bit-upl-lbl-sfg: var(--bit-upl-clr-txt, var(--bit-FileUpload-fill-label-hover-color, var(--bit-FileUpload-label-hover-color, var(--bit-FileUpload-fill-label-color, var(--bit-FileUpload-label-color, #{$clr-pri-text})))));
+                --bit-upl-lbl-sbr: var(--bit-upl-clr-hover, var(--bit-FileUpload-fill-label-hover-background, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover})));
+                --bit-upl-lbl-sbg: var(--bit-upl-clr-hover, var(--bit-FileUpload-fill-label-hover-background, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover})));
             }
         }
 
         &:active {
-            --bit-upl-lbl-sbr: var(--bit-upl-clr-active, var(--bit-FileUpload-label-active-background, #{$clr-pri-active}));
-            --bit-upl-lbl-sbg: var(--bit-upl-clr-active, var(--bit-FileUpload-label-active-background, #{$clr-pri-active}));
+            --bit-upl-lbl-sbr: var(--bit-upl-clr-active, var(--bit-FileUpload-fill-label-active-background, var(--bit-FileUpload-label-active-background, #{$clr-pri-active})));
+            --bit-upl-lbl-sbg: var(--bit-upl-clr-active, var(--bit-FileUpload-fill-label-active-background, var(--bit-FileUpload-label-active-background, #{$clr-pri-active})));
         }
     }
 
     &.bit-dis .bit-upl-lbl {
-        border-color: var(--bit-FileUpload-disabled-border-color, #{$clr-brd-dis});
-        background-color: var(--bit-FileUpload-disabled-background, #{$clr-bg-dis});
+        border-color: var(--bit-upl-dis-brd);
+        background-color: var(--bit-upl-dis-bg);
     }
 }
 
 //Outline: only the rule around the button carries the role color at rest, and it fills in like the Fill
 //variant once a pointer lands on it. The transparent fill at rest is the variant's, not the role's, so it
-//stays the public background's alone.
+//stays the public background's alone - while disabled too, so its tier of the disabled background reaches the
+//ShowDropArea panel alone.
 .bit-upl-otl {
     .bit-upl-lbl {
-        color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr, var(--bit-FileUpload-label-color, #{$clr-pri})));
-        border-color: var(--bit-upl-lbl-sbr, var(--bit-upl-clr, var(--bit-FileUpload-label-border-color, #{$clr-pri})));
-        background-color: var(--bit-upl-lbl-sbg, var(--bit-FileUpload-label-background, transparent));
+        // Resolved on the label that reads them rather than on the root, so a public variable set on the label's
+        // own style still reaches it.
+        --bit-upl-dis-bg: var(--bit-FileUpload-outline-disabled-background, var(--bit-FileUpload-disabled-background, #{$clr-bg-dis}));
+        --bit-upl-dis-brd: var(--bit-FileUpload-outline-disabled-border-color, var(--bit-FileUpload-disabled-border-color, #{$clr-brd-dis}));
+        color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr, var(--bit-FileUpload-outline-label-color, var(--bit-FileUpload-label-color, #{$clr-pri}))));
+        border-color: var(--bit-upl-lbl-sbr, var(--bit-upl-clr, var(--bit-FileUpload-outline-label-border-color, var(--bit-FileUpload-label-border-color, #{$clr-pri}))));
+        background-color: var(--bit-upl-lbl-sbg, var(--bit-FileUpload-outline-label-background, var(--bit-FileUpload-label-background, transparent)));
 
         @media (hover: hover) {
             &:hover {
-                --bit-upl-lbl-sfg: var(--bit-upl-clr-txt, var(--bit-FileUpload-label-hover-color, #{$clr-pri-text}));
-                --bit-upl-lbl-sbg: var(--bit-upl-clr-hover, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover}));
+                --bit-upl-lbl-sfg: var(--bit-upl-clr-txt, var(--bit-FileUpload-outline-label-hover-color, var(--bit-FileUpload-label-hover-color, #{$clr-pri-text})));
+                --bit-upl-lbl-sbg: var(--bit-upl-clr-hover, var(--bit-FileUpload-outline-label-hover-background, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover})));
             }
         }
 
         &:active {
-            --bit-upl-lbl-sfg: var(--bit-upl-clr-txt, var(--bit-FileUpload-label-hover-color, #{$clr-pri-text}));
-            --bit-upl-lbl-sbg: var(--bit-upl-clr-active, var(--bit-FileUpload-label-active-background, #{$clr-pri-active}));
+            --bit-upl-lbl-sfg: var(--bit-upl-clr-txt, var(--bit-FileUpload-outline-label-hover-color, var(--bit-FileUpload-label-hover-color, #{$clr-pri-text})));
+            --bit-upl-lbl-sbg: var(--bit-upl-clr-active, var(--bit-FileUpload-outline-label-active-background, var(--bit-FileUpload-label-active-background, #{$clr-pri-active})));
         }
     }
 
     &.bit-dis .bit-upl-lbl {
-        border-color: var(--bit-FileUpload-disabled-border-color, #{$clr-brd-dis});
-        background-color: var(--bit-FileUpload-label-background, transparent);
+        border-color: var(--bit-upl-dis-brd);
+        background-color: var(--bit-FileUpload-outline-label-background, var(--bit-FileUpload-label-background, transparent));
     }
 }
 
 //Text: neither rule nor fill at rest, for an uploader that should not outweigh the fields around it. Both
-//are the variant's rather than the role's, so they stay the public variables' alone.
+//are the variant's rather than the role's, so they stay the public variables' alone - while disabled too, so
+//its tier of the disabled background and rule reaches the ShowDropArea panel alone.
 .bit-upl-txt {
     .bit-upl-lbl {
-        color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr, var(--bit-FileUpload-label-color, #{$clr-pri})));
-        border-color: var(--bit-upl-lbl-sbr, var(--bit-FileUpload-label-border-color, transparent));
-        background-color: var(--bit-upl-lbl-sbg, var(--bit-FileUpload-label-background, transparent));
+        // Resolved on the label that reads them rather than on the root, so a public variable set on the label's
+        // own style still reaches it.
+        --bit-upl-dis-bg: var(--bit-FileUpload-text-disabled-background, var(--bit-FileUpload-disabled-background, #{$clr-bg-dis}));
+        --bit-upl-dis-brd: var(--bit-FileUpload-text-disabled-border-color, var(--bit-FileUpload-disabled-border-color, #{$clr-brd-dis}));
+        color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr, var(--bit-FileUpload-text-label-color, var(--bit-FileUpload-label-color, #{$clr-pri}))));
+        border-color: var(--bit-upl-lbl-sbr, var(--bit-FileUpload-text-label-border-color, var(--bit-FileUpload-label-border-color, transparent)));
+        background-color: var(--bit-upl-lbl-sbg, var(--bit-FileUpload-text-label-background, var(--bit-FileUpload-label-background, transparent)));
 
         @media (hover: hover) {
             &:hover {
-                --bit-upl-lbl-sfg: var(--bit-upl-clr-txt, var(--bit-FileUpload-label-hover-color, #{$clr-pri-text}));
-                --bit-upl-lbl-sbg: var(--bit-upl-clr-hover, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover}));
+                --bit-upl-lbl-sfg: var(--bit-upl-clr-txt, var(--bit-FileUpload-text-label-hover-color, var(--bit-FileUpload-label-hover-color, #{$clr-pri-text})));
+                --bit-upl-lbl-sbg: var(--bit-upl-clr-hover, var(--bit-FileUpload-text-label-hover-background, var(--bit-FileUpload-label-hover-background, #{$clr-pri-hover})));
             }
         }
 
         &:active {
-            --bit-upl-lbl-sfg: var(--bit-upl-clr-txt, var(--bit-FileUpload-label-hover-color, #{$clr-pri-text}));
-            --bit-upl-lbl-sbg: var(--bit-upl-clr-active, var(--bit-FileUpload-label-active-background, #{$clr-pri-active}));
+            --bit-upl-lbl-sfg: var(--bit-upl-clr-txt, var(--bit-FileUpload-text-label-hover-color, var(--bit-FileUpload-label-hover-color, #{$clr-pri-text})));
+            --bit-upl-lbl-sbg: var(--bit-upl-clr-active, var(--bit-FileUpload-text-label-active-background, var(--bit-FileUpload-label-active-background, #{$clr-pri-active})));
         }
     }
 
     &.bit-dis .bit-upl-lbl {
-        border-color: var(--bit-FileUpload-label-border-color, transparent);
-        background-color: var(--bit-FileUpload-label-background, transparent);
+        border-color: var(--bit-FileUpload-text-label-border-color, var(--bit-FileUpload-label-border-color, transparent));
+        background-color: var(--bit-FileUpload-text-label-background, var(--bit-FileUpload-label-background, transparent));
     }
 }
 
@@ -371,10 +418,11 @@ $upl-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-tin
         }
     }
 
+    // the disabled background and rule of the variant, which each variant block resolves on the label.
     &.bit-dis .bit-upl-lbl {
         color: var(--bit-FileUpload-disabled-color, #{$clr-fg-dis});
-        border-color: var(--bit-FileUpload-disabled-border-color, #{$clr-brd-dis});
-        background-color: var(--bit-FileUpload-disabled-background, #{$clr-bg-dis});
+        border-color: var(--bit-upl-dis-brd, #{$clr-brd-dis});
+        background-color: var(--bit-upl-dis-bg, #{$clr-bg-dis});
 
         .bit-upl-lic {
             color: inherit;
