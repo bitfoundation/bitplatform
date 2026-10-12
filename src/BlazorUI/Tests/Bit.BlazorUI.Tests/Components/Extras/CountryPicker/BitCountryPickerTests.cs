@@ -1271,7 +1271,7 @@ public class BitCountryPickerTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-cnp-und"));
         Assert.AreEqual("rtl", root.GetAttribute("dir"));
         Assert.IsTrue(callout.ClassList.Contains("bit-cnp-res"));
-        Assert.IsTrue(callout.ClassList.Contains("bit-cnp-rtl"));
+        Assert.IsTrue(callout.ClassList.Contains("bit-rtl"));
         Assert.AreEqual("Your country", root.GetAttribute("title"));
         Assert.AreEqual("Your country", component.Find("button.bit-cnp-fld").GetAttribute("title"));
     }
@@ -1330,12 +1330,12 @@ public class BitCountryPickerTests : BunitTestContext
 
         var field = component.Find("button.bit-cnp-fld");
 
-        field.FocusIn();
+        field.Focus();
 
         Assert.IsTrue(component.Find(".bit-cnp").ClassList.Contains("bit-cnp-fcs"));
 
         field.Click();
-        component.Find("button.bit-cnp-fld").FocusOut();
+        component.Find("button.bit-cnp-fld").Blur();
 
         // The focus went into the search box of the list, which is part of the field as far as the user is concerned.
         Assert.IsTrue(component.Find(".bit-cnp").ClassList.Contains("bit-cnp-fcs"));
@@ -1345,7 +1345,7 @@ public class BitCountryPickerTests : BunitTestContext
         // Escape gives the focus back to the field.
         Assert.IsTrue(component.Find(".bit-cnp").ClassList.Contains("bit-cnp-fcs"));
 
-        component.Find("button.bit-cnp-fld").FocusOut();
+        component.Find("button.bit-cnp-fld").Blur();
 
         Assert.IsFalse(component.Find(".bit-cnp").ClassList.Contains("bit-cnp-fcs"));
     }
@@ -1424,6 +1424,258 @@ public class BitCountryPickerTests : BunitTestContext
     }
 
 
+
+    [TestMethod]
+    public void BitCountryPickerShouldCloseItsListWhenDisabledWhileOpen()
+    {
+        var isOpen = false;
+        var closed = 0;
+
+        var component = RenderComponent<BitCountryPicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, isOpen);
+            parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
+            parameters.Add(p => p.OnClose, () => closed++);
+        });
+
+        component.Find("button.bit-cnp-fld").Click();
+
+        Assert.IsTrue(isOpen);
+
+        // A form disabled for its submit while the list is open.
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
+
+        Assert.IsFalse(isOpen);
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(1, closed);
+
+        // The JS side is told to take the relocated list off the screen, not left holding it.
+        Assert.AreEqual(false, LastToggle().Arguments[6]);
+        StringAssert.Contains(component.Find(".bit-cnp-ovl").GetAttribute("style"), "display:none");
+    }
+
+    [TestMethod]
+    public void BitCountryPickerShouldHideAListAOneWayIsOpenKeepsOpenWhileDisabled()
+    {
+        var component = RenderComponent<BitCountryPicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        Assert.AreEqual(true, LastToggle().Arguments[6]);
+
+        // Every render of the page hands the one-way IsOpen down again, which is what keeps it from being set back.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        // The picker cannot set a one-way IsOpen back to false, so the list is hidden instead.
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.AreEqual(false, LastToggle().Arguments[6]);
+        StringAssert.Contains(component.Find(".bit-cnp-ovl").GetAttribute("style"), "display:none");
+        Assert.AreEqual("false", component.Find("button.bit-cnp-fld").GetAttribute("aria-expanded"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Disabled, false);
+        });
+
+        Assert.AreEqual(true, LastToggle().Arguments[6]);
+        StringAssert.Contains(component.Find(".bit-cnp-ovl").GetAttribute("style"), "display:block");
+        Assert.AreEqual("true", component.Find("button.bit-cnp-fld").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    public void BitCountryPickerShouldNotOpenThroughIsOpenWhenItCannotBeUsed(bool disabled, bool readOnly)
+    {
+        var isOpen = false;
+
+        var component = RenderComponent<BitCountryPicker>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, disabled);
+            parameters.Add(p => p.ReadOnly, readOnly);
+            parameters.Add(p => p.IsOpen, isOpen);
+            parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.IsOpen, true));
+
+        Assert.IsFalse(isOpen);
+        Assert.IsFalse(component.Instance.IsOpen);
+        StringAssert.Contains(component.Find(".bit-cnp-ovl").GetAttribute("style"), "display:none");
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Callouts.toggle" && Equals(i.Arguments[6], true)));
+    }
+
+    [TestMethod]
+    public void BitCountryPickerShouldSwapTheKeysOfTheFieldWhenOpenedAndClosedThroughIsOpen()
+    {
+        var component = RenderComponent<BitCountryPicker>(parameters =>
+        {
+            parameters.Add(p => p.NoSearchBox, true);
+        });
+
+        CollectionAssert.DoesNotContain(LastFieldKeys(), "Enter");
+
+        component.Render(parameters => parameters.Add(p => p.IsOpen, true));
+
+        // Enter picks the active country of the open list, and the click it would also fire must not reopen it.
+        CollectionAssert.Contains(LastFieldKeys(), "Enter");
+        CollectionAssert.Contains(LastFieldKeys(), "PageDown");
+
+        component.Render(parameters => parameters.Add(p => p.IsOpen, false));
+
+        // Enter is the native click that opens the closed field again.
+        CollectionAssert.DoesNotContain(LastFieldKeys(), "Enter");
+    }
+
+    [TestMethod]
+    public void BitCountryPickerShouldPutTheFieldKeysBackWhenAnotherCalloutOpens()
+    {
+        var component = RenderComponent<BitCountryPicker>();
+
+        component.Find("button.bit-cnp-fld").Click();
+
+        CollectionAssert.Contains(LastFieldKeys(), "Enter");
+
+        component.InvokeAsync(() => component.Instance._CloseCalloutBeforeAnotherCalloutIsOpened()).GetAwaiter().GetResult();
+
+        CollectionAssert.DoesNotContain(LastFieldKeys(), "Enter");
+    }
+
+    [TestMethod]
+    public void BitCountryPickerShouldStartOnTheCountryOfItsListThatCarriesTheDefaultCountry()
+    {
+        var deutschland = new BitCountry("Deutschland", "49", "DE", "DEU");
+
+        var component = RenderComponent<BitCountryPicker>(parameters =>
+        {
+            parameters.Add(p => p.Countries, [deutschland, BitCountries.France]);
+            parameters.Add(p => p.DefaultCountry, BitCountries.Germany);
+        });
+
+        Assert.AreSame(deutschland, component.Instance.Value);
+        Assert.AreEqual("Deutschland", component.Find(".bit-cnp-txt").TextContent);
+    }
+
+    [TestMethod]
+    public void BitCountryPickerShouldStartOnTheCountryOfItsListThatCarriesTheDefaultValue()
+    {
+        var deutschland = new BitCountry("Deutschland", "49", "DE", "DEU");
+
+        var component = RenderComponent<BitCountryPicker>(parameters =>
+        {
+            parameters.Add(p => p.Countries, [deutschland, BitCountries.France]);
+            parameters.Add(p => p.DefaultValue, BitCountries.Germany);
+        });
+
+        Assert.AreSame(deutschland, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitCountryPickerShouldNotStartOnADefaultCountryItsListDoesNotOffer()
+    {
+        var component = RenderComponent<BitCountryPicker>(parameters =>
+        {
+            parameters.Add(p => p.ExcludeCountries, [BitCountries.Germany]);
+            parameters.Add(p => p.DefaultCountry, BitCountries.Germany);
+        });
+
+        Assert.IsNull(component.Instance.Value);
+        Assert.IsNotNull(component.Find(".bit-cnp-pls"));
+    }
+
+    [TestMethod]
+    public void BitCountryPickerShouldSelectOnlyACountryItsListOffersThroughItsPublicApi()
+    {
+        var deutschland = new BitCountry("Deutschland", "49", "DE", "DEU");
+        var changes = 0;
+
+        var component = RenderComponent<BitCountryPicker>(parameters =>
+        {
+            parameters.Add(p => p.Countries, [deutschland, BitCountries.France]);
+            parameters.Add(p => p.ExcludeCountries, [BitCountries.France]);
+            parameters.Add(p => p.OnChange, _ => changes++);
+        });
+
+        component.InvokeAsync(() => component.Instance.SelectCountryAsync(BitCountries.France)).GetAwaiter().GetResult();
+
+        Assert.IsNull(component.Instance.Value);
+        Assert.AreEqual(0, changes);
+
+        component.InvokeAsync(() => component.Instance.SelectCountryAsync(BitCountries.Germany)).GetAwaiter().GetResult();
+
+        Assert.AreSame(deutschland, component.Instance.Value);
+        Assert.AreEqual(1, changes);
+    }
+
+    [TestMethod]
+    public void BitCountryPickerShouldOfferACountryNamedTwiceOnlyOnce()
+    {
+        var deutschland = new BitCountry("Deutschland", "49", "DE", "DEU");
+
+        var component = RenderComponent<BitCountryPicker>(parameters =>
+        {
+            parameters.Add(p => p.Countries, [BitCountries.UnitedStates, deutschland, BitCountries.UnitedStates, BitCountries.Germany]);
+        });
+
+        component.Find("button.bit-cnp-fld").Click();
+
+        var names = component.FindAll(".bit-cnp-inm").Select(n => n.TextContent).ToArray();
+
+        // The first entry carrying a code is the one offered.
+        CollectionAssert.AreEqual(new[] { "United States", "Deutschland" }, names);
+    }
+
+    [TestMethod]
+    public void BitCountryPickerShouldDrawAnEmptyBoxForACountryWithNoFlag()
+    {
+        var neverland = new BitCountry("Neverland", "999", "ZZ", "ZZZ");
+
+        var component = RenderComponent<BitCountryPicker>(parameters =>
+        {
+            parameters.Add(p => p.Countries, [neverland, BitCountries.France]);
+            parameters.Add(p => p.Value, neverland);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-cnp-fld img").Count);
+        Assert.AreEqual("SPAN", component.Find(".bit-cnp-fld .bit-cnp-flg").TagName);
+
+        component.Find("button.bit-cnp-fld").Click();
+
+        var rows = component.FindAll(".bit-cnp-itm");
+
+        Assert.AreEqual("SPAN", rows[0].QuerySelector(".bit-cnp-flg")!.TagName);
+        Assert.AreEqual("IMG", rows[1].QuerySelector(".bit-cnp-flg")!.TagName);
+    }
+
+    [TestMethod]
+    public void BitCountryPickerShouldListenToOneFocusEventPerDirectionOnItsField()
+    {
+        var component = RenderComponent<BitCountryPicker>();
+
+        var field = component.Find("button.bit-cnp-fld");
+
+        Assert.IsTrue(field.HasAttribute("blazor:onfocus"));
+        Assert.IsTrue(field.HasAttribute("blazor:onblur"));
+        Assert.IsFalse(field.HasAttribute("blazor:onfocusin"));
+        Assert.IsFalse(field.HasAttribute("blazor:onfocusout"));
+    }
+
+
+
+    // The keys the field's own listener was last handed: the field's sets are the ones that carry Home, which the
+    // search box leaves to its caret.
+    private string[] LastFieldKeys()
+    {
+        return (string[])Context.JSInterop.Invocations
+                                .Last(i => i.Identifier == "BitBlazorUI.Extras.setPreventKeys" && ((string[])i.Arguments[1]!).Contains("Home"))
+                                .Arguments[1]!;
+    }
 
     private int CountInvocations(string identifier)
     {

@@ -17,20 +17,18 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
     private bool _tabOutRegistered;
     private bool _hasOpened;
     private bool _fieldKeysWired;
+    private bool _fieldKeysOpen;
     private bool _searchBoxKeysWired;
     private bool _internalIsOpenChange;
     private bool _pendingCalloutToggle;
-    private string? _searchText;
+    private bool _lastCanOpen = true;
     private string? _announcement;
     private bool _announcementMarker;
-    private int _activeIndex = -1;
-    private int _lastScrolledIndex = -1;
     private string? _lastErrorMessage;
 
-    // Type-ahead state of the country list, used when there is no search box to type into.
-    private string _typeAhead = string.Empty;
-    private DateTimeOffset _typeAheadAt;
-    private static readonly TimeSpan _typeAheadTimeout = TimeSpan.FromMilliseconds(1000);
+    // The countries the picker offers, what the search term leaves of them, the one the keyboard is on and the
+    // type-ahead that moves it - the part of the list BitPhoneInput walks and searches the same way.
+    private readonly BitCountryList _list = new();
 
     private string _labelId = string.Empty;
     private string _errorId = string.Empty;
@@ -42,46 +40,8 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
     private string _overlayId = string.Empty;
     private string _scrollContainerId = string.Empty;
 
-    private List<BitCountry> _allItems = [];
-    private List<BitCountry> _viewItems = [];
-
-    // How many of the countries at the head of _allItems are there because they were preferred, which is where
-    // the unfiltered list draws the rule that sets them apart from the rest.
-    private int _preferredCount;
-
-    // The name of each country of _allItems with its diacritics folded away, and the same name cut into words.
-    // Both are read once per country per keystroke, so they are computed with the list instead of being rebuilt
-    // for every country on every letter typed into the search box.
-    private string[] _foldedNames = [];
-    private string[][] _foldedWords = [];
     private ElementReference _searchInputRef;
-    private ICollection<BitCountry>? _lastCountries;
-    private ICollection<BitCountry>? _lastExcludeCountries;
-    private ICollection<BitCountry>? _lastPreferredCountries;
     private DotNetObjectReference<BitCountryPicker>? _dotnetObj;
-
-    // The search term the cached _viewItems were produced for. GetFilteredCountries() runs on every render while
-    // the callout is open, so the filtered list is only rebuilt when the term (or the source list behind it)
-    // actually changes.
-    private bool _viewItemsValid;
-    private string? _viewItemsKey;
-
-    // Keys whose default browser behavior must be suppressed. These are applied through a deterministic JS keydown
-    // listener (see BitExtrasSetPreventKeys) so the suppression always matches the key of the current event instead
-    // of lagging one event behind, as Blazor's stateful `@onkeydown:preventDefault` binding would. Enter and Space
-    // are left alone on the closed field, whose native click is what opens the list; on the open one they pick the
-    // active country, and the click they would also fire would close the list again.
-    // Home and End are deliberately absent from the search box set: inside a text field they move the caret, which
-    // is what a user typing a search term expects them to keep doing.
-    private static readonly string[] _searchBoxKeys = ["ArrowDown", "ArrowUp", "PageDown", "PageUp", "Enter"];
-    private static readonly string[] _fieldClosedKeys = ["ArrowDown", "ArrowUp", "Home", "End"];
-    private static readonly string[] _fieldOpenKeys = ["ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End", "Enter", " ", "Spacebar"];
-
-    private const int PageNavigationSize = 10;
-
-    // The flag file of a country, keyed by its ISO code. Every open callout renders one image per country it
-    // offers, and the url of each of them is otherwise built from scratch on every render.
-    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> _flagUrls = new();
 
 
 
@@ -151,7 +111,9 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
     /// <summary>
     /// The country an unbound picker starts on when no DefaultValue is given - the market of an app, which a
     /// <see cref="BitCountryPickerParams"/> can hand every picker under it. A bound Value is left as it is, so a
-    /// field the user never answered stays empty for its validation to see.
+    /// field the user never answered stays empty for its validation to see. It is matched to the list by its ISO
+    /// code, so the picker starts on the country the list offers (with the name it shows), and on none when the list
+    /// does not offer it.
     /// </summary>
     [Parameter] public BitCountry? DefaultCountry { get; set; }
 
@@ -408,11 +370,18 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
     });
 
     /// <summary>
-    /// Selects the given country exactly as picking it in the list would, so the same events fire.
+    /// Selects the given country exactly as picking it in the list would, so the same events fire. The country is
+    /// matched to the list by its ISO code, so the value is the one the list offers (with the name it shows), and a
+    /// country the list does not offer - one left out of <see cref="Countries"/> or named in
+    /// <see cref="ExcludeCountries"/> - is not selected.
     /// </summary>
     public Task SelectCountryAsync(BitCountry country) => InvokeAsync(async () =>
     {
-        await SelectCountry(country, focusField: false);
+        var offered = _list.Resolve(country);
+
+        if (offered is null) return;
+
+        await SelectCountry(offered, focusField: false);
 
         // Unlike a click in the list, this call does not arrive through an event handler of the component, so
         // nothing re-renders it on its own.
@@ -433,14 +402,11 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
         // The dismissal has taken the tab order around the field back along with the callout (see ToggleCallout).
         _tabOutRegistered = false;
 
-        ResetCalloutState();
+        _list.Reset();
 
         await ClearSearchBoxElement();
 
-        if (_fieldKeysWired)
-        {
-            await _js.BitExtrasSetPreventKeys(InputElement, _fieldClosedKeys);
-        }
+        await SyncFieldKeys();
 
         // The callout this component had open is gone to make room for another one's, so whatever the focus was
         // on inside it is gone along with it.
@@ -536,12 +502,22 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
         _overlayId = $"BitCountryPicker-{UniqueId}-overlay";
         _scrollContainerId = $"BitCountryPicker-{UniqueId}-scroll-container";
 
+        // The list is built before the defaults are applied, since a default is the country of the list that carries
+        // its ISO code - the one with the name the list shows (a translated one, say) - and none at all when the
+        // list does not offer it.
+        _list.Update(Countries, ExcludeCountries, PreferredCountries);
+
         if (ValueHasBeenSet is false && DefaultValueHasBeenSet is false && DefaultCountry is not null)
         {
-            Value = DefaultCountry;
+            Value = _list.Resolve(DefaultCountry);
         }
 
         SetDefaultValue();
+
+        if (ValueHasBeenSet is false && DefaultValueHasBeenSet)
+        {
+            Value = _list.Resolve(Value);
+        }
 
         base.OnInitialized();
     }
@@ -553,21 +529,10 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
         // parameters the field ends up with rather than from the ones it was written with.
         CascadingParameters?.UpdateParameters(this);
 
-        // Materialize the country list only when the source of it actually changes. The list is read on every
-        // render while the callout is open, so without this cache the default country set (BitCountries.All)
-        // would be copied into a new list of ~240 items each cycle.
-        if (ReferenceEquals(_lastCountries, Countries) is false ||
-            ReferenceEquals(_lastExcludeCountries, ExcludeCountries) is false ||
-            ReferenceEquals(_lastPreferredCountries, PreferredCountries) is false)
-        {
-            _lastCountries = Countries;
-            _lastExcludeCountries = ExcludeCountries;
-            _lastPreferredCountries = PreferredCountries;
-            _allItems = BitCountrySearch.BuildItems(Countries, ExcludeCountries, PreferredCountries, out _preferredCount);
-            _foldedNames = [.. _allItems.Select(c => BitCountrySearch.Fold(c.Name))];
-            _foldedWords = [.. _foldedNames.Select(BitCountrySearch.SplitWords)];
-            _viewItemsValid = false;
-        }
+        // The list is read on every render while the callout is open, so it is only built again when its source
+        // actually changes; without that the default country set (BitCountries.All) would be copied into a new list
+        // of ~240 items each cycle.
+        _list.Update(Countries, ExcludeCountries, PreferredCountries);
 
         // A message that says the value was rejected has to be heard as well as seen, and it is written into a part
         // of the page a screen reader has already read past by the time it appears.
@@ -582,6 +547,27 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
         }
 
         base.OnParametersSet();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // A list is only ever shown on a field that can be used. One the page disables or makes read-only while it
+        // is open - a form disabled for its submit - is closed with it, rather than left on screen with nothing that
+        // could pick from it or close it; and one an IsOpen bound one way keeps open is hidden while the field cannot
+        // be used and shown again once it can (see IsCalloutShown), which takes a toggle of its own either way.
+        if (CanOpen != _lastCanOpen)
+        {
+            _lastCanOpen = CanOpen;
+
+            if (IsOpen) _pendingCalloutToggle = true;
+        }
+
+        if (IsOpen && CanOpen is false)
+        {
+            await CloseCallout();
+        }
+
+        await base.OnParametersSetAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -606,7 +592,7 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
             // A callout opened through the IsOpen parameter before the first render had no country list to point
             // at yet, so the active option is settled here instead.
             var activeIndexSettled = false;
-            if (IsOpen && _activeIndex < 0)
+            if (IsCalloutShown && _list.ActiveIndex < 0)
             {
                 ResetActiveIndexToSelection();
 
@@ -618,7 +604,7 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
             // The open list is driven from whichever element carries aria-activedescendant, so the focus is put on
             // it: the search box when there is one, and the field itself when there is not - a callout opened
             // through the IsOpen parameter would otherwise leave the keys nowhere to go.
-            if (IsOpen)
+            if (IsCalloutShown)
             {
                 try
                 {
@@ -645,10 +631,10 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
 
         // Keep the active option visible during keyboard navigation. Done after render so the option element is
         // guaranteed to exist and the callout is laid out.
-        if (IsOpen && _activeIndex >= 0 && _activeIndex != _lastScrolledIndex)
+        if (IsCalloutShown && _list.ActiveIndex >= 0 && _list.ActiveIndex != _list.LastScrolledIndex)
         {
-            _lastScrolledIndex = _activeIndex;
-            await _js.BitExtrasScrollOptionIntoView(GetOptionId(_activeIndex));
+            _list.LastScrolledIndex = _list.ActiveIndex;
+            await _js.BitExtrasScrollOptionIntoView(GetOptionId(_list.ActiveIndex));
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -662,7 +648,14 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
         if (_fieldKeysWired is false)
         {
             _fieldKeysWired = true;
-            await _js.BitExtrasSetPreventKeys(InputElement, IsOpen ? _fieldOpenKeys : _fieldClosedKeys);
+            _fieldKeysOpen = IsCalloutShown;
+            await _js.BitExtrasSetPreventKeys(InputElement, _fieldKeysOpen ? BitCountryList.TriggerOpenKeys : BitCountryList.TriggerClosedKeys);
+        }
+        else
+        {
+            // Whatever opened or closed the list - the IsOpen parameter or the field being disabled under it, which
+            // swap no keys of their own - the keys of the field are put in step with it once the render is through.
+            await SyncFieldKeys();
         }
 
         if (NoSearchBox is false)
@@ -670,7 +663,7 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
             if (_searchBoxKeysWired is false)
             {
                 _searchBoxKeysWired = true;
-                await _js.BitExtrasSetPreventKeys(_searchInputRef, _searchBoxKeys);
+                await _js.BitExtrasSetPreventKeys(_searchInputRef, BitCountryList.SearchBoxKeys);
             }
         }
         else if (_searchBoxKeysWired)
@@ -688,8 +681,7 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
     // back as the one the picker offers, so a value parsed from a text is never a country the list does not hold.
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out BitCountry? result, [NotNullWhen(false)] out string? parsingErrorMessage)
     {
-        var found = BitCountries.Find(value);
-        var offered = found is null ? null : _allItems.Find(c => c.Iso2.Equals(found.Iso2, StringComparison.OrdinalIgnoreCase));
+        var offered = _list.Resolve(BitCountries.Find(value));
 
         if (offered is not null)
         {
@@ -735,12 +727,15 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
         _ => null
     };
 
-    // The last of the pinned countries, after which the rest of the list starts. Only the unfiltered list has such a
-    // boundary: a search orders its matches by how close they are, wherever they came from.
-    private bool IsLastPreferred(int index) => _preferredCount > 0
-                                               && index == _preferredCount - 1
-                                               && index < _allItems.Count - 1
-                                               && ReferenceEquals(_viewItems, _allItems);
+    // Only a field that can be used opens its list: the field, the keyboard and OpenAsync all refuse to open the list
+    // of a disabled or read-only one.
+    private bool CanOpen => Disabled is false && ReadOnly is false;
+
+    // Whether the list is actually on screen. An IsOpen the page holds at true on a field that cannot be used is
+    // refused the way the field refuses to open (see OnParametersSetAsync), and one bound one way, which the picker
+    // cannot set back to false, leaves the list hidden - with nothing it names and no overlay - until the field can
+    // be used again.
+    private bool IsCalloutShown => IsOpen && CanOpen;
 
     // A country is the selected one when it carries the selected ISO code: a page that offers countries of its own
     // (translated names, say) can bind a Value that is a different instance of the same country.
@@ -798,63 +793,14 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
     // being overwritten by the explicit attribute of the field.
     private string? AriaInvalid => IsInvalid ? "true" : GetSplattedInputAttribute("aria-invalid");
 
-    private List<BitCountry> GetFilteredCountries()
-    {
-        if (_viewItemsValid && _viewItemsKey == _searchText) return _viewItems;
-
-        _viewItemsValid = true;
-        _viewItemsKey = _searchText;
-
-        if (_searchText.HasNoValue())
-        {
-            _viewItems = _allItems;
-            return _viewItems;
-        }
-
-        var text = BitCountrySearch.Fold(_searchText!.Trim());
-
-        // A term that is nothing but punctuation and spaces asks for nothing, and answering it with "no results"
-        // would say the country being typed does not exist.
-        if (text.Any(char.IsLetterOrDigit) is false)
-        {
-            _viewItems = _allItems;
-            return _viewItems;
-        }
-
-        var matches = new List<(BitCountry Country, int Rank, int Index)>();
-
-        for (var i = 0; i < _allItems.Count; i++)
-        {
-            // A country is searched by its name and its ISO codes: the picker never shows a dialing code, so a
-            // country found through one would be a match nobody could see the reason for.
-            var rank = BitCountrySearch.GetSearchRank(_allItems[i], _foldedNames[i], _foldedWords[i], text, codeTerm: string.Empty);
-            if (rank < 0) continue;
-
-            matches.Add((_allItems[i], rank, i));
-        }
-
-        // The closest match first (an exact ISO code, then a name that starts with the term), with the list order
-        // kept inside each of those groups.
-        matches.Sort((x, y) => x.Rank != y.Rank ? x.Rank.CompareTo(y.Rank) : x.Index.CompareTo(y.Index));
-
-        _viewItems = [.. matches.Select(m => m.Country)];
-
-        return _viewItems;
-    }
-
     private string GetOptionId(int index) => $"{_calloutId}-opt-{index}";
 
     // The display is written here rather than in the stylesheet because it is what the component toggles the layer
     // with, and Styles.Overlay is appended after it so a value written for the overlay still wins.
-    private string GetOverlayStyles() => $"display:{(IsOpen ? "block" : "none")};{Styles?.Overlay}";
+    private string GetOverlayStyles() => $"display:{(IsCalloutShown ? "block" : "none")};{Styles?.Overlay}";
 
-    // Where the flag images live and how they are named is BitFlag's to know, so the two cannot drift.
-    private string GetFlagUrl(BitCountry country)
-    {
-        var url = FlagUrlSelector?.Invoke(country);
-
-        return url.HasValue() ? url! : _flagUrls.GetOrAdd(country.Iso2, static iso2 => BitFlag.GetFlagUrl(iso2));
-    }
+    // Null for a country with no flag image at all, which is drawn as an empty box of the size of one.
+    private string? GetFlagUrl(BitCountry country) => BitCountryList.GetFlagUrl(country, FlagUrlSelector);
 
     // A single live region carries everything the picker has to say, and a screen reader only announces what changes
     // inside one: repeating the same sentence (two searches with the same number of results) would otherwise be
@@ -908,16 +854,19 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
         {
             // While closed, Enter/Space are handled by the field's native click (which calls HandleOnFieldClick ->
             // OpenCallout), so they are intentionally not treated as open triggers here to avoid a double toggle.
-            // Their defaults are not suppressed (see _fieldClosedKeys) so the native click can open the callout.
+            // Their defaults are not suppressed (see BitCountryList.TriggerClosedKeys) so the native click can open
+            // the callout.
             if (key is "ArrowDown" or "ArrowUp" or "Home" or "End")
             {
                 await OpenCallout();
 
                 // Home and End say where in the list to land, the way they do on a native select.
-                if (key == "Home" && _viewItems.Count > 0) _activeIndex = 0;
-                if (key == "End" && _viewItems.Count > 0) _activeIndex = _viewItems.Count - 1;
+                if (key is "Home" or "End")
+                {
+                    _list.Navigate(key, fromSearchBox: false, NoWrapNavigation);
+                }
             }
-            else if (IsTypeAheadKey(e))
+            else if (BitCountryList.IsTypeAheadKey(e))
             {
                 // Typing on the closed field opens it on what was typed, the way it does on a native select: on the
                 // country the letters start when there is no search box, and as the first letter of the search term
@@ -926,7 +875,7 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
 
                 if (NoSearchBox)
                 {
-                    HandleTypeAhead(key);
+                    _list.TypeAhead(key);
                 }
                 else
                 {
@@ -953,9 +902,9 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
             case "ArrowUp" when e.AltKey:
                 // Alt+Up closes the list the way the combobox pattern has it: a select-only one takes the option the
                 // arrows are on, while one with a search box only gives the focus back to its field.
-                if (fromSearchBox is false && _activeIndex >= 0 && _activeIndex < _viewItems.Count)
+                if (fromSearchBox is false && _list.Active is { } active)
                 {
-                    await HandleOnCountrySelect(_viewItems[_activeIndex]);
+                    await HandleOnCountrySelect(active);
                 }
                 else
                 {
@@ -975,35 +924,10 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
                 await CloseCallout();
                 break;
 
-            case "ArrowDown":
-                MoveActiveIndex(1);
-                break;
-
-            case "ArrowUp":
-                MoveActiveIndex(-1);
-                break;
-
-            case "PageDown":
-                MoveActiveIndex(PageNavigationSize, clamp: true);
-                break;
-
-            case "PageUp":
-                MoveActiveIndex(-PageNavigationSize, clamp: true);
-                break;
-
-            case "Home":
-                // Inside the search box Home belongs to the caret, not to the list.
-                if (fromSearchBox is false && _viewItems.Count > 0) _activeIndex = 0;
-                break;
-
-            case "End":
-                if (fromSearchBox is false && _viewItems.Count > 0) _activeIndex = _viewItems.Count - 1;
-                break;
-
             case "Enter":
-                if (_activeIndex >= 0 && _activeIndex < _viewItems.Count)
+                if (_list.Active is { } country)
                 {
-                    await HandleOnCountrySelect(_viewItems[_activeIndex]);
+                    await HandleOnCountrySelect(country);
                 }
                 break;
 
@@ -1015,32 +939,36 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
 
                 // A space typed in the middle of a type-ahead term is part of the name being typed ("united s" for
                 // the United States), not a choice of the country the term has reached so far.
-                if (IsTypeAheadInProgress)
+                if (_list.IsTypeAheadInProgress)
                 {
-                    HandleTypeAhead(" ");
+                    _list.TypeAhead(" ");
                 }
-                else if (_activeIndex >= 0 && _activeIndex < _viewItems.Count)
+                else if (_list.Active is { } spaced)
                 {
-                    await HandleOnCountrySelect(_viewItems[_activeIndex]);
+                    await HandleOnCountrySelect(spaced);
                 }
                 break;
 
             default:
+                // The arrows, PageUp/PageDown, and Home/End outside the search box, whose caret they belong to.
+                if (_list.Navigate(key, fromSearchBox, NoWrapNavigation)) break;
+
                 // Without a search box to type into, the letters typed on the open list jump to the country whose
                 // name they start, the way a native select behaves.
-                if (fromSearchBox is false && IsTypeAheadKey(e))
+                if (fromSearchBox is false && BitCountryList.IsTypeAheadKey(e))
                 {
-                    HandleTypeAhead(key);
+                    _list.TypeAhead(key);
                 }
                 break;
         }
     }
 
     // The keys of the open list pressed on the field of a list that has a search box (see HandleOnCalloutKeyDown).
-    // The navigation keys move the active option and hand the focus to the search box, which announces it; a letter
-    // goes into the search box as if it had been typed there; Enter and Space press the field, which closes the list
-    // as a click on it does; Alt+Up closes it the way it does from the search box. Escape and Tab are left to the
-    // handling they get anywhere in the list. Reports whether the key was handled here.
+    // The navigation keys move the active option the way they do anywhere in the list - Home and End included, since
+    // they were not pressed in the search box whose caret they would move - and hand the focus to the search box,
+    // which announces it; a letter goes into the search box as if it had been typed there; Enter and Space press the
+    // field, which closes the list as a click on it does; Alt+Up closes it the way it does from the search box.
+    // Escape and Tab are left to the handling they get anywhere in the list. Reports whether the key was handled here.
     private async Task<bool> HandleOnFieldOfSearchableListKeyDown(KeyboardEventArgs e)
     {
         switch (e.Key)
@@ -1050,30 +978,6 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
                 await FocusField();
                 return true;
 
-            case "ArrowDown":
-                MoveActiveIndex(1);
-                break;
-
-            case "ArrowUp":
-                MoveActiveIndex(-1);
-                break;
-
-            case "PageDown":
-                MoveActiveIndex(PageNavigationSize, clamp: true);
-                break;
-
-            case "PageUp":
-                MoveActiveIndex(-PageNavigationSize, clamp: true);
-                break;
-
-            case "Home":
-                if (_viewItems.Count > 0) _activeIndex = 0;
-                break;
-
-            case "End":
-                if (_viewItems.Count > 0) _activeIndex = _viewItems.Count - 1;
-                break;
-
             case "Enter":
             case " ":
             case "Spacebar":
@@ -1082,12 +986,13 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
                 // The focus is still on the field, so the ring CloseCallout dropped belongs right back on.
                 SetHasFocus(true);
                 return true;
+        }
 
-            default:
-                if (IsTypeAheadKey(e) is false) return false;
+        if (_list.Navigate(e.Key, fromSearchBox: false, NoWrapNavigation) is false)
+        {
+            if (BitCountryList.IsTypeAheadKey(e) is false) return false;
 
-                await ApplySearchText(_searchText + e.Key);
-                break;
+            await ApplySearchText(_list.SearchText + e.Key);
         }
 
         try
@@ -1099,82 +1004,21 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
         return true;
     }
 
-    // A printable character typed without a modifier: a shortcut (Ctrl+C, Alt+letter) is not a letter of a name.
-    private static bool IsTypeAheadKey(KeyboardEventArgs e) => e.Key.Length == 1
-                                                               && char.IsLetterOrDigit(e.Key[0])
-                                                               && e.CtrlKey is false
-                                                               && e.AltKey is false
-                                                               && e.MetaKey is false;
-
-    private bool IsTypeAheadInProgress => _typeAhead.Length > 0 && (DateTimeOffset.UtcNow - _typeAheadAt) <= _typeAheadTimeout;
-
-    private void MoveActiveIndex(int offset, bool clamp = false)
-    {
-        if (_viewItems.Count == 0) return;
-
-        var next = _activeIndex < 0 ? (offset > 0 ? 0 : _viewItems.Count - 1) : _activeIndex + offset;
-
-        if (clamp || NoWrapNavigation)
-        {
-            next = Math.Clamp(next, 0, _viewItems.Count - 1);
-        }
-        else if (next < 0)
-        {
-            next = _viewItems.Count - 1;
-        }
-        else if (next > _viewItems.Count - 1)
-        {
-            next = 0;
-        }
-
-        _activeIndex = next;
-    }
-
-    private void HandleTypeAhead(string key)
-    {
-        if (_viewItems.Count == 0) return;
-
-        var now = DateTimeOffset.UtcNow;
-
-        // A pause longer than the timeout starts a new term, and repeating a single letter cycles through the
-        // countries starting with it instead of searching for a doubled letter.
-        _typeAhead = (now - _typeAheadAt) > _typeAheadTimeout ? key : _typeAhead + key;
-        _typeAheadAt = now;
-
-        var term = BitCountrySearch.Fold(_typeAhead);
-        var start = _typeAhead.Length == 1 ? _activeIndex + 1 : Math.Max(_activeIndex, 0);
-
-        // The type-ahead only runs on the unfiltered list (there is no search box to filter it with), so the names
-        // folded once with the list are the same ones this walks over.
-        var folded = ReferenceEquals(_viewItems, _allItems) ? _foldedNames : null;
-
-        var index = BitCountrySearch.FindByNameStart(_viewItems, folded, term, start);
-
-        if (index >= 0)
-        {
-            _activeIndex = index;
-        }
-    }
-
     private async Task OpenCallout()
     {
-        if (Disabled || ReadOnly) return;
+        if (CanOpen is false) return;
 
         _hasOpened = true;
 
         if (await AssignIsOpenInternal(true) is false) return;
 
-        // Populate the view items before computing the active index. GetFilteredCountries() is otherwise only
-        // called during render, so opening via the keyboard (ArrowDown) before the list has rendered would leave
-        // _viewItems empty and _activeIndex at -1, making the first Enter select nothing.
+        // Settle the active option before the list has rendered: opening via the keyboard (ArrowDown) would
+        // otherwise leave it at -1, making the first Enter select nothing.
         ResetActiveIndexToSelection();
 
-        _typeAhead = string.Empty;
+        _list.ResetTypeAhead();
 
-        if (_fieldKeysWired)
-        {
-            await _js.BitExtrasSetPreventKeys(InputElement, _fieldOpenKeys);
-        }
+        await SyncFieldKeys();
 
         _pendingCalloutToggle = true;
 
@@ -1187,14 +1031,11 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
 
         if (await AssignIsOpenInternal(false) is false) return;
 
-        ResetCalloutState();
+        _list.Reset();
 
         await ClearSearchBoxElement();
 
-        if (_fieldKeysWired)
-        {
-            await _js.BitExtrasSetPreventKeys(InputElement, _fieldClosedKeys);
-        }
+        await SyncFieldKeys();
 
         _pendingCalloutToggle = true;
 
@@ -1218,16 +1059,22 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
         await FocusField();
     }
 
+    // The keys the field prevents follow whether its list is on screen, and are swapped the moment that changes, so
+    // the very next key is answered the way the list now is: Enter and Space are left to the native click of a
+    // closed field, which opens it, and are kept from an open one, where they pick a country and the click would
+    // open the list again straight after.
+    private async Task SyncFieldKeys()
+    {
+        if (_fieldKeysWired is false || _fieldKeysOpen == IsCalloutShown) return;
+
+        _fieldKeysOpen = IsCalloutShown;
+
+        await _js.BitExtrasSetPreventKeys(InputElement, _fieldKeysOpen ? BitCountryList.TriggerOpenKeys : BitCountryList.TriggerClosedKeys);
+    }
+
     // Puts the active option on the current selection, or on the first country when nothing is selected yet, so
     // the list always opens with something for Enter to act on.
-    private void ResetActiveIndexToSelection()
-    {
-        GetFilteredCountries();
-
-        var selectedIndex = _viewItems.FindIndex(IsSelected);
-        _activeIndex = selectedIndex >= 0 ? selectedIndex : (_viewItems.Count > 0 ? 0 : -1);
-        _lastScrolledIndex = -1;
-    }
+    private void ResetActiveIndexToSelection() => _list.ResetActiveToSelection(IsSelected);
 
     // Clears the text left in the search box element itself. The value attribute alone is not enough: an input
     // keeps the value its user typed as a DOM property, which a re-render of the same element does not necessarily
@@ -1242,15 +1089,6 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
         }
         catch (JSException) { } // the element might not be ready/visible yet
         catch (JSDisconnectedException) { } // we can ignore this exception here
-    }
-
-    private void ResetCalloutState()
-    {
-        _searchText = null;
-        _activeIndex = -1;
-        _lastScrolledIndex = -1;
-        _typeAhead = string.Empty;
-        _viewItemsValid = false;
     }
 
     // See OnSetIsOpen: the flows that follow AssignIsOpen with their own callout toggle mark the change as internal,
@@ -1273,7 +1111,9 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
         // The internal open and close flows arrange the toggle themselves. The hook only reacts to a change pushed
         // from the outside through the IsOpen parameter, which otherwise has no path to the JS side that actually
         // shows and hides the callout. Before the first render there is no element to toggle either, which
-        // OnAfterRenderAsync takes care of by running the pending toggle as soon as there is one.
+        // OnAfterRenderAsync takes care of by running the pending toggle as soon as there is one; it is also where
+        // the keys of the field are put in step with the list (see WirePreventKeys), and an open on a field that
+        // cannot be used is refused before that (see OnParametersSetAsync).
         if (_internalIsOpenChange) return;
 
         if (IsOpen)
@@ -1284,7 +1124,7 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
         }
         else
         {
-            ResetCalloutState();
+            _list.Reset();
 
             // A callout closed through the IsOpen parameter takes whatever focus it holds down with it, and no
             // focusout of the field is fired for it.
@@ -1306,9 +1146,12 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
     // dismissal, so they cost no round trip of their own and are never left behind a list that is gone.
     private async Task ToggleCallout()
     {
-        if (Disabled || IsDisposed) return;
+        if (IsDisposed) return;
 
-        var tabOut = IsOpen && NoSearchBox is false;
+        // What is shown is what the field can show: a list the field was disabled under is closed on the JS side all
+        // the same, rather than left on screen with nothing that could close it.
+        var shown = IsCalloutShown;
+        var tabOut = shown && NoSearchBox is false;
 
         // A close takes the tab order back whatever it does, and an open that fails registers none.
         _tabOutRegistered = false;
@@ -1323,7 +1166,7 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
             calloutId: _calloutId,
             callout: null,
             overlayId: _overlayId,
-            isCalloutOpen: IsOpen,
+            isCalloutOpen: shown,
             responsiveMode: Responsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
             dropDirection: DropDirection,
             isRtl: Dir is BitDir.Rtl,
@@ -1347,26 +1190,14 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
 
     private async Task ApplySearchText(string? text)
     {
-        _searchText = text;
-        _viewItemsValid = false;
-
-        // Re-evaluate the filtered list so the active option stays within range and pressing Enter selects the
-        // first matching result instead of a stale one.
-        GetFilteredCountries();
-        _activeIndex = _viewItems.Count > 0 ? 0 : -1;
-        _lastScrolledIndex = -1;
+        // The active option moves to the first match, so pressing Enter selects it instead of a stale one.
+        var count = _list.Search(text);
 
         // The list the term filtered down to is inside a callout, so its length is only ever seen: it is announced
         // here for the users who cannot see it.
-        Announce(_viewItems.Count switch
-        {
-            0 => NoResultsMessage ?? "No results found",
-            var count when SearchResultsAnnouncement is not null => SearchResultsAnnouncement(count),
-            1 => "1 country found",
-            var count => $"{count} countries found"
-        });
+        Announce(BitCountryList.GetSearchAnnouncement(count, NoResultsMessage, SearchResultsAnnouncement));
 
-        await OnSearch.InvokeAsync(_searchText);
+        await OnSearch.InvokeAsync(_list.SearchText);
     }
 
     private Task HandleOnCountrySelect(BitCountry country) => SelectCountry(country, focusField: true);
@@ -1408,7 +1239,7 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
             await InputElement.FocusAsync();
 
             // The field is what the focus is back on, so the ring the closing callout dropped is put back on with the
-            // focus itself instead of a render later, once the focusin finds its way back.
+            // focus itself instead of a render later, once the focus event finds its way back.
             SetHasFocus(true);
         }
         catch (JSException) { } // the element might not be ready/visible yet
@@ -1426,16 +1257,20 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
         ClassBuilder.Reset();
     }
 
-    private void HandleOnFocusIn()
+    // The field is a button with nothing focusable inside it, so its focus and blur are the only focus events it
+    // has: one handler per direction keeps the ring in step and reports the event, in a single dispatch.
+    private async Task HandleOnFieldFocus(FocusEventArgs e)
     {
         if (Disabled) return;
 
         _fieldHasFocus = true;
 
         SetHasFocus(true);
+
+        await OnFocus.InvokeAsync(e);
     }
 
-    private void HandleOnFocusOut()
+    private async Task HandleOnFieldBlur(FocusEventArgs e)
     {
         if (Disabled) return;
 
@@ -1445,22 +1280,10 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
         // The focus ring belongs to the field, and the search box of an open callout is part of that field as far
         // as the user is concerned, so the ring stays on while it is open. Closing the callout is what turns it off
         // again (see CloseCallout).
-        if (IsOpen is false)
+        if (IsCalloutShown is false)
         {
             SetHasFocus(false);
         }
-    }
-
-    private async Task HandleOnFieldFocus(FocusEventArgs e)
-    {
-        if (Disabled) return;
-
-        await OnFocus.InvokeAsync(e);
-    }
-
-    private async Task HandleOnFieldBlur(FocusEventArgs e)
-    {
-        if (Disabled) return;
 
         await OnBlur.InvokeAsync(e);
     }

@@ -27,21 +27,20 @@ internal static class BitCountrySearch
     {
         preferredCount = 0;
 
-        IEnumerable<BitCountry> source = countries;
+        var excluded = excludeCountries is not null && excludeCountries.Count > 0
+                            ? new HashSet<string>(excludeCountries.Select(c => c.Iso2), StringComparer.OrdinalIgnoreCase)
+                            : null;
 
-        if (excludeCountries is not null && excludeCountries.Count > 0)
-        {
-            var excluded = new HashSet<string>(excludeCountries.Select(c => c.Iso2), StringComparer.OrdinalIgnoreCase);
-            source = [.. source.Where(c => excluded.Contains(c.Iso2) is false)];
-        }
+        // A country is offered once, by the first entry of the list that carries its ISO code: the code is what
+        // tells a row apart from the others (its key, its selected state), and a list that names a country twice -
+        // the same one repeated, or a translated entry beside the built-in one - would otherwise render two rows
+        // nothing could tell apart. It is also a copy even when the source already is a List: the folded names are
+        // read by the index of the list, and a list the caller keeps a reference to could otherwise grow underneath
+        // them without the parameter reference ever changing.
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        List<BitCountry> source = [.. countries.Where(c => (excluded is null || excluded.Contains(c.Iso2) is false) && seen.Add(c.Iso2))];
 
-        if (preferredCountries is null || preferredCountries.Count == 0)
-        {
-            // A copy even when the source already is a List: the folded names are read by the index of the
-            // list, and a list the caller keeps a reference to could otherwise grow underneath them without the
-            // parameter reference ever changing.
-            return [.. source];
-        }
+        if (preferredCountries is null || preferredCountries.Count == 0) return source;
 
         var preferred = new List<BitCountry>();
         var preferredIso = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -49,7 +48,7 @@ internal static class BitCountrySearch
         foreach (var country in preferredCountries)
         {
             // Only the countries the selector actually offers can be pinned to the top of it.
-            var match = source.FirstOrDefault(c => c.Iso2.Equals(country.Iso2, StringComparison.OrdinalIgnoreCase));
+            var match = source.Find(c => c.Iso2.Equals(country.Iso2, StringComparison.OrdinalIgnoreCase));
             if (match is null || preferredIso.Add(match.Iso2) is false) continue;
 
             preferred.Add(match);

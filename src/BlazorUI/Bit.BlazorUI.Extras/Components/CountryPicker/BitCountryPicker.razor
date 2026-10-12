@@ -10,7 +10,7 @@
      class="@ClassBuilder.Value"
      title="@Title"
      dir="@Dir?.ToString().ToLower()"
-     aria-owns="@JoinTokenLists(GetSplattedAttribute("aria-owns"), IsOpen ? _calloutId : null)">
+     aria-owns="@JoinTokenLists(GetSplattedAttribute("aria-owns"), IsCalloutShown ? _calloutId : null)">
 
     @* A button with the combobox role is a labelable element, but a label tied to it through a for attribute would
        forward its click to it and open the list, which a label of a native select never does: the label names the
@@ -37,8 +37,6 @@
             @attributes="InputHtmlAttributes"
             @onclick="HandleOnFieldClick"
             @onkeydown="HandleOnFieldKeyDown"
-            @onfocusin="HandleOnFocusIn"
-            @onfocusout="HandleOnFocusOut"
             @onfocus="HandleOnFieldFocus"
             @onblur="HandleOnFieldBlur"
             type="button"
@@ -48,9 +46,9 @@
             disabled="@Disabled"
             aria-disabled="@GetInputAriaDisabled(Disabled)"
             aria-haspopup="listbox"
-            aria-expanded="@(IsOpen ? "true" : "false")"
-            aria-controls="@(IsOpen ? _listId : null)"
-            aria-activedescendant="@(IsOpen && NoSearchBox && _activeIndex >= 0 ? GetOptionId(_activeIndex) : null)"
+            aria-expanded="@(IsCalloutShown ? "true" : "false")"
+            aria-controls="@(IsCalloutShown ? _listId : null)"
+            aria-activedescendant="@(IsCalloutShown && NoSearchBox && _list.ActiveIndex >= 0 ? GetOptionId(_list.ActiveIndex) : null)"
             aria-label="@FieldAriaLabel"
             aria-labelledby="@FieldLabelledBy"
             aria-describedby="@AriaDescribedBy"
@@ -69,7 +67,17 @@
             {
                 @if (NoFlags is false)
                 {
-                    <img style="@Styles?.Flag" class="bit-cnp-flg @Classes?.Flag" src="@GetFlagUrl(CurrentValue)" alt="" aria-hidden="true" loading="lazy" />
+                    @* A country with no flag image at all - a custom one whose code no flag ships for - keeps an empty
+                       box of the size of one, rather than an image that fails to load. *@
+                    var fieldFlagUrl = GetFlagUrl(CurrentValue);
+                    @if (fieldFlagUrl is not null)
+                    {
+                        <img style="@Styles?.Flag" class="bit-cnp-flg @Classes?.Flag" src="@fieldFlagUrl" alt="" aria-hidden="true" loading="lazy" />
+                    }
+                    else
+                    {
+                        <span style="@Styles?.Flag" class="bit-cnp-flg @Classes?.Flag" aria-hidden="true"></span>
+                    }
                 }
                 <span class="bit-cnp-txt">@CurrentValue.Name</span>
             }
@@ -137,7 +145,7 @@
 
 <div id="@_calloutId"
      style="@Styles?.Callout"
-     class="bit-cnp-cal @SizeClass @ColorClass @(Responsive ? "bit-cnp-res" : null) @(Dir is BitDir.Rtl ? "bit-cnp-rtl" : null) @Classes?.Callout">
+     class="bit-cnp-cal @SizeClass @ColorClass @(Responsive ? "bit-cnp-res" : null) @(Dir is BitDir.Rtl ? "bit-rtl" : null) @Classes?.Callout">
 
     @if (Responsive)
     {
@@ -166,12 +174,12 @@
                    spellcheck="false"
                    autocorrect="off"
                    autocapitalize="off"
-                   value="@_searchText"
+                   value="@_list.SearchText"
                    aria-autocomplete="list"
                    aria-haspopup="listbox"
-                   aria-expanded="@(IsOpen ? "true" : "false")"
-                   aria-controls="@(IsOpen ? _listId : null)"
-                   aria-activedescendant="@(IsOpen && _activeIndex >= 0 ? GetOptionId(_activeIndex) : null)"
+                   aria-expanded="@(IsCalloutShown ? "true" : "false")"
+                   aria-controls="@(IsCalloutShown ? _listId : null)"
+                   aria-activedescendant="@(IsCalloutShown && _list.ActiveIndex >= 0 ? GetOptionId(_list.ActiveIndex) : null)"
                    aria-label="@(SearchBoxAriaLabel ?? SearchBoxPlaceholder ?? "Search countries")"
                    class="bit-cnp-srch"
                    placeholder="@(SearchBoxPlaceholder ?? "Search")" />
@@ -207,15 +215,15 @@
              aria-labelledby="@ListLabelledBy">
             @if (_hasOpened)
             {
-                var items = GetFilteredCountries();
+                var items = _list.View;
 
                 @for (var i = 0; i < items.Count; i++)
                 {
                     var index = i;
                     var country = items[index];
                     var isSelected = IsSelected(country);
-                    var isActive = index == _activeIndex;
-                    var itemClass = $"bit-cnp-itm{(isSelected ? " bit-cnp-sel" : "")}{(isActive ? " bit-cnp-act" : "")}{(IsLastPreferred(index) ? " bit-cnp-ilp" : "")}";
+                    var isActive = index == _list.ActiveIndex;
+                    var itemClass = $"bit-cnp-itm{(isSelected ? " bit-cnp-sel" : "")}{(isActive ? " bit-cnp-act" : "")}{(_list.IsLastPreferred(index) ? " bit-cnp-ilp" : "")}";
                     <button @key="country.Iso2"
                             id="@GetOptionId(index)"
                             @onclick="() => HandleOnCountrySelect(country)"
@@ -234,7 +242,15 @@
                         {
                             @if (NoFlags is false)
                             {
-                                <img style="@Styles?.Flag" class="bit-cnp-flg @Classes?.Flag" src="@GetFlagUrl(country)" alt="" aria-hidden="true" loading="lazy" />
+                                var flagUrl = GetFlagUrl(country);
+                                @if (flagUrl is not null)
+                                {
+                                    <img style="@Styles?.Flag" class="bit-cnp-flg @Classes?.Flag" src="@flagUrl" alt="" aria-hidden="true" loading="lazy" />
+                                }
+                                else
+                                {
+                                    <span style="@Styles?.Flag" class="bit-cnp-flg @Classes?.Flag" aria-hidden="true"></span>
+                                }
                             }
                             <span style="@Styles?.ItemName" class="bit-cnp-inm @Classes?.ItemName">@country.Name</span>
                         }

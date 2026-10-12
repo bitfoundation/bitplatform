@@ -54,7 +54,7 @@ public partial class BitCountryPickerDemo
             Name = "DefaultCountry",
             Type = "BitCountry?",
             DefaultValue = "null",
-            Description = "The country an unbound picker starts on when no DefaultValue is given - the market of an app, which a BitCountryPickerParams can hand every picker under it. A bound Value is left as it is.",
+            Description = "The country an unbound picker starts on when no DefaultValue is given - the market of an app, which a BitCountryPickerParams can hand every picker under it. A bound Value is left as it is. It is matched to the list by its ISO code, so the picker starts on the country the list offers (with the name it shows), and on none when the list does not offer it.",
             LinkType = LinkType.Link,
             Href = "#country",
         },
@@ -407,7 +407,7 @@ public partial class BitCountryPickerDemo
         {
             Name = "SelectCountryAsync",
             Type = "Task",
-            Description = "Selects the given country exactly as picking it in the list would, so the same events fire.",
+            Description = "Selects the given country exactly as picking it in the list would, so the same events fire. The country is matched to the list by its ISO code, and one the list does not offer is not selected.",
         },
     ];
 
