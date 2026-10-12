@@ -21,8 +21,8 @@ public partial class WebFeatureGatingTests : AppTestBase
     /// user-group of that tenant opens it once she comes back to it.
     /// </summary>
     [TestMethod]
-    [DataRow(App.AdminPanel, DisplayName = "AdminPanel (bit Brouter)")]
-    [DataRow(App.AdminPanelWasmStandalone, DisplayName = "AdminPanelWasmStandalone (Blazor Router)")]
+    [DataRow(App.AdminPanel, DisplayName = "AdminPanel")]
+    [DataRow(App.AdminPanelWasmStandalone, DisplayName = "AdminPanelWasmStandalone")]
     public async Task Dashboard_Should_Open_OnceTheFeatureIsGranted_WithoutSigningInAgain(App app)
     {
         await SkipWithoutGlobalAdminCredentials();

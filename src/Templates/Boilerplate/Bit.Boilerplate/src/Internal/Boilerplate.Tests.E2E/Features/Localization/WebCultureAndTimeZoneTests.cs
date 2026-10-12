@@ -32,9 +32,9 @@ public partial class WebCultureAndTimeZoneTests : AppTestBase
     }
 
     [TestMethod]
-    [DataRow(App.Sales, DisplayName = "Sales (Blazor Router)")]
-    [DataRow(App.Todo, DisplayName = "Todo (Blazor Router)")]
-    [DataRow(App.AdminPanel, DisplayName = "AdminPanel (bit Brouter)")]
+    [DataRow(App.Sales, DisplayName = "Sales")]
+    [DataRow(App.Todo, DisplayName = "Todo")]
+    [DataRow(App.AdminPanel, DisplayName = "AdminPanel")]
     public async Task Culture_Should_FollowTheBrowser_ThenStayWhatTheUserPicked(App app)
     {
         var page = await OpenApp(app);
@@ -58,9 +58,9 @@ public partial class WebCultureAndTimeZoneTests : AppTestBase
     }
 
     [TestMethod]
-    [DataRow(App.Sales, DisplayName = "Sales (Blazor Router)")]
-    [DataRow(App.Todo, DisplayName = "Todo (Blazor Router)")]
-    [DataRow(App.AdminPanel, DisplayName = "AdminPanel (bit Brouter)")]
+    [DataRow(App.Sales, DisplayName = "Sales")]
+    [DataRow(App.Todo, DisplayName = "Todo")]
+    [DataRow(App.AdminPanel, DisplayName = "AdminPanel")]
     public async Task TimeZone_Should_StayWhatTheUserPicked_AfterAReload(App app)
     {
         var page = await OpenApp(app);

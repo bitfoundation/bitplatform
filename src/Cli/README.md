@@ -65,7 +65,7 @@ Every option of the bit Boilerplate template works the same way:
 | `--sentry` | `true`, `false` | `false` |
 | `--appInsights` | `true`, `false` | `false` |
 | `--ads` | `true`, `false` | `false` |
-| `--brouter` | `true`, `false` | `false` |
+| `--brouter` | `true`, `false` | `true` |
 | `--sample` | `true`, `false` | `false` |
 | `--advancedTests` | `true`, `false` | `false` |
 | `--realProject` | `true`, `false` | `false` |
