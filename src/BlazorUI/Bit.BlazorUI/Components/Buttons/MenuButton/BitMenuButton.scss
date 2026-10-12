@@ -544,8 +544,7 @@ $mnb-cal-private-properties: cal-bg;
     // where the navigation is (WCAG 2.4.7). It is drawn inside the item: the callout clips what overflows it,
     // and an outset ring would be cut off on both sides of a row that spans the full width of one.
     &:focus-visible {
-        outline: $shp-border-width-thick $shp-border-style var(--bit-mnb-clr-focus, var(--bit-MenuButton-item-focus-color, #{$clr-pri-focus}));
-        outline-offset: calc(-1 * #{$shp-border-width-thick});
+        @include focus-ring-inset(var(--bit-mnb-clr-focus, var(--bit-MenuButton-item-focus-color, #{$clr-pri-focus})), $width: $shp-border-width-thick);
     }
 
     // The items are neutral surfaces rather than accents: the row lights up and the label keeps the

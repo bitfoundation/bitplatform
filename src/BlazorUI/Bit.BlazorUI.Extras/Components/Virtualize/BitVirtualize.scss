@@ -14,13 +14,7 @@
 // is flush with its neighbours. An outline, unlike an inset box-shadow, is painted above the content, so an item
 // whose root fills it with a background cannot hide it.
 @mixin vir-ring {
-    outline: #{$shp-focus-ring-width} solid var(--bit-Virtualize-focus-color, #{$clr-pri-focus});
-    outline-offset: calc(-1 * #{$shp-focus-ring-width});
-
-    // The forced palette turns the ring into the system's own focus color.
-    @media (forced-colors: active) {
-        outline: #{$shp-focus-ring-width} solid Highlight;
-    }
+    @include focus-ring-inset(var(--bit-Virtualize-focus-color, #{$clr-pri-focus}));
 }
 
 @mixin vir-focus-ring {

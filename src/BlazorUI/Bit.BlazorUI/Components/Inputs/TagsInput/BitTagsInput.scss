@@ -266,8 +266,7 @@ $tgi-private-properties: clr, clr-txt, clr-hover, clr-focus, gap, fontsize, icon
     //It is drawn with the color of the text of the chip rather than with the accent, since on a filled
     //chip the accent is what the ring would be drawn on top of.
     &:focus-visible {
-        outline: $shp-focus-ring-width solid var(--bit-tgi-tag-ring, var(--bit-tgi-tag-ring-pub));
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        @include focus-ring-inset(var(--bit-tgi-tag-ring, var(--bit-tgi-tag-ring-pub)));
     }
 }
 
@@ -368,8 +367,7 @@ $tgi-private-properties: clr, clr-txt, clr-hover, clr-focus, gap, fontsize, icon
     }
 
     &:focus-visible {
-        outline: $shp-focus-ring-width solid var(--bit-tgi-tag-ring, var(--bit-tgi-tag-ring-pub));
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        @include focus-ring-inset(var(--bit-tgi-tag-ring, var(--bit-tgi-tag-ring-pub)));
     }
 }
 
@@ -410,10 +408,10 @@ $tgi-private-properties: clr, clr-txt, clr-hover, clr-focus, gap, fontsize, icon
         }
     }
 
-    //the same inset outline as the tag, and for the same reason: the field is already ringed.
+    //the same inset outline as the tag, and for the same reasons: the field is already ringed, and the chip
+    //clips its overflow, which would cut a ring drawn on the edge of the button off where it meets the chip's.
     &:focus-visible {
-        outline: $shp-focus-ring-width solid var(--bit-tgi-tag-ring, var(--bit-tgi-tag-ring-pub));
-        outline-offset: 0;
+        @include focus-ring-inset(var(--bit-tgi-tag-ring, var(--bit-tgi-tag-ring-pub)));
     }
 }
 
@@ -438,9 +436,9 @@ $tgi-private-properties: clr, clr-txt, clr-hover, clr-focus, gap, fontsize, icon
         }
     }
 
+    //the same inset outline as the dismiss button, for the same reason.
     &:focus-visible {
-        outline: $shp-focus-ring-width solid var(--bit-tgi-tag-ring, var(--bit-tgi-tag-ring-pub));
-        outline-offset: 0;
+        @include focus-ring-inset(var(--bit-tgi-tag-ring, var(--bit-tgi-tag-ring-pub)));
     }
 }
 
@@ -449,8 +447,7 @@ $tgi-private-properties: clr, clr-txt, clr-hover, clr-focus, gap, fontsize, icon
 //one does, so the eye finds it. A ring rather than a fill, since the little input has borrowed the colors
 //of the chip and repainting it now would be the tag changing into something else half way through.
 .bit-tgi-tag-edt {
-    outline: $shp-focus-ring-width solid var(--bit-tgi-tag-ring, var(--bit-tgi-tag-ring-pub));
-    outline-offset: calc(-1 * #{$shp-focus-ring-width});
+    @include focus-ring-inset(var(--bit-tgi-tag-ring, var(--bit-tgi-tag-ring-pub)));
 }
 
 //the chip that has been picked up and is waiting to be put down: outlined rather than faded, since unlike

@@ -226,8 +226,7 @@ $tag-private-properties:
     // so a ring painted outside the element would be cut off by it. Drawn in the color of the label by
     // default, which is the one color guaranteed to contrast with whatever the tag is painted in.
     &:focus-visible {
-        outline: $shp-focus-ring-width solid var(--bit-tag-fcs-clr);
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        @include focus-ring-inset(var(--bit-tag-fcs-clr));
     }
 
     // A button carries the disabled state itself; an anchor has no such state, so the link tag reports it
@@ -246,8 +245,7 @@ $tag-private-properties:
 // that takes focus has to show that it has it. The same inset outline as the content, and for the same
 // reason: the root clips whatever is drawn outside the corner it draws.
 .bit-tag:focus-visible {
-    outline: $shp-focus-ring-width solid var(--bit-tag-fcs-clr);
-    outline-offset: calc(-1 * #{$shp-focus-ring-width});
+    @include focus-ring-inset(var(--bit-tag-fcs-clr));
 }
 
 // The label block: the text of the tag and, under it, whatever qualifies it.
@@ -396,8 +394,7 @@ $tag-private-properties:
     // The same inset outline as the content, and for the same reason: the root clips whatever is drawn
     // outside its corner.
     &:focus-visible {
-        outline: $shp-focus-ring-width solid var(--bit-tag-fcs-clr);
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        @include focus-ring-inset(var(--bit-tag-fcs-clr));
     }
 
     &:disabled,

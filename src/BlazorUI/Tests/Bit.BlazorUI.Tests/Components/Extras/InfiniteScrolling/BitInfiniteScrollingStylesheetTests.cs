@@ -72,8 +72,8 @@ public partial class BitInfiniteScrollingStylesheetTests
         // A button with no box of its own would read as plain text in a forced palette.
         StringAssert.Contains(forced, "border: $shp-border-width $shp-border-style ButtonText;");
 
-        // The ring of a feed's article becomes the system's own focus color.
-        StringAssert.Contains(SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-isc-art {"), "outline: #{$shp-focus-ring-width} solid Highlight;");
+        // The ring of a feed's article becomes the system's own focus color (focus-ring-inset does it).
+        StringAssert.Contains(SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-isc-art {"), "@include focus-ring-inset(");
     }
 
     [TestMethod]
@@ -83,7 +83,7 @@ public partial class BitInfiniteScrollingStylesheetTests
 
         // An inset box-shadow is painted under the article's children, so an item with a background would hide it.
         Assert.IsFalse(article.Contains("box-shadow"), "The ring of an article is a box-shadow, which its content covers.");
-        StringAssert.Contains(article, "outline-offset: calc(-1 * #{$shp-focus-ring-width});");
+        StringAssert.Contains(article, "@include focus-ring-inset(var(--bit-InfiniteScrolling-item-focus-color, #{$clr-pri-focus}));");
     }
 
     [TestMethod]

@@ -138,12 +138,7 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
 // the box-shadow the ring of the whole field is drawn with. The library resets the outline of every button,
 // so without it the two halves of the field would share one ring with nothing saying which of them has focus.
 @mixin phi-focus-inset {
-    outline: $shp-focus-ring-width $shp-border-style var(--bit-phi-focus, #{$clr-pri-focus});
-    outline-offset: calc(-1 * #{$shp-focus-ring-width});
-
-    @media (forced-colors: active) {
-        outline-color: Highlight;
-    }
+    @include focus-ring-inset(var(--bit-phi-focus, #{$clr-pri-focus}));
 }
 
 // A hover cue is drawn on a device that can hover only: on a touch screen it would stick to whatever was

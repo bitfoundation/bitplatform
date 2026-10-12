@@ -266,8 +266,7 @@ $acd-private-properties:
     // mixin's outset shadow (which would poke past the component edge); the width follows the global focus-ring
     // token so theme overrides still apply.
     &:focus-visible {
-        outline: #{$shp-focus-ring-width} solid var(--bit-Accordion-focus-color, #{$clr-pri-focus});
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        @include focus-ring-inset(var(--bit-Accordion-focus-color, #{$clr-pri-focus}));
     }
 }
 
@@ -437,8 +436,7 @@ $acd-private-properties:
 
     // The content region is focusable only while it scrolls (MaxHeight); same inset outline as the header.
     &:focus-visible {
-        outline: #{$shp-focus-ring-width} solid var(--bit-Accordion-focus-color, #{$clr-pri-focus});
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        @include focus-ring-inset(var(--bit-Accordion-focus-color, #{$clr-pri-focus}));
     }
 }
 

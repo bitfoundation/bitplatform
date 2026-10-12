@@ -241,8 +241,8 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
     // takes the real ring back below.
     &:focus-visible {
         z-index: 1;
-        outline: #{$shp-focus-ring-width} solid var(--bit-btg-itm-clr-fcs, var(--bit-ButtonGroup-focus-color, var(--bit-btg-dfl-fcs)));
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+
+        @include focus-ring-inset(var(--bit-btg-itm-clr-fcs, var(--bit-ButtonGroup-focus-color, var(--bit-btg-dfl-fcs))));
     }
 
     // The disabled foreground is one in every variant; the border and background are the variant's (see

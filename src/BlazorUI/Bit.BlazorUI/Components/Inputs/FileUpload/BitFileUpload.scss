@@ -636,10 +636,9 @@ $upl-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-tin
     // removing a file - so each of them has to say when it holds the focus. The shared focus-ring mixin
     // draws its indicator as a box-shadow outside the element, which the file item clips away with its own
     // overflow:hidden, so the indicator is drawn as an outline inset into the button instead - which is also
-    // what survives a forced-colors palette without a media query of its own.
+    // what survives a forced-colors palette.
     &:focus-visible {
-        outline: $shp-focus-ring-width solid var(--bit-upl-clr-focus, var(--bit-FileUpload-focus-color, #{$clr-pri-focus}));
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        @include focus-ring-inset(var(--bit-upl-clr-focus, var(--bit-FileUpload-focus-color, #{$clr-pri-focus})));
     }
 
     &:disabled {
