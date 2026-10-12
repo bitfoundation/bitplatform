@@ -30,7 +30,7 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
             }));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         await component.InvokeAsync(() => component.Instance.Download());
 
@@ -47,7 +47,7 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
             parameters.Add(p => p.OnDownloading, EventCallback.Factory.Create<BitPdfDownloadArgs>(this, args => args.FileName = " "));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         await component.InvokeAsync(() => component.Instance.Download());
 
@@ -63,7 +63,7 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
             parameters.Add(p => p.OnDownloading, EventCallback.Factory.Create<BitPdfDownloadArgs>(this, args => args.Cancel = true));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         // The toolbar button and the shortcut go through the same gate as the method.
         component.Find("button[aria-label='Download document']").Click();
@@ -88,7 +88,7 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
             }));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         var first = component.InvokeAsync(() => component.Instance.Download());
         await component.InvokeAsync(() => component.Instance.OnShortcut("download"));
@@ -114,7 +114,7 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
             }));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
 
         var first = component.InvokeAsync(() => component.Instance.Print());
         await component.InvokeAsync(() => component.Instance.OnShortcut("print"));
@@ -139,7 +139,7 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
             }));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.PageCount));
+        component.WaitForPages(5);
 
         // The range arrives as it will be printed: reordered and clamped.
         await component.InvokeAsync(() => component.Instance.Print(4, 2));
@@ -162,7 +162,7 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
             parameters.Add(p => p.OnPrinting, EventCallback.Factory.Create<BitPdfPrintArgs>(this, _ => raised++));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
 
         await component.InvokeAsync(() => component.Instance.OnShortcut("print"));
 
@@ -181,7 +181,7 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
             parameters.Add(p => p.ToolbarItems, BitPdfToolbarItems.Navigation | BitPdfToolbarItems.Zoom);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
 
         await component.InvokeAsync(() => component.Instance.OnShortcut("print"));
         await component.InvokeAsync(() => component.Instance.OnShortcut("download"));
@@ -207,7 +207,7 @@ public class BitPdfViewerDownloadPrintTests : BunitTestContext
             parameters.Add(p => p.ShowToolbar, false);
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
 
         await component.InvokeAsync(() => component.Instance.OnShortcut("print"));
         await component.InvokeAsync(() => component.Instance.OnShortcut("download"));

@@ -39,7 +39,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld(), "report.pdf"));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
         Assert.AreEqual("report.pdf", component.Find(".bit-pdv-surface").GetAttribute("aria-label"));
 
         component.Render(parameters => parameters.Add(p => p.AriaLabel, "Quarterly report"));
@@ -55,7 +55,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.RichDocument()));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+        component.WaitForPages(3);
 
         Assert.AreEqual("Test Document", component.Find(".bit-pdv-surface").GetAttribute("aria-label"));
         Assert.AreEqual("Test Document", component.Find(".bit-pdv-title").TextContent);
@@ -69,8 +69,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
-        component.WaitForAssertion(() => Assert.AreEqual("false", component.Find(".bit-pdv-surface").GetAttribute("aria-busy")));
+        component.WaitForPages(1);
     }
 
     [TestMethod]
@@ -148,7 +147,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
 
         component.InvokeAsync(component.Instance.ToggleProperties);
 
@@ -268,7 +267,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Texts, new BitPdfViewerTexts { PageAriaLabelFormat = "Seite {0}" });
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+        component.WaitForPages(3);
 
         var pages = component.FindAll(".bit-pdv-page[data-page]");
 
@@ -287,7 +286,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Texts, new BitPdfViewerTexts { LinkAriaLabelFormat = "Zu Seite {0}" });
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
 
         var link = component.Find("[data-bit-pdv-page]");
 
@@ -392,7 +391,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
         // A document that does open takes the failure's place.
         component.Render(parameters => parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld())));
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
         Assert.AreEqual(0, component.FindAll(".bit-pdv-error").Count);
     }
 
@@ -434,7 +433,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
 
         response.SetResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(TestPdf.HelloWorld()) });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
+        component.WaitForPages(1);
         Assert.AreEqual(0, component.FindAll(".custom-loading").Count);
     }
 
@@ -451,7 +450,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
         // The script tracks where focus is from the first render on, so a closing panel
         // needs no round trip to ask it.
         Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.PdfViewer.registerFocusTracker"].Count);
@@ -478,7 +477,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(2)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(2, component.Instance.PageCount));
+        component.WaitForPages(2);
 
         Assert.AreEqual("Control+F", component.Find("button[aria-label='Find in document']").GetAttribute("aria-keyshortcuts"));
         Assert.AreEqual("Control+P", component.Find("button[aria-label='Print document']").GetAttribute("aria-keyshortcuts"));
@@ -499,7 +498,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.MultiPage(3)));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(3, component.Instance.PageCount));
+        component.WaitForPages(3);
 
         var box = component.Find(".bit-pdv-page-input");
         var description = component.Find($"#{box.GetAttribute("aria-describedby")}");
