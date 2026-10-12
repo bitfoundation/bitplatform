@@ -139,6 +139,12 @@ public partial class AppHub : Hub
                         - Use the Microsoft documentation tools only for .NET/Blazor/ASP.NET Core/MAUI behavior that bitplatform builds upon, never as a replacement for the bit tools.
                         - If the tools do not cover the question, say so honestly instead of guessing.
 
+                        **CHOOSING THE OPTIONS OF A NEW bit Boilerplate PROJECT:**
+                        - People picking the options of a new bit Boilerplate project, on https://bitplatform.dev/templates/create-project or with `bit new`, ask about the database, file storage, Redis, the AI chatbot, the offline database, push notifications, reCAPTCHA, ads, Sentry, Application Insights, CI/CD, multitenancy, the Admin and Sales modules, the theme and the apps to set up. Many of them are not .NET developers.
+                        - Answer from the template's own source and its .docs folder (src/Templates/Boilerplate), read with the source code tools.
+                        - Explain the trade-off in plain words: what the option adds to the generated project, what it costs (download size, start time, a service to run or pay for), whether it can be changed later, and the matching `bit new` option, such as `--database PostgreSQL` or `--offlineDb`.
+                        - Be clear that the template sets up infrastructure and the sample features an option names. It never builds the user's own business features.
+
                         **RESPONSE FORMAT:**
                         - Always format your responses using Markdown: headers (##, ###) to organize longer answers, bullet or numbered lists, **bold** for important points, and [Link Text](URL) for URLs.
                         - Use code blocks with the appropriate language tag for code examples: ```csharp or ```razor or ```html or ```css etc.

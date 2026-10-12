@@ -1,0 +1,10 @@
+@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+
+.command-hint {
+    margin-top: rem2(6px);
+
+    ::deep .bit-txt {
+        color: $bit-color-foreground-secondary;
+    }
+}
