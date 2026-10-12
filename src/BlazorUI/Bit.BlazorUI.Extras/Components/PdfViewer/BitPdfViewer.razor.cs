@@ -24,6 +24,7 @@ public partial class BitPdfViewer : BitComponentBase
     private bool _correctWidthsPending; // run the JS text width-correction after render
     private string?[]? _pageText; // lazily-built per-page text index for search
     private int _loadVersion; // bumped per load; guards against a superseded load committing
+    private int _loadedVersion; // the last load that published its document (OnDocumentLoaded is owed to it)
     private int _renderEpoch; // bumped whenever page slots are rebuilt (load, rotation, mode change)
     private string _status = string.Empty;
     private bool _loading;
@@ -1189,6 +1190,7 @@ public partial class BitPdfViewer : BitComponentBase
         _appliedPage = CurrentPage;
         _textCoalescing = TextCoalescing;
         _renderMode = RenderMode;
+        int version = _loadVersion + 1; // the version LoadAsync claims as it starts
         await LoadAsync();
         if (IsDisposed) return;
 
@@ -1200,6 +1202,14 @@ public partial class BitPdfViewer : BitComponentBase
             _appliedPage = CurrentPage;
         }
         AnnouncePage();
+
+        // Only now is the load over in every respect: the loading state is cleared and
+        // the requested page is in place, so a handler acting on the viewer - its pages,
+        // its toolbar, its current page - sees the loaded document, never the loading one.
+        // Owed only by the load that published its document and has not been superseded
+        // (by a newer Source, possibly one the GoToPage above awaited long enough for).
+        if (IsDisposed || _loadedVersion != version || _loadVersion != version) return;
+        await OnDocumentLoaded.InvokeAsync();
     }
 
     /// <summary>Reads the file the reader picked with the toolbar's open-file button.
@@ -2791,6 +2801,14 @@ public partial class BitPdfViewer : BitComponentBase
         // password nobody is waiting for.
         CompletePasswordRequest(null);
 
+        // A new document is on its way: the viewer is busy from here on, not only once the gate
+        // below is ours. A background page build holding the gate would otherwise leave the old
+        // document's pages on show as a finished load until it lets go.
+        if (_source is not null)
+        {
+            _loading = true;
+        }
+
         // Reset the shared state under the render gate so an in-flight background
         // build (which reads _document and lazily (re)creates _fontStore) cannot
         // repopulate these fields after we clear them.
@@ -3019,7 +3037,8 @@ public partial class BitPdfViewer : BitComponentBase
                 // don't announce a superseded document as loaded.
                 if (IsDisposed || version != _loadVersion) return;
             }
-            await OnDocumentLoaded.InvokeAsync();
+            // OnDocumentLoaded is raised by OpenCoreAsync once the load is over in every respect.
+            _loadedVersion = version;
         }
         catch (Exception ex)
         {

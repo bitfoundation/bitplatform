@@ -2143,7 +2143,7 @@ public class BitPdfViewerTests : BunitTestContext
 
         component.WaitForPages(0);
         Assert.IsNull(component.Instance.Document);
-        Assert.IsTrue(component.Find(".bit-pdv").TextContent.Contains("No document loaded."));
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-pdv").TextContent.Contains("No document loaded.")));
     }
 
     [TestMethod]

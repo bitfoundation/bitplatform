@@ -69,8 +69,7 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
             parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld()));
         });
 
-        component.WaitForAssertion(() => Assert.AreEqual(1, component.Instance.PageCount));
-        component.WaitForAssertion(() => Assert.AreEqual("false", component.Find(".bit-pdv-surface").GetAttribute("aria-busy")));
+        component.WaitForPages(1);
     }
 
     [TestMethod]
