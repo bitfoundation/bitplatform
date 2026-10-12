@@ -683,8 +683,15 @@ $dlg-private-properties: wid, hei, mnw, mnh, mxw, mxh;
         border-color: Highlight;
     }
 
-    .bit-dlg-okb:disabled,
-    .bit-dlg-cnb:disabled {
+    // An unavailable action goes GrayText. Keyed on both forms of the state: the Ok button waiting on its callback
+    // is held shut through aria-disabled alone, to keep the focus on it, and is as unavailable as a disabled one.
+    // The dimming of a disabled one is dropped, as it would only weaken a color the user chose for clarity; the
+    // container is named so this outranks the rule that dims it.
+    .bit-dlg-bct .bit-dlg-okb:disabled,
+    .bit-dlg-bct .bit-dlg-okb[aria-disabled="true"],
+    .bit-dlg-bct .bit-dlg-cnb:disabled,
+    .bit-dlg-bct .bit-dlg-cnb[aria-disabled="true"] {
+        opacity: 1;
         color: GrayText;
         border-color: GrayText;
     }

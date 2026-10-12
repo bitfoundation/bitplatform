@@ -743,10 +743,10 @@ $nbr-private-properties: clr, clr-ind, clr-dis, clr-fcs, clr-acc-hover, clr-acc-
     // A background role is the page's own color, Canvas here, which the label beside a selected pill is drawn in -
     // invisible in every engine. It is the system text color instead. The rule carries the root class beside the
     // role's, so it outweighs the role classes, which follow this block.
-    .bit-nbr.bit-nbr-pbg,
-    .bit-nbr.bit-nbr-sbg,
-    .bit-nbr.bit-nbr-tbg {
-        --bit-nbr-clr: CanvasText;
+    @each $role in $bit-background-color-roles {
+        .bit-nbr.bit-nbr-#{$role} {
+            --bit-nbr-clr: CanvasText;
+        }
     }
 }
 

@@ -185,10 +185,10 @@
 // vanish (Firefox draws no backplate, but the page behind it is Canvas as well). CanvasText is what such a text
 // reads in both. A single class, so the disabled rule below still outranks it with its GrayText.
 @media (forced-colors: active) {
-    .bit-txt-pbg,
-    .bit-txt-sbg,
-    .bit-txt-tbg {
-        color: CanvasText;
+    @each $role in $bit-background-color-roles {
+        .bit-txt-#{$role} {
+            color: CanvasText;
+        }
     }
 }
 

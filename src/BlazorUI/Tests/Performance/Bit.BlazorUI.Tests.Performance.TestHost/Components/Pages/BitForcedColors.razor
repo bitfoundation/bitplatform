@@ -1,101 +1,506 @@
-@page "/regression/forced-colors"
+﻿@page "/regression/forced-colors"
 
 <PageTitle>BitForcedColors Regression</PageTitle>
 
 @* The parts that put a role's on-color on a role fill, a selection on the system Highlight, or a background role's color
    on the page, each at rest and in the state that moves its colors. In forced-colors mode the palette maps the primary
    role to a LinkText fill under a Canvas label, and Chromium draws a Canvas backplate behind every line of text, so any
-   of them left on those colors is a label painted Canvas on Canvas. The test reads every line of text inside #fixture. *@
+   of them left on those colors is a label painted Canvas on Canvas. ?part= picks the component, so each page carries one
+   of them (a popup of it included, which a callout moves to the body); the test reads every line of text on the page
+   outside #test-controls. *@
 <div id="test-controls" style="padding: 20px; margin-bottom: 20px;">
-    <h3>BitForcedColors Regression</h3>
+    <h3>BitForcedColors Regression (@Part)</h3>
     <p>Status: <span id="status">@_status</span></p>
 </div>
 
-<div id="fixture" style="display: flex; flex-direction: column; gap: 16px; padding: 16px;">
-    <section id="button" class="fc-row">
-        <BitButton>Fill</BitButton>
-        <BitButton Color="BitColor.Error">Fill error</BitButton>
-        <BitButton Variant="BitVariant.Outline">Outline</BitButton>
-        <BitButton Variant="BitVariant.Text">Text</BitButton>
-        <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryBackground">Outline background</BitButton>
-        <BitButton Variant="BitVariant.Text" Color="BitColor.SecondaryBackground">Text background</BitButton>
-        <BitButton Variant="BitVariant.Outline" FixedColor>Fixed color</BitButton>
-        <BitButton IconName="@BitIconName.Add">Icon</BitButton>
-    </section>
+<div id="case" data-part="@Part" style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 12px; padding: 16px; min-width: 760px;">
+    @switch (Part)
+    {
+        // ---- Buttons ----
 
-    <section id="button-group" class="fc-row">
-        <BitButtonGroup Items="_groupItems" />
-        <BitButtonGroup Items="_groupItems" Toggle DefaultToggleKey="b" />
-    </section>
+        case "button":
+            <BitButton>Fill</BitButton>
+            <BitButton Color="BitColor.Error">Fill error</BitButton>
+            <BitButton Color="BitColor.PrimaryForeground">Fill foreground</BitButton>
+            <BitButton Variant="BitVariant.Outline">Outline</BitButton>
+            <BitButton Variant="BitVariant.Text">Text</BitButton>
+            <BitButton Variant="BitVariant.Outline" Color="BitColor.PrimaryBackground">Outline background</BitButton>
+            <BitButton Variant="BitVariant.Text" Color="BitColor.SecondaryBackground">Text background</BitButton>
+            <BitButton Variant="BitVariant.Outline" FixedColor>Fixed color</BitButton>
+            <BitButton IconName="@BitIconName.Add">Icon</BitButton>
+            <BitButton Disabled>Disabled</BitButton>
+            <BitButton Disabled AllowDisabledFocus>Disabled focusable</BitButton>
+            <BitButton IsLoading>Loading</BitButton>
+            break;
 
-    <section id="toggle-button" class="fc-row">
-        <BitToggleButton Text="Unchecked" IconName="@BitIconName.Microphone" />
-        <BitToggleButton Text="Checked" IconName="@BitIconName.Microphone" DefaultIsChecked="true" />
-    </section>
+        case "actionbutton":
+            <BitActionButton IconName="@BitIconName.Add">Action</BitActionButton>
+            <BitActionButton IconName="@BitIconName.Add" Color="BitColor.PrimaryBackground">Background</BitActionButton>
+            <BitActionButton IconName="@BitIconName.Add" Color="BitColor.TertiaryBackground">Tertiary background</BitActionButton>
+            <BitActionButton IconName="@BitIconName.Add" Disabled>Disabled</BitActionButton>
+            break;
 
-    <section id="pagination" class="fc-row">
-        <BitPagination Count="5" DefaultSelectedPage="2" />
-        <BitPagination Count="5" DefaultSelectedPage="2" Variant="BitVariant.Outline" />
-        <BitPagination Count="5" DefaultSelectedPage="2" Variant="BitVariant.Text" />
-    </section>
+        case "menubutton":
+            <BitMenuButton TItem="BitMenuButtonItem" Text="Menu" Items="_menuButtonItems" />
+            <BitMenuButton TItem="BitMenuButtonItem" Text="Split" Split Items="_menuButtonItems" />
+            <BitMenuButton TItem="BitMenuButtonItem" Text="Outline" Variant="BitVariant.Outline" Items="_menuButtonItems" />
+            <BitMenuButton TItem="BitMenuButtonItem" Text="Text" Variant="BitVariant.Text" Items="_menuButtonItems" />
+            <BitMenuButton TItem="BitMenuButtonItem" Text="Background" Variant="BitVariant.Outline" Color="BitColor.PrimaryBackground" Items="_menuButtonItems" />
+            break;
 
-    <section id="badge" class="fc-row">
-        <BitBadge Content="12"><span>Inbox</span></BitBadge>
-        <BitBadge Content="3" Variant="BitVariant.Outline" Color="BitColor.PrimaryBackground"><span>Drafts</span></BitBadge>
-    </section>
+        case "menubutton-open":
+            <BitMenuButton TItem="BitMenuButtonItem" Text="Open" IsOpen="true" Items="_menuButtonItems" />
+            break;
 
-    <section id="inputs" class="fc-row">
-        <BitTagsInput DefaultValue="_tags" />
-        <BitFileInput />
-        <BitFileUpload />
-        <BitSearchBox ShowSearchButton Placeholder="Search" />
-        <BitSearchBox ShowSearchButton Placeholder="Background" Color="BitColor.PrimaryBackground" />
-    </section>
+        case "buttongroup":
+            <BitButtonGroup TItem="BitButtonGroupItem" Items="_groupItems" />
+            <BitButtonGroup TItem="BitButtonGroupItem" Items="_groupItems" Toggle DefaultToggleKey="b" />
+            <BitButtonGroup TItem="BitButtonGroupItem" Items="_groupItems" Variant="BitVariant.Outline" Color="BitColor.PrimaryBackground" />
+            <BitButtonGroup TItem="BitButtonGroupItem" Items="_groupItems" Variant="BitVariant.Text" Color="BitColor.SecondaryBackground" Toggle DefaultToggleKey="a" />
+            <BitButtonGroup TItem="BitButtonGroupItem" Items="_groupItems" Detached Toggle DefaultToggleKey="c" />
+            <BitButtonGroup TItem="BitButtonGroupItem" Items="_groupItems" Disabled />
+            break;
 
-    <section id="timeline" class="fc-row">
-        <BitTimeline Items="_timelineItems" />
-    </section>
+        case "togglebutton":
+            <BitToggleButton Text="Unchecked" IconName="@BitIconName.Microphone" />
+            <BitToggleButton Text="Checked" IconName="@BitIconName.Microphone" DefaultIsChecked="true" />
+            <BitToggleButton Text="Outline" Variant="BitVariant.Outline" Color="BitColor.PrimaryBackground" />
+            <BitToggleButton Text="Text" Variant="BitVariant.Text" Color="BitColor.SecondaryBackground" />
+            <BitToggleButton Text="Fixed" FixedColor DefaultIsChecked="true" />
+            <BitToggleButton Text="Disabled" Disabled DefaultIsChecked="true" />
+            break;
 
-    <section id="surfaces" class="fc-column">
-        <BitHeader Variant="BitVariant.Fill" Color="BitColor.Primary">Header</BitHeader>
-        <BitMessage Color="BitColor.Primary" Variant="BitVariant.Fill">Primary message</BitMessage>
-        <BitCard Color="BitColor.Primary" Variant="BitVariant.Fill">Primary card</BitCard>
-    </section>
+        // ---- Inputs ----
 
-    <section id="color-roles" class="fc-row">
-        <BitText Color="BitColor.PrimaryBackground">Background text</BitText>
-        <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Fill" />
-        <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Fill" Color="BitColor.Error" />
-        <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" />
-    </section>
+        case "calendar":
+            <BitCalendar DefaultValue="_otherDay" ShowTimePicker TimeFormat="BitTimeFormat.TwelveHours" />
+            <BitCalendar DefaultValue="_otherDay" Color="BitColor.PrimaryBackground" />
+            break;
+
+        case "checkbox":
+            <BitCheckbox Label="Unchecked" />
+            <BitCheckbox Label="Checked" DefaultValue="true" />
+            <BitCheckbox Label="Mixed" DefaultIndeterminate="true" />
+            <BitCheckbox Label="Background" Color="BitColor.PrimaryBackground" DefaultValue="true" />
+            <BitCheckbox Label="Background unchecked" Color="BitColor.PrimaryBackground" UncheckedIconName="@BitIconName.Cancel" />
+            <BitCheckbox Label="Disabled" Disabled DefaultValue="true" />
+            break;
+
+        case "choicegroup":
+            <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Items="_choiceItems" DefaultValue="@("a")" />
+            <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Items="_choiceIconItems" DefaultValue="@("a")" Horizontal />
+            <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string" Items="_choiceIconItems" DefaultValue="@("b")" Horizontal Color="BitColor.PrimaryBackground" />
+            break;
+
+        case "circulartimepicker":
+            <BitCircularTimePicker Standalone ShowNowButton ShowClearButton DefaultValue="_time" />
+            <BitCircularTimePicker Standalone ShowNowButton ShowClearButton DefaultValue="_time" Color="BitColor.PrimaryBackground" />
+            break;
+
+        case "datepicker":
+            <BitDatePicker Standalone ShowGoToToday ShowClearButton DefaultValue="_otherDay" />
+            break;
+
+        case "daterangepicker":
+            <BitDateRangePicker Standalone ShowGoToToday ShowClearButton DefaultValue="_range" />
+            break;
+
+        case "dropdown":
+            <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="_dropdownItems" DefaultValue="@("a")" Label="Single" />
+            <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="_dropdownItems" MultiSelect DefaultValues="_dropdownValues" Chips MaxChips="1" Label="Chips" />
+            break;
+
+        case "dropdown-open":
+            <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="_dropdownItems" MultiSelect DefaultValues="_dropdownValues" IsOpen="true" Label="Open" />
+            break;
+
+        case "fileinput":
+            <BitFileInput />
+            <BitFileInput Variant="BitVariant.Outline" Color="BitColor.PrimaryBackground" />
+            <BitFileInput Variant="BitVariant.Text" Color="BitColor.SecondaryBackground" />
+            <BitFileInput Disabled />
+            break;
+
+        case "fileupload":
+            <BitFileUpload UploadUrl="/upload" />
+            <BitFileUpload UploadUrl="/upload" Variant="BitVariant.Outline" Color="BitColor.PrimaryBackground" />
+            <BitFileUpload UploadUrl="/upload" Variant="BitVariant.Text" Color="BitColor.SecondaryBackground" />
+            <BitFileUpload UploadUrl="/upload" ShowDropArea Color="BitColor.PrimaryBackground" />
+            <BitFileUpload UploadUrl="/upload" Disabled />
+            break;
+
+        case "numberfield":
+            <BitNumberField TValue="int" DefaultValue="3" Prefix="$" Suffix="kg" Mode="BitSpinButtonMode.Inline" />
+            <BitNumberField TValue="int" DefaultValue="3" Prefix="$" Suffix="kg" Color="BitColor.PrimaryBackground" />
+            break;
+
+        case "rating":
+            <BitRating DefaultValue="3" />
+            <BitRating DefaultValue="2" Color="BitColor.PrimaryBackground" />
+            break;
+
+        case "searchbox":
+            <BitSearchBox ShowSearchButton Placeholder="Search" DefaultValue="query" />
+            <BitSearchBox ShowSearchButton Underlined Placeholder="Underlined" />
+            <BitSearchBox ShowSearchButton NoBorder Placeholder="Borderless" />
+            <BitSearchBox ShowSearchButton Placeholder="Background" Color="BitColor.PrimaryBackground" Prefix="in:" />
+            <BitSearchBox ShowSearchButton Underlined Placeholder="Background underlined" Color="BitColor.PrimaryBackground" />
+            break;
+
+        case "slider":
+            <BitSlider DefaultValue="4" Max="10" ShowValue ShowMarks MarkStep="2" />
+            <BitSlider IsRanged DefaultLowerValue="2" DefaultUpperValue="7" Max="10" ShowValue />
+            break;
+
+        case "tagsinput":
+            <BitTagsInput DefaultValue="_tags" />
+            <BitTagsInput DefaultValue="_tags" MaxDisplayedTags="1" />
+            <BitTagsInput DefaultValue="_tags" TagVariant="BitVariant.Outline" Color="BitColor.PrimaryBackground" />
+            <BitTagsInput DefaultValue="_tags" TagVariant="BitVariant.Text" Color="BitColor.SecondaryBackground" MaxDisplayedTags="1" />
+            break;
+
+        case "textfield":
+            <BitTextField DefaultValue="text" IconName="@BitIconName.Mail" Prefix="to:" Suffix=".com" />
+            <BitTextField DefaultValue="secret" Type="BitInputType.Password" CanRevealPassword Color="BitColor.PrimaryBackground" IconName="@BitIconName.Lock" Prefix="pw:" />
+            break;
+
+        case "timepicker":
+            <BitTimePicker Standalone ShowNowButton ShowClearButton DefaultValue="_time" TimeFormat="BitTimeFormat.TwelveHours" />
+            <BitTimePicker Standalone DefaultValue="_time" TimeFormat="BitTimeFormat.TwelveHours" ReadOnly />
+            break;
+
+        case "toggle":
+            <BitToggle Label="Off" OnText="On" OffText="Off" />
+            <BitToggle Label="On" OnText="On" OffText="Off" DefaultValue="true" OnIconName="@BitIconName.CheckMark" />
+            <BitToggle Label="Disabled" Disabled DefaultValue="true" OnText="On" />
+            break;
+
+        // ---- Layouts ----
+
+        case "header":
+            <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+                <BitHeader Variant="BitVariant.Fill" Color="BitColor.Primary" SkipLinkHref="#case" SkipLinkText="Skip">Primary header</BitHeader>
+                <BitHeader Variant="BitVariant.Fill" Color="BitColor.Primary" Translucent>Translucent header</BitHeader>
+                <BitHeader Variant="BitVariant.Fill" Color="BitColor.PrimaryForeground">Foreground header</BitHeader>
+                <BitHeader Variant="BitVariant.Outline" Color="BitColor.PrimaryBackground">Background header</BitHeader>
+            </div>
+            break;
+
+        case "footer":
+            <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+                <BitFooter Variant="BitVariant.Fill" Color="BitColor.Primary">Primary footer</BitFooter>
+                <BitFooter Variant="BitVariant.Outline" Color="BitColor.PrimaryBackground" Bordered>Background footer</BitFooter>
+            </div>
+            break;
+
+        // ---- Lists ----
+
+        case "carousel":
+            <div style="width: 400px; height: 200px;">
+                <BitCarousel Color="BitColor.PrimaryBackground">
+                    <BitCarouselItem>One</BitCarouselItem>
+                    <BitCarouselItem>Two</BitCarouselItem>
+                    <BitCarouselItem>Three</BitCarouselItem>
+                </BitCarousel>
+            </div>
+            break;
+
+        case "swiper":
+            <div style="width: 300px;">
+                <BitSwiper Color="BitColor.PrimaryBackground" ShowDots>
+                    @for (var i = 0; i < 8; i++)
+                    {
+                        var n = i;
+                        <BitSwiperItem><div style="width: 120px; height: 80px;">Item @n</div></BitSwiperItem>
+                    }
+                </BitSwiper>
+            </div>
+            break;
+
+        case "timeline":
+            <BitTimeline TItem="BitTimelineItem" Items="_timelineItems" />
+            <BitTimeline TItem="BitTimelineItem" Items="_timelineItems" Variant="BitVariant.Outline" Color="BitColor.PrimaryBackground" />
+            <BitTimeline TItem="BitTimelineItem" Items="_timelineItems" Variant="BitVariant.Fill" Color="BitColor.PrimaryForeground" />
+            break;
+
+        // ---- Navs ----
+
+        case "breadcrumb":
+            <BitBreadcrumb TItem="BitBreadcrumbItem" Items="_breadcrumbItems" />
+            <BitBreadcrumb TItem="BitBreadcrumbItem" Items="_breadcrumbItems" Color="BitColor.PrimaryBackground" />
+            break;
+
+        case "dropmenu":
+            <BitDropMenu Text="Default"><div>Body</div></BitDropMenu>
+            <BitDropMenu Text="Primary" Color="BitColor.Primary"><div>Body</div></BitDropMenu>
+            <BitDropMenu Text="Fill" Variant="BitVariant.Fill" Color="BitColor.Primary"><div>Body</div></BitDropMenu>
+            <BitDropMenu Text="Outline" Variant="BitVariant.Outline" Color="BitColor.PrimaryBackground"><div>Body</div></BitDropMenu>
+            <BitDropMenu Text="Text" Variant="BitVariant.Text" Color="BitColor.PrimaryForeground"><div>Body</div></BitDropMenu>
+            <BitDropMenu Text="Loading" Color="BitColor.Primary" IsLoading><div>Body</div></BitDropMenu>
+            break;
+
+        case "dropmenu-open":
+            <BitDropMenu Text="Open" Color="BitColor.Primary" IsOpen="true"><div>Body of the menu</div></BitDropMenu>
+            break;
+
+        case "nav":
+            <div style="width: 260px;">
+                <BitNav TItem="BitNavItem" Items="_navItems" Accent="BitColor.Primary" DefaultSelectedItem="_navItems[0]" />
+            </div>
+            <div style="width: 260px;">
+                <BitNav TItem="BitNavItem" Items="_navItems" Color="BitColor.PrimaryBackground" />
+            </div>
+            break;
+
+        case "navbar":
+            <BitNavBar TItem="BitNavBarItem" Items="_navBarItems" Indicator="BitNavBarIndicator.Pill" DefaultSelectedKey="one" />
+            <BitNavBar TItem="BitNavBarItem" Items="_navBarItems" Filled DefaultSelectedKey="two" />
+            <BitNavBar TItem="BitNavBarItem" Items="_navBarItems" Indicator="BitNavBarIndicator.Pill" Color="BitColor.PrimaryBackground" DefaultSelectedKey="one" />
+            break;
+
+        case "pagination":
+            <BitPagination Count="5" DefaultSelectedPage="2" ShowFirstButton ShowLastButton />
+            <BitPagination Count="5" DefaultSelectedPage="2" Variant="BitVariant.Outline" />
+            <BitPagination Count="5" DefaultSelectedPage="2" Variant="BitVariant.Text" />
+            <BitPagination Count="5" DefaultSelectedPage="2" Disabled />
+            break;
+
+        case "pivot":
+            <BitPivot HeaderType="BitPivotHeaderType.Tab" Dismissible>
+                <BitPivotItem HeaderText="First" IconName="@BitIconName.Home">One</BitPivotItem>
+                <BitPivotItem HeaderText="Second">Two</BitPivotItem>
+            </BitPivot>
+            <BitPivot HeaderType="BitPivotHeaderType.Outline" Color="BitColor.PrimaryBackground">
+                <BitPivotItem HeaderText="First">One</BitPivotItem>
+                <BitPivotItem HeaderText="Second">Two</BitPivotItem>
+            </BitPivot>
+            break;
+
+        // ---- Notifications ----
+
+        case "badge":
+            <BitBadge Content="12"><span>Inbox</span></BitBadge>
+            <BitBadge Content="3" Color="BitColor.PrimaryForeground"><span>Foreground</span></BitBadge>
+            <BitBadge Content="3" Variant="BitVariant.Outline" Color="BitColor.PrimaryBackground"><span>Drafts</span></BitBadge>
+            <BitBadge Content="4" Variant="BitVariant.Text" Color="BitColor.SecondaryBackground"><span>Sent</span></BitBadge>
+            <BitBadge Content="5" OnClick="() => { }"><span>Clickable</span></BitBadge>
+            <BitBadge Content="6" Disabled><span>Disabled</span></BitBadge>
+            break;
+
+        case "message":
+            <div style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
+                <BitMessage Color="BitColor.Primary" Variant="BitVariant.Fill" Dismissible>Primary message</BitMessage>
+                <BitMessage Color="BitColor.PrimaryForeground" Variant="BitVariant.Fill">Foreground message</BitMessage>
+                <BitMessage Color="BitColor.PrimaryBackground" Variant="BitVariant.Outline">Background message</BitMessage>
+            </div>
+            break;
+
+        case "persona":
+            <BitPersona PrimaryText="Ada Lovelace" CoinColor="BitColor.Primary" CoinVariant="BitVariant.Fill" />
+            <BitPersona PrimaryText="Grace Hopper" CoinColor="BitColor.PrimaryForeground" CoinVariant="BitVariant.Fill" />
+            <BitPersona PrimaryText="Alan Turing" CoinColor="BitColor.PrimaryBackground" CoinVariant="BitVariant.Outline" />
+            <BitPersona PrimaryText="Edsger Dijkstra" CoinColor="BitColor.SecondaryBackground" CoinVariant="BitVariant.Text" />
+            break;
+
+        case "snackbar":
+            <BitSnackBar @ref="_snackBar" Persistent />
+            break;
+
+        case "tag":
+            <BitTag Text="Fill" />
+            <BitTag Text="Fill foreground" Color="BitColor.PrimaryForeground" />
+            <BitTag Text="Outline" Variant="BitVariant.Outline" />
+            <BitTag Text="Outline background" Variant="BitVariant.Outline" Color="BitColor.PrimaryBackground" />
+            <BitTag Text="Text background" Variant="BitVariant.Text" Color="BitColor.SecondaryBackground" />
+            <BitTag Text="Dismiss" OnDismiss="() => { }" />
+            <BitTag Text="Disabled" Disabled />
+            break;
+
+        // ---- Progress ----
+
+        case "progress":
+            <div style="width: 300px;">
+                <BitProgress Percent="60" ShowPercentNumber Label="Progress" />
+            </div>
+            break;
+
+        // ---- Surfaces ----
+
+        case "card":
+            <BitCard Color="BitColor.Primary" Variant="BitVariant.Fill" Title="Primary card">Primary card body</BitCard>
+            <BitCard Color="BitColor.PrimaryForeground" Variant="BitVariant.Fill" Title="Foreground card">Foreground card body</BitCard>
+            break;
+
+        case "dialog":
+            <BitDialog DefaultIsOpen Title="Dialog" ShowCloseButton ShowOkButton ShowCancelButton AutoFocus="false">Body</BitDialog>
+            break;
+
+        case "dialog-background":
+            <BitDialog DefaultIsOpen Title="Dialog" Color="BitColor.PrimaryBackground" ShowOkButton ShowCancelButton AutoFocus="false">Body</BitDialog>
+            break;
+
+        case "dialog-ok-off":
+            <BitDialog DefaultIsOpen Title="Dialog" ShowOkButton ShowCancelButton IsOkButtonEnabled="false" AutoFocus="false">Body</BitDialog>
+            break;
+
+        case "dialog-busy":
+            @* The Ok callback never returns, so the Ok button stays held shut through aria-disabled alone. *@
+            <BitDialog DefaultIsOpen Title="Dialog" ShowOkButton ShowCancelButton AutoFocus="false" OnOk="NeverEnding">Body</BitDialog>
+            break;
+
+        case "splitter":
+            <div style="width: 400px; height: 160px;">
+                <BitSplitter ShowCollapseButton GutterIconName="@BitIconName.GripperBarVertical">
+                    <FirstPanel><div>First</div></FirstPanel>
+                    <SecondPanel><div>Second</div></SecondPanel>
+                </BitSplitter>
+            </div>
+            break;
+
+        case "tooltip":
+            <div style="padding: 60px;">
+                <BitTooltip Text="Tooltip text" DefaultIsShown="true"><span>Anchor</span></BitTooltip>
+            </div>
+            break;
+
+        // ---- Utilities ----
+
+        case "icon":
+            <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Fill" />
+            <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Fill" Color="BitColor.Error" />
+            <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Fill" Color="BitColor.PrimaryForeground" />
+            <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" />
+            <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Text" Color="BitColor.PrimaryBackground" />
+            <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Fill" OnClick="() => { }" />
+            <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Outline" OnClick="() => { }" />
+            <BitIcon IconName="@BitIconName.Accept" OnClick="() => { }" Color="BitColor.PrimaryBackground" />
+            <BitIcon IconName="@BitIconName.Accept" Variant="BitVariant.Fill" Disabled />
+            break;
+
+        case "text":
+            <BitText Color="BitColor.PrimaryBackground">Background text</BitText>
+            <BitText Color="BitColor.Primary">Primary text</BitText>
+            <BitText Color="BitColor.PrimaryForeground">Foreground text</BitText>
+            break;
+
+        // ---- Extras ----
+
+        case "datagrid":
+            <BitDataGrid TItem="GridRow" Items="_gridRows" Editable NewItemFactory="() => new GridRow()">
+                <BitDataGridColumn TItem="GridRow" Field="@nameof(GridRow.Id)" Title="ID" Editable="false" />
+                <BitDataGridColumn TItem="GridRow" Field="@nameof(GridRow.Name)" Title="Name" />
+            </BitDataGrid>
+            <BitDataGrid TItem="GridRow" Items="_gridRows" Editable NewItemFactory="() => new GridRow()" Disabled>
+                <BitDataGridColumn TItem="GridRow" Field="@nameof(GridRow.Id)" Title="ID" />
+            </BitDataGrid>
+            break;
+
+        case "themeswitcher":
+            <BitThemeSwitcher />
+            <BitThemeSwitcher Disabled />
+            break;
+
+        case "fullcalendar":
+            <div style="width: 900px; height: 640px;">
+                <BitFullCalendar DefaultView="BitFullCalendarView.Month" DefaultDate="DateTime.Today" Events="_fcEvents" />
+            </div>
+            break;
+
+        case "markdowneditor":
+            <div style="width: 600px;">
+                <BitMarkdownEditor @bind-Value="_md" />
+            </div>
+            break;
+
+        case "richtexteditor":
+            <div style="width: 700px;">
+                <BitRichTextEditor @bind-Value="_html" Toolbar="BitRichTextEditorToolbar.AllExtended" />
+            </div>
+            break;
+
+        case "pdfviewer":
+            <BitPdfViewer Height="480px" />
+            break;
+    }
 </div>
 
-<style>
-    .fc-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
-    .fc-column { display: flex; flex-direction: column; gap: 12px; }
-</style>
-
 @code {
+    [SupplyParameterFromQuery(Name = "part")] public string? Part { get; set; }
+
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
+    // interactive render moves it on, which is what the test waits for before it drives the page.
+    private string _status = "Loading";
+
+    private BitSnackBar? _snackBar;
+
+    private static readonly DateTimeOffset _otherDay = new(DateTime.Today.AddDays(DateTime.Today.Day > 20 ? -3 : 3));
+    private static readonly TimeSpan _time = new(9, 30, 0);
+    private readonly BitDateRangePickerValue _range = new() { StartDate = _otherDay, EndDate = _otherDay.AddDays(4) };
+
+    private readonly List<BitMenuButtonItem> _menuButtonItems = [new() { Text = "First", Key = "a" }, new() { Text = "Second", Key = "b" }];
     private readonly List<BitButtonGroupItem> _groupItems =
     [
         new() { Key = "a", Text = "Add", IconName = BitIconName.Add },
         new() { Key = "b", Text = "Edit", IconName = BitIconName.Edit },
         new() { Key = "c", Text = "Delete", IconName = BitIconName.Delete },
     ];
-
+    private readonly List<BitChoiceGroupItem<string>> _choiceItems = [new() { Text = "A", Value = "a" }, new() { Text = "B", Value = "b" }];
+    private readonly List<BitChoiceGroupItem<string>> _choiceIconItems =
+    [
+        new() { Text = "Day", Value = "a", IconName = BitIconName.CalendarDay },
+        new() { Text = "Week", Value = "b", IconName = BitIconName.CalendarWeek },
+    ];
+    private readonly List<BitDropdownItem<string>> _dropdownItems =
+    [
+        new() { Text = "Apple", Value = "a" },
+        new() { Text = "Banana", Value = "b" },
+        new() { Text = "Cherry", Value = "c" },
+    ];
+    private readonly ICollection<string?> _dropdownValues = ["a", "b"];
+    private readonly ICollection<string> _tags = ["blazor", "forced", "colors"];
     private readonly List<BitTimelineItem> _timelineItems =
     [
         new() { PrimaryText = "Created", IconName = BitIconName.Add },
         new() { PrimaryText = "Edited", IconName = BitIconName.Edit },
     ];
+    private readonly List<BitBreadcrumbItem> _breadcrumbItems =
+    [
+        new() { Text = "One", OnClick = _ => { } },
+        new() { Text = "Two", OnClick = _ => { } },
+        new() { Text = "Three", OnClick = _ => { } },
+    ];
+    private readonly List<BitNavItem> _navItems =
+    [
+        new() { Text = "Home", IconName = BitIconName.Home, Description = "The start", Url = "#home" },
+        new() { Text = "Group", IconName = BitIconName.Folder, ChildItems = [new() { Text = "Child", Url = "#child" }] },
+    ];
+    private readonly List<BitNavBarItem> _navBarItems =
+    [
+        new() { Key = "one", Text = "Home", IconName = BitIconName.Home, Badge = "3" },
+        new() { Key = "two", Text = "Mail", IconName = BitIconName.Mail },
+    ];
 
-    private readonly ICollection<string> _tags = ["blazor", "forced"];
+    public class GridRow { public int Id { get; set; } public string Name { get; set; } = ""; }
+    private readonly List<GridRow> _gridRows = [new() { Id = 1, Name = "one" }, new() { Id = 2, Name = "two" }];
 
-    private string _status = "Loading";
+    private string? _md = "**bold** and _italic_";
+    private string? _html = "<p><strong>bold</strong> and <em>italic</em></p>";
+    private readonly List<BitFullCalendarEvent> _fcEvents =
+    [
+        new() { Id = "1", Title = "Meeting", StartDate = DateTime.Today.AddHours(10), EndDate = DateTime.Today.AddHours(11) },
+    ];
 
-    protected override void OnAfterRender(bool firstRender)
+    private static async Task NeverEnding() => await Task.Delay(Timeout.Infinite);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender is false) return;
+
+        if (_snackBar is not null)
+        {
+            await _snackBar.Show("Primary", "A filled primary item", BitColor.Primary, persistent: true);
+            await _snackBar.Show("Foreground", "A filled foreground item", BitColor.PrimaryForeground, persistent: true);
+        }
 
         _status = "Ready";
         StateHasChanged();

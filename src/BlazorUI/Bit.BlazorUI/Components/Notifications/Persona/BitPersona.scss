@@ -1093,16 +1093,16 @@ $prs-private-properties:
 
     // An Outline or a Text coin draws its initials, and an Outline one its ring, in the coin color itself, which
     // for a background role is the page's own color - Canvas here, in both engines.
-    .bit-prs-pbg .bit-prs-otl,
-    .bit-prs-sbg .bit-prs-otl,
-    .bit-prs-tbg .bit-prs-otl {
-        color: CanvasText;
-        border-color: CanvasText;
+    @each $role in $bit-background-color-roles {
+        .bit-prs-#{$role} .bit-prs-otl {
+            color: CanvasText;
+            border-color: CanvasText;
+        }
     }
 
-    .bit-prs-pbg .bit-prs-txt,
-    .bit-prs-sbg .bit-prs-txt,
-    .bit-prs-tbg .bit-prs-txt {
-        color: CanvasText;
+    @each $role in $bit-background-color-roles {
+        .bit-prs-#{$role} .bit-prs-txt {
+            color: CanvasText;
+        }
     }
 }

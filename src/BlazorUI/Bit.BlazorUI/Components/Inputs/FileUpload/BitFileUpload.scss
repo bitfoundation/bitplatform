@@ -764,7 +764,7 @@ $upl-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-tin
     // A background role is the page's own color, Canvas here, which an Outline or Text button, a batch action, the
     // drop area's glyph, a paused status and a hovered action glyph would all read their color from - so they take
     // the system text that pairs with what they sit on instead.
-    @each $role in pbg, sbg, tbg {
+    @each $role in $bit-background-color-roles {
         .bit-upl-otl.bit-upl-#{$role}:not(.bit-dis, .bit-upl-dra) .bit-upl-lbl,
         .bit-upl-txt.bit-upl-#{$role}:not(.bit-dis, .bit-upl-dra) .bit-upl-lbl,
         .bit-upl-#{$role} .bit-upl-bab:not(:disabled, [aria-disabled="true"]) {

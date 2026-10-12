@@ -283,11 +283,11 @@ $acb-private-properties: clr-ico, clr-hover, clr-active, clr-focus, clr-dis-text
 // and on the Canvas backplate Chromium draws behind every line of text and every icon glyph, both would vanish.
 // They take the system button text instead, in every state: the state rules weigh as much and come earlier.
 @media (forced-colors: active) {
-    .bit-acb-pbg:not(.bit-dis),
-    .bit-acb-sbg:not(.bit-dis),
-    .bit-acb-tbg:not(.bit-dis) {
-        color: ButtonText;
-        --bit-acb-ico: ButtonText;
+    @each $role in $bit-background-color-roles {
+        .bit-acb-#{$role}:not(.bit-dis) {
+            color: ButtonText;
+            --bit-acb-ico: ButtonText;
+        }
     }
 
     .bit-acb.bit-dis {

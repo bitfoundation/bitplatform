@@ -490,12 +490,13 @@ $tgb-private-properties: clr-txt, clr, clr-hover, clr-active, clr-focus, clr-dar
     // would read its label from; a FixedColor one wears the role's on-color, Canvas again for the primary role.
     // Both take the system button text instead, which every contrast theme keeps legible over the canvas the
     // button sits on.
-    .bit-tgb-otl.bit-tgb-pbg:not(.bit-dis):not(.bit-tgb-chk),
-    .bit-tgb-otl.bit-tgb-sbg:not(.bit-dis):not(.bit-tgb-chk),
-    .bit-tgb-otl.bit-tgb-tbg:not(.bit-dis):not(.bit-tgb-chk),
-    .bit-tgb-txt.bit-tgb-pbg:not(.bit-dis):not(.bit-tgb-chk),
-    .bit-tgb-txt.bit-tgb-sbg:not(.bit-dis):not(.bit-tgb-chk),
-    .bit-tgb-txt.bit-tgb-tbg:not(.bit-dis):not(.bit-tgb-chk),
+    @each $role in $bit-background-color-roles {
+        .bit-tgb-otl.bit-tgb-#{$role}:not(.bit-dis):not(.bit-tgb-chk),
+        .bit-tgb-txt.bit-tgb-#{$role}:not(.bit-dis):not(.bit-tgb-chk) {
+            color: ButtonText;
+        }
+    }
+
     .bit-tgb.bit-tgb-fxc:not(.bit-dis):not(.bit-tgb-chk) {
         color: ButtonText;
     }

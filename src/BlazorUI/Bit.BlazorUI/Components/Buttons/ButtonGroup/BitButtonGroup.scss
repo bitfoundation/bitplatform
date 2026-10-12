@@ -772,22 +772,20 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
 
     // A background role is the page's own color, Canvas here, which an Outline or Text group reads its labels
     // from; they take the system button text instead, which every contrast theme keeps legible over the canvas.
-    .bit-btg-otl.bit-btg-pbg .bit-btg-itm:not(.bit-btg-chk, [disabled], [aria-disabled="true"]),
-    .bit-btg-otl.bit-btg-sbg .bit-btg-itm:not(.bit-btg-chk, [disabled], [aria-disabled="true"]),
-    .bit-btg-otl.bit-btg-tbg .bit-btg-itm:not(.bit-btg-chk, [disabled], [aria-disabled="true"]),
-    .bit-btg-txt.bit-btg-pbg .bit-btg-itm:not(.bit-btg-chk, [disabled], [aria-disabled="true"]),
-    .bit-btg-txt.bit-btg-sbg .bit-btg-itm:not(.bit-btg-chk, [disabled], [aria-disabled="true"]),
-    .bit-btg-txt.bit-btg-tbg .bit-btg-itm:not(.bit-btg-chk, [disabled], [aria-disabled="true"]) {
-        color: ButtonText;
+    @each $role in $bit-background-color-roles {
+        .bit-btg-otl.bit-btg-#{$role} .bit-btg-itm:not(.bit-btg-chk, [disabled], [aria-disabled="true"]),
+        .bit-btg-txt.bit-btg-#{$role} .bit-btg-itm:not(.bit-btg-chk, [disabled], [aria-disabled="true"]) {
+            color: ButtonText;
+        }
     }
 
     // The pointer states move the variables a button is painted from to the role's hover and press colors - a
     // LinkText fill under a Canvas label in every variant, the very pair the backplate hides - so they are set back
     // here and the state is carried by the system Highlight on the button's border instead. The selectors are the
-    // ones of the rules they undo, which this block follows at the same weight; the toggled button paints its own
-    // colors here, so its moved variables are left alone.
-    .bit-btg-itm:hover,
-    .bit-btg-itm:active {
+    // ones of the rules they undo with one exclusion more, which outweighs them: the toggled button is left out, as
+    // it paints its own colors here and keeps the variables its states move.
+    .bit-btg-itm:not(.bit-btg-chk):hover,
+    .bit-btg-itm:not(.bit-btg-chk):active {
         --bit-btg-itm-sfg: initial;
         --bit-btg-itm-sbg: initial;
         border-color: Highlight;

@@ -529,22 +529,20 @@ $ico-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
 
     // A background role is the page's own color, Canvas here, which an Outline or a Text icon would draw its glyph
     // in. A single class, so the disabled rules below still outrank it with their GrayText.
-    .bit-ico-pbg,
-    .bit-ico-sbg,
-    .bit-ico-tbg {
-        color: CanvasText;
+    @each $role in $bit-background-color-roles {
+        .bit-ico-#{$role} {
+            color: CanvasText;
+        }
     }
 
     // The pointer states of a clickable icon move the variables its variant is painted from to the role's hover and
     // press colors under the role's contrast color - a LinkText box under a Canvas glyph for the primary role, the
     // very pair the backplate hides - so they are set back here and the state is carried by the system Highlight on
     // the border instead. The selectors are the ones of the rules they undo, which this block follows at the same
-    // weight.
+    // weight: a plain icon's states move its glyph color alone, a filled or outlined one's its box as well.
     .bit-ico-int:not(.bit-dis):hover,
     .bit-ico-int:not(.bit-dis):active {
         --bit-ico-sfg: initial;
-        --bit-ico-sbr: initial;
-        --bit-ico-sbg: initial;
     }
 
     .bit-ico-int.bit-ico-fil:not(.bit-dis):hover,

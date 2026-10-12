@@ -3322,6 +3322,30 @@ button.bit-bfc-cell-add-hint:focus-visible {
         border-color: CanvasText;
     }
 
+    /* The primary and danger buttons are a fill of the accent or the error role, LinkText and CanvasText in this
+       mode, under a label the mode forces to a text color - CanvasText on CanvasText, or on a LinkText as dark or as
+       light as it, and Canvas on Canvas over the backplate Chromium draws behind the text. They are painted as
+       native buttons instead, which read with the backplate and without it; the hover moves only the fill these
+       rules paint over, so the state is carried by the system Highlight on the border. */
+    .bit-bfc-btn-primary:not(:disabled),
+    .bit-bfc-btn-danger:not(:disabled) {
+        color: ButtonText;
+        border-color: ButtonText;
+        background: ButtonFace;
+    }
+
+    .bit-bfc-btn-primary:hover:not(:disabled),
+    .bit-bfc-btn-danger:hover:not(:disabled) {
+        border-color: Highlight;
+    }
+
+    .bit-bfc-btn-primary:disabled,
+    .bit-bfc-btn-danger:disabled {
+        color: GrayText;
+        border-color: GrayText;
+        background: ButtonFace;
+    }
+
     .bit-bfc-month-cell-day.today,
     .bit-bfc-tl-day-header.today,
     .bit-bfc-week-header-day-num.today,

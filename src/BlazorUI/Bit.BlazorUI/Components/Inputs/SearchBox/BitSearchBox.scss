@@ -1176,7 +1176,7 @@ $srb-cal-private-properties: siz-item-height, siz-item-fontsize, siz-spn-size, c
     // A background role is the page's own color, Canvas here, which the leading icon, the affixes of a focused field
     // and the glyph of an underlined or borderless search button read their color from - invisible over the field
     // they sit in, so they take the system text instead.
-    @each $role in pbg, sbg, tbg {
+    @each $role in $bit-background-color-roles {
         .bit-srb-#{$role}:not(.bit-dis) .bit-srb-iwp i,
         .bit-srb-#{$role}.bit-srb-foc:not(.bit-dis) .bit-srb-pre,
         .bit-srb-#{$role}.bit-srb-foc:not(.bit-dis) .bit-srb-suf {

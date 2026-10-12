@@ -1043,6 +1043,16 @@ $chg-private-properties: clr, clr-bg, clr-hover, clr-dis, clr-dis-text, clr-focu
         border-color: Highlight;
     }
 
+    // A background role sets the tile of an icon or image item on the role's contrast color, CanvasText here - the
+    // very color the tile's label and glyph are written in, so the item would be a blank block wherever no backplate
+    // is drawn behind the text (Firefox). The tile is taken back to the surface it has without a Color, after the
+    // role classes it outranks on source order.
+    @each $role in $bit-background-color-roles {
+        .bit-chg-#{$role} {
+            --bit-chg-clr-bg: initial;
+        }
+    }
+
     .bit-chg-ich .bit-chg-rad {
         &::before {
             border-color: Highlight;

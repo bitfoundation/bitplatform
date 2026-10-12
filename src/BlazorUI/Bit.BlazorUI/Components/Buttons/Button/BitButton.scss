@@ -643,12 +643,13 @@ $btn-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
     // A background role is the page's own color, Canvas here, which an Outline or Text button would read its label
     // from; a FixedColor button wears the role's on-color, Canvas again for the primary role. Both take the system
     // button text instead, which every contrast theme keeps legible over the canvas the button sits on.
-    .bit-btn-otl.bit-btn-pbg:not(.bit-dis),
-    .bit-btn-otl.bit-btn-sbg:not(.bit-dis),
-    .bit-btn-otl.bit-btn-tbg:not(.bit-dis),
-    .bit-btn-txt.bit-btn-pbg:not(.bit-dis),
-    .bit-btn-txt.bit-btn-sbg:not(.bit-dis),
-    .bit-btn-txt.bit-btn-tbg:not(.bit-dis),
+    @each $role in $bit-background-color-roles {
+        .bit-btn-otl.bit-btn-#{$role}:not(.bit-dis),
+        .bit-btn-txt.bit-btn-#{$role}:not(.bit-dis) {
+            color: ButtonText;
+        }
+    }
+
     .bit-btn.bit-btn-fxc:not(.bit-dis) {
         color: ButtonText;
     }
@@ -674,6 +675,13 @@ $btn-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
     .bit-btn.bit-dis {
         color: GrayText;
         border-color: GrayText;
+    }
+
+    // The disabled fill is a theme color, which the mode replaces with the engine's own button face - and Firefox
+    // swaps that for its darker pressed face while the pointer is down on a button kept focusable (AllowDisabledFocus),
+    // a pairing no contrast is promised for under GrayText. A system color is kept as it is, so the face is named.
+    .bit-btn-fil.bit-dis {
+        background-color: ButtonFace;
     }
 
     .bit-btn.bit-dis .bit-btn-spn {

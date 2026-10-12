@@ -834,7 +834,7 @@ $tgi-private-properties: clr, clr-txt, clr-hover, clr-focus, gap, fontsize, icon
 
     //a background role is the page's own color, Canvas here, which an Outline or Text chip reads its text from,
     //invisible over the field it sits in, so it takes the system text instead.
-    @each $role in pbg, sbg, tbg {
+    @each $role in $bit-background-color-roles {
         .bit-tgi-tgo.bit-tgi-#{$role} .bit-tgi-tag,
         .bit-tgi-tgt.bit-tgi-#{$role} .bit-tgi-tag {
             color: CanvasText;

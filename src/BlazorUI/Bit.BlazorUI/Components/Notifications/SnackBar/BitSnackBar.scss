@@ -447,6 +447,16 @@ $snb-itm-private-properties: bg, fg, clr-txt, gap, pad, hdr-gap, ttl-fs, bdy-fs,
         border-color: CanvasText;
     }
 
+    // A Fill item is the role's fill under its on-color, which the palette makes LinkText under Canvas for the
+    // primary role (and Canvas for the foreground ones) - and Chromium draws a Canvas backplate behind every line of
+    // text, the icon glyphs included, so the title and the body would be Canvas on Canvas: a toast with nothing in it.
+    // It is painted as the plain surface it is in this mode, CanvasText on Canvas, which reads with the backplate
+    // and without it (Firefox draws none); the border above keeps its edge.
+    .bit-snb-itm.bit-snb-fil {
+        color: CanvasText;
+        background-color: Canvas;
+    }
+
     // The bar is drawn in the item's foreground, which High Contrast mode forces to the same color as the surface
     // it sits on; a system color is the one thing that stays a color of its own here.
     .bit-snb-prb {

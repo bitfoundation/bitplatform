@@ -431,8 +431,10 @@ $pgn-private-properties:
         --bit-pgn-sbg: initial;
     }
 
-    // The state is carried by the system Highlight on the border instead, one exclusion heavier than the filled
-    // button above so it wins on that one too. The current page keeps its own Highlight fill under the pointer.
+    // The state is carried by the system Highlight on the border instead. These selectors weigh exactly as much as
+    // the filled button's above - a :not() counts only its heaviest argument, a single class or attribute here - so
+    // they win on that one by source order alone, and have to stay after it. The current page keeps its own
+    // Highlight fill under the pointer.
     .bit-pgn-btn:not(.bit-pgn-sel, [disabled], [aria-disabled="true"]):hover,
     .bit-pgn-btn:not(.bit-pgn-sel, [disabled], [aria-disabled="true"]):active,
     .bit-pgn-elb:not([disabled], [aria-disabled="true"]):hover,

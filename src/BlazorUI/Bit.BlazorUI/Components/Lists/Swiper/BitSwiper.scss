@@ -552,10 +552,10 @@ $swp-private-properties:
     // lost on the canvas, and in Chromium on the Canvas backplate drawn behind them as well. The role's button
     // colors are taken back, after the role classes they outrank on source order, so the arrows read the text
     // color the swiper has without one.
-    .bit-swp-pbg,
-    .bit-swp-sbg,
-    .bit-swp-tbg {
-        --bit-swp-btn: initial;
-        --bit-swp-btn-hover: initial;
+    @each $role in $bit-background-color-roles {
+        .bit-swp-#{$role} {
+            --bit-swp-btn: initial;
+            --bit-swp-btn-hover: initial;
+        }
     }
 }

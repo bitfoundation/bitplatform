@@ -102,13 +102,14 @@ public class BitTextStylesheetTests
     }
 
     // A background role is Canvas under a forced palette, and Chromium draws a Canvas backplate behind the text, so a
-    // text colored with one would vanish; it is painted in CanvasText there instead.
+    // text colored with one would vanish; it is painted in CanvasText there instead. The roles are the ones the shared
+    // role map says are background colors, so a background role added to it is covered as well.
     [TestMethod]
     public void BitTextShouldPaintABackgroundRoleTextInCanvasTextInForcedColors()
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Matches(stylesheet, new Regex(@"@media \(forced-colors: active\) \{\s*\.bit-txt-pbg,\s*\.bit-txt-sbg,\s*\.bit-txt-tbg \{\s*color: CanvasText;"));
+        StringAssert.Matches(stylesheet, new Regex(@"@media \(forced-colors: active\) \{\s*@each \$role in \$bit-background-color-roles \{\s*\.bit-txt-#\{\$role\} \{\s*color: CanvasText;"));
     }
 
     // The ring is for a text the keyboard can tab to; a text focused only by script (tabindex -1, as FocusOnNavigate

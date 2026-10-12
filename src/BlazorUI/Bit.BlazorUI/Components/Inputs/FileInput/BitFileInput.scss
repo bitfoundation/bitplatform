@@ -615,13 +615,11 @@ $fin-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, lbl-hei
 
     // A background role is the page's own color, Canvas here, which an Outline or Text button would read its label
     // from, so it takes the system button text instead.
-    .bit-fin-otl.bit-fin-pbg:not(.bit-dis) .bit-fin-lbl,
-    .bit-fin-otl.bit-fin-sbg:not(.bit-dis) .bit-fin-lbl,
-    .bit-fin-otl.bit-fin-tbg:not(.bit-dis) .bit-fin-lbl,
-    .bit-fin-txt.bit-fin-pbg:not(.bit-dis) .bit-fin-lbl,
-    .bit-fin-txt.bit-fin-sbg:not(.bit-dis) .bit-fin-lbl,
-    .bit-fin-txt.bit-fin-tbg:not(.bit-dis) .bit-fin-lbl {
-        color: ButtonText;
+    @each $role in $bit-background-color-roles {
+        .bit-fin-otl.bit-fin-#{$role}:not(.bit-dis) .bit-fin-lbl,
+        .bit-fin-txt.bit-fin-#{$role}:not(.bit-dis) .bit-fin-lbl {
+            color: ButtonText;
+        }
     }
 
     // The pointer states move the variables the button is painted from to the role's hover and press colors - a

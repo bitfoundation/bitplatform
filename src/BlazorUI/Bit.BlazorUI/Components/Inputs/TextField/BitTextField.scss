@@ -1130,11 +1130,11 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
     // the busy indicator, the icons and the prefix and suffix of a focused field would be drawn in the color they
     // sit on, in both engines (Chromium's backplate behind text is Canvas too). The Accent is taken back, after the
     // classes that publish it, and those parts read the accent the field has without one.
-    .bit-tfl-pbg,
-    .bit-tfl-sbg,
-    .bit-tfl-tbg {
-        --bit-tfl-clr: initial;
-        --bit-tfl-clr-focus: initial;
+    @each $role in $bit-background-color-roles {
+        .bit-tfl-#{$role} {
+            --bit-tfl-clr: initial;
+            --bit-tfl-clr-focus: initial;
+        }
     }
 
     .bit-tfl.bit-dis {

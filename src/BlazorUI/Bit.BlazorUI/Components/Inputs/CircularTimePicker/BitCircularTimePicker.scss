@@ -1171,7 +1171,7 @@ span.bit-ctp-txt {
 
     // A background role is the page's own color, Canvas here, which the action buttons read their label from,
     // invisible over the callout they sit on, so they take the system button text instead.
-    @each $role in pbg, sbg, tbg {
+    @each $role in $bit-background-color-roles {
         .bit-ctp-#{$role} .bit-ctp-abn:not(:disabled) {
             color: ButtonText;
         }

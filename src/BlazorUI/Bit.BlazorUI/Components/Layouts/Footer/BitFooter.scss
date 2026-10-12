@@ -317,11 +317,11 @@ $ftr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, padding, gap, max-widt
 
     // An Outline or Text footer reads its content and its border from the role's main color, and a background
     // role is the page's own color, Canvas here - invisible in every engine. It is the system text color instead.
-    .bit-ftr-pbg,
-    .bit-ftr-sbg,
-    .bit-ftr-tbg {
-        --bit-ftr-fg: CanvasText;
-        --bit-ftr-brd: CanvasText;
+    @each $role in $bit-background-color-roles {
+        .bit-ftr-#{$role} {
+            --bit-ftr-fg: CanvasText;
+            --bit-ftr-brd: CanvasText;
+        }
     }
 }
 

@@ -646,13 +646,15 @@ $bdg-private-properties:
 
     // An Outline or Text badge reads its label from the role, and a background role is the page's own color,
     // Canvas here - invisible in every engine. It takes the system text color instead, the outline with it.
-    .bit-bdg-otl:is(.bit-bdg-pbg, .bit-bdg-sbg, .bit-bdg-tbg):not(.bit-dis) > .bit-bdg-wrp > .bit-bdg-ctn {
-        color: CanvasText;
-        border-color: CanvasText;
-    }
+    @each $role in $bit-background-color-roles {
+        .bit-bdg-otl.bit-bdg-#{$role}:not(.bit-dis) > .bit-bdg-wrp > .bit-bdg-ctn {
+            color: CanvasText;
+            border-color: CanvasText;
+        }
 
-    .bit-bdg-txt:is(.bit-bdg-pbg, .bit-bdg-sbg, .bit-bdg-tbg):not(.bit-dis) > .bit-bdg-wrp > .bit-bdg-ctn {
-        color: CanvasText;
+        .bit-bdg-txt.bit-bdg-#{$role}:not(.bit-dis) > .bit-bdg-wrp > .bit-bdg-ctn {
+            color: CanvasText;
+        }
     }
 
     // The hover and press of a clickable badge move its fill, which the rules above no longer read, so the state

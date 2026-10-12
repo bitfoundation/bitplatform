@@ -1129,9 +1129,15 @@ button.bit-dtg-htext {
         outline-color: Highlight;
     }
 
-    .bit-dtg-btn-primary:disabled {
+    // An unavailable button goes GrayText rather than leaning on the dimming, which would only weaken a color the
+    // user chose for clarity.
+    .bit-dtg-btn:disabled {
+        opacity: 1;
         color: GrayText;
         border-color: GrayText;
+    }
+
+    .bit-dtg-btn-primary:disabled {
         background-color: ButtonFace;
     }
 
