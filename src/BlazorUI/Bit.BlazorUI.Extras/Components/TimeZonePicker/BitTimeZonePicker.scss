@@ -1,0 +1,746 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+@import '../../../Bit.BlazorUI/Styles/media-queries.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every
+// time zone picker and one set on the Style of an instance (or through Styles.Root) re-skins that one and the time
+// zone pickers nested in it. The callout and the overlay are rendered beside the root element and relocated to the body
+// while the callout is open; Callouts.ts carries what the root and its ancestors declare into them, so a variable set
+// on an ancestor or through its class, in Style or in Styles.Root reaches them like any inherited value.
+//
+//   FIELD
+//   --bit-TimeZonePicker-background              fill of the field                        (default: $clr-bg-pri)
+//   --bit-TimeZonePicker-color                   name of the selected time zone           (default: $clr-fg-pri)
+//   --bit-TimeZonePicker-placeholder-color       placeholder of the field and of the
+//                                                search box                               (default: $clr-fg-sec)
+//   --bit-TimeZonePicker-border-color            frame at rest                            (default: $clr-brd-pri)
+//   --bit-TimeZonePicker-hover-border-color      frame under a pointer                    (default: $clr-brd-pri-hover)
+//   --bit-TimeZonePicker-border-width            thickness of the frame                   (default: $shp-border-width)
+//   --bit-TimeZonePicker-radius                  corner radius of the frame               (default: $shp-radius-control)
+//   --bit-TimeZonePicker-min-height              smallest height of the frame             (default: $siz-ctrl-md)
+//   --bit-TimeZonePicker-font-size               text size of the field and of the list   (default: $tg-fs-sm)
+//   --bit-TimeZonePicker-padding                 padding of the field                     (default: 0 $siz-ctrl-pad-x-md)
+//   --bit-TimeZonePicker-focus-color             focused frame, focus ring and the
+//                                                keyboard cues inside the list            (default: $clr-pri-focus)
+//   --bit-TimeZonePicker-invalid-color           frame, ring and message of a rejected
+//                                                value                                    (default: $clr-err / $clr-err-focus)
+//   --bit-TimeZonePicker-disabled-color          text and glyphs when disabled            (default: $clr-fg-dis)
+//   --bit-TimeZonePicker-disabled-background     fill when disabled                       (default: $clr-bg-dis)
+//   --bit-TimeZonePicker-disabled-border-color   frame when disabled                      (default: $clr-brd-dis)
+//   --bit-TimeZonePicker-caret-color             the caret of the field                   (default: $clr-fg-sec)
+//   --bit-TimeZonePicker-offset-color            the UTC offsets of the field and list    (default: $clr-fg-sec)
+//
+//   LABEL AND WHAT IS WRITTEN UNDER THE FIELD
+//   --bit-TimeZonePicker-label-color             label text                               (default: $clr-fg-pri)
+//   --bit-TimeZonePicker-label-font-size         label text size                          (default: --bit-TimeZonePicker-font-size)
+//   --bit-TimeZonePicker-label-font-weight       label weight                             (default: $tg-field-label-font-weight)
+//   --bit-TimeZonePicker-required-color          the asterisk of a Required field         (default: $clr-req)
+//   --bit-TimeZonePicker-description-color       description text                         (default: $clr-fg-sec)
+//   --bit-TimeZonePicker-footer-font-size        description and error message text size  (default: $tg-fs-2xs)
+//
+//   CALLOUT
+//   --bit-TimeZonePicker-callout-background      the list surface                         (default: $clr-bg-pri)
+//   --bit-TimeZonePicker-callout-border-color    its border, and the rules under the
+//                                                search box and the preferred time zones  (default: $clr-brd-pri)
+//   --bit-TimeZonePicker-callout-radius          its corner radius                        (default: $shp-radius-popup)
+//   --bit-TimeZonePicker-callout-shadow          its elevation                            (default: $box-shadow-popup)
+//   --bit-TimeZonePicker-callout-max-height      tallest the scrolling list grows; the
+//                                                MaxHeight parameter wins over it         (default: $siz-popup-max-height)
+//   --bit-TimeZonePicker-responsive-width        width of the side panel a Responsive
+//                                                field opens on a small screen            (default: spacing(34))
+//   --bit-TimeZonePicker-overlay-background      the layer behind an open callout - give
+//                                                it a color for a modal-style scrim       (default: transparent)
+//
+//   ITEMS
+//   --bit-TimeZonePicker-item-height             smallest height of a row                 (default: $siz-item-md)
+//   --bit-TimeZonePicker-item-color              name of a row, and the search text       (default: $clr-fg-pri)
+//   --bit-TimeZonePicker-item-hover-background   row under the pointer or the keyboard    (default: $clr-bg-pri-hover)
+//   --bit-TimeZonePicker-item-selected-background  the selected row                      (default: $clr-bg-sec)
+//   --bit-TimeZonePicker-item-selected-color     text of the selected row                 (default: --bit-TimeZonePicker-item-color)
+//   --bit-TimeZonePicker-item-country-color      country name of a row                    (default: $clr-fg-sec)
+//
+// A parameter written on the field wins over the variable that restyles what it sets: an explicit Background over
+// the fill, an explicit Border - and, below it, an explicit Color - over the rest and hover frame colors, an explicit
+// Color over the focus color, and an explicit Size over the minimum height, the font sizes (the label's included),
+// the padding of the field and the row height. The variables restyle the default, not a choice -
+// which is why Size, Color, Background and Border publish nothing while they are left unset, on the root and on the
+// callout alike: a class that always carried the default would be indistinguishable from one that was asked for. A
+// state the field is in - disabled, rejected - is still read first.
+//
+// A state under the pointer moves a private variable of the part it is on rather than painting the part, so a part
+// an app paints through Classes keeps that paint while it is pointed at as well.
+
+
+// The size of the control and of its callout is driven by these variables, so a single size class applied to the
+// root and repeated on the callout resizes every part consistently. Published only by an explicit Size; an unset
+// one is the medium field, which tzp-vars spells out after the public variables.
+@mixin tzp-size($fs, $h, $pad-x, $itm-h) {
+    --bit-tzp-sz-fs: #{$fs};
+    --bit-tzp-sz-h: #{$h};
+    --bit-tzp-sz-pad: 0 #{$pad-x};
+    --bit-tzp-sz-itm-h: #{$itm-h};
+}
+
+// Every private variable the mixin below starts out unset, so an instance never inherits one from an instance it is
+// nested in. A private variable added to the component goes in this list.
+$tzp-private-properties: sz-fs, sz-h, sz-pad, sz-itm-h, role-main, role-focus, kind-bg, kind-brd, kind-brd-hover;
+
+// The values the Size, Color, Background and Border classes publish start out unset on the root and on the callout,
+// so a picker rendered inside another one's template never inherits the outer picker's choice; the classes -
+// declared further down at the same weight - still win on the element that carries them. Left unset, each sends the
+// var() reading it in tzp-vars on to the public variable and then to the default (the medium size, the primary
+// role, the primary background and border), which is what lets an explicit parameter outrank the variable while an
+// unset one leaves the variable in charge.
+@mixin tzp-resets {
+    @each $name in $tzp-private-properties {
+        --bit-tzp-#{$name}: initial;
+    }
+}
+
+// The one place the public variables meet the parameters and the defaults: the value an explicit parameter publishes
+// first, then the public variable, then the default an unset parameter stands for. Every rule below reads the
+// private variables this leaves behind, so no use site repeats the fallback chain - and the block is included on the
+// callout as well, which is a sibling of the root and inherits nothing its classes declare. An explicit Border kind
+// is read before the main color of an explicit Color, which keeps the focus ring.
+@mixin tzp-vars {
+    --bit-tzp-fs: var(--bit-tzp-sz-fs, var(--bit-TimeZonePicker-font-size, #{$tg-fs-sm}));
+    --bit-tzp-lbl-fs: var(--bit-tzp-sz-fs, var(--bit-TimeZonePicker-label-font-size, var(--bit-TimeZonePicker-font-size, #{$tg-fs-sm})));
+    --bit-tzp-h: var(--bit-tzp-sz-h, var(--bit-TimeZonePicker-min-height, #{$siz-ctrl-md}));
+    --bit-tzp-pad: var(--bit-tzp-sz-pad, var(--bit-TimeZonePicker-padding, 0 #{$siz-ctrl-pad-x-md}));
+    --bit-tzp-itm-h: var(--bit-tzp-sz-itm-h, var(--bit-TimeZonePicker-item-height, #{$siz-item-md}));
+    --bit-tzp-radius: var(--bit-TimeZonePicker-radius, #{$shp-radius-control});
+    --bit-tzp-brd-w: var(--bit-TimeZonePicker-border-width, #{$shp-border-width});
+    --bit-tzp-bg: var(--bit-tzp-kind-bg, var(--bit-TimeZonePicker-background, #{$clr-bg-pri}));
+    --bit-tzp-brd: var(--bit-tzp-kind-brd, var(--bit-tzp-role-main, var(--bit-TimeZonePicker-border-color, #{$clr-brd-pri})));
+    --bit-tzp-brd-hover: var(--bit-tzp-kind-brd-hover, var(--bit-tzp-role-main, var(--bit-TimeZonePicker-hover-border-color, #{$clr-brd-pri-hover})));
+    --bit-tzp-focus: var(--bit-tzp-role-focus, var(--bit-TimeZonePicker-focus-color));
+    --bit-tzp-plc: var(--bit-TimeZonePicker-placeholder-color, #{$clr-fg-sec});
+    --bit-tzp-itm-clr: var(--bit-TimeZonePicker-item-color, #{$clr-fg-pri});
+    --bit-tzp-itm-hover-bg: var(--bit-TimeZonePicker-item-hover-background, #{$clr-bg-pri-hover});
+    --bit-tzp-ofs-clr: var(--bit-TimeZonePicker-offset-color, #{$clr-fg-sec});
+}
+
+// The keyboard cue of everything that sits INSIDE the callout: the close button of the responsive panel and the
+// active row of the list. An outline drawn inwards is never clipped by the scrolling list, and it survives a
+// forced-colors palette.
+@mixin tzp-focus-inset {
+    outline: $shp-focus-ring-width $shp-border-style var(--bit-tzp-focus, #{$clr-pri-focus});
+    outline-offset: calc(-1 * #{$shp-focus-ring-width});
+
+    @media (forced-colors: active) {
+        outline-color: Highlight;
+    }
+}
+
+.bit-tzp {
+    @include tzp-resets;
+    @include tzp-vars;
+
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: var(--bit-tzp-fs);
+    font-family: $tg-font-family;
+}
+
+.bit-tzp-lbl {
+    display: block;
+    box-sizing: border-box;
+    padding: spacing(0.625) 0;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    color: var(--bit-TimeZonePicker-label-color, #{$clr-fg-pri});
+    font-size: var(--bit-tzp-lbl-fs);
+    font-weight: var(--bit-TimeZonePicker-label-font-weight, #{$tg-field-label-font-weight});
+}
+
+// The frame is painted from --bit-tzp-fld-brd-st, which the pointer moves to the hover color; at rest it is unset and
+// the frame takes the rest color.
+.bit-tzp-fld {
+    --bit-tzp-fld-brd-st: initial;
+
+    margin: 0;
+    width: 100%;
+    gap: spacing(1);
+    display: flex;
+    cursor: pointer;
+    appearance: none;
+    user-select: none;
+    text-align: start;
+    align-items: center;
+    flex-flow: row nowrap;
+    box-sizing: border-box;
+    min-height: var(--bit-tzp-h);
+    padding: var(--bit-tzp-pad);
+    font-size: var(--bit-tzp-fs);
+    font-family: $tg-font-family;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    border-radius: var(--bit-tzp-radius);
+    background-color: var(--bit-tzp-bg);
+    color: var(--bit-TimeZonePicker-color, #{$clr-fg-pri});
+    border: var(--bit-tzp-brd-w) $shp-border-style var(--bit-tzp-fld-brd-st, var(--bit-tzp-brd));
+
+    @media (hover: hover) {
+        &:hover {
+            --bit-tzp-fld-brd-st: var(--bit-tzp-brd-hover);
+        }
+    }
+
+    &:disabled {
+        cursor: default;
+    }
+}
+
+// The ring is drawn around the field while the focus is on it or in the list it opened, which is why it follows a
+// class of the root rather than :focus-visible: the search box of the list is part of the field as far as the user
+// is concerned.
+.bit-tzp-fcs .bit-tzp-fld {
+    @include focus-ring-own(var(--bit-tzp-focus));
+
+    border-color: var(--bit-tzp-focus, #{$clr-pri-focus});
+}
+
+// A ReadOnly field answers no click, so it looks like nothing that would.
+.bit-tzp-rdo .bit-tzp-fld {
+    cursor: default;
+}
+
+// The caret promises a list that a ReadOnly field never opens.
+.bit-tzp-rdo .bit-tzp-car {
+    visibility: hidden;
+}
+
+.bit-tzp-tcn {
+    min-width: 0;
+    gap: spacing(1);
+    display: flex;
+    color: inherit;
+    flex: 1 1 auto;
+    align-items: center;
+    flex-flow: row nowrap;
+}
+
+.bit-tzp-txt,
+.bit-tzp-pls {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.bit-tzp-pls {
+    color: var(--bit-tzp-plc);
+}
+
+// The offset leads every row and the field, in figures of one width so the offsets of the list line up in a column.
+.bit-tzp-ofs {
+    flex-shrink: 0;
+    white-space: nowrap;
+    color: var(--bit-tzp-ofs-clr);
+    font-variant-numeric: tabular-nums;
+}
+
+// What a screen reader reads between the parts of a row, which are laid out apart; removed from the layout without
+// being taken out of the accessibility tree, the way the live region is.
+.bit-tzp-sep {
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
+.bit-tzp-car {
+    width: 0;
+    height: 0;
+    flex-shrink: 0;
+    border-style: solid;
+    border-width: spacing(0.5) spacing(0.375) 0 spacing(0.375);
+    border-color: var(--bit-TimeZonePicker-caret-color, #{$clr-fg-sec}) transparent transparent transparent;
+}
+
+.bit-tzp.bit-dis {
+    .bit-tzp-lbl {
+        color: var(--bit-TimeZonePicker-disabled-color, #{$clr-fg-dis});
+    }
+
+    .bit-tzp-fld {
+        cursor: default;
+        color: var(--bit-TimeZonePicker-disabled-color, #{$clr-fg-dis});
+        background: var(--bit-TimeZonePicker-disabled-background, #{$clr-bg-dis});
+        border-color: var(--bit-TimeZonePicker-disabled-border-color, #{$clr-brd-dis});
+    }
+
+    .bit-tzp-pls {
+        color: var(--bit-TimeZonePicker-disabled-color, #{$clr-fg-dis});
+    }
+
+    .bit-tzp-car {
+        border-top-color: var(--bit-TimeZonePicker-disabled-color, #{$clr-fg-dis});
+    }
+
+    .bit-tzp-ofs {
+        color: var(--bit-TimeZonePicker-disabled-color, #{$clr-fg-dis});
+    }
+}
+
+// A field is as wide as its container, and a sentence written under it wraps under it rather than stretching it.
+@mixin tzp-under-field {
+    width: 100%;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    padding-block-start: spacing(0.5);
+    font-size: var(--bit-TimeZonePicker-footer-font-size, #{$tg-fs-2xs});
+}
+
+.bit-tzp-erm {
+    @include tzp-under-field;
+
+    color: var(--bit-TimeZonePicker-invalid-color, #{$clr-err});
+
+    span {
+        color: inherit;
+    }
+}
+
+.bit-tzp-des {
+    @include tzp-under-field;
+
+    color: var(--bit-TimeZonePicker-description-color, #{$clr-fg-sec});
+}
+
+.bit-tzp-ovl {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    position: fixed;
+    z-index: $zindex-overlay;
+    background-color: var(--bit-TimeZonePicker-overlay-background, transparent);
+}
+
+.bit-tzp-cal {
+    @include tzp-resets;
+    @include tzp-vars;
+
+    display: none;
+    overflow: hidden;
+    position: fixed;
+    box-sizing: border-box;
+    z-index: $zindex-callout;
+    font-size: var(--bit-tzp-fs);
+    font-weight: $tg-fw-regular;
+    font-family: $tg-font-family;
+    animation-fill-mode: both;
+    animation-duration: $mot-duration-long;
+    animation-name: bit-fade-show, bit-slide-down;
+    animation-timing-function: $mot-easing-decelerate;
+    border-radius: var(--bit-TimeZonePicker-callout-radius, #{$shp-radius-popup});
+    box-shadow: var(--bit-TimeZonePicker-callout-shadow, #{$box-shadow-popup});
+    background-color: var(--bit-TimeZonePicker-callout-background, #{$clr-bg-pri});
+    border: $shp-border-width $shp-border-style var(--bit-TimeZonePicker-callout-border-color, #{$clr-brd-pri});
+}
+
+.bit-tzp-sbx {
+    box-sizing: border-box;
+    border-block-end: $shp-border-width $shp-border-style var(--bit-TimeZonePicker-callout-border-color, #{$clr-brd-pri});
+}
+
+.bit-tzp-srch {
+    width: 100%;
+    border: none;
+    outline: none;
+    display: block;
+    box-sizing: border-box;
+    background-color: transparent;
+    font-size: var(--bit-tzp-fs);
+    font-family: $tg-font-family;
+    color: var(--bit-tzp-itm-clr);
+    letter-spacing: $tg-ctrl-letter-spacing;
+    padding: spacing(1) spacing(1.5);
+    @include input-placeholder(var(--bit-tzp-plc));
+}
+
+.bit-tzp-scn {
+    overflow: hidden auto;
+    box-sizing: border-box;
+    max-height: var(--bit-TimeZonePicker-callout-max-height, #{$siz-popup-max-height});
+}
+
+.bit-tzp-lst {
+    margin: 0;
+    padding: spacing(0.5) 0;
+    box-sizing: border-box;
+}
+
+// The fill is painted from --bit-tzp-itm-st-bg, which the pointer moves to the hover fill.
+.bit-tzp-itm {
+    --bit-tzp-itm-st-bg: initial;
+
+    gap: spacing(1);
+    margin: 0;
+    width: 100%;
+    border: none;
+    display: flex;
+    cursor: pointer;
+    appearance: none;
+    text-align: start;
+    align-items: center;
+    flex-flow: row nowrap;
+    box-sizing: border-box;
+    font-size: var(--bit-tzp-fs);
+    font-family: $tg-font-family;
+    color: var(--bit-tzp-itm-clr);
+    min-height: var(--bit-tzp-itm-h);
+    padding: spacing(0.75) spacing(1.5);
+    background-color: var(--bit-tzp-itm-st-bg, transparent);
+
+    @media (hover: hover) {
+        &:hover {
+            --bit-tzp-itm-st-bg: var(--bit-tzp-itm-hover-bg);
+        }
+    }
+}
+
+// The rule under the last of the PreferredTimeZones, which sets the pinned ones apart from the rest of the list.
+.bit-tzp-ilp {
+    border-block-end: $shp-border-width $shp-border-style var(--bit-TimeZonePicker-callout-border-color, #{$clr-brd-pri});
+}
+
+.bit-tzp-sel {
+    color: var(--bit-TimeZonePicker-item-selected-color, var(--bit-tzp-itm-clr));
+    background-color: var(--bit-TimeZonePicker-item-selected-background, #{$clr-bg-sec});
+
+    @media (forced-colors: active) {
+        color: HighlightText;
+        forced-color-adjust: none;
+        background-color: Highlight;
+    }
+}
+
+// The row the arrow keys are on. It is pointed at through aria-activedescendant rather than focused, so no
+// :focus-visible ever matches it, and a fill alone would read the same as the row under the pointer.
+.bit-tzp-act {
+    background-color: var(--bit-tzp-itm-hover-bg);
+
+    @include tzp-focus-inset;
+}
+
+// The place keeps the room it needs before the country does, which is what a narrow list cuts short first.
+.bit-tzp-inm {
+    min-width: 0;
+    overflow: hidden;
+    flex: 0 1 auto;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.bit-tzp-icn {
+    min-width: 0;
+    overflow: hidden;
+    flex: 0 100 auto;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--bit-TimeZonePicker-item-country-color, #{$clr-fg-sec});
+}
+
+.bit-tzp-nor {
+    color: var(--bit-tzp-plc);
+    box-sizing: border-box;
+    font-size: var(--bit-tzp-fs);
+    padding: spacing(0.75) spacing(1.5);
+}
+
+.bit-tzp-rlc {
+    display: none;
+}
+
+// The label again, at the top of the responsive panel: it reads the same size as the one above the field (an
+// explicit Size first, then the label and font variables), which tzp-vars resolves on the callout as on the root.
+.bit-tzp-rlb {
+    display: block;
+    box-sizing: border-box;
+    font-size: var(--bit-tzp-lbl-fs);
+    letter-spacing: $tg-ctrl-letter-spacing;
+    color: var(--bit-TimeZonePicker-label-color, #{$clr-fg-pri});
+    font-weight: var(--bit-TimeZonePicker-label-font-weight, #{$tg-field-label-font-weight});
+}
+
+// Rendered after the search box so it follows it in the tab order, and drawn back at the end of the header from
+// there (see .bit-tzp-res); hidden with the header wherever the list is not a panel. Its fill is painted from
+// --bit-tzp-cls-st-bg, which the pointer moves to the hover fill.
+.bit-tzp-cls {
+    --bit-tzp-cls-st-bg: initial;
+
+    margin: 0;
+    padding: 0;
+    border: none;
+    display: none;
+    cursor: pointer;
+    appearance: none;
+    align-items: center;
+    color: var(--bit-tzp-itm-clr);
+    box-sizing: border-box;
+    justify-content: center;
+    background-color: var(--bit-tzp-cls-st-bg, transparent);
+    width: $siz-ctrl-md;
+    height: $siz-ctrl-md;
+    font-size: $siz-icon-md;
+    border-radius: $shp-radius-button;
+
+    @media (hover: hover) {
+        &:hover {
+            --bit-tzp-cls-st-bg: var(--bit-tzp-itm-hover-bg);
+        }
+    }
+
+    &:focus-visible {
+        @include tzp-focus-inset;
+    }
+}
+
+.bit-tzp-res {
+    @include lt-sm {
+        top: 0;
+        right: 0;
+        opacity: 0;
+        height: 100%;
+        display: block;
+        overflow: hidden;
+        max-height: unset;
+        animation-name: unset;
+        border-radius: $shp-radius-sheet;
+        transform: translateX(100%);
+        width: var(--bit-TimeZonePicker-responsive-width, #{spacing(34)});
+        box-shadow: var(--bit-TimeZonePicker-callout-shadow, #{$box-shadow-sheet});
+        transition: transform $mot-duration $mot-easing, opacity $mot-duration-short linear;
+
+        .bit-tzp-rlc {
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+            padding: spacing(1.5) spacing(1.5);
+            min-height: calc(#{$siz-ctrl-md} + #{spacing(3)});
+            padding-inline-end: calc(#{$siz-ctrl-md} + #{spacing(2.5)});
+        }
+
+        .bit-tzp-cls {
+            display: flex;
+            position: absolute;
+            top: spacing(1.5);
+            inset-inline-end: spacing(1.5);
+        }
+
+        .bit-tzp-scn {
+            max-height: unset;
+            height: calc(100% - #{spacing(11)});
+        }
+    }
+}
+
+// The panel is pinned to and slides in from the side the layout ends on, which is the left one under a
+// right-to-left direction - the explicit Dir (the bit-rtl class the callout carries for it, for an engine without
+// :dir()) or the one the page reads in.
+.bit-tzp-res:is(.bit-rtl, :dir(rtl)) {
+    @include lt-sm {
+        left: 0;
+        right: unset;
+        transform: translateX(-100%);
+    }
+}
+
+
+.bit-tzp-nbd {
+    .bit-tzp-fld {
+        border-color: transparent;
+    }
+
+    // A field asked to show no border keeps none in any state, and the disabled, the focused and the rejected rules
+    // each set a border color of their own, which would put one back on it. The focus ring itself stays: it is the
+    // only thing left saying where the focus is.
+    &.bit-dis .bit-tzp-fld,
+    &.bit-tzp-fcs .bit-tzp-fld,
+    &.bit-inv .bit-tzp-fld {
+        border-color: transparent;
+    }
+}
+
+.bit-tzp-und {
+    .bit-tzp-fld {
+        border-radius: 0;
+        border-block-start: none;
+        border-inline: none;
+    }
+
+    &.bit-tzp-fcs .bit-tzp-fld {
+        box-shadow: none;
+        border-block-end-width: $shp-border-width-thick;
+
+        // The thicker rule is the cue of the variant, and forced colors keep its color - but not the ring the
+        // focus-ring mixin restores there, which this variant has no box to draw around.
+        @media (forced-colors: active) {
+            outline: none;
+        }
+    }
+}
+
+// The live region only exists for the assistive technologies, so it is removed from the visual layout without ever
+// being display:none or visibility:hidden, both of which would take it out of the accessibility tree along with what
+// it carries.
+.bit-tzp-lvr {
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
+.bit-tzp-req {
+    // Every label of the field is marked, not only the one built from the Label parameter: a field rendered through a
+    // LabelTemplate is just as required as any other one.
+    & > label::after {
+        content: "*";
+        // The same asterisk with empty alternative text, so it is not read out beside the aria-required that already
+        // says the same thing. Declared second, and left out by an engine that does not know the syntax, which keeps
+        // the plain asterisk above.
+        content: "*" / "";
+        margin-inline-start: spacing(0.625);
+        color: var(--bit-TimeZonePicker-required-color, #{$clr-req});
+    }
+}
+
+
+.bit-tzp-sm {
+    @include tzp-size($tg-fs-xs, $siz-ctrl-sm, $siz-ctrl-pad-x-sm, $siz-item-sm);
+}
+
+.bit-tzp-md {
+    @include tzp-size($tg-fs-sm, $siz-ctrl-md, $siz-ctrl-pad-x-md, $siz-item-md);
+}
+
+.bit-tzp-lg {
+    @include tzp-size($tg-fs-md, $siz-ctrl-lg, $siz-ctrl-pad-x-lg, $siz-item-lg);
+}
+
+
+// The general color of the field: the frame takes the main color of the role at rest and under a pointer, and the
+// ring and the keyboard cues take its focus color. Published only by an explicit Color, and read before the public
+// variables but after the Border kind. The role classes are generated from the shared $bit-color-roles map (see
+// color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-tzp-#{$role} {
+        --bit-tzp-role-main: #{role($tokens, main)};
+        --bit-tzp-role-focus: #{role($tokens, focus)};
+    }
+}
+
+
+// The surface the field sits on. Published only by an explicit Background, and read before the public
+// --bit-TimeZonePicker-background variable.
+.bit-tzp-bpr {
+    --bit-tzp-kind-bg: #{$clr-bg-pri};
+}
+
+.bit-tzp-bse {
+    --bit-tzp-kind-bg: #{$clr-bg-sec};
+}
+
+.bit-tzp-btr {
+    --bit-tzp-kind-bg: #{$clr-bg-ter};
+}
+
+.bit-tzp-btn {
+    --bit-tzp-kind-bg: transparent;
+}
+
+
+// Each border kind carries the hover step of its own family, so a frame that is deliberately invisible
+// (Transparent) stays invisible under the pointer instead of appearing out of nowhere. It wins over the main color
+// of the Color role, which keeps the focus ring, and over the public border colors. Published only by an explicit
+// Border.
+.bit-tzp-brp {
+    --bit-tzp-kind-brd: #{$clr-brd-pri};
+    --bit-tzp-kind-brd-hover: #{$clr-brd-pri-hover};
+}
+
+.bit-tzp-brs {
+    --bit-tzp-kind-brd: #{$clr-brd-sec};
+    --bit-tzp-kind-brd-hover: #{$clr-brd-sec-hover};
+}
+
+.bit-tzp-brt {
+    --bit-tzp-kind-brd: #{$clr-brd-ter};
+    --bit-tzp-kind-brd-hover: #{$clr-brd-ter-hover};
+}
+
+.bit-tzp-brn {
+    --bit-tzp-kind-brd: transparent;
+    --bit-tzp-kind-brd-hover: transparent;
+}
+
+
+// A rejected value wins over the role and over the hover cue, whichever way it was rejected - by the EditContext,
+// by Invalid or by an ErrorMessage.
+.bit-tzp.bit-inv {
+    .bit-tzp-fld {
+        border-color: var(--bit-TimeZonePicker-invalid-color, #{$clr-err});
+    }
+
+    &.bit-tzp-fcs .bit-tzp-fld {
+        @include focus-ring(var(--bit-TimeZonePicker-invalid-color, #{$clr-err-focus}));
+
+        border-color: var(--bit-TimeZonePicker-invalid-color, #{$clr-err});
+    }
+}
+
+// The two variants keep their own shape over a rejected value: no frame at all, or a single rule with no ring.
+.bit-tzp.bit-tzp-nbd.bit-inv .bit-tzp-fld {
+    border-color: transparent;
+}
+
+.bit-tzp.bit-tzp-und.bit-inv.bit-tzp-fcs .bit-tzp-fld {
+    box-shadow: none;
+
+    @media (forced-colors: active) {
+        outline: none;
+    }
+}
+
+
+// Windows High Contrast / forced-colors: the palette collapses to the system pair and every fill an author paints is
+// discarded, so the two states that are nothing but colors - the disabled field and the row under the pointer -
+// would read like the rest. The field is given GrayText while disabled, and a hovered row an outline.
+@media (forced-colors: active) {
+    .bit-tzp.bit-dis {
+        .bit-tzp-lbl,
+        .bit-tzp-fld,
+        .bit-tzp-des {
+            color: GrayText;
+        }
+
+        .bit-tzp-fld {
+            border-color: GrayText;
+        }
+
+        .bit-tzp-car {
+            border-top-color: GrayText;
+        }
+
+        .bit-tzp-ofs {
+            color: GrayText;
+        }
+    }
+
+    .bit-tzp-itm {
+        @media (hover: hover) {
+            &:hover {
+                outline: $shp-border-width dashed Highlight;
+                outline-offset: calc(-1 * #{$shp-border-width});
+            }
+        }
+    }
+}

@@ -81,4 +81,9 @@ internal static class ExtrasJsRuntimeExtensions
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Extras.scrollOptionIntoView", optionId);
     }
+
+    internal static ValueTask<string?> BitExtrasGetTimeZone(this IJSRuntime jsRuntime)
+    {
+        return jsRuntime.Invoke<string?>("BitBlazorUI.Extras.getTimeZone");
+    }
 }

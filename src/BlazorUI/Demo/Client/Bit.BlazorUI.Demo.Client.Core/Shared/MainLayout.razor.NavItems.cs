@@ -179,6 +179,7 @@ public partial class MainLayout
                 new() { Text = "PhoneInput", Url = "/components/phoneinput" },
                 new() { Text = "RichTextEditor", Url = "/components/richtexteditor", Description = "WysiwygEditor, HtmlEditor", Data = "WYSIWYG, Rich text, HTML editor, Text editor, Content editor, Comment box, Formatting, Toolbar, Mentions" },
                 new() { Text = "TextShimmer", Url = "/components/textshimmer", Description = "ShinyText, Skeleton, Loading, AI" },
+                new() { Text = "TimeZonePicker", Url = "/components/timezonepicker", Description = "TimeZoneSelector, TimeZoneSelect, TzPicker", Data = "Time zone, Timezone, UTC offset, GMT offset, IANA, Olson, Windows time zone, TimeZoneInfo, Daylight saving time, DST, Detect time zone" },
                 new() { Text = "Virtualize", Url = "/components/virtualize", Description = "VirtualScroll, Windowing" },
             ]
         },

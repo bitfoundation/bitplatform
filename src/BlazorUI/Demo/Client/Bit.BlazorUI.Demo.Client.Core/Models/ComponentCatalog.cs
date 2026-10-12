@@ -354,6 +354,7 @@ public static class ComponentCatalog
         ["PhoneInput"] = BitIconName.Phone,
         ["RichTextEditor"] = BitIconName.EditNote,
         ["TextShimmer"] = BitIconName.ChatBot,
+        ["TimeZonePicker"] = BitIconName.WorldClock,
         ["Virtualize"] = BitIconName.RowsGroup,
 
         // Legacy - the glyph of the component that replaced it, with the badge telling them apart.
@@ -487,6 +488,7 @@ public static class ComponentCatalog
         ["PhoneInput"] = "A phone number field with a searchable country selector and flags.",
         ["RichTextEditor"] = "A native WYSIWYG editor written in C#, with a configurable toolbar.",
         ["TextShimmer"] = "A gradient band sweeping across text, for AI-style streaming states.",
+        ["TimeZonePicker"] = "A searchable time zone selector with UTC offsets, bound to a TimeZoneInfo or its IANA id.",
         ["Virtualize"] = "Renders only the rows currently in view, for very long lists.",
 
         // Legacy

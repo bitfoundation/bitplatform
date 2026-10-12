@@ -138,6 +138,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/Components/Extras/TimeZonePicker/BitTimeZonePickerDemo.razor.css",
+        "inputFile": "Pages/Components/Extras/TimeZonePicker/BitTimeZonePickerDemo.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/Components/Extras/Virtualize/BitVirtualizeDemo.razor.css",
         "inputFile": "Pages/Components/Extras/Virtualize/BitVirtualizeDemo.razor.scss",
         "minify": { "enabled": false },
