@@ -11,7 +11,6 @@ public partial class WebUnsavedCategoryTests : UnsavedCategoryTestsBase
 {
     protected override IAppOpener AppOpener => new WebAppOpener();
 
-    /// <summary>adminpanel.bitplatform.dev routes with Brouter, adminpanel.bitplatform.cc with Blazor's Router.</summary>
     [TestMethod]
     [DataRow(App.AdminPanel, DisplayName = nameof(App.AdminPanel))]
     [DataRow(App.AdminPanelWasmStandalone, DisplayName = nameof(App.AdminPanelWasmStandalone))]

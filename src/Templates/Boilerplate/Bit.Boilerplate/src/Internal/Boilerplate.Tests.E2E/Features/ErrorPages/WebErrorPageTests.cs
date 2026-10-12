@@ -6,7 +6,7 @@ namespace Boilerplate.Tests.E2E.Features.ErrorPages;
 /// <summary>
 /// NotFoundPage and NotAuthorizedPage as a visitor meets them, across the ways a deployment can reach them: prerendered
 /// (Todo, AdminPanel, Sales - the server's UseStatusCodePages redirects), not prerendered (the WebAssembly standalone
-/// apps - the client router alone), Blazor's Router (Todo, Sales, the standalone apps) and bit Brouter (AdminPanel).
+/// apps - the client router alone).
 /// </summary>
 [TestClass, TestCategory(TestCategories.Web), Retry(2)]
 public partial class WebErrorPageTests : AppTestBase
@@ -23,10 +23,10 @@ public partial class WebErrorPageTests : AppTestBase
     protected override IAppOpener AppOpener => new WebAppOpener();
 
     [TestMethod]
-    [DataRow(App.Todo, unknownDeepPath, DisplayName = "Todo (prerendered, Blazor Router), deep path")]
-    [DataRow(App.Todo, unknownShallowPath, DisplayName = "Todo (prerendered, Blazor Router), one segment")]
-    [DataRow(App.AdminPanel, unknownDeepPath, DisplayName = "AdminPanel (prerendered, bit Brouter), deep path")]
-    [DataRow(App.AdminPanel, unknownShallowPath, DisplayName = "AdminPanel (prerendered, bit Brouter), one segment")]
+    [DataRow(App.Todo, unknownDeepPath, DisplayName = "Todo (prerendered), deep path")]
+    [DataRow(App.Todo, unknownShallowPath, DisplayName = "Todo (prerendered), one segment")]
+    [DataRow(App.AdminPanel, unknownDeepPath, DisplayName = "AdminPanel (prerendered), deep path")]
+    [DataRow(App.AdminPanel, unknownShallowPath, DisplayName = "AdminPanel (prerendered), one segment")]
     [DataRow(App.Sales, unknownDeepPath, DisplayName = "Sales (prerendered, integrated API), deep path")]
     [DataRow(App.Sales, unknownShallowPath, DisplayName = "Sales (prerendered, integrated API), one segment")]
     [DataRow(App.AdminPanelWasmStandalone, unknownDeepPath, DisplayName = "AdminPanelWasmStandalone (not prerendered), deep path")]
@@ -48,8 +48,8 @@ public partial class WebErrorPageTests : AppTestBase
     }
 
     [TestMethod]
-    [DataRow(App.Todo, DisplayName = "Todo (prerendered, Blazor Router)")]
-    [DataRow(App.AdminPanel, DisplayName = "AdminPanel (prerendered, bit Brouter)")]
+    [DataRow(App.Todo, DisplayName = "Todo (prerendered)")]
+    [DataRow(App.AdminPanel, DisplayName = "AdminPanel (prerendered)")]
     [DataRow(App.Sales, DisplayName = "Sales (prerendered, integrated API)")]
     [DataRow(App.AdminPanelWasmStandalone, DisplayName = "AdminPanelWasmStandalone (not prerendered)")]
     [DataRow(App.TodoAot, DisplayName = "TodoAot (not prerendered)")]
@@ -81,9 +81,9 @@ public partial class WebErrorPageTests : AppTestBase
     // Every row grants the same shared store-user the same permission, so two of them running at once means one sees
     // the other's grant where it expects to be turned away. MethodLevel parallelization schedules data rows too.
     [TestMethod, DoNotParallelize]
-    [DataRow(App.Todo, DisplayName = "Todo (Blazor Router, not multitenant)")]
-    [DataRow(App.AdminPanel, DisplayName = "AdminPanel (bit Brouter)")]
-    [DataRow(App.Sales, DisplayName = "Sales (Blazor Router, integrated API)")]
+    [DataRow(App.Todo, DisplayName = "Todo (not multitenant)")]
+    [DataRow(App.AdminPanel, DisplayName = "AdminPanel")]
+    [DataRow(App.Sales, DisplayName = "Sales (integrated API)")]
     public async Task ForbiddenPage_Should_Open_OnceTheGlobalAdminGrantsAccess_WithoutSigningInAgain(App app)
     {
         await SkipWithoutGlobalAdminCredentials();

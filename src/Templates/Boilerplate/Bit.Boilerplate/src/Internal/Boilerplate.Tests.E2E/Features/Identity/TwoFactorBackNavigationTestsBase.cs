@@ -13,10 +13,6 @@ public abstract class TwoFactorBackNavigationTestsBase : AppTestBase
     /// <summary>The platform's own way back.</summary>
     protected abstract Task GoBack(IPage page);
 
-    /// <summary>
-    /// Todo routes with Blazor's Router and AdminPanel with Brouter (See the dotnet new lines in
-    /// .github/workflows/*.cd.yml), and the lock has to hold under both.
-    /// </summary>
     [TestMethod]
     [DataRow(App.Todo, DisplayName = nameof(App.Todo))]
     [DataRow(App.AdminPanel, DisplayName = nameof(App.AdminPanel))]

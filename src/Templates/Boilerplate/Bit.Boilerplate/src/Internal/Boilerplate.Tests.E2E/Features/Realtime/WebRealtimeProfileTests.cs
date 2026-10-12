@@ -11,7 +11,7 @@ public partial class WebRealtimeProfileTests : RealtimeProfileTestsBase
     [TestMethod]
     [DataRow(App.Sales, DisplayName = "Sales (integrated API)")]
     [DataRow(App.Todo, DisplayName = "Todo (standalone API)")]
-    [DataRow(App.AdminPanel, DisplayName = "AdminPanel (standalone API, bit Brouter)")]
+    [DataRow(App.AdminPanel, DisplayName = "AdminPanel (standalone API)")]
     public async Task AProfilePictureChangedInOneBrowser_Should_ShowInTheOtherAtOnce(App app)
     {
         await AProfilePictureChange_Should_ReachTheUsersOtherSession(app, theAppUploads: true);

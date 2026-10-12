@@ -23,7 +23,7 @@ public partial class WebForceUpdateTests : AppTestBase
     [TestMethod]
     [DataRow(App.Sales, DisplayName = "Sales (prerendered, integrated API)")]
     [DataRow(App.Todo, DisplayName = "Todo (prerendered, standalone API)")]
-    [DataRow(App.AdminPanel, DisplayName = "AdminPanel (prerendered, bit Brouter)")]
+    [DataRow(App.AdminPanel, DisplayName = "AdminPanel (prerendered)")]
     [DataRow(App.AdminPanelWasmStandalone, DisplayName = "AdminPanelWasmStandalone (not prerendered)")]
     public async Task AnOutdatedClient_Should_BeShownTheForceUpdatePanel(App app)
     {
