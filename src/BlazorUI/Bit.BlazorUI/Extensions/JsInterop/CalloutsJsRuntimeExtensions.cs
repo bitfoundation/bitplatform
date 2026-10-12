@@ -75,7 +75,12 @@ internal static class CalloutsJsRuntimeExtensions
         // consumer declared on the root for the popup too - the custom properties of Style and Styles.Root,
         // ForceAnimation's bit-fam - is carried into the popup while it is relocated to the body; an empty string
         // carries nothing, which is what a callout opened from inside another one passes.
-        string rootId = "") where T : class
+        string rootId = "",
+        // Whether the component's .NET keydown handlers on its root and on the callout act on Escape, and so have to
+        // be told the Escapes a surface nested in either of them answers apart from their own, through their
+        // OnEscapeVerdict callback (see Utils.watchNestedEscape). It rides on the open and the close themselves, so it
+        // costs no round trip of its own.
+        bool nestedEscape = false) where T : class
     {
         return jsRuntime.Invoke<bool>(
             "BitBlazorUI.Callouts.toggle",
@@ -110,7 +115,8 @@ internal static class CalloutsJsRuntimeExtensions
             trapFocus,
             dismissOnFocusLeave,
             tabOutTriggerId,
-            rootId);
+            rootId,
+            nestedEscape);
     }
 
     // Re-applies the space the scrollable content of the open callout cannot use, for the parts above

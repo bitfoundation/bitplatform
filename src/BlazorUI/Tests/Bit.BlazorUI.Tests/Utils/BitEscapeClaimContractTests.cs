@@ -82,6 +82,13 @@ public sealed class BitEscapeClaimContractTests
                             .Where(listener => listener.Contains("invokeMethodAsync"))
                             .ToList();
 
+        // A verdict handed to Utils.sendEscapeVerdicts answers the key as well when it is what the surface's .NET handler
+        // dismisses on (a panel's escape guard) - unless all it says is which surface owns the press (the modal's, which
+        // reports every Escape of its own, the claimed ones included).
+        listeners.AddRange(body.Split("Utils.sendEscapeVerdicts(").Skip(1)
+                               .Select(call => Regex.Split(call, @"\r?\n        \}")[0])
+                               .Where(call => Regex.IsMatch(call, @"^[^;]*=>\s*Utils\.claimSurfaceEscape\(e, element\)\);") is false));
+
         Assert.IsTrue(listeners.Count > 0, $"Utils.{method} has no keydown listener that answers the key.");
 
         foreach (var listener in listeners)

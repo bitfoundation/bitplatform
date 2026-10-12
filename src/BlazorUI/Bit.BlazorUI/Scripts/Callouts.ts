@@ -143,6 +143,11 @@
             // opened from inside another one passes, as it already inherits all of that through the one it was
             // opened from.
             rootId: string = '',
+            // Whether the component's .NET keydown handlers on its root and on the callout act on Escape, and so
+            // have to be told the Escapes a surface nested in either of them answers apart from their own (see
+            // Utils.watchNestedEscape) - which also has the surfaces around them leave a press they answer alone.
+            // It is watched from the open to the close, in the same calls, so it costs no round trip of its own.
+            nestedEscape: boolean = false,
         ) {
             component ??= document.getElementById(componentId);
             if (component == null) return false;
@@ -181,8 +186,12 @@
 
             Callouts.replaceCurrent({
                 dotnetObj, componentId, calloutId, overlayId, arrowId, responsiveMode, scrollContainerId, noDismiss,
-                noScrollDismiss: noDismiss || noScrollDismiss, trapFocus, tabOut: !!tabOutTriggerId
+                noScrollDismiss: noDismiss || noScrollDismiss, trapFocus, tabOut: !!tabOutTriggerId, nestedEscape
             });
+
+            if (nestedEscape) {
+                Utils.watchNestedEscape(calloutId, rootId ? [rootId, calloutId] : [calloutId], dotnetObj);
+            }
 
             if (trapFocus) {
                 Utils.setupFocusTrap(calloutId);
@@ -1646,6 +1655,11 @@
                     Utils.disposeTabOut(callout.calloutId);
                 }
 
+                // And the watch on its Escapes.
+                if (Callouts._stack[index].nestedEscape && !callout.nestedEscape) {
+                    Utils.unwatchNestedEscape(callout.calloutId);
+                }
+
                 Callouts._stack[index] = callout;
                 return;
             }
@@ -1771,9 +1785,13 @@
                 Utils.disposeFocusTrap(entry.calloutId);
             }
 
-            // The same goes for the tab order around the trigger.
+            // The same goes for the tab order around the trigger, and the watch on the Escapes.
             if (entry.tabOut) {
                 Utils.disposeTabOut(entry.calloutId);
+            }
+
+            if (entry.nestedEscape) {
+                Utils.unwatchNestedEscape(entry.calloutId);
             }
 
             Callouts.disposeFocusLeave(entry.calloutId);
@@ -1825,6 +1843,9 @@
         trapFocus?: boolean;
         // Whether the toggle put the callout into the tab order after its trigger, which is then its to take back.
         tabOut?: boolean;
+        // Whether the toggle watches the Escapes of the component's root and callout (Utils.watchNestedEscape),
+        // which is then its to take back.
+        nestedEscape?: boolean;
     }
 
     // One element of the chain a relocated callout is moved into, and the element of the page it stands for.

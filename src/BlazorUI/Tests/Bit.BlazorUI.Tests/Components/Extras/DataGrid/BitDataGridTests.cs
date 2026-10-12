@@ -3534,6 +3534,45 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual(1, component.FindAll(".bit-dtg-editor-error").Count);
     }
 
+    // A dialog, a panel or a modal of a cell's template stops no key, so the cell hears the keys pressed in it on their
+    // way out too; the script tells the grid which those are (BitDataGrid.ts, reportNestedSurfaceKey), and the cell
+    // leaves them to the surface: its Escape cancels no edit, its Delete deletes no row.
+    [TestMethod]
+    public async Task CellLeavesTheKeysOfASurfaceInItsContentAlone()
+    {
+        var items = CreateRows();
+        var component = RenderCellEditGrid(items);
+
+        DataCell(component, 0, 1).KeyDown(new KeyboardEventArgs { Key = "Enter" });
+        Assert.IsNotNull(component.Instance.EditingItem);
+
+        await component.InvokeAsync(() => component.Instance.OnNestedSurfaceKey(true));
+        DataCell(component, 0, 1).KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.IsNotNull(component.Instance.EditingItem, "the surface's Escape is not the cell's");
+
+        await component.InvokeAsync(() => component.Instance.OnNestedSurfaceKey(false));
+        DataCell(component, 0, 1).KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.IsNull(component.Instance.EditingItem, "a key pressed in the grid again is the cell's");
+    }
+
+    [TestMethod]
+    public async Task DeleteKeyOfASurfaceInACellDeletesNoRow()
+    {
+        var items = CreateRows();
+        var component = RenderGrid(items, parameters =>
+        {
+            parameters.Add(p => p.CellNavigation, true);
+            parameters.Add(p => p.Editable, true);
+            parameters.Add(p => p.OnRowDelete, (TestRow r) => { items.Remove(r); });
+        });
+
+        await component.InvokeAsync(() => component.Instance.OnNestedSurfaceKey(true));
+        component.Find(".bit-dtg-body > .bit-dtg-row .bit-dtg-cell")
+            .KeyDown(new KeyboardEventArgs { Key = "Delete" });
+
+        Assert.AreEqual(5, FirstCellTexts(component).Count);
+    }
+
     [TestMethod]
     public void CellModeClaimsEscapeOnlyWhileACellIsOpen()
     {

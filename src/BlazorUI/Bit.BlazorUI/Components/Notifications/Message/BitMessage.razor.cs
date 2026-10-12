@@ -61,7 +61,7 @@ public partial class BitMessage : BitComponentBase
     // Whether the browser is telling the message which Escapes are its own (see SyncEscapeWatch), and what it answered
     // for the Escape Blazor is about to hand the key handler (see _OnEscapeVerdict).
     private bool _escapeWatched;
-    private bool _foreignEscape;
+    private readonly BitEscapeVerdict _escapeVerdict = new();
 
     // Held as fields so re-registering them on every parameter set keeps handing the renderer the same
     // delegate instance, which is what lets the diff leave the listener alone.
@@ -680,7 +680,7 @@ public partial class BitMessage : BitComponentBase
     [JSInvokable("OnEscapeVerdict")]
     public void _OnEscapeVerdict(bool foreign)
     {
-        _foreignEscape = foreign;
+        _escapeVerdict.Set(foreign);
     }
 
 
@@ -850,7 +850,7 @@ public partial class BitMessage : BitComponentBase
         if (watch == _escapeWatched) return;
 
         _escapeWatched = watch;
-        _foreignEscape = false;
+        _escapeVerdict.Reset();
 
         try
         {
@@ -1419,11 +1419,14 @@ public partial class BitMessage : BitComponentBase
         // "Esc" is what the older browsers report for the same key.
         if (e.Key is not ("Escape" or "Esc")) return;
 
+        // Taken before anything else is decided, so the answer sent for this key is gone before the next one's comes in.
+        var foreign = _escapeVerdict.Take();
+
         // Only the plain key, the one the root claims from a surface the message sits in (see _EscapeClaim): with a
         // modifier the press is that surface's, so it does not dismiss the message as well. Nor does one that a
         // component or a surface inside the message took first, which the browser has said so of (_OnEscapeVerdict).
         if (e.ShiftKey || e.CtrlKey || e.AltKey || e.MetaKey) return;
-        if (_foreignEscape) return;
+        if (foreign) return;
 
         await DismissAsync(BitMessageDismissReason.Escape);
     }

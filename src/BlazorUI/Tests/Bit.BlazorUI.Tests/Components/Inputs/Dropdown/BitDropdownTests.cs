@@ -1499,7 +1499,7 @@ public class BitDropdownTests : BunitTestContext
         var rootId = component.Find(".bit-drp").Id;
 
         Assert.IsFalse(string.IsNullOrEmpty(rootId));
-        Assert.AreEqual(rootId, toggle.Arguments[^1]);
+        Assert.AreEqual(rootId, toggle.Arguments[^2]);
     }
 
     [TestMethod]

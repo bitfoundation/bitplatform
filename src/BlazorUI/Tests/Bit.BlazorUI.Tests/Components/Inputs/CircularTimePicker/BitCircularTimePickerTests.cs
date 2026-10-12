@@ -3193,7 +3193,7 @@ public class BitCircularTimePickerTests : BunitTestContext
         // relocated to the body is the root, which is the last argument of Callouts.toggle.
         var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
 
-        Assert.AreEqual(component.Find(".bit-ctp").Id, toggle.Arguments[^1]);
+        Assert.AreEqual(component.Find(".bit-ctp").Id, toggle.Arguments[^2]);
         Assert.AreNotEqual(component.Find(".bit-ctp-wrp").Id, toggle.Arguments[^1]);
         Assert.IsFalse((component.Find(".bit-ctp-cal").GetAttribute("style") ?? "").Contains("--bit-CircularTimePicker-"));
     }

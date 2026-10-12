@@ -2736,7 +2736,7 @@ public class BitDropMenuTests : BunitTestContext
         // last argument - for what it declares to go on reaching them once they are relocated to the body.
         var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
 
-        Assert.AreEqual(component.Find(".bit-drm").Id, toggle.Arguments[^1]);
+        Assert.AreEqual(component.Find(".bit-drm").Id, toggle.Arguments[^2]);
         Assert.AreEqual("display:block;", component.Find(".bit-drm-ovl").GetAttribute("style"));
     }
 
@@ -2761,7 +2761,7 @@ public class BitDropMenuTests : BunitTestContext
 
         var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
 
-        Assert.AreEqual(component.Find(".bit-drm").Id, toggle.Arguments[^1]);
+        Assert.AreEqual(component.Find(".bit-drm").Id, toggle.Arguments[^2]);
     }
 
     [TestMethod]
