@@ -1060,7 +1060,7 @@ public partial class BitColorPicker : BitComponentBase
         var step = (e.ShiftKey || e.Key is "PageUp" or "PageDown") ? 0.1 : 0.01;
         // The direction the area is laid out in, a page's or a content's included, read only for the keys that
         // act on it since one Dir does not name costs a round trip.
-        var rtl = e.Key is "ArrowLeft" or "ArrowRight" && await IsRtlAsync(_js, _saturationPickerRef);
+        var rtl = await IsRtlArrowAsync(_js, e.Key, _saturationPickerRef);
 
         var newSaturation = e.Key switch
         {
@@ -1323,7 +1323,7 @@ public partial class BitColorPicker : BitComponentBase
         var columns = PresetsPerRow > 0 ? Math.Min(PresetsPerRow.Value, count) : 1;
         // The direction the palette is laid out in, a page's or a content's included, read only for the keys
         // that act on it since one Dir does not name costs a round trip.
-        var step = e.Key is "ArrowLeft" or "ArrowRight" && await IsRtlAsync(_js) ? -1 : 1;
+        var step = await IsRtlArrowAsync(_js, e.Key) ? -1 : 1;
 
         var target = e.Key switch
         {

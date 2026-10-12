@@ -1229,14 +1229,14 @@ public partial class BitPivot : BitComponentBase
             return;
         }
 
-        // The direction the header is laid out in, a page's or a content's included, read only for the keys that
-        // act on it since one Dir does not name costs a round trip.
-        var isRtl = _isVertical is false && e.Key is "ArrowLeft" or "ArrowRight" && await IsRtlAsync(_js);
-
         // Ctrl and an arrow moves the focused tab itself rather than the focus, which is the keyboard
         // half of the drag that reorders a header.
         if (e.CtrlKey && current is not null && GetItemReorderable(current))
         {
+            // The direction the header is laid out in, a page's or a content's included, read only for the keys
+            // that act on it since one Dir does not name costs a round trip.
+            var isRtl = _isVertical is false && await IsRtlArrowAsync(_js, e.Key);
+
             var forward = _isVertical
                             ? e.Key is "ArrowDown"
                             : (isRtl ? e.Key is "ArrowLeft" : e.Key is "ArrowRight");
@@ -1274,13 +1274,16 @@ public partial class BitPivot : BitComponentBase
         int next;
         switch (e.Key)
         {
+            // The direction the header is laid out in, a page's or a content's included, read only for the keys
+            // that act on it, and only once nothing else turned them away, since one Dir does not name costs a
+            // round trip.
             case "ArrowRight":
                 if (_isVertical) return;
-                next = index < 0 ? 0 : (isRtl ? index - 1 : index + 1);
+                next = index < 0 ? 0 : (await IsRtlAsync(_js) ? index - 1 : index + 1);
                 break;
             case "ArrowLeft":
                 if (_isVertical) return;
-                next = index < 0 ? 0 : (isRtl ? index + 1 : index - 1);
+                next = index < 0 ? 0 : (await IsRtlAsync(_js) ? index + 1 : index - 1);
                 break;
             case "ArrowDown":
                 if (_isVertical is false) return;

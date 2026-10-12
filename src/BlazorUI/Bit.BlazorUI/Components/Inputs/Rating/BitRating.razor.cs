@@ -863,7 +863,7 @@ public partial class BitRating : BitInputBase<double>
 
         // The direction the rating is laid out in, a page's or a content's included, read only for the keys that
         // act on it since one Dir does not name costs a round trip.
-        var isRtl = e.Key is "ArrowLeft" or "ArrowRight" && await IsRtlAsync(_js);
+        var isRtl = await IsRtlArrowAsync(_js, e.Key);
         var value = CurrentValue;
 
         // Holding Shift - and the Page keys, which need no modifier for it - moves by a whole item to the

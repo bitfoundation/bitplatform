@@ -283,7 +283,7 @@
             const windowWidth = window.innerWidth;
 
             // The direction the component is laid out in, when its Dir did not name one (see toggle).
-            const isRtl = givenRtl ?? getComputedStyle(component).direction === 'rtl';
+            const isRtl = givenRtl ?? Utils.isRtl(component);
 
             // The consumer's own cap on the scrollable content, applied on top of the space the
             // viewport leaves so that it can only ever shorten the list, never push it off the screen.

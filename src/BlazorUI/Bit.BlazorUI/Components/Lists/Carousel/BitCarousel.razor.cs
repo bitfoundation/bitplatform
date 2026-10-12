@@ -1137,11 +1137,23 @@ public partial class BitCarousel : BitComponentBase
             return;
         }
 
+        // The slides are placed with physical transforms, so the layout is only right in the direction the
+        // container is actually laid out in. A Dir that names none leaves it to the page or to the content, which
+        // only the browser knows, so it is read with every measurement: a page that changes direction is picked
+        // up by the next re-layout (a resize, a change of the items or the parameters, Refresh). The two reads do
+        // not depend on each other, so both are sent before either is awaited and cost one round trip together.
+        var rtl = ExplicitRtl is null ? IsRtlAsync(_js, _carouselContainer).AsTask() : null;
+
         // The measurement comes first because the width it reports is also what the responsive options (and
         // the breakpoint variants of VisibleItemsCount) are matched against, so the counts below are the ones
         // the carousel actually has room for. It is the same element the resize observer watches, so a
         // layout that follows a resize and one that follows a change of the items measure the same box.
         var rect = await _js.BitUtilsGetBoundingClientRect(_carouselContainer);
+
+        if (rtl is not null)
+        {
+            _resolvedRtl = await rtl;
+        }
 
         if (IsDisposed) return;
 
@@ -1149,17 +1161,6 @@ public partial class BitCarousel : BitComponentBase
         {
             _containerWidth = rect.Width;
             _containerHeight = rect.Height;
-        }
-
-        // The slides are placed with physical transforms, so the layout is only right in the direction the
-        // container is actually laid out in. A Dir that names none leaves it to the page or to the content, which
-        // only the browser knows, so it is read with every measurement: a page that changes direction is picked
-        // up by the next re-layout (a resize, a change of the items or the parameters, Refresh).
-        if (ExplicitRtl is null)
-        {
-            _resolvedRtl = await IsRtlAsync(_js, _carouselContainer);
-
-            if (IsDisposed) return;
         }
 
         LayOutSlides();

@@ -256,11 +256,12 @@ $dtrp-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-body, rl-focus
     }
 }
 
-.bit-dtrp-cal.bit-dtrp-rtl {
-    .bit-dtrp-am-pm {
-        order: -1;
-        direction: rtl;
-    }
+// The AM/PM segments lead the times in a picker laid out right to left, whatever made it so: its Dir, the page's
+// direction or its content's (:dir), or its culture, which only the class on the callout says - reached through
+// child combinators, so a picker nested in this one's callout keeps its own direction.
+.bit-dtrp-am-pm:is(:dir(rtl), .bit-dtrp-cal.bit-dtrp-rtl > .bit-dtrp-cac > .bit-dtrp-grp > .bit-dtrp-twp > .bit-dtrp-tic > * > *) {
+    order: -1;
+    direction: rtl;
 }
 
 .bit-dtrp-lbl {

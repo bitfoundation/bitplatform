@@ -581,9 +581,10 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     private protected string? ResolveAriaLabel() => AriaLabel ?? GetSplattedAttribute("aria-label");
 
     /// <summary>
-    /// The direction <see cref="Dir"/> names: true for <see cref="BitDir.Rtl"/>, false for <see cref="BitDir.Ltr"/>,
-    /// and null when it leaves the direction to the page (unset) or to the content (<see cref="BitDir.Auto"/>), which
-    /// only the browser knows.
+    /// The direction the component knows it is laid out in: true for <see cref="BitDir.Rtl"/>, false for
+    /// <see cref="BitDir.Ltr"/>, and null when <see cref="Dir"/> leaves the direction to the page (unset) or to the
+    /// content (<see cref="BitDir.Auto"/>), which only the browser knows. A component that knows more than Dir says
+    /// (a culture that writes right to left) overrides it, through <see cref="BitCssClasses.ExplicitRtl"/>.
     /// </summary>
     /// <remarks>
     /// The stylesheets follow the direction the component is actually laid out in (<c>:dir(rtl)</c>), so anything
@@ -591,7 +592,7 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     /// it is, which resolves it off the element when it needs it, or resolved in .NET through
     /// <see cref="IsRtlAsync(IJSRuntime, ElementReference?)"/>.
     /// </remarks>
-    internal bool? ExplicitRtl => Dir switch
+    internal virtual bool? ExplicitRtl => Dir switch
     {
         BitDir.Rtl => true,
         BitDir.Ltr => false,
@@ -600,25 +601,18 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 
     /// <summary>
     /// Whether the component is laid out right to left, read at the moment it matters: the direction
-    /// <see cref="Dir"/> names, or else the one the browser resolved for the element (the root unless another is
-    /// given), so a page or content that changed direction since the last render is never answered with a stale
+    /// <see cref="ExplicitRtl"/> knows, or else the one the browser resolved for the element (the root unless another
+    /// is given), so a page or content that changed direction since the last render is never answered with a stale
     /// value.
     /// </summary>
     /// <remarks>
-    /// It costs a round trip whenever Dir names no direction, so it is asked only on the path that acts on the
-    /// direction (an arrow key across the inline axis, a pointer on a mirrored axis), never on every key. Before the
-    /// element is rendered, or without a browser, it answers left to right.
+    /// It costs a round trip whenever the direction is not known, so it is asked only on the path that acts on the
+    /// direction (a pointer on a mirrored axis, a measurement), never on every key - a key handler asks through
+    /// <see cref="IsRtlArrowAsync"/>. Before the element is rendered, or without a browser, it answers left to right.
     /// </remarks>
-    internal ValueTask<bool> IsRtlAsync(IJSRuntime js, ElementReference? element = null) => IsRtlAsync(js, ExplicitRtl, element);
-
-    /// <summary>
-    /// <see cref="IsRtlAsync(IJSRuntime, ElementReference?)"/> for a component that knows more about its direction
-    /// than <see cref="Dir"/> says (a culture that writes right to left, see <see cref="BitCssClasses.ExplicitRtl"/>):
-    /// what it knows answers, and a null is resolved off the element.
-    /// </summary>
-    internal async ValueTask<bool> IsRtlAsync(IJSRuntime js, bool? explicitRtl, ElementReference? element = null)
+    internal async ValueTask<bool> IsRtlAsync(IJSRuntime js, ElementReference? element = null)
     {
-        if (explicitRtl is { } rtl) return rtl;
+        if (ExplicitRtl is { } rtl) return rtl;
 
         var target = element ?? RootElement;
         if (target.Id is null) return false;
@@ -632,6 +626,18 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
         catch (TaskCanceledException) { }
 
         return false;
+    }
+
+    /// <summary>
+    /// Whether the key is a left or right arrow pressed in a right-to-left layout, so that it moves the other way
+    /// along the inline axis: false for every other key, without asking, since only those two act on the direction
+    /// and <see cref="IsRtlAsync"/> costs a round trip when the direction is not known.
+    /// </summary>
+    internal async ValueTask<bool> IsRtlArrowAsync(IJSRuntime js, string? key, ElementReference? element = null)
+    {
+        if (key is not ("ArrowLeft" or "ArrowRight")) return false;
+
+        return await IsRtlAsync(js, element);
     }
 
     /// <summary>

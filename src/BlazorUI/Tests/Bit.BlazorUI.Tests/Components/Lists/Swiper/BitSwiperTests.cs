@@ -199,17 +199,17 @@ public class BitSwiperTests : BunitTestContext
         var prevIcon = component.Find(".bit-swp-lbt i");
 
         Assert.IsTrue(nextIcon.ClassList.Contains("bit-icon--ChevronRight"));
-        Assert.IsFalse(nextIcon.ClassList.Contains("bit-ico-r180"));
+        Assert.IsFalse(nextIcon.ClassList.Contains("bit-ico-rt180"));
         Assert.IsTrue(prevIcon.ClassList.Contains("bit-icon--ChevronRight"));
-        Assert.IsTrue(prevIcon.ClassList.Contains("bit-ico-r180"));
+        Assert.IsTrue(prevIcon.ClassList.Contains("bit-ico-rt180"));
 
         // the icons are decorative: the buttons already carry the accessible names
         Assert.AreEqual("true", nextIcon.GetAttribute("aria-hidden"));
         Assert.AreEqual("true", prevIcon.GetAttribute("aria-hidden"));
     }
 
-    // The default chevrons are drawn the same in every direction and mirrored by the stylesheet (bit-swp-dch) in a
-    // swiper laid out right to left, whatever made it one: its Dir, the page's direction or its content's.
+    // The default chevrons are drawn the same in every direction and mirrored by BitIcon's stylesheet (bit-ico-frt) in
+    // a swiper laid out right to left, whatever made it one: its Dir, the page's direction or its content's.
     [TestMethod,
         DataRow(null),
         DataRow(BitDir.Ltr),
@@ -226,10 +226,12 @@ public class BitSwiperTests : BunitTestContext
         var nextIcon = component.Find(".bit-swp-rbt i");
         var prevIcon = component.Find(".bit-swp-lbt i");
 
-        Assert.IsFalse(nextIcon.ClassList.Contains("bit-ico-r180"));
-        Assert.IsTrue(prevIcon.ClassList.Contains("bit-ico-r180"));
-        Assert.IsTrue(nextIcon.ClassList.Contains("bit-swp-dch"));
-        Assert.IsTrue(prevIcon.ClassList.Contains("bit-swp-dch"));
+        Assert.IsFalse(nextIcon.ClassList.Contains("bit-ico-rt180"));
+        Assert.IsTrue(prevIcon.ClassList.Contains("bit-ico-rt180"));
+        Assert.IsTrue(nextIcon.ClassList.Contains("bit-ico-trn"));
+        Assert.IsTrue(prevIcon.ClassList.Contains("bit-ico-trn"));
+        Assert.IsTrue(nextIcon.ClassList.Contains("bit-ico-frt"));
+        Assert.IsTrue(prevIcon.ClassList.Contains("bit-ico-frt"));
     }
 
     [TestMethod]
@@ -241,7 +243,7 @@ public class BitSwiperTests : BunitTestContext
             parameters.Add(p => p.NextIconName, "ChevronRightSmall");
         });
 
-        Assert.IsFalse(component.Find(".bit-swp-rbt i").ClassList.Contains("bit-swp-dch"));
+        Assert.IsFalse(component.Find(".bit-swp-rbt i").ClassList.Contains("bit-ico-frt"));
     }
 
     [TestMethod]

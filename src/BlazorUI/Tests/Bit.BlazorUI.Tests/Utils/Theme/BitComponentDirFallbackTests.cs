@@ -68,7 +68,6 @@ public sealed class BitComponentDirFallbackTests
         ".bit-brc.bit-rtl",
         // The direction a right-to-left culture implies for a picker whose Dir is unset: the class is the whole of it.
         ".bit-dtp-cal.bit-dtp-rtl",
-        ".bit-dtrp-cal.bit-dtrp-rtl",
         ".bit-tpc-cal.bit-tpc-rtl",
         // The calendar writes the direction it resolved (its culture's, or the one read back for Auto) on its root and
         // in bit-bfc-rtl, so the class and the attribute are what it is laid out in.
@@ -107,7 +106,8 @@ public sealed class BitComponentDirFallbackTests
         DataRow(".r.bit-rtl .a { b: c; }"),
         DataRow(".a[dir=\"rtl\"] .b { b: c; }"),
         DataRow(".a.bit-drp-rtl { b: c; }"),
-        DataRow(".a:dir(rtl) { b: c; }\n.bit-rtl.a { b: d; }")]
+        DataRow(".a:dir(rtl) { b: c; }\n.bit-rtl.a { b: d; }"),
+        DataRow(".x-chevron:dir(rtl) { b: c; }\n.x.bit-rtl .x-icon { b: c; }")]
     public void AnRtlRuleWithoutADirTwinFails(string stylesheet)
     {
         Assert.AreEqual(1, CheckFollowsResolvedDirection("test.scss", stylesheet).Count());
@@ -151,7 +151,11 @@ public sealed class BitComponentDirFallbackTests
 
             if (ExplicitOnly.Any(prefix => entry.Selector.StartsWith(prefix, StringComparison.Ordinal))) continue;
 
-            if (twins.Any(twin => twin.Declarations.SequenceEqual(entry.Declarations))) continue;
+            // The twin has to style the same element: the same declarations on another part (an unrelated chevron
+            // turned the same way) leave this one unturned for a direction Dir does not name.
+            var subject = Subject(entry.Selector);
+
+            if (twins.Any(twin => twin.Declarations.SequenceEqual(entry.Declarations) && Subject(twin.Selector) == subject)) continue;
 
             yield return $"{entry.Location} reads the direction only off an explicit Dir: {entry.Selector}";
         }
@@ -413,6 +417,22 @@ public sealed class BitComponentDirFallbackTests
         if (pending.Length > 0) compounds.Add(new(pending, "", selector.Length));
 
         return compounds;
+    }
+
+    // The element a selector styles - its last compound - with the direction it reads taken out (the class, the
+    // attribute, :dir(rtl)), so a rule reading the class and its :dir() twin name the same one.
+    private static string Subject(string selector)
+    {
+        var subject = Compounds(selector)[^1].Text;
+        var masked = Mask(subject, "not");
+        var text = new StringBuilder(subject);
+
+        foreach (var match in RtlHook.Matches(masked).Concat(DirRtl.Matches(masked)).OrderByDescending(match => match.Index))
+        {
+            text.Remove(match.Index, match.Length);
+        }
+
+        return text.ToString();
     }
 
     // Which compound of the selector the character at the index is in.

@@ -69,7 +69,7 @@ public class BitDirResolvedBrowserTests : PerformanceTestBase
             'dialog': () => style('dialog', '.bit-dlg-doc')?.justifyContent,
             'callout': () => variable('callout', '.bit-clo-cal', '--bit-clo-transform-factor'),
             'dropmenu': () => variable('dropmenu', '.bit-drm', '--bit-drm-transform-factor'),
-            'swiper': () => style('swiper', '.bit-swp-rbt .bit-swp-dch')?.scale,
+            'swiper': () => style('swiper', '.bit-swp-rbt .bit-ico-frt')?.scale,
             'searchbox': () => style('searchbox', 'i.bit-srb-dsi')?.transform,
             'phoneinput': () => style('phoneinput', '.bit-phi-inp')?.textAlign,
             'persona': initials
@@ -199,10 +199,163 @@ public class BitDirResolvedBrowserTests : PerformanceTestBase
         Assert.IsTrue(rtl ? callout.X > anchor.X + anchor.Width / 2 : callout.X + callout.Width < anchor.X + anchor.Width / 2, "The callout covers its anchor.");
     }
 
+    // A horizontal arrow moves along a row of items the way it points, so it walks the row backwards in one that reads
+    // right to left - with no Dir on the component, only the direction of the box it sits in.
+    [TestMethod,
+        DataRow("#b-ltr", "buttongroup", "button", "Three"),
+        DataRow("#b-rtl", "buttongroup", "button", "One"),
+        DataRow("#b-ltr", "navbar", "[role=menuitem], [role=link], a, button", "Three"),
+        DataRow("#b-rtl", "navbar", "[role=menuitem], [role=link], a, button", "One"),
+        DataRow("#b-ltr", "pivot", "[role=tab]", "Three"),
+        DataRow("#b-rtl", "pivot", "[role=tab]", "One")]
+    public async Task TheArrowsWalkARowTheWayItReads(string set, string probe, string items, string expected)
+    {
+        await Open();
+
+        await Page.Locator($"{set} [data-probe={probe}]").Locator(items).Filter(new() { HasTextString = "Two" }).First.FocusAsync();
+        await Page.Keyboard.PressAsync("ArrowRight");
+
+        await WaitForFocus(set, probe, expected);
+    }
+
+    // The arrow pointing away from the start of the line opens a collapsed group of the nav: the right one reading left
+    // to right, the left one reading right to left.
+    [TestMethod,
+        DataRow("#b-ltr", "ArrowRight"),
+        DataRow("#b-rtl", "ArrowLeft")]
+    public async Task TheNavOpensAGroupWithTheArrowPointingAwayFromTheStart(string set, string key)
+    {
+        await Open();
+
+        var parent = Page.Locator($"{set} [data-probe=nav] [aria-expanded]").First;
+
+        Assert.AreEqual("false", await parent.GetAttributeAsync("aria-expanded"));
+
+        await parent.FocusAsync();
+        await Page.Keyboard.PressAsync(key);
+
+        await Page.WaitForFunctionAsync($"() => document.querySelector('{set} [data-probe=nav] [aria-expanded]').getAttribute('aria-expanded') === 'true'",
+            null, new() { Timeout = DefaultTimeout });
+    }
+
+    // Walking backwards out of an empty input lands on the last tag, and backwards is the arrow pointing at the start.
+    [TestMethod,
+        DataRow("#b-ltr", "ArrowLeft"),
+        DataRow("#b-rtl", "ArrowRight")]
+    public async Task TheTagsInputArrowBackFollowsTheDirectionItReads(string set, string key)
+    {
+        await Open();
+
+        await Page.Locator($"{set} [data-probe=tagsinput] .bit-tgi-inp").FocusAsync();
+        await Page.Keyboard.PressAsync(key);
+
+        await Page.WaitForFunctionAsync($"() => document.activeElement?.getAttribute('role') === 'listitem' && document.querySelector('{set} [data-probe=tagsinput]').contains(document.activeElement)",
+            null, new() { Timeout = DefaultTimeout });
+    }
+
+    // The right arrow moves to the next day reading left to right and to the previous one reading right to left.
+    [TestMethod,
+        DataRow("#b-ltr", "16"),
+        DataRow("#b-rtl", "14")]
+    public async Task TheCalendarArrowsFollowTheDirectionTheGridReads(string set, string expected)
+    {
+        await Open();
+
+        await Page.Locator($"{set} [data-probe=calendar] .bit-cal-dbt[tabindex='0']").FocusAsync();
+        await Page.Keyboard.PressAsync("ArrowRight");
+
+        await WaitForFocus(set, "calendar", expected);
+    }
+
+    // The arrow pointing away from the start moves to the next column: the right one reading left to right, the left
+    // one reading right to left.
+    [TestMethod,
+        DataRow("#b-ltr", "ArrowRight"),
+        DataRow("#b-rtl", "ArrowLeft")]
+    public async Task TheDataGridCellArrowsFollowTheDirectionTheGridReads(string set, string key)
+    {
+        await Open();
+
+        await Page.Locator($"{set} [data-probe=datagrid] [role=gridcell]").First.FocusAsync();
+        await Page.Keyboard.PressAsync(key);
+
+        await WaitForFocus(set, "datagrid", "one");
+    }
+
+    // The AM/PM segments lead the time in a picker laid out right to left, whatever made it so: the page's direction,
+    // or a culture that writes right to left on a page that does not.
+    [TestMethod,
+        DataRow("#b-ltr", "datepicker", ".bit-dtp-am-pm", "0"),
+        DataRow("#b-rtl", "datepicker", ".bit-dtp-am-pm", "-1"),
+        DataRow("#b-culture", "datepicker", ".bit-dtp-am-pm", "-1"),
+        DataRow("#b-ltr", "daterangepicker", ".bit-dtrp-am-pm", "0"),
+        DataRow("#b-rtl", "daterangepicker", ".bit-dtrp-am-pm", "-1"),
+        DataRow("#b-culture", "daterangepicker", ".bit-dtrp-am-pm", "-1")]
+    public async Task TheAmPmSegmentLeadsTheTimeInAPickerThatReadsRightToLeft(string set, string probe, string part, string expected)
+    {
+        await Open();
+
+        var orders = await Page.EvaluateAsync<string[]>($"() => [...document.querySelectorAll('{set} [data-probe={probe}] {part}')].map(e => getComputedStyle(e).order)");
+
+        Assert.IsTrue(orders.Length > 0, $"{probe}: no AM/PM segment in {set}.");
+        CollectionAssert.AreEqual(Enumerable.Repeat(expected, orders.Length).ToArray(), orders, $"{probe} in {set}: {string.Join(", ", orders)}");
+    }
+
+    // The drawer is docked to the edge its Start placement names in the direction it reads - the left reading left to
+    // right, the right reading right to left - and a swipe towards that edge closes it, while one the other way leaves
+    // it open. The direction is read as the swipe starts, and the moves and the trigger of a quick flick that arrive
+    // before that read returns wait for it.
+    [TestMethod,
+        DataRow("ltr", -1, true),
+        DataRow("ltr", 1, false),
+        DataRow("rtl", 1, true),
+        DataRow("rtl", -1, false)]
+    public async Task TheNavPanelDrawerClosesWithASwipeTowardsTheEdgeItIsDockedTo(string dir, int sign, bool closes)
+    {
+        await Page.GotoAsync($"{BaseUrl}/regression/dir-resolved-drawer?dir={dir}");
+        await WaitForStatus("Ready");
+        await Page.WaitForTimeoutAsync(500);
+
+        var panel = Page.Locator(".bit-npn");
+        await panel.WaitForAsync(new() { Timeout = DefaultTimeout });
+
+        var box = (await panel.BoundingBoxAsync())!;
+        Assert.AreEqual(dir == "rtl", box.X > 100, $"The drawer is docked to the wrong edge (x = {box.X}).");
+
+        // The press starts at the side of the drawer the swipe moves away from, so the whole drag stays on the screen:
+        // an engine sends no pointerup for a release past the edge of the viewport.
+        var x = sign > 0 ? box.X + 5 : box.X + box.Width - 5;
+        var y = box.Y + box.Height / 2;
+
+        await Page.Mouse.MoveAsync(x, y);
+        await Page.Mouse.DownAsync();
+        await Page.Mouse.MoveAsync(x + sign * box.Width * 0.6f, y, new() { Steps = 4 });
+        await Page.Mouse.UpAsync();
+
+        if (closes)
+        {
+            await Page.WaitForFunctionAsync("() => document.querySelector('#open').textContent === 'false'", null, new() { Timeout = DefaultTimeout });
+        }
+        else
+        {
+            await Task.Delay(1000);
+            Assert.AreEqual("true", await Page.Locator("#open").TextContentAsync());
+        }
+    }
+
+    private async Task WaitForFocus(string set, string probe, string text)
+        => await Page.WaitForFunctionAsync($"() => document.querySelector('{set} [data-probe={probe}]').contains(document.activeElement) && document.activeElement.textContent.trim() === '{text}'",
+            null, new() { Timeout = DefaultTimeout });
+
     private async Task Open()
     {
         await Page.GotoAsync($"{BaseUrl}{PageUrl}");
         await WaitForStatus("Ready"); // wait for Blazor SignalR circuit to be interactive
+
+        // The components set up their keys and gestures in calls to the browser of their own once they have rendered,
+        // which nothing on the page reports; a key pressed before they land (WebKit drives the page fast enough to
+        // press one) is a key nothing was listening for yet.
+        await Page.WaitForTimeoutAsync(500);
     }
 
     private async Task<Dictionary<string, string?>> Read(string set)

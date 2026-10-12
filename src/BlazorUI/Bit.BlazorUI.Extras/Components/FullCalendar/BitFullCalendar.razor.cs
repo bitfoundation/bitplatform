@@ -369,6 +369,7 @@ public partial class BitFullCalendar : BitComponentBase
     private BitFullCalendarColorScheme _colorScheme = new(null);
     private BitFcToast? _toast;
     private bool _rootSetUp;
+    private bool _readAutoDirection;
     private SettingsSnapshot? _appliedSettings;
     private bool _defaultViewApplied;
     private bool _defaultModeApplied;
@@ -511,6 +512,9 @@ public partial class BitFullCalendar : BitComponentBase
             // The keyboard and pointer handlers map a physical direction onto earlier/later through the state,
             // so it has to know the direction the calendar is rendered in, not only the culture's.
             State.SetDirection(Dir);
+            // An Auto direction is the content's, which only the browser knows; what decides it (the culture, the
+            // events, Dir itself) arrives as parameters, so it is read back after the render that follows them.
+            _readAutoDirection = Dir is BitDir.Auto;
             State.SetTimeProvider(TimeProvider);
 
             if (Events is not null)
@@ -638,9 +642,13 @@ public partial class BitFullCalendar : BitComponentBase
         }
 
         // A calendar whose direction is Auto is laid out the way its content reads, which only the browser knows, so
-        // what it resolved is read back after every render for the keys, the drags and the layout computed from it.
-        if (Dir is BitDir.Auto && IsDisposed is false)
+        // what it resolved is read back for the keys, the drags and the layout computed from it - once per change of
+        // the parameters rather than after every render, since a drag or a state notification re-renders often and
+        // changes nothing that decides it.
+        if (_readAutoDirection && IsDisposed is false)
         {
+            _readAutoDirection = false;
+
             State.SetAutoDirection(await IsRtlAsync(_js));
         }
 

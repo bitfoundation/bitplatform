@@ -229,7 +229,7 @@ public partial class _BitMenuButtonItem<TItem> : IBitMenuButtonSubmenu, IAsyncDi
 
         // The direction the button is laid out in, a page's or a content's included, read only for a horizontal
         // arrow since one Dir does not name costs a round trip.
-        if ((e.Key is "ArrowLeft") != await MenuButton.IsRtlAsync(_js)) return;
+        if ((e.Key is "ArrowLeft") != await MenuButton.IsRtlArrowAsync(_js, e.Key)) return;
 
         await OpenSubmenu(focusFirstItem: true);
     }

@@ -206,9 +206,10 @@
         }
 
         // The direction the header is laid out in: the one the pivot's Dir names, or else the one it resolves to -
-        // a page's or a content's - read when it is needed, so a page that changes direction is followed too.
+        // a page's or a content's - read when it is needed (a wheel turn, a slide), so a page that changes direction
+        // is followed too. Nothing on the scroll path reads it.
         private get isRtl(): boolean {
-            return this.givenRtl ?? getComputedStyle(this.header).direction === 'rtl';
+            return this.givenRtl ?? Utils.isRtl(this.header);
         }
 
         public start() {
@@ -403,14 +404,12 @@
                     const maxScroll = this.header.scrollWidth - this.header.clientWidth;
                     hasOverflow = maxScroll > 1;
 
-                    if (this.isRtl) {
-                        const abs = Math.abs(scrollLeft);
-                        atStart = abs <= 1;
-                        atEnd = abs >= maxScroll - 1;
-                    } else {
-                        atStart = scrollLeft <= 1;
-                        atEnd = scrollLeft >= maxScroll - 1;
-                    }
+                    // The offset from the start edge, whichever way the header reads: a right-to-left one scrolls
+                    // from 0 down to -maxScroll, a left-to-right one from 0 up to it, so the distance needs no
+                    // direction - and the scroll handler that calls this reads no computed style.
+                    const fromStart = Math.abs(scrollLeft);
+                    atStart = fromStart <= 1;
+                    atEnd = fromStart >= maxScroll - 1;
                 }
 
                 const serialized = `${hasOverflow}|${atStart}|${atEnd}`;

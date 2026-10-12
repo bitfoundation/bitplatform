@@ -2192,7 +2192,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
             return;
         }
 
-        var isRtl = await IsArrowAcrossRtl(e);
+        var isRtl = await IsRtlArrowAsync(_js, e.Key);
 
         int? target = e.Key switch
         {
@@ -2268,7 +2268,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
             return;
         }
 
-        var isRtl = await IsArrowAcrossRtl(e);
+        var isRtl = await IsRtlArrowAsync(_js, e.Key);
 
         int? target = e.Key switch
         {
@@ -2324,7 +2324,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     {
         if (Disabled) return;
 
-        var isRtl = await IsArrowAcrossRtl(e);
+        var isRtl = await IsRtlArrowAsync(_js, e.Key);
 
         DateTime? target = e.Key switch
         {
@@ -2344,15 +2344,9 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         await MoveFocusToDay(target.Value);
     }
 
-    // Whether a left or right arrow runs right to left across a grid: the direction the calendar was given or its
-    // culture implies, and otherwise the one it is laid out in - a page or content reading right to left included.
-    // Only those two keys ask, since a direction neither says costs a round trip to read.
-    private async ValueTask<bool> IsArrowAcrossRtl(KeyboardEventArgs e)
-    {
-        if (e.Key is not ("ArrowLeft" or "ArrowRight")) return false;
-
-        return await IsRtlAsync(_js, BitCssClasses.ExplicitRtl(Dir, _culture));
-    }
+    // The direction the calendar knows it is laid out in: the one it was given, or the one its culture implies - and
+    // null when it is the page's or the content's to say, which only the browser knows.
+    internal override bool? ExplicitRtl => BitCssClasses.ExplicitRtl(Dir, _culture);
 
     // A step that runs off the end of what a DateTime, or of what the culture's own calendar, can represent
     // has nowhere to land - so it is refused rather than thrown, and the key simply moves the focus nowhere.

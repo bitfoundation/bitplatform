@@ -893,11 +893,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             // that act on it since one Dir does not name costs a round trip.
             case "ArrowRight":
                 if (Vertical) return;
-                next = await IsRtlAsync(_js) ? index - 1 : index + 1;
+                next = await IsRtlArrowAsync(_js, e.Key) ? index - 1 : index + 1;
                 break;
             case "ArrowLeft":
                 if (Vertical) return;
-                next = await IsRtlAsync(_js) ? index + 1 : index - 1;
+                next = await IsRtlArrowAsync(_js, e.Key) ? index + 1 : index - 1;
                 break;
             case "ArrowDown":
                 if (Vertical is false) return;

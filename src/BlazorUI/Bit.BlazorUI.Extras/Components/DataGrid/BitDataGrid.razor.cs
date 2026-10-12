@@ -3528,7 +3528,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
 
             case "ArrowLeft":
             case "ArrowRight":
-                var widen = (e.Key == "ArrowRight") != await IsRtlAsync(JS);
+                var widen = (e.Key == "ArrowRight") != await IsRtlArrowAsync(JS, e.Key);
                 var step = KeyboardResizeStep * (e.ShiftKey ? 5 : 1);
                 var current = column.ResizedWidth ?? await MeasureColumnWidthAsync(column);
                 SetColumnWidth(column, current + (widen ? step : -step));
@@ -3691,7 +3691,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
         if (e.Key is not ("ArrowLeft" or "ArrowRight")) return;
         if (!ColumnReorderable(column)) return;
 
-        var forward = (e.Key == "ArrowRight") != await IsRtlAsync(JS);
+        var forward = (e.Key == "ArrowRight") != await IsRtlArrowAsync(JS, e.Key);
         if (ColumnMoveTarget(column, forward ? 1 : -1, visibleOnly: true) is null) return;
 
         _focusHeaderColumn = column;
@@ -4015,7 +4015,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
 
         int row = rowIdx, col = colIndex;
         // Only the horizontal arrows depend on the direction, so only they pay for reading it.
-        var rtl = e.Key is "ArrowLeft" or "ArrowRight" && await IsRtlAsync(JS);
+        var rtl = await IsRtlArrowAsync(JS, e.Key);
 
         // A treegrid opens and closes its nodes from the cell that holds their toggle, as the APG treegrid does: the
         // forward arrow expands a collapsed node, the backward one collapses an expanded node or else moves up to the

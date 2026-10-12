@@ -191,11 +191,14 @@ $dtp-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, inp-h-s
 // right edge of the grid, which is the order the arrow keys already move in.
 .bit-dtp-cal.bit-dtp-rtl {
     direction: rtl;
+}
 
-    .bit-dtp-am-pm {
-        order: -1;
-        direction: rtl;
-    }
+// The AM/PM segment leads the time in a picker laid out right to left, whatever made it so: its Dir, the page's
+// direction or its content's (:dir), or its culture, which only the class on the callout says - reached through
+// child combinators, so a picker nested in this one's callout keeps its own direction.
+.bit-dtp-am-pm:is(:dir(rtl), .bit-dtp-cal.bit-dtp-rtl > .bit-dtp-cac > .bit-dtp-grp > .bit-dtp-twp > .bit-dtp-tic > *) {
+    order: -1;
+    direction: rtl;
 }
 
 .bit-dtp-lbl {

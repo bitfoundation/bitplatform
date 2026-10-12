@@ -1510,7 +1510,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
     {
         if (e.Key is not ("ArrowLeft" or "ArrowRight")) return false;
 
-        return (e.Key is "ArrowRight") == await IsRtlAsync(_js);
+        return (e.Key is "ArrowRight") == await IsRtlArrowAsync(_js, e.Key);
     }
 
     // The one keyboard handler of every menu the button renders: the menu itself, and each submenu, which

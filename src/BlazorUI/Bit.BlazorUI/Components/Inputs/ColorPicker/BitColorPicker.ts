@@ -83,7 +83,7 @@
                 if (e.button !== 0) return;
 
                 dragging = true;
-                rtl = getComputedStyle(saturationPicker).direction === 'rtl';
+                rtl = Utils.isRtl(saturationPicker);
 
                 // Suppresses the text selection and the native drag that a press on the gradient would
                 // otherwise start. That also suppresses the focus the press would have moved, so the area

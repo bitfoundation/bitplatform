@@ -39,6 +39,12 @@
     @Behaviour("rtl")
 </div>
 
+@* A direction only the culture implies, on a left-to-right page: the AM/PM segments lead all the same. *@
+<div id="b-culture">
+    <div data-probe="datepicker"><BitDatePicker Culture="_persian" Standalone ShowTimePicker TimeFormat="BitTimeFormat.TwelveHours" /></div>
+    <div data-probe="daterangepicker"><BitDateRangePicker Culture="_persian" Standalone ShowTimePicker TimeFormat="BitTimeFormat.TwelveHours" /></div>
+</div>
+
 <div id="b-auto" style="padding: 40px 200px;">
     <div data-probe="callout" style="display: inline-block;">
         <BitCallout Dir="BitDir.Auto" Placement="BitPlacement.Start">
@@ -51,6 +57,15 @@
 @code {
     private readonly Dictionary<string, double> _ratings = new() { ["ltr"] = 3, ["rtl"] = 3 };
     private readonly Dictionary<string, string?> _colors = new() { ["ltr"] = "hsv(0,50%,100%)", ["rtl"] = "hsv(0,50%,100%)" };
+    private readonly List<BitButtonGroupItem> _threeButtons = [new() { Text = "One" }, new() { Text = "Two" }, new() { Text = "Three" }];
+    private readonly List<BitNavBarItem> _threeNavBarItems = [new() { Text = "One" }, new() { Text = "Two" }, new() { Text = "Three" }];
+    private readonly List<BitNavItem> _navItems = [new() { Text = "Parent", ChildItems = [new() { Text = "Child" }] }, new() { Text = "Other" }];
+    private readonly ICollection<string> _tags = ["a", "b"];
+    private readonly DateTimeOffset _day = new(2024, 5, 15, 0, 0, 0, TimeSpan.Zero);
+    private readonly System.Globalization.CultureInfo _persian = System.Globalization.CultureInfo.GetCultureInfo("fa-IR");
+    private readonly List<GridRow> _gridRows = [new() { Id = 1, Name = "one" }, new() { Id = 2, Name = "two" }];
+
+    public class GridRow { public int Id { get; set; } public string Name { get; set; } = ""; }
 
     private RenderFragment Set(BitDir? dir) => __builder =>
     {
@@ -91,6 +106,26 @@
                     <BitCarouselItem><div style="height: 40px;">Slide @i</div></BitCarouselItem>
                 }
             </BitCarousel>
+        </div>
+        <div data-probe="buttongroup"><BitButtonGroup TItem="BitButtonGroupItem" Items="_threeButtons" Navigable /></div>
+        <div data-probe="navbar"><BitNavBar TItem="BitNavBarItem" Items="_threeNavBarItems" /></div>
+        <div data-probe="nav" style="width: 200px;"><BitNav TItem="BitNavItem" Items="_navItems" /></div>
+        <div data-probe="pivot">
+            <BitPivot>
+                <BitPivotItem HeaderText="One">1</BitPivotItem>
+                <BitPivotItem HeaderText="Two">2</BitPivotItem>
+                <BitPivotItem HeaderText="Three">3</BitPivotItem>
+            </BitPivot>
+        </div>
+        <div data-probe="tagsinput" style="width: 300px;"><BitTagsInput Value="_tags" /></div>
+        <div data-probe="calendar"><BitCalendar Value="_day" /></div>
+        <div data-probe="datepicker"><BitDatePicker Standalone ShowTimePicker TimeFormat="BitTimeFormat.TwelveHours" /></div>
+        <div data-probe="daterangepicker"><BitDateRangePicker Standalone ShowTimePicker TimeFormat="BitTimeFormat.TwelveHours" /></div>
+        <div data-probe="datagrid" style="width: 300px;">
+            <BitDataGrid TItem="GridRow" Items="_gridRows" CellNavigation>
+                <BitDataGridColumn TItem="GridRow" Field="@nameof(GridRow.Id)" Title="ID" />
+                <BitDataGridColumn TItem="GridRow" Field="@nameof(GridRow.Name)" Title="Name" />
+            </BitDataGrid>
         </div>
         <div data-probe="callout" style="padding: 40px 200px;">
             <div style="display: inline-block;">

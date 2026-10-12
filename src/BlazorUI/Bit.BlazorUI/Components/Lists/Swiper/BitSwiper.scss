@@ -307,14 +307,6 @@ $swp-private-properties:
     inset-inline-start: 0;
 }
 
-// The buttons swap sides in a swiper laid out right to left, so the default chevrons drawn on them are mirrored to
-// keep pointing the way they move - whatever made the swiper right to left: its Dir, the page's direction or its
-// content's (Auto). The scale composes with the rotation the previous chevron is drawn with. A vertical swiper
-// draws other chevrons, which no direction of writing turns.
-.bit-swp-dch:is(:dir(rtl), .bit-swp.bit-rtl > .bit-swp-vwp > * > *) {
-    scale: -1 1;
-}
-
 // A vertical swiper scrolls along its height, so the buttons move to the edges it actually scrolls
 // towards: the next button to the bottom and the previous one to the top.
 .bit-swp-vrt {

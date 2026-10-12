@@ -1432,7 +1432,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                         id: _calloutId,
                         trigger: 0.25m,
                         position: BitPlacement.Top,
-                        isRtl: GetExplicitRtl(),
+                        isRtl: ExplicitRtl,
                         orientationLock: BitSwipeOrientation.Vertical,
                         dotnetObj: _dotnetObj);
                 }
@@ -3104,7 +3104,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             return;
         }
 
-        var isRtl = await IsArrowAcrossRtl(e);
+        var isRtl = await IsRtlArrowAsync(_js, e.Key);
 
         int? target = e.Key switch
         {
@@ -3173,7 +3173,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             return;
         }
 
-        var isRtl = await IsArrowAcrossRtl(e);
+        var isRtl = await IsRtlArrowAsync(_js, e.Key);
 
         int? target = e.Key switch
         {
@@ -3275,7 +3275,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             return;
         }
 
-        var isRtl = await IsArrowAcrossRtl(e);
+        var isRtl = await IsRtlArrowAsync(_js, e.Key);
 
         DateTime? target = e.Key switch
         {
@@ -3337,19 +3337,10 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         return BitCssClasses.IsRtl(Dir, _culture);
     }
 
-    // The direction the picker knows it is laid out in - the one it was given, or the one its culture implies - and
-    // null when it is the page's or the content's to say, which only the browser knows (see BitCssClasses.ExplicitRtl).
-    private bool? GetExplicitRtl() => BitCssClasses.ExplicitRtl(Dir, _culture);
+    // The direction the picker knows it is laid out in: the one it was given, or the one its culture implies - and
+    // null when it is the page's or the content's to say, which only the browser knows.
+    internal override bool? ExplicitRtl => BitCssClasses.ExplicitRtl(Dir, _culture);
 
-    // Whether a left or right arrow runs right to left across a grid: what the picker knows of its direction, and
-    // otherwise the one it is laid out in. Only those two keys ask, since a direction it does not know costs a round
-    // trip to read.
-    private async ValueTask<bool> IsArrowAcrossRtl(KeyboardEventArgs e)
-    {
-        if (e.Key is not ("ArrowLeft" or "ArrowRight")) return false;
-
-        return await IsRtlAsync(_js, GetExplicitRtl());
-    }
 
     private DateTime GetStartOfWeek(DateTime date)
     {
@@ -4238,7 +4229,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             // The same direction the callout renders in (bit-dtrp-rtl covers the culture-implied RTL
             // as well), so the positioning matches the layout; one only the page or the content decides is
             // read off the picker.
-            isRtl: GetExplicitRtl(),
+            isRtl: ExplicitRtl,
             scrollContainerId: "",
             scrollOffset: 0,
             headerId: CalloutHeaderTemplate is not null ? _headerId : "",

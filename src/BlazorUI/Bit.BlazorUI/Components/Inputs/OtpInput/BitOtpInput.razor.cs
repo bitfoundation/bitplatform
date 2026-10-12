@@ -1220,7 +1220,7 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         // The direction the row is laid out in, a page's or a content's included, read only for the keys that
         // act on it since one Dir does not name costs a round trip.
-        var rtl = Vertical is false && navKey is "ArrowLeft" or "ArrowRight" && await IsRtlAsync(_js);
+        var rtl = Vertical is false && await IsRtlArrowAsync(_js, navKey);
 
         var targetIndex = navKey switch
         {

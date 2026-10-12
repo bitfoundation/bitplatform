@@ -43,7 +43,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     private bool _focusTrapped;
     private bool _focusTaken;
     private decimal _diffXPanel;
-    private bool _resolvedRtl;
+    private Task<bool>? _swipeRtl;
     private string? _searchText;
     private bool _focusOriginCaptured;
     private bool _focusSearchBoxPending;
@@ -1116,22 +1116,25 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     }
 
     // The edge the drawer is docked to turns with the direction it is laid out in, which only the browser knows when
-    // Dir names none (the page's, or the content's for Auto), so it is read as a swipe starts, ahead of the moves.
-    private async Task HandleOnSwipeStart(BitSwipeTrapEventArgs args)
+    // Dir names none (the page's, or the content's for Auto), so it is read as a swipe starts. The swipe trap hands
+    // its start, moves and trigger over as separate calls, and the moves of a quick flick can arrive before that
+    // round trip returns, so the read is kept as a task every later handler of the same swipe awaits.
+    private void HandleOnSwipeStart(BitSwipeTrapEventArgs args)
     {
         if (NoSwipe) return;
         if (IsOpen is false) return;
         if (ExplicitRtl is not null) return;
 
-        _resolvedRtl = await IsRtlAsync(_js);
+        _swipeRtl = IsRtlAsync(_js).AsTask();
     }
 
-    private void HandleOnSwipeMove(BitSwipeTrapEventArgs args)
+    private async Task HandleOnSwipeMove(BitSwipeTrapEventArgs args)
     {
         if (NoSwipe) return;
         if (IsOpen is false) return;
 
         _diffXPanel = args.DiffX;
+        await ResolveSwipeDirection();
         StateHasChanged();
     }
 
@@ -1149,6 +1152,8 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
         if (NoSwipe) return;
         if (IsOpen is false) return;
 
+        await ResolveSwipeDirection();
+
         // The swipe that closes the drawer goes towards the edge the drawer came from.
         if (args.Direction == (_IsDockedAtEnd ? BitPlacement.Right : BitPlacement.Left))
         {
@@ -1156,6 +1161,19 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
             await ClosePanel();
             StateHasChanged();
         }
+    }
+
+    // Waits for the direction read as the swipe started, which _IsDockedAtEnd then answers from (read here when no
+    // start was reported before it).
+    private async Task ResolveSwipeDirection()
+    {
+        if (ExplicitRtl is not null) return;
+
+        _swipeRtl ??= IsRtlAsync(_js).AsTask();
+
+        if (_swipeRtl.IsCompleted) return;
+
+        await _swipeRtl;
     }
 
     private string? GetPanelStyle(bool isToggled)
@@ -1202,8 +1220,9 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
     // Which edge the drawer is docked to, and so which way the swipe that closes it goes. The placement is
     // expressed in the text direction, so the End of a right-to-left layout is the left of the screen; every
-    // value but End docks it at the Start. A direction Dir does not name is the one read as the swipe started.
-    private bool _IsDockedAtEnd => (Placement is BitPlacement.End) != (ExplicitRtl ?? _resolvedRtl);
+    // value but End docks it at the Start. A direction Dir does not name is the one read as the last swipe started
+    // (left to right until that read has returned, which every swipe handler waits for).
+    private bool _IsDockedAtEnd => (Placement is BitPlacement.End) != (ExplicitRtl ?? (_swipeRtl is { IsCompletedSuccessfully: true } t && t.Result));
 
     // The class that gives the panel its shape. Once the browser has reported the screen it is the shape itself
     // (the drawer or the column), so the stylesheet and everything decided in C# - the dialog role, the page held

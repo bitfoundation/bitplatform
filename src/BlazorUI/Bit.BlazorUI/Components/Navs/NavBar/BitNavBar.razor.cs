@@ -470,11 +470,11 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
             // The direction the bar is laid out in, a page's or a content's included, read only for the keys that
             // act on it since one Dir does not name costs a round trip.
             case "ArrowRight":
-                await FocusItemAt(items, index + (await IsRtlAsync(_js) ? -1 : 1));
+                await FocusItemAt(items, index + (await IsRtlArrowAsync(_js, e.Key) ? -1 : 1));
                 return;
 
             case "ArrowLeft":
-                await FocusItemAt(items, index + (await IsRtlAsync(_js) ? 1 : -1));
+                await FocusItemAt(items, index + (await IsRtlArrowAsync(_js, e.Key) ? 1 : -1));
                 return;
 
             case "ArrowDown":

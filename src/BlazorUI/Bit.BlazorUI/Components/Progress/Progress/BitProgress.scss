@@ -546,7 +546,7 @@ $prb-private-properties:
 
 // A gradient has no logical direction, so the pattern - which ends on the gap that is clipped off the
 // far edge - has to be turned around by hand for a right-to-left bar, whatever made it one.
-.bit-prb-seg:is(.bit-rtl, :dir(rtl)):not(.bit-prb-ver) .bit-prb-bcn {
+.bit-prb-seg:is(.bit-rtl, :dir(rtl)):not(.bit-prb-ver) > .bit-prb-bcn {
     -webkit-mask-image: repeating-linear-gradient(to left, #000 0 var(--bit-prb-segment-width), transparent 0 calc(var(--bit-prb-segment-width) + var(--bit-prb-segment-gap)));
     mask-image: repeating-linear-gradient(to left, #000 0 var(--bit-prb-segment-width), transparent 0 calc(var(--bit-prb-segment-width) + var(--bit-prb-segment-gap)));
 }
