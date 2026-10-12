@@ -747,7 +747,7 @@
         }
 
         private static onScrollKey(e: KeyboardEvent) {
-            if (e.defaultPrevented || e.isComposing || e.altKey || e.ctrlKey || e.metaKey) return;
+            if (e.defaultPrevented || Utils.isComposingKey(e) || e.altKey || e.ctrlKey || e.metaKey) return;
 
             const space = e.key === ' ' || e.key === 'Spacebar';
             if (e.shiftKey && space === false) return;

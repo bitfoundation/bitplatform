@@ -33,6 +33,7 @@
 //   --bit-DataGrid-detail-background    background of the expanded detail rows      (default: $clr-bg-sec)
 //   --bit-DataGrid-footer-background    background of the footer row                (default: $clr-bg-sec)
 //   --bit-DataGrid-disabled-color       text color of a disabled grid               (default: $clr-fg-dis)
+//   --bit-DataGrid-placeholder-color    placeholder of the search and filter boxes  (default: $clr-fg-sec)
 // The row height is the RowHeight parameter (it also drives virtualization); the cell padding and the line height
 // set the density around it.
 
@@ -781,6 +782,15 @@ button.bit-dtg-htext {
     background: $clr-bg-dis;
     border-color: $clr-brd-dis;
     cursor: default;
+}
+
+.bit-dtg-search-input,
+.bit-dtg-filter-input {
+    @include input-placeholder(var(--bit-DataGrid-placeholder-color, #{$clr-fg-sec}));
+
+    &:disabled {
+        @include input-placeholder(var(--bit-DataGrid-disabled-color, #{$clr-fg-dis}));
+    }
 }
 
 /* Touch drag-and-drop: without touch-action none the browser turns the drag into a scroll and fires

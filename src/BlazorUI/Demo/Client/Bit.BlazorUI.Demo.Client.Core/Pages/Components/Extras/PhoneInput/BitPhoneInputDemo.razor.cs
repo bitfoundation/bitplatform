@@ -707,7 +707,7 @@ public partial class BitPhoneInputDemo
     [
         new() { Name = "--bit-PhoneInput-background", DefaultValue = "--bit-clr-bg-pri", Description = "Fill of the field. The Background parameter wins over it." },
         new() { Name = "--bit-PhoneInput-color", DefaultValue = "--bit-clr-fg-pri", Description = "Text of the number." },
-        new() { Name = "--bit-PhoneInput-placeholder-color", DefaultValue = "--bit-clr-fg-ter", Description = "Placeholder of the number input, of the country selector and of the search box." },
+        new() { Name = "--bit-PhoneInput-placeholder-color", DefaultValue = "--bit-clr-fg-sec", Description = "Placeholder of the number input, of the country selector and of the search box." },
         new() { Name = "--bit-PhoneInput-border-color", DefaultValue = "--bit-clr-brd-pri", Description = "Frame at rest. The Border and Color parameters win over it." },
         new() { Name = "--bit-PhoneInput-hover-border-color", DefaultValue = "--bit-clr-brd-pri-hover", Description = "Frame under a pointer, on devices that can hover. The Border and Color parameters win over it." },
         new() { Name = "--bit-PhoneInput-border-width", DefaultValue = "--bit-shp-brd-width", Description = "Thickness of the frame and of the rule between the selector and the number." },

@@ -903,7 +903,7 @@
         }
 
         private keyDownHandler = (e: KeyboardEvent) => {
-            if (e.isComposing) return;
+            if (Utils.isComposingKey(e)) return;
 
             // Escape arms the Tab escape hatch below, then lets .NET close the find panel
             // or leave full-screen - only the plain key, the one the textarea claims
@@ -1044,7 +1044,7 @@
         // selection it works on is; a custom item runs from the preview pane as well.
         private runItemShortcut(e: KeyboardEvent, editing: boolean): boolean {
             const map = this.config.shortcuts;
-            if (!map || e.isComposing) return false;
+            if (!map || Utils.isComposingKey(e)) return false;
 
             const altGraph = typeof e.getModifierState === 'function' && e.getModifierState('AltGraph');
             const mod = (e.ctrlKey || e.metaKey) && !altGraph;

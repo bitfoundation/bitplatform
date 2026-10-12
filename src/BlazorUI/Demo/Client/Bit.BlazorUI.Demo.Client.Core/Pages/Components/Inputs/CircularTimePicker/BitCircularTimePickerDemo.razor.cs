@@ -933,6 +933,12 @@ public partial class BitCircularTimePickerDemo
         },
         new()
         {
+            Name = "--bit-CircularTimePicker-placeholder-color",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "The placeholder of the field. It replaces the grey the browser picks on its own, which is not derived from the theme and drops below the contrast floor on most surfaces."
+        },
+        new()
+        {
             Name = "--bit-CircularTimePicker-input-font-size",
             DefaultValue = "--bit-tpg-fs-sm",
             Description = "The size of that text. Small, medium and large map to --bit-tpg-fs-xs, --bit-tpg-fs-sm and --bit-tpg-fs-md. The Size parameter wins over it."

@@ -147,12 +147,36 @@ public partial class BitBadgeStylesheetTests
         StringAssert.Contains(stylesheet, "var(--bit-bdg-dotsize, var(--bit-Badge-dot-size, #{$siz-badge-dot-md}))");
 
         // So does an explicit Color, for every color it paints.
-        StringAssert.Contains(stylesheet, "--bit-bdg-cnt-clr-bg: var(--bit-bdg-clr, var(--bit-Badge-background, #{$clr-pri}));");
-        StringAssert.Contains(stylesheet, "--bit-bdg-cnt-clr-txt: var(--bit-bdg-clr-txt, var(--bit-Badge-color, #{$clr-pri-text}));");
+        StringAssert.Contains(stylesheet, "--bit-bdg-cnt-clr-bg: var(--bit-bdg-clr, var(--bit-Badge-fill-background, var(--bit-Badge-background, #{$clr-pri})));");
+        StringAssert.Contains(stylesheet, "--bit-bdg-cnt-clr-txt: var(--bit-bdg-clr-txt, var(--bit-Badge-fill-color, var(--bit-Badge-color, #{$clr-pri-text})));");
         StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-bdg-clr-fcs, var(--bit-Badge-focus-color)))");
         StringAssert.Contains(stylesheet, "var(--bit-bdg-clr, var(--bit-Badge-pulse-color, #{$clr-pri}))");
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Badge-[a-z-]+, var\(--bit-bdg-"), "A public variable is read before the parameter it restyles the default of.");
+    }
+
+    [TestMethod,
+        DataRow("fill", ".bit-bdg-fil"),
+        DataRow("outline", ".bit-bdg-otl"),
+        DataRow("text", ".bit-bdg-txt")]
+    public void BitBadgeShouldReadTheVariablesOfItsVariantAheadOfTheSharedOnes(string variant, string selector)
+    {
+        var stylesheet = ReadStylesheet();
+        var block = SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
+
+        // Each variant reads a tier of its own ahead of every shared color variable, so a theme can set one look apart
+        // from the other two on :root - an outline badge's neutral border without a ring around every filled one.
+        foreach (var name in new[] { "color", "background", "border-color", "hover-background", "active-background" })
+        {
+            StringAssert.Contains(block, $"var(--bit-Badge-{variant}-{name}, var(--bit-Badge-{name}, ",
+                                  $"{selector} does not read --bit-Badge-{variant}-{name} ahead of --bit-Badge-{name}.");
+        }
+
+        // A variant reads a shared color variable only right behind its own twin, and never the tier of another variant.
+        Assert.IsFalse(Regex.IsMatch(block, $@"(?<!var\(--bit-Badge-{variant}-[a-z-]+, )var\(--bit-Badge-(?:hover-|active-)?(?:color|background|border-color)\b"),
+                       $"{selector} reads a shared color variable without its own tier ahead of it.");
+        Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-Badge-(?!{variant}-)(?:fill|outline|text)-"),
+                       $"{selector} reads the variables of another variant.");
     }
 
     [TestMethod]

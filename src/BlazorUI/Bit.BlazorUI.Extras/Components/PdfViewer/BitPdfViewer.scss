@@ -23,6 +23,7 @@
 //   --bit-PdfViewer-button-active-hover-background ... under the pointer                        (default: $clr-pri-hover)
 //   --bit-PdfViewer-field-background               the page box, find box and dropdowns         (default: $clr-bg-pri)
 //   --bit-PdfViewer-field-border-color             ... their border                             (default: $clr-brd-pri)
+//   --bit-PdfViewer-field-placeholder-color        ... the placeholder of the find box          (default: $clr-fg-sec)
 //   --bit-PdfViewer-sidebar-background             background of the side panels                (default: $clr-bg-sec)
 //   --bit-PdfViewer-sidebar-width                  width of the bookmarks/attachments/layers panel (default: spacing(29))
 //   --bit-PdfViewer-item-hover-background          a sidebar row under the pointer              (default: $clr-bg-sec-hover)
@@ -55,6 +56,9 @@ $pdv-button-active-background: var(--bit-PdfViewer-button-active-background, #{$
 $pdv-button-active-hover-background: var(--bit-PdfViewer-button-active-hover-background, #{$clr-pri-hover});
 $pdv-field-background: var(--bit-PdfViewer-field-background, #{$clr-bg-pri});
 $pdv-field-border: var(--bit-PdfViewer-field-border-color, #{$clr-brd-pri});
+// A field's, named with the field family rather than as the --bit-<Component>-placeholder-color of the inputs:
+// here a placeholder is also the page that has not painted yet (--bit-PdfViewer-placeholder-background).
+$pdv-field-placeholder: var(--bit-PdfViewer-field-placeholder-color, #{$clr-fg-sec});
 $pdv-sidebar-background: var(--bit-PdfViewer-sidebar-background, #{$clr-bg-sec});
 $pdv-sidebar-width: var(--bit-PdfViewer-sidebar-width, #{spacing(29)});
 $pdv-item-hover-background: var(--bit-PdfViewer-item-hover-background, #{$clr-bg-sec-hover});
@@ -299,9 +303,12 @@ $pdv-private-properties: scale;
         @include focus-ring($pdv-focus, 0);
     }
 
+    @include input-placeholder($pdv-field-placeholder);
+
     &:disabled {
         cursor: default;
         color: $clr-fg-dis;
+        @include input-placeholder($clr-fg-dis);
     }
 }
 

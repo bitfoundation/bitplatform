@@ -19,7 +19,7 @@
 //   --bit-MarkdownEditor-font-size                 font size of the textarea                   (default: $tg-fs-sm)
 //   --bit-MarkdownEditor-line-height               line height of the textarea                 (default: 1.6)
 //   --bit-MarkdownEditor-padding                   padding of the textarea                     (default: spacing(1.5) spacing(1.75))
-//   --bit-MarkdownEditor-placeholder-color         placeholder of the textarea                 (default: $clr-fg-sec)
+//   --bit-MarkdownEditor-placeholder-color         placeholder of the textarea and the find box (default: $clr-fg-sec)
 //   --bit-MarkdownEditor-label-color               text of the label                           (default: --bit-MarkdownEditor-color)
 //   --bit-MarkdownEditor-label-font-size           size of the label                           (default: $tg-fs-sm)
 //   --bit-MarkdownEditor-label-font-weight         weight of the label                         (default: $tg-field-label-font-weight)
@@ -138,6 +138,10 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
     .bit-mde-des,
     .bit-mde-sbr {
         color: $clr-fg-dis;
+    }
+
+    .bit-mde-txa {
+        @include input-placeholder($clr-fg-dis);
     }
 
     .bit-mde-lbl {
@@ -341,6 +345,7 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
     padding: $siz-ctrl-pad-y-sm $siz-ctrl-pad-x-sm;
     border-radius: $shp-radius-control;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
+    @include input-placeholder(var(--bit-MarkdownEditor-placeholder-color, #{$clr-fg-sec}));
 
     &:focus-visible {
         @include mde-inset-ring;
@@ -484,10 +489,7 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
     padding: var(--bit-MarkdownEditor-padding, #{spacing(1.5) spacing(1.75)});
     font-family: var(--bit-MarkdownEditor-font-family, #{$tg-font-family-mono});
 
-    &::placeholder {
-        opacity: 1;
-        color: var(--bit-MarkdownEditor-placeholder-color, #{$clr-fg-sec});
-    }
+    @include input-placeholder(var(--bit-MarkdownEditor-placeholder-color, #{$clr-fg-sec}));
 
     // The textarea fills its pane, so an inset ring keeps the keyboard
     // focus indicator visible instead of being clipped by the container.

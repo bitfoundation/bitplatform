@@ -473,19 +473,73 @@ public partial class BitMessageDemo
         {
             Name = "--bit-Message-color",
             DefaultValue = "--bit-clr-inf-text (Fill); --bit-clr-inf-fg (Outline, Text)",
-            Description = "Color of the text, the icon and the buttons. The Color parameter wins over it.",
+            Description = "Color of the text, the icon and the buttons. The Color parameter wins over it. Shared by the three variants: --bit-Message-fill-color, --bit-Message-outline-color and --bit-Message-text-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Message-background",
             DefaultValue = "--bit-clr-inf (Fill), --bit-clr-inf-tint (Outline and Text with Tinted), transparent (Outline, Text)",
-            Description = "Background of the surface. The Color parameter wins over it in Fill and Tinted; the transparent background of Outline and Text is its alone.",
+            Description = "Background of the surface. The Color parameter wins over it in Fill and Tinted; the transparent background of Outline and Text is its alone. Shared by the three variants: --bit-Message-fill-background, --bit-Message-outline-background and --bit-Message-text-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Message-border-color",
             DefaultValue = "--bit-clr-inf (Fill, Outline), transparent (Text)",
-            Description = "Color of the border. The Color parameter wins over it, except over the transparent border of Text.",
+            Description = "Color of the border. The Color parameter wins over it, except over the transparent border of Text. Shared by the three variants: --bit-Message-fill-border-color, --bit-Message-outline-border-color and --bit-Message-text-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Message-fill-color",
+            DefaultValue = "--bit-Message-color",
+            Description = "Color of the text, the icon and the buttons of a Fill message alone, read ahead of --bit-Message-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Message-fill-background",
+            DefaultValue = "--bit-Message-background",
+            Description = "Background of the surface of a Fill message alone, read ahead of --bit-Message-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Message-fill-border-color",
+            DefaultValue = "--bit-Message-border-color",
+            Description = "Color of the border of a Fill message alone, read ahead of --bit-Message-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Message-outline-color",
+            DefaultValue = "--bit-Message-color",
+            Description = "Color of the text, the icon and the buttons of an Outline message alone, read ahead of --bit-Message-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Message-outline-background",
+            DefaultValue = "--bit-Message-background",
+            Description = "Background of the surface of an Outline message alone, read ahead of --bit-Message-background so a theme can set this variant apart from the other two. It restyles the Tinted wash as well. The Color parameter wins over it only under Tinted.",
+        },
+        new()
+        {
+            Name = "--bit-Message-outline-border-color",
+            DefaultValue = "--bit-Message-border-color",
+            Description = "Color of the border of an Outline message alone, read ahead of --bit-Message-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Message-text-color",
+            DefaultValue = "--bit-Message-color",
+            Description = "Color of the text, the icon and the buttons of a Text message alone, read ahead of --bit-Message-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Message-text-background",
+            DefaultValue = "--bit-Message-background",
+            Description = "Background of the surface of a Text message alone, read ahead of --bit-Message-background so a theme can set this variant apart from the other two. It restyles the Tinted wash as well. The Color parameter wins over it only under Tinted.",
+        },
+        new()
+        {
+            Name = "--bit-Message-text-border-color",
+            DefaultValue = "--bit-Message-border-color",
+            Description = "Color of the border of a Text message alone, read ahead of --bit-Message-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
         },
         new()
         {
