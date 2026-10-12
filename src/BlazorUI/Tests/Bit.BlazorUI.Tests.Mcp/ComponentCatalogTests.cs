@@ -383,6 +383,7 @@ public class ComponentCatalogTests : McpTestBase
     [DataRow("BitNavPanel", "BitNavPanelParams")]
     [DataRow("BitVirtualize", "BitVirtualizeParams")]
     [DataRow("BitPhoneInput", "BitPhoneInputParams")]
+    [DataRow("BitCountryPicker", "BitCountryPickerParams")]
     [DataRow("BitToggle", "BitToggleParams")]
     [DataRow("BitSwipeTrap", "BitSwipeTrapParams")]
     [DataRow("BitFlag", "BitFlagParams")]

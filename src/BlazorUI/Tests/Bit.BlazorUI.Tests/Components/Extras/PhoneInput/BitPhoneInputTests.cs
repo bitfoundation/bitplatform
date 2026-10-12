@@ -1089,6 +1089,140 @@ public class BitPhoneInputTests : BunitTestContext
         Assert.AreEqual(0, CountInvocations("BitBlazorUI.Utils.disposeTabOut"));
     }
 
+    [TestMethod]
+    public void BitPhoneInputShouldCloseItsListWhenDisabledWhileOpen()
+    {
+        var isOpen = false;
+        var closed = 0;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, isOpen);
+            parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
+            parameters.Add(p => p.OnClose, () => closed++);
+        });
+
+        component.Find("button.bit-phi-drp").Click();
+
+        Assert.IsTrue(isOpen);
+
+        // A form disabled for its submit while the list is open.
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
+
+        Assert.IsFalse(isOpen);
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(1, closed);
+
+        // The JS side is told to take the relocated list off the screen, not left holding it.
+        Assert.AreEqual(false, LastToggle().Arguments[6]);
+        StringAssert.Contains(component.Find(".bit-phi-ovl").GetAttribute("style"), "display:none");
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldHideAListAOneWayIsOpenKeepsOpenWhileDisabled()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        Assert.AreEqual(true, LastToggle().Arguments[6]);
+
+        // Every render of the page hands the one-way IsOpen down again, which is what keeps it from being set back.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.AreEqual(false, LastToggle().Arguments[6]);
+        StringAssert.Contains(component.Find(".bit-phi-ovl").GetAttribute("style"), "display:none");
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Disabled, false);
+        });
+
+        Assert.AreEqual(true, LastToggle().Arguments[6]);
+        StringAssert.Contains(component.Find(".bit-phi-ovl").GetAttribute("style"), "display:block");
+    }
+
+    [TestMethod]
+    [DataRow(true, false)]
+    [DataRow(false, true)]
+    public void BitPhoneInputShouldNotOpenThroughIsOpenWhenTheCountryCannotBeChanged(bool disabled, bool readOnly)
+    {
+        var isOpen = false;
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, disabled);
+            parameters.Add(p => p.ReadOnly, readOnly);
+            parameters.Add(p => p.IsOpen, isOpen);
+            parameters.Add(p => p.IsOpenChanged, v => isOpen = v);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.IsOpen, true));
+
+        Assert.IsFalse(isOpen);
+        Assert.IsFalse(component.Instance.IsOpen);
+        StringAssert.Contains(component.Find(".bit-phi-ovl").GetAttribute("style"), "display:none");
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Callouts.toggle" && Equals(i.Arguments[6], true)));
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldSwapTheKeysOfTheButtonWhenOpenedAndClosedThroughIsOpen()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.NoSearchBox, true);
+        });
+
+        CollectionAssert.DoesNotContain(LastButtonKeys(), "Enter");
+
+        component.Render(parameters => parameters.Add(p => p.IsOpen, true));
+
+        CollectionAssert.Contains(LastButtonKeys(), "Enter");
+        CollectionAssert.Contains(LastButtonKeys(), "PageDown");
+
+        component.Render(parameters => parameters.Add(p => p.IsOpen, false));
+
+        CollectionAssert.DoesNotContain(LastButtonKeys(), "Enter");
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldDrawAnEmptyBoxForACountryWithNoFlag()
+    {
+        var neverland = new BitCountry("Neverland", "999", "ZZ", "ZZZ");
+
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.Countries, [neverland, BitCountries.France]);
+            parameters.Add(p => p.Country, neverland);
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-phi-drp img").Count);
+        Assert.AreEqual("SPAN", component.Find(".bit-phi-drp .bit-phi-flg").TagName);
+
+        component.Find("button.bit-phi-drp").Click();
+
+        var rows = component.FindAll(".bit-phi-itm");
+
+        Assert.AreEqual("SPAN", rows[0].QuerySelector(".bit-phi-flg")!.TagName);
+        Assert.AreEqual("IMG", rows[1].QuerySelector(".bit-phi-flg")!.TagName);
+    }
+
+    // The keys the country button's own listener was last handed: the button's sets are the ones that carry Home,
+    // which the search box leaves to its caret.
+    private string[] LastButtonKeys()
+    {
+        return (string[])Context.JSInterop.Invocations
+                                .Last(i => i.Identifier == "BitBlazorUI.Extras.setPreventKeys" && ((string[])i.Arguments[1]!).Contains("Home"))
+                                .Arguments[1]!;
+    }
+
     private int CountInvocations(string identifier)
     {
         return Context.JSInterop.Invocations.Count(i => i.Identifier == identifier);
@@ -1488,7 +1622,7 @@ public class BitPhoneInputTests : BunitTestContext
         });
 
         Assert.AreEqual("rtl", component.Find(".bit-phi").GetAttribute("dir"));
-        Assert.IsTrue(component.Find(".bit-phi-cal").ClassList.Contains("bit-phi-rtl"));
+        Assert.IsTrue(component.Find(".bit-phi-cal").ClassList.Contains("bit-rtl"));
     }
 
     [TestMethod]

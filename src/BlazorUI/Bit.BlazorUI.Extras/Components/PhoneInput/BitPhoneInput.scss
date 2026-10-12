@@ -629,9 +629,10 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
     }
 }
 
-// The direction the callout is laid out in - the field's Dir, or the page's or the content's it carries over to
-// the body - with the class an explicit Dir renders for an engine without :dir().
-.bit-phi-res:is(.bit-phi-rtl, :dir(rtl)) {
+// The panel is pinned to and slides in from the side the layout ends on, which is the left one under a
+// right-to-left direction - the explicit Dir (the bit-rtl class the callout carries for it, for an engine without
+// :dir()) or the one the page reads in.
+.bit-phi-res:is(.bit-rtl, :dir(rtl)) {
     @include lt-sm {
         left: 0;
         right: unset;

@@ -62,6 +62,7 @@ public class BitDisabledActivationContractTests : BunitTestContext
         [typeof(BitLink)],
         [typeof(BitFlag)],
         [typeof(BitPhoneInput)],
+        [typeof(BitCountryPicker)],
         [typeof(BitThemeSwitcher)],
         [typeof(BitAccentColorSwitcher)],
         [typeof(BitRichTextEditor)],

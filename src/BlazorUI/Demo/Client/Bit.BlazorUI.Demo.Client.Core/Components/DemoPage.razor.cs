@@ -569,7 +569,7 @@ public partial class DemoPage
 
     private readonly List<string> _inputComponents = [
         "Calendar", "Checkbox", "ChoiceGroup", "DatePicker", "DateRangePicker", "Dropdown", "NumberField", "OtpInput", "Rating",
-        "SearchBox", "TextField", "TimePicker", "CircularTimePicker", "Toggle", "TagsInput", "MarkdownEditor"
+        "SearchBox", "TextField", "TimePicker", "CircularTimePicker", "Toggle", "TagsInput", "MarkdownEditor", "CountryPicker"
     ];
 
     private readonly List<ComponentParameter> _inputBaseParameters =
