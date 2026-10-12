@@ -600,19 +600,14 @@ $dlg-private-properties: wid, hei, mnw, mnh, mxw, mxh;
 
 // flex-start and flex-end follow the inline direction, which an RTL Dialog reverses - so left would
 // come out on the right. The physical positions are put back onto their own side here, leaving the
-// start/end pair above as the only ones that move with the reading direction.
-.bit-dlg.bit-rtl {
-    .bit-dlg-tl,
-    .bit-dlg-cl,
-    .bit-dlg-bl {
-        justify-content: flex-end;
-    }
+// start/end pair above as the only ones that move with the reading direction - the one the document is laid out
+// in, whatever made it right to left, with the class an explicit Dir renders for an engine without :dir().
+.bit-dlg-doc:is(.bit-dlg-tl, .bit-dlg-cl, .bit-dlg-bl):is(:dir(rtl), .bit-dlg.bit-rtl > *) {
+    justify-content: flex-end;
+}
 
-    .bit-dlg-tr,
-    .bit-dlg-cr,
-    .bit-dlg-br {
-        justify-content: flex-start;
-    }
+.bit-dlg-doc:is(.bit-dlg-tr, .bit-dlg-cr, .bit-dlg-br):is(:dir(rtl), .bit-dlg.bit-rtl > *) {
+    justify-content: flex-start;
 }
 
 

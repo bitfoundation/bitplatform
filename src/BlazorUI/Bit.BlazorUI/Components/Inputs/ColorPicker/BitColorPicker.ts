@@ -25,16 +25,25 @@
             let latestPosition: { x: number, y: number } | null = null;
             let rafId = 0;
 
+            // Whether the area is laid out right to left, read when a drag starts and kept for the rest of it.
+            let rtl = false;
+
             // The position is resolved to a fraction of the area here rather than in .NET: measuring the
             // element from .NET would cost a second interop round trip per frame, and the round trip that
-            // returns the measurement is the one that cannot be coalesced away.
+            // returns the measurement is the one that cannot be coalesced away. The horizontal fraction is
+            // measured from the inline-start edge, which is the right one in a right-to-left picker, so the
+            // saturation axis mirrors along with the gradient and the thumb drawn on it. The direction is read
+            // off the area rather than passed from .NET, which only knows it when Dir names one: a picker
+            // left to the page's direction or to its content's (Auto) reads right to left just the same.
             const toRelativePosition = (e: PointerEvent) => {
                 const rect = saturationPicker.getBoundingClientRect();
 
                 if (rect.width === 0 || rect.height === 0) return { x: 0, y: 0 };
 
+                const x = ColorPicker.clamp((e.clientX - rect.left) / rect.width);
+
                 return {
-                    x: ColorPicker.clamp((e.clientX - rect.left) / rect.width),
+                    x: rtl ? 1 - x : x,
                     y: ColorPicker.clamp((e.clientY - rect.top) / rect.height)
                 };
             };
@@ -74,6 +83,7 @@
                 if (e.button !== 0) return;
 
                 dragging = true;
+                rtl = Utils.isRtl(saturationPicker);
 
                 // Suppresses the text selection and the native drag that a press on the gradient would
                 // otherwise start. That also suppresses the focus the press would have moved, so the area

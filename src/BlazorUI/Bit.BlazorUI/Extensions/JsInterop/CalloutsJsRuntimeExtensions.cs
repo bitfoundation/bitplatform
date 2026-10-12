@@ -15,7 +15,9 @@ internal static class CalloutsJsRuntimeExtensions
         bool isCalloutOpen,
         BitResponsiveMode responsiveMode,
         BitDropDirection dropDirection,
-        bool isRtl,
+        // The direction the component's Dir names, or null when it leaves it to the page or the content (see
+        // BitComponentBase.ExplicitRtl): the callout then reads the one the component is laid out in.
+        bool? isRtl,
         string scrollContainerId,
         int scrollOffset,
         string headerId,

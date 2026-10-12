@@ -1135,6 +1135,47 @@ public class BitPersonaTests : BunitTestContext
         });
 
         Assert.AreEqual("KS", component.Find(".bit-prs-ini").TextContent.Trim());
+        Assert.IsFalse(component.Find(".bit-prs-ini").ClassList.Contains("bit-prs-rev"));
+    }
+
+    // A Dir that names no direction leaves it to the page (unset) or to the content (Auto), which .NET cannot read: a
+    // pair of left-to-right initials is then written in reading order and marked, and the stylesheet lays it out from
+    // the right wherever the persona reads right to left.
+    [TestMethod,
+        DataRow(null, "Saleh Khafan", true),
+        DataRow(BitDir.Auto, "Saleh Khafan", true),
+        DataRow(BitDir.Ltr, "Saleh Khafan", false),
+        DataRow(null, "Saleh", false),
+        DataRow(null, "משה כהן", false)
+    ]
+    public void BitPersonaInitialsShouldLeaveTheirOrderToTheStylesheetWhenDirNamesNoDirection(BitDir? dir, string name, bool marked)
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+            parameters.Add(p => p.PrimaryText, name);
+        });
+
+        var initials = component.Find(".bit-prs-ini");
+
+        Assert.AreEqual(marked, initials.ClassList.Contains("bit-prs-rev"));
+
+        if (marked)
+        {
+            Assert.AreEqual("SK", initials.TextContent.Trim());
+        }
+    }
+
+    [TestMethod]
+    public void BitPersonaImageInitialsShouldNeverBeMarked()
+    {
+        var component = RenderComponent<BitPersona>(parameters =>
+        {
+            parameters.Add(p => p.PrimaryText, "Saleh Khafan");
+            parameters.Add(p => p.ImageInitials, "AB");
+        });
+
+        Assert.IsFalse(component.Find(".bit-prs-ini").ClassList.Contains("bit-prs-rev"));
     }
 
     [TestMethod]

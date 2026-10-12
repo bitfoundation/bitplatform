@@ -2046,6 +2046,27 @@ public class BitDatePickerTests : BunitTestContext
         Assert.AreEqual(expectedDay, component.Find(".bit-dtp-dbt[tabindex='0']").TextContent.Trim());
     }
 
+    // A Dir that names no direction, under a culture that does not imply one, leaves it to the page (unset) or to the
+    // content (Auto), which is read off the picker for the horizontal arrows alone.
+    [TestMethod,
+        DataRow(null),
+        DataRow(BitDir.Auto)
+    ]
+    public void BitDatePickerKeyboardNavigationShouldFollowAResolvedRtl(BitDir? dir)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.Value, GetLocalDate(2026, 1, 15));
+        });
+
+        component.Find(".bit-dtp-dbt[tabindex='0']").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        Assert.AreEqual("14", component.Find(".bit-dtp-dbt[tabindex='0']").TextContent.Trim());
+    }
+
     [TestMethod]
     public void BitDatePickerKeyboardNavigationShouldSkipDisabledDays()
     {

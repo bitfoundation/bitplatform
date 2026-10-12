@@ -495,20 +495,20 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual("ltr", root.GetAttribute("dir"));
         Assert.IsFalse(root.ClassList.Contains("bit-dtg-rtl"));
         // A named direction is the one the root is written in, so there is nothing to read off the page.
-        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.DataGrid.isRtl");
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.isRtl");
     }
 
     [TestMethod]
     public void InheritedRtlFlipsTheHorizontalArrowKeys()
     {
         // No Dir and no cascade: the grid inherits the page's direction, which is read off the root.
-        Context.JSInterop.Setup<bool>("BitBlazorUI.DataGrid.isRtl", _ => true).SetResult(true);
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
         var component = RenderGrid(configure: parameters => parameters.Add(p => p.CellNavigation, true));
 
         var root = component.Find(".bit-dtg");
         Assert.IsNull(root.GetAttribute("dir"));
         // Rendering never asks: only a key or a drag that depends on the direction reads it.
-        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.DataGrid.isRtl");
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.isRtl");
 
         component.Find(".bit-dtg-body > .bit-dtg-row .bit-dtg-cell")
             .KeyDown(new KeyboardEventArgs { Key = "ArrowLeft" });
@@ -524,7 +524,7 @@ public class BitDataGridTests : BunitTestContext
     {
         // The page switching direction under the grid (a language change flipping <html dir>) must be
         // picked up by the very next key, without the grid re-rendering in between.
-        var isRtl = Context.JSInterop.Setup<bool>("BitBlazorUI.DataGrid.isRtl", _ => true);
+        var isRtl = Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true);
         isRtl.SetResult(false);
         var component = RenderGrid(configure: parameters => parameters.Add(p => p.CellNavigation, true));
 
@@ -548,19 +548,19 @@ public class BitDataGridTests : BunitTestContext
     [TestMethod]
     public void VerticalArrowKeysDoNotReadTheDirection()
     {
-        Context.JSInterop.Setup<bool>("BitBlazorUI.DataGrid.isRtl", _ => true).SetResult(true);
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
         var component = RenderGrid(configure: parameters => parameters.Add(p => p.CellNavigation, true));
 
         component.Find(".bit-dtg-body > .bit-dtg-row .bit-dtg-cell")
             .KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
 
-        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.DataGrid.isRtl");
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.isRtl");
     }
 
     [TestMethod]
     public void InheritedRtlMirrorsTheResizeDrag()
     {
-        Context.JSInterop.Setup<bool>("BitBlazorUI.DataGrid.isRtl", _ => true).SetResult(true);
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
         Context.JSInterop.Setup<double>("BitBlazorUI.DataGrid.getWidth", _ => true).SetResult(150);
         var component = RenderGrid(configure: parameters => parameters.Add(p => p.Resizable, true));
 

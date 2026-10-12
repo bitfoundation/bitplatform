@@ -301,6 +301,16 @@ $prs-private-properties:
     user-select: none;
 }
 
+// A pair of left-to-right initials is written back to front in a persona whose Dir says it reads right to left, so
+// the first one lands on the right. One that reads right to left only by inheriting it - from the page - or by its
+// content (Auto) cannot be told apart in .NET, so its pair is marked instead and laid out from the right here, which
+// for two left-to-right letters is the same thing. A browser without :dir() keeps the pair in reading order.
+@supports selector(:dir(rtl)) {
+    .bit-prs-rev:dir(rtl) {
+        unicode-bidi: bidi-override;
+    }
+}
+
 // The coin is sized for the two initials a name can yield, and clips anything longer. Initials passed in
 // by hand are not held to that, so they are stepped down to fit instead of being cut off. The steps are in
 // em, which is the coin's own font size, so they follow every size class and any custom coin size.

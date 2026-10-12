@@ -629,7 +629,9 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
     }
 }
 
-.bit-phi-res.bit-phi-rtl {
+// The direction the callout is laid out in - the field's Dir, or the page's or the content's it carries over to
+// the body - with the class an explicit Dir renders for an engine without :dir().
+.bit-phi-res:is(.bit-phi-rtl, :dir(rtl)) {
     @include lt-sm {
         left: 0;
         right: unset;
@@ -706,10 +708,21 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
 
 // A phone number is written left to right wherever it is read, and the separators a mask inserts
 // ("(415) 555-0123") are neutral characters that a right-to-left paragraph would otherwise reorder
-// around the digits. The box itself stays on the right hand side of a right-to-left field.
-.bit-phi[dir="rtl"] .bit-phi-inp {
+// around the digits. The box itself stays on the right hand side of a right-to-left field - whatever made
+// it one: its Dir, the page's direction or its content's (Auto). The direction is read off the group the
+// input sits in: an input of type tel with no dir of its own is left to right by definition, so :dir()
+// never finds it right to left.
+.bit-phi-fgp:dir(rtl) > .bit-phi-inp {
     direction: ltr;
     text-align: right;
+}
+
+// An engine without :dir() is left with the dir attribute an explicit Dir renders on the field.
+@supports not selector(:dir(rtl)) {
+    .bit-phi[dir="rtl"] > .bit-phi-fgp > .bit-phi-inp {
+        direction: ltr;
+        text-align: right;
+    }
 }
 
 .bit-phi-req {

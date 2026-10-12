@@ -2192,7 +2192,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
             return;
         }
 
-        var isRtl = BitCssClasses.IsRtl(Dir, _culture);
+        var isRtl = await IsRtlArrowAsync(_js, e.Key);
 
         int? target = e.Key switch
         {
@@ -2248,7 +2248,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     // The year grid answers the same keys, one row being four years wide, and PageUp/PageDown moving to the
     // adjacent range of years.
-    private void HandleYearKeyDown(KeyboardEventArgs e, int year)
+    private async Task HandleYearKeyDown(KeyboardEventArgs e, int year)
     {
         if (Disabled) return;
 
@@ -2268,7 +2268,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
             return;
         }
 
-        var isRtl = BitCssClasses.IsRtl(Dir, _culture);
+        var isRtl = await IsRtlArrowAsync(_js, e.Key);
 
         int? target = e.Key switch
         {
@@ -2324,7 +2324,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     {
         if (Disabled) return;
 
-        var isRtl = BitCssClasses.IsRtl(Dir, _culture);
+        var isRtl = await IsRtlArrowAsync(_js, e.Key);
 
         DateTime? target = e.Key switch
         {
@@ -2343,6 +2343,10 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
         await MoveFocusToDay(target.Value);
     }
+
+    // The direction the calendar knows it is laid out in: the one it was given, or the one its culture implies - and
+    // null when it is the page's or the content's to say, which only the browser knows.
+    internal override bool? ExplicitRtl => BitCssClasses.ExplicitRtl(Dir, _culture);
 
     // A step that runs off the end of what a DateTime, or of what the culture's own calendar, can represent
     // has nowhere to land - so it is refused rather than thrown, and the key simply moves the focus nowhere.

@@ -1945,7 +1945,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
             if (Responsive)
             {
-                await _js.BitSwipesSetup(_calloutId, 0.25m, BitPlacement.End, Dir is BitDir.Rtl, BitSwipeOrientation.Horizontal, _dotnetObj);
+                await _js.BitSwipesSetup(_calloutId, 0.25m, BitPlacement.End, ExplicitRtl, BitSwipeOrientation.Horizontal, _dotnetObj);
             }
 
             // An initial IsOpen fired the OnSetIsOpen hook before the first render, when there was no
@@ -3544,7 +3544,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             isCalloutOpen: IsOpen,
             responsiveMode: Responsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
             dropDirection: DropDirection,
-            isRtl: Dir is BitDir.Rtl,
+            isRtl: ExplicitRtl,
             scrollContainerId: _scrollContainerId,
             scrollOffset: MEASURED_CALLOUT_SCROLL_OFFSET,
             headerId: CalloutHeaderTemplate is not null ? _headerId : "",

@@ -496,7 +496,9 @@ $bdg-private-properties:
         flex-direction: row-reverse;
     }
 
-    &.bit-rtl {
+    // The direction is the one the badge is laid out in - its Dir, the page's or its content's (Auto) - with the
+    // class an explicit Dir renders for an engine without :dir().
+    &:is(.bit-rtl, :dir(rtl)) {
         &:is(.bit-bdg-tlf, .bit-bdg-clf, .bit-bdg-blf) {
             flex-direction: row;
         }

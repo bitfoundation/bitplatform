@@ -35,6 +35,14 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
+    // Whether the element is laid out right to left, which is what a Dir left unset (the page's direction) or set to
+    // Auto (the content's) comes down to - only the browser knows either.
+    internal static ValueTask<bool> BitUtilsIsRtl(this IJSRuntime jsRuntime, ElementReference element)
+    {
+        return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.isRtl", element);
+    }
+
+
     internal static ValueTask<BoundingClientRect> BitUtilsGetBoundingClientRect(this IJSRuntime jsRuntime, ElementReference element)
     {
         return jsRuntime.Invoke<BoundingClientRect>("BitBlazorUI.Utils.getBoundingClientRect", element);

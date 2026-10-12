@@ -771,7 +771,6 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
         var index = _focusedItem is null ? -1 : visibleItems.FindIndex(i => AreEqual(i, _focusedItem));
         var current = index < 0 ? null : visibleItems[index];
-        var isRtl = (Dir ?? CascadingDir) == BitDir.Rtl;
 
         switch (e.Key)
         {
@@ -793,8 +792,10 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
             case "ArrowRight":
             case "ArrowLeft":
-                var isForward = (e.Key is "ArrowRight") != isRtl;
                 if (current is null) return;
+                // The direction the nav is laid out in, a page's or a content's included, read only for the
+                // keys that act on it since one Dir does not name costs a round trip.
+                var isForward = (e.Key is "ArrowRight") != await IsRtlArrowAsync(_js, e.Key);
                 if (isForward)
                 {
                     await StepIn(current);

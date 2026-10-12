@@ -135,7 +135,7 @@
                        class="@goRightIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.GoRightButtonIcon" />
                 </button>;
 
-            var goLeftIsFirst = Vertical is false && Dir == BitDir.Rtl;
+            var goLeftIsFirst = Vertical is false && _IsRtl;
 
             @(goLeftIsFirst ? goLeftButton : goRightButton)
             @(goLeftIsFirst ? goRightButton : goLeftButton)

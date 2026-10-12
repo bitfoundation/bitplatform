@@ -1432,7 +1432,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                         id: _calloutId,
                         trigger: 0.25m,
                         position: BitPlacement.Top,
-                        isRtl: IsRtl(),
+                        isRtl: ExplicitRtl,
                         orientationLock: BitSwipeOrientation.Vertical,
                         dotnetObj: _dotnetObj);
                 }
@@ -3104,7 +3104,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             return;
         }
 
-        var isRtl = IsRtl();
+        var isRtl = await IsRtlArrowAsync(_js, e.Key);
 
         int? target = e.Key switch
         {
@@ -3173,7 +3173,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             return;
         }
 
-        var isRtl = IsRtl();
+        var isRtl = await IsRtlArrowAsync(_js, e.Key);
 
         int? target = e.Key switch
         {
@@ -3275,7 +3275,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             return;
         }
 
-        var isRtl = IsRtl();
+        var isRtl = await IsRtlArrowAsync(_js, e.Key);
 
         DateTime? target = e.Key switch
         {
@@ -3336,6 +3336,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     {
         return BitCssClasses.IsRtl(Dir, _culture);
     }
+
+    // The direction the picker knows it is laid out in: the one it was given, or the one its culture implies - and
+    // null when it is the page's or the content's to say, which only the browser knows.
+    internal override bool? ExplicitRtl => BitCssClasses.ExplicitRtl(Dir, _culture);
+
 
     private DateTime GetStartOfWeek(DateTime date)
     {
@@ -4222,8 +4227,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             responsiveMode: Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
             dropDirection: DropDirection,
             // The same direction the callout renders in (bit-dtrp-rtl covers the culture-implied RTL
-            // as well), so the positioning matches the layout.
-            isRtl: IsRtl(),
+            // as well), so the positioning matches the layout; one only the page or the content decides is
+            // read off the picker.
+            isRtl: ExplicitRtl,
             scrollContainerId: "",
             scrollOffset: 0,
             headerId: CalloutHeaderTemplate is not null ? _headerId : "",

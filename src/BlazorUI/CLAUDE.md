@@ -208,6 +208,37 @@ working there:
   then needs one of the counterparts above as a separate rule.
 - **Not covered**: what is inside `@supports selector(:dir(...))` (BitIcon), which only an engine knowing `:dir()` reads.
 
+## A direction Dir does not name is read, never assumed
+
+`Dir` left unset inherits the page's direction and `Dir="BitDir.Auto"` takes its content's. The stylesheets follow both
+through `:dir()`, so nothing computed from the direction reads `Dir == BitDir.Rtl` and takes everything else for left to
+right - the layout and the behaviour would disagree.
+
+- **A script resolves it itself.** It is handed `ExplicitRtl` (`true` / `false` for a named direction, `null` for unset
+  or Auto) and reads `Utils.isRtl(el)` when it needs it, never once when it registers (`Callouts.toggle`,
+  `Swipes.setup`, `Pivot.setup`) and never on a scroll or every frame where a direction-free measure does (an offset
+  taken as `Math.abs(scrollLeft)`). A position a script hands .NET is measured in the direction already
+  (BitColorPicker's pointer, from the inline-start edge).
+- **.NET asks at the moment it acts**: `await IsRtlAsync(_js)` (`Utils.isRtl` off the root, or the element given)
+  answers a named direction without a round trip; a key handler asks through `await IsRtlArrowAsync(_js, e.Key)`, which
+  answers false without asking for every key but the horizontal arrows, and only once nothing else has turned the key
+  away. A component that knows more than `Dir` says (a culture that writes right to left) overrides `ExplicitRtl` with
+  `BitCssClasses.ExplicitRtl(Dir, _culture)`, and both helpers follow it. Two reads that do not depend on each other are
+  sent together (BitCarousel's measurement and direction), and one a later handler of the same gesture depends on is
+  kept as a task it awaits (BitNavPanel's swipe), since a JS-invoked .NET handler can run before an earlier one's round
+  trip has returned.
+- **What is rendered from the direction** reads a value resolved along with a measurement the component takes anyway
+  (BitCarousel's `_IsRtl`, BitFullCalendar's `SetAutoDirection`, read once per change of its parameters rather than
+  after every render), or is left to the stylesheet (BitSwiper's chevrons through BitIcon's `bit-ico-frt`, BitPersona's
+  initials).
+- **A right-to-left rule reads `:dir(rtl)`**, and the class or `[dir]` an explicit Dir renders only as its fallback
+  (previous section). An input that is left to right by definition (`type="tel"` with no `dir` of its own) is never
+  `:dir(rtl)`, so its rule reads the direction off its parent (`.bit-phi-fgp:dir(rtl) > .bit-phi-inp`).
+  `BitComponentDirFallbackTests.EveryRtlRuleAlsoFollowsADirectionDirDoesNotName` fails on a rule that reads the class alone.
+- The bUnit tests stand the browser's answer in with `Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", ...)`;
+  `BitDirResolvedBrowserTests` (`/regression/dir-resolved`) reads the live layout and drives the keys, the pointer and
+  the placement in a box that reads each way.
+
 `BitComponentDirFallbackTests` checks this for every stylesheet of every package, mixins included (a mixin's
 counterpart is looked for in the mixin itself). A rule whose explicit `Dir` is handled some other way (the root class
 setting a variable the part reads, or the C# doing the turn) goes in its `CoveredOtherwise` list.

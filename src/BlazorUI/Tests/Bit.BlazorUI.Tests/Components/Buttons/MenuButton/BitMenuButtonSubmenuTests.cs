@@ -318,6 +318,35 @@ public class BitMenuButtonSubmenuTests : BunitTestContext
         Assert.AreEqual("false", com.FindAll(".bit-mnb-cal:not(.bit-mnb-sub) > ul > li > .bit-mnb-itm")[1].GetAttribute("aria-expanded"));
     }
 
+    // A Dir that names no direction leaves it to the page (unset) or to the content (Auto), which is read off the
+    // element: the keys follow the direction the component is actually laid out in.
+    [TestMethod,
+        DataRow(null),
+        DataRow(BitDir.Auto)
+    ]
+    public void BitMenuButtonInAResolvedRtlTheArrowKeysShouldBeMirrored(BitDir? dir)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+            parameters.Add(p => p.Items, SubmenuItems());
+        });
+
+        com.Find(".bit-mnb-opb").Click();
+
+        var parentItem = com.FindAll(".bit-mnb-cal:not(.bit-mnb-sub) > ul > li > .bit-mnb-itm")[1];
+
+        parentItem.KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        Assert.AreEqual("false", com.FindAll(".bit-mnb-cal:not(.bit-mnb-sub) > ul > li > .bit-mnb-itm")[1].GetAttribute("aria-expanded"));
+
+        parentItem.KeyDown(new KeyboardEventArgs { Key = "ArrowLeft" });
+        Assert.AreEqual("true", com.FindAll(".bit-mnb-cal:not(.bit-mnb-sub) > ul > li > .bit-mnb-itm")[1].GetAttribute("aria-expanded"));
+
+        com.Find(".bit-mnb-sub").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+        Assert.AreEqual("false", com.FindAll(".bit-mnb-cal:not(.bit-mnb-sub) > ul > li > .bit-mnb-itm")[1].GetAttribute("aria-expanded"));
+    }
+
     [TestMethod]
     public void BitMenuButtonOpeningASubmenuShouldCloseTheOneOpenBesideIt()
     {
