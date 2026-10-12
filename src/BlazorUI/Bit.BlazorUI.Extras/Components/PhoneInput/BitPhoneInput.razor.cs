@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
@@ -22,17 +21,16 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     private bool _tabOutRegistered;
     private bool _hasOpened;
     private bool _dropdownKeysWired;
+    private bool _dropdownKeysOpen;
     private bool _searchBoxKeysWired;
     private bool _internalIsOpenChange;
     private bool _pendingCalloutToggle;
     // Whether the list was opened from its button - a click on it, or a key pressed on it - rather than through
     // the IsOpen parameter, which can open it while the button is anywhere on the page.
     private bool _openedFromButton;
-    private string? _searchText;
+    private bool _lastCanOpen = true;
     private string? _announcement;
     private bool _announcementMarker;
-    private int _activeIndex = -1;
-    private int _lastScrolledIndex = -1;
 
     // Reconciliation state between the full Value and its parts (Number + Country).
     // _lastValue mirrors the last full value the component produced so an external Value
@@ -42,11 +40,11 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     private string? _lastCountryIso;
     private string? _lastErrorMessage;
 
-    // Type-ahead state of the country list, used when there is no search box to type into.
-    private string _typeAhead = string.Empty;
-    private DateTimeOffset _typeAheadAt;
-    private static readonly TimeSpan _typeAheadTimeout = TimeSpan.FromMilliseconds(1000);
-
+    // The countries the dropdown offers, what the search term leaves of them, the one the keyboard is on and the
+    // type-ahead that moves it - the part of the list BitCountryPicker walks and searches the same way. A dialing
+    // code is searched for as well here, and the countries sharing one are ordered the way the same code typed into
+    // the number input resolves.
+    private readonly BitCountryList _list;
     private string _labelId = string.Empty;
     private string _errorId = string.Empty;
     private string _inputId = string.Empty;
@@ -59,50 +57,14 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     private string _fieldGroupId = string.Empty;
     private string _scrollContainerId = string.Empty;
 
-    private List<BitCountry> _allItems = [];
-    private List<BitCountry> _viewItems = [];
-
-    // How many of the countries at the head of _allItems are there because they were preferred, which is where
-    // the unfiltered list draws the rule that sets them apart from the rest.
-    private int _preferredCount;
-
-    // The name of each country of _allItems with its diacritics folded away, and the same name cut
-    // into words. Both are read once per country per keystroke, so they are computed with the list
-    // instead of being rebuilt 240 times for every letter typed into the search box.
-    private string[] _foldedNames = [];
-    private string[][] _foldedWords = [];
     private ElementReference _searchInputRef;
     private ElementReference _dropdownButtonRef;
-    private ICollection<BitCountry>? _lastCountries;
-    private ICollection<BitCountry>? _lastExcludeCountries;
-    private ICollection<BitCountry>? _lastPreferredCountries;
     private DotNetObjectReference<BitPhoneInput>? _dotnetObj;
 
-    // The search term the cached _viewItems were produced for. GetFilteredCountries() runs on every
-    // render while the callout is open, so the filtered list is only rebuilt when the term (or the
-    // source list behind it) actually changes.
-    private bool _viewItemsValid;
-    private string? _viewItemsKey;
-
-    // Keys whose default browser behavior must be suppressed. These are applied through a
-    // deterministic JS keydown listener (see BitExtrasSetPreventKeys) so the suppression
-    // always matches the key of the current event instead of lagging one event behind, as
-    // Blazor's stateful `@onkeydown:preventDefault` binding would.
-    // Home and End are deliberately absent from the search box set: inside a text field they move
-    // the caret, which is what a user typing a search term expects them to keep doing.
-    private static readonly string[] _searchBoxKeys = ["ArrowDown", "ArrowUp", "PageDown", "PageUp", "Enter"];
-    private static readonly string[] _dropdownClosedKeys = ["ArrowDown", "ArrowUp", "Home", "End"];
-    private static readonly string[] _dropdownOpenKeys = ["ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End", "Enter", " ", "Spacebar"];
-
-    private const int PageNavigationSize = 10;
-
-    private const int DialCodeExactRank = 3;
-    private const int DialCodeStartsRank = 4;
-    private const int DialCodeContainsRank = 7;
-
-    // The flag file of a country, keyed by its ISO code. Every open callout renders one image per
-    // country it offers, and the url of each of them is otherwise built from scratch on every render.
-    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> _flagUrls = new();
+    public BitPhoneInput()
+    {
+        _list = new(GetCodeTerm, GetDialCodeRank);
+    }
 
 
 
@@ -940,7 +902,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         BitCountry? best = null;
         var bestLength = 0;
         var bestRank = int.MinValue;
-        IEnumerable<BitCountry> candidates = keepCountry && Country is not null ? [Country] : _allItems;
+        IEnumerable<BitCountry> candidates = keepCountry && Country is not null ? [Country] : _list.All;
 
         foreach (var country in candidates)
         {
@@ -1003,14 +965,11 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         // The dismissal has taken the tab order around the button back along with the callout (see ToggleCallout).
         _tabOutRegistered = false;
 
-        ResetCalloutState();
+        _list.Reset();
 
         await ClearSearchBoxElement();
 
-        if (_dropdownKeysWired)
-        {
-            await _js.BitExtrasSetPreventKeys(_dropdownButtonRef, _dropdownClosedKeys);
-        }
+        await SyncDropdownKeys();
 
         // The callout this component had open is gone to make room for another one's, so whatever the
         // focus was on inside it is gone along with it.
@@ -1129,21 +1088,10 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         // the parameters the field ends up with rather than from the ones it was written with.
         CascadingParameters?.UpdateParameters(this);
 
-        // Materialize the country list only when the source of it actually changes. The list is read
-        // on every render while the callout is open, so without this cache the default country set
-        // (BitCountries.All) would be copied into a new list of ~240 items each cycle.
-        if (ReferenceEquals(_lastCountries, Countries) is false ||
-            ReferenceEquals(_lastExcludeCountries, ExcludeCountries) is false ||
-            ReferenceEquals(_lastPreferredCountries, PreferredCountries) is false)
-        {
-            _lastCountries = Countries;
-            _lastExcludeCountries = ExcludeCountries;
-            _lastPreferredCountries = PreferredCountries;
-            _allItems = BuildItems(out _preferredCount);
-            _foldedNames = [.. _allItems.Select(c => Fold(c.Name))];
-            _foldedWords = [.. _foldedNames.Select(n => n.Split([' ', '-'], StringSplitOptions.RemoveEmptyEntries))];
-            _viewItemsValid = false;
-        }
+        // The list is read on every render while the callout is open, so it is only built again when its
+        // source actually changes; without that the default country set (BitCountries.All) would be copied
+        // into a new list of ~240 items each cycle.
+        _list.Update(Countries, ExcludeCountries, PreferredCountries);
 
         // A message that says the value was rejected has to be heard as well as seen, and it is written
         // into a part of the page a screen reader has already read past by the time it appears.
@@ -1164,46 +1112,24 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     {
         await ReconcileValueAndParts();
 
+        // A list is only ever shown on a field whose country can be changed. One the page disables or makes
+        // read-only while it is open - a form disabled for its submit - is closed with it, rather than left on
+        // screen with nothing that could pick from it or close it; and one an IsOpen bound one way keeps open
+        // is hidden while the country cannot be changed and shown again once it can (see IsCalloutShown), which
+        // takes a toggle of its own either way.
+        if (CanOpen != _lastCanOpen)
+        {
+            _lastCanOpen = CanOpen;
+
+            if (IsOpen) _pendingCalloutToggle = true;
+        }
+
+        if (IsOpen && CanOpen is false)
+        {
+            await CloseCallout();
+        }
+
         await base.OnParametersSetAsync();
-    }
-
-    // The countries in the order the dropdown shows them: the preferred ones first, in the order they
-    // were given, then the rest in the order of the Countries list.
-    private List<BitCountry> BuildItems(out int preferredCount)
-    {
-        preferredCount = 0;
-
-        var countries = Countries;
-
-        if (ExcludeCountries is not null && ExcludeCountries.Count > 0)
-        {
-            var excluded = new HashSet<string>(ExcludeCountries.Select(c => c.Iso2), StringComparer.OrdinalIgnoreCase);
-            countries = [.. countries.Where(c => excluded.Contains(c.Iso2) is false)];
-        }
-
-        if (PreferredCountries is null || PreferredCountries.Count == 0)
-        {
-            // A copy even when the source already is a List: _foldedNames and _foldedWords are read
-            // by the index of _allItems, and a list the caller keeps a reference to could otherwise
-            // grow underneath them without the parameter reference ever changing.
-            return [.. countries];
-        }
-
-        var preferred = new List<BitCountry>();
-        var preferredIso = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var country in PreferredCountries)
-        {
-            // Only the countries the dropdown actually offers can be pinned to the top of it.
-            var match = countries.FirstOrDefault(c => c.Iso2.Equals(country.Iso2, StringComparison.OrdinalIgnoreCase));
-            if (match is null || preferredIso.Add(match.Iso2) is false) continue;
-
-            preferred.Add(match);
-        }
-
-        preferredCount = preferred.Count;
-
-        return [.. preferred, .. countries.Where(c => preferredIso.Contains(c.Iso2) is false)];
     }
 
     // Keeps the full Value and the (Number, Country) parts in sync when parameters change.
@@ -1265,7 +1191,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             // A callout opened through the IsOpen parameter before the first render had no country
             // list to point at yet, so the active option is settled here instead.
             var activeIndexSettled = false;
-            if (IsOpen && _activeIndex < 0)
+            if (IsCalloutShown && _list.ActiveIndex < 0)
             {
                 ResetActiveIndexToSelection();
 
@@ -1275,7 +1201,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             // The open list is driven from whichever element carries aria-activedescendant, so the focus
             // is put on it: the search box when there is one, and the button itself when there is not -
             // a callout opened through the IsOpen parameter would otherwise leave the keys nowhere to go.
-            var focusList = IsOpen && NoDropdown is false;
+            var focusList = IsCalloutShown;
 
             // The button takes it before the list is shown, so a focus that has to bring a button opened through
             // IsOpen into view scrolls the page before the list is placed against it, rather than moving the
@@ -1315,10 +1241,10 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
         // Keep the active option visible during keyboard navigation. Done after render so
         // the option element is guaranteed to exist and the callout is laid out.
-        if (IsOpen && _activeIndex >= 0 && _activeIndex != _lastScrolledIndex)
+        if (IsCalloutShown && _list.ActiveIndex >= 0 && _list.ActiveIndex != _list.LastScrolledIndex)
         {
-            _lastScrolledIndex = _activeIndex;
-            await _js.BitExtrasScrollOptionIntoView(GetOptionId(_activeIndex));
+            _list.LastScrolledIndex = _list.ActiveIndex;
+            await _js.BitExtrasScrollOptionIntoView(GetOptionId(_list.ActiveIndex));
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -1337,7 +1263,15 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             if (_dropdownKeysWired is false)
             {
                 _dropdownKeysWired = true;
-                await _js.BitExtrasSetPreventKeys(_dropdownButtonRef, IsOpen ? _dropdownOpenKeys : _dropdownClosedKeys);
+                _dropdownKeysOpen = IsCalloutShown;
+                await _js.BitExtrasSetPreventKeys(_dropdownButtonRef, _dropdownKeysOpen ? BitCountryList.TriggerOpenKeys : BitCountryList.TriggerClosedKeys);
+            }
+            else
+            {
+                // Whatever opened or closed the list - the IsOpen parameter or the field being disabled under
+                // it, which swap no keys of their own - the keys of the button are put in step with it once the
+                // render is through.
+                await SyncDropdownKeys();
             }
         }
         else if (_dropdownKeysWired)
@@ -1351,7 +1285,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             if (_searchBoxKeysWired is false)
             {
                 _searchBoxKeysWired = true;
-                await _js.BitExtrasSetPreventKeys(_searchInputRef, _searchBoxKeys);
+                await _js.BitExtrasSetPreventKeys(_searchInputRef, BitCountryList.SearchBoxKeys);
             }
         }
         else if (_searchBoxKeysWired)
@@ -1400,12 +1334,15 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         _ => null
     };
 
-    // The last of the pinned countries, after which the rest of the list starts. Only the unfiltered list has
-    // such a boundary: a search orders its matches by how close they are, wherever they came from.
-    private bool IsLastPreferred(int index) => _preferredCount > 0
-                                               && index == _preferredCount - 1
-                                               && index < _allItems.Count - 1
-                                               && ReferenceEquals(_viewItems, _allItems);
+    // Only a field whose country can be changed opens its list: the button, the keyboard and OpenAsync all refuse
+    // to open the list of a disabled or read-only one, and one with no dropdown has no list to open.
+    private bool CanOpen => Disabled is false && ReadOnly is false && NoDropdown is false;
+
+    // Whether the list is actually on screen. An IsOpen the page holds at true on a field whose country cannot be
+    // changed is refused the way the button refuses to open (see OnParametersSetAsync), and one bound one way,
+    // which the field cannot set back to false, leaves the list hidden - with nothing it names and no overlay -
+    // until the country can be changed again.
+    private bool IsCalloutShown => IsOpen && CanOpen;
 
     private bool HasLabel => Label.HasValue() || LabelTemplate is not null;
 
@@ -1481,178 +1418,23 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     // several of them would otherwise pay for a list nobody has asked to see yet.
     private bool RenderList => _hasOpened && NoDropdown is false;
 
-    private List<BitCountry> GetFilteredCountries()
+    // A dialing code is searched for the way it is written down: "+44", "0044" and "44" all mean the same code, so
+    // the term is reduced to its digits, less the "00" international prefix, before it is matched against one.
+    private static string GetCodeTerm(string text)
     {
-        if (_viewItemsValid && _viewItemsKey == _searchText) return _viewItems;
-
-        _viewItemsValid = true;
-        _viewItemsKey = _searchText;
-
-        if (_searchText.HasNoValue())
-        {
-            _viewItems = _allItems;
-            return _viewItems;
-        }
-
-        var text = Fold(_searchText!.Trim());
-
-        // A dialing code is searched for the way it is written down: "+44", "0044" and "44" all mean
-        // the same code, so the term is reduced to its digits before it is matched against one.
         var codeTerm = KeepDigits(text);
 
-        // A term that is nothing but punctuation asks for nothing: the '+' of a dialing code about to
-        // be typed is a term of that kind, and answering it with "no results" would say the country
-        // being typed does not exist.
-        if (codeTerm.Length == 0 && text.Any(char.IsLetterOrDigit) is false)
-        {
-            _viewItems = _allItems;
-            return _viewItems;
-        }
-
-        if (codeTerm.Length > 2 && codeTerm.StartsWith("00", StringComparison.Ordinal))
-        {
-            codeTerm = codeTerm[2..];
-        }
-
-        var matches = new List<(BitCountry Country, int Rank, int Index)>();
-
-        for (var i = 0; i < _allItems.Count; i++)
-        {
-            var country = _allItems[i];
-            var rank = GetSearchRank(country, _foldedNames[i], _foldedWords[i], text, codeTerm);
-            if (rank < 0) continue;
-
-            matches.Add((country, rank, i));
-        }
-
-        // The closest match first (an exact ISO code, then a name that starts with the term, then a
-        // dialing code that does), with the list order kept inside each of those groups. A group of
-        // countries matched by their dialing code is ordered the way the same code typed into the
-        // number input resolves, so searching "+1" offers the United States before Canada rather
-        // than whichever of them the alphabet happens to put first.
-        matches.Sort((x, y) =>
-        {
-            if (x.Rank != y.Rank) return x.Rank.CompareTo(y.Rank);
-
-            if (IsDialCodeRank(x.Rank))
-            {
-                var byOwner = GetDialCodeRank(y.Country).CompareTo(GetDialCodeRank(x.Country));
-                if (byOwner != 0) return byOwner;
-            }
-
-            return x.Index.CompareTo(y.Index);
-        });
-
-        _viewItems = [.. matches.Select(m => m.Country)];
-
-        return _viewItems;
-    }
-
-    // The ranks of a match found through the dialing code rather than through a name or an ISO code.
-    private static bool IsDialCodeRank(int rank) => rank is DialCodeExactRank or DialCodeStartsRank or DialCodeContainsRank;
-
-    // The rank of a country against a search term, lower being closer. A negative rank means the
-    // country does not match the term at all.
-    private static int GetSearchRank(BitCountry country, string name, string[] words, string text, string codeTerm)
-    {
-        var codes = country.DigitsCodes;
-
-        if (country.Iso2.Equals(text, StringComparison.OrdinalIgnoreCase)) return 0;
-        if (country.Iso3.Equals(text, StringComparison.OrdinalIgnoreCase)) return 1;
-        if (name.StartsWith(text, StringComparison.InvariantCultureIgnoreCase)) return 2;
-        if (AnyCode(codes, codeTerm, static (code, term) => code.Equals(term, StringComparison.Ordinal))) return DialCodeExactRank;
-        if (AnyCode(codes, codeTerm, static (code, term) => code.StartsWith(term, StringComparison.Ordinal))) return DialCodeStartsRank;
-
-        // A term of several words matches a name whose words start with them, so "united sta" and
-        // "so afr" both find their country without the term having to be a prefix of the whole name.
-        if (MatchesWordStarts(words, text)) return 5;
-
-        if (name.Contains(text, StringComparison.InvariantCultureIgnoreCase)) return 6;
-        if (AnyCode(codes, codeTerm, static (code, term) => code.Contains(term, StringComparison.Ordinal))) return DialCodeContainsRank;
-        if (country.Iso2.Contains(text, StringComparison.OrdinalIgnoreCase)) return 8;
-        if (country.Iso3.Contains(text, StringComparison.OrdinalIgnoreCase)) return 9;
-
-        return -1;
-    }
-
-    // A country is found by any of the codes it answers to, so a term is measured against all of them.
-    private static bool AnyCode(string[] codes, string term, Func<string, string, bool> matches)
-    {
-        if (term.Length == 0) return false;
-
-        foreach (var code in codes)
-        {
-            if (matches(code, term)) return true;
-        }
-
-        return false;
-    }
-
-    private static bool MatchesWordStarts(string[] words, string text)
-    {
-        if (text.Contains(' ') is false) return false;
-
-        var terms = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-        if (terms.Length == 0 || terms.Length > words.Length) return false;
-
-        for (var i = 0; i < terms.Length; i++)
-        {
-            if (words[i].StartsWith(terms[i], StringComparison.InvariantCultureIgnoreCase) is false) return false;
-        }
-
-        return true;
-    }
-
-    // A copy of the text with the diacritic of each character removed, so a country is found by the
-    // plain letters of its name ("Aland", "Reunion", "Curacao") as much as by the accented ones.
-    private static string Fold(string text)
-    {
-        // Most country names are plain ASCII, which has no diacritic to fold: they are returned as
-        // they are instead of being copied character by character into a builder.
-        if (System.Text.Ascii.IsValid(text)) return text;
-
-        var builder = new StringBuilder(text.Length);
-
-        foreach (var c in text)
-        {
-            // ASCII has no diacritics to fold, and a lone surrogate half (one of the two chars an
-            // emoji is made of) is not a valid string of its own, so normalizing it would throw.
-            if (char.IsAscii(c) || char.IsSurrogate(c))
-            {
-                builder.Append(c);
-                continue;
-            }
-
-            var baseChar = c;
-
-            foreach (var decomposed in c.ToString().Normalize(NormalizationForm.FormD))
-            {
-                if (CharUnicodeInfo.GetUnicodeCategory(decomposed) == UnicodeCategory.NonSpacingMark) continue;
-
-                baseChar = decomposed;
-                break;
-            }
-
-            builder.Append(baseChar);
-        }
-
-        return builder.ToString();
+        return codeTerm.Length > 2 && codeTerm.StartsWith("00", StringComparison.Ordinal) ? codeTerm[2..] : codeTerm;
     }
 
     private string GetOptionId(int index) => $"{_calloutId}-opt-{index}";
 
     // The display is written here rather than in the stylesheet because it is what the component toggles the
     // layer with, and Styles.Overlay is appended after it so a value written for the overlay still wins.
-    private string GetOverlayStyles() => $"display:{(IsOpen ? "block" : "none")};{Styles?.Overlay}";
+    private string GetOverlayStyles() => $"display:{(IsCalloutShown ? "block" : "none")};{Styles?.Overlay}";
 
-    // Where the flag images live and how they are named is BitFlag's to know, so the two cannot drift.
-    private string GetFlagUrl(BitCountry country)
-    {
-        var url = FlagUrlSelector?.Invoke(country);
-
-        return url.HasValue() ? url! : _flagUrls.GetOrAdd(country.Iso2, static iso2 => BitFlag.GetFlagUrl(iso2));
-    }
+    // Null for a country with no flag image at all, which is drawn as an empty box of the size of one.
+    private string? GetFlagUrl(BitCountry country) => BitCountryList.GetFlagUrl(country, FlagUrlSelector);
 
     // A single live region carries everything the callout has to say, and a screen reader only
     // announces what changes inside one: repeating the same sentence (two searches with the same
@@ -1696,22 +1478,24 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             // While closed, Enter/Space are handled by the button's native click (which calls
             // HandleOnDropdownClick -> OpenCallout), so they are intentionally not treated as
             // open triggers here to avoid a double toggle. Their defaults are not suppressed
-            // (see _dropdownClosedKeys) so the native click can open the callout.
+            // (see BitCountryList.TriggerClosedKeys) so the native click can open the callout.
             if (key is "ArrowDown" or "ArrowUp" or "Home" or "End")
             {
                 await OpenCallout(fromButton: true);
 
                 // Home and End say where in the list to land, the way they do on a native select.
-                if (key == "Home" && _viewItems.Count > 0) _activeIndex = 0;
-                if (key == "End" && _viewItems.Count > 0) _activeIndex = _viewItems.Count - 1;
+                if (key is "Home" or "End")
+                {
+                    _list.Navigate(key, fromSearchBox: false, NoWrapNavigation);
+                }
             }
-            else if (NoSearchBox && IsTypeAheadKey(e))
+            else if (NoSearchBox && BitCountryList.IsTypeAheadKey(e))
             {
                 // A selector with no search box is a select-only combobox, and typing on one opens it on the
                 // country the letters start - there is no box for the letters to go into instead.
                 await OpenCallout(fromButton: true);
 
-                HandleTypeAhead(key);
+                _list.TypeAhead(key);
             }
 
             return;
@@ -1733,9 +1517,9 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             case "ArrowUp" when e.AltKey:
                 // Alt+Up closes the list the way the combobox pattern has it: a select-only one takes the option
                 // the arrows are on, while one with a search box only gives the focus back to its button.
-                if (fromSearchBox is false && _activeIndex >= 0 && _activeIndex < _viewItems.Count)
+                if (fromSearchBox is false && _list.Active is { } active)
                 {
-                    await HandleOnCountrySelect(_viewItems[_activeIndex]);
+                    await HandleOnCountrySelect(active);
                 }
                 else
                 {
@@ -1755,35 +1539,10 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
                 await CloseCallout();
                 break;
 
-            case "ArrowDown":
-                MoveActiveIndex(1);
-                break;
-
-            case "ArrowUp":
-                MoveActiveIndex(-1);
-                break;
-
-            case "PageDown":
-                MoveActiveIndex(PageNavigationSize, clamp: true);
-                break;
-
-            case "PageUp":
-                MoveActiveIndex(-PageNavigationSize, clamp: true);
-                break;
-
-            case "Home":
-                // Inside the search box Home belongs to the caret, not to the list.
-                if (fromSearchBox is false && _viewItems.Count > 0) _activeIndex = 0;
-                break;
-
-            case "End":
-                if (fromSearchBox is false && _viewItems.Count > 0) _activeIndex = _viewItems.Count - 1;
-                break;
-
             case "Enter":
-                if (_activeIndex >= 0 && _activeIndex < _viewItems.Count)
+                if (_list.Active is { } country)
                 {
-                    await HandleOnCountrySelect(_viewItems[_activeIndex]);
+                    await HandleOnCountrySelect(country);
                 }
                 break;
 
@@ -1796,32 +1555,36 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
                 // A space typed in the middle of a type-ahead term is part of the name being typed
                 // ("united s" for the United States), not a choice of the country the term has reached so far.
-                if (IsTypeAheadInProgress)
+                if (_list.IsTypeAheadInProgress)
                 {
-                    HandleTypeAhead(" ");
+                    _list.TypeAhead(" ");
                 }
-                else if (_activeIndex >= 0 && _activeIndex < _viewItems.Count)
+                else if (_list.Active is { } spaced)
                 {
-                    await HandleOnCountrySelect(_viewItems[_activeIndex]);
+                    await HandleOnCountrySelect(spaced);
                 }
                 break;
 
             default:
+                // The arrows, PageUp/PageDown, and Home/End outside the search box, whose caret they belong to.
+                if (_list.Navigate(key, fromSearchBox, NoWrapNavigation)) break;
+
                 // Without a search box to type into, the letters typed on the open list jump to the
                 // country whose name they start, the way a native select behaves.
-                if (fromSearchBox is false && IsTypeAheadKey(e))
+                if (fromSearchBox is false && BitCountryList.IsTypeAheadKey(e))
                 {
-                    HandleTypeAhead(key);
+                    _list.TypeAhead(key);
                 }
                 break;
         }
     }
 
     // The keys of the open list pressed on the button of a list that has a search box (see HandleOnCalloutKeyDown).
-    // The navigation keys move the active option and hand the focus to the search box, which announces it; a letter
-    // goes into the search box as if it had been typed there; Enter and Space press the button, which closes the list
-    // as a click on it does; Alt+Up closes it the way it does from the search box. Escape and Tab are left to the
-    // handling they get anywhere in the list. Reports whether the key was handled here.
+    // The navigation keys move the active option the way they do anywhere in the list - Home and End included, since
+    // they were not pressed in the search box whose caret they would move - and hand the focus to the search box,
+    // which announces it; a letter goes into the search box as if it had been typed there; Enter and Space press the
+    // button, which closes the list as a click on it does; Alt+Up closes it the way it does from the search box.
+    // Escape and Tab are left to the handling they get anywhere in the list. Reports whether the key was handled here.
     private async Task<bool> HandleOnButtonOfSearchableListKeyDown(KeyboardEventArgs e)
     {
         switch (e.Key)
@@ -1831,30 +1594,6 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
                 await FocusDropdown();
                 return true;
 
-            case "ArrowDown":
-                MoveActiveIndex(1);
-                break;
-
-            case "ArrowUp":
-                MoveActiveIndex(-1);
-                break;
-
-            case "PageDown":
-                MoveActiveIndex(PageNavigationSize, clamp: true);
-                break;
-
-            case "PageUp":
-                MoveActiveIndex(-PageNavigationSize, clamp: true);
-                break;
-
-            case "Home":
-                if (_viewItems.Count > 0) _activeIndex = 0;
-                break;
-
-            case "End":
-                if (_viewItems.Count > 0) _activeIndex = _viewItems.Count - 1;
-                break;
-
             case "Enter":
             case " ":
             case "Spacebar":
@@ -1863,12 +1602,13 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
                 // The focus is still on the button, so the ring CloseCallout dropped belongs right back on.
                 SetHasFocus(true);
                 return true;
+        }
 
-            default:
-                if (IsTypeAheadKey(e) is false) return false;
+        if (_list.Navigate(e.Key, fromSearchBox: false, NoWrapNavigation) is false)
+        {
+            if (BitCountryList.IsTypeAheadKey(e) is false) return false;
 
-                await ApplySearchText(_searchText + e.Key);
-                break;
+            await ApplySearchText(_list.SearchText + e.Key);
         }
 
         try
@@ -1880,72 +1620,9 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         return true;
     }
 
-    // A printable character typed without a modifier: a shortcut (Ctrl+C, Alt+letter) is not a letter of a name.
-    private static bool IsTypeAheadKey(KeyboardEventArgs e) => e.Key.Length == 1
-                                                               && char.IsLetterOrDigit(e.Key[0])
-                                                               && e.CtrlKey is false
-                                                               && e.AltKey is false
-                                                               && e.MetaKey is false;
-
-    private bool IsTypeAheadInProgress => _typeAhead.Length > 0 && (DateTimeOffset.UtcNow - _typeAheadAt) <= _typeAheadTimeout;
-
-    private void MoveActiveIndex(int offset, bool clamp = false)
-    {
-        if (_viewItems.Count == 0) return;
-
-        var next = _activeIndex < 0 ? (offset > 0 ? 0 : _viewItems.Count - 1) : _activeIndex + offset;
-
-        if (clamp || NoWrapNavigation)
-        {
-            next = Math.Clamp(next, 0, _viewItems.Count - 1);
-        }
-        else if (next < 0)
-        {
-            next = _viewItems.Count - 1;
-        }
-        else if (next > _viewItems.Count - 1)
-        {
-            next = 0;
-        }
-
-        _activeIndex = next;
-    }
-
-    private void HandleTypeAhead(string key)
-    {
-        if (_viewItems.Count == 0) return;
-
-        var now = DateTimeOffset.UtcNow;
-
-        // A pause longer than the timeout starts a new term, and repeating a single letter cycles
-        // through the countries starting with it instead of searching for a doubled letter.
-        _typeAhead = (now - _typeAheadAt) > _typeAheadTimeout ? key : _typeAhead + key;
-        _typeAheadAt = now;
-
-        var term = Fold(_typeAhead);
-        var start = _typeAhead.Length == 1 ? _activeIndex + 1 : Math.Max(_activeIndex, 0);
-
-        // The type-ahead only runs on the unfiltered list (there is no search box to filter it with),
-        // so the names folded once with the list are the same ones this walks over.
-        var folded = ReferenceEquals(_viewItems, _allItems) ? _foldedNames : null;
-
-        for (var i = 0; i < _viewItems.Count; i++)
-        {
-            var index = (start + i) % _viewItems.Count;
-            if (index < 0) index += _viewItems.Count;
-
-            var name = folded is not null ? folded[index] : Fold(_viewItems[index].Name);
-
-            if (name.StartsWith(term, StringComparison.InvariantCultureIgnoreCase) is false) continue;
-
-            _activeIndex = index;
-            return;
-        }
-    }
-
     private async Task OpenCallout(bool fromButton)
     {
-        if (Disabled || NoDropdown) return;
+        if (CanOpen is false) return;
 
         _hasOpened = true;
 
@@ -1953,18 +1630,13 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
         _openedFromButton = fromButton;
 
-        // Populate the view items before computing the active index. GetFilteredCountries()
-        // is otherwise only called during render, so opening via the keyboard (ArrowDown)
-        // before the list has rendered would leave _viewItems empty and _activeIndex at -1,
-        // making the first Enter select nothing.
+        // Settle the active option before the list has rendered: opening via the keyboard (ArrowDown)
+        // would otherwise leave it at -1, making the first Enter select nothing.
         ResetActiveIndexToSelection();
 
-        _typeAhead = string.Empty;
+        _list.ResetTypeAhead();
 
-        if (_dropdownKeysWired)
-        {
-            await _js.BitExtrasSetPreventKeys(_dropdownButtonRef, _dropdownOpenKeys);
-        }
+        await SyncDropdownKeys();
 
         _pendingCalloutToggle = true;
 
@@ -1977,14 +1649,11 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
         if (await AssignIsOpenInternal(false) is false) return;
 
-        ResetCalloutState();
+        _list.Reset();
 
         await ClearSearchBoxElement();
 
-        if (_dropdownKeysWired)
-        {
-            await _js.BitExtrasSetPreventKeys(_dropdownButtonRef, _dropdownClosedKeys);
-        }
+        await SyncDropdownKeys();
 
         _pendingCalloutToggle = true;
 
@@ -2009,16 +1678,22 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         await FocusDropdown();
     }
 
+    // The keys the button prevents follow whether its list is on screen, and are swapped the moment that changes,
+    // so the very next key is answered the way the list now is: Enter and Space are left to the native click of a
+    // closed button, which opens the list, and are kept from an open one, where they pick a country and the click
+    // would open the list again straight after.
+    private async Task SyncDropdownKeys()
+    {
+        if (_dropdownKeysWired is false || _dropdownKeysOpen == IsCalloutShown) return;
+
+        _dropdownKeysOpen = IsCalloutShown;
+
+        await _js.BitExtrasSetPreventKeys(_dropdownButtonRef, _dropdownKeysOpen ? BitCountryList.TriggerOpenKeys : BitCountryList.TriggerClosedKeys);
+    }
+
     // Puts the active option on the current selection, or on the first country when nothing is
     // selected yet, so the list always opens with something for Enter to act on.
-    private void ResetActiveIndexToSelection()
-    {
-        GetFilteredCountries();
-
-        var selectedIndex = _viewItems.FindIndex(c => c.Iso2 == Country?.Iso2);
-        _activeIndex = selectedIndex >= 0 ? selectedIndex : (_viewItems.Count > 0 ? 0 : -1);
-        _lastScrolledIndex = -1;
-    }
+    private void ResetActiveIndexToSelection() => _list.ResetActiveToSelection(c => c.Iso2 == Country?.Iso2);
 
     // Clears the text left in the search box element itself. The value attribute alone is not
     // enough: an input keeps the value its user typed as a DOM property, which a re-render of the
@@ -2034,15 +1709,6 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         }
         catch (JSException) { } // the element might not be ready/visible yet
         catch (JSDisconnectedException) { } // we can ignore this exception here
-    }
-
-    private void ResetCalloutState()
-    {
-        _searchText = null;
-        _activeIndex = -1;
-        _lastScrolledIndex = -1;
-        _typeAhead = string.Empty;
-        _viewItemsValid = false;
     }
 
     // See OnSetIsOpen: the flows that follow AssignIsOpen with their own callout toggle mark the
@@ -2066,7 +1732,9 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         // change pushed from the outside through the IsOpen parameter, which otherwise has no path
         // to the JS side that actually shows and hides the callout. Before the first render there is
         // no element to toggle either, which OnAfterRenderAsync takes care of by running the pending
-        // toggle as soon as there is one.
+        // toggle as soon as there is one; it is also where the keys of the button are put in step
+        // with the list (see WirePreventKeys), and an open on a field whose country cannot be changed
+        // is refused before that (see OnParametersSetAsync).
         if (_internalIsOpenChange) return;
 
         if (IsOpen)
@@ -2078,7 +1746,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         }
         else
         {
-            ResetCalloutState();
+            _list.Reset();
 
             // A callout closed through the IsOpen parameter takes whatever focus it holds down with it,
             // and no focusout of the field is fired for it.
@@ -2105,9 +1773,12 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     private async Task ToggleCallout()
     {
         // Without a dropdown there is no callout element in the document to show or position.
-        if (Disabled || IsDisposed || NoDropdown) return;
+        if (IsDisposed || NoDropdown) return;
 
-        var tabOut = IsOpen && NoSearchBox is false;
+        // What is shown is what the field can show: a list the field was disabled under is closed on the JS side
+        // all the same, rather than left on screen with nothing that could close it.
+        var shown = IsCalloutShown;
+        var tabOut = shown && NoSearchBox is false;
 
         // A close takes the tab order back whatever it does, and an open that fails registers none.
         _tabOutRegistered = false;
@@ -2122,7 +1793,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             calloutId: _calloutId,
             callout: null,
             overlayId: _overlayId,
-            isCalloutOpen: IsOpen,
+            isCalloutOpen: shown,
             responsiveMode: Responsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
             dropDirection: DropDirection,
             isRtl: ExplicitRtl,
@@ -2146,26 +1817,14 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
 
     private async Task ApplySearchText(string? text)
     {
-        _searchText = text;
-        _viewItemsValid = false;
-
-        // Re-evaluate the filtered list so the active option stays within range and
-        // pressing Enter selects the first matching result instead of a stale one.
-        GetFilteredCountries();
-        _activeIndex = _viewItems.Count > 0 ? 0 : -1;
-        _lastScrolledIndex = -1;
+        // The active option moves to the first match, so pressing Enter selects it instead of a stale one.
+        var count = _list.Search(text);
 
         // The list the term filtered down to is inside a callout, so its length is only ever seen:
         // it is announced here for the users who cannot see it.
-        Announce(_viewItems.Count switch
-        {
-            0 => NoResultsMessage ?? "No results found",
-            var count when SearchResultsAnnouncement is not null => SearchResultsAnnouncement(count),
-            1 => "1 country found",
-            var count => $"{count} countries found"
-        });
+        Announce(BitCountryList.GetSearchAnnouncement(count, NoResultsMessage, SearchResultsAnnouncement));
 
-        await OnSearch.InvokeAsync(_searchText);
+        await OnSearch.InvokeAsync(_list.SearchText);
     }
 
     private async Task HandleOnCountrySelect(BitCountry country)
@@ -2389,7 +2048,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         // The focus ring belongs to the field as a whole, and the search box of an open callout is
         // part of that field as far as the user is concerned, so the ring stays on while it is open.
         // Closing the callout is what turns it off again (see CloseCallout).
-        if (IsOpen is false)
+        if (IsCalloutShown is false)
         {
             SetHasFocus(false);
         }

@@ -10,7 +10,7 @@
      class="@ClassBuilder.Value"
      title="@Title"
      dir="@Dir?.ToString().ToLower()"
-     aria-owns="@JoinTokenLists(GetSplattedAttribute("aria-owns"), IsOpen ? _calloutId : null)">
+     aria-owns="@JoinTokenLists(GetSplattedAttribute("aria-owns"), IsCalloutShown ? _calloutId : null)">
 
     @if (LabelTemplate is not null)
     {
@@ -48,7 +48,15 @@
                     {
                         @if (NoFlags is false)
                         {
-                            <img style="@Styles?.Flag" class="bit-phi-flg @Classes?.Flag" src="@GetFlagUrl(Country)" alt="" aria-hidden="true" loading="lazy" />
+                            var flagUrl1 = GetFlagUrl(Country);
+                            @if (flagUrl1 is not null)
+                            {
+                                <img style="@Styles?.Flag" class="bit-phi-flg @Classes?.Flag" src="@flagUrl1" alt="" aria-hidden="true" loading="lazy" />
+                            }
+                            else
+                            {
+                                <span style="@Styles?.Flag" class="bit-phi-flg @Classes?.Flag" aria-hidden="true"></span>
+                            }
                         }
                         @if (NoDialCode is false)
                         {
@@ -73,9 +81,9 @@
                     id="@_dropdownId"
                     role="@(NoSearchBox ? "combobox" : null)"
                     aria-haspopup="listbox"
-                    aria-expanded="@(IsOpen ? "true" : "false")"
-                    aria-controls="@(IsOpen ? _listId : null)"
-                    aria-activedescendant="@(IsOpen && NoSearchBox && _activeIndex >= 0 ? GetOptionId(_activeIndex) : null)"
+                    aria-expanded="@(IsCalloutShown ? "true" : "false")"
+                    aria-controls="@(IsCalloutShown ? _listId : null)"
+                    aria-activedescendant="@(IsCalloutShown && NoSearchBox && _list.ActiveIndex >= 0 ? GetOptionId(_list.ActiveIndex) : null)"
                     aria-label="@DropdownLabel"
                     title="@DropdownTitle"
                     disabled="@(Disabled)"
@@ -92,7 +100,15 @@
                     {
                         @if (NoFlags is false)
                         {
-                            <img style="@Styles?.Flag" class="bit-phi-flg @Classes?.Flag" src="@GetFlagUrl(Country)" alt="" aria-hidden="true" loading="lazy" />
+                            var flagUrl2 = GetFlagUrl(Country);
+                            @if (flagUrl2 is not null)
+                            {
+                                <img style="@Styles?.Flag" class="bit-phi-flg @Classes?.Flag" src="@flagUrl2" alt="" aria-hidden="true" loading="lazy" />
+                            }
+                            else
+                            {
+                                <span style="@Styles?.Flag" class="bit-phi-flg @Classes?.Flag" aria-hidden="true"></span>
+                            }
                         }
                         @if (NoDialCode is false)
                         {
@@ -236,7 +252,7 @@
 
     <div id="@_calloutId"
          style="@Styles?.Callout"
-         class="bit-phi-cal @SizeClass @ColorClass @(Responsive ? "bit-phi-res" : null) @(Dir is BitDir.Rtl ? "bit-phi-rtl" : null) @Classes?.Callout">
+         class="bit-phi-cal @SizeClass @ColorClass @(Responsive ? "bit-phi-res" : null) @(Dir is BitDir.Rtl ? "bit-rtl" : null) @Classes?.Callout">
 
         @if (Responsive)
         {
@@ -265,12 +281,12 @@
                        spellcheck="false"
                        autocorrect="off"
                        autocapitalize="off"
-                       value="@_searchText"
+                       value="@_list.SearchText"
                        aria-autocomplete="list"
                        aria-haspopup="listbox"
-                       aria-expanded="@(IsOpen ? "true" : "false")"
-                       aria-controls="@(IsOpen ? _listId : null)"
-                       aria-activedescendant="@(IsOpen && _activeIndex >= 0 ? GetOptionId(_activeIndex) : null)"
+                       aria-expanded="@(IsCalloutShown ? "true" : "false")"
+                       aria-controls="@(IsCalloutShown ? _listId : null)"
+                       aria-activedescendant="@(IsCalloutShown && _list.ActiveIndex >= 0 ? GetOptionId(_list.ActiveIndex) : null)"
                        aria-label="@(SearchBoxAriaLabel ?? SearchBoxPlaceholder ?? "Search countries")"
                        class="bit-phi-srch"
                        placeholder="@(SearchBoxPlaceholder ?? "Search")" />
@@ -305,15 +321,15 @@
                  aria-label="@(DropdownAriaLabel ?? "Countries")">
                 @if (RenderList)
                 {
-                    var items = GetFilteredCountries();
+                    var items = _list.View;
 
                     @for (var i = 0; i < items.Count; i++)
                     {
                         var index = i;
                         var country = items[index];
                         var isSelected = country.Iso2 == Country?.Iso2;
-                        var isActive = index == _activeIndex;
-                        var itemClass = $"bit-phi-itm{(isSelected ? " bit-phi-sel" : "")}{(isActive ? " bit-phi-act" : "")}{(IsLastPreferred(index) ? " bit-phi-ilp" : "")}";
+                        var isActive = index == _list.ActiveIndex;
+                        var itemClass = $"bit-phi-itm{(isSelected ? " bit-phi-sel" : "")}{(isActive ? " bit-phi-act" : "")}{(_list.IsLastPreferred(index) ? " bit-phi-ilp" : "")}";
                         <button @key="country.Iso2"
                                 id="@GetOptionId(index)"
                                 @onclick="() => HandleOnCountrySelect(country)"
@@ -332,7 +348,15 @@
                             {
                                 @if (NoFlags is false)
                                 {
-                                    <img style="@Styles?.Flag" class="bit-phi-flg @Classes?.Flag" src="@GetFlagUrl(country)" alt="" aria-hidden="true" loading="lazy" />
+                                    var flagUrl = GetFlagUrl(country);
+                                    @if (flagUrl is not null)
+                                    {
+                                        <img style="@Styles?.Flag" class="bit-phi-flg @Classes?.Flag" src="@flagUrl" alt="" aria-hidden="true" loading="lazy" />
+                                    }
+                                    else
+                                    {
+                                        <span style="@Styles?.Flag" class="bit-phi-flg @Classes?.Flag" aria-hidden="true"></span>
+                                    }
                                 }
                                 <span style="@Styles?.ItemName" class="bit-phi-inm @Classes?.ItemName">@country.Name</span>
                                 <span style="@Styles?.ItemCode" class="bit-phi-icd @Classes?.ItemCode">+@country.Code</span>

@@ -1,0 +1,722 @@
+﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
+@import '../../../Bit.BlazorUI/Styles/media-queries.scss';
+
+// Public CSS variables, read with a fallback and never declared here, so a value set on :root re-skins every
+// country picker and one set on the Style of an instance (or through Styles.Root) re-skins that one and the country
+// pickers nested in it. The callout and the overlay are rendered beside the root element and relocated to the body
+// while the callout is open; Callouts.ts carries what the root and its ancestors declare into them, so a variable set
+// on an ancestor or through its class, in Style or in Styles.Root reaches them like any inherited value.
+//
+//   FIELD
+//   --bit-CountryPicker-background              fill of the field                        (default: $clr-bg-pri)
+//   --bit-CountryPicker-color                   name of the selected country             (default: $clr-fg-pri)
+//   --bit-CountryPicker-placeholder-color       placeholder of the field and of the
+//                                               search box                               (default: $clr-fg-sec)
+//   --bit-CountryPicker-border-color            frame at rest                            (default: $clr-brd-pri)
+//   --bit-CountryPicker-hover-border-color      frame under a pointer                    (default: $clr-brd-pri-hover)
+//   --bit-CountryPicker-border-width            thickness of the frame                   (default: $shp-border-width)
+//   --bit-CountryPicker-radius                  corner radius of the frame               (default: $shp-radius-control)
+//   --bit-CountryPicker-min-height              smallest height of the frame             (default: $siz-ctrl-md)
+//   --bit-CountryPicker-font-size               text size of the field and of the list   (default: $tg-fs-sm)
+//   --bit-CountryPicker-padding                 padding of the field                     (default: 0 $siz-ctrl-pad-x-md)
+//   --bit-CountryPicker-focus-color             focused frame, focus ring and the
+//                                               keyboard cues inside the list            (default: $clr-pri-focus)
+//   --bit-CountryPicker-invalid-color           frame, ring and message of a rejected
+//                                               value                                    (default: $clr-err / $clr-err-focus)
+//   --bit-CountryPicker-disabled-color          text and glyphs when disabled            (default: $clr-fg-dis)
+//   --bit-CountryPicker-disabled-background     fill when disabled                       (default: $clr-bg-dis)
+//   --bit-CountryPicker-disabled-border-color   frame when disabled                      (default: $clr-brd-dis)
+//   --bit-CountryPicker-caret-color             the caret of the field                   (default: $clr-fg-sec)
+//   --bit-CountryPicker-flag-size               the flags of the field and the list      (default: $siz-icon-md)
+//   --bit-CountryPicker-flag-radius             corner radius of a flag                  (default: $shp-radius-none)
+//
+//   LABEL AND WHAT IS WRITTEN UNDER THE FIELD
+//   --bit-CountryPicker-label-color             label text                               (default: $clr-fg-pri)
+//   --bit-CountryPicker-label-font-size         label text size                          (default: --bit-CountryPicker-font-size)
+//   --bit-CountryPicker-label-font-weight       label weight                             (default: $tg-field-label-font-weight)
+//   --bit-CountryPicker-required-color          the asterisk of a Required field         (default: $clr-req)
+//   --bit-CountryPicker-description-color       description text                         (default: $clr-fg-sec)
+//   --bit-CountryPicker-footer-font-size        description and error message text size  (default: $tg-fs-2xs)
+//
+//   CALLOUT
+//   --bit-CountryPicker-callout-background      the list surface                         (default: $clr-bg-pri)
+//   --bit-CountryPicker-callout-border-color    its border, and the rules under the
+//                                               search box and the preferred countries   (default: $clr-brd-pri)
+//   --bit-CountryPicker-callout-radius          its corner radius                        (default: $shp-radius-popup)
+//   --bit-CountryPicker-callout-shadow          its elevation                            (default: $box-shadow-popup)
+//   --bit-CountryPicker-callout-max-height      tallest the scrolling list grows; the
+//                                               MaxHeight parameter wins over it         (default: $siz-popup-max-height)
+//   --bit-CountryPicker-responsive-width        width of the side panel a Responsive
+//                                               field opens on a small screen            (default: spacing(34))
+//   --bit-CountryPicker-overlay-background      the layer behind an open callout - give
+//                                               it a color for a modal-style scrim       (default: transparent)
+//
+//   ITEMS
+//   --bit-CountryPicker-item-height             smallest height of a row                 (default: $siz-item-md)
+//   --bit-CountryPicker-item-color              name of a row, and the search text       (default: $clr-fg-pri)
+//   --bit-CountryPicker-item-hover-background   row under the pointer or the keyboard    (default: $clr-bg-pri-hover)
+//   --bit-CountryPicker-item-selected-background  the selected row                       (default: $clr-bg-sec)
+//   --bit-CountryPicker-item-selected-color     text of the selected row                 (default: --bit-CountryPicker-item-color)
+//
+// A parameter written on the field wins over the variable that restyles what it sets: an explicit Background over
+// the fill, an explicit Border - and, below it, an explicit Color - over the rest and hover frame colors, an explicit
+// Color over the focus color, and an explicit Size over the minimum height, the font sizes (the label's included),
+// the padding of the field, the flag size and the row height. The variables restyle the default, not a choice -
+// which is why Size, Color, Background and Border publish nothing while they are left unset, on the root and on the
+// callout alike: a class that always carried the default would be indistinguishable from one that was asked for. A
+// state the field is in - disabled, rejected - is still read first.
+//
+// A state under the pointer moves a private variable of the part it is on rather than painting the part, so a part
+// an app paints through Classes keeps that paint while it is pointed at as well.
+
+
+// The size of the control and of its callout is driven by these variables, so a single size class applied to the
+// root and repeated on the callout resizes every part consistently. Published only by an explicit Size; an unset
+// one is the medium field, which cnp-vars spells out after the public variables.
+@mixin cnp-size($fs, $h, $pad-x, $icon, $itm-h) {
+    --bit-cnp-sz-fs: #{$fs};
+    --bit-cnp-sz-h: #{$h};
+    --bit-cnp-sz-pad: 0 #{$pad-x};
+    --bit-cnp-sz-icon: #{$icon};
+    --bit-cnp-sz-itm-h: #{$itm-h};
+}
+
+// Every private variable the mixin below starts out unset, so an instance never inherits one from an instance it is
+// nested in. A private variable added to the component goes in this list.
+$cnp-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role-focus, kind-bg, kind-brd,
+                         kind-brd-hover;
+
+// The values the Size, Color, Background and Border classes publish start out unset on the root and on the callout,
+// so a picker rendered inside another one's template never inherits the outer picker's choice; the classes -
+// declared further down at the same weight - still win on the element that carries them. Left unset, each sends the
+// var() reading it in cnp-vars on to the public variable and then to the default (the medium size, the primary
+// role, the primary background and border), which is what lets an explicit parameter outrank the variable while an
+// unset one leaves the variable in charge.
+@mixin cnp-resets {
+    @each $name in $cnp-private-properties {
+        --bit-cnp-#{$name}: initial;
+    }
+}
+
+// The one place the public variables meet the parameters and the defaults: the value an explicit parameter publishes
+// first, then the public variable, then the default an unset parameter stands for. Every rule below reads the
+// private variables this leaves behind, so no use site repeats the fallback chain - and the block is included on the
+// callout as well, which is a sibling of the root and inherits nothing its classes declare. An explicit Border kind
+// is read before the main color of an explicit Color, which keeps the focus ring.
+@mixin cnp-vars {
+    --bit-cnp-fs: var(--bit-cnp-sz-fs, var(--bit-CountryPicker-font-size, #{$tg-fs-sm}));
+    --bit-cnp-lbl-fs: var(--bit-cnp-sz-fs, var(--bit-CountryPicker-label-font-size, var(--bit-CountryPicker-font-size, #{$tg-fs-sm})));
+    --bit-cnp-h: var(--bit-cnp-sz-h, var(--bit-CountryPicker-min-height, #{$siz-ctrl-md}));
+    --bit-cnp-pad: var(--bit-cnp-sz-pad, var(--bit-CountryPicker-padding, 0 #{$siz-ctrl-pad-x-md}));
+    --bit-cnp-flg: var(--bit-cnp-sz-icon, var(--bit-CountryPicker-flag-size, #{$siz-icon-md}));
+    --bit-cnp-itm-h: var(--bit-cnp-sz-itm-h, var(--bit-CountryPicker-item-height, #{$siz-item-md}));
+    --bit-cnp-radius: var(--bit-CountryPicker-radius, #{$shp-radius-control});
+    --bit-cnp-brd-w: var(--bit-CountryPicker-border-width, #{$shp-border-width});
+    --bit-cnp-bg: var(--bit-cnp-kind-bg, var(--bit-CountryPicker-background, #{$clr-bg-pri}));
+    --bit-cnp-brd: var(--bit-cnp-kind-brd, var(--bit-cnp-role-main, var(--bit-CountryPicker-border-color, #{$clr-brd-pri})));
+    --bit-cnp-brd-hover: var(--bit-cnp-kind-brd-hover, var(--bit-cnp-role-main, var(--bit-CountryPicker-hover-border-color, #{$clr-brd-pri-hover})));
+    --bit-cnp-focus: var(--bit-cnp-role-focus, var(--bit-CountryPicker-focus-color));
+    --bit-cnp-plc: var(--bit-CountryPicker-placeholder-color, #{$clr-fg-sec});
+    --bit-cnp-itm-clr: var(--bit-CountryPicker-item-color, #{$clr-fg-pri});
+    --bit-cnp-itm-hover-bg: var(--bit-CountryPicker-item-hover-background, #{$clr-bg-pri-hover});
+}
+
+// The keyboard cue of everything that sits INSIDE the callout: the close button of the responsive panel and the
+// active row of the list. An outline drawn inwards is never clipped by the scrolling list, and it survives a
+// forced-colors palette.
+@mixin cnp-focus-inset {
+    outline: $shp-focus-ring-width $shp-border-style var(--bit-cnp-focus, #{$clr-pri-focus});
+    outline-offset: calc(-1 * #{$shp-focus-ring-width});
+
+    @media (forced-colors: active) {
+        outline-color: Highlight;
+    }
+}
+
+.bit-cnp {
+    @include cnp-resets;
+    @include cnp-vars;
+
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    box-sizing: border-box;
+    font-size: var(--bit-cnp-fs);
+    font-family: $tg-font-family;
+}
+
+.bit-cnp-lbl {
+    display: block;
+    box-sizing: border-box;
+    padding: spacing(0.625) 0;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    color: var(--bit-CountryPicker-label-color, #{$clr-fg-pri});
+    font-size: var(--bit-cnp-lbl-fs);
+    font-weight: var(--bit-CountryPicker-label-font-weight, #{$tg-field-label-font-weight});
+}
+
+// The frame is painted from --bit-cnp-fld-brd-st, which the pointer moves to the hover color; at rest it is unset and
+// the frame takes the rest color.
+.bit-cnp-fld {
+    --bit-cnp-fld-brd-st: initial;
+
+    margin: 0;
+    width: 100%;
+    gap: spacing(1);
+    display: flex;
+    cursor: pointer;
+    appearance: none;
+    user-select: none;
+    text-align: start;
+    align-items: center;
+    flex-flow: row nowrap;
+    box-sizing: border-box;
+    min-height: var(--bit-cnp-h);
+    padding: var(--bit-cnp-pad);
+    font-size: var(--bit-cnp-fs);
+    font-family: $tg-font-family;
+    letter-spacing: $tg-ctrl-letter-spacing;
+    border-radius: var(--bit-cnp-radius);
+    background-color: var(--bit-cnp-bg);
+    color: var(--bit-CountryPicker-color, #{$clr-fg-pri});
+    border: var(--bit-cnp-brd-w) $shp-border-style var(--bit-cnp-fld-brd-st, var(--bit-cnp-brd));
+
+    @media (hover: hover) {
+        &:hover {
+            --bit-cnp-fld-brd-st: var(--bit-cnp-brd-hover);
+        }
+    }
+
+    &:disabled {
+        cursor: default;
+    }
+}
+
+// The ring is drawn around the field while the focus is on it or in the list it opened, which is why it follows a
+// class of the root rather than :focus-visible: the search box of the list is part of the field as far as the user
+// is concerned.
+.bit-cnp-fcs .bit-cnp-fld {
+    @include focus-ring-own(var(--bit-cnp-focus));
+
+    border-color: var(--bit-cnp-focus, #{$clr-pri-focus});
+}
+
+// A ReadOnly field answers no click, so it looks like nothing that would.
+.bit-cnp-rdo .bit-cnp-fld {
+    cursor: default;
+}
+
+// The caret promises a list that a ReadOnly field never opens.
+.bit-cnp-rdo .bit-cnp-car {
+    visibility: hidden;
+}
+
+.bit-cnp-tcn {
+    min-width: 0;
+    gap: spacing(1);
+    display: flex;
+    color: inherit;
+    flex: 1 1 auto;
+    align-items: center;
+    flex-flow: row nowrap;
+}
+
+.bit-cnp-txt,
+.bit-cnp-pls {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.bit-cnp-pls {
+    color: var(--bit-cnp-plc);
+}
+
+.bit-cnp-flg {
+    flex-shrink: 0;
+    object-fit: cover;
+    width: var(--bit-cnp-flg);
+    height: var(--bit-cnp-flg);
+    border-radius: var(--bit-CountryPicker-flag-radius, #{$shp-radius-none});
+}
+
+.bit-cnp-car {
+    width: 0;
+    height: 0;
+    flex-shrink: 0;
+    border-style: solid;
+    border-width: spacing(0.5) spacing(0.375) 0 spacing(0.375);
+    border-color: var(--bit-CountryPicker-caret-color, #{$clr-fg-sec}) transparent transparent transparent;
+}
+
+.bit-cnp.bit-dis {
+    .bit-cnp-lbl {
+        color: var(--bit-CountryPicker-disabled-color, #{$clr-fg-dis});
+    }
+
+    .bit-cnp-fld {
+        cursor: default;
+        color: var(--bit-CountryPicker-disabled-color, #{$clr-fg-dis});
+        background: var(--bit-CountryPicker-disabled-background, #{$clr-bg-dis});
+        border-color: var(--bit-CountryPicker-disabled-border-color, #{$clr-brd-dis});
+    }
+
+    .bit-cnp-pls {
+        color: var(--bit-CountryPicker-disabled-color, #{$clr-fg-dis});
+    }
+
+    .bit-cnp-car {
+        border-top-color: var(--bit-CountryPicker-disabled-color, #{$clr-fg-dis});
+    }
+
+    // A flag keeps its own colors, so it is dimmed rather than recolored: one left at full saturation next to a
+    // greyed-out name reads as if the field were still live.
+    .bit-cnp-flg {
+        opacity: $opa-dis;
+    }
+}
+
+// A field is as wide as its container, and a sentence written under it wraps under it rather than stretching it.
+@mixin cnp-under-field {
+    width: 100%;
+    box-sizing: border-box;
+    overflow-wrap: break-word;
+    padding-block-start: spacing(0.5);
+    font-size: var(--bit-CountryPicker-footer-font-size, #{$tg-fs-2xs});
+}
+
+.bit-cnp-erm {
+    @include cnp-under-field;
+
+    color: var(--bit-CountryPicker-invalid-color, #{$clr-err});
+
+    span {
+        color: inherit;
+    }
+}
+
+.bit-cnp-des {
+    @include cnp-under-field;
+
+    color: var(--bit-CountryPicker-description-color, #{$clr-fg-sec});
+}
+
+.bit-cnp-ovl {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    position: fixed;
+    z-index: $zindex-overlay;
+    background-color: var(--bit-CountryPicker-overlay-background, transparent);
+}
+
+.bit-cnp-cal {
+    @include cnp-resets;
+    @include cnp-vars;
+
+    display: none;
+    overflow: hidden;
+    position: fixed;
+    box-sizing: border-box;
+    z-index: $zindex-callout;
+    font-size: var(--bit-cnp-fs);
+    font-weight: $tg-fw-regular;
+    font-family: $tg-font-family;
+    animation-fill-mode: both;
+    animation-duration: $mot-duration-long;
+    animation-name: bit-fade-show, bit-slide-down;
+    animation-timing-function: $mot-easing-decelerate;
+    border-radius: var(--bit-CountryPicker-callout-radius, #{$shp-radius-popup});
+    box-shadow: var(--bit-CountryPicker-callout-shadow, #{$box-shadow-popup});
+    background-color: var(--bit-CountryPicker-callout-background, #{$clr-bg-pri});
+    border: $shp-border-width $shp-border-style var(--bit-CountryPicker-callout-border-color, #{$clr-brd-pri});
+}
+
+.bit-cnp-sbx {
+    box-sizing: border-box;
+    border-block-end: $shp-border-width $shp-border-style var(--bit-CountryPicker-callout-border-color, #{$clr-brd-pri});
+}
+
+.bit-cnp-srch {
+    width: 100%;
+    border: none;
+    outline: none;
+    display: block;
+    box-sizing: border-box;
+    background-color: transparent;
+    font-size: var(--bit-cnp-fs);
+    font-family: $tg-font-family;
+    color: var(--bit-cnp-itm-clr);
+    letter-spacing: $tg-ctrl-letter-spacing;
+    padding: spacing(1) spacing(1.5);
+    @include input-placeholder(var(--bit-cnp-plc));
+}
+
+.bit-cnp-scn {
+    overflow: hidden auto;
+    box-sizing: border-box;
+    max-height: var(--bit-CountryPicker-callout-max-height, #{$siz-popup-max-height});
+}
+
+.bit-cnp-lst {
+    margin: 0;
+    padding: spacing(0.5) 0;
+    box-sizing: border-box;
+}
+
+// The fill is painted from --bit-cnp-itm-st-bg, which the pointer moves to the hover fill.
+.bit-cnp-itm {
+    --bit-cnp-itm-st-bg: initial;
+
+    gap: spacing(1);
+    margin: 0;
+    width: 100%;
+    border: none;
+    display: flex;
+    cursor: pointer;
+    appearance: none;
+    text-align: start;
+    align-items: center;
+    flex-flow: row nowrap;
+    box-sizing: border-box;
+    font-size: var(--bit-cnp-fs);
+    font-family: $tg-font-family;
+    color: var(--bit-cnp-itm-clr);
+    min-height: var(--bit-cnp-itm-h);
+    padding: spacing(0.75) spacing(1.5);
+    background-color: var(--bit-cnp-itm-st-bg, transparent);
+
+    @media (hover: hover) {
+        &:hover {
+            --bit-cnp-itm-st-bg: var(--bit-cnp-itm-hover-bg);
+        }
+    }
+}
+
+// The rule under the last of the PreferredCountries, which sets the pinned ones apart from the rest of the list.
+.bit-cnp-ilp {
+    border-block-end: $shp-border-width $shp-border-style var(--bit-CountryPicker-callout-border-color, #{$clr-brd-pri});
+}
+
+.bit-cnp-sel {
+    color: var(--bit-CountryPicker-item-selected-color, var(--bit-cnp-itm-clr));
+    background-color: var(--bit-CountryPicker-item-selected-background, #{$clr-bg-sec});
+
+    @media (forced-colors: active) {
+        color: HighlightText;
+        forced-color-adjust: none;
+        background-color: Highlight;
+    }
+}
+
+// The row the arrow keys are on. It is pointed at through aria-activedescendant rather than focused, so no
+// :focus-visible ever matches it, and a fill alone would read the same as the row under the pointer.
+.bit-cnp-act {
+    background-color: var(--bit-cnp-itm-hover-bg);
+
+    @include cnp-focus-inset;
+}
+
+.bit-cnp-inm {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.bit-cnp-nor {
+    color: var(--bit-cnp-plc);
+    box-sizing: border-box;
+    font-size: var(--bit-cnp-fs);
+    padding: spacing(0.75) spacing(1.5);
+}
+
+.bit-cnp-rlc {
+    display: none;
+}
+
+// The label again, at the top of the responsive panel: it reads the same size as the one above the field (an
+// explicit Size first, then the label and font variables), which cnp-vars resolves on the callout as on the root.
+.bit-cnp-rlb {
+    display: block;
+    box-sizing: border-box;
+    font-size: var(--bit-cnp-lbl-fs);
+    letter-spacing: $tg-ctrl-letter-spacing;
+    color: var(--bit-CountryPicker-label-color, #{$clr-fg-pri});
+    font-weight: var(--bit-CountryPicker-label-font-weight, #{$tg-field-label-font-weight});
+}
+
+// Rendered after the search box so it follows it in the tab order, and drawn back at the end of the header from
+// there (see .bit-cnp-res); hidden with the header wherever the list is not a panel. Its fill is painted from
+// --bit-cnp-cls-st-bg, which the pointer moves to the hover fill.
+.bit-cnp-cls {
+    --bit-cnp-cls-st-bg: initial;
+
+    margin: 0;
+    padding: 0;
+    border: none;
+    display: none;
+    cursor: pointer;
+    appearance: none;
+    align-items: center;
+    color: var(--bit-cnp-itm-clr);
+    box-sizing: border-box;
+    justify-content: center;
+    background-color: var(--bit-cnp-cls-st-bg, transparent);
+    width: $siz-ctrl-md;
+    height: $siz-ctrl-md;
+    font-size: $siz-icon-md;
+    border-radius: $shp-radius-button;
+
+    @media (hover: hover) {
+        &:hover {
+            --bit-cnp-cls-st-bg: var(--bit-cnp-itm-hover-bg);
+        }
+    }
+
+    &:focus-visible {
+        @include cnp-focus-inset;
+    }
+}
+
+.bit-cnp-res {
+    @include lt-sm {
+        top: 0;
+        right: 0;
+        opacity: 0;
+        height: 100%;
+        display: block;
+        overflow: hidden;
+        max-height: unset;
+        animation-name: unset;
+        border-radius: $shp-radius-sheet;
+        transform: translateX(100%);
+        width: var(--bit-CountryPicker-responsive-width, #{spacing(34)});
+        box-shadow: var(--bit-CountryPicker-callout-shadow, #{$box-shadow-sheet});
+        transition: transform $mot-duration $mot-easing, opacity $mot-duration-short linear;
+
+        .bit-cnp-rlc {
+            display: flex;
+            align-items: center;
+            box-sizing: border-box;
+            padding: spacing(1.5) spacing(1.5);
+            min-height: calc(#{$siz-ctrl-md} + #{spacing(3)});
+            padding-inline-end: calc(#{$siz-ctrl-md} + #{spacing(2.5)});
+        }
+
+        .bit-cnp-cls {
+            display: flex;
+            position: absolute;
+            top: spacing(1.5);
+            inset-inline-end: spacing(1.5);
+        }
+
+        .bit-cnp-scn {
+            max-height: unset;
+            height: calc(100% - #{spacing(11)});
+        }
+    }
+}
+
+// The panel is pinned to and slides in from the side the layout ends on, which is the left one under a
+// right-to-left direction - the explicit Dir (the bit-rtl class the callout carries for it, for an engine without
+// :dir()) or the one the page reads in.
+.bit-cnp-res:is(.bit-rtl, :dir(rtl)) {
+    @include lt-sm {
+        left: 0;
+        right: unset;
+        transform: translateX(-100%);
+    }
+}
+
+
+.bit-cnp-nbd {
+    .bit-cnp-fld {
+        border-color: transparent;
+    }
+
+    // A field asked to show no border keeps none in any state, and the disabled, the focused and the rejected rules
+    // each set a border color of their own, which would put one back on it. The focus ring itself stays: it is the
+    // only thing left saying where the focus is.
+    &.bit-dis .bit-cnp-fld,
+    &.bit-cnp-fcs .bit-cnp-fld,
+    &.bit-inv .bit-cnp-fld {
+        border-color: transparent;
+    }
+}
+
+.bit-cnp-und {
+    .bit-cnp-fld {
+        border-radius: 0;
+        border-block-start: none;
+        border-inline: none;
+    }
+
+    &.bit-cnp-fcs .bit-cnp-fld {
+        box-shadow: none;
+        border-block-end-width: $shp-border-width-thick;
+
+        // The thicker rule is the cue of the variant, and forced colors keep its color - but not the ring the
+        // focus-ring mixin restores there, which this variant has no box to draw around.
+        @media (forced-colors: active) {
+            outline: none;
+        }
+    }
+}
+
+// The live region only exists for the assistive technologies, so it is removed from the visual layout without ever
+// being display:none or visibility:hidden, both of which would take it out of the accessibility tree along with what
+// it carries.
+.bit-cnp-lvr {
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
+.bit-cnp-req {
+    // Every label of the field is marked, not only the one built from the Label parameter: a field rendered through a
+    // LabelTemplate is just as required as any other one.
+    & > label::after {
+        content: "*";
+        // The same asterisk with empty alternative text, so it is not read out beside the aria-required that already
+        // says the same thing. Declared second, and left out by an engine that does not know the syntax, which keeps
+        // the plain asterisk above.
+        content: "*" / "";
+        margin-inline-start: spacing(0.625);
+        color: var(--bit-CountryPicker-required-color, #{$clr-req});
+    }
+}
+
+
+.bit-cnp-sm {
+    @include cnp-size($tg-fs-xs, $siz-ctrl-sm, $siz-ctrl-pad-x-sm, $siz-icon-sm, $siz-item-sm);
+}
+
+.bit-cnp-md {
+    @include cnp-size($tg-fs-sm, $siz-ctrl-md, $siz-ctrl-pad-x-md, $siz-icon-md, $siz-item-md);
+}
+
+.bit-cnp-lg {
+    @include cnp-size($tg-fs-md, $siz-ctrl-lg, $siz-ctrl-pad-x-lg, $siz-icon-lg, $siz-item-lg);
+}
+
+
+// The general color of the field: the frame takes the main color of the role at rest and under a pointer, and the
+// ring and the keyboard cues take its focus color. Published only by an explicit Color, and read before the public
+// variables but after the Border kind. The role classes are generated from the shared $bit-color-roles map (see
+// color-role-maps.scss).
+@each $role, $tokens in $bit-color-roles {
+    .bit-cnp-#{$role} {
+        --bit-cnp-role-main: #{role($tokens, main)};
+        --bit-cnp-role-focus: #{role($tokens, focus)};
+    }
+}
+
+
+// The surface the field sits on. Published only by an explicit Background, and read before the public
+// --bit-CountryPicker-background variable.
+.bit-cnp-bpr {
+    --bit-cnp-kind-bg: #{$clr-bg-pri};
+}
+
+.bit-cnp-bse {
+    --bit-cnp-kind-bg: #{$clr-bg-sec};
+}
+
+.bit-cnp-btr {
+    --bit-cnp-kind-bg: #{$clr-bg-ter};
+}
+
+.bit-cnp-btn {
+    --bit-cnp-kind-bg: transparent;
+}
+
+
+// Each border kind carries the hover step of its own family, so a frame that is deliberately invisible
+// (Transparent) stays invisible under the pointer instead of appearing out of nowhere. It wins over the main color
+// of the Color role, which keeps the focus ring, and over the public border colors. Published only by an explicit
+// Border.
+.bit-cnp-brp {
+    --bit-cnp-kind-brd: #{$clr-brd-pri};
+    --bit-cnp-kind-brd-hover: #{$clr-brd-pri-hover};
+}
+
+.bit-cnp-brs {
+    --bit-cnp-kind-brd: #{$clr-brd-sec};
+    --bit-cnp-kind-brd-hover: #{$clr-brd-sec-hover};
+}
+
+.bit-cnp-brt {
+    --bit-cnp-kind-brd: #{$clr-brd-ter};
+    --bit-cnp-kind-brd-hover: #{$clr-brd-ter-hover};
+}
+
+.bit-cnp-brn {
+    --bit-cnp-kind-brd: transparent;
+    --bit-cnp-kind-brd-hover: transparent;
+}
+
+
+// A rejected value wins over the role and over the hover cue, whichever way it was rejected - by the EditContext,
+// by Invalid or by an ErrorMessage.
+.bit-cnp.bit-inv {
+    .bit-cnp-fld {
+        border-color: var(--bit-CountryPicker-invalid-color, #{$clr-err});
+    }
+
+    &.bit-cnp-fcs .bit-cnp-fld {
+        @include focus-ring(var(--bit-CountryPicker-invalid-color, #{$clr-err-focus}));
+
+        border-color: var(--bit-CountryPicker-invalid-color, #{$clr-err});
+    }
+}
+
+// The two variants keep their own shape over a rejected value: no frame at all, or a single rule with no ring.
+.bit-cnp.bit-cnp-nbd.bit-inv .bit-cnp-fld {
+    border-color: transparent;
+}
+
+.bit-cnp.bit-cnp-und.bit-inv.bit-cnp-fcs .bit-cnp-fld {
+    box-shadow: none;
+
+    @media (forced-colors: active) {
+        outline: none;
+    }
+}
+
+
+// Windows High Contrast / forced-colors: the palette collapses to the system pair and every fill an author paints is
+// discarded, so the two states that are nothing but colors - the disabled field and the row under the pointer -
+// would read like the rest. The field is given GrayText while disabled, and a hovered row an outline.
+@media (forced-colors: active) {
+    .bit-cnp.bit-dis {
+        .bit-cnp-lbl,
+        .bit-cnp-fld,
+        .bit-cnp-des {
+            color: GrayText;
+        }
+
+        .bit-cnp-fld {
+            border-color: GrayText;
+        }
+
+        .bit-cnp-car {
+            border-top-color: GrayText;
+        }
+    }
+
+    .bit-cnp-itm {
+        @media (hover: hover) {
+            &:hover {
+                outline: $shp-border-width dashed Highlight;
+                outline-offset: calc(-1 * #{$shp-border-width});
+            }
+        }
+    }
+}
