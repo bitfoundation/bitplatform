@@ -569,8 +569,17 @@ $mnb-cal-private-properties: cal-bg;
     margin-inline-start: 0;
 }
 
-[dir="rtl"] .bit-mnb-sch {
+// The chevron of a row with a submenu points the way the submenu opens, which turns with the direction the menu is
+// laid out in - the button's Dir, or the page's or the content's the menu carries over to the body.
+.bit-mnb-sch:dir(rtl) {
     transform: scaleX(-1);
+}
+
+// An engine without :dir() is left with the nearest dir attribute.
+@supports not selector(:dir(rtl)) {
+    [dir="rtl"] .bit-mnb-sch {
+        transform: scaleX(-1);
+    }
 }
 
 // The row a submenu is open beside keeps the background it had under the pointer, so the path into the

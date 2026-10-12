@@ -43,6 +43,7 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     private bool _focusTrapped;
     private bool _focusTaken;
     private decimal _diffXPanel;
+    private bool _resolvedRtl;
     private string? _searchText;
     private bool _focusOriginCaptured;
     private bool _focusSearchBoxPending;
@@ -1114,6 +1115,17 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
         return terms.All(t => haystack.Contains(t, StringComparison.InvariantCultureIgnoreCase));
     }
 
+    // The edge the drawer is docked to turns with the direction it is laid out in, which only the browser knows when
+    // Dir names none (the page's, or the content's for Auto), so it is read as a swipe starts, ahead of the moves.
+    private async Task HandleOnSwipeStart(BitSwipeTrapEventArgs args)
+    {
+        if (NoSwipe) return;
+        if (IsOpen is false) return;
+        if (ExplicitRtl is not null) return;
+
+        _resolvedRtl = await IsRtlAsync(_js);
+    }
+
     private void HandleOnSwipeMove(BitSwipeTrapEventArgs args)
     {
         if (NoSwipe) return;
@@ -1190,8 +1202,8 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
 
     // Which edge the drawer is docked to, and so which way the swipe that closes it goes. The placement is
     // expressed in the text direction, so the End of a right-to-left layout is the left of the screen; every
-    // value but End docks it at the Start.
-    private bool _IsDockedAtEnd => (Placement is BitPlacement.End) != (Dir is BitDir.Rtl);
+    // value but End docks it at the Start. A direction Dir does not name is the one read as the swipe started.
+    private bool _IsDockedAtEnd => (Placement is BitPlacement.End) != (ExplicitRtl ?? _resolvedRtl);
 
     // The class that gives the panel its shape. Once the browser has reported the screen it is the shape itself
     // (the drawer or the column), so the stylesheet and everything decided in C# - the dialog role, the page held

@@ -29,6 +29,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     private readonly Dictionary<TItem, ElementReference> _itemElements = [];
 
 
+
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
+
+
     /// <summary>
     /// Gets or sets the cascading parameters for the ButtonGroup component.
     /// </summary>
@@ -880,18 +885,19 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         }
 
         var index = current is null ? -1 : focusables.IndexOf(current);
-        var isRtl = (Dir ?? CascadingDir) == BitDir.Rtl;
 
         int next;
         switch (e.Key)
         {
+            // The direction the group is laid out in, a page's or a content's included, read only for the keys
+            // that act on it since one Dir does not name costs a round trip.
             case "ArrowRight":
                 if (Vertical) return;
-                next = isRtl ? index - 1 : index + 1;
+                next = await IsRtlAsync(_js) ? index - 1 : index + 1;
                 break;
             case "ArrowLeft":
                 if (Vertical) return;
-                next = isRtl ? index + 1 : index - 1;
+                next = await IsRtlAsync(_js) ? index + 1 : index - 1;
                 break;
             case "ArrowDown":
                 if (Vertical is false) return;

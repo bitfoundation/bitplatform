@@ -979,7 +979,7 @@ public partial class BitSwiper : BitComponentBase
             }
         }
 
-        _directionStyle = Dir == BitDir.Rtl ? "direction:rtl;" : string.Empty;
+        _directionStyle = ExplicitRtl is true ? "direction:rtl;" : string.Empty;
 
         _internalScrollItemsCount = Math.Max(1, ScrollItemsCount);
 
@@ -1159,18 +1159,21 @@ public partial class BitSwiper : BitComponentBase
         return resolved is null ? null : Math.Max(1, resolved.Value);
     }
 
+    // The default chevrons point the way they move in a left-to-right swiper; the stylesheet mirrors them in one laid
+    // out right to left (bit-swp-dch), whatever made it so - its Dir, the page's direction or its content's - since
+    // the buttons sit at the inline ends of the swiper and swap sides with the direction.
     private string GetDefaultNextIconName()
     {
         if (Vertical) return "ChevronDown";
 
-        return Dir == BitDir.Rtl ? "ChevronRight bit-ico-r180" : "ChevronRight";
+        return "ChevronRight bit-swp-dch";
     }
 
     private string GetDefaultPrevIconName()
     {
         if (Vertical) return "ChevronUp";
 
-        return Dir == BitDir.Rtl ? "ChevronRight" : "ChevronRight bit-ico-r180";
+        return "ChevronRight bit-ico-r180 bit-swp-dch";
     }
 
     private void SetNavigationButtonsVisibility()
@@ -1249,8 +1252,9 @@ public partial class BitSwiper : BitComponentBase
 
         // The arrow keys move the view the way they point, which is what they do in every scrolling
         // region: the right arrow reveals what sits on the right, and in a right-to-left swiper that is
-        // the item before the current one.
-        var rtl = Vertical is false && Dir == BitDir.Rtl;
+        // the item before the current one. The direction is the one the swiper is laid out in, a page's or a
+        // content's included, read only for the keys that act on it since one Dir does not name costs a round trip.
+        var rtl = Vertical is false && e.Key is "ArrowLeft" or "ArrowRight" && await IsRtlAsync(_js);
 
         switch (e.Key)
         {

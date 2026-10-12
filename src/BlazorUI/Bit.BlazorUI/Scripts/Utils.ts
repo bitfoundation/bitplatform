@@ -1941,6 +1941,20 @@
             }
         }
 
+        // Whether the element is laid out right to left. A component whose Dir is unset inherits the direction of
+        // the page and one whose Dir is Auto takes it from its content, so neither is known to .NET; the computed
+        // style resolves both, the dir attribute of every ancestor included.
+        public static isRtl(element: HTMLElement): boolean {
+            if (!element) return false;
+
+            try {
+                return getComputedStyle(element).direction === 'rtl';
+            } catch (e) {
+                console.error("BitBlazorUI.Utils.isRtl:", e);
+                return false;
+            }
+        }
+
         // Scrolls a scroll container to an absolute offset on its scrolling axis. The axis is passed in
         // rather than guessed, since a container can be scrollable on both and only the component knows
         // which one its items are laid out along. The offset is measured from the start edge the content

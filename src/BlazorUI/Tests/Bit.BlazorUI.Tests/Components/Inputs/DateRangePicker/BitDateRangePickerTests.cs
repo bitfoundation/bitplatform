@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
@@ -1180,6 +1181,32 @@ public class BitDateRangePickerTests : BunitTestContext
         });
 
         await component.Instance.DisposeAsync();
+    }
+
+    // A Dir that names no direction, under a culture that does not imply one, leaves it to the page (unset) or to the
+    // content (Auto), which is read off the picker for the horizontal arrows alone.
+    [TestMethod,
+        DataRow(null, true),
+        DataRow(BitDir.Auto, true),
+        DataRow(BitDir.Ltr, false)
+    ]
+    public void BitDateRangePickerKeyboardNavigationShouldFollowAResolvedDirection(BitDir? dir, bool rtl)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.Value, new BitDateRangePickerValue { StartDate = new DateTimeOffset(2020, 1, 15, 0, 0, 0, DateTimeOffset.Now.Offset) });
+        });
+
+        var before = int.Parse(component.Find(".bit-dtrp-dbt[tabindex='0']").TextContent.Trim());
+
+        component.Find(".bit-dtrp-dbt[tabindex='0']").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        var after = int.Parse(component.Find(".bit-dtrp-dbt[tabindex='0']").TextContent.Trim());
+
+        Assert.AreEqual(rtl ? before - 1 : before + 1, after);
     }
 
     [TestMethod]

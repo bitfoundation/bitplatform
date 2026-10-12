@@ -115,6 +115,40 @@ public partial class BitCarouselTests : BunitTestContext
         Assert.AreEqual("Next slide", component.Find(".bit-csl-rbt").GetAttribute("aria-label"));
     }
 
+    // A Dir that names no direction leaves it to the page (unset) or to the content (Auto): the slides are placed with
+    // physical transforms, so the carousel reads the direction its container is laid out in with every measurement
+    // and lays itself out - the buttons, their names, the slides - the way it reads.
+    [TestMethod,
+        DataRow(null),
+        DataRow(BitDir.Auto)
+    ]
+    public void BitCarouselShouldFlipNavigationAriaLabelsInAResolvedRtl(BitDir? dir)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual("Previous slide", component.Find(".bit-csl-lbt").GetAttribute("aria-label")));
+        Assert.AreEqual("Next slide", component.Find(".bit-csl-rbt").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitCarouselShouldNotReadTheDirectionItsDirNames()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.Dir, BitDir.Ltr);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+
+        Assert.AreEqual("Next slide", component.Find(".bit-csl-lbt").GetAttribute("aria-label"));
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.isRtl");
+    }
+
     [TestMethod]
     public void BitCarouselShouldHideDotsWhenHideDotsTrue()
     {
@@ -839,6 +873,30 @@ public partial class BitCarouselTests : BunitTestContext
         component.WaitForAssertion(() => Assert.AreEqual(0, carousel.CurrentPage));
     }
 
+    [TestMethod,
+        DataRow(null),
+        DataRow(BitDir.Auto)
+    ]
+    public async Task BitCarouselShouldFlipKeyboardNavigationInAResolvedRtl(BitDir? dir)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".bit-csl-dot").Count));
+        component.WaitForAssertion(() => Assert.AreEqual("Previous slide", component.Find(".bit-csl-lbt").GetAttribute("aria-label")));
+
+        var carousel = component.Instance.Carousel;
+
+        await PressKey(component, "ArrowLeft");
+        component.WaitForAssertion(() => Assert.AreEqual(1, carousel.CurrentPage));
+
+        await PressKey(component, "ArrowRight");
+        component.WaitForAssertion(() => Assert.AreEqual(0, carousel.CurrentPage));
+    }
+
     [TestMethod]
     public async Task BitCarouselShouldNavigateWithKeyboardVertically()
     {
@@ -1246,6 +1304,25 @@ public partial class BitCarouselTests : BunitTestContext
         Assert.IsTrue(container.Children[0].ClassList.Contains("bit-csl-lbt"));
         Assert.IsTrue(container.Children[1].ClassList.Contains("bit-csl-rbt"));
         Assert.IsTrue(container.Children[2].ClassList.Contains("bit-crsi"));
+    }
+
+    [TestMethod,
+        DataRow(null),
+        DataRow(BitDir.Auto)
+    ]
+    public void BitCarouselShouldRenderControlsInReadingOrderInAResolvedRtl(BitDir? dir)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+        });
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-csl-cnt").Children[0].ClassList.Contains("bit-csl-lbt")));
+        Assert.IsTrue(component.Find(".bit-csl-cnt").Children[1].ClassList.Contains("bit-csl-rbt"));
+
+        // The container keeps the direction it inherits rather than being handed one: only an explicit Dir writes it.
+        Assert.IsFalse((component.Find(".bit-csl-cnt").GetAttribute("style") ?? "").Contains("direction:rtl"));
     }
 
     [TestMethod]

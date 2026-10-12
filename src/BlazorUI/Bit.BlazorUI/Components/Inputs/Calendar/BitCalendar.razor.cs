@@ -2192,7 +2192,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
             return;
         }
 
-        var isRtl = BitCssClasses.IsRtl(Dir, _culture);
+        var isRtl = await IsArrowAcrossRtl(e);
 
         int? target = e.Key switch
         {
@@ -2248,7 +2248,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     // The year grid answers the same keys, one row being four years wide, and PageUp/PageDown moving to the
     // adjacent range of years.
-    private void HandleYearKeyDown(KeyboardEventArgs e, int year)
+    private async Task HandleYearKeyDown(KeyboardEventArgs e, int year)
     {
         if (Disabled) return;
 
@@ -2268,7 +2268,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
             return;
         }
 
-        var isRtl = BitCssClasses.IsRtl(Dir, _culture);
+        var isRtl = await IsArrowAcrossRtl(e);
 
         int? target = e.Key switch
         {
@@ -2324,7 +2324,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     {
         if (Disabled) return;
 
-        var isRtl = BitCssClasses.IsRtl(Dir, _culture);
+        var isRtl = await IsArrowAcrossRtl(e);
 
         DateTime? target = e.Key switch
         {
@@ -2342,6 +2342,16 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         if (target.HasValue is false) return;
 
         await MoveFocusToDay(target.Value);
+    }
+
+    // Whether a left or right arrow runs right to left across a grid: the direction the calendar was given or its
+    // culture implies, and otherwise the one it is laid out in - a page or content reading right to left included.
+    // Only those two keys ask, since a direction neither says costs a round trip to read.
+    private async ValueTask<bool> IsArrowAcrossRtl(KeyboardEventArgs e)
+    {
+        if (e.Key is not ("ArrowLeft" or "ArrowRight")) return false;
+
+        return await IsRtlAsync(_js, BitCssClasses.ExplicitRtl(Dir, _culture));
     }
 
     // A step that runs off the end of what a DateTime, or of what the culture's own calendar, can represent

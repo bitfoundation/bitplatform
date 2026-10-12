@@ -851,7 +851,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             // so a picker that never becomes a sheet does not get a gesture that would close it out of nowhere.
             if (Responsive && Standalone is false)
             {
-                await _js.BitSwipesSetup(_calloutId, 0.25m, BitPlacement.Top, Dir is BitDir.Rtl, BitSwipeOrientation.Vertical, _dotnetObj);
+                await _js.BitSwipesSetup(_calloutId, 0.25m, BitPlacement.Top, ExplicitRtl, BitSwipeOrientation.Vertical, _dotnetObj);
 
                 // The setup is a round trip, so the picker can be gone by the time it comes back - at a point
                 // where DisposeAsync had nothing to tear down yet. The gesture it registered would outlive the
@@ -1663,7 +1663,7 @@ public partial class BitCircularTimePicker : BitInputBase<TimeSpan?>
             isCalloutOpen: IsOpen,
             responsiveMode: Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
             dropDirection: DropDirection,
-            isRtl: Dir is BitDir.Rtl,
+            isRtl: ExplicitRtl,
             scrollContainerId: "",
             scrollOffset: 0,
             headerId: CalloutHeaderTemplate is not null ? _headerId : "",

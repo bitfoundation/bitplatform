@@ -258,6 +258,35 @@ public class BitButtonGroupTests : BunitTestContext
         Assert.IsTrue(notNavigable.FindAll("button").All(b => b.GetAttribute("tabindex") == "0"));
     }
 
+    // The horizontal arrows walk the group the way it is laid out: a Dir that names no direction leaves that to the
+    // page (unset) or to the content (Auto), which is read off the group for those keys alone.
+    [TestMethod,
+        DataRow(null, true),
+        DataRow(BitDir.Auto, true),
+        DataRow(BitDir.Rtl, true),
+        DataRow(BitDir.Ltr, false)
+    ]
+    public void BitButtonGroupArrowLeftShouldFollowTheDirectionTheGroupIsLaidOutIn(BitDir? dir, bool rtl)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+            parameters.Add(p => p.Items, [new() { Text = "A", Key = "a" }, new() { Text = "B", Key = "b" }, new() { Text = "C", Key = "c" }]);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Single);
+            parameters.Add(p => p.DefaultToggleKey, "b");
+        });
+
+        comp.Find(".bit-btg").KeyDown("ArrowUp");
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.isRtl");
+
+        comp.Find(".bit-btg").KeyDown("ArrowLeft");
+
+        Assert.AreEqual("0", comp.FindAll("button")[rtl ? 2 : 0].GetAttribute("tabindex"));
+        Assert.AreEqual(dir is null or BitDir.Auto, Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.isRtl"));
+    }
+
     [TestMethod]
     public void BitButtonGroupNavigableShouldMoveTheFocusWithTheArrowHomeAndEndKeys()
     {

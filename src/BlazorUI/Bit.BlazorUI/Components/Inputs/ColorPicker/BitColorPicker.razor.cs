@@ -1029,13 +1029,11 @@ public partial class BitColorPicker : BitComponentBase
     {
         if (_IsInteractive is false) return;
 
-        // The area is measured from its inline-start edge, which is the right one in a right-to-left picker,
-        // so the horizontal axis is mirrored along with the gradient that is drawn on it.
-        var saturation = Dir == BitDir.Rtl ? 1 - x : x;
-
+        // The area is measured from its inline-start edge (the script mirrors the pointer in a right-to-left
+        // picker, whatever made it one), which is where the saturation axis starts.
         var before = _color.Hsv;
 
-        _color.Update(before.Hue, saturation, 1 - y, _color.A);
+        _color.Update(before.Hue, x, 1 - y, _color.A);
 
         // A pointer that has not left the color it is already on - a press that lands on the thumb, or a
         // move along an edge the position is clamped against - has nothing to report.
@@ -1060,7 +1058,9 @@ public partial class BitColorPicker : BitComponentBase
         // Holding Shift - and the Page keys, which need no modifier for it - moves a tenth of the area at a
         // time, so crossing it costs ten presses instead of a hundred.
         var step = (e.ShiftKey || e.Key is "PageUp" or "PageDown") ? 0.1 : 0.01;
-        var rtl = Dir == BitDir.Rtl;
+        // The direction the area is laid out in, a page's or a content's included, read only for the keys that
+        // act on it since one Dir does not name costs a round trip.
+        var rtl = e.Key is "ArrowLeft" or "ArrowRight" && await IsRtlAsync(_js, _saturationPickerRef);
 
         var newSaturation = e.Key switch
         {
@@ -1321,7 +1321,9 @@ public partial class BitColorPicker : BitComponentBase
         // A palette laid out on a grid is walked as a grid; one left to wrap has no row length anything can
         // know, so the vertical keys move along it one swatch at a time like the horizontal ones do.
         var columns = PresetsPerRow > 0 ? Math.Min(PresetsPerRow.Value, count) : 1;
-        var step = Dir == BitDir.Rtl ? -1 : 1;
+        // The direction the palette is laid out in, a page's or a content's included, read only for the keys
+        // that act on it since one Dir does not name costs a round trip.
+        var step = e.Key is "ArrowLeft" or "ArrowRight" && await IsRtlAsync(_js) ? -1 : 1;
 
         var target = e.Key switch
         {

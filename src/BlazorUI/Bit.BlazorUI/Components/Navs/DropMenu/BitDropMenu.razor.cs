@@ -963,7 +963,7 @@ public partial class BitDropMenu : BitComponentBase
                 isCalloutOpen: IsOpen,
                 responsiveMode: Responsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
                 dropDirection: DropDirection,
-                isRtl: Dir is BitDir.Rtl,
+                isRtl: ExplicitRtl,
                 // Whatever is named as the scrollable part of the content is what the positioning code caps to
                 // the room the viewport leaves. With nothing named, the callout itself takes that role, so that
                 // content taller than the screen scrolls inside the callout instead of running off the bottom
@@ -1296,7 +1296,7 @@ public partial class BitDropMenu : BitComponentBase
                 id: _calloutId,
                 trigger: 0.25m,
                 position: EffectivePanelPosition,
-                isRtl: Dir is BitDir.Rtl,
+                isRtl: ExplicitRtl,
                 orientationLock: EffectivePanelPosition.ToSwipeOrientation(),
                 dotnetObj: _swipesDotnetObj,
                 isResponsive: true,

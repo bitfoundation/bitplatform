@@ -2270,6 +2270,26 @@ public class BitTagsInputTests : BunitTestContext
         Assert.AreEqual("0", com.FindAll(".bit-tgi-tag")[1].GetAttribute("tabindex"));
     }
 
+    // A Dir that names no direction leaves it to the page (unset) or to the content (Auto), which is read off the
+    // element: the keys follow the direction the component is actually laid out in.
+    [TestMethod,
+        DataRow(null),
+        DataRow(BitDir.Auto)
+    ]
+    public async Task BitTagsInputArrowKeysAreMirroredInAResolvedRtlTest(BitDir? dir)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+            parameters.Add(p => p.DefaultValue, new List<string> { "apple", "banana" });
+        });
+
+        await com.FindAll(".bit-tgi-tag")[0].KeyDownAsync(new KeyboardEventArgs { Key = "ArrowLeft" });
+
+        Assert.AreEqual("0", com.FindAll(".bit-tgi-tag")[1].GetAttribute("tabindex"));
+    }
+
     [TestMethod]
     public async Task BitTagsInputDeleteRemovesTheFocusedTagTest()
     {

@@ -208,19 +208,40 @@ public class BitSwiperTests : BunitTestContext
         Assert.AreEqual("true", prevIcon.GetAttribute("aria-hidden"));
     }
 
-    [TestMethod]
-    public void BitSwiperShouldFlipDefaultIconsInRtl()
+    // The default chevrons are drawn the same in every direction and mirrored by the stylesheet (bit-swp-dch) in a
+    // swiper laid out right to left, whatever made it one: its Dir, the page's direction or its content's.
+    [TestMethod,
+        DataRow(null),
+        DataRow(BitDir.Ltr),
+        DataRow(BitDir.Rtl),
+        DataRow(BitDir.Auto)
+    ]
+    public void BitSwiperShouldLeaveTheDefaultIconsToTheStylesheetInEveryDirection(BitDir? dir)
     {
         var component = RenderComponent<BitSwiperTest>(parameters =>
         {
-            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.Dir, dir);
         });
 
         var nextIcon = component.Find(".bit-swp-rbt i");
         var prevIcon = component.Find(".bit-swp-lbt i");
 
-        Assert.IsTrue(nextIcon.ClassList.Contains("bit-ico-r180"));
-        Assert.IsFalse(prevIcon.ClassList.Contains("bit-ico-r180"));
+        Assert.IsFalse(nextIcon.ClassList.Contains("bit-ico-r180"));
+        Assert.IsTrue(prevIcon.ClassList.Contains("bit-ico-r180"));
+        Assert.IsTrue(nextIcon.ClassList.Contains("bit-swp-dch"));
+        Assert.IsTrue(prevIcon.ClassList.Contains("bit-swp-dch"));
+    }
+
+    [TestMethod]
+    public void BitSwiperShouldNotMarkACustomIconForMirroring()
+    {
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.NextIconName, "ChevronRightSmall");
+        });
+
+        Assert.IsFalse(component.Find(".bit-swp-rbt i").ClassList.Contains("bit-swp-dch"));
     }
 
     [TestMethod]
@@ -1222,6 +1243,26 @@ public class BitSwiperTests : BunitTestContext
         var component = RenderComponent<BitSwiperTest>(parameters =>
         {
             parameters.Add(p => p.Dir, BitDir.Rtl);
+        });
+
+        component.Find(".bit-swp").KeyDown(new KeyboardEventArgs { Key = key });
+
+        Assert.AreEqual(expectedForward, LastInvocation("BitBlazorUI.Swiper.go").Arguments[1]);
+    }
+
+    // A Dir that names no direction leaves it to the page (unset) or to the content (Auto), which is read off the
+    // swiper for the keys that act on it.
+    [TestMethod,
+        DataRow(null, "ArrowRight", false),
+        DataRow(null, "ArrowLeft", true),
+        DataRow(BitDir.Auto, "ArrowRight", false),
+        DataRow(BitDir.Auto, "ArrowLeft", true)]
+    public void BitSwiperShouldFlipTheArrowKeysInAResolvedRtl(BitDir? dir, string key, bool expectedForward)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        var component = RenderComponent<BitSwiperTest>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
         });
 
         component.Find(".bit-swp").KeyDown(new KeyboardEventArgs { Key = key });

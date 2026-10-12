@@ -1351,6 +1351,47 @@ public class BitCalendarTests : BunitTestContext
         Assert.AreEqual("16", component.Find(".bit-cal-dbt[tabindex='0']").TextContent.Trim());
     }
 
+    // A Dir that names no direction, under a culture that does not imply one, leaves it to the page (unset) or to the
+    // content (Auto), which is read off the calendar for the horizontal arrows alone; a direction Dir or the culture
+    // names is never asked for.
+    [TestMethod,
+        DataRow(null, "en-US", "14", true),
+        DataRow(BitDir.Auto, "en-US", "14", true),
+        DataRow(BitDir.Ltr, "en-US", "16", false),
+        DataRow(null, "fa-IR", null, false)
+    ]
+    public void BitCalendarKeyboardNavigationShouldFollowAResolvedDirection(BitDir? dir, string culture, string? expectedDay, bool asked)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+            parameters.Add(p => p.Culture, CultureInfo.GetCultureInfo(culture));
+            parameters.Add(p => p.Value, new DateTimeOffset(2026, 1, 15, 0, 0, 0, TimeZoneInfo.Local.GetUtcOffset(new DateTime(2026, 1, 15))));
+        });
+
+        var focusedButton = component.Find(".bit-cal-dbt[tabindex='0']");
+        var before = focusedButton.TextContent.Trim();
+
+        focusedButton.KeyDown(new KeyboardEventArgs { Key = "ArrowUp" });
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.isRtl");
+
+        component.Find(".bit-cal-dbt[tabindex='0']").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+        component.Find(".bit-cal-dbt[tabindex='0']").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        if (expectedDay is not null)
+        {
+            Assert.AreEqual(expectedDay, component.Find(".bit-cal-dbt[tabindex='0']").TextContent.Trim());
+        }
+        else
+        {
+            // A culture that writes right to left implies the direction: the right arrow steps back a day.
+            Assert.AreNotEqual(before, component.Find(".bit-cal-dbt[tabindex='0']").TextContent.Trim());
+        }
+
+        Assert.AreEqual(asked, Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.isRtl"));
+    }
+
     [TestMethod]
     public void BitCalendarKeyboardNavigationShouldSkipDisabledDays()
     {

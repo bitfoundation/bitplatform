@@ -1478,7 +1478,14 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         return [.. suggestions];
     }
 
-    private bool IsRtl => Dir == BitDir.Rtl;
+    // Whether the tags are laid out right to left, a page's or a content's direction (Auto, the tags' own text)
+    // included. Only a horizontal arrow asks, since a direction Dir does not name costs a round trip to read.
+    private async ValueTask<bool> IsRtlFor(KeyboardEventArgs e)
+    {
+        if (e.Key is not ("ArrowLeft" or "ArrowRight")) return false;
+
+        return await IsRtlAsync(_js);
+    }
 
     /// <summary>
     /// How many of the tags are actually drawn: all of them unless <see cref="MaxDisplayedTags"/> folded
@@ -2358,7 +2365,8 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             // a field holding nothing but the tags CanRemoveTag pins in place has nothing to clear.
             await Clear();
         }
-        else if ((e.Key == (IsRtl ? "ArrowRight" : "ArrowLeft")) && _inputText.Length == 0 && CurrentValue?.Count > 0)
+        else if (e.Key is "ArrowLeft" or "ArrowRight" && _inputText.Length == 0 && CurrentValue?.Count > 0 &&
+                 e.Key == (await IsRtlFor(e) ? "ArrowRight" : "ArrowLeft"))
         {
             // Walking backwards out of an empty input lands on the last tag that is drawn, from where
             // the arrow keys keep moving between the tags.
@@ -2460,8 +2468,9 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         // sending a tag past the fold is a change to the value, not to where the focus may travel.
         var displayed = GetDisplayedTagCount();
 
-        var previousKey = IsRtl ? "ArrowRight" : "ArrowLeft";
-        var nextKey = IsRtl ? "ArrowLeft" : "ArrowRight";
+        var isRtl = await IsRtlFor(e);
+        var previousKey = isRtl ? "ArrowRight" : "ArrowLeft";
+        var nextKey = isRtl ? "ArrowLeft" : "ArrowRight";
 
         // Alt turns the navigation keys into the move commands of the reordering, which is the pointer
         // free equivalent of dragging a chip into place, so it is checked before them.

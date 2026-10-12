@@ -2368,11 +2368,12 @@ public class BitCalloutTests : BunitTestContext
 
         var arguments = Context.JSInterop.Invocations["BitBlazorUI.Callouts.toggle"][^1].Arguments;
 
-        // A callout that asks for nothing drops above or below its anchor, is laid out left to right,
-        // takes the width of its content and is kept within the screen at every window width.
+        // A callout that asks for nothing drops above or below its anchor, leaves its direction to the page
+        // (the script reads the one the anchor is laid out in), takes the width of its content and is kept
+        // within the screen at every window width.
         Assert.AreEqual(BitResponsiveMode.None, arguments[7]);
         Assert.AreEqual(BitDropDirection.TopAndBottom, arguments[8]);
-        Assert.AreEqual(false, arguments[9]);
+        Assert.IsNull(arguments[9]);
         Assert.AreEqual(0, arguments[11]);
         Assert.AreEqual(false, arguments[14]);
         Assert.AreEqual(false, arguments[15]);
@@ -2381,6 +2382,28 @@ public class BitCalloutTests : BunitTestContext
         // The cap on the scrollable content is the callout's own stylesheet business, so the positioning
         // is always left to decide it against the room the viewport leaves.
         Assert.AreEqual(0, arguments[17]);
+    }
+
+    // The placement mirrors a Start and an End in a right-to-left layout. A direction Dir names is handed over as it
+    // is; one it leaves to the page (unset) or to the content (Auto) is handed over as unknown, and the script reads
+    // the one the anchor is laid out in whenever it places the callout, rather than taking it for left to right.
+    [TestMethod,
+        DataRow(null, null),
+        DataRow(BitDir.Auto, null),
+        DataRow(BitDir.Rtl, true),
+        DataRow(BitDir.Ltr, false)
+    ]
+    public void BitCalloutShouldHandTheDirectionItsDirNamesToThePlacement(BitDir? dir, bool? expected)
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+        });
+
+        component.Find(".bit-clo-acn").Click();
+
+        Assert.AreEqual(expected, Context.JSInterop.Invocations["BitBlazorUI.Callouts.toggle"][^1].Arguments[9]);
     }
 
     [TestMethod]

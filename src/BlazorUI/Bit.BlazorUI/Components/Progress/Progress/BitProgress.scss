@@ -411,12 +411,13 @@ $prb-private-properties:
 }
 
 // A rotation is a physical thing, so the two sides that are named after the reading direction are the
-// two that have to be swapped by hand when it turns around.
-.bit-rtl.bit-prb-gps {
+// two that have to be swapped by hand when it turns around - in the direction the progress is laid out in,
+// with the class an explicit Dir renders for an engine without :dir().
+.bit-prb-gps:is(.bit-rtl, :dir(rtl)) {
     --bit-prb-gap-base: 0deg;
 }
 
-.bit-rtl.bit-prb-gpe {
+.bit-prb-gpe:is(.bit-rtl, :dir(rtl)) {
     --bit-prb-gap-base: 180deg;
 }
 
@@ -544,8 +545,8 @@ $prb-private-properties:
 }
 
 // A gradient has no logical direction, so the pattern - which ends on the gap that is clipped off the
-// far edge - has to be turned around by hand for a right-to-left bar.
-.bit-prb-seg.bit-rtl:not(.bit-prb-ver) .bit-prb-bcn {
+// far edge - has to be turned around by hand for a right-to-left bar, whatever made it one.
+.bit-prb-seg:is(.bit-rtl, :dir(rtl)):not(.bit-prb-ver) .bit-prb-bcn {
     -webkit-mask-image: repeating-linear-gradient(to left, #000 0 var(--bit-prb-segment-width), transparent 0 calc(var(--bit-prb-segment-width) + var(--bit-prb-segment-gap)));
     mask-image: repeating-linear-gradient(to left, #000 0 var(--bit-prb-segment-width), transparent 0 calc(var(--bit-prb-segment-width) + var(--bit-prb-segment-gap)));
 }

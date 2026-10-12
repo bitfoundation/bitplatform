@@ -1045,7 +1045,7 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             // so a picker that never becomes a sheet does not get a gesture that would close it out of nowhere.
             if (Responsive && Standalone is false)
             {
-                await _js.BitSwipesSetup(_calloutId, 0.25m, BitPlacement.Top, IsRtl(), BitSwipeOrientation.Vertical, _dotnetObj);
+                await _js.BitSwipesSetup(_calloutId, 0.25m, BitPlacement.Top, GetExplicitRtl(), BitSwipeOrientation.Vertical, _dotnetObj);
 
                 // The setup is a round trip, so the picker can be gone by the time it comes back - at a point
                 // where DisposeAsync had nothing to tear down yet. The gesture it registered would outlive the
@@ -1227,8 +1227,9 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
             responsiveMode: Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
             dropDirection: DropDirection,
             // The same direction the callout renders in (the bit-tpc-rtl class covers the culture-implied
-            // RTL as well), so the positioning matches the layout.
-            isRtl: IsRtl(),
+            // RTL as well), so the positioning matches the layout; one only the page or the content decides
+            // is read off the picker.
+            isRtl: GetExplicitRtl(),
             scrollContainerId: string.Empty,
             scrollOffset: 0,
             headerId: CalloutHeaderTemplate is not null ? _headerId : string.Empty,
@@ -2182,6 +2183,10 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
     }
 
     private bool IsRtl() => BitCssClasses.IsRtl(Dir, _culture);
+
+    // The direction the picker knows it is laid out in - the one it was given, or the one its culture implies - and
+    // null when it is the page's or the content's to say, which only the browser knows (see BitCssClasses.ExplicitRtl).
+    private bool? GetExplicitRtl() => BitCssClasses.ExplicitRtl(Dir, _culture);
 
     private string GetColorClass()
     {

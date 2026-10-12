@@ -3451,7 +3451,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     {
         // Everything the drag reads is gathered before it starts: setting _resizingColumn renders the
         // overlay that feeds OnResizeMove, which must not see a start width or direction still pending.
-        var rtl = await IsRtlAsync();
+        var rtl = await IsRtlAsync(JS);
         // Prefer the header cell's real rendered width: a %/fr-sized column has no px width .NET could
         // parse, and even a px-declared one may be constrained by min/max at render time. Falls back to
         // parsing the declared width when JS is unavailable (prerendering, disconnected circuit).
@@ -3528,7 +3528,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
 
             case "ArrowLeft":
             case "ArrowRight":
-                var widen = (e.Key == "ArrowRight") != await IsRtlAsync();
+                var widen = (e.Key == "ArrowRight") != await IsRtlAsync(JS);
                 var step = KeyboardResizeStep * (e.ShiftKey ? 5 : 1);
                 var current = column.ResizedWidth ?? await MeasureColumnWidthAsync(column);
                 SetColumnWidth(column, current + (widen ? step : -step));
@@ -3691,7 +3691,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
         if (e.Key is not ("ArrowLeft" or "ArrowRight")) return;
         if (!ColumnReorderable(column)) return;
 
-        var forward = (e.Key == "ArrowRight") != await IsRtlAsync();
+        var forward = (e.Key == "ArrowRight") != await IsRtlAsync(JS);
         if (ColumnMoveTarget(column, forward ? 1 : -1, visibleOnly: true) is null) return;
 
         _focusHeaderColumn = column;
@@ -4015,7 +4015,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
 
         int row = rowIdx, col = colIndex;
         // Only the horizontal arrows depend on the direction, so only they pay for reading it.
-        var rtl = e.Key is "ArrowLeft" or "ArrowRight" && await IsRtlAsync();
+        var rtl = e.Key is "ArrowLeft" or "ArrowRight" && await IsRtlAsync(JS);
 
         // A treegrid opens and closes its nodes from the cell that holds their toggle, as the APG treegrid does: the
         // forward arrow expands a collapsed node, the backward one collapses an expanded node or else moves up to the
@@ -5151,25 +5151,6 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     }
 
     private string HeaderCellStyle(BitDataGridColumn<TItem> column) => FrozenStyle(column) + Styles?.HeaderCell;
-
-    /// <summary>Whether the grid renders right to left, read at the moment it matters. An explicit or cascaded
-    /// <see cref="BitComponentBase.Dir"/> naming a direction answers it; when Dir leaves it to the page (null) or to the
-    /// content (Auto), the rendered root is asked, so a page or content that changed direction since the
-    /// last render is never answered with a stale value. Only the arrow keys and the resize drag need it -
-    /// the sticky offsets and the resizer are placed with logical properties, which follow the inherited
-    /// direction on their own.</summary>
-    private async Task<bool> IsRtlAsync()
-    {
-        if (Dir is BitDir.Rtl) return true;
-        if (Dir is BitDir.Ltr) return false;
-        try
-        {
-            return await JS.InvokeAsync<bool>("BitBlazorUI.DataGrid.isRtl", RootElement);
-        }
-        catch (JSException) { }
-        catch (JSDisconnectedException) { }
-        return false;
-    }
 
     protected override string RootElementClass => "bit-dtg";
 

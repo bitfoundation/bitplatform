@@ -74,7 +74,11 @@
             isCalloutOpen: boolean,
             responsiveMode: BitResponsiveMode,
             dropDirection: BitDropDirection,
-            isRtl: boolean,
+            // true or false for a component whose Dir names a direction, or null when its Dir leaves the direction
+            // to the page (unset) or to its content (Auto): the component is then asked for the direction it is
+            // actually laid out in, every time the callout is placed, so a page or content that changed direction
+            // since it opened is followed too.
+            isRtl: boolean | null,
             scrollContainerId: string,
             // The height in pixels of everything the callout renders around its scroll container, which comes
             // off the room that container is given. A NEGATIVE value has the callout measure it itself, which
@@ -251,7 +255,7 @@
             callout: HTMLElement,
             responsiveMode: BitResponsiveMode,
             dropDirection: BitDropDirection,
-            isRtl: boolean,
+            givenRtl: boolean | null,
             scrollContainerId: string,
             scrollOffset: number,
             headerId: string,
@@ -277,6 +281,9 @@
             arrowPadding: number = 0,
         ) {
             const windowWidth = window.innerWidth;
+
+            // The direction the component is laid out in, when its Dir did not name one (see toggle).
+            const isRtl = givenRtl ?? getComputedStyle(component).direction === 'rtl';
 
             // The consumer's own cap on the scrollable content, applied on top of the space the
             // viewport leaves so that it can only ever shorten the list, never push it off the screen.
@@ -1869,7 +1876,7 @@
         overlayId: string;
         responsiveMode: BitResponsiveMode;
         dropDirection: BitDropDirection;
-        isRtl: boolean;
+        isRtl: boolean | null;
         scrollContainerId: string;
         scrollOffset: number;
         headerId: string;

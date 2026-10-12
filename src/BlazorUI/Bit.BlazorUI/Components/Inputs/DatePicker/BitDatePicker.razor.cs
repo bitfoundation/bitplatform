@@ -1357,7 +1357,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                 // The swipe dismisses the callout, and standalone there is no callout to dismiss.
                 if (Responsive && Standalone is false)
                 {
-                    await _js.BitSwipesSetup(_calloutId, 0.25m, BitPlacement.Top, IsRtl(), BitSwipeOrientation.Vertical, _dotnetObj);
+                    await _js.BitSwipesSetup(_calloutId, 0.25m, BitPlacement.Top, GetExplicitRtl(), BitSwipeOrientation.Vertical, _dotnetObj);
                 }
                 // An initial IsOpen fired the OnSetIsOpen hook before the first render, when there was no
                 // callout element to toggle yet, so the open state is applied here instead - with the focus
@@ -3123,7 +3123,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             return;
         }
 
-        var isRtl = IsRtl();
+        var isRtl = await IsArrowAcrossRtl(e);
 
         int? target = e.Key switch
         {
@@ -3202,7 +3202,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             return;
         }
 
-        var isRtl = IsRtl();
+        var isRtl = await IsArrowAcrossRtl(e);
 
         int? target = e.Key switch
         {
@@ -3257,6 +3257,20 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private bool IsRtl()
     {
         return BitCssClasses.IsRtl(Dir, _culture);
+    }
+
+    // The direction the picker knows it is laid out in - the one it was given, or the one its culture implies - and
+    // null when it is the page's or the content's to say, which only the browser knows (see BitCssClasses.ExplicitRtl).
+    private bool? GetExplicitRtl() => BitCssClasses.ExplicitRtl(Dir, _culture);
+
+    // Whether a left or right arrow runs right to left across a grid: what the picker knows of its direction, and
+    // otherwise the one it is laid out in. Only those two keys ask, since a direction it does not know costs a round
+    // trip to read.
+    private async ValueTask<bool> IsArrowAcrossRtl(KeyboardEventArgs e)
+    {
+        if (e.Key is not ("ArrowLeft" or "ArrowRight")) return false;
+
+        return await IsRtlAsync(_js, GetExplicitRtl());
     }
 
     // The single day of the grid that is in the tab sequence (the roving tabindex of the APG grid
@@ -3315,7 +3329,7 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             return;
         }
 
-        var isRtl = IsRtl();
+        var isRtl = await IsArrowAcrossRtl(e);
 
         DateTime? target;
         try
@@ -4116,8 +4130,9 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
             responsiveMode: Responsive ? BitResponsiveMode.Top : BitResponsiveMode.None,
             dropDirection: DropDirection,
             // The same direction the callout renders in (bit-dtp-rtl covers the culture-implied RTL
-            // as well), so the positioning matches the layout.
-            isRtl: IsRtl(),
+            // as well), so the positioning matches the layout; one only the page or the content decides is
+            // read off the picker.
+            isRtl: GetExplicitRtl(),
             scrollContainerId: "",
             scrollOffset: 0,
             headerId: CalloutHeaderTemplate is not null ? _headerId : "",

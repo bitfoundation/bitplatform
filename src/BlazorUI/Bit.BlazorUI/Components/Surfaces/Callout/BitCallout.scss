@@ -229,7 +229,9 @@ $clo-cal-private-properties: wid, mnw, mnw-def, mxw, mxh;
         overflow: hidden;
     }
 
-    &.bit-rtl {
+    // The direction the callout is laid out in - its Dir, or the page's or the content's it carries over to the
+    // body - with the class an explicit Dir renders for an engine without :dir().
+    &:is(.bit-rtl, :dir(rtl)) {
         --bit-clo-transform-factor: -1;
     }
 }

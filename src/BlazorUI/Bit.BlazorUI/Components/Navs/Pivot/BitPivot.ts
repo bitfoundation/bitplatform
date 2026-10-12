@@ -10,7 +10,8 @@
             isMenu: boolean,
             isSlide: boolean,
             isReorderable: boolean,
-            isRtl: boolean,
+            // The direction the pivot's Dir names, or null when it leaves it to the page or the content.
+            isRtl: boolean | null,
             isVertical: boolean,
             dotnetObj: DotNetObject) {
             if (!header) return;
@@ -172,7 +173,7 @@
         private isMenu: boolean;
         private isSlide: boolean;
         private isReorderable: boolean;
-        private isRtl: boolean;
+        private givenRtl: boolean | null;
         private isVertical: boolean;
         private dotnetObj: DotNetObject;
         private disposed: boolean = false;
@@ -190,7 +191,7 @@
             isMenu: boolean,
             isSlide: boolean,
             isReorderable: boolean,
-            isRtl: boolean,
+            isRtl: boolean | null,
             isVertical: boolean,
             dotnetObj: DotNetObject) {
             this.id = id;
@@ -199,9 +200,15 @@
             this.isMenu = isMenu;
             this.isSlide = isSlide;
             this.isReorderable = isReorderable;
-            this.isRtl = isRtl;
+            this.givenRtl = isRtl;
             this.isVertical = isVertical;
             this.dotnetObj = dotnetObj;
+        }
+
+        // The direction the header is laid out in: the one the pivot's Dir names, or else the one it resolves to -
+        // a page's or a content's - read when it is needed, so a page that changes direction is followed too.
+        private get isRtl(): boolean {
+            return this.givenRtl ?? getComputedStyle(this.header).direction === 'rtl';
         }
 
         public start() {

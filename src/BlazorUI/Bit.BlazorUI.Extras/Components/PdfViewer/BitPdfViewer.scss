@@ -146,8 +146,10 @@ $pdv-private-properties: scale;
 }
 
 // A right-to-left viewer mirrors the whole track, so the determinate bar fills from the inline-start edge and the
-// indeterminate one sweeps the way the text reads.
-.bit-rtl .bit-pdv-progress {
+// indeterminate one sweeps the way the text reads - whatever made it right to left: the viewer's Dir, the page's
+// direction or its content's (Auto). The track is a child of the root, so the class an explicit Dir renders is read
+// through a child combinator for an engine without :dir().
+.bit-pdv-progress:is(:dir(rtl), .bit-pdv.bit-rtl > *) {
     transform: scaleX(-1);
 }
 
@@ -715,9 +717,17 @@ $pdv-private-properties: scale;
     }
 }
 
-// A folded branch points the way it will open, which in a right-to-left tree is to the left.
-.bit-rtl .bit-pdv-outline-toggle.bit-pdv-col svg {
+// A folded branch points the way it will open, which in a right-to-left tree is to the left - whatever made it
+// right to left: the viewer's Dir, the page's direction or the outline's own content (Auto).
+.bit-pdv-outline-toggle.bit-pdv-col:dir(rtl) svg {
     transform: rotate(180deg);
+}
+
+// An engine without :dir() is left with the class an explicit Dir renders.
+@supports not selector(:dir(rtl)) {
+    .bit-pdv.bit-rtl .bit-pdv-outline-toggle.bit-pdv-col svg {
+        transform: rotate(180deg);
+    }
 }
 
 /* A leaf keeps the toggle's width so every label in the tree starts on the same

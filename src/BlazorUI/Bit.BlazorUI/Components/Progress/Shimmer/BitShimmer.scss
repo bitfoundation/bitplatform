@@ -312,9 +312,18 @@ $smr-private-properties: hgt, gap, llw, rad, shp, dly, lnh, crs, bg-clr, wrp-bg;
 }
 
 // The wave sweeps with the reading direction: on a right-to-left page it comes in from the right, the same
-// way BitTextShimmer turns its own sweep around.
-.bit-smr.bit-rtl .bit-smr-wav {
+// way BitTextShimmer turns its own sweep around - whatever made it right to left: the shimmer's Dir, the
+// page's direction or its content's (Auto).
+.bit-smr-wav:dir(rtl) {
     animation-direction: reverse;
+}
+
+// An engine without :dir() is left with the class an explicit Dir renders. The wave sits deep inside the
+// shimmer, which can hold another one, so the class is only read where nothing better is known.
+@supports not selector(:dir(rtl)) {
+    .bit-smr.bit-rtl .bit-smr-wav {
+        animation-direction: reverse;
+    }
 }
 
 // Windows High Contrast / forced-colors: author backgrounds are stripped to Canvas, which would leave the

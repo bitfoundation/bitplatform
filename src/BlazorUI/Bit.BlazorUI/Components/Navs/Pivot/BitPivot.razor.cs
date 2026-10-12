@@ -9,7 +9,7 @@ public partial class BitPivot : BitComponentBase
 {
     private bool _jsSetup;
     private bool _jsSetupRunning;
-    private bool _setupRtl;
+    private bool? _setupRtl;
     private bool _setupVertical;
     private bool _setupReorderable;
     private bool _isMenuOpen;
@@ -582,7 +582,8 @@ public partial class BitPivot : BitComponentBase
         // transfer never starts in some browsers, and Blazor has no way of filling that in from C#.
         var reorderable = Reorderable || _allItems.Exists(i => i.Reorderable is true);
         var needsJs = behavior is BitPivotOverflowBehavior.Menu or BitPivotOverflowBehavior.Slide || reorderable;
-        var rtl = Dir is BitDir.Rtl;
+        // Null when Dir names no direction: the script then reads the one the header is laid out in itself.
+        var rtl = ExplicitRtl;
         var vertical = Placement is BitPlacement.Start or BitPlacement.End;
 
         if (_jsSetupRunning is false && (_setupBehavior != behavior
@@ -1228,7 +1229,9 @@ public partial class BitPivot : BitComponentBase
             return;
         }
 
-        var isRtl = Dir == BitDir.Rtl;
+        // The direction the header is laid out in, a page's or a content's included, read only for the keys that
+        // act on it since one Dir does not name costs a round trip.
+        var isRtl = _isVertical is false && e.Key is "ArrowLeft" or "ArrowRight" && await IsRtlAsync(_js);
 
         // Ctrl and an arrow moves the focused tab itself rather than the focus, which is the keyboard
         // half of the drag that reorders a header.

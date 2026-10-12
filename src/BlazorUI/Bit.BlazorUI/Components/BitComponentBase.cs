@@ -581,6 +581,60 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     private protected string? ResolveAriaLabel() => AriaLabel ?? GetSplattedAttribute("aria-label");
 
     /// <summary>
+    /// The direction <see cref="Dir"/> names: true for <see cref="BitDir.Rtl"/>, false for <see cref="BitDir.Ltr"/>,
+    /// and null when it leaves the direction to the page (unset) or to the content (<see cref="BitDir.Auto"/>), which
+    /// only the browser knows.
+    /// </summary>
+    /// <remarks>
+    /// The stylesheets follow the direction the component is actually laid out in (<c>:dir(rtl)</c>), so anything
+    /// computed from the direction has to as well: a null is never read as left to right. It is handed to a script as
+    /// it is, which resolves it off the element when it needs it, or resolved in .NET through
+    /// <see cref="IsRtlAsync(IJSRuntime, ElementReference?)"/>.
+    /// </remarks>
+    internal bool? ExplicitRtl => Dir switch
+    {
+        BitDir.Rtl => true,
+        BitDir.Ltr => false,
+        _ => null
+    };
+
+    /// <summary>
+    /// Whether the component is laid out right to left, read at the moment it matters: the direction
+    /// <see cref="Dir"/> names, or else the one the browser resolved for the element (the root unless another is
+    /// given), so a page or content that changed direction since the last render is never answered with a stale
+    /// value.
+    /// </summary>
+    /// <remarks>
+    /// It costs a round trip whenever Dir names no direction, so it is asked only on the path that acts on the
+    /// direction (an arrow key across the inline axis, a pointer on a mirrored axis), never on every key. Before the
+    /// element is rendered, or without a browser, it answers left to right.
+    /// </remarks>
+    internal ValueTask<bool> IsRtlAsync(IJSRuntime js, ElementReference? element = null) => IsRtlAsync(js, ExplicitRtl, element);
+
+    /// <summary>
+    /// <see cref="IsRtlAsync(IJSRuntime, ElementReference?)"/> for a component that knows more about its direction
+    /// than <see cref="Dir"/> says (a culture that writes right to left, see <see cref="BitCssClasses.ExplicitRtl"/>):
+    /// what it knows answers, and a null is resolved off the element.
+    /// </summary>
+    internal async ValueTask<bool> IsRtlAsync(IJSRuntime js, bool? explicitRtl, ElementReference? element = null)
+    {
+        if (explicitRtl is { } rtl) return rtl;
+
+        var target = element ?? RootElement;
+        if (target.Id is null) return false;
+
+        try
+        {
+            return await js.BitUtilsIsRtl(target);
+        }
+        catch (JSException) { }
+        catch (JSDisconnectedException) { }
+        catch (TaskCanceledException) { }
+
+        return false;
+    }
+
+    /// <summary>
     /// The events an element is activated through: by the pointer, by touch, by the keyboard, and by the click an
     /// assistive technology dispatches. The ones that only follow the pointer or the focus around (a hover, a focus)
     /// are not among them.

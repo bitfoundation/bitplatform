@@ -1,0 +1,116 @@
+﻿@page "/regression/dir-resolved"
+
+<PageTitle>Dir Resolved Regression</PageTitle>
+
+@* A component whose Dir names no direction is laid out the way the page (Dir unset) or its content (Dir=Auto) reads,
+   which only the browser knows (#13567). Every part a right-to-left rule turns around is probed with no direction, with
+   Dir=Rtl, inside a box that reads right to left, and with Dir=Ltr inside a right-to-left component; then what the
+   components compute from the direction - keys, pointer, placement, layout - is driven in a box that reads left to
+   right and in one that reads right to left, with no Dir on any of them, and the callout once more with Dir=Auto over
+   Persian content on a left-to-right page. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>Dir Resolved Regression</h3>
+    <p>Status: <span id="status">@_status</span></p>
+</div>
+
+<div id="ltr">
+    @Set(null)
+</div>
+
+<div id="own">
+    @Set(BitDir.Rtl)
+</div>
+
+<div id="inherited" dir="rtl">
+    @Set(null)
+</div>
+
+<div id="nested">
+    <BitStack Dir="BitDir.Rtl">
+        @Set(BitDir.Ltr)
+    </BitStack>
+</div>
+
+<div id="b-ltr">
+    @Behaviour("ltr")
+</div>
+
+<div id="b-rtl" dir="rtl">
+    @Behaviour("rtl")
+</div>
+
+<div id="b-auto" style="padding: 40px 200px;">
+    <div data-probe="callout" style="display: inline-block;">
+        <BitCallout Dir="BitDir.Auto" Placement="BitPlacement.Start">
+            <Anchor><button class="anchor" style="width: 80px;">سلام دنیا</button></Anchor>
+            <Content><div class="content" style="width: 60px;">محتوا</div></Content>
+        </BitCallout>
+    </div>
+</div>
+
+@code {
+    private readonly Dictionary<string, double> _ratings = new() { ["ltr"] = 3, ["rtl"] = 3 };
+    private readonly Dictionary<string, string?> _colors = new() { ["ltr"] = "hsv(0,50%,100%)", ["rtl"] = "hsv(0,50%,100%)" };
+
+    private RenderFragment Set(BitDir? dir) => __builder =>
+    {
+        <div data-probe="colorpicker" style="width: 200px;"><BitColorPicker Dir="dir" ShowAlphaSlider /></div>
+        <div data-probe="pagination"><BitPagination Dir="dir" Count="5" /></div>
+        <div data-probe="badge"><BitBadge Dir="dir" Inline Position="BitPosition.TopLeft" Content="3"><span>Inbox</span></BitBadge></div>
+        <div data-probe="progress-gap" style="width: 100px;"><BitProgress Dir="dir" Circular Percent="40" GapDegree="60" GapPlacement="BitPlacement.Start" /></div>
+        <div data-probe="progress-segments" style="width: 300px;"><BitProgress Dir="dir" Percent="40" Segments="5" /></div>
+        <div data-probe="shimmer" style="width: 300px;"><BitShimmer Dir="dir" Width="200px" /></div>
+        <div data-probe="dialog"><BitDialog Dir="dir" IsOpen="true" Modeless Position="BitPosition.TopLeft" Message="Dialog" /></div>
+        <div data-probe="callout"><BitCallout Dir="dir"><Anchor><button>Anchor</button></Anchor><Content>Content</Content></BitCallout></div>
+        <div data-probe="dropmenu"><BitDropMenu Dir="dir" Text="Menu"><div>Body</div></BitDropMenu></div>
+        <div data-probe="swiper" style="width: 300px;">
+            <BitSwiper Dir="dir">
+                @for (var i = 0; i < 6; i++)
+                {
+                    <BitSwiperItem><div style="width: 100px; height: 40px;">Item @i</div></BitSwiperItem>
+                }
+            </BitSwiper>
+        </div>
+        <div data-probe="searchbox" style="width: 300px;"><BitSearchBox Dir="dir" ShowSearchButton /></div>
+        <div data-probe="phoneinput" style="width: 300px;"><BitPhoneInput Dir="dir" /></div>
+        <div data-probe="persona"><BitPersona Dir="dir" PrimaryText="Saleh Khafan" /></div>
+    };
+
+    private RenderFragment Behaviour(string key) => __builder =>
+    {
+        <div data-probe="rating">
+            <BitRating Value="_ratings[key]" ValueChanged="v => _ratings[key] = v" />
+            <span class="value">@_ratings[key]</span>
+        </div>
+        <div data-probe="colorpicker" style="width: 200px;"><BitColorPicker Color="@_colors[key]" ColorChanged="c => _colors[key] = c" /></div>
+        <div data-probe="otp"><BitOtpInput Length="3" /></div>
+        <div data-probe="carousel" style="width: 300px;">
+            <BitCarousel>
+                @for (var i = 0; i < 3; i++)
+                {
+                    <BitCarouselItem><div style="height: 40px;">Slide @i</div></BitCarouselItem>
+                }
+            </BitCarousel>
+        </div>
+        <div data-probe="callout" style="padding: 40px 200px;">
+            <div style="display: inline-block;">
+                <BitCallout Placement="BitPlacement.Start">
+                    <Anchor><button class="anchor" style="width: 80px;">Anchor</button></Anchor>
+                    <Content><div class="content" style="width: 60px;">Content</div></Content>
+                </BitCallout>
+            </div>
+        </div>
+    };
+
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
+    // interactive render moves it on, which is what the test waits for before it reads the page.
+    private string _status = "Loading";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+}

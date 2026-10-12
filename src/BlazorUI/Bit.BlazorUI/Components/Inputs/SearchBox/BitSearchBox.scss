@@ -228,10 +228,13 @@ $srb-private-properties: siz-height, siz-fontsize, siz-iconsize, siz-cbt-iconsiz
 
     // Only the default glyph is mirrored: it is a directional arrow, and an arrow has to point the other
     // way in an RTL layout. A magnifier - or whatever else the app put on the button - means the same
-    // thing in both directions, and flipping it would only render it backwards.
-    &.bit-rtl {
-        .bit-srb-sbn i.bit-srb-dsi {
-            transform: scale(-1);
+    // thing in both directions, and flipping it would only render it backwards. An engine without :dir()
+    // is left with the class an explicit Dir renders (see .bit-srb-dsi).
+    @supports not selector(:dir(rtl)) {
+        &.bit-rtl {
+            .bit-srb-sbn i.bit-srb-dsi {
+                transform: scale(-1);
+            }
         }
     }
 
@@ -434,6 +437,12 @@ $srb-private-properties: siz-height, siz-fontsize, siz-iconsize, siz-cbt-iconsiz
             }
         }
     }
+}
+
+// The default glyph points the other way in a search box laid out right to left, whatever made it so: its Dir, the
+// page's direction or its content's (Auto). See the .bit-rtl rule of .bit-srb for an engine without :dir().
+.bit-srb-sbn i.bit-srb-dsi:dir(rtl) {
+    transform: scale(-1);
 }
 
 .bit-srb-sbn {

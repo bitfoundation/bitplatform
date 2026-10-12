@@ -861,7 +861,9 @@ public partial class BitRating : BitInputBase<double>
         // own modifier, the one that turns a step into a whole item.
         if (e.CtrlKey || e.AltKey || e.MetaKey) return;
 
-        var isRtl = Dir == BitDir.Rtl;
+        // The direction the rating is laid out in, a page's or a content's included, read only for the keys that
+        // act on it since one Dir does not name costs a round trip.
+        var isRtl = e.Key is "ArrowLeft" or "ArrowRight" && await IsRtlAsync(_js);
         var value = CurrentValue;
 
         // Holding Shift - and the Page keys, which need no modifier for it - moves by a whole item to the

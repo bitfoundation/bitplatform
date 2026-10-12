@@ -395,7 +395,8 @@ public partial class BitFullCalendar : BitComponentBase
     /// <summary>
     /// The direction the calendar renders in: the explicit <c>Dir</c> parameter when supplied,
     /// otherwise the direction of the active culture, so a right-to-left culture flips the layout
-    /// without the consumer having to say so twice.
+    /// without the consumer having to say so twice. Auto is left to the browser, and read back from it
+    /// (see <see cref="BitFullCalendarState.SetAutoDirection"/>).
     /// </summary>
     private BitDir ResolvedDir => Dir is BitDir.Auto ? BitDir.Auto : State.IsRtl ? BitDir.Rtl : BitDir.Ltr;
 
@@ -634,6 +635,13 @@ public partial class BitFullCalendar : BitComponentBase
             {
                 // A circuit going away (or a prerender) leaves nothing to set up.
             }
+        }
+
+        // A calendar whose direction is Auto is laid out the way its content reads, which only the browser knows, so
+        // what it resolved is read back after every render for the keys, the drags and the layout computed from it.
+        if (Dir is BitDir.Auto && IsDisposed is false)
+        {
+            State.SetAutoDirection(await IsRtlAsync(_js));
         }
 
         await base.OnAfterRenderAsync(firstRender);

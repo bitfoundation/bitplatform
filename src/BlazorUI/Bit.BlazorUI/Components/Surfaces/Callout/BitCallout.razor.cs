@@ -1136,7 +1136,7 @@ public partial class BitCallout : BitComponentBase
                 isCalloutOpen: IsOpen,
                 responsiveMode: ResponsiveMode ?? BitResponsiveMode.None,
                 dropDirection: Direction ?? BitDropDirection.TopAndBottom,
-                isRtl: Dir is BitDir.Rtl,
+                isRtl: ExplicitRtl,
                 // Whatever is named as the scrollable part of the content is what the positioning code caps
                 // to the room the viewport leaves. With nothing named, the callout itself takes that role,
                 // so that content taller than the screen scrolls inside the callout instead of running off
@@ -1689,7 +1689,7 @@ public partial class BitCallout : BitComponentBase
                 id: _contentId,
                 trigger: 0.25m,
                 position: ResponsivePosition,
-                isRtl: Dir is BitDir.Rtl,
+                isRtl: ExplicitRtl,
                 orientationLock: ResponsivePosition.ToSwipeOrientation(),
                 dotnetObj: _swipesDotnetObj,
                 isResponsive: true,

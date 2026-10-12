@@ -168,7 +168,7 @@ public partial class _BitMenuButtonItem<TItem> : IBitMenuButtonSubmenu, IAsyncDi
                 isCalloutOpen: _isSubmenuOpen,
                 responsiveMode: BitResponsiveMode.None,
                 dropDirection: BitDropDirection.All,
-                isRtl: MenuButton.Dir is BitDir.Rtl,
+                isRtl: MenuButton.ExplicitRtl,
                 // The submenu caps itself to the room the viewport leaves and scrolls inside it, the way
                 // the menu it was opened from does.
                 scrollContainerId: _submenuId,
@@ -225,9 +225,11 @@ public partial class _BitMenuButtonItem<TItem> : IBitMenuButtonSubmenu, IAsyncDi
     {
         if (_hasSubmenu is false) return;
 
-        var openKey = MenuButton.Dir is BitDir.Rtl ? "ArrowLeft" : "ArrowRight";
+        if (e.Key is not ("ArrowLeft" or "ArrowRight")) return;
 
-        if (e.Key != openKey) return;
+        // The direction the button is laid out in, a page's or a content's included, read only for a horizontal
+        // arrow since one Dir does not name costs a round trip.
+        if ((e.Key is "ArrowLeft") != await MenuButton.IsRtlAsync(_js)) return;
 
         await OpenSubmenu(focusFirstItem: true);
     }

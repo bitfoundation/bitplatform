@@ -1190,12 +1190,23 @@ $drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz
 }
 
 // A box-shadow has no logical form, so the bar marking the commit target has to be moved to the
-// other edge by hand for the callout to keep pointing at the items from the side the text starts on.
-.bit-drp-rtl {
-    .bit-drp-itm.bit-drp-ctg,
-    .bit-drp-dyn.bit-drp-ctg,
-    .bit-drp-iwr.bit-drp-ctg {
-        box-shadow: inset calc(-1 * $shp-border-width-thick) 0 0 0 var(--bit-drp-clr);
+// other edge by hand for the callout to keep pointing at the items from the side the text starts on -
+// in the direction each item is laid out in, whatever made it right to left: the dropdown's Dir, or the
+// page's or the content's the callout carries over to the body.
+.bit-drp-itm.bit-drp-ctg:dir(rtl),
+.bit-drp-dyn.bit-drp-ctg:dir(rtl),
+.bit-drp-iwr.bit-drp-ctg:dir(rtl) {
+    box-shadow: inset calc(-1 * $shp-border-width-thick) 0 0 0 var(--bit-drp-clr);
+}
+
+// An engine without :dir() is left with the class an explicit Dir renders on the callout.
+@supports not selector(:dir(rtl)) {
+    .bit-drp-rtl {
+        .bit-drp-itm.bit-drp-ctg,
+        .bit-drp-dyn.bit-drp-ctg,
+        .bit-drp-iwr.bit-drp-ctg {
+            box-shadow: inset calc(-1 * $shp-border-width-thick) 0 0 0 var(--bit-drp-clr);
+        }
     }
 }
 
@@ -1452,7 +1463,8 @@ $drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz
     }
 }
 
-.bit-drp-res.bit-drp-rtl {
+// The direction the callout is laid out in, with the class an explicit Dir renders for an engine without :dir().
+.bit-drp-res:is(.bit-drp-rtl, :dir(rtl)) {
     @include lt-sm {
         left: 0;
         right: unset;

@@ -582,6 +582,52 @@ public class BitPivotTests : BunitTestContext
         Assert.AreEqual("0", component.FindAll("[role=tab]")[0].GetAttribute("tabindex"));
     }
 
+    // A Dir that names no direction leaves it to the page (unset) or to the content (Auto), which is read off the
+    // element: the keys follow the direction the component is actually laid out in.
+    [TestMethod,
+        DataRow(null),
+        DataRow(BitDir.Auto)
+    ]
+    public void BitPivotShouldMirrorTheHorizontalArrowsInAResolvedRightToLeftHeader(BitDir? dir)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "B"));
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "C"));
+        });
+
+        var tablist = component.Find(".bit-pvt-hct");
+
+        tablist.KeyDown("ArrowLeft");
+        Assert.AreEqual("0", component.FindAll("[role=tab]")[1].GetAttribute("tabindex"));
+
+        tablist.KeyDown("ArrowRight");
+        Assert.AreEqual("0", component.FindAll("[role=tab]")[0].GetAttribute("tabindex"));
+    }
+
+    // The slide and the wheel scroll the header along its inline axis. A direction Dir names is handed to the script as
+    // it is; one it leaves to the page or the content is handed over as unknown, and read off the header when needed.
+    [TestMethod,
+        DataRow(null, null),
+        DataRow(BitDir.Auto, null),
+        DataRow(BitDir.Rtl, true),
+        DataRow(BitDir.Ltr, false)
+    ]
+    public void BitPivotShouldHandTheDirectionItsDirNamesToTheScript(BitDir? dir, bool? expected)
+    {
+        RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+            parameters.Add(p => p.OverflowBehavior, BitPivotOverflowBehavior.Slide);
+            parameters.AddChildContent<BitPivotItem>(p => p.Add(i => i.HeaderText, "A"));
+        });
+
+        Assert.AreEqual(expected, Context.JSInterop.Invocations["BitBlazorUI.Pivot.setup"][^1].Arguments[6]);
+    }
+
     [TestMethod]
     public void BitPivotShouldStepOverTheItemsThatCannotTakeTheFocus()
     {

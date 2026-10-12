@@ -200,7 +200,10 @@ public class BitFullCalendarThemeAndAccessibilityTests : BunitTestContext
     public void BitFullCalendarShouldMarkItsOwnDirectionForTheChevrons()
     {
         // The chevrons mirror off the calendar's own direction, never a [dir] ancestor: an auto-directed calendar in
-        // a right-to-left culture is right-to-left, a left-to-right one on any page is not.
+        // a right-to-left culture is right-to-left (the browser resolves its Persian content so), a left-to-right one
+        // on any page is not.
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+
         var auto = RenderComponent<BitFullCalendar>(parameters =>
         {
             parameters.Add(p => p.Events, Events());
@@ -216,6 +219,43 @@ public class BitFullCalendarThemeAndAccessibilityTests : BunitTestContext
             parameters.Add(p => p.CultureName, "en-US");
         });
         Assert.IsFalse(ltr.Find(".bit-bfc").ClassList.Contains("bit-bfc-rtl"));
+    }
+
+    // An auto-directed calendar is laid out the way its content reads, which the browser resolves and the culture only
+    // guesses at until it has: what it resolved is read back after the render, for the chevrons and every key and drag.
+    [TestMethod,
+        DataRow("en-US", true),
+        DataRow("fa-IR", false)
+    ]
+    public void BitFullCalendarAutoShouldFollowTheDirectionTheBrowserResolved(string culture, bool resolvedRtl)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(resolvedRtl);
+
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.CultureName, culture);
+            parameters.Add(p => p.Dir, BitDir.Auto);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(resolvedRtl, component.Find(".bit-bfc").ClassList.Contains("bit-bfc-rtl")));
+        Assert.AreEqual(resolvedRtl, component.Instance.State.IsRtl);
+        Assert.AreEqual("auto", component.Find(".bit-bfc").GetAttribute("dir"));
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldNotReadADirectionItsDirOrCultureNames()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.CultureName, "en-US");
+        });
+
+        Assert.IsFalse(component.Instance.State.IsRtl);
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.isRtl");
     }
 
     #endregion

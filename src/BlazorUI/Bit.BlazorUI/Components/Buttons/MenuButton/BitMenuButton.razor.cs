@@ -1502,6 +1502,17 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
         }
     }
 
+    // The key that walks back out of a submenu is the one pointing at the menu it was opened from, which is the
+    // opposite of the one that walked into it (_BitMenuButtonItem.HandleOnItemKeyDown), in the direction the button is laid
+    // out in - a page's or a content's included, which the menus carry over to the body. Only a horizontal arrow
+    // asks, since a direction Dir does not name costs a round trip to read.
+    private async ValueTask<bool> IsBackKey(KeyboardEventArgs e)
+    {
+        if (e.Key is not ("ArrowLeft" or "ArrowRight")) return false;
+
+        return (e.Key is "ArrowRight") == await IsRtlAsync(_js);
+    }
+
     // The one keyboard handler of every menu the button renders: the menu itself, and each submenu, which
     // is a callout of its own rather than a part of the menu it was opened from - moved to the body while
     // it is open, so its keys never reach the handler of the menu around it.
@@ -1511,10 +1522,6 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
         // The level of the items of THIS menu: the submenu of an item at level N holds items at N + 1.
         var level = owner is null ? 0 : owner.Level + 1;
-
-        // The key that walks back out of a submenu is the one pointing at the menu it was opened from,
-        // which is the opposite of the one that walked into it.
-        var backKey = Dir is BitDir.Rtl ? "ArrowRight" : "ArrowLeft";
 
         switch (e.Key)
         {
@@ -1556,7 +1563,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
                 await FocusTrigger();
                 break;
             default:
-                if (owner is not null && e.Key == backKey)
+                if (owner is not null && await IsBackKey(e))
                 {
                     await CloseSubmenusFrom(owner.Level);
                     await owner.FocusAsync();
@@ -1730,7 +1737,7 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
             isCalloutOpen: IsOpen,
             responsiveMode: BitResponsiveMode.None,
             dropDirection: DropDirection,
-            isRtl: Dir is BitDir.Rtl,
+            isRtl: ExplicitRtl,
             // With nothing else named as the scrollable part, the callout itself takes that role, so that a menu
             // taller than the screen scrolls inside the callout instead of running off the bottom of it - where a
             // fixed-positioned element leaves it out of reach of the page's own scrolling. An author-set MaxHeight

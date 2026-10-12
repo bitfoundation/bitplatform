@@ -127,7 +127,9 @@ $drm-private-properties: clr, clr-txt, clr-flt, clr-hover, clr-active, clr-focus
     --bit-drm-cur-bg: var(--bit-drm-rst-bg, var(--bit-DropMenu-background, var(--bit-drm-rst-bg-d)));
     --bit-drm-cur-brd: var(--bit-drm-rst-brd, var(--bit-DropMenu-border-color, var(--bit-drm-rst-brd-d)));
 
-    &.bit-rtl {
+    // The direction the drop menu is laid out in - its Dir, the page's or its content's (Auto) - with the class an
+    // explicit Dir renders for an engine without :dir().
+    &:is(.bit-rtl, :dir(rtl)) {
         --bit-drm-transform-factor: -1;
     }
 
@@ -359,7 +361,9 @@ $drm-cal-private-properties: cal-bg, cal-brd;
         --bit-drm-cal-tra: var(--bit-drm-cal-tra-ent);
     }
 
-    &.bit-drm-rtl {
+    // The direction the callout is laid out in - the drop menu's Dir, or the page's or the content's it carries
+    // over to the body - with the class an explicit Dir renders for an engine without :dir().
+    &:is(.bit-drm-rtl, :dir(rtl)) {
         --bit-drm-transform-factor: -1;
     }
 

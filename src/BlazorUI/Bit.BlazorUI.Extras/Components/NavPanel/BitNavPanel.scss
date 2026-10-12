@@ -86,14 +86,16 @@ $npn-fallback-breakpoints: (
 
     // The drawer is docked to the edge it comes from, which the Placement expresses in the text direction:
     // the End of a left-to-right layout and the Start of a right-to-left one are both the right of the
-    // screen, and a panel that is both is back where it started.
-    &.bit-rtl,
+    // screen, and a panel that is both is back where it started. The direction is the one the panel is laid
+    // out in - its Dir, the page's or its content's (Auto) - with the class an explicit Dir renders for an
+    // engine without :dir().
+    &:is(.bit-rtl, :dir(rtl)),
     &.bit-npn-end {
         right: 0;
         left: unset;
     }
 
-    &.bit-rtl.bit-npn-end {
+    &:is(.bit-rtl, :dir(rtl)).bit-npn-end {
         left: 0;
         right: unset;
     }
@@ -107,12 +109,12 @@ $npn-fallback-breakpoints: (
         pointer-events: none;
         transition: transform $mot-duration $mot-easing-accelerate, opacity $mot-duration-short $mot-easing-accelerate, visibility 0s linear $mot-duration;
 
-        &.bit-rtl,
+        &:is(.bit-rtl, :dir(rtl)),
         &.bit-npn-end {
             transform: translateX(100%);
         }
 
-        &.bit-rtl.bit-npn-end {
+        &:is(.bit-rtl, :dir(rtl)).bit-npn-end {
             transform: translateX(-100%);
         }
     }
