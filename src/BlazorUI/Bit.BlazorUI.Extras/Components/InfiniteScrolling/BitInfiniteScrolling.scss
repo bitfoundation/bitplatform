@@ -119,13 +119,7 @@ $isc-ring-room: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});
     box-sizing: border-box;
 
     &:focus-visible {
-        outline: #{$shp-focus-ring-width} solid var(--bit-InfiniteScrolling-item-focus-color, #{$clr-pri-focus});
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
-
-        // The forced palette turns the ring into the system's own focus color.
-        @media (forced-colors: active) {
-            outline: #{$shp-focus-ring-width} solid Highlight;
-        }
+        @include focus-ring-inset(var(--bit-InfiniteScrolling-item-focus-color, #{$clr-pri-focus}));
     }
 }
 

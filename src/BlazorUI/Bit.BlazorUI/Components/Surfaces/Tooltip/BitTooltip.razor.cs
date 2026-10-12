@@ -915,8 +915,12 @@ public partial class BitTooltip : BitComponentBase
         // The JS side takes an Escape that dismisses a shown tooltip before it reaches this handler, so this is
         // only the answer while that side is not set up yet - and a repeat of it, which finds the tooltip
         // already hidden, for a key it let through to a component inside the anchor that answers Escape itself.
+        // Only the plain key, as on the JS side: an Escape with a modifier goes on to the surface around the tooltip.
+        // A key cancelling an IME composition never gets here (see Utils.stopComposingEscape).
         if (e.Key is "Escape")
         {
+            if (e.IsPlainEscape() is false) return;
+
             await DismissByEscape();
 
             return;

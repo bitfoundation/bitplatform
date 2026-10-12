@@ -28,10 +28,15 @@ public class BitTagsInputStylesheetTests
 
         // So does an explicit Color: the chip colors of the tag variant are the Color's (unset while it is), then the
         // variable's, then the primary chip's; the field's focus ring and rule and the spinner rank the same way. The
-        // chip reads them behind the value its own hover moves, which is unset while the chip is not hovered.
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-tgi-tag-sbg, var(--bit-tgi-tag-bg, var(--bit-TagsInput-tag-background, var(--bit-tgi-tag-bg-dft))));");
-        StringAssert.Contains(stylesheet, "color: var(--bit-tgi-tag-sfg, var(--bit-tgi-tag-clr, var(--bit-TagsInput-tag-color, var(--bit-tgi-tag-clr-dft))));");
-        StringAssert.Contains(stylesheet, "var(--bit-tgi-tag-ring, var(--bit-TagsInput-tag-focus-color, var(--bit-tgi-tag-ring-dft)))");
+        // chip reads them behind the value its own hover moves, which is unset while the chip is not hovered. The
+        // variables and the primary chip are resolved on the chip by its tag variant (the -pub values), each variable
+        // behind the tag variant's own twin of it.
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-tgi-tag-sbg, var(--bit-tgi-tag-bg, var(--bit-tgi-tag-bg-pub)));");
+        StringAssert.Contains(stylesheet, "color: var(--bit-tgi-tag-sfg, var(--bit-tgi-tag-clr, var(--bit-tgi-tag-clr-pub)));");
+        StringAssert.Contains(stylesheet, "var(--bit-tgi-tag-ring, var(--bit-tgi-tag-ring-pub))");
+        StringAssert.Contains(stylesheet, "--bit-tgi-tag-bg-pub: var(--bit-TagsInput-fill-tag-background, var(--bit-TagsInput-tag-background, var(--bit-tgi-tag-bg-dft)));");
+        StringAssert.Contains(stylesheet, "--bit-tgi-tag-clr-pub: var(--bit-TagsInput-fill-tag-color, var(--bit-TagsInput-tag-color, var(--bit-tgi-tag-clr-dft)));");
+        StringAssert.Contains(stylesheet, "--bit-tgi-tag-ring-pub: var(--bit-TagsInput-fill-tag-focus-color, var(--bit-TagsInput-tag-focus-color, var(--bit-tgi-tag-ring-dft)));");
         StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-tgi-clr-focus, var(--bit-TagsInput-focus-color)))");
         StringAssert.Contains(stylesheet, "var(--bit-tgi-clr, var(--bit-TagsInput-focus-border-color, #{$clr-pri}))");
         StringAssert.Contains(stylesheet, "var(--bit-tgi-clr, var(--bit-TagsInput-spinner-color, #{$clr-pri}))");
@@ -42,6 +47,60 @@ public class BitTagsInputStylesheetTests
         // Variant's recipe for the primary chip an unset Color stands for, so the variables stay ahead of them.
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-TagsInput-[a-z-]+, var\(--bit-tgi-(clr|clr-txt|clr-hover|clr-focus|gap|fontsize|iconsize|helperfontsize|tagfontsize|minheight|padding|tagminheight|tagpadding|tag-clr|tag-brd|tag-bg|tag-ring|tag-clr-hover|tag-brd-hover|tag-bg-hover)\)"),
                        "A public variable is read before the parameter it restyles the default of.");
+    }
+
+    [TestMethod,
+        DataRow("fill", ".bit-tgi-fil"),
+        DataRow("outline", ".bit-tgi-otl"),
+        DataRow("text", ".bit-tgi-txt")]
+    public void BitTagsInputShouldReadTheFieldVariablesOfItsVariantAheadOfTheSharedOnes(string variant, string selector)
+    {
+        var block = SourceFiles.GetScssBlock(ReadStylesheet(), $"\n{selector} {{");
+
+        // Each Variant reads a tier of its own ahead of the shared field colors, so a theme can set one look of the
+        // field apart from the other two on :root.
+        foreach (var name in new[] { "background", "border-color", "hover-border-color" })
+        {
+            StringAssert.Contains(block, $"var(--bit-TagsInput-{variant}-{name}, var(--bit-TagsInput-{name}, ",
+                                  $"{selector} does not read --bit-TagsInput-{variant}-{name} ahead of --bit-TagsInput-{name}.");
+        }
+
+        Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-TagsInput-(?!{variant}-)(?:fill|outline|text)-"),
+                       $"{selector} reads the variables of another variant.");
+    }
+
+    [TestMethod,
+        DataRow("fill", ".bit-tgi-tgf"),
+        DataRow("outline", ".bit-tgi-tgo"),
+        DataRow("text", ".bit-tgi-tgt")]
+    public void BitTagsInputShouldReadTheChipVariablesOfItsTagVariantAheadOfTheSharedOnes(string variant, string selector)
+    {
+        // The tag variant resolves the public chip colors on the chip itself - so a chip handed one through GetTagStyle
+        // still takes it - each behind the tag variant's own twin of it, named the way the field's are.
+        var block = SourceFiles.GetScssBlock(ReadStylesheet(), $"\n{selector} .bit-tgi-tag,\n{selector} .bit-tgi-tgl {{");
+
+        foreach (var name in new[] { "tag-color", "tag-background", "tag-border-color", "tag-focus-color", "tag-hover-color",
+                                     "tag-hover-background", "toggle-hover-color", "toggle-hover-background" })
+        {
+            StringAssert.Contains(block, $"var(--bit-TagsInput-{variant}-{name}, var(--bit-TagsInput-{name}, ",
+                                  $"{selector} does not read --bit-TagsInput-{variant}-{name} ahead of --bit-TagsInput-{name}.");
+        }
+
+        Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-TagsInput-(?!{variant}-)(?:fill|outline|text)-"),
+                       $"{selector} reads the variables of another tag variant.");
+    }
+
+    [TestMethod]
+    [DataRow("\n.bit-tgi-dbt {")]
+    [DataRow("\n.bit-tgi-rbt {")]
+    public void BitTagsInputChipButtonsShouldDrawTheirRingInsideTheChip(string rule)
+    {
+        // The dismiss and reorder buttons stretch to the height of a chip that clips its overflow, so a ring drawn on
+        // their edge was cut off along the chip's: it is drawn inside them, like the chip's own.
+        var block = SourceFiles.GetScssBlock(ReadStylesheet(), rule);
+
+        StringAssert.Contains(block, "@include focus-ring-inset(var(--bit-tgi-tag-ring, var(--bit-tgi-tag-ring-pub)));");
+        Assert.IsFalse(block.Contains("outline-offset: 0"), "The ring is drawn on the edge the chip clips.");
     }
 
     [TestMethod]

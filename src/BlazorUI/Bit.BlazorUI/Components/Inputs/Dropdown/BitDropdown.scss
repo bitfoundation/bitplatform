@@ -164,12 +164,7 @@ $drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz
 // Every one of these is a <button>, and the library resets `button { outline: none }` globally, so without
 // this the keyboard has nothing to follow through the list at all.
 @mixin drp-focus-inset($color: var(--bit-drp-clr-focus, #{$clr-pri-focus})) {
-    outline: $shp-focus-ring-width $shp-border-style #{$color};
-    outline-offset: calc(-1 * #{$shp-focus-ring-width});
-
-    @media (forced-colors: active) {
-        outline-color: Highlight;
-    }
+    @include focus-ring-inset($color);
 }
 
 .bit-drp {

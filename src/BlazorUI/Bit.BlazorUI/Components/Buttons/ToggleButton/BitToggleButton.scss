@@ -26,6 +26,45 @@
 //   --bit-ToggleButton-disabled-color                 foreground when disabled                (default: $clr-pri-dis-text)
 //   --bit-ToggleButton-disabled-background            background when disabled                (default: per variant, $clr-pri-dis or transparent)
 //   --bit-ToggleButton-disabled-border-color          border color when disabled              (default: the disabled background)
+//                                                     Each unchecked color above has a twin per variant, read ahead
+//                                                     of it, so a theme can set one look apart from the other two
+//                                                     (Color still wins over both; the checked state has one tier):
+//   --bit-ToggleButton-fill-color                     foreground at rest, Fill                (default: --bit-ToggleButton-color)
+//   --bit-ToggleButton-fill-background                background at rest, Fill                (default: --bit-ToggleButton-background)
+//   --bit-ToggleButton-fill-border-color              border color at rest, Fill              (default: --bit-ToggleButton-border-color)
+//   --bit-ToggleButton-fill-hover-color               foreground on hover, Fill               (default: --bit-ToggleButton-hover-color)
+//   --bit-ToggleButton-fill-hover-background          background on hover, Fill               (default: --bit-ToggleButton-hover-background)
+//   --bit-ToggleButton-fill-hover-border-color        border color on hover, Fill             (default: --bit-ToggleButton-hover-border-color)
+//   --bit-ToggleButton-fill-active-color              foreground while pressed, Fill          (default: --bit-ToggleButton-active-color)
+//   --bit-ToggleButton-fill-active-background         background while pressed, Fill          (default: --bit-ToggleButton-active-background)
+//   --bit-ToggleButton-fill-active-border-color       border color while pressed, Fill        (default: --bit-ToggleButton-active-border-color)
+//   --bit-ToggleButton-fill-disabled-color            foreground when disabled, Fill          (default: --bit-ToggleButton-disabled-color)
+//   --bit-ToggleButton-fill-disabled-background       background when disabled, Fill          (default: --bit-ToggleButton-disabled-background)
+//   --bit-ToggleButton-fill-disabled-border-color     border color when disabled, Fill        (default: --bit-ToggleButton-disabled-border-color)
+//   --bit-ToggleButton-outline-color                  foreground at rest, Outline             (default: --bit-ToggleButton-color)
+//   --bit-ToggleButton-outline-background             background at rest, Outline             (default: --bit-ToggleButton-background)
+//   --bit-ToggleButton-outline-border-color           border color at rest, Outline           (default: --bit-ToggleButton-border-color)
+//   --bit-ToggleButton-outline-hover-color            foreground on hover, Outline            (default: --bit-ToggleButton-hover-color)
+//   --bit-ToggleButton-outline-hover-background       background on hover, Outline            (default: --bit-ToggleButton-hover-background)
+//   --bit-ToggleButton-outline-hover-border-color     border color on hover, Outline          (default: --bit-ToggleButton-hover-border-color)
+//   --bit-ToggleButton-outline-active-color           foreground while pressed, Outline       (default: --bit-ToggleButton-active-color)
+//   --bit-ToggleButton-outline-active-background      background while pressed, Outline       (default: --bit-ToggleButton-active-background)
+//   --bit-ToggleButton-outline-active-border-color    border color while pressed, Outline     (default: --bit-ToggleButton-active-border-color)
+//   --bit-ToggleButton-outline-disabled-color         foreground when disabled, Outline       (default: --bit-ToggleButton-disabled-color)
+//   --bit-ToggleButton-outline-disabled-background    background when disabled, Outline       (default: --bit-ToggleButton-disabled-background)
+//   --bit-ToggleButton-outline-disabled-border-color  border color when disabled, Outline     (default: --bit-ToggleButton-disabled-border-color)
+//   --bit-ToggleButton-text-color                     foreground at rest, Text                (default: --bit-ToggleButton-color)
+//   --bit-ToggleButton-text-background                background at rest, Text                (default: --bit-ToggleButton-background)
+//   --bit-ToggleButton-text-border-color              border color at rest, Text              (default: --bit-ToggleButton-border-color)
+//   --bit-ToggleButton-text-hover-color               foreground on hover, Text               (default: --bit-ToggleButton-hover-color)
+//   --bit-ToggleButton-text-hover-background          background on hover, Text               (default: --bit-ToggleButton-hover-background)
+//   --bit-ToggleButton-text-hover-border-color        border color on hover, Text             (default: --bit-ToggleButton-hover-border-color)
+//   --bit-ToggleButton-text-active-color              foreground while pressed, Text          (default: --bit-ToggleButton-active-color)
+//   --bit-ToggleButton-text-active-background         background while pressed, Text          (default: --bit-ToggleButton-active-background)
+//   --bit-ToggleButton-text-active-border-color       border color while pressed, Text        (default: --bit-ToggleButton-active-border-color)
+//   --bit-ToggleButton-text-disabled-color            foreground when disabled, Text          (default: --bit-ToggleButton-disabled-color)
+//   --bit-ToggleButton-text-disabled-background       background when disabled, Text          (default: --bit-ToggleButton-disabled-background)
+//   --bit-ToggleButton-text-disabled-border-color     border color when disabled, Text        (default: --bit-ToggleButton-disabled-border-color)
 //   --bit-ToggleButton-checked-disabled-opacity       dimming of a disabled checked toggle
 //                                                     button, which keeps its own colors so
 //                                                     the state survives being disabled       (default: $opa-dis)
@@ -106,13 +145,6 @@ $tgb-private-properties: clr-txt, clr, clr-hover, clr-active, clr-focus, clr-dar
     gap: var(--bit-ToggleButton-gap, var(--bit-tgb-icn-margin));
     --bit-tgb-icn-margin: #{spacing(0.5)};
 
-    // The foreground FixedColor pins: the role's contrasting color, which every variant and every state is
-    // readable against, rather than the resting color of the Outline and Text variants, which on a background
-    // role is the background itself. The checked state retargets it below, and the pin at the end of the file
-    // reads it off the element, so the value is written twice rather than once per variant and state. An
-    // explicit Color is read first, then the public variable, then the primary role an unset Color stands for.
-    --bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-color, #{$clr-pri-text}));
-
     // The one size the icon and the check mark read. An icon-only button retargets it below to the glyph
     // size of its size class; with a label beside it the glyph rides the text, which is what keeps the two
     // lined up whatever the font scale turns out to be.
@@ -132,15 +164,10 @@ $tgb-private-properties: clr-txt, clr, clr-hover, clr-active, clr-focus, clr-dar
     // refused twice over, in the handler and in preventDefault. Every rule that paints a pointer state excludes
     // this one by name rather than by being written before it, so the inert look does not depend on where in the
     // file it happens to sit - the FixedColor pin at the end of the file included.
+    // The ring a disabled toggle button keeps in the tab order is drawn by its variant (see .bit-tgb-fil), in the
+    // disabled foreground the variant reads.
     &.bit-dis {
         cursor: default;
-
-        // AllowDisabledFocus keeps a disabled toggle button in the tab order, so the indicator has to stay
-        // visible - but drawn in the disabled color, since the vivid role ring of the enabled state
-        // contradicts the inert look and reads as actionable.
-        &:focus-visible {
-            @include focus-ring(var(--bit-tgb-clr-dis-text, var(--bit-ToggleButton-disabled-color, #{$clr-pri-dis-text})));
-        }
     }
 }
 
@@ -287,85 +314,118 @@ $tgb-private-properties: clr-txt, clr, clr-hover, clr-active, clr-focus, clr-dar
 // role leaves alone (the transparent background of Outline and Text, the transparent border of Text) is the
 // variables' alone.
 //
+// Every color variable of the unchecked state is read in two tiers: the variant's own (--bit-ToggleButton-fill-*,
+// -outline-*, -text-*) ahead of the shared one, so a theme can give the three looks different colors from :root - an
+// outline toggle button's neutral hairline without a ring around every filled one - while a shared variable still
+// re-skins all three at once. Both tiers sit between the role and the default, so an explicit Color still wins over
+// them. The checked state is one appearance across the variants (see .bit-tgb-chk), so its variables have one tier.
+//
 // The states change the variables the toggle button is painted from (--bit-tgb-sfg / -sbg / -sbr, reset on .bit-tgb)
 // rather than its colors, so the rules at rest are the only ones that paint: a toggle button the app paints through
 // Class keeps that paint under the pointer and while pressed, instead of losing it to a state that outranks the
 // app's class. The states still rank among themselves as they did, the checked ones after the variants'.
+//
+// Each variant also sets --bit-tgb-fg, the foreground FixedColor pins: the role's contrasting color, which every
+// variant and every state is readable against, rather than the resting color of the Outline and Text variants,
+// which on a background role is the background itself. The checked state retargets it, and the pin at the end of the
+// file reads it off the element. An explicit Color is read first, then the variables of the variant's on-color and the
+// shared ones, then the primary role an unset Color stands for: a Fill toggle button's resting foreground, which is
+// the on-color already, and an Outline or Text one's hover foreground - never its resting one
+// (--bit-ToggleButton-outline-color / -text-color), which is the role's own color and would vanish on the role fill
+// the hover paints.
 .bit-tgb-fil {
+    --bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-fill-color, var(--bit-ToggleButton-color, #{$clr-pri-text})));
     color: var(--bit-tgb-sfg, var(--bit-tgb-fg));
-    border-color: var(--bit-tgb-sbr, var(--bit-tgb-clr, var(--bit-ToggleButton-border-color, var(--bit-ToggleButton-background, #{$clr-pri}))));
-    background-color: var(--bit-tgb-sbg, var(--bit-tgb-clr, var(--bit-ToggleButton-background, #{$clr-pri})));
+    border-color: var(--bit-tgb-sbr, var(--bit-tgb-clr, var(--bit-ToggleButton-fill-border-color, var(--bit-ToggleButton-border-color, var(--bit-ToggleButton-fill-background, var(--bit-ToggleButton-background, #{$clr-pri}))))));
+    background-color: var(--bit-tgb-sbg, var(--bit-tgb-clr, var(--bit-ToggleButton-fill-background, var(--bit-ToggleButton-background, #{$clr-pri}))));
 
     @media (hover: hover) {
         &:not(.bit-dis):not(.bit-tgb-lod):hover {
-            --bit-tgb-sfg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-hover-color, var(--bit-ToggleButton-color, #{$clr-pri-text})));
-            --bit-tgb-sbr: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-border-color, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover})));
-            --bit-tgb-sbg: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover}));
+            --bit-tgb-sfg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-fill-hover-color, var(--bit-ToggleButton-hover-color, var(--bit-ToggleButton-fill-color, var(--bit-ToggleButton-color, #{$clr-pri-text})))));
+            --bit-tgb-sbr: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-fill-hover-border-color, var(--bit-ToggleButton-hover-border-color, var(--bit-ToggleButton-fill-hover-background, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover})))));
+            --bit-tgb-sbg: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-fill-hover-background, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover})));
         }
     }
 
     &:not(.bit-dis):not(.bit-tgb-lod):active {
-        --bit-tgb-sfg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-active-color, var(--bit-ToggleButton-hover-color, var(--bit-ToggleButton-color, #{$clr-pri-text}))));
-        --bit-tgb-sbr: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-border-color, var(--bit-ToggleButton-active-background, #{$clr-pri-active})));
-        --bit-tgb-sbg: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-background, #{$clr-pri-active}));
+        --bit-tgb-sfg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-fill-active-color, var(--bit-ToggleButton-active-color, var(--bit-ToggleButton-fill-hover-color, var(--bit-ToggleButton-hover-color, var(--bit-ToggleButton-fill-color, var(--bit-ToggleButton-color, #{$clr-pri-text})))))));
+        --bit-tgb-sbr: var(--bit-tgb-clr-active, var(--bit-ToggleButton-fill-active-border-color, var(--bit-ToggleButton-active-border-color, var(--bit-ToggleButton-fill-active-background, var(--bit-ToggleButton-active-background, #{$clr-pri-active})))));
+        --bit-tgb-sbg: var(--bit-tgb-clr-active, var(--bit-ToggleButton-fill-active-background, var(--bit-ToggleButton-active-background, #{$clr-pri-active})));
     }
 
     &.bit-dis {
-        color: var(--bit-tgb-clr-dis-text, var(--bit-ToggleButton-disabled-color, #{$clr-pri-dis-text}));
-        border-color: var(--bit-tgb-clr-dis, var(--bit-ToggleButton-disabled-border-color, var(--bit-ToggleButton-disabled-background, #{$clr-pri-dis})));
-        background-color: var(--bit-tgb-clr-dis, var(--bit-ToggleButton-disabled-background, #{$clr-pri-dis}));
+        color: var(--bit-tgb-clr-dis-text, var(--bit-ToggleButton-fill-disabled-color, var(--bit-ToggleButton-disabled-color, #{$clr-pri-dis-text})));
+        border-color: var(--bit-tgb-clr-dis, var(--bit-ToggleButton-fill-disabled-border-color, var(--bit-ToggleButton-disabled-border-color, var(--bit-ToggleButton-fill-disabled-background, var(--bit-ToggleButton-disabled-background, #{$clr-pri-dis})))));
+        background-color: var(--bit-tgb-clr-dis, var(--bit-ToggleButton-fill-disabled-background, var(--bit-ToggleButton-disabled-background, #{$clr-pri-dis})));
+
+        // AllowDisabledFocus keeps a disabled toggle button in the tab order, so the indicator has to stay
+        // visible - but drawn in the disabled foreground of its variant, since the vivid role ring of the enabled
+        // state contradicts the inert look and reads as actionable.
+        &:focus-visible {
+            @include focus-ring(var(--bit-tgb-clr-dis-text, var(--bit-ToggleButton-fill-disabled-color, var(--bit-ToggleButton-disabled-color, #{$clr-pri-dis-text}))));
+        }
     }
 }
 
 .bit-tgb-otl {
-    color: var(--bit-tgb-sfg, var(--bit-tgb-clr, var(--bit-ToggleButton-color, #{$clr-pri})));
-    border-color: var(--bit-tgb-sbr, var(--bit-tgb-clr, var(--bit-ToggleButton-border-color, #{$clr-pri})));
-    background-color: var(--bit-tgb-sbg, var(--bit-ToggleButton-background, transparent));
+    --bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-outline-hover-color, var(--bit-ToggleButton-hover-color, #{$clr-pri-text})));
+    color: var(--bit-tgb-sfg, var(--bit-tgb-clr, var(--bit-ToggleButton-outline-color, var(--bit-ToggleButton-color, #{$clr-pri}))));
+    border-color: var(--bit-tgb-sbr, var(--bit-tgb-clr, var(--bit-ToggleButton-outline-border-color, var(--bit-ToggleButton-border-color, #{$clr-pri}))));
+    background-color: var(--bit-tgb-sbg, var(--bit-ToggleButton-outline-background, var(--bit-ToggleButton-background, transparent)));
 
     @media (hover: hover) {
         &:not(.bit-dis):not(.bit-tgb-lod):hover {
-            --bit-tgb-sfg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-hover-color, #{$clr-pri-text}));
-            --bit-tgb-sbr: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-border-color, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover})));
-            --bit-tgb-sbg: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover}));
+            --bit-tgb-sfg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-outline-hover-color, var(--bit-ToggleButton-hover-color, #{$clr-pri-text})));
+            --bit-tgb-sbr: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-outline-hover-border-color, var(--bit-ToggleButton-hover-border-color, var(--bit-ToggleButton-outline-hover-background, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover})))));
+            --bit-tgb-sbg: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-outline-hover-background, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover})));
         }
     }
 
     &:not(.bit-dis):not(.bit-tgb-lod):active {
-        --bit-tgb-sfg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-active-color, var(--bit-ToggleButton-hover-color, #{$clr-pri-text})));
-        --bit-tgb-sbr: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-border-color, var(--bit-ToggleButton-active-background, #{$clr-pri-active})));
-        --bit-tgb-sbg: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-background, #{$clr-pri-active}));
+        --bit-tgb-sfg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-outline-active-color, var(--bit-ToggleButton-active-color, var(--bit-ToggleButton-outline-hover-color, var(--bit-ToggleButton-hover-color, #{$clr-pri-text})))));
+        --bit-tgb-sbr: var(--bit-tgb-clr-active, var(--bit-ToggleButton-outline-active-border-color, var(--bit-ToggleButton-active-border-color, var(--bit-ToggleButton-outline-active-background, var(--bit-ToggleButton-active-background, #{$clr-pri-active})))));
+        --bit-tgb-sbg: var(--bit-tgb-clr-active, var(--bit-ToggleButton-outline-active-background, var(--bit-ToggleButton-active-background, #{$clr-pri-active})));
     }
 
     &.bit-dis {
-        color: var(--bit-tgb-clr-dis-text, var(--bit-ToggleButton-disabled-color, #{$clr-pri-dis-text}));
-        border-color: var(--bit-tgb-clr-dis, var(--bit-ToggleButton-disabled-border-color, #{$clr-pri-dis}));
-        background-color: var(--bit-ToggleButton-disabled-background, transparent);
+        color: var(--bit-tgb-clr-dis-text, var(--bit-ToggleButton-outline-disabled-color, var(--bit-ToggleButton-disabled-color, #{$clr-pri-dis-text})));
+        border-color: var(--bit-tgb-clr-dis, var(--bit-ToggleButton-outline-disabled-border-color, var(--bit-ToggleButton-disabled-border-color, #{$clr-pri-dis})));
+        background-color: var(--bit-ToggleButton-outline-disabled-background, var(--bit-ToggleButton-disabled-background, transparent));
+
+        &:focus-visible {
+            @include focus-ring(var(--bit-tgb-clr-dis-text, var(--bit-ToggleButton-outline-disabled-color, var(--bit-ToggleButton-disabled-color, #{$clr-pri-dis-text}))));
+        }
     }
 }
 
 .bit-tgb-txt {
-    color: var(--bit-tgb-sfg, var(--bit-tgb-clr, var(--bit-ToggleButton-color, #{$clr-pri})));
-    border-color: var(--bit-tgb-sbr, var(--bit-ToggleButton-border-color, transparent));
-    background-color: var(--bit-tgb-sbg, var(--bit-ToggleButton-background, transparent));
+    --bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-text-hover-color, var(--bit-ToggleButton-hover-color, #{$clr-pri-text})));
+    color: var(--bit-tgb-sfg, var(--bit-tgb-clr, var(--bit-ToggleButton-text-color, var(--bit-ToggleButton-color, #{$clr-pri}))));
+    border-color: var(--bit-tgb-sbr, var(--bit-ToggleButton-text-border-color, var(--bit-ToggleButton-border-color, transparent)));
+    background-color: var(--bit-tgb-sbg, var(--bit-ToggleButton-text-background, var(--bit-ToggleButton-background, transparent)));
 
     @media (hover: hover) {
         &:not(.bit-dis):not(.bit-tgb-lod):hover {
-            --bit-tgb-sfg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-hover-color, #{$clr-pri-text}));
-            --bit-tgb-sbr: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-border-color, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover})));
-            --bit-tgb-sbg: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover}));
+            --bit-tgb-sfg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-text-hover-color, var(--bit-ToggleButton-hover-color, #{$clr-pri-text})));
+            --bit-tgb-sbr: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-text-hover-border-color, var(--bit-ToggleButton-hover-border-color, var(--bit-ToggleButton-text-hover-background, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover})))));
+            --bit-tgb-sbg: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-text-hover-background, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover})));
         }
     }
 
     &:not(.bit-dis):not(.bit-tgb-lod):active {
-        --bit-tgb-sfg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-active-color, var(--bit-ToggleButton-hover-color, #{$clr-pri-text})));
-        --bit-tgb-sbr: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-border-color, var(--bit-ToggleButton-active-background, #{$clr-pri-active})));
-        --bit-tgb-sbg: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-background, #{$clr-pri-active}));
+        --bit-tgb-sfg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-text-active-color, var(--bit-ToggleButton-active-color, var(--bit-ToggleButton-text-hover-color, var(--bit-ToggleButton-hover-color, #{$clr-pri-text})))));
+        --bit-tgb-sbr: var(--bit-tgb-clr-active, var(--bit-ToggleButton-text-active-border-color, var(--bit-ToggleButton-active-border-color, var(--bit-ToggleButton-text-active-background, var(--bit-ToggleButton-active-background, #{$clr-pri-active})))));
+        --bit-tgb-sbg: var(--bit-tgb-clr-active, var(--bit-ToggleButton-text-active-background, var(--bit-ToggleButton-active-background, #{$clr-pri-active})));
     }
 
     &.bit-dis {
-        color: var(--bit-tgb-clr-dis-text, var(--bit-ToggleButton-disabled-color, #{$clr-pri-dis-text}));
-        border-color: var(--bit-ToggleButton-disabled-border-color, transparent);
-        background-color: var(--bit-ToggleButton-disabled-background, transparent);
+        color: var(--bit-tgb-clr-dis-text, var(--bit-ToggleButton-text-disabled-color, var(--bit-ToggleButton-disabled-color, #{$clr-pri-dis-text})));
+        border-color: var(--bit-ToggleButton-text-disabled-border-color, var(--bit-ToggleButton-disabled-border-color, transparent));
+        background-color: var(--bit-ToggleButton-text-disabled-background, var(--bit-ToggleButton-disabled-background, transparent));
+
+        &:focus-visible {
+            @include focus-ring(var(--bit-tgb-clr-dis-text, var(--bit-ToggleButton-text-disabled-color, var(--bit-ToggleButton-disabled-color, #{$clr-pri-dis-text}))));
+        }
     }
 }
 
@@ -376,7 +436,7 @@ $tgb-private-properties: clr-txt, clr, clr-hover, clr-active, clr-focus, clr-dar
 // still the role's, so an explicit Color (or OnColor) outranks the checked variables here just as it outranks
 // the resting ones above, and an unset one falls back to them and then to the primary role.
 .bit-tgb-chk {
-    // Retargeted here rather than on the root, so FixedColor pins the checked foreground on a checked toggle
+    // Retargeted here, after the variants that set it, so FixedColor pins the checked foreground on a checked toggle
     // button and the resting one on an unchecked one, without the pin having to name either state.
     --bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-checked-color, #{$clr-pri-text}));
     color: var(--bit-tgb-sfg, var(--bit-tgb-fg));

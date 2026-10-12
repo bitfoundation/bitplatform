@@ -173,6 +173,28 @@ public partial class BitMarkdownEditorStylesheetTests
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-mde-txa {"), "@include mde-inset-ring;");
     }
 
+    [TestMethod]
+    public void BitMarkdownEditorSplitPreviewShouldDrawItsRingInsideTheDivider()
+    {
+        // The divider is pulled outside the pane and clipped by the body on its own edge, so a ring drawn from the
+        // border edge in would lose that side: it is drawn inside the divider instead.
+        var split = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-mde-split .bit-mde-ppn {");
+
+        StringAssert.Contains(split, "margin-block-start: calc(-1 * #{$shp-border-width});");
+        StringAssert.Contains(split, "@include focus-ring-inset($mde-focus, $offset: $shp-border-width);");
+    }
+
+    [TestMethod]
+    public void BitMarkdownEditorPanesShouldScrollWithinTheBody()
+    {
+        // The lines of a wrapping flex body are as tall as what they hold, so a pane is capped to the body's height,
+        // or a long text runs on under the body's clipped edge instead of scrolling.
+        var pane = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-mde-pne {");
+
+        StringAssert.Contains(pane, "max-height: 100%;");
+        StringAssert.Contains(pane, "overflow: auto;");
+    }
+
     private static string[] DocumentedVariables(string stylesheet)
     {
         return DocumentedVariable().Matches(stylesheet).Select(m => m.Groups[1].Value).Distinct().ToArray();

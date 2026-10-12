@@ -723,11 +723,9 @@ $pvt-private-properties:
 .bit-pvt-sld,
 .bit-pvt-scr {
     #{$tab}:focus-visible {
-        box-shadow: inset 0 0 0 #{$shp-focus-ring-width} var(--bit-pvt-clr-focus, #{$clr-pri-focus});
+        box-shadow: none;
 
-        @media (forced-colors: active) {
-            outline-offset: calc(-1 * #{$shp-focus-ring-width});
-        }
+        @include focus-ring-inset(var(--bit-pvt-clr-focus, #{$clr-pri-focus}));
     }
 }
 
@@ -1097,11 +1095,9 @@ $pvt-private-properties:
     // show as a stray line along a single edge. It is drawn on the inside of the row instead, as on the tabs.
     &:focus-visible,
     &.bit-pvt-mni-act {
-        box-shadow: inset 0 0 0 #{$shp-focus-ring-width} var(--bit-pvt-clr-focus, #{$clr-pri-focus});
+        box-shadow: none;
 
-        @media (forced-colors: active) {
-            outline-offset: calc(-1 * #{$shp-focus-ring-width});
-        }
+        @include focus-ring-inset(var(--bit-pvt-clr-focus, #{$clr-pri-focus}));
     }
 }
 

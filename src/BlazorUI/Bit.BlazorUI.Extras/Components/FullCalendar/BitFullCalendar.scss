@@ -2556,12 +2556,12 @@ button.bit-bfc-cell-add-hint:focus-visible {
 .bit-bfc-hour-row-half:focus-visible,
 .bit-bfc-tl-cell-slot:focus-visible,
 .bit-bfc-tl-cell-half:focus-visible {
-    outline: $shp-border-width-thick $shp-border-style var(--bit-bfc-primary);
-    outline-offset: -2px;
     box-shadow: none;
     --bit-bfc-slt-sbg: var(--bit-bfc-resize-glow);
     opacity: 1;
     z-index: 4;
+
+    @include focus-ring-inset(var(--bit-bfc-primary), $width: $shp-border-width-thick);
 }
 
 .bit-bfc-cell-add-hint-month {
@@ -3233,11 +3233,9 @@ button.bit-bfc-cell-add-hint:focus-visible {
 }
 
 /* A month badge fills a slot that clips to it, so a ring drawn outside would never be seen: it is drawn inside,
-   with a hairline of the surface between it and the chip. */
+   with a band of the surface between it and the chip. */
 .bit-bfc .bit-bfc-event-badge:focus-visible {
-    outline: none;
-    box-shadow: inset 0 0 0 $shp-focus-ring-width var(--bit-focus-ring-color, #{$clr-pri-focus}),
-                inset 0 0 0 calc(#{$shp-focus-ring-width} + 1px) var(--bit-bfc-bg);
+    @include focus-ring-inset(var(--bit-focus-ring-color, #{$clr-pri-focus}), $band: var(--bit-bfc-bg));
 }
 
 /* ===== Background events =====

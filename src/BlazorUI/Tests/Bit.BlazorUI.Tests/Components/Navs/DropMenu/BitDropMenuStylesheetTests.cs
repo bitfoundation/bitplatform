@@ -53,12 +53,12 @@ public class BitDropMenuStylesheetTests
         var stylesheet = ReadStylesheet();
         var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-drm {");
 
-        // Each state ranks what an explicit Color paints there first, then the public variable, then the default look
-        // (the -d slots) the variable restyles.
-        StringAssert.Contains(root, "--bit-drm-cur-txt: var(--bit-drm-rst-txt, var(--bit-DropMenu-color, var(--bit-drm-rst-txt-d)));");
-        StringAssert.Contains(root, "--bit-drm-cur-bg: var(--bit-drm-rst-bg, var(--bit-DropMenu-background, var(--bit-drm-rst-bg-d)));");
-        StringAssert.Contains(root, "--bit-drm-cur-bg: var(--bit-drm-hov-bg, var(--bit-DropMenu-hover-background, var(--bit-drm-hov-bg-d)));");
-        StringAssert.Contains(root, "--bit-drm-cur-bg: var(--bit-drm-act-bg, var(--bit-DropMenu-active-background, var(--bit-drm-act-bg-d)));");
+        // Each state ranks what an explicit Color paints there first, then the public variables a variant resolved (the
+        // -p slots), then the shared variable a drop menu with no Variant reads, then the default look (the -d slots).
+        StringAssert.Contains(root, "--bit-drm-cur-txt: var(--bit-drm-rst-txt, var(--bit-drm-rst-txt-p, var(--bit-DropMenu-color, var(--bit-drm-rst-txt-d))));");
+        StringAssert.Contains(root, "--bit-drm-cur-bg: var(--bit-drm-rst-bg, var(--bit-drm-rst-bg-p, var(--bit-DropMenu-background, var(--bit-drm-rst-bg-d))));");
+        StringAssert.Contains(root, "--bit-drm-cur-bg: var(--bit-drm-hov-bg, var(--bit-drm-hov-bg-p, var(--bit-DropMenu-hover-background, var(--bit-drm-hov-bg-d))));");
+        StringAssert.Contains(root, "--bit-drm-cur-bg: var(--bit-drm-act-bg, var(--bit-drm-act-bg-p, var(--bit-DropMenu-active-background, var(--bit-drm-act-bg-d))));");
         StringAssert.Contains(root, "@include focus-ring-own(var(--bit-drm-clr-focus, var(--bit-DropMenu-focus-color)));");
 
         // A look that paints no Color in a slot leaves the bare slot unset, so the variable keeps it.
@@ -74,6 +74,40 @@ public class BitDropMenuStylesheetTests
         // Only a -d default slot may sit behind a public variable.
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-DropMenu-[a-z-]+, var\(--bit-drm-(?![a-z-]+-d\))"), "A public variable is read before the parameter it restyles the default of.");
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-DropMenu-[a-z-]+, #\{role"), "A role class reads a public variable ahead of the role.");
+    }
+
+    [TestMethod,
+        DataRow("fill", ".bit-drm-fil"),
+        DataRow("outline", ".bit-drm-otl"),
+        DataRow("text", ".bit-drm-tex")]
+    public void BitDropMenuShouldReadTheVariablesOfItsVariantAheadOfTheSharedOnes(string variant, string selector)
+    {
+        var stylesheet = ReadStylesheet();
+        var block = SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
+
+        // Each variant resolves its own tier ahead of every shared color variable into the -p slot of each state, so a
+        // theme can set one look apart from the others on :root - an outline drop menu's neutral hairline without a
+        // ring around every filled one.
+        foreach (var (slot, name) in new[] { ("rst-txt", "color"), ("rst-bg", "background"), ("rst-brd", "border-color"),
+                                             ("hov-txt", "hover-color"), ("hov-bg", "hover-background"), ("hov-brd", "hover-border-color"),
+                                             ("act-txt", "active-color"), ("act-bg", "active-background"), ("act-brd", "active-border-color"),
+                                             ("dis-txt", "disabled-color"), ("dis-bg", "disabled-background"), ("dis-brd", "disabled-border-color") })
+        {
+            StringAssert.Contains(block, $"--bit-drm-{slot}-p: var(--bit-DropMenu-{variant}-{name}, var(--bit-DropMenu-{name}, ",
+                                  $"{selector} does not publish --bit-DropMenu-{variant}-{name} ahead of --bit-DropMenu-{name}.");
+        }
+
+        // A variant reads a shared color variable only right behind its own twin, and never the tier of another variant.
+        Assert.IsFalse(Regex.IsMatch(block, $@"(?<!var\(--bit-DropMenu-{variant}-[a-z-]+, )var\(--bit-DropMenu-(?:hover-|active-|disabled-)?(?:color|background|border-color)\b"),
+                       $"{selector} reads a shared color variable without its own tier ahead of it.");
+        Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-DropMenu-(?!{variant}-)(?:fill|outline|text)-"),
+                       $"{selector} reads the variables of another variant.");
+
+        // The root reads each slot right after the Color, and a drop menu with no Variant - which renders no class -
+        // reads the shared variable behind it; the slots are reset on every root, so one never leaks into a nested one.
+        var root = SourceFiles.GetScssBlock(stylesheet, "\n.bit-drm {");
+        StringAssert.Contains(root, "--bit-drm-cur-brd: var(--bit-drm-rst-brd, var(--bit-drm-rst-brd-p, var(--bit-DropMenu-border-color, var(--bit-drm-rst-brd-d))));");
+        StringAssert.Contains(stylesheet, "dis-txt-p, dis-bg-p, dis-brd-p;");
     }
 
     [TestMethod]

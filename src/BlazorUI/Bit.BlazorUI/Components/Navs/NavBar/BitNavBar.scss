@@ -425,12 +425,7 @@ $nbr-private-properties: clr, clr-ind, clr-dis, clr-fcs, clr-acc-hover, clr-acc-
     // the item, so all that would be left of it is the two sides between the items. The ring is drawn inside
     // the item instead: along its edge, with the gap that sets it off the item's fill inside it.
     .bit-nbr-itm:focus-visible {
-        box-shadow: inset 0 0 0 $shp-focus-ring-width var(--bit-nbr-clr-fcs, var(--bit-NavBar-focus-color, #{$clr-pri-focus})),
-                    inset 0 0 0 calc(#{$shp-focus-ring-width} + #{$shp-focus-ring-offset}) #{$clr-bg-pri};
-
-        @media (forced-colors: active) {
-            outline-offset: calc(-1 * #{$shp-focus-ring-width});
-        }
+        @include focus-ring-inset(var(--bit-nbr-clr-fcs, var(--bit-NavBar-focus-color, #{$clr-pri-focus})), $band: true);
     }
 }
 

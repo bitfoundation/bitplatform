@@ -351,31 +351,121 @@ public partial class BitBadgeDemo
         {
             Name = "--bit-Badge-color",
             DefaultValue = "Per variant, from the primary role",
-            Description = "Text and icon color. In the Outline variant it is also the border color. The Color parameter wins over it.",
+            Description = "Text and icon color. In the Outline variant it is also the border color. The Color parameter wins over it. Shared by the three variants: --bit-Badge-fill-color, --bit-Badge-outline-color and --bit-Badge-text-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Badge-background",
             DefaultValue = "Per variant, from the primary role",
-            Description = "Background. In the Fill variant it is also the border color. The Color parameter wins over it in Fill; the transparent background of Outline and Text is its alone.",
+            Description = "Background. In the Fill variant it is also the border color. The Color parameter wins over it in Fill; the transparent background of Outline and Text is its alone. Shared by the three variants: --bit-Badge-fill-background, --bit-Badge-outline-background and --bit-Badge-text-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Badge-border-color",
             DefaultValue = "The background (Fill), the text color (Outline), transparent (Text)",
-            Description = "Border color, in every state. The Color parameter wins over it, except over the transparent border of Text.",
+            Description = "Border color, in every state. The Color parameter wins over it, except over the transparent border of Text. Shared by the three variants: --bit-Badge-fill-border-color, --bit-Badge-outline-border-color and --bit-Badge-text-border-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Badge-hover-background",
             DefaultValue = "Per variant, from the primary role",
-            Description = "Background of a clickable (OnClick or Href) badge on hover. Set it together with --bit-Badge-background. The Color parameter wins over it.",
+            Description = "Background of a clickable (OnClick or Href) badge on hover. Set it together with --bit-Badge-background. The Color parameter wins over it. Shared by the three variants: --bit-Badge-fill-hover-background, --bit-Badge-outline-hover-background and --bit-Badge-text-hover-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Badge-active-background",
             DefaultValue = "Per variant, from the primary role",
-            Description = "Background of a clickable badge while pressed. The Color parameter wins over it.",
+            Description = "Background of a clickable badge while pressed. The Color parameter wins over it. Shared by the three variants: --bit-Badge-fill-active-background, --bit-Badge-outline-active-background and --bit-Badge-text-active-background are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Badge-fill-color",
+            DefaultValue = "--bit-Badge-color",
+            Description = "Text and icon color of a Fill badge alone, read ahead of --bit-Badge-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Badge-fill-background",
+            DefaultValue = "--bit-Badge-background",
+            Description = "Background of a Fill badge alone, read ahead of --bit-Badge-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Badge-fill-border-color",
+            DefaultValue = "--bit-Badge-border-color",
+            Description = "Border color, in every state, of a Fill badge alone, read ahead of --bit-Badge-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Badge-fill-hover-background",
+            DefaultValue = "--bit-Badge-hover-background",
+            Description = "Background on hover of a Fill badge alone, read ahead of --bit-Badge-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Badge-fill-active-background",
+            DefaultValue = "--bit-Badge-active-background",
+            Description = "Background while pressed of a Fill badge alone, read ahead of --bit-Badge-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Badge-outline-color",
+            DefaultValue = "--bit-Badge-color",
+            Description = "Text and icon color of an Outline badge alone, read ahead of --bit-Badge-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Badge-outline-background",
+            DefaultValue = "--bit-Badge-background",
+            Description = "Background of an Outline badge alone, read ahead of --bit-Badge-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Badge-outline-border-color",
+            DefaultValue = "--bit-Badge-border-color",
+            Description = "Border color, in every state, of an Outline badge alone, read ahead of --bit-Badge-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Badge-outline-hover-background",
+            DefaultValue = "--bit-Badge-hover-background",
+            Description = "Background on hover of an Outline badge alone, read ahead of --bit-Badge-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Badge-outline-active-background",
+            DefaultValue = "--bit-Badge-active-background",
+            Description = "Background while pressed of an Outline badge alone, read ahead of --bit-Badge-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Badge-text-color",
+            DefaultValue = "--bit-Badge-color",
+            Description = "Text and icon color of a Text badge alone, read ahead of --bit-Badge-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Badge-text-background",
+            DefaultValue = "--bit-Badge-background",
+            Description = "Background of a Text badge alone, read ahead of --bit-Badge-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Badge-text-border-color",
+            DefaultValue = "--bit-Badge-border-color",
+            Description = "Border color, in every state, of a Text badge alone, read ahead of --bit-Badge-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Badge-text-hover-background",
+            DefaultValue = "--bit-Badge-hover-background",
+            Description = "Background on hover of a Text badge alone, read ahead of --bit-Badge-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Badge-text-active-background",
+            DefaultValue = "--bit-Badge-active-background",
+            Description = "Background while pressed of a Text badge alone, read ahead of --bit-Badge-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
         },
         new()
         {

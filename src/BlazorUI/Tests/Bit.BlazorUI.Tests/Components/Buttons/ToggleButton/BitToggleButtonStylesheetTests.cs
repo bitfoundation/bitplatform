@@ -28,20 +28,21 @@ public partial class BitToggleButtonStylesheetTests
 
         // So does an explicit Color, for every color the role paints - the checked state's included, since the state
         // is the rule's but the colors it shows are still the role's.
-        StringAssert.Contains(stylesheet, "--bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-color, #{$clr-pri-text}));");
+        StringAssert.Contains(stylesheet, "--bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-fill-color, var(--bit-ToggleButton-color, #{$clr-pri-text})));");
         // The hover and press states set the variables the rules at rest paint from (--bit-tgb-sfg / -sbg / -sbr), never
         // the colors themselves, so the state's value is read ahead of the rest value it stands in for.
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-tgb-sbg, var(--bit-tgb-clr, var(--bit-ToggleButton-background, #{$clr-pri})));");
-        StringAssert.Contains(stylesheet, "--bit-tgb-sbg: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover}));");
-        StringAssert.Contains(stylesheet, "--bit-tgb-sbg: var(--bit-tgb-clr-active, var(--bit-ToggleButton-active-background, #{$clr-pri-active}));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-tgb-sbg, var(--bit-tgb-clr, var(--bit-ToggleButton-fill-background, var(--bit-ToggleButton-background, #{$clr-pri}))));");
+        StringAssert.Contains(stylesheet, "--bit-tgb-sbg: var(--bit-tgb-clr-hover, var(--bit-ToggleButton-fill-hover-background, var(--bit-ToggleButton-hover-background, #{$clr-pri-hover})));");
+        StringAssert.Contains(stylesheet, "--bit-tgb-sbg: var(--bit-tgb-clr-active, var(--bit-ToggleButton-fill-active-background, var(--bit-ToggleButton-active-background, #{$clr-pri-active})));");
         StringAssert.Contains(stylesheet, "--bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-checked-color, #{$clr-pri-text}));");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-tgb-sbg, var(--bit-tgb-clr-dark, var(--bit-ToggleButton-checked-background, #{$clr-pri-dark})));");
         StringAssert.Contains(stylesheet, "--bit-tgb-sbg: var(--bit-tgb-clr-dark-hover, var(--bit-ToggleButton-checked-hover-background, #{$clr-pri-dark-hover}));");
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-tgb-clr-dis, var(--bit-ToggleButton-disabled-background, #{$clr-pri-dis}));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-tgb-clr-dis, var(--bit-ToggleButton-fill-disabled-background, var(--bit-ToggleButton-disabled-background, #{$clr-pri-dis})));");
         StringAssert.Contains(stylesheet, "focus-ring-own(var(--bit-tgb-clr-focus, var(--bit-ToggleButton-focus-color)))");
 
         // What a Color does not paint stays the variables' alone: the transparent background of Outline and Text.
-        StringAssert.Contains(stylesheet, "background-color: var(--bit-tgb-sbg, var(--bit-ToggleButton-background, transparent));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-tgb-sbg, var(--bit-ToggleButton-outline-background, var(--bit-ToggleButton-background, transparent)));");
+        StringAssert.Contains(stylesheet, "background-color: var(--bit-tgb-sbg, var(--bit-ToggleButton-text-background, var(--bit-ToggleButton-background, transparent)));");
 
         // Two reads keep the variable in front on purpose, neither of them in front of a value a parameter publishes
         // on its own: the gap, which only the absence of a label zeroes, and the minimum width, which Size does not
@@ -52,6 +53,40 @@ public partial class BitToggleButtonStylesheetTests
         Assert.HasCount(2, publicFirst, "A public variable is read before the parameter it restyles the default of.");
         StringAssert.Contains(body, "gap: var(--bit-ToggleButton-gap, var(--bit-tgb-icn-margin));");
         StringAssert.Contains(body, "min-width: var(--bit-ToggleButton-min-width, var(--bit-tgb-min-height, var(--bit-ToggleButton-min-height, #{$siz-ctrl-md})));");
+    }
+
+    [TestMethod,
+        DataRow("fill", ".bit-tgb-fil"),
+        DataRow("outline", ".bit-tgb-otl"),
+        DataRow("text", ".bit-tgb-txt")]
+    public void BitToggleButtonShouldReadTheVariablesOfItsVariantAheadOfTheSharedOnes(string variant, string selector)
+    {
+        var stylesheet = ReadStylesheet();
+        var block = SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
+
+        // Each variant reads a tier of its own ahead of every shared color variable of the unchecked state, so a theme
+        // can set one look apart from the other two on :root - an outline toggle button's neutral hairline without a
+        // ring around every filled one.
+        foreach (var name in new[] { "color", "background", "border-color",
+                                     "hover-color", "hover-background", "hover-border-color",
+                                     "active-color", "active-background", "active-border-color",
+                                     "disabled-color", "disabled-background", "disabled-border-color" })
+        {
+            StringAssert.Contains(block, $"var(--bit-ToggleButton-{variant}-{name}, var(--bit-ToggleButton-{name}, ",
+                                  $"{selector} does not read --bit-ToggleButton-{variant}-{name} ahead of --bit-ToggleButton-{name}.");
+        }
+
+        // The foreground FixedColor pins is the variant's too, set by the variant rather than the root: the on-color that
+        // stays readable on the role fill the hover and press paint - a Fill toggle button's resting foreground, an
+        // Outline or Text one's hover foreground, never its resting one, which is the role's own color.
+        var onColor = variant == "fill" ? "color" : "hover-color";
+        StringAssert.Contains(block, $"--bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-{variant}-{onColor}, var(--bit-ToggleButton-{onColor}, #{{$clr-pri-text}})));");
+
+        // A variant reads a shared color variable only right behind its own twin, and never the tier of another variant.
+        Assert.IsFalse(Regex.IsMatch(block, $@"(?<!var\(--bit-ToggleButton-{variant}-[a-z-]+, )var\(--bit-ToggleButton-(?:hover-|active-|disabled-)?(?:color|background|border-color)\b"),
+                       $"{selector} reads a shared color variable without its own tier ahead of it.");
+        Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-ToggleButton-(?!{variant}-)(?:fill|outline|text)-"),
+                       $"{selector} reads the variables of another variant.");
     }
 
     [TestMethod]

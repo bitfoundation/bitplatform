@@ -474,9 +474,8 @@ You can add additional MCP servers to extend Copilot's capabilities further. For
 {
     "dotnet.defaultSolution": "Boilerplate.Web.slnf",
     "dotnet.unitTests.runSettingsPath": "src/Tests/.runsettings",
-    "chat.tools.autoApprove": true,
+    "chat.permissions.default": "autopilot",
     "github.copilot.chat.codesearch.enabled": true,
-    "csharp.preview.improvedLaunchExperience": true,
     "explorer.fileNesting.enabled": true,
     "explorer.fileNesting.patterns": {
         "*.resx": "$(capture).*.resx",
@@ -494,7 +493,7 @@ You can add additional MCP servers to extend Copilot's capabilities further. For
 - **File Nesting**: Groups related files together in the explorer
   - `Component.razor`, `Component.razor.cs`, `Component.razor.scss` nest under `Component.razor`
   - `AppStrings.resx`, `AppStrings.fa.resx`, `AppStrings.nl.resx` nest under `AppStrings.resx`
-- **GitHub Copilot**: Auto-approve tool usage, code search enabled
+- **GitHub Copilot**: Autopilot permission level for new chats, code search enabled
 
 #### 6.3.3 `.vscode/extensions.json`
 

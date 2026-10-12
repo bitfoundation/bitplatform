@@ -23,6 +23,15 @@ public class BitPaginationStylesheetTests
         "--bit-Pagination-button-color",
         "--bit-Pagination-button-background",
         "--bit-Pagination-button-border-color",
+        "--bit-Pagination-fill-button-color",
+        "--bit-Pagination-fill-button-background",
+        "--bit-Pagination-fill-button-border-color",
+        "--bit-Pagination-outline-button-color",
+        "--bit-Pagination-outline-button-background",
+        "--bit-Pagination-outline-button-border-color",
+        "--bit-Pagination-text-button-color",
+        "--bit-Pagination-text-button-background",
+        "--bit-Pagination-text-button-border-color",
         "--bit-Pagination-button-hover-color",
         "--bit-Pagination-button-hover-background",
         "--bit-Pagination-button-active-color",
@@ -137,14 +146,38 @@ public class BitPaginationStylesheetTests
 
         // So does an explicit Color, for every color it paints; what it leaves alone (the transparent fill of Outline
         // and Text) stays the variable's alone.
-        StringAssert.Contains(stylesheet, "--bit-pgn-clr-btn-txt: var(--bit-pgn-clr-txt, var(--bit-Pagination-button-color, #{$clr-pri-text}));");
-        StringAssert.Contains(stylesheet, "--bit-pgn-clr-btn-bg: var(--bit-pgn-clr, var(--bit-Pagination-button-background, #{$clr-pri}));");
-        StringAssert.Contains(stylesheet, "--bit-pgn-clr-btn-bg: var(--bit-Pagination-button-background, transparent);");
+        StringAssert.Contains(stylesheet, "--bit-pgn-clr-btn-txt: var(--bit-pgn-clr-txt, var(--bit-Pagination-fill-button-color, var(--bit-Pagination-button-color, #{$clr-pri-text})));");
+        StringAssert.Contains(stylesheet, "--bit-pgn-clr-btn-bg: var(--bit-pgn-clr, var(--bit-Pagination-fill-button-background, var(--bit-Pagination-button-background, #{$clr-pri})));");
+        StringAssert.Contains(stylesheet, "--bit-pgn-clr-btn-bg: var(--bit-Pagination-outline-button-background, var(--bit-Pagination-button-background, transparent));");
         StringAssert.Contains(stylesheet, "--bit-pgn-sbg: var(--bit-pgn-clr-btn-bg-hover, var(--bit-Pagination-button-hover-background, #{$clr-pri-hover}));");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-pgn-sbg, var(--bit-pgn-clr-btn-sel-bg, var(--bit-Pagination-selected-background, #{$clr-pri-dark})));");
         StringAssert.Contains(stylesheet, "@include focus-ring-own(var(--bit-pgn-clr-fcs, var(--bit-Pagination-focus-color)));");
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Pagination-[a-z-]+, var\(--bit-pgn-"), "A public variable is read before the parameter it restyles the default of.");
+    }
+
+    [TestMethod,
+        DataRow("fill", ".bit-pgn-fil"),
+        DataRow("outline", ".bit-pgn-otl"),
+        DataRow("text", ".bit-pgn-txt")]
+    public void BitPaginationShouldReadTheVariablesOfItsVariantAheadOfTheSharedOnes(string variant, string selector)
+    {
+        var stylesheet = ReadStylesheet();
+        var block = SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
+
+        // Each variant reads a tier of its own ahead of every shared button color, so a theme can set one look apart
+        // from the other two on :root - an outline pagination's neutral hairline without a ring around every filled one.
+        foreach (var name in new[] { "button-color", "button-background", "button-border-color" })
+        {
+            StringAssert.Contains(block, $"var(--bit-Pagination-{variant}-{name}, var(--bit-Pagination-{name}, ",
+                                  $"{selector} does not read --bit-Pagination-{variant}-{name} ahead of --bit-Pagination-{name}.");
+        }
+
+        // A variant reads a shared button color only right behind its own twin, and never the tier of another variant.
+        Assert.IsFalse(Regex.IsMatch(block, $@"(?<!var\(--bit-Pagination-{variant}-[a-z-]+, )var\(--bit-Pagination-button-(?:color|background|border-color)\b"),
+                       $"{selector} reads a shared button color without its own tier ahead of it.");
+        Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-Pagination-(?!{variant}-)(?:fill|outline|text)-"),
+                       $"{selector} reads the variables of another variant.");
     }
 
     [TestMethod]

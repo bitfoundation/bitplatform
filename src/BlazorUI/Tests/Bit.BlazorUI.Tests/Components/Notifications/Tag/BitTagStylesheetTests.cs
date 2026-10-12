@@ -25,6 +25,36 @@ public class BitTagStylesheetTests
         "--bit-Tag-disabled-color",
         "--bit-Tag-disabled-background",
         "--bit-Tag-disabled-border-color",
+        "--bit-Tag-fill-color",
+        "--bit-Tag-fill-background",
+        "--bit-Tag-fill-border-color",
+        "--bit-Tag-fill-hover-background",
+        "--bit-Tag-fill-active-background",
+        "--bit-Tag-fill-selected-color",
+        "--bit-Tag-fill-selected-background",
+        "--bit-Tag-fill-selected-border-color",
+        "--bit-Tag-fill-disabled-background",
+        "--bit-Tag-fill-disabled-border-color",
+        "--bit-Tag-outline-color",
+        "--bit-Tag-outline-background",
+        "--bit-Tag-outline-border-color",
+        "--bit-Tag-outline-hover-background",
+        "--bit-Tag-outline-active-background",
+        "--bit-Tag-outline-selected-color",
+        "--bit-Tag-outline-selected-background",
+        "--bit-Tag-outline-selected-border-color",
+        "--bit-Tag-outline-disabled-background",
+        "--bit-Tag-outline-disabled-border-color",
+        "--bit-Tag-text-color",
+        "--bit-Tag-text-background",
+        "--bit-Tag-text-border-color",
+        "--bit-Tag-text-hover-background",
+        "--bit-Tag-text-active-background",
+        "--bit-Tag-text-selected-color",
+        "--bit-Tag-text-selected-background",
+        "--bit-Tag-text-selected-border-color",
+        "--bit-Tag-text-disabled-background",
+        "--bit-Tag-text-disabled-border-color",
         "--bit-Tag-focus-color",
         "--bit-Tag-radius",
         "--bit-Tag-border-width",
@@ -183,18 +213,44 @@ public class BitTagStylesheetTests
 
         // So does an explicit Color, for every color its role paints - at rest, selected, hovered and disabled.
         var fill = SourceFiles.GetScssBlock(stylesheet, "\n.bit-tag-fil {");
-        StringAssert.Contains(fill, "--bit-tag-v-fg: var(--bit-tag-clr-txt, var(--bit-Tag-color, #{$clr-pri-text}));");
-        StringAssert.Contains(fill, "--bit-tag-v-bg: var(--bit-tag-clr, var(--bit-Tag-background, #{$clr-pri}));");
-        StringAssert.Contains(fill, "--bit-tag-v-sel-bg: var(--bit-tag-clr-active, var(--bit-Tag-selected-background, #{$clr-pri-active}));");
-        StringAssert.Contains(fill, "--bit-tag-v-dis-bg: var(--bit-tag-clr-dis, var(--bit-Tag-disabled-background, #{$clr-pri-dis}));");
+        StringAssert.Contains(fill, "--bit-tag-v-fg: var(--bit-tag-clr-txt, var(--bit-Tag-fill-color, var(--bit-Tag-color, #{$clr-pri-text})));");
+        StringAssert.Contains(fill, "--bit-tag-v-bg: var(--bit-tag-clr, var(--bit-Tag-fill-background, var(--bit-Tag-background, #{$clr-pri})));");
+        StringAssert.Contains(fill, "--bit-tag-v-sel-bg: var(--bit-tag-clr-active, var(--bit-Tag-fill-selected-background, var(--bit-Tag-selected-background, #{$clr-pri-active})));");
+        StringAssert.Contains(fill, "--bit-tag-v-dis-bg: var(--bit-tag-clr-dis, var(--bit-Tag-fill-disabled-background, var(--bit-Tag-disabled-background, #{$clr-pri-dis})));");
         var outline = SourceFiles.GetScssBlock(stylesheet, "\n.bit-tag-otl {");
-        StringAssert.Contains(outline, "--bit-tag-v-hover-bg: var(--bit-tag-clr-light, var(--bit-Tag-hover-background, #{$clr-pri-light}));");
+        StringAssert.Contains(outline, "--bit-tag-v-hover-bg: var(--bit-tag-clr-light, var(--bit-Tag-outline-hover-background, var(--bit-Tag-hover-background, #{$clr-pri-light})));");
         StringAssert.Contains(stylesheet, "--bit-tag-fg: var(--bit-tag-clr-dis-text, var(--bit-Tag-disabled-color, #{$clr-pri-dis-text}));");
 
-        // What the role leaves alone stays the variable's: the transparent background of Outline and Text.
-        StringAssert.Contains(outline, "--bit-tag-v-bg: var(--bit-Tag-background, transparent);");
+        // What the role leaves alone stays the variables': the transparent background of Outline and Text.
+        StringAssert.Contains(outline, "--bit-tag-v-bg: var(--bit-Tag-outline-background, var(--bit-Tag-background, transparent));");
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Tag-[a-z-]+, var\(--bit-tag-(clr|sz|radius|v-)"), "A public variable is read before the parameter it restyles the default of.");
+    }
+
+    [TestMethod,
+        DataRow("fill", ".bit-tag-fil"),
+        DataRow("outline", ".bit-tag-otl"),
+        DataRow("text", ".bit-tag-txt")]
+    public void BitTagShouldReadTheVariablesOfItsVariantAheadOfTheSharedOnes(string variant, string selector)
+    {
+        var stylesheet = ReadStylesheet();
+        var block = SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
+
+        // Each variant reads a tier of its own ahead of every shared color variable, so a theme can set one look apart
+        // from the other two on :root - an outline tag's neutral rule without a ring around every filled one.
+        foreach (var name in new[] { "color", "background", "border-color", "hover-background", "active-background",
+                                     "selected-color", "selected-background", "selected-border-color",
+                                     "disabled-background", "disabled-border-color" })
+        {
+            StringAssert.Contains(block, $"var(--bit-Tag-{variant}-{name}, var(--bit-Tag-{name}, ",
+                                  $"{selector} does not read --bit-Tag-{variant}-{name} ahead of --bit-Tag-{name}.");
+        }
+
+        // A variant reads a shared color variable only right behind its own twin, and never the tier of another variant.
+        Assert.IsFalse(Regex.IsMatch(block, $@"(?<!var\(--bit-Tag-{variant}-[a-z-]+, )var\(--bit-Tag-(?:hover-|active-|selected-|disabled-)?(?:color|background|border-color)\b"),
+                       $"{selector} reads a shared color variable without its own tier ahead of it.");
+        Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-Tag-(?!{variant}-)(?:fill|outline|text)-"),
+                       $"{selector} reads the variables of another variant.");
     }
 
     [TestMethod]

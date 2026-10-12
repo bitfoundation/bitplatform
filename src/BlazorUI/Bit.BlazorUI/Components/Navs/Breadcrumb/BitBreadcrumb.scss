@@ -407,8 +407,7 @@ $brc-private-properties:
     // The rows fill the width of a list that scrolls, which would clip the outward ring of focus-ring, so
     // the indicator is an outline drawn inwards instead - one a forced-colors palette keeps as well.
     &:focus-visible {
-        outline: $shp-focus-ring-width $shp-border-style var(--bit-brc-fcs-clr, #{$clr-pri-focus});
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        @include focus-ring-inset(var(--bit-brc-fcs-clr, #{$clr-pri-focus}));
     }
 }
 
