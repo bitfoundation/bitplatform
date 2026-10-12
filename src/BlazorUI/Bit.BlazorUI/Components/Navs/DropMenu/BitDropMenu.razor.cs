@@ -1065,7 +1065,7 @@ public partial class BitDropMenu : BitComponentBase
     {
         if (IsDisposed) return;
 
-        await _buttonRef.FocusSafelyAsync();
+        await _buttonRef.FocusSafelyAsync(preventScroll: true);
     }
 
     private async Task<bool> CalloutContainsFocus()

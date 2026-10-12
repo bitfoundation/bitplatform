@@ -1826,6 +1826,7 @@ public class BitDropMenuTests : BunitTestContext
         // took the focus is a drop menu without its Escape key: the handler that closes the callout on
         // it sits on the trigger.
         Assert.AreEqual(1, CountInvocations("Blazor._internal.domWrapper.focus"));
+        Assert.AreEqual(true, Context.JSInterop.Invocations.Single(i => i.Identifier == "Blazor._internal.domWrapper.focus").Arguments[1]);
         Assert.AreEqual(0, CountInvocations("BitBlazorUI.Utils.focusFirstElement"));
     }
 

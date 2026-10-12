@@ -1571,7 +1571,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
     private async Task FocusOverflowButton()
     {
-        await _overflowButtonRef.FocusSafelyAsync();
+        await _overflowButtonRef.FocusSafelyAsync(preventScroll: true);
     }
 
     private string GetItemKey(TItem item, string defaultKey)
