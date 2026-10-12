@@ -628,6 +628,24 @@ variant hands its twins in through a private slot the root reads ahead of the sh
 (`var(--bit-drm-rst-brd-p, var(--bit-DropMenu-border-color, ...))`), and the test's `RootOwnsTheUnsetLook` names it. `BitButton` is the reference; `BitComponentVariantVariablesContractTests` fails on a variant
 read without its twin, a twin not falling back to its shared variable, and a shared rule reading one with
 twins, for every stylesheet at once (the variant classes are read off the `BitVariant` arms of the C#).
+The tier must not take away what the shared variable could do before it:
+
+- **Resolve a twin on the element that paints it, never on the root.** A private slot a variant computes
+  (`--bit-chg-card-bg`, `--bit-otp-bg`, `--bit-mnb-hov-bg`) is fixed where it is declared, so one declared on the
+  root is out of reach of a variable set on a part's own style (an item's `Style`, `Styles.Input`,
+  `Styles.ChevronDownButton`). Declare it on the part (`.bit-otp-otl .bit-otp-inp`), or on the root and each part
+  that reads it (`.bit-mnb-fil, .bit-mnb-fil > .bit-mnb-opb, ...`).
+- **A variant qualifier adds no weight to a part's rule.** A single class an app hands a part through `Class` /
+  `Classes` outweighed the shared rule and must keep doing so: qualify with `:where(.bit-x-fil)`, never a second
+  class. Nor does it go through the markup with a child combinator - an app may wrap a part (an option in a tooltip's
+  anchor); a part that needs its variant renders a class of its own for it (BitButtonGroup's `bit-btg-ifl`).
+- **A rule matching parts of more than one variant reads no tier.** BitTimeline's Text plate also matches an item
+  that overrides its variant, so it reads what the item's own variant resolved (`--bit-tln-dot-ico-clr-bg`).
+- **FixedColor fixes the variant's on-color**: a Fill button's resting foreground, an Outline or Text one's hover
+  foreground - never `--bit-X-outline-color` / `-text-color`, which is the role's color and vanishes on the hover fill.
+
+`BitVariantVariablesBrowserTests` (`Tests/Performance`, `/regression/variant-variables`) checks every twin of these
+components in every engine - its own variant alone, the shared one through it, the twin winning - and each rule above.
 
 **A state moves a variable, never the paint.** A `:hover` / `:active` / `:focus*` rule outranks the single class
 an app hands a part through `Class` / `Classes`, so one that set `color`, `background`, `border-color`, `fill`

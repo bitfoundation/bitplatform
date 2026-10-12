@@ -70,7 +70,14 @@ public class BitFileUploadStylesheetTests
         Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-FileUpload-(?!{variant}-)(?:fill|outline|text)-"),
                        $"{selector} reads the variables of another variant.");
 
-        // The ShowDropArea panel, drawn the same in every variant, reads the disabled colors its variant resolved.
+        // The ShowDropArea panel, drawn the same in every variant, reads the disabled colors its variant resolved - on the
+        // label itself, never on the root, so a public variable set on Styles.Label still reaches it.
+        StringAssert.DoesNotMatch(SourceFiles.GetScssDeclarations(stylesheet, $"\n{selector} {{"), new Regex(@"--bit-upl-dis-(bg|brd)\s*:"),
+                                  $"{selector} resolves the disabled colors on the root, out of reach of the label's own style.");
+        var label = SourceFiles.GetScssDeclarations(block, ".bit-upl-lbl {");
+        StringAssert.Contains(label, "--bit-upl-dis-bg: ");
+        StringAssert.Contains(label, "--bit-upl-dis-brd: ");
+
         var dropArea = SourceFiles.GetScssBlock(stylesheet, "\n.bit-upl.bit-upl-dra {");
         StringAssert.Contains(dropArea, "border-color: var(--bit-upl-dis-brd, #{$clr-brd-dis});");
         StringAssert.Contains(dropArea, "background-color: var(--bit-upl-dis-bg, #{$clr-bg-dis});");

@@ -220,9 +220,9 @@ $otp-private-properties: size, fontsize, dsc-fontsize, clr, clr-focus;
     border-width: var(--bit-OtpInput-border-width, #{$shp-border-width});
     width: var(--bit-otp-size, var(--bit-OtpInput-input-width, var(--bit-OtpInput-input-size, #{$siz-ctrl-md})));
     height: var(--bit-otp-size, var(--bit-OtpInput-input-height, var(--bit-OtpInput-input-size, #{$siz-ctrl-md})));
-    //the two colors of a box are read from private variables here, which every variant resolves on the root
-    //from its own tier of the public variables (--bit-OtpInput-outline-*, -fill-*, -text-*) ahead of the
-    //shared one: a shared variable still re-skins every variant at once, and a variant's own one sets that
+    //the two colors of a box are read from private variables here, which every variant resolves on the box
+    //itself from its own tier of the public variables (--bit-OtpInput-outline-*, -fill-*, -text-*) ahead of
+    //the shared one: a shared variable still re-skins every variant at once, and a variant's own one sets that
     //look apart from the other two.
     //the states below set the two variables read ahead of them rather than the colors themselves, so only the
     //rules at rest paint the box: a box the app paints through Classes keeps that paint under the pointer and
@@ -286,10 +286,12 @@ $otp-private-properties: size, fontsize, dsc-fontsize, clr, clr-focus;
 
 //every variant resolves the colors of its boxes here, each public variable read behind the variant's own twin of
 //it, so a theme can give one look colors of its own from :root without re-skinning the other two. The state
-//colors fall back to the rest ones of the same variant, its own tier included.
+//colors fall back to the rest ones of the same variant, its own tier included. They are resolved on each box,
+//never on the root: Styles.Input, Styles.Filled and Styles.InputsWrapper land on the box or between it and the
+//root, and a public variable set there reaches only what is resolved at or below it.
 
 //Outline - the default: each input is a box drawn with the border color, filled with the page surface.
-.bit-otp-otl {
+.bit-otp-otl .bit-otp-inp {
     --bit-otp-bg: var(--bit-OtpInput-outline-background, var(--bit-OtpInput-background, #{$clr-bg-pri}));
     --bit-otp-bg-hover: var(--bit-OtpInput-outline-hover-background, var(--bit-OtpInput-hover-background, var(--bit-otp-bg)));
     --bit-otp-bg-filled: var(--bit-OtpInput-outline-filled-background, var(--bit-OtpInput-filled-background, var(--bit-otp-bg)));
@@ -300,7 +302,7 @@ $otp-private-properties: size, fontsize, dsc-fontsize, clr, clr-focus;
 
 //Fill: the box is painted with the secondary surface and carries no rule of its own, for a softer
 //looking field that still reads as a single character slot.
-.bit-otp-fil {
+.bit-otp-fil .bit-otp-inp {
     --bit-otp-bg: var(--bit-OtpInput-fill-background, var(--bit-OtpInput-background, #{$clr-bg-sec}));
     --bit-otp-bg-hover: var(--bit-OtpInput-fill-hover-background, var(--bit-OtpInput-hover-background, #{$clr-bg-sec-hover}));
     --bit-otp-bg-filled: var(--bit-OtpInput-fill-filled-background, var(--bit-OtpInput-filled-background, var(--bit-otp-bg)));
@@ -310,22 +312,19 @@ $otp-private-properties: size, fontsize, dsc-fontsize, clr, clr-focus;
 }
 
 //Text: only an underline is painted, for a code entry that should not outweigh the content around it.
-.bit-otp-txt {
+.bit-otp-txt .bit-otp-inp {
     --bit-otp-bg: var(--bit-OtpInput-text-background, var(--bit-OtpInput-background, transparent));
     --bit-otp-bg-hover: var(--bit-OtpInput-text-hover-background, var(--bit-OtpInput-hover-background, var(--bit-otp-bg)));
     --bit-otp-bg-filled: var(--bit-OtpInput-text-filled-background, var(--bit-OtpInput-filled-background, var(--bit-otp-bg)));
     --bit-otp-brd: var(--bit-OtpInput-text-border-color, var(--bit-OtpInput-border-color, #{$clr-brd-pri}));
     --bit-otp-brd-hover: var(--bit-OtpInput-text-hover-border-color, var(--bit-OtpInput-hover-border-color, #{$clr-brd-pri-hover}));
     --bit-otp-brd-filled: var(--bit-OtpInput-text-filled-border-color, var(--bit-OtpInput-filled-border-color, var(--bit-otp-brd)));
-
     //the other three sides are taken away, which leaves the bottom one at the thickness the rule of the box
     //reads in every variant - drawn here as the underline.
-    .bit-otp-inp {
-        border-radius: 0;
-        border-top-width: 0;
-        border-right-width: 0;
-        border-left-width: 0;
-    }
+    border-radius: 0;
+    border-top-width: 0;
+    border-right-width: 0;
+    border-left-width: 0;
 }
 
 //FullWidth: the row stretches across whatever it is given and the boxes share it evenly, which is what

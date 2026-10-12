@@ -210,7 +210,7 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
     // Every value an explicit Size or Color publishes - inherited from the group, where its classes sit - is read
     // first, then the public variable (read here, so one set on the Style of a single button reaches it), then the
     // medium primary group an unset one stands for (per variant, see .bit-btg-fil). The colors are read the same
-    // way, by the variant's rule for its buttons (see :where(.bit-btg-fil) > .bit-btg-itm).
+    // way, by the variant's rule for its buttons (see .bit-btg-ifl).
     padding: var(--bit-btg-itm-padding, var(--bit-ButtonGroup-padding, #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-md}));
     // The colors the hover and press states move (here and on the toggled button), unset at rest so a button never
     // inherits them from a button of an outer group it sits in.
@@ -246,7 +246,7 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
     }
 
     // The disabled foreground is one in every variant; the border and background are the variant's (see
-    // :where(.bit-btg-fil) > .bit-btg-itm).
+    // .bit-btg-ifl).
     &[disabled],
     &[aria-disabled="true"] {
         cursor: default;
@@ -457,9 +457,12 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
 // group's neutral hairline without a ring around every filled one - while a shared variable still re-skins all three
 // at once. Both tiers sit between the value an explicit Color publishes and the variant's default, so an explicit Color
 // still wins over them. The group's outer border and the colors its separators pick between are read on the group (the
-// variant's own rule), the colors of the buttons on each button (the :where() rule after each variant, which weighs no
-// more than .bit-btg-itm itself and reaches the group's own buttons alone, never those of a group nested in one), so a
-// variable set on the Style of a single button still reaches it. The toggled button, the disabled foreground and the
+// variant's own rule), the colors of the buttons on each button, so a variable set on the Style of a single button still
+// reaches it. Each button carries its group's variant as a class of its own (.bit-btg-ifl / -iol / -itx, after each
+// variant's rule), never a selector through the group: it weighs no more than .bit-btg-itm itself, so a class an app
+// hands a button still repaints it; it holds whatever element an app wraps an option in (a tooltip's anchor), which a
+// child combinator would not; and a group nested in a button is painted by its own variant, which a descendant one
+// would not. The toggled button, the disabled foreground and the
 // focus rings are one appearance across the variants, so their variables have one tier.
 //
 // The states change the variables a button is painted from rather than its colors, so the rules at rest (the buttons'
@@ -513,7 +516,7 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
     }
 }
 
-:where(.bit-btg-fil) > .bit-btg-itm {
+.bit-btg-ifl {
     color: var(--bit-btg-itm-sfg, var(--bit-btg-itm-clr-txt, var(--bit-ButtonGroup-fill-color, var(--bit-ButtonGroup-color, var(--bit-btg-dfl-txt)))));
     background-color: var(--bit-btg-itm-sbg, var(--bit-btg-itm-clr-bg, var(--bit-ButtonGroup-fill-background, var(--bit-ButtonGroup-background, var(--bit-btg-dfl-bg)))));
 
@@ -572,7 +575,7 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
     }
 }
 
-:where(.bit-btg-otl) > .bit-btg-itm {
+.bit-btg-iol {
     color: var(--bit-btg-itm-sfg, var(--bit-btg-itm-clr-txt, var(--bit-ButtonGroup-outline-color, var(--bit-ButtonGroup-color, var(--bit-btg-dfl-txt)))));
     background-color: var(--bit-btg-itm-sbg, var(--bit-btg-itm-clr-bg, var(--bit-ButtonGroup-outline-background, var(--bit-ButtonGroup-background, var(--bit-btg-dfl-bg)))));
 
@@ -618,7 +621,7 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
     }
 }
 
-:where(.bit-btg-txt) > .bit-btg-itm {
+.bit-btg-itx {
     color: var(--bit-btg-itm-sfg, var(--bit-btg-itm-clr-txt, var(--bit-ButtonGroup-text-color, var(--bit-ButtonGroup-color, var(--bit-btg-dfl-txt)))));
     background-color: var(--bit-btg-itm-sbg, var(--bit-btg-itm-clr-bg, var(--bit-ButtonGroup-text-background, var(--bit-ButtonGroup-background, var(--bit-btg-dfl-bg)))));
 

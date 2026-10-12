@@ -61,8 +61,13 @@ public class BitFileInputStylesheetTests
         Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-FileInput-(?!{variant}-|text-color\b)(?:fill|outline|text)-"),
                        $"{selector} reads the variables of another variant.");
 
-        // The remove buttons, which every variant draws alike, read the disabled background their variant resolved.
+        // The remove buttons, which every variant draws alike, read the disabled background their variant resolved - on
+        // them and on the button, never on the root, so a public variable set on Styles.Label or Styles.RemoveButton
+        // still reaches the part it was set on.
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-fin-rbt {"), "background-color: var(--bit-fin-dis-bg, #{$clr-bg-dis});");
+        StringAssert.DoesNotMatch(SourceFiles.GetScssDeclarations(stylesheet, $"\n{selector} {{"), new Regex(@"--bit-fin-dis-bg\s*:"),
+                                  $"{selector} resolves the disabled background on the root, out of reach of a part's own style.");
+        StringAssert.Contains(SourceFiles.GetScssBlock(block, ".bit-fin-lbl,\n    .bit-fin-rbt {"), "--bit-fin-dis-bg: ");
     }
 
     [TestMethod]

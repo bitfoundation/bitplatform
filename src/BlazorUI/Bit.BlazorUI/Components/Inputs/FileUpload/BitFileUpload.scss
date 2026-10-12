@@ -231,16 +231,17 @@ $upl-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-tin
 //-outline-*, -text-*) ahead of the shared one, so a theme can give the three looks different colors from :root
 //while a shared variable still re-skins all three at once. Both tiers sit after the role, so an explicit Color
 //still wins over them. Each variant also resolves its tier of the disabled background and rule into
-//--bit-upl-dis-bg / -brd, which the ShowDropArea panel - drawn the same in every variant - reads as well.
+//--bit-upl-dis-bg / -brd on the label, which the ShowDropArea panel - drawn the same in every variant - reads as well.
 
 //Fill - the default: a solid block of the role color labelled in the role's on-color. Every color the role
 //paints is read from the role first - published only by an explicit Color (see .bit-upl) - then from the
 //public variables, then from the primary role an unset Color stands for; the same holds in every block below.
 .bit-upl-fil {
-    --bit-upl-dis-bg: var(--bit-FileUpload-fill-disabled-background, var(--bit-FileUpload-disabled-background, #{$clr-bg-dis}));
-    --bit-upl-dis-brd: var(--bit-FileUpload-fill-disabled-border-color, var(--bit-FileUpload-disabled-border-color, #{$clr-brd-dis}));
-
     .bit-upl-lbl {
+        // Resolved on the label that reads them rather than on the root, so a public variable set on the label's
+        // own style still reaches it.
+        --bit-upl-dis-bg: var(--bit-FileUpload-fill-disabled-background, var(--bit-FileUpload-disabled-background, #{$clr-bg-dis}));
+        --bit-upl-dis-brd: var(--bit-FileUpload-fill-disabled-border-color, var(--bit-FileUpload-disabled-border-color, #{$clr-brd-dis}));
         color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr-txt, var(--bit-FileUpload-fill-label-color, var(--bit-FileUpload-label-color, #{$clr-pri-text}))));
         border-color: var(--bit-upl-lbl-sbr, var(--bit-upl-clr, var(--bit-FileUpload-fill-label-border-color, var(--bit-FileUpload-label-border-color, var(--bit-FileUpload-fill-label-background, var(--bit-FileUpload-label-background, #{$clr-pri}))))));
         background-color: var(--bit-upl-lbl-sbg, var(--bit-upl-clr, var(--bit-FileUpload-fill-label-background, var(--bit-FileUpload-label-background, #{$clr-pri}))));
@@ -270,10 +271,11 @@ $upl-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-tin
 //stays the public background's alone - while disabled too, so its tier of the disabled background reaches the
 //ShowDropArea panel alone.
 .bit-upl-otl {
-    --bit-upl-dis-bg: var(--bit-FileUpload-outline-disabled-background, var(--bit-FileUpload-disabled-background, #{$clr-bg-dis}));
-    --bit-upl-dis-brd: var(--bit-FileUpload-outline-disabled-border-color, var(--bit-FileUpload-disabled-border-color, #{$clr-brd-dis}));
-
     .bit-upl-lbl {
+        // Resolved on the label that reads them rather than on the root, so a public variable set on the label's
+        // own style still reaches it.
+        --bit-upl-dis-bg: var(--bit-FileUpload-outline-disabled-background, var(--bit-FileUpload-disabled-background, #{$clr-bg-dis}));
+        --bit-upl-dis-brd: var(--bit-FileUpload-outline-disabled-border-color, var(--bit-FileUpload-disabled-border-color, #{$clr-brd-dis}));
         color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr, var(--bit-FileUpload-outline-label-color, var(--bit-FileUpload-label-color, #{$clr-pri}))));
         border-color: var(--bit-upl-lbl-sbr, var(--bit-upl-clr, var(--bit-FileUpload-outline-label-border-color, var(--bit-FileUpload-label-border-color, #{$clr-pri}))));
         background-color: var(--bit-upl-lbl-sbg, var(--bit-FileUpload-outline-label-background, var(--bit-FileUpload-label-background, transparent)));
@@ -301,10 +303,11 @@ $upl-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-tin
 //are the variant's rather than the role's, so they stay the public variables' alone - while disabled too, so
 //its tier of the disabled background and rule reaches the ShowDropArea panel alone.
 .bit-upl-txt {
-    --bit-upl-dis-bg: var(--bit-FileUpload-text-disabled-background, var(--bit-FileUpload-disabled-background, #{$clr-bg-dis}));
-    --bit-upl-dis-brd: var(--bit-FileUpload-text-disabled-border-color, var(--bit-FileUpload-disabled-border-color, #{$clr-brd-dis}));
-
     .bit-upl-lbl {
+        // Resolved on the label that reads them rather than on the root, so a public variable set on the label's
+        // own style still reaches it.
+        --bit-upl-dis-bg: var(--bit-FileUpload-text-disabled-background, var(--bit-FileUpload-disabled-background, #{$clr-bg-dis}));
+        --bit-upl-dis-brd: var(--bit-FileUpload-text-disabled-border-color, var(--bit-FileUpload-disabled-border-color, #{$clr-brd-dis}));
         color: var(--bit-upl-lbl-sfg, var(--bit-upl-clr, var(--bit-FileUpload-text-label-color, var(--bit-FileUpload-label-color, #{$clr-pri}))));
         border-color: var(--bit-upl-lbl-sbr, var(--bit-FileUpload-text-label-border-color, var(--bit-FileUpload-label-border-color, transparent)));
         background-color: var(--bit-upl-lbl-sbg, var(--bit-FileUpload-text-label-background, var(--bit-FileUpload-label-background, transparent)));
@@ -415,7 +418,7 @@ $upl-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-tin
         }
     }
 
-    // the disabled background and rule of the variant, which each variant block resolves on the root.
+    // the disabled background and rule of the variant, which each variant block resolves on the label.
     &.bit-dis .bit-upl-lbl {
         color: var(--bit-FileUpload-disabled-color, #{$clr-fg-dis});
         border-color: var(--bit-upl-dis-brd, #{$clr-brd-dis});

@@ -40,6 +40,13 @@ public class BitFooterStylesheetTests
         var stylesheet = ReadStylesheet();
         var block = SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
 
+        // The divider of a Bordered footer is the variant's too (Outline draws a whole border instead), in a rule whose
+        // variant costs no specificity, so a single class an app hands the footer still restyles it.
+        if (variant != "outline")
+        {
+            block += SourceFiles.GetScssBlock(stylesheet, $"\n:where({selector}).bit-ftr-brd {{");
+        }
+
         // Each variant reads a tier of its own ahead of every shared color variable it draws with, so a theme can set
         // one look apart from the other two on :root - a neutral hairline around the outlined footers without a divider
         // over every filled one.

@@ -93,7 +93,8 @@
     --bit-tln-dot-clr-bg: #{$dot-background};
     --bit-tln-dot-clr-brd: #{$dot-border-color};
     --bit-tln-dot-ico-clr: #{$icon-color};
-    --bit-tln-dot-ico-clr-bg: transparent;
+    // The plate under the icon, the only fill a text dot has, is painted with the dot background of the variant.
+    --bit-tln-dot-ico-clr-bg: #{$dot-background};
     --bit-tln-dot-ico-width: var(--bit-tln-dot-size);
     --bit-tln-dot-ico-height: var(--bit-tln-dot-size);
 }
@@ -782,9 +783,12 @@ $tln-private-properties: clr, clr-fg, clr-focus, clr-dis-bg, clr-dis-text, dot-s
 }
 
 // The icon of the text variant sits on a plate of the size and the shape of a dot, transparent by default, which is
-// the only fill a text dot has: the public dot background paints it, the tier of the Text variant first. The plate
-// takes the corners of the dot it sits in rather than reading the radius again, so it keeps the shape of the dot
-// wherever that was set - and the radius stays one variable for every variant: the shape of a dot, whatever its look.
+// the only fill a text dot has: the public dot background paints it, the tier of the Text variant first. The color is
+// the one the item's own variant resolves (--bit-tln-dot-ico-clr-bg, see timeline-variant-text), never a variable read
+// here: this rule also matches the icons of the items of a Text timeline that override their variant to Fill or
+// Outline, which must not be handed the Text tier. The plate takes the corners of the dot it sits in rather than
+// reading the radius again, so it keeps the shape of the dot wherever that was set - and the radius stays one variable
+// for every variant: the shape of a dot, whatever its look.
 .bit-tln-txt .bit-tln-ico,
 .bit-tln-itm.bit-tln-ivt .bit-tln-ico {
     display: flex;
@@ -793,7 +797,7 @@ $tln-private-properties: clr, clr-fg, clr-focus, clr-dis-bg, clr-dis-text, dot-s
     width: var(--bit-tln-dot-ico-width);
     height: var(--bit-tln-dot-ico-height);
     border-radius: inherit;
-    background-color: var(--bit-Timeline-text-dot-background, var(--bit-Timeline-dot-background, var(--bit-tln-dot-ico-clr-bg)));
+    background-color: var(--bit-tln-dot-ico-clr-bg);
 }
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss), published only by an

@@ -103,10 +103,6 @@ $ftr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, padding, gap, max-widt
     color: var(--bit-ftr-on, var(--bit-Footer-fill-color, var(--bit-Footer-color, #{$clr-fg-pri})));
     background-color: var(--bit-ftr-bg, var(--bit-Footer-fill-background, var(--bit-Footer-background, #{$clr-bg-pri})));
 
-    &.bit-ftr-brd {
-        border-block-start: $shp-border-width $shp-border-style var(--bit-ftr-brd, var(--bit-Footer-fill-border-color, var(--bit-Footer-border-color, #{$clr-brd-pri})));
-    }
-
     &.bit-dis {
         color: $ftr-fg-dis;
         background-color: $ftr-bg-dis;
@@ -127,10 +123,6 @@ $ftr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, padding, gap, max-widt
 .bit-ftr-txt {
     color: var(--bit-ftr-fg, var(--bit-Footer-text-color, var(--bit-Footer-color, #{$clr-fg-pri})));
     background-color: transparent;
-
-    &.bit-ftr-brd {
-        border-block-start: $shp-border-width $shp-border-style var(--bit-ftr-brd, var(--bit-Footer-text-border-color, var(--bit-Footer-border-color, #{$clr-brd-pri})));
-    }
 
     &.bit-dis {
         color: $ftr-fg-dis;
@@ -279,6 +271,17 @@ $ftr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, padding, gap, max-widt
     position: absolute;
 }
 
+
+// Bordered draws the divider in the variant's own tier of the border variables; Outline draws a whole border
+// already. The variant costs no specificity, so the rule weighs the one class it always did and a single class
+// an app hands the footer through Class still restyles the divider.
+:where(.bit-ftr-fil).bit-ftr-brd {
+    border-block-start: $shp-border-width $shp-border-style var(--bit-ftr-brd, var(--bit-Footer-fill-border-color, var(--bit-Footer-border-color, #{$clr-brd-pri})));
+}
+
+:where(.bit-ftr-txt).bit-ftr-brd {
+    border-block-start: $shp-border-width $shp-border-style var(--bit-ftr-brd, var(--bit-Footer-text-border-color, var(--bit-Footer-border-color, #{$clr-brd-pri})));
+}
 
 // The shadow is cast upwards, towards the content the footer covers, which is the opposite of the
 // downward elevation shadows of the theme.

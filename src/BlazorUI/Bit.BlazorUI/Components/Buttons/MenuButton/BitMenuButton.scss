@@ -247,7 +247,7 @@ $mnb-private-properties: clr, clr-txt, clr-hover, clr-active, clr-dark, clr-dark
     // The states change the variables each half is painted from rather than its colors, so the rules at rest
     // (.bit-mnb-opb, .bit-mnb-chb and the toggled header) are the only ones that paint: a half the app paints
     // through Classes keeps that paint under the pointer and while pressed, instead of losing it to a state that
-    // outranks the app's class. The colors themselves are resolved per variant on the root (see .bit-mnb-fil), where
+    // outranks the app's class. The colors themselves are resolved per variant on each half (see .bit-mnb-fil), where
     // the variant's own variables are read ahead of the shared ones.
     @media (hover: hover) {
         &:hover {
@@ -633,18 +633,15 @@ $mnb-cal-private-properties: cal-bg;
 // -text-*) ahead of the shared one, so a theme can give the three looks different colors from :root - an outline
 // menu button's neutral hairline without a ring around every filled one - while a shared variable still re-skins all
 // three at once. Both tiers sit between the role and the default, so an explicit Color still wins over them. The
-// hovered and pressed colors of the two halves are resolved here as well (--bit-mnb-hov-* / -act-*), on the root
-// the halves inherit them from, so the variant's tier reaches them; the toggled header and the callout are one
-// appearance across the variants, so their variables have one tier.
+// hovered and pressed colors (--bit-mnb-hov-* / -act-*) are resolved after each variant's rule, on the root, whose
+// border reads them, and again on each half, so the variant's tier reaches the halves and a public variable set on
+// Styles.OperatorButton or Styles.ChevronDownButton still reaches the half it was set on; the toggled header and the
+// callout are one appearance across the variants, so their variables have one tier.
 .bit-mnb-fil {
     color: var(--bit-mnb-clr-txt, var(--bit-MenuButton-fill-color, var(--bit-MenuButton-color, #{$clr-pri-text})));
     border-color: var(--bit-mnb-sbr, var(--bit-mnb-clr, var(--bit-MenuButton-fill-border-color, var(--bit-MenuButton-border-color, var(--bit-MenuButton-fill-background, var(--bit-MenuButton-background, #{$clr-pri}))))));
     background-color: var(--bit-mnb-clr, var(--bit-MenuButton-fill-background, var(--bit-MenuButton-background, #{$clr-pri})));
     --bit-mnb-clr-spb: var(--bit-mnb-clr-txt, var(--bit-MenuButton-fill-divider-color, var(--bit-MenuButton-divider-color, var(--bit-MenuButton-fill-color, var(--bit-MenuButton-color, #{$clr-pri-text})))));
-    --bit-mnb-hov-fg: var(--bit-mnb-clr-txt, var(--bit-MenuButton-fill-hover-color, var(--bit-MenuButton-hover-color, #{$clr-pri-text})));
-    --bit-mnb-hov-bg: var(--bit-mnb-clr-hover, var(--bit-MenuButton-fill-hover-background, var(--bit-MenuButton-hover-background, #{$clr-pri-hover})));
-    --bit-mnb-act-fg: var(--bit-mnb-clr-txt, var(--bit-MenuButton-fill-active-color, var(--bit-MenuButton-active-color, #{$clr-pri-text})));
-    --bit-mnb-act-bg: var(--bit-mnb-clr-active, var(--bit-MenuButton-fill-active-background, var(--bit-MenuButton-active-background, #{$clr-pri-active})));
 
     // Like the halves', the states move the variable the border is painted from rather than the border itself.
     @media (hover: hover) {
@@ -664,15 +661,20 @@ $mnb-cal-private-properties: cal-bg;
     }
 }
 
+.bit-mnb-fil,
+.bit-mnb-fil > .bit-mnb-opb,
+.bit-mnb-fil > .bit-mnb-chb {
+    --bit-mnb-hov-fg: var(--bit-mnb-clr-txt, var(--bit-MenuButton-fill-hover-color, var(--bit-MenuButton-hover-color, #{$clr-pri-text})));
+    --bit-mnb-hov-bg: var(--bit-mnb-clr-hover, var(--bit-MenuButton-fill-hover-background, var(--bit-MenuButton-hover-background, #{$clr-pri-hover})));
+    --bit-mnb-act-fg: var(--bit-mnb-clr-txt, var(--bit-MenuButton-fill-active-color, var(--bit-MenuButton-active-color, #{$clr-pri-text})));
+    --bit-mnb-act-bg: var(--bit-mnb-clr-active, var(--bit-MenuButton-fill-active-background, var(--bit-MenuButton-active-background, #{$clr-pri-active})));
+}
+
 .bit-mnb-otl {
     color: var(--bit-mnb-clr, var(--bit-MenuButton-outline-color, var(--bit-MenuButton-color, #{$clr-pri})));
     border-color: var(--bit-mnb-sbr, var(--bit-mnb-clr, var(--bit-MenuButton-outline-border-color, var(--bit-MenuButton-border-color, #{$clr-pri}))));
     background-color: var(--bit-MenuButton-outline-background, var(--bit-MenuButton-background, transparent));
     --bit-mnb-clr-spb: var(--bit-mnb-clr, var(--bit-MenuButton-outline-divider-color, var(--bit-MenuButton-divider-color, var(--bit-MenuButton-outline-border-color, var(--bit-MenuButton-border-color, #{$clr-pri})))));
-    --bit-mnb-hov-fg: var(--bit-mnb-clr-txt, var(--bit-MenuButton-outline-hover-color, var(--bit-MenuButton-hover-color, #{$clr-pri-text})));
-    --bit-mnb-hov-bg: var(--bit-mnb-clr-hover, var(--bit-MenuButton-outline-hover-background, var(--bit-MenuButton-hover-background, #{$clr-pri-hover})));
-    --bit-mnb-act-fg: var(--bit-mnb-clr-txt, var(--bit-MenuButton-outline-active-color, var(--bit-MenuButton-active-color, #{$clr-pri-text})));
-    --bit-mnb-act-bg: var(--bit-mnb-clr-active, var(--bit-MenuButton-outline-active-background, var(--bit-MenuButton-active-background, #{$clr-pri-active})));
 
     @media (hover: hover) {
         &:hover {
@@ -691,21 +693,35 @@ $mnb-cal-private-properties: cal-bg;
     }
 }
 
+.bit-mnb-otl,
+.bit-mnb-otl > .bit-mnb-opb,
+.bit-mnb-otl > .bit-mnb-chb {
+    --bit-mnb-hov-fg: var(--bit-mnb-clr-txt, var(--bit-MenuButton-outline-hover-color, var(--bit-MenuButton-hover-color, #{$clr-pri-text})));
+    --bit-mnb-hov-bg: var(--bit-mnb-clr-hover, var(--bit-MenuButton-outline-hover-background, var(--bit-MenuButton-hover-background, #{$clr-pri-hover})));
+    --bit-mnb-act-fg: var(--bit-mnb-clr-txt, var(--bit-MenuButton-outline-active-color, var(--bit-MenuButton-active-color, #{$clr-pri-text})));
+    --bit-mnb-act-bg: var(--bit-mnb-clr-active, var(--bit-MenuButton-outline-active-background, var(--bit-MenuButton-active-background, #{$clr-pri-active})));
+}
+
 .bit-mnb-txt {
     color: var(--bit-mnb-clr, var(--bit-MenuButton-text-color, var(--bit-MenuButton-color, #{$clr-pri})));
     border-color: var(--bit-MenuButton-text-border-color, var(--bit-MenuButton-border-color, transparent));
     background-color: var(--bit-MenuButton-text-background, var(--bit-MenuButton-background, transparent));
     --bit-mnb-clr-spb: var(--bit-mnb-clr, var(--bit-MenuButton-text-divider-color, var(--bit-MenuButton-divider-color, #{$clr-pri})));
-    --bit-mnb-hov-fg: var(--bit-mnb-clr-txt, var(--bit-MenuButton-text-hover-color, var(--bit-MenuButton-hover-color, #{$clr-pri-text})));
-    --bit-mnb-hov-bg: var(--bit-mnb-clr-hover, var(--bit-MenuButton-text-hover-background, var(--bit-MenuButton-hover-background, #{$clr-pri-hover})));
-    --bit-mnb-act-fg: var(--bit-mnb-clr-txt, var(--bit-MenuButton-text-active-color, var(--bit-MenuButton-active-color, #{$clr-pri-text})));
-    --bit-mnb-act-bg: var(--bit-mnb-clr-active, var(--bit-MenuButton-text-active-background, var(--bit-MenuButton-active-background, #{$clr-pri-active})));
 
     &.bit-dis {
         color: var(--bit-mnb-dis-clr);
         border-color: var(--bit-MenuButton-text-disabled-border-color, var(--bit-MenuButton-disabled-border-color, transparent));
         background-color: var(--bit-MenuButton-text-disabled-background, var(--bit-MenuButton-disabled-background, transparent));
     }
+}
+
+.bit-mnb-txt,
+.bit-mnb-txt > .bit-mnb-opb,
+.bit-mnb-txt > .bit-mnb-chb {
+    --bit-mnb-hov-fg: var(--bit-mnb-clr-txt, var(--bit-MenuButton-text-hover-color, var(--bit-MenuButton-hover-color, #{$clr-pri-text})));
+    --bit-mnb-hov-bg: var(--bit-mnb-clr-hover, var(--bit-MenuButton-text-hover-background, var(--bit-MenuButton-hover-background, #{$clr-pri-hover})));
+    --bit-mnb-act-fg: var(--bit-mnb-clr-txt, var(--bit-MenuButton-text-active-color, var(--bit-MenuButton-active-color, #{$clr-pri-text})));
+    --bit-mnb-act-bg: var(--bit-mnb-clr-active, var(--bit-MenuButton-text-active-background, var(--bit-MenuButton-active-background, #{$clr-pri-active})));
 }
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss). They are

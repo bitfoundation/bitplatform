@@ -62,7 +62,15 @@ public partial class BitMenuButtonStylesheetTests
     public void BitMenuButtonShouldReadTheVariablesOfItsVariantAheadOfTheSharedOnes(string variant, string selector)
     {
         var stylesheet = ReadStylesheet();
-        var block = SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
+        // The hovered and pressed colors are resolved by a rule of the variant's own that also reaches each half, so a
+        // public variable set on Styles.OperatorButton or Styles.ChevronDownButton reaches the half it was set on.
+        var states = SourceFiles.GetScssBlock(stylesheet, $"\n{selector},\n{selector} > .bit-mnb-opb,\n{selector} > .bit-mnb-chb {{");
+        var block = SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{") + states;
+
+        foreach (var name in new[] { "hov-fg", "hov-bg", "act-fg", "act-bg" })
+        {
+            StringAssert.Contains(states, $"--bit-mnb-{name}: ", $"{selector} does not resolve --bit-mnb-{name} on the halves.");
+        }
 
         // Each variant reads a tier of its own ahead of every shared color variable of the button, so a theme can set
         // one look apart from the other two on :root - an outline menu button's neutral hairline without a ring around
@@ -81,8 +89,8 @@ public partial class BitMenuButtonStylesheetTests
         Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-MenuButton-(?!{variant}-)(?:fill|outline|text)-"),
                        $"{selector} reads the variables of another variant.");
 
-        // The halves are painted in the hovered and pressed colors their variant resolves on the root, so no rule
-        // shared by the three variants reads those variables itself.
+        // The halves are painted in the hovered and pressed colors their variant resolves on them, so no rule shared by
+        // the three variants reads those variables itself.
         var halves = SourceFiles.StripScssComments(SourceFiles.GetScssBlock(stylesheet, "\n.bit-mnb-opb,\n.bit-mnb-chb {"));
         Assert.IsFalse(Regex.IsMatch(halves, @"var\(--bit-MenuButton-(?:hover|active)-"), "The halves read the shared hover or active variables past their variant's tier.");
     }

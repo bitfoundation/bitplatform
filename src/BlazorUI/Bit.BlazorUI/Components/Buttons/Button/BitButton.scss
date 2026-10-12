@@ -644,8 +644,10 @@ $btn-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
 // The color it fixes is the on-color of the role - the one the hover and press states paint, because those fill the
 // box with the role's own color. An Outline or Text button given the color of the surface it sits on is the case this
 // is for: its resting foreground is that surface's color and would be invisible against it, so the button wears the
-// on-color from the start and never shifts. An explicit Color's on-color is read before the public foreground of the
-// variant and the shared one, as everywhere else on the button.
+// on-color from the start and never shifts. So each variant fixes the variables of its own on-color: a Fill button's
+// resting foreground, which already is the on-color; an Outline or Text button's hover foreground, never its resting
+// one (--bit-Button-outline-color / -text-color), which is the role's color and would vanish on the role fill the
+// hover paints. An explicit Color's on-color is read before the public variables, as everywhere else on the button.
 @mixin btn-fixed-color($color) {
     color: var(--bit-btn-sfg, #{$color});
 
@@ -665,11 +667,11 @@ $btn-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
 }
 
 .bit-btn-otl.bit-btn-fxc:not(.bit-dis) {
-    @include btn-fixed-color(var(--bit-btn-clr-txt, var(--bit-Button-outline-color, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})))));
+    @include btn-fixed-color(var(--bit-btn-clr-txt, var(--bit-Button-outline-hover-color, var(--bit-Button-hover-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})))));
 }
 
 .bit-btn-txt.bit-btn-fxc:not(.bit-dis) {
-    @include btn-fixed-color(var(--bit-btn-clr-txt, var(--bit-Button-text-color, var(--bit-Button-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})))));
+    @include btn-fixed-color(var(--bit-btn-clr-txt, var(--bit-Button-text-hover-color, var(--bit-Button-hover-color, var(--bit-btn-dft-clr-txt, #{$clr-pri-text})))));
 }
 
 // An icon-only button is a square, the way every icon button in the library is: the side padding drops to the

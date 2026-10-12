@@ -463,7 +463,7 @@ public partial class BitButtonDemo
         {
             Name = "--bit-Button-color",
             DefaultValue = "Per variant: --bit-clr-pri-text when filled, --bit-clr-pri otherwise",
-            Description = "Foreground (text and icon) in the rest state. FixedColor holds this color through hover and press as well. The Color parameter wins over it. Shared by the three variants: --bit-Button-fill-color, --bit-Button-outline-color and --bit-Button-text-color are read ahead of it.",
+            Description = "Foreground (text and icon) in the rest state. FixedColor holds this color of a Fill button through hover and press as well; an Outline or Text button with FixedColor wears its hover color instead. The Color parameter wins over it. Shared by the three variants: --bit-Button-fill-color, --bit-Button-outline-color and --bit-Button-text-color are read ahead of it.",
         },
         new()
         {
@@ -481,7 +481,7 @@ public partial class BitButtonDemo
         {
             Name = "--bit-Button-hover-color",
             DefaultValue = "--bit-clr-pri-text, and the rest color for the Fill variant",
-            Description = "Foreground while hovered (pointer devices only). The Color parameter wins over it. Shared by the three variants: --bit-Button-fill-hover-color, --bit-Button-outline-hover-color and --bit-Button-text-hover-color are read ahead of it.",
+            Description = "Foreground while hovered (pointer devices only), and the one an Outline or Text button with FixedColor wears in every state. The Color parameter wins over it. Shared by the three variants: --bit-Button-fill-hover-color, --bit-Button-outline-hover-color and --bit-Button-text-hover-color are read ahead of it.",
         },
         new()
         {
@@ -625,7 +625,7 @@ public partial class BitButtonDemo
         {
             Name = "--bit-Button-outline-hover-color",
             DefaultValue = "--bit-Button-hover-color",
-            Description = "Foreground while hovered (pointer devices only) of an Outline button alone, read ahead of --bit-Button-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+            Description = "Foreground while hovered (pointer devices only) of an Outline button alone, and the one it wears in every state with FixedColor, read ahead of --bit-Button-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
         },
         new()
         {
@@ -697,7 +697,7 @@ public partial class BitButtonDemo
         {
             Name = "--bit-Button-text-hover-color",
             DefaultValue = "--bit-Button-hover-color",
-            Description = "Foreground while hovered (pointer devices only) of a Text button alone, read ahead of --bit-Button-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+            Description = "Foreground while hovered (pointer devices only) of a Text button alone, and the one it wears in every state with FixedColor, read ahead of --bit-Button-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
         },
         new()
         {

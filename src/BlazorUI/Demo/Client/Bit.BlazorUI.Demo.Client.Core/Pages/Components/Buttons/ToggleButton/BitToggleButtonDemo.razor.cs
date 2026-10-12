@@ -454,7 +454,7 @@ public partial class BitToggleButtonDemo
         {
             Name = "--bit-ToggleButton-hover-color",
             DefaultValue = "Per Variant: the resting foreground (Fill), --bit-clr-pri-text (Outline, Text)",
-            Description = "Foreground while hovered, on pointer devices only. The Color parameter (or OffColor) wins over it. Shared by the three variants: --bit-ToggleButton-fill-hover-color, --bit-ToggleButton-outline-hover-color and --bit-ToggleButton-text-hover-color are read ahead of it.",
+            Description = "Foreground while hovered, on pointer devices only, and the one an unchecked Outline or Text toggle button with FixedColor wears in every state. The Color parameter (or OffColor) wins over it. Shared by the three variants: --bit-ToggleButton-fill-hover-color, --bit-ToggleButton-outline-hover-color and --bit-ToggleButton-text-hover-color are read ahead of it.",
         },
         new()
         {
@@ -652,7 +652,7 @@ public partial class BitToggleButtonDemo
         {
             Name = "--bit-ToggleButton-outline-hover-color",
             DefaultValue = "--bit-ToggleButton-hover-color",
-            Description = "Foreground while hovered (pointer devices only) of an unchecked Outline toggle button alone, read ahead of --bit-ToggleButton-hover-color so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+            Description = "Foreground while hovered (pointer devices only) of an unchecked Outline toggle button alone, and the one it wears in every state with FixedColor, read ahead of --bit-ToggleButton-hover-color so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
         },
         new()
         {
@@ -724,7 +724,7 @@ public partial class BitToggleButtonDemo
         {
             Name = "--bit-ToggleButton-text-hover-color",
             DefaultValue = "--bit-ToggleButton-hover-color",
-            Description = "Foreground while hovered (pointer devices only) of an unchecked Text toggle button alone, read ahead of --bit-ToggleButton-hover-color so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
+            Description = "Foreground while hovered (pointer devices only) of an unchecked Text toggle button alone, and the one it wears in every state with FixedColor, read ahead of --bit-ToggleButton-hover-color so a theme can set this variant apart from the other two. The Color parameter (or OffColor) wins over it.",
         },
         new()
         {

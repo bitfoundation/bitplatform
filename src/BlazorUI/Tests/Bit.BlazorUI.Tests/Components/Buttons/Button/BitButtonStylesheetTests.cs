@@ -119,6 +119,21 @@ public partial class BitButtonStylesheetTests
         }
     }
 
+    [TestMethod,
+        DataRow(".bit-btn-fil.bit-btn-fxc:not(.bit-dis)", "var(--bit-btn-clr-txt, var(--bit-Button-fill-color, var(--bit-Button-color, "),
+        DataRow(".bit-btn-otl.bit-btn-fxc:not(.bit-dis)", "var(--bit-btn-clr-txt, var(--bit-Button-outline-hover-color, var(--bit-Button-hover-color, "),
+        DataRow(".bit-btn-txt.bit-btn-fxc:not(.bit-dis)", "var(--bit-btn-clr-txt, var(--bit-Button-text-hover-color, var(--bit-Button-hover-color, ")]
+    public void BitButtonShouldFixTheOnColorOfItsVariant(string selector, string expected)
+    {
+        // FixedColor wears the color that stays readable on the role fill the hover and press paint: a Fill button's
+        // resting foreground, an Outline or Text button's hover foreground - never the resting foreground of those two,
+        // which is the role's own color and would vanish on that fill.
+        var block = SourceFiles.GetScssBlock(ReadStylesheet(), $"\n{selector} {{");
+
+        StringAssert.Contains(block, expected);
+        Assert.IsFalse(Regex.IsMatch(block, @"var\(--bit-Button-(outline|text)-color\b"), $"{selector} fixes the resting foreground of its variant.");
+    }
+
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Buttons", "Button", "BitButton.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-Button-[a-z-]+)\s", RegexOptions.Multiline)]

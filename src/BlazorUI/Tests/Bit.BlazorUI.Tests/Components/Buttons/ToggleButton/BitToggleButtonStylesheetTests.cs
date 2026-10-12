@@ -76,8 +76,11 @@ public partial class BitToggleButtonStylesheetTests
                                   $"{selector} does not read --bit-ToggleButton-{variant}-{name} ahead of --bit-ToggleButton-{name}.");
         }
 
-        // The foreground FixedColor pins is the variant's too, set by the variant rather than the root.
-        StringAssert.Contains(block, $"--bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-{variant}-color, var(--bit-ToggleButton-color, #{{$clr-pri-text}})));");
+        // The foreground FixedColor pins is the variant's too, set by the variant rather than the root: the on-color that
+        // stays readable on the role fill the hover and press paint - a Fill toggle button's resting foreground, an
+        // Outline or Text one's hover foreground, never its resting one, which is the role's own color.
+        var onColor = variant == "fill" ? "color" : "hover-color";
+        StringAssert.Contains(block, $"--bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-{variant}-{onColor}, var(--bit-ToggleButton-{onColor}, #{{$clr-pri-text}})));");
 
         // A variant reads a shared color variable only right behind its own twin, and never the tier of another variant.
         Assert.IsFalse(Regex.IsMatch(block, $@"(?<!var\(--bit-ToggleButton-{variant}-[a-z-]+, )var\(--bit-ToggleButton-(?:hover-|active-|disabled-)?(?:color|background|border-color)\b"),

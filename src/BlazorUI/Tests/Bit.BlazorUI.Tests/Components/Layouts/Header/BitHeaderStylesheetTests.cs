@@ -43,6 +43,13 @@ public class BitHeaderStylesheetTests
         var stylesheet = ReadStylesheet();
         var block = SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
 
+        // The divider of a Bordered header is the variant's too (Outline draws a whole border instead), in a rule whose
+        // variant costs no specificity, so a single class an app hands the header still restyles it.
+        if (variant != "outline")
+        {
+            block += SourceFiles.GetScssBlock(stylesheet, $"\n:where({selector}).bit-hdr-brd {{");
+        }
+
         // Each variant reads a tier of its own ahead of every shared variable it draws with, so a theme can set one look
         // apart from the other two on :root - a neutral hairline around the outlined headers without a divider under
         // every filled one.

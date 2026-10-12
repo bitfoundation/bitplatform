@@ -77,19 +77,19 @@ public partial class BitButtonGroupStylesheetTests
     }
 
     [TestMethod,
-        DataRow("fill", "bit-btg-fil"),
-        DataRow("outline", "bit-btg-otl"),
-        DataRow("text", "bit-btg-txt")]
-    public void BitButtonGroupShouldReadTheVariablesOfItsVariantAheadOfTheSharedOnes(string variant, string variantClass)
+        DataRow("fill", "bit-btg-fil", "bit-btg-ifl"),
+        DataRow("outline", "bit-btg-otl", "bit-btg-iol"),
+        DataRow("text", "bit-btg-txt", "bit-btg-itx")]
+    public void BitButtonGroupShouldReadTheVariablesOfItsVariantAheadOfTheSharedOnes(string variant, string variantClass, string itemVariantClass)
     {
         var stylesheet = ReadStylesheet();
 
         // The group's outer border and the colors its separators pick between are read on the group, by the variant's
-        // own rule; the colors of the buttons on each button, by the variant's rule for them - one that weighs no more
-        // than .bit-btg-itm and reaches only the group's own buttons, so a variable set on the Style of a single button
-        // still arrives and a group nested in a button is painted by its own variant.
+        // own rule; the colors of the buttons on each button, by the rule of the variant class every button carries -
+        // one class, so it weighs no more than .bit-btg-itm, it finds a button whatever element wraps it, and a variable
+        // set on the Style of a single button still arrives.
         var group = SourceFiles.GetScssBlock(stylesheet, $"\n.{variantClass} {{");
-        var buttons = SourceFiles.GetScssBlock(stylesheet, $"\n:where(.{variantClass}) > .bit-btg-itm {{");
+        var buttons = SourceFiles.GetScssBlock(stylesheet, $"\n.{itemVariantClass} {{");
 
         foreach (var name in new[] { "border-color", "separator-color", "disabled-border-color" })
         {

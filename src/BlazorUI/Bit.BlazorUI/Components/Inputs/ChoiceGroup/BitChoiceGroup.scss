@@ -95,9 +95,6 @@ $chg-private-properties: clr, clr-bg, clr-hover, clr-dis, clr-dis-text, clr-focu
     --bit-chg-flex-direction: row;
     --bit-chg-flex-flow: column nowrap;
     --bit-chg-justify-content: flex-start;
-    // The accent the card variants tint a checked card with when nothing else does. It is the accent of every
-    // variant - the radio ring and dot too - so it is resolved once here rather than read by each variant.
-    --bit-chg-acc: var(--bit-chg-clr, var(--bit-ChoiceGroup-color, #{$clr-pri}));
 
     // Wins over the "fit-content" above through the extra class, so the declaration order
     // of the two rules in this file cannot silently decide which width applies.
@@ -257,8 +254,9 @@ $chg-private-properties: clr, clr-bg, clr-hover, clr-dis, clr-dis-text, clr-focu
 }
 
 // The tile paints a surface of its own only in Text, the variant with no card around it: the card variants make it
-// transparent below, so it reads the Text tier of the item background.
-.bit-chg-txt .bit-chg-ihi {
+// transparent below, so it reads the Text tier of the item background. The variant costs no specificity, so the
+// tile still weighs the one class it always did and a single class handed to it through Classes.ItemLabel repaints it.
+:where(.bit-chg-txt) .bit-chg-ihi {
     background-color: var(--bit-chg-clr-bg, var(--bit-ChoiceGroup-text-item-background, var(--bit-ChoiceGroup-item-background, #{$clr-bg-sec})));
 }
 
@@ -357,6 +355,10 @@ $chg-private-properties: clr, clr-bg, clr-hover, clr-dis, clr-dis-text, clr-focu
 }
 
 .bit-chg-itl {
+    // The accent the card variants tint a checked card with when nothing else does. It is the accent of every
+    // variant - the radio ring and dot too - so it is no variant's to read; it is resolved on the label, where the
+    // card variants read it, so an accent set on an item's Style reaches its card as well.
+    --bit-chg-acc: var(--bit-chg-clr, var(--bit-ChoiceGroup-color, #{$clr-pri}));
     display: flex;
     cursor: pointer;
     user-select: none;
@@ -986,8 +988,10 @@ $chg-private-properties: clr, clr-bg, clr-hover, clr-dis, clr-dis-text, clr-focu
 // Each card variant resolves its surface and border here, reading its own tier of the item variables
 // (--bit-ChoiceGroup-outline-item-*, -fill-item-*) ahead of the shared one, so a theme can give outline and
 // filled cards different colors from :root while a shared variable still re-skins both at once. The card
-// rules above read only these resolved values, so neither variant is handed the other's.
-.bit-chg-otl {
+// rules above read only these resolved values, so neither variant is handed the other's. They are resolved
+// on the card itself, never on the root: an item's Style and Styles.ItemContainer land on the item container
+// around it, and a public variable set there reaches only what is resolved below it.
+.bit-chg-otl .bit-chg-itl {
     --bit-chg-card-bg: var(--bit-ChoiceGroup-outline-item-background, var(--bit-ChoiceGroup-item-background, transparent));
     --bit-chg-card-brd: var(--bit-ChoiceGroup-outline-item-border-color, var(--bit-ChoiceGroup-item-border-color, #{$clr-brd-sec}));
     --bit-chg-card-bg-hover: var(--bit-ChoiceGroup-outline-item-hover-background, var(--bit-ChoiceGroup-item-hover-background, #{$clr-bg-sec-hover}));
@@ -997,7 +1001,7 @@ $chg-private-properties: clr, clr-bg, clr-hover, clr-dis, clr-dis-text, clr-focu
 
 // Fill states the card with a surface instead of a border; the checked one is the accent color at an
 // alpha low enough to keep the item text above the 4.5:1 contrast of WCAG 1.4.3 in both schemes.
-.bit-chg-fil {
+.bit-chg-fil .bit-chg-itl {
     --bit-chg-card-bg: var(--bit-ChoiceGroup-fill-item-background, var(--bit-ChoiceGroup-item-background, #{$clr-bg-sec}));
     --bit-chg-card-brd: var(--bit-ChoiceGroup-fill-item-border-color, var(--bit-ChoiceGroup-item-border-color, transparent));
     --bit-chg-card-bg-hover: var(--bit-ChoiceGroup-fill-item-hover-background, var(--bit-ChoiceGroup-item-hover-background, #{$clr-bg-ter}));

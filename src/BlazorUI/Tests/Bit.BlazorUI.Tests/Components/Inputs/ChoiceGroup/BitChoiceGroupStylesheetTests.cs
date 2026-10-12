@@ -53,15 +53,15 @@ public class BitChoiceGroupStylesheetTests
     }
 
     [TestMethod,
-        DataRow("fill", ".bit-chg-fil", "item-background"),
-        DataRow("fill", ".bit-chg-fil", "item-hover-background"),
-        DataRow("fill", ".bit-chg-fil", "item-checked-background"),
-        DataRow("fill", ".bit-chg-fil", "item-border-color"),
-        DataRow("outline", ".bit-chg-otl", "item-background"),
-        DataRow("outline", ".bit-chg-otl", "item-hover-background"),
-        DataRow("outline", ".bit-chg-otl", "item-checked-background"),
-        DataRow("outline", ".bit-chg-otl", "item-border-color"),
-        DataRow("text", ".bit-chg-txt .bit-chg-ihi", "item-background")]
+        DataRow("fill", ".bit-chg-fil .bit-chg-itl", "item-background"),
+        DataRow("fill", ".bit-chg-fil .bit-chg-itl", "item-hover-background"),
+        DataRow("fill", ".bit-chg-fil .bit-chg-itl", "item-checked-background"),
+        DataRow("fill", ".bit-chg-fil .bit-chg-itl", "item-border-color"),
+        DataRow("outline", ".bit-chg-otl .bit-chg-itl", "item-background"),
+        DataRow("outline", ".bit-chg-otl .bit-chg-itl", "item-hover-background"),
+        DataRow("outline", ".bit-chg-otl .bit-chg-itl", "item-checked-background"),
+        DataRow("outline", ".bit-chg-otl .bit-chg-itl", "item-border-color"),
+        DataRow("text", ":where(.bit-chg-txt) .bit-chg-ihi", "item-background")]
     public void BitChoiceGroupShouldReadTheVariablesOfItsVariantAheadOfTheSharedOnes(string variant, string selector, string name)
     {
         // The variant's own rule, not the card rule the Outline and Fill variants share (".bit-chg-otl,\n.bit-chg-fil {").
@@ -75,6 +75,23 @@ public class BitChoiceGroupStylesheetTests
                               $"{selector} does not read --bit-ChoiceGroup-{variant}-{name} ahead of --bit-ChoiceGroup-{name}.");
         Assert.IsFalse(Regex.IsMatch(block, $@"var\(--bit-ChoiceGroup-(?!{variant}-)(?:fill|outline|text)-"),
                        $"{selector} reads the variables of another variant.");
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldResolveItsCardSurfaceOnTheCard()
+    {
+        // An item's Style and Styles.ItemContainer land on the item container around the card, so a public item
+        // variable set there reaches the card only while the card resolves it itself - a value worked out on the
+        // root would already be fixed by the time it inherits down to the card.
+        var stylesheet = ReadStylesheet();
+
+        foreach (var rule in SourceFiles.GetScssRules(stylesheet).Where(r => r.Header is ".bit-chg-otl" or ".bit-chg-fil" && r.Ancestors.Count == 0))
+        {
+            var block = SourceFiles.GetScssDeclarations(stylesheet[rule.Index..], $"{rule.Header} {{");
+
+            StringAssert.DoesNotMatch(block, new Regex(@"--bit-chg-card-[a-z-]+\s*:"),
+                                      $"{rule.Header} resolves the card surface on the root, out of reach of an item's Style.");
+        }
     }
 
     [TestMethod]

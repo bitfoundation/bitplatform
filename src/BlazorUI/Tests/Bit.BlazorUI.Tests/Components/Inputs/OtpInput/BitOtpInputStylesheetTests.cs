@@ -43,10 +43,13 @@ public partial class BitOtpInputStylesheetTests
     public void BitOtpInputShouldReadTheVariablesOfItsVariantAheadOfTheSharedOnes(string variant, string selector)
     {
         var stylesheet = SourceFiles.StripScssComments(ReadStylesheet());
-        var block = SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
+        var block = SourceFiles.GetScssBlock(stylesheet, $"\n{selector} .bit-otp-inp {{");
 
         // Each variant resolves the colors of its boxes from a tier of its own ahead of every shared variable, so a theme
-        // can set one look apart from the other two on :root - and the box reads only what its variant resolved.
+        // can set one look apart from the other two on :root - and the box reads only what its variant resolved. It
+        // resolves them on the box rather than on the root, so a public variable set on Styles.Input, Styles.Filled or
+        // Styles.InputsWrapper still reaches it.
+        Assert.IsFalse(stylesheet.Contains($"\n{selector} {{"), $"{selector} resolves the box colors on the root, out of reach of a box's own style.");
         foreach (var name in new[] { "background", "hover-background", "filled-background", "border-color", "hover-border-color", "filled-border-color" })
         {
             StringAssert.Contains(block, $"var(--bit-OtpInput-{variant}-{name}, var(--bit-OtpInput-{name}, ",

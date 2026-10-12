@@ -328,8 +328,11 @@ $tgb-private-properties: clr-txt, clr, clr-hover, clr-active, clr-focus, clr-dar
 // Each variant also sets --bit-tgb-fg, the foreground FixedColor pins: the role's contrasting color, which every
 // variant and every state is readable against, rather than the resting color of the Outline and Text variants,
 // which on a background role is the background itself. The checked state retargets it, and the pin at the end of the
-// file reads it off the element. An explicit Color is read first, then the variant's variable and the shared one,
-// then the primary role an unset Color stands for.
+// file reads it off the element. An explicit Color is read first, then the variables of the variant's on-color and the
+// shared ones, then the primary role an unset Color stands for: a Fill toggle button's resting foreground, which is
+// the on-color already, and an Outline or Text one's hover foreground - never its resting one
+// (--bit-ToggleButton-outline-color / -text-color), which is the role's own color and would vanish on the role fill
+// the hover paints.
 .bit-tgb-fil {
     --bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-fill-color, var(--bit-ToggleButton-color, #{$clr-pri-text})));
     color: var(--bit-tgb-sfg, var(--bit-tgb-fg));
@@ -365,7 +368,7 @@ $tgb-private-properties: clr-txt, clr, clr-hover, clr-active, clr-focus, clr-dar
 }
 
 .bit-tgb-otl {
-    --bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-outline-color, var(--bit-ToggleButton-color, #{$clr-pri-text})));
+    --bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-outline-hover-color, var(--bit-ToggleButton-hover-color, #{$clr-pri-text})));
     color: var(--bit-tgb-sfg, var(--bit-tgb-clr, var(--bit-ToggleButton-outline-color, var(--bit-ToggleButton-color, #{$clr-pri}))));
     border-color: var(--bit-tgb-sbr, var(--bit-tgb-clr, var(--bit-ToggleButton-outline-border-color, var(--bit-ToggleButton-border-color, #{$clr-pri}))));
     background-color: var(--bit-tgb-sbg, var(--bit-ToggleButton-outline-background, var(--bit-ToggleButton-background, transparent)));
@@ -396,7 +399,7 @@ $tgb-private-properties: clr-txt, clr, clr-hover, clr-active, clr-focus, clr-dar
 }
 
 .bit-tgb-txt {
-    --bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-text-color, var(--bit-ToggleButton-color, #{$clr-pri-text})));
+    --bit-tgb-fg: var(--bit-tgb-clr-txt, var(--bit-ToggleButton-text-hover-color, var(--bit-ToggleButton-hover-color, #{$clr-pri-text})));
     color: var(--bit-tgb-sfg, var(--bit-tgb-clr, var(--bit-ToggleButton-text-color, var(--bit-ToggleButton-color, #{$clr-pri}))));
     border-color: var(--bit-tgb-sbr, var(--bit-ToggleButton-text-border-color, var(--bit-ToggleButton-border-color, transparent)));
     background-color: var(--bit-tgb-sbg, var(--bit-ToggleButton-text-background, var(--bit-ToggleButton-background, transparent)));

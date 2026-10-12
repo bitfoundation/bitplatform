@@ -90,9 +90,9 @@ public class BitTimelineStylesheetTests : BunitTestContext
         StringAssert.Contains(fill, "var(--bit-tln-clr-fg, var(--bit-Timeline-fill-icon-color, var(--bit-Timeline-icon-color, #{$clr-pri-text})))");
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-tln-otl > .bit-tln-itm {"), "var(--bit-Timeline-outline-dot-background, var(--bit-Timeline-dot-background, transparent)),");
 
-        // Left in front: the legacy line color behind the public one, and the plate of a Text dot, which no Color paints.
+        // Left in front: the legacy line color behind the public one.
         var publicFirst = Regex.Matches(stylesheet, @"var\(--bit-Timeline-[a-z-]+, var\(--bit-tln-([a-z-]+)").Select(m => m.Groups[1].Value).Distinct().Order().ToArray();
-        CollectionAssert.AreEqual(new[] { "dot-ico-clr-bg", "dvd-clr" }, publicFirst);
+        CollectionAssert.AreEqual(new[] { "dvd-clr" }, publicFirst);
     }
 
     [TestMethod,
@@ -129,10 +129,17 @@ public class BitTimelineStylesheetTests : BunitTestContext
     {
         var plate = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-tln-txt .bit-tln-ico,");
 
-        // The plate copies the corners of the dot it sits in, so the radius stays one variable for every variant, and
-        // is filled by the dot background of the Text variant first.
+        // The plate copies the corners of the dot it sits in, so the radius stays one variable for every variant, and is
+        // filled with what the item's own variant resolved: the rule also matches the icons of the items of a Text
+        // timeline that override their variant, which must not be handed the Text tier. Only the Text variant paints it.
         StringAssert.Contains(plate, "border-radius: inherit;");
-        StringAssert.Contains(plate, "background-color: var(--bit-Timeline-text-dot-background, var(--bit-Timeline-dot-background, var(--bit-tln-dot-ico-clr-bg)));");
+        StringAssert.Contains(plate, "background-color: var(--bit-tln-dot-ico-clr-bg);");
+        Assert.IsFalse(Regex.IsMatch(plate, @"var\(--bit-Timeline-"), "The plate reads a public variable past the variant of its item.");
+
+        var stylesheet = ReadStylesheet();
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "@mixin timeline-variant-text("), "--bit-tln-dot-ico-clr-bg: #{$dot-background};");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "@mixin timeline-variant-fill("), "--bit-tln-dot-ico-clr-bg: transparent;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "@mixin timeline-variant-outline("), "--bit-tln-dot-ico-clr-bg: transparent;");
     }
 
     [TestMethod]
