@@ -126,6 +126,10 @@
                 <BitText>
                     <code>bit-theme-view-transition</code> is purely presentational: when present, every theme swap (from <code>SetThemeAsync</code>, <code>ToggleDarkLightAsync</code>, the JS API, or an OS appearance change while following the system) runs inside <code>document.startViewTransition</code>, so the page cross-fades to the new palette instead of hard-swapping. It is checked live on every change - add or remove it at runtime to turn the effect on or off - and it is skipped automatically (falling back to an instant swap) in browsers without the View Transitions API and for users with <code>prefers-reduced-motion: reduce</code>. Style the animation itself in CSS via the standard <code>::view-transition-old(root)</code> / <code>::view-transition-new(root)</code> pseudo-elements (e.g. a circular reveal instead of the default cross-fade).
                 </BitText>
+
+                <BitText>
+                    With the transition on, the new theme is written onto the page a frame after the call, once the browser has captured the old frame. <code>GetCurrentThemeAsync</code> / <code>Theme.get()</code> return the new theme straight away, and the change is announced (<code>onChange</code>, <code>bit-theme-change</code>, <code>BitThemeNotifications.ThemeChanged</code>) once it is written, so a handler that reads the page - <code>getComputedStyle</code>, the <code>bit-theme</code> attribute - finds the new palette there.
+                </BitText>
             </DocSection>
 
             <DocSection Level="3" Id="theme-color-meta" Title="Browser chrome (PWA status bar)">
@@ -1597,7 +1601,7 @@ BitBlazorUI.Theme.clearAppliedTheme(document.body);</CodeBox>
             <BitText><b>onChange / isSystemDark / getPersisted</b> - observation helpers.</BitText>
 
             <CodeBox Language="js">// For the browser chrome itself, prefer bit-theme-color-meta (see "Browser chrome" below) -
-// it reads the live palette, which a callback cannot do while a view transition is pending.
+// it also follows an accent or a swapped stylesheet, which announce no theme change.
 BitBlazorUI.Theme.onChange((newTheme, oldTheme) => {
     document.body.classList.toggle('is-dark', newTheme.includes('dark'));
 });

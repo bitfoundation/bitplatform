@@ -79,6 +79,20 @@ namespace BitBlazorUI {
         internalOsRefresh?: boolean;
     }
 
+    /** One write of the bit-theme attribute, and the changes it announces once it has landed (see swapThemeAttribute). */
+    interface ThemeSwap {
+        /** The theme the swap writes. */
+        theme: string;
+        /** The attribute the swap found; a different one when its write is due means a write from outside landed first. */
+        from: string;
+        /** The changes announced once the write lands, as [newTheme, oldTheme], those of the swaps it superseded first. */
+        changes: [string, string][];
+        /** The View Transition the write waits on, null when it is written at once. */
+        transition: { skipTransition?: () => void } | null;
+        /** Set once the swap has written and announced, or has been superseded by a later one. */
+        done: boolean;
+    }
+
     export class Theme {
         private static SYSTEM_THEME = 'system';
         private static THEME_ATTRIBUTE = ATTR_THEME;
@@ -123,13 +137,19 @@ namespace BitBlazorUI {
             // set() (re-persist + re-dispatch) rippling across 3+ tabs. "system" is always processed
             // because the OS scheme may differ from the currently painted attribute.
             if (next !== Theme.SYSTEM_THEME &&
-                Theme.getActualTheme(next) === (document.documentElement.getAttribute(ATTR_THEME) || '')) {
+                Theme.getActualTheme(next) === Theme.getAppliedTheme()) {
                 return;
             }
             // Mirror the other tab's intent (including a switch to "system"); set() resolves and
             // re-cascades. storage events never fire in the tab that wrote, so this cannot loop.
             Theme.set(next);
         };
+
+        // With bit-theme-view-transition the bit-theme attribute is written by the View Transition's
+        // callback, a frame after the swap that asked for it (see swapThemeAttribute). This is the swap
+        // still waiting on it (null when none is), whose theme every read of the applied theme sees
+        // through getAppliedTheme().
+        private static _pendingSwap: ThemeSwap | null = null;
 
         private static _dotnetNotifier: DotNetObject | null = null;
 
@@ -262,11 +282,13 @@ namespace BitBlazorUI {
 
         public static get() {
             // Report the theme that is actually applied: the bit-theme attribute is the source of
-            // truth (it is what is painted, and set()/OS-follow keep _currentTheme in sync with it).
+            // truth (it is what is painted, and set()/OS-follow keep _currentTheme in sync with it),
+            // or the theme a pending View Transition is about to write there, so a read right after a
+            // set() returns the new theme rather than the outgoing one (getAppliedTheme).
             // The persisted *preference* is a separate concept exposed via getPersisted(); the two
             // can legitimately diverge - e.g. runtime OS-follow updates the attribute without
             // rewriting storage - so get() must not substitute the persisted value here.
-            Theme._currentTheme = document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) || '';
+            Theme._currentTheme = Theme.getAppliedTheme();
 
             return Theme._currentTheme;
         }
@@ -310,13 +332,17 @@ namespace BitBlazorUI {
                 Theme.writePreferenceCookie(themeName);
             }
 
-            const oldTheme = document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) || '';
+            const oldTheme = Theme.getAppliedTheme();
 
-            // Never animate the startup application (there is nothing meaningful to transition at
-            // boot, and a transition would add a frame capture to every page load).
-            Theme.swapThemeAttribute(Theme._currentTheme, /* skipTransition: */ fromInit);
-
-            Theme.dispatchThemeChange(Theme._currentTheme, oldTheme);
+            // Re-setting the theme the page is already on - painted, or on its way in through a
+            // pending View Transition (a double click, or SetThemeAsync right after a JS set) - is no
+            // change: nothing is written or announced, and a pending transition runs on undisturbed.
+            // The startup application is always written and announced, as the first word on it.
+            if (fromInit || Theme._currentTheme !== oldTheme) {
+                // Never animate the startup application (there is nothing meaningful to transition at
+                // boot, and a transition would add a frame capture to every page load).
+                Theme.swapThemeAttribute(Theme._currentTheme, oldTheme, /* skipTransition: */ fromInit);
+            }
 
             Theme.syncSystemThemeListener();
 
@@ -324,15 +350,14 @@ namespace BitBlazorUI {
         }
 
         public static toggleDarkLight() {
-            // Re-sync from the bit-theme attribute first (the source of truth, same as get()) so a
-            // toggle issued after an external attribute write - a non-bit script or dev tooling
-            // setting bit-theme directly - acts on what is actually painted instead of a stale
-            // _currentTheme. Read the attribute directly (not via get(), which would overwrite
-            // _currentTheme before the fallback could use it) and fall back to _currentTheme when
-            // the attribute is absent - which also bridges the one-frame window in which a pending
-            // view transition has not applied the new attribute yet, since set() updates
-            // _currentTheme synchronously.
-            const current = document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) || Theme._currentTheme;
+            // Re-sync from the applied theme first (the source of truth, same as get()) so a toggle
+            // issued after an external attribute write - a non-bit script or dev tooling setting
+            // bit-theme directly - acts on what is actually painted instead of a stale _currentTheme,
+            // and a toggle issued while a View Transition is still to write the previous one acts on
+            // that previous one, so two toggles in a row end where they started. Read it directly (not
+            // via get(), which would overwrite _currentTheme before the fallback could use it) and fall
+            // back to _currentTheme when the attribute is absent.
+            const current = Theme.getAppliedTheme() || Theme._currentTheme;
 
             // Toggle relative to the configured dark theme: when the dark theme is active switch to
             // light, otherwise switch to dark. Anchoring on the dark theme (rather than the light
@@ -528,13 +553,12 @@ namespace BitBlazorUI {
             if (!Theme.shouldFollowSystem()) return;
 
             const resolved = Theme.isSystemDark() ? Theme._darkTheme : Theme._lightTheme;
-            const oldTheme = document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) || '';
+            const oldTheme = Theme.getAppliedTheme();
 
             if (resolved === oldTheme) return;
 
             Theme._currentTheme = resolved;
-            Theme.swapThemeAttribute(resolved);
-            Theme.dispatchThemeChange(resolved, oldTheme);
+            Theme.swapThemeAttribute(resolved, oldTheme);
         }
 
         /**
@@ -544,33 +568,110 @@ namespace BitBlazorUI {
          * toggled at runtime). The transition is skipped - falling back to a plain synchronous
          * attribute write - when the API is unavailable or the user prefers reduced motion.
          *
+         * The change is announced once the attribute is written, so a handler of onChange, of
+         * bit-theme-change or of the .NET ThemeChanged that reads the page (getComputedStyle, the
+         * attribute) finds the new theme on it, as Theme.get() reports it.
+         *
          * Note: startViewTransition invokes its callback asynchronously (after capturing the old
-         * frame), so with the transition active the attribute updates a frame later than the
-         * Theme.set call. _currentTheme is always updated synchronously by the callers, and the
-         * change notifications carry the explicit old/new names, so observers are unaffected.
+         * frame), so with the transition active the attribute is written, and the change announced,
+         * a frame later than the Theme.set call. Until then the swap is _pendingSwap, whose theme
+         * every read of the applied theme sees through getAppliedTheme(), and a later swap
+         * supersedes it: its callback writes nothing, and the later swap announces its change ahead
+         * of its own. Whichever write lands first, the attribute ends on the theme asked for last -
+         * a write from outside the library included.
          */
-        private static swapThemeAttribute(themeName: string, skipTransition?: boolean) {
-            const apply = () => document.documentElement.setAttribute(Theme.THEME_ATTRIBUTE, themeName);
+        private static swapThemeAttribute(themeName: string, oldTheme: string, skipTransition?: boolean) {
+            const root = document.documentElement;
+            const previous = Theme._pendingSwap;
+            const swap: ThemeSwap = {
+                theme: themeName,
+                from: root.getAttribute(Theme.THEME_ATTRIBUTE) || '',
+                changes: [...(previous ? previous.changes : []), [themeName, oldTheme]],
+                transition: null,
+                done: false,
+            };
 
-            // A no-op swap (re-setting the already-applied theme, e.g. pinning the currently
-            // resolved preset) must not run a transition: startViewTransition captures and
-            // cross-fades even when the callback changes nothing visible.
-            if (skipTransition || document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) === themeName) {
+            if (previous) {
+                previous.done = true;
+            }
+            Theme._pendingSwap = null;
+
+            // Runs once, whichever of the transition's callback and the fallbacks below comes first.
+            const apply = () => {
+                if (swap.done) return;
+                swap.done = true;
+                if (Theme._pendingSwap === swap) {
+                    Theme._pendingSwap = null;
+                }
+                // A write from outside the library (a script, dev tooling) that landed while the swap
+                // was waiting was asked for after it, so it stays; the change is still announced.
+                if ((root.getAttribute(Theme.THEME_ATTRIBUTE) || '') === swap.from) {
+                    root.setAttribute(Theme.THEME_ATTRIBUTE, themeName);
+                }
+                swap.changes.forEach(([newTheme, changedFrom]) => Theme.dispatchThemeChange(newTheme, changedFrom));
+            };
+            // A transition still waiting on the superseded swap would now only cross-fade the page
+            // into the frame a direct write already shows, so it is skipped; its callback still
+            // runs, and writes nothing.
+            const applyNow = () => {
                 apply();
+                try {
+                    previous?.transition?.skipTransition?.();
+                } catch { /* the transition has already ended; nothing to skip */ }
+            };
+
+            // A no-op swap (re-setting the already-painted theme at startup, or going back to it
+            // before a pending transition has written the other one) must not run a transition:
+            // startViewTransition captures and cross-fades even when the callback changes nothing
+            // visible. Compared with the attribute itself rather than getAppliedTheme(), since the
+            // attribute is what a transition would capture.
+            if (skipTransition || swap.from === themeName) {
+                applyNow();
                 return;
             }
 
             try {
-                const doc = document as Document & { startViewTransition?: (callback: () => void) => unknown };
-                if (document.documentElement.hasAttribute(ATTR_THEME_VIEW_TRANSITION) &&
+                type Transition = { skipTransition?: () => void, updateCallbackDone?: Promise<unknown> };
+                const doc = document as Document & { startViewTransition?: (callback: () => void) => Transition | undefined };
+                if (root.hasAttribute(ATTR_THEME_VIEW_TRANSITION) &&
                     typeof doc.startViewTransition === 'function' &&
                     !(typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches)) {
-                    doc.startViewTransition(apply);
+                    // Recorded before the call, so a callback run synchronously (a polyfill) finds
+                    // the swap it settles; a throw falls through to the direct write below. A
+                    // transition started while another is waiting skips that one (the browser does).
+                    Theme._pendingSwap = swap;
+                    const transition = doc.startViewTransition(apply) || null;
+                    swap.transition = transition;
+
+                    // The browser settles updateCallbackDone once the callback has run, so a swap
+                    // still unwritten then had its callback dropped (an app's wrapper of
+                    // startViewTransition), and is written there. A call returning nothing to track
+                    // the callback by is written at once rather than left waiting for good.
+                    const callbackDone = transition?.updateCallbackDone;
+                    if (callbackDone && typeof callbackDone.then === 'function') {
+                        callbackDone.then(apply, apply);
+                    } else {
+                        apply();
+                    }
                     return;
                 }
             } catch { /* View Transition unavailable or failed to start; fall through to the direct swap */ }
 
-            apply();
+            applyNow();
+        }
+
+        /**
+         * The theme the page is on: the one a pending View Transition is still to write onto the
+         * bit-theme attribute, else the attribute itself. Every read of the applied theme goes
+         * through here, so one made between a swap and its transition's callback sees the theme on
+         * its way in rather than the outgoing one - unless a write from outside the library has
+         * landed on the attribute since, which is then the theme the page is on.
+         */
+        private static getAppliedTheme() {
+            const painted = document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) || '';
+            const pending = Theme._pendingSwap;
+
+            return pending && pending.from === painted ? pending.theme : painted;
         }
 
         private static dispatchThemeChange(newTheme: string, oldTheme: string) {
@@ -620,10 +721,9 @@ namespace BitBlazorUI {
      * their own surfaces, an app's stylesheet may re-declare the tokens, and an accent (see
      * BitAccentColor in Bit.BlazorUI.Extras) re-derives the whole palette - surfaces included - into
      * an applyTheme overlay on `<body>`. It is read off `<body>` for that last reason, and on a
-     * schedule of its own rather than from the theme-change notification: with
-     * bit-theme-view-transition the bit-theme attribute is only written a frame AFTER the change is
-     * announced, so a listener would still see the outgoing palette. What it watches instead is the
-     * DOM the color actually comes from.
+     * schedule of its own rather than from the theme-change notification: an accent, an applyTheme
+     * overlay and a swapped stylesheet all move the palette without any theme change being
+     * announced. What it watches instead is the DOM the color actually comes from.
      */
     export class ThemeColorMeta {
         private static _variable: string | null = null;
