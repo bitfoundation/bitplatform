@@ -1,0 +1,30 @@
+@page "/regression/theme-switcher"
+
+<PageTitle>Theme Switcher Regression</PageTitle>
+
+@* BitThemeSwitcher against the real theme script (BitThemeSwitcherBrowserTests): the document's theme setup -
+   the pair the page declares, persistence - comes from this page's query, which App.razor reads into the root
+   attributes and the first-paint script (light, dark, default, persist=1, cookie=1), so a reload is a real
+   return visit. The switcher reports what it applied, and the page counts the theme changes the script raised. *@
+<div id="test-controls" style="padding: 20px;">
+    <h3>Theme Switcher Regression</h3>
+    <div id="metrics" style="font-family: monospace;">
+        <p>Changed: <span id="v-changed">@_changed</span></p>
+        <p>Status: <span id="status">@_status</span></p>
+    </div>
+</div>
+
+<BitThemeSwitcher OnChange="theme => _changed = theme" />
+
+@code {
+    private string? _changed;
+    private string _status = "Loading";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+}

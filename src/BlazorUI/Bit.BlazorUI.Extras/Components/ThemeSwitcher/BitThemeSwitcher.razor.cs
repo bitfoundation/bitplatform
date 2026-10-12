@@ -95,9 +95,18 @@ public partial class BitThemeSwitcher : BitComponentBase
     /// <see cref="BitThemeCookie.PreferenceCookieName"/> cookie, which the client mirrors the choice into
     /// when the host page opts in with <see cref="BitThemeAttributeNames.ThemePersistCookie"/>) so
     /// prerendered markup shows the visitor's own design system instead of showing the first item until
-    /// hydration.
+    /// hydration. A visitor who follows the OS has <c>system</c> stored there, which names no design
+    /// system - <see cref="InitialThemePair"/> does.
     /// </summary>
     [Parameter] public string? InitialTheme { get; set; }
+
+    /// <summary>
+    /// The light / dark pair to reflect until the applied theme can be read back, for when
+    /// <see cref="InitialTheme"/> names no design system (a visitor following the OS). Hand it the
+    /// <see cref="BitThemeCookie.PairCookieName"/> cookie, which the client mirrors a picked design system
+    /// into beside the preference cookie; anything but a <c>"&lt;light&gt; &lt;dark&gt;"</c> pair is ignored.
+    /// </summary>
+    [Parameter] public string? InitialThemePair { get; set; }
 
     /// <summary>
     /// The icon of the button that switches to the light scheme - the one shown while the dark scheme is
@@ -157,7 +166,7 @@ public partial class BitThemeSwitcher : BitComponentBase
         })];
 
         // Only until the first interactive render, which reads the applied theme back and takes over.
-        _designSystem ??= ResolveDesignSystem(InitialTheme);
+        _designSystem ??= (FindDesignSystem(InitialTheme) ?? FindDesignSystem(GetInitialPairLightTheme()) ?? _designSystems.FirstOrDefault())?.Value;
 
         base.OnParametersSet();
     }
@@ -197,6 +206,16 @@ public partial class BitThemeSwitcher : BitComponentBase
 
 
 
+    /// <summary>The light theme of <see cref="InitialThemePair"/>, URL-encoded or not, or null when it is no pair.</summary>
+    private string? GetInitialPairLightTheme()
+    {
+        if (InitialThemePair.HasValue() is false) return null;
+
+        var parts = Uri.UnescapeDataString(InitialThemePair!).Split(' ');
+
+        return parts.Length == 2 && parts[0].HasValue() && parts[1].HasValue() ? parts[0] : null;
+    }
+
     /// <summary>The theme name this design system's light scheme is spelled with.</summary>
     private static string GetLightTheme(BitThemeSwitcherItem item) => item.LightTheme ?? $"{item.Value}-light";
 
@@ -225,6 +244,25 @@ public partial class BitThemeSwitcher : BitComponentBase
             string.Equals(theme, GetLightTheme(item), StringComparison.OrdinalIgnoreCase) ||
             string.Equals(theme, GetDarkTheme(item), StringComparison.OrdinalIgnoreCase) ||
             theme!.StartsWith($"{item.Value}-", StringComparison.OrdinalIgnoreCase));
+    }
+
+    /// <summary>
+    /// The light / dark pair a design system stands for on this page: the active pair when the design system
+    /// claims both its themes (it is already the one in use - the visitor's, or one a page retargets within
+    /// the design system, like <c>fluent-light</c> / <c>fluent-dark</c> for Fluent, which the page stays in
+    /// charge of), then the pair the page declares on the same terms, and the item's own pair otherwise.
+    /// </summary>
+    private (string Light, string Dark) ResolvePair(BitThemeSwitcherItem item, BitThemeState? state)
+    {
+        if (state is not null)
+        {
+            if (Claims(state.Light, state.Dark)) return (state.Light, state.Dark);
+            if (Claims(state.ConfiguredLight, state.ConfiguredDark)) return (state.ConfiguredLight, state.ConfiguredDark);
+        }
+
+        return (GetLightTheme(item), GetDarkTheme(item));
+
+        bool Claims(string light, string dark) => FindDesignSystem(light) == item && FindDesignSystem(dark) == item;
     }
 
     /// <summary>
@@ -283,20 +321,23 @@ public partial class BitThemeSwitcher : BitComponentBase
 
         // The design system is the light / dark pair, so it is switched as one: the scheme - the half of
         // the theme this control does not decide - is carried over by the theme script, which keeps the
-        // visitor following the OS when they were, and the toggle and the OS resolve to the new pair from
-        // here on, this visit and the next.
-        var applied = await _themeManager.SetThemePairAsync(GetLightTheme(item), GetDarkTheme(item));
+        // visitor following the OS when they were and otherwise always lands on one of the pair's two
+        // themes, and the toggle and the OS resolve to the new pair from here on, this visit and the next.
+        var (light, dark) = ResolvePair(item, await _themeManager.GetThemeStateAsync());
+
+        var applied = await _themeManager.SetThemePairAsync(light, dark);
 
         _designSystem = item.Value;
 
-        await OnChange.InvokeAsync(applied ?? GetLightTheme(item));
+        await OnChange.InvokeAsync(applied ?? light);
     }
 
     private async Task HandleOnToggleColorScheme()
     {
         if (Disabled) return;
 
-        var current = await _themeManager.GetCurrentThemeAsync();
+        var state = await _themeManager.GetThemeStateAsync();
+        var current = state?.Theme;
 
         // The picker's own selection is the fallback rather than the first design system: it is what the
         // visitor is looking at, and it is all there is to go on when the applied theme cannot be read back.
@@ -305,21 +346,13 @@ public partial class BitThemeSwitcher : BitComponentBase
                 ?? _designSystems.FirstOrDefault();
         if (item is null) return;
 
-        var light = GetLightTheme(item);
-        var dark = GetDarkTheme(item);
+        // The toggle flips within the pair of the design system being worn, whatever pair the page started
+        // on: a page that retargets the pair within that design system stays in charge of it (ResolvePair),
+        // and any other pair is made the active one in the same call, so there is one swap to animate.
+        var (light, dark) = ResolvePair(item, state);
         var target = IsDarkTheme(current) ? light : dark;
 
-        // The core light/dark pair is the one the JS toggle flips between by default, and a host page can
-        // retarget it with the bit-theme-light / bit-theme-dark attributes, so it is left to the page: such a
-        // host stays in charge of what "light" and "dark" mean. Every other pair names both of its themes
-        // outright, and is made the active one first - a no-op once it is - so the toggle flips within it
-        // whatever pair the page started on.
-        if (light != BitThemePresets.Light || dark != BitThemePresets.Dark)
-        {
-            await _themeManager.SetThemePairAsync(light, dark);
-        }
-
-        var applied = await _themeManager.ToggleDarkLightAsync();
+        var applied = await _themeManager.ToggleDarkLightWithinAsync(light, dark);
 
         // Nothing to re-render for: which of the two buttons is visible follows the document's own bit-theme
         // attribute in CSS, and the design system is unchanged by definition.

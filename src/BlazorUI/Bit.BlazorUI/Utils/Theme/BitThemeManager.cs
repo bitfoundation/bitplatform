@@ -126,7 +126,9 @@ public class BitThemeManager : IAsyncDisposable
     /// <see cref="BitThemeAttributeNames.ThemeDark"/> and, with persistence on, stored under
     /// <see cref="BitThemeAttributeNames.ThemePairStorageKey"/> (and mirrored into the
     /// <see cref="BitThemeCookie.PairCookieName"/> cookie with cookie persistence), so the next visit
-    /// restores it ahead of the pair the page declares. Switching back to the declared pair removes it.
+    /// restores it ahead of the pair the page declares. Switching back to the declared pair removes it
+    /// (leaving only the <c>light</c> / <c>dark</c> marker of a pinned preference), so a later change of
+    /// the page's own pair reaches the visitor again.
     /// </remarks>
     /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>
     public async ValueTask<string?> SetThemePairAsync(string lightTheme, string darkTheme)
@@ -142,6 +144,36 @@ public class BitThemeManager : IAsyncDisposable
     public ValueTask<string?> SetThemePairAsync(BitThemeName lightTheme, BitThemeName darkTheme)
     {
         return SetThemePairAsync(lightTheme.Value, darkTheme.Value);
+    }
+
+    /// <summary>
+    /// The applied theme, the active light / dark pair and the pair the page declares, read in one round
+    /// trip - what <c>BitThemeSwitcher</c> decides from which pair a design system stands for. Returns
+    /// <see langword="null"/> when JS interop is unavailable (e.g. prerendering / disconnected circuit).
+    /// </summary>
+    /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>
+    internal async ValueTask<BitThemeState?> GetThemeStateAsync()
+    {
+        await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
+        var state = await _js.BitThemeGetState();
+
+        return state is { Length: 5 } && state[1].HasValue() && state[2].HasValue() && state[3].HasValue() && state[4].HasValue()
+            ? new(state[0], state[1]!, state[2]!, state[3]!, state[4]!)
+            : null;
+    }
+
+    /// <summary>
+    /// Flips the scheme within the given pair, making it the active pair first when it is not (stored as
+    /// <see cref="SetThemePairAsync(string, string)"/> stores it) - one theme swap and one change
+    /// notification either way. Both names are normalized like <see cref="SetThemeAsync(string)"/>; a blank
+    /// one makes the call a no-op. Returns the applied theme, or <see langword="null"/> when JS interop is
+    /// unavailable.
+    /// </summary>
+    /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>
+    internal async ValueTask<string?> ToggleDarkLightWithinAsync(string lightTheme, string darkTheme)
+    {
+        await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
+        return await _js.BitThemeToggleDarkLightWithin(NormalizeThemeName(lightTheme), NormalizeThemeName(darkTheme));
     }
 
     /// <summary>Applies <paramref name="bitTheme"/> as CSS custom properties on <paramref name="element"/> (default: body), overriding stylesheet tokens for that subtree.</summary>

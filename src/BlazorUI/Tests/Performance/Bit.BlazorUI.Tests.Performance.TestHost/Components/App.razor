@@ -1,10 +1,16 @@
 ﻿@using Microsoft.AspNetCore.Components.Web
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" @attributes="_themeAttributes">
 
 <head>
     <meta charset="utf-8" />
+    @if (_themeOptions is not null)
+    {
+        <BitThemeHead DefaultTheme="@_themeOptions.DefaultTheme"
+                      LightTheme="@_themeOptions.LightTheme"
+                      DarkTheme="@_themeOptions.DarkTheme" />
+    }
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
     <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
@@ -21,3 +27,28 @@
 </body>
 
 </html>
+
+@code {
+    [CascadingParameter] private HttpContext? HttpContext { get; set; }
+
+    private BitThemeSsrOptions? _themeOptions;
+    private IReadOnlyDictionary<string, object>? _themeAttributes;
+
+    protected override void OnInitialized()
+    {
+        // /regression/theme-switcher states the theme setup of its document in its query, as a host page states
+        // its own; every other page keeps the document bare.
+        if (HttpContext?.Request.Path.StartsWithSegments("/regression/theme-switcher") is not true) return;
+
+        var query = HttpContext.Request.Query;
+        _themeOptions = new BitThemeSsrOptions
+        {
+            DefaultTheme = query["default"],
+            LightTheme = query["light"],
+            DarkTheme = query["dark"],
+            Persist = query["persist"] == "1",
+            PersistCookie = query["cookie"] == "1",
+        };
+        _themeAttributes = BitThemeSsr.BuildRootThemeAttributeMap(null, _themeOptions);
+    }
+}

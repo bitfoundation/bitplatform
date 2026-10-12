@@ -128,27 +128,45 @@ public sealed class BitThemeSsrTests
         var baseResolved = body.IndexOf("var base=", StringComparison.Ordinal);
         Assert.IsTrue(pairRead < baseResolved, "The stored pair must be read before the base theme is resolved against it.");
 
-        Assert.IsTrue(body.Contains("if(s){cur=d?f(s):s;}", StringComparison.Ordinal),
-            "A stored preference must be fitted to the pair once a pair is named (#13686), and applied as it is otherwise.");
+        Assert.IsTrue(body.Contains("if(s){cur=s!=='system'&&sc?(sc==='dark'?dk:lt):s;}", StringComparison.Ordinal),
+            "A preference stored as a theme of the declared pair must follow the pair (#13686), and be applied as it is otherwise.");
     }
 
     [DataTestMethod]
-    [DataRow("fluent2-dark", "material-dark")]
-    [DataRow("fluent2-light", "material-light")]
-    [DataRow("dark", "material-dark")]
-    [DataRow("material-dark", "material-dark")]
-    [DataRow("high-contrast", "high-contrast")]
-    public void BuildRootThemeAttributeMapFitsAStoredThemeToTheDeclaredPair(string preference, string expected)
+    [DataRow("fluent2-dark", "dark", "material-dark")]
+    [DataRow("fluent2-light", "light", "material-light")]
+    [DataRow("dark", "dark", "material-dark")]
+    [DataRow("light", "light", "material-light")]
+    public void BuildRootThemeAttributeMapMovesAThemeStoredAsTheDeclaredPairsOntoTheNewPair(string preference, string scheme, string expected)
     {
-        // #13686: the app switched presets after the visitor stored a theme. The theme the server
-        // paints is the new pair's theme of the visitor's scheme; one of neither scheme is kept.
+        // #13686: the visitor pinned the dark (or light) theme of the page's pair, and the app has
+        // switched presets since. The scheme marker stored beside the preference says so, and the
+        // server paints the new pair's theme of the visitor's scheme.
         var map = BitThemeSsr.BuildRootThemeAttributeMap(preference, new BitThemeSsrOptions
         {
             LightTheme = "material-light",
             DarkTheme = "material-dark",
+            PersistedThemePair = scheme,
         });
 
         Assert.AreEqual(expected, map[BitThemeAttributeNames.Theme]);
+    }
+
+    [DataTestMethod]
+    [DataRow("material-dark")]
+    [DataRow("fluent2-dark")]
+    [DataRow("high-contrast")]
+    public void BuildRootThemeAttributeMapKeepsAStoredThemeWithNoSchemeMarker(string preference)
+    {
+        // A theme the app pinned outside the pair, or one stored before the marker existed (a design
+        // system picked with an earlier switcher), is a choice of its own: painted as it is.
+        var map = BitThemeSsr.BuildRootThemeAttributeMap(preference, new BitThemeSsrOptions
+        {
+            LightTheme = "fluent2-light",
+            DarkTheme = "fluent2-dark",
+        });
+
+        Assert.AreEqual(preference, map[BitThemeAttributeNames.Theme]);
     }
 
     [TestMethod]
@@ -160,8 +178,25 @@ public sealed class BitThemeSsrTests
         Assert.AreEqual("material-dark", map[BitThemeAttributeNames.Theme]);
     }
 
+    [TestMethod]
+    public void BuildRootThemeAttributeMapIgnoresAStoredPairThePageNowDeclares()
+    {
+        // The visitor's pair is the page's own now; the stored preference is painted as it is.
+        var map = BitThemeSsr.BuildRootThemeAttributeMap("material-dark", new BitThemeSsrOptions
+        {
+            DefaultTheme = "material-light",
+            LightTheme = "material-light",
+            DarkTheme = "material-dark",
+            PersistedThemePair = "material-light material-dark",
+        });
+
+        Assert.AreEqual("material-dark", map[BitThemeAttributeNames.Theme]);
+    }
+
     [DataTestMethod]
-    [DataRow("fluent2-dark", "cupertino-dark")]
+    // The client keeps a pinned preference in step with the pair it switches to, so one outside the
+    // stored pair is a theme the app pinned on purpose, and is painted as it is.
+    [DataRow("fluent2-dark", "fluent2-dark")]
     [DataRow("cupertino-light", "cupertino-light")]
     [DataRow(null, "cupertino-light")]
     public void BuildRootThemeAttributeMapResolvesAgainstTheStoredPair(string? preference, string expected)
@@ -188,7 +223,8 @@ public sealed class BitThemeSsrTests
     [DataRow("cupertino-light%20cupertino-dark")]
     public void BuildRootThemeAttributeMapReadsTheStoredPairDecodedOrNot(string storedPair)
     {
-        var map = BitThemeSsr.BuildRootThemeAttributeMap("dark", new BitThemeSsrOptions { PersistedThemePair = storedPair });
+        // The page's default names a theme of its pair, and the visitor's pair stands in for it.
+        var map = BitThemeSsr.BuildRootThemeAttributeMap(null, new BitThemeSsrOptions { DefaultTheme = "dark", PersistedThemePair = storedPair });
 
         Assert.AreEqual("cupertino-dark", map[BitThemeAttributeNames.Theme]);
     }

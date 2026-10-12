@@ -76,11 +76,11 @@ public partial class BitThemeHead : ComponentBase
     [Parameter] public string? DarkTheme { get; set; }
 
     /// <summary>
-    /// The pair the visitor switched to at runtime - the <see cref="BitThemeCookie.PairCookieName"/>
-    /// cookie of this request, the same value handed to
-    /// <see cref="BitThemeSsrOptions.PersistedThemePair"/>. A valid one stands in for
-    /// <see cref="LightTheme"/> / <see cref="DarkTheme"/>, so the tag is painted for the visitor's
-    /// design system; anything else is ignored.
+    /// The <see cref="BitThemeCookie.PairCookieName"/> cookie of this request, the same value handed to
+    /// <see cref="BitThemeSsrOptions.PersistedThemePair"/>. A pair the visitor switched to at runtime
+    /// stands in for <see cref="LightTheme"/> / <see cref="DarkTheme"/>, so the tag is painted for the
+    /// visitor's design system; a <c>light</c> / <c>dark</c> marker moves the stored preference onto the
+    /// declared pair, as it does there; anything else is ignored.
     /// </summary>
     [Parameter] public string? PersistedThemePair { get; set; }
 
@@ -136,12 +136,22 @@ public partial class BitThemeHead : ComponentBase
     // Normalized, as every other layer sees them: the attribute the client reads back carries the
     // normalized token, the maps are keyed by it, and IsDarkName tests it ordinally - so a pair
     // written as "Fluent2-Dark" has to become that token before it is looked up or classified. The
-    // visitor's stored pair stands in for the declared one, as it does for the client.
-    private BitThemeSsrPair Pair => BitThemeSsr.ResolveThemePair(LightTheme, DarkTheme, PersistedThemePair);
+    // visitor's stored pair stands in for the declared one, as it does for the client. Resolved once
+    // per parameter set (OnParametersSet), since every color lookup of a render reads it.
+    private BitThemeSsrPair _pair;
 
-    private string LightThemeName => Pair.Light;
+    private string LightThemeName => _pair.Light;
 
-    private string DarkThemeName => Pair.Dark;
+    private string DarkThemeName => _pair.Dark;
+
+
+
+    protected override void OnParametersSet()
+    {
+        _pair = BitThemeSsr.ResolveThemePair(LightTheme, DarkTheme, PersistedThemePair);
+
+        base.OnParametersSet();
+    }
 
     private string ResolveLightThemeColor() => ColorOf(LightThemeName, isDark: false);
 

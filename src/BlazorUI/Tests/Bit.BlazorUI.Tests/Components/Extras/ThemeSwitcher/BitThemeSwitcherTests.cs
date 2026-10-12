@@ -110,6 +110,42 @@ public class BitThemeSwitcherTests : BunitTestContext
         Assert.AreEqual(expected, SelectedDesignSystem(component));
     }
 
+    [DataTestMethod]
+    [DataRow("material-light material-dark", "Material")]
+    [DataRow("cupertino-light%20cupertino-dark", "Cupertino")]
+    // A scheme marker, or anything else that is no pair, names no design system.
+    [DataRow("dark", "Fluent")]
+    [DataRow("material-light", "Fluent")]
+    [DataRow(null, "Fluent")]
+    public void BitThemeSwitcherShouldSelectTheDesignSystemOfTheInitialPairWhenTheInitialThemeNamesNone(string? initialPair, string expected)
+    {
+        RegisterServices();
+
+        // A visitor who follows the OS has "system" stored as the preference; the pair cookie is what says
+        // which design system they picked.
+        var component = RenderComponent<BitThemeSwitcher>(parameters =>
+        {
+            parameters.Add(p => p.InitialTheme, BitThemePresets.System);
+            parameters.Add(p => p.InitialThemePair, initialPair);
+        });
+
+        Assert.AreEqual(expected, SelectedDesignSystem(component));
+    }
+
+    [TestMethod]
+    public void BitThemeSwitcherShouldPreferTheInitialThemeOverTheInitialPair()
+    {
+        RegisterServices();
+
+        var component = RenderComponent<BitThemeSwitcher>(parameters =>
+        {
+            parameters.Add(p => p.InitialTheme, BitThemePresets.CupertinoDark);
+            parameters.Add(p => p.InitialThemePair, "material-light material-dark");
+        });
+
+        Assert.AreEqual("Cupertino", SelectedDesignSystem(component));
+    }
+
     [TestMethod]
     public void BitThemeSwitcherShouldSwitchTheLightDarkPairWhenADesignSystemIsPicked()
     {
@@ -135,11 +171,30 @@ public class BitThemeSwitcherTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitThemeSwitcherShouldPickThePairThePageRetargetsWithinTheDesignSystem()
+    {
+        RegisterServices();
+        // The page declares fluent-light / fluent-dark - Fluent, spelled its own way - and the visitor is on Fluent 2.
+        SetupState(BitThemePresets.Fluent2Dark, BitThemePresets.Fluent2Light, BitThemePresets.Fluent2Dark, BitThemePresets.FluentLight, BitThemePresets.FluentDark);
+        Context.JSInterop.Setup<string?>("BitBlazorUI.Theme.get").SetResult(BitThemePresets.Fluent2Dark);
+
+        var component = RenderComponent<BitThemeSwitcher>();
+        Assert.AreEqual("Fluent 2", SelectedDesignSystem(component));
+
+        component.FindAll(".bit-drp-itm").Single(i => i.TextContent.Trim() == "Fluent").Click();
+
+        // Back to the page's own pair rather than the item's light / dark, so the page stays in charge of it.
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.Theme.setPair");
+        Assert.AreEqual(BitThemePresets.FluentLight, invocation.Arguments[0]);
+        Assert.AreEqual(BitThemePresets.FluentDark, invocation.Arguments[1]);
+    }
+
+    [TestMethod]
     public void BitThemeSwitcherShouldToggleWithinThePairOfTheAppliedDesignSystem()
     {
         RegisterServices();
-        Context.JSInterop.Setup<string?>("BitBlazorUI.Theme.get").SetResult(BitThemePresets.MaterialDark);
-        Context.JSInterop.Setup<string?>("BitBlazorUI.Theme.toggleDarkLight").SetResult(BitThemePresets.MaterialLight);
+        SetupState(BitThemePresets.MaterialDark, BitThemePresets.MaterialLight, BitThemePresets.MaterialDark, BitThemePresets.Fluent2Light, BitThemePresets.Fluent2Dark);
+        Context.JSInterop.Setup<string?>("BitBlazorUI.Theme.toggleDarkLightWithin", _ => true).SetResult(BitThemePresets.MaterialLight);
         string? changed = null;
 
         var component = RenderComponent<BitThemeSwitcher>(parameters =>
@@ -149,31 +204,55 @@ public class BitThemeSwitcherTests : BunitTestContext
 
         component.Find(".bit-ths-lgt").Click();
 
-        // The page may have started on another pair, so the applied design system's pair is made the active one
-        // before the toggle flips within it.
-        var pair = Context.JSInterop.VerifyInvoke("BitBlazorUI.Theme.setPair");
-        Assert.AreEqual(BitThemePresets.MaterialLight, pair.Arguments[0]);
-        Assert.AreEqual(BitThemePresets.MaterialDark, pair.Arguments[1]);
-        Context.JSInterop.VerifyInvoke("BitBlazorUI.Theme.toggleDarkLight");
+        // Material is the active pair already: one call flips within it, with no pair switch in front of it.
+        var toggle = Context.JSInterop.VerifyInvoke("BitBlazorUI.Theme.toggleDarkLightWithin");
+        Assert.AreEqual(BitThemePresets.MaterialLight, toggle.Arguments[0]);
+        Assert.AreEqual(BitThemePresets.MaterialDark, toggle.Arguments[1]);
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Theme.setPair");
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Theme.toggleDarkLight");
         Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Theme.set");
 
         Assert.AreEqual(BitThemePresets.MaterialLight, changed);
     }
 
     [TestMethod]
-    public void BitThemeSwitcherShouldLeaveTheCorePairToThePage()
+    public void BitThemeSwitcherShouldToggleWithinTheAppliedDesignSystemWhenAnotherPairIsActive()
     {
         RegisterServices();
-        Context.JSInterop.Setup<string?>("BitBlazorUI.Theme.get").SetResult(BitThemePresets.Dark);
+        // The page declares Fluent 2, and the app applied the core dark theme - Fluent's - on its own.
+        SetupState(BitThemePresets.Dark, BitThemePresets.Fluent2Light, BitThemePresets.Fluent2Dark, BitThemePresets.Fluent2Light, BitThemePresets.Fluent2Dark);
 
         var component = RenderComponent<BitThemeSwitcher>();
 
-        component.Find(".bit-ths-lgt").Click();
+        component.Find(".bit-ths-drk").Click();
 
-        // A host page can retarget the core pair with bit-theme-light / bit-theme-dark, so the toggle defers to
-        // whatever pair is active rather than imposing light / dark on it.
-        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Theme.setPair");
-        Context.JSInterop.VerifyInvoke("BitBlazorUI.Theme.toggleDarkLight");
+        // Within Fluent's pair, so "Turn on light" turns light on rather than jumping to Fluent 2's dark theme.
+        var toggle = Context.JSInterop.VerifyInvoke("BitBlazorUI.Theme.toggleDarkLightWithin");
+        Assert.AreEqual(BitThemePresets.Light, toggle.Arguments[0]);
+        Assert.AreEqual(BitThemePresets.Dark, toggle.Arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitThemeSwitcherShouldLeaveAPairThePageRetargetsToThePage()
+    {
+        RegisterServices();
+        SetupState(BitThemePresets.FluentDark, BitThemePresets.FluentLight, BitThemePresets.FluentDark, BitThemePresets.FluentLight, BitThemePresets.FluentDark);
+
+        var component = RenderComponent<BitThemeSwitcher>();
+
+        component.Find(".bit-ths-drk").Click();
+
+        // A host page can retarget Fluent's pair with bit-theme-light / bit-theme-dark, so the toggle flips within
+        // the page's pair rather than imposing the item's light / dark on it.
+        var toggle = Context.JSInterop.VerifyInvoke("BitBlazorUI.Theme.toggleDarkLightWithin");
+        Assert.AreEqual(BitThemePresets.FluentLight, toggle.Arguments[0]);
+        Assert.AreEqual(BitThemePresets.FluentDark, toggle.Arguments[1]);
+    }
+
+    private void SetupState(string theme, string light, string dark, string configuredLight, string configuredDark)
+    {
+        Context.JSInterop.Setup<string?[]?>("BitBlazorUI.Theme.getState")
+                         .SetResult([theme, light, dark, configuredLight, configuredDark]);
     }
 
     [TestMethod]

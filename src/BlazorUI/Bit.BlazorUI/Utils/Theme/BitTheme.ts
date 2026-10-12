@@ -51,8 +51,12 @@ namespace BitBlazorUI {
     // ~400 days, the upper bound modern browsers clamp persistent cookies to.
     const COOKIE_MAX_AGE_SECONDS = 34560000;
     // Kept aligned with BitThemeAttributeNames.ThemePairStorageKey and BitThemeCookie.PairCookieName in C#.
-    // The light / dark pair a visitor picked at runtime (setPair), stored as "<light> <dark>" beside the
-    // preference and mirrored into the cookie the same way, so the next visit - and the server - restore it.
+    // What the stored preference resolves against, kept beside it and mirrored into the cookie the same way,
+    // so the next visit - and the server - restore it: "<light> <dark>", the pair a visitor picked at runtime
+    // (setPair); or "light" / "dark", when the preference is that theme of the page's own pair, so a later
+    // change of that pair (the app switching presets) moves the preference with it. Absent otherwise, and a
+    // preference stored without it - a theme the app pinned outside the pair, or one stored before this
+    // key existed - is restored as it is.
     const PAIR_STORAGE_KEY = 'bit-theme-pair';
     const PAIR_COOKIE_NAME = 'bit-theme-pair';
 
@@ -97,10 +101,9 @@ namespace BitBlazorUI {
         private static _darkTheme: string = 'dark';
         private static _lightTheme: string = 'light';
         // The pair the page declares (bit-theme-light / bit-theme-dark, or init's lightTheme / darkTheme),
-        // and whether it declares one at all rather than leaving the core light / dark to stand in.
+        // the core light / dark when it declares none.
         private static _configuredDarkTheme: string = 'dark';
         private static _configuredLightTheme: string = 'light';
-        private static _configuredPairDeclared = false;
         // The pair setPair switched to, while it differs from the configured one; null otherwise.
         private static _runtimePair: [string, string] | null = null;
         private static _initOptions: ThemeOptions = {};
@@ -128,11 +131,16 @@ namespace BitBlazorUI {
         private static _onStorage = (e: StorageEvent) => {
             if (!Theme._persist) return;
             // The other tab switched the pair (setPair writes it before the preference, so this arrives
-            // first): adopt it without writing it back. A removed pair is the configured one again.
-            if (e.key === PAIR_STORAGE_KEY) {
-                const pair = Theme.parsePair(e.newValue);
-                Theme.applyPair(pair ? pair[0] : Theme._configuredLightTheme, pair ? pair[1] : Theme._configuredDarkTheme, false);
-                return;
+            // first), or storage was cleared (e.key null): adopt what is stored now without writing it
+            // back - the configured pair when no pair is (a scheme marker, or nothing at all).
+            if (e.key === PAIR_STORAGE_KEY || e.key === null) {
+                const pair = Theme.readPersistedPair().pair;
+                const light = pair ? pair[0] : Theme._configuredLightTheme;
+                const dark = pair ? pair[1] : Theme._configuredDarkTheme;
+                if (light !== Theme._lightTheme || dark !== Theme._darkTheme) {
+                    Theme.applyPair(light, dark, false);
+                }
+                if (e.key !== null) return;
             }
             // e.key is null when storage was cleared; otherwise it must be our key.
             if (e.key !== null && e.key !== Theme.THEME_STORAGE_KEY) return;
@@ -170,7 +178,6 @@ namespace BitBlazorUI {
 
             Theme._configuredDarkTheme = Theme._initOptions.darkTheme || 'dark';
             Theme._configuredLightTheme = Theme._initOptions.lightTheme || 'light';
-            Theme._configuredPairDeclared = !!(Theme._initOptions.darkTheme || Theme._initOptions.lightTheme);
 
             // Cookie mirroring is independent of localStorage persistence: an SSR app may want the
             // server to read the preference cookie without necessarily enabling localStorage.
@@ -185,8 +192,15 @@ namespace BitBlazorUI {
 
             // A pair the visitor picked (setPair) outranks the configured one: stored, it survives the
             // visit; in memory, a later init. Same precedence as the SSR inline script in BitThemeSsr.cs.
-            const pair = ((Theme._persist || Theme._persistCookie) ? Theme.getPersistedPair() : null) || Theme._runtimePair;
+            const stored = (Theme._persist || Theme._persistCookie) ? Theme.readPersistedPair() : { pair: null, scheme: null };
+            const pair = stored.pair || Theme._runtimePair;
             Theme._runtimePair = pair && !Theme.isConfiguredPair(pair[0], pair[1]) ? pair : null;
+            // A stored pair the page has since come to declare itself is no pick of the visitor's any
+            // more: it is dropped from storage too, so a later change of the page's pair reaches them
+            // again. set() below stores the scheme marker in its place when the preference is of the pair.
+            if (stored.pair && !Theme._runtimePair) {
+                Theme.writePersistedPair(null);
+            }
             Theme._lightTheme = Theme._runtimePair ? Theme._runtimePair[0] : Theme._configuredLightTheme;
             Theme._darkTheme = Theme._runtimePair ? Theme._runtimePair[1] : Theme._configuredDarkTheme;
             if (Theme._runtimePair) {
@@ -224,11 +238,13 @@ namespace BitBlazorUI {
             if (Theme._persist || Theme._persistCookie) {
                 const persisted = Theme.getPersisted();
                 if (persisted) {
-                    // A theme saved under another pair - the app has switched presets since, the stored
-                    // pair was taken back - is moved onto this one, keeping the visitor's light or dark
-                    // choice; set() below then stores what it was moved to. Only once a pair is named:
-                    // a page that never named one keeps whatever theme it was told to restore.
-                    theme = Theme.isPairDeclared() ? Theme.fitToPair(persisted) : persisted;
+                    // A preference stored as the light or dark theme of the page's pair follows that pair
+                    // - the app may have switched presets since - so the visitor keeps their light or dark
+                    // choice; set() below then stores what it resolved to. Anything else is restored as it
+                    // is: a theme pinned outside the pair is a choice of its own, kept on purpose.
+                    theme = persisted !== Theme.SYSTEM_THEME && stored.scheme
+                        ? (stored.scheme === 'dark' ? Theme._darkTheme : Theme._lightTheme)
+                        : persisted;
                     // An explicit persisted preset (anything other than "system") means the user pinned a theme;
                     // stop following the OS even when <html bit-theme-system> is present.
                     Theme._stopFollowingSystem = persisted !== Theme.SYSTEM_THEME;
@@ -373,6 +389,38 @@ namespace BitBlazorUI {
         }
 
         /**
+         * [applied theme, active light, active dark, declared light, declared dark], in one read - for
+         * BitThemeSwitcher (BitThemeManager.GetThemeStateAsync), which decides from all of them which pair
+         * a design system stands for. An array, so .NET reads it back without a type of its own to trim.
+         */
+        public static getState() {
+            return [Theme.get(), Theme._lightTheme, Theme._darkTheme, Theme._configuredLightTheme, Theme._configuredDarkTheme];
+        }
+
+        /**
+         * Flips the scheme within the given pair, making it the active pair first when it is not (stored
+         * as setPair stores it) - one swap and one change notification either way. A theme that is
+         * neither of the two flips by its name's "dark" ending, so a dark one always turns light.
+         * Blank names, or names containing whitespace, make it a no-op. Returns the applied theme.
+         */
+        public static toggleDarkLightWithin(lightTheme: string, darkTheme: string) {
+            const pair = Theme.validPair(lightTheme, darkTheme);
+            if (!pair) return Theme._currentTheme;
+
+            const [light, dark] = pair;
+            if (light !== Theme._lightTheme || dark !== Theme._darkTheme) {
+                Theme.switchPair(light, dark);
+                // Ahead of the preference set() stores, for the other tabs - as applyPair orders them.
+                Theme.writePersistedPair(Theme.pairStoreValue(null));
+            }
+
+            const current = document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) || Theme._currentTheme;
+            const isDark = current === dark || (current !== light && /dark$/.test(current));
+
+            return Theme.set(isDark ? light : dark);
+        }
+
+        /**
          * Changes which themes "light" and "dark" mean - what toggleDarkLight flips between and what
          * following the OS resolves to - for an app that lets its users pick a design system. The
          * visitor's own choice is kept: while following the OS the new pair's theme for the OS scheme is
@@ -382,47 +430,57 @@ namespace BitBlazorUI {
          * Blank names, or names containing whitespace, are ignored. Returns the applied theme.
          */
         public static setPair(lightTheme: string, darkTheme: string) {
-            const light = (lightTheme || '').trim();
-            const dark = (darkTheme || '').trim();
-            if (!light || !dark || /\s/.test(light) || /\s/.test(dark)) return Theme._currentTheme;
+            const pair = Theme.validPair(lightTheme, darkTheme);
+            if (!pair) return Theme._currentTheme;
 
-            Theme.applyPair(light, dark, true);
+            Theme.applyPair(pair[0], pair[1], true);
 
             return Theme._currentTheme;
+        }
+
+        /** Both names trimmed, or null when either is blank or contains whitespace. */
+        private static validPair(lightTheme: string, darkTheme: string): [string, string] | null {
+            const light = (lightTheme || '').trim();
+            const dark = (darkTheme || '').trim();
+            return !light || !dark || /\s/.test(light) || /\s/.test(dark) ? null : [light, dark];
+        }
+
+        /** Makes a pair the active one - in memory and on the attributes - without applying a theme. */
+        private static switchPair(light: string, dark: string) {
+            Theme._lightTheme = light;
+            Theme._darkTheme = dark;
+            Theme._runtimePair = Theme.isConfiguredPair(light, dark) ? null : [light, dark];
+            Theme.writePairAttributes();
         }
 
         private static applyPair(light: string, dark: string, persist: boolean) {
             const oldLight = Theme._lightTheme;
             const oldDark = Theme._darkTheme;
 
-            Theme._lightTheme = light;
-            Theme._darkTheme = dark;
-            Theme._runtimePair = Theme.isConfiguredPair(light, dark) ? null : [light, dark];
-            Theme.writePairAttributes();
+            Theme.switchPair(light, dark);
 
-            // Before the preference below, so another tab adopts the pair first and then reads the
-            // preference against it. The configured pair is stored as no pair at all, so the page's own
-            // pair - a preset change of the app - reaches this visitor again.
-            if (persist) {
-                Theme.writePersistedPair(Theme._runtimePair ? `${light} ${dark}` : null);
-            }
-
-            // Following the OS: "system" stays the preference, only what it resolves to changes.
-            if (Theme.shouldFollowSystem()) {
-                Theme.applyResolvedTheme(Theme.isSystemDark() ? dark : light);
-                return;
-            }
-
+            // Following the OS, "system" stays the preference and only what it resolves to changes.
+            // Otherwise the applied theme moves to its counterpart in the new pair. Either way the switch
+            // lands on one of the pair's two themes: one of neither (a high-contrast variant, an app's
+            // "brand") goes by its name's "dark" ending, as the stylesheets classify it, and else to light.
             const current = document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) || Theme._currentTheme;
-            const target = current === oldDark ? dark
-                : current === oldLight ? light
-                    : Theme.fitToPair(current);
+            const target = Theme.shouldFollowSystem() ? (Theme.isSystemDark() ? dark : light)
+                : current === oldDark ? dark
+                    : current === oldLight ? light
+                        : current === dark || current === light ? current
+                            : /dark$/.test(current) ? dark : light;
 
-            // The visitor's pinned theme moves with it, so the next visit restores the same scheme.
             if (persist) {
+                // The visitor's pinned theme moves with it, so the next visit restores the same scheme.
                 const persisted = Theme.getPersisted();
-                if (persisted && persisted !== Theme.SYSTEM_THEME && persisted !== target) {
-                    Theme.writePersisted(target);
+                const pinned = persisted && persisted !== Theme.SYSTEM_THEME ? target : null;
+
+                // The pair before the preference, so another tab adopts the pair first and then reads the
+                // preference against it. The configured pair is stored as no pair at all (a scheme marker
+                // at most), so the page's own pair - a preset change of the app - reaches this visitor again.
+                Theme.writePersistedPair(Theme.pairStoreValue(pinned));
+                if (pinned && persisted !== pinned) {
+                    Theme.writePreference(pinned);
                 }
             }
 
@@ -433,7 +491,8 @@ namespace BitBlazorUI {
          * The theme of the active pair that stands for a theme outside it: the pair's dark theme for a
          * name ending in "dark" (the rule the stylesheets' [bit-theme$="dark"] selectors classify by), its
          * light theme for one ending in "light". Anything else - a member of the pair, "system", a theme
-         * of neither scheme - is kept as it is.
+         * of neither scheme - is kept as it is. Used for the page's own base theme, which names a theme of
+         * the pair the page declares, once the visitor's pair stands in for it.
          */
         private static fitToPair(theme: string) {
             if (theme === Theme.SYSTEM_THEME || theme === Theme._lightTheme || theme === Theme._darkTheme) return theme;
@@ -446,31 +505,42 @@ namespace BitBlazorUI {
             return light === Theme._configuredLightTheme && dark === Theme._configuredDarkTheme;
         }
 
-        private static isPairDeclared() {
-            return Theme._configuredPairDeclared || Theme._runtimePair !== null;
-        }
-
         private static writePairAttributes() {
             document.documentElement.setAttribute(ATTR_THEME_LIGHT, Theme._lightTheme);
             document.documentElement.setAttribute(ATTR_THEME_DARK, Theme._darkTheme);
         }
 
-        /** "<light> <dark>" as stored; null for anything else. */
-        private static parsePair(value: string | null): [string, string] | null {
-            const parts = (value || '').split(' ');
-            return parts.length === 2 && parts[0] && parts[1] ? [parts[0], parts[1]] : null;
-        }
-
-        /** The pair setPair stored, from localStorage first and the cookie second - getPersisted's order. */
-        private static getPersistedPair() {
+        /**
+         * What is stored under PAIR_STORAGE_KEY, from localStorage first and the cookie second -
+         * getPersisted's order: a "<light> <dark>" pair, or a "light" / "dark" scheme marker.
+         */
+        private static readPersistedPair(): { pair: [string, string] | null, scheme: string | null } {
+            let value: string | null = null;
             if (Theme._persist) {
                 try {
-                    const stored = Theme.parsePair(localStorage.getItem(PAIR_STORAGE_KEY));
-                    if (stored) return stored;
+                    value = localStorage.getItem(PAIR_STORAGE_KEY);
                 } catch { /* fall through to cookie / null */ }
             }
 
-            return Theme._persistCookie ? Theme.parsePair(Theme.readCookie(PAIR_COOKIE_NAME)) : null;
+            if (!value && Theme._persistCookie) {
+                value = Theme.readCookie(PAIR_COOKIE_NAME);
+            }
+
+            const parts = (value || '').split(' ');
+            return {
+                pair: parts.length === 2 && parts[0] && parts[1] ? [parts[0], parts[1]] : null,
+                scheme: parts.length === 1 && (parts[0] === 'light' || parts[0] === 'dark') ? parts[0] : null,
+            };
+        }
+
+        /**
+         * What PAIR_STORAGE_KEY holds beside a stored preference: the visitor's pair while one is active;
+         * otherwise "light" / "dark" when the pinned preference is that theme of the page's pair, and
+         * nothing for "system", for no preference, and for a theme outside the pair.
+         */
+        private static pairStoreValue(pinned: string | null) {
+            if (Theme._runtimePair) return `${Theme._runtimePair[0]} ${Theme._runtimePair[1]}`;
+            return pinned === Theme._darkTheme ? 'dark' : pinned === Theme._lightTheme ? 'light' : null;
         }
 
         private static writePersistedPair(value: string | null) {
@@ -489,8 +559,14 @@ namespace BitBlazorUI {
             }
         }
 
-        /** Stores a preference in every store that is on. */
+        /** Stores a preference, and what it resolves against, in every store that is on. */
         private static writePersisted(themeName: string) {
+            Theme.writePreference(themeName);
+            Theme.writePersistedPair(Theme.pairStoreValue(themeName === Theme.SYSTEM_THEME ? null : themeName));
+        }
+
+        /** Stores a preference in every store that is on. */
+        private static writePreference(themeName: string) {
             if (Theme._persist) {
                 // localStorage can throw in Safari private mode, in iframes that block storage,
                 // when over quota, or under restrictive document policies (e.g. file:// in some

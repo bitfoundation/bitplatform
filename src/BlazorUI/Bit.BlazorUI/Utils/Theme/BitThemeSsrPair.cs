@@ -6,6 +6,9 @@
 /// </summary>
 /// <param name="Light">The normalized light theme.</param>
 /// <param name="Dark">The normalized dark theme.</param>
-/// <param name="IsDeclared">Whether a pair is named at all - by the page or by the visitor - rather than the core default standing in.</param>
 /// <param name="IsPersisted">Whether it is the visitor's stored pair rather than the one the page declares.</param>
-internal readonly record struct BitThemeSsrPair(string Light, string Dark, bool IsDeclared, bool IsPersisted);
+/// <param name="StoredScheme">
+/// <c>light</c> / <c>dark</c> when the stored preference is that theme of the declared pair, so it follows the
+/// pair; <see langword="null"/> otherwise, and always alongside a stored pair.
+/// </param>
+internal readonly record struct BitThemeSsrPair(string Light, string Dark, bool IsPersisted, string? StoredScheme);

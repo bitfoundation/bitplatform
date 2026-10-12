@@ -49,10 +49,11 @@ public class BitThemeHeadTests : BunitTestContext
     [TestMethod]
     public void BitThemeHeadShouldPaintAThemeSavedUnderAnotherPairAsTheDeclaredPairsTheme()
     {
-        // #13686: the visitor stored fluent2-dark, the app has since switched to Material. The document
-        // paints material-dark, so the chrome has to be painted for it too.
+        // #13686: the visitor pinned Fluent 2's dark theme (the "dark" marker beside it), the app has since
+        // switched to Material. The document paints material-dark, so the chrome has to be painted for it too.
         var component = RenderComponent<BitThemeHead>(parameters => parameters
             .Add(p => p.PersistedPreference, BitThemePresets.Fluent2Dark)
+            .Add(p => p.PersistedThemePair, BitThemePresets.Dark)
             .Add(p => p.LightTheme, BitThemePresets.MaterialLight)
             .Add(p => p.DarkTheme, BitThemePresets.MaterialDark)
             .Add(p => p.ThemeColors, PairColors));
@@ -63,9 +64,10 @@ public class BitThemeHeadTests : BunitTestContext
     [TestMethod]
     public void BitThemeHeadShouldPaintTheChromeForTheVisitorsStoredPair()
     {
-        // The visitor picked Material (BitThemeManager.SetThemePairAsync); the page still declares Fluent 2.
+        // The visitor picked Material (BitThemeManager.SetThemePairAsync) while following the OS; the page
+        // still declares Fluent 2. The tag's guess for the OS is the visitor's dark theme.
         var component = RenderComponent<BitThemeHead>(parameters => parameters
-            .Add(p => p.PersistedPreference, BitThemePresets.Fluent2Dark)
+            .Add(p => p.PersistedPreference, BitThemePresets.System)
             .Add(p => p.LightTheme, BitThemePresets.Fluent2Light)
             .Add(p => p.DarkTheme, BitThemePresets.Fluent2Dark)
             .Add(p => p.PersistedThemePair, $"{BitThemePresets.MaterialLight} {BitThemePresets.MaterialDark}")
