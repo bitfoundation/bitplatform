@@ -1,0 +1,260 @@
+﻿@namespace Bit.BlazorUI
+@inherits BitInputBase<BitCountry?>
+
+@* aria-owns is a list of ids, so one the page splatted on is kept beside the popup's rather than replaced by it or
+   removed by the null written while the popup is closed (see BitComponentBase.GetSplattedAttribute). *@
+<div @ref="RootElement"
+     @attributes="DisabledAwareHtmlAttributes"
+     id="@_Id"
+     style="@StyleBuilder.Value"
+     class="@ClassBuilder.Value"
+     title="@Title"
+     dir="@Dir?.ToString().ToLower()"
+     aria-owns="@JoinTokenLists(GetSplattedAttribute("aria-owns"), IsOpen ? _calloutId : null)">
+
+    @* A button with the combobox role is a labelable element, but a label tied to it through a for attribute would
+       forward its click to it and open the list, which a label of a native select never does: the label names the
+       field through aria-labelledby instead, and a click on it only moves the focus to the field. *@
+    @if (LabelTemplate is not null)
+    {
+        <label @onclick="HandleOnLabelClick" id="@_labelId" style="@Styles?.Label" class="bit-cnp-lbl @Classes?.Label">
+            @LabelTemplate
+        </label>
+    }
+    else if (Label.HasValue())
+    {
+        <label @onclick="HandleOnLabelClick" id="@_labelId" style="@Styles?.Label" class="bit-cnp-lbl @Classes?.Label">
+            @Label
+        </label>
+    }
+
+    @* The field is a select-only combobox: its name comes from the label, and its value is the country written
+       inside it. It is a native button, so the browser disables it, puts it in the tab order and clicks it on Enter
+       and Space, and it is the element InputElement points at and FocusAsync focuses. The attributes the page hands
+       InputHtmlAttributes - and the aria-invalid of a failed validation - are written onto it, since it is the
+       control the value of the field is read from. *@
+    <button @ref="InputElement"
+            @attributes="InputHtmlAttributes"
+            @onclick="HandleOnFieldClick"
+            @onkeydown="HandleOnFieldKeyDown"
+            @onfocusin="HandleOnFocusIn"
+            @onfocusout="HandleOnFocusOut"
+            @onfocus="HandleOnFieldFocus"
+            @onblur="HandleOnFieldBlur"
+            type="button"
+            id="@_fieldId"
+            role="combobox"
+            tabindex="@TabIndex"
+            disabled="@Disabled"
+            aria-disabled="@GetInputAriaDisabled(Disabled)"
+            aria-haspopup="listbox"
+            aria-expanded="@(IsOpen ? "true" : "false")"
+            aria-controls="@(IsOpen ? _listId : null)"
+            aria-activedescendant="@(IsOpen && NoSearchBox && _activeIndex >= 0 ? GetOptionId(_activeIndex) : null)"
+            aria-label="@FieldAriaLabel"
+            aria-labelledby="@FieldLabelledBy"
+            aria-describedby="@AriaDescribedBy"
+            aria-invalid="@AriaInvalid"
+            aria-required="@(Required ? "true" : null)"
+            aria-readonly="@(ReadOnly ? "true" : null)"
+            title="@FieldTitle"
+            style="@Styles?.Field"
+            class="bit-cnp-fld @Classes?.Field">
+        <span style="@Styles?.Text" class="bit-cnp-tcn @Classes?.Text">
+            @if (ValueTemplate is not null)
+            {
+                @ValueTemplate(CurrentValue)
+            }
+            else if (CurrentValue is not null)
+            {
+                @if (NoFlags is false)
+                {
+                    <img style="@Styles?.Flag" class="bit-cnp-flg @Classes?.Flag" src="@GetFlagUrl(CurrentValue)" alt="" aria-hidden="true" loading="lazy" />
+                }
+                <span class="bit-cnp-txt">@CurrentValue.Name</span>
+            }
+            else
+            {
+                <span class="bit-cnp-pls">@Placeholder</span>
+            }
+        </span>
+        <span aria-hidden="true" style="@Styles?.Caret" class="bit-cnp-car @Classes?.Caret"></span>
+    </button>
+
+    @if (HasErrorMessage)
+    {
+        @* What is wrong with the value is the first thing to read under the field, so the message sits
+           above the description rather than beside it. It carries no live role of its own: the region at
+           the end of the component is what announces it, so it is never read out twice. *@
+        <div id="@_errorId"
+             style="@Styles?.ErrorMessageContainer"
+             class="bit-cnp-erm @Classes?.ErrorMessageContainer">
+            @if (ErrorMessageTemplate is not null)
+            {
+                @ErrorMessageTemplate
+            }
+            else
+            {
+                <span style="@Styles?.ErrorMessage" class="@Classes?.ErrorMessage">@ErrorMessage</span>
+            }
+        </div>
+    }
+
+    @if (HasDescription)
+    {
+        @* A div rather than a span: a DescriptionTemplate is free to render block content, which is
+           not valid inside a span. *@
+        <div id="@_descriptionId"
+             style="@Styles?.DescriptionContainer"
+             class="bit-cnp-des @Classes?.DescriptionContainer">
+            @if (DescriptionTemplate is not null)
+            {
+                @DescriptionTemplate
+            }
+            else
+            {
+                <span style="@Styles?.Description" class="@Classes?.Description">@Description</span>
+            }
+        </div>
+    }
+
+    @if (Name.HasValue())
+    {
+        @* The value is a selection rather than a text, so a plain HTML form is handed the ISO 3166-1 alpha-2 code
+           of the country through a hidden field of its own. *@
+        <input type="hidden" name="@Name" value="@CurrentValueAsString" />
+    }
+
+    @* The live region sits outside the callout on purpose: the content of a display:none callout is
+       never announced, so the result of a search made in it has to be reported from out here. *@
+    <div role="status" aria-live="polite" aria-atomic="true" class="bit-cnp-lvr">@_announcement</div>
+</div>
+
+<div @onclick="CloseCalloutAndRestoreFocus"
+     id="@_overlayId"
+     style="@GetOverlayStyles()"
+     class="bit-cnp-ovl @Classes?.Overlay"></div>
+
+<div id="@_calloutId"
+     style="@Styles?.Callout"
+     class="bit-cnp-cal @SizeClass @ColorClass @(Responsive ? "bit-cnp-res" : null) @(Dir is BitDir.Rtl ? "bit-cnp-rtl" : null) @Classes?.Callout">
+
+    @if (Responsive)
+    {
+        <div style="@Styles?.ResponsiveLabelContainer" class="bit-cnp-rlc @Classes?.ResponsiveLabelContainer">
+            @if (LabelTemplate is not null)
+            {
+                @LabelTemplate
+            }
+            else if (Label.HasValue())
+            {
+                <label style="@Styles?.ResponsiveLabel" class="bit-cnp-rlb @Classes?.ResponsiveLabel">@Label</label>
+            }
+        </div>
+    }
+
+    @if (NoSearchBox is false)
+    {
+        <div style="@Styles?.SearchBox" class="bit-cnp-sbx @Classes?.SearchBox">
+            <input @ref="_searchInputRef"
+                   @oninput="HandleOnSearchInput"
+                   @onkeydown="HandleOnSearchKeyDown"
+                   type="text"
+                   role="combobox"
+                   id="@_searchId"
+                   autocomplete="off"
+                   spellcheck="false"
+                   autocorrect="off"
+                   autocapitalize="off"
+                   value="@_searchText"
+                   aria-autocomplete="list"
+                   aria-haspopup="listbox"
+                   aria-expanded="@(IsOpen ? "true" : "false")"
+                   aria-controls="@(IsOpen ? _listId : null)"
+                   aria-activedescendant="@(IsOpen && _activeIndex >= 0 ? GetOptionId(_activeIndex) : null)"
+                   aria-label="@(SearchBoxAriaLabel ?? SearchBoxPlaceholder ?? "Search countries")"
+                   class="bit-cnp-srch"
+                   placeholder="@(SearchBoxPlaceholder ?? "Search")" />
+        </div>
+    }
+
+    @if (Responsive)
+    {
+        @* After the search box in the document, though it is drawn in the header above it: the list is driven
+           from its search box, which is what a Tab from the field goes into and Shift+Tab goes back from, so the
+           close button is the next stop of the tab order rather than the one ahead of it. *@
+        <button @onclick="CloseCalloutAndRestoreFocus"
+                type="button"
+                title="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
+                aria-label="@(ResponsiveCloseButtonAriaLabel ?? "Close")"
+                style="@Styles?.ResponsiveCloseButton"
+                class="bit-cnp-cls @Classes?.ResponsiveCloseButton">
+            @{
+                var responsiveCloseIcon = BitIconInfo.From(ResponsiveCloseIcon, ResponsiveCloseIconName ?? "Cancel");
+            }
+            <i aria-hidden="true"
+               style="@Styles?.ResponsiveCloseIcon"
+               class="@responsiveCloseIcon?.GetCssClasses() @Classes?.ResponsiveCloseIcon" />
+        </button>
+    }
+
+    <div id="@_scrollContainerId" style="@Styles?.ScrollContainer" class="bit-cnp-scn @Classes?.ScrollContainer">
+        <div id="@_listId"
+             role="listbox"
+             style="@Styles?.List"
+             class="bit-cnp-lst @Classes?.List"
+             aria-label="@ListAriaLabel"
+             aria-labelledby="@ListLabelledBy">
+            @if (_hasOpened)
+            {
+                var items = GetFilteredCountries();
+
+                @for (var i = 0; i < items.Count; i++)
+                {
+                    var index = i;
+                    var country = items[index];
+                    var isSelected = IsSelected(country);
+                    var isActive = index == _activeIndex;
+                    var itemClass = $"bit-cnp-itm{(isSelected ? " bit-cnp-sel" : "")}{(isActive ? " bit-cnp-act" : "")}{(IsLastPreferred(index) ? " bit-cnp-ilp" : "")}";
+                    <button @key="country.Iso2"
+                            id="@GetOptionId(index)"
+                            @onclick="() => HandleOnCountrySelect(country)"
+                            type="button"
+                            role="option"
+                            tabindex="-1"
+                            title="@country.Name"
+                            aria-selected="@(isSelected ? "true" : "false")"
+                            style="@Styles?.Item"
+                            class="@itemClass @Classes?.Item">
+                        @if (ItemTemplate is not null)
+                        {
+                            @ItemTemplate(country)
+                        }
+                        else
+                        {
+                            @if (NoFlags is false)
+                            {
+                                <img style="@Styles?.Flag" class="bit-cnp-flg @Classes?.Flag" src="@GetFlagUrl(country)" alt="" aria-hidden="true" loading="lazy" />
+                            }
+                            <span style="@Styles?.ItemName" class="bit-cnp-inm @Classes?.ItemName">@country.Name</span>
+                        }
+                    </button>
+                }
+
+                @if (items.Count == 0)
+                {
+                    <div style="@Styles?.NoResults" class="bit-cnp-nor @Classes?.NoResults">
+                        @if (NoResultsTemplate is not null)
+                        {
+                            @NoResultsTemplate
+                        }
+                        else
+                        {
+                            @(NoResultsMessage ?? "No results found")
+                        }
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>

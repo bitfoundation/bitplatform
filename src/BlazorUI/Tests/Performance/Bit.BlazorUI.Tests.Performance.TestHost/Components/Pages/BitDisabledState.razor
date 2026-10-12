@@ -300,6 +300,10 @@
             </div>
             break;
 
+        case "countrypicker":
+            <BitCountryPicker data-case-root Disabled="_disabled" DefaultValue="BitCountries.Germany" @onclick="Hit" />
+            break;
+
         case "datagrid":
             <BitDataGrid data-case-root TItem="GridRow" Disabled="_disabled" Items="_gridRows" Editable ShowColumnChooser
                          SelectionMode="BitSelectionMode.Multiple" IsRowSelectionDisabled="IsRowSelectionDisabled"

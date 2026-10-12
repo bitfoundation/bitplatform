@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using System.Globalization;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
@@ -92,10 +91,6 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     private static readonly string[] _dropdownOpenKeys = ["ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End", "Enter", " ", "Spacebar"];
 
     private const int PageNavigationSize = 10;
-
-    private const int DialCodeExactRank = 3;
-    private const int DialCodeStartsRank = 4;
-    private const int DialCodeContainsRank = 7;
 
     // The flag file of a country, keyed by its ISO code. Every open callout renders one image per
     // country it offers, and the url of each of them is otherwise built from scratch on every render.
@@ -1136,9 +1131,9 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             _lastCountries = Countries;
             _lastExcludeCountries = ExcludeCountries;
             _lastPreferredCountries = PreferredCountries;
-            _allItems = BuildItems(out _preferredCount);
-            _foldedNames = [.. _allItems.Select(c => Fold(c.Name))];
-            _foldedWords = [.. _foldedNames.Select(n => n.Split([' ', '-'], StringSplitOptions.RemoveEmptyEntries))];
+            _allItems = BitCountrySearch.BuildItems(Countries, ExcludeCountries, PreferredCountries, out _preferredCount);
+            _foldedNames = [.. _allItems.Select(c => BitCountrySearch.Fold(c.Name))];
+            _foldedWords = [.. _foldedNames.Select(BitCountrySearch.SplitWords)];
             _viewItemsValid = false;
         }
 
@@ -1162,45 +1157,6 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         await ReconcileValueAndParts();
 
         await base.OnParametersSetAsync();
-    }
-
-    // The countries in the order the dropdown shows them: the preferred ones first, in the order they
-    // were given, then the rest in the order of the Countries list.
-    private List<BitCountry> BuildItems(out int preferredCount)
-    {
-        preferredCount = 0;
-
-        var countries = Countries;
-
-        if (ExcludeCountries is not null && ExcludeCountries.Count > 0)
-        {
-            var excluded = new HashSet<string>(ExcludeCountries.Select(c => c.Iso2), StringComparer.OrdinalIgnoreCase);
-            countries = [.. countries.Where(c => excluded.Contains(c.Iso2) is false)];
-        }
-
-        if (PreferredCountries is null || PreferredCountries.Count == 0)
-        {
-            // A copy even when the source already is a List: _foldedNames and _foldedWords are read
-            // by the index of _allItems, and a list the caller keeps a reference to could otherwise
-            // grow underneath them without the parameter reference ever changing.
-            return [.. countries];
-        }
-
-        var preferred = new List<BitCountry>();
-        var preferredIso = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-
-        foreach (var country in PreferredCountries)
-        {
-            // Only the countries the dropdown actually offers can be pinned to the top of it.
-            var match = countries.FirstOrDefault(c => c.Iso2.Equals(country.Iso2, StringComparison.OrdinalIgnoreCase));
-            if (match is null || preferredIso.Add(match.Iso2) is false) continue;
-
-            preferred.Add(match);
-        }
-
-        preferredCount = preferred.Count;
-
-        return [.. preferred, .. countries.Where(c => preferredIso.Contains(c.Iso2) is false)];
     }
 
     // Keeps the full Value and the (Number, Country) parts in sync when parameters change.
@@ -1480,7 +1436,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             return _viewItems;
         }
 
-        var text = Fold(_searchText!.Trim());
+        var text = BitCountrySearch.Fold(_searchText!.Trim());
 
         // A dialing code is searched for the way it is written down: "+44", "0044" and "44" all mean
         // the same code, so the term is reduced to its digits before it is matched against one.
@@ -1505,7 +1461,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         for (var i = 0; i < _allItems.Count; i++)
         {
             var country = _allItems[i];
-            var rank = GetSearchRank(country, _foldedNames[i], _foldedWords[i], text, codeTerm);
+            var rank = BitCountrySearch.GetSearchRank(country, _foldedNames[i], _foldedWords[i], text, codeTerm);
             if (rank < 0) continue;
 
             matches.Add((country, rank, i));
@@ -1520,7 +1476,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         {
             if (x.Rank != y.Rank) return x.Rank.CompareTo(y.Rank);
 
-            if (IsDialCodeRank(x.Rank))
+            if (BitCountrySearch.IsDialCodeRank(x.Rank))
             {
                 var byOwner = GetDialCodeRank(y.Country).CompareTo(GetDialCodeRank(x.Country));
                 if (byOwner != 0) return byOwner;
@@ -1532,98 +1488,6 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         _viewItems = [.. matches.Select(m => m.Country)];
 
         return _viewItems;
-    }
-
-    // The ranks of a match found through the dialing code rather than through a name or an ISO code.
-    private static bool IsDialCodeRank(int rank) => rank is DialCodeExactRank or DialCodeStartsRank or DialCodeContainsRank;
-
-    // The rank of a country against a search term, lower being closer. A negative rank means the
-    // country does not match the term at all.
-    private static int GetSearchRank(BitCountry country, string name, string[] words, string text, string codeTerm)
-    {
-        var codes = country.DigitsCodes;
-
-        if (country.Iso2.Equals(text, StringComparison.OrdinalIgnoreCase)) return 0;
-        if (country.Iso3.Equals(text, StringComparison.OrdinalIgnoreCase)) return 1;
-        if (name.StartsWith(text, StringComparison.InvariantCultureIgnoreCase)) return 2;
-        if (AnyCode(codes, codeTerm, static (code, term) => code.Equals(term, StringComparison.Ordinal))) return DialCodeExactRank;
-        if (AnyCode(codes, codeTerm, static (code, term) => code.StartsWith(term, StringComparison.Ordinal))) return DialCodeStartsRank;
-
-        // A term of several words matches a name whose words start with them, so "united sta" and
-        // "so afr" both find their country without the term having to be a prefix of the whole name.
-        if (MatchesWordStarts(words, text)) return 5;
-
-        if (name.Contains(text, StringComparison.InvariantCultureIgnoreCase)) return 6;
-        if (AnyCode(codes, codeTerm, static (code, term) => code.Contains(term, StringComparison.Ordinal))) return DialCodeContainsRank;
-        if (country.Iso2.Contains(text, StringComparison.OrdinalIgnoreCase)) return 8;
-        if (country.Iso3.Contains(text, StringComparison.OrdinalIgnoreCase)) return 9;
-
-        return -1;
-    }
-
-    // A country is found by any of the codes it answers to, so a term is measured against all of them.
-    private static bool AnyCode(string[] codes, string term, Func<string, string, bool> matches)
-    {
-        if (term.Length == 0) return false;
-
-        foreach (var code in codes)
-        {
-            if (matches(code, term)) return true;
-        }
-
-        return false;
-    }
-
-    private static bool MatchesWordStarts(string[] words, string text)
-    {
-        if (text.Contains(' ') is false) return false;
-
-        var terms = text.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-        if (terms.Length == 0 || terms.Length > words.Length) return false;
-
-        for (var i = 0; i < terms.Length; i++)
-        {
-            if (words[i].StartsWith(terms[i], StringComparison.InvariantCultureIgnoreCase) is false) return false;
-        }
-
-        return true;
-    }
-
-    // A copy of the text with the diacritic of each character removed, so a country is found by the
-    // plain letters of its name ("Aland", "Reunion", "Curacao") as much as by the accented ones.
-    private static string Fold(string text)
-    {
-        // Most country names are plain ASCII, which has no diacritic to fold: they are returned as
-        // they are instead of being copied character by character into a builder.
-        if (System.Text.Ascii.IsValid(text)) return text;
-
-        var builder = new StringBuilder(text.Length);
-
-        foreach (var c in text)
-        {
-            // ASCII has no diacritics to fold, and a lone surrogate half (one of the two chars an
-            // emoji is made of) is not a valid string of its own, so normalizing it would throw.
-            if (char.IsAscii(c) || char.IsSurrogate(c))
-            {
-                builder.Append(c);
-                continue;
-            }
-
-            var baseChar = c;
-
-            foreach (var decomposed in c.ToString().Normalize(NormalizationForm.FormD))
-            {
-                if (CharUnicodeInfo.GetUnicodeCategory(decomposed) == UnicodeCategory.NonSpacingMark) continue;
-
-                baseChar = decomposed;
-                break;
-            }
-
-            builder.Append(baseChar);
-        }
-
-        return builder.ToString();
     }
 
     private string GetOptionId(int index) => $"{_calloutId}-opt-{index}";
@@ -1908,24 +1772,18 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         _typeAhead = (now - _typeAheadAt) > _typeAheadTimeout ? key : _typeAhead + key;
         _typeAheadAt = now;
 
-        var term = Fold(_typeAhead);
+        var term = BitCountrySearch.Fold(_typeAhead);
         var start = _typeAhead.Length == 1 ? _activeIndex + 1 : Math.Max(_activeIndex, 0);
 
         // The type-ahead only runs on the unfiltered list (there is no search box to filter it with),
         // so the names folded once with the list are the same ones this walks over.
         var folded = ReferenceEquals(_viewItems, _allItems) ? _foldedNames : null;
 
-        for (var i = 0; i < _viewItems.Count; i++)
+        var index = BitCountrySearch.FindByNameStart(_viewItems, folded, term, start);
+
+        if (index >= 0)
         {
-            var index = (start + i) % _viewItems.Count;
-            if (index < 0) index += _viewItems.Count;
-
-            var name = folded is not null ? folded[index] : Fold(_viewItems[index].Name);
-
-            if (name.StartsWith(term, StringComparison.InvariantCultureIgnoreCase) is false) continue;
-
             _activeIndex = index;
-            return;
         }
     }
 
