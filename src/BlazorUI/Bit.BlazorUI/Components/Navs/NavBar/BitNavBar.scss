@@ -679,7 +679,11 @@ $nbr-private-properties: clr, clr-ind, clr-dis, clr-fcs, clr-acc-hover, clr-acc-
         inset-inline: auto 0;
     }
 
+    // The pill is drawn in the selection pair, and HighlightText is as dark or as light as Canvas in a contrast
+    // theme - left to the forced palette, Chromium would draw the icon over the Canvas backplate it puts behind
+    // every glyph, an empty pill. It is kept out of the palette, which holds the disabled pill below as well.
     .bit-nbr-pil .bit-nbr-sel .bit-nbr-icc {
+        forced-color-adjust: none;
         color: HighlightText;
         background-color: Highlight;
     }
@@ -698,9 +702,46 @@ $nbr-private-properties: clr, clr-ind, clr-dis, clr-fcs, clr-acc-hover, clr-acc-
         background-color: GrayText;
     }
 
+    // The badge's count is Canvas on a CanvasText fill, which the backplate would empty the same way.
     .bit-nbr-bdg {
+        forced-color-adjust: none;
         color: Canvas;
         background-color: CanvasText;
+    }
+
+    // The hover and the press paint the item - or the pill - with the fill of the role under its on-color, a
+    // LinkText fill under a Canvas label for the primary role of a Filled bar, which the backplate empties; an
+    // unfilled bar paints the label in the role, the page's own Canvas for a background role. Both are restated
+    // as the link the item is, LinkText on nothing, with the selectors of the rules they undo.
+    @media (hover: hover) {
+        .bit-nbr-itm:not(.bit-nbr-sel):not(.bit-nbr-dis):hover,
+        .bit-nbr-pil .bit-nbr-itm:not(.bit-nbr-sel):not(.bit-nbr-dis):hover .bit-nbr-icc {
+            color: LinkText;
+            background-color: transparent;
+        }
+
+        .bit-nbr-pil .bit-nbr-itm:not(.bit-nbr-sel):not(.bit-nbr-dis):hover:has(.bit-nbr-icc) {
+            color: LinkText;
+        }
+    }
+
+    .bit-nbr-itm:not(.bit-nbr-sel):not(.bit-nbr-dis):active,
+    .bit-nbr-pil .bit-nbr-itm:not(.bit-nbr-sel):not(.bit-nbr-dis):active .bit-nbr-icc {
+        color: LinkText;
+        background-color: transparent;
+    }
+
+    .bit-nbr-pil .bit-nbr-itm:not(.bit-nbr-sel):not(.bit-nbr-dis):active:has(.bit-nbr-icc) {
+        color: LinkText;
+    }
+
+    // A background role is the page's own color, Canvas here, which the label beside a selected pill is drawn in -
+    // invisible in every engine. It is the system text color instead. The rule carries the root class beside the
+    // role's, so it outweighs the role classes, which follow this block.
+    @each $role in $bit-background-color-roles {
+        .bit-nbr.bit-nbr-#{$role} {
+            --bit-nbr-clr: CanvasText;
+        }
     }
 }
 

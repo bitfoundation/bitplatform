@@ -277,7 +277,19 @@ $acb-private-properties: clr-ico, clr-hover, clr-active, clr-focus, clr-dis-text
 // Windows High Contrast / forced-colors: the palette is reduced to the system pair, so a disabled button
 // conveyed through aria-disabled alone (AllowDisabledFocus) would look enabled, and the spinner's track and
 // arc would be painted the same color and stop reading as motion. Both are re-established in system colors.
+//
+// A background role is the page's own color, Canvas here, and an action button paints its icon from the role at
+// rest and its label and icon from the role's hover and press colors - Canvas again - so on the canvas it sits on,
+// and on the Canvas backplate Chromium draws behind every line of text and every icon glyph, both would vanish.
+// They take the system button text instead, in every state: the state rules weigh as much and come earlier.
 @media (forced-colors: active) {
+    @each $role in $bit-background-color-roles {
+        .bit-acb-#{$role}:not(.bit-dis) {
+            color: ButtonText;
+            --bit-acb-ico: ButtonText;
+        }
+    }
+
     .bit-acb.bit-dis {
         color: GrayText;
         --bit-acb-ico: GrayText;

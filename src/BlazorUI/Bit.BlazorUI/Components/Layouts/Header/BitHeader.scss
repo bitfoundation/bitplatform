@@ -408,6 +408,34 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
         backdrop-filter: none;
         -webkit-backdrop-filter: none;
     }
+
+    // A Fill header reads its content color from the role's on-color, which the palette makes Canvas for the
+    // primary role and the foreground ones - and Chromium draws a Canvas backplate behind every line of text, so
+    // everything on the bar would be Canvas on Canvas. The bar is painted as the plain surface it is in this mode,
+    // CanvasText on Canvas, which reads with the backplate and without it (Firefox draws none); the border color
+    // keeps a Bordered divider in the same system text color. The root class is named so this outranks the solid
+    // fill a Transparent header gets back under prefers-reduced-transparency, which follows this block.
+    .bit-hdr.bit-hdr-fil:not(.bit-dis) {
+        color: CanvasText;
+        border-color: CanvasText;
+        background-color: Canvas;
+    }
+
+    // An Outline or Text header reads its content and its border from the role's main color, and a background
+    // role is the page's own color, Canvas here - invisible in every engine. It is the system text color instead.
+    @each $role in $bit-background-color-roles {
+        .bit-hdr-#{$role} {
+            --bit-hdr-fg: CanvasText;
+            --bit-hdr-brd: CanvasText;
+        }
+    }
+
+    // The focused skip link is the primary pair as well, a Canvas label on a LinkText fill, which the backplate
+    // empties the same way. It is shown as the link it is, LinkText on Canvas, with the focus outline around it.
+    .bit-hdr-skp:focus {
+        color: LinkText;
+        background-color: Canvas;
+    }
 }
 
 // A user who asked the system for less transparency gets the solid surface back: the text of a translucent

@@ -469,4 +469,15 @@ $csl-private-properties:
         color: Highlight;
         background-color: transparent;
     }
+
+    // A background role is the page's own color, Canvas here, which the arrows and a templated dot would draw
+    // their glyphs in - lost on the canvas, and in Chromium on the Canvas backplate drawn behind them as well.
+    // The role's button colors are taken back, after the role classes they outrank on source order, so those
+    // glyphs read the text color the carousel has without one.
+    @each $role in $bit-background-color-roles {
+        .bit-csl-#{$role} {
+            --bit-csl-btn: initial;
+            --bit-csl-btn-hover: initial;
+        }
+    }
 }

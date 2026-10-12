@@ -118,7 +118,20 @@ public class BitPaginationStylesheetTests
         // Under the Fill variant every page is filled and the current one only a shade darker, so its weight is the
         // cue that does not rest on color, and forced colors repaint it with the system selection colors.
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pgn-sel {"), "font-weight: var(--bit-Pagination-selected-font-weight, #{$tg-fw-semibold});");
-        StringAssert.Contains(stylesheet, ".bit-pgn-btn.bit-pgn-sel {\n        color: HighlightText;");
+        // The selection pair opts out of the forced palette, or Chromium's Canvas backplate would sit behind the
+        // HighlightText number and all but erase it.
+        StringAssert.Contains(stylesheet, ".bit-pgn-btn.bit-pgn-sel:not([disabled], [aria-disabled=\"true\"]) {\n        forced-color-adjust: none;\n        color: HighlightText;");
+    }
+
+    [TestMethod]
+    public void BitPaginationShouldPaintAFilledButtonAsANativeOneUnderForcedColors()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The primary fill is LinkText under a Canvas label, which Chromium's Canvas backplate erases, so a filled
+        // button takes the system button pair instead, and the pointer states are set back to it.
+        StringAssert.Contains(stylesheet, ".bit-pgn-btn.bit-pgn-fil:not(.bit-pgn-sel, [disabled], [aria-disabled=\"true\"]) {\n        color: ButtonText;\n        border-color: ButtonText;\n        background-color: ButtonFace;");
+        StringAssert.Contains(stylesheet, ".bit-pgn-elb:active {\n        --bit-pgn-sfg: initial;");
     }
 
     [TestMethod]

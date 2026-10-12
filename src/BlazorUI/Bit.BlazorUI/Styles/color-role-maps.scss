@@ -1,4 +1,5 @@
-﻿@use 'sass:map';
+﻿@use 'sass:list';
+@use 'sass:map';
 @use 'sass:string';
 @import "theme-variables.scss";
 
@@ -352,6 +353,19 @@ $bit-semantic-color-roles: (
     swr: map.get($bit-color-roles, swr),
     err: map.get($bit-color-roles, err),
 );
+
+// The surface roles whose main is one of the page's own background colors - pbg/sbg/tbg. A forced-colors palette
+// maps every one of those to Canvas (forced-colors.fluent.scss), so a part that reads such a role's main as a text,
+// an icon or a rule is drawn there in the very color it sits on; the forced-colors blocks of the components iterate
+// this list to take those parts back. It is read off the map rather than listed, so a background role added to the
+// map is covered by every one of them.
+$bit-background-color-roles: ();
+
+@each $role, $tokens in $bit-color-roles {
+    @if string.index("#{map.get($tokens, main)}", "--bit-clr-bg-") {
+        $bit-background-color-roles: list.append($bit-background-color-roles, $role, $separator: comma);
+    }
+}
 
 /*
  * role($tokens, $slot) / role-emphasis($tokens)

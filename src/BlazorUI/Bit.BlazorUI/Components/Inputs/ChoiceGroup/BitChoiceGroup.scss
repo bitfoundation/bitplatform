@@ -1057,6 +1057,23 @@ $chg-private-properties: clr, clr-bg, clr-hover, clr-dis, clr-dis-text, clr-focu
         color: GrayText;
     }
 
+    // The checked tile of an icon or image item says so with a border in the accent, which for a background
+    // role is the page's own color - Canvas here, a border drawn in the color of what it sits on. The system
+    // selection color carries it instead, as it does for the circle below; a disabled tile keeps no border.
+    .bit-chg-ich:not(.bit-chg-ids) .bit-chg-ili {
+        border-color: Highlight;
+    }
+
+    // A background role sets the tile of an icon or image item on the role's contrast color, CanvasText here - the
+    // very color the tile's label and glyph are written in, so the item would be a blank block wherever no backplate
+    // is drawn behind the text (Firefox). The tile is taken back to the surface it has without a Color, after the
+    // role classes it outranks on source order.
+    @each $role in $bit-background-color-roles {
+        .bit-chg-#{$role} {
+            --bit-chg-clr-bg: initial;
+        }
+    }
+
     .bit-chg-ich .bit-chg-rad {
         &::before {
             border-color: Highlight;

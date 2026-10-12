@@ -871,10 +871,42 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
 // background is discarded, which would leave the toggled button - whose whole state is a background
 // color - indistinguishable from the rest of the group. The state is re-established here with the
 // system colors, and the separators keep a real color of their own so the buttons stay separate.
+//
+// The buttons of a filled group are painted as native ones. The palette fills the primary role with LinkText
+// under a Canvas label, two system colors the mode keeps - but Chromium draws a Canvas backplate behind every
+// line of text, the icon glyphs and the badge included, so the label would be Canvas on Canvas and every button
+// an empty box. ButtonText on ButtonFace reads with the backplate and without it (Firefox draws none), and needs
+// no opt-out of the forced palette. The toggled and the unavailable buttons keep their own pairs below.
 @media (forced-colors: active) {
     .bit-btg,
     .bit-btg-itm {
         border-color: ButtonText;
+    }
+
+    .bit-btg-fil .bit-btg-itm:not(.bit-btg-chk, [disabled], [aria-disabled="true"]) {
+        color: ButtonText;
+        background-color: ButtonFace;
+    }
+
+    // A background role is the page's own color, Canvas here, which an Outline or Text group reads its labels
+    // from; they take the system button text instead, which every contrast theme keeps legible over the canvas.
+    @each $role in $bit-background-color-roles {
+        .bit-btg-otl.bit-btg-#{$role} .bit-btg-itm:not(.bit-btg-chk, [disabled], [aria-disabled="true"]),
+        .bit-btg-txt.bit-btg-#{$role} .bit-btg-itm:not(.bit-btg-chk, [disabled], [aria-disabled="true"]) {
+            color: ButtonText;
+        }
+    }
+
+    // The pointer states move the variables a button is painted from to the role's hover and press colors - a
+    // LinkText fill under a Canvas label in every variant, the very pair the backplate hides - so they are set back
+    // here and the state is carried by the system Highlight on the button's border instead. The selectors are the
+    // ones of the rules they undo with one exclusion more, which outweighs them: the toggled button is left out, as
+    // it paints its own colors here and keeps the variables its states move.
+    .bit-btg-itm:not(.bit-btg-chk):hover,
+    .bit-btg-itm:not(.bit-btg-chk):active {
+        --bit-btg-itm-sfg: initial;
+        --bit-btg-itm-sbg: initial;
+        border-color: Highlight;
     }
 
     .bit-btg-chk {
@@ -892,6 +924,12 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
 
     .bit-btg-chk:focus-visible {
         outline-color: HighlightText;
+    }
+
+    // The toggled button opts out of the forced palette, which brings back the box-shadow ring the detached
+    // layout draws in the theme's colors; the outline the focus-ring mixin restores in this mode is the ring here.
+    .bit-btg-dtc:not(.bit-btg-scr):not(.bit-btg-scb) .bit-btg-chk:focus-visible {
+        box-shadow: none;
     }
 
     .bit-btg-itm[disabled],

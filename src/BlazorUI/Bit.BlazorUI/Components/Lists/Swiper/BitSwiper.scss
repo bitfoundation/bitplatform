@@ -544,4 +544,15 @@ $swp-private-properties:
         outline: none;
         text-decoration: underline;
     }
+
+    // A background role is the page's own color, Canvas here, which the arrows would draw their glyphs in -
+    // lost on the canvas, and in Chromium on the Canvas backplate drawn behind them as well. The role's button
+    // colors are taken back, after the role classes they outrank on source order, so the arrows read the text
+    // color the swiper has without one.
+    @each $role in $bit-background-color-roles {
+        .bit-swp-#{$role} {
+            --bit-swp-btn: initial;
+            --bit-swp-btn-hover: initial;
+        }
+    }
 }

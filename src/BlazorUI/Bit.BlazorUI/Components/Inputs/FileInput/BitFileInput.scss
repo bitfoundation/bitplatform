@@ -630,7 +630,51 @@ $fin-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, lbl-hei
 // gone. The states that carry meaning are re-established without relying on color: the drop indicator
 // keeps its dashed rule, an invalid item is told apart by a dashed rule of its own, and a disabled
 // input takes the system's own inert color.
+//
+// A Fill browse button is painted as a native one. The palette fills the primary role with LinkText under a Canvas
+// label, two system colors the mode keeps - but Chromium draws a Canvas backplate behind every line of text, so the
+// label would be Canvas on Canvas, an empty box where the one way into the component should be. ButtonText on
+// ButtonFace reads with the backplate and without it (Firefox draws none), and needs no opt-out of the palette.
 @media (forced-colors: active) {
+    .bit-fin-fil:not(.bit-dis) .bit-fin-lbl {
+        color: ButtonText;
+        border-color: ButtonText;
+        background-color: ButtonFace;
+    }
+
+    // A background role is the page's own color, Canvas here, which an Outline or Text button would read its label
+    // from, so it takes the system button text instead.
+    @each $role in $bit-background-color-roles {
+        .bit-fin-otl.bit-fin-#{$role}:not(.bit-dis) .bit-fin-lbl,
+        .bit-fin-txt.bit-fin-#{$role}:not(.bit-dis) .bit-fin-lbl {
+            color: ButtonText;
+        }
+    }
+
+    // The pointer states move the variables the button is painted from to the role's hover and press colors - a
+    // LinkText fill under a Canvas label, the very pair the backplate hides - so they are set back here and the
+    // state is carried by the system Highlight on the border instead. The selectors are the ones of the rules they
+    // undo, which this block follows at the same weight.
+    .bit-fin-fil .bit-fin-lbl:hover,
+    .bit-fin-fil .bit-fin-lbl:active,
+    .bit-fin-otl .bit-fin-lbl:hover,
+    .bit-fin-otl .bit-fin-lbl:active,
+    .bit-fin-txt .bit-fin-lbl:hover,
+    .bit-fin-txt .bit-fin-lbl:active {
+        --bit-fin-lbl-sfg: initial;
+        --bit-fin-lbl-sbr: initial;
+        --bit-fin-lbl-sbg: initial;
+        border-color: Highlight;
+    }
+
+    // The drop indicator paints the on-color over the role's hover fill in every variant, the same pair again, so it
+    // keeps the native button paint and is marked out by its dashed rule, drawn in Highlight.
+    .bit-fin.bit-fin-drg:not(.bit-dis) .bit-fin-lbl {
+        color: ButtonText;
+        border-color: Highlight;
+        background-color: ButtonFace;
+    }
+
     .bit-fin.bit-dis .bit-fin-lbl {
         color: GrayText;
         border-color: GrayText;

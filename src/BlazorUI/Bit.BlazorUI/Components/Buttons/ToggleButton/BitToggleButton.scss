@@ -530,18 +530,64 @@ $tgb-private-properties: clr-txt, clr, clr-hover, clr-active, clr-focus, clr-dar
 // as a state at all, and a button disabled through aria-disabled alone (AllowDisabledFocus) would look
 // enabled. Both are re-established in system colors, as is the spinner, whose track and arc would otherwise
 // be painted the same color and stop reading as motion.
+//
+// An unchecked filled toggle button is painted as a native button. The palette fills the primary role with
+// LinkText under a Canvas label, two system colors the mode keeps - but Chromium draws a Canvas backplate behind
+// every line of text and every icon glyph, so the label would be Canvas on Canvas, an empty box. ButtonText on
+// ButtonFace reads with the backplate and without it (Firefox draws none), and needs no opt-out of the palette.
 @media (forced-colors: active) {
     .bit-tgb {
         border-color: ButtonText;
+    }
+
+    .bit-tgb-fil:not(.bit-dis):not(.bit-tgb-chk) {
+        color: ButtonText;
+        border-color: ButtonText;
+        background-color: ButtonFace;
+    }
+
+    // A background role is the page's own color, Canvas here, which an unchecked Outline or Text toggle button
+    // would read its label from; a FixedColor one wears the role's on-color, Canvas again for the primary role.
+    // Both take the system button text instead, which every contrast theme keeps legible over the canvas the
+    // button sits on.
+    @each $role in $bit-background-color-roles {
+        .bit-tgb-otl.bit-tgb-#{$role}:not(.bit-dis):not(.bit-tgb-chk),
+        .bit-tgb-txt.bit-tgb-#{$role}:not(.bit-dis):not(.bit-tgb-chk) {
+            color: ButtonText;
+        }
+    }
+
+    .bit-tgb.bit-tgb-fxc:not(.bit-dis):not(.bit-tgb-chk) {
+        color: ButtonText;
+    }
+
+    // The pointer states move the variables an unchecked toggle button is painted from to the role's hover and
+    // press colors - a LinkText fill under a Canvas label in every variant, the very pair the backplate hides - so
+    // they are set back here and the state is carried by the system Highlight on the border instead. The selectors
+    // are the ones of the rules they undo, which this block follows at the same weight; the checked state below
+    // paints its own colors over whatever they move.
+    .bit-tgb-fil:not(.bit-dis):not(.bit-tgb-lod):hover,
+    .bit-tgb-fil:not(.bit-dis):not(.bit-tgb-lod):active,
+    .bit-tgb-otl:not(.bit-dis):not(.bit-tgb-lod):hover,
+    .bit-tgb-otl:not(.bit-dis):not(.bit-tgb-lod):active,
+    .bit-tgb-txt:not(.bit-dis):not(.bit-tgb-lod):hover,
+    .bit-tgb-txt:not(.bit-dis):not(.bit-tgb-lod):active {
+        --bit-tgb-sfg: initial;
+        --bit-tgb-sbg: initial;
+        --bit-tgb-sbr: initial;
+        border-color: Highlight;
     }
 
     // The hovered and pressed selectors are spelled out, exactly as the rules they have to beat spell them,
     // because this is the one state that opts out of the forced palette: with forced-color-adjust off the
     // author's colors are used again, and the checked hover/active rules would otherwise paint the theme's dark
     // shade over the system Highlight the user chose. The FixedColor pair is listed for the same reason, one
-    // class further up. The two states that take no clicks paint no pointer state to undo: a disabled checked
-    // button is handled on its own below, and a loading one keeps the resting Highlight of this rule.
+    // class further up - at rest too, since the FixedColor pin at the end of the file paints the theme's on-color
+    // at the weight of a bare class. The two states that take no clicks paint no pointer state to undo: a
+    // disabled checked button is handled on its own below, and a loading one keeps the resting Highlight of this
+    // rule.
     .bit-tgb-chk,
+    .bit-tgb-chk.bit-tgb-fxc,
     .bit-tgb-chk:not(.bit-dis):not(.bit-tgb-lod):hover,
     .bit-tgb-chk:not(.bit-dis):not(.bit-tgb-lod):active,
     .bit-tgb-chk.bit-tgb-fxc:not(.bit-dis):not(.bit-tgb-lod):hover,

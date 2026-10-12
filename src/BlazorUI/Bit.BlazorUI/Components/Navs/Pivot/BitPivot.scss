@@ -1132,4 +1132,51 @@ $pvt-private-properties:
     .bit-pvt-scr.bit-pvt-top #{$hwr}::before {
         content: "";
     }
+
+    // The selected Tab is a fill of the accent under the role's on-color - LinkText under Canvas for the primary
+    // role - and Chromium draws a Canvas backplate behind every line of text, so its label would be Canvas on
+    // Canvas, the one tab with nothing written on it. It is drawn in the system selection pair instead, kept out
+    // of the forced palette so the pair holds in both engines. Out of it, the theme's focus ring would come back,
+    // so the system outline the focus-ring mixin draws is left alone there; inside a clipping header that outline
+    // is drawn on the inside of the tab, over the Highlight fill, so it takes the selection's text color. The
+    // hover of its dismiss button, which the opt-out reaches as well, would repaint it in theme colors, so it is
+    // set back too.
+    .bit-pvt-tab:not(.bit-dis) #{$sel}:not(.bit-dis) {
+        forced-color-adjust: none;
+        color: HighlightText;
+        border-color: Highlight;
+        background-color: Highlight;
+
+        &:focus-visible {
+            box-shadow: none;
+        }
+
+        > .bit-pvti-dbt:hover {
+            --bit-pvt-dbt-clr: initial;
+            --bit-pvt-dbt-bg: initial;
+        }
+    }
+
+    .bit-pvt-tab:is(.bit-pvt-mnu, .bit-pvt-sld, .bit-pvt-scr):not(.bit-dis) #{$sel}:not(.bit-dis):focus-visible {
+        outline-color: HighlightText;
+    }
+
+    // The hover of a Tab item moves the variables it is painted from to the role's hover fill and on-color, the
+    // pair the backplate empties, so they are set back here with the selector of the rule they undo.
+    .bit-pvt-tab {
+        #{$itm} {
+            &:hover {
+                --bit-pvt-itm-clr: initial;
+                --bit-pvt-itm-bg: initial;
+            }
+        }
+    }
+
+    // A background role is the page's own color, Canvas here, which the More button holding the selection and the
+    // accented edge of a selected Outline tab are drawn in - invisible in every engine. It is the text color here.
+    @each $role in $bit-background-color-roles {
+        .bit-pvt-#{$role} {
+            --bit-pvt-role-main: CanvasText;
+        }
+    }
 }

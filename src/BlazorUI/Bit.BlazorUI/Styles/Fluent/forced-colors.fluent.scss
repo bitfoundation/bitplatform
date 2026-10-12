@@ -22,6 +22,14 @@
         --bit-clr-bg-ter: Canvas;
         --bit-clr-brd-pri: CanvasText;
         --bit-clr-brd-sec: CanvasText;
+        // The primary role and its on-color are a pair no token can make legible as a FILL. Chromium draws a Canvas
+        // backplate behind every line of text (and icon glyph) left to the forced palette, so an on-color has to stand
+        // out from Canvas; Firefox draws none, so it has to stand out from the fill as well - which leaves the fill no
+        // system color but one as dark or as light as Canvas. And --bit-clr-pri is not only a fill: it is the color
+        // of every link, accent, rule and ring of the library, where Canvas would be the page's own color. So the
+        // pair stays the one a contrast theme gives a link, and a part that fills itself with a role under its
+        // on-color is painted in its own forced-colors block - as a native button (ButtonText on ButtonFace) or as a
+        // plain surface (CanvasText on Canvas). BitForcedColorsBrowserTests reads every such part in each engine.
         --bit-clr-pri: LinkText;
         --bit-clr-pri-hover: LinkText;
         --bit-clr-pri-active: LinkText;

@@ -1083,3 +1083,36 @@ $prs-private-properties:
     --bit-prs-coin-clr-bg: #{$clr-brd-ter};
     --bit-prs-coin-clr-txt: #{$clr-bg-pri};
 }
+
+// Forced colors, after the variants and the role classes these rules paint over.
+@media (forced-colors: active) {
+    // A filled coin, and the overlay that covers it, wear the coin color under the text color paired with it -
+    // LinkText under Canvas for the primary role, CanvasText under Canvas for a foreground one - and Chromium draws
+    // a Canvas backplate behind every line of text, so the initials would be Canvas on Canvas. They are drawn as
+    // a bordered canvas disc instead, which reads with the backplate and without it (Firefox draws none).
+    .bit-prs-fil {
+        color: CanvasText;
+        border-color: CanvasText;
+        background-color: Canvas;
+    }
+
+    .bit-prs-imo {
+        color: CanvasText;
+        background-color: Canvas;
+    }
+
+    // An Outline or a Text coin draws its initials, and an Outline one its ring, in the coin color itself, which
+    // for a background role is the page's own color - Canvas here, in both engines.
+    @each $role in $bit-background-color-roles {
+        .bit-prs-#{$role} .bit-prs-otl {
+            color: CanvasText;
+            border-color: CanvasText;
+        }
+    }
+
+    @each $role in $bit-background-color-roles {
+        .bit-prs-#{$role} .bit-prs-txt {
+            color: CanvasText;
+        }
+    }
+}

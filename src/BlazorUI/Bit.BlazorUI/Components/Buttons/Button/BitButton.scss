@@ -690,15 +690,65 @@ $btn-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
 // through aria-disabled alone (AllowDisabledFocus, the default here) would look enabled, an Outline or Text button
 // would lose the border that is its only edge, and the spinner's track and arc would be painted the same color and
 // stop reading as motion. All three are re-established in system colors.
+//
+// A filled button is painted as a native one. The palette fills the primary role with LinkText under a Canvas
+// label, two system colors the mode keeps - but Chromium draws a Canvas backplate behind every line of text, so the
+// label would be Canvas on Canvas, an empty box where the main action of a form should be. ButtonText on ButtonFace
+// reads with the backplate and without it (Firefox draws none), and needs no opt-out of the forced palette.
 @media (forced-colors: active) {
     .bit-btn-otl,
     .bit-btn-txt {
         border-color: ButtonBorder;
     }
 
+    .bit-btn-fil:not(.bit-dis) {
+        color: ButtonText;
+        border-color: ButtonText;
+        background-color: ButtonFace;
+    }
+
+    // A background role is the page's own color, Canvas here, which an Outline or Text button would read its label
+    // from; a FixedColor button wears the role's on-color, Canvas again for the primary role. Both take the system
+    // button text instead, which every contrast theme keeps legible over the canvas the button sits on.
+    @each $role in $bit-background-color-roles {
+        .bit-btn-otl.bit-btn-#{$role}:not(.bit-dis),
+        .bit-btn-txt.bit-btn-#{$role}:not(.bit-dis) {
+            color: ButtonText;
+        }
+    }
+
+    .bit-btn.bit-btn-fxc:not(.bit-dis) {
+        color: ButtonText;
+    }
+
+    // The pointer states move the variables the button is painted from to the role's hover and press colors -
+    // a LinkText fill under a Canvas label, the very pair the backplate hides - so they are set back here and the
+    // state is carried by the system Highlight on the border instead. The selectors are the ones of the rules they
+    // undo, which this block follows at the same weight.
+    .bit-btn-fil:not(.bit-dis, .bit-btn-lnc):hover,
+    .bit-btn-fil:not(.bit-dis, .bit-btn-lnc):active,
+    .bit-btn-otl:not(.bit-dis, .bit-btn-lnc):hover,
+    .bit-btn-otl:not(.bit-dis, .bit-btn-lnc):active,
+    .bit-btn-txt:not(.bit-dis, .bit-btn-lnc):hover,
+    .bit-btn-txt:not(.bit-dis, .bit-btn-lnc):active,
+    .bit-btn.bit-btn-fxc:not(.bit-dis):hover,
+    .bit-btn.bit-btn-fxc:not(.bit-dis):active {
+        --bit-btn-sfg: initial;
+        --bit-btn-sbg: initial;
+        --bit-btn-sbr: initial;
+        border-color: Highlight;
+    }
+
     .bit-btn.bit-dis {
         color: GrayText;
         border-color: GrayText;
+    }
+
+    // The disabled fill is a theme color, which the mode replaces with the engine's own button face - and Firefox
+    // swaps that for its darker pressed face while the pointer is down on a button kept focusable (AllowDisabledFocus),
+    // a pairing no contrast is promised for under GrayText. A system color is kept as it is, so the face is named.
+    .bit-btn-fil.bit-dis {
+        background-color: ButtonFace;
     }
 
     .bit-btn.bit-dis .bit-btn-spn {

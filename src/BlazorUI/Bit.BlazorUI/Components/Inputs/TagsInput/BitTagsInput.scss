@@ -888,6 +888,51 @@ $tgi-private-properties: clr, clr-txt, clr-hover, clr-focus, gap, fontsize, icon
         border: $shp-border-width $shp-border-style ButtonText;
     }
 
+    //a Fill chip is the role color written in the role's on-color - LinkText under Canvas for the primary role,
+    //two system colors the mode keeps. But Chromium draws a Canvas backplate behind every line of text, the glyphs
+    //of the dismiss and reorder buttons included, so the chip would read Canvas on Canvas: a row of empty pills.
+    //A chip is a surface, so it takes the canvas pair, and the fold chip, a button, the native button pair; both
+    //read with the backplate and without it (Firefox draws none). The pointer states move the chip's variables to
+    //the role's hover fill under the on-color, the same pair again, so they are set back with the selectors of the
+    //rules they undo and the state is carried by the system Highlight on the rule instead.
+    .bit-tgi-tgf .bit-tgi-tag {
+        color: CanvasText;
+        background-color: Canvas;
+    }
+
+    .bit-tgi-tgf .bit-tgi-tgl {
+        color: ButtonText;
+        background-color: ButtonFace;
+    }
+
+    .bit-tgi-tag-clk:hover {
+        --bit-tgi-tag-sfg: initial;
+        --bit-tgi-tag-sbr: initial;
+        --bit-tgi-tag-sbg: initial;
+        border-color: Highlight;
+    }
+
+    .bit-tgi-tgl:hover {
+        --bit-tgi-tgl-sfg: initial;
+        --bit-tgi-tgl-sbr: initial;
+        --bit-tgi-tgl-sbg: initial;
+        border-color: Highlight;
+    }
+
+    //a background role is the page's own color, Canvas here, which an Outline or Text chip reads its text from,
+    //invisible over the field it sits in, so it takes the system text instead.
+    @each $role in $bit-background-color-roles {
+        .bit-tgi-tgo.bit-tgi-#{$role} .bit-tgi-tag,
+        .bit-tgi-tgt.bit-tgi-#{$role} .bit-tgi-tag {
+            color: CanvasText;
+        }
+
+        .bit-tgi-tgo.bit-tgi-#{$role} .bit-tgi-tgl,
+        .bit-tgi-tgt.bit-tgi-#{$role} .bit-tgi-tgl {
+            color: ButtonText;
+        }
+    }
+
     //the inset ring a chip is focused with, and the one marking the chip a drag would land on, are
     //painted with a color the forced palette has thrown away, so both are re-drawn in the system
     //highlight - the one color a focused element is expected to wear there.

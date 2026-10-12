@@ -180,6 +180,18 @@
     }
 }
 
+// The background roles are the page's own colors, which a forced-colors palette maps to Canvas - and Chromium draws
+// a Canvas backplate behind every line of text there, so a text colored with one would be Canvas on Canvas and
+// vanish (Firefox draws no backplate, but the page behind it is Canvas as well). CanvasText is what such a text
+// reads in both. A single class, so the disabled rule below still outranks it with its GrayText.
+@media (forced-colors: active) {
+    @each $role in $bit-background-color-roles {
+        .bit-txt-#{$role} {
+            color: CanvasText;
+        }
+    }
+}
+
 // The transparent foreground is the gradient text technique: the box paints a background and the glyphs are
 // punched out of it. A forced-colors palette removes every gradient it would have shown through, so the fill
 // is given back to the system color there - otherwise the text is painted with nothing behind it.

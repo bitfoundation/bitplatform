@@ -696,6 +696,14 @@ $tgl-private-properties: clr, clr-hover, clr-text, clr-focus, gap, trk-w-base, t
             color: HighlightText;
         }
 
+        // The checked track is opted out of the forced palette, and that opt-out is inherited by whatever the
+        // content puts on it, which then keeps every author color of its own: an icon of the library reads its
+        // LinkText there, a glyph lost on the Highlight fill. Everything inside follows the HighlightText the
+        // content is painted in instead, and the GrayText of a disabled toggle the same way.
+        .bit-tgl-cnn * {
+            color: inherit;
+        }
+
         .bit-tgl-ico, .bit-tgl-spn {
             color: Highlight;
             border-color: translucent(Highlight, 30%);

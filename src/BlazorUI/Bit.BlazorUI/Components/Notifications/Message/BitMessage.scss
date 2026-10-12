@@ -378,15 +378,32 @@ $msg-private-properties:
 // forced-colors: Windows High Contrast repaints every surface from one system pair, which takes the tint out
 // of the two round buttons - their hover fill turns into an opaque block of the very color their glyph is
 // drawn in - and leaves the countdown bar indistinguishable from the track it runs down. Both are painted
-// back with the system colors that still carry a meaning there.
+// back with the system colors that still carry a meaning there. The buttons' pair is kept out of the forced
+// palette: Chromium draws a Canvas backplate behind every line of text, the glyph included, and HighlightText is
+// as dark or as light as Canvas in a contrast theme, so the glyph would vanish into it the moment it is pointed
+// at. Opted out, the theme's focus ring would come back as well, so it is left to the system outline the
+// focus-ring mixin draws in this mode.
+//
+// A Fill message is painted as a plain surface. The palette gives the primary role, and the foreground ones, a
+// Canvas on-color, which is all the text and the icon read - Canvas over that backplate, a message with nothing
+// in it. CanvasText on Canvas reads with the backplate and without it (Firefox draws none), and the border keeps
+// the edge the fill used to draw.
 @media (forced-colors: active) {
     .bit-msg-exb,
     .bit-msg-dmb {
         &:hover,
         &:active {
+            forced-color-adjust: none;
             color: HighlightText;
             background-color: Highlight;
+            box-shadow: none;
         }
+    }
+
+    .bit-msg-fil {
+        color: CanvasText;
+        border-color: CanvasText;
+        background-color: Canvas;
     }
 
     .bit-msg-prg {

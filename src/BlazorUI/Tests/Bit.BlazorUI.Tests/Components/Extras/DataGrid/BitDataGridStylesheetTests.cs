@@ -95,4 +95,22 @@ public class BitDataGridStylesheetTests
         StringAssert.Contains(stylesheet, ".bit-dtg-resizer:focus-visible");
         StringAssert.Contains(stylesheet, "@media (forced-colors: active)");
     }
+
+    // The primary button's label is the on-color of its fill, Canvas under a forced palette, which Chromium's Canvas
+    // backplate behind text hides; it is painted as a native button there instead.
+    [TestMethod]
+    public void BitDataGridShouldPaintThePrimaryButtonAsANativeOneUnderForcedColors()
+    {
+        var stylesheet = SourceFiles.ReadStylesheet("Bit.BlazorUI.Extras", "Components", "DataGrid", "BitDataGrid.scss");
+
+        var forced = SourceFiles.GetScssBlock(stylesheet, "\n@media (forced-colors: active) {");
+
+        StringAssert.Contains(forced, """
+                .bit-dtg-btn-primary:not(:disabled) {
+                    color: ButtonText;
+                    border-color: ButtonText;
+                    background-color: ButtonFace;
+                }
+            """.Replace("\r\n", "\n"));
+    }
 }

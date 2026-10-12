@@ -855,6 +855,28 @@ $tln-private-properties: clr, clr-fg, clr-focus, clr-dis-bg, clr-dis-text, dot-s
                 transparent var(--bit-tln-dvd-dash, 100%) var(--bit-tln-dvd-period, 100%));
     }
 
+    // A filled dot draws its icon in the role's on-color, which the palette makes Canvas for the primary role and
+    // the foreground ones - and Chromium draws a Canvas backplate behind every glyph, so the icon would be Canvas on
+    // Canvas, an empty disc. The filled dot becomes a plain one instead, CanvasText on Canvas inside a CanvasText
+    // ring, which reads with the backplate and without it (Firefox draws none). The selectors are those of the
+    // variant rules they follow, kept off the disabled items and the items that ask for another variant.
+    .bit-tln-fil:not(.bit-dis) > .bit-tln-itm:not(.bit-tln-ivo, .bit-tln-ivt, .bit-tln-ids),
+    .bit-tln:not(.bit-dis) > .bit-tln-itm.bit-tln-ivf:not(.bit-tln-ids) {
+        --bit-tln-dot-clr: CanvasText;
+        --bit-tln-dot-clr-bg: Canvas;
+        --bit-tln-dot-clr-brd: CanvasText;
+        --bit-tln-dot-ico-clr: CanvasText;
+    }
+
+    // A background role is the page's own color, Canvas here, which the icon of an Outline or Text dot and the ring
+    // of an Outline one are drawn in - invisible in every engine. The role is the system text color instead.
+    @each $role in $bit-background-color-roles {
+        .bit-tln-#{$role},
+        .bit-tln-i#{$role} {
+            --bit-tln-clr: CanvasText;
+        }
+    }
+
     .bit-tln.bit-dis,
     .bit-tln-itm.bit-tln-ids,
     .bit-dis .bit-tln-ico,
