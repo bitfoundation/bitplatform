@@ -330,61 +330,55 @@ public partial class BitNavDemo
         {
             Name = "--bit-Nav-hover-background",
             DefaultValue = "--bit-clr-bg-pri-hover",
-            Description = "Background of a hovered item (pointer devices only); the selected item keeps --bit-Nav-selected-hover-background instead. The Accent parameter wins over it.",
+            Description = "Background of a hovered item (pointer devices only); the selected item, and a collapsed branch that holds it, takes --bit-Nav-selected-hover-background instead. The Accent parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Nav-hover-color",
             DefaultValue = "--bit-clr-fg-pri",
-            Description = "Text and chevron color of a hovered item. The Accent parameter wins over it.",
+            Description = "Text and chevron color of a hovered item; the selected item, and a collapsed branch that holds it, takes --bit-Nav-selected-hover-color instead. The Accent parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Nav-hover-icon-color",
             DefaultValue = "--bit-Nav-icon-color, then --bit-clr-pri",
-            Description = "Icon color of a hovered item (pointer devices only). The Accent and Color parameters win over it.",
+            Description = "Icon color of a hovered item (pointer devices only); the selected item, and a collapsed branch that holds it, takes --bit-Nav-selected-hover-icon-color instead. The Accent and Color parameters win over it.",
         },
         new()
         {
             Name = "--bit-Nav-hover-description-color",
             DefaultValue = "--bit-Nav-description-color, then --bit-clr-fg-ter",
-            Description = "Description color of a hovered item (pointer devices only). The Accent parameter wins over it.",
+            Description = "Description color of a hovered item (pointer devices only); the selected item, and a collapsed branch that holds it, takes --bit-Nav-selected-hover-description-color instead. The Accent parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Nav-pressed-background",
             DefaultValue = "--bit-clr-bg-pri-active",
-            Description = "Background of an item while it is pressed (the one feedback a tap gets on a touch screen); the selected item keeps --bit-Nav-selected-hover-background instead. The Accent parameter wins over it.",
+            Description = "Background of an item while it is pressed (the one feedback a tap gets on a touch screen); the selected item, and a collapsed branch that holds it, takes --bit-Nav-selected-pressed-background instead. The Accent parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Nav-pressed-color",
             DefaultValue = "--bit-Nav-hover-color, then --bit-clr-fg-pri (on a touch screen --bit-clr-fg-pri)",
-            Description = "Text and chevron color of an item while it is pressed. Where the pointer can hover it falls back on the hovered color; on a touch screen, where no hover applies, on the default. The Accent parameter wins over it.",
+            Description = "Text and chevron color of an item while it is pressed; the selected item, and a collapsed branch that holds it, takes --bit-Nav-selected-hover-color instead. Where the pointer can hover it falls back on the hovered color; on a touch screen, where no hover applies, on the default. The Accent parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Nav-pressed-icon-color",
             DefaultValue = "--bit-Nav-hover-icon-color, then --bit-Nav-icon-color, then --bit-clr-pri (on a touch screen --bit-Nav-icon-color, then --bit-clr-pri)",
-            Description = "Icon color of an item while it is pressed. Where the pointer can hover it falls back on the hovered icon color; on a touch screen, where no hover applies, on the one at rest. The Accent and Color parameters win over it.",
+            Description = "Icon color of an item while it is pressed; the selected item, and a collapsed branch that holds it, takes --bit-Nav-selected-hover-icon-color instead. Where the pointer can hover it falls back on the hovered icon color; on a touch screen, where no hover applies, on the one at rest. The Accent and Color parameters win over it.",
         },
         new()
         {
             Name = "--bit-Nav-pressed-description-color",
             DefaultValue = "--bit-Nav-hover-description-color, then --bit-Nav-description-color, then --bit-clr-fg-ter (on a touch screen --bit-Nav-description-color, then --bit-clr-fg-ter)",
-            Description = "Description color of an item while it is pressed. Where the pointer can hover it falls back on the hovered description color; on a touch screen, where no hover applies, on the one at rest. The Accent parameter wins over it.",
+            Description = "Description color of an item while it is pressed; the selected item, and a collapsed branch that holds it, takes --bit-Nav-selected-hover-description-color instead. Where the pointer can hover it falls back on the hovered description color; on a touch screen, where no hover applies, on the one at rest. The Accent parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Nav-selected-background",
             DefaultValue = "--bit-clr-bg-pri-active",
             Description = "Background of the selected item, and of a collapsed branch that holds it. The Accent parameter wins over it.",
-        },
-        new()
-        {
-            Name = "--bit-Nav-selected-hover-background",
-            DefaultValue = "--bit-Nav-selected-background, then --bit-clr-bg-pri-active",
-            Description = "Background of the selected item, and of a collapsed branch that holds it, while it is hovered or pressed. The selection keeps its own fill and colors under the pointer rather than taking the hovered or pressed ones, so the item just picked never looks unselected; set this to give it a feedback of its own. The Accent parameter wins over it.",
         },
         new()
         {
@@ -403,6 +397,36 @@ public partial class BitNavDemo
             Name = "--bit-Nav-selected-description-color",
             DefaultValue = "--bit-Nav-description-color, then --bit-clr-fg-ter",
             Description = "Description color of the selected item, and of a collapsed branch that holds it. The Accent parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-selected-hover-background",
+            DefaultValue = "--bit-Nav-selected-background with 8% of --bit-Nav-selected-color mixed in",
+            Description = "Background of the selected item, and of a collapsed branch that holds it, while it is hovered (pointer devices only). The selection gives its feedback on its own fill rather than taking the hovered one every other item gets, so the item just picked - which the pointer is still on right after the click - never looks unselected. Where the browser has no color-mix it keeps the selected background. The Accent parameter wins over it: an explicit Accent mixes its own on-color into its own selected fill.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-selected-pressed-background",
+            DefaultValue = "--bit-Nav-selected-hover-background with 8% of --bit-Nav-selected-hover-color mixed in",
+            Description = "Background of the selected item, and of a collapsed branch that holds it, while it is pressed - on a touch screen too, where it is the one feedback a tap gets. Where the browser has no color-mix it falls back on --bit-Nav-selected-hover-background. The Accent parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-selected-hover-color",
+            DefaultValue = "--bit-Nav-selected-color, then --bit-clr-fg-pri",
+            Description = "Text and chevron color of the selected item, and of a collapsed branch that holds it (its group header included), while it is hovered or pressed - the one to move with --bit-Nav-selected-hover-background when the selected color does not read on that fill. The Accent parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-selected-hover-icon-color",
+            DefaultValue = "--bit-Nav-selected-icon-color, then --bit-Nav-icon-color, then --bit-clr-pri",
+            Description = "Icon color of the selected item, and of a collapsed branch that holds it, while it is hovered or pressed. The Accent and Color parameters win over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-selected-hover-description-color",
+            DefaultValue = "--bit-Nav-selected-description-color, then --bit-Nav-description-color, then --bit-clr-fg-ter",
+            Description = "Description color of the selected item, and of a collapsed branch that holds it, while it is hovered or pressed. The Accent parameter wins over it.",
         },
         new()
         {
@@ -486,7 +510,7 @@ public partial class BitNavDemo
         {
             Name = "--bit-Nav-header-hover-background",
             DefaultValue = "--bit-clr-bg-pri-hover",
-            Description = "Background of a hovered group header (pointer devices only).",
+            Description = "Background of a hovered group header (pointer devices only); a collapsed one that holds the selected item takes --bit-Nav-selected-hover-background instead.",
         },
         new()
         {

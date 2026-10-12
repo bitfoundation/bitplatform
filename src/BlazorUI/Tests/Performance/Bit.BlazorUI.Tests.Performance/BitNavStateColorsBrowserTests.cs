@@ -160,6 +160,191 @@ public class BitNavStateColorsBrowserTests : PerformanceTestBase
         await Page.Mouse.UpAsync();
     }
 
+    [TestMethod]
+    public async Task BitNav_SelectedHover_GivesItsFeedbackOnTheSelectedFillInTheSelectedColors()
+    {
+        await Open(Page);
+
+        await Hover(Page, "theme-default", Selected);
+
+        // Neither the hover's fill and colors (the neutral grey this used to turn into) nor the selected fill unchanged,
+        // which would give the pointer no feedback at all.
+        await AssertParts(Page, "theme-default", Selected, SelectedText, SelectedIcon, SelectedDescription);
+        await AssertBackground(Page, "theme-default", Selected, await ResolveBackground(Page, "theme-default", Mix(SelectedText, SelectedBackground)));
+        await AssertBackgroundIsNot(Page, "theme-default", Selected, SelectedBackground, "rgb(0, 0, 200)");
+    }
+
+    [TestMethod]
+    public async Task BitNav_SelectedPressedWithAMouse_DeepensTheHoverFeedback()
+    {
+        await Open(Page);
+
+        await Press(Page, "theme-default", Selected);
+
+        await AssertParts(Page, "theme-default", Selected, SelectedText, SelectedIcon, SelectedDescription);
+        await AssertBackground(Page, "theme-default", Selected, await ResolveBackground(Page, "theme-default", Mix(SelectedText, Mix(SelectedText, SelectedBackground))));
+        await Page.Mouse.UpAsync();
+    }
+
+    [TestMethod]
+    public async Task BitNav_SelectedHover_EndsBackInTheSelectedFill()
+    {
+        await Open(Page);
+
+        await Hover(Page, "theme-default", Selected);
+        await AssertBackgroundIsNot(Page, "theme-default", Selected, SelectedBackground);
+
+        await Page.Mouse.MoveAsync(0, 0);
+        await Page.WaitForFunctionAsync("selector => !document.querySelector(selector).matches(':hover')", Item("theme-default", Selected));
+
+        await AssertParts(Page, "theme-default", Selected, SelectedText, SelectedIcon, SelectedDescription);
+        await AssertBackground(Page, "theme-default", Selected, SelectedBackground);
+    }
+
+    [TestMethod]
+    public async Task BitNav_SelectedHoverAndPress_TakeTheThemesSelectedStateVariables()
+    {
+        await Open(Page);
+
+        await Hover(Page, "theme-selected-hover", Selected);
+        await AssertBackground(Page, "theme-selected-hover", Selected, "rgb(0, 60, 0)");
+        await AssertParts(Page, "theme-selected-hover", Selected, "rgb(255, 255, 9)", "rgb(255, 255, 10)", "rgb(255, 255, 11)");
+
+        await Page.Mouse.DownAsync();
+        await WaitForState(Page, "theme-selected-hover", Selected, ":active");
+        await AssertBackground(Page, "theme-selected-hover", Selected, "rgb(0, 30, 0)");
+        await AssertParts(Page, "theme-selected-hover", Selected, "rgb(255, 255, 9)", "rgb(255, 255, 10)", "rgb(255, 255, 11)");
+        await Page.Mouse.UpAsync();
+    }
+
+    [TestMethod]
+    public async Task BitNav_SelectedHover_UnderASemanticAccent_MixesTheAccentsOwnColors()
+    {
+        await Open(Page);
+
+        await Hover(Page, "theme-semantic", Selected);
+
+        // The Accent wins over the theme's selected variables as it does at rest, and still gives the pointer feedback.
+        var on = await Resolve(Page, "theme-semantic", "var(--bit-nav-clr-text)");
+        await AssertParts(Page, "theme-semantic", Selected, on, on, on);
+        await AssertBackground(Page, "theme-semantic", Selected,
+            await ResolveBackground(Page, "theme-semantic", "color-mix(in srgb, var(--bit-nav-clr-text) 8%, var(--bit-nav-clr-active))"));
+        await AssertBackgroundIsNot(Page, "theme-semantic", Selected, await ResolveBackground(Page, "theme-semantic", "var(--bit-nav-clr-active)"));
+    }
+
+    [TestMethod]
+    public async Task BitNav_SelectedHover_UnderASurfaceAccent_KeepsTheIconAndDescriptionAtRest()
+    {
+        await Open(Page);
+
+        await Hover(Page, "theme-surface", Selected);
+
+        await AssertParts(Page, "theme-surface", Selected, await Resolve(Page, "theme-surface", "var(--bit-nav-clr-text)"), RestIcon, RestDescription);
+        await AssertBackground(Page, "theme-surface", Selected,
+            await ResolveBackground(Page, "theme-surface", "color-mix(in srgb, var(--bit-nav-clr-text) 8%, var(--bit-nav-clr-active))"));
+    }
+
+    [TestMethod]
+    public async Task BitNav_SelectedHover_WithNoTheme_DarkensTheSelectedFill()
+    {
+        await Open(Page);
+
+        await Hover(Page, "plain", Selected);
+
+        await AssertParts(Page, "plain", Selected,
+            await Resolve(Page, "plain", "var(--bit-clr-fg-pri)"),
+            await Resolve(Page, "plain", "var(--bit-clr-pri)"),
+            await Resolve(Page, "plain", "var(--bit-clr-fg-ter)"));
+        await AssertBackground(Page, "plain", Selected,
+            await ResolveBackground(Page, "plain", "color-mix(in srgb, var(--bit-clr-fg-pri) 8%, var(--bit-clr-bg-pri-active))"));
+        await AssertBackgroundIsNot(Page, "plain", Selected,
+            await ResolveBackground(Page, "plain", "var(--bit-clr-bg-pri-active)"),
+            await ResolveBackground(Page, "plain", "var(--bit-clr-bg-pri-hover)"));
+    }
+
+    [TestMethod]
+    public async Task BitNav_CollapsedBranchHoldingTheSelection_GivesTheSelectedFeedback()
+    {
+        await Open(Page);
+
+        // A click on a parent with no url collapses it.
+        const string branch = ".bit-nav-ict.bit-nav-sca";
+        await Collapse(Page, "theme-branch", ".bit-nav-ict", branch);
+
+        await AssertParts(Page, "theme-branch", branch, SelectedText, SelectedIcon, SelectedDescription);
+        await Expect(Page.Locator($"{Item("theme-branch", branch)} .bit-nav-cbt")).ToHaveCSSAsync("color", SelectedText);
+        await AssertBackground(Page, "theme-branch", branch, await ResolveBackground(Page, "theme-branch", Mix(SelectedText, SelectedBackground)));
+
+        await Page.Mouse.DownAsync();
+        await WaitForState(Page, "theme-branch", branch, ":active");
+        await AssertBackground(Page, "theme-branch", branch, await ResolveBackground(Page, "theme-branch", Mix(SelectedText, Mix(SelectedText, SelectedBackground))));
+        await Page.Mouse.UpAsync();
+    }
+
+    [TestMethod]
+    public async Task BitNav_CollapsedGroupHeaderHoldingTheSelection_GivesTheSelectedFeedback()
+    {
+        await Open(Page);
+
+        const string header = ".bit-nav-gcb.bit-nav-sca";
+        await Collapse(Page, "theme-group", ".bit-nav-gcb", header);
+
+        // The selected item's feedback, not the neutral hover of a header (--bit-Nav-header-hover-background).
+        await AssertHeaderParts(Page, header, SelectedText, SelectedIcon, SelectedDescription);
+        await AssertBackground(Page, "theme-group", header, await ResolveBackground(Page, "theme-group", Mix(SelectedText, SelectedBackground)));
+
+        await Page.Mouse.DownAsync();
+        await WaitForState(Page, "theme-group", header, ":active");
+        await AssertHeaderParts(Page, header, SelectedText, SelectedIcon, SelectedDescription);
+        await AssertBackground(Page, "theme-group", header, await ResolveBackground(Page, "theme-group", Mix(SelectedText, Mix(SelectedText, SelectedBackground))));
+        await Page.Mouse.UpAsync();
+    }
+
+    [TestMethod]
+    public async Task BitNav_CollapsedGroupHeaderHoldingTheSelection_TakesTheThemesSelectedHoverColor()
+    {
+        await Open(Page);
+
+        const string header = ".bit-nav-gcb.bit-nav-sca";
+        await Page.EvalOnSelectorAsync("#theme-group", $"section => section.setAttribute('style', '{SelectedHoverStyleForGroup}')");
+        await Collapse(Page, "theme-group", ".bit-nav-gcb", header);
+
+        await AssertHeaderParts(Page, header, "rgb(255, 255, 9)", "rgb(255, 255, 10)", "rgb(255, 255, 11)");
+        await AssertBackground(Page, "theme-group", header, "rgb(0, 60, 0)");
+    }
+
+    private const string SelectedBackground = "rgb(0, 100, 0)";
+
+    private const string SelectedHoverStyleForGroup =
+        "--bit-Nav-selected-hover-background: rgb(0, 60, 0);" +
+        "--bit-Nav-selected-hover-color: rgb(255, 255, 9);" +
+        "--bit-Nav-selected-hover-icon-color: rgb(255, 255, 10);" +
+        "--bit-Nav-selected-hover-description-color: rgb(255, 255, 11);";
+
+    /// <summary>
+    /// Collapses the branch holding the selected item with a click on it, then hovers it again: the page gets shorter as
+    /// the branch closes, so a page scrolled to the end scrolls back and the branch slides out from under the pointer.
+    /// </summary>
+    private static async Task Collapse(IPage page, string section, string toggle, string collapsed)
+    {
+        await page.ClickAsync(Item(section, toggle));
+        await Expect(page.Locator(Item(section, collapsed))).ToHaveCountAsync(1);
+        await Hover(page, section, collapsed);
+    }
+
+    /// <summary>The fill the selection takes under the pointer: the fill with 8% of the color drawn on it mixed in.</summary>
+    internal static string Mix(string on, string fill) => $"color-mix(in srgb, {on} 8%, {fill})";
+
+    /// <summary>The colors of a group header's text (inherited from the header), icon and description.</summary>
+    private static async Task AssertHeaderParts(IPage page, string header, string text, string icon, string description)
+    {
+        var container = page.Locator(Item("theme-group", header)).First;
+
+        await Expect(container.Locator(".bit-nav-ghd").First).ToHaveCSSAsync("color", text);
+        await Expect(container.Locator(".bit-nav-iic").First).ToHaveCSSAsync("color", icon);
+        await Expect(container.Locator(".bit-nav-des").First).ToHaveCSSAsync("color", description);
+    }
+
 
 
     internal const string Selected = ".bit-nav-sel";
@@ -196,7 +381,7 @@ public class BitNavStateColorsBrowserTests : PerformanceTestBase
         await WaitForState(page, section, item, ":active");
     }
 
-    private static Task WaitForState(IPage page, string section, string item, string state)
+    internal static Task WaitForState(IPage page, string section, string item, string state)
     {
         return page.WaitForFunctionAsync("([selector, state]) => document.querySelector(selector)?.matches(state)",
             new[] { Item(section, item), state }, new() { Timeout = 5000 });
@@ -213,6 +398,37 @@ public class BitNavStateColorsBrowserTests : PerformanceTestBase
             probe.remove();
             return color;
         }", new[] { $"#{section} .bit-nav", expression });
+    }
+
+    /// <summary>
+    /// What a background expression resolves to inside the root of a section's nav, serialized the way the engine
+    /// serializes a computed background - a color-mix included, which is compared as the engine writes it.
+    /// </summary>
+    internal static Task<string> ResolveBackground(IPage page, string section, string expression)
+    {
+        return page.EvaluateAsync<string>(@"([selector, expression]) => {
+            const probe = document.createElement('span');
+            probe.style.backgroundColor = expression;
+            document.querySelector(selector).appendChild(probe);
+            const color = getComputedStyle(probe).backgroundColor;
+            probe.remove();
+            return color;
+        }", new[] { $"#{section} .bit-nav", expression });
+    }
+
+    /// <summary>The fill an item (or a group header) is drawn on.</summary>
+    internal static Task AssertBackground(IPage page, string section, string item, string background)
+    {
+        return Expect(page.Locator(Item(section, item)).First).ToHaveCSSAsync("background-color", background);
+    }
+
+    /// <summary>That an item's fill is none of the given ones, once it has settled.</summary>
+    internal static async Task AssertBackgroundIsNot(IPage page, string section, string item, params string[] backgrounds)
+    {
+        foreach (var background in backgrounds)
+        {
+            await Expect(page.Locator(Item(section, item)).First).Not.ToHaveCSSAsync("background-color", background);
+        }
     }
 
     /// <summary>
@@ -280,6 +496,29 @@ public class BitNavStateColorsTouchBrowserTests : PerformanceTestBase
 
         await BitNavStateColorsBrowserTests.AssertParts(Page, "theme-pressed", BitNavStateColorsBrowserTests.Other,
             "rgb(255, 255, 6)", "rgb(255, 255, 7)", "rgb(255, 255, 8)");
+        await Page.Mouse.UpAsync();
+    }
+
+    [TestMethod]
+    public async Task BitNav_SelectedPressedOnATouchScreen_GivesTheSelectedFeedback()
+    {
+        await BitNavStateColorsBrowserTests.Open(Page);
+
+        if (await Page.EvaluateAsync<bool>("() => matchMedia('(hover: hover)').matches"))
+        {
+            Assert.Inconclusive("This engine reports a pointer that can hover even with touch on.");
+        }
+
+        await BitNavStateColorsBrowserTests.Press(Page, "theme-default", BitNavStateColorsBrowserTests.Selected);
+
+        // The one feedback a tap gets: the selected fill deepened twice, in the selected colors - never the pressed
+        // fill of the other items.
+        const string selectedText = "rgb(255, 255, 3)";
+        await BitNavStateColorsBrowserTests.AssertParts(Page, "theme-default", BitNavStateColorsBrowserTests.Selected,
+            selectedText, "rgb(255, 255, 4)", "rgb(255, 255, 5)");
+        await BitNavStateColorsBrowserTests.AssertBackground(Page, "theme-default", BitNavStateColorsBrowserTests.Selected,
+            await BitNavStateColorsBrowserTests.ResolveBackground(Page, "theme-default",
+                BitNavStateColorsBrowserTests.Mix(selectedText, BitNavStateColorsBrowserTests.Mix(selectedText, "rgb(0, 100, 0)"))));
         await Page.Mouse.UpAsync();
     }
 }
