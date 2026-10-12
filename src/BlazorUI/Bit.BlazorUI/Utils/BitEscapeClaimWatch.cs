@@ -10,7 +10,7 @@ namespace Bit.BlazorUI;
 /// The verdict is read once (<see cref="TakeForeign"/>, a <see cref="BitEscapeVerdict"/>), so it never outlives the
 /// press it was given for.
 /// </summary>
-internal sealed class BitEscapeClaimWatch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>
+internal sealed class BitEscapeClaimWatch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>
     : IAsyncDisposable where T : class
 {
     private readonly IJSRuntime _js;
