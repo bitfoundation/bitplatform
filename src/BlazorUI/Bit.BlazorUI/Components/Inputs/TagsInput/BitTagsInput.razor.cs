@@ -2452,14 +2452,20 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     {
         if (Disabled) return;
 
-        var count = CurrentValue?.Count ?? 0;
+        var snapshot = GetTags();
+        var count = snapshot.Count;
         if (count == 0) return;
+
+        var isRtl = await IsRtlArrowAsync(_js, e.Key);
+
+        // The index names a tag of the list as it was when the key was pressed. A list that changed while the
+        // direction was being read (a tag removed or moved by a press handled in the meantime) puts another tag
+        // at that index, which this press was never meant for.
+        if (GetTags().SequenceEqual(snapshot) is false) return;
 
         // The navigation walks the tags that are drawn, while a move addresses the list as it really is:
         // sending a tag past the fold is a change to the value, not to where the focus may travel.
         var displayed = GetDisplayedTagCount();
-
-        var isRtl = await IsRtlArrowAsync(_js, e.Key);
         var previousKey = isRtl ? "ArrowRight" : "ArrowLeft";
         var nextKey = isRtl ? "ArrowLeft" : "ArrowRight";
 

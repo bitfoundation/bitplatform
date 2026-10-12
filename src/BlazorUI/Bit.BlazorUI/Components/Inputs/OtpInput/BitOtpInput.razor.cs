@@ -1222,6 +1222,13 @@ public partial class BitOtpInput : BitInputBase<string?>
         // act on it since one Dir does not name costs a round trip.
         var rtl = Vertical is false && await IsRtlArrowAsync(_js, navKey);
 
+        // The component may be gone, or resized into one that no longer has this input, by the time the
+        // direction comes back, so the neighbours are taken from the length it has now.
+        if (IsDisposed || IsStaleIndex(index)) return;
+
+        nextIndex = Math.Min(index + 1, _length - 1);
+        previousIndex = Math.Max(index - 1, 0);
+
         var targetIndex = navKey switch
         {
             "ArrowLeft" => Vertical ? index : ((rtl ^ Reversed) ? nextIndex : previousIndex),

@@ -864,6 +864,15 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         if (Disabled) return;
         if (e.CtrlKey || e.AltKey || e.MetaKey) return;
 
+        // The direction the group is laid out in, a page's or a content's included, read only for the keys that
+        // act on it since one Dir does not name costs a round trip. It is read before the active item is, so
+        // that a press handled while that round trip is out (a held arrow key) has already moved the focus and
+        // this one steps on from where it landed rather than from where the focus stood before.
+        var horizontalArrow = e.Key is "ArrowRight" or "ArrowLeft";
+        if (horizontalArrow && Vertical) return;
+
+        var isRtl = horizontalArrow && await IsRtlArrowAsync(_js, e.Key);
+
         var focusables = _items.Where(IsItemFocusable).ToList();
         if (focusables.Count == 0) return;
 
@@ -889,15 +898,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         int next;
         switch (e.Key)
         {
-            // The direction the group is laid out in, a page's or a content's included, read only for the keys
-            // that act on it since one Dir does not name costs a round trip.
             case "ArrowRight":
-                if (Vertical) return;
-                next = await IsRtlArrowAsync(_js, e.Key) ? index - 1 : index + 1;
+                next = isRtl ? index - 1 : index + 1;
                 break;
             case "ArrowLeft":
-                if (Vertical) return;
-                next = await IsRtlArrowAsync(_js, e.Key) ? index + 1 : index - 1;
+                next = isRtl ? index + 1 : index - 1;
                 break;
             case "ArrowDown":
                 if (Vertical is false) return;

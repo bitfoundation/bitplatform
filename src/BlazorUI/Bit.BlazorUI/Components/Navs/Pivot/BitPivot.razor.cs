@@ -1235,7 +1235,7 @@ public partial class BitPivot : BitComponentBase
         {
             // The direction the header is laid out in, a page's or a content's included, read only for the keys
             // that act on it since one Dir does not name costs a round trip.
-            var isRtl = _isVertical is false && await IsRtlArrowAsync(_js, e.Key);
+            var isRtl = _isVertical is false && await IsRtlArrowAsync(_js, e.Key, _headerRef);
 
             var forward = _isVertical
                             ? e.Key is "ArrowDown"
@@ -1279,11 +1279,11 @@ public partial class BitPivot : BitComponentBase
             // round trip.
             case "ArrowRight":
                 if (_isVertical) return;
-                next = index < 0 ? 0 : (await IsRtlAsync(_js) ? index - 1 : index + 1);
+                next = index < 0 ? 0 : (await IsRtlAsync(_js, _headerRef) ? index - 1 : index + 1);
                 break;
             case "ArrowLeft":
                 if (_isVertical) return;
-                next = index < 0 ? 0 : (await IsRtlAsync(_js) ? index + 1 : index - 1);
+                next = index < 0 ? 0 : (await IsRtlAsync(_js, _headerRef) ? index + 1 : index - 1);
                 break;
             case "ArrowDown":
                 if (_isVertical is false) return;
