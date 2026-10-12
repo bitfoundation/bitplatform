@@ -45,6 +45,9 @@ public class BitDataGridPrerenderTests : BunitTestContext
 
     private static int RenderedRowCount(string html) => RenderedRows(html).Count;
 
+    // The spacer the grid reserves that many rows after its window with, at the default 36px RowHeight.
+    private static string ReservingSpacer(int rows) => $"class=\"bit-dtg-vsp\" style=\"height: {rows * 36}px;\"";
+
     [TestMethod]
     public async Task BitDataGridShouldPrerenderTheFirstWindowOfVirtualizedRows()
     {
@@ -62,8 +65,23 @@ public class BitDataGridPrerenderTests : BunitTestContext
         // The first data row comes right after the single header row.
         StringAssert.Contains(html, "aria-rowindex=\"2\"");
 
-        // The rows past the window are reserved by a spacer, so the scroll height is already the real one.
-        StringAssert.Contains(html, $"height: {(1000 - EstimatedWindow) * 36}px");
+        // The rows past the window are reserved by the grid's own spacer, so the scroll height is already the real one
+        // whether Virtualize writes its spacer's height inline (before .NET 11) or leaves it to its JS (.NET 11 on).
+        StringAssert.Contains(html, ReservingSpacer(1000 - EstimatedWindow));
+    }
+
+    [TestMethod]
+    public async Task BitDataGridShouldReserveNoRowsAfterAShortVirtualizedSet()
+    {
+        var html = await Prerenderer.RenderAsync<BitDataGrid<TestRow>>(new Dictionary<string, object?>
+        {
+            [nameof(BitDataGrid<TestRow>.Items)] = CreateRows(EstimatedWindow),
+            [nameof(BitDataGrid<TestRow>.Virtualize)] = true,
+            [nameof(BitDataGrid<TestRow>.ChildContent)] = Columns(),
+        });
+
+        Assert.AreEqual(EstimatedWindow, RenderedRowCount(html));
+        Assert.IsFalse(html.Contains("bit-dtg-vsp"), "a window holding every row leaves none to reserve");
     }
 
     [TestMethod]
@@ -94,7 +112,7 @@ public class BitDataGridPrerenderTests : BunitTestContext
         StringAssert.Contains(html, "row-0;");
         StringAssert.Contains(html, $"row-{EstimatedWindow - 1};");
         Assert.AreEqual(EstimatedWindow, RenderedRowCount(html));
-        StringAssert.Contains(html, $"height: {(50 - EstimatedWindow) * 36}px");
+        StringAssert.Contains(html, ReservingSpacer(50 - EstimatedWindow));
     }
 
     [TestMethod]
