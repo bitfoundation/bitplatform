@@ -1556,6 +1556,28 @@ public class BitDateRangePickerTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDateRangePickerAllowTextInputShouldFocusTheInputWithoutScrollingWhenAClickOpensIt()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.AllowTextInput, true);
+        });
+
+        component.Find(".bit-dtrp-wrp").Click();
+
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+
+        // The field was just clicked, so it is in view, and a focus that scrolled to it would scroll a sticky
+        // header's container - which dismisses the callout the click just opened.
+        Assert.AreEqual(1, focused.Count);
+        Assert.AreEqual(true, focused[0].Arguments[1]);
+    }
+
+    [TestMethod]
     public void BitDateRangePickerAllowTextInputShouldSwapReversedDates()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;

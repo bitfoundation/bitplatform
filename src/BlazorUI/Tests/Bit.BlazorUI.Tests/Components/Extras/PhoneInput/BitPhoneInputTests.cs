@@ -975,6 +975,25 @@ public class BitPhoneInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPhoneInputShouldFocusTheButtonWithoutScrollingWhenAListWithoutASearchBoxOpens()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.NoSearchBox, true);
+        });
+
+        component.Find("button.bit-phi-drp").Click();
+
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Last();
+
+        // A focus that scrolled the button into view would scroll a sticky header's container, and the
+        // scroll dismisses the list just opened.
+        Assert.AreEqual(true, focused.Arguments[1]);
+    }
+
+    [TestMethod]
     [DataRow(true)]
     [DataRow(false)]
     public void BitPhoneInputShouldKeepTheFocusRingOnlyWhenTheTabOutLandsInTheField(bool landsInField)

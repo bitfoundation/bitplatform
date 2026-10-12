@@ -1761,8 +1761,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         {
             // A click that landed on the icon rather than on the input never moved the focus into the
             // field, so the picker would open with none of the focus cues the very same click on the
-            // input two pixels away produces.
-            await InputElement.FocusSafelyAsync();
+            // input two pixels away produces. The field was just clicked, so it is in view already, and a
+            // focus() scrolling to it anyway would dismiss the callout just opened.
+            await InputElement.FocusSafelyAsync(preventScroll: true);
         }
 
         StateHasChanged();

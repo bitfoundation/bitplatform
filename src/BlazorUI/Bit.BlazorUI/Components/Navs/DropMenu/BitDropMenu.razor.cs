@@ -720,9 +720,12 @@ public partial class BitDropMenu : BitComponentBase
         // alone where the callout is the one taking the focus, which is the case an activation from the
         // keyboard and the AutoFocus and TrapFocus modes each ask for - except on a callout the pointer
         // opened, which those two modes leave the focus out of (see FocusCalloutIfNeeded).
+        // The click's own focus never scrolls, but a focus() does: a trigger in a sticky header of a scrolled
+        // container would have the browser scroll that container back to it, and the scroll dismisses the
+        // callout just opened. The button was just clicked or is already focused, so it is in view anyway.
         if (focusCallout is false && ((AutoFocus || TrapFocus) is false || _owner is CalloutOwner.Pointer))
         {
-            await FocusButton();
+            await FocusButton(preventScroll: true);
         }
 
         await OnClick.InvokeAsync();
@@ -1061,11 +1064,11 @@ public partial class BitDropMenu : BitComponentBase
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
-    private async Task FocusButton()
+    private async Task FocusButton(bool preventScroll = false)
     {
         if (IsDisposed) return;
 
-        await _buttonRef.FocusSafelyAsync();
+        await _buttonRef.FocusSafelyAsync(preventScroll);
     }
 
     private async Task<bool> CalloutContainsFocus()

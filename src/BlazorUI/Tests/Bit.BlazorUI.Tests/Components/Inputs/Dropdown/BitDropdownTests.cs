@@ -2592,6 +2592,29 @@ public class BitDropdownTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDropdownComboShouldFocusItsInputWithoutScrollingWhenAClickOpensIt()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.Combo, true);
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+
+        // The input is part of the field just clicked, so it is in view, and a focus that scrolled to it would
+        // scroll a sticky header's container - which dismisses the list the click just opened.
+        Assert.AreEqual(1, focused.Count);
+        Assert.AreEqual(true, focused[0].Arguments[1]);
+    }
+
+    [TestMethod]
     public void BitDropdownOpenOnFocusShouldHonorAutoFocusSearchBox()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;

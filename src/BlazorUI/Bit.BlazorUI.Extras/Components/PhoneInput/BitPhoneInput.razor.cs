@@ -1278,9 +1278,11 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             {
                 try
                 {
+                    // The button stays where it is on the page, and a focus() scrolling to it would scroll
+                    // its container - a sticky header of a scrolled one - and dismiss the list just opened.
                     if (NoSearchBox)
                     {
-                        await _dropdownButtonRef.FocusAsync();
+                        await _dropdownButtonRef.FocusAsync(preventScroll: true);
                     }
                     else
                     {
