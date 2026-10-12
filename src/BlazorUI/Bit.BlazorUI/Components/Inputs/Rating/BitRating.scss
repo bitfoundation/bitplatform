@@ -391,11 +391,20 @@ $rtg-private-properties: clr, clr-hover, clr-active, clr-focus, size, lbl-size, 
 
 // The filled and unfilled items are told apart by color alone, which forced-colors modes discard, so the
 // distinction is re-established with the system colors here: the plain text color for the empty outline
-// glyph and the selection color for the filled one, both of which contrast with the page.
+// glyph and the selection color for the filled one, both of which contrast with the canvas.
+//
+// Opted out of the forced palette, the glyphs also lose the Canvas backplate Chromium draws behind text, so
+// nothing would stand between them and whatever the rating is laid over - a surface of the page painted in
+// CanvasText would swallow the empty glyph whole and leave the filled one barely visible. The box the glyphs
+// sit in is given the Canvas they are paired with instead, the backplate drawn by the rating itself.
 @media (forced-colors: active) {
+    .bit-rtg-ict {
+        background-color: Canvas;
+    }
+
     .bit-rtg-iem {
         forced-color-adjust: none;
-        color: ButtonText;
+        color: CanvasText;
     }
 
     .bit-rtg-ifl {
@@ -413,7 +422,7 @@ $rtg-private-properties: clr, clr-hover, clr-active, clr-focus, size, lbl-size, 
     // already; the error color is painted outright, so it is taken back here.
     .bit-rtg.bit-inv {
         .bit-rtg-iem {
-            color: ButtonText;
+            color: CanvasText;
         }
 
         .bit-rtg-ifl {

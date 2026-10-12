@@ -1126,6 +1126,17 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
 // that is already in the value, and a field that deliberately has no frame would have no perceivable boundary
 // at all. Each is re-established with something the mode keeps: a system color, or a border style.
 @media (forced-colors: active) {
+    // A background-role Accent is the page's own color, Canvas here, focus color included - so the reveal button,
+    // the busy indicator, the icons and the prefix and suffix of a focused field would be drawn in the color they
+    // sit on, in both engines (Chromium's backplate behind text is Canvas too). The Accent is taken back, after the
+    // classes that publish it, and those parts read the accent the field has without one.
+    .bit-tfl-pbg,
+    .bit-tfl-sbg,
+    .bit-tfl-tbg {
+        --bit-tfl-clr: initial;
+        --bit-tfl-clr-focus: initial;
+    }
+
     .bit-tfl.bit-dis {
         .bit-tfl-lbl,
         .bit-tfl-cnt,

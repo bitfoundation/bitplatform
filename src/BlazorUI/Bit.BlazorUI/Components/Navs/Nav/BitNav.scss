@@ -565,6 +565,38 @@ $nav-private-properties: item-font-size, item-min-height, icon-size, des-font-si
         border-color: Highlight;
     }
 
+    // With the fills gone, what is drawn on a hovered, pressed or selected item is read straight off the canvas -
+    // and an Accent moves it to the role's on-color, Canvas for the primary role and the foreground ones, which
+    // Chromium draws over the Canvas backplate it puts behind every line of text: the item's label, icon and
+    // description would vanish the moment it is pointed at or picked. The colors the Accent publishes are set back
+    // to the ones the item has at rest, the system text color for the words and the icon's own role (LinkText
+    // unless a Color says otherwise). They are read ahead of the public state variables too, so a theme that pairs
+    // a state with the primary on-color is overruled in the same stroke. The rule follows the Accent classes at
+    // the same weight, on the root they are published on.
+    .bit-nav {
+        --bit-nav-clr-text: CanvasText;
+        --bit-nav-clr-des: CanvasText;
+        --bit-nav-clr-icon: var(--bit-nav-clr, #{$nav-icon-color});
+    }
+
+    // The fills themselves can survive the mode where they are a system color - a primary Accent fills the hovered,
+    // pressed and selected item with LinkText - and Firefox, which draws no backplate, would set the words above on
+    // it. Every item is painted on the canvas instead, and the bar carries the selection.
+    .bit-nav-ict,
+    .bit-nav-gcb,
+    .bit-nav-sel,
+    .bit-nav-sca {
+        background-color: Canvas;
+    }
+
+    // A background role is the page's own color, Canvas here, which the icons would be drawn in - invisible in
+    // every engine. It is the system text color instead.
+    .bit-nav-pbg,
+    .bit-nav-sbg,
+    .bit-nav-tbg {
+        --bit-nav-clr: CanvasText;
+    }
+
     .bit-nav-dis,
     .bit-nav.bit-dis,
     .bit-nav-gcb:disabled {

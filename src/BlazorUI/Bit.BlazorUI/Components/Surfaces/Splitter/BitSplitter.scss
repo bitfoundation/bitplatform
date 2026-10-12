@@ -436,7 +436,11 @@ body.bit-spl-drg-bdy {
         background-color: Canvas;
     }
 
+    // The icon is a glyph, and Chromium draws a Canvas backplate behind every glyph of a part left to the forced
+    // palette - a Canvas icon would be an empty Canvas box on the line. Kept out of the palette, it is the Canvas
+    // the grip is drawn in over the CanvasText gutter, a pair of system colors that holds in both engines.
     .bit-spl-gic {
+        forced-color-adjust: none;
         color: Canvas;
     }
 
@@ -450,5 +454,13 @@ body.bit-spl-drg-bdy {
         color: CanvasText;
         border-color: CanvasText;
         background-color: Canvas;
+    }
+
+    // Its hover moves the variables it is painted from to a LinkText fill under a Canvas chevron, which the rule
+    // above no longer reads, so the state is carried by the system Highlight on its outline instead.
+    @media (hover: hover) {
+        .bit-spl-cbt:hover {
+            border-color: Highlight;
+        }
     }
 }

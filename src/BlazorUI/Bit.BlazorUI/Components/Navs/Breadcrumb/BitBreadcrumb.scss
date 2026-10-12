@@ -481,6 +481,19 @@ $brc-private-properties:
     }
 }
 
+// A background role is the page's own color, which a forced-colors palette maps to Canvas, focus color included -
+// so the items, the dividers and the inward focus outline of the overflow rows would all be drawn in the color
+// they sit on, in both engines (Chromium's backplate behind text is Canvas too). The role is taken back here,
+// after the role classes it outranks on source order, and the trail reads the text color it has without one.
+@media (forced-colors: active) {
+    .bit-brc-pbg,
+    .bit-brc-sbg,
+    .bit-brc-tbg {
+        --bit-brc-role-main: initial;
+        --bit-brc-role-focus: initial;
+    }
+}
+
 
 // Published only by an explicit Size, which wins over the public size variables; an unset one is the medium
 // breadcrumb brc-vars spells out after them.

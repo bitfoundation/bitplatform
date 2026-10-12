@@ -92,6 +92,30 @@ public partial class BitButtonStylesheetTests
         }
     }
 
+    [TestMethod]
+    public void BitButtonShouldKeepItsLabelReadableInForcedColors()
+    {
+        var forced = SourceFiles.GetScssBlock(ReadStylesheet(), "@media (forced-colors: active) {");
+
+        // The forced palette fills the primary role with LinkText under a Canvas label, and Chromium draws a Canvas
+        // backplate behind every line of text: a filled button is painted as a native one instead, a pair that reads
+        // with the backplate and without it.
+        var filled = SourceFiles.GetScssDeclarations(forced, ".bit-btn-fil:not(.bit-dis) {");
+        StringAssert.Contains(filled, "color: ButtonText;");
+        StringAssert.Contains(filled, "background-color: ButtonFace;");
+        StringAssert.Contains(filled, "border-color: ButtonText;");
+
+        // The pointer states would move every variant back to that pair, so their variables are set back.
+        foreach (var state in new[] { ".bit-btn-fil:not(.bit-dis, .bit-btn-lnc):hover", ".bit-btn-otl:not(.bit-dis, .bit-btn-lnc):active",
+                                      ".bit-btn-txt:not(.bit-dis, .bit-btn-lnc):hover", ".bit-btn.bit-btn-fxc:not(.bit-dis):active" })
+        {
+            StringAssert.Contains(forced, state);
+        }
+
+        StringAssert.Contains(forced, "--bit-btn-sfg: initial;");
+        StringAssert.Contains(forced, "--bit-btn-sbg: initial;");
+    }
+
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Buttons", "Button", "BitButton.scss");
 
     [GeneratedRegex(@"^//\s+(--bit-Button-[a-z-]+)\s", RegexOptions.Multiline)]

@@ -101,6 +101,16 @@ public class BitTextStylesheetTests
         StringAssert.Contains(disabled, "color: GrayText;");
     }
 
+    // A background role is Canvas under a forced palette, and Chromium draws a Canvas backplate behind the text, so a
+    // text colored with one would vanish; it is painted in CanvasText there instead.
+    [TestMethod]
+    public void BitTextShouldPaintABackgroundRoleTextInCanvasTextInForcedColors()
+    {
+        var stylesheet = ReadStylesheet();
+
+        StringAssert.Matches(stylesheet, new Regex(@"@media \(forced-colors: active\) \{\s*\.bit-txt-pbg,\s*\.bit-txt-sbg,\s*\.bit-txt-tbg \{\s*color: CanvasText;"));
+    }
+
     // The ring is for a text the keyboard can tab to; a text focused only by script (tabindex -1, as FocusOnNavigate
     // leaves a page's title) keeps whatever outline the app gives the element, so its "h1:focus { outline: none }"
     // still removes it.

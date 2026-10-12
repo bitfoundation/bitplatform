@@ -1498,10 +1498,14 @@ $drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz
         border-color: CanvasText;
     }
 
+    // The overflow chip is a count rather than a state, so it is painted as the surface the other chips are, and
+    // its weight and its "+N" are what set it apart. The role's on-color it is written in at rest is Canvas here,
+    // and the Highlight pair it used to take is no better: left to the mode, either sits on the Canvas backplate
+    // Chromium draws behind every line of text, and the count vanishes.
     .bit-drp-ovf {
-        color: HighlightText;
-        border-color: Highlight;
-        background-color: Highlight;
+        color: CanvasText;
+        border-color: CanvasText;
+        background-color: Canvas;
     }
 
     // An outline rather than a background: the fill is stripped, so a selected row is marked with the one
@@ -1515,14 +1519,41 @@ $drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz
     // The bar marking the item Enter would take is a box-shadow, which this mode strips. The row is filled
     // instead - the way a native select fills its current option - which also tells it apart from the
     // outline a selected row carries. A system color keyword is honoured here where a palette color is not.
+    // The row opts out of the forced palette: left to the mode, its HighlightText would sit on the Canvas
+    // backplate Chromium draws behind every line of text, close to invisible. Everything the row carries is
+    // then restated against the Highlight fill - the check box and its mark, and the outline a selected row
+    // wears, which would otherwise be Highlight on Highlight.
     .bit-drp-itm.bit-drp-ctg,
     .bit-drp-dyn.bit-drp-ctg,
     .bit-drp-iwr.bit-drp-ctg {
+        forced-color-adjust: none;
         color: HighlightText;
         background-color: Highlight;
 
         .bit-drp-itx {
             color: HighlightText;
+        }
+
+        .bit-drp-chb {
+            border-color: HighlightText;
+        }
+
+        .bit-drp-chm {
+            color: HighlightText;
+        }
+    }
+
+    .bit-drp-sel.bit-drp-ctg,
+    .bit-drp-iwr.bit-drp-chd.bit-drp-ctg {
+        outline-color: HighlightText;
+    }
+
+    .bit-drp-iwr.bit-drp-chd.bit-drp-ctg .bit-drp-chb {
+        border-color: HighlightText;
+        background-color: HighlightText;
+
+        .bit-drp-chm {
+            color: Highlight;
         }
     }
 
@@ -1535,7 +1566,11 @@ $drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz
         border-color: CanvasText;
     }
 
+    // The filled check box and the matched part of an item take the selection pair, and opt out of the forced
+    // palette to keep it: the check mark is a glyph and the match is text, and Chromium draws its Canvas backplate
+    // behind both, which HighlightText would vanish into.
     .bit-drp-iwr.bit-drp-chd .bit-drp-chb {
+        forced-color-adjust: none;
         border-color: Highlight;
         background-color: Highlight;
 
@@ -1549,6 +1584,7 @@ $drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz
     }
 
     .bit-drp-hlt {
+        forced-color-adjust: none;
         color: HighlightText;
         background-color: Highlight;
     }

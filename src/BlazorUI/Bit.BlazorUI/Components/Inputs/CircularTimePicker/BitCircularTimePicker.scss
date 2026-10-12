@@ -1148,4 +1148,32 @@ span.bit-ctp-txt {
     .bit-ctp-ina {
         color: CanvasText;
     }
+
+    // The toolbar is repainted CanvasText on Canvas above, but three of its parts read the role's on-color off it
+    // directly - Canvas for the primary role - which would sit on the Canvas backplate Chromium draws behind every
+    // line of text: a hovered part of the time, the close button laid over its corner, and the focus ring of a part
+    // the dial is not on. The hover is set back with the selectors of the rule that sets it, so the part keeps the
+    // bar's text, and the other two take the system button text and focus colors.
+    .bit-ctp-cal:not(.bit-dis):not(.bit-ctp-rdl) {
+        .bit-ctp-tlb button.bit-ctp-txt:not(:disabled):hover,
+        .bit-ctp-tlb .bit-ctp-apb:not(:disabled):hover {
+            --bit-ctp-txb-clr: initial;
+        }
+    }
+
+    .bit-ctp-wcb .bit-ctp-cbn {
+        color: ButtonText;
+    }
+
+    .bit-ctp-tlb .bit-ctp-ina:focus-visible {
+        outline-color: Highlight;
+    }
+
+    // A background role is the page's own color, Canvas here, which the action buttons read their label from,
+    // invisible over the callout they sit on, so they take the system button text instead.
+    @each $role in pbg, sbg, tbg {
+        .bit-ctp-#{$role} .bit-ctp-abn:not(:disabled) {
+            color: ButtonText;
+        }
+    }
 }

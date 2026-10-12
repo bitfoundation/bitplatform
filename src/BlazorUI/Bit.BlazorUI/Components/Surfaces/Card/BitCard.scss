@@ -795,6 +795,15 @@ button.bit-crd-lnk {
         border-color: CanvasText;
     }
 
+    // A Fill card reads its words from the role's on-color, which the palette makes Canvas for the primary role
+    // and the foreground ones - and Chromium draws a Canvas backplate behind every line of text, so the title and
+    // everything under it would be Canvas on Canvas, a card with nothing on it. CanvasText on Canvas reads with the
+    // backplate and without it (Firefox draws none); the rule above keeps its edge.
+    .bit-crd-vfl:not(.bit-dis) {
+        color: CanvasText;
+        background-color: Canvas;
+    }
+
     .bit-crd-sel {
         outline-color: Highlight;
     }

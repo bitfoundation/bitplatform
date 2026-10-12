@@ -508,18 +508,53 @@ $ico-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
 }
 
 
-// A forced-colors mode throws away every color the icon paints, which would leave the filled and the
-// outlined variants indistinguishable from the plain glyph, and a disabled icon looking enabled. All
-// three are re-established here in the system colors, which are the only ones such a mode keeps.
+// A forced-colors mode throws away every color the icon paints, which would leave an outlined icon without the
+// border that is its only edge, and a disabled icon looking enabled. Both are re-established here in the system
+// colors, which are the only ones such a mode keeps.
+//
+// A filled icon is drawn as an outlined box rather than as a solid one. The solid box would be a CanvasText fill
+// under a Canvas glyph - but Chromium draws a Canvas backplate behind every glyph of a font, so the glyph would be
+// Canvas on Canvas and the icon an empty block. CanvasText on Canvas reads with the backplate and without it
+// (Firefox draws none), and the border keeps the box the variant is drawn in.
 @media (forced-colors: active) {
     .bit-ico-fil {
-        color: Canvas;
+        color: CanvasText;
         border-color: CanvasText;
-        background-color: CanvasText;
+        background-color: Canvas;
     }
 
     .bit-ico-out {
         border-color: CanvasText;
+    }
+
+    // A background role is the page's own color, Canvas here, which an Outline or a Text icon would draw its glyph
+    // in. A single class, so the disabled rules below still outrank it with their GrayText.
+    .bit-ico-pbg,
+    .bit-ico-sbg,
+    .bit-ico-tbg {
+        color: CanvasText;
+    }
+
+    // The pointer states of a clickable icon move the variables its variant is painted from to the role's hover and
+    // press colors under the role's contrast color - a LinkText box under a Canvas glyph for the primary role, the
+    // very pair the backplate hides - so they are set back here and the state is carried by the system Highlight on
+    // the border instead. The selectors are the ones of the rules they undo, which this block follows at the same
+    // weight.
+    .bit-ico-int:not(.bit-dis):hover,
+    .bit-ico-int:not(.bit-dis):active {
+        --bit-ico-sfg: initial;
+        --bit-ico-sbr: initial;
+        --bit-ico-sbg: initial;
+    }
+
+    .bit-ico-int.bit-ico-fil:not(.bit-dis):hover,
+    .bit-ico-int.bit-ico-out:not(.bit-dis):hover,
+    .bit-ico-int.bit-ico-fil:not(.bit-dis):active,
+    .bit-ico-int.bit-ico-out:not(.bit-dis):active {
+        --bit-ico-sfg: initial;
+        --bit-ico-sbr: initial;
+        --bit-ico-sbg: initial;
+        border-color: Highlight;
     }
 
     .bit-ico.bit-dis {
@@ -527,9 +562,9 @@ $ico-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
     }
 
     .bit-ico-fil.bit-dis {
-        color: Canvas;
+        color: GrayText;
         border-color: GrayText;
-        background-color: GrayText;
+        background-color: Canvas;
     }
 
     .bit-ico-out.bit-dis {

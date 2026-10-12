@@ -926,6 +926,32 @@ $tpc-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-focus, inp-h, i
         }
     }
 
+    // The half of the day in force opts out of the forced palette, so whatever else is said about its label has
+    // to pair with the Highlight fill rather than with the canvas: the two rules above would leave GrayText of a
+    // disabled picker on the theme's own disabled fill, and the CanvasText of a read-only one on Highlight - pairs
+    // no contrast is promised for. A disabled one drops its fill back to the canvas, where GrayText is legible by
+    // definition, and keeps the selection as a Highlight edge; a read-only one keeps the selection pair whole.
+    // The buttons are named with both of their classes so these outrank the rules they correct.
+    .bit-tpc-tbt.bit-tpc-bns:disabled {
+        color: GrayText;
+        background-color: Canvas;
+        outline: $shp-border-width $shp-border-style Highlight;
+        outline-offset: calc(-1 * #{$shp-border-width});
+    }
+
+    .bit-tpc-rdl .bit-tpc-tbt.bit-tpc-bns:disabled {
+        color: HighlightText;
+        outline: none;
+        background-color: Highlight;
+    }
+
+    // The focus ring is a box-shadow, which the opt-out hands back to the selected half alone, in the theme's own
+    // colors. The focus-ring mixin already restores a Highlight outline, so the shadow is dropped and that outline
+    // is the whole indicator, as it is on every other button of the picker.
+    .bit-tpc-tbt.bit-tpc-bns:focus-visible {
+        box-shadow: none;
+    }
+
     .bit-tpc-erm {
         color: CanvasText;
     }

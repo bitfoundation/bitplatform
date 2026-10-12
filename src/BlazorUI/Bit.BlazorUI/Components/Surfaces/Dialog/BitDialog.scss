@@ -650,4 +650,42 @@ $dlg-private-properties: wid, hei, mnw, mnh, mxw, mxh;
         border-color: GrayText;
         border-top-color: Highlight;
     }
+
+    // The two actions are painted as native buttons. The Ok button is a fill of the Dialog's color under its
+    // on-color - LinkText under Canvas for the primary role - and Chromium draws a Canvas backplate behind every
+    // line of text, so its label would be Canvas on Canvas; the Cancel button reads its label from the Dialog's
+    // color, which for a background role is Canvas itself. ButtonText on ButtonFace reads with the backplate and
+    // without it (Firefox draws none).
+    .bit-dlg-okb {
+        color: ButtonText;
+        border-color: ButtonText;
+        background-color: ButtonFace;
+    }
+
+    .bit-dlg-cnb {
+        color: ButtonText;
+        border-color: ButtonText;
+    }
+
+    // The pointer states move the variables the actions are painted from to the role's hover and press fills, the
+    // very pair the backplate hides. The rules above paint over the ones the Ok button reads; the Cancel button's
+    // fill is still read from its variable, so that one is set back here. Either way the state is carried by the
+    // system Highlight on the border instead. The selectors are the ones of the rules they undo, which this block
+    // follows at the same weight.
+    .bit-dlg-okb:hover:not(:disabled):not([aria-disabled="true"]),
+    .bit-dlg-okb:active:not(:disabled):not([aria-disabled="true"]) {
+        border-color: Highlight;
+    }
+
+    .bit-dlg-cnb:hover:not(:disabled),
+    .bit-dlg-cnb:active:not(:disabled) {
+        --bit-dlg-cnb-bg: initial;
+        border-color: Highlight;
+    }
+
+    .bit-dlg-okb:disabled,
+    .bit-dlg-cnb:disabled {
+        color: GrayText;
+        border-color: GrayText;
+    }
 }

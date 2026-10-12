@@ -1133,8 +1133,42 @@ $dtp-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, inp-h-s
         forced-color-adjust: none;
     }
 
+    // The selected day takes the selection pair, opted out of the forced palette like today: left to the mode, a
+    // label in the selection's text color would sit on the Canvas backplate Chromium draws behind every line of
+    // text, close to invisible. Its ring is drawn in the selection's text color, which is what tells it apart from
+    // today when the two are not the same day (today is the circle without a ring). A disabled day is left to the
+    // GrayText rule above.
+    .bit-dtp-dbt.bit-dtp-dbs:not(:disabled) {
+        forced-color-adjust: none;
+        color: HighlightText;
+        background-color: Highlight;
+    }
+
     .bit-dtp-dbs::after {
         border-color: CanvasText;
+    }
+
+    .bit-dtp-dbt.bit-dtp-dbs:not(:disabled)::after {
+        border-color: HighlightText;
+    }
+
+    // The focus ring is a box-shadow, which the opt-outs hand back to these parts alone, in the theme's own
+    // colors. The focus-ring mixin already restores a Highlight outline, so the shadow is dropped and that outline
+    // is the whole indicator, as it is on every other cell.
+    .bit-dtp-dbt.bit-dtp-dbs:focus-visible,
+    .bit-dtp-dbt.bit-dtp-dtd:focus-visible,
+    .bit-dtp-pkb.bit-dtp-pcm:focus-visible,
+    .bit-dtp-tbt.bit-dtp-bns:focus-visible {
+        box-shadow: none;
+    }
+
+    // Today and the meridiem in force keep the opt-out when they cannot be pressed, under which the theme's
+    // disabled fill comes back beneath the label - a pairing no contrast is promised for. The fill drops back to
+    // the canvas, where GrayText is legible by definition.
+    .bit-dtp-dbt.bit-dtp-dtd:disabled,
+    .bit-dtp-tbt.bit-dtp-bns:disabled {
+        color: GrayText;
+        background-color: Canvas;
     }
 
     .bit-dtp-dhl {

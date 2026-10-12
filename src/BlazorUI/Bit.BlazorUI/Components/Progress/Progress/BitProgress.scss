@@ -637,8 +637,12 @@ $prb-private-properties:
         opacity: 0.4;
     }
 
-    // The readout rides on the bar, so it takes the color the bar is painted with.
+    // The readout rides on the bar, so it takes the color the bar is painted with. It is kept out of the forced
+    // palette: HighlightText is as dark or as light as Canvas in a contrast theme, and Chromium draws a Canvas
+    // backplate behind every line of text it is left to repaint, so the number would vanish into it. Out of the
+    // palette it is drawn straight onto the Highlight fill, in both engines.
     .bit-prb-pci {
+        forced-color-adjust: none;
         color: HighlightText;
     }
 }

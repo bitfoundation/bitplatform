@@ -478,11 +478,21 @@ $arrow-clip-bl: polygon(-#{$arrow-clip-room} -#{$arrow-clip-room}, calc(100% + #
 // for it - the text would be left sitting on the page's own background. A border in the system text color
 // is what keeps it a surface of its own. The arrow is dropped along with them: it is a rotated square whose
 // two outward edges cannot be drawn without the two inward ones crossing the surface it points from.
+//
+// The text is named in the system pair too. A role's on-color is the color it is read over its fill with, and
+// the palette gives the primary role (and the foreground ones) a Canvas one - which Chromium draws over the
+// Canvas backplate it puts behind every line of text, so the bubble would open empty. CanvasText on Canvas
+// reads with the backplate and without it (Firefox draws none). A disabled tooltip keeps the disabled color.
 @media (forced-colors: active) {
     .bit-ttp-ctn {
         border-width: $shp-border-width;
         border-style: $shp-border-style;
         border-color: CanvasText;
+    }
+
+    .bit-ttp:not(.bit-dis) > .bit-ttp-wrp > .bit-ttp-ctn {
+        color: CanvasText;
+        background-color: Canvas;
     }
 
     .bit-ttp-arw {

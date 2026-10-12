@@ -1102,8 +1102,37 @@ button.bit-dtg-htext {
         background: Highlight;
     }
 
+    // The priority badge is the accent under its on-color, which this mode maps to LinkText under Canvas - and
+    // Chromium draws a Canvas backplate behind every line of text, so the number would be Canvas on Canvas. It is
+    // drawn as a bordered canvas chip instead, which reads with the backplate and without it (Firefox draws none).
     .bit-dtg-sort-priority {
+        color: CanvasText;
+        background-color: Canvas;
         border: $shp-border-width $shp-border-style CanvasText;
+    }
+
+    // The primary button is painted as a native one for the same reason: its label is the on-color of a LinkText
+    // fill, Canvas on the backplate. The hover only moves the variables the rule at rest reads, which this one
+    // paints over, so the state is carried by the system Highlight on the border; the focus ring is drawn in the
+    // on-color to stand out from the fill, Canvas here, and goes back to the Highlight of every other control.
+    .bit-dtg-btn-primary:not(:disabled) {
+        color: ButtonText;
+        border-color: ButtonText;
+        background-color: ButtonFace;
+    }
+
+    .bit-dtg-btn-primary:hover:not(:disabled) {
+        border-color: Highlight;
+    }
+
+    .bit-dtg-btn-primary:focus-visible {
+        outline-color: Highlight;
+    }
+
+    .bit-dtg-btn-primary:disabled {
+        color: GrayText;
+        border-color: GrayText;
+        background-color: ButtonFace;
     }
 
     .bit-dtg-drop-target {

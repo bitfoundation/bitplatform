@@ -748,7 +748,56 @@ $upl-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-tin
 // Windows High Contrast / forced-colors: the palette collapses to the system pair, so every color the
 // component paints is dropped. What has to be re-established is what the color alone was saying: the drop
 // state, the disabled state, the progress bar against its track, and the spinner's arc against its ring.
+//
+// A Fill browse button is painted as a native one. The palette fills the primary role with LinkText under a Canvas
+// label (a foreground role with CanvasText under Canvas), system colors the mode keeps - but Chromium draws a Canvas
+// backplate behind every line of text, the icon glyph included, so the label would be Canvas on Canvas, an empty box
+// where the one way into the component should be. ButtonText on ButtonFace reads with the backplate and without it
+// (Firefox draws none), and needs no opt-out of the palette. The ShowDropArea panel is a neutral surface already.
 @media (forced-colors: active) {
+    .bit-upl-fil:not(.bit-dis, .bit-upl-dra) .bit-upl-lbl {
+        color: ButtonText;
+        border-color: ButtonText;
+        background-color: ButtonFace;
+    }
+
+    // A background role is the page's own color, Canvas here, which an Outline or Text button, a batch action, the
+    // drop area's glyph, a paused status and a hovered action glyph would all read their color from - so they take
+    // the system text that pairs with what they sit on instead.
+    @each $role in pbg, sbg, tbg {
+        .bit-upl-otl.bit-upl-#{$role}:not(.bit-dis, .bit-upl-dra) .bit-upl-lbl,
+        .bit-upl-txt.bit-upl-#{$role}:not(.bit-dis, .bit-upl-dra) .bit-upl-lbl,
+        .bit-upl-#{$role} .bit-upl-bab:not(:disabled, [aria-disabled="true"]) {
+            color: ButtonText;
+        }
+
+        .bit-upl-#{$role}.bit-upl-dra:not(.bit-dis) .bit-upl-lic,
+        .bit-upl-#{$role} .bit-upl-psd .bit-upl-us {
+            color: CanvasText;
+        }
+
+        .bit-upl-#{$role} .bit-upl-usi:hover:not(:disabled) i {
+            --bit-upl-usi-ifg: initial;
+        }
+    }
+
+    // The pointer states move the variables the button is painted from to the role's hover and press colors - a
+    // LinkText fill under a Canvas label, the very pair the backplate hides - so they are set back here and the
+    // state is carried by the system Highlight on the border instead. The selectors are the ones of the rules they
+    // undo, which this block follows at the same weight; the drop area's own states outrank them and keep its
+    // neutral pair.
+    .bit-upl-fil .bit-upl-lbl:hover,
+    .bit-upl-fil .bit-upl-lbl:active,
+    .bit-upl-otl .bit-upl-lbl:hover,
+    .bit-upl-otl .bit-upl-lbl:active,
+    .bit-upl-txt .bit-upl-lbl:hover,
+    .bit-upl-txt .bit-upl-lbl:active {
+        --bit-upl-lbl-sfg: initial;
+        --bit-upl-lbl-sbr: initial;
+        --bit-upl-lbl-sbg: initial;
+        border-color: Highlight;
+    }
+
     .bit-upl.bit-dis,
     .bit-upl.bit-dis .bit-upl-lbl {
         color: GrayText;
@@ -765,15 +814,23 @@ $upl-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-tin
 
     // The fill of the drop state is stripped, so the dashed rule is the only thing left to say a file is
     // being dragged over the component - it is given the system highlight to stand out from the rest state.
+    // Its label is the on-color over the hover fill, the pair the backplate hides, so it keeps the native button
+    // paint; the drop area's own drag rule outranks this one and keeps its neutral pair.
     .bit-upl.bit-upl-drg .bit-upl-lbl {
+        color: ButtonText;
         border-color: Highlight;
+        background-color: ButtonFace;
     }
 
     // a rejected drag loses its error fill as well, so its rule switches to a dotted one: a difference of
-    // shape, which is all a forced palette leaves to tell the two drag states apart.
+    // shape, which is all a forced palette leaves to tell the two drag states apart. The error fill itself is
+    // mapped to CanvasText, under a label the mode forces to CanvasText too - legible only on Chromium's backplate -
+    // so it takes the native button pair as well.
     .bit-upl.bit-upl-drg.bit-upl-drj .bit-upl-lbl {
+        color: ButtonText;
         border-style: dotted;
         border-color: Mark;
+        background-color: ButtonFace;
     }
 
     .bit-upl-bab:disabled,

@@ -303,6 +303,26 @@ $ftr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, padding, gap, max-widt
         backdrop-filter: none;
         -webkit-backdrop-filter: none;
     }
+
+    // A Fill footer reads its content color from the role's on-color, which the palette makes Canvas for the
+    // primary role and the foreground ones - and Chromium draws a Canvas backplate behind every line of text, so
+    // everything on the bar would be Canvas on Canvas. The bar is painted as the plain surface it is in this mode,
+    // CanvasText on Canvas, which reads with the backplate and without it (Firefox draws none); the border color
+    // keeps a Bordered divider in the same system text color.
+    .bit-ftr-fil:not(.bit-dis) {
+        color: CanvasText;
+        border-color: CanvasText;
+        background-color: Canvas;
+    }
+
+    // An Outline or Text footer reads its content and its border from the role's main color, and a background
+    // role is the page's own color, Canvas here - invisible in every engine. It is the system text color instead.
+    .bit-ftr-pbg,
+    .bit-ftr-sbg,
+    .bit-ftr-tbg {
+        --bit-ftr-fg: CanvasText;
+        --bit-ftr-brd: CanvasText;
+    }
 }
 
 // On paper there is no viewport to pin anything to: a pinned footer would either repeat on every sheet or

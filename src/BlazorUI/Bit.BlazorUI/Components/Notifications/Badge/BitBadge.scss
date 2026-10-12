@@ -625,11 +625,46 @@ $bdg-private-properties:
 // Windows High Contrast / forced-colors: every background an author paints is stripped, which would leave a
 // dot an empty outline and a disabled badge looking like an enabled one. A dot is nothing but its fill, so it
 // keeps one in the system text color; a disabled badge takes the system disabled color.
+//
+// A Fill badge is painted as a plain surface. The palette fills the primary role with LinkText under a Canvas
+// label, and a foreground role's label is the page's Canvas too - but Chromium draws a Canvas backplate behind
+// every line of text, the icon glyph included, so the count would be Canvas on Canvas, a pill with nothing in
+// it. CanvasText on Canvas reads with the backplate and without it (Firefox draws none), and the border keeps the
+// pill's edge now that the fill is the page's own color.
 @media (forced-colors: active) {
     .bit-bdg-dot > .bit-bdg-wrp > .bit-bdg-ctn {
         forced-color-adjust: none;
         border-color: CanvasText;
         background-color: CanvasText;
+    }
+
+    .bit-bdg-fil:not(.bit-dis, .bit-bdg-dot) > .bit-bdg-wrp > .bit-bdg-ctn {
+        color: CanvasText;
+        border-color: CanvasText;
+        background-color: Canvas;
+    }
+
+    // An Outline or Text badge reads its label from the role, and a background role is the page's own color,
+    // Canvas here - invisible in every engine. It takes the system text color instead, the outline with it.
+    .bit-bdg-otl:is(.bit-bdg-pbg, .bit-bdg-sbg, .bit-bdg-tbg):not(.bit-dis) > .bit-bdg-wrp > .bit-bdg-ctn {
+        color: CanvasText;
+        border-color: CanvasText;
+    }
+
+    .bit-bdg-txt:is(.bit-bdg-pbg, .bit-bdg-sbg, .bit-bdg-tbg):not(.bit-dis) > .bit-bdg-wrp > .bit-bdg-ctn {
+        color: CanvasText;
+    }
+
+    // The hover and press of a clickable badge move its fill, which the rules above no longer read, so the state
+    // is carried by the system Highlight on the border instead, as on every other button of the mode.
+    @media (hover: hover) {
+        .bit-bdg:not(.bit-dis) > .bit-bdg-wrp > .bit-bdg-clk:hover {
+            border-color: Highlight;
+        }
+    }
+
+    .bit-bdg:not(.bit-dis) > .bit-bdg-wrp > .bit-bdg-clk:active {
+        border-color: Highlight;
     }
 
     .bit-bdg.bit-dis > .bit-bdg-wrp > .bit-bdg-ctn {

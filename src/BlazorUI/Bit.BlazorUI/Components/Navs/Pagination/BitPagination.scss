@@ -387,13 +387,57 @@ $pgn-private-properties:
 
 // forced-colors: the selected page is conveyed by fill colors that High Contrast strips; repaint
 // it with the system selection colors so it stays distinguishable from the other page buttons.
+//
+// A filled page button is painted as a native one. The palette fills the primary role with LinkText under a Canvas
+// label, two system colors the mode keeps - but Chromium draws a Canvas backplate behind every line of text, so the
+// numbers, the labels and the arrow glyphs would be Canvas on Canvas, a row of empty boxes. ButtonText on ButtonFace
+// reads with the backplate and without it (Firefox draws none), and needs no opt-out of the forced palette.
 @media (forced-colors: active) {
-    // Double class matches the specificity of the selected-state hover/active rules above so this
-    // wins the cascade in High Contrast mode (media queries add no specificity of their own).
-    .bit-pgn-btn.bit-pgn-sel {
+    .bit-pgn-btn.bit-pgn-fil:not(.bit-pgn-sel, [disabled], [aria-disabled="true"]) {
+        color: ButtonText;
+        border-color: ButtonText;
+        background-color: ButtonFace;
+    }
+
+    // The current page opts out of the forced palette, in every variant: HighlightText left to the mode would sit
+    // on the Canvas backplate Chromium draws behind it, close to invisible in every contrast theme. Its selectors
+    // carry the attribute exclusions so they outrank the hover and press rules above, which only move variables
+    // this paint does not read.
+    .bit-pgn-btn.bit-pgn-sel:not([disabled], [aria-disabled="true"]) {
+        forced-color-adjust: none;
         color: HighlightText;
         border-color: Highlight;
         background-color: Highlight;
+    }
+
+    // The focus ring is a box-shadow, which the opt-out above hands back to the current page alone, in the theme's
+    // own colors. The focus-ring mixin already restores a Highlight outline, so the shadow is dropped and that outline
+    // is the whole indicator, as it is on every other page button.
+    .bit-pgn-btn.bit-pgn-sel:focus-visible {
+        box-shadow: none;
+    }
+
+    // The pointer states move the variables a button and a clickable gap are painted from to the role's hover and
+    // press colors - a LinkText fill under a Canvas label, the very pair the backplate hides - so they are set back
+    // here, with the selectors of the rules they undo, which this block follows at the same weight.
+    .bit-pgn-btn:hover,
+    .bit-pgn-btn:active,
+    .bit-pgn-sel:hover,
+    .bit-pgn-sel:active,
+    .bit-pgn-elb:hover,
+    .bit-pgn-elb:active {
+        --bit-pgn-sfg: initial;
+        --bit-pgn-sbr: initial;
+        --bit-pgn-sbg: initial;
+    }
+
+    // The state is carried by the system Highlight on the border instead, one exclusion heavier than the filled
+    // button above so it wins on that one too. The current page keeps its own Highlight fill under the pointer.
+    .bit-pgn-btn:not(.bit-pgn-sel, [disabled], [aria-disabled="true"]):hover,
+    .bit-pgn-btn:not(.bit-pgn-sel, [disabled], [aria-disabled="true"]):active,
+    .bit-pgn-elb:not([disabled], [aria-disabled="true"]):hover,
+    .bit-pgn-elb:not([disabled], [aria-disabled="true"]):active {
+        border-color: Highlight;
     }
 
     // The dimmed fill of a control that cannot be reached is stripped as well, so it is repainted with the
@@ -404,6 +448,15 @@ $pgn-private-properties:
     .bit-pgn-elb[aria-disabled="true"] {
         color: GrayText;
         border-color: GrayText;
+    }
+
+    // A disabled current page has two facts to carry at once, and GrayText over the Highlight fill is a pairing no
+    // contrast is promised for. The fill drops back to the canvas, where GrayText is legible by definition, and the
+    // state moves onto the border, which Highlight still marks out.
+    .bit-pgn-btn.bit-pgn-sel[disabled],
+    .bit-pgn-btn.bit-pgn-sel[aria-disabled="true"] {
+        border-color: Highlight;
+        background-color: Canvas;
     }
 }
 

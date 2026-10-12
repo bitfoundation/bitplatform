@@ -617,9 +617,42 @@ $drm-cal-private-properties: cal-bg, cal-brd;
 // would lose the pressed surface it is shown with, a loading drop menu - aria-disabled rather than disabled -
 // would look enabled, and the spinner's track and arc would be painted the same color and stop reading as
 // motion. Each is re-established in system colors. Declared last, so they win over the state rules above.
+//
+// A drop menu whose button is filled - the default look and the Fill variant - is painted as a native button. Under
+// an explicit Color the palette fills the primary role with LinkText under a Canvas label, two system colors the
+// mode keeps - but Chromium draws a Canvas backplate behind every line of text and every icon glyph, so the label
+// and the chevron would be Canvas on Canvas, an empty box. ButtonText on ButtonFace reads with the backplate and
+// without it (Firefox draws none), and needs no opt-out of the forced palette.
 @media (forced-colors: active) {
     .bit-drm {
         border-color: ButtonBorder;
+    }
+
+    .bit-drm:not(.bit-drm-otl, .bit-drm-tex, .bit-drm-trn, .bit-dis, .bit-drm-ldg) {
+        color: ButtonText;
+        background-color: ButtonFace;
+    }
+
+    // The looks that paint no surface write their label in the role's contrast color when the role is a neutral
+    // surface one, and for a foreground or a border role that color is the page's own, Canvas here - the canvas
+    // the button sits on and the backplate behind its text. They take the system button text instead.
+    @each $role, $tokens in $bit-color-roles {
+        @if role($tokens, kind) != semantic {
+            .bit-drm-#{$role} {
+                --bit-drm-clr-flt: ButtonText;
+            }
+        }
+    }
+
+    // The pointer states and the open one move the colors the button is painted with to the role's hover and press
+    // colors - a LinkText fill under a Canvas label in every look, the very pair the backplate hides - so they are
+    // pointed back at the resting colors here and the state is carried by the system Highlight on the border instead.
+    .bit-drm:not(.bit-dis):not(.bit-drm-ldg):hover,
+    .bit-drm:not(.bit-dis):not(.bit-drm-ldg):active,
+    .bit-drm.bit-drm-omn:not(.bit-dis):not(.bit-drm-ldg) {
+        --bit-drm-cur-txt: var(--bit-drm-rst-txt, var(--bit-DropMenu-color, var(--bit-drm-rst-txt-d)));
+        --bit-drm-cur-bg: var(--bit-drm-rst-bg, var(--bit-DropMenu-background, var(--bit-drm-rst-bg-d)));
+        border-color: Highlight;
     }
 
     .bit-drm.bit-drm-omn {

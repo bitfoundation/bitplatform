@@ -1036,6 +1036,13 @@ $chg-private-properties: clr, clr-bg, clr-hover, clr-dis, clr-dis-text, clr-focu
         color: GrayText;
     }
 
+    // The checked tile of an icon or image item says so with a border in the accent, which for a background
+    // role is the page's own color - Canvas here, a border drawn in the color of what it sits on. The system
+    // selection color carries it instead, as it does for the circle below; a disabled tile keeps no border.
+    .bit-chg-ich:not(.bit-chg-ids) .bit-chg-ili {
+        border-color: Highlight;
+    }
+
     .bit-chg-ich .bit-chg-rad {
         &::before {
             border-color: Highlight;

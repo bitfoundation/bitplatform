@@ -1501,6 +1501,41 @@ $dtrp-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-body, rl-focus
         forced-color-adjust: none;
     }
 
+    // The focus ring is a box-shadow, which the opt-out above hands back to these parts alone, in the theme's own
+    // colors. The focus-ring mixins already restore a Highlight outline, so the shadow is dropped and that outline
+    // is the whole indicator, as it is on every other control of the picker.
+    .bit-dtrp-dbt.bit-dtrp-dtd:focus-visible,
+    .bit-dtrp-dbt.bit-dtrp-dss:focus-visible,
+    .bit-dtrp-dbt.bit-dtrp-dse:focus-visible,
+    .bit-dtrp-prb.bit-dtrp-prs:focus-visible,
+    .bit-dtrp-pkb.bit-dtrp-pcm:focus-visible,
+    .bit-dtrp-pkb.bit-dtrp-psm:focus-visible,
+    .bit-dtrp-tbt.bit-dtrp-bns:focus-visible,
+    .bit-dtrp-acb.bit-dtrp-apb:focus-visible {
+        box-shadow: none;
+    }
+
+    // An Apply button that waits for the second end of the range, and a meridiem button that cannot be pressed,
+    // keep the opt-out above, under which the theme's disabled fill comes back beneath the GrayText label - a
+    // pairing no contrast is promised for. The fill drops back to the canvas, where GrayText is legible by
+    // definition.
+    .bit-dtrp-tbt.bit-dtrp-bns:disabled,
+    .bit-dtrp-acb.bit-dtrp-apb:disabled {
+        color: GrayText;
+        background-color: Canvas;
+    }
+
+    // Pointing at a day inside the range swaps its light body for the full role color under the role's on-color -
+    // a LinkText fill under a Canvas label, which the Canvas backplate Chromium draws behind the number hides. The
+    // variables are set back here with the selectors of the rules that move them, and the state is carried by the
+    // system Highlight on the edge the body is drawn with instead.
+    .bit-dtrp-dsb:hover,
+    .bit-dtrp-dsb:active {
+        --bit-dtrp-sfg: initial;
+        --bit-dtrp-sbg: initial;
+        outline-color: Highlight;
+    }
+
     .bit-dtrp-dsb {
         outline: $shp-border-width $shp-border-style CanvasText;
         outline-offset: calc(-1 * #{$shp-border-width});

@@ -15,6 +15,11 @@ public class BitDropMenuStylesheetTests
         DataRow(".bit-drm {", "border-color: ButtonBorder;"),
         // The open state is otherwise a pressed background, which forced colors strip.
         DataRow(".bit-drm.bit-drm-omn {", "border-color: Highlight;"),
+        // A filled button under a Color is LinkText under a Canvas label, which Chromium's Canvas text backplate hides:
+        // it is painted as a native button, and the pointer states point back at the resting colors.
+        DataRow(".bit-drm:not(.bit-drm-otl, .bit-drm-tex, .bit-drm-trn, .bit-dis, .bit-drm-ldg) {", "color: ButtonText;"),
+        DataRow(".bit-drm:not(.bit-drm-otl, .bit-drm-tex, .bit-drm-trn, .bit-dis, .bit-drm-ldg) {", "background-color: ButtonFace;"),
+        DataRow(".bit-drm:not(.bit-dis):not(.bit-drm-ldg):hover,", "--bit-drm-cur-bg: var(--bit-drm-rst-bg, var(--bit-DropMenu-background, var(--bit-drm-rst-bg-d)));"),
         // A loading drop menu is only aria-disabled, so nothing else would tell it from an enabled one.
         DataRow(".bit-drm.bit-drm-ldg {", "color: GrayText;"),
         DataRow(".bit-drm.bit-drm-ldg {", "border-color: GrayText;"),

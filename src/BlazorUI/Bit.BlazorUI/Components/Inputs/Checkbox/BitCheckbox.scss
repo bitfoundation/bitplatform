@@ -698,6 +698,15 @@ $chb-private-properties: clr, clr-hover, clr-txt, clr-txt-sec, clr-txt-hover, cl
         border-color: ButtonText;
     }
 
+    // A glyph on a box that is not filled - the check an empty box previews under the pointer, a custom
+    // unchecked or mixed icon - is drawn in a color of the role, which for a background role is the page's own
+    // color, Canvas here. Chromium draws a Canvas backplate behind every glyph, so it would vanish; ButtonText,
+    // the color of the box's own edge, reads with the backplate and without it. Written before the checked box
+    // below, which paints its glyph in HighlightText over this at a greater weight.
+    .bit-chb-ico {
+        color: ButtonText;
+    }
+
     .bit-chb-ckd .bit-chb-box {
         forced-color-adjust: none;
         border-color: Highlight;

@@ -1133,4 +1133,61 @@ $srb-cal-private-properties: siz-item-height, siz-item-fontsize, siz-spn-size, c
         color: inherit;
         background-color: transparent;
     }
+
+    // The filled search button is painted as a native one. The palette fills the primary role with LinkText under a
+    // Canvas glyph, two system colors the mode keeps - but Chromium draws a Canvas backplate behind every line of
+    // text, icon glyphs included, so the arrow and the label would be Canvas on Canvas, an empty square at the end of
+    // the field. ButtonText on ButtonFace reads with the backplate and without it (Firefox draws none). The border is
+    // left to the rules that already mark the focus on it.
+    .bit-srb:not(.bit-dis, .bit-srb-und, .bit-srb-nbr) .bit-srb-sbn {
+        color: ButtonText;
+        background-color: ButtonFace;
+    }
+
+    .bit-srb:not(.bit-dis, .bit-srb-und, .bit-srb-nbr) .bit-srb-sbn i,
+    .bit-srb:not(.bit-dis, .bit-srb-und, .bit-srb-nbr) .bit-srb-sbx {
+        color: ButtonText;
+    }
+
+    // The pointer states move the variables the button is painted from to the role's hover and press colors - and,
+    // in the underlined and borderless variants, its glyph to the on-color over that fill, the very pair the
+    // backplate hides - so they are set back here with the selectors of the rules they undo, which this block
+    // follows at the same weight, and the state is carried by the system Highlight on the border instead.
+    .bit-srb-sbn:hover,
+    .bit-srb-sbn:active,
+    .bit-srb-und .bit-srb-sbn:hover,
+    .bit-srb-nbr .bit-srb-sbn:hover {
+        --bit-srb-sbn-bg: initial;
+        --bit-srb-sbn-brd: initial;
+    }
+
+    .bit-srb-und .bit-srb-sbn:hover i,
+    .bit-srb-und .bit-srb-sbn:hover .bit-srb-sbx,
+    .bit-srb-nbr .bit-srb-sbn:hover i,
+    .bit-srb-nbr .bit-srb-sbn:hover .bit-srb-sbx {
+        --bit-srb-sbn-clr: initial;
+    }
+
+    .bit-srb:not(.bit-dis, .bit-srb-nbr) .bit-srb-sbn:hover,
+    .bit-srb:not(.bit-dis, .bit-srb-nbr) .bit-srb-sbn:active {
+        border-color: Highlight;
+    }
+
+    // A background role is the page's own color, Canvas here, which the leading icon, the affixes of a focused field
+    // and the glyph of an underlined or borderless search button read their color from - invisible over the field
+    // they sit in, so they take the system text instead.
+    @each $role in pbg, sbg, tbg {
+        .bit-srb-#{$role}:not(.bit-dis) .bit-srb-iwp i,
+        .bit-srb-#{$role}.bit-srb-foc:not(.bit-dis) .bit-srb-pre,
+        .bit-srb-#{$role}.bit-srb-foc:not(.bit-dis) .bit-srb-suf {
+            color: CanvasText;
+        }
+
+        .bit-srb-#{$role}.bit-srb-und:not(.bit-dis) .bit-srb-sbn i,
+        .bit-srb-#{$role}.bit-srb-und:not(.bit-dis) .bit-srb-sbx,
+        .bit-srb-#{$role}.bit-srb-nbr:not(.bit-dis) .bit-srb-sbn i,
+        .bit-srb-#{$role}.bit-srb-nbr:not(.bit-dis) .bit-srb-sbx {
+            color: ButtonText;
+        }
+    }
 }
