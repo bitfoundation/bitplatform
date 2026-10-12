@@ -1,4 +1,5 @@
 using System.Text;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace Boilerplate.Tests.Features.ErrorHandling;
 
@@ -76,6 +77,23 @@ public class ProblemDetailsWireContractTests
         Assert.IsTrue(problemDetails.TryGetProperty("payload", out var payload), $"A validation failure must carry its payload. Body: {body}");
         Assert.IsGreaterThan(0, payload.GetProperty("details").GetArrayLength(),
             $"The payload must hold the real field-level errors, not an empty placeholder. Body: {body}");
+    }
+
+    [TestMethod]
+    public async Task ARequestBodyOverTheLimit_Should_Answer413()
+    {
+        await using var server = new AppTestServer();
+        await server.Build(configureTestApiAppServices: services => services.Configure<KestrelServerOptions>(options => options.Limits.MaxRequestBodySize = 1024))
+            .Start(TestContext.CancellationToken);
+        using var httpClient = server.CreateRawHttpClient();
+
+        using var content = new StringContent($$"""{"userName":"{{new string('a', 2048)}}"}""", Encoding.UTF8, "application/json");
+        using var response = await httpClient.PostAsync("api/v1/Identity/SignIn", content, TestContext.CancellationToken);
+
+        var body = await response.Content.ReadAsStringAsync(TestContext.CancellationToken);
+
+        Assert.AreEqual(HttpStatusCode.RequestEntityTooLarge, response.StatusCode, $"Unexpected status. Body: {body}");
+        Assert.AreEqual(413, JsonDocument.Parse(body).RootElement.GetProperty("status").GetInt32(), $"Body: {body}");
     }
 
 
