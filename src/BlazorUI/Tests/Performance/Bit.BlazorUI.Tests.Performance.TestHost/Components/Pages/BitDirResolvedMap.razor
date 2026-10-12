@@ -1,0 +1,41 @@
+﻿@page "/regression/dir-resolved-map"
+
+<PageTitle>Dir Resolved Map Regression</PageTitle>
+
+@* A BitMap whose marker popup opens in a map that reads the way the query string says (#13592): every provider projects
+   a point in pixels from the container's left edge whatever the direction, so the popup sits over its marker either
+   way, with the auto-pan the open asks for (?pan=true) and without it. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>Dir Resolved Map Regression</h3>
+    <p>Status: <span id="status">@_status</span></p>
+</div>
+
+<div dir="@Dir" style="width: 800px; height: 400px;">
+    <BitMap TMapProvider="BitLeafletMapProvider" Provider="_provider" Markers="_markers" PopupAutoPan="Pan">
+        <MarkerPopupTemplate Context="marker">
+            <b class="popup-title">@marker.Alt</b>
+        </MarkerPopupTemplate>
+    </BitMap>
+</div>
+
+@code {
+    [SupplyParameterFromQuery] public string? Dir { get; set; }
+
+    [SupplyParameterFromQuery] public bool Pan { get; set; }
+
+    private readonly BitLeafletMapProvider _provider = new() { Center = new(48.2082, 16.3738), Zoom = 12 };
+
+    // West of the centre, so that on a right-to-left map an inline-start origin would push the popup past the map's
+    // right edge rather than leave it inside by chance.
+    private readonly List<BitMapMarker> _markers = [new() { Id = "opera", Position = new(48.2029, 16.3290), Alt = "Vienna State Opera" }];
+
+    private string _status = "Loading";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+}

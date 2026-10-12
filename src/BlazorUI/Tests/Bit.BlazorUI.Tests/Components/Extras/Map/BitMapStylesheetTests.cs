@@ -89,6 +89,25 @@ public class BitMapStylesheetTests
         StringAssert.Contains(block, "min-height: rem2(24px);");
     }
 
+    // The anchor is moved by the point a provider projects, which is in pixels from the container's top-left corner in
+    // every writing direction, so it starts there too: an inline-start origin is the right edge on a right-to-left map,
+    // and puts the popup a map's width away from its marker (#13592).
+    [TestMethod]
+    public void BitMapShouldAnchorThePopupToTheTopLeftCornerInEveryDirection()
+    {
+        var block = ReadBlock(".bit-map-anchor");
+
+        StringAssert.Contains(block, "top: 0;");
+        StringAssert.Contains(block, "left: 0;");
+        Assert.DoesNotContain("inset-inline", block);
+        Assert.DoesNotContain("inset-block", block);
+        Assert.DoesNotContain("right:", block);
+
+        var chrome = SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "Map", "BitMapChrome.ts");
+
+        StringAssert.Contains(chrome, "anchor.element.style.transform = `translate(${Math.round(point.x)}px, ${Math.round(point.y)}px)`;");
+    }
+
     // A loader slows down under reduced motion rather than stopping, and the motion tokens are what do that - and what
     // ForceAnimation restores. A media query of the map's own would stop it outright and ignore ForceAnimation.
     [TestMethod]

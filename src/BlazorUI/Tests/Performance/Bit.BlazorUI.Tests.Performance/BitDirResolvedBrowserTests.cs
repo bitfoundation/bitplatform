@@ -343,6 +343,61 @@ public class BitDirResolvedBrowserTests : PerformanceTestBase
         }
     }
 
+    // A map's marker popup sits over its marker in a map that reads either way, with the auto-pan the open asks for and
+    // without it (#13592): the anchor is moved by the provider's projected point, which is in pixels from the
+    // container's left edge whatever the direction, so an inline-start origin put it a map's width to the right on a
+    // right-to-left map - out of sight without the pan, and away from its marker with it.
+    [TestMethod,
+        DataRow("ltr", false),
+        DataRow("ltr", true),
+        DataRow("rtl", false),
+        DataRow("rtl", true)]
+    public async Task TheMapPopupSitsOverItsMarkerInEitherDirection(string dir, bool pan)
+    {
+        await Page.GotoAsync($"{BaseUrl}/regression/dir-resolved-map?dir={dir}&pan={(pan ? "true" : "false")}");
+        await WaitForStatus("Ready");
+
+        var marker = Page.Locator(".bit-map .leaflet-marker-icon").First;
+        await marker.WaitForAsync(new() { Timeout = DefaultTimeout });
+        await Page.WaitForTimeoutAsync(500);
+
+        await marker.ClickAsync();
+
+        var popup = Page.Locator(".bit-map-popup");
+        await popup.WaitForAsync(new() { Timeout = DefaultTimeout });
+
+        // The anchor follows the marker every frame and a pan is spent once the popup has laid out, so the two are read
+        // once they have both stopped moving.
+        var placement = await Page.WaitForFunctionAsync(@"() => {
+            const popup = document.querySelector('.bit-map-popup');
+            const marker = document.querySelector('.bit-map .leaflet-marker-icon');
+            const map = document.querySelector('.bit-map');
+            if (!popup || !marker || !map) return null;
+            const p = popup.getBoundingClientRect(), m = marker.getBoundingClientRect(), f = map.getBoundingClientRect();
+            const now = JSON.stringify([Math.round(p.left), Math.round(p.top), Math.round(m.left), Math.round(m.top)]);
+            const last = window.__mapPlacement;
+            window.__mapPlacement = now;
+            if (now !== last) return null;
+            return JSON.stringify({
+                popupCentre: (p.left + p.right) / 2, markerCentre: (m.left + m.right) / 2,
+                popupLeft: p.left, popupRight: p.right, popupBottom: p.bottom, markerBottom: m.bottom,
+                mapLeft: f.left, mapRight: f.right,
+                direction: getComputedStyle(popup).direction,
+            });
+        }", null, new() { Timeout = DefaultTimeout, PollingInterval = 200 });
+
+        var read = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(await placement.JsonValueAsync<string>())!;
+        double Value(string name) => read[name].GetDouble();
+
+        Assert.AreEqual(Value("markerCentre"), Value("popupCentre"), 2, $"The popup is not centred over its marker ({dir}, pan {pan}).");
+        Assert.IsTrue(Value("popupBottom") < Value("markerBottom"), $"The popup is not above its marker ({dir}, pan {pan}).");
+        Assert.IsTrue(Value("popupLeft") >= Value("mapLeft") && Value("popupRight") <= Value("mapRight"),
+            $"The popup is outside the map ({Value("popupLeft")}..{Value("popupRight")} in {Value("mapLeft")}..{Value("mapRight")}; {dir}, pan {pan}).");
+
+        // Only the anchor is placed physically: the popup's content still reads the way the map does.
+        Assert.AreEqual(dir, read["direction"].GetString());
+    }
+
     private async Task WaitForFocus(string set, string probe, string text)
         => await Page.WaitForFunctionAsync($"() => document.querySelector('{set} [data-probe={probe}]').contains(document.activeElement) && document.activeElement.textContent.trim() === '{text}'",
             null, new() { Timeout = DefaultTimeout });
