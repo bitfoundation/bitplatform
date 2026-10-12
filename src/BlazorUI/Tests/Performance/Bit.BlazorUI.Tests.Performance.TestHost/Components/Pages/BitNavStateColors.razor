@@ -5,7 +5,8 @@
 @* A theme that gives the hovered and the selected item a vivid fill, and moves the text, the icon and the description of
    each with it through the per-state variables, set once on the wrapper so every nav below inherits it. Each section
    is one nav under that theme with one parameter changed: none, a surface Accent, a semantic Accent, an explicit
-   Color, and a theme that sets the pressed colors too. Every color is a distinct rgb() so a test can tell which
+   Color, a theme that sets the pressed colors too, one that sets the selected item's hovered and pressed ones, and a
+   branch and a group header holding the selected item. Every color is a distinct rgb() so a test can tell which
    variable painted a part. The pressed background is left light, the case of a theme that only made the hover vivid. *@
 <div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
     <h3>BitNav State Colors Regression</h3>
@@ -31,6 +32,19 @@
 
     <section id="theme-pressed" style="@PressedStyle">
         <BitNav TItem="BitNavItem" Items="_items" DefaultSelectedItem="_items[0]" Mode="BitNavMode.Manual" />
+    </section>
+
+    <section id="theme-selected-hover" style="@SelectedHoverStyle">
+        <BitNav TItem="BitNavItem" Items="_items" DefaultSelectedItem="_items[0]" Mode="BitNavMode.Manual" />
+    </section>
+
+    @* A parent item and a group header holding the selected item, which a test collapses to draw them as the selection. *@
+    <section id="theme-branch">
+        <BitNav TItem="BitNavItem" Items="_branchItems" DefaultSelectedItem="_branchItems[0].ChildItems[0]" Mode="BitNavMode.Manual" />
+    </section>
+
+    <section id="theme-group">
+        <BitNav TItem="BitNavItem" Items="_groupItems" DefaultSelectedItem="_groupItems[0].ChildItems[0]" Mode="BitNavMode.Manual" RenderType="BitNavRenderType.Grouped" />
     </section>
 </div>
 
@@ -59,10 +73,40 @@
         "--bit-Nav-pressed-icon-color: rgb(255, 255, 7);" +
         "--bit-Nav-pressed-description-color: rgb(255, 255, 8);";
 
+    private const string SelectedHoverStyle =
+        "--bit-Nav-selected-hover-background: rgb(0, 60, 0);" +
+        "--bit-Nav-selected-pressed-background: rgb(0, 30, 0);" +
+        "--bit-Nav-selected-hover-color: rgb(255, 255, 9);" +
+        "--bit-Nav-selected-hover-icon-color: rgb(255, 255, 10);" +
+        "--bit-Nav-selected-hover-description-color: rgb(255, 255, 11);";
+
     private readonly List<BitNavItem> _items =
     [
         new() { Key = "selected", Text = "Selected", IconName = BitIconName.Home, Description = "The selected item" },
         new() { Key = "other", Text = "Other", IconName = BitIconName.Mail, Description = "An item at rest" },
+    ];
+
+    private readonly List<BitNavItem> _branchItems =
+    [
+        new()
+        {
+            Key = "branch", Text = "Branch", IconName = BitIconName.Folder, Description = "The branch holding the selection",
+            ChildItems = [new() { Key = "child", Text = "Child", IconName = BitIconName.Home, Description = "The selected item" }]
+        },
+        new() { Key = "other", Text = "Other", IconName = BitIconName.Mail, Description = "An item at rest" },
+    ];
+
+    private readonly List<BitNavItem> _groupItems =
+    [
+        new()
+        {
+            Key = "group", Text = "Group", IconName = BitIconName.Folder, Description = "The group holding the selection",
+            ChildItems =
+            [
+                new() { Key = "child", Text = "Child", IconName = BitIconName.Home, Description = "The selected item" },
+                new() { Key = "other", Text = "Other", IconName = BitIconName.Mail, Description = "An item at rest" },
+            ]
+        },
     ];
 
     private string _status = "Loading";

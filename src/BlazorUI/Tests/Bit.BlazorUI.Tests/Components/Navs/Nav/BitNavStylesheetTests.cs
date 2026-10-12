@@ -144,6 +144,61 @@ public class BitNavStylesheetTests
     }
 
     [TestMethod]
+    public void BitNavShouldKeepTheSelectionUnderThePointer()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // Right after a click the pointer is still on the item just picked, so the hover and the press of the selected
+        // item (and of the collapsed branch that holds it) give their feedback on the selected fill, in the selected
+        // colors, rather than taking the hover's and the press's, which turned a vivid selection into the neutral hover
+        // grey - and still give one, since a collapsed branch is a control the pointer toggles.
+        var selected = SourceFiles.GetScssBlock(stylesheet, "\n.bit-nav-sel,");
+        var hover = SourceFiles.GetScssBlock(SourceFiles.GetScssBlock(selected, "@media (hover: hover) {"), "&:hover:not(:disabled) {");
+        var pressed = SourceFiles.GetScssBlock(selected, "\n    &:active:not(:disabled) {");
+        StringAssert.Contains(hover, "@include selected-item-state(--bit-nav-clr-sel-hover, $nav-selected-hover-background, $nav-selected-hover-background-fallback);");
+        StringAssert.Contains(pressed, "@include selected-item-state(--bit-nav-clr-sel-active, $nav-selected-pressed-background, $nav-selected-pressed-background-fallback);");
+
+        // The fill reads the Accent's own state fill first, then the state's public variable, then the selected fill with
+        // the selected color mixed in - the press over the hover's, so it is felt on a touch screen and over a hover fill
+        // a theme set alike; color-mix sits behind @supports, with the selected fill kept where it is not understood.
+        StringAssert.Contains(stylesheet, "@return color-mix(in srgb, #{$on} 8%, #{$fill});");
+        StringAssert.Contains(stylesheet, "$nav-selected-hover-background: var(--bit-Nav-selected-hover-background, #{nav-selected-state-fill($nav-selected-color, $nav-selected-background)});");
+        StringAssert.Contains(stylesheet, "$nav-selected-pressed-background: var(--bit-Nav-selected-pressed-background, #{nav-selected-state-fill($nav-selected-hover-color, $nav-selected-hover-background)});");
+        StringAssert.Contains(stylesheet, "$nav-selected-hover-background-fallback: var(--bit-Nav-selected-hover-background, #{$nav-selected-background});");
+        StringAssert.Contains(stylesheet, "$nav-selected-pressed-background-fallback: var(--bit-Nav-selected-pressed-background, #{$nav-selected-hover-background-fallback});");
+
+        var state = SourceFiles.GetScssBlock(stylesheet, "@mixin selected-item-state($accent-fill, $fill, $fallback) {");
+        StringAssert.Contains(state, "--bit-nav-sbg: var(#{$accent-fill}, #{$fallback});");
+        StringAssert.Contains(SourceFiles.GetScssBlock(state, "@supports (color: color-mix(in srgb, red, blue)) {"), "--bit-nav-sbg: var(#{$accent-fill}, #{$fill});");
+
+        // Every part takes the selected state's own colors, which fall back on the selected ones, the Accent and Color
+        // still read first; a collapsed group header paints its text from the one the state sets on it.
+        StringAssert.Contains(state, "@include accented-item-content($nav-selected-hover-color, $nav-selected-hover-icon-color, $nav-selected-hover-description-color, $state: true);");
+        StringAssert.Contains(state, "--bit-nav-sfg: var(--bit-nav-clr-text, #{$nav-selected-hover-color});");
+        StringAssert.Contains(stylesheet, "$nav-selected-hover-color: var(--bit-Nav-selected-hover-color, #{$nav-selected-color});");
+        StringAssert.Contains(stylesheet, "$nav-selected-hover-icon-color: var(--bit-Nav-selected-hover-icon-color, var(--bit-Nav-selected-icon-color, #{$nav-icon-color}));");
+        StringAssert.Contains(stylesheet, "$nav-selected-hover-description-color: var(--bit-Nav-selected-hover-description-color, var(--bit-Nav-selected-description-color, #{$nav-description-color}));");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-nav-gcb.bit-nav-sca {"), "color: var(--bit-nav-sfg, var(--bit-nav-clr-text, var(--bit-Nav-selected-color, #{$clr-fg-pri})));");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-nav-gcb {"), "--bit-nav-sfg: initial;");
+
+        // An explicit Accent publishes those fills off its own selected fill and on-color, ahead of the public variables.
+        var accent = SourceFiles.GetScssBlock(stylesheet, "\n    .bit-nav-a#{$role} {");
+        StringAssert.Contains(accent, "--bit-nav-clr-sel-hover: #{role($tokens, active)};");
+        StringAssert.Contains(accent, "--bit-nav-clr-sel-active: #{role($tokens, active)};");
+        var mixed = SourceFiles.GetScssBlock(accent, "@supports (color: color-mix(in srgb, red, blue)) {");
+        StringAssert.Contains(mixed, "--bit-nav-clr-sel-hover: #{nav-selected-state-fill(role($tokens, on), role($tokens, active))};");
+        StringAssert.Contains(mixed, "--bit-nav-clr-sel-active: #{nav-selected-state-fill(role($tokens, on), nav-selected-state-fill(role($tokens, on), role($tokens, active)))};");
+
+        // The :not(:disabled) keeps a disabled group header out, and gives the selectors the weight of the header's own
+        // states, (0,3,0) both, so it is coming later that lets them win there; the states of an item weigh (0,2,0) and
+        // lose to them wherever they are declared.
+        var selectedAt = stylesheet.IndexOf("\n.bit-nav-sel,", StringComparison.Ordinal);
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-nav-gcb {"), "&:hover:not(:disabled, .bit-nav-gst) {");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-nav-gcb {"), "&:active:not(:disabled, .bit-nav-gst) {");
+        Assert.IsTrue(selectedAt > stylesheet.IndexOf("\n.bit-nav-gcb {", StringComparison.Ordinal), "The selected item's states are declared ahead of the group header's, which weigh as much.");
+    }
+
+    [TestMethod]
     public void BitNavShouldLetEveryAccentWinOverTheStateColorsOfTheIconAndTheDescription()
     {
         var accent = SourceFiles.GetScssBlock(ReadStylesheet(), "\n    .bit-nav-a#{$role} {");
@@ -168,7 +223,8 @@ public class BitNavStylesheetTests
         // win on the root that carries them.
         foreach (var property in new[] { "--bit-nav-item-font-size", "--bit-nav-item-min-height", "--bit-nav-icon-size", "--bit-nav-des-font-size",
                                          "--bit-nav-header-font-size", "--bit-nav-header-min-height", "--bit-nav-chevron-size", "--bit-nav-clr",
-                                         "--bit-nav-clr-text", "--bit-nav-clr-hover", "--bit-nav-clr-active", "--bit-nav-clr-icon", "--bit-nav-clr-des" })
+                                         "--bit-nav-clr-text", "--bit-nav-clr-hover", "--bit-nav-clr-active", "--bit-nav-clr-sel-hover",
+                                         "--bit-nav-clr-sel-active", "--bit-nav-clr-icon", "--bit-nav-clr-des" })
         {
             StringAssert.Contains(root, $"{property}: initial;");
         }
