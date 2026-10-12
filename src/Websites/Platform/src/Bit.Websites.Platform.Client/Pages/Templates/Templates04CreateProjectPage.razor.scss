@@ -130,11 +130,6 @@
     flex-direction: column;
     gap: rem2(10px);
     min-width: 0;
-
-    &.follow-up {
-        padding-inline-start: rem2(16px);
-        border-inline-start: rem2(3px) solid $bit-color-primary;
-    }
 }
 
 .group-prompt {
@@ -155,17 +150,15 @@
 }
 
 .answer {
+    position: relative;
     display: flex;
     gap: rem2(12px);
     align-items: flex-start;
     width: 100%;
     min-width: 0;
     min-height: rem2(72px);
-    margin: 0;
     padding: rem2(14px) rem2(16px);
     box-sizing: border-box;
-    font: inherit;
-    text-align: start;
     cursor: pointer;
     color: $bit-color-foreground-primary;
     border-radius: rem2(10px);
@@ -177,15 +170,27 @@
         border-color: $bit-color-primary;
     }
 
-    &:focus-visible {
-        outline: 2px solid $bit-color-primary;
-        outline-offset: 2px;
-    }
-
     &.chosen {
         border-color: $bit-color-primary;
         box-shadow: inset 0 0 0 1px $bit-color-primary;
         background-color: $bit-color-background-secondary;
+    }
+}
+
+.answer-hit {
+    position: absolute;
+    inset: -1px;
+    z-index: 1;
+    margin: 0;
+    padding: 0;
+    cursor: pointer;
+    border: none;
+    border-radius: inherit;
+    background: transparent;
+
+    &:focus-visible {
+        outline: 2px solid $bit-color-primary;
+        outline-offset: 2px;
     }
 }
 
@@ -266,6 +271,12 @@
     font-size: rem2(14px);
     line-height: 1.45;
     color: $bit-color-foreground-secondary;
+
+    a {
+        position: relative;
+        z-index: 2;
+        color: $bit-color-primary;
+    }
 }
 
 .effect {

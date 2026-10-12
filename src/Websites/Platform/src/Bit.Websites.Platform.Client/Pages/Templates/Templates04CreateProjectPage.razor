@@ -23,6 +23,26 @@
             }
         </span>;
 
+    RenderFragment RichText(string text) =>
+        @<span>
+            @foreach (var part in AnswerParts(text))
+            {
+                if (part.IsCode)
+                {
+                    <code>@part.Text</code>
+                }
+                else if (part.Url is not null)
+                {
+                    var external = part.Url.StartsWith("http", StringComparison.Ordinal);
+                    <a href="@part.Url" target="@(external ? "_blank" : null)" rel="@(external ? "noopener" : null)">@part.Text</a>
+                }
+                else
+                {
+                    @part.Text
+                }
+            }
+        </span>;
+
     RenderFragment Faqs(Faq[] faqs) =>
         @<div class="faqs">
             <span class="faqs-title">Common questions</span>
@@ -37,24 +57,7 @@
                         </button>
                         @if (open)
                         {
-                            <p class="faq-answer">
-                                @foreach (var part in AnswerParts(faq.Answer))
-                                {
-                                    if (part.IsCode)
-                                    {
-                                        <code>@part.Text</code>
-                                    }
-                                    else if (part.Url is not null)
-                                    {
-                                        var external = part.Url.StartsWith("http", StringComparison.Ordinal);
-                                        <a href="@part.Url" target="@(external ? "_blank" : null)" rel="@(external ? "noopener" : null)">@part.Text</a>
-                                    }
-                                    else
-                                    {
-                                        @part.Text
-                                    }
-                                }
-                            </p>
+                            <p class="faq-answer">@RichText(faq.Answer)</p>
                         }
                     </div>
                 }
@@ -70,41 +73,41 @@
 
             @foreach (var group in step.Groups)
             {
-                @if (IsShown(group))
-                {
-                    <div class="choice-group @(group.FollowUp ? "follow-up" : null)">
-                        @if (group.Prompt is not null)
+                <div class="choice-group">
+                    @if (group.Prompt is not null)
+                    {
+                        <h3 class="group-prompt">@group.Prompt</h3>
+                    }
+                    <div class="answers" role="@(group.Multiple ? "group" : "radiogroup")" aria-label="@(group.Prompt ?? step.Question)">
+                        @foreach (var answer in group.Answers)
                         {
-                            <h3 class="group-prompt">@group.Prompt</h3>
-                        }
-                        <div class="answers" role="@(group.Multiple ? "group" : "radiogroup")" aria-label="@(group.Prompt ?? step.Question)">
-                            @foreach (var answer in group.Answers)
-                            {
-                                var chosen = answer.IsChosen();
+                            var chosen = answer.IsChosen();
+                            <div class="answer @(chosen ? "chosen" : null)">
                                 <button type="button"
-                                        class="answer @(chosen ? "chosen" : null)"
+                                        class="answer-hit"
                                         role="@(group.Multiple ? "checkbox" : "radio")"
                                         aria-checked="@(chosen ? "true" : "false")"
-                                        @onclick="WrapHandled(() => Choose(group, answer))">
-                                    <span class="answer-mark @(group.Multiple ? "square" : null)" aria-hidden="true"></span>
-                                    <span class="answer-body">
-                                        <span class="answer-head">
-                                            <span class="answer-text">@answer.Text</span>
-                                            @if (answer.ShowsRecommended)
-                                            {
-                                                <span class="answer-badge">Recommended</span>
-                                            }
-                                        </span>
-                                        @if (answer.Hint is not null)
+                                        aria-label="@answer.Text"
+                                        aria-describedby="@(answer.Hint is null ? null : answer.HintId)"
+                                        @onclick="WrapHandled(() => Choose(group, answer))"></button>
+                                <span class="answer-mark @(group.Multiple ? "square" : null)" aria-hidden="true"></span>
+                                <span class="answer-body">
+                                    <span class="answer-head">
+                                        <span class="answer-text">@answer.Text</span>
+                                        @if (answer.ShowsRecommended)
                                         {
-                                            <span class="answer-hint">@answer.Hint</span>
+                                            <span class="answer-badge">Recommended</span>
                                         }
                                     </span>
-                                </button>
-                            }
-                        </div>
+                                    @if (answer.Hint is not null)
+                                    {
+                                        <span class="answer-hint" id="@answer.HintId">@RichText(answer.Hint)</span>
+                                    }
+                                </span>
+                            </div>
+                        }
                     </div>
-                }
+                </div>
             }
         </div>;
 
