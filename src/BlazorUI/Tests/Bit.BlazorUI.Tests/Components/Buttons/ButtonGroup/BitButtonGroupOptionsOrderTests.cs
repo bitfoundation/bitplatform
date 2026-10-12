@@ -24,6 +24,24 @@ public class BitButtonGroupOptionsOrderTests : BunitTestContext
         CollectionAssert.AreEqual(new[] { "First", "Last" }, GetItemTexts(component));
     }
 
+    [TestMethod,
+        DataRow(null, "bit-btg-ifl"),
+        DataRow(BitVariant.Fill, "bit-btg-ifl"),
+        DataRow(BitVariant.Outline, "bit-btg-iol"),
+        DataRow(BitVariant.Text, "bit-btg-itx")]
+    public void BitButtonGroupShouldMarkEveryButtonWithItsVariantWhateverWrapsIt(BitVariant? variant, string expected)
+    {
+        var component = RenderComponent<BitButtonGroupWrappedOptionTest>(parameters => parameters.Add(p => p.Variant, variant));
+
+        // The stylesheet paints a button's colors through the variant class the button carries itself, so an option an
+        // app wraps in an element of its own (a tooltip's anchor) is painted like the ones placed straight in the group.
+        var buttons = component.FindAll("button.bit-btg-itm");
+
+        Assert.AreEqual(2, buttons.Count);
+        Assert.IsTrue(buttons.All(b => b.ClassList.Contains(expected)), $"Not every button carries {expected}.");
+        Assert.AreEqual(1, buttons.Count(b => b.ParentElement?.ClassList.Contains("wrapper") is true));
+    }
+
     [TestMethod]
     public void BitButtonGroupShouldReleaseTheTabStopWhenTheOptionHoldingItIsRemoved()
     {

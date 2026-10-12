@@ -21,7 +21,7 @@
 //                                                                                            collapses under reduced motion)
 //   --bit-TextField-color                   color of the typed text                         (default: $clr-fg-pri)
 //   --bit-TextField-caret-color             color of the text cursor                        (default: the typed text color)
-//   --bit-TextField-placeholder-color       color of the placeholder                        (default: $clr-fg-ter)
+//   --bit-TextField-placeholder-color       color of the placeholder                        (default: $clr-fg-sec)
 //   --bit-TextField-font-family             typeface of the field and of its chrome         (default: $tg-font-family)
 //   --bit-TextField-font-size               size of the typed text, the label and the
 //                                           affixes                                         (default: $tg-fs-sm)
@@ -135,10 +135,7 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
 
         .bit-tfl-inp {
             color: var(--bit-TextField-disabled-color, #{$clr-fg-dis});
-
-            &::placeholder {
-                color: var(--bit-TextField-disabled-color, #{$clr-fg-dis});
-            }
+            @include input-placeholder(var(--bit-TextField-disabled-color, #{$clr-fg-dis}));
         }
 
         .bit-tfl-pre,
@@ -316,13 +313,7 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
     font-size: var(--bit-tfl-font-size, var(--bit-TextField-font-size, #{$tg-fs-sm}));
     min-height: var(--bit-tfl-inp-min-height);
 
-    // The placeholder is left to the browser otherwise, whose default grey is not derived from the theme
-    // and drops below the contrast floor on a dark surface. Firefox also dims it with an opacity of its
-    // own, which would darken the themed color again, so that is reset here.
-    &::placeholder {
-        opacity: 1;
-        color: var(--bit-TextField-placeholder-color, #{$clr-fg-ter});
-    }
+    @include input-placeholder(var(--bit-TextField-placeholder-color, #{$clr-fg-sec}));
 
     &[type="password"]::-ms-reveal,
     &[type="password"]::-ms-clear {

@@ -23,6 +23,18 @@ public class BitSnackBarStylesheetTests
         "--bit-SnackBar-color",
         "--bit-SnackBar-border-color",
         "--bit-SnackBar-border-width",
+        "--bit-SnackBar-fill-background",
+        "--bit-SnackBar-fill-color",
+        "--bit-SnackBar-fill-border-color",
+        "--bit-SnackBar-fill-border-width",
+        "--bit-SnackBar-outline-background",
+        "--bit-SnackBar-outline-color",
+        "--bit-SnackBar-outline-border-color",
+        "--bit-SnackBar-outline-border-width",
+        "--bit-SnackBar-text-background",
+        "--bit-SnackBar-text-color",
+        "--bit-SnackBar-text-border-color",
+        "--bit-SnackBar-text-border-width",
         "--bit-SnackBar-radius",
         "--bit-SnackBar-shadow",
         "--bit-SnackBar-padding",
@@ -67,16 +79,16 @@ public class BitSnackBarStylesheetTests
     }
 
     [TestMethod,
-        DataRow("otl"),
-        DataRow("txt")
+        DataRow("otl", "outline"),
+        DataRow("txt", "text")
     ]
-    public void BitSnackBarUnfilledVariantsShouldReadTheRoleForegroundAsText(string variant)
+    public void BitSnackBarUnfilledVariantsShouldReadTheRoleForegroundAsText(string variant, string name)
     {
         var rules = GetRules(ReadStylesheet());
 
         // A role's main color is picked to be a fill; on the page surface the text takes the shade meant to be read.
         StringAssert.Contains(rules, "--bit-snb-clr-txt: #{role($tokens, fg)};");
-        StringAssert.Contains(GetRule(rules, variant), "--bit-snb-clr: var(--bit-snb-clr-txt, var(--bit-SnackBar-color, #{$clr-inf-fg}));");
+        StringAssert.Contains(GetRule(rules, variant), $"--bit-snb-clr: var(--bit-snb-clr-txt, var(--bit-SnackBar-{name}-color, var(--bit-SnackBar-color, #{{$clr-inf-fg}})));");
     }
 
     [TestMethod]
@@ -165,15 +177,44 @@ public class BitSnackBarStylesheetTests
         // So does the explicit Color of an item, for every color its role paints; the page surface the unfilled
         // variants float on is the variable's alone.
         var fill = GetRule(rules, "fil");
-        StringAssert.Contains(fill, "--bit-snb-clr: var(--bit-snb-fg, var(--bit-SnackBar-color, #{$clr-inf-text}));");
-        StringAssert.Contains(fill, "--bit-snb-clr-bg: var(--bit-snb-bg, var(--bit-SnackBar-background, #{$clr-inf}));");
-        StringAssert.Contains(fill, "--bit-snb-clr-brd: var(--bit-snb-bg, var(--bit-SnackBar-border-color, #{$clr-inf}));");
-        StringAssert.Contains(GetRule(rules, "otl"), "--bit-snb-clr-bg: var(--bit-SnackBar-background, #{$clr-bg-pri});");
+        StringAssert.Contains(fill, "--bit-snb-clr: var(--bit-snb-fg, var(--bit-SnackBar-fill-color, var(--bit-SnackBar-color, #{$clr-inf-text})));");
+        StringAssert.Contains(fill, "--bit-snb-clr-bg: var(--bit-snb-bg, var(--bit-SnackBar-fill-background, var(--bit-SnackBar-background, #{$clr-inf})));");
+        StringAssert.Contains(fill, "--bit-snb-clr-brd: var(--bit-snb-bg, var(--bit-SnackBar-fill-border-color, var(--bit-SnackBar-border-color, #{$clr-inf})));");
+        StringAssert.Contains(GetRule(rules, "otl"), "--bit-snb-clr-bg: var(--bit-SnackBar-outline-background, var(--bit-SnackBar-background, #{$clr-bg-pri}));");
 
-        // The two left in front are fed by no parameter of these: the phone-width floor comes from a media query, and
-        // the border width from the Variant, which always publishes a class.
+        // The one left in front is fed by no parameter: the phone-width floor comes from a media query.
         var publicFirst = Regex.Matches(rules, @"var\(--bit-SnackBar-[a-z-]+, var\(--bit-snb-([a-z-]+)").Select(m => m.Groups[1].Value).Order().ToArray();
-        CollectionAssert.AreEqual(new[] { "brd-w", "min-w" }, publicFirst);
+        CollectionAssert.AreEqual(new[] { "min-w" }, publicFirst);
+    }
+
+    [TestMethod,
+        DataRow("fill", "fil"),
+        DataRow("outline", "otl"),
+        DataRow("text", "txt")]
+    public void BitSnackBarShouldReadTheVariablesOfItsVariantAheadOfTheSharedOnes(string variant, string suffix)
+    {
+        var rules = GetRules(ReadStylesheet());
+        var rule = GetRule(rules, suffix);
+
+        // Each variant reads a tier of its own ahead of every shared color variable and of the border width it decides
+        // on, so a theme can set one look apart from the other two on :root - a neutral hairline around the outlined
+        // items without a border on every filled one.
+        foreach (var name in new[] { "color", "background", "border-color", "border-width" })
+        {
+            StringAssert.Contains(rule, $"var(--bit-SnackBar-{variant}-{name}, var(--bit-SnackBar-{name}, ",
+                                  $".bit-snb-{suffix} does not read --bit-SnackBar-{variant}-{name} ahead of --bit-SnackBar-{name}.");
+        }
+
+        // A variant reads a shared variable only right behind its own twin, and never the tier of another variant.
+        Assert.IsFalse(Regex.IsMatch(rule, $@"(?<!var\(--bit-SnackBar-{variant}-[a-z-]+, )var\(--bit-SnackBar-(?:color|background|border-color|border-width)\b"),
+                       $".bit-snb-{suffix} reads a shared variable without its own tier ahead of it.");
+        Assert.IsFalse(Regex.IsMatch(rule, $@"var\(--bit-SnackBar-(?!{variant}-)(?:fill|outline|text)-"),
+                       $".bit-snb-{suffix} reads the variables of another variant.");
+
+        // The item itself paints what the variants resolve, and reads none of those shared variables on its own.
+        StringAssert.Contains(GetRule(rules, "itm"), "border-width: var(--bit-snb-brd-w);");
+        Assert.IsFalse(Regex.IsMatch(GetRule(rules, "itm"), @"var\(--bit-SnackBar-(?:color|background|border-color|border-width)\b"),
+                       "The item reads a variable the variants have a tier of.");
     }
 
     [TestMethod]
@@ -196,7 +237,7 @@ public class BitSnackBarStylesheetTests
     {
         var rules = GetRules(ReadStylesheet());
 
-        StringAssert.Contains(rules, ".bit-snb-prb:dir(rtl) {\n    transform-origin: right center;");
+        StringAssert.Contains(rules, ".bit-snb-prb:is(:dir(rtl), .bit-snb.bit-rtl > .bit-snb-itm > *) {\n    transform-origin: right center;");
     }
 
     /// <summary>

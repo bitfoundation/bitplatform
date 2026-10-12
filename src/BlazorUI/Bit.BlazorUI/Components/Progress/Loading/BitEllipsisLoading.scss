@@ -66,13 +66,9 @@
 
 // The dots travel toward the end of the line rather than always to the right, so that the motion runs
 // with the reading direction the way an indeterminate progress bar does. Mirroring the whole box is what
-// does it: the drawing is symmetrical, so nothing but the direction of the travel changes.
-.bit-rtl .bit-ldn-elp-ccn {
-    transform: scaleX(-1);
-}
-
-// The same for a loader that inherits a right-to-left direction from the page rather than being given one. Kept
-// in its own rule so a browser without :dir() drops only this.
-.bit-ldn-elp-ccn:dir(rtl) {
+// does it: the drawing is symmetrical, so nothing but the direction of the travel changes. :dir() reads a direction
+// the loader inherits as well as its own Dir; the class Dir renders on the root, the drawing's parent, is read
+// beside it, and :is() keeps it where an engine without :dir() drops the other one, since its list is forgiving.
+.bit-ldn-elp-ccn:is(:dir(rtl), .bit-ldn-elp.bit-rtl > *) {
     transform: scaleX(-1);
 }

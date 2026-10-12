@@ -11,7 +11,7 @@
 //   --bit-PhoneInput-background              fill of the field                        (default: $clr-bg-pri)
 //   --bit-PhoneInput-color                   text of the number                       (default: $clr-fg-pri)
 //   --bit-PhoneInput-placeholder-color       placeholder of the number input, of the
-//                                            selector and of the search box           (default: $clr-fg-ter)
+//                                            selector and of the search box           (default: $clr-fg-sec)
 //   --bit-PhoneInput-border-color            frame at rest                            (default: $clr-brd-pri)
 //   --bit-PhoneInput-hover-border-color      frame under a pointer                    (default: $clr-brd-pri-hover)
 //   --bit-PhoneInput-border-width            thickness of the frame                   (default: $shp-border-width)
@@ -127,7 +127,7 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
     --bit-phi-brd: var(--bit-phi-kind-brd, var(--bit-phi-role-main, var(--bit-PhoneInput-border-color, #{$clr-brd-pri})));
     --bit-phi-brd-hover: var(--bit-phi-kind-brd-hover, var(--bit-phi-role-main, var(--bit-PhoneInput-hover-border-color, #{$clr-brd-pri-hover})));
     --bit-phi-focus: var(--bit-phi-role-focus, var(--bit-PhoneInput-focus-color));
-    --bit-phi-plc: var(--bit-PhoneInput-placeholder-color, #{$clr-fg-ter});
+    --bit-phi-plc: var(--bit-PhoneInput-placeholder-color, #{$clr-fg-sec});
     --bit-phi-itm-clr: var(--bit-PhoneInput-item-color, #{$clr-fg-pri});
     --bit-phi-itm-hover-bg: var(--bit-PhoneInput-item-hover-background, #{$clr-bg-pri-hover});
 }
@@ -310,9 +310,7 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
     border-start-end-radius: var(--bit-phi-radius);
     border-end-end-radius: var(--bit-phi-radius);
 
-    &::placeholder {
-        color: var(--bit-phi-plc);
-    }
+    @include input-placeholder(var(--bit-phi-plc));
 
     &:disabled {
         cursor: default;
@@ -377,8 +375,8 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
         opacity: $opa-dis;
     }
 
-    .bit-phi-inp::placeholder {
-        color: var(--bit-PhoneInput-disabled-color, #{$clr-fg-dis});
+    .bit-phi-inp {
+        @include input-placeholder(var(--bit-PhoneInput-disabled-color, #{$clr-fg-dis}));
     }
 }
 
@@ -461,10 +459,7 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
     color: var(--bit-phi-itm-clr);
     letter-spacing: $tg-ctrl-letter-spacing;
     padding: spacing(1) spacing(1.5);
-
-    &::placeholder {
-        color: var(--bit-phi-plc);
-    }
+    @include input-placeholder(var(--bit-phi-plc));
 }
 
 .bit-phi-scn {

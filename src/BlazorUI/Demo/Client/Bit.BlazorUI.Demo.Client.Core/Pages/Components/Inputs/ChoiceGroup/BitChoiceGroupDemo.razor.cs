@@ -443,25 +443,79 @@ public partial class BitChoiceGroupDemo
         {
             Name = "--bit-ChoiceGroup-item-background",
             DefaultValue = "--bit-clr-bg-sec for an icon or image tile, and per variant for a card",
-            Description = "Background of the surface an item draws at rest: the icon or image tile, and the card of the Outline and Fill variants. A plain text item draws no surface of its own, and the Inline mode drops the tile. The Color parameter wins over it for a tile; the card is its alone.",
+            Description = "Background of the surface an item draws at rest: the icon or image tile, and the card of the Outline and Fill variants. A plain text item draws no surface of its own, and the Inline mode drops the tile. The Color parameter wins over it for a tile; the card is its alone. Shared by the variants: --bit-ChoiceGroup-fill-item-background, --bit-ChoiceGroup-outline-item-background and --bit-ChoiceGroup-text-item-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-ChoiceGroup-item-hover-background",
             DefaultValue = "Per variant",
-            Description = "Background of a hovered card.",
+            Description = "Background of a hovered card. Shared by the variants: --bit-ChoiceGroup-fill-item-hover-background and --bit-ChoiceGroup-outline-item-hover-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-ChoiceGroup-item-checked-background",
             DefaultValue = "Per variant, a tint of --bit-ChoiceGroup-color",
-            Description = "Background of the checked card. The Color parameter wins over it.",
+            Description = "Background of the checked card. The Color parameter wins over it. Shared by the variants: --bit-ChoiceGroup-fill-item-checked-background and --bit-ChoiceGroup-outline-item-checked-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-ChoiceGroup-item-border-color",
             DefaultValue = "Per variant",
-            Description = "Border of a card at rest.",
+            Description = "Border of a card at rest. Shared by the variants: --bit-ChoiceGroup-fill-item-border-color and --bit-ChoiceGroup-outline-item-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-fill-item-background",
+            DefaultValue = "--bit-ChoiceGroup-item-background",
+            Description = "Background of the card at rest of a Fill choice group alone, read ahead of --bit-ChoiceGroup-item-background so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-fill-item-hover-background",
+            DefaultValue = "--bit-ChoiceGroup-item-hover-background",
+            Description = "Background of a hovered card of a Fill choice group alone, read ahead of --bit-ChoiceGroup-item-hover-background so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-fill-item-checked-background",
+            DefaultValue = "--bit-ChoiceGroup-item-checked-background",
+            Description = "Background of the checked card of a Fill choice group alone, read ahead of --bit-ChoiceGroup-item-checked-background so a theme can set this variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-fill-item-border-color",
+            DefaultValue = "--bit-ChoiceGroup-item-border-color",
+            Description = "Border of a card at rest of a Fill choice group alone, read ahead of --bit-ChoiceGroup-item-border-color so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-outline-item-background",
+            DefaultValue = "--bit-ChoiceGroup-item-background",
+            Description = "Background of the card at rest of an Outline choice group alone, read ahead of --bit-ChoiceGroup-item-background so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-outline-item-hover-background",
+            DefaultValue = "--bit-ChoiceGroup-item-hover-background",
+            Description = "Background of a hovered card of an Outline choice group alone, read ahead of --bit-ChoiceGroup-item-hover-background so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-outline-item-checked-background",
+            DefaultValue = "--bit-ChoiceGroup-item-checked-background",
+            Description = "Background of the checked card of an Outline choice group alone, read ahead of --bit-ChoiceGroup-item-checked-background so a theme can set this variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-outline-item-border-color",
+            DefaultValue = "--bit-ChoiceGroup-item-border-color",
+            Description = "Border of a card at rest of an Outline choice group alone, read ahead of --bit-ChoiceGroup-item-border-color so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-ChoiceGroup-text-item-background",
+            DefaultValue = "--bit-ChoiceGroup-item-background",
+            Description = "Background of the icon or image tile of a Text choice group alone, read ahead of --bit-ChoiceGroup-item-background so a theme can set this variant apart from the others. The Color parameter wins over it.",
         },
         new()
         {

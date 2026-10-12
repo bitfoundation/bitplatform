@@ -1400,37 +1400,145 @@ public partial class BitFileUploadDemo
         {
             Name = "--bit-FileUpload-label-color",
             DefaultValue = "Per Variant, from the primary role",
-            Description = "Browse button text at rest: the role's on-color in the Fill variant, the role's main color in Outline and Text. The Color parameter wins over it.",
+            Description = "Browse button text at rest: the role's on-color in the Fill variant, the role's main color in Outline and Text. The Color parameter wins over it. Shared by the variants: --bit-FileUpload-fill-label-color, --bit-FileUpload-outline-label-color and --bit-FileUpload-text-label-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-FileUpload-label-background",
             DefaultValue = "Per Variant, from the primary role",
-            Description = "Browse button fill at rest: the role's main color in the Fill variant, transparent in Outline and Text. The Color parameter wins over it in Fill; the transparent fill of Outline and Text is its alone.",
+            Description = "Browse button fill at rest: the role's main color in the Fill variant, transparent in Outline and Text. The Color parameter wins over it in Fill; the transparent fill of Outline and Text is its alone. Shared by the variants: --bit-FileUpload-fill-label-background, --bit-FileUpload-outline-label-background and --bit-FileUpload-text-label-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-FileUpload-label-border-color",
             DefaultValue = "Per Variant, from the primary role",
-            Description = "Browse button rule at rest. In the Fill variant it follows the background unless it is set on its own. The Color parameter wins over it, except over the transparent rule of Text.",
+            Description = "Browse button rule at rest. In the Fill variant it follows the background unless it is set on its own. The Color parameter wins over it, except over the transparent rule of Text. Shared by the variants: --bit-FileUpload-fill-label-border-color, --bit-FileUpload-outline-label-border-color and --bit-FileUpload-text-label-border-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-FileUpload-label-hover-color",
             DefaultValue = "--bit-clr-pri-text",
-            Description = "Browse button text while hovered or pressed (pointer devices only). The Color parameter wins over it.",
+            Description = "Browse button text while hovered or pressed (pointer devices only). The Color parameter wins over it. Shared by the variants: --bit-FileUpload-fill-label-hover-color, --bit-FileUpload-outline-label-hover-color and --bit-FileUpload-text-label-hover-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-FileUpload-label-hover-background",
             DefaultValue = "--bit-clr-pri-hover",
-            Description = "Browse button fill on hover, and its rule too in the Fill variant. The Color parameter wins over it.",
+            Description = "Browse button fill on hover, and its rule too in the Fill variant. The Color parameter wins over it. Shared by the variants: --bit-FileUpload-fill-label-hover-background, --bit-FileUpload-outline-label-hover-background and --bit-FileUpload-text-label-hover-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-FileUpload-label-active-background",
             DefaultValue = "--bit-clr-pri-active",
-            Description = "Browse button fill while pressed, and its rule too in the Fill variant. The Color parameter wins over it.",
+            Description = "Browse button fill while pressed, and its rule too in the Fill variant. The Color parameter wins over it. Shared by the variants: --bit-FileUpload-fill-label-active-background, --bit-FileUpload-outline-label-active-background and --bit-FileUpload-text-label-active-background are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-fill-label-color",
+            DefaultValue = "--bit-FileUpload-label-color",
+            Description = "Browse button text at rest of a Fill file upload alone, read ahead of --bit-FileUpload-label-color so a theme can set this variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-fill-label-background",
+            DefaultValue = "--bit-FileUpload-label-background",
+            Description = "Browse button fill at rest of a Fill file upload alone, read ahead of --bit-FileUpload-label-background so a theme can set this variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-fill-label-border-color",
+            DefaultValue = "--bit-FileUpload-label-border-color",
+            Description = "Browse button rule at rest of a Fill file upload alone, read ahead of --bit-FileUpload-label-border-color so a theme can set this variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-fill-label-hover-color",
+            DefaultValue = "--bit-FileUpload-label-hover-color",
+            Description = "Browse button text while hovered or pressed (pointer devices only) of a Fill file upload alone, read ahead of --bit-FileUpload-label-hover-color so a theme can set this variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-fill-label-hover-background",
+            DefaultValue = "--bit-FileUpload-label-hover-background",
+            Description = "Browse button fill on hover, and its rule too of a Fill file upload alone, read ahead of --bit-FileUpload-label-hover-background so a theme can set this variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-fill-label-active-background",
+            DefaultValue = "--bit-FileUpload-label-active-background",
+            Description = "Browse button fill while pressed, and its rule too of a Fill file upload alone, read ahead of --bit-FileUpload-label-active-background so a theme can set this variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-outline-label-color",
+            DefaultValue = "--bit-FileUpload-label-color",
+            Description = "Browse button text at rest of an Outline file upload alone, read ahead of --bit-FileUpload-label-color so a theme can set this variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-outline-label-background",
+            DefaultValue = "--bit-FileUpload-label-background",
+            Description = "Browse button fill at rest and while disabled of an Outline file upload alone, read ahead of --bit-FileUpload-label-background so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-outline-label-border-color",
+            DefaultValue = "--bit-FileUpload-label-border-color",
+            Description = "Browse button rule at rest of an Outline file upload alone, read ahead of --bit-FileUpload-label-border-color so a theme can set this variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-outline-label-hover-color",
+            DefaultValue = "--bit-FileUpload-label-hover-color",
+            Description = "Browse button text while hovered or pressed (pointer devices only) of an Outline file upload alone, read ahead of --bit-FileUpload-label-hover-color so a theme can set this variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-outline-label-hover-background",
+            DefaultValue = "--bit-FileUpload-label-hover-background",
+            Description = "Browse button fill on hover of an Outline file upload alone, read ahead of --bit-FileUpload-label-hover-background so a theme can set this variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-outline-label-active-background",
+            DefaultValue = "--bit-FileUpload-label-active-background",
+            Description = "Browse button fill while pressed of an Outline file upload alone, read ahead of --bit-FileUpload-label-active-background so a theme can set this variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-text-label-color",
+            DefaultValue = "--bit-FileUpload-label-color",
+            Description = "Browse button text at rest of a Text file upload alone, read ahead of --bit-FileUpload-label-color so a theme can set this variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-text-label-background",
+            DefaultValue = "--bit-FileUpload-label-background",
+            Description = "Browse button fill at rest and while disabled of a Text file upload alone, read ahead of --bit-FileUpload-label-background so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-text-label-border-color",
+            DefaultValue = "--bit-FileUpload-label-border-color",
+            Description = "Browse button rule at rest and while disabled of a Text file upload alone, read ahead of --bit-FileUpload-label-border-color so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-text-label-hover-color",
+            DefaultValue = "--bit-FileUpload-label-hover-color",
+            Description = "Browse button text while hovered or pressed (pointer devices only) of a Text file upload alone, read ahead of --bit-FileUpload-label-hover-color so a theme can set this variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-text-label-hover-background",
+            DefaultValue = "--bit-FileUpload-label-hover-background",
+            Description = "Browse button fill on hover of a Text file upload alone, read ahead of --bit-FileUpload-label-hover-background so a theme can set this variant apart from the others. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-text-label-active-background",
+            DefaultValue = "--bit-FileUpload-label-active-background",
+            Description = "Browse button fill while pressed of a Text file upload alone, read ahead of --bit-FileUpload-label-active-background so a theme can set this variant apart from the others. The Color parameter wins over it.",
         },
         new()
         {
@@ -1796,14 +1904,50 @@ public partial class BitFileUploadDemo
         {
             Name = "--bit-FileUpload-disabled-background",
             DefaultValue = "--bit-clr-bg-dis",
-            Description = "Fill of a disabled browse button in the Fill variant and of a disabled drop area.",
+            Description = "Fill of a disabled browse button in the Fill variant and of a disabled drop area. Shared by the variants: --bit-FileUpload-fill-disabled-background, --bit-FileUpload-outline-disabled-background and --bit-FileUpload-text-disabled-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-FileUpload-disabled-border-color",
             DefaultValue = "--bit-clr-brd-dis",
-            Description = "Rule of a disabled browse button in the Fill and Outline variants.",
-        }
+            Description = "Rule of a disabled browse button in the Fill and Outline variants. Shared by the variants: --bit-FileUpload-fill-disabled-border-color, --bit-FileUpload-outline-disabled-border-color and --bit-FileUpload-text-disabled-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-fill-disabled-background",
+            DefaultValue = "--bit-FileUpload-disabled-background",
+            Description = "Fill of a disabled browse button and of a disabled drop area of a Fill file upload alone, read ahead of --bit-FileUpload-disabled-background so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-fill-disabled-border-color",
+            DefaultValue = "--bit-FileUpload-disabled-border-color",
+            Description = "Rule of a disabled browse button and of a disabled drop area of a Fill file upload alone, read ahead of --bit-FileUpload-disabled-border-color so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-outline-disabled-background",
+            DefaultValue = "--bit-FileUpload-disabled-background",
+            Description = "Fill of a disabled drop area (the browse button keeps its transparent fill) of an Outline file upload alone, read ahead of --bit-FileUpload-disabled-background so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-outline-disabled-border-color",
+            DefaultValue = "--bit-FileUpload-disabled-border-color",
+            Description = "Rule of a disabled browse button and of a disabled drop area of an Outline file upload alone, read ahead of --bit-FileUpload-disabled-border-color so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-text-disabled-background",
+            DefaultValue = "--bit-FileUpload-disabled-background",
+            Description = "Fill of a disabled drop area (the browse button keeps its transparent fill) of a Text file upload alone, read ahead of --bit-FileUpload-disabled-background so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-FileUpload-text-disabled-border-color",
+            DefaultValue = "--bit-FileUpload-disabled-border-color",
+            Description = "Rule of a disabled drop area (the browse button keeps its transparent rule) of a Text file upload alone, read ahead of --bit-FileUpload-disabled-border-color so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
+        },
     ];
 
 

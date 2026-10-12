@@ -22,7 +22,7 @@
                 // the separator typed into it. The event is kept from reaching Blazor's delegated
                 // listener on the document altogether, so nothing is committed half way through a word.
                 // Engines that predate isComposing report the composition through the 229 key code.
-                if (e.isComposing || e.keyCode === 229) {
+                if (Utils.isComposingKey(e)) {
                     e.stopPropagation();
                     return;
                 }
@@ -129,7 +129,7 @@
             root.dataset.bitTgiTagsSetup = 'true';
 
             root.addEventListener('keydown', (e: KeyboardEvent) => {
-                if (e.isComposing || e.keyCode === 229) return;
+                if (Utils.isComposingKey(e)) return;
 
                 const target = e.target as HTMLElement;
 

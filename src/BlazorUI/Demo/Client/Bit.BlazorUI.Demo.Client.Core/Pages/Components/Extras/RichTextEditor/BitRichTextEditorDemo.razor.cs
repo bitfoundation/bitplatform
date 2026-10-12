@@ -437,7 +437,7 @@ public partial class BitRichTextEditorDemo
         new() { Name = "--bit-RichTextEditor-font-family", DefaultValue = "inherit", Description = "Font of the content." },
         new() { Name = "--bit-RichTextEditor-font-size", DefaultValue = "inherit", Description = "Font size of the content." },
         new() { Name = "--bit-RichTextEditor-line-height", DefaultValue = "1.6", Description = "Line height of the content and the source view." },
-        new() { Name = "--bit-RichTextEditor-placeholder-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Placeholder text of the editing surface." },
+        new() { Name = "--bit-RichTextEditor-placeholder-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Placeholder text of the editing surface and of the fields of its panels (link, image, media, find and replace, search)." },
         new() { Name = "--bit-RichTextEditor-link-color", DefaultValue = "var(--bit-clr-pri)", Description = "Links in the content." },
         new() { Name = "--bit-RichTextEditor-code-background", DefaultValue = "var(--bit-clr-bg-sec)", Description = "Background of code spans, code blocks and the source view." },
         new() { Name = "--bit-RichTextEditor-quote-border-color", DefaultValue = "var(--bit-clr-brd-pri)", Description = "Leading rule of a block quote." },

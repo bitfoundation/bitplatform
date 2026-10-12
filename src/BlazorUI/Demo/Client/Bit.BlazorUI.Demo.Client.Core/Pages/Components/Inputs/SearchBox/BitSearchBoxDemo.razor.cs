@@ -628,7 +628,7 @@ public partial class BitSearchBoxDemo
         new()
         {
             Name = "--bit-SearchBox-placeholder-color",
-            DefaultValue = "$clr-fg-sec",
+            DefaultValue = "--bit-clr-fg-sec",
             Description = "Text color of the placeholder.",
         },
         new()

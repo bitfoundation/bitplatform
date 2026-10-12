@@ -649,14 +649,15 @@ public partial class BitCallout : BitComponentBase
     }
 
     // Sent by the JS side as an Escape goes down inside the root or the callout while it is open, ahead of the keydown
-    // Blazor then dispatches, saying whether it was pressed inside a surface nested there - another callout's anchor, a
-    // dialog, a modal, a panel - that has spoken for it first (see Utils.watchNestedEscape, which Callouts.toggle sets
-    // up with the open). Only those presses are answered, and the one after them, so one that never reaches a handler
-    // is overwritten before the next one is read (BitEscapeVerdict).
+    // Blazor then dispatches, saying whether the press is another's - a surface nested there that has spoken for it
+    // first (another callout's anchor, a dialog, a modal, a panel), a part inside them that claimed it (see
+    // Utils.claimEscape), a popup opened from inside them that closes on it - rather than the callout's (see
+    // Utils.watchNestedEscape, which Callouts.toggle sets up with the open). Only those presses are answered, and the
+    // one after them, so one that never reaches a handler is overwritten before the next one is read (BitEscapeVerdict).
     [JSInvokable("OnEscapeVerdict")]
-    public void _OnEscapeVerdict(bool nested)
+    public void _OnEscapeVerdict(bool foreign)
     {
-        _escapeVerdict.Set(nested);
+        _escapeVerdict.Set(foreign);
     }
 
     [JSInvokable("OnTabOut")]

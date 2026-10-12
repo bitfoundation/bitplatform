@@ -327,25 +327,85 @@ public partial class BitHeaderDemo
         {
             Name = "--bit-Header-background",
             DefaultValue = "--bit-clr-bg-pri",
-            Description = "Fill of the Fill variant. The Color parameter wins over it.",
+            Description = "Fill of the Fill variant. The Color parameter wins over it. The Fill variant, the only one reading it, reads --bit-Header-fill-background ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-fill-background",
+            DefaultValue = "--bit-Header-background",
+            Description = "Fill of a Fill header alone, read ahead of --bit-Header-background, like every variable a variant reads. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Header-color",
             DefaultValue = "--bit-clr-fg-pri",
-            Description = "Color of the content. The Color parameter wins over it.",
+            Description = "Color of the content. The Color parameter wins over it. Shared by the three variants: --bit-Header-fill-color, --bit-Header-outline-color and --bit-Header-text-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-fill-color",
+            DefaultValue = "--bit-Header-color",
+            Description = "Color of the content of a Fill header alone, read ahead of --bit-Header-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-outline-color",
+            DefaultValue = "--bit-Header-color",
+            Description = "Color of the content of an Outline header alone, read ahead of --bit-Header-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-text-color",
+            DefaultValue = "--bit-Header-color",
+            Description = "Color of the content of a Text header alone, read ahead of --bit-Header-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Header-border-color",
             DefaultValue = "--bit-clr-brd-pri",
-            Description = "Border of the Outline variant, and the divider of a Bordered header. The Color parameter wins over it.",
+            Description = "Border of the Outline variant, and the divider of a Bordered header. The Color parameter wins over it. Shared by the three variants: --bit-Header-fill-border-color, --bit-Header-outline-border-color and --bit-Header-text-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-fill-border-color",
+            DefaultValue = "--bit-Header-border-color",
+            Description = "Divider of a Bordered Fill header alone, read ahead of --bit-Header-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-outline-border-color",
+            DefaultValue = "--bit-Header-border-color",
+            Description = "Border of an Outline header alone, read ahead of --bit-Header-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-text-border-color",
+            DefaultValue = "--bit-Header-border-color",
+            Description = "Divider of a Bordered Text header alone, read ahead of --bit-Header-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Header-border-width",
             DefaultValue = "--bit-shp-brd-width",
-            Description = "Thickness of that border and divider.",
+            Description = "Thickness of that border and divider. Shared by the three variants: --bit-Header-fill-border-width, --bit-Header-outline-border-width and --bit-Header-text-border-width are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-fill-border-width",
+            DefaultValue = "--bit-Header-border-width",
+            Description = "Thickness of the divider of a Bordered Fill header alone, read ahead of --bit-Header-border-width so a theme can set this variant apart from the other two.",
+        },
+        new()
+        {
+            Name = "--bit-Header-outline-border-width",
+            DefaultValue = "--bit-Header-border-width",
+            Description = "Thickness of the border of an Outline header alone, read ahead of --bit-Header-border-width so a theme can set this variant apart from the other two.",
+        },
+        new()
+        {
+            Name = "--bit-Header-text-border-width",
+            DefaultValue = "--bit-Header-border-width",
+            Description = "Thickness of the divider of a Bordered Text header alone, read ahead of --bit-Header-border-width so a theme can set this variant apart from the other two.",
         },
         new()
         {
@@ -399,25 +459,61 @@ public partial class BitHeaderDemo
         {
             Name = "--bit-Header-backdrop-blur",
             DefaultValue = "12px",
-            Description = "Blur of what passes behind a Translucent header.",
+            Description = "Blur of what passes behind a Translucent header. The Fill variant, the only one reading it, reads --bit-Header-fill-backdrop-blur ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-fill-backdrop-blur",
+            DefaultValue = "--bit-Header-backdrop-blur",
+            Description = "Blur of what passes behind a Translucent Fill header alone, read ahead of --bit-Header-backdrop-blur, like every variable a variant reads.",
         },
         new()
         {
             Name = "--bit-Header-translucent-opacity",
             DefaultValue = "72%",
-            Description = "How much of its fill a Translucent header keeps.",
+            Description = "How much of its fill a Translucent header keeps. The Fill variant, the only one reading it, reads --bit-Header-fill-translucent-opacity ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-fill-translucent-opacity",
+            DefaultValue = "--bit-Header-translucent-opacity",
+            Description = "Share of its fill a Translucent Fill header alone keeps, read ahead of --bit-Header-translucent-opacity, like every variable a variant reads.",
         },
         new()
         {
             Name = "--bit-Header-disabled-color",
             DefaultValue = "--bit-clr-fg-dis",
-            Description = "Content color of a disabled header, and the border of a disabled Outline one. The Color parameter wins over it.",
+            Description = "Content color of a disabled header, and the border of a disabled Outline one. The Color parameter wins over it. Shared by the three variants: --bit-Header-fill-disabled-color, --bit-Header-outline-disabled-color and --bit-Header-text-disabled-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-fill-disabled-color",
+            DefaultValue = "--bit-Header-disabled-color",
+            Description = "Content color of a disabled Fill header alone, read ahead of --bit-Header-disabled-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-outline-disabled-color",
+            DefaultValue = "--bit-Header-disabled-color",
+            Description = "Content and border color of a disabled Outline header alone, read ahead of --bit-Header-disabled-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-text-disabled-color",
+            DefaultValue = "--bit-Header-disabled-color",
+            Description = "Content color of a disabled Text header alone, read ahead of --bit-Header-disabled-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
         },
         new()
         {
             Name = "--bit-Header-disabled-background",
             DefaultValue = "--bit-clr-bg-pri",
-            Description = "Fill of a disabled Fill header. The Color parameter wins over it.",
+            Description = "Fill of a disabled Fill header. The Color parameter wins over it. The Fill variant, the only one reading it, reads --bit-Header-fill-disabled-background ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Header-fill-disabled-background",
+            DefaultValue = "--bit-Header-disabled-background",
+            Description = "Fill of a disabled Fill header alone, read ahead of --bit-Header-disabled-background, like every variable a variant reads. The Color parameter wins over it.",
         },
         new()
         {

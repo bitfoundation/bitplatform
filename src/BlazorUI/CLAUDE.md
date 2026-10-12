@@ -103,6 +103,16 @@ the callouts, BitTooltip, BitMessage - the listeners in `Scripts/Utils.ts`) leav
   round trip that registers its popup - is claimed from the render (`data-bit-esc` on its root). A component whose .NET keydown handlers hear every key of its content leaves the keys of a surface rendered
   there alone through `Utils.isInNestedSurface` (BitDataGrid's cells, rows and headers, BitSwiper, BitCarousel).
   `BitSurfaceKeyPropagationContractTests` pins the keys reaching the page.
+- **A surface that dismisses itself in its own .NET keydown handler asks the JS side first.** `BitPanel`
+  (`Utils.setupEscapeGuard`) and `BitCallout` (its anchor and its content, `Utils.watchNestedEscape`) go by one
+  per-press `OnEscapeVerdict`, which folds a nested surface, a claim, an open popup opened from inside (and, for the
+  panel, a prevented default and an IME composition) into one answer - never a channel of their own for one of them.
+  A callout names itself to `Utils.isEscapeOfOpenCallout`, since it is the innermost open callout the key closes.
+- **The Escape of an IME composition is nobody's.** Every script of both packages reads it through
+  `Utils.isComposingKey` (the one reading of `isComposing` and the legacy 229 key code), every listener that closes
+  something leaves it alone, and `Utils.stopComposingEscape` stops it on the document element, ahead of Blazor's
+  delegation, so no .NET handler hears it in any engine - a component never tests for it in C#.
+  `BitEscapeClaimContractTests` pins both.
 - **Nothing guesses from what the target looks like.** No selector of inputs, roles or `aria-expanded`
   decides who owns the key; a component the claim and the open popup do not cover is fixed by claiming,
   never by teaching a surface a new selector. A consumer's own control opts in the same way.
@@ -176,6 +186,31 @@ component" section is where consumers read it:
   lists, disabled and enabled, for the root class and the pairing. `BitDisabledStateBrowserTests`
   (`Tests/Performance`, one `?part=` of `/regression/disabled-state` per component) reads the live DOM
   of every engine for the same, through a runtime toggle of `Disabled` and back.
+
+## Right-to-left rules work without `:dir()`
+
+`:dir(rtl)` is how a stylesheet reads the direction an element is actually laid out in, inherited or not, so it
+is the selector to reach for. But it arrived late (Chromium 120, Safari 16.4), the WebViews a Blazor Hybrid app
+runs in can be older, and an engine that does not know a selector drops the whole rule - every other selector in
+its list too. An explicit `Dir="BitDir.Rtl"` renders the `bit-rtl` class (and `dir="rtl"`), and that has to keep
+working there:
+
+- **Write the two in one forgiving `:is()`**: `.bit-mdl-tlf:is(.bit-rtl, :dir(rtl))`. An engine without `:dir()` drops
+  only that alternative and keeps the class, and `:is()` (Chromium 88, Safari 14) is older than `:dir()`, so one rule
+  covers both and nothing is written twice. When the class is on an ancestor, the alternative reaches it through child
+  combinators only (`.bit-ttp-wrp:is(:dir(rtl), .bit-ttp.bit-rtl > *)`,
+  `.bit-msg-prb:is(:dir(rtl), .bit-msg.bit-rtl > .bit-msg-prg > *)`): a descendant combinator would also reach into a
+  nested instance that reads the other way, which `:dir()` gets right.
+- **A class behind a descendant combinator goes inside `@supports not selector(:dir(rtl))`**, as a rule of its own with
+  the same declarations, in the same at-rules (`.bit-crd.bit-rtl .bit-crd-skb::after`): there, where nothing better is
+  known, reaching a nested instance is the lesser loss.
+- **A `:dir()` outside `:is()` / `:where()` stands in a list of its own**, never beside a selector without it, and
+  then needs one of the counterparts above as a separate rule.
+- **Not covered**: what is inside `@supports selector(:dir(...))` (BitIcon), which only an engine knowing `:dir()` reads.
+
+`BitComponentDirFallbackTests` checks this for every stylesheet of every package, mixins included (a mixin's
+counterpart is looked for in the mixin itself). A rule whose explicit `Dir` is handled some other way (the root class
+setting a variable the part reads, or the C# doing the turn) goes in its `CoveredOtherwise` list.
 
 ## Demo pages
 
@@ -617,6 +652,46 @@ variable, not per component:
   parts off from it.
 
 A name moves to the root-only list only once no selector reading it matches anything but the root.
+
+**A variant reads its own tier of the public variables ahead of the shared one.** Filled, outlined and text
+looks are styled apart by nearly every design system, so a variable all three read cannot re-skin one of them
+from `:root` without the others: a neutral hairline for outline buttons would ring every filled one too. So every
+public variable a component reads in the rules of one variant has a twin for it - `--bit-<Component>-fill-X`,
+`-outline-X`, `-text-X`, whatever the variant class is called (`bit-drm-tex`, `bit-crd-vot`) - read right ahead
+of it there and falling back to it at once:
+`var(--bit-btn-clr, var(--bit-Button-outline-border-color, var(--bit-Button-border-color, <default>)))`. The
+twin sits between the private variable a parameter publishes and the shared one, so an explicit `Color` still
+wins over both; a chain falling back from one public variable to another (hover to rest) puts the twin ahead of
+each. A part with a variant axis of its own names its twins the same way (`--bit-TagsInput-outline-tag-background`).
+A rule of two variants, or of none (the root, a mixin body), never reads a shared variable that has twins - it
+is split per variant, or the literal `var()` chain is passed into the mixin from each variant's rule, since a
+name put together with Sass interpolation is invisible to the contract tests. A variable whose meaning is the
+same in every variant - a role input the variants all derive from (`--bit-FileInput-color`) - is no variant's
+and stays shared; one that a variant rule reads all the same (`--bit-Card-border-width`, the one rule every card
+draws whoever asks for it) is named in the test's `SharedByEveryLook`, never hidden from it behind a Sass variable.
+A component whose unset `Variant` renders no class (`BitDropMenu`) owns a fourth look in its root rules: each
+variant hands its twins in through a private slot the root reads ahead of the shared variable
+(`var(--bit-drm-rst-brd-p, var(--bit-DropMenu-border-color, ...))`), and the test's `RootOwnsTheUnsetLook` names it. `BitButton` is the reference; `BitComponentVariantVariablesContractTests` fails on a variant
+read without its twin, a twin not falling back to its shared variable, and a shared rule reading one with
+twins, for every stylesheet at once (the variant classes are read off the `BitVariant` arms of the C#).
+The tier must not take away what the shared variable could do before it:
+
+- **Resolve a twin on the element that paints it, never on the root.** A private slot a variant computes
+  (`--bit-chg-card-bg`, `--bit-otp-bg`, `--bit-mnb-hov-bg`) is fixed where it is declared, so one declared on the
+  root is out of reach of a variable set on a part's own style (an item's `Style`, `Styles.Input`,
+  `Styles.ChevronDownButton`). Declare it on the part (`.bit-otp-otl .bit-otp-inp`), or on the root and each part
+  that reads it (`.bit-mnb-fil, .bit-mnb-fil > .bit-mnb-opb, ...`).
+- **A variant qualifier adds no weight to a part's rule.** A single class an app hands a part through `Class` /
+  `Classes` outweighed the shared rule and must keep doing so: qualify with `:where(.bit-x-fil)`, never a second
+  class. Nor does it go through the markup with a child combinator - an app may wrap a part (an option in a tooltip's
+  anchor); a part that needs its variant renders a class of its own for it (BitButtonGroup's `bit-btg-ifl`).
+- **A rule matching parts of more than one variant reads no tier.** BitTimeline's Text plate also matches an item
+  that overrides its variant, so it reads what the item's own variant resolved (`--bit-tln-dot-ico-clr-bg`).
+- **FixedColor fixes the variant's on-color**: a Fill button's resting foreground, an Outline or Text one's hover
+  foreground - never `--bit-X-outline-color` / `-text-color`, which is the role's color and vanishes on the hover fill.
+
+`BitVariantVariablesBrowserTests` (`Tests/Performance`, `/regression/variant-variables`) checks every twin of these
+components in every engine - its own variant alone, the shared one through it, the twin winning - and each rule above.
 
 **A state moves a variable, never the paint.** A `:hover` / `:active` / `:focus*` rule outranks the single class
 an app hands a part through `Class` / `Classes`, so one that set `color`, `background`, `border-color`, `fill`

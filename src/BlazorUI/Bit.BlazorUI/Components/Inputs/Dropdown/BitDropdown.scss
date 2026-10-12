@@ -252,6 +252,12 @@ $drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz
             color: var(--bit-Dropdown-disabled-color, #{$clr-fg-dis});
         }
 
+        // The ComboBox input is painted apart from the field around it, so it greys out apart from it too.
+        .bit-drp-inp {
+            color: var(--bit-Dropdown-disabled-color, #{$clr-fg-dis});
+            @include input-placeholder(var(--bit-Dropdown-disabled-color, #{$clr-fg-dis}));
+        }
+
         .bit-drp-icn {
             cursor: default;
 
@@ -699,9 +705,7 @@ $drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz
 
     // The typed text and the placeholder of the ComboBox input are the same two colors the selection
     // display beside it uses, so the field reads as one control whichever of the two is showing.
-    &::placeholder {
-        color: var(--bit-Dropdown-placeholder-color, #{$clr-fg-sec});
-    }
+    @include input-placeholder(var(--bit-Dropdown-placeholder-color, #{$clr-fg-sec}));
 }
 
 .bit-drp-pre,
@@ -944,10 +948,7 @@ $drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz
     padding: 0 0 spacing(0.0625);
     background-color: transparent;
     color: var(--bit-Dropdown-color, #{$clr-fg-pri});
-
-    &::placeholder {
-        color: var(--bit-Dropdown-placeholder-color, #{$clr-fg-sec});
-    }
+    @include input-placeholder(var(--bit-Dropdown-placeholder-color, #{$clr-fg-sec}));
 }
 
 .bit-drp-sbcc {

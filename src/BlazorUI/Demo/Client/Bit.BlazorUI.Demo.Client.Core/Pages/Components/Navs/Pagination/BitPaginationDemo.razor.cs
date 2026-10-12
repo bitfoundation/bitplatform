@@ -711,19 +711,73 @@ public partial class BitPaginationDemo
         {
             Name = "--bit-Pagination-button-color",
             DefaultValue = "Per Variant, from the primary role",
-            Description = "Label color of a button at rest. The Color parameter wins over it.",
+            Description = "Label color of a button at rest. The Color parameter wins over it. Shared by the three variants: --bit-Pagination-fill-button-color, --bit-Pagination-outline-button-color and --bit-Pagination-text-button-color are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Pagination-button-background",
             DefaultValue = "Per Variant, from the primary role",
-            Description = "Fill of a button at rest. The Color parameter wins over it in Fill; the transparent fill of Outline and Text is its alone.",
+            Description = "Fill of a button at rest. The Color parameter wins over it in Fill; the transparent fill of Outline and Text is its alone. Shared by the three variants: --bit-Pagination-fill-button-background, --bit-Pagination-outline-button-background and --bit-Pagination-text-button-background are read ahead of it.",
         },
         new()
         {
             Name = "--bit-Pagination-button-border-color",
             DefaultValue = "Per Variant, from the primary role",
-            Description = "Border color of a button at rest. The Color parameter wins over it, except over the transparent border of Text.",
+            Description = "Border color of a button at rest. The Color parameter wins over it, except over the transparent border of Text. Shared by the three variants: --bit-Pagination-fill-button-border-color, --bit-Pagination-outline-button-border-color and --bit-Pagination-text-button-border-color are read ahead of it.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-fill-button-color",
+            DefaultValue = "--bit-Pagination-button-color",
+            Description = "Label color of a button at rest of a Fill pagination alone, read ahead of --bit-Pagination-button-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-fill-button-background",
+            DefaultValue = "--bit-Pagination-button-background",
+            Description = "Fill of a button at rest of a Fill pagination alone, read ahead of --bit-Pagination-button-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-fill-button-border-color",
+            DefaultValue = "--bit-Pagination-button-border-color",
+            Description = "Border color of a button at rest of a Fill pagination alone, read ahead of --bit-Pagination-button-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-outline-button-color",
+            DefaultValue = "--bit-Pagination-button-color",
+            Description = "Label color of a button at rest of an Outline pagination alone, read ahead of --bit-Pagination-button-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-outline-button-background",
+            DefaultValue = "--bit-Pagination-button-background",
+            Description = "Fill of a button at rest of an Outline pagination alone, read ahead of --bit-Pagination-button-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-outline-button-border-color",
+            DefaultValue = "--bit-Pagination-button-border-color",
+            Description = "Border color of a button at rest of an Outline pagination alone, read ahead of --bit-Pagination-button-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-text-button-color",
+            DefaultValue = "--bit-Pagination-button-color",
+            Description = "Label color of a button at rest of a Text pagination alone, read ahead of --bit-Pagination-button-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-text-button-background",
+            DefaultValue = "--bit-Pagination-button-background",
+            Description = "Fill of a button at rest of a Text pagination alone, read ahead of --bit-Pagination-button-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-Pagination-text-button-border-color",
+            DefaultValue = "--bit-Pagination-button-border-color",
+            Description = "Border color of a button at rest of a Text pagination alone, read ahead of --bit-Pagination-button-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
         },
         new()
         {

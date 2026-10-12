@@ -1,0 +1,12 @@
+﻿@using Bit.BlazorUI
+
+<BitButtonGroup TItem="BitButtonGroupOption" Variant="Variant">
+    <span class="wrapper">
+        <BitButtonGroupOption Text="Wrapped" />
+    </span>
+    <BitButtonGroupOption Text="Direct" />
+</BitButtonGroup>
+
+@code {
+    [Parameter] public BitVariant? Variant { get; set; }
+}

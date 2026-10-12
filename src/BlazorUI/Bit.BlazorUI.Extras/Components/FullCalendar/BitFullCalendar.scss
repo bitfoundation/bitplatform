@@ -9,7 +9,7 @@
 // --bit-FullCalendar-secondary-background     tab strips, the day-view sidebar, sticky titles, the timeline gutter
 // --bit-FullCalendar-hover-background         a hovered cell, slot, row or control
 // --bit-FullCalendar-color                    text
-// --bit-FullCalendar-secondary-color          weekday headers, group titles, descriptions
+// --bit-FullCalendar-secondary-color          weekday headers, group titles, descriptions, placeholders
 // --bit-FullCalendar-muted-color              hour labels, week numbers, days of the neighbouring months
 // --bit-FullCalendar-border-color             grid lines and the border of the calendar
 // --bit-FullCalendar-control-border-color     edges of the fields, selects, search box and switch tracks
@@ -1337,6 +1337,7 @@ $bfc-private-properties: evt-color;
     color: var(--bit-bfc-text);
     font-size: $tg-fs-sm;
     outline: none;
+    @include input-placeholder(var(--bit-bfc-text-secondary));
 }
 
 .bit-bfc-agenda-search input:focus {
@@ -1604,6 +1605,7 @@ $bfc-private-properties: evt-color;
     font-size: $tg-fs-sm;
     outline: none;
     box-sizing: border-box;
+    @include input-placeholder(var(--bit-bfc-text-secondary));
 }
 
 .bit-bfc-field input:focus,
