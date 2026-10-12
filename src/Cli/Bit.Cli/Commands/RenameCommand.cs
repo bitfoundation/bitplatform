@@ -96,7 +96,7 @@ public static class RenameCommand
                     : StepResult.Warning("Couldn't delete every bin, obj and .vs folder", $"{Count(failures.Count, "folder")} left", hint: Describe(failures[0]));
             }, token), cancellationToken);
 
-            await steps.RunAsync("rename-contents", "Replacing the name in files", (_, token) => Task.Run(() =>
+            var contents = await steps.RunAsync("rename-contents", "Replacing the name in files", (_, token) => Task.Run(() =>
             {
                 var (changed, failures) = renamer.ReplaceInFiles(folder);
                 changedFiles = changed;
@@ -107,17 +107,24 @@ public static class RenameCommand
                     : StepResult.Failed("Couldn't replace the name in every file", $"{Count(failures.Count, "file")} failed", hint: Describe(failures[0]));
             }, token), cancellationToken);
 
-            await steps.RunAsync("rename-paths", "Renaming files and folders", (_, token) => Task.Run(() =>
+            if (contents.Status is StepStatus.Failed)
             {
-                var (files, folders, failures) = renamer.RenamePaths(folder);
-                renamedFiles = files;
-                renamedFolders = folders;
-                Log(cli, failures);
+                steps.Add("rename-paths", StepResult.Skipped("Didn't rename files and folders", "some files still have the old name"));
+            }
+            else
+            {
+                await steps.RunAsync("rename-paths", "Renaming files and folders", (_, token) => Task.Run(() =>
+                {
+                    var (files, folders, failures) = renamer.RenamePaths(folder);
+                    renamedFiles = files;
+                    renamedFolders = folders;
+                    Log(cli, failures);
 
-                return failures.Count == 0
-                    ? StepResult.Succeeded("Renamed files and folders", $"{Count(files, "file")}, {Count(folders, "folder")}")
-                    : StepResult.Failed("Couldn't rename every file and folder", $"{Count(failures.Count, "item")} failed", hint: Describe(failures[0]));
-            }, token), cancellationToken);
+                    return failures.Count == 0
+                        ? StepResult.Succeeded("Renamed files and folders", $"{Count(files, "file")}, {Count(folders, "folder")}")
+                        : StepResult.Failed("Couldn't rename every file and folder", $"{Count(failures.Count, "item")} failed", hint: Describe(failures[0]));
+                }, token), cancellationToken);
+            }
 
             cli.Console.Out.WriteLine();
             cli.Console.Out.MarkupLine(steps.AnyFailed

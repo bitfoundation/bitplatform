@@ -201,8 +201,27 @@ public sealed class ProjectRenamer
         bytes.AsSpan(0, preambleLength).CopyTo(output);
         body.CopyTo(output, preambleLength);
 
-        using var stream = new FileStream(path, FileMode.Truncate, FileAccess.Write, FileShare.None);
-        stream.Write(output);
+        var temp = $"{path}.{Guid.NewGuid():N}.tmp";
+
+        try
+        {
+            File.WriteAllBytes(temp, output);
+
+            if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+            {
+                File.SetUnixFileMode(temp, File.GetUnixFileMode(path));
+            }
+
+            File.Replace(temp, path, destinationBackupFileName: null);
+        }
+        finally
+        {
+            if (File.Exists(temp))
+            {
+                File.Delete(temp);
+            }
+        }
+
         return true;
     }
 

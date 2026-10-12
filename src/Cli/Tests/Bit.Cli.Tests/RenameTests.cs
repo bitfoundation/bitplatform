@@ -57,6 +57,29 @@ public class RenameTests
     }
 
     [TestMethod]
+    public async Task Rename_Should_LeaveFilesAndFoldersAloneWhenAFileCantBeChanged()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost(HostOs.Linux);
+        var folder = CreateProject(host);
+        host.Runner.On("git", "rev-parse", 0, folder);
+        host.Runner.On("git", "status --porcelain", 0, "");
+        var csproj = Path.Combine(folder, "src", "Server", "Old.Server.Api", "Old.Server.Api.csproj");
+
+        using (File.Open(csproj, FileMode.Open, FileAccess.Read, FileShare.None))
+        {
+            Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("rename", "Contoso.Shop", folder), host.Output);
+        }
+
+        StringAssert.Contains(host.FlatOutput, "Didn't rename files and folders");
+        Assert.IsTrue(File.Exists(Path.Combine(folder, "Old.slnx")));
+        StringAssert.Contains(File.ReadAllText(csproj), "<RootNamespace>Old.Server.Api</RootNamespace>");
+        Assert.IsEmpty(Directory.GetFiles(folder, "*.tmp", SearchOption.AllDirectories));
+    }
+
+    [TestMethod]
     public async Task Rename_Should_RefuseAGitRepositoryWithChanges()
     {
         using var host = new TestHost();
