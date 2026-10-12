@@ -499,16 +499,9 @@ $fin-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, lbl-hei
 
     // the ring is drawn inside the button rather than around it: the file item clips its own overflow to
     // stay rounded, and the remove button sits flush against that edge, so an outset ring would be cut off
-    // on the very side the button touches. The forced-colors branch mirrors focus-ring's, since a
-    // box-shadow is dropped entirely in that mode.
+    // on the very side the button touches.
     &:focus-visible {
-        outline: none;
-        box-shadow: inset 0 0 0 $shp-focus-ring-width var(--bit-fin-clr-focus, var(--bit-FileInput-focus-color, #{$clr-pri-focus}));
-
-        @media (forced-colors: active) {
-            outline: #{$shp-focus-ring-width} solid Highlight;
-            outline-offset: calc(-1 * #{$shp-focus-ring-width});
-        }
+        @include focus-ring-inset(var(--bit-fin-clr-focus, var(--bit-FileInput-focus-color, #{$clr-pri-focus})));
     }
 
     &:disabled {

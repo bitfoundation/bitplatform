@@ -58,13 +58,7 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
 
 // A ring drawn inside the element, for the parts that fill the frame, whose clipping would cut one drawn outside.
 @mixin rte-inset-ring($color: $rte-focus) {
-    outline: none;
-    box-shadow: inset 0 0 0 $shp-focus-ring-width #{$color};
-
-    @media (forced-colors: active) {
-        outline: #{$shp-focus-ring-width} solid Highlight;
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
-    }
+    @include focus-ring-inset($color);
 }
 
 // The small fields of the tool panels and menus.

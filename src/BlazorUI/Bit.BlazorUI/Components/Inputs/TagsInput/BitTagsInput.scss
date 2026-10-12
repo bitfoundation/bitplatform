@@ -230,8 +230,7 @@ $tgi-private-properties: clr, clr-txt, clr-hover, clr-focus, gap, fontsize, icon
     //It is drawn with the color of the text of the chip rather than with the accent, since on a filled
     //chip the accent is what the ring would be drawn on top of.
     &:focus-visible {
-        outline: $shp-focus-ring-width solid var(--bit-tgi-tag-ring, var(--bit-TagsInput-tag-focus-color, var(--bit-tgi-tag-ring-dft)));
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        @include focus-ring-inset(var(--bit-tgi-tag-ring, var(--bit-TagsInput-tag-focus-color, var(--bit-tgi-tag-ring-dft))));
     }
 }
 
@@ -332,8 +331,7 @@ $tgi-private-properties: clr, clr-txt, clr-hover, clr-focus, gap, fontsize, icon
     }
 
     &:focus-visible {
-        outline: $shp-focus-ring-width solid var(--bit-tgi-tag-ring, var(--bit-TagsInput-tag-focus-color, var(--bit-tgi-tag-ring-dft)));
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        @include focus-ring-inset(var(--bit-tgi-tag-ring, var(--bit-TagsInput-tag-focus-color, var(--bit-tgi-tag-ring-dft))));
     }
 }
 
@@ -413,8 +411,7 @@ $tgi-private-properties: clr, clr-txt, clr-hover, clr-focus, gap, fontsize, icon
 //one does, so the eye finds it. A ring rather than a fill, since the little input has borrowed the colors
 //of the chip and repainting it now would be the tag changing into something else half way through.
 .bit-tgi-tag-edt {
-    outline: $shp-focus-ring-width solid var(--bit-tgi-tag-ring, var(--bit-TagsInput-tag-focus-color, var(--bit-tgi-tag-ring-dft)));
-    outline-offset: calc(-1 * #{$shp-focus-ring-width});
+    @include focus-ring-inset(var(--bit-tgi-tag-ring, var(--bit-TagsInput-tag-focus-color, var(--bit-tgi-tag-ring-dft))));
 }
 
 //the chip that has been picked up and is waiting to be put down: outlined rather than faded, since unlike

@@ -436,8 +436,7 @@ i.bit-crd-hic {
     // An inset outline rather than the shared focus ring: a sectioned card clips its content to the corner it
     // draws, so a ring painted outside the element would be cut off by it.
     &:focus-visible {
-        outline: $shp-focus-ring-width solid var(--bit-Card-focus-color, currentcolor);
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        @include focus-ring-inset(var(--bit-Card-focus-color, currentcolor));
     }
 
     &:disabled,
@@ -467,8 +466,7 @@ button.bit-crd-lnk {
 // one on the stretched link is, and it wins over the selection ring further down: a focus indicator a state can
 // hide is not a focus indicator.
 .bit-crd:focus-visible {
-    outline: $shp-focus-ring-width solid var(--bit-Card-focus-color, currentcolor);
-    outline-offset: calc(-1 * #{$shp-focus-ring-width});
+    @include focus-ring-inset(var(--bit-Card-focus-color, currentcolor));
 }
 
 // The neutral surface paints. They are what Background asks for, and the Color blocks further down override them.

@@ -66,13 +66,7 @@ $pdv-placeholder-background: var(--bit-PdfViewer-placeholder-background, #f0f0f0
 // A ring drawn inside the element, for the parts that sit in a scroll container (or fill one) whose overflow would
 // clip a ring drawn outside.
 @mixin pdv-inset-ring {
-    outline: none;
-    box-shadow: inset 0 0 0 $shp-focus-ring-width #{$pdv-focus};
-
-    @media (forced-colors: active) {
-        outline: #{$shp-focus-ring-width} solid Highlight;
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
-    }
+    @include focus-ring-inset($pdv-focus);
 }
 
 $pdv-private-properties: scale;

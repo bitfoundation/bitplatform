@@ -328,8 +328,7 @@ $drm-cal-private-properties: cal-bg, cal-brd;
     // is drawn inside the callout rather than through the shared focus-ring mixin, whose box-shadow would
     // take the place of the elevation the callout is drawn with.
     &:focus-visible {
-        outline: $shp-focus-ring-width solid var(--bit-DropMenu-focus-color, #{$clr-pri-focus});
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        @include focus-ring-inset(var(--bit-DropMenu-focus-color, #{$clr-pri-focus}));
     }
 
     &[data-bit-cal-pos="above"] {

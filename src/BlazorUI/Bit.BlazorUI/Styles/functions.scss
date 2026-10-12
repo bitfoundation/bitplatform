@@ -225,6 +225,67 @@ $html-font-size: 16px;
     @include focus-ring-forced-colors($shp-focus-ring-offset);
 }
 
+/*
+ * focus-ring-inset($color, $width, $offset, $band, $also)
+ * --------------------------------------------------
+ * The focus indicator of an element whose outward ring would be cut off: one that sits flush against
+ * the edge of an ancestor that clips its overflow (a scrolling list, a rounded frame, a slide container),
+ * or one whose box-shadow is already spent on something else (the elevation of a callout).
+ *
+ * Behavior:
+ *   - An outline drawn inwards: nothing outside the element is painted, so no ancestor's overflow can
+ *     clip it, and an outline is painted above the content, so a child with a background of its own
+ *     cannot hide it the way it hides an inset box-shadow.
+ *   - $width is the stroke (the global focus-ring width unless a heavier one is asked for) and $offset
+ *     the gap between the element's edge and the ring, 0 for a ring flush with the edge.
+ *   - $band adds the separator band of the outward ring on the inner side of the stroke, so the ring
+ *     keeps a contrasting neighbour (WCAG 1.4.11) however busy the content under it is - a slide image.
+ *     It is a color, or true for the page background the outward ring is separated with. The band is an
+ *     inset box-shadow; $also is the box-shadow the element draws for a reason of its own, kept under it.
+ *     Without a band the box-shadow is left alone, so a call that replaces a focus-ring-own ring on a
+ *     clipping layout clears that one with box-shadow: none of its own.
+ *   - In Windows High Contrast / forced-colors mode the outline survives and turns to the system
+ *     Highlight color (the band, a box-shadow, is stripped).
+ *
+ * Usage:
+ *   .my-component-item:focus-visible { @include focus-ring-inset(var(--bit-MyComponent-focus-color, #{$clr-pri-focus})); }
+ *   .my-component-arrow:focus-visible { @include focus-ring-inset(var(--bit-my-focus, #{$clr-pri-focus}), $band: true); }
+ */
+@mixin focus-ring-inset($color, $width: $shp-focus-ring-width, $offset: 0, $band: null, $also: null) {
+    outline: #{$width} solid #{$color};
+
+    @if $offset == 0 {
+        outline-offset: calc(-1 * #{$width});
+    }
+    @else {
+        outline-offset: calc(-1 * (#{$width} + #{$offset}));
+    }
+
+    @if $band != null and $band != false {
+        $band-color: $band;
+        $band-spread: calc(#{$width} + #{$shp-focus-ring-offset});
+        $kept: '';
+
+        @if $band == true {
+            $band-color: $clr-bg-pri;
+        }
+
+        @if $offset != 0 {
+            $band-spread: calc(#{$offset} + #{$width} + #{$shp-focus-ring-offset});
+        }
+
+        @if $also != null {
+            $kept: ', #{$also}';
+        }
+
+        box-shadow: inset 0 0 0 #{$band-spread} #{$band-color}#{$kept};
+    }
+
+    @media (forced-colors: active) {
+        outline-color: Highlight;
+    }
+}
+
 // In Windows High Contrast / forced-colors mode box-shadows are stripped, which would leave the
 // focused element with no visible indicator. Restore a real outline so focus stays perceivable.
 @mixin focus-ring-forced-colors($offset) {

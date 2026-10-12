@@ -183,8 +183,7 @@ $snb-itm-private-properties: bg, fg, clr-txt, gap, pad, hdr-gap, ttl-fs, bdy-fs,
     }
 
     &:focus-visible {
-        outline: $shp-focus-ring-width solid currentcolor;
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        @include focus-ring-inset(currentcolor);
     }
 }
 
@@ -389,8 +388,7 @@ $snb-itm-private-properties: bg, fg, clr-txt, gap, pad, hdr-gap, ttl-fs, bdy-fs,
     // button sits on a surface whose color the item picks, and only a ring in the color the item already
     // contrasts against is guaranteed to stay perceivable on all of them (WCAG 2.4.7).
     &:focus-visible {
-        outline: $shp-focus-ring-width solid currentcolor;
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        @include focus-ring-inset(currentcolor);
     }
 }
 

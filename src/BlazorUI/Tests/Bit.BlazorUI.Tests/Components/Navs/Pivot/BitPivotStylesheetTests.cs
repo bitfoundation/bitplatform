@@ -140,7 +140,9 @@ public class BitPivotStylesheetTests
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-mnc {"), "animation-timing-function: $mot-easing-decelerate;");
 
         // The menu scrolls, so a ring drawn around the outside of a row would be clipped to one edge of it.
-        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-mni {"), "box-shadow: inset 0 0 0 #{$shp-focus-ring-width} var(--bit-pvt-clr-focus, #{$clr-pri-focus});");
+        var row = SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-mni {");
+        StringAssert.Contains(row, "box-shadow: none;");
+        StringAssert.Contains(row, "@include focus-ring-inset(var(--bit-pvt-clr-focus, #{$clr-pri-focus}));");
     }
 
     [TestMethod]
@@ -213,8 +215,11 @@ public class BitPivotStylesheetTests
         var block = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-pvt-mnu,\n.bit-pvt-sld,\n.bit-pvt-scr {");
 
         StringAssert.Contains(block, "#{$tab}:focus-visible");
-        StringAssert.Contains(block, "box-shadow: inset 0 0 0 #{$shp-focus-ring-width} var(--bit-pvt-clr-focus, #{$clr-pri-focus});");
-        StringAssert.Contains(block, "outline-offset: calc(-1 * #{$shp-focus-ring-width});");
+
+        // The outer ring of focus-ring-own is taken off and the inset one, which also keeps the forced-colors outline
+        // inside the tab, drawn instead.
+        StringAssert.Contains(block, "box-shadow: none;");
+        StringAssert.Contains(block, "@include focus-ring-inset(var(--bit-pvt-clr-focus, #{$clr-pri-focus}));");
     }
 
     [TestMethod]

@@ -180,6 +180,13 @@ $csl-private-properties:
     // The glyphs of the controls come from the icon sizes of the theme. The next/prev glyph sits over a whole slide
     // rather than inside a field, so it is drawn half as large again as a control's own.
     font-size: var(--bit-csl-btn-size, var(--bit-Carousel-button-size, calc(#{$siz-icon-md} * 1.5)));
+
+    // The buttons sit against the edges of the slide container, which clips its overflow, so a ring drawn
+    // outside of them would be cut off on three sides. The indicator is drawn inside the button instead, with
+    // the separator band on its inner side so it keeps its contrast over whatever the slide shows.
+    &:focus-visible {
+        @include focus-ring-inset(var(--bit-csl-focus, #{$clr-pri-focus}), $band: true);
+    }
 }
 
 .bit-csl-lbt {

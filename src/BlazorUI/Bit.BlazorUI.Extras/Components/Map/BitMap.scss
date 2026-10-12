@@ -304,8 +304,7 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
 }
 
 .bit-map-canvas:focus-visible {
-    outline: $shp-border-width-thick solid var(--bit-Map-focus-color, #{$clr-pri-focus});
-    outline-offset: -#{$shp-border-width-thick};
+    @include focus-ring-inset(var(--bit-Map-focus-color, #{$clr-pri-focus}), $width: $shp-border-width-thick);
 }
 
 // A disabled map is inert - out of the tab order and away from the pointer - and dimmed like every other disabled

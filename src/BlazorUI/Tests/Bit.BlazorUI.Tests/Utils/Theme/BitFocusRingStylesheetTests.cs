@@ -48,6 +48,10 @@ public sealed class BitFocusRingStylesheetTests
 
     private static readonly string[] PrimaryFocusColor = ["$clr-pri-focus", "--bit-clr-pri-focus"];
 
+    // An outline pulled inside its element, or a box-shadow inset by the focus-ring width: the two shapes of a ring drawn
+    // inside the element by hand.
+    private static readonly Regex HandWrittenInsetRing = new(@"outline-offset:\s*(?:calc\(\s*-|-)[^;]*;|box-shadow:\s*inset\s+0\s+0\s+0\s+[^;]*focus-ring-width[^;]*;", RegexOptions.Compiled);
+
     [TestMethod]
     public void TheStateColorExemptionShouldMatchWholeSegmentsOnly()
     {
@@ -170,6 +174,61 @@ public sealed class BitFocusRingStylesheetTests
         var general = SourceFiles.Read("Bit.BlazorUI", "Styles", "general.scss").Replace("\r\n", "\n");
 
         StringAssert.Contains(general, "@property --bit-focus-ring-own {\n    syntax: \"*\";\n    inherits: false;\n}");
+    }
+
+    [TestMethod]
+    public void TheInsetRingMixinShouldDrawAnOutlineInsideTheElement()
+    {
+        var functions = SourceFiles.Read("Bit.BlazorUI", "Styles", "functions.scss").Replace("\r\n", "\n");
+        var mixin = SourceFiles.GetScssBlock(functions, "@mixin focus-ring-inset($color, $width: $shp-focus-ring-width, $offset: 0, $band: null, $also: null) {");
+
+        // An outline drawn inwards paints nothing outside the element, so no clipping ancestor can cut it off.
+        StringAssert.Contains(mixin, "outline: #{$width} solid #{$color};");
+        StringAssert.Contains(mixin, "outline-offset: calc(-1 * #{$width});");
+        StringAssert.Contains(mixin, "outline-offset: calc(-1 * (#{$width} + #{$offset}));");
+
+        // The band is the separator of the outward ring, mirrored onto the inner side of the stroke.
+        StringAssert.Contains(mixin, "$band-color: $clr-bg-pri;");
+        StringAssert.Contains(mixin, "$band-spread: calc(#{$width} + #{$shp-focus-ring-offset});");
+        StringAssert.Contains(mixin, "box-shadow: inset 0 0 0 #{$band-spread} #{$band-color}#{$kept};");
+
+        // The outline survives a forced-colors palette, in the system's focus color.
+        StringAssert.Contains(mixin, "@media (forced-colors: active) {\n        outline-color: Highlight;\n    }");
+    }
+
+    [TestMethod]
+    [DataRow("Lists/Carousel/BitCarousel.scss", "\n.bit-csl-lbt,\n.bit-csl-rbt {\n    top: 0;", "var(--bit-csl-focus, #{$clr-pri-focus})")]
+    [DataRow("Lists/Swiper/BitSwiper.scss", "\n.bit-swp-rbt,\n.bit-swp-lbt {\n    top: 0;", "var(--bit-swp-focus, #{$clr-pri-focus})")]
+    public void TheSlideArrowsShouldDrawABandedRingInsideTheContainerThatClipsThem(string path, string rule, string color)
+    {
+        // The next/prev buttons sit against the edges of a container that clips its overflow, and over a slide that may
+        // be a busy image: the ring is drawn inside them, with the separator band keeping its contrast against the slide.
+        var stylesheet = SourceFiles.ReadStylesheet(["Bit.BlazorUI", "Components", .. path.Split('/')]);
+        var block = SourceFiles.GetScssBlock(stylesheet, rule);
+
+        StringAssert.Contains(block, "&:focus-visible {");
+        StringAssert.Contains(block, $"@include focus-ring-inset({color}, $band: true);");
+    }
+
+    [TestMethod]
+    public void NoComponentShouldDrawAnInsetFocusRingByHand()
+    {
+        // An inward outline or inset box-shadow written under a :focus-visible rule is focus-ring-inset written again:
+        // the copies drifted apart on width, offset, color fallback and forced-colors treatment before they were one.
+        var offenders = new List<string>();
+
+        foreach (var (file, stylesheet) in ReadComponentStylesheets())
+        {
+            foreach (Match declaration in HandWrittenInsetRing.Matches(stylesheet))
+            {
+                if (EnclosingHeaders(stylesheet, declaration.Index).Any(header => header.Contains(":focus", StringComparison.Ordinal)) is false) continue;
+
+                offenders.Add($"{Path.GetFileName(file)}: {declaration.Value}");
+            }
+        }
+
+        CollectionAssert.AreEqual(Array.Empty<string>(), offenders,
+            $"A focus ring is drawn inside its element by hand - use focus-ring-inset(): {string.Join(", ", offenders)}");
     }
 
     private static bool ReadsThePrimaryFocusColor(string value) => PrimaryFocusColor.Any(color => value.Contains(color, StringComparison.Ordinal));

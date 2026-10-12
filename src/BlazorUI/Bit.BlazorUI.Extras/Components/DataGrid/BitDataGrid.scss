@@ -40,12 +40,7 @@
 // their overflow (a ring outside the control would be cut off), the same way BitDropdown draws its items' ring.
 // The library resets `button { outline: none }` globally, so without it the grid's buttons show no focus at all.
 @mixin dtg-focus-inset($color: var(--bit-DataGrid-focus-color, #{$clr-pri-focus})) {
-    outline: $shp-focus-ring-width $shp-border-style #{$color};
-    outline-offset: calc(-1 * #{$shp-focus-ring-width});
-
-    @media (forced-colors: active) {
-        outline-color: Highlight;
-    }
+    @include focus-ring-inset($color);
 }
 
 $dtg-private-properties:

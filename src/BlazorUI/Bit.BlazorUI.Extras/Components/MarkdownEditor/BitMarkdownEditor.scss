@@ -60,13 +60,7 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
 
 // A ring drawn inside the element, for the parts that fill a pane whose overflow would clip one drawn outside.
 @mixin mde-inset-ring($color: $mde-focus) {
-    outline: none;
-    box-shadow: inset 0 0 0 $shp-focus-ring-width #{$color};
-
-    @media (forced-colors: active) {
-        outline: #{$shp-focus-ring-width} solid Highlight;
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
-    }
+    @include focus-ring-inset($color);
 }
 
 .bit-mde {
