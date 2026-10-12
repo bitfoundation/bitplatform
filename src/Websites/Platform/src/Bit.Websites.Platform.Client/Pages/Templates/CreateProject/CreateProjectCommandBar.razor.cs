@@ -1,21 +1,16 @@
-using Bit.Butil;
 using Bit.Websites.Platform.Shared.Dtos.CreateProject;
 
 namespace Bit.Websites.Platform.Client.Pages.Templates.CreateProject;
 
 public partial class CreateProjectCommandBar
 {
-    [AutoInject] private Clipboard clipboard = default!;
-
     private string? copiedCommand;
 
     [Parameter, EditorRequired] public ProjectSetup Setup { get; set; } = default!;
 
-    private async Task CopyCommand()
+    private void RecordCopiedCommand()
     {
         var command = Setup.ToCommand();
-
-        await clipboard.WriteText(command);
 
         if (command == copiedCommand)
             return;

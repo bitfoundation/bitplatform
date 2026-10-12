@@ -2,23 +2,14 @@
 @import '../../../Styles/abstracts/_bit-css-variables.scss';
 
 .command-bar {
-    display: flex;
-    gap: rem2(8px);
-    align-items: center;
     padding: rem2(8px);
     border-radius: rem2(6px);
     background-color: $bit-color-background-primary;
     box-shadow: $bit-box-shadow-callout;
 
-    .command {
-        flex: 1;
-        min-width: 0;
-    }
-
     ::deep .code-box-content {
         margin-bottom: 0;
         white-space: pre-wrap;
         overflow-wrap: anywhere;
-        padding-right: rem2(16px);
     }
 }
