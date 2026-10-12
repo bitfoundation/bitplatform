@@ -18,7 +18,8 @@
 //   --bit-RichTextEditor-font-family               font of the content                             (default: inherit)
 //   --bit-RichTextEditor-font-size                 font size of the content                        (default: inherit)
 //   --bit-RichTextEditor-line-height               line height of the content                      (default: 1.6)
-//   --bit-RichTextEditor-placeholder-color         placeholder of the editing surface              (default: $clr-fg-sec)
+//   --bit-RichTextEditor-placeholder-color         placeholder of the editing surface and of the
+//                                                  fields of its panels                            (default: $clr-fg-sec)
 //   --bit-RichTextEditor-link-color                links in the content                            (default: $clr-pri)
 //   --bit-RichTextEditor-code-background           code spans and code blocks                      (default: $clr-bg-sec)
 //   --bit-RichTextEditor-quote-border-color        leading rule of a block quote                   (default: $clr-brd-pri)
@@ -76,6 +77,7 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
     height: $siz-ctrl-sm;
     border-radius: $shp-radius-control;
     border: $shp-border-width $shp-border-style $clr-brd-pri;
+    @include input-placeholder(var(--bit-RichTextEditor-placeholder-color, #{$clr-fg-sec}));
 
     &:focus-visible {
         @include focus-ring($rte-focus, 0);
@@ -139,7 +141,7 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
     display: block;
     color: inherit;
     font-size: $tg-fs-sm;
-    font-weight: $tg-fw-semibold;
+    font-weight: $tg-field-label-font-weight;
     letter-spacing: $tg-ctrl-letter-spacing;
     padding: spacing(0.75) spacing(1) spacing(0.5);
 }
@@ -211,6 +213,16 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
 
     svg.bit-rte-flip:dir(rtl) {
         transform: scaleX(-1);
+    }
+
+    // An engine without :dir() drops the rule above, so it reads the class an explicit Dir renders on the editor
+    // instead. Only there: the buttons are deep inside the editor, so a descendant selector would also turn the
+    // icons of an editor nested in this one that reads the other way, which :dir() gets right wherever it is
+    // supported.
+    @supports not selector(:dir(rtl)) {
+        .bit-rte.bit-rtl & svg.bit-rte-flip {
+            transform: scaleX(-1);
+        }
     }
 
     // The states move the variable the button is painted from rather than its background, so a button the app

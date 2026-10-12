@@ -215,7 +215,7 @@
 @media (prefers-reduced-motion: reduce) {
     .bit-mdl-bna:not(.bit-fam):not(.bit-fam *),
     .bit-mdl-bnb:not(.bit-fam):not(.bit-fam *) {
-        animation-duration: var(--bit-mot-duration-long-full, #{$mot-duration-long});
+        animation-duration: $mot-duration-long-full;
         animation-timing-function: steps(1, end);
     }
 
@@ -296,16 +296,18 @@
 
 // flex-start and flex-end follow the inline direction, which a right-to-left layout reverses - so Left would
 // come out on the right. The physical positions are put back onto their own side here, whether the direction
-// is the Modal's own (Dir) or the page's, leaving the start/end ones as the only ones that follow it.
-.bit-mdl-tlf:dir(rtl),
-.bit-mdl-clf:dir(rtl),
-.bit-mdl-blf:dir(rtl) {
+// is the Modal's own (Dir) or the page's, leaving the start/end ones as the only ones that follow it. The class
+// covers a Dir set on the Modal and :dir() a direction it inherits; :is() keeps the class where an engine without
+// :dir() drops the other one, since its list is forgiving.
+.bit-mdl-tlf:is(.bit-rtl, :dir(rtl)),
+.bit-mdl-clf:is(.bit-rtl, :dir(rtl)),
+.bit-mdl-blf:is(.bit-rtl, :dir(rtl)) {
     justify-content: flex-end;
 }
 
-.bit-mdl-trg:dir(rtl),
-.bit-mdl-crg:dir(rtl),
-.bit-mdl-brg:dir(rtl) {
+.bit-mdl-trg:is(.bit-rtl, :dir(rtl)),
+.bit-mdl-crg:is(.bit-rtl, :dir(rtl)),
+.bit-mdl-brg:is(.bit-rtl, :dir(rtl)) {
     justify-content: flex-start;
 }
 

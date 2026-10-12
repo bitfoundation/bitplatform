@@ -980,8 +980,8 @@ public partial class BitTextFieldDemo : IDisposable
         new()
         {
             Name = "--bit-TextField-placeholder-color",
-            DefaultValue = "--bit-clr-fg-ter",
-            Description = "Color of the placeholder. It replaces the grey the browser picks on its own, which is not derived from the theme and drops below the contrast floor on a dark surface.",
+            DefaultValue = "--bit-clr-fg-sec",
+            Description = "Color of the placeholder. It replaces the grey the browser picks on its own, which is not derived from the theme and drops below the contrast floor on most surfaces.",
         },
         new()
         {

@@ -746,7 +746,8 @@
         };
 
         // A control inside an item that takes the navigation keys for itself: typing in a text field, moving a
-        // slider or walking a listbox with the arrow keys must not move the swiper under it.
+        // slider or walking a listbox with the arrow keys must not move the swiper under it. Nor must anything in a
+        // dialog, a panel or a modal rendered in an item, which stops no key on its way out.
         private ownsKeys(target: EventTarget | null): boolean {
             if (target instanceof HTMLElement === false) return false;
 
@@ -754,6 +755,7 @@
 
             if (el === this.root || this.root.contains(el) === false) return false;
             if (el.isContentEditable) return true;
+            if (Utils.isInNestedSurface(el, this.root)) return true;
             if (/^(input|textarea|select)$/i.test(el.tagName)) return true;
 
             return el.closest('[role="slider"],[role="spinbutton"],[role="listbox"],[role="combobox"],[role="textbox"],' +

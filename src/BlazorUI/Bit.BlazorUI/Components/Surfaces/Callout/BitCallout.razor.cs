@@ -28,10 +28,8 @@ public partial class BitCallout : BitComponentBase
     private bool _focusTrapped;
     private bool _focusOriginCaptured;
     private bool _escapeRegistered;
-    private bool _escapeGuarded;
-    // What the escape guard answered for the Escape Blazor is about to hand a key handler (see _OnEscapeVerdict),
-    // taken by the handler as it starts.
-    private bool _foreignEscape;
+    // What the JS side answered for the Escape Blazor is about to hand a key handler (see _OnEscapeVerdict).
+    private readonly BitEscapeVerdict _escapeVerdict = new();
     private bool _tabOutRegistered;
     private bool _scrollLocked;
     private bool _hoverInside;
@@ -650,16 +648,16 @@ public partial class BitCallout : BitComponentBase
         await InvokeAsync(StateHasChanged);
     }
 
-    // Sent by the escape guard as each Escape goes down inside the anchor or the callout while it is open, ahead of the
-    // keydown Blazor then dispatches, so the key handler that runs next reads the answer that was taken for its own key:
-    // whether the press is another's - one a part inside them claimed (see Utils.claimEscape), one a popup opened from
-    // inside them closes, one cancelling an IME composition - rather than the callout's (see Utils.setupEscapeGuard).
-    // It is written for every Escape, so one that never reaches the handler leaves nothing behind that the next one
-    // could be mistaken for.
+    // Sent by the JS side as an Escape goes down inside the root or the callout while it is open, ahead of the keydown
+    // Blazor then dispatches, saying whether the press is another's - a surface nested there that has spoken for it
+    // first (another callout's anchor, a dialog, a modal, a panel), a part inside them that claimed it (see
+    // Utils.claimEscape), a popup opened from inside them that closes on it - rather than the callout's (see
+    // Utils.watchNestedEscape, which Callouts.toggle sets up with the open). Only those presses are answered, and the
+    // one after them, so one that never reaches a handler is overwritten before the next one is read (BitEscapeVerdict).
     [JSInvokable("OnEscapeVerdict")]
     public void _OnEscapeVerdict(bool foreign)
     {
-        _foreignEscape = foreign;
+        _escapeVerdict.Set(foreign);
     }
 
     [JSInvokable("OnTabOut")]
@@ -898,11 +896,15 @@ public partial class BitCallout : BitComponentBase
         StateHasChanged();
     }
 
+    // When HandleOnRootKeyDown closes the callout on Escape, written onto the root for Utils.claimEscape: read off the
+    // same state it decides on, so the key is claimed exactly when the press closes the callout.
+    private string? EscapeClaim => IsOpen && Disabled is false && NoDismissOnEscape is false ? "claim" : null;
+
     // The key pressed on the anchor, where the focus usually still is while the callout is open. The page-level
     // listener leaves the anchor out, so this is the one place the key is answered for it.
     private async Task HandleOnRootKeyDown(KeyboardEventArgs e)
     {
-        if (TakeForeignEscape(e)) return;
+        if (e.Key is "Escape" && _escapeVerdict.Take()) return;
 
         if (Disabled || IsOpen is false) return;
 
@@ -918,7 +920,7 @@ public partial class BitCallout : BitComponentBase
 
     private async Task HandleOnCalloutKeyDown(KeyboardEventArgs e)
     {
-        if (TakeForeignEscape(e)) return;
+        if (e.Key is "Escape" && _escapeVerdict.Take()) return;
 
         if (Disabled || IsOpen is false) return;
 
@@ -933,19 +935,6 @@ public partial class BitCallout : BitComponentBase
         // The close runs on the callout's own event, which does not re-render the anchor, so refresh the
         // open-state classes and aria-expanded here.
         StateHasChanged();
-    }
-
-    // Whether the key is an Escape the escape guard said is another's (see _OnEscapeVerdict): a field of the anchor
-    // clearing, a dropdown inside the callout closing its list - the press does that, and the callout waits for the
-    // next one. The answer is read once, so it never outlives the press it was given for.
-    private bool TakeForeignEscape(KeyboardEventArgs e)
-    {
-        if (e.Key is not "Escape") return false;
-
-        var foreign = _foreignEscape;
-        _foreignEscape = false;
-
-        return foreign;
     }
 
     private async Task HandleOnMouseEnter()
@@ -1174,7 +1163,11 @@ public partial class BitCallout : BitComponentBase
                 alignmentOffset: AlignmentOffset,
                 arrowPadding: ArrowPadding ?? 0,
                 noScrollDismiss: NoDismissOnScroll,
-                rootId: _Id);
+                rootId: _Id,
+                // The keys of the root and the callout are not stopped from bubbling - the page's own handlers
+                // around the anchor hear every key - so an Escape pressed in a surface nested in either of them,
+                // the anchor of a callout nested in this one's content among them, reaches this one's handlers too.
+                nestedEscape: true);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1354,9 +1347,6 @@ public partial class BitCallout : BitComponentBase
     // - The element the focus is on is remembered, by a callout without an anchor of its own - an external one,
     //   or a point: the one it renders is otherwise where the focus goes back to.
     // - Escape is listened for on the page (see ListensForEscapeOnPage).
-    // - The anchor and the callout the key handlers dismiss it from on Escape are guarded, so they leave alone a press
-    //   that is another's (see _OnEscapeVerdict): only while it dismisses on Escape at all, and the callout only while
-    //   the page's listener is not the one answering the keys pressed inside it.
     // - Tab and Shift+Tab are kept inside a callout that keeps the focus, or the content of one that does not is
     //   put into the tab order right after its trigger (see GetTabOutTriggerId).
     private async Task SetupKeyboard()
@@ -1365,21 +1355,18 @@ public partial class BitCallout : BitComponentBase
 
         var captureFocusOrigin = HasOwnAnchor is false && _focusOriginCaptured is false;
         var escape = ListensForEscapeOnPage && _escapeRegistered is false;
-        var escapeGuardIds = _escapeGuarded ? null : GetEscapeGuardIds();
         var focusTrap = KeepsFocus && _focusTrapped is false;
         var tabOutTriggerId = _tabOutRegistered ? null : GetTabOutTriggerId();
 
-        if ((captureFocusOrigin || escape || escapeGuardIds is not null || focusTrap || tabOutTriggerId is not null) is false) return;
+        if ((captureFocusOrigin || escape || focusTrap || tabOutTriggerId is not null) is false) return;
 
         _escapeRegistered |= escape;
-        _escapeGuarded |= escapeGuardIds is not null;
         _focusTrapped |= focusTrap;
         _tabOutRegistered |= tabOutTriggerId is not null;
 
         try
         {
-            var captured = await _js.BitCalloutSetupKeyboard(_contentId, _dotnetObj, captureFocusOrigin, escape, _Id, focusTrap, tabOutTriggerId,
-                                                         escapeGuardIds);
+            var captured = await _js.BitCalloutSetupKeyboard(_contentId, _dotnetObj, captureFocusOrigin, escape, _Id, focusTrap, tabOutTriggerId);
 
             // A focus that was on the body leaves nothing to hand back to, which ReturnFocus has to know to fall
             // back to the anchor instead.
@@ -1397,11 +1384,9 @@ public partial class BitCallout : BitComponentBase
     {
         var forget = forgetFocusOrigin && _focusOriginCaptured;
 
-        if ((_escapeRegistered || _escapeGuarded || _focusTrapped || _tabOutRegistered || forget) is false) return;
+        if ((_escapeRegistered || _focusTrapped || _tabOutRegistered || forget) is false) return;
 
         _escapeRegistered = false;
-        _escapeGuarded = false;
-        _foreignEscape = false;
         _focusTrapped = false;
         _tabOutRegistered = false;
 
@@ -1630,29 +1615,6 @@ public partial class BitCallout : BitComponentBase
         if (KeepsFocus || HasPoint || _openedByHover) return null;
 
         return Anchor is not null ? _anchorId : AnchorId.HasValue() ? AnchorId : null;
-    }
-
-    // The elements whose key handlers dismiss the callout on Escape, guarded so that they leave alone a press that is
-    // another's (see _OnEscapeVerdict), or null for none: the root while it holds an anchor, and the callout while the
-    // page's listener is not the one answering the keys pressed inside it (see HandleOnCalloutKeyDown). A callout that
-    // does not dismiss on Escape has nothing to be told, and no round trip is made for its keys.
-    private string[]? GetEscapeGuardIds()
-    {
-        if (NoDismissOnEscape) return null;
-
-        List<string> ids = [];
-
-        if (Anchor is not null)
-        {
-            ids.Add(_Id);
-        }
-
-        if (ListensForEscapeOnPage is false)
-        {
-            ids.Add(_contentId);
-        }
-
-        return ids.Count > 0 ? [.. ids] : null;
     }
 
     private async Task DisposeTabOut()

@@ -1,0 +1,5 @@
+﻿@inherits BitModalContainer
+
+<div>Open in this container: [@ModalReferences.Count(m => m.IsClosed is false)]</div>
+
+@(RenderModals(item => @<div class="demo-modal-slot" data-modal-id="@item.Reference.Id">@item.Modal</div>))

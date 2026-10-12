@@ -54,6 +54,8 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
             ["tooltip"] = ["--bit-clr-tooltip-bg", "--bit-clr-tooltip-fg"],
             ["foreground"] = [.. Roles.Select(r => $"--bit-clr-{r}-fg")],
             ["typography"] = ["--bit-tpg-dialog-title-font-size", "--bit-tpg-dialog-title-font-weight", "--bit-tpg-field-label-font-weight"],
+            ["motion"] = ["--bit-mot-duration", "--bit-mot-duration-short", "--bit-mot-duration-long", "--bit-mot-duration-factor",
+                          "--bit-mot-duration-spinner", "--bit-mot-easing-spinner", "--bit-mot-loop-factor"],
         };
 
         foreach (var role in Roles)
@@ -282,11 +284,40 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
 
         foreach (var (group, aliases) in GroupAliases)
         {
-            var rule = rules.FirstOrDefault(r => r.Selectors.Contains($":root [bit-theme-overlay~={group}]", StringComparer.Ordinal));
+            // The motion aliases are built alike by every theme, so their one rule re-declares them at no weight.
+            var rule = rules.FirstOrDefault(r => r.Selectors.Contains($":root [bit-theme-overlay~={group}]", StringComparer.Ordinal) ||
+                                                 r.Selectors.Contains($":where(:root [bit-theme-overlay~={group}])", StringComparer.Ordinal));
 
             Assert.IsNotNull(rule, $"The core stylesheet has no overlay rule for the {group} group.");
             CollectionAssert.AreEquivalent(aliases, rule.Declarations.Select(d => d.Key).ToArray(), $"The core overlay rule for the {group} group.");
         }
+    }
+
+    [TestMethod]
+    public void NoThemeDeclaresTheMotionAliasesOutsideTheRuleItsOverlaysShare()
+    {
+        // The motion group has no per-theme overlay rule for EveryThemeReDeclaresItsOwnFamilyAliasesForAnOverlay to pin:
+        // every theme builds the aliases alike, from the -full tokens a preset re-values, so the one core rule declaring
+        // them on :root, on every scoped region and on every motion overlay is all of them. That holds only while no
+        // theme declares an alias of its own: one that did would be the core recipe again under an overlay.
+        string[] shared = [":root", ":where(:root [bit-theme])", ":where(:root [bit-theme-overlay~=motion])"];
+        var checkedRules = 0;
+
+        foreach (var (bundle, rules) in Bundles())
+        {
+            foreach (var rule in rules.Where(r => r.Declarations.Any(d => GroupAliases["motion"].Contains(d.Key))))
+            {
+                // .bit-fam (ForceAnimation) substitutes them again too, from the same mixin, for the subtree it opts out.
+                if (rule.Selectors is [".bit-fam"]) continue;
+
+                CollectionAssert.AreEqual(shared, rule.Selectors,
+                    $"{bundle}: '{string.Join(", ", rule.Selectors)}' declares a motion alias; a theme re-values the -full tokens instead.");
+                CollectionAssert.AreEquivalent(GroupAliases["motion"], rule.Declarations.Select(d => d.Key).ToArray(), $"{bundle}: the motion alias rule.");
+                checkedRules++;
+            }
+        }
+
+        Assert.AreEqual(1, checkedRules, "The motion aliases are declared by one rule, in the core stylesheet.");
     }
 
     [TestMethod]
@@ -365,6 +396,10 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
             ("the medium weight", t => t.Typography.FontWeights.Medium = "550", "typography"),
             ("the semibold weight", t => t.Typography.FontWeights.SemiBold = "700", "typography"),
             ("the bold weight", t => t.Typography.FontWeights.Bold = "800", "typography"),
+            ("the duration", t => t.Motion.Duration = "250ms", "motion"),
+            ("the duration factor", t => t.Motion.DurationFactor = "0.5", "motion"),
+            ("the spinner easing", t => t.Motion.EasingSpinner = "linear", "motion"),
+            ("the loop factor", t => t.Motion.LoopFactor = "2", "motion"),
         };
 
         foreach (var (what, set, expected) in cases)
@@ -394,6 +429,7 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
         theme.Color.SevereWarning.Main = "#CE4207";
         theme.Color.Error.Main = "#D2393B";
         theme.Typography.FontWeights.SemiBold = "700";
+        theme.Motion.DurationLong = "400ms";
 
         Assert.AreEqual(string.Join(' ', OverlayGroupNames()), RenderOverlay(theme));
     }
@@ -406,6 +442,7 @@ public sealed class BitThemeFamilyAliasReSubstitutionTests : BunitTestContext
         theme.Typography.FontWeight = "500";
         theme.Typography.LineHeight = "1.5rem";
         theme.Shape.Radius.Surface = "2rem";
+        theme.Motion.EasingStandard = "linear";
 
         Assert.IsNull(RenderOverlay(theme));
     }

@@ -337,12 +337,10 @@ $msg-private-properties:
 }
 
 // The bar runs down towards the start of the line. The class covers a Dir set on the message itself, and :dir()
-// a direction it inherits from the page; they are two rules because an engine without :dir() drops a whole list.
-.bit-rtl .bit-msg-prb {
-    transform-origin: right;
-}
-
-.bit-msg-prb:dir(rtl) {
+// a direction it inherits from the page; :is() keeps the class where an engine without :dir() drops the other
+// one, since its list is forgiving. The class is reached through child combinators only, so a message nested in
+// one that reads the other way keeps its own direction.
+.bit-msg-prb:is(:dir(rtl), .bit-msg.bit-rtl > .bit-msg-prg > *) {
     transform-origin: right;
 }
 

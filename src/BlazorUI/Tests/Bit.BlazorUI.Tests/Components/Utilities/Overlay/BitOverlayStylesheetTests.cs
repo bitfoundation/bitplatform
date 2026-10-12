@@ -69,8 +69,8 @@ public class BitOverlayStylesheetTests
         }
 
         // The physical ones are pinned back to their own side in a right-to-left layout.
-        StringAssert.Contains(stylesheet, ".bit-ovl-tlf:dir(rtl)");
-        StringAssert.Contains(stylesheet, ".bit-ovl-brg:dir(rtl)");
+        StringAssert.Contains(stylesheet, ".bit-ovl-tlf:is(.bit-rtl, :dir(rtl))");
+        StringAssert.Contains(stylesheet, ".bit-ovl-brg:is(.bit-rtl, :dir(rtl))");
     }
 
     [TestMethod]

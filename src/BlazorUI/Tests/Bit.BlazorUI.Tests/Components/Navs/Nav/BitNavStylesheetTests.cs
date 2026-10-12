@@ -87,12 +87,74 @@ public class BitNavStylesheetTests
         // So does an explicit Color for the icon and the indicator, and an explicit Accent for the hover, the press
         // and the selection; an unset Accent is the PrimaryBackground one.
         // (The states set the state variables the rules at rest read first, rather than painting the colors themselves.)
-        StringAssert.Contains(stylesheet, "color: var(--bit-nav-sfg, var(--bit-nav-clr, var(--bit-Nav-icon-color, #{$clr-pri})));");
+        StringAssert.Contains(stylesheet, "color: var(--bit-nav-sfg, var(--bit-nav-clr, #{$nav-icon-color}));");
         StringAssert.Contains(stylesheet, "border-color: var(--bit-nav-clr, var(--bit-Nav-indicator-color, #{$clr-pri}));");
         StringAssert.Contains(stylesheet, "--bit-nav-sbg: var(--bit-nav-clr-hover, var(--bit-Nav-hover-background, #{$clr-bg-pri-hover}));");
         StringAssert.Contains(stylesheet, "background-color: var(--bit-nav-sbg, var(--bit-nav-clr-active, var(--bit-Nav-selected-background, #{$clr-bg-pri-active})));");
 
         Assert.IsFalse(Regex.IsMatch(stylesheet, @"var\(--bit-Nav-[a-z-]+, var\(--bit-nav-"), "A public variable is read before the parameter it restyles the default of.");
+    }
+
+    [TestMethod]
+    public void BitNavShouldLetEveryStateRecolorTheIconAndTheDescriptionOfItsItem()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // A theme that gives a state a vivid fill moves the text with --bit-Nav-*-color; without a variable of their own
+        // the icon and the description stayed in their colors at rest, unreadable on that fill. Each falls back on the
+        // one at rest, so a nav that sets none of them looks as it did.
+        StringAssert.Contains(stylesheet, "$nav-icon-color: var(--bit-Nav-icon-color, #{$clr-pri});");
+        StringAssert.Contains(stylesheet, "$nav-description-color: var(--bit-Nav-description-color, #{$clr-fg-ter});");
+        StringAssert.Contains(stylesheet, "$nav-hover-color: var(--bit-Nav-hover-color, #{$clr-fg-pri});");
+        StringAssert.Contains(stylesheet, "$nav-hover-icon-color: var(--bit-Nav-hover-icon-color, #{$nav-icon-color});");
+        StringAssert.Contains(stylesheet, "$nav-hover-description-color: var(--bit-Nav-hover-description-color, #{$nav-description-color});");
+
+        // Each state reads its own variables, in its own rule: a string searched for in the whole stylesheet would be
+        // found in another state's fallbacks too.
+        var item = SourceFiles.GetScssBlock(stylesheet, "\n.bit-nav-ict {");
+        var hover = SourceFiles.GetScssBlock(item, "&:hover {");
+        StringAssert.Contains(hover, "@include accented-item-content($nav-hover-color, $nav-hover-icon-color, $nav-hover-description-color, $state: true);");
+
+        // On a touch screen no hover ever applies, so the press falls back on the colors at rest, not on a hover's a
+        // theme set for a fill the tap never shows; where the pointer can hover, a press is a hover too, and that rule
+        // comes later to win there.
+        var pressed = SourceFiles.GetScssBlock(item, "\n    &:active {");
+        StringAssert.Contains(pressed, "var(--bit-Nav-pressed-color, #{$clr-fg-pri}),");
+        StringAssert.Contains(pressed, "var(--bit-Nav-pressed-icon-color, #{$nav-icon-color}),");
+        StringAssert.Contains(pressed, "var(--bit-Nav-pressed-description-color, #{$nav-description-color}),");
+        Assert.IsFalse(pressed.Contains("hover", StringComparison.Ordinal), "A press on a touch screen falls back on the hovered colors.");
+
+        var hoverablePressAt = item.LastIndexOf("@media (hover: hover) {", StringComparison.Ordinal);
+        Assert.IsTrue(hoverablePressAt > item.IndexOf("\n    &:active {", StringComparison.Ordinal), "The press of a pointer that can hover is not declared after the one of every pointer.");
+        var hoverablePress = SourceFiles.GetScssBlock(SourceFiles.GetScssBlock(item[hoverablePressAt..], "@media (hover: hover) {"), "&:active {");
+        StringAssert.Contains(hoverablePress, "var(--bit-Nav-pressed-color, #{$nav-hover-color}),");
+        StringAssert.Contains(hoverablePress, "var(--bit-Nav-pressed-icon-color, #{$nav-hover-icon-color}),");
+        StringAssert.Contains(hoverablePress, "var(--bit-Nav-pressed-description-color, #{$nav-hover-description-color}),");
+
+        var selected = SourceFiles.GetScssBlock(stylesheet, "\n.bit-nav-sel,");
+        StringAssert.Contains(selected, "var(--bit-Nav-selected-color, #{$clr-fg-pri}),");
+        StringAssert.Contains(selected, "var(--bit-Nav-selected-icon-color, #{$nav-icon-color}),");
+        StringAssert.Contains(selected, "var(--bit-Nav-selected-description-color, #{$nav-description-color}));");
+
+        // An explicit Accent and an explicit Color still win over them: the mixin reads its own private variables first.
+        var mixin = SourceFiles.GetScssBlock(stylesheet, "@mixin accented-item-content(");
+        StringAssert.Contains(mixin, "$text: var(--bit-nav-clr-text, #{$color});");
+        StringAssert.Contains(mixin, "$icon: var(--bit-nav-clr-icon, var(--bit-nav-clr, #{$icon-color}));");
+        StringAssert.Contains(mixin, "$des: var(--bit-nav-clr-des, #{$description-color});");
+    }
+
+    [TestMethod]
+    public void BitNavShouldLetEveryAccentWinOverTheStateColorsOfTheIconAndTheDescription()
+    {
+        var accent = SourceFiles.GetScssBlock(ReadStylesheet(), "\n    .bit-nav-a#{$role} {");
+
+        // A semantic accent draws them in its on-color. A surface one keeps them in the colors they have at rest on its
+        // tint - but publishes them all the same, so a hovered, pressed or selected variable a theme set for its own
+        // fill never lands on the accent's.
+        StringAssert.Contains(accent, "--bit-nav-clr-icon: #{role($tokens, on)};");
+        StringAssert.Contains(accent, "--bit-nav-clr-des: #{role($tokens, on)};");
+        StringAssert.Contains(accent, "--bit-nav-clr-icon: var(--bit-nav-clr, #{$nav-icon-color});");
+        StringAssert.Contains(accent, "--bit-nav-clr-des: #{$nav-description-color};");
     }
 
     [TestMethod]

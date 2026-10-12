@@ -86,7 +86,7 @@ public class BitModalStylesheetTests
     {
         var rules = GetRules(ReadStylesheet());
 
-        var match = Regex.Match(rules, $@"[^}}]*\.bit-mdl-{position}:dir\(rtl\)[^{{]*\{{([^}}]*)\}}");
+        var match = Regex.Match(rules, $@"[^}}]*\.bit-mdl-{position}:is\(\.bit-rtl, :dir\(rtl\)\)[^{{]*\{{([^}}]*)\}}");
 
         Assert.IsTrue(match.Success, $"{position} is not pinned in a right-to-left layout.");
         StringAssert.Contains(match.Groups[1].Value, $"justify-content: {justify};");
@@ -99,7 +99,7 @@ public class BitModalStylesheetTests
 
         foreach (var position in new[] { "tst", "ten", "cst", "cen", "bst", "ben" })
         {
-            Assert.IsFalse(rules.Contains($".bit-mdl-{position}:dir(rtl)"), $"{position} is pinned, so it no longer follows the direction.");
+            Assert.IsFalse(rules.Contains($".bit-mdl-{position}:is(.bit-rtl, :dir(rtl))"), $"{position} is pinned, so it no longer follows the direction.");
         }
     }
 
@@ -164,7 +164,7 @@ public class BitModalStylesheetTests
         // unless the Modal was asked to animate regardless.
         StringAssert.Contains(reduced, "animation-name: bit-mdl-refuse-ring-a;");
         StringAssert.Contains(reduced, "animation-name: bit-mdl-refuse-ring-b;");
-        StringAssert.Contains(reduced, "var(--bit-mot-duration-long-full, #{$mot-duration-long})");
+        StringAssert.Contains(reduced, "animation-duration: $mot-duration-long-full;");
         Assert.IsFalse(Regex.IsMatch(reduced, @"\d+m?s\b"), "The ring hard-codes a duration instead of reading the motion token.");
         StringAssert.Contains(reduced, ":not(.bit-fam *)");
     }

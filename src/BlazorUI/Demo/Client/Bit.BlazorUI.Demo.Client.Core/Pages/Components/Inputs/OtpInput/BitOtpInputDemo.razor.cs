@@ -533,7 +533,7 @@ public partial class BitOtpInputDemo
         new()
         {
             Name = "--bit-OtpInput-placeholder-color",
-            DefaultValue = "--bit-clr-fg-ter",
+            DefaultValue = "--bit-clr-fg-sec",
             Description = "Hint character of an empty input.",
         },
         new()

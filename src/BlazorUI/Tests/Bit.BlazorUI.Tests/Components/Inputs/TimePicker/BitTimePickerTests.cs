@@ -2755,7 +2755,7 @@ public class BitTimePickerTests : BunitTestContext
 
         var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
 
-        Assert.AreEqual(string.Empty, toggle.Arguments[^1]);
+        Assert.AreEqual(string.Empty, toggle.Arguments[^2]);
     }
 
     #endregion

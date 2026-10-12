@@ -37,6 +37,7 @@ public class BitDataGridStylesheetTests
         "--bit-DataGrid-detail-background",
         "--bit-DataGrid-footer-background",
         "--bit-DataGrid-disabled-color",
+        "--bit-DataGrid-placeholder-color",
     ];
 
     [TestMethod]

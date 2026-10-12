@@ -126,15 +126,17 @@
 
 // flex-start and flex-end follow the inline direction, which a right-to-left layout reverses - so Left would
 // come out on the right. The physical positions are put back onto their own side here, whether the direction
-// is the Overlay's own (Dir) or the page's, leaving the start/end ones as the only ones that follow it.
-.bit-ovl-tlf:dir(rtl),
-.bit-ovl-clf:dir(rtl),
-.bit-ovl-blf:dir(rtl) {
+// is the Overlay's own (Dir) or the page's, leaving the start/end ones as the only ones that follow it. The
+// class covers a Dir set on the Overlay and :dir() a direction it inherits; :is() keeps the class where an engine
+// without :dir() drops the other one, since its list is forgiving.
+.bit-ovl-tlf:is(.bit-rtl, :dir(rtl)),
+.bit-ovl-clf:is(.bit-rtl, :dir(rtl)),
+.bit-ovl-blf:is(.bit-rtl, :dir(rtl)) {
     justify-content: flex-end;
 }
 
-.bit-ovl-trg:dir(rtl),
-.bit-ovl-crg:dir(rtl),
-.bit-ovl-brg:dir(rtl) {
+.bit-ovl-trg:is(.bit-rtl, :dir(rtl)),
+.bit-ovl-crg:is(.bit-rtl, :dir(rtl)),
+.bit-ovl-brg:is(.bit-rtl, :dir(rtl)) {
     justify-content: flex-start;
 }

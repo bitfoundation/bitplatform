@@ -471,6 +471,9 @@ public class ComponentCatalogTests : McpTestBase
         StringAssert.Contains(answer, "Action<BitModalParameters>", "BitModalService does not document the Update that changes some of the parameters.");
         StringAssert.Contains(answer, "## BitModalContainer (component)", "BitModalService does not document its container.");
         StringAssert.Contains(answer, "BitModalService?", "BitModalService does not document the Service a container can be handed.");
+        StringAssert.Contains(answer, "## BitModalContainerBase<TReference, TParameters>", "BitModalService does not document the base a container of an app's own derives from.");
+        StringAssert.Contains(answer, "RenderModals", "BitModalService does not say how a container of an app's own renders a modal that can play its exit animation.");
+        StringAssert.Contains(answer, "BitModalContainerItem<TReference>", "BitModalService does not document what the template of a container of an app's own is rendered with.");
     }
 
     /// <summary>

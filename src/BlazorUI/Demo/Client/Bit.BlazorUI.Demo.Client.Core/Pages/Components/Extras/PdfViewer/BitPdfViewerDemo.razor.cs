@@ -849,6 +849,7 @@ public partial class BitPdfViewerDemo
         new() { Name = "--bit-PdfViewer-button-active-hover-background", DefaultValue = "var(--bit-clr-pri-hover)", Description = "Background of a toggle that is on, under the pointer." },
         new() { Name = "--bit-PdfViewer-field-background", DefaultValue = "var(--bit-clr-bg-pri)", Description = "Background of the page box, the find box and the dropdowns." },
         new() { Name = "--bit-PdfViewer-field-border-color", DefaultValue = "var(--bit-clr-brd-pri)", Description = "Border of the page box, the find box, the dropdowns and the find options." },
+        new() { Name = "--bit-PdfViewer-field-placeholder-color", DefaultValue = "var(--bit-clr-fg-sec)", Description = "Placeholder of the find box." },
         new() { Name = "--bit-PdfViewer-sidebar-background", DefaultValue = "var(--bit-clr-bg-sec)", Description = "Background of the side panels." },
         new() { Name = "--bit-PdfViewer-sidebar-width", DefaultValue = "spacing(29)", Description = "Width of the bookmarks, attachments and layers panels (at most half the viewer)." },
         new() { Name = "--bit-PdfViewer-item-hover-background", DefaultValue = "var(--bit-clr-bg-sec-hover)", Description = "A bookmark, attachment or layer row under the pointer." },

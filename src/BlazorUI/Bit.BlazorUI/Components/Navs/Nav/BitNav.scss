@@ -9,9 +9,16 @@
 //   --bit-Nav-disabled-color         everything a disabled item draws               (default: $clr-fg-dis)
 //   --bit-Nav-hover-background       background of a hovered item                   (default: $clr-bg-pri-hover)
 //   --bit-Nav-hover-color            text and chevron color of a hovered item       (default: $clr-fg-pri)
+//   --bit-Nav-hover-icon-color       icon color of a hovered item                   (default: --bit-Nav-icon-color)
+//   --bit-Nav-hover-description-color description color of a hovered item         (default: --bit-Nav-description-color)
 //   --bit-Nav-pressed-background     background of a pressed item                   (default: $clr-bg-pri-active)
+//   --bit-Nav-pressed-color          text and chevron color of a pressed item       (default: --bit-Nav-hover-color; $clr-fg-pri on touch)
+//   --bit-Nav-pressed-icon-color     icon color of a pressed item                   (default: --bit-Nav-hover-icon-color; --bit-Nav-icon-color on touch)
+//   --bit-Nav-pressed-description-color description color of a pressed item       (default: --bit-Nav-hover-description-color; --bit-Nav-description-color on touch)
 //   --bit-Nav-selected-background    background of the selected item                (default: $clr-bg-pri-active)
 //   --bit-Nav-selected-color         text and chevron color of the selected item    (default: $clr-fg-pri)
+//   --bit-Nav-selected-icon-color    icon color of the selected item                (default: --bit-Nav-icon-color)
+//   --bit-Nav-selected-description-color description color of the selected item   (default: --bit-Nav-description-color)
 //   --bit-Nav-indicator-color        leading bar of the selected item               (default: $clr-pri)
 //   --bit-Nav-indicator-width        thickness of that bar                          (default: $shp-border-width-thick)
 //   --bit-Nav-item-radius            corner radius of an item                       (default: $shp-radius-control)
@@ -29,11 +36,20 @@
 //   --bit-Nav-separator-color        separator color                                (default: $clr-brd-sec)
 //
 // A parameter written on the nav wins over the variable that restyles what it sets: an explicit Color over the
-// icon and indicator colors, an explicit Accent over the hover, pressed and selected backgrounds and the colors
-// drawn on them (a semantic Accent over the icon and description colors of an accented item too), and an explicit
-// Size over the font, icon, description and header sizes and the item and header heights. The variables restyle
-// the default, not a choice - which is why Color, Accent and Size publish nothing while they are left unset: a
-// class that always carried the default would be indistinguishable from one that was asked for.
+// icon and indicator colors, an explicit Accent over the hover, pressed and selected backgrounds and every color
+// drawn on them - the text, the chevron, the icon and the description - and an explicit Size over the font, icon,
+// description and header sizes and the item and header heights. The variables restyle the default, not a choice -
+// which is why Color, Accent and Size publish nothing while they are left unset: a class that always carried the
+// default would be indistinguishable from one that was asked for.
+
+// The colors the parts of an item have at rest, which the hovered, pressed and selected ones fall back on.
+$nav-icon-color: var(--bit-Nav-icon-color, #{$clr-pri});
+$nav-description-color: var(--bit-Nav-description-color, #{$clr-fg-ter});
+
+// The hovered ones, which a press falls back on where the pointer can hover (see .bit-nav-ict).
+$nav-hover-color: var(--bit-Nav-hover-color, #{$clr-fg-pri});
+$nav-hover-icon-color: var(--bit-Nav-hover-icon-color, #{$nav-icon-color});
+$nav-hover-description-color: var(--bit-Nav-hover-description-color, #{$nav-description-color});
 
 // The accent fills the whole hovered or selected item, so everything drawn on top of it moves to the
 // accent's own colors at once. Each part had been given a color that reads on the page background
@@ -43,16 +59,18 @@
 // its color, so the rules that declare the colors are the ones at rest - the parts' own rules and the selection's -
 // and a part the app paints through Classes keeps that paint under the pointer, instead of losing it to a state
 // that outranks the app's class. Each part unsets the variable on itself at rest (see .bit-nav-itm).
-@mixin accented-item-content($color, $state: false) {
-    // A semantic Accent publishes these; any other leaves the icon and the description in the colors they have
-    // at rest, ranked the same way as they are there.
-    $icon: var(--bit-nav-clr-icon, var(--bit-nav-clr, var(--bit-Nav-icon-color, #{$clr-pri})));
-    $des: var(--bit-nav-clr-des, var(--bit-Nav-description-color, #{$clr-fg-ter}));
+// $color, $icon-color and $description-color are the state's public variables for those parts, so a theme that
+// gives the state a vivid fill can move all three with it; an explicit Accent publishes the private ones read
+// before them, and an explicit Color the icon's.
+@mixin accented-item-content($color, $icon-color, $description-color, $state: false) {
+    $text: var(--bit-nav-clr-text, #{$color});
+    $icon: var(--bit-nav-clr-icon, var(--bit-nav-clr, #{$icon-color}));
+    $des: var(--bit-nav-clr-des, #{$description-color});
 
     @if $state {
         .bit-nav-itm,
         .bit-nav-cbt {
-            --bit-nav-sfg: #{$color};
+            --bit-nav-sfg: #{$text};
         }
 
         .bit-nav-iic {
@@ -65,7 +83,7 @@
     } @else {
         .bit-nav-itm,
         .bit-nav-cbt {
-            color: var(--bit-nav-sfg, #{$color});
+            color: var(--bit-nav-sfg, #{$text});
         }
 
         .bit-nav-iic {
@@ -287,16 +305,33 @@ $nav-private-properties: item-font-size, item-min-height, icon-size, des-font-si
         &:hover {
             --bit-nav-sbg: var(--bit-nav-clr-hover, var(--bit-Nav-hover-background, #{$clr-bg-pri-hover}));
 
-            @include accented-item-content(var(--bit-nav-clr-text, var(--bit-Nav-hover-color, #{$clr-fg-pri})), $state: true);
+            @include accented-item-content($nav-hover-color, $nav-hover-icon-color, $nav-hover-description-color, $state: true);
         }
     }
 
     // Unlike the hover, the pressed state is not kept to the pointers that can hover: on a touch screen it is
-    // the one feedback a tap gets before the page changes.
+    // the one feedback a tap gets before the page changes. There no hover ever applies, so the pressed colors fall
+    // back on the ones at rest rather than on a hover's that a theme set for a fill the tap never shows.
     &:active {
         --bit-nav-sbg: var(--bit-nav-clr-active, var(--bit-Nav-pressed-background, #{$clr-bg-pri-active}));
 
-        @include accented-item-content(var(--bit-nav-clr-text, var(--bit-Nav-hover-color, #{$clr-fg-pri})), $state: true);
+        @include accented-item-content(
+            var(--bit-Nav-pressed-color, #{$clr-fg-pri}),
+            var(--bit-Nav-pressed-icon-color, #{$nav-icon-color}),
+            var(--bit-Nav-pressed-description-color, #{$nav-description-color}),
+            $state: true);
+    }
+
+    // Where the pointer can hover, a press is a hover too, so the pressed colors fall back on the hovered ones the
+    // item is already drawn in. Declared after the rule above at the same weight, so it wins wherever it applies.
+    @media (hover: hover) {
+        &:active {
+            @include accented-item-content(
+                var(--bit-Nav-pressed-color, #{$nav-hover-color}),
+                var(--bit-Nav-pressed-icon-color, #{$nav-hover-icon-color}),
+                var(--bit-Nav-pressed-description-color, #{$nav-hover-description-color}),
+                $state: true);
+        }
     }
 }
 
@@ -349,7 +384,7 @@ $nav-private-properties: item-font-size, item-min-height, icon-size, des-font-si
     text-overflow: ellipsis;
     padding-inline-start: spacing(2.75);
     --bit-nav-sfg: initial;
-    color: var(--bit-nav-sfg, var(--bit-Nav-description-color, #{$clr-fg-ter}));
+    color: var(--bit-nav-sfg, #{$nav-description-color});
     font-size: var(--bit-nav-des-font-size, var(--bit-Nav-description-font-size, #{$tg-fs-xs}));
     transition: color $mot-duration-short $mot-easing;
 }
@@ -377,7 +412,7 @@ $nav-private-properties: item-font-size, item-min-height, icon-size, des-font-si
     line-height: 1;
     flex-shrink: 0;
     --bit-nav-sfg: initial;
-    color: var(--bit-nav-sfg, var(--bit-nav-clr, var(--bit-Nav-icon-color, #{$clr-pri})));
+    color: var(--bit-nav-sfg, var(--bit-nav-clr, #{$nav-icon-color}));
     font-size: var(--bit-nav-icon-size, var(--bit-Nav-icon-size, #{$siz-icon-md}));
     transition: color $mot-duration-short $mot-easing;
 }
@@ -416,7 +451,10 @@ $nav-private-properties: item-font-size, item-min-height, icon-size, des-font-si
     border-color: var(--bit-nav-clr, var(--bit-Nav-indicator-color, #{$clr-pri}));
     background-color: var(--bit-nav-sbg, var(--bit-nav-clr-active, var(--bit-Nav-selected-background, #{$clr-bg-pri-active})));
 
-    @include accented-item-content(var(--bit-nav-clr-text, var(--bit-Nav-selected-color, #{$clr-fg-pri})));
+    @include accented-item-content(
+        var(--bit-Nav-selected-color, #{$clr-fg-pri}),
+        var(--bit-Nav-selected-icon-color, #{$nav-icon-color}),
+        var(--bit-Nav-selected-description-color, #{$nav-description-color}));
 
     .bit-nav-itm {
         font-weight: $tg-fw-semibold;
@@ -496,10 +534,14 @@ $nav-private-properties: item-font-size, item-min-height, icon-size, des-font-si
             // follow the accent's on-color together with the text.
             --bit-nav-clr-icon: #{role($tokens, on)};
             --bit-nav-clr-des: #{role($tokens, on)};
+        } @else {
+            // A surface accent only tints the item's background, so the icon and the description keep the colors
+            // they have at rest on it - published all the same, so they are read ahead of the hovered, pressed and
+            // selected variables the way the accent's text color is, which a theme sets for its own fill rather than
+            // for this one (see accented-item-content). The icon still follows an explicit Color.
+            --bit-nav-clr-icon: var(--bit-nav-clr, #{$nav-icon-color});
+            --bit-nav-clr-des: #{$nav-description-color};
         }
-        // A surface accent only tints the item's background, so it publishes no icon and description colors:
-        // left unset, they keep the colors they have at rest, the public variables of those two included (see
-        // accented-item-content).
     }
 }
 

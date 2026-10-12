@@ -773,7 +773,7 @@ public partial class BitTagsInputDemo
         new()
         {
             Name = "--bit-TagsInput-placeholder-color",
-            DefaultValue = "--bit-clr-fg-ter",
+            DefaultValue = "--bit-clr-fg-sec",
             Description = "Color of the Placeholder and the TagsPlaceholder.",
         },
         new()

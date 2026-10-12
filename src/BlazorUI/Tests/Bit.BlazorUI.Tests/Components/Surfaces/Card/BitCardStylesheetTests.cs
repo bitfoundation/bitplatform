@@ -315,7 +315,13 @@ public partial class BitCardStylesheetTests
         // :dir() reads the direction the bar inherits - from the page, an ancestor or Dir on the card - where the
         // bit-rtl class is only set by Dir on the card itself.
         StringAssert.Contains(stylesheet, "\n.bit-crd-skb:dir(rtl)::after {\n    animation-direction: reverse;\n}");
-        Assert.IsFalse(stylesheet.Contains(".bit-rtl .bit-crd-skb"), "The wave only turns round for Dir on the card.");
+
+        // The class is read only where :dir() is unknown, so a card nested in one with the other direction keeps its
+        // own wave wherever :dir() can tell them apart.
+        var fallback = SourceFiles.GetScssBlock(stylesheet, "\n@supports not selector(:dir(rtl)) {");
+
+        StringAssert.Contains(fallback, ".bit-crd.bit-rtl .bit-crd-skb::after {\n        animation-direction: reverse;");
+        Assert.AreEqual(1, Regex.Matches(stylesheet, @"\.bit-rtl \.bit-crd-skb").Count, "The class is read outside the @supports fallback.");
     }
 
     private static string[] DocumentedVariables(string stylesheet)

@@ -46,16 +46,11 @@ $pnl-private-properties: zin-ovl, zin-cnt;
     --bit-pnl-sa-left: env(safe-area-inset-left, 0px);
     --bit-pnl-sa-right: env(safe-area-inset-right, 0px);
 
-    // The class Dir renders, for the engines without :dir() (older WebViews among them), where an explicit
-    // right-to-left still has to slide out towards the edge it came from.
-    &.bit-rtl {
-        --bit-pnl-transform-factor: -1;
-    }
-
-    // :dir() as well, so a panel given no direction of its own (or Auto) still slides out towards the edge it
-    // came from on a page (or in a box, or with a content) that reads right to left. Kept in its own rule, so
-    // a browser without :dir() drops only this one.
-    &:dir(rtl) {
+    // :dir(), so a panel given no direction of its own (or Auto) still slides out towards the edge it came from on
+    // a page (or in a box, or with a content) that reads right to left; and the class Dir renders, for the engines
+    // without :dir() (older WebViews among them), where an explicit right-to-left still has to. :is() keeps the
+    // class there, since its list is forgiving.
+    &:is(.bit-rtl, :dir(rtl)) {
         --bit-pnl-transform-factor: -1;
     }
 

@@ -92,11 +92,22 @@ the callouts, BitTooltip, BitMessage - the listeners in `Scripts/Utils.ts`) leav
 - **One shared watch per claiming root.** A component whose own .NET keydown on its root acts on the key it
   claims there hears the presses a part inside it claimed first, too; it tells them apart through
   `BitEscapeClaimWatch` (`Utils.watchEscapeClaim`), never a copy of it.
-- **A surface that dismisses itself in its own .NET keydown handler asks the escape guard first.** `BitPanel` and
-  `BitCallout` (its anchor and its content) go by `Utils.setupEscapeGuard`'s per-press `OnEscapeVerdict`, which
-  folds a claim, a prevented default, an open popup opened from inside and an IME composition into one answer -
-  never a channel of their own for one of them. A callout names itself to the guard, since it is the innermost
-  open callout the key closes.
+- **No surface stops a key.** BitDialog, BitModal, BitPanel and BitCallout put no `@onkeydown:stopPropagation` on
+  their roots, so the page's own Blazor handlers around one (an app's Ctrl+S) keep hearing every key while it is
+  open. An outer surface tells a nested one's Escape from its own through `Utils._escapeSurfaceOwners` instead: the
+  innermost surface records itself as the key bubbles through its root (`claimSurfaceEscape`), the outer ones read
+  that (`isNestedSurfaceEscape`), and the ones whose .NET handler acts on Escape are told through `OnEscapeVerdict`,
+  sent by the one `Utils.sendEscapeVerdicts` and taken once by a `BitEscapeVerdict` - never a copy of either. It
+  answers only the presses that are not the handler's own, and the one after them, so an own press costs no round
+  trip. What a watch registered after the render cannot cover - the press between a BitCallout's open render and the
+  round trip that registers its popup - is claimed from the render (`data-bit-esc` on its root). A component whose .NET keydown handlers hear every key of its content leaves the keys of a surface rendered
+  there alone through `Utils.isInNestedSurface` (BitDataGrid's cells, rows and headers, BitSwiper, BitCarousel).
+  `BitSurfaceKeyPropagationContractTests` pins the keys reaching the page.
+- **A surface that dismisses itself in its own .NET keydown handler asks the JS side first.** `BitPanel`
+  (`Utils.setupEscapeGuard`) and `BitCallout` (its anchor and its content, `Utils.watchNestedEscape`) go by one
+  per-press `OnEscapeVerdict`, which folds a nested surface, a claim, an open popup opened from inside (and, for the
+  panel, a prevented default and an IME composition) into one answer - never a channel of their own for one of them.
+  A callout names itself to `Utils.isEscapeOfOpenCallout`, since it is the innermost open callout the key closes.
 - **The Escape of an IME composition is nobody's.** Every script of both packages reads it through
   `Utils.isComposingKey` (the one reading of `isComposing` and the legacy 229 key code), every listener that closes
   something leaves it alone, and `Utils.stopComposingEscape` stops it on the document element, ahead of Blazor's
@@ -175,6 +186,31 @@ component" section is where consumers read it:
   lists, disabled and enabled, for the root class and the pairing. `BitDisabledStateBrowserTests`
   (`Tests/Performance`, one `?part=` of `/regression/disabled-state` per component) reads the live DOM
   of every engine for the same, through a runtime toggle of `Disabled` and back.
+
+## Right-to-left rules work without `:dir()`
+
+`:dir(rtl)` is how a stylesheet reads the direction an element is actually laid out in, inherited or not, so it
+is the selector to reach for. But it arrived late (Chromium 120, Safari 16.4), the WebViews a Blazor Hybrid app
+runs in can be older, and an engine that does not know a selector drops the whole rule - every other selector in
+its list too. An explicit `Dir="BitDir.Rtl"` renders the `bit-rtl` class (and `dir="rtl"`), and that has to keep
+working there:
+
+- **Write the two in one forgiving `:is()`**: `.bit-mdl-tlf:is(.bit-rtl, :dir(rtl))`. An engine without `:dir()` drops
+  only that alternative and keeps the class, and `:is()` (Chromium 88, Safari 14) is older than `:dir()`, so one rule
+  covers both and nothing is written twice. When the class is on an ancestor, the alternative reaches it through child
+  combinators only (`.bit-ttp-wrp:is(:dir(rtl), .bit-ttp.bit-rtl > *)`,
+  `.bit-msg-prb:is(:dir(rtl), .bit-msg.bit-rtl > .bit-msg-prg > *)`): a descendant combinator would also reach into a
+  nested instance that reads the other way, which `:dir()` gets right.
+- **A class behind a descendant combinator goes inside `@supports not selector(:dir(rtl))`**, as a rule of its own with
+  the same declarations, in the same at-rules (`.bit-crd.bit-rtl .bit-crd-skb::after`): there, where nothing better is
+  known, reaching a nested instance is the lesser loss.
+- **A `:dir()` outside `:is()` / `:where()` stands in a list of its own**, never beside a selector without it, and
+  then needs one of the counterparts above as a separate rule.
+- **Not covered**: what is inside `@supports selector(:dir(...))` (BitIcon), which only an engine knowing `:dir()` reads.
+
+`BitComponentDirFallbackTests` checks this for every stylesheet of every package, mixins included (a mixin's
+counterpart is looked for in the mixin itself). A rule whose explicit `Dir` is handled some other way (the root class
+setting a variable the part reads, or the C# doing the turn) goes in its `CoveredOtherwise` list.
 
 ## Demo pages
 
@@ -402,12 +438,17 @@ the whole library from one `:root[bit-theme="..."]` block.
   surface family (plus `$box-shadow-card-hover`, the lift of a card under the pointer), never
   `$box-shadow-callout` directly.
 - **Motion**: `$mot-easing` for state transitions, `$mot-easing-decelerate` / `-accelerate` for popup
-  entry / exit; never a literal `ease` or `cubic-bezier` outside a looping loader keyframe.
+  entry / exit; never a literal `ease` or `cubic-bezier` outside a looping loader keyframe. A duration
+  that must survive `prefers-reduced-motion` (a color flash rather than a movement, BitModal's refusal ring)
+  reads `$mot-duration-full` / `-short-full` / `-long-full`, never `--bit-mot-*-full` itself
+  (`BitMotionTokenTests`). Whether motion is reduced is inherited state, the `--bit-mot-*-reduced` tokens: declared on `:root`
+  under the query, withdrawn (`initial`) by `.bit-fam`, and read by every rule that substitutes the plain
+  aliases again (`:root`, a scoped preset, a motion overlay, `.bit-fam`), so none of them decides it anew.
   **Reduced motion is the tokens' job alone, and a duration the page sets follows it too.** The
   `--bit-mot-duration*` tokens collapse under `prefers-reduced-motion` and `.bit-fam` (ForceAnimation)
-  or an app's `:root` restores them; a duration the page sets on a component - a public
-  `--bit-<Component>-*-duration` variable, a duration parameter written inline as a private token - is
-  read through `mot-scaled-duration(...)` (a delay through `mot-scaled-delay(...)`) from
+  or an app withdrawing the `-reduced` tokens at `:root` restores them; a duration the page sets on a
+  component - a public `--bit-<Component>-*-duration` variable, a duration parameter written inline as a
+  private token - is read through `mot-scaled-duration(...)` (a delay through `mot-scaled-delay(...)`) from
   `Styles/functions.scss`, which scales it by `--bit-mot-duration-factor` (1, 0 under the query, restored
   with the rest), so it collapses and comes back with them. A component therefore writes **no
   `prefers-reduced-motion` query and no `.bit-fam` restore for a duration** - the per-component pair missed
@@ -472,7 +513,10 @@ global token tier: add the token, let the component read it, and keep the preset
 `BitThemeProvider` / `ApplyBitThemeAsync` writes only the primitives it was given, plus a
 `bit-theme-overlay` attribute naming the alias groups those feed (`BitThemeMapper.FamilyAliasOverlayGroups`:
 `radius`, `radius-control`, `shadow`, `tooltip`, `foreground`, the eight roles, `typography` - the dialog
-title and field caption, built from any step of the type ramps); every theme stylesheet
+title and field caption, built from any step of the type ramps - and `motion` - the plain `--bit-mot-*`
+aliases of the `-full` sources `BitTheme.Motion` writes, built alike by every theme and so re-declared by one
+zero-specificity rule of `motion.fluent.scss`, reading whether motion is reduced off the inherited
+`--bit-mot-*-reduced` tokens that `.bit-fam` withdraws); every theme stylesheet
 re-declares its OWN aliases of each group on that element through the `theme-overlay($group, $names)` mixin
 of `Styles/theme-overlay.scss`, so the aliases follow the overlay as the active theme builds them - never the
 core default under a preset that decided otherwise. So a group's declarations live in one mixin per theme

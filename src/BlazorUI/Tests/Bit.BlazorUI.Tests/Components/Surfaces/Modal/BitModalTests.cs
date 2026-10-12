@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -1911,6 +1912,62 @@ public class BitModalTests : BunitTestContext
 
         Assert.AreEqual(0, com.FindAll(".inner-modal").Count);
         Assert.AreEqual(1, com.FindAll(".outer-modal").Count);
+    }
+
+    [TestMethod]
+    public void BitModalShouldNotReportTheEscapeOfAModalNestedInIt()
+    {
+        var outerEscapes = 0;
+        var innerEscapes = 0;
+
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.OnEscapeKeyDown, EventCallback.Factory.Create<KeyboardEventArgs>(this, () => outerEscapes++));
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitModal>(0);
+                builder.AddAttribute(1, nameof(BitModal.IsOpen), true);
+                builder.AddAttribute(2, nameof(BitModal.Class), "inner-modal");
+                builder.AddAttribute(3, nameof(BitModal.OnEscapeKeyDown), EventCallback.Factory.Create<KeyboardEventArgs>(this, () => innerEscapes++));
+                builder.CloseComponent();
+            }));
+        });
+
+        // No key is stopped at the inner Modal, so its Escape reaches the outer one's handler too. What
+        // Utils.watchEscape sends the outer one as the key goes down through its root, after the inner one has
+        // spoken for it.
+        com.Instance._OnEscapeVerdict(true);
+
+        com.Find(".inner-modal").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(1, innerEscapes);
+        Assert.AreEqual(0, outerEscapes);
+
+        // A verdict answers the one key it was sent for: the next Escape, pressed in the outer Modal itself, is its own.
+        com.Find(".bit-mdl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(1, outerEscapes);
+    }
+
+    // Nothing stops a key at the Modal, so until the script tells its handler which Escapes a surface nested in it
+    // answered, the handler would report theirs as its own: the watch goes first, ahead of every other round trip of
+    // the opening.
+    [TestMethod]
+    public void BitModalShouldWatchItsEscapesFirstWhenItOpens()
+    {
+        var com = RenderComponent<BitModal>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"].Count));
+
+        var order = Context.JSInterop.Invocations.Select(i => i.Identifier).ToList();
+        var watch = order.IndexOf("BitBlazorUI.Utils.watchEscape");
+
+        Assert.IsTrue(watch >= 0);
+        Assert.IsTrue(watch < order.IndexOf("BitBlazorUI.Utils.storeFocus"));
     }
 
     [TestMethod]

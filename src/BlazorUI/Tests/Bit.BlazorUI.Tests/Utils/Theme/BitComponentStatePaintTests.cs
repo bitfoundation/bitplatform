@@ -69,7 +69,7 @@ public sealed class BitComponentStatePaintTests
                 // them, less the at-rules (@media, @include, @if, ...), which apply to the selector they are written in.
                 // A selector list is judged one alternative at a time, so an exception one of them earns is not handed
                 // to the others written beside it.
-                var offending = ResolveSelectors(headers.Where(header => header.StartsWith('@') is false))
+                var offending = SourceFiles.ResolveScssSelectors(headers.Where(header => header.StartsWith('@') is false))
                     .Where(PaintsAtAnInteractionState)
                     .ToArray();
 
@@ -107,46 +107,6 @@ public sealed class BitComponentStatePaintTests
         if (ThirdPartyControl.IsMatch(selector)) return false;
 
         return true;
-    }
-
-    // The selectors a chain of nested rule headers stands for: each header's list crossed with the selectors of the
-    // rule around it, an & standing for the outer selector and a header without one being a descendant of it.
-    private static IEnumerable<string> ResolveSelectors(IEnumerable<string> headers)
-    {
-        IEnumerable<string> selectors = [""];
-
-        foreach (var header in headers)
-        {
-            var alternatives = SplitSelectorList(header);
-
-            selectors = selectors.SelectMany(outer => alternatives.Select(inner =>
-                inner.Contains('&') ? inner.Replace("&", outer) : (outer.Length == 0 ? inner : $"{outer} {inner}"))).ToArray();
-        }
-
-        return selectors.Where(selector => selector.Length > 0);
-    }
-
-    // The alternatives of a selector list, split on the commas outside of any parentheses (:is(a, b) stays whole).
-    private static List<string> SplitSelectorList(string selectorList)
-    {
-        var alternatives = new List<string>();
-        var depth = 0;
-        var start = 0;
-
-        for (var i = 0; i < selectorList.Length; i++)
-        {
-            if (selectorList[i] == '(') depth++;
-            else if (selectorList[i] == ')') depth--;
-            else if (selectorList[i] == ',' && depth == 0)
-            {
-                alternatives.Add(selectorList[start..i].Trim());
-                start = i + 1;
-            }
-        }
-
-        alternatives.Add(selectorList[start..].Trim());
-
-        return alternatives;
     }
 
     // The selector less every :not(...) in it, nested parentheses and all.

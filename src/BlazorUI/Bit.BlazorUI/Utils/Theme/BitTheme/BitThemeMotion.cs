@@ -1,21 +1,26 @@
 ﻿namespace Bit.BlazorUI;
 
+/// <summary>
+/// The motion tokens of a theme. The durations and their factor, the spinner pair and the loop factor are written to their unreduced
+/// <c>-full</c> tokens (<c>--bit-mot-duration-full</c>, ...), as a preset declares them, so a value set here is still
+/// collapsed (or calmed) under <c>prefers-reduced-motion</c> and restored by <c>ForceAnimation</c>.
+/// </summary>
 public class BitThemeMotion
 {
+    /// <summary>The standard duration of a transition or a one-shot animation (<c>--bit-mot-duration-full</c>).</summary>
     public string? Duration { get; set; }
+
+    /// <summary>The short duration, for small state changes (<c>--bit-mot-duration-short-full</c>).</summary>
     public string? DurationShort { get; set; }
+
+    /// <summary>The long duration, for large surfaces entering and leaving (<c>--bit-mot-duration-long-full</c>).</summary>
     public string? DurationLong { get; set; }
 
     /// <summary>
     /// Multiplies every duration a page sets on a component itself - a public
     /// <c>--bit-&lt;Component&gt;-*-duration</c> variable or a duration parameter - which none of the durations
     /// above reach. It is a unitless number: 1 keeps the pace the page asked for, and reduced motion drops it
-    /// to 0 so those durations collapse along with the theme's own (<c>--bit-mot-duration-factor</c>).
-    /// <br />
-    /// Like the durations above, it is written to the effective token, and a theme applied inline outranks the
-    /// reduced-motion query on <c>:root</c>: a value set here keeps every duration a page sets running for a reader
-    /// who asked for reduced motion. Leave it unset unless the app answers that preference itself, and scale the
-    /// page's durations with <c>--bit-mot-duration-factor-full</c> in CSS instead, which feeds both states.
+    /// to 0 so those durations collapse along with the theme's own (<c>--bit-mot-duration-factor-full</c>).
     /// </summary>
     public string? DurationFactor { get; set; }
 

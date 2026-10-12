@@ -896,8 +896,8 @@ public class BitPhoneInputTests : BunitTestContext
         // is dismissed once the focus moves on from both the field and itself.
         var open = LastToggle();
         Assert.AreEqual(true, open.Arguments[6]);
-        Assert.AreEqual(component.Find("button.bit-phi-drp").Id, open.Arguments[^2]);
-        Assert.AreEqual(true, open.Arguments[^3]);
+        Assert.AreEqual(component.Find("button.bit-phi-drp").Id, open.Arguments[^3]);
+        Assert.AreEqual(true, open.Arguments[^4]);
         Assert.AreEqual(0, CountInvocations("BitBlazorUI.Utils.setupTabOut"));
 
         // A Shift+Tab from the search box goes back to the button with the list left open, and a Tab on the button
@@ -917,7 +917,7 @@ public class BitPhoneInputTests : BunitTestContext
         // Every open registers it again.
         component.Find("button.bit-phi-drp").Click();
 
-        Assert.AreEqual(component.Find("button.bit-phi-drp").Id, LastToggle().Arguments[^2]);
+        Assert.AreEqual(component.Find("button.bit-phi-drp").Id, LastToggle().Arguments[^3]);
     }
 
     [TestMethod]
@@ -966,7 +966,7 @@ public class BitPhoneInputTests : BunitTestContext
         component.Find("button.bit-phi-drp").Click();
 
         Assert.IsTrue(component.Instance.IsOpen);
-        Assert.AreEqual("", LastToggle().Arguments[^2]);
+        Assert.AreEqual("", LastToggle().Arguments[^3]);
 
         // The focus stays on the button, so its Tab moves on through the page and the list closes behind it.
         component.Find("button.bit-phi-drp").KeyDown("Tab");
@@ -2670,7 +2670,7 @@ public class BitPhoneInputTests : BunitTestContext
         // once it is relocated is the root, which is the last argument of Callouts.toggle.
         var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
 
-        Assert.AreEqual(component.Find(".bit-phi").Id, toggle.Arguments[^1]);
+        Assert.AreEqual(component.Find(".bit-phi").Id, toggle.Arguments[^2]);
         Assert.AreNotEqual(component.Find(".bit-phi-fgp").Id, toggle.Arguments[^1]);
     }
 
