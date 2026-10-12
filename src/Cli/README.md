@@ -143,6 +143,49 @@ bit trust
 
 Marks the git repository around the current folder as trusted for VS Code, Claude Code, Copilot CLI, Codex and Gemini CLI, e.g. after cloning a project.
 
+## bit clean
+
+```bash
+bit clean
+```
+
+Deletes the project's build outputs and downloaded packages, so the next build starts from scratch:
+
+- Stops what keeps the project's files in use first: the .NET build servers, and on Windows every app that runs from the project folder, like the app itself, its Aspire AppHost, or Node.js and Sass from `node_modules`. macOS and Linux don't lock open files, so there only the build servers stop.
+- Runs the project's own `Clean.bat` on Windows or `Clean.sh` on macOS and Linux, which deletes `bin`, `obj`, `node_modules` and the generated CSS and JS.
+
+Run `bit setup` afterwards to restore and build again.
+
+## bit rename
+
+```bash
+bit rename Contoso.Shop
+```
+
+Renames the project everywhere its name appears: files, folders, namespaces, the solution, database names and the app id.
+
+- In a git repository it needs your changes committed or stashed first, so you can review the rename with `git diff` and undo it with `git checkout`. Outside git it asks first, or needs `--yes`.
+- Stops the same apps `bit clean` stops, and deletes `bin`, `obj` and `.vs`, which hold the old name.
+- For a project named `MyApp`, it replaces `MyApp`, `myapp` as in `com.companyname.myapp`, and for a name with dots the same name with underscores. A match counts only where the name starts a word and isn't followed by a lowercase letter, so `MyAppDb` and `MyApp.Server` change while `TheMyApp` and `MyApps` don't.
+- Skips `.git`, `node_modules` and binary files. Every file keeps its encoding and line endings.
+- Leaves the project's own folder named as it was, since your terminal is usually in it. Rename it after closing the editors and terminals that use it.
+
+Then review the changes with `git diff`, and run `bit setup` to restore and build.
+
+## bit remove
+
+```bash
+bit remove
+bit remove ../Contoso.Shop --yes
+```
+
+Deletes a project's folder for good. On Windows that usually fails while the app, a build server or Node.js still holds its files, so:
+
+- It asks first, and says when the project has changes that aren't committed or commits that aren't pushed. Without a terminal to ask in, it needs `--yes`.
+- It stops what keeps the files in use, the same way `bit clean` does, then deletes the folder, read-only files like git's included.
+- When a terminal is still in the folder, everything in it is deleted and the empty folder stays. Delete it after leaving it.
+- The project's Aspire containers and volumes stay in Docker. Remove them in Docker when you no longer need their data.
+
 ## bit translate
 
 Fills in the missing translations of `.resx` files with an OpenAI-compatible LLM, and keeps the existing ones:
