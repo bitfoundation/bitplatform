@@ -16,6 +16,7 @@
 //   --bit-Nav-pressed-icon-color     icon color of a pressed item                   (default: --bit-Nav-hover-icon-color; --bit-Nav-icon-color on touch)
 //   --bit-Nav-pressed-description-color description color of a pressed item       (default: --bit-Nav-hover-description-color; --bit-Nav-description-color on touch)
 //   --bit-Nav-selected-background    background of the selected item                (default: $clr-bg-pri-active)
+//   --bit-Nav-selected-hover-background the same while hovered or pressed        (default: --bit-Nav-selected-background)
 //   --bit-Nav-selected-color         text and chevron color of the selected item    (default: $clr-fg-pri)
 //   --bit-Nav-selected-icon-color    icon color of the selected item                (default: --bit-Nav-icon-color)
 //   --bit-Nav-selected-description-color description color of the selected item   (default: --bit-Nav-description-color)
@@ -93,6 +94,20 @@ $nav-hover-description-color: var(--bit-Nav-hover-description-color, #{$nav-desc
         .bit-nav-des {
             color: var(--bit-nav-sfg, #{$des});
         }
+    }
+}
+
+// The hover and the press of the selected item: the fill moves to the selected one's own variable for those states,
+// and every part drops the state color the item's hover or press gave it, so it is painted in the selected colors
+// again (see accented-item-content). An explicit Accent keeps its own selected fill, as it does at rest.
+@mixin selected-item-state {
+    --bit-nav-sbg: var(--bit-nav-clr-active, var(--bit-Nav-selected-hover-background, var(--bit-Nav-selected-background, #{$clr-bg-pri-active})));
+
+    .bit-nav-itm,
+    .bit-nav-cbt,
+    .bit-nav-iic,
+    .bit-nav-des {
+        --bit-nav-sfg: initial;
     }
 }
 
@@ -458,6 +473,20 @@ $nav-private-properties: item-font-size, item-min-height, icon-size, des-font-si
 
     .bit-nav-itm {
         font-weight: $tg-fw-semibold;
+    }
+
+    // The selection outlasts the pointer: hovered or pressed, the selected item keeps its own fill and colors rather
+    // than taking the ones every other item gets, so the item just picked - which the pointer is still on right after
+    // the click - never looks unselected. These selectors weigh as much as the item's states and the group header's
+    // (.bit-nav-gcb) and come later, so they win over both.
+    @media (hover: hover) {
+        &:hover:not(:disabled, .bit-nav-gst) {
+            @include selected-item-state;
+        }
+    }
+
+    &:active:not(:disabled, .bit-nav-gst) {
+        @include selected-item-state;
     }
 }
 

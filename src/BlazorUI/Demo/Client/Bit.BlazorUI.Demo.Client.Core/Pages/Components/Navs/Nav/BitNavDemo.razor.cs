@@ -330,7 +330,7 @@ public partial class BitNavDemo
         {
             Name = "--bit-Nav-hover-background",
             DefaultValue = "--bit-clr-bg-pri-hover",
-            Description = "Background of a hovered item (pointer devices only). The Accent parameter wins over it.",
+            Description = "Background of a hovered item (pointer devices only); the selected item keeps --bit-Nav-selected-hover-background instead. The Accent parameter wins over it.",
         },
         new()
         {
@@ -354,7 +354,7 @@ public partial class BitNavDemo
         {
             Name = "--bit-Nav-pressed-background",
             DefaultValue = "--bit-clr-bg-pri-active",
-            Description = "Background of an item while it is pressed (the one feedback a tap gets on a touch screen). The Accent parameter wins over it.",
+            Description = "Background of an item while it is pressed (the one feedback a tap gets on a touch screen); the selected item keeps --bit-Nav-selected-hover-background instead. The Accent parameter wins over it.",
         },
         new()
         {
@@ -379,6 +379,12 @@ public partial class BitNavDemo
             Name = "--bit-Nav-selected-background",
             DefaultValue = "--bit-clr-bg-pri-active",
             Description = "Background of the selected item, and of a collapsed branch that holds it. The Accent parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-selected-hover-background",
+            DefaultValue = "--bit-Nav-selected-background, then --bit-clr-bg-pri-active",
+            Description = "Background of the selected item, and of a collapsed branch that holds it, while it is hovered or pressed. The selection keeps its own fill and colors under the pointer rather than taking the hovered or pressed ones, so the item just picked never looks unselected; set this to give it a feedback of its own. The Accent parameter wins over it.",
         },
         new()
         {

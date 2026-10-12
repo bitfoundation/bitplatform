@@ -144,6 +144,37 @@ public class BitNavStylesheetTests
     }
 
     [TestMethod]
+    public void BitNavShouldKeepTheSelectionUnderThePointer()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // Right after a click the pointer is still on the item just picked, so the hover and the press of the selected
+        // item (and of the collapsed branch that holds it) keep the selected fill - or the one a theme gives those states
+        // - rather than the hover's and the press's, which turned a vivid selection into the neutral hover grey.
+        var selected = SourceFiles.GetScssBlock(stylesheet, "\n.bit-nav-sel,");
+        var hover = SourceFiles.GetScssBlock(SourceFiles.GetScssBlock(selected, "@media (hover: hover) {"), "&:hover:not(:disabled, .bit-nav-gst) {");
+        var pressed = SourceFiles.GetScssBlock(selected, "\n    &:active:not(:disabled, .bit-nav-gst) {");
+        StringAssert.Contains(hover, "@include selected-item-state;");
+        StringAssert.Contains(pressed, "@include selected-item-state;");
+
+        // The fill reads the Accent first, then the state's own variable, then the selected one; and every part drops the
+        // state color the item's hover or press gave it, so it is painted in the selected colors again.
+        var state = SourceFiles.GetScssBlock(stylesheet, "@mixin selected-item-state {");
+        StringAssert.Contains(state, "--bit-nav-sbg: var(--bit-nav-clr-active, var(--bit-Nav-selected-hover-background, var(--bit-Nav-selected-background, #{$clr-bg-pri-active})));");
+        StringAssert.Contains(state, "--bit-nav-sfg: initial;");
+        foreach (var part in new[] { ".bit-nav-itm", ".bit-nav-cbt", ".bit-nav-iic", ".bit-nav-des" })
+        {
+            StringAssert.Contains(state, part);
+        }
+
+        // The selectors weigh what the states of the item and of the group header weigh, so they win over them by
+        // coming later.
+        var selectedAt = stylesheet.IndexOf("\n.bit-nav-sel,", StringComparison.Ordinal);
+        Assert.IsTrue(selectedAt > stylesheet.IndexOf("\n.bit-nav-ict {", StringComparison.Ordinal), "The selected item's states are declared ahead of the item's.");
+        Assert.IsTrue(selectedAt > stylesheet.IndexOf("\n.bit-nav-gcb {", StringComparison.Ordinal), "The selected item's states are declared ahead of the group header's.");
+    }
+
+    [TestMethod]
     public void BitNavShouldLetEveryAccentWinOverTheStateColorsOfTheIconAndTheDescription()
     {
         var accent = SourceFiles.GetScssBlock(ReadStylesheet(), "\n    .bit-nav-a#{$role} {");
