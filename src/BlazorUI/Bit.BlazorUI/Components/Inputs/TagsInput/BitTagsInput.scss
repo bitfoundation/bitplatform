@@ -372,10 +372,10 @@ $tgi-private-properties: clr, clr-txt, clr-hover, clr-focus, gap, fontsize, icon
         }
     }
 
-    //the same inset outline as the tag, and for the same reason: the field is already ringed.
+    //the same inset outline as the tag, and for the same reasons: the field is already ringed, and the chip
+    //clips its overflow, which would cut a ring drawn on the edge of the button off where it meets the chip's.
     &:focus-visible {
-        outline: $shp-focus-ring-width solid var(--bit-tgi-tag-ring, var(--bit-TagsInput-tag-focus-color, var(--bit-tgi-tag-ring-dft)));
-        outline-offset: 0;
+        @include focus-ring-inset(var(--bit-tgi-tag-ring, var(--bit-TagsInput-tag-focus-color, var(--bit-tgi-tag-ring-dft))));
     }
 }
 
@@ -400,9 +400,9 @@ $tgi-private-properties: clr, clr-txt, clr-hover, clr-focus, gap, fontsize, icon
         }
     }
 
+    //the same inset outline as the dismiss button, for the same reason.
     &:focus-visible {
-        outline: $shp-focus-ring-width solid var(--bit-tgi-tag-ring, var(--bit-TagsInput-tag-focus-color, var(--bit-tgi-tag-ring-dft)));
-        outline-offset: 0;
+        @include focus-ring-inset(var(--bit-tgi-tag-ring, var(--bit-TagsInput-tag-focus-color, var(--bit-tgi-tag-ring-dft))));
     }
 }
 

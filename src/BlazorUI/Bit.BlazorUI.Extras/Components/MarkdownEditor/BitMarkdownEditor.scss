@@ -425,9 +425,13 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
     min-height: 0;
 }
 
+// A wrapping body is a multi-line flex container, whose lines are as tall as what they hold rather than as the
+// body: the cap is what keeps a pane holding more than the body shows to the body's height, so it scrolls (and
+// the two scroll together) instead of running on under the body's clipped edge.
 .bit-mde-pne {
     min-width: 0;
     min-height: 0;
+    max-height: 100%;
     overflow: auto;
     box-sizing: border-box;
     flex: 1 1 var(--bit-MarkdownEditor-pane-min-width, 18rem);
@@ -458,6 +462,12 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
     margin-inline-start: calc(-1 * #{$shp-border-width});
     border-block-start: $shp-border-width $shp-border-style $mde-divider;
     border-inline-start: $shp-border-width $shp-border-style $mde-divider;
+
+    // The ring is drawn inside the divider: an outline is laid from the border edge in, and the divider lying
+    // on the body's edge is the one the overflow clips, so a ring drawn on it would lose that side.
+    &:focus-visible {
+        @include focus-ring-inset($mde-focus, $offset: $shp-border-width);
+    }
 }
 
 .bit-mde-txa {

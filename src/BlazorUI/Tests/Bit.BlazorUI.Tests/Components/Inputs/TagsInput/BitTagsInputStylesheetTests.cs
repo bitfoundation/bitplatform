@@ -45,6 +45,19 @@ public class BitTagsInputStylesheetTests
     }
 
     [TestMethod]
+    [DataRow("\n.bit-tgi-dbt {")]
+    [DataRow("\n.bit-tgi-rbt {")]
+    public void BitTagsInputChipButtonsShouldDrawTheirRingInsideTheChip(string rule)
+    {
+        // The dismiss and reorder buttons stretch to the height of a chip that clips its overflow, so a ring drawn on
+        // their edge was cut off along the chip's: it is drawn inside them, like the chip's own.
+        var block = SourceFiles.GetScssBlock(ReadStylesheet(), rule);
+
+        StringAssert.Contains(block, "@include focus-ring-inset(var(--bit-tgi-tag-ring, var(--bit-TagsInput-tag-focus-color, var(--bit-tgi-tag-ring-dft))));");
+        Assert.IsFalse(block.Contains("outline-offset: 0"), "The ring is drawn on the edge the chip clips.");
+    }
+
+    [TestMethod]
     public void BitTagsInputShouldPublishItsColorAndSizeOnlyWhereTheyAreSet()
     {
         var root = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-tgi {");
