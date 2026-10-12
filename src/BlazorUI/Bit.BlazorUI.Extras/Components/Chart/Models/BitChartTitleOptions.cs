@@ -10,10 +10,11 @@ public sealed class BitChartTitleOptions
     /// Which edge of the chart the title is drawn against (default is the top).
     /// </summary>
     /// <remarks>
-    /// Only Top, Bottom, Left and Right are meaningful here. Top and Bottom draw the title as a band across the
-    /// chart; Left and Right run it down the side of the plot, turned on its side, and stay on the side they are
-    /// named for in both reading directions. Every other value, the logical pair included, leaves the title at
-    /// the top. Use <see cref="Align"/> to move it along the edge it is drawn against.
+    /// Only Top, Bottom, Left, Right, Start and End are meaningful here. Top and Bottom draw the title as a band
+    /// across the chart; the other four run it down the side of the plot, turned on its side. Left and Right stay on
+    /// the side they are named for in both reading directions, while Start and End follow it: a title at the Start
+    /// sits on the left of a left-to-right chart and on the right of a right-to-left one. Every other value leaves
+    /// the title at the top. Use <see cref="Align"/> to move it along the edge it is drawn against.
     /// </remarks>
     public BitPlacement Placement { get; set; } = BitPlacement.Top;
     /// <summary>

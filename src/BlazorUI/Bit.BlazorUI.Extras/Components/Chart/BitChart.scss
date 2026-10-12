@@ -63,15 +63,25 @@ $cht-private-properties: dur-full, ease;
     text-align: center;
 }
 
-// A title or subtitle on the left or right runs down the side of the plot instead of across the top. The ones
-// on the left are turned over, so both sides read from the plot outwards.
+// A title or subtitle beside the plot runs down its side instead of across the top. The ones on the left are
+// turned over, so both sides read from the plot outwards.
 .bit-cht-ttl-v {
     width: auto;
     align-items: center;
     writing-mode: vertical-rl;
 }
 
-.bit-cht-ttl-l {
+.bit-cht-ttl-l,
+.bit-cht-ttl-v.bit-cht-sta {
+    rotate: 180deg;
+}
+
+// A title on the reading start or end is turned over wherever that side is the left.
+.bit-cht-ttl-v.bit-cht-sta:is(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {
+    rotate: none;
+}
+
+.bit-cht-ttl-v.bit-cht-end:is(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {
     rotate: 180deg;
 }
 
@@ -83,12 +93,36 @@ $cht-private-properties: dur-full, ease;
     align-items: stretch;
 }
 
-// The titles and the legend beside the plot are placed by the physical Left and Right, which stay on the side
-// they are named for in both reading directions, so the row is turned back around in a right-to-left chart.
+// The row around the plot is turned back around in a right-to-left chart, so it runs from left to right in both.
 // The class the component sets on its root, the row's parent, is read beside :dir(), and :is() keeps it where an
 // engine without :dir() drops the other one, since its list is forgiving.
 .bit-cht-mid:is(:dir(rtl), .bit-cht.bit-rtl > *) {
     flex-direction: row-reverse;
+}
+
+// Each part beside the plot takes its place in that row by its side and by how far out it sits: the legend next to
+// the plot, then the subtitle, then the title. Left and Right keep their side; Start and End swap theirs in a
+// right-to-left chart, which is how they follow the reading direction.
+$cht-side-steps: (lgd: 1, sub: 2, ttl: 3);
+
+@each $part, $step in $cht-side-steps {
+    .bit-cht-#{$part}.bit-cht-lft,
+    .bit-cht-#{$part}.bit-cht-sta {
+        order: -$step;
+    }
+
+    .bit-cht-#{$part}.bit-cht-rgt,
+    .bit-cht-#{$part}.bit-cht-end {
+        order: $step;
+    }
+
+    .bit-cht-#{$part}.bit-cht-sta:is(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {
+        order: $step;
+    }
+
+    .bit-cht-#{$part}.bit-cht-end:is(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {
+        order: -$step;
+    }
 }
 
 .bit-cht-plot {

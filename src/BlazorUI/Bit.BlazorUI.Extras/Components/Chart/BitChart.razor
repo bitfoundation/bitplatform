@@ -23,16 +23,18 @@
         @RenderLegend(_scene.Legend)
     }
 
+    @* The parts beside the plot are written in the order a left-to-right chart shows them, the start side first; the
+       side class each one carries is what places it in the row in either direction (see BitChart.scss). *@
     <div class="bit-cht-mid">
-        @if (_scene.Title is { } leftTitle && TitleSide(leftTitle) == BitPlacement.Left)
+        @if (_scene.Title is { } leftTitle && TitleSide(leftTitle) is BitPlacement.Left or BitPlacement.Start)
         {
-            @RenderTitle(leftTitle, "bit-cht-ttl bit-cht-ttl-v bit-cht-ttl-l", false)
+            @RenderTitle(leftTitle, $"bit-cht-ttl bit-cht-ttl-v {SideTitleClass(TitleSide(leftTitle))}", false)
         }
-        @if (_scene.Subtitle is { } leftSub && TitleSide(leftSub) == BitPlacement.Left)
+        @if (_scene.Subtitle is { } leftSub && TitleSide(leftSub) is BitPlacement.Left or BitPlacement.Start)
         {
-            @RenderTitle(leftSub, "bit-cht-sub bit-cht-ttl-v bit-cht-ttl-l", true)
+            @RenderTitle(leftSub, $"bit-cht-sub bit-cht-ttl-v {SideTitleClass(TitleSide(leftSub))}", true)
         }
-        @if (_scene.Legend is { Placement: BitPlacement.Left })
+        @if (_scene.Legend is { Placement: BitPlacement.Left or BitPlacement.Start })
         {
             @RenderLegend(_scene.Legend)
         }
@@ -246,17 +248,17 @@
             }
         </div>
 
-        @if (_scene.Legend is { Placement: BitPlacement.Right })
+        @if (_scene.Legend is { Placement: BitPlacement.Right or BitPlacement.End })
         {
             @RenderLegend(_scene.Legend)
         }
-        @if (_scene.Subtitle is { } rightSub && TitleSide(rightSub) == BitPlacement.Right)
+        @if (_scene.Subtitle is { } rightSub && TitleSide(rightSub) is BitPlacement.Right or BitPlacement.End)
         {
-            @RenderTitle(rightSub, "bit-cht-sub bit-cht-ttl-v", true)
+            @RenderTitle(rightSub, $"bit-cht-sub bit-cht-ttl-v {SideTitleClass(TitleSide(rightSub))}", true)
         }
-        @if (_scene.Title is { } rightTitle && TitleSide(rightTitle) == BitPlacement.Right)
+        @if (_scene.Title is { } rightTitle && TitleSide(rightTitle) is BitPlacement.Right or BitPlacement.End)
         {
-            @RenderTitle(rightTitle, "bit-cht-ttl bit-cht-ttl-v", false)
+            @RenderTitle(rightTitle, $"bit-cht-ttl bit-cht-ttl-v {SideTitleClass(TitleSide(rightTitle))}", false)
         }
     </div>
 
@@ -356,9 +358,9 @@
 
     private RenderFragment RenderLegend(BitChartLegendModel legend) => __builder =>
     {
-        bool vertical = legend.Placement is BitPlacement.Left or BitPlacement.Right;
+        bool vertical = legend.Placement is BitPlacement.Left or BitPlacement.Right or BitPlacement.Start or BitPlacement.End;
         bool interactive = IsLegendInteractive(legend);
-        <div class="bit-cht-lgd @(vertical ? "bit-cht-lgd-v" : "bit-cht-lgd-h") @Classes?.Legend"
+        <div class="bit-cht-lgd @(vertical ? $"bit-cht-lgd-v {SideClass(legend.Placement)}" : "bit-cht-lgd-h") @Classes?.Legend"
              role="group" aria-label="@(legend.Title ?? ActiveTexts.LegendAriaLabel)"
              style="justify-content:@AlignToFlex(legend.Align);gap:4px @(BitChartSvg.N(legend.Labels.Padding))px@(legend.MaxHeight is { } mh ? $";max-height:{BitChartSvg.N(mh)}px;overflow-y:auto" : "");@Styles?.Legend">
             @if (!string.IsNullOrEmpty(legend.Title))

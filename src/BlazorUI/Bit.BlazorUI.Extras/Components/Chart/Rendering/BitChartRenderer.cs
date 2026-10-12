@@ -310,8 +310,10 @@ public sealed partial class BitChartRenderer
 
         var legend = new BitChartLegendModel
         {
-            // The legend only has four sides to live on; anything else would silently render nowhere.
+            // The legend lives on one of the four sides, two of them named either physically or by the reading
+            // direction; anything else would silently render nowhere.
             Placement = lo.Placement is BitPlacement.Bottom or BitPlacement.Left or BitPlacement.Right
+                                        or BitPlacement.Start or BitPlacement.End
                 ? lo.Placement : BitPlacement.Top,
             Align = lo.Align,
             Labels = lo.Labels,

@@ -426,7 +426,10 @@ counterpart (as nullable), unless noted.
 - **BitVirtualize**: `BitVirtualizeScrollAlignment.Auto` -> `BitScrollAlignment.Nearest`.
 - **BitMarkdown**: `BitMarkdownColumnAlignment.None` -> `null`.
 - **BitChart**: `BitChartPosition.Chart` (reserved, never placed anything) is gone. Titles and legends
-  placed `Left` / `Right` are now physical and keep their side in an RTL chart (**behavior**).
+  placed `Left` / `Right` are now physical and keep their side in an RTL chart (**behavior**); the new
+  `Start` / `End` placements put them beside the plot on the reading start / end, which is what the old
+  `Left` / `Right` did, so migrate those as `Left` -> `Start` and `Right` -> `End` to keep a chart
+  following the reading direction ([#13714](https://github.com/bitfoundation/bitplatform/issues/13714)).
 - **BitTooltip** (**behavior**): the twelve corner values are now a side (`Placement`) plus an alignment
   along that side (`Alignment`). The new alignment lines the tooltip's edge up with the **same** edge of
   the anchor and lets it grow away from it, whereas the old corner values let the tooltip overhang the
@@ -463,7 +466,8 @@ counterpart (as nullable), unless noted.
   (and new `bit-dtg-left`) now mean physical alignment.
 - New classes, no removals: BitPanel `bit-pnl-left` / `bit-pnl-right`, BitCallout `bit-clo-lft` /
   `bit-clo-rgt`, BitDropMenu `bit-drm-lft` / `bit-drm-rgt`, BitSnackBar `bit-snb-tlf`, `-trg`, `-blf`,
-  `-brg`, `-cst`, `-cen`, `-clf`, `-crg`, `-ctr`, BitChart `bit-cht-ttl-l`.
+  `-brg`, `-cst`, `-cen`, `-clf`, `-crg`, `-ctr`, BitChart `bit-cht-ttl-l` and the side classes of a title,
+  subtitle or legend beside the plot, `bit-cht-lft` / `bit-cht-rgt` / `bit-cht-sta` / `bit-cht-end`.
 
 #### Internal-but-public members
 
@@ -480,7 +484,7 @@ The Boilerplate template (`src/Templates/Boilerplate`) is outside the BlazorUI e
 | `Boilerplate.Client.Core/Components/Layout/AppConsentBanner.razor` | 12 | `Position="BitPanelPosition.Bottom"` -> `Placement="BitPlacement.Bottom"` |
 | `Boilerplate.Client.Core/Components/Layout/AppSnackBar.razor` | 7 | `BitSnackBarPosition.TopCenter` -> `BitPosition.TopCenter` |
 | `Boilerplate.Client.Core/Components/Pages/Categories/CategoriesPage.razor` | 58 | `BitDataGridColumnAlign.Center` -> `BitTextAlign.Center` |
-| `Boilerplate.Client.Core/Components/Pages/Dashboard/ProductsPercentageWidget.razor.cs` | 19 | `Position = BitChartPosition.Right` -> `Placement = BitPlacement.Right` |
+| `Boilerplate.Client.Core/Components/Pages/Dashboard/ProductsPercentageWidget.razor.cs` | 19 | `Position = BitChartPosition.Right` -> `Placement = BitPlacement.End` (keeps the pie legend on the reading end in Persian and Arabic) |
 | `Boilerplate.Client.Core/Components/Pages/Management/OperationsPage.razor` | 217 | `BitTagShape.Circular` -> `BitShape.Pill` |
 | `Boilerplate.Client.Core/Components/Pages/Products/ProductsPage.razor` | 60 | `BitDataGridColumnAlign.Right` -> `BitTextAlign.End` |
 | `Boilerplate.Client.Core/Components/Pages/Products/ProductsPage.razor` | 67 | `BitDataGridColumnAlign.Center` -> `BitTextAlign.Center` |

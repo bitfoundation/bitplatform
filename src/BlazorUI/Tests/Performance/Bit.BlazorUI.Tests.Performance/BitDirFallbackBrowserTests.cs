@@ -27,7 +27,7 @@ public class BitDirFallbackBrowserTests : PerformanceTestBase
     private static readonly string[] Probes =
     [
         "modal", "overlay", "collapse", "timeline", "tooltip", "panel", "snackbar-bar", "snackbar-entry", "message",
-        "ellipsis", "rolling-square", "slider", "chart", "card", "datagrid", "rte"
+        "ellipsis", "rolling-square", "slider", "chart", "chart-sides", "card", "datagrid", "rte"
     ];
 
     // The probes that can be nested in a component of their own kind, which #nested-same does.
@@ -66,6 +66,11 @@ public class BitDirFallbackBrowserTests : PerformanceTestBase
             'rolling-square': () => style('rolling-square', '.bit-ldn-rsq-ccn')?.transform,
             'slider': () => style('slider', '.bit-sld-inp-near')?.clipPath,
             'chart': () => style('chart', '.bit-cht-mid')?.flexDirection,
+            'chart-sides': () => {
+                const legend = style('chart-sides', '.bit-cht-mid > .bit-cht-lgd');
+                const title = style('chart-sides', '.bit-cht-mid > .bit-cht-ttl');
+                return legend && title ? `${legend.order} ${title.order} ${title.rotate}` : null;
+            },
             'card': () => style('card', '.bit-crd-skb', '::after')?.animationDirection,
             'datagrid': () => style('datagrid', '.bit-dtg-dir-glyph')?.transform,
             'rte': () => style('rte', 'svg.bit-rte-flip')?.transform
@@ -76,6 +81,15 @@ public class BitDirFallbackBrowserTests : PerformanceTestBase
             result[probe] = value === undefined || value === null ? null : String(value);
         }
         return JSON.stringify(result);
+    }";
+
+    // Which side of the plot the chart-sides probe's legend and title are drawn on, and the title's turn.
+    private const string ChartSides = @"(set) => {
+        const probe = document.querySelector(`${set} [data-probe=""chart-sides""]`);
+        const plot = probe.querySelector('.bit-cht-plot').getBoundingClientRect();
+        const side = selector => probe.querySelector(selector).getBoundingClientRect().left < plot.left ? 'left' : 'right';
+        const title = probe.querySelector('.bit-cht-mid > .bit-cht-ttl');
+        return `legend ${side('.bit-cht-mid > .bit-cht-lgd')}, title ${side('.bit-cht-mid > .bit-cht-ttl')} ${getComputedStyle(title).rotate}`;
     }";
 
     // The stylesheets as an engine without :dir() parses them.
@@ -230,6 +244,11 @@ public class BitDirFallbackBrowserTests : PerformanceTestBase
             Assert.IsNotNull(rtl[probe], $"{probe}: the part is not on the page with Dir=Rtl.");
             Assert.AreNotEqual(ltr[probe], rtl[probe], $"{probe}: Dir=Rtl does not turn the part around ({rtl[probe]}).");
         }
+
+        // What those orders and turns amount to on the screen: a legend on the reading start and a title on the reading
+        // end, the title turned over where it is on the left (#13714).
+        Assert.AreEqual("legend left, title right none", await Page.EvaluateAsync<string>(ChartSides, "#ltr"));
+        Assert.AreEqual("legend right, title left 180deg", await Page.EvaluateAsync<string>(ChartSides, "#own"));
 
         return (ltr, rtl);
     }

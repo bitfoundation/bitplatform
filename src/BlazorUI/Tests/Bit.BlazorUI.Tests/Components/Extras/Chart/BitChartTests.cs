@@ -916,27 +916,35 @@ public class BitChartTests : BunitTestContext
 
     // ---- title placement ----
 
-    [TestMethod]
-    public void ASideTitleShouldRenderBesideThePlot()
+    [DataTestMethod]
+    [DataRow(BitPlacement.Left, "bit-cht-lft")]
+    [DataRow(BitPlacement.Right, "bit-cht-rgt")]
+    [DataRow(BitPlacement.Start, "bit-cht-sta")]
+    [DataRow(BitPlacement.End, "bit-cht-end")]
+    public void ASideTitleShouldRenderBesideThePlot(BitPlacement placement, string sideClass)
     {
         var options = new BitChartOptions
         {
-            Plugins = { Title = { Display = true, Text = "Down the side", Placement = BitPlacement.Left } }
+            Plugins = { Title = { Display = true, Text = "Down the side", Placement = placement } }
         };
         var component = RenderChart(options: options);
 
         var title = component.Find(".bit-cht-mid > .bit-cht-ttl");
         Assert.IsTrue(title.ClassList.Contains("bit-cht-ttl-v"));
+        Assert.IsTrue(title.ClassList.Contains(sideClass));
         StringAssert.Contains(title.TextContent, "Down the side");
     }
 
     // A subtitle goes wherever a title can - beside the plot it sits between the title and the plot, on either
-    // side - and the ones on the left are the ones turned over, by a class of their own rather than by being the
-    // first child, which only the outermost of them is.
+    // side - and the ones on the physical left are the ones turned over by a class of their own rather than by being
+    // the first child, which only the outermost of them is. The reading start and end are written where a
+    // left-to-right chart shows them; their side class turns them over and moves them in the other direction.
     [DataTestMethod]
-    [DataRow(BitPlacement.Left, true)]
-    [DataRow(BitPlacement.Right, false)]
-    public void ASideSubtitleShouldRenderBesideThePlot(BitPlacement placement, bool turnedOver)
+    [DataRow(BitPlacement.Left, true, true)]
+    [DataRow(BitPlacement.Right, false, false)]
+    [DataRow(BitPlacement.Start, true, false)]
+    [DataRow(BitPlacement.End, false, false)]
+    public void ASideSubtitleShouldRenderBesideThePlot(BitPlacement placement, bool beforeThePlot, bool turnedOver)
     {
         var options = new BitChartOptions
         {
@@ -958,7 +966,7 @@ public class BitChartTests : BunitTestContext
         var order = component.Find(".bit-cht-mid").Children
                              .Select(c => c.ClassList.Contains("bit-cht-plot") ? "plot" : c.ClassList.Contains("bit-cht-sub") ? "sub" : "title")
                              .ToArray();
-        CollectionAssert.AreEqual(turnedOver ? new[] { "title", "sub", "plot" } : new[] { "plot", "sub", "title" }, order);
+        CollectionAssert.AreEqual(beforeThePlot ? new[] { "title", "sub", "plot" } : new[] { "plot", "sub", "title" }, order);
     }
 
     [TestMethod]
@@ -979,23 +987,26 @@ public class BitChartTests : BunitTestContext
     private IRenderedComponent<BitChart> RenderLegendAt(BitPlacement placement)
         => RenderChart(options: new BitChartOptions { Plugins = { Legend = { Placement = placement } } });
 
+    // The reading start and end are sides of their own (#13714), named apart from the physical left and right since
+    // only they swap sides in a right-to-left chart.
     [TestMethod]
-    [DataRow(BitPlacement.Left)]
-    [DataRow(BitPlacement.Right)]
-    public void AnInlineLegendShouldRenderBesideThePlotAndStackItsItems(BitPlacement placement)
+    [DataRow(BitPlacement.Left, "bit-cht-lft")]
+    [DataRow(BitPlacement.Right, "bit-cht-rgt")]
+    [DataRow(BitPlacement.Start, "bit-cht-sta")]
+    [DataRow(BitPlacement.End, "bit-cht-end")]
+    public void AnInlineLegendShouldRenderBesideThePlotAndStackItsItems(BitPlacement placement, string sideClass)
     {
         var legend = RenderLegendAt(placement).Find(".bit-cht-mid > .bit-cht-lgd");
 
         Assert.IsTrue(legend.ClassList.Contains("bit-cht-lgd-v"));
+        Assert.IsTrue(legend.ClassList.Contains(sideClass));
     }
 
     [TestMethod]
     [DataRow(BitPlacement.Top)]
     [DataRow(BitPlacement.Bottom)]
-    // A chart is laid out physically, so the logical pair, the two combined values and Center have no edge of
-    // their own here: they leave the legend where an unset placement would, at the top, rather than dropping it.
-    [DataRow(BitPlacement.Start)]
-    [DataRow(BitPlacement.End)]
+    // The two combined values and Center have no edge of their own here: they leave the legend where an unset
+    // placement would, at the top, rather than dropping it.
     [DataRow(BitPlacement.Center)]
     [DataRow(BitPlacement.TopAndBottom)]
     [DataRow(BitPlacement.StartAndEnd)]

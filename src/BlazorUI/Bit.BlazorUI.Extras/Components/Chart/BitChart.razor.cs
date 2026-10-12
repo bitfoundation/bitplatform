@@ -1556,16 +1556,38 @@ public partial class BitChart : BitComponentBase
     }
 
     /// <summary>
-    /// The side a title or subtitle actually renders on. Left and right ones run down the side of the plot
-    /// (rotated); anything that is not one of the four sides falls back to the top.
+    /// The side a title or subtitle actually renders on. Left, right, start and end ones run down the side of the
+    /// plot (rotated); anything that is not one of the four sides falls back to the top.
     /// </summary>
     private static BitPlacement TitleSide(BitChartTitleModel title) => title.Placement switch
     {
         BitPlacement.Bottom => BitPlacement.Bottom,
         BitPlacement.Left => BitPlacement.Left,
         BitPlacement.Right => BitPlacement.Right,
+        BitPlacement.Start => BitPlacement.Start,
+        BitPlacement.End => BitPlacement.End,
         _ => BitPlacement.Top
     };
+
+    /// <summary>
+    /// The class naming which side of the plot a title, subtitle or legend beside it sits on, which places it in the
+    /// row around the plot (see BitChart.scss). Start and End are named apart from Left and Right, since only they
+    /// swap sides in a right-to-left chart.
+    /// </summary>
+    private static string SideClass(BitPlacement side) => side switch
+    {
+        BitPlacement.Left => "bit-cht-lft",
+        BitPlacement.Right => "bit-cht-rgt",
+        BitPlacement.Start => "bit-cht-sta",
+        _ => "bit-cht-end"
+    };
+
+    /// <summary>
+    /// The side class of a title or subtitle beside the plot, plus the one turning over a title on the physical left.
+    /// One on the reading start or end is turned over by its side class wherever that side is the left.
+    /// </summary>
+    private static string SideTitleClass(BitPlacement side)
+        => side == BitPlacement.Left ? "bit-cht-lft bit-cht-ttl-l" : SideClass(side);
 
     // Each value is written as the CSS keyword that means what it says: the logical pair as the keywords that
     // follow the reading direction, the physical pair as the ones that never move. Every value without an edge
