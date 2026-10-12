@@ -110,6 +110,40 @@ public class BitThemeManager : IAsyncDisposable
         return await _js.BitThemeToggleThemeDarkLight();
     }
 
+    /// <summary>
+    /// Changes which themes "light" and "dark" mean - what <see cref="ToggleDarkLightAsync"/> flips
+    /// between and what following the OS resolves to - for an app that lets its users pick a design
+    /// system (Fluent 2, Material, Cupertino, ...) at runtime. The user's own choice is kept: while
+    /// following the OS, the new pair's theme for the OS scheme is applied and <c>system</c> stays the
+    /// stored preference; otherwise the applied theme moves to its counterpart in the new pair, and so
+    /// does a stored one. Both names are normalized like <see cref="SetThemeAsync(string)"/>; a blank
+    /// one makes the call a no-op.
+    /// Returns the applied theme, or <see langword="null"/> when JS interop is unavailable (e.g.
+    /// prerendering / disconnected circuit).
+    /// </summary>
+    /// <remarks>
+    /// The pair is written to <see cref="BitThemeAttributeNames.ThemeLight"/> /
+    /// <see cref="BitThemeAttributeNames.ThemeDark"/> and, with persistence on, stored under
+    /// <see cref="BitThemeAttributeNames.ThemePairStorageKey"/> (and mirrored into the
+    /// <see cref="BitThemeCookie.PairCookieName"/> cookie with cookie persistence), so the next visit
+    /// restores it ahead of the pair the page declares. Switching back to the declared pair removes it.
+    /// </remarks>
+    /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>
+    public async ValueTask<string?> SetThemePairAsync(string lightTheme, string darkTheme)
+    {
+        await EnsureJsNotifierRegisteredAsync().ConfigureAwait(false);
+        return await _js.BitThemeSetPair(NormalizeThemeName(lightTheme), NormalizeThemeName(darkTheme));
+    }
+
+    /// <summary>
+    /// <see cref="SetThemePairAsync(string, string)"/> from strongly-typed
+    /// <see cref="BitThemeName"/>s (already normalized).
+    /// </summary>
+    public ValueTask<string?> SetThemePairAsync(BitThemeName lightTheme, BitThemeName darkTheme)
+    {
+        return SetThemePairAsync(lightTheme.Value, darkTheme.Value);
+    }
+
     /// <summary>Applies <paramref name="bitTheme"/> as CSS custom properties on <paramref name="element"/> (default: body), overriding stylesheet tokens for that subtree.</summary>
     /// <remarks>
     /// Semantic aliases (<c>--bit-sem-*</c>) whose target the theme overrides are re-declared on the target

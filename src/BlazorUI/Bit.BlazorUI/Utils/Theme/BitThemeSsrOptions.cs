@@ -62,4 +62,20 @@ public class BitThemeSsrOptions
 
     /// <inheritdoc cref="LightTheme"/>
     public string? DarkTheme { get; set; }
+
+    /// <summary>
+    /// The pair the visitor switched to at runtime - the <see cref="BitThemeCookie.PairCookieName"/>
+    /// cookie of this request, <c>"&lt;light&gt; &lt;dark&gt;"</c>. A valid one stands in for
+    /// <see cref="LightTheme"/> / <see cref="DarkTheme"/> when the theme this response paints is
+    /// resolved, so a visitor who picked another design system gets it from the server too; the
+    /// attributes still carry the page's own pair, which the client keeps as the one to return to.
+    /// Anything else is ignored. Pass the same value to <see cref="BitThemeHead"/>.
+    /// </summary>
+    /// <remarks>
+    /// Once a pair is named - here or through <see cref="LightTheme"/> / <see cref="DarkTheme"/> - a
+    /// stored preference outside it (a theme saved before the app switched presets) is painted as the
+    /// pair's light or dark theme, by the name's <c>light</c> / <c>dark</c> ending, the way the client
+    /// script restores it.
+    /// </remarks>
+    public string? PersistedThemePair { get; set; }
 }

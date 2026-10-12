@@ -47,6 +47,38 @@ app.MapGet("/api/gc-info", () =>
     return Results.Ok(new { allocatedMB });
 });
 
+// A host page with nothing but the theme setup (BitThemePairBrowserTests): the
+// root attributes the server resolves from this request's cookies, the first-paint script, and the library
+// script that self-initializes from them - no Blazor, so a reload is a plain first paint. The query states the
+// page's setup: default, light, dark, persist=1, cookie=1.
+app.MapGet("/regression/theme-host", (HttpContext context) =>
+{
+    var query = context.Request.Query;
+    var options = new BitThemeSsrOptions
+    {
+        DefaultTheme = query["default"],
+        LightTheme = query["light"],
+        DarkTheme = query["dark"],
+        Persist = query["persist"] == "1",
+        PersistCookie = query["cookie"] == "1",
+        PersistedThemePair = context.Request.Cookies[BitThemeCookie.PairCookieName],
+    };
+    var attributes = BitThemeSsr.BuildRootThemeAttributes(context.Request.Cookies[BitThemeCookie.PreferenceCookieName], options);
+
+    return Results.Content($"""
+        <!DOCTYPE html>
+        <html lang="en" {attributes}>
+        <head>
+            <meta charset="utf-8" />
+            {BitThemeSsr.InlineHeadScript}
+        </head>
+        <body>
+            <script src="/_content/Bit.BlazorUI/scripts/bit.blazorui.js"></script>
+        </body>
+        </html>
+        """, "text/html");
+});
+
 app.Run();
 
 // Make Program class accessible for WebApplicationFactory

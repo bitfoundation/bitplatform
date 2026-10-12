@@ -81,11 +81,12 @@ public sealed class BitThemeSsrTests
         Assert.IsTrue(systemOverridesBase >= 0,
             "Inline script must resolve the OS theme when bit-theme-system is present, overriding the explicit base.");
 
-        var persistedReadsStorage = body.IndexOf(
-            $"if(r.hasAttribute('{BitThemeAttributeNames.ThemePersist}'))",
-            StringComparison.Ordinal);
+        Assert.IsTrue(body.Contains($"if(r.hasAttribute('{BitThemeAttributeNames.ThemePersist}'))", StringComparison.Ordinal),
+            "Inline script must read stored values from localStorage when bit-theme-persist is present.");
+
+        var persistedReadsStorage = body.IndexOf($"s=g(k,ck)", StringComparison.Ordinal);
         Assert.IsTrue(persistedReadsStorage >= 0,
-            "Inline script must read the persisted preference when bit-theme-persist is present.");
+            "Inline script must read the persisted preference.");
 
         // A persisted preference is applied AFTER the system override, so it wins (highest precedence).
         Assert.IsTrue(persistedReadsStorage > systemOverridesBase,
@@ -111,6 +112,97 @@ public sealed class BitThemeSsrTests
             "Base fallback must resolve to the configured light theme (lt), matching BitTheme.ts init precedence.");
         Assert.IsFalse(body.Contains("||'light';", StringComparison.Ordinal),
             "Base fallback must not use the literal 'light' (it diverges from the client's _lightTheme).");
+    }
+
+    [TestMethod]
+    public void InlineHeadScriptReadsTheStoredPairBeforeResolvingTheTheme()
+    {
+        // The pair a visitor switched to (Theme.setPair) is stored beside the preference, under names
+        // the C# owns; the script reads it before the base theme is resolved, since the base, the OS
+        // resolution and a stored preference all resolve against it - as Theme.init does.
+        var body = BitThemeSsr.InlineHeadScriptBody;
+
+        var pairRead = body.IndexOf($"g('{BitThemeAttributeNames.ThemePairStorageKey}','{BitThemeCookie.PairCookieName}')", StringComparison.Ordinal);
+        Assert.IsTrue(pairRead >= 0, "Inline script must read the stored pair from the names BitThemeAttributeNames / BitThemeCookie publish.");
+
+        var baseResolved = body.IndexOf("var base=", StringComparison.Ordinal);
+        Assert.IsTrue(pairRead < baseResolved, "The stored pair must be read before the base theme is resolved against it.");
+
+        Assert.IsTrue(body.Contains("if(s){cur=d?f(s):s;}", StringComparison.Ordinal),
+            "A stored preference must be fitted to the pair once a pair is named (#13686), and applied as it is otherwise.");
+    }
+
+    [DataTestMethod]
+    [DataRow("fluent2-dark", "material-dark")]
+    [DataRow("fluent2-light", "material-light")]
+    [DataRow("dark", "material-dark")]
+    [DataRow("material-dark", "material-dark")]
+    [DataRow("high-contrast", "high-contrast")]
+    public void BuildRootThemeAttributeMapFitsAStoredThemeToTheDeclaredPair(string preference, string expected)
+    {
+        // #13686: the app switched presets after the visitor stored a theme. The theme the server
+        // paints is the new pair's theme of the visitor's scheme; one of neither scheme is kept.
+        var map = BitThemeSsr.BuildRootThemeAttributeMap(preference, new BitThemeSsrOptions
+        {
+            LightTheme = "material-light",
+            DarkTheme = "material-dark",
+        });
+
+        Assert.AreEqual(expected, map[BitThemeAttributeNames.Theme]);
+    }
+
+    [TestMethod]
+    public void BuildRootThemeAttributeMapKeepsAStoredThemeWhenNoPairIsNamed()
+    {
+        // A page that never names a pair keeps whatever theme it was told to restore, as before.
+        var map = BitThemeSsr.BuildRootThemeAttributeMap("material-dark", new BitThemeSsrOptions());
+
+        Assert.AreEqual("material-dark", map[BitThemeAttributeNames.Theme]);
+    }
+
+    [DataTestMethod]
+    [DataRow("fluent2-dark", "cupertino-dark")]
+    [DataRow("cupertino-light", "cupertino-light")]
+    [DataRow(null, "cupertino-light")]
+    public void BuildRootThemeAttributeMapResolvesAgainstTheStoredPair(string? preference, string expected)
+    {
+        // The visitor picked Cupertino; the page still declares Fluent 2, and the server paints Cupertino.
+        var map = BitThemeSsr.BuildRootThemeAttributeMap(preference, new BitThemeSsrOptions
+        {
+            DefaultTheme = "fluent2-light",
+            LightTheme = "fluent2-light",
+            DarkTheme = "fluent2-dark",
+            PersistedThemePair = "cupertino-light%20cupertino-dark",
+        });
+
+        Assert.AreEqual(expected, map[BitThemeAttributeNames.Theme]);
+
+        // The attributes keep the page's own pair: the client restores the stored one itself, and keeps
+        // the declared one as the pair to return to.
+        Assert.AreEqual("fluent2-light", map[BitThemeAttributeNames.ThemeLight]);
+        Assert.AreEqual("fluent2-dark", map[BitThemeAttributeNames.ThemeDark]);
+    }
+
+    [DataTestMethod]
+    [DataRow("cupertino-light cupertino-dark")]
+    [DataRow("cupertino-light%20cupertino-dark")]
+    public void BuildRootThemeAttributeMapReadsTheStoredPairDecodedOrNot(string storedPair)
+    {
+        var map = BitThemeSsr.BuildRootThemeAttributeMap("dark", new BitThemeSsrOptions { PersistedThemePair = storedPair });
+
+        Assert.AreEqual("cupertino-dark", map[BitThemeAttributeNames.Theme]);
+    }
+
+    [DataTestMethod]
+    [DataRow("cupertino-light")]
+    [DataRow("a b c")]
+    [DataRow("light\" onload=\"x dark")]
+    [DataRow("")]
+    public void BuildRootThemeAttributeMapIgnoresAnInvalidStoredPair(string storedPair)
+    {
+        var map = BitThemeSsr.BuildRootThemeAttributeMap("fluent2-dark", new BitThemeSsrOptions { PersistedThemePair = storedPair });
+
+        Assert.AreEqual("fluent2-dark", map[BitThemeAttributeNames.Theme]);
     }
 
     [TestMethod]
@@ -214,7 +306,7 @@ public sealed class BitThemeSsrTests
     {
         // The point of the options overload: a host page states its setup once, and every attribute
         // name stays owned by BitThemeAttributeNames rather than being spelled beside the call.
-        var map = BitThemeSsr.BuildRootThemeAttributeMap("dark", new BitThemeSsrOptions
+        var map = BitThemeSsr.BuildRootThemeAttributeMap(BitThemePresets.Fluent2Dark, new BitThemeSsrOptions
         {
             Persist = true,
             PersistCookie = true,
@@ -224,7 +316,7 @@ public sealed class BitThemeSsrTests
             DarkTheme = BitThemePresets.Fluent2Dark,
         });
 
-        Assert.AreEqual("dark", map[BitThemeAttributeNames.Theme]);
+        Assert.AreEqual(BitThemePresets.Fluent2Dark, map[BitThemeAttributeNames.Theme]);
         Assert.AreEqual(true, map[BitThemeAttributeNames.ThemePersist]);
         Assert.AreEqual(true, map[BitThemeAttributeNames.ThemePersistCookie]);
         Assert.AreEqual(true, map[BitThemeAttributeNames.ThemeViewTransition]);

@@ -50,6 +50,11 @@ namespace BitBlazorUI {
     const COOKIE_NAME = 'bit-theme-preference';
     // ~400 days, the upper bound modern browsers clamp persistent cookies to.
     const COOKIE_MAX_AGE_SECONDS = 34560000;
+    // Kept aligned with BitThemeAttributeNames.ThemePairStorageKey and BitThemeCookie.PairCookieName in C#.
+    // The light / dark pair a visitor picked at runtime (setPair), stored as "<light> <dark>" beside the
+    // preference and mirrored into the cookie the same way, so the next visit - and the server - restore it.
+    const PAIR_STORAGE_KEY = 'bit-theme-pair';
+    const PAIR_COOKIE_NAME = 'bit-theme-pair';
 
     type onThemeChangeType = (newThemeName: string, oldThemeName: string) => void;
 
@@ -91,6 +96,13 @@ namespace BitBlazorUI {
         private static _persistCookie = false;
         private static _darkTheme: string = 'dark';
         private static _lightTheme: string = 'light';
+        // The pair the page declares (bit-theme-light / bit-theme-dark, or init's lightTheme / darkTheme),
+        // and whether it declares one at all rather than leaving the core light / dark to stand in.
+        private static _configuredDarkTheme: string = 'dark';
+        private static _configuredLightTheme: string = 'light';
+        private static _configuredPairDeclared = false;
+        // The pair setPair switched to, while it differs from the configured one; null otherwise.
+        private static _runtimePair: [string, string] | null = null;
         private static _initOptions: ThemeOptions = {};
         private static _currentTheme = Theme._lightTheme;
         private static _onThemeChange: onThemeChangeType = () => { };
@@ -115,6 +127,13 @@ namespace BitBlazorUI {
         // localStorage-backed store raises this event (cookie-only persistence does not).
         private static _onStorage = (e: StorageEvent) => {
             if (!Theme._persist) return;
+            // The other tab switched the pair (setPair writes it before the preference, so this arrives
+            // first): adopt it without writing it back. A removed pair is the configured one again.
+            if (e.key === PAIR_STORAGE_KEY) {
+                const pair = Theme.parsePair(e.newValue);
+                Theme.applyPair(pair ? pair[0] : Theme._configuredLightTheme, pair ? pair[1] : Theme._configuredDarkTheme, false);
+                return;
+            }
             // e.key is null when storage was cleared; otherwise it must be our key.
             if (e.key !== null && e.key !== Theme.THEME_STORAGE_KEY) return;
             const next = e.newValue;
@@ -149,13 +168,9 @@ namespace BitBlazorUI {
                 Theme._onThemeChange = Theme._initOptions.onChange;
             }
 
-            if (Theme._initOptions.darkTheme) {
-                Theme._darkTheme = Theme._initOptions.darkTheme;
-            }
-
-            if (Theme._initOptions.lightTheme) {
-                Theme._lightTheme = Theme._initOptions.lightTheme;
-            }
+            Theme._configuredDarkTheme = Theme._initOptions.darkTheme || 'dark';
+            Theme._configuredLightTheme = Theme._initOptions.lightTheme || 'light';
+            Theme._configuredPairDeclared = !!(Theme._initOptions.darkTheme || Theme._initOptions.lightTheme);
 
             // Cookie mirroring is independent of localStorage persistence: an SSR app may want the
             // server to read the preference cookie without necessarily enabling localStorage.
@@ -163,6 +178,20 @@ namespace BitBlazorUI {
             // init({ persistCookie: false }) can clear the flag, while an init that omits the key
             // keeps the previously merged value.
             Theme._persistCookie = !!Theme._initOptions.persistCookie;
+
+            // Derive on every call (see persistCookie note above) so a later init({ persist: false })
+            // clears the flag, while an omitted key preserves the merged value.
+            Theme._persist = !!Theme._initOptions.persist;
+
+            // A pair the visitor picked (setPair) outranks the configured one: stored, it survives the
+            // visit; in memory, a later init. Same precedence as the SSR inline script in BitThemeSsr.cs.
+            const pair = ((Theme._persist || Theme._persistCookie) ? Theme.getPersistedPair() : null) || Theme._runtimePair;
+            Theme._runtimePair = pair && !Theme.isConfiguredPair(pair[0], pair[1]) ? pair : null;
+            Theme._lightTheme = Theme._runtimePair ? Theme._runtimePair[0] : Theme._configuredLightTheme;
+            Theme._darkTheme = Theme._runtimePair ? Theme._runtimePair[1] : Theme._configuredDarkTheme;
+            if (Theme._runtimePair) {
+                Theme.writePairAttributes();
+            }
 
             let theme = Theme._initOptions.theme || Theme._initOptions.default || Theme._lightTheme;
 
@@ -183,11 +212,10 @@ namespace BitBlazorUI {
             // wrong theme. Keeping the two code paths in lockstep avoids that.
             if (systemRequested) {
                 theme = Theme.isSystemDark() ? Theme._darkTheme : Theme._lightTheme;
+            } else if (Theme._runtimePair) {
+                // The page's base names a theme of the pair it declares; the visitor's pair stands in for it.
+                theme = Theme.fitToPair(theme);
             }
-
-            // Derive on every call (see persistCookie note above) so a later init({ persist: false })
-            // clears the flag, while an omitted key preserves the merged value.
-            Theme._persist = !!Theme._initOptions.persist;
 
             // Restore a previously persisted preference. getPersisted() reads localStorage first and
             // falls back to the preference cookie, so this also covers a cookie-only setup
@@ -196,7 +224,11 @@ namespace BitBlazorUI {
             if (Theme._persist || Theme._persistCookie) {
                 const persisted = Theme.getPersisted();
                 if (persisted) {
-                    theme = persisted;
+                    // A theme saved under another pair - the app has switched presets since, the stored
+                    // pair was taken back - is moved onto this one, keeping the visitor's light or dark
+                    // choice; set() below then stores what it was moved to. Only once a pair is named:
+                    // a page that never named one keeps whatever theme it was told to restore.
+                    theme = Theme.isPairDeclared() ? Theme.fitToPair(persisted) : persisted;
                     // An explicit persisted preset (anything other than "system") means the user pinned a theme;
                     // stop following the OS even when <html bit-theme-system> is present.
                     Theme._stopFollowingSystem = persisted !== Theme.SYSTEM_THEME;
@@ -294,21 +326,7 @@ namespace BitBlazorUI {
             if (!resolved) return Theme._currentTheme;
             Theme._currentTheme = resolved;
 
-            if (Theme._persist) {
-                // localStorage can throw in Safari private mode, in iframes that block storage,
-                // when over quota, or under restrictive document policies (e.g. file:// in some
-                // browsers). Theme persistence is best-effort - never let it break theme switching.
-                try {
-                    localStorage.setItem(Theme.THEME_STORAGE_KEY, themeName);
-                } catch { /* persistence unavailable; continue without storing */ }
-            }
-
-            // Mirror the preference into the cookie so the server (BitThemeSsr.BuildRootThemeAttributes)
-            // can paint the matching theme on first render. Stored verbatim (the abstract key, e.g.
-            // "system" / "dark" / "fluent-light"), matching what localStorage holds.
-            if (Theme._persistCookie) {
-                Theme.writePreferenceCookie(themeName);
-            }
+            Theme.writePersisted(themeName);
 
             const oldTheme = document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) || '';
 
@@ -352,6 +370,154 @@ namespace BitBlazorUI {
         /** Pins storage (when persist is on) to <c>system</c> and follows OS light/dark until an explicit preset is set. */
         public static useSystem() {
             return Theme.set(Theme.SYSTEM_THEME);
+        }
+
+        /**
+         * Changes which themes "light" and "dark" mean - what toggleDarkLight flips between and what
+         * following the OS resolves to - for an app that lets its users pick a design system. The
+         * visitor's own choice is kept: while following the OS the new pair's theme for the OS scheme is
+         * applied and "system" stays stored; otherwise the applied theme moves to its counterpart in the
+         * new pair, and so does a stored one. The pair is persisted beside the preference (and mirrored
+         * into its cookie) when persistence is on, and written to bit-theme-light / bit-theme-dark.
+         * Blank names, or names containing whitespace, are ignored. Returns the applied theme.
+         */
+        public static setPair(lightTheme: string, darkTheme: string) {
+            const light = (lightTheme || '').trim();
+            const dark = (darkTheme || '').trim();
+            if (!light || !dark || /\s/.test(light) || /\s/.test(dark)) return Theme._currentTheme;
+
+            Theme.applyPair(light, dark, true);
+
+            return Theme._currentTheme;
+        }
+
+        private static applyPair(light: string, dark: string, persist: boolean) {
+            const oldLight = Theme._lightTheme;
+            const oldDark = Theme._darkTheme;
+
+            Theme._lightTheme = light;
+            Theme._darkTheme = dark;
+            Theme._runtimePair = Theme.isConfiguredPair(light, dark) ? null : [light, dark];
+            Theme.writePairAttributes();
+
+            // Before the preference below, so another tab adopts the pair first and then reads the
+            // preference against it. The configured pair is stored as no pair at all, so the page's own
+            // pair - a preset change of the app - reaches this visitor again.
+            if (persist) {
+                Theme.writePersistedPair(Theme._runtimePair ? `${light} ${dark}` : null);
+            }
+
+            // Following the OS: "system" stays the preference, only what it resolves to changes.
+            if (Theme.shouldFollowSystem()) {
+                Theme.applyResolvedTheme(Theme.isSystemDark() ? dark : light);
+                return;
+            }
+
+            const current = document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) || Theme._currentTheme;
+            const target = current === oldDark ? dark
+                : current === oldLight ? light
+                    : Theme.fitToPair(current);
+
+            // The visitor's pinned theme moves with it, so the next visit restores the same scheme.
+            if (persist) {
+                const persisted = Theme.getPersisted();
+                if (persisted && persisted !== Theme.SYSTEM_THEME && persisted !== target) {
+                    Theme.writePersisted(target);
+                }
+            }
+
+            Theme.applyResolvedTheme(target);
+        }
+
+        /**
+         * The theme of the active pair that stands for a theme outside it: the pair's dark theme for a
+         * name ending in "dark" (the rule the stylesheets' [bit-theme$="dark"] selectors classify by), its
+         * light theme for one ending in "light". Anything else - a member of the pair, "system", a theme
+         * of neither scheme - is kept as it is.
+         */
+        private static fitToPair(theme: string) {
+            if (theme === Theme.SYSTEM_THEME || theme === Theme._lightTheme || theme === Theme._darkTheme) return theme;
+            if (/dark$/.test(theme)) return Theme._darkTheme;
+            if (/light$/.test(theme)) return Theme._lightTheme;
+            return theme;
+        }
+
+        private static isConfiguredPair(light: string, dark: string) {
+            return light === Theme._configuredLightTheme && dark === Theme._configuredDarkTheme;
+        }
+
+        private static isPairDeclared() {
+            return Theme._configuredPairDeclared || Theme._runtimePair !== null;
+        }
+
+        private static writePairAttributes() {
+            document.documentElement.setAttribute(ATTR_THEME_LIGHT, Theme._lightTheme);
+            document.documentElement.setAttribute(ATTR_THEME_DARK, Theme._darkTheme);
+        }
+
+        /** "<light> <dark>" as stored; null for anything else. */
+        private static parsePair(value: string | null): [string, string] | null {
+            const parts = (value || '').split(' ');
+            return parts.length === 2 && parts[0] && parts[1] ? [parts[0], parts[1]] : null;
+        }
+
+        /** The pair setPair stored, from localStorage first and the cookie second - getPersisted's order. */
+        private static getPersistedPair() {
+            if (Theme._persist) {
+                try {
+                    const stored = Theme.parsePair(localStorage.getItem(PAIR_STORAGE_KEY));
+                    if (stored) return stored;
+                } catch { /* fall through to cookie / null */ }
+            }
+
+            return Theme._persistCookie ? Theme.parsePair(Theme.readCookie(PAIR_COOKIE_NAME)) : null;
+        }
+
+        private static writePersistedPair(value: string | null) {
+            if (Theme._persist) {
+                try {
+                    if (value) {
+                        localStorage.setItem(PAIR_STORAGE_KEY, value);
+                    } else {
+                        localStorage.removeItem(PAIR_STORAGE_KEY);
+                    }
+                } catch { /* persistence unavailable; continue without storing */ }
+            }
+
+            if (Theme._persistCookie) {
+                Theme.writeCookie(PAIR_COOKIE_NAME, value);
+            }
+        }
+
+        /** Stores a preference in every store that is on. */
+        private static writePersisted(themeName: string) {
+            if (Theme._persist) {
+                // localStorage can throw in Safari private mode, in iframes that block storage,
+                // when over quota, or under restrictive document policies (e.g. file:// in some
+                // browsers). Theme persistence is best-effort - never let it break theme switching.
+                try {
+                    localStorage.setItem(Theme.THEME_STORAGE_KEY, themeName);
+                } catch { /* persistence unavailable; continue without storing */ }
+            }
+
+            // Mirror the preference into the cookie so the server (BitThemeSsr.BuildRootThemeAttributes)
+            // can paint the matching theme on first render. Stored verbatim (the abstract key, e.g.
+            // "system" / "dark" / "fluent-light"), matching what localStorage holds.
+            if (Theme._persistCookie) {
+                Theme.writeCookie(COOKIE_NAME, themeName);
+            }
+        }
+
+        /** Applies a resolved theme without touching the preference or the OS-following flags. */
+        private static applyResolvedTheme(themeName: string) {
+            const oldTheme = document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) || '';
+
+            Theme._currentTheme = themeName;
+
+            if (themeName === oldTheme) return;
+
+            Theme.swapThemeAttribute(themeName);
+            Theme.dispatchThemeChange(themeName, oldTheme);
         }
 
         public static applyTheme(theme: Record<string, string>, element?: HTMLElement) {
@@ -441,7 +607,7 @@ namespace BitBlazorUI {
             // Cookie-only persistence (or localStorage unavailable): read the same preference the
             // server uses so the client and server agree on the stored choice.
             if (Theme._persistCookie) {
-                return Theme.readPreferenceCookie();
+                return Theme.readCookie(COOKIE_NAME);
             }
 
             return null;
@@ -455,19 +621,21 @@ namespace BitBlazorUI {
             Theme._dotnetNotifier = null;
         }
 
-        private static writePreferenceCookie(value: string) {
+        /** Writes a cookie, or expires it for a null value. */
+        private static writeCookie(name: string, value: string | null) {
             try {
-                if (typeof document === 'undefined' || !value) return;
+                if (typeof document === 'undefined' || value === '') return;
                 const secure = location.protocol === 'https:' ? '; Secure' : '';
-                document.cookie =
-                    `${COOKIE_NAME}=${encodeURIComponent(value)}; path=/; max-age=${COOKIE_MAX_AGE_SECONDS}; SameSite=Lax${secure}`;
+                document.cookie = value === null
+                    ? `${name}=; path=/; max-age=0; SameSite=Lax${secure}`
+                    : `${name}=${encodeURIComponent(value)}; path=/; max-age=${COOKIE_MAX_AGE_SECONDS}; SameSite=Lax${secure}`;
             } catch { /* cookies unavailable / blocked; best-effort like localStorage */ }
         }
 
-        private static readPreferenceCookie(): string | null {
+        private static readCookie(name: string): string | null {
             try {
                 if (typeof document === 'undefined' || !document.cookie) return null;
-                const prefix = `${COOKIE_NAME}=`;
+                const prefix = `${name}=`;
                 const match = document.cookie
                     .split(';')
                     .map(c => c.trim())
@@ -527,14 +695,7 @@ namespace BitBlazorUI {
         private static applyResolvedSystemThemeFromOs() {
             if (!Theme.shouldFollowSystem()) return;
 
-            const resolved = Theme.isSystemDark() ? Theme._darkTheme : Theme._lightTheme;
-            const oldTheme = document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) || '';
-
-            if (resolved === oldTheme) return;
-
-            Theme._currentTheme = resolved;
-            Theme.swapThemeAttribute(resolved);
-            Theme.dispatchThemeChange(resolved, oldTheme);
+            Theme.applyResolvedTheme(Theme.isSystemDark() ? Theme._darkTheme : Theme._lightTheme);
         }
 
         /**

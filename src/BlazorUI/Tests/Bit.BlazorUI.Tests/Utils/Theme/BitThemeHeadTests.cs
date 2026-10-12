@@ -38,6 +38,42 @@ public class BitThemeHeadTests : BunitTestContext
             "The client can re-resolve to a theme the cookie never mentioned; the tag has to follow it.");
     }
 
+    private static readonly Dictionary<string, string> PairColors = new(StringComparer.Ordinal)
+    {
+        [BitThemePresets.Fluent2Light] = "#eeeee1",
+        [BitThemePresets.Fluent2Dark] = "#111111",
+        [BitThemePresets.MaterialLight] = "#eeeee2",
+        [BitThemePresets.MaterialDark] = "#222222",
+    };
+
+    [TestMethod]
+    public void BitThemeHeadShouldPaintAThemeSavedUnderAnotherPairAsTheDeclaredPairsTheme()
+    {
+        // #13686: the visitor stored fluent2-dark, the app has since switched to Material. The document
+        // paints material-dark, so the chrome has to be painted for it too.
+        var component = RenderComponent<BitThemeHead>(parameters => parameters
+            .Add(p => p.PersistedPreference, BitThemePresets.Fluent2Dark)
+            .Add(p => p.LightTheme, BitThemePresets.MaterialLight)
+            .Add(p => p.DarkTheme, BitThemePresets.MaterialDark)
+            .Add(p => p.ThemeColors, PairColors));
+
+        StringAssert.Contains(component.Markup, "content=\"#222222\"", StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void BitThemeHeadShouldPaintTheChromeForTheVisitorsStoredPair()
+    {
+        // The visitor picked Material (BitThemeManager.SetThemePairAsync); the page still declares Fluent 2.
+        var component = RenderComponent<BitThemeHead>(parameters => parameters
+            .Add(p => p.PersistedPreference, BitThemePresets.Fluent2Dark)
+            .Add(p => p.LightTheme, BitThemePresets.Fluent2Light)
+            .Add(p => p.DarkTheme, BitThemePresets.Fluent2Dark)
+            .Add(p => p.PersistedThemePair, $"{BitThemePresets.MaterialLight} {BitThemePresets.MaterialDark}")
+            .Add(p => p.ThemeColors, PairColors));
+
+        StringAssert.Contains(component.Markup, "content=\"#222222\"", StringComparison.Ordinal);
+    }
+
     [TestMethod]
     public void BitThemeHeadShouldCorrectTheTagWhenTheClientResolvesAThemeTheCookieDidNot()
     {

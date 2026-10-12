@@ -281,15 +281,15 @@ public partial class BitThemeSwitcher : BitComponentBase
         var item = _designSystems.FirstOrDefault(i => i.Value == selected.Value);
         if (item is null) return;
 
-        // The scheme is the half of the theme this control does not decide, so it is carried over from
-        // whatever is applied rather than reset to light.
-        var target = IsDarkTheme(await _themeManager.GetCurrentThemeAsync()) ? GetDarkTheme(item) : GetLightTheme(item);
-
-        await _themeManager.SetThemeAsync(target);
+        // The design system is the light / dark pair, so it is switched as one: the scheme - the half of
+        // the theme this control does not decide - is carried over by the theme script, which keeps the
+        // visitor following the OS when they were, and the toggle and the OS resolve to the new pair from
+        // here on, this visit and the next.
+        var applied = await _themeManager.SetThemePairAsync(GetLightTheme(item), GetDarkTheme(item));
 
         _designSystem = item.Value;
 
-        await OnChange.InvokeAsync(target);
+        await OnChange.InvokeAsync(applied ?? GetLightTheme(item));
     }
 
     private async Task HandleOnToggleColorScheme()
@@ -309,20 +309,17 @@ public partial class BitThemeSwitcher : BitComponentBase
         var dark = GetDarkTheme(item);
         var target = IsDarkTheme(current) ? light : dark;
 
-        string? applied;
-        if (light == BitThemePresets.Light && dark == BitThemePresets.Dark)
+        // The core light/dark pair is the one the JS toggle flips between by default, and a host page can
+        // retarget it with the bit-theme-light / bit-theme-dark attributes, so it is left to the page: such a
+        // host stays in charge of what "light" and "dark" mean. Every other pair names both of its themes
+        // outright, and is made the active one first - a no-op once it is - so the toggle flips within it
+        // whatever pair the page started on.
+        if (light != BitThemePresets.Light || dark != BitThemePresets.Dark)
         {
-            // The core light/dark pair is the one the JS toggle flips between by default, and a host page can
-            // retarget it with the bit-theme-light / bit-theme-dark attributes. Going through the manager
-            // therefore leaves such a host in charge of what "light" and "dark" mean; every other pair names
-            // both of its themes outright, so there is nothing to defer to and they are set directly.
-            applied = await _themeManager.ToggleDarkLightAsync();
+            await _themeManager.SetThemePairAsync(light, dark);
         }
-        else
-        {
-            await _themeManager.SetThemeAsync(target);
-            applied = target;
-        }
+
+        var applied = await _themeManager.ToggleDarkLightAsync();
 
         // Nothing to re-render for: which of the two buttons is visible follows the document's own bit-theme
         // attribute in CSS, and the design system is unchanged by definition.

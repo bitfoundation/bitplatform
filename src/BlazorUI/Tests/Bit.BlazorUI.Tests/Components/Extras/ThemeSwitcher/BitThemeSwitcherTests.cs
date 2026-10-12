@@ -111,6 +111,72 @@ public class BitThemeSwitcherTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitThemeSwitcherShouldSwitchTheLightDarkPairWhenADesignSystemIsPicked()
+    {
+        RegisterServices();
+        string? changed = null;
+
+        var component = RenderComponent<BitThemeSwitcher>(parameters =>
+        {
+            parameters.Add(p => p.OnChange, (string theme) => changed = theme);
+        });
+
+        component.FindAll(".bit-drp-itm").Single(i => i.TextContent.Trim() == "Material").Click();
+
+        // The design system is the pair, so it goes through setPair - which carries the scheme over and keeps a
+        // visitor who follows the OS following it - rather than pinning one theme of it with set (#13687).
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.Theme.setPair");
+        Assert.AreEqual(BitThemePresets.MaterialLight, invocation.Arguments[0]);
+        Assert.AreEqual(BitThemePresets.MaterialDark, invocation.Arguments[1]);
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Theme.set");
+
+        Assert.AreEqual("Material", SelectedDesignSystem(component));
+        Assert.IsNotNull(changed);
+    }
+
+    [TestMethod]
+    public void BitThemeSwitcherShouldToggleWithinThePairOfTheAppliedDesignSystem()
+    {
+        RegisterServices();
+        Context.JSInterop.Setup<string?>("BitBlazorUI.Theme.get").SetResult(BitThemePresets.MaterialDark);
+        Context.JSInterop.Setup<string?>("BitBlazorUI.Theme.toggleDarkLight").SetResult(BitThemePresets.MaterialLight);
+        string? changed = null;
+
+        var component = RenderComponent<BitThemeSwitcher>(parameters =>
+        {
+            parameters.Add(p => p.OnChange, (string theme) => changed = theme);
+        });
+
+        component.Find(".bit-ths-lgt").Click();
+
+        // The page may have started on another pair, so the applied design system's pair is made the active one
+        // before the toggle flips within it.
+        var pair = Context.JSInterop.VerifyInvoke("BitBlazorUI.Theme.setPair");
+        Assert.AreEqual(BitThemePresets.MaterialLight, pair.Arguments[0]);
+        Assert.AreEqual(BitThemePresets.MaterialDark, pair.Arguments[1]);
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.Theme.toggleDarkLight");
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Theme.set");
+
+        Assert.AreEqual(BitThemePresets.MaterialLight, changed);
+    }
+
+    [TestMethod]
+    public void BitThemeSwitcherShouldLeaveTheCorePairToThePage()
+    {
+        RegisterServices();
+        Context.JSInterop.Setup<string?>("BitBlazorUI.Theme.get").SetResult(BitThemePresets.Dark);
+
+        var component = RenderComponent<BitThemeSwitcher>();
+
+        component.Find(".bit-ths-lgt").Click();
+
+        // A host page can retarget the core pair with bit-theme-light / bit-theme-dark, so the toggle defers to
+        // whatever pair is active rather than imposing light / dark on it.
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Theme.setPair");
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.Theme.toggleDarkLight");
+    }
+
+    [TestMethod]
     public void BitThemeSwitcherShouldOfferCustomDesignSystems()
     {
         RegisterServices();
