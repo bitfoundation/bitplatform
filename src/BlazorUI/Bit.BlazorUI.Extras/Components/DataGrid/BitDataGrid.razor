@@ -570,6 +570,15 @@
         <Virtualize Items="GetRowsAfter(rows, head)" ItemSize="RowHeight" Context="item" TItem="TItem">
             <BitDataGridRow TItem="TItem" Grid="this" Item="item" @key="GetKey(item)" />
         </Virtualize>
+        if (rows.Count > head)
+        {
+            @* From .NET 11 Virtualize writes its spacers' heights into a data attribute that only its JS turns into a
+               height, so before the grid is interactive (and for good under static rendering) the rows after the
+               window would take no room and the scroll height would be a window's. This spacer reserves them in
+               the meantime; the stylesheet shows it only while a spacer of Virtualize's has its height pending, so
+               it never adds to one an older Virtualize wrote inline or one its JS has applied. *@
+            <div class="bit-dtg-vsp" style="height: @(SpacerHeight(rows.Count - head))px;" aria-hidden="true"></div>
+        }
     }
 
     // The skeleton row standing in for a row still being read, cached: it is rendered once per row of a window.

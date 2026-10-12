@@ -337,6 +337,19 @@ $dtg-private-properties:
     justify-content: right;
 }
 
+/* The spacer a virtualized grid reserves the rows after its window with until Virtualize's JS has given its own
+   spacers their heights (.NET 11 renders them as data-blazor-virtualize-reserved-height, applied by its JS as an
+   inline height). Hidden otherwise: under an older Virtualize, whose spacers carry the inline height from the
+   start, and once the JS has run, it would reserve the same rows twice. */
+.bit-dtg-vsp {
+    display: none;
+    flex-shrink: 0;
+}
+
+.bit-dtg-body > [data-blazor-virtualize-reserved-height]:not([style*="height"]) ~ .bit-dtg-vsp {
+    display: block;
+}
+
 /* Striping, hover, editing and selection. The grid-level switches (Striped, Hoverable) are flags on the root,
    reset on every root, so a grid nested in a detail row keeps its own. */
 .bit-dtg-body > .bit-dtg-row:nth-child(even) {
