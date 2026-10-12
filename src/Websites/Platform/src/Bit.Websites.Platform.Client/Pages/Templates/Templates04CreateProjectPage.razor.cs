@@ -5,7 +5,7 @@ namespace Bit.Websites.Platform.Client.Pages.Templates;
 
 public partial class Templates04CreateProjectPage
 {
-    private const int QuestionCount = 16;
+    private const int QuestionCount = 17;
 
     private static readonly ProjectSetup pageDefaults = new() { SignalR = true, Captcha = "reCaptcha" };
     private static readonly ProjectSetup realProduct = WithPageDefaults(ProjectSetup.RealProduct());
@@ -27,6 +27,14 @@ public partial class Templates04CreateProjectPage
         ProjectOptionCatalog.Get("realProject")
     ];
 
+    private static readonly BitAccordionClassStyles summaryRowClasses = new()
+    {
+        Root = "summary-accordion",
+        Header = "summary-header",
+        Title = "summary-title",
+        Content = "summary-content"
+    };
+
     private ProjectSetup setup = pageDefaults.Clone();
     private Step[] steps = [];
     private int stepIndex;
@@ -36,6 +44,7 @@ public partial class Templates04CreateProjectPage
     private readonly HashSet<string> touched = [];
     private readonly List<string> purposeKeys = [];
     private Faq? openFaq;
+    private int? openSummaryRow;
 
     private Step CurrentStep => steps[stepIndex];
 
@@ -92,6 +101,7 @@ public partial class Templates04CreateProjectPage
     {
         stepIndex = Math.Clamp(index, 0, QuestionCount);
         openFaq = null;
+        openSummaryRow = null;
         focusQuestion = true;
     }
 
@@ -149,16 +159,13 @@ public partial class Templates04CreateProjectPage
             CopyValue(ProjectOptionCatalog.Get(key), pageDefaults, setup);
         }
 
-        if (setup.Redis is false)
-        {
-            setup.Api = pageDefaults.Api;
-        }
-
         purposeKeys.Clear();
         purpose = null;
     }
 
     private void ToggleFaq(Faq faq) => openFaq = openFaq == faq ? null : faq;
+
+    private void ToggleSummaryRow(int index, bool expanded) => openSummaryRow = expanded ? index : openSummaryRow == index ? null : openSummaryRow;
 
     private static IEnumerable<AnswerPart> AnswerParts(string answer)
     {
@@ -212,11 +219,9 @@ public partial class Templates04CreateProjectPage
         ? purpose is not null
         : step.Groups.SelectMany(g => g.Keys).Any(touched.Contains);
 
-    private static bool IsShown(ChoiceGroup group) => group.IsVisible?.Invoke() ?? true;
-
     private List<EffectPart> EffectFor(ChoiceGroup group) => group.Effect?.Invoke() ?? EffectOf(group.Keys);
 
-    private List<EffectPart> StepEffect(Step step) => [.. step.Groups.Where(g => IsShown(g)).SelectMany(g => EffectFor(g))];
+    private List<EffectPart> StepEffect(Step step) => [.. step.Groups.SelectMany(EffectFor)];
 
     private List<EffectPart> EffectOf(IEnumerable<string> keys)
     {
@@ -278,7 +283,6 @@ public partial class Templates04CreateProjectPage
             return setup.Name;
 
         var answers = step.Groups
-            .Where(g => IsShown(g))
             .SelectMany(g => g.Answers.Where(a => a.IsChosen()))
             .Select(a => a.Summary ?? a.Text)
             .ToArray();
@@ -442,9 +446,9 @@ public partial class Templates04CreateProjectPage
         new()
         {
             Key = "multitenant",
-            Label = "Many organizations",
+            Label = "Many organizations (multi-tenancy)",
             Question = "Will several companies or teams use it, each seeing only their own data?",
-            Help = "Try it in the admin panel demo: sign in as store-user@bitplatform.dev with password 123456.",
+            Help = "This is known as multi-tenancy. Try it in the admin panel demo: sign in as store-user@bitplatform.dev with password 123456.",
             Groups =
             [
                 new()
@@ -507,16 +511,18 @@ public partial class Templates04CreateProjectPage
                     Answers =
                     [
                         Pick("filesStorage", "Local", "On the server's own disk", "Simplest. Fine while one server is enough.", "Server's own disk"),
-                        Pick("filesStorage", "S3", "S3 compatible storage", "Amazon S3 or lookalikes such as DigitalOcean Spaces, Hetzner and Contabo."),
+                        Pick("filesStorage", "S3", "S3 compatible storage", "Amazon S3 or lookalikes such as Cloudflare R2, Hetzner or your own RustFS server."),
                         Pick("filesStorage", "AzureBlobStorage", "Azure Blob Storage", "Microsoft's cloud storage."),
-                        Pick("filesStorage", "Other", "Somewhere else", "Any other storage. You connect it yourself.", "Other storage")
+                        Pick("filesStorage", "Other", "Somewhere else", "FTP, SFTP, Google Cloud Storage and [many more](https://github.com/robinrodricks/FluentStorage#storage-providers).", "Other storage")
                     ]
                 }
             ],
             Faqs =
             [
                 new("Which S3 compatible services work?",
-                    "Any of them: Amazon S3, Cloudflare R2, DigitalOcean Spaces, Hetzner, Contabo and more. The API's `appsettings.json` has sample connection strings for them, and while you develop, Aspire runs RustFS on your machine."),
+                    "Any of them: Amazon S3, Cloudflare R2, Hetzner, DigitalOcean Spaces, Contabo, RustFS on your own server and more. The API's `appsettings.json` has sample connection strings for them, and while you develop, Aspire runs RustFS on your machine."),
+                new("Which other storages can I use?",
+                    "Uploaded files go through FluentStorage, so the app works the same on FTP, SFTP, Google Cloud Storage and [many more storages](https://github.com/robinrodricks/FluentStorage#storage-providers). Only the storage setup changes: pick \"Somewhere else\", then ask your AI assistant, for example `/ai-dlc store uploaded files on our FTP server`."),
                 new("Can I move uploaded files from the server's disk to S3 later?",
                     "Yes. Write this prompt: `/ai-dlc switch file storage from the server's disk to S3`. Uploaded files keep their paths, so the ones you already have move over as they are.")
             ]
@@ -562,41 +568,8 @@ public partial class Templates04CreateProjectPage
                     Keys = ["redis"],
                     Answers =
                     [
-                        new()
-                        {
-                            Text = "No, one server is enough",
-                            Hint = "Right for most new apps.",
-                            Summary = "One server",
-                            IsNone = true,
-                            IsChosen = () => setup.Redis is false,
-                            Choose = () =>
-                            {
-                                setup.Redis = false;
-                                setup.Api = pageDefaults.Api;
-                            },
-                            IsRecommended = () => Baseline.Redis is false
-                        },
-                        new()
-                        {
-                            Text = "Yes, lots of people, maybe several servers",
-                            Hint = "Adds shared caching and fast background jobs, so it can run on more than one server.",
-                            Summary = "Lots of people, several servers",
-                            IsChosen = () => setup.Redis,
-                            Choose = () => setup.Redis = true,
-                            IsRecommended = () => Baseline.Redis
-                        }
-                    ]
-                },
-                new()
-                {
-                    Prompt = "Should the API run on its own server?",
-                    FollowUp = true,
-                    Keys = ["api"],
-                    IsVisible = () => setup.Redis,
-                    Answers =
-                    [
-                        Pick("api", "Integrated", "No, one server for everything", "The website and the API deploy together.", "API on the same server"),
-                        Pick("api", "Standalone", "Yes, a separate API server", "Deploy and grow the website and the API on their own.", "API on its own server")
+                        Switch("redis", false, "No, one server is enough", "Right for most new apps.", "One server"),
+                        Switch("redis", true, "Yes, lots of people, maybe several servers", "Adds shared caching and fast background jobs, so it can run on more than one server.", "Lots of people, several servers")
                     ]
                 }
             ],
@@ -663,49 +636,6 @@ public partial class Templates04CreateProjectPage
         },
         new()
         {
-            Key = "captcha",
-            Label = "Bot protection",
-            Question = "Should sign-up be protected from bots?",
-            Groups =
-            [
-                new()
-                {
-                    Keys = ["captcha"],
-                    Answers =
-                    [
-                        Pick("captcha", "reCaptcha", "Yes, with Google reCAPTCHA", "Checks for bots when people sign up.", "Google reCAPTCHA"),
-                        Pick("captcha", "None", "No", "Keeps signing up as quick as possible.", "No bot check", none: true)
-                    ]
-                }
-            ],
-            Links = [new("Try a protected sign-up page", "https://todo.bitplatform.dev/sign-up")]
-        },
-        new()
-        {
-            Key = "ads",
-            Label = "Rewarded ads",
-            Question = "Will you show rewarded ads?",
-            Groups =
-            [
-                new()
-                {
-                    Keys = ["ads"],
-                    Answers =
-                    [
-                        Switch("ads", false, "No", "No ads in the app.", "No ads"),
-                        Switch("ads", true, "Yes, Google rewarded ads", "People watch an ad in return for something you give them, such as a premium plan you build.", "Reward-based Google ads")
-                    ]
-                }
-            ],
-            Links = [new("See it live", "https://adminpanel.bitplatform.dev/settings/UpgradeAccount")],
-            Faqs =
-            [
-                new("How do the rewarded ads work?",
-                    "They use Google Ad Manager's rewarded ads on the Upgrade account page in settings: once people agree to ads, they watch one and see a thank you message. What they get for it is yours to build, since the template doesn't grant or save anything. Replace Google's sample ad unit in `appsettings.json` with your own.")
-            ]
-        },
-        new()
-        {
             Key = "crashes",
             Label = "Crash reports",
             Question = "How do you want to hear about crashes?",
@@ -717,8 +647,8 @@ public partial class Templates04CreateProjectPage
                     Answers =
                     [
                         Monitoring(false, false, "Not now", "No outside service for now.", "No crash reports"),
-                        Monitoring(true, false, "Sentry", "Errors and crashes from every app, collected in Sentry."),
-                        Monitoring(false, true, "Application Insights", "Logs and errors from the server and the apps, collected in Microsoft Azure."),
+                        Monitoring(true, false, "Sentry", "Errors and crashes from the server and every app, native Android and iOS crashes included, collected in Sentry."),
+                        Monitoring(false, true, "Application Insights", "Logs and errors from the server and the web app, collected in Microsoft Azure."),
                         Monitoring(true, true, "Both", "Sentry and Application Insights together.", "Sentry and Application Insights")
                     ]
                 }
@@ -726,7 +656,9 @@ public partial class Templates04CreateProjectPage
             Faqs =
             [
                 new("Sentry or Application Insights?",
-                    "Sentry collects errors and crashes from the server and every app, Android, iOS and Windows included. Application Insights runs on Azure and collects the server's logs and requests, plus page views and errors from the web app. Pick Sentry if crashes in the apps matter most. You can turn on both.")
+                    "Sentry collects errors and crashes from the server and every app, including the Windows app and native Android and iOS crashes. Application Insights runs on Azure and collects the server's logs and requests, plus page views and errors from the web app. Pick Sentry if crashes in the apps matter most."),
+                new("Can I use both?",
+                    "Yes. Pick \"Both\", then ask your AI assistant to split the work between them, for example `/ai-dlc use Application Insights for the server and the web app, and Sentry for the Android and iOS apps`.")
             ]
         },
         new()
@@ -753,7 +685,27 @@ public partial class Templates04CreateProjectPage
                 new("What do the GitHub pipelines do?",
                     "On every pull request, CI checks the code style, builds everything and runs the tests. On every push to `main` or `test`, CD deploys the web app, and the API when it runs on its own server, to Azure App Service, and builds a signed Windows installer and Android and iOS packages for you to download. Store uploads are up to you."),
                 new("Where can I deploy my project?",
-                    "The pipelines deploy to Azure App Service by default, but the server is a regular ASP.NET Core app: it runs on AWS, Google Cloud, your own Linux servers, Windows with IIS, Docker or Kubernetes.")
+                    "The pipelines deploy to Azure App Service by default, but the server is a regular ASP.NET Core app: it runs on AWS, Google Cloud, your own Linux servers, Windows with IIS, Docker or Kubernetes."),
+                new("My code is on GitLab. What should I pick?",
+                    "Pick \"GitHub, I'll create the repo myself\" and use its workflows in `.github/workflows` as a starting point. Most of their steps are plain command line commands, so your AI assistant can turn them into GitLab, Bitbucket or Jenkins pipelines, for example `/ai-dlc create GitLab pipelines that do what the GitHub workflows do`.")
+            ]
+        },
+        new()
+        {
+            Key = "api",
+            Label = "Website and API publishing",
+            Question = "Should the website and the API be published together or separately?",
+            Groups =
+            [
+                new()
+                {
+                    Keys = ["api"],
+                    Answers =
+                    [
+                        Pick("api", "Integrated", "Together", "Easier. One publish sends out both the website and the API.", "Published together"),
+                        Pick("api", "Standalone", "Separately", "More advanced. The website and the API are published on their own, so each can be updated and grown without the other.", "Published separately")
+                    ]
+                }
             ]
         },
         new()
@@ -795,6 +747,49 @@ public partial class Templates04CreateProjectPage
                     "Yes. Give the project's rebrand skill whatever reference you have, for example `/rebrand Make the app look like https://contoso.com`, `/rebrand Use our Figma design: <link to the file>`, `/rebrand Follow our brand book in docs/brand-book.pdf` or `/rebrand Calm and modern, our brand color is #0F766E`."),
                 new("Can I switch to another theme later?",
                     "Yes. Write this prompt: `/rebrand Switch the app to the Material theme`.")
+            ]
+        },
+        new()
+        {
+            Key = "captcha",
+            Label = "Bot protection",
+            Question = "Should sign-up be protected from bots?",
+            Groups =
+            [
+                new()
+                {
+                    Keys = ["captcha"],
+                    Answers =
+                    [
+                        Pick("captcha", "reCaptcha", "Yes, with Google reCAPTCHA", "Checks for bots when people sign up.", "Google reCAPTCHA"),
+                        Pick("captcha", "None", "No", "Keeps signing up as quick as possible.", "No bot check", none: true)
+                    ]
+                }
+            ],
+            Links = [new("Try a protected sign-up page", "https://todo.bitplatform.dev/sign-up")]
+        },
+        new()
+        {
+            Key = "ads",
+            Label = "Rewarded ads",
+            Question = "Will you show rewarded ads?",
+            Groups =
+            [
+                new()
+                {
+                    Keys = ["ads"],
+                    Answers =
+                    [
+                        Switch("ads", false, "No", "No ads in the app.", "No ads"),
+                        Switch("ads", true, "Yes, Google rewarded ads", "People watch an ad in return for something you give them, such as a premium plan you build.", "Reward-based Google ads")
+                    ]
+                }
+            ],
+            Links = [new("See it live", "https://adminpanel.bitplatform.dev/settings/UpgradeAccount")],
+            Faqs =
+            [
+                new("How do the rewarded ads work?",
+                    "They use Google Ad Manager's rewarded ads on the Upgrade account page in settings: once people agree to ads, they watch one and see a thank you message. What they get for it is yours to build, since the template doesn't grant or save anything. Replace Google's sample ad unit in `appsettings.json` with your own.")
             ]
         },
         new()
@@ -853,6 +848,9 @@ public partial class Templates04CreateProjectPage
 
     private sealed class Answer
     {
+        private static int count;
+
+        public string HintId { get; } = $"answer-hint-{Interlocked.Increment(ref count)}";
         public required string Text { get; init; }
         public string? Hint { get; init; }
         public string? Summary { get; init; }
@@ -866,10 +864,8 @@ public partial class Templates04CreateProjectPage
     private sealed class ChoiceGroup
     {
         public string? Prompt { get; init; }
-        public bool FollowUp { get; init; }
         public bool Multiple { get; init; }
         public string[] Keys { get; init; } = [];
-        public Func<bool>? IsVisible { get; init; }
         public Func<List<EffectPart>>? Effect { get; init; }
         public required Answer[] Answers { get; init; }
     }
