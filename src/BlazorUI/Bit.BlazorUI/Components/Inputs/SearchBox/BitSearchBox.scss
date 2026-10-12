@@ -147,6 +147,12 @@ $srb-private-properties: siz-height, siz-fontsize, siz-iconsize, siz-cbt-iconsiz
             color: var(--bit-srb-dis-clr);
         }
 
+        // The input paints its own text apart from the field around it, so it greys out apart from it too.
+        .bit-srb-inp {
+            color: var(--bit-srb-dis-clr);
+            @include input-placeholder(var(--bit-srb-dis-clr));
+        }
+
         .bit-srb-des {
             color: $clr-fg-dis;
         }
@@ -343,12 +349,7 @@ $srb-private-properties: siz-height, siz-fontsize, siz-iconsize, siz-cbt-iconsiz
     color: var(--bit-SearchBox-color, #{$clr-fg-pri});
     padding: 0 var(--bit-SearchBox-padding, #{spacing(1)});
 
-    // Left to the browser, the placeholder is a light gray that misses the 4.5:1 of WCAG 1.4.3 on most
-    // surfaces, and a placeholder is regularly the only hint of what the field expects.
-    &::placeholder {
-        opacity: 1; // Firefox dims it on top of its color, which would undo the token below.
-        color: var(--bit-SearchBox-placeholder-color, #{$clr-fg-sec});
-    }
+    @include input-placeholder(var(--bit-SearchBox-placeholder-color, #{$clr-fg-sec}));
 
     // WebKit draws a clear button and a pair of result decorations of its own inside a search input.
     // The component owns that affordance, so the native ones are removed instead of showing twice.

@@ -24,7 +24,7 @@
 //   --bit-OtpInput-filled-border-color     rule of a box that holds a character          (default: the rest rule)
 //   --bit-OtpInput-focus-border-color      box rule while focused                        (default: $clr-pri)
 //   --bit-OtpInput-focus-color             focus ring color                              (default: $clr-pri-focus)
-//   --bit-OtpInput-placeholder-color       hint character of an empty box                (default: $clr-fg-ter)
+//   --bit-OtpInput-placeholder-color       hint character of an empty box                (default: $clr-fg-sec)
 //   --bit-OtpInput-label-color             label above the boxes                         (default: $clr-fg-pri)
 //   --bit-OtpInput-description-color       helper text under the boxes                   (default: $clr-fg-sec)
 //   --bit-OtpInput-separator-color         text drawn between the groups                 (default: $clr-fg-sec)
@@ -206,9 +206,7 @@ $otp-private-properties: size, fontsize, dsc-fontsize, clr, clr-focus;
     background-color: var(--bit-otp-inp-sbg, var(--bit-OtpInput-background, var(--bit-otp-bg)));
     transition: border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
-    &::placeholder {
-        color: var(--bit-OtpInput-placeholder-color, #{$clr-fg-ter});
-    }
+    @include input-placeholder(var(--bit-OtpInput-placeholder-color, #{$clr-fg-sec}));
 
     //a box that already holds a character, which is the hook for a row that shows its own progress. Both
     //of its colors fall back to the ones of the rest state, so nothing changes until one of the two is set.
@@ -483,9 +481,7 @@ $otp-private-properties: size, fontsize, dsc-fontsize, clr, clr-focus;
 
         //the hint of an empty box is a part of the field, so it has to be dimmed along with it instead of
         //staying the only thing in the component that still reads as enabled.
-        &::placeholder {
-            color: var(--bit-OtpInput-disabled-color, #{$clr-fg-dis});
-        }
+        @include input-placeholder(var(--bit-OtpInput-disabled-color, #{$clr-fg-dis}));
     }
 
     //a disabled component is out of the flow the wait belongs to, so the bar is dimmed along with the rest

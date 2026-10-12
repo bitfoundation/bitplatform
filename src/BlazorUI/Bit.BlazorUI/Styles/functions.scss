@@ -327,3 +327,34 @@ $html-font-size: 16px;
     border-color: Canvas;
     border-block-start-color: GrayText;
 }
+
+/*
+ * input-placeholder($color)
+ * --------------------------------------------------
+ * The hint an input or a textarea shows while it is empty, painted from the theme rather than left
+ * to the browser, whose own grey is not derived from the theme and misses the 4.5:1 of WCAG 1.4.3
+ * on most surfaces, dark ones above all. Every placeholder of the library is painted through it.
+ *   - $color is the component's public placeholder variable with $clr-fg-sec as its fallback: a
+ *     placeholder is often the only hint of what a field expects, so it is held to the floor of
+ *     text, which the subtle $clr-fg-ter misses on the tertiary surface.
+ *   - Included again in the component's disabled state with its disabled color, so the hint of an
+ *     empty disabled field greys out with the rest of it instead of being the one part that still
+ *     reads as live.
+ *   - Firefox dims a placeholder with an opacity of its own on top of its color, which would darken
+ *     the themed one below the floor again, so that is reset.
+ *
+ * Usage:
+ *   .bit-xyz-inp {
+ *       @include input-placeholder(var(--bit-Xyz-placeholder-color, #{$clr-fg-sec}));
+ *   }
+ *
+ *   .bit-xyz.bit-dis .bit-xyz-inp {
+ *       @include input-placeholder(var(--bit-Xyz-disabled-color, #{$clr-fg-dis}));
+ *   }
+ */
+@mixin input-placeholder($color) {
+    &::placeholder {
+        opacity: 1;
+        color: $color;
+    }
+}

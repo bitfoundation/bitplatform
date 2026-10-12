@@ -566,6 +566,7 @@ private readonly BitCircularTimePickerParams[] bookingPickerParams =
         --bit-CircularTimePicker-border-radius: 1rem;
         --bit-CircularTimePicker-input-background: #f4efff;
         --bit-CircularTimePicker-input-color: #3a2358;
+        --bit-CircularTimePicker-placeholder-color: #6b3fa0;
         --bit-CircularTimePicker-callout-radius: 1.25rem;
         --bit-CircularTimePicker-clock-background: #f4efff;
         --bit-CircularTimePicker-number-color: #3a2358;

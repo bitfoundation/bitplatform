@@ -98,6 +98,7 @@ $nfl-private-properties: height, fontsize, label-fontsize, icon-size, btn-width,
             cursor: default;
             color: var(--bit-NumberField-disabled-color, #{$clr-fg-dis});
             background: var(--bit-NumberField-disabled-background, #{$clr-bg-dis});
+            @include input-placeholder(var(--bit-NumberField-disabled-color, #{$clr-fg-dis}));
         }
 
         .bit-nfl-pre,
@@ -321,9 +322,7 @@ $nfl-private-properties: height, fontsize, label-fontsize, icon-size, btn-width,
     border-start-end-radius: 0;
     border-end-end-radius: 0;
 
-    &::placeholder {
-        color: var(--bit-NumberField-placeholder-color, #{$clr-fg-sec});
-    }
+    @include input-placeholder(var(--bit-NumberField-placeholder-color, #{$clr-fg-sec}));
 }
 
 .bit-nfl-cbt {
