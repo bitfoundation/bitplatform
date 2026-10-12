@@ -38,6 +38,11 @@ public class BitNavClassStyles
     public string? ItemContainer { get; set; }
 
     /// <summary>
+    /// Custom CSS classes/styles for the item badge (or the dot) of the BitNav.
+    /// </summary>
+    public string? ItemBadge { get; set; }
+
+    /// <summary>
     /// Custom CSS classes/styles for the item icon of the BitNav.
     /// </summary>
     public string? ItemIcon { get; set; }
@@ -46,6 +51,11 @@ public class BitNavClassStyles
     /// Custom CSS classes/styles for the item text of the BitNav.
     /// </summary>
     public string? ItemText { get; set; }
+
+    /// <summary>
+    /// Custom CSS classes/styles for the item suffix of the BitNav, the end of the item that holds its suffix template and its badge.
+    /// </summary>
+    public string? ItemSuffix { get; set; }
 
     /// <summary>
     /// Custom CSS classes/styles for the selected item container of the BitNav.

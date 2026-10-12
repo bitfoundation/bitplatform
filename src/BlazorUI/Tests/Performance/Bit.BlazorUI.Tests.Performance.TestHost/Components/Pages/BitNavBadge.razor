@@ -1,0 +1,73 @@
+﻿@page "/regression/nav-badge"
+
+<PageTitle>BitNav Badge Regression</PageTitle>
+
+@* The badge, the dot and the suffix template of a nav item, laid out in a nav of a fixed width: left to right, right to
+   left, as a rail of icons, and after a template rendered in the Normal mode. The badge colors and the state colors are
+   distinct rgb() values, so a test can tell that the badge keeps its own colors in every state of the item. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>BitNav Badge Regression</h3>
+    <p>Status: <span id="status">@_status</span></p>
+</div>
+
+<div id="theme" style="@ThemeStyle">
+    <section id="ltr">
+        <BitNav TItem="BitNavItem" Items="_items" DefaultSelectedItem="_items[0]" Mode="BitNavMode.Manual" Style="width: 240px">
+            <ItemSuffixTemplate Context="item">
+                @if (item.Data is string shortcut)
+                {
+                    <span class="suffix" aria-hidden="true">@shortcut</span>
+                }
+            </ItemSuffixTemplate>
+        </BitNav>
+    </section>
+
+    <section id="rtl">
+        <BitNav TItem="BitNavItem" Items="_items" DefaultSelectedItem="_items[0]" Mode="BitNavMode.Manual" Style="width: 240px" Dir="BitDir.Rtl" />
+    </section>
+
+    @* No Dir of its own: the direction is inherited from the page around it. *@
+    <section id="rtl-inherited" dir="rtl">
+        <BitNav TItem="BitNavItem" Items="_items" DefaultSelectedItem="_items[0]" Mode="BitNavMode.Manual" Style="width: 240px" />
+    </section>
+
+    <section id="rail">
+        <BitNav TItem="BitNavItem" Items="_items" DefaultSelectedItem="_items[0]" Mode="BitNavMode.Manual" IconOnly />
+    </section>
+
+    <section id="template">
+        <BitNav TItem="BitNavItem" Items="_items" DefaultSelectedItem="_items[0]" Mode="BitNavMode.Manual" Style="width: 240px">
+            <ItemTemplate Context="item">
+                <span class="custom">@item.Text</span>
+            </ItemTemplate>
+        </BitNav>
+    </section>
+</div>
+
+@code {
+    private const string ThemeStyle =
+        "--bit-Nav-badge-color: rgb(1, 2, 3);" +
+        "--bit-Nav-badge-background: rgb(4, 5, 6);" +
+        "--bit-Nav-hover-background: rgb(0, 0, 200);" +
+        "--bit-Nav-hover-color: rgb(255, 255, 255);" +
+        "--bit-Nav-selected-background: rgb(0, 100, 0);" +
+        "--bit-Nav-selected-color: rgb(255, 255, 3);";
+
+    private readonly List<BitNavItem> _items =
+    [
+        new() { Key = "inbox", Text = "Inbox", IconName = BitIconName.Inbox, Badge = "12", Data = "Ctrl+I" },
+        new() { Key = "long", Text = "An item whose text is far too long to fit beside its badge", IconName = BitIconName.Mail, Badge = "New" },
+        new() { Key = "dot", Text = "Sent", IconName = BitIconName.Send, Dot = true },
+        new() { Key = "plain", Text = "Archive", IconName = BitIconName.Archive },
+    ];
+
+    private string _status = "Loading";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+}

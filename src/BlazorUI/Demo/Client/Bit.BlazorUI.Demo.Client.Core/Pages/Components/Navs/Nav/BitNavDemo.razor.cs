@@ -153,6 +153,13 @@ public partial class BitNavDemo
         },
         new()
         {
+            Name = "ItemSuffixTemplate",
+            Type = "RenderFragment<TItem>?",
+            DefaultValue = "null",
+            Description = "Used to render custom content at the end of every item, after its text and ahead of its badge, while the item keeps its default content. The SuffixTemplate of an item wins over it. It is rendered inside the item's anchor (or button), so it holds content to look at and never a control of its own; group headers, separators, items replaced by their template and the IconOnly nav do not render it.",
+        },
+        new()
+        {
             Name = "ItemTemplate",
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",
@@ -518,6 +525,18 @@ public partial class BitNavDemo
             DefaultValue = "--bit-clr-brd-sec",
             Description = "Color of a separator item.",
         },
+        new()
+        {
+            Name = "--bit-Nav-badge-color",
+            DefaultValue = "--bit-clr-err-text",
+            Description = "Text color of the badge of an item; it keeps it in every state of the item.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-badge-background",
+            DefaultValue = "--bit-clr-err",
+            Description = "Fill of the badge and the dot of an item; it keeps it in every state of the item.",
+        },
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =
@@ -598,6 +617,20 @@ public partial class BitNavDemo
                },
                new()
                {
+                   Name = "Badge",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The badge text to render after the text of the nav item, for a count or a short status (\"3\", \"New\"). The item keeps its icon, its text and its states, and a template in the Normal mode keeps it too. Wins over Dot. Group headers, separators and a template in the Replace mode do not render it; the IconOnly nav pins it to the corner of the icon.",
+               },
+               new()
+               {
+                   Name = "BadgeAriaLabel",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The accessible description of the badge (or the dot) of the nav item, folded into its accessible name (\"Inbox (3 unread)\"). It falls back to the Badge text, and a Dot is only announced while this is set.",
+               },
+               new()
+               {
                    Name = "Class",
                    Type = "string?",
                    DefaultValue = "null",
@@ -630,6 +663,13 @@ public partial class BitNavDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "The description for the nav item.",
+               },
+               new()
+               {
+                   Name = "Dot",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Renders a small dot after the text of the nav item, to mark it as needing attention without showing a number. Ignored while Badge is set.",
                },
                new()
                {
@@ -714,6 +754,13 @@ public partial class BitNavDemo
                },
                new()
                {
+                   Name = "SuffixTemplate",
+                   Type = "RenderFragment<BitNavItem>?",
+                   DefaultValue = "null",
+                   Description = "The custom template to render at the end of the nav item, after its text and ahead of its badge, while the item keeps its default content. Wins over the ItemSuffixTemplate of the nav. It holds content to look at, never a control of its own, and the IconOnly nav does not render it.",
+               },
+               new()
+               {
                    Name = "Target",
                    Type = "string?",
                    DefaultValue = "null",
@@ -789,6 +836,20 @@ public partial class BitNavDemo
                },
                new()
                {
+                   Name = "Badge",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The badge text to render after the text of the nav option, for a count or a short status (\"3\", \"New\"). The option keeps its icon, its text and its states, and a template in the Normal mode keeps it too. Wins over Dot. Group headers, separators and a template in the Replace mode do not render it; the IconOnly nav pins it to the corner of the icon.",
+               },
+               new()
+               {
+                   Name = "BadgeAriaLabel",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "The accessible description of the badge (or the dot) of the nav option, folded into its accessible name (\"Inbox (3 unread)\"). It falls back to the Badge text, and a Dot is only announced while this is set.",
+               },
+               new()
+               {
                    Name = "Class",
                    Type = "string?",
                    DefaultValue = "null",
@@ -821,6 +882,13 @@ public partial class BitNavDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "The description for the nav option.",
+               },
+               new()
+               {
+                   Name = "Dot",
+                   Type = "bool",
+                   DefaultValue = "false",
+                   Description = "Renders a small dot after the text of the nav option, to mark it as needing attention without showing a number. Ignored while Badge is set.",
                },
                new()
                {
@@ -905,6 +973,13 @@ public partial class BitNavDemo
                },
                new()
                {
+                   Name = "SuffixTemplate",
+                   Type = "RenderFragment<BitNavOption>?",
+                   DefaultValue = "null",
+                   Description = "The custom template to render at the end of the nav option, after its text and ahead of its badge, while the option keeps its default content. Wins over the ItemSuffixTemplate of the nav. It holds content to look at, never a control of its own, and the IconOnly nav does not render it.",
+               },
+               new()
+               {
                    Name = "Target",
                    Type = "string?",
                    DefaultValue = "null",
@@ -980,6 +1055,20 @@ public partial class BitNavDemo
                },
                new()
                {
+                   Name = "Badge",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitNavItem.Badge))",
+                   Description = "The Badge field name and selector of the custom input class.",
+               },
+               new()
+               {
+                   Name = "BadgeAriaLabel",
+                   Type = "BitNameSelectorPair<TItem, string?>",
+                   DefaultValue = "new(nameof(BitNavItem.BadgeAriaLabel))",
+                   Description = "The BadgeAriaLabel field name and selector of the custom input class.",
+               },
+               new()
+               {
                    Name = "Class",
                    Type = "BitNameSelectorPair<TItem, string?>",
                    DefaultValue = "new(nameof(BitNavItem.Class))",
@@ -1012,6 +1101,13 @@ public partial class BitNavDemo
                    Type = "BitNameSelectorPair<TItem, string?>",
                    DefaultValue = "new(nameof(BitNavItem.Description))",
                    Description = "The Description field name and selector of the custom input class."
+               },
+               new()
+               {
+                   Name = "Dot",
+                   Type = "BitNameSelectorPair<TItem, bool?>",
+                   DefaultValue = "new(nameof(BitNavItem.Dot))",
+                   Description = "The Dot field name and selector of the custom input class.",
                },
                new()
                {
@@ -1093,6 +1189,13 @@ public partial class BitNavDemo
                    Type = "BitNameSelectorPair<TItem, string?>",
                    DefaultValue = "new(nameof(BitNavItem.Style))",
                    Description = "The Style field name and selector of the custom input class."
+               },
+               new()
+               {
+                   Name = "SuffixTemplate",
+                   Type = "BitNameSelectorPair<TItem, RenderFragment<TItem>?>",
+                   DefaultValue = "new(nameof(BitNavItem.SuffixTemplate))",
+                   Description = "The SuffixTemplate field name and selector of the custom input class.",
                },
                new()
                {
@@ -1204,6 +1307,13 @@ public partial class BitNavDemo
                },
                new()
                {
+                   Name = "ItemBadge",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the item badge (or the dot) of the BitNav.",
+               },
+               new()
+               {
                    Name = "ItemIcon",
                    Type = "string?",
                    DefaultValue = "null",
@@ -1215,6 +1325,13 @@ public partial class BitNavDemo
                    Type = "string?",
                    DefaultValue = "null",
                    Description = "Custom CSS classes/styles for the item text of the BitNav."
+               },
+               new()
+               {
+                   Name = "ItemSuffix",
+                   Type = "string?",
+                   DefaultValue = "null",
+                   Description = "Custom CSS classes/styles for the item suffix of the BitNav, the end of the item that holds its suffix template and its badge.",
                },
                new()
                {

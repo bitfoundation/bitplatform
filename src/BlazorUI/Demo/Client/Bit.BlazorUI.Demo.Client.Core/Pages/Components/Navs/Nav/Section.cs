@@ -12,6 +12,10 @@ public class Section
     public List<Section> Links { get; set; } = [];
     public string? Comment { get; set; }
     public int? Count { get; set; }
+    public string? Status { get; set; }
+    public string? StatusLabel { get; set; }
+    public bool NeedsAttention { get; set; }
+    public string? Shortcut { get; set; }
     public string? OpenLabel { get; set; }
     public string? CloseLabel { get; set; }
     public BitNavMatch? UrlMatch { get; set; }
