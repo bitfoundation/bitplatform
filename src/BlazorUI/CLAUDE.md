@@ -20,6 +20,24 @@ branch that cannot be merged on its own.
 So: grep the whole repo to *find out* what a change reaches, and say so. Only write inside
 `src/BlazorUI`.
 
+## Every source file starts with a BOM
+
+`src/.editorconfig` sets `charset = utf-8-bom` for every file, and `SourceFilesBomTests` fails CI on any
+`.cs`, `.razor`, `.cshtml`, `.scss`, `.ts`, `.md`, `.xaml`, `.csproj`, `.props`, `.targets`, `.slnf` or
+`.slnx` under `src/BlazorUI` that does not start with the three bytes `EF BB BF`. `dotnet format` enforces
+the charset on C# only, and the Write tool, a shell heredoc or redirect, VS Code, `dotnet new` and npm
+scripts all save a new file without one - so this is the check that fails most often, and always on a
+file that was just created.
+
+- **Every new file of those extensions gets a BOM when it is created**, a test, a demo page, a stylesheet
+  or a doc alike. After writing it, check its first bytes (`head -c 3 <file> | xxd` shows `efbb bf`) and
+  prepend the BOM when they are missing (`printf '\xEF\xBB\xBF' | cat - <file> > <file>.tmp && mv <file>.tmp <file>`).
+- **Rewriting a file keeps its BOM.** Replacing a whole file through a tool or a script that drops it is the
+  same failure as creating one without it; check it again afterwards.
+- **An empty file is a dead file to delete**, never one to give a BOM.
+- A new extension that has to go without a BOM (a served asset, a manifest) is exempted in
+  `src/BlazorUI/.editorconfig`, never in the test's list.
+
 ## Razor comments
 
 **Never put a `@* ... *@` comment inside a tag, between its attributes.** It compiles, but the Razor
