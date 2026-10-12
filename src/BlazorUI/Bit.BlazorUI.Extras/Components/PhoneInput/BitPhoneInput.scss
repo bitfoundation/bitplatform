@@ -138,12 +138,7 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
 // the box-shadow the ring of the whole field is drawn with. The library resets the outline of every button,
 // so without it the two halves of the field would share one ring with nothing saying which of them has focus.
 @mixin phi-focus-inset {
-    outline: $shp-focus-ring-width $shp-border-style var(--bit-phi-focus, #{$clr-pri-focus});
-    outline-offset: calc(-1 * #{$shp-focus-ring-width});
-
-    @media (forced-colors: active) {
-        outline-color: Highlight;
-    }
+    @include focus-ring-inset(var(--bit-phi-focus, #{$clr-pri-focus}));
 }
 
 // A hover cue is drawn on a device that can hover only: on a touch screen it would stick to whatever was
@@ -714,10 +709,21 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
 
 // A phone number is written left to right wherever it is read, and the separators a mask inserts
 // ("(415) 555-0123") are neutral characters that a right-to-left paragraph would otherwise reorder
-// around the digits. The box itself stays on the right hand side of a right-to-left field.
-.bit-phi[dir="rtl"] .bit-phi-inp {
+// around the digits. The box itself stays on the right hand side of a right-to-left field - whatever made
+// it one: its Dir, the page's direction or its content's (Auto). The direction is read off the group the
+// input sits in: an input of type tel with no dir of its own is left to right by definition, so :dir()
+// never finds it right to left.
+.bit-phi-fgp:dir(rtl) > .bit-phi-inp {
     direction: ltr;
     text-align: right;
+}
+
+// An engine without :dir() is left with the dir attribute an explicit Dir renders on the field.
+@supports not selector(:dir(rtl)) {
+    .bit-phi[dir="rtl"] > .bit-phi-fgp > .bit-phi-inp {
+        direction: ltr;
+        text-align: right;
+    }
 }
 
 .bit-phi-req {

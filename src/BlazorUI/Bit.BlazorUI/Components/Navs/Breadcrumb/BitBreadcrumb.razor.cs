@@ -1464,7 +1464,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
                 isCalloutOpen: _isCalloutOpen,
                 responsiveMode: BitResponsiveMode.None,
                 dropDirection: BitDropDirection.TopAndBottom,
-                isRtl: Dir is BitDir.Rtl,
+                isRtl: ExplicitRtl,
                 scrollContainerId: _scrollContainerId,
                 scrollOffset: 0,
                 headerId: "",

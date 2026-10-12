@@ -59,11 +59,9 @@ public partial class BitVirtualizeStylesheetTests
         // The list clips what overflows it and the items are flush with each other, so the ring is drawn inside, as an
         // outline that is painted above the content of the item.
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n@mixin vir-focus-ring {"), "&:focus-visible {");
-        StringAssert.Contains(ring, "outline-offset: calc(-1 * #{$shp-focus-ring-width});");
-        Assert.IsFalse(ring.Contains("box-shadow"), "The ring is a box-shadow, which the content of an item covers.");
-
-        // The forced palette turns the ring into the system's own focus color.
-        StringAssert.Contains(ring, "outline: #{$shp-focus-ring-width} solid Highlight;");
+        // focus-ring-inset is that outline, and it turns into the system's own focus color in a forced palette.
+        StringAssert.Contains(ring, "@include focus-ring-inset(var(--bit-Virtualize-focus-color, #{$clr-pri-focus}));");
+        Assert.IsFalse(ring.Contains("$band"), "The ring is banded with a box-shadow, which the content of an item covers.");
 
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-vir {"), "@include vir-focus-ring;");
         StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-vir-itm {"), "@include vir-focus-ring;");

@@ -148,12 +148,7 @@ $clo-cal-private-properties: wid, mnw, mnw-def, mxw, mxh;
     // is drawn inside the callout rather than through the shared focus-ring mixin, whose box-shadow would
     // take the place of the elevation the callout is drawn with.
     &:focus-visible {
-        outline: $shp-focus-ring-width solid var(--bit-Callout-focus-color, #{$clr-pri-focus});
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
-
-        @media (forced-colors: active) {
-            outline-color: Highlight;
-        }
+        @include focus-ring-inset(var(--bit-Callout-focus-color, #{$clr-pri-focus}));
     }
 
     &[data-bit-cal-pos="above"] {
@@ -229,7 +224,9 @@ $clo-cal-private-properties: wid, mnw, mnw-def, mxw, mxh;
         overflow: hidden;
     }
 
-    &.bit-rtl {
+    // The direction the callout is laid out in - its Dir, or the page's or the content's it carries over to the
+    // body - with the class an explicit Dir renders for an engine without :dir().
+    &:is(.bit-rtl, :dir(rtl)) {
         --bit-clo-transform-factor: -1;
     }
 }

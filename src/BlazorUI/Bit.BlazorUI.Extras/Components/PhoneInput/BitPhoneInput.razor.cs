@@ -1779,7 +1779,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             isCalloutOpen: shown,
             responsiveMode: Responsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
             dropDirection: DropDirection,
-            isRtl: Dir is BitDir.Rtl,
+            isRtl: ExplicitRtl,
             scrollContainerId: _scrollContainerId,
             scrollOffset: NoSearchBox ? 0 : 32,
             headerId: "",

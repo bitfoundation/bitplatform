@@ -155,8 +155,7 @@
     // box-shadow sitting outside the box, and the scrolling region of the list clips everything that
     // falls outside of it, which would leave the focused button with no visible indicator at all.
     &:focus-visible {
-        outline: $shp-focus-ring-width solid var(--bit-BasicList-focus-color, #{$clr-pri-focus});
-        outline-offset: calc(-1 * #{$shp-focus-ring-width} - #{$shp-focus-ring-offset});
+        @include focus-ring-inset(var(--bit-BasicList-focus-color, #{$clr-pri-focus}), $offset: $shp-focus-ring-offset);
     }
 }
 

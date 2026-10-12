@@ -1548,6 +1548,30 @@ public class BitOtpInputTests : BunitTestContext
         Assert.AreEqual(2, keyDownIndex);
     }
 
+    // The horizontal arrows walk the row the way it is laid out: a Dir that names no direction leaves that to the page
+    // (unset) or to the content (Auto), which is read off the input for those keys alone.
+    [TestMethod,
+        DataRow(null, true, 2),
+        DataRow(BitDir.Auto, true, 2),
+        DataRow(BitDir.Rtl, false, 2),
+        DataRow(BitDir.Ltr, false, 0)
+    ]
+    public async Task BitOtpInputArrowLeftShouldFollowTheDirectionTheRowIsLaidOutIn(BitDir? dir, bool asked, int expected)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+            parameters.Add(p => p.Length, 3);
+        });
+
+        await com.FindAll(".bit-otp-inp")[1].KeyDownAsync(new KeyboardEventArgs { Code = "ArrowLeft", Key = "ArrowLeft" });
+
+        Assert.AreEqual(asked, Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.isRtl"));
+        var focused = (ElementReference)Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"][^1].Arguments[0]!;
+        Assert.AreEqual(com.Instance.InputElements[expected].Id, focused.Id);
+    }
+
     [TestMethod]
     public async Task BitOtpInputShouldClearASingleInputOnDeleteWithoutAutoShift()
     {

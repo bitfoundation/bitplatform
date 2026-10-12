@@ -653,26 +653,26 @@ $clp-private-properties:
 
 
 // A right-to-left picker mirrors every axis at once. The native range inputs already reverse themselves
-// under dir=rtl, so the gradients behind them have to follow or the fully transparent end of the alpha
-// track would sit under the position the thumb calls opaque.
-.bit-rtl {
-    &.bit-clp .bit-clp-light {
-        background: linear-gradient(to left, white 0%, transparent 100%);
-    }
+// in a right-to-left layout, so the gradients behind them have to follow or the fully transparent end of the
+// alpha track would sit under the position the thumb calls opaque. The direction is the one each part is laid
+// out in - a page's or a content's (Auto) as much as an explicit Dir - with the class an explicit Dir renders
+// read through child combinators for an engine without :dir(), so it never reaches a nested picker.
+.bit-clp-light:is(:dir(rtl), .bit-clp.bit-rtl > .bit-clp-rec > *) {
+    background: linear-gradient(to left, white 0%, transparent 100%);
+}
 
-    &.bit-clp .bit-clp-abg {
-        background: linear-gradient(to left, transparent 0%, var(--bit-clp-alpha-clr) 100%);
-    }
+.bit-clp-abg:is(:dir(rtl), .bit-clp.bit-rtl > .bit-clp-cnt > .bit-clp-sct > .bit-clp-asd > *) {
+    background: linear-gradient(to left, transparent 0%, var(--bit-clp-alpha-clr) 100%);
+}
 
-    &.bit-clp .bit-clp-hsd {
-        background: linear-gradient(to left, red 0%, #ff0 17%, lime 33%, cyan 50%, blue 66%, #f0f 83%, red 100%);
-    }
+.bit-clp-hsd:is(:dir(rtl), .bit-clp.bit-rtl > .bit-clp-cnt > .bit-clp-sct > *) {
+    background: linear-gradient(to left, red 0%, #ff0 17%, lime 33%, cyan 50%, blue 66%, #f0f 83%, red 100%);
+}
 
-    // The thumb is positioned from the inline-start edge, which is the right one here, so the half-width
-    // correction that centres it on its color has to point the other way too.
-    &.bit-clp .bit-clp-thumb {
-        transform: translate(50%, -50%);
-    }
+// The thumb is positioned from the inline-start edge, which is the right one here, so the half-width
+// correction that centres it on its color has to point the other way too.
+.bit-clp-thumb:is(:dir(rtl), .bit-clp.bit-rtl > .bit-clp-rec > *) {
+    transform: translate(50%, -50%);
 }
 
 

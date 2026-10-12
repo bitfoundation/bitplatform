@@ -11,6 +11,17 @@
 //   --bit-Pagination-button-color             label color of a button at rest                    (default: per Variant, from the primary role)
 //   --bit-Pagination-button-background        fill of a button at rest                           (default: per Variant, from the primary role)
 //   --bit-Pagination-button-border-color      border color of a button at rest                   (default: per Variant, from the primary role)
+//                                             Each button color at rest above has a twin per variant, read ahead of
+//                                             it, so a theme can set one look apart from the other two (Color still wins):
+//   --bit-Pagination-fill-button-color            label color of a button at rest, Fill variant      (default: --bit-Pagination-button-color)
+//   --bit-Pagination-fill-button-background       fill of a button at rest, Fill variant             (default: --bit-Pagination-button-background)
+//   --bit-Pagination-fill-button-border-color     border color of a button at rest, Fill variant     (default: --bit-Pagination-button-border-color)
+//   --bit-Pagination-outline-button-color         label color of a button at rest, Outline variant   (default: --bit-Pagination-button-color)
+//   --bit-Pagination-outline-button-background    fill of a button at rest, Outline variant          (default: --bit-Pagination-button-background)
+//   --bit-Pagination-outline-button-border-color  border color of a button at rest, Outline variant  (default: --bit-Pagination-button-border-color)
+//   --bit-Pagination-text-button-color            label color of a button at rest, Text variant      (default: --bit-Pagination-button-color)
+//   --bit-Pagination-text-button-background       fill of a button at rest, Text variant             (default: --bit-Pagination-button-background)
+//   --bit-Pagination-text-button-border-color     border color of a button at rest, Text variant     (default: --bit-Pagination-button-border-color)
 //   --bit-Pagination-button-hover-color       label color of a hovered button                    (default: $clr-pri-text)
 //   --bit-Pagination-button-hover-background  fill and border of a hovered button                (default: $clr-pri-hover)
 //   --bit-Pagination-button-active-color      label color of a pressed button                    (default: the hover color, then $clr-pri-text)
@@ -76,7 +87,9 @@ $pgn-private-properties:
     --bit-pgn-clr-btn-sel-bg-hover: var(--bit-pgn-clr-sel-hover);
     --bit-pgn-clr-btn-sel-bg-active: var(--bit-pgn-clr-sel-active);
 
-    &.bit-rtl {
+    // The direction is the one the pagination is laid out in - its Dir, the page's or its content's (Auto) - with
+    // the class an explicit Dir renders for an engine without :dir().
+    &:is(.bit-rtl, :dir(rtl)) {
         --bit-pgn-ico-transform-end: scaleX(-1);
         --bit-pgn-ico-transform-start: scaleX(1);
     }
@@ -412,26 +425,32 @@ $pgn-private-properties:
 // the role first - published only by an explicit Color (see .bit-pgn) - then from the public variables, then from
 // the primary role an unset Color stands for; a color the role leaves alone (the transparent fill of Outline and
 // Text, the transparent border of Text) is the variables' alone.
+//
+// Every button color variable is read in two tiers: the variant's own (--bit-Pagination-fill-button-*,
+// -outline-button-*, -text-button-*) ahead of the shared one, so a theme can give the three looks different colors
+// from :root - an outline pagination's neutral hairline without a ring around every filled button - while a shared
+// variable still re-skins all three at once. Both tiers sit between the role and the default, so an explicit Color
+// still wins over them.
 .bit-pgn-fil {
-    --bit-pgn-clr-btn-txt: var(--bit-pgn-clr-txt, var(--bit-Pagination-button-color, #{$clr-pri-text}));
-    --bit-pgn-clr-btn-bg: var(--bit-pgn-clr, var(--bit-Pagination-button-background, #{$clr-pri}));
-    --bit-pgn-clr-btn-brd: var(--bit-pgn-clr, var(--bit-Pagination-button-border-color, #{$clr-pri}));
+    --bit-pgn-clr-btn-txt: var(--bit-pgn-clr-txt, var(--bit-Pagination-fill-button-color, var(--bit-Pagination-button-color, #{$clr-pri-text})));
+    --bit-pgn-clr-btn-bg: var(--bit-pgn-clr, var(--bit-Pagination-fill-button-background, var(--bit-Pagination-button-background, #{$clr-pri})));
+    --bit-pgn-clr-btn-brd: var(--bit-pgn-clr, var(--bit-Pagination-fill-button-border-color, var(--bit-Pagination-button-border-color, #{$clr-pri})));
     --bit-pgn-clr-btn-bg-dis: var(--bit-pgn-clr-dis);
     --bit-pgn-clr-btn-brd-dis: var(--bit-pgn-clr-dis);
 }
 
 .bit-pgn-otl {
-    --bit-pgn-clr-btn-txt: var(--bit-pgn-clr, var(--bit-Pagination-button-color, #{$clr-pri}));
-    --bit-pgn-clr-btn-bg: var(--bit-Pagination-button-background, transparent);
-    --bit-pgn-clr-btn-brd: var(--bit-pgn-clr, var(--bit-Pagination-button-border-color, #{$clr-pri}));
+    --bit-pgn-clr-btn-txt: var(--bit-pgn-clr, var(--bit-Pagination-outline-button-color, var(--bit-Pagination-button-color, #{$clr-pri})));
+    --bit-pgn-clr-btn-bg: var(--bit-Pagination-outline-button-background, var(--bit-Pagination-button-background, transparent));
+    --bit-pgn-clr-btn-brd: var(--bit-pgn-clr, var(--bit-Pagination-outline-button-border-color, var(--bit-Pagination-button-border-color, #{$clr-pri})));
     --bit-pgn-clr-btn-bg-dis: transparent;
     --bit-pgn-clr-btn-brd-dis: var(--bit-pgn-clr-dis);
 }
 
 .bit-pgn-txt {
-    --bit-pgn-clr-btn-txt: var(--bit-pgn-clr, var(--bit-Pagination-button-color, #{$clr-pri}));
-    --bit-pgn-clr-btn-bg: var(--bit-Pagination-button-background, transparent);
-    --bit-pgn-clr-btn-brd: var(--bit-Pagination-button-border-color, transparent);
+    --bit-pgn-clr-btn-txt: var(--bit-pgn-clr, var(--bit-Pagination-text-button-color, var(--bit-Pagination-button-color, #{$clr-pri})));
+    --bit-pgn-clr-btn-bg: var(--bit-Pagination-text-button-background, var(--bit-Pagination-button-background, transparent));
+    --bit-pgn-clr-btn-brd: var(--bit-Pagination-text-button-border-color, var(--bit-Pagination-button-border-color, transparent));
     --bit-pgn-clr-btn-bg-dis: transparent;
     --bit-pgn-clr-btn-brd-dis: transparent;
 }

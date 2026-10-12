@@ -111,8 +111,7 @@ $col-private-properties: dur-full, del-full, eas, csz;
     // The content region takes the focus from FocusAsync, or from the Tab key while it is on the screen; the
     // outline is inset so it stays inside the box the collapse clips rather than poking past its edge.
     &:focus-visible {
-        outline: #{$shp-focus-ring-width} solid var(--bit-Collapse-focus-color, #{$clr-pri-focus});
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        @include focus-ring-inset(var(--bit-Collapse-focus-color, #{$clr-pri-focus}));
     }
 }
 

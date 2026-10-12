@@ -1218,10 +1218,21 @@ public partial class BitOtpInput : BitInputBase<string?>
                         ? code
                         : key;
 
+        // The direction the row is laid out in, a page's or a content's included, read only for the keys that
+        // act on it since one Dir does not name costs a round trip.
+        var rtl = Vertical is false && await IsRtlArrowAsync(_js, navKey);
+
+        // The component may be gone, or resized into one that no longer has this input, by the time the
+        // direction comes back, so the neighbours are taken from the length it has now.
+        if (IsDisposed || IsStaleIndex(index)) return;
+
+        nextIndex = Math.Min(index + 1, _length - 1);
+        previousIndex = Math.Max(index - 1, 0);
+
         var targetIndex = navKey switch
         {
-            "ArrowLeft" => Vertical ? index : ((Dir is BitDir.Rtl ^ Reversed) ? nextIndex : previousIndex),
-            "ArrowRight" => Vertical ? index : ((Dir is BitDir.Rtl ^ Reversed) ? previousIndex : nextIndex),
+            "ArrowLeft" => Vertical ? index : ((rtl ^ Reversed) ? nextIndex : previousIndex),
+            "ArrowRight" => Vertical ? index : ((rtl ^ Reversed) ? previousIndex : nextIndex),
             "ArrowUp" => Vertical ? (Reversed ? nextIndex : previousIndex) : index,
             "ArrowDown" => Vertical ? (Reversed ? previousIndex : nextIndex) : index,
             // Home and End address the code rather than the layout, so they always land on the input

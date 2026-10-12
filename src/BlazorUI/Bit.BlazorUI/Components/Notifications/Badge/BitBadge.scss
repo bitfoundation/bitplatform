@@ -11,6 +11,23 @@
 //   --bit-Badge-active-background    background of a clickable badge while pressed  (default: the hover background, then the
 //                                                                                   background, when either is set, otherwise
 //                                                                                   per variant, from the primary role)
+//                                    Each color above has a twin per variant, read ahead of it, so a theme can set
+//                                    one look apart from the other two (Color still wins over both):
+//   --bit-Badge-fill-color                 text and icon color, Fill variant               (default: --bit-Badge-color)
+//   --bit-Badge-fill-background            background, Fill variant                        (default: --bit-Badge-background)
+//   --bit-Badge-fill-border-color          border color, Fill variant                      (default: --bit-Badge-border-color)
+//   --bit-Badge-fill-hover-background      hovered clickable background, Fill variant      (default: --bit-Badge-hover-background)
+//   --bit-Badge-fill-active-background     pressed clickable background, Fill variant      (default: --bit-Badge-active-background)
+//   --bit-Badge-outline-color              text and icon color, Outline variant            (default: --bit-Badge-color)
+//   --bit-Badge-outline-background         background, Outline variant                     (default: --bit-Badge-background)
+//   --bit-Badge-outline-border-color       border color, Outline variant                   (default: --bit-Badge-border-color)
+//   --bit-Badge-outline-hover-background   hovered clickable background, Outline variant   (default: --bit-Badge-hover-background)
+//   --bit-Badge-outline-active-background  pressed clickable background, Outline variant   (default: --bit-Badge-active-background)
+//   --bit-Badge-text-color                 text and icon color, Text variant               (default: --bit-Badge-color)
+//   --bit-Badge-text-background            background, Text variant                        (default: --bit-Badge-background)
+//   --bit-Badge-text-border-color          border color, Text variant                      (default: --bit-Badge-border-color)
+//   --bit-Badge-text-hover-background      hovered clickable background, Text variant      (default: --bit-Badge-hover-background)
+//   --bit-Badge-text-active-background     pressed clickable background, Text variant      (default: --bit-Badge-active-background)
 //   --bit-Badge-focus-color          focus ring color of a clickable badge          (default: $clr-pri-focus)
 //   --bit-Badge-border-width         border width                                   (default: $shp-border-width)
 //   --bit-Badge-radius               corner radius                                  (default: $shp-radius-full)
@@ -479,7 +496,9 @@ $bdg-private-properties:
         flex-direction: row-reverse;
     }
 
-    &.bit-rtl {
+    // The direction is the one the badge is laid out in - its Dir, the page's or its content's (Auto) - with the
+    // class an explicit Dir renders for an engine without :dir().
+    &:is(.bit-rtl, :dir(rtl)) {
         &:is(.bit-bdg-tlf, .bit-bdg-clf, .bit-bdg-blf) {
             flex-direction: row;
         }
@@ -517,40 +536,45 @@ $bdg-private-properties:
 // color re-tints either of them without leaving a border of the default color around it. A clickable badge
 // given a background of its own keeps it while it is hovered and pressed, rather than switching back to the
 // default colors there, until a hover or an active background of its own is given too.
+//
+// Every color variable is read in two tiers: the variant's own (--bit-Badge-fill-*, -outline-*, -text-*) ahead of
+// the shared one, so a theme can give the three looks different colors from :root - an outline badge's neutral
+// border without a ring around every filled badge - while a shared variable still re-skins all three at once. Both
+// tiers sit between the role and the default, so an explicit Color still wins over them.
 .bit-bdg-fil {
     --bit-bdg-clr-bg-dis: var(--bit-bdg-clr-dis, #{$clr-pri-dis});
     --bit-bdg-clr-brd-dis: var(--bit-bdg-clr-dis, #{$clr-pri-dis});
-    --bit-bdg-cnt-clr-bg: var(--bit-bdg-clr, var(--bit-Badge-background, #{$clr-pri}));
-    --bit-bdg-cnt-clr-brd: var(--bit-bdg-clr, var(--bit-Badge-border-color, var(--bit-Badge-background, #{$clr-pri})));
-    --bit-bdg-cnt-clr-txt: var(--bit-bdg-clr-txt, var(--bit-Badge-color, #{$clr-pri-text}));
-    --bit-bdg-cnt-clr-bg-hover: var(--bit-bdg-clr-hover, var(--bit-Badge-hover-background, var(--bit-Badge-background, #{$clr-pri-hover})));
-    --bit-bdg-cnt-clr-brd-hover: var(--bit-bdg-clr-hover, var(--bit-Badge-border-color, var(--bit-Badge-hover-background, var(--bit-Badge-background, #{$clr-pri-hover}))));
-    --bit-bdg-cnt-clr-bg-active: var(--bit-bdg-clr-active, var(--bit-Badge-active-background, var(--bit-Badge-hover-background, var(--bit-Badge-background, #{$clr-pri-active}))));
-    --bit-bdg-cnt-clr-brd-active: var(--bit-bdg-clr-active, var(--bit-Badge-border-color, var(--bit-Badge-active-background, var(--bit-Badge-hover-background, var(--bit-Badge-background, #{$clr-pri-active})))));
+    --bit-bdg-cnt-clr-bg: var(--bit-bdg-clr, var(--bit-Badge-fill-background, var(--bit-Badge-background, #{$clr-pri})));
+    --bit-bdg-cnt-clr-brd: var(--bit-bdg-clr, var(--bit-Badge-fill-border-color, var(--bit-Badge-border-color, var(--bit-Badge-fill-background, var(--bit-Badge-background, #{$clr-pri})))));
+    --bit-bdg-cnt-clr-txt: var(--bit-bdg-clr-txt, var(--bit-Badge-fill-color, var(--bit-Badge-color, #{$clr-pri-text})));
+    --bit-bdg-cnt-clr-bg-hover: var(--bit-bdg-clr-hover, var(--bit-Badge-fill-hover-background, var(--bit-Badge-hover-background, var(--bit-Badge-fill-background, var(--bit-Badge-background, #{$clr-pri-hover})))));
+    --bit-bdg-cnt-clr-brd-hover: var(--bit-bdg-clr-hover, var(--bit-Badge-fill-border-color, var(--bit-Badge-border-color, var(--bit-Badge-fill-hover-background, var(--bit-Badge-hover-background, var(--bit-Badge-fill-background, var(--bit-Badge-background, #{$clr-pri-hover})))))));
+    --bit-bdg-cnt-clr-bg-active: var(--bit-bdg-clr-active, var(--bit-Badge-fill-active-background, var(--bit-Badge-active-background, var(--bit-Badge-fill-hover-background, var(--bit-Badge-hover-background, var(--bit-Badge-fill-background, var(--bit-Badge-background, #{$clr-pri-active})))))));
+    --bit-bdg-cnt-clr-brd-active: var(--bit-bdg-clr-active, var(--bit-Badge-fill-border-color, var(--bit-Badge-border-color, var(--bit-Badge-fill-active-background, var(--bit-Badge-active-background, var(--bit-Badge-fill-hover-background, var(--bit-Badge-hover-background, var(--bit-Badge-fill-background, var(--bit-Badge-background, #{$clr-pri-active})))))))));
 }
 
 .bit-bdg-otl {
     --bit-bdg-clr-bg-dis: transparent;
     --bit-bdg-clr-brd-dis: var(--bit-bdg-clr-dis, #{$clr-pri-dis});
-    --bit-bdg-cnt-clr-bg: var(--bit-Badge-background, transparent);
-    --bit-bdg-cnt-clr-txt: var(--bit-bdg-clr, var(--bit-Badge-color, #{$clr-pri}));
-    --bit-bdg-cnt-clr-brd: var(--bit-bdg-clr, var(--bit-Badge-border-color, var(--bit-Badge-color, #{$clr-pri})));
-    --bit-bdg-cnt-clr-bg-hover: var(--bit-bdg-clr-light, var(--bit-Badge-hover-background, var(--bit-Badge-background, #{$clr-pri-light})));
-    --bit-bdg-cnt-clr-brd-hover: var(--bit-bdg-clr-hover, var(--bit-Badge-border-color, var(--bit-Badge-color, #{$clr-pri-hover})));
-    --bit-bdg-cnt-clr-bg-active: var(--bit-bdg-clr-light-hover, var(--bit-Badge-active-background, var(--bit-Badge-hover-background, var(--bit-Badge-background, #{$clr-pri-light-hover}))));
-    --bit-bdg-cnt-clr-brd-active: var(--bit-bdg-clr-active, var(--bit-Badge-border-color, var(--bit-Badge-color, #{$clr-pri-active})));
+    --bit-bdg-cnt-clr-bg: var(--bit-Badge-outline-background, var(--bit-Badge-background, transparent));
+    --bit-bdg-cnt-clr-txt: var(--bit-bdg-clr, var(--bit-Badge-outline-color, var(--bit-Badge-color, #{$clr-pri})));
+    --bit-bdg-cnt-clr-brd: var(--bit-bdg-clr, var(--bit-Badge-outline-border-color, var(--bit-Badge-border-color, var(--bit-Badge-outline-color, var(--bit-Badge-color, #{$clr-pri})))));
+    --bit-bdg-cnt-clr-bg-hover: var(--bit-bdg-clr-light, var(--bit-Badge-outline-hover-background, var(--bit-Badge-hover-background, var(--bit-Badge-outline-background, var(--bit-Badge-background, #{$clr-pri-light})))));
+    --bit-bdg-cnt-clr-brd-hover: var(--bit-bdg-clr-hover, var(--bit-Badge-outline-border-color, var(--bit-Badge-border-color, var(--bit-Badge-outline-color, var(--bit-Badge-color, #{$clr-pri-hover})))));
+    --bit-bdg-cnt-clr-bg-active: var(--bit-bdg-clr-light-hover, var(--bit-Badge-outline-active-background, var(--bit-Badge-active-background, var(--bit-Badge-outline-hover-background, var(--bit-Badge-hover-background, var(--bit-Badge-outline-background, var(--bit-Badge-background, #{$clr-pri-light-hover})))))));
+    --bit-bdg-cnt-clr-brd-active: var(--bit-bdg-clr-active, var(--bit-Badge-outline-border-color, var(--bit-Badge-border-color, var(--bit-Badge-outline-color, var(--bit-Badge-color, #{$clr-pri-active})))));
 }
 
 .bit-bdg-txt {
     --bit-bdg-clr-bg-dis: transparent;
     --bit-bdg-clr-brd-dis: transparent;
-    --bit-bdg-cnt-clr-bg: var(--bit-Badge-background, transparent);
-    --bit-bdg-cnt-clr-brd: var(--bit-Badge-border-color, transparent);
-    --bit-bdg-cnt-clr-txt: var(--bit-bdg-clr, var(--bit-Badge-color, #{$clr-pri}));
-    --bit-bdg-cnt-clr-bg-hover: var(--bit-bdg-clr-light, var(--bit-Badge-hover-background, var(--bit-Badge-background, #{$clr-pri-light})));
-    --bit-bdg-cnt-clr-brd-hover: var(--bit-Badge-border-color, transparent);
-    --bit-bdg-cnt-clr-bg-active: var(--bit-bdg-clr-light-hover, var(--bit-Badge-active-background, var(--bit-Badge-hover-background, var(--bit-Badge-background, #{$clr-pri-light-hover}))));
-    --bit-bdg-cnt-clr-brd-active: var(--bit-Badge-border-color, transparent);
+    --bit-bdg-cnt-clr-bg: var(--bit-Badge-text-background, var(--bit-Badge-background, transparent));
+    --bit-bdg-cnt-clr-brd: var(--bit-Badge-text-border-color, var(--bit-Badge-border-color, transparent));
+    --bit-bdg-cnt-clr-txt: var(--bit-bdg-clr, var(--bit-Badge-text-color, var(--bit-Badge-color, #{$clr-pri})));
+    --bit-bdg-cnt-clr-bg-hover: var(--bit-bdg-clr-light, var(--bit-Badge-text-hover-background, var(--bit-Badge-hover-background, var(--bit-Badge-text-background, var(--bit-Badge-background, #{$clr-pri-light})))));
+    --bit-bdg-cnt-clr-brd-hover: var(--bit-Badge-text-border-color, var(--bit-Badge-border-color, transparent));
+    --bit-bdg-cnt-clr-bg-active: var(--bit-bdg-clr-light-hover, var(--bit-Badge-text-active-background, var(--bit-Badge-active-background, var(--bit-Badge-text-hover-background, var(--bit-Badge-hover-background, var(--bit-Badge-text-background, var(--bit-Badge-background, #{$clr-pri-light-hover})))))));
+    --bit-bdg-cnt-clr-brd-active: var(--bit-Badge-text-border-color, var(--bit-Badge-border-color, transparent));
 }
 
 

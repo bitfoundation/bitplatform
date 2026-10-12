@@ -26,6 +26,38 @@
 //   --bit-ButtonGroup-disabled-background         background while disabled                     (default: per variant - $clr-pri-dis filled,
 //                                                                                               transparent otherwise)
 //   --bit-ButtonGroup-disabled-border-color       border and separators while disabled          (default: $clr-pri-dis)
+//                                                 Each color above but the toggled ones and the disabled
+//                                                 foreground - one appearance in every variant - has a twin per
+//                                                 variant, read ahead of it, so a theme can set one look apart
+//                                                 from the other two (Color still wins over both; the focus
+//                                                 color below keeps one tier too):
+//   --bit-ButtonGroup-fill-color                      text and icon color at rest, Fill         (default: --bit-ButtonGroup-color)
+//   --bit-ButtonGroup-fill-background                 background at rest, Fill                  (default: --bit-ButtonGroup-background)
+//   --bit-ButtonGroup-fill-border-color               outer border and separators, Fill         (default: --bit-ButtonGroup-border-color)
+//   --bit-ButtonGroup-fill-separator-color            the separators alone, Fill                (default: --bit-ButtonGroup-separator-color)
+//   --bit-ButtonGroup-fill-hover-color                text and icon color on hover, Fill        (default: --bit-ButtonGroup-hover-color)
+//   --bit-ButtonGroup-fill-hover-background           background while hovered, Fill            (default: --bit-ButtonGroup-hover-background)
+//   --bit-ButtonGroup-fill-active-background          background while pressed, Fill            (default: --bit-ButtonGroup-active-background)
+//   --bit-ButtonGroup-fill-disabled-background        background while disabled, Fill           (default: --bit-ButtonGroup-disabled-background)
+//   --bit-ButtonGroup-fill-disabled-border-color      border while disabled, Fill               (default: --bit-ButtonGroup-disabled-border-color)
+//   --bit-ButtonGroup-outline-color                   text and icon color at rest, Outline      (default: --bit-ButtonGroup-color)
+//   --bit-ButtonGroup-outline-background              background at rest, Outline               (default: --bit-ButtonGroup-background)
+//   --bit-ButtonGroup-outline-border-color            outer border and separators, Outline      (default: --bit-ButtonGroup-border-color)
+//   --bit-ButtonGroup-outline-separator-color         the separators alone, Outline             (default: --bit-ButtonGroup-separator-color)
+//   --bit-ButtonGroup-outline-hover-color             text and icon color on hover, Outline     (default: --bit-ButtonGroup-hover-color)
+//   --bit-ButtonGroup-outline-hover-background        background while hovered, Outline         (default: --bit-ButtonGroup-hover-background)
+//   --bit-ButtonGroup-outline-active-background       background while pressed, Outline         (default: --bit-ButtonGroup-active-background)
+//   --bit-ButtonGroup-outline-disabled-background     background while disabled, Outline        (default: --bit-ButtonGroup-disabled-background)
+//   --bit-ButtonGroup-outline-disabled-border-color   border while disabled, Outline            (default: --bit-ButtonGroup-disabled-border-color)
+//   --bit-ButtonGroup-text-color                      text and icon color at rest, Text         (default: --bit-ButtonGroup-color)
+//   --bit-ButtonGroup-text-background                 background at rest, Text                  (default: --bit-ButtonGroup-background)
+//   --bit-ButtonGroup-text-border-color               outer border and separators, Text         (default: --bit-ButtonGroup-border-color)
+//   --bit-ButtonGroup-text-separator-color            the separators alone, Text                (default: --bit-ButtonGroup-separator-color)
+//   --bit-ButtonGroup-text-hover-color                text and icon color on hover, Text        (default: --bit-ButtonGroup-hover-color)
+//   --bit-ButtonGroup-text-hover-background           background while hovered, Text            (default: --bit-ButtonGroup-hover-background)
+//   --bit-ButtonGroup-text-active-background          background while pressed, Text            (default: --bit-ButtonGroup-active-background)
+//   --bit-ButtonGroup-text-disabled-background        background while disabled, Text           (default: --bit-ButtonGroup-disabled-background)
+//   --bit-ButtonGroup-text-disabled-border-color      border while disabled, Text               (default: --bit-ButtonGroup-disabled-border-color)
 //   --bit-ButtonGroup-focus-color                 keyboard focus indicator color                (default: per variant - $clr-pri-text filled
 //                                                                                               and toggled, $clr-pri otherwise; the
 //                                                                                               group's own ring $clr-pri-focus)
@@ -79,16 +111,14 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
     border-style: $shp-border-style;
     border-width: var(--bit-ButtonGroup-border-width, #{$shp-border-width});
     border-radius: var(--bit-btg-rad, var(--bit-ButtonGroup-radius, #{$shp-radius-button}));
-    // Each variant repaints --bit-btg-clr-outer (from an explicit Color) and --bit-btg-dfl-outer (the primary
-    // role an unset one stands for) as the group is hovered and pressed rather than repainting border-color
-    // itself, so this one declaration is where the public override lands, between the two, in every one of
-    // those states.
-    border-color: var(--bit-btg-clr-outer, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-outer)));
+    // The outer border is painted by the variant (see .bit-btg-fil), where the variant's own variable is read
+    // ahead of the shared one.
     // The line between two buttons: a separator of its own in the attached single-row layout, and the outer
     // border itself in the detached and wrapping ones, which redirect it below. It is resolved here rather than
     // on the button so that those two can redirect it with a selector on the group - a selector on the button
-    // would outrank the toggled and disabled states, which paint a border of their own.
-    --bit-btg-sep: var(--bit-btg-itm-clr-brd, var(--bit-ButtonGroup-separator-color, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-brd))));
+    // would outrank the toggled and disabled states, which paint a border of their own. Both colors it picks
+    // between are resolved by the variant (--bit-btg-sep-lin / -out).
+    --bit-btg-sep: var(--bit-btg-sep-lin);
     --bit-btg-itm-brd-wid: var(--bit-ButtonGroup-border-width, #{$shp-border-width});
     --bit-btg-itm-brd-wid-ver: 0;
     // Only the border is painted on the group itself: the filled and outline variants repaint it
@@ -108,9 +138,9 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
         pointer-events: none;
     }
 
+    // The disabled border is the variant's, painted beside its outer border (see .bit-btg-fil).
     &.bit-dis {
         color: var(--bit-btg-clr-dis-text, var(--bit-ButtonGroup-disabled-color, #{$clr-pri-dis-text}));
-        border-color: var(--bit-btg-clr-dis, var(--bit-ButtonGroup-disabled-border-color, #{$clr-pri-dis}));
 
         // Resolve through the per-variant `*-dis` tokens so outline/text variants keep transparent
         // backgrounds and only filled variants render the colored disabled tint.
@@ -179,16 +209,15 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
     font-weight: var(--bit-ButtonGroup-font-weight, #{$tg-font-weight});
     // Every value an explicit Size or Color publishes - inherited from the group, where its classes sit - is read
     // first, then the public variable (read here, so one set on the Style of a single button reaches it), then the
-    // medium primary group an unset one stands for (per variant, see .bit-btg-fil).
+    // medium primary group an unset one stands for (per variant, see .bit-btg-fil). The colors are read the same
+    // way, by the variant's rule for its buttons (see .bit-btg-ifl).
     padding: var(--bit-btg-itm-padding, var(--bit-ButtonGroup-padding, #{$siz-ctrl-pad-y-md} #{$siz-ctrl-pad-x-md}));
     // The colors the hover and press states move (here and on the toggled button), unset at rest so a button never
     // inherits them from a button of an outer group it sits in.
     --bit-btg-itm-sfg: initial;
     --bit-btg-itm-sbg: initial;
     --bit-btg-itm-sbr: initial;
-    color: var(--bit-btg-itm-sfg, var(--bit-btg-itm-clr-txt, var(--bit-ButtonGroup-color, var(--bit-btg-dfl-txt))));
     border-color: var(--bit-btg-sep);
-    background-color: var(--bit-btg-itm-sbg, var(--bit-btg-itm-clr-bg, var(--bit-ButtonGroup-background, var(--bit-btg-dfl-bg))));
     // The control height of the size class, as a floor rather than a height: the button still grows
     // with a wrapped label or a taller template. It is what lines a group up with the other controls
     // of its size, and what keeps the smallest one above the 24px minimum pointer target of
@@ -205,20 +234,6 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
     // tokens above, so animating the three properties here covers every variant of the group.
     transition: color $mot-duration-short $mot-easing, border-color $mot-duration-short $mot-easing, background-color $mot-duration-short $mot-easing;
 
-    // The states change the variables the button is painted from rather than its colors, so the rules at rest (this
-    // one and .bit-btg-chk) are the only ones that paint: a button the app paints through Class keeps that paint under
-    // the pointer and while pressed, instead of losing it to a state that outranks the app's class.
-    @media (hover: hover) {
-        &:hover {
-            --bit-btg-itm-sfg: var(--bit-btg-itm-clr-hover, var(--bit-ButtonGroup-hover-color, #{$clr-pri-text}));
-            --bit-btg-itm-sbg: var(--bit-btg-itm-clr-bg-hover, var(--bit-ButtonGroup-hover-background, #{$clr-pri-hover}));
-        }
-    }
-
-    &:active {
-        --bit-btg-itm-sbg: var(--bit-btg-itm-clr-bg-active, var(--bit-ButtonGroup-active-background, var(--bit-ButtonGroup-hover-background, #{$clr-pri-active})));
-    }
-
     // The focus ring is drawn inside the button because the group clips its overflow, which would
     // otherwise cut an outset ring off at the edges of the group. An inset outline is used instead
     // of the focus-ring mixin's box-shadow for the same reason, but the width follows the global
@@ -226,16 +241,16 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
     // takes the real ring back below.
     &:focus-visible {
         z-index: 1;
-        outline: #{$shp-focus-ring-width} solid var(--bit-btg-itm-clr-fcs, var(--bit-ButtonGroup-focus-color, var(--bit-btg-dfl-fcs)));
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+
+        @include focus-ring-inset(var(--bit-btg-itm-clr-fcs, var(--bit-ButtonGroup-focus-color, var(--bit-btg-dfl-fcs))));
     }
 
+    // The disabled foreground is one in every variant; the border and background are the variant's (see
+    // .bit-btg-ifl).
     &[disabled],
     &[aria-disabled="true"] {
         cursor: default;
         color: var(--bit-btg-clr-dis-text, var(--bit-ButtonGroup-disabled-color, #{$clr-pri-dis-text}));
-        border-color: var(--bit-btg-clr-dis, var(--bit-ButtonGroup-disabled-border-color, #{$clr-pri-dis}));
-        background-color: var(--bit-btg-itm-clr-bg-dis, var(--bit-ButtonGroup-disabled-background, var(--bit-btg-dfl-bg-dis)));
     }
 
     &[disabled] {
@@ -257,7 +272,7 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
     border-width: 0;
     gap: var(--bit-ButtonGroup-gap, #{spacing(1)});
     // Every button draws the whole outline here, so there are no separators for a separator color to paint.
-    --bit-btg-sep: var(--bit-btg-itm-clr-brd, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-brd)));
+    --bit-btg-sep: var(--bit-btg-sep-out);
 
     // The radius Rounded publishes on the group reaches every button here, ahead of the public radius - whether the
     // group is vertical or not, since each button is a pill of its own.
@@ -292,7 +307,7 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
     flex-wrap: wrap;
     // As in the detached layout: each button draws a full border, which the overlap below collapses into the
     // shared lines, so the whole outline is the border color and no part of it is a separator on its own.
-    --bit-btg-sep: var(--bit-btg-itm-clr-brd, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-brd)));
+    --bit-btg-sep: var(--bit-btg-sep-out);
 
     // Without this the buttons of every row stretch to fill their own row, so a row holding fewer
     // buttons renders them much wider than the rows above it.
@@ -437,11 +452,27 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
     opacity: 1;
 }
 
+// Every color variable a variant paints is read in two tiers: the variant's own (--bit-ButtonGroup-fill-*, -outline-*,
+// -text-*) ahead of the shared one, so a theme can give the three looks different colors from :root - an outline
+// group's neutral hairline without a ring around every filled one - while a shared variable still re-skins all three
+// at once. Both tiers sit between the value an explicit Color publishes and the variant's default, so an explicit Color
+// still wins over them. The group's outer border and the colors its separators pick between are read on the group (the
+// variant's own rule), the colors of the buttons on each button, so a variable set on the Style of a single button still
+// reaches it. Each button carries its group's variant as a class of its own (.bit-btg-ifl / -iol / -itx, after each
+// variant's rule), never a selector through the group: it weighs no more than .bit-btg-itm itself, so a class an app
+// hands a button still repaints it; it holds whatever element an app wraps an option in (a tooltip's anchor), which a
+// child combinator would not; and a group nested in a button is painted by its own variant, which a descendant one
+// would not. The toggled button, the disabled foreground and the
+// focus rings are one appearance across the variants, so their variables have one tier.
+//
+// The states change the variables a button is painted from rather than its colors, so the rules at rest (the buttons'
+// rule of each variant and .bit-btg-chk) are the only ones that paint: a button the app paints through Class keeps that
+// paint under the pointer and while pressed, instead of losing it to a state that outranks the app's class.
 .bit-btg-fil {
     // The variants hand the buttons two values for each color: the one an explicit Color publishes (the
     // --bit-btg-itm-clr-* ones, which stay unset while the role classes do) and the primary-role default an unset
-    // one stands for (--bit-btg-dfl-*), which the buttons read on either side of the public variables (see
-    // .bit-btg-itm). A color the role leaves alone - the transparent backgrounds of Outline and Text - has no first
+    // one stands for (--bit-btg-dfl-*), which the buttons read on either side of the public variables (see the
+    // buttons' rule below). A color the role leaves alone - the transparent backgrounds of Outline and Text - has no first
     // value and is the variables' alone.
     --bit-btg-clr-outer: var(--bit-btg-clr);
     --bit-btg-dfl-outer: #{$clr-pri};
@@ -457,6 +488,16 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
     --bit-btg-dfl-bg-dis: #{$clr-pri-dis};
     --bit-btg-itm-clr-fcs: var(--bit-btg-clr-txt);
     --bit-btg-dfl-fcs: #{$clr-pri-text};
+    // Each variant repaints --bit-btg-clr-outer (from an explicit Color) and --bit-btg-dfl-outer (the primary
+    // role an unset one stands for) as the group is hovered and pressed rather than repainting border-color
+    // itself, so this one declaration is where the public override lands, between the two, in every one of
+    // those states.
+    border-color: var(--bit-btg-clr-outer, var(--bit-ButtonGroup-fill-border-color, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-outer))));
+    // The two colors --bit-btg-sep picks between (see .bit-btg): the separator lines of the attached layout, and the
+    // whole outline of every button in the detached and wrapping ones, where there are no separators for a separator
+    // color to paint.
+    --bit-btg-sep-lin: var(--bit-btg-itm-clr-brd, var(--bit-ButtonGroup-fill-separator-color, var(--bit-ButtonGroup-separator-color, var(--bit-ButtonGroup-fill-border-color, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-brd))))));
+    --bit-btg-sep-out: var(--bit-btg-itm-clr-brd, var(--bit-ButtonGroup-fill-border-color, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-brd))));
 
     @media (hover: hover) {
         &:hover {
@@ -468,6 +509,32 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
     &:active {
         --bit-btg-clr-outer: var(--bit-btg-clr-active);
         --bit-btg-dfl-outer: #{$clr-pri-active};
+    }
+
+    &.bit-dis {
+        border-color: var(--bit-btg-clr-dis, var(--bit-ButtonGroup-fill-disabled-border-color, var(--bit-ButtonGroup-disabled-border-color, #{$clr-pri-dis})));
+    }
+}
+
+.bit-btg-ifl {
+    color: var(--bit-btg-itm-sfg, var(--bit-btg-itm-clr-txt, var(--bit-ButtonGroup-fill-color, var(--bit-ButtonGroup-color, var(--bit-btg-dfl-txt)))));
+    background-color: var(--bit-btg-itm-sbg, var(--bit-btg-itm-clr-bg, var(--bit-ButtonGroup-fill-background, var(--bit-ButtonGroup-background, var(--bit-btg-dfl-bg)))));
+
+    @media (hover: hover) {
+        &:hover {
+            --bit-btg-itm-sfg: var(--bit-btg-itm-clr-hover, var(--bit-ButtonGroup-fill-hover-color, var(--bit-ButtonGroup-hover-color, #{$clr-pri-text})));
+            --bit-btg-itm-sbg: var(--bit-btg-itm-clr-bg-hover, var(--bit-ButtonGroup-fill-hover-background, var(--bit-ButtonGroup-hover-background, #{$clr-pri-hover})));
+        }
+    }
+
+    &:active {
+        --bit-btg-itm-sbg: var(--bit-btg-itm-clr-bg-active, var(--bit-ButtonGroup-fill-active-background, var(--bit-ButtonGroup-active-background, var(--bit-ButtonGroup-fill-hover-background, var(--bit-ButtonGroup-hover-background, #{$clr-pri-active})))));
+    }
+
+    &[disabled],
+    &[aria-disabled="true"] {
+        border-color: var(--bit-btg-clr-dis, var(--bit-ButtonGroup-fill-disabled-border-color, var(--bit-ButtonGroup-disabled-border-color, #{$clr-pri-dis})));
+        background-color: var(--bit-btg-itm-clr-bg-dis, var(--bit-ButtonGroup-fill-disabled-background, var(--bit-ButtonGroup-disabled-background, var(--bit-btg-dfl-bg-dis))));
     }
 }
 
@@ -486,6 +553,9 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
     --bit-btg-dfl-bg-dis: transparent;
     --bit-btg-itm-clr-fcs: var(--bit-btg-clr);
     --bit-btg-dfl-fcs: #{$clr-pri};
+    border-color: var(--bit-btg-clr-outer, var(--bit-ButtonGroup-outline-border-color, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-outer))));
+    --bit-btg-sep-lin: var(--bit-btg-itm-clr-brd, var(--bit-ButtonGroup-outline-separator-color, var(--bit-ButtonGroup-separator-color, var(--bit-ButtonGroup-outline-border-color, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-brd))))));
+    --bit-btg-sep-out: var(--bit-btg-itm-clr-brd, var(--bit-ButtonGroup-outline-border-color, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-brd))));
 
     @media (hover: hover) {
         &:hover {
@@ -501,6 +571,29 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
 
     &.bit-dis {
         background-color: transparent;
+        border-color: var(--bit-btg-clr-dis, var(--bit-ButtonGroup-outline-disabled-border-color, var(--bit-ButtonGroup-disabled-border-color, #{$clr-pri-dis})));
+    }
+}
+
+.bit-btg-iol {
+    color: var(--bit-btg-itm-sfg, var(--bit-btg-itm-clr-txt, var(--bit-ButtonGroup-outline-color, var(--bit-ButtonGroup-color, var(--bit-btg-dfl-txt)))));
+    background-color: var(--bit-btg-itm-sbg, var(--bit-btg-itm-clr-bg, var(--bit-ButtonGroup-outline-background, var(--bit-ButtonGroup-background, var(--bit-btg-dfl-bg)))));
+
+    @media (hover: hover) {
+        &:hover {
+            --bit-btg-itm-sfg: var(--bit-btg-itm-clr-hover, var(--bit-ButtonGroup-outline-hover-color, var(--bit-ButtonGroup-hover-color, #{$clr-pri-text})));
+            --bit-btg-itm-sbg: var(--bit-btg-itm-clr-bg-hover, var(--bit-ButtonGroup-outline-hover-background, var(--bit-ButtonGroup-hover-background, #{$clr-pri-hover})));
+        }
+    }
+
+    &:active {
+        --bit-btg-itm-sbg: var(--bit-btg-itm-clr-bg-active, var(--bit-ButtonGroup-outline-active-background, var(--bit-ButtonGroup-active-background, var(--bit-ButtonGroup-outline-hover-background, var(--bit-ButtonGroup-hover-background, #{$clr-pri-active})))));
+    }
+
+    &[disabled],
+    &[aria-disabled="true"] {
+        border-color: var(--bit-btg-clr-dis, var(--bit-ButtonGroup-outline-disabled-border-color, var(--bit-ButtonGroup-disabled-border-color, #{$clr-pri-dis})));
+        background-color: var(--bit-btg-itm-clr-bg-dis, var(--bit-ButtonGroup-outline-disabled-background, var(--bit-ButtonGroup-disabled-background, var(--bit-btg-dfl-bg-dis))));
     }
 }
 
@@ -519,9 +612,34 @@ $btg-private-properties: clr, clr-txt, clr-brd, clr-hover, clr-active, clr-focus
     --bit-btg-dfl-bg-dis: transparent;
     --bit-btg-itm-clr-fcs: var(--bit-btg-clr);
     --bit-btg-dfl-fcs: #{$clr-pri};
+    border-color: var(--bit-btg-clr-outer, var(--bit-ButtonGroup-text-border-color, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-outer))));
+    --bit-btg-sep-lin: var(--bit-btg-itm-clr-brd, var(--bit-ButtonGroup-text-separator-color, var(--bit-ButtonGroup-separator-color, var(--bit-ButtonGroup-text-border-color, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-brd))))));
+    --bit-btg-sep-out: var(--bit-btg-itm-clr-brd, var(--bit-ButtonGroup-text-border-color, var(--bit-ButtonGroup-border-color, var(--bit-btg-dfl-brd))));
 
     &.bit-dis {
-        border-color: var(--bit-ButtonGroup-disabled-border-color, transparent);
+        border-color: var(--bit-ButtonGroup-text-disabled-border-color, var(--bit-ButtonGroup-disabled-border-color, transparent));
+    }
+}
+
+.bit-btg-itx {
+    color: var(--bit-btg-itm-sfg, var(--bit-btg-itm-clr-txt, var(--bit-ButtonGroup-text-color, var(--bit-ButtonGroup-color, var(--bit-btg-dfl-txt)))));
+    background-color: var(--bit-btg-itm-sbg, var(--bit-btg-itm-clr-bg, var(--bit-ButtonGroup-text-background, var(--bit-ButtonGroup-background, var(--bit-btg-dfl-bg)))));
+
+    @media (hover: hover) {
+        &:hover {
+            --bit-btg-itm-sfg: var(--bit-btg-itm-clr-hover, var(--bit-ButtonGroup-text-hover-color, var(--bit-ButtonGroup-hover-color, #{$clr-pri-text})));
+            --bit-btg-itm-sbg: var(--bit-btg-itm-clr-bg-hover, var(--bit-ButtonGroup-text-hover-background, var(--bit-ButtonGroup-hover-background, #{$clr-pri-hover})));
+        }
+    }
+
+    &:active {
+        --bit-btg-itm-sbg: var(--bit-btg-itm-clr-bg-active, var(--bit-ButtonGroup-text-active-background, var(--bit-ButtonGroup-active-background, var(--bit-ButtonGroup-text-hover-background, var(--bit-ButtonGroup-hover-background, #{$clr-pri-active})))));
+    }
+
+    &[disabled],
+    &[aria-disabled="true"] {
+        border-color: var(--bit-btg-clr-dis, var(--bit-ButtonGroup-text-disabled-border-color, var(--bit-ButtonGroup-disabled-border-color, #{$clr-pri-dis})));
+        background-color: var(--bit-btg-itm-clr-bg-dis, var(--bit-ButtonGroup-text-disabled-background, var(--bit-ButtonGroup-disabled-background, var(--bit-btg-dfl-bg-dis))));
     }
 }
 

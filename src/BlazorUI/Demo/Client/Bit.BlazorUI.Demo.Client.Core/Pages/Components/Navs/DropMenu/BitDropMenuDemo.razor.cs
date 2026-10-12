@@ -393,31 +393,31 @@ public partial class BitDropMenuDemo
         {
             Name = "--bit-DropMenu-color",
             DefaultValue = "--bit-clr-fg-pri",
-            Description = "Text and icon color of the button at rest. The Color parameter wins over it.",
+            Description = "Text and icon color of the button at rest. The Color parameter wins over it. Shared by the three variants: --bit-DropMenu-fill-color, --bit-DropMenu-outline-color and --bit-DropMenu-text-color are read ahead of it; a drop menu with no Variant reads it alone.",
         },
         new()
         {
             Name = "--bit-DropMenu-background",
             DefaultValue = "--bit-clr-bg-pri (transparent for Outline, Text and Transparent)",
-            Description = "Background of the button at rest. The Color parameter wins over it where the look paints one; the transparent background of Outline, Text and Transparent is its alone.",
+            Description = "Background of the button at rest. The Color parameter wins over it where the look paints one; the transparent background of Outline, Text and Transparent is its alone. Shared by the three variants: --bit-DropMenu-fill-background, --bit-DropMenu-outline-background and --bit-DropMenu-text-background are read ahead of it; a drop menu with no Variant reads it alone.",
         },
         new()
         {
             Name = "--bit-DropMenu-border-color",
             DefaultValue = "Per Variant",
-            Description = "Border color of the button, in every state. The Color parameter wins over it where the look paints the border with the Color.",
+            Description = "Border color of the button, in every state. The Color parameter wins over it where the look paints the border with the Color. Shared by the three variants: --bit-DropMenu-fill-border-color, --bit-DropMenu-outline-border-color and --bit-DropMenu-text-border-color are read ahead of it; a drop menu with no Variant reads it alone.",
         },
         new()
         {
             Name = "--bit-DropMenu-hover-border-color",
             DefaultValue = "--bit-DropMenu-border-color, or per Variant",
-            Description = "Border color of the button on hover.",
+            Description = "Border color of the button on hover. Shared by the three variants: --bit-DropMenu-fill-hover-border-color, --bit-DropMenu-outline-hover-border-color and --bit-DropMenu-text-hover-border-color are read ahead of it; a drop menu with no Variant reads it alone.",
         },
         new()
         {
             Name = "--bit-DropMenu-active-border-color",
             DefaultValue = "--bit-DropMenu-border-color, or per Variant",
-            Description = "Border color of the button while pressed or open.",
+            Description = "Border color of the button while pressed or open. Shared by the three variants: --bit-DropMenu-fill-active-border-color, --bit-DropMenu-outline-active-border-color and --bit-DropMenu-text-active-border-color are read ahead of it; a drop menu with no Variant reads it alone.",
         },
         new()
         {
@@ -435,43 +435,259 @@ public partial class BitDropMenuDemo
         {
             Name = "--bit-DropMenu-hover-color",
             DefaultValue = "--bit-clr-fg-pri",
-            Description = "Text and icon color on hover. The Color parameter wins over it.",
+            Description = "Text and icon color on hover. The Color parameter wins over it. Shared by the three variants: --bit-DropMenu-fill-hover-color, --bit-DropMenu-outline-hover-color and --bit-DropMenu-text-hover-color are read ahead of it; a drop menu with no Variant reads it alone.",
         },
         new()
         {
             Name = "--bit-DropMenu-hover-background",
             DefaultValue = "--bit-clr-bg-pri-hover",
-            Description = "Background on hover. The Color parameter wins over it.",
+            Description = "Background on hover. The Color parameter wins over it. Shared by the three variants: --bit-DropMenu-fill-hover-background, --bit-DropMenu-outline-hover-background and --bit-DropMenu-text-hover-background are read ahead of it; a drop menu with no Variant reads it alone.",
         },
         new()
         {
             Name = "--bit-DropMenu-active-color",
             DefaultValue = "--bit-clr-fg-pri",
-            Description = "Text and icon color while pressed or while the callout is open. The Color parameter wins over it.",
+            Description = "Text and icon color while pressed or while the callout is open. The Color parameter wins over it. Shared by the three variants: --bit-DropMenu-fill-active-color, --bit-DropMenu-outline-active-color and --bit-DropMenu-text-active-color are read ahead of it; a drop menu with no Variant reads it alone.",
         },
         new()
         {
             Name = "--bit-DropMenu-active-background",
             DefaultValue = "--bit-clr-bg-pri-active",
-            Description = "Background while pressed or while the callout is open. The Color parameter wins over it.",
+            Description = "Background while pressed or while the callout is open. The Color parameter wins over it. Shared by the three variants: --bit-DropMenu-fill-active-background, --bit-DropMenu-outline-active-background and --bit-DropMenu-text-active-background are read ahead of it; a drop menu with no Variant reads it alone.",
         },
         new()
         {
             Name = "--bit-DropMenu-disabled-color",
             DefaultValue = "--bit-clr-fg-dis",
-            Description = "Text and icon color when disabled or loading. The Color parameter wins over it.",
+            Description = "Text and icon color when disabled or loading. The Color parameter wins over it. Shared by the three variants: --bit-DropMenu-fill-disabled-color, --bit-DropMenu-outline-disabled-color and --bit-DropMenu-text-disabled-color are read ahead of it; a drop menu with no Variant reads it alone.",
         },
         new()
         {
             Name = "--bit-DropMenu-disabled-background",
             DefaultValue = "--bit-clr-bg-pri (transparent for Outline, Text and Transparent)",
-            Description = "Background when disabled or loading. The Color parameter wins over it where the look paints one.",
+            Description = "Background when disabled or loading. The Color parameter wins over it where the look paints one. Shared by the three variants: --bit-DropMenu-fill-disabled-background, --bit-DropMenu-outline-disabled-background and --bit-DropMenu-text-disabled-background are read ahead of it; a drop menu with no Variant reads it alone.",
         },
         new()
         {
             Name = "--bit-DropMenu-disabled-border-color",
             DefaultValue = "Per Variant",
-            Description = "Border color when disabled or loading.",
+            Description = "Border color when disabled or loading. Shared by the three variants: --bit-DropMenu-fill-disabled-border-color, --bit-DropMenu-outline-disabled-border-color and --bit-DropMenu-text-disabled-border-color are read ahead of it; a drop menu with no Variant reads it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-color",
+            DefaultValue = "--bit-DropMenu-color",
+            Description = "Text and icon color of the button at rest of a Fill drop menu alone, read ahead of --bit-DropMenu-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-background",
+            DefaultValue = "--bit-DropMenu-background",
+            Description = "Background of the button at rest of a Fill drop menu alone, read ahead of --bit-DropMenu-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-border-color",
+            DefaultValue = "--bit-DropMenu-border-color",
+            Description = "Border color of the button, in every state, of a Fill drop menu alone, read ahead of --bit-DropMenu-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-hover-color",
+            DefaultValue = "--bit-DropMenu-hover-color",
+            Description = "Text and icon color on hover of a Fill drop menu alone, read ahead of --bit-DropMenu-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-hover-background",
+            DefaultValue = "--bit-DropMenu-hover-background",
+            Description = "Background on hover of a Fill drop menu alone, read ahead of --bit-DropMenu-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-hover-border-color",
+            DefaultValue = "--bit-DropMenu-hover-border-color",
+            Description = "Border color on hover of a Fill drop menu alone, read ahead of --bit-DropMenu-hover-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-active-color",
+            DefaultValue = "--bit-DropMenu-active-color",
+            Description = "Text and icon color while pressed or open of a Fill drop menu alone, read ahead of --bit-DropMenu-active-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-active-background",
+            DefaultValue = "--bit-DropMenu-active-background",
+            Description = "Background while pressed or open of a Fill drop menu alone, read ahead of --bit-DropMenu-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-active-border-color",
+            DefaultValue = "--bit-DropMenu-active-border-color",
+            Description = "Border color while pressed or open of a Fill drop menu alone, read ahead of --bit-DropMenu-active-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-disabled-color",
+            DefaultValue = "--bit-DropMenu-disabled-color",
+            Description = "Text and icon color when disabled or loading of a Fill drop menu alone, read ahead of --bit-DropMenu-disabled-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-disabled-background",
+            DefaultValue = "--bit-DropMenu-disabled-background",
+            Description = "Background when disabled or loading of a Fill drop menu alone, read ahead of --bit-DropMenu-disabled-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-fill-disabled-border-color",
+            DefaultValue = "--bit-DropMenu-disabled-border-color",
+            Description = "Border color when disabled or loading of a Fill drop menu alone, read ahead of --bit-DropMenu-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-color",
+            DefaultValue = "--bit-DropMenu-color",
+            Description = "Text and icon color of the button at rest of an Outline drop menu alone, read ahead of --bit-DropMenu-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-background",
+            DefaultValue = "--bit-DropMenu-background",
+            Description = "Background of the button at rest of an Outline drop menu alone, read ahead of --bit-DropMenu-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-border-color",
+            DefaultValue = "--bit-DropMenu-border-color",
+            Description = "Border color of the button, in every state, of an Outline drop menu alone, read ahead of --bit-DropMenu-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-hover-color",
+            DefaultValue = "--bit-DropMenu-hover-color",
+            Description = "Text and icon color on hover of an Outline drop menu alone, read ahead of --bit-DropMenu-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-hover-background",
+            DefaultValue = "--bit-DropMenu-hover-background",
+            Description = "Background on hover of an Outline drop menu alone, read ahead of --bit-DropMenu-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-hover-border-color",
+            DefaultValue = "--bit-DropMenu-hover-border-color",
+            Description = "Border color on hover of an Outline drop menu alone, read ahead of --bit-DropMenu-hover-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-active-color",
+            DefaultValue = "--bit-DropMenu-active-color",
+            Description = "Text and icon color while pressed or open of an Outline drop menu alone, read ahead of --bit-DropMenu-active-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-active-background",
+            DefaultValue = "--bit-DropMenu-active-background",
+            Description = "Background while pressed or open of an Outline drop menu alone, read ahead of --bit-DropMenu-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-active-border-color",
+            DefaultValue = "--bit-DropMenu-active-border-color",
+            Description = "Border color while pressed or open of an Outline drop menu alone, read ahead of --bit-DropMenu-active-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-disabled-color",
+            DefaultValue = "--bit-DropMenu-disabled-color",
+            Description = "Text and icon color when disabled or loading of an Outline drop menu alone, read ahead of --bit-DropMenu-disabled-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-disabled-background",
+            DefaultValue = "--bit-DropMenu-disabled-background",
+            Description = "Background when disabled or loading of an Outline drop menu alone, read ahead of --bit-DropMenu-disabled-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-outline-disabled-border-color",
+            DefaultValue = "--bit-DropMenu-disabled-border-color",
+            Description = "Border color when disabled or loading of an Outline drop menu alone, read ahead of --bit-DropMenu-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-color",
+            DefaultValue = "--bit-DropMenu-color",
+            Description = "Text and icon color of the button at rest of a Text drop menu alone, read ahead of --bit-DropMenu-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-background",
+            DefaultValue = "--bit-DropMenu-background",
+            Description = "Background of the button at rest of a Text drop menu alone, read ahead of --bit-DropMenu-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-border-color",
+            DefaultValue = "--bit-DropMenu-border-color",
+            Description = "Border color of the button, in every state, of a Text drop menu alone, read ahead of --bit-DropMenu-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-hover-color",
+            DefaultValue = "--bit-DropMenu-hover-color",
+            Description = "Text and icon color on hover of a Text drop menu alone, read ahead of --bit-DropMenu-hover-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-hover-background",
+            DefaultValue = "--bit-DropMenu-hover-background",
+            Description = "Background on hover of a Text drop menu alone, read ahead of --bit-DropMenu-hover-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-hover-border-color",
+            DefaultValue = "--bit-DropMenu-hover-border-color",
+            Description = "Border color on hover of a Text drop menu alone, read ahead of --bit-DropMenu-hover-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-active-color",
+            DefaultValue = "--bit-DropMenu-active-color",
+            Description = "Text and icon color while pressed or open of a Text drop menu alone, read ahead of --bit-DropMenu-active-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-active-background",
+            DefaultValue = "--bit-DropMenu-active-background",
+            Description = "Background while pressed or open of a Text drop menu alone, read ahead of --bit-DropMenu-active-background so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-active-border-color",
+            DefaultValue = "--bit-DropMenu-active-border-color",
+            Description = "Border color while pressed or open of a Text drop menu alone, read ahead of --bit-DropMenu-active-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-disabled-color",
+            DefaultValue = "--bit-DropMenu-disabled-color",
+            Description = "Text and icon color when disabled or loading of a Text drop menu alone, read ahead of --bit-DropMenu-disabled-color so a theme can set this variant apart from the other two. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-disabled-background",
+            DefaultValue = "--bit-DropMenu-disabled-background",
+            Description = "Background when disabled or loading of a Text drop menu alone, read ahead of --bit-DropMenu-disabled-background so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
+        },
+        new()
+        {
+            Name = "--bit-DropMenu-text-disabled-border-color",
+            DefaultValue = "--bit-DropMenu-disabled-border-color",
+            Description = "Border color when disabled or loading of a Text drop menu alone, read ahead of --bit-DropMenu-disabled-border-color so a theme can set this variant apart from the other two. The Color parameter leaves it alone.",
         },
         new()
         {

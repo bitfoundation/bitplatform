@@ -23,6 +23,45 @@
 //   --bit-DropMenu-disabled-background       background when disabled/loading            (default: $clr-bg-pri, transparent for
 //                                                                                         Outline, Text and Transparent)
 //   --bit-DropMenu-disabled-border-color     border color when disabled/loading          (default: per variant)
+//                                            Each button color above has a twin per variant, read ahead of it by that
+//                                            variant alone, so a theme can set one look apart from the others (Color still
+//                                            wins over both; a drop menu with no Variant reads only the shared ones):
+//   --bit-DropMenu-fill-color                     text and icon color at rest, Fill variant            (default: --bit-DropMenu-color)
+//   --bit-DropMenu-fill-background                background at rest, Fill variant                     (default: --bit-DropMenu-background)
+//   --bit-DropMenu-fill-border-color              border color at rest, Fill variant                   (default: --bit-DropMenu-border-color)
+//   --bit-DropMenu-fill-hover-color               text and icon color on hover, Fill variant           (default: --bit-DropMenu-hover-color)
+//   --bit-DropMenu-fill-hover-background          background on hover, Fill variant                    (default: --bit-DropMenu-hover-background)
+//   --bit-DropMenu-fill-hover-border-color        border color on hover, Fill variant                  (default: --bit-DropMenu-hover-border-color)
+//   --bit-DropMenu-fill-active-color              text and icon color, pressed or open, Fill variant   (default: --bit-DropMenu-active-color)
+//   --bit-DropMenu-fill-active-background         background, pressed or open, Fill variant            (default: --bit-DropMenu-active-background)
+//   --bit-DropMenu-fill-active-border-color       border color, pressed or open, Fill variant          (default: --bit-DropMenu-active-border-color)
+//   --bit-DropMenu-fill-disabled-color            text and icon color, disabled/loading, Fill variant  (default: --bit-DropMenu-disabled-color)
+//   --bit-DropMenu-fill-disabled-background       background, disabled/loading, Fill variant           (default: --bit-DropMenu-disabled-background)
+//   --bit-DropMenu-fill-disabled-border-color     border color, disabled/loading, Fill variant         (default: --bit-DropMenu-disabled-border-color)
+//   --bit-DropMenu-outline-color                  text and icon color at rest, Outline variant         (default: --bit-DropMenu-color)
+//   --bit-DropMenu-outline-background             background at rest, Outline variant                  (default: --bit-DropMenu-background)
+//   --bit-DropMenu-outline-border-color           border color at rest, Outline variant                (default: --bit-DropMenu-border-color)
+//   --bit-DropMenu-outline-hover-color            text and icon color on hover, Outline variant        (default: --bit-DropMenu-hover-color)
+//   --bit-DropMenu-outline-hover-background       background on hover, Outline variant                 (default: --bit-DropMenu-hover-background)
+//   --bit-DropMenu-outline-hover-border-color     border color on hover, Outline variant               (default: --bit-DropMenu-hover-border-color)
+//   --bit-DropMenu-outline-active-color           text and icon color, pressed or open, Outline variant (default: --bit-DropMenu-active-color)
+//   --bit-DropMenu-outline-active-background      background, pressed or open, Outline variant         (default: --bit-DropMenu-active-background)
+//   --bit-DropMenu-outline-active-border-color    border color, pressed or open, Outline variant       (default: --bit-DropMenu-active-border-color)
+//   --bit-DropMenu-outline-disabled-color         text and icon color, disabled/loading, Outline variant (default: --bit-DropMenu-disabled-color)
+//   --bit-DropMenu-outline-disabled-background    background, disabled/loading, Outline variant        (default: --bit-DropMenu-disabled-background)
+//   --bit-DropMenu-outline-disabled-border-color  border color, disabled/loading, Outline variant      (default: --bit-DropMenu-disabled-border-color)
+//   --bit-DropMenu-text-color                     text and icon color at rest, Text variant            (default: --bit-DropMenu-color)
+//   --bit-DropMenu-text-background                background at rest, Text variant                     (default: --bit-DropMenu-background)
+//   --bit-DropMenu-text-border-color              border color at rest, Text variant                   (default: --bit-DropMenu-border-color)
+//   --bit-DropMenu-text-hover-color               text and icon color on hover, Text variant           (default: --bit-DropMenu-hover-color)
+//   --bit-DropMenu-text-hover-background          background on hover, Text variant                    (default: --bit-DropMenu-hover-background)
+//   --bit-DropMenu-text-hover-border-color        border color on hover, Text variant                  (default: --bit-DropMenu-hover-border-color)
+//   --bit-DropMenu-text-active-color              text and icon color, pressed or open, Text variant   (default: --bit-DropMenu-active-color)
+//   --bit-DropMenu-text-active-background         background, pressed or open, Text variant            (default: --bit-DropMenu-active-background)
+//   --bit-DropMenu-text-active-border-color       border color, pressed or open, Text variant          (default: --bit-DropMenu-active-border-color)
+//   --bit-DropMenu-text-disabled-color            text and icon color, disabled/loading, Text variant  (default: --bit-DropMenu-disabled-color)
+//   --bit-DropMenu-text-disabled-background       background, disabled/loading, Text variant           (default: --bit-DropMenu-disabled-background)
+//   --bit-DropMenu-text-disabled-border-color     border color, disabled/loading, Text variant         (default: --bit-DropMenu-disabled-border-color)
 //   --bit-DropMenu-focus-color               focus ring color                            (default: $clr-pri-focus)
 //   --bit-DropMenu-min-height                smallest height of the button, and the width
 //                                            of a button that holds only an icon         (default: $siz-ctrl-md)
@@ -57,7 +96,11 @@
 // callout takes no Color or Size, so nothing of them has to reach it once it is moved to the body.
 
 $drm-private-properties: clr, clr-txt, clr-flt, clr-hover, clr-active, clr-focus, clr-dis, clr-dis-text, font-size,
-                         min-height, icon-size, pad-y, padding;
+                         min-height, icon-size, pad-y, padding,
+                         // The public tier of each state a variant publishes (see .bit-drm-fil), so a drop menu
+                         // with no Variant never inherits one from a variant around it.
+                         rst-txt-p, rst-bg-p, rst-brd-p, hov-txt-p, hov-bg-p, hov-brd-p, act-txt-p, act-bg-p, act-brd-p,
+                         dis-txt-p, dis-bg-p, dis-brd-p;
 
 .bit-drm {
     display: flex;
@@ -98,8 +141,13 @@ $drm-private-properties: clr, clr-txt, clr-flt, clr-hover, clr-active, clr-focus
     // paints there - unset while Color is, and unset wherever the look paints something no Color decides (a
     // transparent background or border); the -d one is the default the public variables restyle: the
     // PrimaryBackground look a drop menu with no Color has. The variant classes below re-point both, and the
-    // state rules rank them around the public variable of that state - the Color first, then the variable, then
-    // the default - so a public variable restyles its state in every variant alike without outranking a Color.
+    // state rules rank them around the public variables of that state - the Color first, then the variables, then
+    // the default - so a public variable restyles its state without outranking a Color.
+    //
+    // A variant reads the public variables itself, its own tier (--bit-DropMenu-fill-*, -outline-*, -text-*) ahead
+    // of the shared one, and publishes what they resolve to in a -p slot (reset above with the rest of the list),
+    // read right after the Color; the shared variable read after the slot is then only reached by the look of a
+    // drop menu with no Variant, which renders no class of its own to read it under.
     --bit-drm-rst-txt: var(--bit-drm-clr-txt);
     --bit-drm-rst-txt-d: #{$clr-fg-pri};
     --bit-drm-rst-bg: var(--bit-drm-clr);
@@ -111,40 +159,43 @@ $drm-private-properties: clr, clr-txt, clr-flt, clr-hover, clr-active, clr-focus
     --bit-drm-hov-bg: var(--bit-drm-clr-hover);
     --bit-drm-hov-bg-d: #{$clr-bg-pri-hover};
     --bit-drm-hov-brd: initial;
-    --bit-drm-hov-brd-d: transparent;
+    // With no variant the hover and press borders fall back to the rest one, its public variable included.
+    --bit-drm-hov-brd-d: var(--bit-drm-rst-brd-p, var(--bit-DropMenu-border-color, transparent));
     --bit-drm-act-txt: var(--bit-drm-clr-txt);
     --bit-drm-act-txt-d: #{$clr-fg-pri};
     --bit-drm-act-bg: var(--bit-drm-clr-active);
     --bit-drm-act-bg-d: #{$clr-bg-pri-active};
     --bit-drm-act-brd: initial;
-    --bit-drm-act-brd-d: transparent;
+    --bit-drm-act-brd-d: var(--bit-drm-rst-brd-p, var(--bit-DropMenu-border-color, transparent));
     --bit-drm-dis-bg: var(--bit-drm-clr-dis);
     --bit-drm-dis-bg-d: #{$clr-bg-pri};
     --bit-drm-dis-brd: initial;
     --bit-drm-dis-brd-d: transparent;
 
-    --bit-drm-cur-txt: var(--bit-drm-rst-txt, var(--bit-DropMenu-color, var(--bit-drm-rst-txt-d)));
-    --bit-drm-cur-bg: var(--bit-drm-rst-bg, var(--bit-DropMenu-background, var(--bit-drm-rst-bg-d)));
-    --bit-drm-cur-brd: var(--bit-drm-rst-brd, var(--bit-DropMenu-border-color, var(--bit-drm-rst-brd-d)));
+    --bit-drm-cur-txt: var(--bit-drm-rst-txt, var(--bit-drm-rst-txt-p, var(--bit-DropMenu-color, var(--bit-drm-rst-txt-d))));
+    --bit-drm-cur-bg: var(--bit-drm-rst-bg, var(--bit-drm-rst-bg-p, var(--bit-DropMenu-background, var(--bit-drm-rst-bg-d))));
+    --bit-drm-cur-brd: var(--bit-drm-rst-brd, var(--bit-drm-rst-brd-p, var(--bit-DropMenu-border-color, var(--bit-drm-rst-brd-d))));
 
-    &.bit-rtl {
+    // The direction the drop menu is laid out in - its Dir, the page's or its content's (Auto) - with the class an
+    // explicit Dir renders for an engine without :dir().
+    &:is(.bit-rtl, :dir(rtl)) {
         --bit-drm-transform-factor: -1;
     }
 
     @media (hover: hover) {
         &:hover {
-            --bit-drm-cur-txt: var(--bit-drm-hov-txt, var(--bit-DropMenu-hover-color, var(--bit-drm-hov-txt-d)));
-            --bit-drm-cur-bg: var(--bit-drm-hov-bg, var(--bit-DropMenu-hover-background, var(--bit-drm-hov-bg-d)));
-            --bit-drm-cur-brd: var(--bit-drm-hov-brd, var(--bit-DropMenu-hover-border-color, var(--bit-DropMenu-border-color, var(--bit-drm-hov-brd-d))));
+            --bit-drm-cur-txt: var(--bit-drm-hov-txt, var(--bit-drm-hov-txt-p, var(--bit-DropMenu-hover-color, var(--bit-drm-hov-txt-d))));
+            --bit-drm-cur-bg: var(--bit-drm-hov-bg, var(--bit-drm-hov-bg-p, var(--bit-DropMenu-hover-background, var(--bit-drm-hov-bg-d))));
+            --bit-drm-cur-brd: var(--bit-drm-hov-brd, var(--bit-drm-hov-brd-p, var(--bit-DropMenu-hover-border-color, var(--bit-drm-hov-brd-d))));
         }
     }
 
     // While the callout is open the button keeps the pressed look, so it stays visibly tied to it.
     &:active,
     &.bit-drm-omn {
-        --bit-drm-cur-txt: var(--bit-drm-act-txt, var(--bit-DropMenu-active-color, var(--bit-drm-act-txt-d)));
-        --bit-drm-cur-bg: var(--bit-drm-act-bg, var(--bit-DropMenu-active-background, var(--bit-drm-act-bg-d)));
-        --bit-drm-cur-brd: var(--bit-drm-act-brd, var(--bit-DropMenu-active-border-color, var(--bit-DropMenu-border-color, var(--bit-drm-act-brd-d))));
+        --bit-drm-cur-txt: var(--bit-drm-act-txt, var(--bit-drm-act-txt-p, var(--bit-DropMenu-active-color, var(--bit-drm-act-txt-d))));
+        --bit-drm-cur-bg: var(--bit-drm-act-bg, var(--bit-drm-act-bg-p, var(--bit-DropMenu-active-background, var(--bit-drm-act-bg-d))));
+        --bit-drm-cur-brd: var(--bit-drm-act-brd, var(--bit-drm-act-brd-p, var(--bit-DropMenu-active-border-color, var(--bit-drm-act-brd-d))));
     }
 
     &:has(.bit-drm-btn:focus-visible) {
@@ -156,9 +207,9 @@ $drm-private-properties: clr, clr-txt, clr-flt, clr-hover, clr-active, clr-focus
     &.bit-dis,
     &.bit-drm-ldg {
         pointer-events: none;
-        --bit-drm-cur-txt: var(--bit-drm-clr-dis-text, var(--bit-DropMenu-disabled-color, #{$clr-fg-dis}));
-        --bit-drm-cur-bg: var(--bit-drm-dis-bg, var(--bit-DropMenu-disabled-background, var(--bit-drm-dis-bg-d)));
-        --bit-drm-cur-brd: var(--bit-drm-dis-brd, var(--bit-DropMenu-disabled-border-color, var(--bit-drm-dis-brd-d)));
+        --bit-drm-cur-txt: var(--bit-drm-clr-dis-text, var(--bit-drm-dis-txt-p, var(--bit-DropMenu-disabled-color, #{$clr-fg-dis})));
+        --bit-drm-cur-bg: var(--bit-drm-dis-bg, var(--bit-drm-dis-bg-p, var(--bit-DropMenu-disabled-background, var(--bit-drm-dis-bg-d))));
+        --bit-drm-cur-brd: var(--bit-drm-dis-brd, var(--bit-drm-dis-brd-p, var(--bit-DropMenu-disabled-border-color, var(--bit-drm-dis-brd-d))));
 
         .bit-drm-btn {
             cursor: default;
@@ -168,7 +219,7 @@ $drm-private-properties: clr, clr-txt, clr-flt, clr-hover, clr-active, clr-focus
     // A loading button keeps the focus (it is only aria-disabled), so its ring stays visible - but drawn in the
     // disabled color, since the vivid ring of the enabled state reads as actionable.
     &.bit-drm-ldg:has(.bit-drm-btn:focus-visible) {
-        @include focus-ring(var(--bit-drm-clr-dis-text, var(--bit-DropMenu-disabled-color, #{$clr-fg-dis})));
+        @include focus-ring(var(--bit-drm-clr-dis-text, var(--bit-drm-dis-txt-p, var(--bit-DropMenu-disabled-color, #{$clr-fg-dis}))));
     }
 }
 
@@ -328,8 +379,7 @@ $drm-cal-private-properties: cal-bg, cal-brd;
     // is drawn inside the callout rather than through the shared focus-ring mixin, whose box-shadow would
     // take the place of the elevation the callout is drawn with.
     &:focus-visible {
-        outline: $shp-focus-ring-width solid var(--bit-DropMenu-focus-color, #{$clr-pri-focus});
-        outline-offset: calc(-1 * #{$shp-focus-ring-width});
+        @include focus-ring-inset(var(--bit-DropMenu-focus-color, #{$clr-pri-focus}));
     }
 
     &[data-bit-cal-pos="above"] {
@@ -359,7 +409,9 @@ $drm-cal-private-properties: cal-bg, cal-brd;
         --bit-drm-cal-tra: var(--bit-drm-cal-tra-ent);
     }
 
-    &.bit-drm-rtl {
+    // The direction the callout is laid out in - the drop menu's Dir, or the page's or the content's it carries
+    // over to the body - with the class an explicit Dir renders for an engine without :dir().
+    &:is(.bit-drm-rtl, :dir(rtl)) {
         --bit-drm-transform-factor: -1;
     }
 
@@ -531,16 +583,34 @@ $drm-cal-private-properties: cal-bg, cal-brd;
 // variant class at all, which leaves the drop menu with the filled look it has always had by default.
 // They only re-point the per-state colors; the state rules of .bit-drm pick the set that applies.
 // A filled border is drawn in the background of its state, so with no Color it follows the public background
-// variable of that state before the default.
+// variables of that state before the default.
+//
+// Every color variable is read in two tiers here: the variant's own (--bit-DropMenu-fill-*, -outline-*, -text-*)
+// ahead of the shared one, so a theme can give the three looks different colors from :root - an outline drop
+// menu's neutral hairline without a ring around every filled one - while a shared variable still re-skins all of
+// them at once, the look of a drop menu with no Variant included. Each state publishes what they resolve to in its
+// -p slot, which the state rules of .bit-drm read right after the Color, so an explicit Color still wins over both.
 .bit-drm-fil {
     --bit-drm-rst-brd: var(--bit-drm-clr);
-    --bit-drm-rst-brd-d: var(--bit-DropMenu-background, #{$clr-bg-pri});
+    --bit-drm-rst-brd-d: var(--bit-DropMenu-fill-background, var(--bit-DropMenu-background, #{$clr-bg-pri}));
     --bit-drm-hov-brd: var(--bit-drm-clr-hover);
-    --bit-drm-hov-brd-d: var(--bit-DropMenu-hover-background, #{$clr-bg-pri-hover});
+    --bit-drm-hov-brd-d: var(--bit-DropMenu-fill-hover-background, var(--bit-DropMenu-hover-background, #{$clr-bg-pri-hover}));
     --bit-drm-act-brd: var(--bit-drm-clr-active);
-    --bit-drm-act-brd-d: var(--bit-DropMenu-active-background, #{$clr-bg-pri-active});
+    --bit-drm-act-brd-d: var(--bit-DropMenu-fill-active-background, var(--bit-DropMenu-active-background, #{$clr-bg-pri-active}));
     --bit-drm-dis-brd: var(--bit-drm-clr-dis);
-    --bit-drm-dis-brd-d: var(--bit-DropMenu-disabled-background, #{$clr-bg-pri});
+    --bit-drm-dis-brd-d: var(--bit-DropMenu-fill-disabled-background, var(--bit-DropMenu-disabled-background, #{$clr-bg-pri}));
+    --bit-drm-rst-txt-p: var(--bit-DropMenu-fill-color, var(--bit-DropMenu-color, var(--bit-drm-rst-txt-d)));
+    --bit-drm-rst-bg-p: var(--bit-DropMenu-fill-background, var(--bit-DropMenu-background, var(--bit-drm-rst-bg-d)));
+    --bit-drm-rst-brd-p: var(--bit-DropMenu-fill-border-color, var(--bit-DropMenu-border-color, var(--bit-drm-rst-brd-d)));
+    --bit-drm-hov-txt-p: var(--bit-DropMenu-fill-hover-color, var(--bit-DropMenu-hover-color, var(--bit-drm-hov-txt-d)));
+    --bit-drm-hov-bg-p: var(--bit-DropMenu-fill-hover-background, var(--bit-DropMenu-hover-background, var(--bit-drm-hov-bg-d)));
+    --bit-drm-hov-brd-p: var(--bit-DropMenu-fill-hover-border-color, var(--bit-DropMenu-hover-border-color, var(--bit-DropMenu-fill-border-color, var(--bit-DropMenu-border-color, var(--bit-drm-hov-brd-d)))));
+    --bit-drm-act-txt-p: var(--bit-DropMenu-fill-active-color, var(--bit-DropMenu-active-color, var(--bit-drm-act-txt-d)));
+    --bit-drm-act-bg-p: var(--bit-DropMenu-fill-active-background, var(--bit-DropMenu-active-background, var(--bit-drm-act-bg-d)));
+    --bit-drm-act-brd-p: var(--bit-DropMenu-fill-active-border-color, var(--bit-DropMenu-active-border-color, var(--bit-DropMenu-fill-border-color, var(--bit-DropMenu-border-color, var(--bit-drm-act-brd-d)))));
+    --bit-drm-dis-txt-p: var(--bit-DropMenu-fill-disabled-color, var(--bit-DropMenu-disabled-color, #{$clr-fg-dis}));
+    --bit-drm-dis-bg-p: var(--bit-DropMenu-fill-disabled-background, var(--bit-DropMenu-disabled-background, var(--bit-drm-dis-bg-d)));
+    --bit-drm-dis-brd-p: var(--bit-DropMenu-fill-disabled-border-color, var(--bit-DropMenu-disabled-border-color, var(--bit-drm-dis-brd-d)));
 }
 
 .bit-drm-otl {
@@ -550,13 +620,25 @@ $drm-cal-private-properties: cal-bg, cal-brd;
     --bit-drm-rst-brd: var(--bit-drm-clr);
     --bit-drm-rst-brd-d: #{$clr-bg-pri};
     --bit-drm-hov-brd: var(--bit-drm-clr-hover);
-    --bit-drm-hov-brd-d: var(--bit-DropMenu-hover-background, #{$clr-bg-pri-hover});
+    --bit-drm-hov-brd-d: var(--bit-DropMenu-outline-hover-background, var(--bit-DropMenu-hover-background, #{$clr-bg-pri-hover}));
     --bit-drm-act-brd: var(--bit-drm-clr-active);
-    --bit-drm-act-brd-d: var(--bit-DropMenu-active-background, #{$clr-bg-pri-active});
+    --bit-drm-act-brd-d: var(--bit-DropMenu-outline-active-background, var(--bit-DropMenu-active-background, #{$clr-bg-pri-active}));
     --bit-drm-dis-bg: initial;
     --bit-drm-dis-bg-d: transparent;
     --bit-drm-dis-brd: var(--bit-drm-clr-dis);
     --bit-drm-dis-brd-d: #{$clr-bg-pri};
+    --bit-drm-rst-txt-p: var(--bit-DropMenu-outline-color, var(--bit-DropMenu-color, var(--bit-drm-rst-txt-d)));
+    --bit-drm-rst-bg-p: var(--bit-DropMenu-outline-background, var(--bit-DropMenu-background, var(--bit-drm-rst-bg-d)));
+    --bit-drm-rst-brd-p: var(--bit-DropMenu-outline-border-color, var(--bit-DropMenu-border-color, var(--bit-drm-rst-brd-d)));
+    --bit-drm-hov-txt-p: var(--bit-DropMenu-outline-hover-color, var(--bit-DropMenu-hover-color, var(--bit-drm-hov-txt-d)));
+    --bit-drm-hov-bg-p: var(--bit-DropMenu-outline-hover-background, var(--bit-DropMenu-hover-background, var(--bit-drm-hov-bg-d)));
+    --bit-drm-hov-brd-p: var(--bit-DropMenu-outline-hover-border-color, var(--bit-DropMenu-hover-border-color, var(--bit-DropMenu-outline-border-color, var(--bit-DropMenu-border-color, var(--bit-drm-hov-brd-d)))));
+    --bit-drm-act-txt-p: var(--bit-DropMenu-outline-active-color, var(--bit-DropMenu-active-color, var(--bit-drm-act-txt-d)));
+    --bit-drm-act-bg-p: var(--bit-DropMenu-outline-active-background, var(--bit-DropMenu-active-background, var(--bit-drm-act-bg-d)));
+    --bit-drm-act-brd-p: var(--bit-DropMenu-outline-active-border-color, var(--bit-DropMenu-active-border-color, var(--bit-DropMenu-outline-border-color, var(--bit-DropMenu-border-color, var(--bit-drm-act-brd-d)))));
+    --bit-drm-dis-txt-p: var(--bit-DropMenu-outline-disabled-color, var(--bit-DropMenu-disabled-color, #{$clr-fg-dis}));
+    --bit-drm-dis-bg-p: var(--bit-DropMenu-outline-disabled-background, var(--bit-DropMenu-disabled-background, var(--bit-drm-dis-bg-d)));
+    --bit-drm-dis-brd-p: var(--bit-DropMenu-outline-disabled-border-color, var(--bit-DropMenu-disabled-border-color, var(--bit-drm-dis-brd-d)));
 }
 
 .bit-drm-tex {
@@ -565,6 +647,18 @@ $drm-cal-private-properties: cal-bg, cal-brd;
     --bit-drm-rst-bg-d: transparent;
     --bit-drm-dis-bg: initial;
     --bit-drm-dis-bg-d: transparent;
+    --bit-drm-rst-txt-p: var(--bit-DropMenu-text-color, var(--bit-DropMenu-color, var(--bit-drm-rst-txt-d)));
+    --bit-drm-rst-bg-p: var(--bit-DropMenu-text-background, var(--bit-DropMenu-background, var(--bit-drm-rst-bg-d)));
+    --bit-drm-rst-brd-p: var(--bit-DropMenu-text-border-color, var(--bit-DropMenu-border-color, var(--bit-drm-rst-brd-d)));
+    --bit-drm-hov-txt-p: var(--bit-DropMenu-text-hover-color, var(--bit-DropMenu-hover-color, var(--bit-drm-hov-txt-d)));
+    --bit-drm-hov-bg-p: var(--bit-DropMenu-text-hover-background, var(--bit-DropMenu-hover-background, var(--bit-drm-hov-bg-d)));
+    --bit-drm-hov-brd-p: var(--bit-DropMenu-text-hover-border-color, var(--bit-DropMenu-hover-border-color, var(--bit-DropMenu-text-border-color, var(--bit-DropMenu-border-color, var(--bit-drm-hov-brd-d)))));
+    --bit-drm-act-txt-p: var(--bit-DropMenu-text-active-color, var(--bit-DropMenu-active-color, var(--bit-drm-act-txt-d)));
+    --bit-drm-act-bg-p: var(--bit-DropMenu-text-active-background, var(--bit-DropMenu-active-background, var(--bit-drm-act-bg-d)));
+    --bit-drm-act-brd-p: var(--bit-DropMenu-text-active-border-color, var(--bit-DropMenu-active-border-color, var(--bit-DropMenu-text-border-color, var(--bit-DropMenu-border-color, var(--bit-drm-act-brd-d)))));
+    --bit-drm-dis-txt-p: var(--bit-DropMenu-text-disabled-color, var(--bit-DropMenu-disabled-color, #{$clr-fg-dis}));
+    --bit-drm-dis-bg-p: var(--bit-DropMenu-text-disabled-background, var(--bit-DropMenu-disabled-background, var(--bit-drm-dis-bg-d)));
+    --bit-drm-dis-brd-p: var(--bit-DropMenu-text-disabled-border-color, var(--bit-DropMenu-disabled-border-color, var(--bit-drm-dis-brd-d)));
 }
 
 // A transparent drop menu never paints a surface, in any state, so it never takes the label that goes with

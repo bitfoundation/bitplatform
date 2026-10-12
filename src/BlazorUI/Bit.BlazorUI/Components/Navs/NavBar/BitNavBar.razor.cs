@@ -462,18 +462,19 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
         if (items.Count == 0) return;
 
         var index = _focusedItem is null ? -1 : items.FindIndex(i => AreEqual(i, _focusedItem));
-        var isRtl = (Dir ?? CascadingDir) == BitDir.Rtl;
 
         // Both axes move along the bar, whichever way it is laid out: the pair that matches the orientation
         // is the expected one, and the other pair is what a reader of a bar or a rail reaches for anyway.
         switch (e.Key)
         {
+            // The direction the bar is laid out in, a page's or a content's included, read only for the keys that
+            // act on it since one Dir does not name costs a round trip.
             case "ArrowRight":
-                await FocusItemAt(items, index + (isRtl ? -1 : 1));
+                await FocusItemAt(items, index + (await IsRtlArrowAsync(_js, e.Key) ? -1 : 1));
                 return;
 
             case "ArrowLeft":
-                await FocusItemAt(items, index + (isRtl ? 1 : -1));
+                await FocusItemAt(items, index + (await IsRtlArrowAsync(_js, e.Key) ? 1 : -1));
                 return;
 
             case "ArrowDown":

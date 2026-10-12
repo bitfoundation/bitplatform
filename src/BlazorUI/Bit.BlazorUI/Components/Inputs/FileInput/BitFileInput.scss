@@ -53,6 +53,13 @@
 //   --bit-FileInput-remove-button-hover-background  background of a hovered remove button      (default: $clr-bg-sec-hover)
 //   --bit-FileInput-remove-button-active-background background of a pressed remove button      (default: $clr-bg-sec-active)
 //   --bit-FileInput-remove-icon-size          glyph size of the remove button                  (default: $siz-icon-md)
+//                                             The disabled background and border have a twin per variant, read ahead
+//                                             of the shared one, so a theme can set one look apart from the others:
+//   --bit-FileInput-fill-disabled-background        disabled browse and remove buttons, Fill variant  (default: --bit-FileInput-disabled-background)
+//   --bit-FileInput-fill-disabled-border-color      disabled browse button border, Fill variant       (default: --bit-FileInput-disabled-border-color)
+//   --bit-FileInput-outline-disabled-background     disabled remove buttons, Outline variant          (default: --bit-FileInput-disabled-background)
+//   --bit-FileInput-outline-disabled-border-color   disabled browse button border, Outline variant    (default: --bit-FileInput-disabled-border-color)
+//   --bit-FileInput-text-disabled-background        disabled remove buttons, Text variant             (default: --bit-FileInput-disabled-background)
 //
 // A parameter written on the file input wins over the variable that restyles what it sets: an explicit Color
 // over the color, text, hover, active and focus colors above and over the drop indicator's, and an explicit
@@ -178,8 +185,20 @@ $fin-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, lbl-hei
     }
 }
 
+//The role colors are shared by the three variants, since each of them derives its look from the same role. The
+//disabled background and border are what the variants paint apart, so each variant reads its own tier of them
+//(--bit-FileInput-fill-disabled-*, -outline-*, -text-*) ahead of the shared one, and resolves the background into
+//--bit-fin-dis-bg on its button and on the remove buttons of its file items, which read it as well.
+
 //Fill - the default: a solid block of the role color labelled in the role's on-color.
 .bit-fin-fil {
+    // Resolved on the parts that read it rather than on the root, so a public variable set on a part's own style
+    // (Styles.Label, Styles.RemoveButton) still reaches it.
+    .bit-fin-lbl,
+    .bit-fin-rbt {
+        --bit-fin-dis-bg: var(--bit-FileInput-fill-disabled-background, var(--bit-FileInput-disabled-background, #{$clr-bg-dis}));
+    }
+
     .bit-fin-lbl {
         color: var(--bit-fin-lbl-sfg, var(--bit-fin-c-txt));
         border-color: var(--bit-fin-lbl-sbr, var(--bit-fin-c));
@@ -199,14 +218,22 @@ $fin-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, lbl-hei
     }
 
     &.bit-dis .bit-fin-lbl {
-        border-color: var(--bit-FileInput-disabled-border-color, #{$clr-brd-dis});
-        background-color: var(--bit-FileInput-disabled-background, #{$clr-bg-dis});
+        border-color: var(--bit-FileInput-fill-disabled-border-color, var(--bit-FileInput-disabled-border-color, #{$clr-brd-dis}));
+        background-color: var(--bit-fin-dis-bg);
     }
 }
 
 //Outline: only the rule around the button carries the role color at rest, and it fills in like the Fill
-//variant once a pointer lands on it.
+//variant once a pointer lands on it. Its button stays transparent while disabled, so its tier of the disabled
+//background reaches the remove buttons alone.
 .bit-fin-otl {
+    // Resolved on the parts that read it rather than on the root, so a public variable set on a part's own style
+    // (Styles.Label, Styles.RemoveButton) still reaches it.
+    .bit-fin-lbl,
+    .bit-fin-rbt {
+        --bit-fin-dis-bg: var(--bit-FileInput-outline-disabled-background, var(--bit-FileInput-disabled-background, #{$clr-bg-dis}));
+    }
+
     .bit-fin-lbl {
         color: var(--bit-fin-lbl-sfg, var(--bit-fin-c));
         border-color: var(--bit-fin-lbl-sbr, var(--bit-fin-c));
@@ -226,13 +253,21 @@ $fin-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, lbl-hei
     }
 
     &.bit-dis .bit-fin-lbl {
-        border-color: var(--bit-FileInput-disabled-border-color, #{$clr-brd-dis});
+        border-color: var(--bit-FileInput-outline-disabled-border-color, var(--bit-FileInput-disabled-border-color, #{$clr-brd-dis}));
         background-color: transparent;
     }
 }
 
-//Text: neither rule nor fill at rest, for a file input that should not outweigh the fields around it.
+//Text: neither rule nor fill at rest, for a file input that should not outweigh the fields around it. Like
+//Outline, its tier of the disabled background reaches the remove buttons alone.
 .bit-fin-txt {
+    // Resolved on the parts that read it rather than on the root, so a public variable set on a part's own style
+    // (Styles.Label, Styles.RemoveButton) still reaches it.
+    .bit-fin-lbl,
+    .bit-fin-rbt {
+        --bit-fin-dis-bg: var(--bit-FileInput-text-disabled-background, var(--bit-FileInput-disabled-background, #{$clr-bg-dis}));
+    }
+
     .bit-fin-lbl {
         color: var(--bit-fin-lbl-sfg, var(--bit-fin-c));
         border-color: var(--bit-fin-lbl-sbr, transparent);
@@ -499,26 +534,20 @@ $fin-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, lbl-hei
 
     // the ring is drawn inside the button rather than around it: the file item clips its own overflow to
     // stay rounded, and the remove button sits flush against that edge, so an outset ring would be cut off
-    // on the very side the button touches. The forced-colors branch mirrors focus-ring's, since a
-    // box-shadow is dropped entirely in that mode.
+    // on the very side the button touches.
     &:focus-visible {
-        outline: none;
-        box-shadow: inset 0 0 0 $shp-focus-ring-width var(--bit-fin-clr-focus, var(--bit-FileInput-focus-color, #{$clr-pri-focus}));
-
-        @media (forced-colors: active) {
-            outline: #{$shp-focus-ring-width} solid Highlight;
-            outline-offset: calc(-1 * #{$shp-focus-ring-width});
-        }
+        @include focus-ring-inset(var(--bit-fin-clr-focus, var(--bit-FileInput-focus-color, #{$clr-pri-focus})));
     }
 
     &:disabled {
         cursor: default;
         color: var(--bit-FileInput-disabled-color, #{$clr-fg-dis});
-        background-color: var(--bit-FileInput-disabled-background, #{$clr-bg-dis});
+        // The disabled background of the variant, which each variant block resolves on the remove button.
+        background-color: var(--bit-fin-dis-bg, #{$clr-bg-dis});
 
         @media (hover: hover) {
             &:hover {
-                background-color: var(--bit-FileInput-disabled-background, #{$clr-bg-dis});
+                background-color: var(--bit-fin-dis-bg, #{$clr-bg-dis});
             }
         }
     }

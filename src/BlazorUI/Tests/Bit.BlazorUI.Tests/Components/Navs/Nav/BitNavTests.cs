@@ -2160,6 +2160,23 @@ public class BitNavTests : BunitTestContext
         Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
     }
 
+    // A Dir that names no direction leaves it to the page (unset) or to the content (Auto), which is read off the
+    // element: the keys follow the direction the component is actually laid out in.
+    [TestMethod,
+        DataRow(null),
+        DataRow(BitDir.Auto)
+    ]
+    public void BitNavShouldSwapTheArrowDirectionsInAResolvedRtl(BitDir? dir)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        var component = RenderNav(TreeItems(), p => p.Add(c => c.Dir, dir));
+
+        component.FindAll(".bit-nav-ict")[0].FocusIn();
+        PressKey(component, "ArrowLeft");
+
+        Assert.AreEqual(4, component.FindAll(".bit-nav-ict").Count);
+    }
+
     [TestMethod]
     public void BitNavShouldMoveTheFocusToTheNextItemWithTheDownArrow()
     {

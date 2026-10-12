@@ -226,13 +226,6 @@
             if (element) element.indeterminate = value;
         }
 
-        // Whether the element renders right to left. A grid whose Dir is unset inherits the page's
-        // direction and one whose Dir is Auto takes it from its content, so neither is known to .NET;
-        // the computed style resolves both, the dir attribute of every ancestor included.
-        public static isRtl(element: HTMLElement): boolean {
-            return element ? getComputedStyle(element).direction === 'rtl' : false;
-        }
-
         // Puts the focus back into a column header after its column moved: moving an element in the DOM drops the
         // focus it held. The sort button is the header's own control, so it is preferred; a header that is not
         // sortable falls back to its first focusable child (the resize handle).

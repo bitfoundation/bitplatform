@@ -37,7 +37,9 @@ public sealed class BitComponentDirFallbackTests
         ".bit-spl:not(.bit-spl-vrt):not([dir=\"rtl\"]):dir(rtl) > .bit-spl-gtr > .bit-spl-cbt > .bit-spl-cbd",
     };
 
-    private static readonly Regex RtlHook = new(@"\.bit-rtl(?![a-zA-Z0-9_-])|\[dir=[""']?rtl[""']?\]", RegexOptions.Compiled);
+    // The bit-rtl class, the class of its own a component renders for an explicit Dir on a part outside its root (the
+    // relocated callout of a dropdown, bit-drp-rtl), or the dir attribute.
+    private static readonly Regex RtlHook = new(@"\.bit-(?:[a-z0-9]+-)?rtl(?![a-zA-Z0-9_-])|\[dir=[""']?rtl[""']?\]", RegexOptions.Compiled);
 
     private static readonly Regex DirRtl = new(@":dir\(\s*rtl\s*\)", RegexOptions.Compiled);
 
@@ -58,11 +60,114 @@ public sealed class BitComponentDirFallbackTests
             $"A :dir(rtl) rule is lost for an explicit Dir on an engine without :dir(), or its fallback reaches into a nested instance; write it as :is(.bit-rtl, :dir(rtl)), or read the class through child combinators only, or inside @supports not selector(:dir(rtl)):{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
     }
 
+    // The rules that read the class or the dir attribute an explicit Dir renders, and nothing else, on purpose - each a
+    // prefix of the selectors it covers.
+    private static readonly string[] ExplicitOnly =
+    [
+        // The class sets --bit-brc-div-transform for an explicit Dir; .bit-brc-div:dir(rtl) turns the divider for the rest.
+        ".bit-brc.bit-rtl",
+        // The direction a right-to-left culture implies for a picker whose Dir is unset: the class is the whole of it.
+        ".bit-dtp-cal.bit-dtp-rtl",
+        ".bit-tpc-cal.bit-tpc-rtl",
+        // The calendar writes the direction it resolved (its culture's, or the one read back for Auto) on its root and
+        // in bit-bfc-rtl, so the class and the attribute are what it is laid out in.
+        ".bit-bfc-rtl ",
+        "[dir=\"rtl\"] .bit-bfc-",
+        // The safe-area insets of the page, mapped onto the inline sides of whatever declares a direction.
+        ":root [dir=\"rtl\"]",
+    ];
+
+    // A rule reading the class or the dir attribute an explicit Dir renders sees only that one: a component whose Dir
+    // leaves the direction to the page or to its content (Auto) reads right to left without either. So every such rule
+    // is the fallback of a :dir(rtl) one with the same declarations, which follows the direction the element is
+    // actually laid out in, whatever made it so (#13567).
+    [TestMethod]
+    public void EveryRtlRuleAlsoFollowsADirectionDirDoesNotName()
+    {
+        var offenders = EnumerateStylesheets().SelectMany(file => CheckFollowsResolvedDirection(Path.GetFileName(file), SourceFiles.ReadFullPath(file))).ToArray();
+
+        CollectionAssert.AreEqual(Array.Empty<string>(), offenders,
+            $"A right-to-left rule reads only the class or the attribute an explicit Dir renders, so it is lost for a component that is right to left by inheriting the page's direction or by its content (Auto); write it as :is(.bit-rtl, :dir(rtl)), or give it a :dir(rtl) twin and keep the class inside @supports not selector(:dir(rtl)):{Environment.NewLine}{string.Join(Environment.NewLine, offenders)}");
+    }
+
+    [TestMethod,
+        DataRow(".a:is(.bit-rtl, :dir(rtl)) { b: c; }"),
+        DataRow(".a:dir(rtl) { b: c; }\n@supports not selector(:dir(rtl)) { .r.bit-rtl .a { b: c; } }"),
+        DataRow(".a:dir(rtl) { b: c; }\n.r.bit-rtl > .a { b: c; }"),
+        DataRow("@supports selector(:dir(rtl)) { .a:dir(rtl) { b: c; } }\n.bit-rtl.a { b: c; }"),
+        DataRow(".a:not(.bit-rtl) { b: c; }")]
+    public void AnRtlRuleWithADirTwinPasses(string stylesheet)
+    {
+        CollectionAssert.AreEqual(Array.Empty<string>(), CheckFollowsResolvedDirection("test.scss", stylesheet).ToArray());
+    }
+
+    [TestMethod,
+        DataRow(".bit-rtl.a { b: c; }"),
+        DataRow(".r.bit-rtl .a { b: c; }"),
+        DataRow(".a[dir=\"rtl\"] .b { b: c; }"),
+        DataRow(".a.bit-drp-rtl { b: c; }"),
+        DataRow(".a:dir(rtl) { b: c; }\n.bit-rtl.a { b: d; }"),
+        DataRow(".x-chevron:dir(rtl) { b: c; }\n.x.bit-rtl .x-icon { b: c; }")]
+    public void AnRtlRuleWithoutADirTwinFails(string stylesheet)
+    {
+        Assert.AreEqual(1, CheckFollowsResolvedDirection("test.scss", stylesheet).Count());
+    }
+
+    private static IEnumerable<string> CheckFollowsResolvedDirection(string name, string source)
+    {
+        var stylesheet = SourceFiles.StripScssComments(source).Replace("\r\n", "\n");
+        var lineStarts = LineStarts(stylesheet);
+        var entries = new List<(string Selector, string[] Declarations, bool Fallback, string Location)>();
+
+        foreach (var rule in SourceFiles.GetScssRules(stylesheet))
+        {
+            var headers = rule.Ancestors.Append(rule.Header).ToArray();
+
+            if (headers.Any(header => header.StartsWith("@function", StringComparison.Ordinal))) continue;
+
+            var declarations = rule.Declarations.Select(Squash).Order(StringComparer.Ordinal).ToArray();
+
+            if (declarations.Length == 0) continue;
+
+            var fallback = headers.Any(header => DirUnknownGuard.IsMatch(header));
+
+            foreach (var selector in SourceFiles.ResolveScssSelectors(headers.Where(header => header.StartsWith('@') is false)))
+            {
+                entries.Add((Squash(selector), declarations, fallback, $"{name}:{LineOf(lineStarts, rule.Index)}"));
+            }
+        }
+
+        var twins = entries.Where(entry => DirRtl.IsMatch(entry.Selector)).ToArray();
+
+        foreach (var entry in entries)
+        {
+            // Inside @supports not selector(:dir(rtl)) it is the fallback of a :dir() rule, which the other test pins.
+            if (entry.Fallback) continue;
+
+            // A :dir() anywhere in it - beside the class in an :is(), or the twin itself - follows the direction already.
+            if (entry.Selector.Contains(":dir(", StringComparison.Ordinal)) continue;
+
+            if (FindHook(entry.Selector) is null) continue;
+
+            if (ExplicitOnly.Any(prefix => entry.Selector.StartsWith(prefix, StringComparison.Ordinal))) continue;
+
+            // The twin has to style the same element: the same declarations on another part (an unrelated chevron
+            // turned the same way) leave this one unturned for a direction Dir does not name.
+            var subject = Subject(entry.Selector);
+
+            if (twins.Any(twin => twin.Declarations.SequenceEqual(entry.Declarations) && Subject(twin.Selector) == subject)) continue;
+
+            yield return $"{entry.Location} reads the direction only off an explicit Dir: {entry.Selector}";
+        }
+    }
+
     [TestMethod,
         DataRow(".a:is(.bit-rtl, :dir(rtl)) { b: c; }"),
         DataRow(".a:is(:dir(rtl), .r.bit-rtl > .p > *) { b: c; }"),
         DataRow(".a:dir(rtl) { b: c; }\n.bit-rtl.a { b: c; }"),
         DataRow(".a:dir(rtl) { b: c; }\n.r.bit-rtl > .a { b: c; }"),
+        DataRow(".a:is(.bit-drp-rtl, :dir(rtl)) { b: c; }"),
+        DataRow(".a:dir(rtl) { b: c; }\n@supports not selector(:dir(rtl)) { .bit-drp-rtl .a { b: c; } }"),
         DataRow(".a:dir(rtl) { b: c; }\n@supports not selector(:dir(rtl)) { .r.bit-rtl .a { b: c; } }"),
         DataRow("@media print { .a:dir(rtl) { b: c; } .bit-rtl.a { b: c; } }"),
         DataRow("@mixin m { &:dir(rtl) { b: c; } &.bit-rtl { b: c; } }"),
@@ -312,6 +417,22 @@ public sealed class BitComponentDirFallbackTests
         if (pending.Length > 0) compounds.Add(new(pending, "", selector.Length));
 
         return compounds;
+    }
+
+    // The element a selector styles - its last compound - with the direction it reads taken out (the class, the
+    // attribute, :dir(rtl)), so a rule reading the class and its :dir() twin name the same one.
+    private static string Subject(string selector)
+    {
+        var subject = Compounds(selector)[^1].Text;
+        var masked = Mask(subject, "not");
+        var text = new StringBuilder(subject);
+
+        foreach (var match in RtlHook.Matches(masked).Concat(DirRtl.Matches(masked)).OrderByDescending(match => match.Index))
+        {
+            text.Remove(match.Index, match.Length);
+        }
+
+        return text.ToString();
     }
 
     // Which compound of the selector the character at the index is in.

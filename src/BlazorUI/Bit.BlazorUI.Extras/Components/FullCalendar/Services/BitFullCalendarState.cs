@@ -236,21 +236,24 @@ public class BitFullCalendarState
 
     /// <summary>
     /// Whether the calendar is laid out right-to-left: the explicit direction of the component when one was given,
-    /// otherwise the writing direction of the active culture. Everything that maps a physical key or pointer
-    /// movement onto earlier/later reads this, so it agrees with what is actually rendered.
+    /// the one the browser resolved for <see cref="BitDir.Auto"/> once it has rendered, otherwise the writing direction
+    /// of the active culture. Everything that maps a physical key or pointer movement onto earlier/later reads this,
+    /// so it agrees with what is actually rendered.
     /// </summary>
     public bool IsRtl => _dir switch
     {
         BitDir.Rtl => true,
         BitDir.Ltr => false,
+        BitDir.Auto when _autoRtl is { } autoRtl => autoRtl,
         _ => Culture.TextInfo.IsRightToLeft
     };
 
     private BitDir? _dir;
+    private bool? _autoRtl;
 
     /// <summary>
-    /// Sets the explicit layout direction of the calendar; <c>null</c> (or <see cref="BitDir.Auto"/>) follows the
-    /// writing direction of the culture.
+    /// Sets the explicit layout direction of the calendar; <c>null</c> follows the writing direction of the culture,
+    /// and <see cref="BitDir.Auto"/> the content, as the browser resolves it (see <see cref="SetAutoDirection"/>).
     /// </summary>
     public void SetDirection(BitDir? dir)
     {
@@ -259,6 +262,25 @@ public class BitFullCalendarState
 
         _dir = dir;
         NotifyStateChanged();
+    }
+
+    /// <summary>
+    /// Records the direction the browser resolved for a calendar whose direction is <see cref="BitDir.Auto"/>: its
+    /// content decides it, which .NET cannot read, so until it is known the culture's stands in for it.
+    /// </summary>
+    internal void SetAutoDirection(bool isRtl)
+    {
+        if (_autoRtl == isRtl)
+            return;
+
+        var before = IsRtl;
+
+        _autoRtl = isRtl;
+
+        if (IsRtl != before)
+        {
+            NotifyStateChanged();
+        }
     }
 
     // Drag state. The setter is private so all drag mutations go through StartDrag/EndDrag,
