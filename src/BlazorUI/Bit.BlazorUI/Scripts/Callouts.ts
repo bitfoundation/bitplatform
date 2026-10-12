@@ -74,7 +74,11 @@
             isCalloutOpen: boolean,
             responsiveMode: BitResponsiveMode,
             dropDirection: BitDropDirection,
-            isRtl: boolean,
+            // true or false for a component whose Dir names a direction, or null when its Dir leaves the direction
+            // to the page (unset) or to its content (Auto): the component is then asked for the direction it is
+            // actually laid out in, every time the callout is placed, so a page or content that changed direction
+            // since it opened is followed too.
+            isRtl: boolean | null,
             scrollContainerId: string,
             // The height in pixels of everything the callout renders around its scroll container, which comes
             // off the room that container is given. A NEGATIVE value has the callout measure it itself, which
@@ -213,7 +217,7 @@
                 componentId, calloutId, overlayId, responsiveMode, dropDirection, isRtl,
                 scrollContainerId, scrollOffset, headerId, footerId,
                 setCalloutWidth, fixedCalloutWidth, maxWindowWidth, maxHeight, arrowId, gap, preferredSide, alignment, noFlip, collisionPadding,
-                alignmentOffset, arrowPadding
+                alignmentOffset, arrowPadding, rootId
             });
 
             // The callout follows a component that changes size while it is open - a button whose label
@@ -224,7 +228,7 @@
             const result = Callouts.position(component, callout, responsiveMode, dropDirection, isRtl,
                 scrollContainerId, scrollOffset, headerId, footerId,
                 setCalloutWidth, fixedCalloutWidth, maxWindowWidth, true, maxHeight, arrowId, gap, preferredSide, alignment, noFlip, collisionPadding,
-                alignmentOffset, arrowPadding);
+                alignmentOffset, arrowPadding, rootId);
 
             return result;
         }
@@ -251,7 +255,7 @@
             callout: HTMLElement,
             responsiveMode: BitResponsiveMode,
             dropDirection: BitDropDirection,
-            isRtl: boolean,
+            givenRtl: boolean | null,
             scrollContainerId: string,
             scrollOffset: number,
             headerId: string,
@@ -275,8 +279,17 @@
             // The distance in pixels the arrow is kept away from the corners of the callout; zero takes
             // the default below.
             arrowPadding: number = 0,
+            // The id of the root of the component (see toggle), or '' when there is none to read apart from
+            // the element the callout is placed against.
+            rootId: string = '',
         ) {
             const windowWidth = window.innerWidth;
+
+            // The direction the component is laid out in, when its Dir did not name one (see toggle). It is read
+            // off its root, which is what that Dir is set on, rather than off the element the callout is placed
+            // against: an anchor elsewhere on the page (a BitCallout's AnchorId) can read the other way.
+            const directionSource = (rootId ? document.getElementById(rootId) : null) ?? component;
+            const isRtl = givenRtl ?? Utils.isRtl(directionSource);
 
             // The consumer's own cap on the scrollable content, applied on top of the space the
             // viewport leaves so that it can only ever shorten the list, never push it off the screen.
@@ -909,7 +922,7 @@
                     params.scrollContainerId, params.scrollOffset, params.headerId, params.footerId,
                     params.setCalloutWidth, params.fixedCalloutWidth, params.maxWindowWidth, false, params.maxHeight,
                     params.arrowId, params.gap, params.preferredSide, params.alignment, params.noFlip, params.collisionPadding,
-                    params.alignmentOffset, params.arrowPadding);
+                    params.alignmentOffset, params.arrowPadding, params.rootId);
             }
         }
 
@@ -1869,7 +1882,7 @@
         overlayId: string;
         responsiveMode: BitResponsiveMode;
         dropDirection: BitDropDirection;
-        isRtl: boolean;
+        isRtl: boolean | null;
         scrollContainerId: string;
         scrollOffset: number;
         headerId: string;
@@ -1886,6 +1899,7 @@
         collisionPadding: number;
         alignmentOffset: number;
         arrowPadding: number;
+        rootId: string;
     }
 
     // Which side of the component the callout was placed on, as a physical side, so that the stylesheets

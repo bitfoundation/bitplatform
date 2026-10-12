@@ -51,7 +51,7 @@
             const onStart = async (e: TouchEvent | PointerEvent): Promise<void> => {
                 if (belongsElsewhere(e.target)) return;
 
-                rtl = isRtl ?? getComputedStyle(element).direction === 'rtl';
+                rtl = isRtl ?? Utils.isRtl(element);
 
                 startX = getX(e);
                 startY = getY(e);
@@ -258,7 +258,7 @@
                         touchOnScrollContainer = true;
 
                         // This runs before the surface's own touchstart, so the direction is read here as well.
-                        rtl = isRtl ?? getComputedStyle(element).direction === 'rtl';
+                        rtl = isRtl ?? Utils.isRtl(element);
 
                         // The two flags are the start and the end of the scroll (scrollLeft is 0 at the start in
                         // both directions), while the gesture that dismisses the surface runs toward the physical

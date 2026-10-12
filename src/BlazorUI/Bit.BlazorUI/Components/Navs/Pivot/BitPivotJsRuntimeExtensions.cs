@@ -12,7 +12,9 @@ internal static class BitPivotJsRuntimeExtensions
         bool isMenu,
         bool isSlide,
         bool isReorderable,
-        bool isRtl,
+        // The direction the pivot's Dir names, or null when it leaves it to the page or the content: the header
+        // then reads the one it is laid out in whenever it needs it.
+        bool? isRtl,
         bool isVertical,
         DotNetObjectReference<T> dotnetObj) where T : class
     {

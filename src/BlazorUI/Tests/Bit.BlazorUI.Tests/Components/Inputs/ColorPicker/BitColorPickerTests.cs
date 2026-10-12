@@ -279,25 +279,34 @@ public class BitColorPickerTests : BunitTestContext
         Assert.AreEqual(expected, com.Instance.Hex);
     }
 
-    // The area is measured from its inline-start edge, which is the right one in a right-to-left picker,
-    // so the horizontal axis mirrors along with the gradient drawn on it.
-    [TestMethod]
-    public async Task BitColorPickerShouldMirrorThePointerAxisInRtl()
+    // The area is measured from its inline-start edge, which is the right one in a right-to-left picker, so the
+    // horizontal axis mirrors along with the gradient drawn on it. The script measures the pointer that way (it is the
+    // one that knows the direction the area is laid out in, whatever made it so), so .NET maps the fraction it is
+    // handed the same in every direction, and asks nothing about it.
+    [TestMethod,
+        DataRow(null),
+        DataRow(BitDir.Ltr),
+        DataRow(BitDir.Rtl),
+        DataRow(BitDir.Auto)
+    ]
+    public async Task BitColorPickerShouldMapThePointerFromTheInlineStartInEveryDirection(BitDir? dir)
     {
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.Dir, dir);
             parameters.Add(p => p.Color, "#FF0000");
             parameters.Add(p => p.OnChange, () => { });
         });
 
         await com.InvokeAsync(() => com.Instance.HandlePointerMove(0, 0));
 
-        Assert.AreEqual("#FF0000", com.Instance.Hex);
+        Assert.AreEqual("#FFFFFF", com.Instance.Hex);
 
         await com.InvokeAsync(() => com.Instance.HandlePointerMove(1, 0));
 
-        Assert.AreEqual("#FFFFFF", com.Instance.Hex);
+        Assert.AreEqual("#FF0000", com.Instance.Hex);
+
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.isRtl");
     }
 
     [TestMethod]
@@ -458,6 +467,29 @@ public class BitColorPickerTests : BunitTestContext
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.Color, "hsv(210,60%,50%)");
+            parameters.Add(p => p.OnChange, () => { });
+        });
+
+        com.Find(".bit-clp-rec").KeyDown(key);
+
+        Assert.AreEqual(saturation, (int)Math.Round(com.Instance.Hsv.Saturation * 100));
+    }
+
+    // A Dir that names no direction leaves it to the page (unset) or to the content (Auto), which is read off the
+    // element: the keys follow the direction the component is actually laid out in.
+    [TestMethod,
+        DataRow(null, "ArrowRight", 59),
+        DataRow(null, "ArrowLeft", 61),
+        DataRow(BitDir.Auto, "ArrowRight", 59),
+        DataRow(BitDir.Auto, "ArrowLeft", 61)
+    ]
+    public void BitColorPickerShouldMirrorTheArrowKeysInAResolvedRtl(BitDir? dir, string key, int saturation)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
             parameters.Add(p => p.Color, "hsv(210,60%,50%)");
             parameters.Add(p => p.OnChange, () => { });
         });
@@ -1163,6 +1195,26 @@ public class BitColorPickerTests : BunitTestContext
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.Presets, ["#FF0000", "#00FF00", "#0000FF"]);
+        });
+
+        com.FindAll(".bit-clp-prt")[1].KeyDown(key);
+
+        Assert.AreEqual("0", com.FindAll(".bit-clp-prt")[expected].GetAttribute("tabindex"));
+    }
+
+    // A Dir that names no direction leaves it to the page (unset) or to the content (Auto), which is read off the
+    // element: the keys follow the direction the component is actually laid out in.
+    [TestMethod,
+        DataRow(null, "ArrowRight", 0),
+        DataRow(BitDir.Auto, "ArrowLeft", 2)
+    ]
+    public void BitColorPickerShouldMirrorThePresetArrowKeysInAResolvedRtl(BitDir? dir, string key, int expected)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
             parameters.Add(p => p.Presets, ["#FF0000", "#00FF00", "#0000FF"]);
         });
 

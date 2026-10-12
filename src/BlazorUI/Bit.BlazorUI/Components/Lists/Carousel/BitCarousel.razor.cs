@@ -51,6 +51,7 @@ public partial class BitCarousel : BitComponentBase
     private int _internalScrollItemsCount = 1;
     private int _internalVisibleItemsCount = 1;
     private System.Timers.Timer? _autoPlayTimer;
+    private bool _resolvedRtl;
     private string _directionStyle = string.Empty;
     private string _goLeftButtonStyle = string.Empty;
     private string _goRightButtonStyle = string.Empty;
@@ -853,7 +854,7 @@ public partial class BitCarousel : BitComponentBase
             }
         }
 
-        _directionStyle = Dir == BitDir.Rtl ? "direction:rtl" : string.Empty;
+        _directionStyle = ExplicitRtl is true ? "direction:rtl" : string.Empty;
 
         ClampCounts();
 
@@ -1119,6 +1120,10 @@ public partial class BitCarousel : BitComponentBase
         return "transition:transform var(--bit-csl-dur) var(--bit-csl-ease)";
     }
 
+    // Whether the carousel is laid out right to left: the direction Dir names, or else the one the browser resolved
+    // for the container at the last measurement (see ResetDimensionsAsync) - left to right before the first one.
+    private bool _IsRtl => ExplicitRtl ?? _resolvedRtl;
+
     private async Task ResetDimensionsAsync()
     {
         if (IsDisposed) return;
@@ -1132,11 +1137,23 @@ public partial class BitCarousel : BitComponentBase
             return;
         }
 
+        // The slides are placed with physical transforms, so the layout is only right in the direction the
+        // container is actually laid out in. A Dir that names none leaves it to the page or to the content, which
+        // only the browser knows, so it is read with every measurement: a page that changes direction is picked
+        // up by the next re-layout (a resize, a change of the items or the parameters, Refresh). The two reads do
+        // not depend on each other, so both are sent before either is awaited and cost one round trip together.
+        var rtl = ExplicitRtl is null ? IsRtlAsync(_js, _carouselContainer).AsTask() : null;
+
         // The measurement comes first because the width it reports is also what the responsive options (and
         // the breakpoint variants of VisibleItemsCount) are matched against, so the counts below are the ones
         // the carousel actually has room for. It is the same element the resize observer watches, so a
         // layout that follows a resize and one that follows a change of the items measure the same box.
         var rect = await _js.BitUtilsGetBoundingClientRect(_carouselContainer);
+
+        if (rtl is not null)
+        {
+            _resolvedRtl = await rtl;
+        }
 
         if (IsDisposed) return;
 
@@ -1272,7 +1289,7 @@ public partial class BitCarousel : BitComponentBase
         // as the container keeps the one it would be measured at; the transforms below are percentages of
         // the slide itself either way, so the slides sit where a measurement would put them.
         var size = Vertical ? _containerHeight : _containerWidth;
-        var sign = (Vertical is false && Dir == BitDir.Rtl) ? -1 : 1;
+        var sign = (Vertical is false && _IsRtl) ? -1 : 1;
 
         var itemStyle = size > 0
             ? (Vertical
@@ -1354,7 +1371,7 @@ public partial class BitCarousel : BitComponentBase
 
         // The button on the left of a right-to-left carousel is the one that goes back, so which end
         // silences which button flips with the direction. The vertical axis has no direction to flip.
-        var isRtl = Vertical is false && Dir == BitDir.Rtl;
+        var isRtl = Vertical is false && _IsRtl;
 
         _goLeftButtonStyle = (single || (isRtl ? atStart : atEnd)) ? "display:none" : string.Empty;
         _goRightButtonStyle = (single || (isRtl ? atEnd : atStart)) ? "display:none" : string.Empty;
@@ -1376,9 +1393,9 @@ public partial class BitCarousel : BitComponentBase
         return _currentIndices.Length > 0 && _currentIndices[0] > 0;
     }
 
-    private async Task GoLeft() => await ((Vertical is false && Dir == BitDir.Rtl) ? Prev() : Next());
+    private async Task GoLeft() => await ((Vertical is false && _IsRtl) ? Prev() : Next());
 
-    private async Task GoRight() => await ((Vertical is false && Dir == BitDir.Rtl) ? Next() : Prev());
+    private async Task GoRight() => await ((Vertical is false && _IsRtl) ? Next() : Prev());
 
     // Everything the person reading the page does to the carousel by hand goes through here first, so the
     // auto scrolling can step aside for them when it was asked to.
@@ -1601,7 +1618,7 @@ public partial class BitCarousel : BitComponentBase
             var o = others[i];
             o.InternalTransitionStyle = string.Empty;
             var x = sign * 100 * (offset + (sign * i));
-            x = (Vertical is false && Dir == BitDir.Rtl) ? -x : x;
+            x = (Vertical is false && _IsRtl) ? -x : x;
             o.InternalTransformStyle = Translate(x);
         }
 
@@ -1632,7 +1649,7 @@ public partial class BitCarousel : BitComponentBase
                 var c = currents[i];
                 c.InternalTransitionStyle = transitionStyle;
                 var x = -sign * 100 * (scrollCount + (-sign * i));
-                x = (Vertical is false && Dir == BitDir.Rtl) ? -x : x;
+                x = (Vertical is false && _IsRtl) ? -x : x;
                 c.InternalTransformStyle = Translate(x);
             }
 
@@ -1641,7 +1658,7 @@ public partial class BitCarousel : BitComponentBase
                 var o = others[i];
                 o.InternalTransitionStyle = transitionStyle;
                 var x = 100 * (offset + i);
-                x = (Vertical is false && Dir == BitDir.Rtl) ? -x : x;
+                x = (Vertical is false && _IsRtl) ? -x : x;
                 o.InternalTransformStyle = Translate(x);
             }
 
@@ -2145,14 +2162,14 @@ public partial class BitCarousel : BitComponentBase
     {
         if (GoLeftAriaLabel.HasValue()) return GoLeftAriaLabel;
 
-        return (Vertical is false && Dir == BitDir.Rtl) ? "Previous slide" : "Next slide";
+        return (Vertical is false && _IsRtl) ? "Previous slide" : "Next slide";
     }
 
     private string? GetGoRightAriaLabel()
     {
         if (GoRightAriaLabel.HasValue()) return GoRightAriaLabel;
 
-        return (Vertical is false && Dir == BitDir.Rtl) ? "Next slide" : "Previous slide";
+        return (Vertical is false && _IsRtl) ? "Next slide" : "Previous slide";
     }
 
 

@@ -836,6 +836,47 @@ public class BitRatingTests : BunitTestContext
         Assert.AreEqual(2d, value);
     }
 
+    // A Dir that names no direction leaves it to the page (unset) or to the content (Auto): the rating reads the one
+    // it is laid out in off the element, and only for the keys that act on it.
+    [TestMethod,
+        DataRow(null),
+        DataRow(BitDir.Auto)
+    ]
+    public void BitRatingKeyboardShouldReverseTheHorizontalArrowsInAResolvedRtl(BitDir? dir)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        double value = 3;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-rtg").KeyDown("ArrowUp");
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.isRtl");
+
+        component.Find(".bit-rtg").KeyDown("ArrowRight");
+
+        Assert.AreEqual(3d, value);
+    }
+
+    [TestMethod]
+    public void BitRatingKeyboardShouldNotReadTheDirectionDirNames()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+        double value = 3;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Dir, BitDir.Ltr);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-rtg").KeyDown("ArrowRight");
+
+        Assert.AreEqual(4d, value);
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.isRtl");
+    }
+
     [TestMethod]
     public void BitRatingKeyboardShouldClearWithAllowClear()
     {

@@ -1583,6 +1583,36 @@ public class BitNavPanelTests : BunitTestContext
         Assert.AreEqual(isEnd, component.Find(".bit-npn").ClassList.Contains("bit-npn-end"));
     }
 
+    // The drawer is docked to the edge its Placement names in the direction it is laid out in, and the swipe that closes
+    // it goes towards that edge. A Dir that names no direction leaves it to the page (unset) or to the content (Auto),
+    // which is read as the swipe starts: a Start drawer of a right-to-left page sits on the right.
+    [TestMethod,
+        DataRow(null, true),
+        DataRow(BitDir.Auto, true),
+        DataRow(BitDir.Ltr, false)
+    ]
+    public async Task BitNavPanelSwipeShouldCloseTowardsTheEdgeOfTheDirectionItIsLaidOutIn(BitDir? dir, bool closes)
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+
+        var isOpen = true;
+
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.Dir, dir);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        var trap = component.FindComponent<BitSwipeTrap>();
+
+        await component.InvokeAsync(() => trap.Instance._OnStart(0, 0));
+        await component.InvokeAsync(() => trap.Instance._OnTrigger(100, 0, 1, 0));
+
+        Assert.AreEqual(closes, isOpen is false);
+        Assert.AreEqual(dir is not BitDir.Ltr, Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.isRtl"));
+    }
+
     [TestMethod]
     public void BitNavPanelNoSwipeShouldNotRenderTheSwipeTrap()
     {

@@ -921,11 +921,16 @@ public partial class BitPersona : BitComponentBase
         };
     }
 
-    private string GetInitials()
+    // The initials, and whether their order is left to the stylesheet: a pair a Dir that names no direction would
+    // write back to front in a right-to-left layout (see CalculateInitials), which only the browser knows the
+    // persona is laid out in. Initials passed in by hand are shown as they were written, in every direction.
+    private (string Initials, bool FollowsDirection) GetInitials()
     {
-        if (ImageInitials.HasValue()) return ImageInitials!;
+        if (ImageInitials.HasValue()) return (ImageInitials!, false);
 
-        return CalculateInitials(PrimaryText, Dir == BitDir.Rtl, AllowPhoneInitials);
+        var initials = CalculateInitials(PrimaryText, ExplicitRtl, AllowPhoneInitials, out var followsDirection);
+
+        return (initials, followsDirection);
     }
 
     /// <summary>
@@ -940,8 +945,10 @@ public partial class BitPersona : BitComponentBase
     /// rest of the industry settled on: two words give first and last, three skip the middle one, and anything
     /// else gives the first alone.
     /// </remarks>
-    private static string CalculateInitials(string? text, bool isRtl, bool allowPhoneInitials)
+    private static string CalculateInitials(string? text, bool? isRtl, bool allowPhoneInitials, out bool followsDirection)
     {
+        followsDirection = false;
+
         if (text.HasNoValue()) return string.Empty;
 
         var source = text!.Trim();
@@ -978,9 +985,14 @@ public partial class BitPersona : BitComponentBase
         // but only for initials that are themselves left-to-right, which the bidi algorithm lays out left
         // to right wherever they sit. Initials taken from a right-to-left name are already laid out from
         // the right, and reversing those would undo the very order it is here to produce.
-        var reverse = isRtl && IsRtlText(first) is false && IsRtlText(second) is false;
+        // A direction Dir does not name is the page's or the content's, which only the browser knows: such a pair
+        // is left in reading order and handed to the stylesheet, which lays it out from the right wherever the
+        // persona reads right to left (bit-prs-rev).
+        var ltrPair = IsRtlText(first) is false && IsRtlText(second) is false;
 
-        return reverse ? $"{second}{first}" : $"{first}{second}";
+        followsDirection = isRtl is null && ltrPair;
+
+        return isRtl is true && ltrPair ? $"{second}{first}" : $"{first}{second}";
     }
 
     /// <summary>

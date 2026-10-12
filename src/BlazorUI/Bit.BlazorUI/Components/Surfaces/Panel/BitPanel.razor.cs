@@ -1124,7 +1124,7 @@ public partial class BitPanel : BitComponentBase
                 // A panel given no direction slides the way the page it is in reads, and one given Auto the
                 // way its content resolves it to, so for both the script reads that off the layout rather
                 // than being told a left-to-right it may not be.
-                isRtl: Dir switch { BitDir.Rtl => true, BitDir.Ltr => false, _ => null },
+                isRtl: ExplicitRtl,
                 orientationLock: position.ToSwipeOrientation(),
                 dotnetObj: _swipesDotnetObj,
                 isResponsive: false);

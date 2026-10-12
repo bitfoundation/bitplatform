@@ -75,6 +75,20 @@ internal static class BitCssClasses
     }
 
     /// <summary>
+    /// The direction a component knows it lays itself out in: the one it was given, or without one right to left
+    /// when its culture writes right to left - and null when neither says (no direction and a left-to-right culture,
+    /// which inherits the page's, or <see cref="BitDir.Auto"/>, which the content decides), so that it is read off
+    /// the element rather than taken for left to right (see <see cref="BitComponentBase.ExplicitRtl"/>).
+    /// </summary>
+    internal static bool? ExplicitRtl(BitDir? dir, CultureInfo culture) => dir switch
+    {
+        BitDir.Rtl => true,
+        BitDir.Ltr => false,
+        null when culture.TextInfo.IsRightToLeft => true,
+        _ => null
+    };
+
+    /// <summary>
     /// The <c>bit-rtl</c> class a component needs only when its culture is what makes it right to left. A
     /// direction it was given explicitly is rendered as the <c>dir</c> attribute of the element instead, so
     /// adding the class for that case as well would say the same thing twice.

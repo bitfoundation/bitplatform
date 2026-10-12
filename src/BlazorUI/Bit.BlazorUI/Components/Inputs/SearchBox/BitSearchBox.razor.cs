@@ -1869,7 +1869,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
                 isCalloutOpen: _isOpen,
                 responsiveMode: BitResponsiveMode.None,
                 dropDirection: BitDropDirection.TopAndBottom,
-                isRtl: Dir is BitDir.Rtl,
+                isRtl: ExplicitRtl,
                 scrollContainerId: _scrollContainerId,
                 scrollOffset: 0,
                 headerId: string.Empty,

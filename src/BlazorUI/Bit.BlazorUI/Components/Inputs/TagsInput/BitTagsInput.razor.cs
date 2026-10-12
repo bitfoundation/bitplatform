@@ -1478,8 +1478,6 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         return [.. suggestions];
     }
 
-    private bool IsRtl => Dir == BitDir.Rtl;
-
     /// <summary>
     /// How many of the tags are actually drawn: all of them unless <see cref="MaxDisplayedTags"/> folded
     /// the rest away and the chip standing for them has not been used to unfold the list.
@@ -2358,7 +2356,8 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
             // a field holding nothing but the tags CanRemoveTag pins in place has nothing to clear.
             await Clear();
         }
-        else if ((e.Key == (IsRtl ? "ArrowRight" : "ArrowLeft")) && _inputText.Length == 0 && CurrentValue?.Count > 0)
+        else if (e.Key is "ArrowLeft" or "ArrowRight" && _inputText.Length == 0 && CurrentValue?.Count > 0 &&
+                 e.Key == (await IsRtlArrowAsync(_js, e.Key) ? "ArrowRight" : "ArrowLeft"))
         {
             // Walking backwards out of an empty input lands on the last tag that is drawn, from where
             // the arrow keys keep moving between the tags.
@@ -2453,15 +2452,22 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     {
         if (Disabled) return;
 
-        var count = CurrentValue?.Count ?? 0;
+        var snapshot = GetTags();
+        var count = snapshot.Count;
         if (count == 0) return;
+
+        var isRtl = await IsRtlArrowAsync(_js, e.Key);
+
+        // The index names a tag of the list as it was when the key was pressed. A list that changed while the
+        // direction was being read (a tag removed or moved by a press handled in the meantime) puts another tag
+        // at that index, which this press was never meant for.
+        if (GetTags().SequenceEqual(snapshot) is false) return;
 
         // The navigation walks the tags that are drawn, while a move addresses the list as it really is:
         // sending a tag past the fold is a change to the value, not to where the focus may travel.
         var displayed = GetDisplayedTagCount();
-
-        var previousKey = IsRtl ? "ArrowRight" : "ArrowLeft";
-        var nextKey = IsRtl ? "ArrowLeft" : "ArrowRight";
+        var previousKey = isRtl ? "ArrowRight" : "ArrowLeft";
+        var nextKey = isRtl ? "ArrowLeft" : "ArrowRight";
 
         // Alt turns the navigation keys into the move commands of the reordering, which is the pointer
         // free equivalent of dragging a chip into place, so it is checked before them.

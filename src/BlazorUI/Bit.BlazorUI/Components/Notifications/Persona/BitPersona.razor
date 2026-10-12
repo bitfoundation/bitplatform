@@ -19,7 +19,7 @@
     RenderFragment? coinFallback = null;
     if (NeedsCoinFallback())
     {
-        var initials = GetInitials();
+        var (initials, initialsFollowDirection) = GetInitials();
         var coinIcon = GetCoinIcon(initials);
 
         if (coinIcon is not null)
@@ -35,7 +35,7 @@
                a reader has and stay in the accessibility tree. *@
             coinFallback = @<span style="@Styles?.Initials"
                                   aria-hidden="@(PrimaryText.HasValue() ? "true" : null)"
-                                  class="bit-prs-ini @GetInitialsFitClass(initials) @Classes?.Initials">@initials</span>;
+                                  class="bit-prs-ini @(initialsFollowDirection ? "bit-prs-rev" : null) @GetInitialsFitClass(initials) @Classes?.Initials">@initials</span>;
         }
     }
 
