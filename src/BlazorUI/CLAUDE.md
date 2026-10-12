@@ -177,6 +177,31 @@ component" section is where consumers read it:
   (`Tests/Performance`, one `?part=` of `/regression/disabled-state` per component) reads the live DOM
   of every engine for the same, through a runtime toggle of `Disabled` and back.
 
+## Right-to-left rules work without `:dir()`
+
+`:dir(rtl)` is how a stylesheet reads the direction an element is actually laid out in, inherited or not, so it
+is the selector to reach for. But it arrived late (Chromium 120, Safari 16.4), the WebViews a Blazor Hybrid app
+runs in can be older, and an engine that does not know a selector drops the whole rule - every other selector in
+its list too. An explicit `Dir="BitDir.Rtl"` renders the `bit-rtl` class (and `dir="rtl"`), and that has to keep
+working there:
+
+- **Write the two in one forgiving `:is()`**: `.bit-mdl-tlf:is(.bit-rtl, :dir(rtl))`. An engine without `:dir()` drops
+  only that alternative and keeps the class, and `:is()` (Chromium 88, Safari 14) is older than `:dir()`, so one rule
+  covers both and nothing is written twice. When the class is on an ancestor, the alternative reaches it through child
+  combinators only (`.bit-ttp-wrp:is(:dir(rtl), .bit-ttp.bit-rtl > *)`,
+  `.bit-msg-prb:is(:dir(rtl), .bit-msg.bit-rtl > .bit-msg-prg > *)`): a descendant combinator would also reach into a
+  nested instance that reads the other way, which `:dir()` gets right.
+- **A class behind a descendant combinator goes inside `@supports not selector(:dir(rtl))`**, as a rule of its own with
+  the same declarations, in the same at-rules (`.bit-crd.bit-rtl .bit-crd-skb::after`): there, where nothing better is
+  known, reaching a nested instance is the lesser loss.
+- **A `:dir()` outside `:is()` / `:where()` stands in a list of its own**, never beside a selector without it, and
+  then needs one of the counterparts above as a separate rule.
+- **Not covered**: what is inside `@supports selector(:dir(...))` (BitIcon), which only an engine knowing `:dir()` reads.
+
+`BitComponentDirFallbackTests` checks this for every stylesheet of every package, mixins included (a mixin's
+counterpart is looked for in the mixin itself). A rule whose explicit `Dir` is handled some other way (the root class
+setting a variable the part reads, or the C# doing the turn) goes in its `CoveredOtherwise` list.
+
 ## Demo pages
 
 A component's demo page is

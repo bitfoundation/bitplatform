@@ -106,6 +106,17 @@ public class SourceFilesTests
     }
 
     [TestMethod]
+    public void GetScssRulesShouldReadTheDeclarationsEachRuleMakesItself()
+    {
+        var stylesheet = ".a {\n    --x: #{$y};\n    // paints on hover\n    &:hover {\n        background: red\n    }\n    @include b;\n    color: var(--x)\n}";
+
+        var rules = SourceFiles.GetScssRules(stylesheet);
+
+        CollectionAssert.AreEqual(new[] { "--x: #{$y}", "@include b", "color: var(--x)" }, rules[0].Declarations.ToArray());
+        CollectionAssert.AreEqual(new[] { "background: red" }, rules[1].Declarations.ToArray());
+    }
+
+    [TestMethod]
     public void GetScssDeclarationsShouldLeaveTheNestedRulesOut()
     {
         var stylesheet = ".a {\n    --x: #{$y};\n    // paints on hover\n    &:hover {\n        background-color: red;\n    }\n    @media (forced-colors: active) {\n        color: Highlight;\n    }\n    color: var(--x);\n}";

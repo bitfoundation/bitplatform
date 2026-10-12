@@ -172,8 +172,10 @@ public class BitLoadingStylesheetTests
     {
         var stylesheet = ReadStylesheets().Single(s => s.Name == file).Content;
 
-        StringAssert.Contains(stylesheet, $".bit-rtl .bit-ldn-{loader}-ccn {{");
-        StringAssert.Contains(stylesheet, $"\n.bit-ldn-{loader}-ccn:dir(rtl) {{");
+        // The class Dir renders is read on the drawing's parent only, so a loader nested in one that reads the other way
+        // keeps its own direction.
+        StringAssert.Contains(stylesheet, $"\n.bit-ldn-{loader}-ccn:is(:dir(rtl), .bit-ldn-{loader}.bit-rtl > *) {{");
+        Assert.IsFalse(stylesheet.Contains($".bit-rtl .bit-ldn-{loader}-ccn"), "The class must not reach the drawing of a nested loader.");
     }
 
     private static (string Name, string Content)[] ReadStylesheets()

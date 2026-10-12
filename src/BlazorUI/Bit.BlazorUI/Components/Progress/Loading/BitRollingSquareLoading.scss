@@ -26,10 +26,6 @@
 
 // Mirrored so the square rolls toward the end of the line - which also turns the rotation the other way,
 // as a square actually rolling in that direction does. See the same rule on BitEllipsisLoading.
-.bit-rtl .bit-ldn-rsq-ccn {
-    transform: scaleX(-1);
-}
-
-.bit-ldn-rsq-ccn:dir(rtl) {
+.bit-ldn-rsq-ccn:is(:dir(rtl), .bit-ldn-rsq.bit-rtl > *) {
     transform: scaleX(-1);
 }

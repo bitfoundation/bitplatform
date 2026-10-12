@@ -334,7 +334,11 @@ internal static class SourceFiles
     /// <param name="Header">Its selector, at-rule or mixin header, trimmed and without its comments.</param>
     /// <param name="Index">Where the header starts in the stylesheet.</param>
     /// <param name="Ancestors">The headers of the rules it is nested in, the outermost first.</param>
-    public sealed record ScssRule(string Header, int Index, IReadOnlyList<string> Ancestors);
+    /// <param name="Declarations">
+    /// The statements it makes itself, trimmed and without their comments or semicolons, in the order written: what
+    /// <see cref="GetScssDeclarations"/> reads, read in the same pass that lists the rules.
+    /// </param>
+    public sealed record ScssRule(string Header, int Index, IReadOnlyList<string> Ancestors, IReadOnlyList<string> Declarations);
 
     /// <summary>
     /// Every rule of a stylesheet - each brace that opens a block, with the header written before it - in the order
@@ -346,8 +350,21 @@ internal static class SourceFiles
         var kinds = Classify(stylesheet);
         var rules = new List<ScssRule>();
         var ancestors = new List<string>();
+        var declarations = new Stack<List<string>>();
         var statementStart = 0;
         var interpolation = 0;
+
+        // The statement written since the last one ended, less its comments.
+        string Statement(int end)
+        {
+            var statement = new StringBuilder();
+            for (var j = statementStart; j < end; j++)
+            {
+                if (kinds[j] is not ScssChar.Comment) statement.Append(stylesheet[j]);
+            }
+
+            return statement.ToString().Trim();
+        }
 
         for (var i = 0; i < stylesheet.Length; i++)
         {
@@ -365,29 +382,78 @@ internal static class SourceFiles
             }
             else if (c == '{')
             {
-                var header = new StringBuilder();
-                for (var j = statementStart; j < i; j++)
-                {
-                    if (kinds[j] is not ScssChar.Comment) header.Append(stylesheet[j]);
-                }
-
                 var index = statementStart;
                 while (kinds[index] is ScssChar.Comment || char.IsWhiteSpace(stylesheet[index])) index++;
 
-                var text = header.ToString().Trim();
+                var text = Statement(i);
+                var own = new List<string>();
 
-                rules.Add(new ScssRule(text, index, ancestors.ToArray()));
+                rules.Add(new ScssRule(text, index, ancestors.ToArray(), own));
                 ancestors.Add(text);
+                declarations.Push(own);
                 statementStart = i + 1;
             }
             else if (c is '}' or ';')
             {
-                if (c == '}' && ancestors.Count > 0) ancestors.RemoveAt(ancestors.Count - 1);
+                // The last statement of a block may leave out its semicolon.
+                var statement = Statement(i);
+                if (statement.Length > 0 && declarations.Count > 0) declarations.Peek().Add(statement);
+
+                if (c == '}' && ancestors.Count > 0)
+                {
+                    ancestors.RemoveAt(ancestors.Count - 1);
+                    declarations.Pop();
+                }
+
                 statementStart = i + 1;
             }
         }
 
         return rules;
+    }
+
+    /// <summary>
+    /// The selectors a chain of nested rule headers stands for, the outermost first: each header's list crossed with
+    /// the selectors of the rule around it, an &amp; standing for the outer selector and a header without one being a
+    /// descendant of it. The at-rules (@media, @supports, ...) are left for the caller to drop, since they apply to the
+    /// selector they are written in.
+    /// </summary>
+    public static IEnumerable<string> ResolveScssSelectors(IEnumerable<string> headers)
+    {
+        IEnumerable<string> selectors = [""];
+
+        foreach (var header in headers)
+        {
+            var alternatives = SplitScssSelectorList(header);
+
+            selectors = selectors.SelectMany(outer => alternatives.Select(inner =>
+                inner.Contains('&') ? inner.Replace("&", outer) : (outer.Length == 0 ? inner : $"{outer} {inner}"))).ToArray();
+        }
+
+        return selectors.Where(selector => selector.Length > 0);
+    }
+
+    /// <summary>The alternatives of a selector list, split on the commas outside of any parentheses (:is(a, b) stays whole).</summary>
+    public static List<string> SplitScssSelectorList(string selectorList)
+    {
+        var alternatives = new List<string>();
+        var depth = 0;
+        var start = 0;
+
+        for (var i = 0; i < selectorList.Length; i++)
+        {
+            if (selectorList[i] == '(') depth++;
+            else if (selectorList[i] == ')') depth--;
+            else if (selectorList[i] == ',' && depth == 0)
+            {
+                alternatives.Add(selectorList[start..i].Trim());
+                start = i + 1;
+            }
+        }
+
+        alternatives.Add(selectorList[start..].Trim());
+
+        return alternatives;
     }
 
     private static (int Index, int Open, int Close, ScssChar[] Kinds) FindBlock(string stylesheet, string start, string? message)

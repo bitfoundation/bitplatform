@@ -977,6 +977,15 @@ button.bit-dtg-htext {
     transform: scaleX(-1);
 }
 
+/* An engine without :dir() drops the rule above, so it reads the class an explicit Dir renders on the grid instead.
+   Only there: the glyph is deep inside the grid, so a descendant selector would also turn the glyphs of a grid
+   nested in a detail of this one that reads the other way, which :dir() gets right wherever it is supported. */
+@supports not selector(:dir(rtl)) {
+    .bit-dtg.bit-rtl .bit-dtg-dir-glyph {
+        transform: scaleX(-1);
+    }
+}
+
 /* ---------------------------------------------------------- Pager */
 .bit-dtg-pager {
     display: flex;

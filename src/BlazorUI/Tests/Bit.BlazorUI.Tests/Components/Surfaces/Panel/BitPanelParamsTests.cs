@@ -273,14 +273,13 @@ public class BitPanelParamsTests : BunitTestContext
 
     // The direction is read off the layout as well as off the class Dir renders: the one so a panel given no
     // direction of its own on a right-to-left page still slides out towards the edge it came from, the other
-    // so an explicit right-to-left still does on an engine without :dir(), each in a rule of its own.
+    // so an explicit right-to-left still does on an engine without :dir(), which the forgiving :is() keeps the class for.
     [TestMethod]
     public void BitPanelShouldSlideTheWayThePageItIsInReads()
     {
         var stylesheet = ReadStylesheet();
 
-        StringAssert.Contains(stylesheet, "    &:dir(rtl) {\n        --bit-pnl-transform-factor: -1;\n    }");
-        StringAssert.Contains(stylesheet, "    &.bit-rtl {\n        --bit-pnl-transform-factor: -1;\n    }");
+        StringAssert.Contains(stylesheet, "    &:is(.bit-rtl, :dir(rtl)) {\n        --bit-pnl-transform-factor: -1;\n    }");
     }
 
     private static string RuleOf(string stylesheet, string selector)
