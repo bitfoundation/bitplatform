@@ -65,16 +65,16 @@ public class BitDirFallbackBrowserTests : PerformanceTestBase
             'ellipsis': () => style('ellipsis', '.bit-ldn-elp-ccn')?.transform,
             'rolling-square': () => style('rolling-square', '.bit-ldn-rsq-ccn')?.transform,
             'slider': () => style('slider', '.bit-sld-inp-near')?.clipPath,
-            'chart': () => style('chart', '.bit-cht-mid')?.flexDirection,
-            'chart-sides': () => {
-                const legend = style('chart-sides', '.bit-cht-mid > .bit-cht-lgd');
-                const title = style('chart-sides', '.bit-cht-mid > .bit-cht-ttl');
-                return legend && title ? `${legend.order} ${title.order} ${title.rotate}` : null;
-            },
+            'chart': () => chart('chart'),
+            'chart-sides': () => chart('chart-sides'),
             'card': () => style('card', '.bit-crd-skb', '::after')?.animationDirection,
             'datagrid': () => style('datagrid', '.bit-dtg-dir-glyph')?.transform,
             'rte': () => style('rte', 'svg.bit-rte-flip')?.transform
         };
+        function chart(probe) {
+            const [legend, sub, title] = ['lgd', 'sub', 'ttl'].map(part => style(probe, `.bit-cht-mid > .bit-cht-${part}`));
+            return legend && sub && title ? `${legend.order} ${sub.order} ${sub.rotate} ${title.order} ${title.rotate}` : null;
+        }
         const result = {};
         for (const [probe, reader] of Object.entries(read)) {
             const value = reader();
@@ -83,14 +83,23 @@ public class BitDirFallbackBrowserTests : PerformanceTestBase
         return JSON.stringify(result);
     }";
 
-    // Which side of the plot the chart-sides probe's legend and title are drawn on, and the title's turn.
-    private const string ChartSides = @"(set) => {
-        const probe = document.querySelector(`${set} [data-probe=""chart-sides""]`);
-        const plot = probe.querySelector('.bit-cht-plot').getBoundingClientRect();
-        const side = selector => probe.querySelector(selector).getBoundingClientRect().left < plot.left ? 'left' : 'right';
-        const title = probe.querySelector('.bit-cht-mid > .bit-cht-ttl');
-        return `legend ${side('.bit-cht-mid > .bit-cht-lgd')}, title ${side('.bit-cht-mid > .bit-cht-ttl')} ${getComputedStyle(title).rotate}`;
+    // Which side of the plot a chart probe's legend, subtitle and title are drawn on - the legend next to the plot - and
+    // the turn of the two titles.
+    private const string ChartSides = @"([set, name]) => {
+        const probe = document.querySelector(`${set} [data-probe=""${name}""]`);
+        const part = selector => probe.querySelector(`.bit-cht-mid > ${selector}`);
+        const box = selector => part(selector).getBoundingClientRect();
+        const plot = box('.bit-cht-plot'), legend = box('.bit-cht-lgd'), sub = box('.bit-cht-sub');
+        const side = rect => rect.right <= plot.left + 0.5 ? 'left' : rect.left >= plot.right - 0.5 ? 'right' : 'over the plot';
+        const nextToPlot = Math.min(Math.abs(legend.right - plot.left), Math.abs(legend.left - plot.right))
+                         < Math.min(Math.abs(sub.right - plot.left), Math.abs(sub.left - plot.right));
+        const turn = selector => getComputedStyle(part(selector)).rotate;
+        return `legend ${side(legend)}${nextToPlot ? '' : ' (not next to the plot)'}, subtitle ${side(sub)} ${turn('.bit-cht-sub')}, title ${side(box('.bit-cht-ttl'))} ${turn('.bit-cht-ttl')}`;
     }";
+
+    // The left-to-right picture of both chart probes, and the right-to-left one of the probe placed by the reading side.
+    private const string ChartLeftToRight = "legend left, subtitle left 180deg, title right none";
+    private const string ChartRightToLeft = "legend right, subtitle right none, title left 180deg";
 
     // The stylesheets as an engine without :dir() parses them.
     private const string DropDir = @"() => {
@@ -182,6 +191,9 @@ public class BitDirFallbackBrowserTests : PerformanceTestBase
         AssertSet(await Read("#inherited"), ltr, rtl, "rtl", "a direction inherited from a box");
         AssertSet(await Read("#nested"), ltr, rtl, "ltr", "Dir=Ltr inside a right-to-left component");
         AssertSet(await Read("#nested-same"), ltr, rtl, NestableProbes.ToDictionary(probe => probe, _ => "ltr"), "Dir=Ltr inside a right-to-left component of its own kind");
+
+        await AssertChartSides("#inherited", ChartLeftToRight, ChartRightToLeft);
+        await AssertChartSides("#nested", ChartLeftToRight, ChartLeftToRight);
     }
 
     [TestMethod]
@@ -202,6 +214,15 @@ public class BitDirFallbackBrowserTests : PerformanceTestBase
 
         // What :dir() alone can tell: a direction inherited from a box is lost, which is what proves the rules were dropped.
         AssertSet(await Read("#inherited"), ltr, rtl, "ltr", "a direction inherited from a box, without :dir()");
+
+        await AssertChartSides("#ltr", ChartLeftToRight, ChartLeftToRight);
+        await AssertChartSides("#own", ChartLeftToRight, ChartRightToLeft);
+        await AssertChartSides("#nested", ChartLeftToRight, ChartLeftToRight);
+
+        // The row follows the direction it is laid out in without :dir() too, so there the reading sides still land where
+        // they belong for an inherited direction; only the physical sides and the turn of the titles are lost.
+        const string inheritedWithoutDir = "legend right, subtitle right 180deg, title left none";
+        await AssertChartSides("#inherited", inheritedWithoutDir, inheritedWithoutDir);
     }
 
     [TestMethod]
@@ -245,12 +266,18 @@ public class BitDirFallbackBrowserTests : PerformanceTestBase
             Assert.AreNotEqual(ltr[probe], rtl[probe], $"{probe}: Dir=Rtl does not turn the part around ({rtl[probe]}).");
         }
 
-        // What those orders and turns amount to on the screen: a legend on the reading start and a title on the reading
-        // end, the title turned over where it is on the left (#13714).
-        Assert.AreEqual("legend left, title right none", await Page.EvaluateAsync<string>(ChartSides, "#ltr"));
-        Assert.AreEqual("legend right, title left 180deg", await Page.EvaluateAsync<string>(ChartSides, "#own"));
+        // What those orders and turns amount to on the screen (#13714): the parts placed Left and Right keep their side
+        // in either direction, the ones placed Start and End swap theirs, and a title on the left is turned over.
+        await AssertChartSides("#ltr", ChartLeftToRight, ChartLeftToRight);
+        await AssertChartSides("#own", ChartLeftToRight, ChartRightToLeft);
 
         return (ltr, rtl);
+    }
+
+    private async Task AssertChartSides(string set, string physical, string logical)
+    {
+        Assert.AreEqual(physical, await Page.EvaluateAsync<string>(ChartSides, new[] { set, "chart" }), $"{set}: Left / Right");
+        Assert.AreEqual(logical, await Page.EvaluateAsync<string>(ChartSides, new[] { set, "chart-sides" }), $"{set}: Start / End");
     }
 
     private async Task<Dictionary<string, string?>> Read(string set)

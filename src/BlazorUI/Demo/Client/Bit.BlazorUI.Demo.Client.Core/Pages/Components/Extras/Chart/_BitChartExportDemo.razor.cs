@@ -33,7 +33,7 @@ public partial class _BitChartExportDemo
         Plugins = new BitChartPluginOptions
         {
             Title = new BitChartTitleOptions { Display = true, Text = "Traffic by source" },
-            Legend = new BitChartLegendOptions { Placement = BitPlacement.Right }
+            Legend = new BitChartLegendOptions { Placement = BitPlacement.End }
         }
     };
 

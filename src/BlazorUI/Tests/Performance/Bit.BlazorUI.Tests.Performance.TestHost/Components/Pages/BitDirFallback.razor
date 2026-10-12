@@ -90,8 +90,8 @@
         <div data-probe="ellipsis"><BitEllipsisLoading Dir="dir" /></div>
         <div data-probe="rolling-square"><BitRollingSquareLoading Dir="dir" /></div>
         <div data-probe="slider" style="width: 300px;"><BitSlider Dir="dir" IsRanged LowerValue="20" UpperValue="80" /></div>
-        <div data-probe="chart" style="width: 300px; height: 200px;"><BitChart Dir="dir" Type="BitChartType.Bar" Data="ChartData()" /></div>
-        <div data-probe="chart-sides" style="width: 300px; height: 200px;"><BitChart Dir="dir" Type="BitChartType.Bar" Data="ChartData()" Options="ChartSidesOptions()" /></div>
+        <div data-probe="chart" style="width: 400px; height: 200px;"><BitChart Dir="dir" Type="BitChartType.Bar" Data="ChartData()" Options="ChartSides(BitPlacement.Left, BitPlacement.Right)" /></div>
+        <div data-probe="chart-sides" style="width: 400px; height: 200px;"><BitChart Dir="dir" Type="BitChartType.Bar" Data="ChartData()" Options="ChartSides(BitPlacement.Start, BitPlacement.End)" /></div>
         <div data-probe="card" style="width: 300px;"><BitCard Dir="dir" Loading /></div>
         <div data-probe="datagrid" style="width: 300px;">
             <BitDataGrid Dir="dir" Items="People">
@@ -112,13 +112,15 @@
         Datasets = { new BitChartDataset { Label = "Series", Data = [3, 5, 2] } }
     };
 
-    // A legend on the reading start and a title on the reading end, which swap sides with the direction (#13714).
-    private static BitChartOptions ChartSidesOptions() => new()
+    // A legend and a subtitle on one side of the plot and a title on the other (#13714): the physical Left and Right keep
+    // their side in either direction, the reading Start and End swap theirs.
+    private static BitChartOptions ChartSides(BitPlacement near, BitPlacement far) => new()
     {
         Plugins =
         {
-            Legend = { Placement = BitPlacement.Start },
-            Title = { Display = true, Text = "Title", Placement = BitPlacement.End }
+            Legend = { Placement = near },
+            Subtitle = { Display = true, Text = "Sub", Placement = near },
+            Title = { Display = true, Text = "Title", Placement = far }
         }
     };
 

@@ -936,15 +936,16 @@ public class BitChartTests : BunitTestContext
     }
 
     // A subtitle goes wherever a title can - beside the plot it sits between the title and the plot, on either
-    // side - and the ones on the physical left are the ones turned over by a class of their own rather than by being
-    // the first child, which only the outermost of them is. The reading start and end are written where a
-    // left-to-right chart shows them; their side class turns them over and moves them in the other direction.
+    // side. Both carry the class of their side rather than leaning on being the first child, which only the outermost
+    // of them is: it is what moves them in the row and turns over the ones on the left (Left, and Start in a
+    // left-to-right chart), which BitChartStylesheetTests pins and BitDirFallbackBrowserTests reads off the screen.
+    // The reading start and end are written where a left-to-right chart shows them.
     [DataTestMethod]
-    [DataRow(BitPlacement.Left, true, true)]
-    [DataRow(BitPlacement.Right, false, false)]
-    [DataRow(BitPlacement.Start, true, false)]
-    [DataRow(BitPlacement.End, false, false)]
-    public void ASideSubtitleShouldRenderBesideThePlot(BitPlacement placement, bool beforeThePlot, bool turnedOver)
+    [DataRow(BitPlacement.Left, "bit-cht-lft", true)]
+    [DataRow(BitPlacement.Right, "bit-cht-rgt", false)]
+    [DataRow(BitPlacement.Start, "bit-cht-sta", true)]
+    [DataRow(BitPlacement.End, "bit-cht-end", false)]
+    public void ASideSubtitleShouldRenderBesideThePlot(BitPlacement placement, string sideClass, bool beforeThePlot)
     {
         var options = new BitChartOptions
         {
@@ -960,8 +961,9 @@ public class BitChartTests : BunitTestContext
         var subtitle = component.Find(".bit-cht-mid > .bit-cht-sub");
         Assert.IsTrue(subtitle.ClassList.Contains("bit-cht-ttl-v"));
         Assert.AreEqual("Sub", subtitle.TextContent.Trim());
-        Assert.AreEqual(turnedOver, title.ClassList.Contains("bit-cht-ttl-l"));
-        Assert.AreEqual(turnedOver, subtitle.ClassList.Contains("bit-cht-ttl-l"));
+        string[] sideClasses = ["bit-cht-lft", "bit-cht-rgt", "bit-cht-sta", "bit-cht-end"];
+        CollectionAssert.AreEqual(new[] { sideClass }, sideClasses.Where(title.ClassList.Contains).ToArray());
+        CollectionAssert.AreEqual(new[] { sideClass }, sideClasses.Where(subtitle.ClassList.Contains).ToArray());
 
         var order = component.Find(".bit-cht-mid").Children
                              .Select(c => c.ClassList.Contains("bit-cht-plot") ? "plot" : c.ClassList.Contains("bit-cht-sub") ? "sub" : "title")
@@ -988,7 +990,7 @@ public class BitChartTests : BunitTestContext
         => RenderChart(options: new BitChartOptions { Plugins = { Legend = { Placement = placement } } });
 
     // The reading start and end are sides of their own (#13714), named apart from the physical left and right since
-    // only they swap sides in a right-to-left chart.
+    // only they follow the reading direction.
     [TestMethod]
     [DataRow(BitPlacement.Left, "bit-cht-lft")]
     [DataRow(BitPlacement.Right, "bit-cht-rgt")]

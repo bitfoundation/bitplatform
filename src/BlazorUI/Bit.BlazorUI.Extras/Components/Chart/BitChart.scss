@@ -65,26 +65,33 @@ $cht-private-properties: dur-full, ease;
 
 // A title or subtitle beside the plot runs down its side instead of across the top. The ones on the left are
 // turned over, so both sides read from the plot outwards.
+//
+// Every rule naming a side below qualifies its part through :where(), so it weighs what the part's own class weighs
+// and a single class an app hands the part (Classes.Title / Subtitle / Legend) can still turn or move it. The
+// right-to-left ones come later at the same weight, which is what lets them win over the left-to-right ones. Their
+// :where() is forgiving too, so an engine without :dir() drops only that alternative and keeps reading the class an
+// explicit Dir renders on the root, two levels up through child combinators only.
 .bit-cht-ttl-v {
     width: auto;
     align-items: center;
     writing-mode: vertical-rl;
 }
 
-.bit-cht-ttl-l,
-.bit-cht-ttl-v.bit-cht-sta {
+// The reading start is the left of a left-to-right chart and the right of a right-to-left one, the end the other way.
+.bit-cht-ttl-v:where(.bit-cht-lft, .bit-cht-sta) {
     rotate: 180deg;
 }
 
-// A title on the reading start or end is turned over wherever that side is the left.
-.bit-cht-ttl-v.bit-cht-sta:is(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {
+.bit-cht-ttl-v:where(.bit-cht-sta):where(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {
     rotate: none;
 }
 
-.bit-cht-ttl-v.bit-cht-end:is(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {
+.bit-cht-ttl-v:where(.bit-cht-end):where(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {
     rotate: 180deg;
 }
 
+// The row around the plot runs in the reading direction, the way a flex row does: its start is on the right of a
+// right-to-left chart, an inherited direction and an explicit Dir alike, since the root renders dir="rtl" for one.
 .bit-cht-mid {
     flex: 1 1 auto;
     display: flex;
@@ -93,34 +100,25 @@ $cht-private-properties: dur-full, ease;
     align-items: stretch;
 }
 
-// The row around the plot is turned back around in a right-to-left chart, so it runs from left to right in both.
-// The class the component sets on its root, the row's parent, is read beside :dir(), and :is() keeps it where an
-// engine without :dir() drops the other one, since its list is forgiving.
-.bit-cht-mid:is(:dir(rtl), .bit-cht.bit-rtl > *) {
-    flex-direction: row-reverse;
-}
-
 // Each part beside the plot takes its place in that row by its side and by how far out it sits: the legend next to
-// the plot, then the subtitle, then the title. Left and Right keep their side; Start and End swap theirs in a
-// right-to-left chart, which is how they follow the reading direction.
+// the plot, then the subtitle, then the title. Start and End follow the row, so they need nothing more; Left and
+// Right keep their side, so they swap places in a right-to-left chart.
 $cht-side-steps: (lgd: 1, sub: 2, ttl: 3);
 
 @each $part, $step in $cht-side-steps {
-    .bit-cht-#{$part}.bit-cht-lft,
-    .bit-cht-#{$part}.bit-cht-sta {
+    .bit-cht-#{$part}:where(.bit-cht-lft, .bit-cht-sta) {
         order: -$step;
     }
 
-    .bit-cht-#{$part}.bit-cht-rgt,
-    .bit-cht-#{$part}.bit-cht-end {
+    .bit-cht-#{$part}:where(.bit-cht-rgt, .bit-cht-end) {
         order: $step;
     }
 
-    .bit-cht-#{$part}.bit-cht-sta:is(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {
+    .bit-cht-#{$part}:where(.bit-cht-lft):where(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {
         order: $step;
     }
 
-    .bit-cht-#{$part}.bit-cht-end:is(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {
+    .bit-cht-#{$part}:where(.bit-cht-rgt):where(:dir(rtl), .bit-cht.bit-rtl > .bit-cht-mid > *) {
         order: -$step;
     }
 }

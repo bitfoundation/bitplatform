@@ -56,7 +56,7 @@ public partial class _BitChartDataLabelsDemo
         CutoutPercentage = 55,
         Plugins = new BitChartPluginOptions
         {
-            Legend = new BitChartLegendOptions { Placement = BitPlacement.Right },
+            Legend = new BitChartLegendOptions { Placement = BitPlacement.End },
             DataLabels = new BitChartDataLabelOptions
             {
                 Display = true,
@@ -171,7 +171,7 @@ private readonly BitChartOptions _doughnut = new()
     CutoutPercentage = 55,
     Plugins = new BitChartPluginOptions
     {
-        Legend = new BitChartLegendOptions { Placement = BitPlacement.Right },
+        Legend = new BitChartLegendOptions { Placement = BitPlacement.End },
         DataLabels = new BitChartDataLabelOptions
         {
             Display = true,

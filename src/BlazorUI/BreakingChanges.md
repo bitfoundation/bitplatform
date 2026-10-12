@@ -466,8 +466,9 @@ counterpart (as nullable), unless noted.
   (and new `bit-dtg-left`) now mean physical alignment.
 - New classes, no removals: BitPanel `bit-pnl-left` / `bit-pnl-right`, BitCallout `bit-clo-lft` /
   `bit-clo-rgt`, BitDropMenu `bit-drm-lft` / `bit-drm-rgt`, BitSnackBar `bit-snb-tlf`, `-trg`, `-blf`,
-  `-brg`, `-cst`, `-cen`, `-clf`, `-crg`, `-ctr`, BitChart `bit-cht-ttl-l` and the side classes of a title,
-  subtitle or legend beside the plot, `bit-cht-lft` / `bit-cht-rgt` / `bit-cht-sta` / `bit-cht-end`.
+  `-brg`, `-cst`, `-cen`, `-clf`, `-crg`, `-ctr`, and BitChart's side classes of a title, subtitle or legend
+  beside the plot, `bit-cht-lft` / `bit-cht-rgt` / `bit-cht-sta` / `bit-cht-end` (the 11.0 previews' `bit-cht-ttl-l`
+  is gone again: `bit-cht-lft` says the same).
 
 #### Internal-but-public members
 
