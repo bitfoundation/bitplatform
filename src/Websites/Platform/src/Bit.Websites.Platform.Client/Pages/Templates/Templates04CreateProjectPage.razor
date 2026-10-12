@@ -1,570 +1,260 @@
 @page "/templates/create-project"
 @page "/boilerplate/create-project"
+@using Bit.Websites.Platform.Client.Pages.Templates.CreateProject
 @inherits AppComponentBase
 
 <PageOutlet Url="templates/create-project"
             Title="Create project - Templates"
-            Description="Create a new project from the bit Boilerplate template and customize it with parameters like database, authentication, and CI/CD pipeline." />
+            Description="Create a new project from the bit Boilerplate template: answer a few everyday questions and copy the bit new command that sets everything up." />
+
+@{
+    RenderFragment EffectTag(List<EffectPart> effectParts) =>
+        @<span class="effect">
+            @if (effectParts.Count is 0)
+            {
+                <span class="effect-part">no change</span>
+            }
+            else
+            {
+                foreach (var part in effectParts)
+                {
+                    <span class="effect-part">@(part.Verb + " ")<code>@part.Flags</code></span>
+                }
+            }
+        </span>;
+
+    RenderFragment Faqs(Faq[] faqs) =>
+        @<div class="faqs">
+            <span class="faqs-title">Common questions</span>
+            <div class="faq-list">
+                @foreach (var faq in faqs)
+                {
+                    var open = openFaq == faq;
+                    <div class="faq @(open ? "open" : null)">
+                        <button type="button" class="faq-question" aria-expanded="@(open ? "true" : "false")" @onclick="() => ToggleFaq(faq)">
+                            <span class="faq-mark" aria-hidden="true"></span>
+                            <span>@faq.Question</span>
+                        </button>
+                        @if (open)
+                        {
+                            <p class="faq-answer">
+                                @foreach (var part in AnswerParts(faq.Answer))
+                                {
+                                    if (part.IsCode)
+                                    {
+                                        <code>@part.Text</code>
+                                    }
+                                    else if (part.Url is not null)
+                                    {
+                                        <a href="@part.Url">@part.Text</a>
+                                    }
+                                    else
+                                    {
+                                        @part.Text
+                                    }
+                                }
+                            </p>
+                        }
+                    </div>
+                }
+            </div>
+        </div>;
+}
 
 <div class="page-container">
-
     <BitText Typography="BitTypography.H3" Element="h1" Gutter>Create Project</BitText>
-    <br />
-    <BitText Typography="BitTypography.Subtitle1" Gutter>
-        Let's make our next cross platform project a success with Bit.Boilerplate.
+    <BitText Typography="BitTypography.Subtitle1" Class="page-intro">
+        Answer a few everyday questions, one at a time. Every answer updates the command right away, so you can copy it whenever you're ready.
     </BitText>
-    <br />
-
-    <section class="section-card">
-        <BitText Typography="BitTypography.H5" Gutter>How it works</BitText>
-        <ol class="how-it-works">
-            <li>Tell the assistant about your app, or pick the options below. Either way, the command stays ready to copy.</li>
-            <li>Copy it and paste it into a terminal. If something needs installing with administrator rights, Windows asks once.</li>
-            <li>The <code>bit new</code> command installs what this machine is missing, creates the project, adds its first EF Core migration, trusts the folder, installs the VS Code extensions the project recommends and opens it in VS Code.</li>
-            <li>Use any AI assistant you like: the project comes fully configured for Claude Code, GitHub Copilot, Codex, Gemini CLI and Cursor.</li>
-        </ol>
-        <BitText Typography="BitTypography.Body2">
-            The platforms you tick only decide what is set up on this machine now; every project has the web, Android, iOS, Windows and macOS apps.
-            New to the bit CLI? <a href="/templates/getting-started">Getting started</a> shows how to install it with the .NET SDK.
-        </BitText>
-    </section>
-    <br />
-
-    <section class="section-card assistant">
-        <BitText Typography="BitTypography.H5" Gutter>Describe your project</BitText>
-        <BitText Typography="BitTypography.Body2" Gutter>
-            Tell the assistant what you're building, in your own words. It fills in the options below and asks a question or two so the project fits better.
-            You don't have to answer them: copy the command whenever you like, and go on with your day.
-        </BitText>
-        @foreach (var message in assistantMessages)
-        {
-            if (message.FromUser)
-            {
-                <BitCard Background="BitColorKind.Tertiary" Class="assistant-user-message">
-                    <BitText Element="pre">@message.Text</BitText>
-                </BitCard>
-            }
-            else
-            {
-                <BitMarkdownViewer Markdown="@message.Text" />
-            }
-        }
-        @if (isAssistantBusy)
-        {
-            <BitEllipsisLoading Size="BitSize.Small" />
-        }
-        else if (assistantMessages.Count > 0)
-        {
-            <BitStack Horizontal HorizontalAlign="BitAlignment.Start" VerticalAlign="BitAlignment.Center" Wrap Class="assistant-ready">
-                <BitText Typography="BitTypography.Body2">The command is ready.</BitText>
-                <BitButton Size="BitSize.Small" Variant="BitVariant.Outline" IconName="Copy" OnClick="WrapHandled(CopyCommand)">@CopyButtonText</BitButton>
-            </BitStack>
-        }
-        <BitTextField Multiline
-                      Rows="4"
-                      Immediate
-                      MaxLength="4000"
-                      @bind-Value="assistantInput"
-                      Placeholder="@(assistantMessages.Count == 0 ? "e.g. A booking app for my clinic: patients book on the web and on Android, the staff manage the calendar." : "Answer, or tell it anything else that matters.")" />
-        <BitStack Horizontal HorizontalAlign="BitAlignment.SpaceBetween" VerticalAlign="BitAlignment.Start" Wrap Class="assistant-actions">
-            <div class="real-project">
-                <BitCheckbox Label="This isn't a test project, I'm creating my real one" Value="realProject.Value" ValueChanged="(bool value) => SetRealProject(value)" />
-                <BitText Typography="BitTypography.Body2" Class="real-project-hint">Adds <code>--realProject</code>, which keeps the project's containers running between runs so debugging starts fast, and switches to PostgreSQL, S3, Redis and SignalR (AI Chatbot) wherever you haven't picked something else.</BitText>
-            </div>
-            <BitButton IsEnabled="@(isAssistantBusy is false && string.IsNullOrWhiteSpace(assistantInput) is false)" OnClick="WrapHandled(SendToAssistant)">Send</BitButton>
-        </BitStack>
-    </section>
-    <br />
 
     <BitSticky Top="64px">
-        <div class="command-bar">
-            <div class="command">
-                <CodeBox HideCopyButton>
-                    @GetFinalCommand()
-                </CodeBox>
-            </div>
-            <BitButton IconName="Copy" OnClick="WrapHandled(CopyCommand)">@CopyButtonText</BitButton>
-        </div>
+        <CreateProjectCommandBar Setup="setup" />
     </BitSticky>
-    <BitText Typography="BitTypography.Body2" Class="command-hint">
-        Paste it into a terminal, then go on with your day. No bit CLI yet? Run <code>dotnet tool install --global Bit.Cli --prerelease</code> first, or put <code>dnx Bit.Cli --prerelease --</code> in place of <code>bit</code>.
-    </BitText>
-    <br />
+    <CreateProjectCommandHint />
 
-    <BitGrid Columns="2"
-             VerticalSpacing="1rem"
-             HorizontalSpacing="1rem"
-             VerticalAlign="BitAlignment.Stretch">
-        <BitGridItem Class="grid-item">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Name</BitText>
-                <BitTextField IsRequired @bind-Value="@name" Placeholder="Enter a name" MaxLength="60" Immediate DebounceTime="300" />
-            </div>
-            <br />
-            <CodeBox>
-                @GetNameCommand()
-            </CodeBox>
-            <br />
-            It is required to specify a name for your project.
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Platforms to set up on this machine now</BitText>
-            </div>
-            <BitStack Horizontal HorizontalAlign="BitAlignment.Start" Wrap AutoHeight>
-                <BitCheckbox Label="Android" @bind-Value="android" />
-                <BitCheckbox Label="iOS" @bind-Value="ios" />
-                <BitCheckbox Label="macOS" @bind-Value="macOS" />
-                <BitCheckbox Label="Windows" @bind-Value="windows" />
-            </BitStack>
-            <br />
-            <CodeBox>
-                @GetPlatformsCommand()
-            </CodeBox>
-            <BitMessage Color="BitColor.Info" Multiline>
-                This only decides what <code>bit new</code> installs and builds on this machine right now.
-                Every project has the web, Android, iOS, Windows and macOS apps.
-            </BitMessage>
-            <br />
-            The web app is always set up. Ticking any native app builds the whole solution, which needs several GB of extra build tools and makes the first build minutes longer.
-            Add one any time later from the project folder, e.g. <code>bit setup --platforms android</code>.
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Open in</BitText>
-                <BitDropdown Placeholder="Choose an IDE" Items="@ide.Items" @bind-Value="@ide.Value" />
-            </div>
-            <br />
-            <CodeBox>
-                @GetIdeCommand()
-            </CodeBox>
-            By default <code>bit new</code> opens the project in VS Code, installs the extensions the project recommends (C# Dev Kit, Copilot, Claude Code and more), and trusts the folder,
-            so it opens without prompts. If VS Code is missing, it's installed for you.
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Server Database</BitText>
-                <BitDropdown Placeholder="Choose database" Items="@database.Items" @bind-Value="@database.Value" />
-            </div>
-            <br />
-            <CodeBox>
-                @GetDatabaseCommand()
-            </CodeBox>
-            @switch (database.Value)
+    <section class="interview" aria-label="Questions">
+        <div class="interview-top">
+            <span class="progress-text">@ProgressText</span>
+            @if (IsFinalStep is false)
             {
-                case "Sqlite":
-                    <div>
-                        The API project requires an Entity Framework Core DbContext for tables such as ASP.NET Core Identity.
-                        <br />
-                        <br />
-                        Supported options include SqlServer, PostgreSQL, MySQL and Other.
-                        <br />
-                        <br />
-                        For the default SQLite option, we'd recommend installing sqlite package for <a href="https://marketplace.visualstudio.com/items?itemName=ErikEJ.SQLServerCompactSQLiteToolbox" target="_blank" rel="noopener">Visual Studio</a> and <a href="https://marketplace.visualstudio.com/items?itemName=yy0931.vscode-sqlite3-editor" target="_blank" rel="noopener">Visual Studio Code</a>.
-                    </div>
-                    break;
-                case "SqlServer" when aspire.Value:
-                case "PostgreSQL" when aspire.Value:
-                case "MySql" when aspire.Value:
-                    <div>
-                        With Aspire, @database.Value runs in a container for you, so there's nothing to install besides Docker, which <code>bit new</code> offers when it's missing.
-                    </div>
-                    break;
-                case "SqlServer":
-                    <div>
-                        You can use Sql Server LocalDb 2025 for development purposes.
-                        <br />
-                        It gets installed within Visual Studio by default, but you can either download it from <a href="https://download.microsoft.com/download/3/8/d/38de7036-2433-4207-8eae-06e247e17b25/SqlLocalDB.msi" target="_blank" rel="noopener">here</a> or install it using PowerShell:
-                        <CodeBox>$ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -Uri https://download.microsoft.com/download/3/8/d/38de7036-2433-4207-8eae-06e247e17b25/SqlLocalDB.msi -OutFile SqlLocalDB.msi; msiexec /i SqlLocalDB.msi /quiet</CodeBox>
-                    </div>
-                    break;
-                case "PostgreSQL":
-                    <div>
-                        Download and install @database.Value <a href="https://www.postgresql.org/download/" target="_blank" rel="noopener">here</a>.
-                        Alternatively, use the following command:
-                        <br />
-                        <CodeBox>winget install --id=PostgreSQL.PostgreSQL.18</CodeBox>
-                    </div>
-                    break;
-                case "MySql":
-                    <div>
-                        Download and install @database.Value <a href="https://dev.mysql.com/downloads/mysql/" target="_blank" rel="noopener">here</a>.
-                    </div>
-                    break;
-                case "Other":
-                    <div>
-                        Add the desired <a href="https://learn.microsoft.com/en-us/ef/core/providers/" target="_blank" rel="noopener">database</a> package and configure it in the AddDbContextPool method which is located in the Program.Services.cs file within the Server.Api project.
-                    </div>
-                    break;
+                <button type="button" class="done-link" @onclick="WrapHandled(ShowCommand)">I'm done, show my command</button>
             }
-        </BitGridItem>
+        </div>
+        <BitProgress Percent="ProgressPercent" Thickness="4" Rounded AriaLabel="Progress" AriaValueText="@ProgressText" />
 
-        <BitGridItem Class="grid-item" ColumnSpan="2">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Multi-tenancy</BitText>
-                <BitToggle @bind-Value="multiTenant.Value" OnText="true" OffText="false" />
-            </div>
-            <CodeBox>
-                @GetMultiTenantCommand()
-            </CodeBox>
-            <BitText Typography="BitTypography.Body1" Gutter>
-                You can experience the Multi-tenancy feature instantly by logging into <a href="https://adminpanel.bitplatform.dev" target="_blank" rel="noopener">adminpanel.bitplatform.dev</a> using <strong>store-user@bitplatform.dev</strong> (Password: <code>123456</code>). This gives you access to a demo tenant ("Store") where you can explore the Dashboard, Products, and Categories.
-            </BitText>
-            <BitText Typography="BitTypography.Body1" Gutter>
-                Alternatively, you can sign in using your regular Google/Gmail account to automatically create your own isolated tenant. Once inside your personal tenant, you will also gain access to advanced Identity Management features, including User and Role administration pages.
-            </BitText>
-            <BitText Typography="BitTypography.Body2" Class="note-text">
-                <strong>Note:</strong> The Global Tenant Administration page is exclusive to Global Administrators. To explore global management features, we recommend creating your project following this tutorial and running it locally. You can then log in using <strong>test@bitplatform.dev</strong> (Password: <code>123456</code>) to access full global admin privileges.
-            </BitText>
-        </BitGridItem>
+        @if (IsFinalStep)
+        {
+            <div class="question" @key="stepIndex">
+                <h2 class="question-title" tabindex="-1" @ref="questionHeading">Your command is ready</h2>
+                <BitText Typography="BitTypography.Body2" Class="question-help">
+                    It's at the top of the page, ready to copy. Here's what you told us. Use Edit to change an answer.
+                </BitText>
 
-        <BitGridItem Class="grid-item">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>File Storage</BitText>
-                <BitDropdown Placeholder="Choose file storage" Items="@fileStorage.Items" @bind-Value="@fileStorage.Value" />
-            </div>
-            <CodeBox>
-                @GetFileStorageCommand()
-            </CodeBox>
+                <ol class="summary">
+                    @for (var i = 0; i < QuestionCount; i++)
+                    {
+                        var index = i;
+                        var step = steps[index];
+                        var parts = StepEffect(step);
+                        <li class="summary-row @(parts.Count > 0 ? "changed" : null)">
+                            <span class="summary-number" aria-hidden="true">@(index + 1)</span>
+                            <div class="summary-body">
+                                <span class="summary-label">@step.Label</span>
+                                <span class="summary-answer">@Describe(step)</span>
+                                @if (parts.Count > 0)
+                                {
+                                    @EffectTag(parts)
+                                }
+                            </div>
+                            <BitButton Variant="BitVariant.Text"
+                                       Size="BitSize.Small"
+                                       IconName="Edit"
+                                       Class="summary-edit"
+                                       AriaLabel="@($"Edit {step.Label}")"
+                                       OnClick="WrapHandled(() => GoTo(index))">Edit</BitButton>
+                        </li>
+                    }
+                </ol>
 
-            @switch (fileStorage.Value)
-            {
-                case "Local":
-                    <div>
-                        The API project includes an Attachment Controller responsible for handling user images,
-                        including resizing and saving them in the WebP format using <a href="https://github.com/robinrodricks/FluentStorage" target="_blank" rel="noopener">FluentStorage</a>
-                        <br />
-                        <br />
-                        Local option stores files on local hard drive.
+                <div class="final-section">
+                    <h3 class="final-section-title">Technical extras</h3>
+                    <BitText Typography="BitTypography.Body2" Class="question-help">
+                        Already set the way most projects want them. Change them only if you know you need to.
+                    </BitText>
+                    <div class="extras-list">
+                        @foreach (var option in technicalExtras)
+                        {
+                            <ProjectOptionEditor Option="option" Setup="setup" Compact OnChange="() => MarkTouched(option.Key)" />
+                        }
                     </div>
-                    break;
-                case "AzureBlobStorage":
-                    <div>
-                        Download and install Azure blob storage emulator <a href="https://learn.microsoft.com/en-us/azure/storage/common/storage-use-azurite?tabs=npm%2Cblob-storage#install-azurite">here</a>.
-                    </div>
-                    break;
-                case "S3":
-                    <div>
-                        Install and configure <a href="https://www.nuget.org/packages/FluentStorage.AWS" target="_blank" rel="noopener">FluentStorage.AWS</a>, which supports Amazon S3.
-                        This allows you to use any file storage solution compatible with S3, such as AWS, DigitalOcean Spaces, RustFS, Hetzner, Contabo etc.
-                    </div>
-                    break;
-                case "Other":
-                    <div>
-                        Install and configure any of the <a href="https://www.nuget.org/profiles/hgupta" target="_blank" rel="noopener">FluentStorage packages</a>.
-                    </div>
-                    break;
-            }
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Pipeline</BitText>
-                <BitDropdown Placeholder="Choose pipeline" Items="@pipeline.Items" @bind-Value="@pipeline.Value" />
-            </div>
-            <br />
-            <CodeBox>
-                @GetPipelineCommand()
-            </CodeBox>
-            <br />
-            @switch (pipeline.Value)
-            {
-                case "None":
-                    <div>
-                        By selecting None, no CI/CD pipeline will be added.
-                    </div>
-                    break;
-                case "GitHub":
-                    <div>
-                        Ensure a rapid and reliable deployment by utilizing a pipeline.
-                        By selecting GitHub, CI/ CD pipelines will be set up using <a href="https://github.com/features/actions" target="_blank" rel="noopener">Github Actions</a>.
-                    </div>
-                    break;
-                case "Azure":
-                    <div>
-                        By selecting Azure, CI/ CD pipelines will be set up using <a href="https://azure.microsoft.com/en-us/products/devops/pipelines" target="_blank" rel="noopener">Azure Devops</a>.
-                    </div>
-                    break;
-            }
-            @if (pipeline.Value is "GitHub")
-            {
-                <div class="github-repo">
-                    <BitCheckbox Label="Create a private GitHub repository and push the project to it" @bind-Value="githubRepo" />
-                    <BitText Typography="BitTypography.Body2" Class="github-repo-hint">Adds <code>--github-repo</code>. The <code>bit new</code> command installs the GitHub CLI if it's missing, and opens GitHub in your browser when you need to sign in.</BitText>
                 </div>
-            }
-        </BitGridItem>
 
-        <BitGridItem Class="grid-item">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Redis</BitText>
-                <BitToggle @bind-Value="redis.Value" OnText="true" OffText="false" />
-            </div>
-            <br />
-            <CodeBox>
-                @GetRedisCommand()
-            </CodeBox>
-            <BitText Typography="BitTypography.Body1" Gutter>
-                bit Boilerplate handles most of your scalability requirements using Redis:
-                <ul>
-                    <li>Hybrid (In-memory + Redis) caching with FusionCache</li>
-                    <li>Background job processing for Hangfire</li>
-                    <li>SignalR backplane (Azure SignalR Service is also pre-configured)</li>
-                    <li>Distributed locking</li>
-                </ul>
-                If Redis integration is disabled:
-                <ul>
-                    <li>In-memory caching will be used instead of hybrid caching</li>
-                    <li>Background jobs will be persisted in the database (significantly slower)</li>
-                </ul>
-                In production, You may not scale out the application without addressing distributed locking and SignalR scale out concerns.
-            </BitText>
-        </BitGridItem>
+                @Faqs(finalFaqs)
 
-        <BitGridItem Class="grid-item">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Aspire</BitText>
-                <BitToggle @bind-Value="aspire.Value" OnText="true" OffText="false" />
-            </div>
-            <BitText Typography="BitTypography.Body1" Gutter>
-                Aspire helps you publish your project not only on Azure, AWS, and Kubernetes, but also on a simple Linux VPS running a basic Docker Compose setup, automatically building the database, API projects, and more.
-            </BitText>
-            <BitText>
-                In the Bit Boilerplate, .NET Aspire automatically provisions Redis, a database, file storage (Azure Blob Storage or S3), a test SMTP server, Keycloak, and Dev Tunnels for you!
-            </BitText>
-            <CodeBox>
-                @GetAspireCommand()
-            </CodeBox>
-            <BitText Typography="BitTypography.Body2">
-                Aspire helps you build, test, and deploy distributed applications with ease. Learn more at <a href="https://learn.microsoft.com/en-us/dotnet/aspire/" target="_blank" rel="noopener">ASP.NET Core Aspire</a>.
-                It runs those resources in containers, so <code>bit new</code> installs the Aspire CLI, and offers Docker, when they're missing.
-            </BitText>
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item" ColumnSpan="2">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>API</BitText>
-                <BitDropdown Placeholder="Choose api" Items="@api.Items" @bind-Value="@api.Value" />
-            </div>
-            <br />
-            <CodeBox>
-                @GetApiCommand()
-            </CodeBox>
-            Select the API mode that best aligns with your specific requirements.
-            <br />
-            <br />
-            @if (api.Value == "Integrated")
-            {
-                <div>
-                    Easily debug and deploy Server.Web projects that serves restful API services, SSR, Blazor Server, Blazor Auto and pre-rendering.
+                <div class="final-section">
+                    <h3 class="final-section-title">What happens next</h3>
+                    <ol class="next-steps">
+                        <li>Paste the command into a terminal. If something needs administrator rights, Windows asks once.</li>
+                        <li><code>bit new</code> installs what this machine is missing, creates the project and opens it in the editor you picked.</li>
+                        <li>Use any AI assistant you like. The project comes set up for Claude Code, GitHub Copilot, Codex, Gemini CLI and Cursor.</li>
+                    </ol>
                 </div>
-                <br />
-                <div class="api-image-container">
-                    <img class="image" src="images/templates/api-integrated.webp" alt="Integrated API architecture diagram" loading="lazy" />
-                </div>
-            }
-            else
-            {
-                <div>
-                    Conversely, if the parameter is set to Standalone, you will need to separately run and publish both the Server.Api and Server.Web projects.
-                </div>
-                <br />
-                <div class="api-image-container">
-                    <img class="image" src="images/templates/api-standalone.webp" alt="Standalone API architecture diagram" loading="lazy" />
-                </div>
-            }
-
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Module</BitText>
-                <BitDropdown Placeholder="Choose module" Items="@module.Items" @bind-Value="@module.Value" />
             </div>
-            <br />
-            <CodeBox>
-                @GetModuleCommand()
-            </CodeBox>
-            Use this parameter to initialize the project with a module.
-            The two available options are <a href="https://adminpanel.bitplatform.dev/" target="_blank" rel="noopener">Admin Panel</a> and <a href="https://sales.bitplatform.dev/" target="_blank" rel="noopener">Sales</a>.
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Captcha</BitText>
-                <BitDropdown Placeholder="Choose captcha" Items="@captcha.Items" @bind-Value="@captcha.Value" />
+        }
+        else if (stepIndex is 0)
+        {
+            <div class="question" @key="stepIndex">
+                <h2 class="question-title" tabindex="-1" @ref="questionHeading">@CurrentStep.Question</h2>
+                <BitText Typography="BitTypography.Body2" Class="question-help">@CurrentStep.Help</BitText>
+                <BitTextField @bind-Value="setup.Name"
+                              Label="Project name"
+                              Placeholder="MyFirstProject"
+                              ErrorMessage="@NameError"
+                              MaxLength="60"
+                              Immediate
+                              DebounceTime="300"
+                              Class="name-field" />
+                @Faqs(CurrentStep.Faqs)
             </div>
-            <br />
-            <CodeBox>
-                @GetCaptchaCommand()
-            </CodeBox>
-            <br />
-            <div>
-                @if (captcha.Value == "None")
+        }
+        else
+        {
+            var step = CurrentStep;
+            <div class="question" @key="stepIndex">
+                <h2 class="question-title" tabindex="-1" @ref="questionHeading">@step.Question</h2>
+                @if (step.Help is not null)
                 {
-                    <div>
-                        By setting this parameter to None, CAPTCHA won't be added to the project.
+                    <BitText Typography="BitTypography.Body2" Class="question-help">@step.Help</BitText>
+                }
+                @if (step.Warning is not null)
+                {
+                    <BitMessage Color="BitColor.Warning" Multiline Class="question-warning">@step.Warning</BitMessage>
+                }
+
+                @foreach (var group in step.Groups)
+                {
+                    @if (IsShown(group))
+                    {
+                        <div class="choice-group @(group.FollowUp ? "follow-up" : null)">
+                            @if (group.Prompt is not null)
+                            {
+                                <h3 class="group-prompt">@group.Prompt</h3>
+                            }
+                            <div class="answers" role="@(group.Multiple ? "group" : "radiogroup")" aria-label="@(group.Prompt ?? step.Question)">
+                                @foreach (var answer in group.Answers)
+                                {
+                                    var chosen = answer.IsChosen();
+                                    <button type="button"
+                                            class="answer @(chosen ? "chosen" : null)"
+                                            role="@(group.Multiple ? "checkbox" : "radio")"
+                                            aria-checked="@(chosen ? "true" : "false")"
+                                            @onclick="WrapHandled(() => Choose(group, answer))">
+                                        <span class="answer-mark @(group.Multiple ? "square" : null)" aria-hidden="true"></span>
+                                        <span class="answer-body">
+                                            <span class="answer-head">
+                                                <span class="answer-text">@answer.Text</span>
+                                                @if (answer.ShowsRecommended)
+                                                {
+                                                    <span class="answer-badge">Recommended</span>
+                                                }
+                                            </span>
+                                            @if (answer.Hint is not null)
+                                            {
+                                                <span class="answer-hint">@answer.Hint</span>
+                                            }
+                                        </span>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+
+                @if (step.Key is "platforms")
+                {
+                    <BitText Typography="BitTypography.Body2" Class="question-help">
+                        Add one later from the project folder with <code>bit setup --platforms android</code>.
+                    </BitText>
+                }
+
+                @if (step.Links.Length > 0)
+                {
+                    <div class="demo-links">
+                        @foreach (var link in step.Links)
+                        {
+                            <a href="@link.Url" target="_blank" rel="noopener">@link.Text</a>
+                        }
                     </div>
+                }
+
+                @if (step.Faqs.Length > 0)
+                {
+                    @Faqs(step.Faqs)
+                }
+            </div>
+        }
+
+        <div class="interview-nav">
+            <BitButton Variant="BitVariant.Outline"
+                       IconName="ChevronLeft"
+                       IsEnabled="@(stepIndex > 0)"
+                       OnClick="WrapHandled(GoBack)">Back</BitButton>
+            <div class="nav-forward">
+                @if (CanSkip)
+                {
+                    <BitButton Variant="BitVariant.Text" Title="Keep the current answer and go on" OnClick="WrapHandled(GoNext)">Skip</BitButton>
+                }
+                @if (IsFinalStep)
+                {
+                    <BitButton Variant="BitVariant.Outline" IconName="Refresh" OnClick="WrapHandled(StartOver)">Start over</BitButton>
                 }
                 else
                 {
-                    <div>
-                        To integrate Google <a href="https://www.google.com/recaptcha/about/" target="_blank" rel="noopener">reCAPTCHA</a> into
-                        the app, include <code>--captcha reCaptcha</code> in the <code>bit new</code> command. <a href="https://todo.bitplatform.dev/sign-up" target="_blank" rel="noopener">Live demo</a>
-                    </div>
+                    <BitButton IconName="ChevronRight" IconPosition="BitIconPosition.End" OnClick="WrapHandled(GoNext)">@NextText</BitButton>
                 }
             </div>
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Push Notification (Native and Web Push)</BitText>
-                <BitToggle @bind-Value="notification.Value" OnText="true" OffText="false" />
-            </div>
-            <br />
-            <CodeBox>
-                @GetNotificationCommand()
-            </CodeBox>
-            Setting this parameter to True enables native push notification using firebase and APN for Androiod, iOS and macOS apps alongside with Web Push for Web Browsers.
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Sample</BitText>
-                <BitToggle @bind-Value="sample.Value" OnText="true" OffText="false" />
-            </div>
-            <br />
-            <CodeBox>
-                @GetSampleCommand()
-            </CodeBox>
-            Use this parameter to initialize the project with a sample pages.
-            Checkout demo sample at <a href="https://todo.bitplatform.dev/todo" target="_blank" rel="noopener">Todo</a>.
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Sentry</BitText>
-                <BitToggle @bind-Value="sentry.Value" OnText="true" OffText="false" />
-            </div>
-            <br />
-            <CodeBox>
-                @GetSentryCommand()
-            </CodeBox>
-            Adding <code>--sentry</code> to the <code>bit new</code> command allows you to capture errors, crashes, and analytics data
-            seamlessly across all supported platforms.
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>AppInsights</BitText>
-                <BitToggle @bind-Value="appInsight.Value" OnText="true" OffText="false" />
-            </div>
-            <br />
-            <CodeBox>
-                @GetAppInsightsCommand()
-            </CodeBox>
-            To enable Azure Application Insights for both server and client-side applications (including web),
-            set the appinsights parameter to true. This option will configure the application to store logs such as
-            errors and informational messages.
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>SignalR</BitText>
-                <BitToggle @bind-Value="signalR.Value" OnText="true" OffText="false" />
-            </div>
-            <br />
-            <CodeBox>
-                @GetSignalRCommand()
-            </CodeBox>
-            Enabling this parameter will include sample code for SignalR, which can be used to implement real-time functionalities, such as chat, in your Blazor project.
-            <br />
-            <br />
-            <b>Note:</b>
-            <br />
-            Disabling this feature will affect AI Chatbot features.
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Offline Database</BitText>
-                <BitToggle @bind-Value="offlineDb.Value" OnText="true" OffText="false" />
-            </div>
-            <br />
-            <CodeBox>
-                @GetOfflineDbCommand()
-            </CodeBox>
-            Setting this parameter to True enables SQLite and Entity Framework Core,
-            allowing for the development of an offline-capable cross platform application.
-            <br />
-            <br />
-            Warning: It is advisable to use this option only when necessary, as integrating Entity Framework Core can increase application size and potentially reduce startup performance.
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Cloudflare</BitText>
-                <BitToggle @bind-Value="cloudflare.Value" OnText="true" OffText="false" />
-            </div>
-            <br />
-            <CodeBox>
-                @GetCloudflareCommand()
-            </CodeBox>
-            Integrating Cloudflare and placing your backend behind the Cloudflare CDN will significantly enhance the app's performance while reducing server load.
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Google Ads</BitText>
-                <BitToggle @bind-Value="googleAds.Value" OnText="true" OffText="false" />
-            </div>
-            <br />
-            <CodeBox>
-                @GetGoogleAdsCommand()
-            </CodeBox>
-            Helps you earn money by displaying reward-based Google ads. <a href="https://adminpanel.bitplatform.dev/settings/UpgradeAccount" target="_blank" rel="noopener">Demo</a>
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item" ColumnSpan="2">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>bit Brouter</BitText>
-                <BitToggle @bind-Value="brouter.Value" OnText="true" OffText="false" />
-            </div>
-            <br />
-            <CodeBox>
-                @GetBrouterCommand()
-            </CodeBox>
-            bit Brouter replaces Blazor's built-in Router and brings the powerful routing features that developers enjoy in Vue.js, React and Angular to the Blazor ecosystem: nested routing, async route guards, data loaders, keep-alive pages that preserve their state across navigation, named and typed routes, and animated view transitions.
-            <br />
-            <br />
-            It stays a drop-in replacement, so your existing <b>@@page</b> routes, layouts and authorization keep working unchanged while you opt into the advanced features where you need them.
-        </BitGridItem>
-
-        <BitGridItem Class="grid-item" ColumnSpan="2">
-            <div class="row">
-                <BitText Typography="BitTypography.H6" Gutter>Theme</BitText>
-                <BitDropdown Placeholder="Choose theme" Items="@theme.Items" @bind-Value="@theme.Value" />
-            </div>
-            <br />
-            <CodeBox>
-                @GetThemeCommand()
-            </CodeBox>
-            The design system the app's UI ships with, powered by bit BlazorUI theming.
-            Fluent 2 is the default; Fluent, Cupertino and Material are also available, and all of them come with light and dark modes out of the box.
-            @if (theme.Value is "Cupertino" or "Material")
-            {
-                <br />
-                <br />
-                <BitMessage Color="BitColor.Warning" Multiline>
-                    The @theme.Value theme is experimental and still under active development, so some components may not look fully polished yet.
-                </BitMessage>
-            }
-        </BitGridItem>
-
-    </BitGrid>
+        </div>
+    </section>
 </div>
 
 <NavigationButtons Prev="Getting started" PrevUrl="/templates/getting-started" Next="Project structure" NextUrl="/templates/project-structure" />

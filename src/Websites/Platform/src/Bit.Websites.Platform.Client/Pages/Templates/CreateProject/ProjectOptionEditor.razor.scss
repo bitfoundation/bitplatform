@@ -1,0 +1,55 @@
+@import '../../../Styles/abstracts/_functions.scss';
+@import '../../../Styles/abstracts/_bit-css-variables.scss';
+@import '../../../Styles/abstracts/_media-queries.scss';
+
+.option-editor {
+    display: flex;
+    flex-direction: column;
+    gap: rem2(4px);
+    padding: rem2(12px) rem2(14px);
+    border-radius: rem2(6px);
+    border: 1px solid $bit-color-border-secondary;
+    border-inline-start: rem2(3px) solid transparent;
+
+    &.modified {
+        border-inline-start-color: $bit-color-primary;
+    }
+
+    &.compact {
+        padding: rem2(8px) rem2(10px);
+    }
+}
+
+.option-head {
+    display: flex;
+    gap: rem2(12px);
+    align-items: center;
+    justify-content: space-between;
+
+    ::deep .bit-drp {
+        width: rem2(190px);
+        flex-shrink: 0;
+    }
+
+    @include lt-sm {
+        flex-wrap: wrap;
+
+        ::deep .bit-drp {
+            width: 100%;
+        }
+    }
+}
+
+::deep .option-title {
+    font-weight: 600;
+}
+
+::deep .option-summary {
+    color: $bit-color-foreground-secondary;
+
+    a {
+        color: $bit-color-primary;
+        margin-inline-start: rem2(4px);
+        white-space: nowrap;
+    }
+}

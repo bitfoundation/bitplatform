@@ -1,0 +1,46 @@
+@if (Option.Applies(Setup))
+{
+    <div class="option-editor @(Compact ? "compact" : null) @(Option.IsModified(Setup) ? "modified" : null)">
+        <div class="option-head">
+            <BitText Typography="@(Compact ? BitTypography.Body1 : BitTypography.Subtitle1)" Class="option-title">@Option.Title</BitText>
+            @if (Option.IsChoice)
+            {
+                <BitDropdown Items="items" Value="@Option.GetChoice!(Setup)" ValueChanged="(string? value) => Change(() => Option.SetChoice!(Setup, value!))" AriaLabel="@Option.Title" />
+            }
+            else
+            {
+                <BitToggle Value="@Option.GetBool!(Setup)" ValueChanged="(bool value) => Change(() => Option.SetBool!(Setup, value))" AriaLabel="@Option.Title" />
+            }
+        </div>
+        <BitText Typography="BitTypography.Body2" Class="option-summary">
+            @Option.Summary
+            @if (Option.DemoUrl is not null)
+            {
+                <a href="@Option.DemoUrl" target="_blank" rel="noopener">See it live</a>
+            }
+        </BitText>
+    </div>
+}
+
+@code {
+    private BitDropdownItem<string>[] items = [];
+
+    [Parameter, EditorRequired] public ProjectOption Option { get; set; } = default!;
+
+    [Parameter, EditorRequired] public ProjectSetup Setup { get; set; } = default!;
+
+    [Parameter] public EventCallback OnChange { get; set; }
+
+    [Parameter] public bool Compact { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        items = Option.Choices?.Select(c => new BitDropdownItem<string> { Text = c.Text, Value = c.Value }).ToArray() ?? [];
+    }
+
+    private async Task Change(Action apply)
+    {
+        apply();
+        await OnChange.InvokeAsync();
+    }
+}

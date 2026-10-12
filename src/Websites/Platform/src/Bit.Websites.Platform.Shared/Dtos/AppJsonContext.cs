@@ -1,5 +1,5 @@
 ﻿using Bit.Websites.Platform.Shared.Dtos.ContactUs;
-using Bit.Websites.Platform.Shared.Dtos.ProjectAssistant;
+using Bit.Websites.Platform.Shared.Dtos.CreateProject;
 using Bit.Websites.Platform.Shared.Dtos.SupportPackage;
 
 namespace Bit.Websites.Platform.Shared.Dtos;
@@ -13,9 +13,6 @@ namespace Bit.Websites.Platform.Shared.Dtos;
 [JsonSerializable(typeof(ContactUsDto))]
 [JsonSerializable(typeof(BuyPackageDto))]
 [JsonSerializable(typeof(SupportPackageDto))]
-[JsonSerializable(typeof(ProjectOptions))]
-[JsonSerializable(typeof(ProjectAssistantRequest))]
-[JsonSerializable(typeof(ProjectAssistantReply))]
 [JsonSerializable(typeof(ProjectCreatedDto))]
 public partial class AppJsonContext : JsonSerializerContext
 {

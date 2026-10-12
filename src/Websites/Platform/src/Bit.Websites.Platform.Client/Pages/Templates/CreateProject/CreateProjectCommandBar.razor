@@ -1,0 +1,8 @@
+@inherits AppComponentBase
+
+<div class="command-bar">
+    <div class="command">
+        <CodeBox HideCopyButton>@Setup.ToCommand()</CodeBox>
+    </div>
+    <BitButton OnClick="WrapHandled(CopyCommand)">@(copiedCommand == Setup.ToCommand() ? "Copied" : "Copy")</BitButton>
+</div>
