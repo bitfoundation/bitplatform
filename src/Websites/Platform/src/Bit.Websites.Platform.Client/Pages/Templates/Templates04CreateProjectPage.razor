@@ -46,7 +46,8 @@
                                     }
                                     else if (part.Url is not null)
                                     {
-                                        <a href="@part.Url">@part.Text</a>
+                                        var external = part.Url.StartsWith("http", StringComparison.Ordinal);
+                                        <a href="@part.Url" target="@(external ? "_blank" : null)" rel="@(external ? "noopener" : null)">@part.Text</a>
                                     }
                                     else
                                     {
@@ -59,6 +60,63 @@
                 }
             </div>
         </div>;
+
+    RenderFragment Choices(Step step) =>
+        @<div class="choices">
+            @if (step.Warning is not null)
+            {
+                <BitMessage Color="BitColor.Warning" Multiline Class="question-warning">@step.Warning</BitMessage>
+            }
+
+            @foreach (var group in step.Groups)
+            {
+                @if (IsShown(group))
+                {
+                    <div class="choice-group @(group.FollowUp ? "follow-up" : null)">
+                        @if (group.Prompt is not null)
+                        {
+                            <h3 class="group-prompt">@group.Prompt</h3>
+                        }
+                        <div class="answers" role="@(group.Multiple ? "group" : "radiogroup")" aria-label="@(group.Prompt ?? step.Question)">
+                            @foreach (var answer in group.Answers)
+                            {
+                                var chosen = answer.IsChosen();
+                                <button type="button"
+                                        class="answer @(chosen ? "chosen" : null)"
+                                        role="@(group.Multiple ? "checkbox" : "radio")"
+                                        aria-checked="@(chosen ? "true" : "false")"
+                                        @onclick="WrapHandled(() => Choose(group, answer))">
+                                    <span class="answer-mark @(group.Multiple ? "square" : null)" aria-hidden="true"></span>
+                                    <span class="answer-body">
+                                        <span class="answer-head">
+                                            <span class="answer-text">@answer.Text</span>
+                                            @if (answer.ShowsRecommended)
+                                            {
+                                                <span class="answer-badge">Recommended</span>
+                                            }
+                                        </span>
+                                        @if (answer.Hint is not null)
+                                        {
+                                            <span class="answer-hint">@answer.Hint</span>
+                                        }
+                                    </span>
+                                </button>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+        </div>;
+
+    RenderFragment NameField() =>
+        @<BitTextField @bind-Value="setup.Name"
+                       Label="Project name"
+                       Placeholder="MyFirstProject"
+                       ErrorMessage="@NameError"
+                       MaxLength="60"
+                       Immediate
+                       DebounceTime="300"
+                       Class="name-field" />;
 }
 
 <div class="page-container">
@@ -87,7 +145,7 @@
             <div class="question" @key="stepIndex">
                 <h2 class="question-title" tabindex="-1" @ref="questionHeading">Your command is ready</h2>
                 <BitText Typography="BitTypography.Body2" Class="question-help">
-                    It's at the top of the page, ready to copy. Here's what you told us. Use Edit to change an answer.
+                    It's at the top of the page, ready to copy. Here's what you told us. Open an answer to change it.
                 </BitText>
 
                 <ol class="summary">
@@ -96,22 +154,34 @@
                         var index = i;
                         var step = steps[index];
                         var parts = StepEffect(step);
-                        <li class="summary-row @(parts.Count > 0 ? "changed" : null)">
-                            <span class="summary-number" aria-hidden="true">@(index + 1)</span>
-                            <div class="summary-body">
-                                <span class="summary-label">@step.Label</span>
-                                <span class="summary-answer">@Describe(step)</span>
-                                @if (parts.Count > 0)
-                                {
-                                    @EffectTag(parts)
-                                }
-                            </div>
-                            <BitButton Variant="BitVariant.Text"
-                                       Size="BitSize.Small"
-                                       IconName="Edit"
-                                       Class="summary-edit"
-                                       AriaLabel="@($"Edit {step.Label}")"
-                                       OnClick="WrapHandled(() => GoTo(index))">Edit</BitButton>
+                        <li class="summary-row @(parts.Count > 0 ? "changed" : null)" @key="step.Key">
+                            <BitAccordion IsExpanded="openSummaryRow == index"
+                                          IsExpandedChanged="(bool expanded) => ToggleSummaryRow(index, expanded)"
+                                          NoBorder
+                                          HeadingLevel="3"
+                                          Classes="summaryRowClasses">
+                                <TitleTemplate>
+                                    <span class="summary-number" aria-hidden="true">@(index + 1)</span>
+                                    <span class="summary-body">
+                                        <span class="summary-label">@step.Label</span>
+                                        <span class="summary-answer">@Describe(step)</span>
+                                        @if (parts.Count > 0)
+                                        {
+                                            @EffectTag(parts)
+                                        }
+                                    </span>
+                                </TitleTemplate>
+                                <Body>
+                                    @if (step.Key is "name")
+                                    {
+                                        @NameField()
+                                    }
+                                    else
+                                    {
+                                        @Choices(step)
+                                    }
+                                </Body>
+                            </BitAccordion>
                         </li>
                     }
                 </ol>
@@ -146,14 +216,7 @@
             <div class="question" @key="stepIndex">
                 <h2 class="question-title" tabindex="-1" @ref="questionHeading">@CurrentStep.Question</h2>
                 <BitText Typography="BitTypography.Body2" Class="question-help">@CurrentStep.Help</BitText>
-                <BitTextField @bind-Value="setup.Name"
-                              Label="Project name"
-                              Placeholder="MyFirstProject"
-                              ErrorMessage="@NameError"
-                              MaxLength="60"
-                              Immediate
-                              DebounceTime="300"
-                              Class="name-field" />
+                @NameField()
                 @Faqs(CurrentStep.Faqs)
             </div>
         }
@@ -166,49 +229,7 @@
                 {
                     <BitText Typography="BitTypography.Body2" Class="question-help">@step.Help</BitText>
                 }
-                @if (step.Warning is not null)
-                {
-                    <BitMessage Color="BitColor.Warning" Multiline Class="question-warning">@step.Warning</BitMessage>
-                }
-
-                @foreach (var group in step.Groups)
-                {
-                    @if (IsShown(group))
-                    {
-                        <div class="choice-group @(group.FollowUp ? "follow-up" : null)">
-                            @if (group.Prompt is not null)
-                            {
-                                <h3 class="group-prompt">@group.Prompt</h3>
-                            }
-                            <div class="answers" role="@(group.Multiple ? "group" : "radiogroup")" aria-label="@(group.Prompt ?? step.Question)">
-                                @foreach (var answer in group.Answers)
-                                {
-                                    var chosen = answer.IsChosen();
-                                    <button type="button"
-                                            class="answer @(chosen ? "chosen" : null)"
-                                            role="@(group.Multiple ? "checkbox" : "radio")"
-                                            aria-checked="@(chosen ? "true" : "false")"
-                                            @onclick="WrapHandled(() => Choose(group, answer))">
-                                        <span class="answer-mark @(group.Multiple ? "square" : null)" aria-hidden="true"></span>
-                                        <span class="answer-body">
-                                            <span class="answer-head">
-                                                <span class="answer-text">@answer.Text</span>
-                                                @if (answer.ShowsRecommended)
-                                                {
-                                                    <span class="answer-badge">Recommended</span>
-                                                }
-                                            </span>
-                                            @if (answer.Hint is not null)
-                                            {
-                                                <span class="answer-hint">@answer.Hint</span>
-                                            }
-                                        </span>
-                                    </button>
-                                }
-                            </div>
-                        </div>
-                    }
-                }
+                @Choices(step)
 
                 @if (step.Key is "platforms")
                 {
