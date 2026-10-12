@@ -700,11 +700,10 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         // Not every engine focuses a button it has just dispatched a click for - WebKit leaves the focus where
         // it was - and a menu whose button never took the focus is a menu without its Escape key, since the key
         // is answered on the button. Doing it here is what the engines that focus it have already done, so
-        // nothing moves for them. Nor does the page: a focus() scrolls its element into view, and a scroll of the
-        // container the button sits in (a sticky header of a scrolled one) dismisses the menu just opened.
+        // nothing moves for them. The button was just clicked, so it is not scrolled to.
         if (focusFirstItem is false && _isCalloutOpen)
         {
-            await FocusOverflowButton(preventScroll: true);
+            await _overflowButtonRef.FocusClickedSafelyAsync();
         }
     }
 
@@ -1570,9 +1569,9 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
         catch (JSException) { } // the trail may already be gone with the items it revealed
     }
 
-    private async Task FocusOverflowButton(bool preventScroll = false)
+    private async Task FocusOverflowButton()
     {
-        await _overflowButtonRef.FocusSafelyAsync(preventScroll);
+        await _overflowButtonRef.FocusSafelyAsync();
     }
 
     private string GetItemKey(TItem item, string defaultKey)

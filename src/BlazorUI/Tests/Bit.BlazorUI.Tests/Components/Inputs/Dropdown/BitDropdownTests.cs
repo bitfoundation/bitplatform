@@ -2594,13 +2594,14 @@ public class BitDropdownTests : BunitTestContext
     [TestMethod]
     public void BitDropdownComboShouldFocusItsInputWithoutScrollingWhenAClickOpensIt()
     {
-        Context.JSInterop.Mode = JSRuntimeMode.Loose;
-
         var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
         {
             parameters.Add(p => p.Items, GetShortDropdownItems());
             parameters.Add(p => p.Combo, true);
         });
+
+        // Read before the click: a re-render leaves the reference off the markup of an element it keeps.
+        var input = component.Find(".bit-drp-inp").GetAttribute("blazor:elementReference");
 
         component.Find(".bit-drp-wrp").Click();
 
@@ -2609,8 +2610,9 @@ public class BitDropdownTests : BunitTestContext
         var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
 
         // The input is part of the field just clicked, so it is in view, and a focus that scrolled to it would
-        // scroll a sticky header's container - which dismisses the list the click just opened.
+        // scroll a sticky header's container back to where the header sits in the flow.
         Assert.AreEqual(1, focused.Count);
+        Assert.AreEqual(input, ((ElementReference)focused[0].Arguments[0]!).Id);
         Assert.AreEqual(true, focused[0].Arguments[1]);
     }
 

@@ -25,6 +25,9 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     private bool _searchBoxKeysWired;
     private bool _internalIsOpenChange;
     private bool _pendingCalloutToggle;
+    // Whether the list was opened from its button - a click on it, or a key pressed on it - rather than through
+    // the IsOpen parameter, which can open it while the button is anywhere on the page.
+    private bool _openedFromButton;
     private string? _searchText;
     private string? _announcement;
     private bool _announcementMarker;
@@ -612,7 +615,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         // context, since the caller can be on any thread.
         if (Disabled || ReadOnly || NoDropdown || IsOpen) return;
 
-        await OpenCallout();
+        await OpenCallout(fromButton: false);
 
         StateHasChanged();
     });
@@ -1269,25 +1272,34 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
                 activeIndexSettled = true;
             }
 
-            await ToggleCallout();
-
             // The open list is driven from whichever element carries aria-activedescendant, so the focus
             // is put on it: the search box when there is one, and the button itself when there is not -
             // a callout opened through the IsOpen parameter would otherwise leave the keys nowhere to go.
-            if (IsOpen && NoDropdown is false)
+            var focusList = IsOpen && NoDropdown is false;
+
+            // The button takes it before the list is shown, so a focus that has to bring a button opened through
+            // IsOpen into view scrolls the page before the list is placed against it, rather than moving the
+            // button out from under a list already open. One the user has just clicked or pressed a key on is in
+            // view already.
+            if (focusList && NoSearchBox)
+            {
+                if (_openedFromButton)
+                {
+                    await _dropdownButtonRef.FocusClickedSafelyAsync();
+                }
+                else
+                {
+                    await _dropdownButtonRef.FocusSafelyAsync();
+                }
+            }
+
+            await ToggleCallout();
+
+            if (focusList && NoSearchBox is false)
             {
                 try
                 {
-                    // The button stays where it is on the page, and a focus() scrolling to it would scroll
-                    // its container - a sticky header of a scrolled one - and dismiss the list just opened.
-                    if (NoSearchBox)
-                    {
-                        await _dropdownButtonRef.FocusAsync(preventScroll: true);
-                    }
-                    else
-                    {
-                        await _searchInputRef.FocusAsync();
-                    }
+                    await _searchInputRef.FocusAsync();
                 }
                 catch (JSException) { } // the element might not be ready/visible yet
             }
@@ -1665,7 +1677,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         }
         else
         {
-            await OpenCallout();
+            await OpenCallout(fromButton: true);
         }
     }
 
@@ -1687,7 +1699,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             // (see _dropdownClosedKeys) so the native click can open the callout.
             if (key is "ArrowDown" or "ArrowUp" or "Home" or "End")
             {
-                await OpenCallout();
+                await OpenCallout(fromButton: true);
 
                 // Home and End say where in the list to land, the way they do on a native select.
                 if (key == "Home" && _viewItems.Count > 0) _activeIndex = 0;
@@ -1697,7 +1709,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             {
                 // A selector with no search box is a select-only combobox, and typing on one opens it on the
                 // country the letters start - there is no box for the letters to go into instead.
-                await OpenCallout();
+                await OpenCallout(fromButton: true);
 
                 HandleTypeAhead(key);
             }
@@ -1931,13 +1943,15 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         }
     }
 
-    private async Task OpenCallout()
+    private async Task OpenCallout(bool fromButton)
     {
         if (Disabled || NoDropdown) return;
 
         _hasOpened = true;
 
         if (await AssignIsOpenInternal(true) is false) return;
+
+        _openedFromButton = fromButton;
 
         // Populate the view items before computing the active index. GetFilteredCountries()
         // is otherwise only called during render, so opening via the keyboard (ArrowDown)
@@ -2058,6 +2072,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         if (IsOpen)
         {
             _hasOpened = true;
+            _openedFromButton = false;
 
             ResetActiveIndexToSelection();
         }

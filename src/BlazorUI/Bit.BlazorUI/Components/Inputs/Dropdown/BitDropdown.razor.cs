@@ -2940,9 +2940,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (Combo is false) return;
         if (_isResponsiveMode) return;
 
-        // The input is part of the field that was just clicked, so it is in view already; a focus() that
-        // scrolled to it anyway would scroll a sticky header's container and dismiss the list just opened.
-        await _comboBoxInputRef.FocusSafelyAsync(preventScroll: true);
+        // The input is part of the field that was just clicked, so it is not scrolled to.
+        await _comboBoxInputRef.FocusClickedSafelyAsync();
     }
 
     // The term the items are actually filtered by. It is null until the typed text is long enough for
