@@ -69,8 +69,7 @@
        Fluent family, plus the Fluent 2 / Material / Cupertino surfaces Bit.BlazorUI.Extras adds to
        it when its assembly loads - which AddBitBlazorUIExtrasServices has seen to by now. It is
        also the default, and is spelled out here only to show where the colors come from. *@
-    <BitThemeHead LightTheme="@themeOptions.LightTheme"
-                  DarkTheme="@themeOptions.DarkTheme"
+    <BitThemeHead Options="@themeOptions"
                   ThemeColors="@BitThemeSurfaces.BackgroundPrimary" />
     @* The accent counterpart of the script above, as one component: emits the inline script that,
        before anything is painted, re-resolves bit-accent from localStorage and injects the palette

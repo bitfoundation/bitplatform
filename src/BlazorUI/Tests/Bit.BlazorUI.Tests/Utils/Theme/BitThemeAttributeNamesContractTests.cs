@@ -32,6 +32,7 @@ public sealed class BitThemeAttributeNamesContractTests
             ["ATTR_THEME_PERSIST_COOKIE"] = BitThemeAttributeNames.ThemePersistCookie,
             ["ATTR_THEME_DARK"] = BitThemeAttributeNames.ThemeDark,
             ["ATTR_THEME_LIGHT"] = BitThemeAttributeNames.ThemeLight,
+            ["ATTR_THEME_AVAILABLE"] = BitThemeAttributeNames.ThemeAvailable,
             ["ATTR_THEME_VIEW_TRANSITION"] = BitThemeAttributeNames.ThemeViewTransition,
             ["ATTR_THEME_COLOR_META"] = BitThemeAttributeNames.ThemeColorMeta,
             ["ATTR_THEME_OVERLAY"] = BitThemeAttributeNames.ThemeOverlay,

@@ -84,9 +84,13 @@ public sealed class BitThemeSsrTests
         Assert.IsTrue(body.Contains($"if(r.hasAttribute('{BitThemeAttributeNames.ThemePersist}'))", StringComparison.Ordinal),
             "Inline script must read stored values from localStorage when bit-theme-persist is present.");
 
-        var persistedReadsStorage = body.IndexOf($"s=g(k,ck)", StringComparison.Ordinal);
-        Assert.IsTrue(persistedReadsStorage >= 0,
+        Assert.IsTrue(body.Contains("s=g(k,ck)", StringComparison.Ordinal),
             "Inline script must read the persisted preference.");
+
+        // Read up front (a stored pair set aside is resolved against it), applied here.
+        var persistedReadsStorage = body.IndexOf("var cur=base;if(s){", StringComparison.Ordinal);
+        Assert.IsTrue(persistedReadsStorage >= 0,
+            "Inline script must apply the persisted preference over the base.");
 
         // A persisted preference is applied AFTER the system override, so it wins (highest precedence).
         Assert.IsTrue(persistedReadsStorage > systemOverridesBase,
@@ -128,8 +132,134 @@ public sealed class BitThemeSsrTests
         var baseResolved = body.IndexOf("var base=", StringComparison.Ordinal);
         Assert.IsTrue(pairRead < baseResolved, "The stored pair must be read before the base theme is resolved against it.");
 
-        Assert.IsTrue(body.Contains("if(s){cur=s!=='system'&&sc?(sc==='dark'?dk:lt):s;}", StringComparison.Ordinal),
-            "A preference stored as a theme of the declared pair must follow the pair (#13686), and be applied as it is otherwise.");
+        Assert.IsTrue(body.Contains("if(s){cur=s==='system'?s:sc?(sc==='dark'?dk:lt):av(s)?s:/dark$/.test(s)?dk:lt;}", StringComparison.Ordinal),
+            "A preference stored as a theme of the declared pair, or one the page no longer offers, must follow the pair (#13686), and be applied as it is otherwise.");
+    }
+
+    [TestMethod]
+    public void InlineHeadScriptReadsTheOfferedThemesFromTheAttributeCSharpNames()
+    {
+        // Theme.isAvailable: the list on bit-theme-available, everything when it lists nothing, and the
+        // declared pair (kept as dl / dd while lt / dk may become the visitor's) and "system" always.
+        var body = BitThemeSsr.InlineHeadScriptBody;
+
+        Assert.IsTrue(body.Contains($"al=(r.getAttribute('{BitThemeAttributeNames.ThemeAvailable}')||'').trim().toLowerCase().split(/\\s+/),", StringComparison.Ordinal),
+            "The list must be lower-cased, as BitThemeSsr.NormalizeAvailableThemes normalizes it for the server.");
+        Assert.IsTrue(body.Contains("av=function(v){return !al[0]||v==='system'||v===dl||v===dd||al.indexOf(v.toLowerCase())>=0;}", StringComparison.Ordinal));
+        Assert.IsTrue(body.Contains("rp=ps&&!(p[0]===lt&&p[1]===dk)&&av(p[0])&&av(p[1])", StringComparison.Ordinal),
+            "A stored pair the page no longer offers must not stand in for the declared one.");
+    }
+
+    [DataTestMethod]
+    [DataRow("fluent2-dark", "material-dark")]
+    [DataRow("fluent2-light", "material-light")]
+    [DataRow("cupertino-dark", "material-dark")]
+    [DataRow("high-contrast", "material-light")]
+    public void BuildRootThemeAttributeMapMovesAStoredThemeThePageNoLongerOffersOntoThePair(string preference, string expected)
+    {
+        // #13686, the theme stored before the scheme marker existed: the app has switched presets and no
+        // longer ships the one the visitor's theme came from. The page says which themes it offers, so the
+        // theme goes to the pair's theme of its scheme by its name's "dark" ending, as the client does.
+        var map = BitThemeSsr.BuildRootThemeAttributeMap(preference, new BitThemeSsrOptions
+        {
+            LightTheme = "material-light",
+            DarkTheme = "material-dark",
+            AvailableThemes = ["material-light", "material-dark"],
+        });
+
+        Assert.AreEqual(expected, map[BitThemeAttributeNames.Theme]);
+    }
+
+    [DataTestMethod]
+    [DataRow("high-contrast")]
+    [DataRow("fluent2-dark")]
+    [DataRow("material-dark")]
+    public void BuildRootThemeAttributeMapKeepsAStoredThemeThePageOffers(string preference)
+    {
+        // A listed theme, or one of the declared pair (listed or not), is a choice the page still styles.
+        var map = BitThemeSsr.BuildRootThemeAttributeMap(preference, new BitThemeSsrOptions
+        {
+            LightTheme = "material-light",
+            DarkTheme = "material-dark",
+            AvailableThemes = ["High-Contrast", "fluent2-light", "fluent2-dark"],
+        });
+
+        Assert.AreEqual(preference, map[BitThemeAttributeNames.Theme]);
+    }
+
+    [DataTestMethod]
+    [DataRow("cupertino-dark", "fluent2-dark")]
+    [DataRow("cupertino-light", "fluent2-light")]
+    [DataRow(null, "fluent2-light")]
+    public void BuildRootThemeAttributeMapSetsAsideAStoredPairThePageNoLongerOffers(string? preference, string expected)
+    {
+        // The visitor picked Cupertino, and the app has since stopped shipping it: the declared pair is
+        // painted, with the visitor's light or dark choice carried onto it.
+        var map = BitThemeSsr.BuildRootThemeAttributeMap(preference, new BitThemeSsrOptions
+        {
+            DefaultTheme = "fluent2-light",
+            LightTheme = "fluent2-light",
+            DarkTheme = "fluent2-dark",
+            PersistedThemePair = "cupertino-light cupertino-dark",
+            AvailableThemes = ["fluent2-light", "fluent2-dark", "material-light", "material-dark"],
+        });
+
+        Assert.AreEqual(expected, map[BitThemeAttributeNames.Theme]);
+    }
+
+    [TestMethod]
+    public void BuildRootThemeAttributeMapKeepsAStoredPairThePageOffers()
+    {
+        var map = BitThemeSsr.BuildRootThemeAttributeMap("material-dark", new BitThemeSsrOptions
+        {
+            LightTheme = "fluent2-light",
+            DarkTheme = "fluent2-dark",
+            PersistedThemePair = "material-light material-dark",
+            AvailableThemes = ["material-light", "material-dark"],
+        });
+
+        Assert.AreEqual("material-dark", map[BitThemeAttributeNames.Theme]);
+    }
+
+    [TestMethod]
+    public void BuildRootThemeAttributeMapMatchesTheOfferedThemesWhateverTheirCase()
+    {
+        // The client lower-cases the list the same way, so a hand-written name in another case is offered
+        // by both, and the server and the first-paint script paint the same theme.
+        var map = BitThemeSsr.BuildRootThemeAttributeMap("High-Contrast", new BitThemeSsrOptions
+        {
+            LightTheme = "material-light",
+            DarkTheme = "material-dark",
+            AvailableThemes = ["HIGH-CONTRAST"],
+        });
+
+        Assert.AreEqual("high-contrast", map[BitThemeAttributeNames.Theme]);
+    }
+
+    [TestMethod]
+    public void BuildRootThemeAttributeMapEmitsTheOfferedThemesNormalized()
+    {
+        // Normalized and validated like every other name, in the order given and without repeats; a
+        // name that is not a theme token is dropped rather than emitted into the document.
+        var map = BitThemeSsr.BuildRootThemeAttributeMap(null, new BitThemeSsrOptions
+        {
+            AvailableThemes = [" Material-Light ", "material-dark", "material-light", "x\" onload=\"y", ""],
+        });
+
+        Assert.AreEqual("material-light material-dark", map[BitThemeAttributeNames.ThemeAvailable]);
+    }
+
+    [DataTestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void BuildRootThemeAttributeMapOmitsTheOfferedThemesWhenNoneIsNamed(bool empty)
+    {
+        var map = BitThemeSsr.BuildRootThemeAttributeMap(null, new BitThemeSsrOptions
+        {
+            AvailableThemes = empty ? ["", "a b"] : null,
+        });
+
+        Assert.IsFalse(map.ContainsKey(BitThemeAttributeNames.ThemeAvailable));
     }
 
     [DataTestMethod]

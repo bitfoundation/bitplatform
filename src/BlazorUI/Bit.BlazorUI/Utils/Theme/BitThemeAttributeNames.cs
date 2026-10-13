@@ -34,6 +34,21 @@ public static class BitThemeAttributeNames
     public const string ThemeLight = "bit-theme-light";
 
     /// <summary>
+    /// Opt-in list of the themes the page ships stylesheets for, space-separated
+    /// (<c>bit-theme-available="fluent2-light fluent2-dark high-contrast"</c>). A stored pair naming a
+    /// theme outside it falls back to <see cref="ThemeLight"/> / <see cref="ThemeDark"/>, and a stored
+    /// preference outside it to the active pair's theme of its scheme (a name ending in <c>dark</c> to the
+    /// dark one, any other to the light one) - so a visitor whose saved theme came from a preset the app no
+    /// longer offers keeps their light or dark choice instead of a theme nothing styles. The declared pair
+    /// and <c>system</c> count as offered whether listed or not, and a call that sets a theme or a pair outside
+    /// it (<see cref="BitThemeManager.SetThemeAsync(string)"/>, <see cref="BitThemeManager.SetThemePairAsync(string, string)"/>)
+    /// is ignored rather than painted unstyled, while one another tab stores (a tab of an older build) is fitted
+    /// onto the pair the way a stored one is. Names are matched lower-cased, as the server normalizes them.
+    /// Absent, every stored name is restored as it is.
+    /// </summary>
+    public const string ThemeAvailable = "bit-theme-available";
+
+    /// <summary>
     /// Marker attribute that opts theme swaps into the View Transitions API: the page cross-fades
     /// to the new palette instead of hard-swapping. Checked live on every change, so it can be
     /// added/removed at runtime. Ignored (plain swap) when the browser lacks
@@ -79,7 +94,8 @@ public static class BitThemeAttributeNames
     /// (<see cref="BitThemeManager.SetThemePairAsync(string, string)"/>), which outranks
     /// <see cref="ThemeLight"/> / <see cref="ThemeDark"/> on the next visit; otherwise <c>light</c> /
     /// <c>dark</c> while the preference is that theme of the page's own pair, so it follows a later
-    /// change of that pair. Absent for any other preference, which is restored as it is.
+    /// change of that pair. Absent for any other preference, which is restored as it is - unless
+    /// <see cref="ThemeAvailable"/> leaves it out.
     /// </summary>
     public const string ThemePairStorageKey = "bit-theme-pair";
 }

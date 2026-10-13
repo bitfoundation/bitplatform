@@ -124,9 +124,56 @@ public class BitThemeSwitcherBrowserTests : PerformanceTestBase
         await Expect(Page.Locator("html")).ToHaveAttributeAsync("bit-theme-light", "fluent2-light");
     }
 
-    private async Task Open()
+    [TestMethod]
+    public async Task PickingADesignSystemThePageDoesNotOffer_KeepsTheOneWorn()
     {
-        await Page.GotoAsync($"{BaseUrl}/regression/theme-switcher?{Setup}");
+        // The default design systems include Cupertino, which this page does not ship: the theme script refuses
+        // the pair, and the picker goes back to what the page is still wearing instead of naming Cupertino.
+        await Open("&available=fluent2-light,fluent2-dark,material-light,material-dark");
+        await Page.EvaluateAsync("BitBlazorUI.Theme.set('fluent2-dark')");
+
+        await Page.Locator(".bit-ths-dds").ClickAsync();
+        await Page.Locator(".bit-drp-itm", new() { HasTextString = "Cupertino" }).First.ClickAsync();
+
+        await AssertPicked("Fluent 2");
+        await AssertTheme("fluent2-dark");
+        Assert.AreEqual("fluent2-dark", await Stored("bit-current-theme"));
+        await Expect(Page.Locator("#v-changed")).ToBeEmptyAsync();
+
+        // A design system it does ship is still picked.
+        await Pick("Material");
+        await AssertTheme("material-dark");
+    }
+
+    [TestMethod]
+    public async Task APairThePageNoLongerShips_IsSetAsideBeforeFirstPaint_ChromeIncluded()
+    {
+        // BitThemeHead is handed the page's BitThemeSsrOptions, so its theme-color correction reads the same
+        // offered themes as the first-paint script: the chrome is painted for the theme the document is.
+        const string Available = "&available=fluent2-light,fluent2-dark,material-light,material-dark";
+        await Open(Available);
+        await Page.EvaluateAsync("() => { localStorage.setItem('bit-current-theme', 'fluent2-dark'); localStorage.setItem('bit-theme-pair', 'dark'); }");
+        await Open(Available);
+        await AssertTheme("fluent2-dark");
+        var fluent2DarkChrome = await ThemeColor();
+
+        // A visitor who picked Cupertino on an earlier build, which shipped it.
+        await Page.EvaluateAsync("() => { localStorage.setItem('bit-current-theme', 'cupertino-dark'); localStorage.setItem('bit-theme-pair', 'cupertino-light cupertino-dark'); }");
+        await Open(Available);
+
+        await AssertTheme("fluent2-dark");
+        await AssertPicked("Fluent 2");
+        Assert.AreEqual(fluent2DarkChrome, await ThemeColor());
+        Assert.AreEqual("fluent2-dark", await Stored("bit-current-theme"));
+        Assert.AreEqual("dark", await Stored("bit-theme-pair"));
+    }
+
+    private Task<string> ThemeColor()
+        => Page.EvaluateAsync<string>("() => document.querySelector('meta[name=theme-color]').content");
+
+    private async Task Open(string query = "")
+    {
+        await Page.GotoAsync($"{BaseUrl}/regression/theme-switcher?{Setup}{query}");
         await Expect(Page.Locator("#status")).ToHaveTextAsync("Ready");
     }
 

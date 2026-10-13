@@ -7,9 +7,7 @@
     <meta charset="utf-8" />
     @if (_themeOptions is not null)
     {
-        <BitThemeHead DefaultTheme="@_themeOptions.DefaultTheme"
-                      LightTheme="@_themeOptions.LightTheme"
-                      DarkTheme="@_themeOptions.DarkTheme" />
+        <BitThemeHead Options="@_themeOptions" />
     }
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
@@ -48,6 +46,7 @@
             DarkTheme = query["dark"],
             Persist = query["persist"] == "1",
             PersistCookie = query["cookie"] == "1",
+            AvailableThemes = ((string?)query["available"])?.Split(','),
         };
         _themeAttributes = BitThemeSsr.BuildRootThemeAttributeMap(null, _themeOptions);
     }
