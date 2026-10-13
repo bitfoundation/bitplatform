@@ -5,6 +5,7 @@
             Description="BitTimeZonePicker is a time zone selector: a searchable list of the IANA time zones with their offsets from UTC, places and countries, bound to a TimeZoneInfo or its id and the same on Blazor Server, WebAssembly and Hybrid." />
 
 <DemoPage Name="TimeZonePicker"
+          SecondaryNames="@(["TimeZoneSelector", "TimeZoneSelect", "TzPicker"])"
           Description="BitTimeZonePicker picks a time zone out of a searchable list that shows the offset from UTC, the place and the country of each one - for the time zone of a profile, a meeting or a report, and for the TimeZone of the date and time pickers. Value is a TimeZoneInfo or the IANA id of the time zone, whichever it is bound to; the list is the same on every runtime, Windows ids and renamed IANA ids are recognized, the visitor's own time zone can be preselected from the browser, and the whole field is keyboard and screen-reader operable."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"

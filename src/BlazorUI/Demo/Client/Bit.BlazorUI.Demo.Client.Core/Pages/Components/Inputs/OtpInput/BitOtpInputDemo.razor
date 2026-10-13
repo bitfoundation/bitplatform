@@ -6,6 +6,7 @@
             Description="A one-time password (OTP) input for Blazor: single character boxes bound to one string, with auto advancing focus, keyboard editing, whole-code paste and copy, SMS autofill, auto submit, masking, grouping, busy and error states, and public CSS variables." />
 
 <DemoPage Name="OtpInput"
+          SecondaryNames="@(["PinInput", "VerificationCode", "OneTimePassword"])"
           Description="A one-time code entered as a row of single character boxes bound to one string. Focus advances as you type, the keyboard edits the code like a single field, and a pasted or SMS-filled code is cleaned up and spread over the boxes. It filters, folds and normalizes what it accepts, reports what it rejects, and carries the busy and error states of the round trip that follows."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
