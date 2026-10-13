@@ -58,7 +58,7 @@
         </MSBuild>
         <ItemGroup>
             <TfmSpecificPackageFile Include="$(BaseIntermediateOutputPath)butil-js\chunks\*.js;$(BaseIntermediateOutputPath)butil-js\chunks\manifest.txt" PackagePath="buildTransitive\chunks\" />
-            <TfmSpecificPackageFile Include="@(_ButilBuildTaskAssembly)" PackagePath="tasks\" />
+            <TfmSpecificPackageFile Include="@(_ButilBuildTaskAssembly)" PackagePath="tasks\%(_ButilBuildTaskAssembly.Filename)%(_ButilBuildTaskAssembly.Extension)" />
         </ItemGroup>
     </Target>
 
