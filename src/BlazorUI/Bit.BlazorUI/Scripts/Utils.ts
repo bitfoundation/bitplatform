@@ -822,7 +822,8 @@
         // control that has taken it (defaultPrevented, see claimEscape); a component inside the surface whose own
         // popup is open - a combo box, a search box's suggestions, a date picker - which closes that popup on the
         // key and has its keydown bubble on up through the surface; and a surface nested inside this one (a dialog
-        // opened from inside it), which has answered the key before it got here.
+        // opened from inside it), which has answered the key before it got here, or a layer opened over it (see
+        // _escapeSurfaceOwners).
         // The popups are read as the key is pressed: this listener is on the element, so it runs before Blazor's
         // document-level delegation lets the component close its popup, while the stack of open callouts is still
         // the one the key was pressed against. Whether a control took the key is read once the whole dispatch is
@@ -1092,27 +1093,76 @@
         private static _escapeGuards = new Map<string, AbortController>();
 
         // The surface each Escape belongs to: the innermost one it was pressed inside of, of a dialog
-        // (setupSurfaceEscape), an open panel (setupEscapeGuard), a modal (watchEscape) and an open callout's root or
-        // callout (watchNestedEscape). Each records itself as the key bubbles through its root, so the first to see it
-        // is the one it is pressed nearest to. None of them stops a key from bubbling on to the handlers around it -
-        // the page's own keyboard shortcuts keep working while one is open - so this is what tells an outer surface,
-        // and the .NET handler it has hearing the same key, that the press was an inner one's.
+        // (setupSurfaceEscape), an open panel (setupEscapeGuard), a modal (watchEscape), an open callout's root or
+        // callout (watchNestedEscape) and a layer (watchLayerEscape). Each records itself as the key bubbles through its
+        // root, so the first to see it is the one it is pressed nearest to - unless a layer covering the page has been
+        // opened over that one, which then owns the press instead (layerOver). None of them stops a key from bubbling on
+        // to the handlers around it - the page's own keyboard shortcuts keep working while one is open - so this is what
+        // tells every other surface, and the .NET handler it has hearing the same key, that the press was not its own.
         private static _escapeSurfaceOwners = new WeakMap<Event, Element>();
 
-        // Records the surface as the owner of the Escape unless one nested inside it already is, and says whether one
-        // was: whether the press is a nested surface's rather than this one's.
+        // Records the surface as the owner of the Escape - or the layer opened over it, if there is one - unless another
+        // surface already is, and says whether one is: whether the press belongs to somebody else rather than to this
+        // one.
         private static claimSurfaceEscape(e: Event, surface: Element) {
             if (Utils.isNestedSurfaceEscape(e, surface)) return true;
 
-            Utils._escapeSurfaceOwners.set(e, surface);
-            return false;
+            const layer = Utils.layerOver(surface, e.target);
+
+            Utils._escapeSurfaceOwners.set(e, layer ?? surface);
+            return !!layer;
         }
 
-        // Whether the Escape belongs to a surface nested inside this one (see _escapeSurfaceOwners). A surface listening on
-        // more than one element of its own - a callout's root and its callout - records whichever one the key is in.
+        // Whether the Escape belongs to a surface other than this one (see _escapeSurfaceOwners): one nested inside it,
+        // or a layer opened over it. A surface listening on more than one element of its own - a callout's root and its
+        // callout - records whichever one the key is in.
         private static isNestedSurfaceEscape(e: Event, surface: Element) {
             const owner = Utils._escapeSurfaceOwners.get(e);
             return !!owner && owner !== surface;
+        }
+
+        // The layer covering the page (watchLayerEscape) that lies over the surface the key was pressed in, if any: one
+        // opened from a button of the surface, which does not take the focus and so leaves it where it was, under the
+        // layer. Which one is on top is a question of the stacking order rather than of the DOM - such a layer may be
+        // rendered inside the surface's content or anywhere else in the page, and a z-index of the app's may put the
+        // surface back over it - so it is read off the screen, at the focused element (or the surface): the first layer
+        // or part of the surface found there, from the top down, is the one the user sees there. A layer the surface is
+        // shown in is never over it. While a callout is open, the layers leave the key to it (watchLayerEscape), so none
+        // takes it away from the surface it is open in either.
+        private static layerOver(surface: Element, target: EventTarget | null): Element | null {
+            if (Utils._layerEscapes.length === 0 || Callouts.current.calloutId) return null;
+
+            const layers = Utils.openLayers().filter(l => l !== surface && l.contains(surface) === false
+                                                                         && Utils.coversPage(l.id));
+            if (layers.length === 0) return null;
+
+            const from = target instanceof Element && target !== surface && surface.contains(target) ? target : null;
+            const point = (from && Utils.visibleCenter(from)) ?? Utils.visibleCenter(surface);
+            if (!point) return null;
+
+            for (const hit of document.elementsFromPoint(point.x, point.y)) {
+                for (let element: Element | null = hit; element; element = element.parentElement) {
+                    if (layers.includes(element as HTMLElement)) return element;
+                }
+
+                if (surface.contains(hit)) return null;
+            }
+
+            return null;
+        }
+
+        // The center of the part of the element that is inside the viewport, if any of it is.
+        private static visibleCenter(element: Element) {
+            const rect = element.getBoundingClientRect();
+
+            const left = Math.max(rect.left, 0);
+            const top = Math.max(rect.top, 0);
+            const right = Math.min(rect.right, window.innerWidth);
+            const bottom = Math.min(rect.bottom, window.innerHeight);
+
+            if (right <= left || bottom <= top) return null;
+
+            return { x: (left + right) / 2, y: (top + bottom) / 2 };
         }
 
         // Tells a surface's .NET keydown handler on the elements, through its OnEscapeVerdict callback, what `verdict`
@@ -1202,8 +1252,9 @@
         //   the panel the user was filling in along with the list they meant to close;
         // - a handler that already prevented the key's default;
         // - an IME composition the key cancels;
-        // - a surface nested inside this one - a panel, a dialog, a modal, an open callout's anchor - which answers
-        //   the key itself (or refuses it), see _escapeSurfaceOwners.
+        // - a surface nested inside this one - a panel, a dialog, a modal, a layer, an open callout's anchor - or a
+        //   layer covering the page opened over it, which answers the key itself (or refuses it), see
+        //   _escapeSurfaceOwners.
         // The answer has to be taken while the key is still going down: this listener is on the element, so it
         // runs before Blazor's document-level delegation lets the nested component close its popup (see
         // sendEscapeVerdicts).
@@ -1218,18 +1269,17 @@
             const controller = new AbortController();
 
             Utils.sendEscapeVerdicts([element], dotnetObj, controller.signal, 'setupEscapeGuard', e => {
-                const foreign = Utils.isNestedSurfaceEscape(e, element)
+                // A closed surface is inert, so an Escape reaches it only while it is open - and from then on the
+                // key is this surface's to answer or to refuse, never the one's it was opened from - unless a layer
+                // has been opened over it since (see layerOver).
+                const nested = element.hasAttribute('inert')
+                    ? Utils.isNestedSurfaceEscape(e, element)
+                    : Utils.claimSurfaceEscape(e, element);
+
+                return nested
                     || e.defaultPrevented
                     || Utils.isComposingKey(e)
                     || Utils.isEscapeOfOpenCallout(e.target);
-
-                // A closed surface is inert, so an Escape reaches it only while it is open - and from then on the
-                // key is this surface's to answer or to refuse, never the one's it was opened from.
-                if (element.hasAttribute('inert') === false) {
-                    Utils.claimSurfaceEscape(e, element);
-                }
-
-                return foreign;
             });
 
             Utils._escapeGuards.set(elementId, controller);
@@ -1282,9 +1332,9 @@
         // ask about later, so two quick presses cannot overwrite each other's answer, and .NET is only called
         // for a press that is the surface's.
         // A surface nested inside another one - a modal opened from inside a modal, rendered inside its
-        // content, a dialog, a panel or an open callout's anchor in it - takes the presses made inside it, and the
-        // outer one leaves them alone (see _escapeSurfaceOwners). The modal's own handler, which reports the key, is told
-        // the same through OnEscapeVerdict (sendEscapeVerdicts).
+        // content, a dialog, a panel, a layer or an open callout's anchor in it - takes the presses made inside it, and
+        // the outer one leaves them alone, as it does the ones a layer opened over it takes (see _escapeSurfaceOwners).
+        // The modal's own handler, which reports the key, is told the same through OnEscapeVerdict (sendEscapeVerdicts).
         public static watchEscape(elementId: string, dotnetObj: DotNetObject) {
             Utils.unwatchEscape(elementId);
 
@@ -1344,13 +1394,16 @@
         // most often still on the control that opened it, behind the layer.
         // A press is the layer's only when nothing had the better claim to it: an input method composing, an open
         // callout anywhere in the page (a dropdown or a menu closes its own popup on the same key), a control that
-        // answered the key by preventing its default, or another surface the focus is inside of - a dialog or a
-        // panel opened over the layer or from inside its content, or a modal opened from inside its content. With the focus outside of every surface, only the
-        // layer watched last - the one opened last, so the topmost - answers, and one press closes one layer. The
-        // same goes for the focus inside a layer covering the page, among the layers covering the page: one opened
-        // over it has the say, not the layer the focus happens to be in. A
-        // layer that refuses the key (a blocking one) is watched all the same and says no in .NET, so that the
-        // press does not fall through to a layer underneath it.
+        // answered the key by preventing its default, or another surface the key went through on its way here - a
+        // dialog, a panel, a modal or another layer, whether it is rendered inside this layer's content or around
+        // it (see _escapeSurfaceOwners). The layer records itself as the key bubbles through it like every other
+        // surface, so a press made inside it is its own, and a surface around it leaves the press alone. A layer
+        // covering the page that was opened over the surface the key was pressed in - from a button of a panel,
+        // which keeps the focus - takes the press away from that surface (layerOver), and so does one opened over a
+        // layer, so the one the user sees on top answers, whichever the focus happens to be in. With the focus
+        // outside of every surface, only the layer watched last - the one opened last, so the topmost - answers, and
+        // one press closes one layer. A layer that refuses the key (a blocking one) is watched all the same and says
+        // no in .NET, so that the press does not fall through to a layer or a surface underneath it.
         public static watchLayerEscape(elementId: string, dotnetObj: DotNetObject) {
             Utils.unwatchLayerEscape(elementId);
 
@@ -1372,44 +1425,49 @@
                 }
             }, { signal: controller.signal, capture: true });
 
+            element.addEventListener('keydown', e => {
+                if (e.key !== 'Escape') return;
+
+                Utils.claimSurfaceEscape(e, element);
+            }, { signal: controller.signal });
+
             window.addEventListener('keydown', e => {
                 if (e.key !== 'Escape') return;
 
                 if (claimed.has(e) || e.defaultPrevented) return;
 
-                // A surface of the library the key went through - a dialog, an open panel, a modal - answered it, or
-                // refused it, as the one it was pressed in, even when the surface is part of what this layer hosts (see
-                // _escapeSurfaceOwners).
-                if (Utils._escapeSurfaceOwners.has(e)) return;
+                // The surface the key was pressed in answers it - or refuses it - and only this layer when it is that
+                // surface, or the layer opened over it.
+                const owner = Utils._escapeSurfaceOwners.get(e);
+                if (owner) {
+                    if (owner === element) {
+                        dotnetObj.invokeMethodAsync('OnEscape');
+                    }
 
-                const target = e.target as Node | null;
-
-                // A dialog the focus is inside of owns the key, unless it is part of what this layer hosts - a
-                // surface of the consumer's own the layer is the backdrop of - which the key closes along with it.
-                const dialog = target instanceof Element ? target.closest('[role="dialog"],[role="alertdialog"],dialog') : null;
-                if (dialog && !element.contains(dialog)) return;
-
-                const layers = Utils._layerEscapes;
-                const root = target ? Utils.nearestEscapeRoot(target) : null;
-                const rootCoversPage = root instanceof Element
-                                    && layers.some(l => l.elementId === root.id)
-                                    && Utils.coversPage(root.id);
-
-                if (root && rootCoversPage === false) {
-                    // A surface, or a layer scoped to an element, answers the presses made inside it.
-                    if (root !== element) return;
-                } else {
-                    // A layer covering the page is covered in turn by one opened over it, whatever the focus is
-                    // inside of: the topmost of those answers the press - or refuses it (a blocking one) - rather
-                    // than the layer underneath it.
-                    const candidates = root ? layers.filter(l => Utils.coversPage(l.elementId)) : layers;
-                    if (candidates[candidates.length - 1]?.elementId !== elementId) return;
+                    return;
                 }
+
+                // A dialog of the consumer's own the focus is inside of owns the key. Inside a layer, one is no surface
+                // that answers the key on its own: it is what the layer is the backdrop of, and the key closes it along
+                // with the layer (a press made inside the layer is the layer's, above) unless the consumer claims it.
+                const target = e.target as Node | null;
+                if (target instanceof Element && target.closest('[role="dialog"],[role="alertdialog"],dialog')) return;
+
+                const layers = Utils.openLayers();
+                if (layers[layers.length - 1] !== element) return;
 
                 dotnetObj.invokeMethodAsync('OnEscape');
             }, { signal: controller.signal });
 
             Utils._layerEscapes.push({ elementId, controller });
+        }
+
+        // The watched layers that are still open, in the order they were opened. A layer that has just closed is still
+        // watched until the round trip that unwatches it is back, but it is inert from the render that closes it on -
+        // so a second press right after the first goes to the layer underneath it rather than to the one it closed.
+        private static openLayers() {
+            return Utils._layerEscapes.map(l => document.getElementById(l.elementId))
+                                      .filter((l): l is HTMLElement => !!l && l.hasAttribute('inert') === false);
         }
 
         public static unwatchLayerEscape(elementId: string) {

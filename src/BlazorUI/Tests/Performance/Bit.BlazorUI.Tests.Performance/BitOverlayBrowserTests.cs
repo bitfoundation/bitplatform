@@ -25,6 +25,7 @@ public class BitOverlayBrowserTests : PerformanceTestBase
         await Page.Keyboard.PressAsync("Enter");
         await WaitForStatus("Lower open");
         await Expect(Page.Locator(".bit-ovl-opn")).ToHaveCountAsync(1);
+        await WaitForWatchedLayers(1);
 
         // The focus stayed on the button behind the layer.
         await Expect(button).ToBeFocusedAsync();
@@ -43,12 +44,15 @@ public class BitOverlayBrowserTests : PerformanceTestBase
         await Page.Locator("#btn-open-both").ClickAsync();
         await WaitForStatus("Both open");
         await Expect(Page.Locator(".bit-ovl-opn")).ToHaveCountAsync(2);
+        await WaitForWatchedLayers(2);
 
         await Page.Keyboard.PressAsync("Escape");
 
         await Expect(Page.Locator("#upper-state")).ToHaveTextAsync("closed");
         await Expect(Page.Locator("#lower-state")).ToHaveTextAsync("open");
 
+        // Right after the first press, before the round trip that unwatches the upper one is back: the closed one is
+        // inert from the render that closes it on, and is no longer the topmost.
         await Page.Keyboard.PressAsync("Escape");
 
         await Expect(Page.Locator("#lower-state")).ToHaveTextAsync("closed");
@@ -64,6 +68,7 @@ public class BitOverlayBrowserTests : PerformanceTestBase
         await Page.Locator("#btn-open-both").ClickAsync();
         await WaitForStatus("Both open");
         await Expect(Page.Locator(".bit-ovl-opn")).ToHaveCountAsync(2);
+        await WaitForWatchedLayers(2);
 
         await Page.Keyboard.PressAsync("Escape");
 
@@ -84,6 +89,7 @@ public class BitOverlayBrowserTests : PerformanceTestBase
         await Page.Locator("#btn-open-both").ClickAsync();
         await WaitForStatus("Both open");
         await Expect(Page.Locator(".bit-ovl-opn")).ToHaveCountAsync(2);
+        await WaitForWatchedLayers(2);
 
         // The focus is inside the lower Overlay, which the upper one covers.
         var input = Page.Locator("#lower-input");
@@ -98,4 +104,10 @@ public class BitOverlayBrowserTests : PerformanceTestBase
         await Expect(Page.Locator("#upper-state")).ToHaveTextAsync("open");
         await Expect(Page.Locator("#lower-state")).ToHaveTextAsync("open");
     }
+
+    // An Overlay starts watching the key in a call to the browser of its own once it has rendered open, which can land
+    // well after the render the status is read off (some tens of milliseconds in WebKit): a key pressed before it is a
+    // key nothing was listening for yet, and before the upper one's lands, the lower one is the topmost.
+    private Task WaitForWatchedLayers(int count) =>
+        Page.WaitForFunctionAsync("(count) => BitBlazorUI.Utils._layerEscapes.length === count", count);
 }

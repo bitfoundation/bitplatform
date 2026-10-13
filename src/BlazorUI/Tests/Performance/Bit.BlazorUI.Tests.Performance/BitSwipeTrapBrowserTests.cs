@@ -231,5 +231,11 @@ public class BitSwipeTrapBrowserTests : PerformanceTestBase
     {
         await Page.GotoAsync($"{BaseUrl}/regression/swipetrap-keyboard");
         await WaitForStatus("Ready");
+
+        // Every trap starts listening in a call to the browser of its own once it has rendered, which can land after
+        // the render the status is read off (in WebKit especially): a gesture made before it is one nothing was
+        // listening for yet.
+        await Page.WaitForFunctionAsync(@"() => ['trap', 'disabled-trap', 'throttled-trap']
+            .every(id => BitBlazorUI.SwipeTrap._swipeTraps.some(t => t.element === document.getElementById(id)))");
     }
 }

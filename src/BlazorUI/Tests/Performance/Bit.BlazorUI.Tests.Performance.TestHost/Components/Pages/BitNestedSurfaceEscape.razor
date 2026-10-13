@@ -3,10 +3,15 @@
 <PageTitle>Nested Surface Escape Regression</PageTitle>
 
 @* One Escape closes one surface, the innermost one: a Dialog opened from inside a DropMenu's popup, a DropMenu opened
-   from inside a Dialog, a Dialog opened from inside another one, and a Dialog or a Panel opened from inside an
-   Overlay's content each close alone, and the surface around them closes on the next press. The surfaces do not stop
-   the key, so the outer one tells the inner one's press from its own through the owner the inner one recorded as the
-   key went by (Utils._escapeSurfaceOwners). Each case is rendered on its own (?case=). *@
+   from inside a Dialog, a Dialog opened from inside another one, a Dialog or a Panel opened from inside an Overlay's
+   content, and an Overlay opened from inside a Modal's, a Panel's or a Dialog's content each close alone, and the
+   surface around them closes on the next press. The surfaces do not stop the key, so the outer one tells the inner
+   one's press from its own through the owner the inner one recorded as the key went by (Utils._escapeSurfaceOwners).
+   An Overlay opened from a button of a Panel leaves the focus on that button, under the layer, and is still the one
+   the press closes - rendered in the Panel's content or anywhere else in the page - when it is the one on top; one
+   rendered outside the Panel stays under the Panel's surface unless its ZIndex lifts it (?zindex=). A dialog of
+   the consumer's own inside an Overlay answers no Escape of its own, and closes with the Overlay it is shown on.
+   Each case is rendered on its own (?case=). *@
 <div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
     <h3>Nested Surface Escape Regression (@Case)</h3>
     <button id="btn-open-outer" @onclick="() => _outerOpen = true">Open outer</button>
@@ -25,7 +30,7 @@
                 <Body>
                     <div style="padding: 16px;">
                         <button id="btn-open-inner" @onclick="() => _innerOpen = true">Open dialog</button>
-                        <BitDialog @bind-IsOpen="_innerOpen" Title="Inner dialog">
+                        <BitDialog Id="inner-surface" @bind-IsOpen="_innerOpen" Title="Inner dialog">
                             <Body><input id="inner-input" /></Body>
                         </BitDialog>
                     </div>
@@ -35,7 +40,7 @@
         break;
 
     case "dialog-menu":
-        <BitDialog @bind-IsOpen="_outerOpen" AutoFocus="false" Title="Outer dialog">
+        <BitDialog Id="outer-surface" @bind-IsOpen="_outerOpen" AutoFocus="false" Title="Outer dialog">
             <Body>
                 <input id="outer-input" />
                 <BitDropMenu Id="inner-trigger" Text="Menu" @bind-IsOpen="_innerOpen">
@@ -48,10 +53,10 @@
         break;
 
     case "dialog-dialog":
-        <BitDialog @bind-IsOpen="_outerOpen" AutoFocus="false" Title="Outer dialog">
+        <BitDialog Id="outer-surface" @bind-IsOpen="_outerOpen" AutoFocus="false" Title="Outer dialog">
             <Body>
                 <button id="btn-open-inner" @onclick="() => _innerOpen = true">Open dialog</button>
-                <BitDialog @bind-IsOpen="_innerOpen" Title="Inner dialog">
+                <BitDialog Id="inner-surface" @bind-IsOpen="_innerOpen" Title="Inner dialog">
                     <Body><input id="inner-input" /></Body>
                 </BitDialog>
             </Body>
@@ -59,10 +64,10 @@
         break;
 
     case "overlay-dialog":
-        <BitOverlay @bind-IsOpen="_outerOpen">
+        <BitOverlay Id="outer-surface" @bind-IsOpen="_outerOpen">
             <div style="padding: 16px; background: white;">
                 <button id="btn-open-inner" @onclick="() => _innerOpen = true">Open dialog</button>
-                <BitDialog @bind-IsOpen="_innerOpen" Title="Inner dialog">
+                <BitDialog Id="inner-surface" @bind-IsOpen="_innerOpen" Title="Inner dialog">
                     <Body><input id="inner-input" /></Body>
                 </BitDialog>
             </div>
@@ -70,22 +75,87 @@
         break;
 
     case "overlay-panel":
-        <BitOverlay @bind-IsOpen="_outerOpen">
+        <BitOverlay Id="outer-surface" @bind-IsOpen="_outerOpen">
             <div style="padding: 16px; background: white;">
                 <button id="btn-open-inner" @onclick="() => _innerOpen = true">Open panel</button>
-                <BitPanel @bind-IsOpen="_innerOpen">
+                <BitPanel Id="inner-surface" @bind-IsOpen="_innerOpen">
                     <input id="inner-input" />
                 </BitPanel>
             </div>
         </BitOverlay>
         break;
+
+    case "modal-overlay":
+        <BitModal Id="outer-surface" @bind-IsOpen="_outerOpen">
+            <div style="padding: 16px;">
+                <button id="btn-open-inner" @onclick="() => _innerOpen = true">Open overlay</button>
+                <BitOverlay Id="inner-surface" @bind-IsOpen="_innerOpen">
+                    <div style="padding: 16px; background: white;"><input id="inner-input" /></div>
+                </BitOverlay>
+            </div>
+        </BitModal>
+        break;
+
+    case "panel-overlay":
+        <BitPanel Id="outer-surface" @bind-IsOpen="_outerOpen">
+            <button id="btn-open-inner" @onclick="() => _innerOpen = true">Open overlay</button>
+            <BitOverlay Id="inner-surface" @bind-IsOpen="_innerOpen">
+                <div style="padding: 16px; background: white;"><input id="inner-input" /></div>
+            </BitOverlay>
+        </BitPanel>
+        break;
+
+    case "dialog-overlay":
+        <BitDialog Id="outer-surface" @bind-IsOpen="_outerOpen" AutoFocus="false" Title="Outer dialog">
+            <Body>
+                <button id="btn-open-inner" @onclick="() => _innerOpen = true">Open overlay</button>
+                <BitOverlay Id="inner-surface" @bind-IsOpen="_innerOpen">
+                    <div style="padding: 16px; background: white;"><input id="inner-input" /></div>
+                </BitOverlay>
+            </Body>
+        </BitDialog>
+        break;
+
+    case "panel-overlay-inside":
+        <BitPanel Id="outer-surface" @bind-IsOpen="_outerOpen">
+            <button id="btn-open-inner" @onclick="() => _innerOpen = true">Open overlay</button>
+            <BitOverlay Id="inner-surface" @bind-IsOpen="_innerOpen" Blocking="Blocking">
+                <div style="padding: 16px; background: white;">Over the panel</div>
+            </BitOverlay>
+        </BitPanel>
+        break;
+
+    case "panel-overlay-outside":
+        <BitPanel Id="outer-surface" @bind-IsOpen="_outerOpen">
+            <button id="btn-open-inner" @onclick="() => _innerOpen = true">Open overlay</button>
+        </BitPanel>
+        <BitOverlay Id="inner-surface" @bind-IsOpen="_innerOpen" Blocking="Blocking" ZIndex="ZIndex">
+            <div style="padding: 16px; background: white;">Over the panel</div>
+        </BitOverlay>
+        break;
+
+    case "overlay-consumer-dialog":
+        <BitOverlay Id="outer-surface" @bind-IsOpen="_outerOpen">
+            <div role="dialog" aria-label="Consumer dialog" style="padding: 16px; background: white;">
+                <input id="inner-input" />
+            </div>
+        </BitOverlay>
+        break;
 }
+
+@* A round trip through the circuit, ordered behind every call the script made into .NET before it: once its count is
+   rendered, whatever an earlier press asked .NET to close has been closed. *@
+<button id="btn-ping" style="display: none;" @onclick="() => _pings++">Ping</button>
+<span id="ping-count" style="display: none;">@_pings</span>
 
 @code {
     [SupplyParameterFromQuery(Name = "case")] public string? Case { get; set; }
+    [SupplyParameterFromQuery(Name = "blocking")] public bool Blocking { get; set; }
+    [SupplyParameterFromQuery(Name = "zindex")] public int? ZIndex { get; set; }
 
     private bool _outerOpen;
     private bool _innerOpen;
+    private int _pings;
     // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
     // interactive render moves it on, which is what the test waits for before it drives the page.
     private string _status = "Loading";
