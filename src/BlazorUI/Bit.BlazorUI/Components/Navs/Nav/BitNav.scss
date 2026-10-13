@@ -710,6 +710,14 @@ $nav-private-properties: item-font-size, item-min-height, icon-size, des-font-si
 // selected item (and the collapsed branch that holds it), so it is painted in the system Highlight, and a
 // disabled item is drawn in GrayText, the one color this mode keeps for "not available".
 @media (forced-colors: active) {
+    // Every item reserves the bar's room with a transparent border, which this mode forces to a system color like any
+    // other, so every row would carry a bar and the selected one would differ by its color alone. The bar of an item
+    // that is not selected is drawn in Canvas instead - the item's own background here, so it vanishes - and keeps its
+    // width, so no content moves when the selection does. The selected item's rule follows at the same weight and wins.
+    .bit-nav-ict {
+        border-color: Canvas;
+    }
+
     .bit-nav-sel,
     .bit-nav-sca {
         border-color: Highlight;

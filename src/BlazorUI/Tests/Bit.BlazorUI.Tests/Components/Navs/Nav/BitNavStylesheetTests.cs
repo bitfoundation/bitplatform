@@ -235,5 +235,26 @@ public class BitNavStylesheetTests
         Assert.IsTrue(rootAt < stylesheet.IndexOf("\n    .bit-nav-#{$role} {", StringComparison.Ordinal), "The color classes are declared ahead of the root that resets them.");
     }
 
+    [TestMethod]
+    public void BitNavShouldDrawTheBarOfTheSelectedItemAloneInForcedColors()
+    {
+        var forced = SourceFiles.GetScssBlock(ReadStylesheet(), "@media (forced-colors: active) {");
+
+        // The transparent border every item reserves the bar with is forced to a system color like any other, so the
+        // items that are not selected draw it in Canvas, their own background in this mode, and the selected ones -
+        // later in the block, at the same weight - in Highlight.
+        var item = SourceFiles.GetScssBlock(forced, "\n    .bit-nav-ict {");
+        var selected = SourceFiles.GetScssBlock(forced, "\n    .bit-nav-sel,\n    .bit-nav-sca {");
+
+        StringAssert.Contains(item, "border-color: Canvas;");
+        StringAssert.Contains(selected, "border-color: Highlight;");
+        Assert.IsTrue(forced.IndexOf(item, StringComparison.Ordinal) < forced.IndexOf(selected, StringComparison.Ordinal),
+                      "The rule hiding the bar comes after the selected item's, which it would then override.");
+
+        // The bar keeps its width, so no content moves when the selection does.
+        Assert.IsFalse(forced.Contains("border-inline-start-width"), "The bar's width changes in forced colors.");
+        Assert.IsFalse(Regex.IsMatch(forced, @"border(-inline-start)?\s*:"), "The bar's border is redefined in forced colors.");
+    }
+
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Navs", "Nav", "BitNav.scss");
 }
