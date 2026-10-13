@@ -705,7 +705,7 @@ public partial class BitPivot : BitComponentBase
     [JSInvokable("OnSetOverflowItems")]
     public void OnSetOverflowItems(int[] indexes)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         ApplyOverflowItems(indexes);
     }
@@ -713,7 +713,7 @@ public partial class BitPivot : BitComponentBase
     [JSInvokable("OnSetSlideState")]
     public void OnSetSlideState(bool hasOverflow, bool atStart, bool atEnd)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         _slideHasOverflow = hasOverflow;
         _slideAtStart = atStart;
@@ -1021,6 +1021,10 @@ public partial class BitPivot : BitComponentBase
 
     internal void UnregisterItem(BitPivotItem item)
     {
+        // The items unregister while they are being disposed, which also happens when the pivot goes away with
+        // them: moving the selection off each one in turn would raise SelectedKeyChanged for a choice nobody made.
+        if (IsDisposing) return;
+
         var index = _allItems.IndexOf(item);
 
         _allItems.Remove(item);

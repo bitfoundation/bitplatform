@@ -719,10 +719,11 @@ public partial class BitDropMenu : BitComponentBase
         // is what the engines that focus it have already done, so nothing moves for them. It is left
         // alone where the callout is the one taking the focus, which is the case an activation from the
         // keyboard and the AutoFocus and TrapFocus modes each ask for - except on a callout the pointer
-        // opened, which those two modes leave the focus out of (see FocusCalloutIfNeeded).
-        if (focusCallout is false && ((AutoFocus || TrapFocus) is false || _owner is CalloutOwner.Pointer))
+        // opened, which those two modes leave the focus out of (see FocusCalloutIfNeeded). The button was just
+        // clicked, so it is not scrolled to.
+        if (IsDisposed is false && focusCallout is false && ((AutoFocus || TrapFocus) is false || _owner is CalloutOwner.Pointer))
         {
-            await FocusButton();
+            await _buttonRef.FocusClickedSafelyAsync();
         }
 
         await OnClick.InvokeAsync();

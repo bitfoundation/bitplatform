@@ -1313,7 +1313,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     /// </summary>
     public Task OpenCallout()
     {
-        return HandleOnClick();
+        return Open(clicked: false);
     }
 
     /// <summary>
@@ -1436,6 +1436,17 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                         orientationLock: BitSwipeOrientation.Vertical,
                         dotnetObj: _dotnetObj);
                 }
+                // The autofocus attribute is only honored by the browser for an element that is part of the
+                // initial document, which the input of an interactively rendered picker is not, so the focus
+                // is placed from here instead. A standalone picker carries the value in a hidden input nobody
+                // is meant to land on, so it has nothing to focus.
+                // It is placed ahead of an initial IsOpen: a focus() brings the field into view, and a field it
+                // scrolls the page to would otherwise be moved out from under the callout just placed against it.
+                if (AutoFocus && Disabled is false && Standalone is false)
+                {
+                    await InputElement.FocusSafelyAsync();
+                }
+
                 // An initial IsOpen fired the OnSetIsOpen hook before the first render, when there was no
                 // callout element to toggle yet, so the open state is applied here instead - with the focus
                 // handling and the event of the hook, so a picker that starts open and one opened from the
@@ -1453,15 +1464,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                     }
 
                     await OnOpen.InvokeAsync();
-                }
-
-                // The autofocus attribute is only honored by the browser for an element that is part of the
-                // initial document, which the input of an interactively rendered picker is not, so the focus
-                // is placed from here instead. A standalone picker carries the value in a hidden input nobody
-                // is meant to land on, so it has nothing to focus.
-                if (AutoFocus && Disabled is false && Standalone is false)
-                {
-                    await InputElement.FocusSafelyAsync();
                 }
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
@@ -1735,7 +1737,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         }
     }
 
-    private async Task HandleOnClick()
+    private Task HandleOnClick() => Open(clicked: true);
+
+    // Opens the callout the way a click on the field does. `clicked` says the user is on the field already - it was
+    // clicked, or a key was pressed in it - rather than having it opened through OpenCallout from anywhere else.
+    private async Task Open(bool clicked)
     {
         if (Standalone) return;
         if (Disabled) return;
@@ -1761,8 +1767,16 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         {
             // A click that landed on the icon rather than on the input never moved the focus into the
             // field, so the picker would open with none of the focus cues the very same click on the
-            // input two pixels away produces.
-            await InputElement.FocusSafelyAsync();
+            // input two pixels away produces. A field the user is on is not scrolled to; one opened through
+            // OpenCallout may be anywhere on the page, and the focus brings it into view.
+            if (clicked)
+            {
+                await InputElement.FocusClickedSafelyAsync();
+            }
+            else
+            {
+                await InputElement.FocusSafelyAsync();
+            }
         }
 
         StateHasChanged();
@@ -2261,7 +2275,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         // Enter and Space are left to the browser whenever the text input is editable.
         if (IsOpen is false && (e.Key is "ArrowDown" || ((e.Key is "Enter" or " ") && AllowTextInput is false)))
         {
-            await HandleOnClick();
+            await Open(clicked: true);
         }
     }
 

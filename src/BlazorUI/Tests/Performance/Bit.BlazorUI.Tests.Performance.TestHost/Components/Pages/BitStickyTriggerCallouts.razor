@@ -1,0 +1,129 @@
+﻿@page "/regression/sticky-trigger-callouts"
+
+<PageTitle>Sticky Trigger Callouts Regression</PageTitle>
+
+@* A callout is dismissed when the page scrolls under it, and a focus() scrolls its element into view - for a trigger
+   in a sticky header of a scrolled container, back to where the header sits in the flow, which a click on it is
+   enough to cause (an app shell's header menu, #13732). ?part= picks one component:
+   - sticky-<name>: the component sits in a sticky header of a container the test scrolls before it clicks it, and its
+     callout has to stay open, with the container left where it was.
+   - plain-dropmenu: the same menu in the flow of the container, which a scroll does move, and so still dismisses.
+   - autofocus-<picker>: a picker mounted below the fold with IsOpen and AutoFocus; the focus has to bring it into view
+     before its callout is placed, and the callout has to stay open.
+   - open-daterangepicker / isopen-phoneinput / openasync-phoneinput: the same, opened through the API from a button
+     outside the container. *@
+<div id="test-controls" style="padding: 8px; background: #f0f0f0;">
+    <span>Status: <span id="status">@_status</span></span>
+    <button id="btn-mount" @onclick="() => _mounted = true">Mount</button>
+    <button id="btn-open" @onclick="Open">Open</button>
+</div>
+
+@* The scroll padding is what an app shell's container is given (BitAppShell's ScrollPadding, the Boilerplate's
+   "5rem 0 4rem"), and what has a header stuck at the top of it count as out of view for a focus(). *@
+<div id="scroller" data-part="@Part" style="height: 360px; width: 640px; overflow: auto; position: relative; scroll-padding: 5rem 0 4rem;">
+    @if (Part?.StartsWith("sticky-") is true)
+    {
+        <header id="hdr" style="position: sticky; top: 0; z-index: 1; display: flex; align-items: center; height: 56px; padding: 0 8px; background: #ddd;">
+            @Sticky(Part["sticky-".Length..])
+        </header>
+        <div style="height: 2000px; background: linear-gradient(#fff, #bbb);"></div>
+    }
+    else if (Part == "plain-dropmenu")
+    {
+        <div style="height: 120px;"></div>
+        <div id="hdr" style="display: flex; align-items: center; height: 56px; padding: 0 8px;">
+            <BitDropMenu Text="Menu"><div style="padding: 8px;">Body</div></BitDropMenu>
+        </div>
+        <div style="height: 2000px; background: linear-gradient(#fff, #bbb);"></div>
+    }
+    else
+    {
+        <div style="height: 1200px; background: linear-gradient(#fff, #bbb);"></div>
+        <div id="target" style="padding: 8px; width: 320px;">
+            @if (_mounted)
+            {
+                @Below(Part ?? string.Empty)
+            }
+        </div>
+        <div style="height: 600px;"></div>
+    }
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "part")] public string? Part { get; set; }
+
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
+    // interactive render moves it on, which is what the test waits for before it drives the page.
+    private string _status = "Loading";
+    private bool _mounted;
+    private bool _isOpen = true;
+    private bool _phoneOpen;
+    private BitDateRangePicker? _drp;
+    private BitPhoneInput? _phone;
+
+    private readonly List<BitDropdownItem<string>> _items =
+    [
+        new() { Text = "Apple", Value = "a" }, new() { Text = "Banana", Value = "b" }, new() { Text = "Cherry", Value = "c" }
+    ];
+
+    private readonly List<BitBreadcrumbItem> _crumbs =
+    [
+        new() { Text = "One", OnClick = _ => { } },
+        new() { Text = "Two", OnClick = _ => { } },
+        new() { Text = "Three", OnClick = _ => { } },
+        new() { Text = "Four", OnClick = _ => { } },
+        new() { Text = "Five", OnClick = _ => { } },
+    ];
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+
+    private async Task Open()
+    {
+        switch (Part)
+        {
+            case "open-daterangepicker":
+                await _drp!.OpenCallout();
+                break;
+            case "isopen-phoneinput":
+                _phoneOpen = true;
+                break;
+            case "openasync-phoneinput":
+                await _phone!.OpenAsync();
+                break;
+        }
+    }
+
+    private RenderFragment Sticky(string name) => name switch
+    {
+        "dropmenu" => @<BitDropMenu Text="Menu"><div style="padding: 8px;">Body</div></BitDropMenu>,
+        "breadcrumb" => @<BitBreadcrumb TItem="BitBreadcrumbItem" Items="_crumbs" MaxDisplayedItems="2" />,
+        "dropdown-combo" => @<BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="_items" Combo Style="width: 240px;" />,
+        "dropdown" => @<BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="_items" Style="width: 240px;" />,
+        "daterangepicker" => @<BitDateRangePicker AllowTextInput Style="width: 300px;" />,
+        "datepicker" => @<BitDatePicker AllowTextInput Style="width: 240px;" />,
+        "timepicker" => @<BitTimePicker Style="width: 240px;" />,
+        "circulartimepicker" => @<BitCircularTimePicker Style="width: 240px;" />,
+        "phoneinput" => @<BitPhoneInput NoSearchBox Style="width: 300px;" />,
+        "phoneinput-search" => @<BitPhoneInput Style="width: 300px;" />,
+        "callout" => @<BitCallout><Anchor><button id="clo-anchor">Open</button></Anchor><Content><div style="padding: 8px;">Body</div></Content></BitCallout>,
+        _ => @<span>unknown part</span>,
+    };
+
+    private RenderFragment Below(string name) => name switch
+    {
+        "autofocus-datepicker" => @<BitDatePicker @bind-IsOpen="_isOpen" AutoFocus AllowTextInput />,
+        "autofocus-daterangepicker" => @<BitDateRangePicker @bind-IsOpen="_isOpen" AutoFocus AllowTextInput />,
+        "autofocus-timepicker" => @<BitTimePicker @bind-IsOpen="_isOpen" AutoFocus />,
+        "autofocus-circulartimepicker" => @<BitCircularTimePicker @bind-IsOpen="_isOpen" AutoFocus />,
+        "open-daterangepicker" => @<BitDateRangePicker @ref="_drp" AllowTextInput />,
+        "isopen-phoneinput" => @<BitPhoneInput @bind-IsOpen="_phoneOpen" NoSearchBox />,
+        "openasync-phoneinput" => @<BitPhoneInput @ref="_phone" NoSearchBox />,
+        _ => @<span>unknown part</span>,
+    };
+}

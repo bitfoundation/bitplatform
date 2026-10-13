@@ -1071,7 +1071,7 @@ public partial class BitModal : BitComponentBase
     [JSInvokable("OnEscape")]
     public async Task _OnEscape()
     {
-        if (IsOpen is false || _params.Disabled is true) return;
+        if (IsDisposing || IsOpen is false || _params.Disabled is true) return;
 
         if (_params.NoDismissOnEscape ?? false)
         {
@@ -1082,7 +1082,7 @@ public partial class BitModal : BitComponentBase
             await TryDismiss();
         }
 
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         await InvokeAsync(StateHasChanged);
     }

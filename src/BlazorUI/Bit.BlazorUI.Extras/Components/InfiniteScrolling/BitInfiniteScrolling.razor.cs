@@ -644,7 +644,7 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
     [JSInvokable("Load")]
     public async Task _LoadMoreItems()
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         await LoadMoreItemsAsync();
     }

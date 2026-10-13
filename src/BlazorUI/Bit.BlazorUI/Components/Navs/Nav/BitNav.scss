@@ -39,11 +39,16 @@
 //   --bit-Nav-header-border-color    rule under a group header                      (default: $clr-brd-pri)
 //   --bit-Nav-header-hover-background background of a hovered group header, one holding the selection aside (default: $clr-bg-pri-hover)
 //   --bit-Nav-separator-color        separator color                                (default: $clr-brd-sec)
+//   --bit-Nav-badge-color            text color of an item badge                    (default: $clr-err-text)
+//   --bit-Nav-badge-background       fill of an item badge and dot                  (default: $clr-err)
+//   --bit-Nav-badge-font-size        text size of an item badge                     (default: $tg-fs-2xs)
+//   --bit-Nav-badge-height           height (and smallest width) of an item badge   (default: $siz-badge-md)
+//   --bit-Nav-badge-dot-size         diameter of an item dot                        (default: $siz-badge-dot-md)
 //
 // A parameter written on the nav wins over the variable that restyles what it sets: an explicit Color over the
 // icon and indicator colors, an explicit Accent over the hover, pressed and selected backgrounds and every color
 // drawn on them - the text, the chevron, the icon and the description - and an explicit Size over the font, icon,
-// description and header sizes and the item and header heights. The variables restyle the default, not a choice -
+// description, header and badge sizes and the item and header heights. The variables restyle the default, not a choice -
 // which is why Color, Accent and Size publish nothing while they are left unset: a class that always carried the
 // default would be indistinguishable from one that was asked for.
 
@@ -152,8 +157,8 @@ $nav-selected-pressed-background-fallback: var(--bit-Nav-selected-pressed-backgr
 }
 
 $nav-private-properties: item-font-size, item-min-height, icon-size, des-font-size, header-font-size,
-                         header-min-height, chevron-size, clr, clr-text, clr-hover, clr-active, clr-sel-hover, clr-sel-active,
-                         clr-icon, clr-des;
+                         header-min-height, chevron-size, badge-font-size, badge-height, badge-dot-size, clr, clr-text,
+                         clr-hover, clr-active, clr-sel-hover, clr-sel-active, clr-icon, clr-des;
 
 .bit-nav {
     font-family: $tg-font-family;
@@ -427,6 +432,56 @@ $nav-private-properties: item-font-size, item-min-height, icon-size, des-font-si
     text-overflow: ellipsis;
 }
 
+// The end of an item: its suffix template and its badge, kept whole at the far end of the row while the text before
+// it gives up its room to an ellipsis.
+.bit-nav-sfx {
+    flex-shrink: 0;
+    display: inline-flex;
+    gap: spacing(0.5);
+    align-items: center;
+    margin-inline-start: auto;
+}
+
+// The badge keeps its own colors in every state of the item - hovered, pressed, selected - since it marks the item
+// rather than its state. Its height is the design system's badge height for the Size of the nav.
+.bit-nav-bdg {
+    display: inline-flex;
+    box-sizing: border-box;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    min-width: var(--bit-nav-badge-height, var(--bit-Nav-badge-height, #{$siz-badge-md}));
+    height: var(--bit-nav-badge-height, var(--bit-Nav-badge-height, #{$siz-badge-md}));
+    padding: 0 spacing(0.75);
+    border-radius: $shp-radius-full;
+    font-weight: $tg-fw-semibold;
+    font-size: var(--bit-nav-badge-font-size, var(--bit-Nav-badge-font-size, #{$tg-fs-2xs}));
+    color: var(--bit-Nav-badge-color, #{$clr-err-text});
+    background-color: var(--bit-Nav-badge-background, #{$clr-err});
+}
+
+// The rail has no room left after the icon, so the badge is pinned to the corner of the item over it, where the rail
+// draws the attention a badge in the row would. The item says so with a class of its own (.bit-nav-icb) rather than
+// through the rail's class on the root, which would also reach a nav rendered inside an item template of the rail.
+.bit-nav-icb {
+    position: relative;
+
+    > .bit-nav-sfx {
+        margin: 0;
+        position: absolute;
+        top: spacing(0.5);
+        inset-inline-end: spacing(0.5);
+    }
+}
+
+// The dot only marks the item as needing attention, so it carries no text and stays perfectly round.
+.bit-nav-bdt {
+    padding: 0;
+    min-width: var(--bit-nav-badge-dot-size, var(--bit-Nav-badge-dot-size, #{$siz-badge-dot-md}));
+    width: var(--bit-nav-badge-dot-size, var(--bit-Nav-badge-dot-size, #{$siz-badge-dot-md}));
+    height: var(--bit-nav-badge-dot-size, var(--bit-Nav-badge-dot-size, #{$siz-badge-dot-md}));
+}
+
 .bit-nav-des {
     all: unset;
     display: block;
@@ -544,6 +599,12 @@ $nav-private-properties: item-font-size, item-min-height, icon-size, des-font-si
 
     @include disabled-item-content;
 
+    // The badge keeps its own colors, so it is dimmed with the item rather than repainted in the disabled color. The
+    // path to it is spelled out, so a nav rendered inside an item template keeps its own badges as they are.
+    > .bit-nav-mct > .bit-nav-itm > .bit-nav-sfx > .bit-nav-bdg {
+        opacity: $opa-dis;
+    }
+
     .bit-nav-itm,
     .bit-nav-iic {
         pointer-events: none;
@@ -568,6 +629,9 @@ $nav-private-properties: item-font-size, item-min-height, icon-size, des-font-si
     --bit-nav-header-font-size: #{$tg-fs-sm};
     --bit-nav-header-min-height: #{spacing(4.5)};
     --bit-nav-chevron-size: #{$tg-fs-2xs};
+    --bit-nav-badge-font-size: #{$tg-fs-2xs};
+    --bit-nav-badge-height: #{$siz-badge-sm};
+    --bit-nav-badge-dot-size: #{$siz-badge-dot-sm};
 }
 
 .bit-nav-md {
@@ -578,6 +642,9 @@ $nav-private-properties: item-font-size, item-min-height, icon-size, des-font-si
     --bit-nav-header-font-size: #{$tg-fs-lg};
     --bit-nav-header-min-height: #{spacing(5.5)};
     --bit-nav-chevron-size: #{$tg-fs-xs};
+    --bit-nav-badge-font-size: #{$tg-fs-2xs};
+    --bit-nav-badge-height: #{$siz-badge-md};
+    --bit-nav-badge-dot-size: #{$siz-badge-dot-md};
 }
 
 .bit-nav-lg {
@@ -588,6 +655,9 @@ $nav-private-properties: item-font-size, item-min-height, icon-size, des-font-si
     --bit-nav-header-font-size: #{$tg-fs-xl};
     --bit-nav-header-min-height: #{spacing(6.5)};
     --bit-nav-chevron-size: #{$tg-fs-sm};
+    --bit-nav-badge-font-size: #{$tg-fs-xs};
+    --bit-nav-badge-height: #{$siz-badge-lg};
+    --bit-nav-badge-dot-size: #{$siz-badge-dot-lg};
 }
 
 
@@ -669,6 +739,13 @@ $nav-private-properties: item-font-size, item-min-height, icon-size, des-font-si
         background-color: Canvas;
     }
 
+    // The badge's count is Canvas on a CanvasText fill, which the backplate would empty the same way.
+    .bit-nav-bdg {
+        forced-color-adjust: none;
+        color: Canvas;
+        background-color: CanvasText;
+    }
+
     // A background role is the page's own color, Canvas here, which the icons would be drawn in - invisible in
     // every engine. It is the system text color instead.
     @each $role in $bit-background-color-roles {
@@ -687,5 +764,10 @@ $nav-private-properties: item-font-size, item-min-height, icon-size, des-font-si
         .bit-nav-ghd {
             color: GrayText;
         }
+    }
+
+    // Every item of a disabled nav is a .bit-nav-dis too, so this one path covers both.
+    .bit-nav-dis > .bit-nav-mct > .bit-nav-itm > .bit-nav-sfx > .bit-nav-bdg {
+        background-color: GrayText;
     }
 }

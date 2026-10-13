@@ -126,6 +126,18 @@ public partial class BitNav<TItem>
     [Parameter] public IList<TItem> Items { get; set; } = [];
 
     /// <summary>
+    /// Used to render custom content at the end of every item, after its text and ahead of its badge, while the item
+    /// keeps its default content. The SuffixTemplate of an item takes precedence over it.
+    /// </summary>
+    /// <remarks>
+    /// It is rendered inside the anchor (or the button) each item is, so it holds content to look at - a counter, a
+    /// status, a shortcut - and never a control of its own. A group header in the Grouped render type, a separator
+    /// and an item whose template renders in the Replace mode do not render it, and the IconOnly nav, which is down
+    /// to the icons of its items, keeps their badges alone.
+    /// </remarks>
+    [Parameter] public RenderFragment<TItem>? ItemSuffixTemplate { get; set; }
+
+    /// <summary>
     /// Used to customize how content inside the item is rendered.
     /// </summary>
     [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }

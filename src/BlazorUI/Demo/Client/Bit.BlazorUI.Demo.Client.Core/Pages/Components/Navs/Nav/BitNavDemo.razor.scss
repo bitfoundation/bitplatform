@@ -42,6 +42,13 @@
         flex-flow: row nowrap;
     }
 
+    // A shortcut hint at the end of an item, ahead of its badge.
+    .nav-custom-suffix {
+        opacity: 0.6;
+        font-size: 11px;
+        font-family: monospace;
+    }
+
     // The count sits at the far end of the row, where a sidebar keeps its badges.
     .nav-custom-item .bit-bdg {
         margin-inline-start: auto;

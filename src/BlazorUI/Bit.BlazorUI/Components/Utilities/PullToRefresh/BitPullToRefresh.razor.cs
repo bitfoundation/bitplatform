@@ -340,6 +340,8 @@ public partial class BitPullToRefresh : BitComponentBase
     [JSInvokable("Refresh")]
     public async Task _Refresh()
     {
+        if (IsDisposing) return;
+
         _diff = _Trigger;
         _refreshing = true;
 
@@ -363,7 +365,7 @@ public partial class BitPullToRefresh : BitComponentBase
         // The script holds the indicator at full size until the strip has closed, so it is let go of before the idle
         // state is rendered: the strip closes on the refreshing or complete indicator it ended on, rather than on
         // the idle one drawn at full size until this call has made it back to the script.
-        if (IsDisposed is false)
+        if (IsDisposing is false)
         {
             error = await RunStep(() => _js.BitPullToRefreshRelease(UniqueId).AsTask(), error);
         }

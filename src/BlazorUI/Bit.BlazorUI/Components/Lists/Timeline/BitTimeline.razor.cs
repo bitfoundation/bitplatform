@@ -179,7 +179,7 @@ public partial class BitTimeline<TItem> : BitComponentBase where TItem : class
     {
         // The options unregister while they are being disposed, which also happens when the timeline
         // itself goes away, so a re-render is only requested while the timeline is still alive.
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         _items.Remove((option as TItem)!);
 

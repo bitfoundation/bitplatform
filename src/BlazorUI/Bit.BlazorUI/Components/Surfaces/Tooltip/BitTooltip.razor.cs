@@ -573,7 +573,7 @@ public partial class BitTooltip : BitComponentBase
     [JSInvokable("OnEscape")]
     public async Task _OnEscape()
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         await DismissByEscape();
     }
@@ -587,7 +587,7 @@ public partial class BitTooltip : BitComponentBase
     [JSInvokable("OnOutsidePress")]
     public async Task _OnOutsidePress()
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
         if (IsControlledExternally) return;
         if (_isShownByClick is false || IsShown is false) return;
 

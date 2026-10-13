@@ -511,6 +511,10 @@ public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
 
     internal void UnregisterOption(BitMenuButtonOption option)
     {
+        // The options unregister while they are being disposed, which also happens when the menu button goes away
+        // with them: rescanning for submenus and re-rendering once per option is work for a component that is gone.
+        if (IsDisposing) return;
+
         _items.Remove((option as TItem)!);
 
         _hasSubmenus = _items.Exists(GetHasChildren);

@@ -3453,5 +3453,25 @@ public class BitTimePickerTests : BunitTestContext
         Assert.AreEqual(before, FocusCalls());
     }
 
+    [TestMethod]
+    public void BitTimePickerShouldFocusTheInputBeforeAnInitialIsOpenPlacesTheCallout()
+    {
+        RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AutoFocus, true);
+        });
+
+        var identifiers = Context.JSInterop.Invocations.Select(i => i.Identifier).ToList();
+        var focus = identifiers.IndexOf("Blazor._internal.domWrapper.focus");
+        var toggle = identifiers.IndexOf("BitBlazorUI.Callouts.toggle");
+
+        // A focus() brings the field into view, and a field it scrolled the page to after the callout was placed
+        // against it would be moved out from under the callout - which the scroll then dismisses.
+        Assert.IsTrue(focus >= 0);
+        Assert.IsTrue(toggle >= 0);
+        Assert.IsTrue(focus < toggle);
+    }
+
     #endregion
 }
