@@ -74,7 +74,7 @@ public partial class BitTimeZonePickerStylesheetTests
         // A separator only a screen reader reads is clipped out of sight, never display:none or visibility:hidden.
         var separator = SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-tzp-sep {");
 
-        StringAssert.Contains(separator, "clip-path: inset(50%);");
+        StringAssert.Contains(separator, "@include visually-hidden;");
         Assert.IsFalse(separator.Contains("display: none"));
         Assert.IsFalse(separator.Contains("visibility: hidden"));
     }

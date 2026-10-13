@@ -250,15 +250,7 @@ $btn-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-dis
 .bit-btn-dsc,
 .bit-btn-srl,
 .bit-btn-sts {
-    border: 0;
-    padding: 0;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 // The spinner and its label are the icon and the text of the loading state, so they are spaced by the same gap

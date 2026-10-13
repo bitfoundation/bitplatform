@@ -546,15 +546,7 @@ $tgl-private-properties: clr, clr-hover, clr-text, clr-focus, gap, trk-w-base, t
 }
 
 .bit-tgl-dsc {
-    border: 0;
-    padding: 0;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 // The checked state picks which colors are read; within it, an explicit Color comes first, then the public

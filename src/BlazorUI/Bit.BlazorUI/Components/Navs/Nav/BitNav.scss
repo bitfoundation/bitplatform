@@ -303,15 +303,7 @@ $nav-private-properties: item-font-size, item-min-height, icon-size, des-font-si
 // Text read by assistive technologies and drawn nowhere: the name of a static group header in the rail,
 // which hides its visible text, and the sentence saying that an item opens a new tab.
 .bit-nav-vhd {
-    border: 0;
-    padding: 0;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 .bit-nav-ghd {

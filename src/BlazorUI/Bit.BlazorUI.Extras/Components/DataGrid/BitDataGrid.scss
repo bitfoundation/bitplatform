@@ -817,15 +817,7 @@ button.bit-dtg-htext {
 
 /* Screen-reader-only content (the aria-live status region, the names of the special columns). */
 .bit-dtg-visually-hidden {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    border: 0;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
+    @include visually-hidden;
 }
 
 /* Inline-edit validation: flag the invalid editor and show its message underneath. */

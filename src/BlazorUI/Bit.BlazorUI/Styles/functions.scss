@@ -333,6 +333,54 @@ $html-font-size: 16px;
 }
 
 /*
+ * visually-hidden
+ * --------------------------------------------------
+ * Takes an element out of the flow and out of sight while leaving it in the accessibility tree: the
+ * text a control points at through aria-describedby, a live region announcing a state, the name of a
+ * part that shows none. display:none and visibility:hidden would hide it from the screen readers it
+ * is written for as well, and a box sized to nothing is dropped from the tree by some of them, so it
+ * keeps one pixel and is clipped away from it.
+ *   - Every component hides its screen-reader-only text through this one mixin, never a copy of it,
+ *     so a change to the technique is made once (BitVisuallyHiddenContractTests).
+ *   - What the element needs beyond it (an anchor, a user-select) is declared after the include.
+ *   - A part that is shown again on a state (a skip link on focus) is hidden under a selector that
+ *     stops matching in that state, or resets what the mixin set: the size, the overflow, the clip
+ *     and the margin.
+ *
+ * Usage:
+ *   .bit-xyz-dsc,
+ *   .bit-xyz-lvr {
+ *       @include visually-hidden;
+ *   }
+ */
+@mixin visually-hidden {
+    border: 0;
+    padding: 0;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    position: absolute;
+    white-space: nowrap;
+    clip-path: inset(50%);
+}
+
+/*
+ * visually-hidden-control
+ * --------------------------------------------------
+ * A native form control kept in the page for what the browser does with it - the focus, the keyboard
+ * of a radio group, what a screen reader says about a checkbox - while the component draws what is
+ * seen in its place (a label, a box). It is hidden the way visually-hidden hides text, and on top of
+ * that it is never painted and never the target of the pointer, so its pixel neither shows a native
+ * focus outline nor takes a click meant for the label drawn over it.
+ */
+@mixin visually-hidden-control {
+    @include visually-hidden;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/*
  * spinner-ring($size, $color, $track, $box-sizing, $stroke)
  * --------------------------------------------------
  * The inline busy spinner a component draws for itself - core components never render a

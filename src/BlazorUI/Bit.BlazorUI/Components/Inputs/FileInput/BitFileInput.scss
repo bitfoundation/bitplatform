@@ -558,14 +558,7 @@ $fin-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, lbl-hei
 }
 
 .bit-fin-lvr {
-    top: auto;
-    left: -10000px;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 // Role classes are generated from the shared $bit-color-roles map (see color-role-maps.scss), and published

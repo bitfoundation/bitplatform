@@ -393,15 +393,7 @@ $drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz
 // the readers they are written for.
 .bit-drp-vhd,
 .bit-drp-lvr {
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    border: none;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 .bit-drp-wrp {

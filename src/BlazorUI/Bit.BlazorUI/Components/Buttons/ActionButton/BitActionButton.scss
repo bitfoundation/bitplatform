@@ -150,15 +150,7 @@ $acb-private-properties: clr-ico, clr-hover, clr-active, clr-focus, clr-dis-text
 // out of the flow rather than hidden, since display:none is also hidden from the readers they are written for.
 .bit-acb-sts,
 .bit-acb-dsc {
-    border: 0;
-    padding: 0;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 .bit-acb-eni {

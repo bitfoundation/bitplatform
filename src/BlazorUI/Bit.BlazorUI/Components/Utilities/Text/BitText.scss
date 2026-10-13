@@ -429,15 +429,7 @@
 // focus moved there by script - FocusOnNavigate landing on a visually hidden page title - and keeps it hidden. The
 // condition sits in :where so the rule weighs no more than the one class a page overrides it with.
 .bit-txt-vhd:where(:not(:focus-visible:not([tabindex="-1"]), :has(:focus-visible:not([tabindex="-1"])))) {
-    padding: 0;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
-    clip: rect(0 0 0 0);
+    @include visually-hidden;
 }
 
 // A disabled run of text is dimmed rather than recolored, so that it keeps whichever of the color roles it was

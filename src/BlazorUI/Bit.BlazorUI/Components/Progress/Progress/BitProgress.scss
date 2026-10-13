@@ -214,15 +214,7 @@ $prb-private-properties:
 }
 
 .bit-prb-lvr {
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    border: 0;
-    padding: 0;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 .bit-prb-pnm {

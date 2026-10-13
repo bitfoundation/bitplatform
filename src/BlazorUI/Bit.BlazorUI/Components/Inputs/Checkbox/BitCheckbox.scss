@@ -131,15 +131,7 @@ $chb-private-properties: clr, clr-hover, clr-txt, clr-txt-sec, clr-txt-hover, cl
 
 // visually hidden but focusable, so the native checkbox keeps its keyboard and screen reader behavior
 .bit-chb-inp {
-    margin: 0;
-    opacity: 0;
-    width: 1px;
-    height: 1px;
-    border: none;
-    overflow: hidden;
-    position: absolute;
-    pointer-events: none;
-    clip-path: inset(50%);
+    @include visually-hidden-control;
 
     // Focus lands on this hidden input, so the themed ring is drawn on the visible box.
     &:focus-visible ~ .bit-chb-lbl .bit-chb-box {
@@ -168,15 +160,7 @@ $chb-private-properties: clr, clr-hover, clr-txt, clr-txt-sec, clr-txt-hover, cl
 }
 
 .bit-chb-dsc {
-    border: 0;
-    padding: 0;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 .bit-chb-rdl,

@@ -263,15 +263,7 @@ $nbr-private-properties: clr, clr-ind, clr-dis, clr-fcs, clr-acc-hover, clr-acc-
 
 // The sentence saying that an item opens a new tab: read by assistive technologies, drawn nowhere.
 .bit-nbr-vhd {
-    border: 0;
-    padding: 0;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 .bit-nbr-bdg {

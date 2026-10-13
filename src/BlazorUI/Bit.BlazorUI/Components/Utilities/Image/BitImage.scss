@@ -87,15 +87,7 @@
 // until the image itself is there to be announced. It is hidden visually rather than with display:none,
 // which would take it out of the accessibility tree as well.
 .bit-img-alt {
-    padding: 0;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    border: 0;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 @keyframes bit-img-fade-in {

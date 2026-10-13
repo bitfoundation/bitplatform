@@ -242,13 +242,7 @@ $tzp-private-properties: sz-fs, sz-h, sz-pad, sz-itm-h, role-main, role-focus, k
 // What a screen reader reads between the parts of a row, which are laid out apart; removed from the layout without
 // being taken out of the accessibility tree, the way the live region is.
 .bit-tzp-sep {
-    top: auto;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 .bit-tzp-car {
@@ -597,13 +591,7 @@ $tzp-private-properties: sz-fs, sz-h, sz-pad, sz-itm-h, role-main, role-focus, k
 // being display:none or visibility:hidden, both of which would take it out of the accessibility tree along with what
 // it carries.
 .bit-tzp-lvr {
-    top: auto;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 .bit-tzp-req {

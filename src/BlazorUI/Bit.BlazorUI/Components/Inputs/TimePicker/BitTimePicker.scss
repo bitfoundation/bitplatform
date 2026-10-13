@@ -522,15 +522,7 @@ $tpc-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-focus, inp-h, i
 // The text written for a screen reader alone: the announcement of the whole time, and the accessible
 // description. Read but never seen, and out of the layout so neither of them takes any room.
 .bit-tpc-vhd {
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    border-width: 0;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 .bit-tpc-am-pm {

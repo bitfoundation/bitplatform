@@ -335,15 +335,7 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
 // clip-path over `display:none` because a hidden element is not announced at all.
 .bit-map-help,
 .bit-map-live {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    border: 0;
-    overflow: hidden;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 // The instructions are painted from variables the focus below moves, so a help text painted through a class keeps

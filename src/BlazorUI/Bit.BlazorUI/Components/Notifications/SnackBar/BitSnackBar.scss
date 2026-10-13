@@ -265,15 +265,7 @@ $snb-itm-private-properties: bg, fg, clr-txt, gap, pad, hdr-gap, ttl-fs, bdy-fs,
 // which is the only way a screen reader hears it; the region is taken out of the visual layout without being
 // taken out of the accessibility tree - display:none or visibility:hidden would silence it.
 .bit-snb-lvr {
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    border: 0;
-    padding: 0;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 .bit-snb-prb {

@@ -189,15 +189,7 @@ $lnk-private-properties: clr, clr-hover, clr-active, clr-focus, clr-dis, fs,
 // written for.
 .bit-lnk-hnt,
 .bit-lnk-dsc {
-    border: 0;
-    padding: 0;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 // The size classes are for the link that stands on its own; a link inside a sentence is left inheriting. Published

@@ -188,15 +188,7 @@ $swp-private-properties:
 
 // The live region that announces the item the swiper comes to stand on, kept out of sight.
 .bit-swp-sro {
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    border: 0;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 // A vertical swiper is laid out over its own height, so it needs one; this is the default, which any

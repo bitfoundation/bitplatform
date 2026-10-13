@@ -742,13 +742,7 @@ $srb-private-properties: siz-height, siz-fontsize, siz-iconsize, siz-cbt-iconsiz
 .bit-srb-lvr,
 .bit-srb-elv,
 .bit-srb-ard {
-    top: auto;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 // The message that says why the value was rejected. It is referenced by the input through

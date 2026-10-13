@@ -357,16 +357,9 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
 // the screen to park the link above. It anchors to .bit-hdr-gut, and being absolutely positioned it is
 // out of the flow, so the flex line of the container lays out the content of the header alone.
 .bit-hdr-skp {
+    @include visually-hidden;
     top: 0;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
     inset-inline-start: 0;
-    clip-path: inset(50%);
-    clip: rect(0 0 0 0);
     // The link is only drawn while it has the focus, and the focus changes the variables it is painted from rather
     // than its colors: a link the app paints through Classes.SkipLink keeps that paint once it is shown, instead
     // of losing it to the focus rule that outranks the app's class. Unset, they leave the hidden link inheriting.
@@ -378,7 +371,7 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
     &:focus {
         // z-index keeps the focused link above the content of the header it lands on top of.
         z-index: 1;
-        clip: auto;
+        margin: 0;
         width: auto;
         height: auto;
         overflow: visible;

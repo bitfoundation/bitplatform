@@ -628,15 +628,7 @@ $sld-private-properties:
 // aria-describedby takes an id reference, so the AriaDescription lives in an element of its own, removed
 // from the page visually but left in the accessibility tree.
 .bit-sld-dsc {
-    border: 0;
-    padding: 0;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 

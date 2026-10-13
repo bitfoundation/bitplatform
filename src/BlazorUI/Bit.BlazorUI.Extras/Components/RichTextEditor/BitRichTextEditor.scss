@@ -570,15 +570,7 @@ $rte-rule-color: var(--bit-RichTextEditor-table-border-color, #{$clr-brd-pri});
 // Read by assistive technology only.
 .bit-rte-ann,
 .bit-rte-hint {
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    border: 0;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 .bit-rte-src {

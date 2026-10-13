@@ -570,13 +570,7 @@ $cnp-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
 // being display:none or visibility:hidden, both of which would take it out of the accessibility tree along with what
 // it carries.
 .bit-cnp-lvr {
-    top: auto;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 .bit-cnp-req {

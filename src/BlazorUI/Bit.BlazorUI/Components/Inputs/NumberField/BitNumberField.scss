@@ -627,15 +627,7 @@ $nfl-private-properties: height, fontsize, label-fontsize, icon-size, btn-width,
 }
 
 .bit-nfl-dsc {
-    border: 0;
-    padding: 0;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 .bit-nfl-req {

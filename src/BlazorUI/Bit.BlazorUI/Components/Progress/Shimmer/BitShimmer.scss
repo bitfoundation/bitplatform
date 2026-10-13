@@ -346,15 +346,7 @@ $smr-private-properties: hgt, gap, llw, rad, shp, dly, lnh, crs, bg-clr, wrp-bg;
 // everyone else. It stays in the render tree rather than being display:none, which would take it out of the
 // accessibility tree along with the layout and leave the live region with nothing to announce.
 .bit-smr-vhd {
-    border: 0;
-    padding: 0;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 

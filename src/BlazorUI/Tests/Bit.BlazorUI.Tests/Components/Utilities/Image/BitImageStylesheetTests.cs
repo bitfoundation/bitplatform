@@ -129,8 +129,7 @@ public partial class BitImageStylesheetTests
         // the image it stands in for, which is the one thing it is there to avoid.
         var block = RuleOf(ReadStylesheet(), ".bit-img-alt");
 
-        StringAssert.Contains(block, "clip-path: inset(50%);");
-        StringAssert.Contains(block, "position: absolute;");
+        StringAssert.Contains(block, "@include visually-hidden;");
         Assert.IsFalse(block.Contains("display: none"));
         Assert.IsFalse(block.Contains("visibility: hidden"));
     }

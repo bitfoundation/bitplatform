@@ -698,13 +698,7 @@ $phi-private-properties: sz-fs, sz-h, sz-pad, sz-icon, sz-itm-h, role-main, role
 // which would take them out of the accessibility tree along with what they carry.
 .bit-phi-lvr,
 .bit-phi-vhd {
-    top: auto;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 // A phone number is written left to right wherever it is read, and the separators a mask inserts
