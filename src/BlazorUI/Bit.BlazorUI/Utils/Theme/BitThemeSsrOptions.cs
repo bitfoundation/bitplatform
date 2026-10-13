@@ -77,7 +77,19 @@ public class BitThemeSsrOptions
     /// scheme - so a visitor's light or dark choice survives the app switching presets (a stored
     /// <c>fluent2-dark</c> becomes <c>material-dark</c>), the way the client script restores it. A stored
     /// preference without it - a theme the app pinned outside the pair, or one stored by an earlier
-    /// version - is painted as it is.
+    /// version - is painted as it is, unless <see cref="AvailableThemes"/> leaves it out.
     /// </remarks>
     public string? PersistedThemePair { get; set; }
+
+    /// <summary>
+    /// The themes the page ships stylesheets for (<see cref="BitThemeAttributeNames.ThemeAvailable"/>) -
+    /// every preset it links, and its own. A stored pair naming a theme outside them falls back to
+    /// <see cref="LightTheme"/> / <see cref="DarkTheme"/>, and a stored preference outside them to the
+    /// active pair's theme of its scheme, so a visitor whose saved theme came from a preset the app no
+    /// longer offers - one saved before the light / dark marker existed included - keeps their light or
+    /// dark choice instead of a theme nothing styles. The declared pair and <c>system</c> count as offered
+    /// whether listed or not. <see langword="null"/> or empty restores every stored name as it is. Pass
+    /// the same names to <see cref="BitThemeHead"/>.
+    /// </summary>
+    public IEnumerable<string>? AvailableThemes { get; set; }
 }

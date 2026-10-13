@@ -153,6 +153,12 @@ public static class BitThemeSsr
         {
             pairs.Add(new(BitThemeAttributeNames.ThemeDark, dark));
         }
+
+        var available = NormalizeAvailableThemes(options.AvailableThemes);
+        if (available is not null)
+        {
+            pairs.Add(new(BitThemeAttributeNames.ThemeAvailable, string.Join(' ', available)));
+        }
     }
 
     /// <summary>
@@ -211,7 +217,8 @@ public static class BitThemeSsr
     {
         var preference = NormalizeThemeToken(persistedPreference);
         var fallback = NormalizeThemeToken(options.DefaultTheme);
-        var pair = ResolveThemePair(options.LightTheme, options.DarkTheme, options.PersistedThemePair);
+        var available = NormalizeAvailableThemes(options.AvailableThemes);
+        var pair = ResolveThemePair(options.LightTheme, options.DarkTheme, options.PersistedThemePair, preference, available);
 
         // The page's default names a theme of the pair it declares; a pair the visitor switched to
         // stands in for it - as the client's init does with its base theme.
@@ -231,14 +238,17 @@ public static class BitThemeSsr
 
         // Concrete persisted preference → paint it directly (no flash). One stored as the light or dark
         // theme of the page's pair follows that pair - the app may have switched presets since - as the
-        // client restores it; any other is painted as it is.
+        // client restores it, and so does one the page no longer offers, by its name's "dark" ending;
+        // any other is painted as it is.
         if (preference is not null)
         {
             var theme = pair.StoredScheme switch
             {
                 BitThemePresets.Dark => pair.Dark,
                 BitThemePresets.Light => pair.Light,
-                _ => preference,
+                _ when preference == pair.Light || preference == pair.Dark
+                    || IsAvailable(preference, options.LightTheme, options.DarkTheme, available) => preference,
+                _ => preference.EndsWith("dark", StringComparison.Ordinal) ? pair.Dark : pair.Light,
             };
 
             return [new(BitThemeAttributeNames.Theme, theme)];
@@ -263,23 +273,64 @@ public static class BitThemeSsr
 
     /// <summary>
     /// The light / dark pair a response resolves its theme against: the visitor's stored pair
-    /// (<paramref name="persistedPair"/>) when it is valid and differs from the declared one, else the
-    /// declared pair, defaulting to the core <c>light</c> / <c>dark</c> - carrying the stored scheme
-    /// marker along in that case. The precedence of the client's init and of the inline script.
+    /// (<paramref name="persistedPair"/>) when it is valid, differs from the declared one and is offered
+    /// (<paramref name="availableThemes"/>), else the declared pair, defaulting to the core <c>light</c> /
+    /// <c>dark</c> - carrying the stored scheme marker along in that case, or the scheme the stored
+    /// <paramref name="persistedPreference"/> was of a stored pair set aside. The precedence of the
+    /// client's init and of the inline script.
     /// </summary>
-    internal static BitThemeSsrPair ResolveThemePair(string? lightTheme, string? darkTheme, string? persistedPair)
+    internal static BitThemeSsrPair ResolveThemePair(string? lightTheme, string? darkTheme, string? persistedPair,
+        string? persistedPreference = null, IReadOnlyCollection<string>? availableThemes = null)
     {
         var light = NormalizeThemeToken(lightTheme) ?? BitThemePresets.Light;
         var dark = NormalizeThemeToken(darkTheme) ?? BitThemePresets.Dark;
 
         var (storedPair, storedScheme) = ParseStoredThemePair(persistedPair);
 
-        if (storedPair is { } stored && (stored.Light != light || stored.Dark != dark))
+        if (storedPair is { } stored && (stored.Light != light || stored.Dark != dark)
+            && IsAvailable(stored.Light, light, dark, availableThemes) && IsAvailable(stored.Dark, light, dark, availableThemes))
         {
             return new(stored.Light, stored.Dark, IsPersisted: true, StoredScheme: null);
         }
 
+        // A stored pair the page declares itself, or no longer offers, is set aside as the client sets it
+        // aside, and a preference of it carried onto the declared pair as the scheme it was.
+        if (storedPair is { } setAside)
+        {
+            var preference = NormalizeThemeToken(persistedPreference);
+            storedScheme = preference == setAside.Dark ? BitThemePresets.Dark
+                : preference == setAside.Light ? BitThemePresets.Light
+                : null;
+        }
+
         return new(light, dark, IsPersisted: false, storedScheme);
+    }
+
+    /// <summary>
+    /// The names <see cref="BitThemeSsrOptions.AvailableThemes"/> lists, normalized and validated like
+    /// every other name here and in the order given, without repeats; <see langword="null"/> when none is
+    /// left - the page then does not say, and every stored name is restored as it is.
+    /// </summary>
+    internal static IReadOnlyList<string>? NormalizeAvailableThemes(IEnumerable<string>? themes)
+    {
+        if (themes is null) return null;
+
+        var names = themes.Select(NormalizeThemeToken).OfType<string>().Distinct(StringComparer.Ordinal).ToList();
+
+        return names.Count == 0 ? null : names;
+    }
+
+    /// <summary>
+    /// Whether the page offers <paramref name="theme"/>: always when it lists nothing, and for
+    /// <c>system</c> and the declared pair whether listed or not - the client's <c>Theme.isAvailable</c>.
+    /// </summary>
+    internal static bool IsAvailable(string theme, string? lightTheme, string? darkTheme, IReadOnlyCollection<string>? availableThemes)
+    {
+        return availableThemes is null
+            || theme == BitThemePresets.System
+            || theme == (NormalizeThemeToken(lightTheme) ?? BitThemePresets.Light)
+            || theme == (NormalizeThemeToken(darkTheme) ?? BitThemePresets.Dark)
+            || availableThemes.Contains(theme);
     }
 
     /// <summary>
@@ -333,6 +384,7 @@ public static class BitThemeSsr
         var themePersistCookie = BitThemeAttributeNames.ThemePersistCookie;
         var themeDark = BitThemeAttributeNames.ThemeDark;
         var themeLight = BitThemeAttributeNames.ThemeLight;
+        var themeAvailable = BitThemeAttributeNames.ThemeAvailable;
         var storageKey = BitThemeAttributeNames.ThemeStorageKey;
         var cookieName = BitThemeCookie.PreferenceCookieName;
         var pairStorageKey = BitThemeAttributeNames.ThemePairStorageKey;
@@ -347,15 +399,24 @@ public static class BitThemeSsr
             $"ck='{cookieName}'," +
             $"lt=r.getAttribute('{themeLight}')||'light'," +
             $"dk=r.getAttribute('{themeDark}')||'dark'," +
+            // The declared pair, kept while lt / dk may become the visitor's: it is always offered.
+            "dl=lt,dd=dk," +
             "m=window.matchMedia&&matchMedia('(prefers-color-scheme:dark)').matches," +
             // One read of a stored value, for the preference and the pair alike: localStorage first,
             // then the cookie - Theme.getPersisted's order.
             "c=function(n){var x=('; '+document.cookie).match('; '+n+'=([^;]*)');if(!x)return null;try{return decodeURIComponent(x[1]);}catch(e){return x[1];}}," +
             $"g=function(sk,cn){{var v=null;if(r.hasAttribute('{themePersist}')){{try{{v=localStorage.getItem(sk);}}catch(e){{}}}}if(!v&&r.hasAttribute('{themePersistCookie}')){{v=c(cn);}}return v;}}," +
+            // Theme.isAvailable: what bit-theme-available lists, everything when it lists nothing, and
+            // "system" and the declared pair whether listed or not.
+            $"al=(r.getAttribute('{themeAvailable}')||'').trim().split(/\\s+/)," +
+            "av=function(v){return !al[0]||v==='system'||v===dl||v===dd||al.indexOf(v)>=0;}," +
+            "s=g(k,ck)," +
             // What is stored beside the preference: the pair the visitor switched to (Theme.setPair),
-            // when it is not the declared one, or which of the declared pair the preference is (sc).
-            $"p=(g('{pairStorageKey}','{pairCookieName}')||'').split(' '),rp=p.length===2&&!!p[0]&&!!p[1]&&!(p[0]===lt&&p[1]===dk)," +
-            "sc=p.length===1&&(p[0]==='light'||p[0]==='dark')?p[0]:null," +
+            // when it is not the declared one and is offered, or which of the declared pair the
+            // preference is (sc) - read off a stored pair set aside too, as Theme.init does.
+            $"p=(g('{pairStorageKey}','{pairCookieName}')||'').split(' '),ps=p.length===2&&!!p[0]&&!!p[1]," +
+            "rp=ps&&!(p[0]===lt&&p[1]===dk)&&av(p[0])&&av(p[1])," +
+            "sc=p.length===1&&(p[0]==='light'||p[0]==='dark')?p[0]:ps&&!rp?(s===p[1]?'dark':s===p[0]?'light':null):null," +
             // Theme.fitToPair: a theme outside the pair becomes the pair's theme of its scheme.
             "f=function(v){return v==='system'||v===lt||v===dk?v:/dark$/.test(v)?dk:/light$/.test(v)?lt:v;};" +
             "if(rp){lt=p[0];dk=p[1];}" +
@@ -367,8 +428,9 @@ public static class BitThemeSsr
             $"var base=r.getAttribute('{theme}')||r.getAttribute('{themeDefault}')||lt;" +
             $"if(r.hasAttribute('{themeSystem}')){{base=m?dk:lt;}}else if(rp){{base=f(base);}}" +
             // A preference stored as the light or dark theme of the declared pair follows that pair (the
-            // app may have switched presets since); any other is applied as it is.
-            "var cur=base,s=g(k,ck);if(s){cur=s!=='system'&&sc?(sc==='dark'?dk:lt):s;}" +
+            // app may have switched presets since), and so does one the page no longer offers, by its
+            // name's "dark" ending; any other is applied as it is.
+            "var cur=base;if(s){cur=s==='system'?s:sc?(sc==='dark'?dk:lt):s===lt||s===dk||av(s)?s:/dark$/.test(s)?dk:lt;}" +
             "if(cur==='system'){cur=m?dk:lt;}" +
             $"r.setAttribute('{theme}',cur);}})();";
     }

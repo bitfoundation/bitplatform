@@ -85,6 +85,13 @@ public partial class BitThemeHead : ComponentBase
     [Parameter] public string? PersistedThemePair { get; set; }
 
     /// <summary>
+    /// The themes the page ships stylesheets for, the same names handed to
+    /// <see cref="BitThemeSsrOptions.AvailableThemes"/>: a stored pair or preference outside them falls
+    /// back to the declared pair, as it does there, so the tag is painted for the theme the document is.
+    /// </summary>
+    [Parameter] public IEnumerable<string>? AvailableThemes { get; set; }
+
+    /// <summary>
     /// Theme name to browser-chrome color, as CSS colors. Defaults to
     /// <see cref="BitThemeSurfaces.BackgroundPrimary"/> - the page background of every registered
     /// preset, packaged or the app's own (the remarks on this type say how to narrow it). An app
@@ -127,6 +134,7 @@ public partial class BitThemeHead : ComponentBase
             LightTheme = LightTheme,
             DarkTheme = DarkTheme,
             PersistedThemePair = PersistedThemePair,
+            AvailableThemes = AvailableThemes,
         }).TryGetValue(BitThemeAttributeNames.Theme, out var theme)
         ? theme as string
         : null;
@@ -148,7 +156,8 @@ public partial class BitThemeHead : ComponentBase
 
     protected override void OnParametersSet()
     {
-        _pair = BitThemeSsr.ResolveThemePair(LightTheme, DarkTheme, PersistedThemePair);
+        _pair = BitThemeSsr.ResolveThemePair(LightTheme, DarkTheme, PersistedThemePair,
+            PersistedPreference, BitThemeSsr.NormalizeAvailableThemes(AvailableThemes));
 
         base.OnParametersSet();
     }

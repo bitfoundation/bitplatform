@@ -8,7 +8,8 @@
 /// <param name="Dark">The normalized dark theme.</param>
 /// <param name="IsPersisted">Whether it is the visitor's stored pair rather than the one the page declares.</param>
 /// <param name="StoredScheme">
-/// <c>light</c> / <c>dark</c> when the stored preference is that theme of the declared pair, so it follows the
-/// pair; <see langword="null"/> otherwise, and always alongside a stored pair.
+/// <c>light</c> / <c>dark</c> when the stored preference is that theme of the declared pair, or of a stored pair
+/// set aside (one the page declares itself, or no longer offers), so it follows the declared pair;
+/// <see langword="null"/> otherwise, and always alongside a stored pair in use.
 /// </param>
 internal readonly record struct BitThemeSsrPair(string Light, string Dark, bool IsPersisted, string? StoredScheme);

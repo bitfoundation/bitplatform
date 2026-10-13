@@ -15,6 +15,8 @@ public class BitThemePairBrowserTests : PerformanceTestBase
 {
     private const string Fluent2 = "light=fluent2-light&dark=fluent2-dark";
     private const string Material = "light=material-light&dark=material-dark";
+    // What a page that ships Material alone lists in bit-theme-available.
+    private const string MaterialOnly = "material-light,material-dark";
 
     [TestMethod]
     public async Task SetPair_WhileFollowingTheOs_KeepsFollowingIt()
@@ -166,6 +168,64 @@ public class BitThemePairBrowserTests : PerformanceTestBase
 
         StringAssert.Contains(html, "bit-theme=\"material-dark\"");
         await AssertTheme("material-dark");
+    }
+
+    [TestMethod]
+    public async Task SavedThemeOfAPresetThePageNoLongerOffers_IsMovedOntoThePair()
+    {
+        // #13686, a theme saved before the scheme marker existed: nothing says it was of the old pair, but the
+        // page lists what it ships, and Fluent 2 is not among it any more.
+        await Open($"persist=1&{Fluent2}&default=fluent2-light");
+        await Page.EvaluateAsync("localStorage.setItem('bit-current-theme', 'fluent2-dark'); localStorage.removeItem('bit-theme-pair')");
+
+        await Open($"persist=1&{Material}&default=material-light&available={MaterialOnly}");
+
+        await AssertTheme("material-dark");
+        Assert.AreEqual("material-dark", await Stored("bit-current-theme"));
+        Assert.AreEqual("dark", await Stored("bit-theme-pair"));
+    }
+
+    [TestMethod]
+    public async Task SavedThemeOfAPresetThePageStillOffers_IsKept()
+    {
+        await Open($"persist=1&{Fluent2}&default=fluent2-light");
+        await Page.EvaluateAsync("localStorage.setItem('bit-current-theme', 'material-dark'); localStorage.removeItem('bit-theme-pair')");
+
+        await Open($"persist=1&{Fluent2}&default=fluent2-light&available={MaterialOnly}");
+
+        await AssertTheme("material-dark");
+        Assert.AreEqual("material-dark", await Stored("bit-current-theme"));
+    }
+
+    [TestMethod]
+    public async Task SavedThemeOfAPresetThePageNoLongerOffers_IsMovedOntoThePair_ByTheServerToo()
+    {
+        await Open($"cookie=1&{Fluent2}&default=fluent2-light");
+        await Page.EvaluateAsync("document.cookie = 'bit-theme-preference=fluent2-dark; path=/'; document.cookie = 'bit-theme-pair=; path=/; max-age=0'");
+        var url = $"/regression/theme-host?cookie=1&{Material}&default=material-light&available={MaterialOnly}";
+
+        // What the server renders from the old cookie alone, before any script of the new page has rewritten it.
+        var html = await Page.EvaluateAsync<string>("u => fetch(u).then(r => r.text())", url);
+        StringAssert.Contains(html, "bit-theme=\"material-dark\"");
+
+        await Page.GotoAsync($"{BaseUrl}{url}");
+        await AssertTheme("material-dark");
+    }
+
+    [TestMethod]
+    public async Task AStoredPairThePageNoLongerOffers_IsSetAside()
+    {
+        // The visitor picked Cupertino, and the app has since stopped shipping it.
+        await Open($"persist=1&{Fluent2}&default=fluent2-light");
+        await Page.EvaluateAsync("BitBlazorUI.Theme.set('fluent2-dark')");
+        await SetPair("cupertino-light", "cupertino-dark");
+
+        await Open($"persist=1&{Fluent2}&default=fluent2-light&available={MaterialOnly}");
+
+        await AssertTheme("fluent2-dark");
+        await Expect(Page.Locator("html")).ToHaveAttributeAsync("bit-theme-dark", "fluent2-dark");
+        Assert.AreEqual("fluent2-dark", await Stored("bit-current-theme"));
+        Assert.AreEqual("dark", await Stored("bit-theme-pair"));
     }
 
     [TestMethod]

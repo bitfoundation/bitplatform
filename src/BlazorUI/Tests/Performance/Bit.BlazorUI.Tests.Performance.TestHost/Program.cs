@@ -54,7 +54,7 @@ app.MapGet("/api/gc-info", () =>
 // A host page with nothing but the theme setup (BitThemePairBrowserTests): the
 // root attributes the server resolves from this request's cookies, the first-paint script, and the library
 // script that self-initializes from them - no Blazor, so a reload is a plain first paint. The query states the
-// page's setup: default, light, dark, persist=1, cookie=1.
+// page's setup: default, light, dark, persist=1, cookie=1, available (comma-separated).
 app.MapGet("/regression/theme-host", (HttpContext context) =>
 {
     var query = context.Request.Query;
@@ -66,6 +66,7 @@ app.MapGet("/regression/theme-host", (HttpContext context) =>
         Persist = query["persist"] == "1",
         PersistCookie = query["cookie"] == "1",
         PersistedThemePair = context.Request.Cookies[BitThemeCookie.PairCookieName],
+        AvailableThemes = ((string?)query["available"])?.Split(','),
     };
     var attributes = BitThemeSsr.BuildRootThemeAttributes(context.Request.Cookies[BitThemeCookie.PreferenceCookieName], options);
 

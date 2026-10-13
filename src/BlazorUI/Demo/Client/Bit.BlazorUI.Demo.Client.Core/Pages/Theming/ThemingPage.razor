@@ -159,7 +159,7 @@
 
                 <ol>
                     <li>
-                        <code>bit-theme-light</code> / <code>bit-theme-dark</code> &nbsp;&rarr;&nbsp; the light / dark pair (default <code>light</code> / <code>dark</code>). A pair the visitor switched to at runtime and that was stored (see below) takes its place.
+                        <code>bit-theme-light</code> / <code>bit-theme-dark</code> &nbsp;&rarr;&nbsp; the light / dark pair (default <code>light</code> / <code>dark</code>). A pair the visitor switched to at runtime and that was stored (see below) takes its place, unless <code>bit-theme-available</code> leaves one of its themes out.
                     </li>
                     <li>
                         <code>bit-theme</code> / <code>bit-theme-default</code> &nbsp;&rarr;&nbsp; the base preset (<code>bit-theme</code> wins over <code>bit-theme-default</code> when both are present). Under a stored pair, a light or dark base becomes that pair's theme of the same scheme.
@@ -168,7 +168,7 @@
                         <code>bit-theme-system</code> (or a base value of <code>system</code>) &nbsp;&rarr;&nbsp; overrides the base preset with the OS choice, resolved from <code>prefers-color-scheme</code> using the pair.
                     </li>
                     <li>
-                        <code>bit-theme-persist</code> / <code>bit-theme-persist-cookie</code> &nbsp;&rarr;&nbsp; a stored preference overrides both. A concrete stored preset also stops the OS-following; a stored <code>system</code> keeps following and resolves like step 3. A stored preset that was the light or dark theme of the page's pair is restored as the pair's theme of the same scheme, so the visitor keeps their light or dark choice when the app switches presets; any other stored preset is restored as it is.
+                        <code>bit-theme-persist</code> / <code>bit-theme-persist-cookie</code> &nbsp;&rarr;&nbsp; a stored preference overrides both. A concrete stored preset also stops the OS-following; a stored <code>system</code> keeps following and resolves like step 3. A stored preset that was the light or dark theme of the page's pair is restored as the pair's theme of the same scheme, so the visitor keeps their light or dark choice when the app switches presets, and so is one that <code>bit-theme-available</code> leaves out, by its name's <code>dark</code> ending; any other stored preset is restored as it is.
                     </li>
                 </ol>
             </DocSection>
@@ -194,6 +194,18 @@ await BitThemeManager.SetThemePairAsync(BitThemePresets.MaterialLight, BitThemeP
 
                 <BitText>
                     <b>A saved theme the pair no longer covers.</b> When the visitor pins the light or dark theme of the page's pair (the toggle does), <code>bit-theme-pair</code> holds <code>light</code> / <code>dark</code> beside it. So when an app later changes the pair its page declares (a rebrand from Fluent 2 to Material, say), a returning visitor's stored <code>fluent2-dark</code> is restored as <code>material-dark</code>, and stored that way. Any other stored theme is applied as it is: one the app pinned outside the pair with <code>SetThemeAsync</code> (<code>high-contrast</code>, or another design system's theme) is a choice of its own, and so is one stored before this marker existed - a design system picked with an earlier <code>BitThemeSwitcher</code> stays picked. An app that lets its users pick between presets should still switch the pair with <code>SetThemePairAsync</code> rather than set one theme of it, so the toggle and the OS resolve within the pick.
+                </BitText>
+
+                <BitText>
+                    <b>A saved theme the page no longer ships.</b> Nothing in storage tells a theme from a preset the app has since dropped apart from one the visitor picked on purpose, so an app that drops a preset says which themes it still ships, on <code>&lt;html&gt;</code> or as <code>BitThemeSsrOptions.AvailableThemes</code>:
+                </BitText>
+
+                <CodeBox Language="html">&lt;html bit-theme-light="material-light"
+      bit-theme-dark="material-dark"
+      bit-theme-available="material-light material-dark high-contrast"&gt;...&lt;/html&gt;</CodeBox>
+
+                <BitText>
+                    A stored pair naming a theme outside the list is set aside for the declared pair, and a stored theme outside it - one saved before the marker existed included, such as a <code>fluent2-dark</code> after the app moved to Material - goes to the active pair's theme of its scheme: a name ending in <code>dark</code> to the dark one, any other to the light one. Either is then stored that way. The declared pair and <code>system</code> count as shipped whether listed or not, and without the attribute every stored theme is restored as it is. The first-paint script and the server resolve it the same way, so <code>BitThemeHead</code> takes the same <code>AvailableThemes</code>.
                 </BitText>
             </DocSection>
         </DocSection>
@@ -1763,6 +1775,8 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
         DarkTheme = BitThemePresets.Fluent2Dark,
         // The pair a visitor switched to (SetThemePairAsync / BitThemeSwitcher), if any.
         PersistedThemePair = HttpContext.Request.Cookies[BitThemeCookie.PairCookieName],
+        // The themes this page ships; a saved theme of any other falls back to the pair.
+        AvailableThemes = [BitThemePresets.Fluent2Light, BitThemePresets.Fluent2Dark],
     };
 }
 
@@ -1773,6 +1787,7 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
                   LightTheme="@@themeOptions.LightTheme"
                   DarkTheme="@@themeOptions.DarkTheme"
                   PersistedThemePair="@@themeOptions.PersistedThemePair"
+                  AvailableThemes="@@themeOptions.AvailableThemes"
                   ThemeColors="@@BitThemeSurfaces.BackgroundSecondary" /&gt;
     ...</CodeBox>
 
