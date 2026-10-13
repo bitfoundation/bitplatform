@@ -49,6 +49,37 @@
         // description is announced as the description it is (aria-describedby) rather than as part of the
         // name, and a rail item has no visible text left to be named after at all.
         var ariaLabel = Nav.GetAriaLabel(Item) ?? ((isChevronInteractive || hasDescription || Nav.IconOnly) ? text : null);
+        // The end of an item holds its suffix template and its badge (or its dot), after the default content or a
+        // template rendered in its place, so an item marked with a count keeps its icon, its text and its states.
+        // Only an item that renders its own anchor (or button) has one: a group header, a separator and a template
+        // that replaces the item render none, and the rail keeps the badge alone, pinned to the icon.
+        var replacingTemplate = template is not null && templateRenderMode is BitNavItemTemplateRenderMode.Replace ? template
+                              : Nav.ItemTemplate is not null && Nav.ItemTemplateRenderMode is BitNavItemTemplateRenderMode.Replace ? Nav.ItemTemplate
+                              : null;
+        var hasEnd = isGroupHeader is false && isSeparator is false && replacingTemplate is null;
+        var badge = hasEnd ? Nav.GetBadge(Item) : null;
+        var dot = hasEnd && badge.HasNoValue() && Nav.GetDot(Item);
+        var suffixTemplate = hasEnd && Nav.IconOnly is false ? (Nav.GetSuffixTemplate(Item) ?? Nav.ItemSuffixTemplate) : null;
+        // A badge is hidden from assistive technologies where it is drawn, so a count that only exists as a colored
+        // bubble is folded into the name of the item instead: appended to its aria-label when it is named through one,
+        // and read out of a visually hidden copy after the content otherwise, which names it - whatever a template
+        // renders there. A dot carries no text of its own, so it is only announced when it was given a description.
+        var badgeLabel = (badge.HasValue() || dot) ? (Nav.GetBadgeAriaLabel(Item) ?? badge) : null;
+        string? badgeHint = null;
+        if (badgeLabel.HasValue())
+        {
+            if (ariaLabel is not null)
+            {
+                ariaLabel = $"{ariaLabel} ({badgeLabel})";
+            }
+            else
+            {
+                badgeHint = $" ({badgeLabel})";
+            }
+        }
+        var hasSuffix = suffixTemplate is not null || badge.HasValue() || dot;
+        // The rail pins its badge to the corner of the item, which the item says with a class of its own.
+        var cornerBadgeClass = hasSuffix && Nav.IconOnly ? "bit-nav-icb" : null;
         // A collapsed branch that holds the selected item borrows its look, so the way to the current page
         // stays visible while the branch leading to it is closed.
         var isSelectedAncestor = isSelected is false && childItems.Any() && isExpanded is false && Nav.HasSelectedDescendant(Item);
@@ -214,13 +245,9 @@
             var chevronStyle = $"min-width:{Nav.IndentPadding}px;{Nav.Styles?.ToggleButton}";
 
 
-            @if (template is not null && templateRenderMode is BitNavItemTemplateRenderMode.Replace)
+            @if (replacingTemplate is not null)
             {
-                @template(Item)
-            }
-            else if (Nav.ItemTemplate is not null && Nav.ItemTemplateRenderMode is BitNavItemTemplateRenderMode.Replace)
-            {
-                @Nav.ItemTemplate(Item)
+                @replacingTemplate(Item)
             }
             else
             {
@@ -277,7 +304,7 @@
                             </span>
                         }
                         <div style="@GetItemStyles()"
-                             class="bit-nav-itm @GetItemClasses()">
+                             class="bit-nav-itm @cornerBadgeClass @GetItemClasses()">
                             @if (template is not null)
                             {
                                 @template(Item)
@@ -293,6 +320,29 @@
                                     <i style="@Nav.Styles?.ItemIcon" class="bit-nav-iic @icon.GetCssClasses() @Nav.Classes?.ItemIcon" aria-hidden="true" />
                                 }
                                 <span style="@Nav.Styles?.ItemText" class="bit-nav-itx @Nav.Classes?.ItemText">@text</span>
+                            }
+                            @if (hasSuffix)
+                            {
+                                @* The end of the item follows its content inside the item itself, so it keeps to the far
+                                   end of the row whichever side the chevron is on, and is drawn in the item's colors. *@
+                                <span style="@Nav.Styles?.ItemSuffix" class="bit-nav-sfx @Nav.Classes?.ItemSuffix">
+                                    @if (suffixTemplate is not null)
+                                    {
+                                        @suffixTemplate(Item)
+                                    }
+                                    @if (badge.HasValue())
+                                    {
+                                        <span aria-hidden="true" style="@Nav.Styles?.ItemBadge" class="bit-nav-bdg @Nav.Classes?.ItemBadge">@badge</span>
+                                    }
+                                    else if (dot)
+                                    {
+                                        <span aria-hidden="true" style="@Nav.Styles?.ItemBadge" class="bit-nav-bdg bit-nav-bdt @Nav.Classes?.ItemBadge"></span>
+                                    }
+                                    @if (badgeHint is not null)
+                                    {
+                                        <span class="bit-nav-vhd">@badgeHint</span>
+                                    }
+                                </span>
                             }
                         </div>
                     </div>

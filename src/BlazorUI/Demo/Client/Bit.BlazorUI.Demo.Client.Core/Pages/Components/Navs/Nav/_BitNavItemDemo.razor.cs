@@ -366,6 +366,21 @@ public partial class _BitNavItemDemo
         new() { Text = "Settings", IconName = BitIconName.Settings },
     ];
 
+    private static readonly List<BitNavItem> badgeNavItems =
+    [
+        new() { Text = "Inbox", IconName = BitIconName.Inbox, Badge = "12", BadgeAriaLabel = "12 unread" },
+        new() { Text = "Drafts", IconName = BitIconName.EditMail, Badge = "New" },
+        new() { Text = "Sent", IconName = BitIconName.Send, Dot = true, BadgeAriaLabel = "failed to send" },
+        new() { Text = "Archive", IconName = BitIconName.Archive },
+    ];
+
+    private static readonly List<BitNavItem> suffixNavItems =
+    [
+        new() { Text = "Inbox", IconName = BitIconName.Inbox, Badge = "12", Data = "Ctrl+I" },
+        new() { Text = "Drafts", IconName = BitIconName.EditMail, Data = "Ctrl+D" },
+        new() { Text = "Sent", IconName = BitIconName.Send, Data = "Ctrl+S" },
+    ];
+
     private static readonly List<BitNavItem> sizeNavItems =
     [
         new() { Text = "Home", IconName = BitIconName.Home, Description = "The main page" },

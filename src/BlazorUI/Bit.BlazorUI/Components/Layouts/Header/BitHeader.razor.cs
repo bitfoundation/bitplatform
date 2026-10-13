@@ -443,7 +443,7 @@ public partial class BitHeader : BitComponentBase
     {
         // The script is disposed asynchronously, so a scroll of the very last frame can still land here
         // after the component is gone, where there is nothing left to re-render.
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         if (_hidden == hidden) return;
 
@@ -464,7 +464,7 @@ public partial class BitHeader : BitComponentBase
     [JSInvokable("OnScrollChange")]
     public async Task _OnScrollChange(bool scrolled)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         if (_scrolled == scrolled) return;
 

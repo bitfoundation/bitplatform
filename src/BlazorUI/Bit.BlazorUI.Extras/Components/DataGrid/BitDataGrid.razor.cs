@@ -893,6 +893,10 @@ public partial class BitDataGrid<TItem> : BitComponentBase
 
     internal void RemoveColumn(BitDataGridColumn<TItem> column)
     {
+        // The columns unregister while they are being disposed, which also happens when the grid goes away with
+        // them: dropping the descriptors they held would refresh, and in server mode re-query, a grid that is gone.
+        if (IsDisposing) return;
+
         // Remove by the key the column is actually registered under: a column whose ColumnId/Field
         // changed after registration is re-keyed via UpdateColumnRegistration, but guard against any
         // stale key by also matching on the column instance.

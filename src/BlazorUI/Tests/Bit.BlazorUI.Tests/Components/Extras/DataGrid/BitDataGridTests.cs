@@ -3836,4 +3836,33 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual("Price", editor.GetAttribute("aria-label"));
         Assert.AreEqual("2.5", editor.GetAttribute("value"));
     }
+
+    [TestMethod]
+    public async Task ServerGridShouldNotReadAgainWhileItIsDisposedTogetherWithItsSortedColumn()
+    {
+        var component = RenderComponent<BitDataGridTeardownTest>();
+
+        await component.InvokeAsync(() => component.Instance.Grid!.SortByAsync("Name", BitDataGridSortDirection.Ascending));
+
+        var reads = component.Instance.Reads;
+
+        component.Render(parameters => parameters.Add(p => p.Show, false));
+
+        Assert.AreEqual(reads, component.Instance.Reads);
+    }
+
+    [TestMethod]
+    public async Task ServerGridShouldStillReadAgainWhenTheSortedColumnIsRemovedFromAGridThatStays()
+    {
+        var component = RenderComponent<BitDataGridTeardownTest>();
+
+        await component.InvokeAsync(() => component.Instance.Grid!.SortByAsync("Name", BitDataGridSortDirection.Ascending));
+
+        var reads = component.Instance.Reads;
+
+        component.Render(parameters => parameters.Add(p => p.ShowName, false));
+
+        component.WaitForAssertion(() => Assert.AreEqual(reads + 1, component.Instance.Reads));
+        Assert.AreEqual(0, component.Instance.Grid!.ActiveSorts.Count);
+    }
 }

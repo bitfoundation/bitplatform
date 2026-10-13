@@ -28,6 +28,16 @@ public class BitNavTests : BunitTestContext
         public List<NavRecord> Nodes { get; set; } = [];
     }
 
+    // A custom item type whose badge, dot and suffix are found through renamed members and selectors.
+    private class NavBadgeRecord
+    {
+        public string? Label { get; set; }
+        public string? Counter { get; set; }
+        public string? CounterLabel { get; set; }
+        public bool Marker { get; set; }
+        public RenderFragment<NavBadgeRecord>? End { get; set; }
+    }
+
     // A custom item type whose members carry the names BitNavItem uses, so the default (name based)
     // selectors find them without any mapping beyond handing the nav a NameSelectors instance.
     private class NavConventionItem
@@ -2744,6 +2754,352 @@ public class BitNavTests : BunitTestContext
 
         Assert.AreEqual(2, component.FindAll(".custom-header").Count);
         Assert.AreEqual(0, component.FindAll(".bit-nav-gcb").Count);
+    }
+
+    #endregion
+
+    #region badges and suffix
+
+    [TestMethod]
+    public void BitNavShouldRenderTheBadgeOfAnItemAfterItsDefaultContent()
+    {
+        var items = BasicItems();
+        items[1].IconName = "Mail";
+        items[1].Badge = "12";
+
+        var component = RenderNav(items);
+
+        var item = component.FindAll(".bit-nav-itm")[1];
+        var badge = item.QuerySelector(".bit-nav-sfx .bit-nav-bdg")!;
+
+        Assert.AreEqual("12", badge.TextContent);
+        // The badge is drawn after the icon and the text the item keeps, and hidden where it is drawn.
+        Assert.AreEqual("true", badge.GetAttribute("aria-hidden"));
+        Assert.IsNotNull(item.QuerySelector(".bit-nav-iic"));
+        Assert.AreEqual("Products", item.QuerySelector(".bit-nav-itx")!.TextContent);
+        Assert.IsTrue(item.LastElementChild!.ClassList.Contains("bit-nav-sfx"));
+        Assert.AreEqual(1, component.FindAll(".bit-nav-bdg").Count);
+    }
+
+    [TestMethod]
+    public void BitNavShouldNotRenderTheEndOfAnItemWithNothingToShowThere()
+    {
+        var component = RenderNav(BasicItems());
+
+        Assert.AreEqual(0, component.FindAll(".bit-nav-sfx").Count);
+    }
+
+    [TestMethod]
+    public void BitNavShouldRenderTheDotOfAnItem()
+    {
+        var items = BasicItems();
+        items[1].Dot = true;
+
+        var component = RenderNav(items);
+
+        var dot = component.Find(".bit-nav-bdg");
+
+        Assert.IsTrue(dot.ClassList.Contains("bit-nav-bdt"));
+        Assert.AreEqual(string.Empty, dot.TextContent);
+        Assert.AreEqual("true", dot.GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitNavBadgeShouldWinOverTheDot()
+    {
+        var items = BasicItems();
+        items[1].Badge = "3";
+        items[1].Dot = true;
+
+        var component = RenderNav(items);
+
+        var badge = component.Find(".bit-nav-bdg");
+
+        Assert.AreEqual("3", badge.TextContent);
+        Assert.IsFalse(badge.ClassList.Contains("bit-nav-bdt"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldKeepTheBadgeOfAnItemAfterItsTemplateInTheNormalMode()
+    {
+        var items = BasicItems();
+        items[1].Badge = "New";
+
+        var component = RenderNav(items, p =>
+            p.Add(c => c.ItemTemplate, (BitNavItem item) => builder => builder.AddMarkupContent(0, $"<span class='custom'>{item.Text}</span>")));
+
+        var item = component.FindAll(".bit-nav-itm")[1];
+
+        Assert.IsNotNull(item.QuerySelector(".custom"));
+        Assert.AreEqual("New", item.QuerySelector(".bit-nav-sfx .bit-nav-bdg")!.TextContent);
+    }
+
+    [TestMethod]
+    public void BitNavShouldNotRenderTheBadgeOfAnItemItsTemplateReplaced()
+    {
+        var items = BasicItems();
+        items[1].Badge = "New";
+        items[1].Template = item => builder => builder.AddMarkupContent(0, $"<span class='own'>{item.Text}</span>");
+        items[1].TemplateRenderMode = BitNavItemTemplateRenderMode.Replace;
+
+        var component = RenderNav(items);
+
+        Assert.AreEqual(1, component.FindAll(".own").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-nav-sfx").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-nav-vhd").Count);
+    }
+
+    [TestMethod]
+    public void BitNavShouldNotRenderTheBadgeOfAGroupHeader()
+    {
+        var items = TreeItems();
+        items[0].Badge = "2";
+        items[0].ChildItems[0].Badge = "5";
+
+        var component = RenderNav(items, p =>
+        {
+            p.Add(c => c.RenderType, BitNavRenderType.Grouped);
+            p.Add(c => c.AllExpanded, true);
+        });
+
+        // Only the item inside the group renders its badge; the header of the group does not.
+        Assert.AreEqual(0, component.FindAll(".bit-nav-gcb .bit-nav-bdg").Count);
+        Assert.AreEqual("5", component.Find(".bit-nav-ict .bit-nav-bdg").TextContent);
+    }
+
+    [TestMethod]
+    public void BitNavShouldFoldTheBadgeIntoTheNameOfItsItem()
+    {
+        var items = BasicItems();
+        items[1].Badge = "12";
+
+        var component = RenderNav(items);
+
+        var container = component.FindAll(".bit-nav-ict")[1];
+
+        // An item named by its content is named by a visually hidden copy of the badge after it.
+        Assert.IsNull(container.GetAttribute("aria-label"));
+        Assert.AreEqual("(12)", container.QuerySelector(".bit-nav-sfx .bit-nav-vhd")!.TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitNavShouldLetTheBadgeAriaLabelOfAnItemWinOverItsBadge()
+    {
+        var items = BasicItems();
+        items[1].Badge = "12";
+        items[1].BadgeAriaLabel = "12 unread messages";
+
+        var component = RenderNav(items);
+
+        Assert.AreEqual("(12 unread messages)", component.Find(".bit-nav-sfx .bit-nav-vhd").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitNavShouldAnnounceADotOnlyWithABadgeAriaLabel()
+    {
+        var items = BasicItems();
+        items[1].Dot = true;
+
+        var component = RenderNav(items);
+
+        Assert.AreEqual(0, component.FindAll(".bit-nav-vhd").Count);
+
+        var labeled = BasicItems();
+        labeled[1].Dot = true;
+        labeled[1].BadgeAriaLabel = "needs attention";
+
+        component = RenderNav(labeled);
+
+        Assert.AreEqual("(needs attention)", component.Find(".bit-nav-sfx .bit-nav-vhd").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitNavShouldNotAnnounceABadgeAriaLabelWithoutABadgeOrADot()
+    {
+        var items = BasicItems();
+        items[1].BadgeAriaLabel = "needs attention";
+
+        var component = RenderNav(items);
+
+        Assert.AreEqual(0, component.FindAll(".bit-nav-sfx").Count);
+        Assert.IsNull(component.FindAll(".bit-nav-ict")[1].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldFoldTheBadgeIntoTheExplicitAriaLabelOfAnItem()
+    {
+        var items = BasicItems();
+        items[1].Badge = "12";
+        items[1].AriaLabel = "Messages";
+
+        var component = RenderNav(items);
+
+        var container = component.FindAll(".bit-nav-ict")[1];
+
+        Assert.AreEqual("Messages (12)", container.GetAttribute("aria-label"));
+        Assert.IsNull(container.QuerySelector(".bit-nav-vhd"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldFoldTheBadgeIntoTheNameOfAnItemDescribedByItsDescription()
+    {
+        var items = BasicItems();
+        items[1].Badge = "12";
+        items[1].Description = "All products";
+
+        var component = RenderNav(items);
+
+        Assert.AreEqual("Products (12)", component.FindAll(".bit-nav-ict")[1].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldPutTheNewTabHintAfterTheBadgeInTheNameOfAnItem()
+    {
+        var items = BasicItems();
+        items[1].Badge = "12";
+        items[1].AriaLabel = "Messages";
+        items[1].Target = "_blank";
+
+        var component = RenderNav(items);
+
+        Assert.AreEqual("Messages (12) (opens in a new tab)", component.FindAll(".bit-nav-ict")[1].GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldKeepTheBadgeAloneInTheIconOnlyMode()
+    {
+        var items = BasicItems();
+        items[1].IconName = "Mail";
+        items[1].Badge = "12";
+
+        var component = RenderNav(items, p =>
+        {
+            p.Add(c => c.IconOnly, true);
+            p.Add(c => c.ItemSuffixTemplate, (BitNavItem item) => builder => builder.AddMarkupContent(0, "<span class='suffix'>x</span>"));
+        });
+
+        var container = component.FindAll(".bit-nav-ict")[1];
+
+        // The rail has no room for a suffix, so it keeps the badge alone, folded into the name the rail gives the item.
+        Assert.AreEqual("12", container.QuerySelector(".bit-nav-bdg")!.TextContent);
+        Assert.AreEqual(0, component.FindAll(".suffix").Count);
+        Assert.AreEqual("Products (12)", container.GetAttribute("aria-label"));
+        Assert.AreEqual(1, component.FindAll(".bit-nav-sfx").Count);
+        // The item that pins the badge to its corner says so itself, so the rule never reaches a nav inside a template.
+        Assert.IsTrue(container.QuerySelector(".bit-nav-itm")!.ClassList.Contains("bit-nav-icb"));
+        Assert.AreEqual(1, component.FindAll(".bit-nav-icb").Count);
+    }
+
+    [TestMethod]
+    public void BitNavShouldRenderTheItemSuffixTemplateAheadOfTheBadge()
+    {
+        var items = BasicItems();
+        items[1].Badge = "12";
+
+        var component = RenderNav(items, p =>
+            p.Add(c => c.ItemSuffixTemplate, (BitNavItem item) => builder => builder.AddMarkupContent(0, $"<span class='suffix'>{item.Text}</span>")));
+
+        var suffixes = component.FindAll(".bit-nav-sfx");
+
+        Assert.AreEqual(3, suffixes.Count);
+        // The item keeps its default content, and the template is drawn before the badge.
+        Assert.AreEqual(3, component.FindAll(".bit-nav-itx").Count);
+        Assert.AreEqual("suffix", suffixes[1].Children[0].ClassName);
+        Assert.IsTrue(suffixes[1].Children[1].ClassList.Contains("bit-nav-bdg"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldLetTheSuffixTemplateOfAnItemWinOverTheItemSuffixTemplate()
+    {
+        var items = BasicItems();
+        items[0].SuffixTemplate = item => builder => builder.AddMarkupContent(0, "<span class='own'>1</span>");
+
+        var component = RenderNav(items, p =>
+            p.Add(c => c.ItemSuffixTemplate, (BitNavItem item) => builder => builder.AddMarkupContent(0, "<span class='shared'>2</span>")));
+
+        Assert.AreEqual(1, component.FindAll(".bit-nav-sfx .own").Count);
+        Assert.AreEqual(2, component.FindAll(".bit-nav-sfx .shared").Count);
+    }
+
+    [TestMethod]
+    public void BitNavShouldApplyTheClassesAndStylesOfTheBadgeAndTheSuffix()
+    {
+        var items = BasicItems();
+        items[0].Badge = "1";
+        items[1].Dot = true;
+
+        var component = RenderNav(items, p =>
+        {
+            p.Add(c => c.Classes, new() { ItemBadge = "badge-class", ItemSuffix = "suffix-class" });
+            p.Add(c => c.Styles, new() { ItemBadge = "color: red", ItemSuffix = "gap: 0" });
+        });
+
+        var badges = component.FindAll(".bit-nav-bdg");
+
+        Assert.AreEqual(2, badges.Count);
+        Assert.IsTrue(badges.All(b => b.ClassList.Contains("badge-class") && b.GetAttribute("style") == "color: red"));
+        Assert.IsTrue(component.FindAll(".bit-nav-sfx").All(s => s.ClassList.Contains("suffix-class") && s.GetAttribute("style") == "gap: 0"));
+    }
+
+    [TestMethod]
+    public void BitNavShouldReadTheBadgeOfACustomItemThroughTheNameSelectors()
+    {
+        var items = new List<NavBadgeRecord>
+        {
+            new() { Label = "Inbox", Counter = "4", CounterLabel = "4 unread" },
+            new() { Label = "Alerts", Marker = true },
+            new() { Label = "Drafts", End = item => builder => builder.AddMarkupContent(0, "<span class='end'>d</span>") },
+        };
+
+        var component = RenderComponent<BitNav<NavBadgeRecord>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.NameSelectors, new BitNavNameSelectors<NavBadgeRecord>
+            {
+                Text = { Name = nameof(NavBadgeRecord.Label) },
+                Badge = { Selector = i => i.Counter },
+                BadgeAriaLabel = { Selector = i => i.CounterLabel },
+                Dot = { Name = nameof(NavBadgeRecord.Marker) },
+                SuffixTemplate = { Name = nameof(NavBadgeRecord.End) },
+            });
+        });
+
+        var badges = component.FindAll(".bit-nav-bdg");
+
+        Assert.AreEqual(2, badges.Count);
+        Assert.AreEqual("4", badges[0].TextContent);
+        Assert.IsTrue(badges[1].ClassList.Contains("bit-nav-bdt"));
+        Assert.AreEqual("(4 unread)", component.Find(".bit-nav-vhd").TextContent.Trim());
+        Assert.AreEqual(1, component.FindAll(".bit-nav-sfx .end").Count);
+    }
+
+    [TestMethod]
+    public void BitNavOptionShouldRenderItsBadgeAndItsSuffixTemplate()
+    {
+        var component = RenderComponent<BitNav<BitNavOption>>(parameters =>
+        {
+            parameters.AddChildContent<BitNavOption>(o =>
+            {
+                o.Add(p => p.Text, "Inbox");
+                o.Add(p => p.Badge, "7");
+                o.Add(p => p.SuffixTemplate, (BitNavOption option) => builder => builder.AddMarkupContent(0, "<span class='end'>e</span>"));
+            });
+            parameters.AddChildContent<BitNavOption>(o =>
+            {
+                o.Add(p => p.Text, "Alerts");
+                o.Add(p => p.Dot, true);
+                o.Add(p => p.BadgeAriaLabel, "new alerts");
+            });
+        });
+
+        var badges = component.FindAll(".bit-nav-bdg");
+
+        Assert.AreEqual("7", badges[0].TextContent);
+        Assert.IsTrue(badges[1].ClassList.Contains("bit-nav-bdt"));
+        Assert.AreEqual(1, component.FindAll(".bit-nav-sfx .end").Count);
+        CollectionAssert.AreEqual(
+            new[] { "(7)", "(new alerts)" },
+            component.FindAll(".bit-nav-sfx .bit-nav-vhd").Select(e => e.TextContent.Trim()).ToArray());
     }
 
     #endregion

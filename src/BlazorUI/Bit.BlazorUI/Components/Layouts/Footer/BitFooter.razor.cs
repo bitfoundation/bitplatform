@@ -382,7 +382,7 @@ public partial class BitFooter : BitComponentBase
     {
         // The script is disposed asynchronously, so a scroll of the very last frame can still land here
         // after the component is gone, where there is nothing left to re-render.
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         if (_hidden == hidden) return;
 
@@ -403,7 +403,7 @@ public partial class BitFooter : BitComponentBase
     [JSInvokable("OnOverlapChange")]
     public async Task _OnOverlapChange(bool overlapping)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         if (_overlapping == overlapping) return;
 

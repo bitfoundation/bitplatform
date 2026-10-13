@@ -29,6 +29,7 @@ public class BitNavPanelParamsTests : BunitTestContext
         nameof(BitNavPanel<BitNavItem>.IsToggled),
         nameof(BitNavPanel<BitNavItem>.IsToggledChanged),
         nameof(BitNavPanel<BitNavItem>.Items),
+        nameof(BitNavPanel<BitNavItem>.ItemSuffixTemplate),
         nameof(BitNavPanel<BitNavItem>.ItemTemplate),
         nameof(BitNavPanel<BitNavItem>.NameSelectors),
         nameof(BitNavPanel<BitNavItem>.OnItemClick),

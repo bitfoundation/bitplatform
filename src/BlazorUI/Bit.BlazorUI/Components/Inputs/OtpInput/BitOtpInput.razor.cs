@@ -465,6 +465,8 @@ public partial class BitOtpInput : BitInputBase<string?>
     [JSInvokable("SetValue")]
     public async Task _SetValue(string value, int index)
     {
+        if (IsDisposing) return;
+
         if (Disabled || IsReadOnly || InvalidValueBinding()) return;
         if (value.HasNoValue()) return;
 
@@ -483,11 +485,11 @@ public partial class BitOtpInput : BitInputBase<string?>
 
         await FocusFirstEmptyInput(startIndex);
 
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         await CallOnFill();
 
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         // Unlike an event callback, a JSInvokable method does not re-render the component on its own,
         // so an uncontrolled component would keep showing the inputs it had before the paste.
@@ -497,6 +499,8 @@ public partial class BitOtpInput : BitInputBase<string?>
     [JSInvokable("ClearValue")]
     public async Task _ClearValue()
     {
+        if (IsDisposing) return;
+
         // Unlike the Clear of the consumer, a cut is the user editing the code, so it is refused by the
         // states that refuse a keystroke as well.
         if (Disabled || IsReadOnly) return;
@@ -505,7 +509,7 @@ public partial class BitOtpInput : BitInputBase<string?>
         // code on the clipboard by the time this is called, so all that is left of it is the clearing.
         await Clear();
 
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         // The whole code was taken out of the inputs at once, wherever the caret happened to be, so the
         // typing carries on at the start of an empty code rather than in the middle of one.

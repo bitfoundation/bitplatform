@@ -1443,6 +1443,10 @@ public class BitBreadcrumbTests : BunitTestContext
         // WebKit leaves the focus where it was on a click, and Escape is answered on the button.
         Assert.AreEqual("true", component.Find(".bit-brc-obt").GetAttribute("aria-expanded"));
         Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "Blazor._internal.domWrapper.focus") - before);
+
+        // A focus that scrolled the button into view would scroll a sticky header's container, and the
+        // scroll dismisses the menu the click just opened.
+        Assert.AreEqual(true, Context.JSInterop.Invocations.Last(i => i.Identifier == "Blazor._internal.domWrapper.focus").Arguments[1]);
     }
 
     [TestMethod]

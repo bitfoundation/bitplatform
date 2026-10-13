@@ -1827,6 +1827,10 @@ public class BitDropMenuTests : BunitTestContext
         // it sits on the trigger.
         Assert.AreEqual(1, CountInvocations("Blazor._internal.domWrapper.focus"));
         Assert.AreEqual(0, CountInvocations("BitBlazorUI.Utils.focusFirstElement"));
+
+        // A focus that scrolled the button into view would scroll a sticky header's container, and the
+        // scroll dismisses the callout the click just opened.
+        Assert.AreEqual(true, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Single().Arguments[1]);
     }
 
     [TestMethod]

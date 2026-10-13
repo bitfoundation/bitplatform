@@ -63,6 +63,50 @@ public partial class BitNav<TItem>
         return item.GetValueFromProperty<string?>(NameSelectors.AriaLabel.Name);
     }
 
+    internal string? GetBadge(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.Badge;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.Badge;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.Badge.Selector is not null)
+        {
+            return NameSelectors.Badge.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.Badge.Name);
+    }
+
+    internal string? GetBadgeAriaLabel(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.BadgeAriaLabel;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.BadgeAriaLabel;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.BadgeAriaLabel.Selector is not null)
+        {
+            return NameSelectors.BadgeAriaLabel.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<string?>(NameSelectors.BadgeAriaLabel.Name);
+    }
+
     internal string? GetClass(TItem item)
     {
         if (item is BitNavItem navItem)
@@ -171,6 +215,28 @@ public partial class BitNav<TItem>
         }
 
         return item.GetValueFromProperty<string?>(NameSelectors.Description.Name);
+    }
+
+    internal bool GetDot(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.Dot;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.Dot;
+        }
+
+        if (NameSelectors is null) return false;
+
+        if (NameSelectors.Dot.Selector is not null)
+        {
+            return NameSelectors.Dot.Selector!(item) ?? false;
+        }
+
+        return item.GetValueFromProperty(NameSelectors.Dot.Name, false);
     }
 
     internal string? GetExpandAriaLabel(TItem item)
@@ -408,6 +474,28 @@ public partial class BitNav<TItem>
         }
 
         return item.GetValueFromProperty<string?>(NameSelectors.Style.Name);
+    }
+
+    internal RenderFragment<TItem>? GetSuffixTemplate(TItem item)
+    {
+        if (item is BitNavItem navItem)
+        {
+            return navItem.SuffixTemplate as RenderFragment<TItem>;
+        }
+
+        if (item is BitNavOption navOption)
+        {
+            return navOption.SuffixTemplate as RenderFragment<TItem>;
+        }
+
+        if (NameSelectors is null) return null;
+
+        if (NameSelectors.SuffixTemplate.Selector is not null)
+        {
+            return NameSelectors.SuffixTemplate.Selector!(item);
+        }
+
+        return item.GetValueFromProperty<RenderFragment<TItem>?>(NameSelectors.SuffixTemplate.Name);
     }
 
     internal string? GetTarget(TItem item)

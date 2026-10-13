@@ -1219,7 +1219,7 @@ public partial class BitSnackBar : BitComponentBase
     [JSInvokable("SwipeDismissed")]
     public Task _SwipeDismissed(string id)
     {
-        if (IsDisposed || Guid.TryParse(id, out var itemId) is false) return Task.CompletedTask;
+        if (IsDisposing || Guid.TryParse(id, out var itemId) is false) return Task.CompletedTask;
 
         return InvokeAsync(async () =>
         {

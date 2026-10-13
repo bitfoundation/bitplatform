@@ -663,7 +663,7 @@ public partial class BitMessage : BitComponentBase
     [JSInvokable("OnOverflowChange")]
     public void _OnOverflowChange(bool isClipped)
     {
-        if (IsDisposed || _isClipped == isClipped) return;
+        if (IsDisposing || _isClipped == isClipped) return;
 
         _isClipped = isClipped;
 

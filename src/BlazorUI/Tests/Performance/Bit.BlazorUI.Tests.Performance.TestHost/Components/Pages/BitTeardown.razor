@@ -1,0 +1,428 @@
+﻿@page "/regression/teardown"
+
+<PageTitle>Teardown Regression</PageTitle>
+
+@* Every component that unregisters its parts while it is being disposed, or that is called back by its script, goes
+   away here with its parts, the way it does when the page hosting it is left - and does so while its disposal awaits
+   the real round trip to the script, the window the renderer disposes the parts in. Whatever the component raises
+   is written to the log, so a callback raised by the teardown (a selection moved off each part in turn, a re-read of
+   the server, a dismissal) shows up as an entry the unmount added. One component is rendered per ?part=, the remount
+   button brings it back to show the circuit survived, and remove-first takes the first part away from a component
+   that stays, where the component is expected to react as before. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>Teardown Regression (@Part)</h3>
+    <button id="btn-unmount" @onclick="() => _mounted = false">Unmount</button>
+    <button id="btn-remount" @onclick="Remount">Remount</button>
+    <button id="btn-remove-first" @onclick="() => _showFirst = false">Remove first</button>
+    <button id="btn-sort" @onclick="Sort">Sort</button>
+    <div id="metrics" style="font-family: monospace;">
+        <p>Mounted: <span id="mounted">@(_mounted ? "yes" : "no")</span> (<span id="generation">@_generation</span>)</p>
+        <p>Entries: <span id="count">@_log.Count</span></p>
+        <p>Reads: <span id="reads">@_reads</span></p>
+        <p>Log: <span id="log">@string.Join("|", _log)</span></p>
+        <p>Status: <span id="status">@_status</span></p>
+    </div>
+</div>
+
+@if (_mounted)
+{
+    <div id="part" @key="_generation" style="padding: 20px;">
+        @switch (Part)
+        {
+            case "accordion-list":
+                <BitAccordionList TItem="BitAccordionListOption" ExpandedKey="@_key" ExpandedKeyChanged="@(v => Set("ExpandedKey", v))">
+                    @if (_showFirst)
+                    {
+                        <BitAccordionListOption Key="one" Title="First">Body of the first</BitAccordionListOption>
+                    }
+                    <BitAccordionListOption Key="two" Title="Second">Body of the second</BitAccordionListOption>
+                </BitAccordionList>
+                break;
+
+            case "button-group":
+                <BitButtonGroup TItem="BitButtonGroupOption" Toggle ToggleKey="@_key" ToggleKeyChanged="@(v => Set("ToggleKey", v))">
+                    @if (_showFirst)
+                    {
+                        <BitButtonGroupOption Text="First" Key="one" />
+                    }
+                    <BitButtonGroupOption Text="Second" Key="two" />
+                </BitButtonGroup>
+                break;
+
+            case "pivot":
+                <BitPivot OverflowBehavior="BitPivotOverflowBehavior.Slide"
+                          SelectedKey="@_key"
+                          SelectedKeyChanged="@(v => Set("SelectedKey", v))"
+                          OnChange="@(i => Log($"OnChange:{i.Key}"))">
+                    @if (_showFirst)
+                    {
+                        <BitPivotItem Key="one" HeaderText="First">Body of the first</BitPivotItem>
+                    }
+                    <BitPivotItem Key="two" HeaderText="Second">Body of the second</BitPivotItem>
+                </BitPivot>
+                break;
+
+            case "choice-group":
+                <BitChoiceGroup TItem="BitChoiceGroupOption<string>" TValue="string" Value="@_key" ValueChanged="@(v => Set("Value", v))">
+                    @if (_showFirst)
+                    {
+                        <BitChoiceGroupOption Text="First" Value="@("one")" />
+                    }
+                    <BitChoiceGroupOption Text="Second" Value="@("two")" />
+                </BitChoiceGroup>
+                break;
+
+            case "dropdown":
+                <BitDropdown Id="dropdown" TItem="BitDropdownOption<string>" TValue="string" Label="Dropdown"
+                             Value="@_key" ValueChanged="@(v => Set("Value", v))"
+                             OnSelectItem="@(i => Log($"OnSelectItem:{i?.Value}"))">
+                    @if (_showFirst)
+                    {
+                        <BitDropdownOption Text="First" Value="@("one")" />
+                    }
+                    <BitDropdownOption Text="Second" Value="@("two")" />
+                </BitDropdown>
+                break;
+
+            case "carousel":
+                <div style="width: 400px;">
+                    <BitCarousel OnChange="@(i => Log($"OnChange:{i}"))">
+                        @if (_showFirst)
+                        {
+                            <BitCarouselItem><div style="height: 100px;">First</div></BitCarouselItem>
+                        }
+                        <BitCarouselItem><div style="height: 100px;">Second</div></BitCarouselItem>
+                        <BitCarouselItem><div style="height: 100px;">Third</div></BitCarouselItem>
+                    </BitCarousel>
+                </div>
+                break;
+
+            case "swiper":
+                <div style="width: 400px;">
+                    <BitSwiper OnChange="@(i => Log($"OnChange:{i}"))">
+                        @if (_showFirst)
+                        {
+                            <BitSwiperItem><div style="width: 300px; height: 100px;">First</div></BitSwiperItem>
+                        }
+                        <BitSwiperItem><div style="width: 300px; height: 100px;">Second</div></BitSwiperItem>
+                        <BitSwiperItem><div style="width: 300px; height: 100px;">Third</div></BitSwiperItem>
+                    </BitSwiper>
+                </div>
+                break;
+
+            case "timeline":
+                <BitTimeline TItem="BitTimelineOption" OnItemClick="@(i => Log($"OnItemClick:{i.PrimaryText}"))">
+                    @if (_showFirst)
+                    {
+                        <BitTimelineOption PrimaryText="First" />
+                    }
+                    <BitTimelineOption PrimaryText="Second" />
+                </BitTimeline>
+                break;
+
+            case "breadcrumb":
+                <div style="width: 200px;">
+                    <BitBreadcrumb TItem="BitBreadcrumbOption" OnItemClick="@(i => Log($"OnItemClick:{i.Text}"))">
+                        @if (_showFirst)
+                        {
+                            <BitBreadcrumbOption Text="First" />
+                        }
+                        <BitBreadcrumbOption Text="Second" />
+                        <BitBreadcrumbOption Text="Third" />
+                        <BitBreadcrumbOption Text="Fourth" />
+                        <BitBreadcrumbOption Text="Fifth" IsSelected />
+                    </BitBreadcrumb>
+                </div>
+                break;
+
+            case "nav":
+                <BitNav TItem="BitNavOption" OnSelectItem="@(i => Log($"OnSelectItem:{i?.Key}"))" OnItemClick="@(i => Log($"OnItemClick:{i?.Key}"))">
+                    @if (_showFirst)
+                    {
+                        <BitNavOption Text="First" Key="one" />
+                    }
+                    <BitNavOption Text="Second" Key="two">
+                        <BitNavOption Text="Child" Key="child" />
+                    </BitNavOption>
+                </BitNav>
+                break;
+
+            case "navbar":
+                <BitNavBar TItem="BitNavBarOption" OnSelectItem="@(i => Log($"OnSelectItem:{i?.Key}"))">
+                    @if (_showFirst)
+                    {
+                        <BitNavBarOption Text="First" Key="one" />
+                    }
+                    <BitNavBarOption Text="Second" Key="two" />
+                </BitNavBar>
+                break;
+
+            case "menu-button":
+                <BitMenuButton Id="menu-button" TItem="BitMenuButtonOption" Text="Menu"
+                               OnChange="@(i => Log($"OnChange:{i?.Key}"))"
+                               OnToggleChange="@(v => Log($"OnToggleChange:{v}"))">
+                    @if (_showFirst)
+                    {
+                        <BitMenuButtonOption Text="First" Key="one" />
+                    }
+                    <BitMenuButtonOption Text="Second" Key="two" />
+                </BitMenuButton>
+                break;
+
+            case "data-grid":
+                <BitDataGrid TItem="Row" OnRead="Read" @ref="_grid">
+                    @if (_showFirst)
+                    {
+                        <BitDataGridColumn TItem="Row" Field="Name" />
+                    }
+                    <BitDataGridColumn TItem="Row" Field="Price" />
+                </BitDataGrid>
+                break;
+
+            case "modal":
+                <BitModal IsOpen="@_open" IsOpenChanged="@(v => SetOpen("IsOpen", v))" OnDismiss="@(() => Log("OnDismiss"))">
+                    <div id="modal-content" style="padding: 24px;">Modal content <input id="modal-input" /></div>
+                </BitModal>
+                break;
+
+            case "overlay":
+                <BitOverlay IsOpen="@_open" IsOpenChanged="@(v => SetOpen("IsOpen", v))" OnClose="@(() => Log("OnClose"))">
+                    <div id="overlay-content" style="padding: 24px; background: white;">Overlay content</div>
+                </BitOverlay>
+                break;
+
+            case "panel":
+                <BitPanel IsOpen="@_open" IsOpenChanged="@(v => SetOpen("IsOpen", v))"
+                          OnDismiss="@(() => Log("OnDismiss"))"
+                          OnTransitionEnd="@(v => Log($"OnTransitionEnd:{v}"))">
+                    <div id="panel-content" style="padding: 24px;">Panel content</div>
+                </BitPanel>
+                break;
+
+            case "tooltip":
+                <BitTooltip Text="Tooltip text" OnShow="@(() => Log("OnShow"))" OnHide="@(() => Log("OnHide"))">
+                    <span id="tooltip-anchor" style="display: inline-block; padding: 8px; border: 1px solid;">Hover me</span>
+                </BitTooltip>
+                break;
+
+            case "message":
+                <div style="width: 200px;">
+                    <BitMessage Truncate OnDismiss="@(() => Log("OnDismiss"))">
+                        A message long enough to be clipped by the width of the box it is rendered in, so it has an overflow to report.
+                    </BitMessage>
+                </div>
+                break;
+
+            case "snack-bar":
+                <BitSnackBar @ref="_snackBar" OnDismiss="@(i => Log($"OnDismiss:{i.Title}"))" OnShow="@(i => Log($"OnShow:{i.Title}"))" />
+                break;
+
+            case "scrollable-pane":
+                <BitScrollablePane Id="pane" Height="120px" Width="300px"
+                                   OnScroll="@(_ => LogOnce("OnScroll"))"
+                                   OnReachedBottom="@(() => Log("OnReachedBottom"))">
+                    <div style="height: 1000px;">Tall content</div>
+                </BitScrollablePane>
+                break;
+
+            case "header":
+                <BitHeader Sticky Reveal ElevateOnScroll RevealOffset="10" OnRevealChanged="@(v => Log($"OnRevealChanged:{v}"))" OnScrolledChanged="@(v => Log($"OnScrolledChanged:{v}"))">
+                    Header
+                </BitHeader>
+                <div style="height: 2000px;">Page content</div>
+                break;
+
+            case "footer":
+                <div style="height: 2000px;">Page content</div>
+                <BitFooter Fixed Reveal ElevateOnScroll RevealOffset="10" OnRevealChanged="@(v => Log($"OnRevealChanged:{v}"))" OnOverlapChanged="@(v => Log($"OnOverlapChanged:{v}"))">
+                    Footer
+                </BitFooter>
+                break;
+
+            case "basic-list":
+                <div style="height: 200px; overflow: auto;">
+                    <BitBasicList Items="_numbers" LoadMore LoadMoreSize="5" OnLoadMore="@(n => Log($"OnLoadMore:{n}"))">
+                        <EmptyContent>Empty</EmptyContent>
+                        <RowTemplate Context="n"><div style="height: 30px;">Row @n</div></RowTemplate>
+                    </BitBasicList>
+                </div>
+                break;
+
+            case "media-query":
+                <BitMediaQuery Query="(min-width: 800px)" OnChange="@(v => Log($"OnChange:{v}"))">
+                    <span>Media query</span>
+                </BitMediaQuery>
+                break;
+
+            case "pull-to-refresh":
+                <BitPullToRefresh OnRefresh="@(() => Log("OnRefresh"))" OnStateChange="@(s => Log($"OnStateChange:{s}"))">
+                    <div style="height: 300px;">Pull me</div>
+                </BitPullToRefresh>
+                break;
+
+            case "sticky":
+                <div style="height: 300px; overflow: auto;">
+                    <div style="height: 50px;">Before</div>
+                    <BitSticky OnStuckChanged="@(v => Log($"OnStuckChanged:{v}"))">
+                        <div style="background: white;">Sticky</div>
+                    </BitSticky>
+                    <div style="height: 2000px;">After</div>
+                </div>
+                break;
+
+            case "app-shell":
+                <div style="height: 300px;">
+                    <BitAppShell OnScroll="@(_ => LogOnce("OnScroll"))" OnKeyboardInsetChanged="@(v => Log($"OnKeyboardInsetChanged:{v}"))">
+                        <div style="height: 2000px;">App shell content</div>
+                    </BitAppShell>
+                </div>
+                break;
+
+            case "country-picker":
+                <BitCountryPicker Id="country-picker" Label="Country"
+                                  OnOpen="@(() => Log("OnOpen"))" OnClose="@(() => Log("OnClose"))"
+                                  ValueChanged="@(c => Log($"Value:{c?.Iso2}"))" />
+                break;
+
+            case "phone-input":
+                <BitPhoneInput Id="phone-input" Label="Phone"
+                               OnOpen="@(() => Log("OnOpen"))" OnClose="@(() => Log("OnClose"))"
+                               OnCountryChange="@(c => Log($"OnCountryChange:{c?.Iso2}"))" />
+                break;
+
+            case "infinite-scrolling":
+                <div style="height: 200px; overflow: auto;">
+                    <BitInfiniteScrolling TItem="int" ItemsProvider="LoadItems" OnItemsLoaded="@(items => Log($"OnItemsLoaded:{items.Count}"))">
+                        <ItemTemplate Context="n"><div style="height: 30px;">Item @n</div></ItemTemplate>
+                    </BitInfiniteScrolling>
+                </div>
+                break;
+
+            case "markdown-editor":
+                <BitMarkdownEditor Value="@_key" ValueChanged="@(v => Set("Value", v))" />
+                break;
+
+            case "virtualize":
+                <div style="height: 200px; overflow: auto;">
+                    <BitVirtualize TItem="int" Items="_numbers" ItemSize="30"
+                                   OnVisibleRangeChanged="@(r => LogOnce("OnVisibleRangeChanged"))">
+                        <ItemTemplate Context="n"><div style="height: 30px;">Row @n</div></ItemTemplate>
+                    </BitVirtualize>
+                </div>
+                break;
+
+            case "file-upload":
+                <BitFileUpload Label="Upload" UploadUrl="/upload" OnChange="@(f => Log($"OnChange:{f.Length}"))" />
+                break;
+
+            case "otp-input":
+                <BitOtpInput Id="otp" Length="4" Value="@_key" ValueChanged="@(v => Set("Value", v))" OnFill="@(v => Log($"OnFill:{v}"))" />
+                break;
+        }
+    </div>
+}
+
+@code {
+    [SupplyParameterFromQuery(Name = "part")] public string? Part { get; set; }
+
+    private bool _mounted = true;
+    private bool _showFirst = true;
+    private bool _open = true;
+    private int _generation;
+    private int _reads;
+    private string? _key;
+    private readonly List<string> _log = [];
+    private readonly HashSet<string> _loggedOnce = [];
+    private BitDataGrid<Row>? _grid;
+    private BitSnackBar? _snackBar;
+    private bool _snackShown;
+    private readonly List<int> _numbers = Enumerable.Range(1, 1000).ToList();
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
+    // interactive render moves it on, which is what the test waits for before it drives the page.
+    private string _status = "Loading";
+
+    protected override void OnInitialized()
+    {
+        // The parts that hold a selection start with the first part selected, so a teardown that moves it off
+        // that part has something to report.
+        _key = Part switch
+        {
+            "markdown-editor" => "Some **markdown**",
+            "otp-input" => null,
+            _ => "one",
+        };
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            _status = "Ready";
+            StateHasChanged();
+        }
+
+        if (_snackBar is not null && _snackShown is false)
+        {
+            _snackShown = true;
+            // A dismiss timer still running, so the teardown has it to stop as well.
+            await _snackBar.Info("Snack", "A snack still counting down", autoDismissTime: TimeSpan.FromMinutes(5));
+        }
+    }
+
+    private void Remount()
+    {
+        _mounted = true;
+        _showFirst = true;
+        _snackShown = false;
+        _generation++;
+    }
+
+    private void Log(string entry) => _log.Add(entry);
+
+    // A callback raised on every frame of a scroll is logged the first time only, so the count stays readable.
+    private void LogOnce(string entry)
+    {
+        if (_loggedOnce.Add($"{_generation}:{entry}")) _log.Add(entry);
+    }
+
+    private void Set(string name, string? value)
+    {
+        _key = value;
+        Log($"{name}:{value}");
+    }
+
+    private void SetOpen(string name, bool value)
+    {
+        _open = value;
+        Log($"{name}:{value}");
+    }
+
+    private async Task Sort()
+    {
+        if (_grid is not null) await _grid.SortByAsync("Name", BitDataGridSortDirection.Ascending);
+    }
+
+    private Task<BitDataGridReadResult<Row>> Read(BitDataGridReadRequest request)
+    {
+        _reads++;
+
+        // The grid reads on its own schedule (a column it drops, a refresh it posts), outside any event of this page,
+        // so the count is put on the screen by a render of its own.
+        _ = InvokeAsync(StateHasChanged);
+
+        return Task.FromResult(new BitDataGridReadResult<Row>([new() { Name = "Apple", Price = 1 }, new() { Name = "Banana", Price = 2 }], 2));
+    }
+
+    private async ValueTask<IEnumerable<int>> LoadItems(BitInfiniteScrollingItemsProviderRequest request)
+    {
+        await Task.Delay(50);
+        return Enumerable.Range(request.Skip + 1, 20);
+    }
+
+    public class Row
+    {
+        public string Name { get; set; } = string.Empty;
+
+        public double Price { get; set; }
+    }
+}

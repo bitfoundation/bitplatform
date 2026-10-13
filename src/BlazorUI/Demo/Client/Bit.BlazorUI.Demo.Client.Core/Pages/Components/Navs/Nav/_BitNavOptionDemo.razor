@@ -615,7 +615,46 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="Color" RazorCode="@example14RazorCode" Id="example14" PreventRenderForMcpClient>
+<DemoExample Title="Badges & Suffix" RazorCode="@example14RazorCode" Id="example14">
+    <div>
+        <b>Badge</b> marks an option with a count or a short status, and <b>Dot</b> marks it as needing attention without
+        a number. Both are drawn after the text while the option keeps its icon, its text and its states, and both are
+        folded into the option's accessible name, in the words of <b>BadgeAriaLabel</b> when the bare count would not say
+        enough (a dot is only announced with one). <b>ItemSuffixTemplate</b>, or the <b>SuffixTemplate</b> of a single
+        option, adds content of your own ahead of the badge without taking the option's own content over the way an
+        <b>ItemTemplate</b> does. The <b>IconOnly</b> nav keeps the badges alone, pinned to the icons.
+    </div>
+    <br /><br /><br />
+    <div>Badge &amp; Dot</div><br />
+    <BitNav TItem="BitNavOption" Mode="BitNavMode.Manual" FitWidth>
+        <BitNavOption Text="Inbox" IconName="@BitIconName.Inbox" Badge="12" BadgeAriaLabel="12 unread" />
+        <BitNavOption Text="Drafts" IconName="@BitIconName.EditMail" Badge="New" />
+        <BitNavOption Text="Sent" IconName="@BitIconName.Send" Dot BadgeAriaLabel="failed to send" />
+        <BitNavOption Text="Archive" IconName="@BitIconName.Archive" />
+    </BitNav>
+    <br /><br /><br />
+    <div>ItemSuffixTemplate</div><br />
+    <BitNav TItem="BitNavOption" Mode="BitNavMode.Manual" FitWidth>
+        <ItemSuffixTemplate Context="option">
+            <span class="nav-custom-suffix" aria-hidden="true">@option.Data</span>
+        </ItemSuffixTemplate>
+        <ChildContent>
+            <BitNavOption Text="Inbox" IconName="@BitIconName.Inbox" Badge="12" Data="@("Ctrl+I")" />
+            <BitNavOption Text="Drafts" IconName="@BitIconName.EditMail" Data="@("Ctrl+D")" />
+            <BitNavOption Text="Sent" IconName="@BitIconName.Send" Data="@("Ctrl+S")" />
+        </ChildContent>
+    </BitNav>
+    <br /><br /><br />
+    <div>IconOnly</div><br />
+    <BitNav TItem="BitNavOption" Mode="BitNavMode.Manual" IconOnly>
+        <BitNavOption Text="Inbox" IconName="@BitIconName.Inbox" Badge="12" BadgeAriaLabel="12 unread" />
+        <BitNavOption Text="Drafts" IconName="@BitIconName.EditMail" Badge="New" />
+        <BitNavOption Text="Sent" IconName="@BitIconName.Send" Dot BadgeAriaLabel="failed to send" />
+        <BitNavOption Text="Archive" IconName="@BitIconName.Archive" />
+    </BitNav>
+</DemoExample>
+
+<DemoExample Title="Color" RazorCode="@example15RazorCode" Id="example15" PreventRenderForMcpClient>
     <div>
         <b>Color</b> paints the icons and the bar of the selected option. <b>Accent</b> paints the hovered and the selected
         option: a background, foreground or border role tints it, while a semantic role fills it and recolors what it holds.
@@ -708,7 +747,7 @@
     </BitNav>
 </DemoExample>
 
-<DemoExample Title="External Icons" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15" PreventRenderForMcpClient>
+<DemoExample Title="External Icons" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16" PreventRenderForMcpClient>
     <div>
         <b>Icon</b> takes the CSS classes of an external icon library (FontAwesome, Bootstrap Icons, ...) and wins over
         <b>IconName</b>; <b>ChevronDownIcon</b> does the same for the chevron.
@@ -743,7 +782,7 @@
     </BitNav>
 </DemoExample>
 
-<DemoExample Title="Size" RazorCode="@example16RazorCode" Id="example16" PreventRenderForMcpClient>
+<DemoExample Title="Size" RazorCode="@example17RazorCode" Id="example17" PreventRenderForMcpClient>
     <div>
         <b>Size</b> scales the height, text, icon, chevron and description of the options, and the height and text of the group
         headers.
@@ -771,7 +810,7 @@
     </BitNav>
 </DemoExample>
 
-<DemoExample Title="Style & Class" RazorCode="@example17RazorCode" Id="example17" PreventRenderForMcpClient>
+<DemoExample Title="Style & Class" RazorCode="@example18RazorCode" Id="example18" PreventRenderForMcpClient>
     <div>
         <b>Style</b> and <b>Class</b> reach the root, the <b>Style</b> and <b>Class</b> of an option its list element, and
         <b>Styles</b> and <b>Classes</b> each part of the nav. The public <b>CSS variables</b> re-skin it without a
@@ -860,7 +899,7 @@
     </div>
 </DemoExample>
 
-<DemoExample Title="RTL" RazorCode="@example18RazorCode" Id="example18" PreventRenderForMcpClient>
+<DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19" PreventRenderForMcpClient>
     <div>
         <b>Dir</b> set to <b>Rtl</b> mirrors the nav, its indentation and the arrow keys: <b>→</b> steps out of a branch
         and <b>←</b> steps into it.
