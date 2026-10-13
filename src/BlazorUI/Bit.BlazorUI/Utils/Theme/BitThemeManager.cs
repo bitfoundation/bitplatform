@@ -56,7 +56,8 @@ public class BitThemeManager : IAsyncDisposable
     /// Sets the <c>bit-theme</c> attribute (use values from <see cref="BitThemePresets"/> or custom names matching your CSS).
     /// The name is normalized to the canonical form (trimmed and lower-cased invariantly) before it
     /// is written, so it matches the lowercase <c>:root[bit-theme=…]</c> selectors in the packaged
-    /// CSS and stays consistent with <see cref="BitThemeName"/>. A blank name is a no-op.
+    /// CSS and stays consistent with <see cref="BitThemeName"/>. A blank name is a no-op, and so is one the
+    /// page does not offer when it lists the themes it ships (<see cref="BitThemeAttributeNames.ThemeAvailable"/>).
     /// Returns <see langword="null"/> when JS interop is unavailable (e.g. prerendering / disconnected circuit).
     /// </summary>
     /// <remarks>
@@ -117,7 +118,8 @@ public class BitThemeManager : IAsyncDisposable
     /// following the OS, the new pair's theme for the OS scheme is applied and <c>system</c> stays the
     /// stored preference; otherwise the applied theme moves to its counterpart in the new pair, and so
     /// does a stored one. Both names are normalized like <see cref="SetThemeAsync(string)"/>; a blank
-    /// one makes the call a no-op.
+    /// one, or one the page does not offer (<see cref="BitThemeAttributeNames.ThemeAvailable"/>), makes the
+    /// call a no-op.
     /// Returns the applied theme, or <see langword="null"/> when JS interop is unavailable (e.g.
     /// prerendering / disconnected circuit).
     /// </summary>
@@ -166,7 +168,7 @@ public class BitThemeManager : IAsyncDisposable
     /// Flips the scheme within the given pair, making it the active pair first when it is not (stored as
     /// <see cref="SetThemePairAsync(string, string)"/> stores it) - one theme swap and one change
     /// notification either way. Both names are normalized like <see cref="SetThemeAsync(string)"/>; a blank
-    /// one makes the call a no-op. Returns the applied theme, or <see langword="null"/> when JS interop is
+    /// one, or one the page does not offer, makes the call a no-op. Returns the applied theme, or <see langword="null"/> when JS interop is
     /// unavailable.
     /// </summary>
     /// <exception cref="ObjectDisposedException">The manager has been disposed.</exception>

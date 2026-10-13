@@ -173,7 +173,10 @@ namespace BitBlazorUI {
                     const written = Theme.parsePairValue(e.newValue);
                     if (!written.pair && !written.scheme) return;
                 }
-                const pair = Theme.readPersistedPair().pair;
+                // A pair this page does not offer (one a tab of an older build of the app stored) is no
+                // pair here, as it is none to the next init of this tab.
+                const stored = Theme.readPersistedPair().pair;
+                const pair = stored && Theme.isAvailablePair(stored) ? stored : null;
                 const light = pair ? pair[0] : Theme._configuredLightTheme;
                 const dark = pair ? pair[1] : Theme._configuredDarkTheme;
                 if (light !== Theme._lightTheme || dark !== Theme._darkTheme) {
@@ -183,7 +186,9 @@ namespace BitBlazorUI {
             }
             // e.key is null when storage was cleared; otherwise it must be our key.
             if (e.key !== null && e.key !== Theme.THEME_STORAGE_KEY) return;
-            const next = e.newValue;
+            // A theme this page does not offer goes to the active pair's theme of its scheme, as the next
+            // init of this tab restores it.
+            const next = e.newValue ? Theme.fitAvailable(e.newValue) : null;
             if (!next) return;
             // Skip when the other tab's concrete choice is already applied here: avoids a redundant
             // set() (re-persist + re-dispatch) rippling across 3+ tabs. "system" is always processed
@@ -240,21 +245,26 @@ namespace BitBlazorUI {
             // visit; in memory, a later init. Same precedence as the SSR inline script in BitThemeSsr.cs.
             const stored = (Theme._persist || Theme._persistCookie) ? Theme.readPersistedPair() : { pair: null, scheme: null };
             const persisted = (Theme._persist || Theme._persistCookie) ? Theme.getPersisted() : null;
-            // A stored pair of a preset the page no longer offers is no pair at all any more.
-            const storedPair = stored.pair && Theme.isAvailable(stored.pair[0]) && Theme.isAvailable(stored.pair[1]) ? stored.pair : null;
-            const pair = storedPair || Theme._runtimePair;
+            // A pair of a preset the page no longer offers - stored, or switched to in memory before this
+            // init - is no pair at all any more.
+            const storedPair = stored.pair && Theme.isAvailablePair(stored.pair) ? stored.pair : null;
+            const runtimePair = Theme._runtimePair && Theme.isAvailablePair(Theme._runtimePair) ? Theme._runtimePair : null;
+            const pair = storedPair || runtimePair;
+            const hadRuntimePair = !!Theme._runtimePair;
             Theme._runtimePair = pair && !Theme.isConfiguredPair(pair[0], pair[1]) ? pair : null;
             // A stored pair the page has since come to declare itself, or no longer offers, is no pick of
             // the visitor's any more: it is dropped from storage too, so a later change of the page's pair
-            // reaches them again, and a preference of it is carried onto the page's pair as the scheme it
-            // was. set() below stores the scheme marker in its place.
-            if (stored.pair && !Theme._runtimePair) {
+            // reaches them again, and a preference of it is carried onto the active pair as the scheme it
+            // was. set() below stores the scheme marker, or the pair in use, in its place.
+            if (stored.pair && (!storedPair || !Theme._runtimePair)) {
                 stored.scheme = persisted === stored.pair[1] ? 'dark' : persisted === stored.pair[0] ? 'light' : null;
                 Theme.writePersistedPair(null);
             }
             Theme._lightTheme = Theme._runtimePair ? Theme._runtimePair[0] : Theme._configuredLightTheme;
             Theme._darkTheme = Theme._runtimePair ? Theme._runtimePair[1] : Theme._configuredDarkTheme;
-            if (Theme._runtimePair) {
+            // The attributes name the active pair: the visitor's, or the configured one again once a pair this
+            // init sets aside no longer stands in for it.
+            if (Theme._runtimePair || hadRuntimePair) {
                 Theme.writePairAttributes();
             }
 
@@ -293,10 +303,9 @@ namespace BitBlazorUI {
                     // choice; set() below then stores what it resolved to. So does one the page no longer
                     // offers, going by its name's "dark" ending as the stylesheets classify it. Anything
                     // else is restored as it is: a theme pinned outside the pair is a choice of its own.
-                    theme = persisted === Theme.SYSTEM_THEME ? persisted
-                        : stored.scheme ? (stored.scheme === 'dark' ? Theme._darkTheme : Theme._lightTheme)
-                            : persisted === Theme._lightTheme || persisted === Theme._darkTheme || Theme.isAvailable(persisted) ? persisted
-                                : /dark$/.test(persisted) ? Theme._darkTheme : Theme._lightTheme;
+                    theme = persisted !== Theme.SYSTEM_THEME && stored.scheme
+                        ? (stored.scheme === 'dark' ? Theme._darkTheme : Theme._lightTheme)
+                        : Theme.fitAvailable(persisted);
                     // An explicit persisted preset (anything other than "system") means the user pinned a theme;
                     // stop following the OS even when <html bit-theme-system> is present.
                     Theme._stopFollowingSystem = persisted !== Theme.SYSTEM_THEME;
@@ -382,6 +391,13 @@ namespace BitBlazorUI {
             const fromInit = options?.fromInit === true;
             const internalOs = options?.internalOsRefresh === true;
 
+            // A theme the page does not offer (ThemeOptions.available) has no stylesheet to paint it, and the
+            // next init - and the server - would set it aside again: a call naming one is ignored, as a blank
+            // one is. init and another tab's value are fitted onto the offered themes before they get here.
+            if (!fromInit && !internalOs && options?.fromOtherTab !== true && !Theme.isAvailable(themeName)) {
+                return Theme._currentTheme;
+            }
+
             if (!fromInit && !internalOs) {
                 if (themeName === Theme.SYSTEM_THEME) {
                     Theme._stopFollowingSystem = false;
@@ -460,11 +476,12 @@ namespace BitBlazorUI {
          * Flips the scheme within the given pair, making it the active pair first when it is not (stored
          * as setPair stores it) - one swap and one change notification either way. A theme that is
          * neither of the two flips by its name's "dark" ending, so a dark one always turns light.
-         * Blank names, or names containing whitespace, make it a no-op. Returns the applied theme.
+         * Blank names, names containing whitespace, or a pair the page does not offer
+         * (ThemeOptions.available) make it a no-op. Returns the applied theme.
          */
         public static toggleDarkLightWithin(lightTheme: string, darkTheme: string) {
             const pair = Theme.validPair(lightTheme, darkTheme);
-            if (!pair) return Theme._currentTheme;
+            if (!pair || !Theme.isAvailablePair(pair)) return Theme._currentTheme;
 
             const [light, dark] = pair;
             if (light !== Theme._lightTheme || dark !== Theme._darkTheme) {
@@ -486,11 +503,12 @@ namespace BitBlazorUI {
          * applied and "system" stays stored; otherwise the applied theme moves to its counterpart in the
          * new pair, and so does a stored one. The pair is persisted beside the preference (and mirrored
          * into its cookie) when persistence is on, and written to bit-theme-light / bit-theme-dark.
-         * Blank names, or names containing whitespace, are ignored. Returns the applied theme.
+         * Blank names, names containing whitespace, and a pair the page does not offer
+         * (ThemeOptions.available) are ignored. Returns the applied theme.
          */
         public static setPair(lightTheme: string, darkTheme: string) {
             const pair = Theme.validPair(lightTheme, darkTheme);
-            if (!pair) return Theme._currentTheme;
+            if (!pair || !Theme.isAvailablePair(pair)) return Theme._currentTheme;
 
             Theme.applyPair(pair[0], pair[1], true);
 
@@ -567,13 +585,29 @@ namespace BitBlazorUI {
         private static isAvailable(theme: string) {
             return !Theme._available || theme === Theme.SYSTEM_THEME
                 || theme === Theme._configuredLightTheme || theme === Theme._configuredDarkTheme
-                || Theme._available.has(theme);
+                || Theme._available.has(theme.toLowerCase());
         }
 
-        /** The names ThemeOptions.available lists, null when it lists none. */
+        private static isAvailablePair(pair: [string, string]) {
+            return Theme.isAvailable(pair[0]) && Theme.isAvailable(pair[1]);
+        }
+
+        /**
+         * A theme the page offers as it is; one it does not goes to the active pair's theme of its scheme, by
+         * its name's "dark" ending as the stylesheets classify it - the light one for any other.
+         */
+        private static fitAvailable(theme: string) {
+            if (Theme.isAvailable(theme)) return theme;
+            return /dark$/.test(theme) ? Theme._darkTheme : Theme._lightTheme;
+        }
+
+        /**
+         * The names ThemeOptions.available lists, lower-cased as the server normalizes them
+         * (BitThemeSsr.NormalizeAvailableThemes); null when it lists none.
+         */
         private static parseAvailable(value: string[] | string | null | undefined): Set<string> | null {
             const names = (Array.isArray(value) ? value : (value || '').split(/\s+/))
-                .map(name => (name || '').trim())
+                .map(name => (name || '').trim().toLowerCase())
                 .filter(name => name);
             return names.length ? new Set(names) : null;
         }

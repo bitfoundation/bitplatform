@@ -40,7 +40,11 @@ public static class BitThemeAttributeNames
     /// preference outside it to the active pair's theme of its scheme (a name ending in <c>dark</c> to the
     /// dark one, any other to the light one) - so a visitor whose saved theme came from a preset the app no
     /// longer offers keeps their light or dark choice instead of a theme nothing styles. The declared pair
-    /// and <c>system</c> count as offered whether listed or not. Absent, every stored name is restored as it is.
+    /// and <c>system</c> count as offered whether listed or not, and a call that sets a theme or a pair outside
+    /// it (<see cref="BitThemeManager.SetThemeAsync(string)"/>, <see cref="BitThemeManager.SetThemePairAsync(string, string)"/>)
+    /// is ignored rather than painted unstyled, while one another tab stores (a tab of an older build) is fitted
+    /// onto the pair the way a stored one is. Names are matched lower-cased, as the server normalizes them.
+    /// Absent, every stored name is restored as it is.
     /// </summary>
     public const string ThemeAvailable = "bit-theme-available";
 

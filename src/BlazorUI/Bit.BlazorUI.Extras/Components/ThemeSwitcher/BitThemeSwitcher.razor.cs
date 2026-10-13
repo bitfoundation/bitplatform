@@ -323,9 +323,21 @@ public partial class BitThemeSwitcher : BitComponentBase
         // the theme this control does not decide - is carried over by the theme script, which keeps the
         // visitor following the OS when they were and otherwise always lands on one of the pair's two
         // themes, and the toggle and the OS resolve to the new pair from here on, this visit and the next.
-        var (light, dark) = ResolvePair(item, await _themeManager.GetThemeStateAsync());
+        var state = await _themeManager.GetThemeStateAsync();
+        var (light, dark) = ResolvePair(item, state);
 
         var applied = await _themeManager.SetThemePairAsync(light, dark);
+
+        // A switch always lands on one of the pair's two themes, so landing on neither means the theme script
+        // refused the pair - the page does not offer it (bit-theme-available). Nothing changed, so the picker
+        // goes back to the design system still being worn rather than name one the page does not show.
+        if (applied.HasValue() &&
+            string.Equals(applied, light, StringComparison.OrdinalIgnoreCase) is false &&
+            string.Equals(applied, dark, StringComparison.OrdinalIgnoreCase) is false)
+        {
+            _designSystem = (FindDesignSystem(state?.Light) ?? FindDesignSystem(applied) ?? _designSystems.FirstOrDefault())?.Value;
+            return;
+        }
 
         _designSystem = item.Value;
 

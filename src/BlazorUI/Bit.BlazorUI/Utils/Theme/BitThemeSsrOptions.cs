@@ -88,8 +88,9 @@ public class BitThemeSsrOptions
     /// active pair's theme of its scheme, so a visitor whose saved theme came from a preset the app no
     /// longer offers - one saved before the light / dark marker existed included - keeps their light or
     /// dark choice instead of a theme nothing styles. The declared pair and <c>system</c> count as offered
-    /// whether listed or not. <see langword="null"/> or empty restores every stored name as it is. Pass
-    /// the same names to <see cref="BitThemeHead"/>.
+    /// whether listed or not. <see langword="null"/> or empty restores every stored name as it is. Names are
+    /// normalized like every other one here (trimmed, lower-cased, a name that is not a theme token dropped).
+    /// Hand this instance to <see cref="BitThemeHead.Options"/>, so the tag is painted from the same list.
     /// </summary>
     public IEnumerable<string>? AvailableThemes { get; set; }
 }

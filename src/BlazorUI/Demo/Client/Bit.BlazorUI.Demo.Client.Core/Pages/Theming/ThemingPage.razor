@@ -205,7 +205,7 @@ await BitThemeManager.SetThemePairAsync(BitThemePresets.MaterialLight, BitThemeP
       bit-theme-available="material-light material-dark high-contrast"&gt;...&lt;/html&gt;</CodeBox>
 
                 <BitText>
-                    A stored pair naming a theme outside the list is set aside for the declared pair, and a stored theme outside it - one saved before the marker existed included, such as a <code>fluent2-dark</code> after the app moved to Material - goes to the active pair's theme of its scheme: a name ending in <code>dark</code> to the dark one, any other to the light one. Either is then stored that way. The declared pair and <code>system</code> count as shipped whether listed or not, and without the attribute every stored theme is restored as it is. The first-paint script and the server resolve it the same way, so <code>BitThemeHead</code> takes the same <code>AvailableThemes</code>.
+                    A stored pair naming a theme outside the list is set aside for the declared pair, and a stored theme outside it - one saved before the marker existed included, such as a <code>fluent2-dark</code> after the app moved to Material - goes to the active pair's theme of its scheme: a name ending in <code>dark</code> to the dark one, any other to the light one. Either is then stored that way. The declared pair and <code>system</code> count as shipped whether listed or not, and without the attribute every stored theme is restored as it is. Names are matched lower-cased. A theme or pair outside the list that the app sets at runtime (<code>SetThemeAsync</code>, <code>SetThemePairAsync</code>, a <code>BitThemeSwitcher</code> item) is ignored rather than painted unstyled, and one another tab stores - a tab still on an older build - is fitted onto the pair like a stored one. The first-paint script and the server resolve it the same way, so <code>BitThemeHead</code> is handed the same <code>BitThemeSsrOptions</code>.
                 </BitText>
             </DocSection>
         </DocSection>
@@ -1784,10 +1784,7 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
 &lt;head&gt;
     &lt;meta charset="utf-8" /&gt;
     &lt;BitThemeHead PersistedPreference="@@preference"
-                  LightTheme="@@themeOptions.LightTheme"
-                  DarkTheme="@@themeOptions.DarkTheme"
-                  PersistedThemePair="@@themeOptions.PersistedThemePair"
-                  AvailableThemes="@@themeOptions.AvailableThemes"
+                  Options="@@themeOptions"
                   ThemeColors="@@BitThemeSurfaces.BackgroundSecondary" /&gt;
     ...</CodeBox>
 
@@ -1796,7 +1793,7 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
                 </BitText>
 
                 <BitText>
-                    Hand both halves the same preference and the same light / dark pair: that is what makes the tag and the document agree about which theme was painted. The client can still resolve a third theme the server never saw - it follows the OS, or its <code>localStorage</code> is newer than the cookie this response was rendered from - so <code>BitThemeHead</code> always emits a small script that reads the resolved attribute back and corrects the tag, still before first paint, writing nothing when the two already agree.
+                    Hand both halves the same preference and the same options instance: that is what makes the tag and the document agree about which theme was painted. <code>Options</code> carries the default theme, the light / dark pair, the visitor's stored pair and the available themes into the head; a parameter of the same name set on <code>BitThemeHead</code> wins over it. The client can still resolve a third theme the server never saw - it follows the OS, or its <code>localStorage</code> is newer than the cookie this response was rendered from - so <code>BitThemeHead</code> always emits a small script that reads the resolved attribute back and corrects the tag, still before first paint, writing nothing when the two already agree.
                 </BitText>
             </DocSection>
         </DocSection>

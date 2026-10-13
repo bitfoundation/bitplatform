@@ -132,7 +132,7 @@ public sealed class BitThemeSsrTests
         var baseResolved = body.IndexOf("var base=", StringComparison.Ordinal);
         Assert.IsTrue(pairRead < baseResolved, "The stored pair must be read before the base theme is resolved against it.");
 
-        Assert.IsTrue(body.Contains("if(s){cur=s==='system'?s:sc?(sc==='dark'?dk:lt):s===lt||s===dk||av(s)?s:/dark$/.test(s)?dk:lt;}", StringComparison.Ordinal),
+        Assert.IsTrue(body.Contains("if(s){cur=s==='system'?s:sc?(sc==='dark'?dk:lt):av(s)?s:/dark$/.test(s)?dk:lt;}", StringComparison.Ordinal),
             "A preference stored as a theme of the declared pair, or one the page no longer offers, must follow the pair (#13686), and be applied as it is otherwise.");
     }
 
@@ -143,8 +143,9 @@ public sealed class BitThemeSsrTests
         // declared pair (kept as dl / dd while lt / dk may become the visitor's) and "system" always.
         var body = BitThemeSsr.InlineHeadScriptBody;
 
-        Assert.IsTrue(body.Contains($"al=(r.getAttribute('{BitThemeAttributeNames.ThemeAvailable}')||'').trim().split(/\\s+/),", StringComparison.Ordinal));
-        Assert.IsTrue(body.Contains("av=function(v){return !al[0]||v==='system'||v===dl||v===dd||al.indexOf(v)>=0;}", StringComparison.Ordinal));
+        Assert.IsTrue(body.Contains($"al=(r.getAttribute('{BitThemeAttributeNames.ThemeAvailable}')||'').trim().toLowerCase().split(/\\s+/),", StringComparison.Ordinal),
+            "The list must be lower-cased, as BitThemeSsr.NormalizeAvailableThemes normalizes it for the server.");
+        Assert.IsTrue(body.Contains("av=function(v){return !al[0]||v==='system'||v===dl||v===dd||al.indexOf(v.toLowerCase())>=0;}", StringComparison.Ordinal));
         Assert.IsTrue(body.Contains("rp=ps&&!(p[0]===lt&&p[1]===dk)&&av(p[0])&&av(p[1])", StringComparison.Ordinal),
             "A stored pair the page no longer offers must not stand in for the declared one.");
     }
@@ -218,6 +219,21 @@ public sealed class BitThemeSsrTests
         });
 
         Assert.AreEqual("material-dark", map[BitThemeAttributeNames.Theme]);
+    }
+
+    [TestMethod]
+    public void BuildRootThemeAttributeMapMatchesTheOfferedThemesWhateverTheirCase()
+    {
+        // The client lower-cases the list the same way, so a hand-written name in another case is offered
+        // by both, and the server and the first-paint script paint the same theme.
+        var map = BitThemeSsr.BuildRootThemeAttributeMap("High-Contrast", new BitThemeSsrOptions
+        {
+            LightTheme = "material-light",
+            DarkTheme = "material-dark",
+            AvailableThemes = ["HIGH-CONTRAST"],
+        });
+
+        Assert.AreEqual("high-contrast", map[BitThemeAttributeNames.Theme]);
     }
 
     [TestMethod]

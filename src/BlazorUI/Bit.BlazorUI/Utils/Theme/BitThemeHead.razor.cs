@@ -15,7 +15,8 @@
 /// </para>
 /// <para>
 /// Pair it with <see cref="BitThemeSsr.BuildRootThemeAttributeMap(string?, BitThemeSsrOptions)"/> on
-/// the <c>&lt;html&gt;</c> element, handing both the same persisted preference: that call writes the
+/// the <c>&lt;html&gt;</c> element, handing both the same persisted preference and this component that
+/// call's <see cref="BitThemeSsrOptions"/> instance as <see cref="Options"/>: that call writes the
 /// attributes this script reads, including <see cref="BitThemeAttributeNames.ThemeColorMeta"/>, which
 /// is what keeps the tag current from the first frame the client can compute a color. The pair is
 /// the whole of the host page's theme setup.
@@ -46,6 +47,15 @@
 /// </remarks>
 public partial class BitThemeHead : ComponentBase
 {
+    /// <summary>
+    /// The options handed to <see cref="BitThemeSsr.BuildRootThemeAttributeMap(string?, BitThemeSsrOptions)"/>
+    /// for the <c>&lt;html&gt;</c> element of the same response. Handing the one instance to both is what keeps
+    /// the two halves of the setup from disagreeing: <see cref="DefaultTheme"/>, <see cref="LightTheme"/>,
+    /// <see cref="DarkTheme"/>, <see cref="PersistedThemePair"/> and <see cref="AvailableThemes"/> are read from
+    /// it, and each of those set here as well wins over its value there.
+    /// </summary>
+    [Parameter] public BitThemeSsrOptions? Options { get; set; }
+
     /// <summary>
     /// The visitor's stored theme preference - the
     /// <see cref="BitThemeCookie.PreferenceCookieName"/> cookie of this request, the same value handed
@@ -86,8 +96,9 @@ public partial class BitThemeHead : ComponentBase
 
     /// <summary>
     /// The themes the page ships stylesheets for, the same names handed to
-    /// <see cref="BitThemeSsrOptions.AvailableThemes"/>: a stored pair or preference outside them falls
-    /// back to the declared pair, as it does there, so the tag is painted for the theme the document is.
+    /// <see cref="BitThemeSsrOptions.AvailableThemes"/> (read from <see cref="Options"/> when not set): a
+    /// stored pair or preference outside them falls back to the declared pair, as it does there, so the
+    /// tag is painted for the theme the document is.
     /// </summary>
     [Parameter] public IEnumerable<string>? AvailableThemes { get; set; }
 
@@ -121,23 +132,11 @@ public partial class BitThemeHead : ComponentBase
 
 
 
-    /// <summary>
-    /// The theme this response renders, or <see langword="null"/> when the visitor follows the OS.
-    /// Resolved exactly as the root attributes are, so the tag and the server-rendered document
-    /// cannot disagree - the client can still re-resolve to a third theme from a store the server
-    /// never saw, which is what the correction script covers.
-    /// </summary>
-    private string? ResolvedTheme =>
-        BitThemeSsr.BuildRootThemeAttributeMap(PersistedPreference, new BitThemeSsrOptions
-        {
-            DefaultTheme = DefaultTheme,
-            LightTheme = LightTheme,
-            DarkTheme = DarkTheme,
-            PersistedThemePair = PersistedThemePair,
-            AvailableThemes = AvailableThemes,
-        }).TryGetValue(BitThemeAttributeNames.Theme, out var theme)
-        ? theme as string
-        : null;
+    // The theme this response renders, or null when the visitor follows the OS. Resolved exactly as the
+    // root attributes are, so the tag and the server-rendered document cannot disagree - the client can
+    // still re-resolve to a third theme from a store the server never saw, which is what the correction
+    // script covers.
+    private string? _resolvedTheme;
 
     private IReadOnlyDictionary<string, string> Colors => ThemeColors ?? BitThemeSurfaces.BackgroundPrimary;
 
@@ -145,7 +144,7 @@ public partial class BitThemeHead : ComponentBase
     // normalized token, the maps are keyed by it, and IsDarkName tests it ordinally - so a pair
     // written as "Fluent2-Dark" has to become that token before it is looked up or classified. The
     // visitor's stored pair stands in for the declared one, as it does for the client. Resolved once
-    // per parameter set (OnParametersSet), since every color lookup of a render reads it.
+    // per parameter set (OnParametersSet), along with the theme, since every color lookup of a render reads it.
     private BitThemeSsrPair _pair;
 
     private string LightThemeName => _pair.Light;
@@ -156,8 +155,14 @@ public partial class BitThemeHead : ComponentBase
 
     protected override void OnParametersSet()
     {
-        _pair = BitThemeSsr.ResolveThemePair(LightTheme, DarkTheme, PersistedThemePair,
-            PersistedPreference, BitThemeSsr.NormalizeAvailableThemes(AvailableThemes));
+        _resolvedTheme = BitThemeSsr.ResolveRenderedTheme(PersistedPreference, new BitThemeSsrOptions
+        {
+            DefaultTheme = DefaultTheme ?? Options?.DefaultTheme,
+            LightTheme = LightTheme ?? Options?.LightTheme,
+            DarkTheme = DarkTheme ?? Options?.DarkTheme,
+            PersistedThemePair = PersistedThemePair ?? Options?.PersistedThemePair,
+            AvailableThemes = AvailableThemes ?? Options?.AvailableThemes,
+        }, out _pair);
 
         base.OnParametersSet();
     }
@@ -173,7 +178,7 @@ public partial class BitThemeHead : ComponentBase
     /// </summary>
     private string ResolveThemeColor()
     {
-        var theme = ResolvedTheme;
+        var theme = _resolvedTheme;
         return theme is null ? ResolveDarkThemeColor() : ColorOf(theme, IsDarkName(theme));
     }
 

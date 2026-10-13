@@ -229,6 +229,91 @@ public class BitThemePairBrowserTests : PerformanceTestBase
     }
 
     [TestMethod]
+    public async Task AThemeOrPairThePageDoesNotOffer_IsIgnored()
+    {
+        // The app lists what it ships; a pick outside it would be painted unstyled now and set aside by the next
+        // visit, so it is not made at all.
+        await Open($"persist=1&{Fluent2}&default=fluent2-light&available={MaterialOnly}");
+
+        Assert.AreEqual("fluent2-light", await SetPair("cupertino-light", "cupertino-dark"));
+        Assert.AreEqual("fluent2-light", await Page.EvaluateAsync<string>("BitBlazorUI.Theme.set('cupertino-dark')"));
+        Assert.AreEqual("fluent2-light", await Page.EvaluateAsync<string>("BitBlazorUI.Theme.toggleDarkLightWithin('cupertino-light', 'cupertino-dark')"));
+
+        await AssertTheme("fluent2-light");
+        await Expect(Page.Locator("html")).ToHaveAttributeAsync("bit-theme-dark", "fluent2-dark");
+        Assert.AreEqual("fluent2-light", await Stored("bit-current-theme"));
+        Assert.AreEqual("light", await Stored("bit-theme-pair"));
+
+        // What it does offer still applies.
+        Assert.AreEqual("material-light", await SetPair("material-light", "material-dark"));
+        Assert.AreEqual("material-dark", await Page.EvaluateAsync<string>("BitBlazorUI.Theme.set('material-dark')"));
+    }
+
+    [TestMethod]
+    public async Task TheOfferedThemes_AreMatchedWhateverTheirCase()
+    {
+        // The server lower-cases the list it renders; a list handed to init by hand is read the same way.
+        await Open($"persist=1&{Fluent2}&default=fluent2-light");
+        await Page.EvaluateAsync("BitBlazorUI.Theme.init({ available: ['Material-Light', 'MATERIAL-DARK'] })");
+
+        Assert.AreEqual("material-light", await SetPair("material-light", "material-dark"));
+        Assert.AreEqual("material-light", await SetPair("cupertino-light", "cupertino-dark"));
+    }
+
+    [TestMethod]
+    public async Task APairSwitchedToInMemory_ThatThePageNoLongerOffers_IsSetAsideByTheNextInit()
+    {
+        // No persistence: the visitor's pair lives in memory alone, and an init naming what the page offers
+        // puts the declared pair back - in memory and on the attributes.
+        await Open($"{Fluent2}&default=fluent2-light");
+        await SetPair("cupertino-light", "cupertino-dark");
+        await Expect(Page.Locator("html")).ToHaveAttributeAsync("bit-theme-light", "cupertino-light");
+
+        await Page.EvaluateAsync($"BitBlazorUI.Theme.init({{ available: '{MaterialOnly.Replace(',', ' ')}' }})");
+
+        await AssertTheme("fluent2-light");
+        await Expect(Page.Locator("html")).ToHaveAttributeAsync("bit-theme-light", "fluent2-light");
+        await Expect(Page.Locator("html")).ToHaveAttributeAsync("bit-theme-dark", "fluent2-dark");
+        Assert.AreEqual("fluent2-dark", await Page.EvaluateAsync<string>("BitBlazorUI.Theme.toggleDarkLight()"));
+    }
+
+    [TestMethod]
+    public async Task AStoredPairThePageNoLongerOffers_IsDroppedFromStorage_WhileAnInMemoryPairStandsIn()
+    {
+        // The visitor's Material pair is in memory, and storage holds a Cupertino pair (another tab's, say) the
+        // page has since stopped shipping: the next init keeps Material and stores it in Cupertino's place.
+        await Open($"persist=1&{Fluent2}&default=fluent2-light");
+        await SetPair("material-light", "material-dark");
+        await Page.EvaluateAsync("localStorage.setItem('bit-theme-pair', 'cupertino-light cupertino-dark')");
+
+        await Page.EvaluateAsync($"BitBlazorUI.Theme.init({{ available: '{MaterialOnly.Replace(',', ' ')}' }})");
+
+        await Expect(Page.Locator("html")).ToHaveAttributeAsync("bit-theme-light", "material-light");
+        Assert.AreEqual("material-light material-dark", await Stored("bit-theme-pair"));
+    }
+
+    [TestMethod]
+    public async Task AnotherTabOfAnOlderBuild_PickingAPresetThePageDoesNotOffer_IsFittedOntoThePair()
+    {
+        // A rolling deploy: the other tab still runs the build that ships Cupertino, this one no longer does.
+        var setup = $"persist=1&{Material}&default=material-light";
+        await Open($"{setup}&available={MaterialOnly}");
+        var other = await Page.Context.NewPageAsync();
+        await other.GotoAsync($"{BaseUrl}/regression/theme-host?{setup}");
+        await other.WaitForFunctionAsync("typeof BitBlazorUI !== 'undefined' && !!BitBlazorUI.Theme");
+
+        await other.EvaluateAsync("BitBlazorUI.Theme.setPair('cupertino-light', 'cupertino-dark')");
+        await other.EvaluateAsync("BitBlazorUI.Theme.set('cupertino-dark')");
+
+        // This tab keeps its own pair and takes the other tab's scheme, as its next init would.
+        await AssertTheme("material-dark");
+        await Expect(Page.Locator("html")).ToHaveAttributeAsync("bit-theme-dark", "material-dark");
+
+        await Open($"{setup}&available={MaterialOnly}");
+        await AssertTheme("material-dark");
+    }
+
+    [TestMethod]
     public async Task AStoredPairThePageNowDeclares_IsDroppedFromStorage()
     {
         await Open($"persist=1&{Fluent2}&default=fluent2-light");
