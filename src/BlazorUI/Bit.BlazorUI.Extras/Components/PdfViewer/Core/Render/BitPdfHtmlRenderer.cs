@@ -274,6 +274,7 @@ public sealed class BitPdfHtmlRenderer
         _viewW = viewW;
         _viewH = viewH;
         _ops = EmitCanvasOps ? new List<object?[]>() : null;
+        _tilesEmitted = 0;
 
         List<BitPdfOperation> ops;
         try
@@ -2310,16 +2311,17 @@ public sealed class BitPdfHtmlRenderer
     // this the fill degrades to a solid color to bound the generated DOM.
     private const int MaxTiles = 4000;
 
-    // Maximum number of cells across NESTED tiling fills: a cell whose content fills
-    // with a tiling pattern again (itself, or another) multiplies the cell count at
-    // every level, so MaxTiles alone bounds one level but not the product - a pattern
-    // that selects itself in its own cell ran to MaxFormDepth levels and out of
-    // memory. A nested fill that would push the product past this degrades to a solid
-    // fill, the same as one fill with too many cells.
-    private const long MaxNestedTiles = 16000;
+    // Maximum number of pattern cells emitted across the WHOLE render: a cell whose
+    // content fills with a tiling pattern again (itself, or another) multiplies the
+    // cell count at every level, and a cell holding several such fills side by side
+    // multiplies it again, so MaxTiles alone bounds one fill but not the page - a
+    // pattern that selects itself in its own cell ran to MaxFormDepth levels and out
+    // of memory. A fill whose cells would push the total past this degrades to a
+    // solid fill, the same as one fill with too many cells.
+    private const long MaxTotalTiles = 16000;
 
-    // The cell count of the tiling fills the current content is nested in (1 at the page).
-    private long _tileProduct = 1;
+    // The pattern cells emitted so far in this render, every nesting level counted.
+    private long _tilesEmitted;
 
     /// <summary>
     /// Renders a tiling pattern (PatternType 1) fill: the pattern cell's content
@@ -2382,11 +2384,11 @@ public sealed class BitPdfHtmlRenderer
         {
             return false;
         }
-        long tileProduct = _tileProduct * tileCount;
-        if (tileProduct > MaxNestedTiles)
+        if (_tilesEmitted + tileCount > MaxTotalTiles)
         {
             return false;
         }
+        _tilesEmitted += tileCount;
 
         double[] bbox = pd.Get("BBox") is List<object?> bb && bb.Count >= 4
             ? [Num(bb[0]), Num(bb[1]), Num(bb[2]), Num(bb[3])]
@@ -2401,22 +2403,13 @@ public sealed class BitPdfHtmlRenderer
         }
         _html.Append('\'').Append(clipData).Append("')\">");
 
-        long outerProduct = _tileProduct;
-        _tileProduct = tileProduct;
-        try
+        for (int j = jStart; j <= jEnd; j++)
         {
-            for (int j = jStart; j <= jEnd; j++)
+            for (int i = iStart; i <= iEnd; i++)
             {
-                for (int i = iStart; i <= iEnd; i++)
-                {
-                    BitPdfMatrix cellCtm = BitPdfMatrix.Concat(patToDevice, new BitPdfMatrix(1, 0, 0, 1, i * xStep, j * yStep));
-                    RunPatternCell(patStream, cellCtm, patRes, bbox);
-                }
+                BitPdfMatrix cellCtm = BitPdfMatrix.Concat(patToDevice, new BitPdfMatrix(1, 0, 0, 1, i * xStep, j * yStep));
+                RunPatternCell(patStream, cellCtm, patRes, bbox);
             }
-        }
-        finally
-        {
-            _tileProduct = outerProduct;
         }
 
         _html.Append("</div>");

@@ -2439,12 +2439,44 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         }
     }
 
-    // Walks the (year, month) pair the given number of months forward or backward.
-    private static (int year, int month) AddMonths(int year, int month, int offset)
+    // Walks the (year, month) pair the given number of months forward or backward, in the months of the
+    // culture's own calendar - not every year of every calendar has twelve of them (a leap year of the
+    // Hebrew calendar has thirteen).
+    private (int year, int month) AddMonths(int year, int month, int offset)
     {
-        var total = ((year * 12) + (month - 1)) + offset;
+        var calendar = _culture.DateTimeFormat.Calendar;
 
-        return (total / 12, (total % 12) + 1);
+        while (offset > 0)
+        {
+            if (month < calendar.GetMonthsInYear(year))
+            {
+                month++;
+            }
+            else
+            {
+                year++;
+                month = 1;
+            }
+
+            offset--;
+        }
+
+        while (offset < 0)
+        {
+            if (month > 1)
+            {
+                month--;
+            }
+            else
+            {
+                year--;
+                month = calendar.GetMonthsInYear(year);
+            }
+
+            offset++;
+        }
+
+        return (year, month);
     }
 
     // The month names go through BitMonthNames, which spells them the way the culture's formatter spells the date
@@ -2467,32 +2499,24 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         // Adjust dayOfWeek to match the culture's first day of week
         dayOfWeek = (dayOfWeek - firstDayOfWeek + 7) % 7;
 
-        DateTime previousMonth;
-        if (month == 1)
-        {
-            previousMonth = new(year - 1, 12, 1);
-        }
-        else
-        {
-            previousMonth = new(year, month - 1, 1);
-        }
-        int daysInPreviousMonth = calendar.GetDaysInMonth(previousMonth.Year, previousMonth.Month);
+        // The adjacent months are kept as plain year/month numbers of the culture's own calendar: a
+        // DateTime built out of them would be a Gregorian date of a year that calendar never had, and a
+        // thirteenth month - which a leap year of the Hebrew calendar does have - has no Gregorian
+        // counterpart to build at all.
+        int monthsInYear = calendar.GetMonthsInYear(year);
 
-        DateTime nextMonth;
-        if (month == 12)
-        {
-            nextMonth = new(year + 1, 1, 1);
-        }
-        else
-        {
-            nextMonth = new(year, month + 1, 1);
-        }
+        int previousYear = month == 1 ? year - 1 : year;
+        int previousMonth = month == 1 ? calendar.GetMonthsInYear(previousYear) : month - 1;
+        int daysInPreviousMonth = calendar.GetDaysInMonth(previousYear, previousMonth);
+
+        int nextYear = month == monthsInYear ? year + 1 : year;
+        int nextMonth = month == monthsInYear ? 1 : month + 1;
 
         int day = daysInPreviousMonth - dayOfWeek + 1;
 
         for (int j = 0; j < dayOfWeek; j++)
         {
-            days[0, j] = new(previousMonth.Year, previousMonth.Month, day, calendar);
+            days[0, j] = new(previousYear, previousMonth, day, calendar);
             day++;
         }
 
@@ -2519,7 +2543,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                     }
                     days[i, j] = ended
                                  ? null
-                                 : new(nextMonth.Year, nextMonth.Month, day - daysInMonth, calendar);
+                                 : new(nextYear, nextMonth, day - daysInMonth, calendar);
                     day++;
                 }
             }
@@ -3381,7 +3405,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
             // A target past the last rendered month only has to scroll far enough to become the last
             // one, so the months already on screen keep as much of their place as they can.
-            var movingForward = ((year * 12) + month) > ((_currentYear * 12) + _currentMonth);
+            var movingForward = (year, month).CompareTo((_currentYear, _currentMonth)) > 0;
 
             (_currentYear, _currentMonth) = movingForward
                                             ? AddMonths(year, month, -(_monthCount - 1))

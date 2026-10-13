@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -218,13 +219,13 @@ public class BitFullCalendarMiniCalendarTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitFullCalendarMiniCalendarShouldFollowADateChangedElsewhere()
+    public async Task BitFullCalendarMiniCalendarShouldFollowADateChangedElsewhere()
     {
         var component = RenderDay();
         NextButton(component).Click();
         Assert.AreEqual("April 2026", Title(component));
 
-        component.InvokeAsync(() => component.Instance.State.SetSelectedDate(new DateTime(2026, 7, 7)));
+        await component.InvokeAsync(() => component.Instance.State.SetSelectedDate(new DateTime(2026, 7, 7)));
 
         Assert.AreEqual("July 2026", Title(component));
         Assert.IsTrue(Day(component, new DateTime(2026, 7, 7)).ClassList.Contains("selected"));
