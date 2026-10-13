@@ -21,11 +21,7 @@ public partial class BitDropMenu : BitComponentBase
     private bool _contentRendered;
     private bool _selfDrivenIsOpen;
     private bool _focusCalloutOnClick;
-    private bool _focusTrapped;
-    private bool _tabOutSetUp;
-    private bool _escapeSetUp;
-    private bool _escapeFromAnywhere;
-    private bool _focusInSetUp;
+    private CalloutKeyboard? _keyboard;
     private bool _hoverInside;
     private bool _iconOnly;
     private CalloutOwner _owner;
@@ -453,7 +449,7 @@ public partial class BitDropMenu : BitComponentBase
         // from. Assigning the state is what would otherwise take that path, so it is suppressed for it.
         // The focus is deliberately left where it is: whatever took over from this callout is about to
         // take it.
-        await DisposeFocusTrap();
+        await DisposeKeyboard();
 
         _selfDrivenIsOpen = true;
         try
@@ -513,8 +509,6 @@ public partial class BitDropMenu : BitComponentBase
     {
         // The JS side reports it once and has already released the watch: the focus went into a callout the
         // pointer opened other than by a press of the pointer, which is the keyboard taking it over.
-        _focusInSetUp = false;
-
         await TakeOverFromPointer();
 
         // aria-modal follows the owner.
@@ -617,7 +611,7 @@ public partial class BitDropMenu : BitComponentBase
         // is open has to reach the already registered one rather than wait for the next time it opens.
         if (IsRendered && IsOpen)
         {
-            await SetupFocusTrap();
+            await SetupKeyboard();
         }
     }
 
@@ -657,9 +651,7 @@ public partial class BitDropMenu : BitComponentBase
 
             await ToggleCallout();
 
-            await SetupFocusTrap();
-
-            await FocusCalloutIfNeeded(focusCallout);
+            await SetupKeyboard(focus: focusCallout);
 
             if (notifyOpen)
             {
@@ -705,8 +697,7 @@ public partial class BitDropMenu : BitComponentBase
         }
         else if (focusCallout && _owner is CalloutOwner.Pointer)
         {
-            await TakeOverFromPointer();
-            await FocusCalloutIfNeeded(force: true);
+            await TakeOverFromPointer(focusCallout: true);
         }
         else if (HoverDriven is false || _hoverInside is false)
         {
@@ -719,7 +710,7 @@ public partial class BitDropMenu : BitComponentBase
         // is what the engines that focus it have already done, so nothing moves for them. It is left
         // alone where the callout is the one taking the focus, which is the case an activation from the
         // keyboard and the AutoFocus and TrapFocus modes each ask for - except on a callout the pointer
-        // opened, which those two modes leave the focus out of (see FocusCalloutIfNeeded). The button was just
+        // opened, which those two modes leave the focus out of (see ShouldFocusCallout). The button was just
         // clicked, so it is not scrolled to.
         if (IsDisposed is false && focusCallout is false && ((AutoFocus || TrapFocus) is false || _owner is CalloutOwner.Pointer))
         {
@@ -744,7 +735,7 @@ public partial class BitDropMenu : BitComponentBase
         {
             if (IsOpen is false) return;
 
-            if (e.Key is "Tab" && e.ShiftKey is false && _tabOutSetUp) return;
+            if (e.Key is "Tab" && e.ShiftKey is false && _keyboard is CalloutKeyboard.TabOut) return;
 
             // A callout the pointer opened is the pointer's to close, by leaving it, so a Tab passing through the
             // button leaves it showing for as long as the pointer is on it (WCAG 1.4.13). Escape still dismisses it.
@@ -776,8 +767,7 @@ public partial class BitDropMenu : BitComponentBase
             {
                 // The callout is already open, which is the state an arrow key from the trigger reaches
                 // when the pointer opened it: the content is showing but the keyboard is still outside it.
-                await TakeOverFromPointer();
-                await FocusCalloutIfNeeded(force: true);
+                await TakeOverFromPointer(focusCallout: true);
                 return;
             }
 
@@ -875,9 +865,7 @@ public partial class BitDropMenu : BitComponentBase
 
         await ToggleCallout();
 
-        await SetupFocusTrap();
-
-        await FocusCalloutIfNeeded(focusCallout);
+        await SetupKeyboard(focus: focusCallout);
 
         await OnOpen.InvokeAsync();
     }
@@ -933,7 +921,7 @@ public partial class BitDropMenu : BitComponentBase
         // here would only replay the entry animation of a callout that is not going anywhere.
         if (wasOpen && IsOpen) return;
 
-        await DisposeFocusTrap();
+        await DisposeKeyboard();
 
         await ToggleCallout();
 
@@ -1019,13 +1007,11 @@ public partial class BitDropMenu : BitComponentBase
 
             await ToggleCallout();
 
-            await SetupFocusTrap();
-
-            await FocusCalloutIfNeeded();
+            await SetupKeyboard(focus: false);
         }
         else
         {
-            await DisposeFocusTrap();
+            await DisposeKeyboard();
 
             await ToggleCallout();
         }
@@ -1042,24 +1028,22 @@ public partial class BitDropMenu : BitComponentBase
         await OnDismiss.InvokeAsync();
     }
 
-    private async Task FocusCalloutIfNeeded(bool force = false)
+    // Whether the focus goes into the callout at a moment it may (see SetupKeyboard): null is none, false the
+    // callout opening, true the keyboard asking for it.
+    private bool ShouldFocusCallout(bool? focus)
     {
+        if (focus is null) return false;
+
+        // The keyboard asking for the callout always gets it.
+        if (focus is true) return true;
+
         // A trapped callout has to hold the focus to trap it: leaving it on the trigger would let the very
         // first Tab out of the callout, since the trap only ever sees the keys pressed inside of it.
-        if ((force || AutoFocus || TrapFocus) is false || IsOpen is false || IsDisposed) return;
+        if ((AutoFocus || TrapFocus) is false) return false;
 
         // One the pointer opened was not asked for from the keyboard, and the pointer only passing over the
-        // button must not pull the focus out of whatever the user is typing into (WCAG 3.2.1). Only a caller that
-        // forces the focus in - the keyboard asking for the callout - gets past that.
-        if (force is false && _owner is CalloutOwner.Pointer) return;
-
-        if (_dotnetObj is null) return;
-
-        try
-        {
-            await _js.BitUtilsFocusFirstElement(_calloutId);
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
+        // button must not pull the focus out of whatever the user is typing into (WCAG 3.2.1).
+        return _owner is not CalloutOwner.Pointer;
     }
 
     private async Task FocusButton()
@@ -1142,132 +1126,86 @@ public partial class BitDropMenu : BitComponentBase
         return IsDisposed is false;
     }
 
-    // Registers the keyboard handling of the open callout. Escape closes it (see SetupEscape). And the Tab key:
-    // TrapFocus keeps it cycling there, and without it the keyboard is handed back to the page around the button
-    // at either end of the content. The callout is relocated to the end of the body while it is open, so the
-    // browser's own tab order would otherwise run from its last element off the page, and back from its first
-    // one into whatever ends the page, leaving the callout open behind a keyboard that has moved on (WCAG 2.4.3).
-    // Calling it again switches between the two. It is all registered on opening and released on closing, so a
-    // drop menu that is never opened - most of those repeated down a list - costs the JS side nothing.
-    private async Task SetupFocusTrap()
+    // Registers the keyboard handling of the open callout, and moves the focus into it where that is asked for, in
+    // one round trip (see Callouts.setupMenuKeyboard): on a server-rendered page each piece would be a round trip of
+    // its own, all of them standing between the key and the focus moving in. Exactly one mode is registered while
+    // the callout is open, and switching to another takes the previous one back in the same call:
+    // - A callout the pointer opened (FocusIn) takes no part in the tab order until the keyboard asks for it (see
+    //   TakeOverFromPointer): a Tab on the button moves on through the page rather than diverting into a callout the
+    //   keyboard never opened, and nothing is there to trap while the focus is outside it. The focus going into it is
+    //   watched for instead, since that is the keyboard asking for it too. It is shown wherever the focus happens to
+    //   be, and content that appears on hover has to be dismissible without moving the pointer or the focus
+    //   (WCAG 1.4.13), so an Escape pressed anywhere outside it and the root closes it as well.
+    // - Otherwise Escape is only the one pressed inside the callout - a key pressed outside it belongs to whatever
+    //   the focus is on, a dialog opened from the content, for one - and the Tab key is handled: TrapFocus keeps it
+    //   cycling there (FocusTrap), and without it the keyboard is handed back to the page around the button at either
+    //   end of the content (TabOut). The callout is relocated to the end of the body while it is open, so the
+    //   browser's own tab order would otherwise run from its last element off the page, and back from its first one
+    //   into whatever ends the page, leaving the callout open behind a keyboard that has moved on (WCAG 2.4.3).
+    // It is all registered on opening and released on closing, so a drop menu that is never opened - most of those
+    // repeated down a list - costs the JS side nothing. `focus` says whether this is a moment the focus may move into
+    // the callout: null for none (a parameter changing), false for its opening, true for the keyboard asking for it
+    // (see ShouldFocusCallout). Everything is decided and sent before anything is awaited, so a close coming in while
+    // the call is on its way finds the state as it was sent, and its own release reaches the JS side after it.
+    private async Task SetupKeyboard(bool? focus = null)
     {
-        if (IsDisposed || _dotnetObj is null) return;
+        if (IsDisposed || IsOpen is false || _dotnetObj is null) return;
+
+        var keyboard = _owner is CalloutOwner.Pointer ? CalloutKeyboard.FocusIn
+                     : TrapFocus ? CalloutKeyboard.FocusTrap
+                     : CalloutKeyboard.TabOut;
+
+        var mode = keyboard == _keyboard ? null : keyboard switch
+        {
+            CalloutKeyboard.FocusIn => "focusIn",
+            CalloutKeyboard.FocusTrap => "focusTrap",
+            _ => "tabOut"
+        };
+        var focusFirst = ShouldFocusCallout(focus);
+
+        if (mode is null && focusFirst is false) return;
+
+        _keyboard = keyboard;
 
         try
         {
-            await SetupEscape();
-
-            // A callout the pointer opened takes no part in the tab order until the keyboard asks for it (see
-            // TakeOverFromPointer): a Tab on the button moves on through the page rather than diverting into a
-            // callout the keyboard never opened, and nothing is there to trap while the focus is outside it. The
-            // focus going into it is watched for instead, since that is the keyboard asking for it too.
-            if (_owner is CalloutOwner.Pointer)
-            {
-                if (_focusInSetUp) return;
-
-                _focusInSetUp = true;
-                await _js.BitUtilsSetupFocusIn(_calloutId, _dotnetObj);
-                return;
-            }
-
-            if (_focusInSetUp)
-            {
-                _focusInSetUp = false;
-                await _js.BitUtilsDisposeFocusIn(_calloutId);
-            }
-
-            if (TrapFocus)
-            {
-                if (_tabOutSetUp)
-                {
-                    _tabOutSetUp = false;
-                    await _js.BitUtilsDisposeTabOut(_calloutId);
-                }
-
-                if (_focusTrapped) return;
-
-                _focusTrapped = true;
-                await _js.BitUtilsSetupFocusTrap(_calloutId);
-            }
-            else
-            {
-                if (_focusTrapped)
-                {
-                    _focusTrapped = false;
-                    await _js.BitUtilsDisposeFocusTrap(_calloutId);
-                }
-
-                if (_tabOutSetUp) return;
-
-                _tabOutSetUp = true;
-                await _js.BitUtilsSetupTabOut(_calloutId, _buttonId, _dotnetObj);
-            }
+            await _js.BitCalloutSetupMenuKeyboard(_calloutId, _dotnetObj, mode, _buttonId, _Id, focusFirst);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
 
-    // A callout the pointer opened becomes the keyboard's once the keyboard asks for it - an arrow key, Enter or
-    // Space on the button, or the focus going into the content other than by a press of the pointer - and from
-    // then on it is handled as one opened from the keyboard: its Tab key is handled (or trapped), its Escape is
-    // only the one pressed inside it, the pointer leaving it no longer closes it, and the close the pointer may
-    // already have scheduled is called off, so the callout does not disappear from under the focus. Moving the
-    // focus in is left to the caller, since the focus that went in on its own is already there.
-    private async Task TakeOverFromPointer()
+    // The keyboard taking over a callout the pointer opened: an arrow key, Enter or Space on the button, or the focus
+    // going into the content other than by a press of the pointer - and from then on it is handled as one opened from
+    // the keyboard: its Tab key is handled (or trapped), its Escape is only the one pressed inside it, the pointer
+    // leaving it no longer closes it, and the close the pointer may already have scheduled is called off, so the
+    // callout does not disappear from under the focus. A key asking for it moves the focus in along with the rest
+    // (focusCallout), which it does for a callout that is already the keyboard's too; the focus that went in on its
+    // own is already there.
+    private async Task TakeOverFromPointer(bool focusCallout = false)
     {
-        if (_owner is not CalloutOwner.Pointer || IsOpen is false) return;
+        if (IsOpen is false) return;
 
-        _owner = CalloutOwner.Keyboard;
+        if (_owner is CalloutOwner.Pointer)
+        {
+            _owner = CalloutOwner.Keyboard;
 
-        CancelHover();
+            CancelHover();
+        }
+        else if (focusCallout is false) return;
 
-        await SetupFocusTrap();
+        await SetupKeyboard(focus: focusCallout ? true : null);
     }
 
-    // Escape pressed inside the callout closes it. One opened by hovering is shown wherever the focus happens to
-    // be, and content that appears on hover has to be dismissible without moving the pointer or the focus
-    // (WCAG 1.4.13), so for that one the root is named as the trigger and an Escape pressed anywhere else counts
-    // too. A callout opened by a click is left alone by a key pressed outside it: that key belongs to whatever
-    // the focus is on - a dialog opened from the content, for one.
-    // Registering it again replaces the registration before it, which is how the keyboard taking over a callout the
-    // pointer opened narrows its Escape down to the one pressed inside the callout.
-    private async Task SetupEscape()
+    // Takes back everything SetupKeyboard set up, in one round trip.
+    private async Task DisposeKeyboard()
     {
-        var fromAnywhere = _owner is CalloutOwner.Pointer;
+        if (_keyboard is null) return;
 
-        if (_escapeSetUp && _escapeFromAnywhere == fromAnywhere) return;
+        _keyboard = null;
 
-        _escapeSetUp = true;
-        _escapeFromAnywhere = fromAnywhere;
-        await _js.BitUtilsSetupEscape(_calloutId, _dotnetObj!, fromAnywhere ? _Id : null);
-    }
-
-    private async Task DisposeFocusTrap()
-    {
         try
         {
-            if (_escapeSetUp)
-            {
-                _escapeSetUp = false;
-                await _js.BitUtilsDisposeEscape(_calloutId);
-            }
-
-            if (_focusTrapped)
-            {
-                _focusTrapped = false;
-                await _js.BitUtilsDisposeFocusTrap(_calloutId);
-            }
-
-            if (_tabOutSetUp)
-            {
-                _tabOutSetUp = false;
-                await _js.BitUtilsDisposeTabOut(_calloutId);
-            }
-
-            if (_focusInSetUp)
-            {
-                _focusInSetUp = false;
-                await _js.BitUtilsDisposeFocusIn(_calloutId);
-            }
+            await _js.BitCalloutDisposeKeyboard(_calloutId, forgetFocusOrigin: false);
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here
     }
@@ -1463,7 +1401,7 @@ public partial class BitDropMenu : BitComponentBase
         // Only what is registered is released: the keyboard handling of the callout exists while it is
         // open, so a drop menu disposed closed - most of those repeated down a list - owes the JS side
         // nothing for it.
-        await DisposeFocusTrap();
+        await DisposeKeyboard();
 
         await DisposeSwipes();
 
@@ -1481,5 +1419,14 @@ public partial class BitDropMenu : BitComponentBase
         Default,
         Pointer,
         Keyboard
+    }
+
+    // The keyboard handling registered for the open callout (see SetupKeyboard): the focus going into it watched
+    // for, the focus trapped in it, or it put into the tab order after the button.
+    private enum CalloutKeyboard
+    {
+        FocusIn,
+        FocusTrap,
+        TabOut
     }
 }

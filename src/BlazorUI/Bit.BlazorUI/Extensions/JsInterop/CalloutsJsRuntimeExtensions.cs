@@ -160,7 +160,22 @@ internal static class CalloutsJsRuntimeExtensions
                                       calloutId, dotnetObj, captureFocusOrigin, escape, escapeTriggerId, focusTrap, tabOutTriggerId);
     }
 
-    // Takes back everything BitCalloutSetupKeyboard may have set up, in one round trip.
+    // Switches the keyboard handling of an open BitDropMenu over to the given mode ("focusIn", "focusTrap" or
+    // "tabOut"; null leaves it as it is), taking back what the previous one registered, and moves the focus into
+    // the callout last where asked for - all in one round trip (see Callouts.setupMenuKeyboard).
+    internal static ValueTask BitCalloutSetupMenuKeyboard<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] T>(
+        this IJSRuntime jsRuntime,
+        string calloutId,
+        DotNetObjectReference<T> dotnetObj,
+        string? mode,
+        string triggerId,
+        string rootId,
+        bool focusFirst) where T : class
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Callouts.setupMenuKeyboard", calloutId, dotnetObj, mode, triggerId, rootId, focusFirst);
+    }
+
+    // Takes back everything BitCalloutSetupKeyboard or BitCalloutSetupMenuKeyboard may have set up, in one round trip.
     internal static ValueTask BitCalloutDisposeKeyboard(this IJSRuntime jsRuntime, string calloutId, bool forgetFocusOrigin)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Callouts.disposeKeyboard", calloutId, forgetFocusOrigin);

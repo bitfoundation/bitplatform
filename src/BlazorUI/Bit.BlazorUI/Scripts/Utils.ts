@@ -959,7 +959,9 @@
                 const inner = Utils.getFocusables(trigger);
                 if (inner.length > 0 && e.target !== inner[inner.length - 1]) return;
 
-                if (trigger.getAttribute('aria-expanded') === 'false' || !Utils.isFocusable(element)) return;
+                // Whether the popup is shown at all: a popup is kept out of the tab sequence itself (tabindex="-1"),
+                // which is not what is asked here.
+                if (trigger.getAttribute('aria-expanded') === 'false' || !Utils.canHoldFocus(element)) return;
 
                 const target = Utils.firstFocusable(element) ?? (element.hasAttribute('tabindex') ? element : null);
                 if (!target) return;
