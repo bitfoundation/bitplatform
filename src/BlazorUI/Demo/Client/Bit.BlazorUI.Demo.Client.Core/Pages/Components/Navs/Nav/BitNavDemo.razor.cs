@@ -638,7 +638,7 @@ public partial class BitNavDemo
                    Name = "Badge",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "The badge text to render after the text of the nav item, for a count or a short status (\"3\", \"New\"). The item keeps its icon, its text and its states, and a template in the Normal mode keeps it too. Wins over Dot. Group headers, separators and a template in the Replace mode do not render it; the IconOnly nav pins it to the corner of the icon.",
+                   Description = "The badge text to render after the text of the nav item, for a count or a short status (\"3\", \"New\"). The item keeps its icon, its text and its states; a template in the Normal mode replaces the default icon and text, but the badge remains. Wins over Dot. Group headers, separators and a template in the Replace mode do not render it; the IconOnly nav pins it to the corner of the icon.",
                },
                new()
                {
@@ -857,7 +857,7 @@ public partial class BitNavDemo
                    Name = "Badge",
                    Type = "string?",
                    DefaultValue = "null",
-                   Description = "The badge text to render after the text of the nav option, for a count or a short status (\"3\", \"New\"). The option keeps its icon, its text and its states, and a template in the Normal mode keeps it too. Wins over Dot. Group headers, separators and a template in the Replace mode do not render it; the IconOnly nav pins it to the corner of the icon.",
+                   Description = "The badge text to render after the text of the nav option, for a count or a short status (\"3\", \"New\"). The option keeps its icon, its text and its states; a template in the Normal mode replaces the default icon and text, but the badge remains. Wins over Dot. Group headers, separators and a template in the Replace mode do not render it; the IconOnly nav pins it to the corner of the icon.",
                },
                new()
                {
