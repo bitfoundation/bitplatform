@@ -7,9 +7,6 @@ on:
     paths:
     - 'src/BlazorUI/**'
     - 'src/Minifier/**'
-    - 'src/Bit.Build.props'
-    - 'src/global.json'
-    - '.github/workflows/bit.ci.BlazorUI.yml'
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true

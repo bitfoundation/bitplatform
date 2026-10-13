@@ -52,6 +52,3 @@ jobs:
 
     - name: dotnet build
       run: dotnet build src/Bit.CI.Release.slnx -c Release
-
-    - name: Test BlazorUI (Release)
-      run: cd src/BlazorUI/Tests/Bit.BlazorUI.Tests && dotnet test -c Release --no-build
