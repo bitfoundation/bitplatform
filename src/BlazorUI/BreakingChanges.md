@@ -5,6 +5,19 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## vNext (after 10.6.2)
 
+### The item type of the item-based components keeps its public properties in a trimmed app
+
+`BitDropdown`, `BitChoiceGroup`, `BitButtonGroup`, `BitMenuButton`, `BitNav`, `BitNavBar`, `BitNavPanel`,
+`BitBreadcrumb`, `BitTimeline`, `BitAccordionList` and `BitDataGrid` (with `BitDataGridColumn`) read an app's own item
+type by the names of its properties - the `NameSelectors` names, a column's `Field`. A trimmed app could lose a
+property it never read in code of its own, and the component then showed nothing for it. Their `TItem` now carries
+`[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]`, so the type's public properties are
+kept wherever it is handed to one of them. Nothing changes for an app that names its item type (`BitDropdown<MyItem,
+string>`). **A generic component or method of an app's own that passes its type parameter on as one of these
+`TItem`s** gets the trim analysis warning IL2091 when it runs the trim analyzers; give its type parameter the same
+attribute. A `BitDataGridColumn.Field` path that reaches a nested type ("Address.City") still depends on the app
+reading that nested property somewhere itself; `Property="x => x.Address.City"` names every member and keeps them all.
+
 ### Rate limiters run their callback on the caller's context
 
 `BitDebouncer.Do` and `BitThrottler.Do` used to run the callback through `Task.Run`, on the thread pool. They

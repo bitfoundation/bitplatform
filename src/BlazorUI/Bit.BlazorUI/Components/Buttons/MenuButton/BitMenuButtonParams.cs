@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The parameters for <see cref="BitMenuButton{TItem}"/> component.
@@ -283,7 +285,7 @@ public class BitMenuButtonParams : BitComponentBaseParams, IBitComponentParams
     /// <param name="bitMenuButton">
     /// The <see cref="BitMenuButton{TItem}"/> instance whose properties will be updated. Cannot be null.
     /// </param>
-    public void UpdateParameters<TItem>(BitMenuButton<TItem> bitMenuButton) where TItem : class
+    public void UpdateParameters<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(BitMenuButton<TItem> bitMenuButton) where TItem : class
     {
         if (bitMenuButton is null) return;
 

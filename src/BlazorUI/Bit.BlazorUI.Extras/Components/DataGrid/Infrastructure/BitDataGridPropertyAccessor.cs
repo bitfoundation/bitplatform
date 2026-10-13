@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -9,7 +10,7 @@ namespace Bit.BlazorUI;
 /// Builds and caches fast compiled delegates to read and write a property on
 /// <typeparamref name="TItem"/> by name, supporting nested paths like "Address.City".
 /// </summary>
-public sealed class BitDataGridPropertyAccessor<TItem>
+public sealed class BitDataGridPropertyAccessor<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>
 {
     // Build() resolves members with BindingFlags.IgnoreCase, so logically identical paths that differ only
     // in casing ("Address.City" vs "address.city") map to the same member. Key the cache case-insensitively
@@ -130,6 +131,8 @@ public sealed class BitDataGridPropertyAccessor<TItem>
         }
     }
 
+    // A value type needs no constructor for its default, so nothing the trimmer could remove stands in the way.
+    [UnconditionalSuppressMessage("Trimming", "IL2072", Justification = "Activator.CreateInstance is only called for a value type, whose default instance needs no constructor.")]
     private object? DefaultValue()
         => PropertyType.IsValueType && Nullable.GetUnderlyingType(PropertyType) is null
             ? Activator.CreateInstance(PropertyType)
@@ -185,6 +188,10 @@ public sealed class BitDataGridPropertyAccessor<TItem>
         return Cache.GetOrAdd(path, Build);
     }
 
+    // The first segment of the path is a property of TItem, which the annotation on TItem keeps. A nested segment is a
+    // property of the type the previous one returns, which the trimmer cannot see: it is kept when the app names it
+    // anywhere, which a Property selector always does (BitDataGridColumn.Field documents the rest).
+    [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "The first segment is kept by the PublicProperties annotation on TItem; nested segments are kept by the app's own use of them, as BitDataGridColumn.Field documents.")]
     private static BitDataGridPropertyAccessor<TItem> Build(string path)
     {
         var param = Expression.Parameter(typeof(TItem), "x");
@@ -221,8 +228,9 @@ public sealed class BitDataGridPropertyAccessor<TItem>
             // otherwise GetProperty would look on Nullable<T> (which only has Value/HasValue) and fail for
             // a nested path like "Price.Amount" where Price is Money?. The null guard added above already
             // protects the getter/setter from dereferencing a null nullable here.
-            var owner = Nullable.GetUnderlyingType(body.Type) is not null
-                ? Expression.Property(body, "Value")
+            // The conversion to the underlying type is what .Value compiles to, without naming the member by a string.
+            var owner = Nullable.GetUnderlyingType(body.Type) is { } underlying
+                ? Expression.Convert(body, underlying)
                 : body;
 
             var prop = owner.Type.GetProperty(segment,

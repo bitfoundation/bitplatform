@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// ChoiceGroup let people select a single option from two or more choices.
 /// </summary>
-public partial class BitChoiceGroup<TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
+public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
 {
     private List<TItem> _items = [];
     private string _name = default!;

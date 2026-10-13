@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -9,12 +10,17 @@ namespace Bit.BlazorUI;
 /// or be a purely template-driven column.
 /// </summary>
 /// <typeparam name="TItem">The row item type.</typeparam>
-public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
+public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : ComponentBase, IDisposable
 {
     [CascadingParameter] internal BitDataGrid<TItem>? Grid { get; set; }
 
     /// <summary>Name of the property this column is bound to. Supports nested paths ("Address.City").
     /// Prefer <see cref="Property"/> for a strongly typed, refactor-safe alternative.</summary>
+    /// <remarks>
+    /// In a trimmed app the public properties of <typeparamref name="TItem"/> are kept for this lookup, but the
+    /// properties a nested path reaches on other types are kept only when the app reads them somewhere itself;
+    /// <see cref="Property"/> names every member of the chain, so it keeps them all.
+    /// </remarks>
     [Parameter] public string? Field { get; set; }
 
     /// <summary>

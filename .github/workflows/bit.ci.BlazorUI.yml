@@ -7,6 +7,9 @@ on:
     paths:
     - 'src/BlazorUI/**'
     - 'src/Minifier/**'
+    - 'src/Bit.Build.props'
+    - 'src/global.json'
+    - '.github/workflows/bit.ci.BlazorUI.yml'
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -56,3 +59,60 @@ jobs:
 
     - name: Test
       run: cd src/BlazorUI/Tests/Bit.BlazorUI.Tests && dotnet test --no-build --verbosity normal -p:BuildAllTfms=true
+
+    # The MCP server suite boots the demo server as a child process and talks to it over HTTP (about a minute).
+    - name: Test MCP server
+      run: dotnet run --project src/BlazorUI/Tests/Bit.BlazorUI.Tests.Mcp
+
+    # A Release build packs, and packing validates the public API against the last published packages
+    # (src/BlazorUI/Bit.BlazorUI.PackageValidation.props); it also minifies the scripts the way a release does.
+    - name: Validate packages
+      run: |
+        dotnet build src/BlazorUI/Bit.BlazorUI/Bit.BlazorUI.csproj -c Release
+        dotnet build src/BlazorUI/Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj -c Release
+        dotnet build src/BlazorUI/Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj -c Release
+        dotnet build src/BlazorUI/Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj -c Release
+
+    # Trims an app that uses the packages and fails on any trim warning of theirs (Tests/Bit.BlazorUI.Tests.Consumer).
+    - name: Trimmed publish
+      run: dotnet publish src/BlazorUI/Tests/Bit.BlazorUI.Tests.Consumer -c Release
+
+  browser-tests-BlazorUI:
+    if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
+    name: browser tests Bit.BlazorUI (${{ matrix.browser }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [ chromium, firefox, webkit ]
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: Build browser tests and their host
+      run: |
+        dotnet build src/BlazorUI/Tests/Performance/Bit.BlazorUI.Tests.Performance.TestHost
+        dotnet build src/BlazorUI/Tests/Performance/Bit.BlazorUI.Tests.Performance
+
+    - name: Install Playwright browser
+      run: pwsh src/BlazorUI/Tests/Performance/Bit.BlazorUI.Tests.Performance/bin/Debug/net10.0/playwright.ps1 install --with-deps ${{ matrix.browser }}
+
+    # The timing thresholds of the Performance category depend on the runner, so they stay a local tool.
+    - name: Test
+      env:
+        RUN_BROWSER_TESTS: 1
+        BROWSER: ${{ matrix.browser }}
+      run: cd src/BlazorUI/Tests/Performance/Bit.BlazorUI.Tests.Performance && dotnet test --no-build -f net10.0 --filter "TestCategory!=Performance"

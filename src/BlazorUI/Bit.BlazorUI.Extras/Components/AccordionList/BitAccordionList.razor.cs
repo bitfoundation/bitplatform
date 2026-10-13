@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// items (panels) from a single collection. It manages the expand/collapse state of all the items and supports
 /// single-expand (default) and multiple-expand modes.
 /// </summary>
-public partial class BitAccordionList<TItem> : BitComponentBase where TItem : class
+public partial class BitAccordionList<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : BitComponentBase where TItem : class
 {
     // The keys the header of an item answers on top of the Tab key. They are suppressed on a listener of
     // the browser's own, since Blazor's preventDefault directive cannot be decided per key, and a header

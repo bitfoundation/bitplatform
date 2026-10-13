@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -7,7 +8,7 @@ namespace Bit.BlazorUI;
 /// </summary>
 public static class BitDataGridDataProcessor
 {
-    public static IReadOnlyList<TItem> Filter<TItem>(
+    public static IReadOnlyList<TItem> Filter<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IEnumerable<TItem> source,
         IReadOnlyList<BitDataGridFilterDescriptor> filters,
         IReadOnlyDictionary<string, BitDataGridColumn<TItem>> columns)
@@ -32,7 +33,7 @@ public static class BitDataGridDataProcessor
     /// <see cref="Filter"/>, for pipelines that decide row by row rather than over a flat sequence
     /// (the tree grid, which must keep a non-matching row whose descendants match).
     /// </summary>
-    public static bool MatchesFilters<TItem>(
+    public static bool MatchesFilters<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         TItem item,
         IReadOnlyList<BitDataGridFilterDescriptor> filters,
         IReadOnlyDictionary<string, BitDataGridColumn<TItem>> columns)
@@ -50,7 +51,7 @@ public static class BitDataGridDataProcessor
     /// Whether a single row matches the quick-search term - the per-row form of <see cref="Search"/>.
     /// A blank term matches every row; a term with no searchable column to read matches none.
     /// </summary>
-    public static bool MatchesSearch<TItem>(
+    public static bool MatchesSearch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         TItem item,
         string? term,
         IReadOnlyList<BitDataGridColumn<TItem>> columns)
@@ -74,7 +75,7 @@ public static class BitDataGridDataProcessor
     /// read matches none - the same contract <see cref="BitDataGridQueryableProcessor.ApplySearch"/>
     /// applies over an <see cref="IQueryable{T}"/> source.
     /// </summary>
-    public static IReadOnlyList<TItem> Search<TItem>(
+    public static IReadOnlyList<TItem> Search<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IEnumerable<TItem> source,
         string? term,
         IReadOnlyList<BitDataGridColumn<TItem>> columns)
@@ -105,7 +106,7 @@ public static class BitDataGridDataProcessor
         return result;
     }
 
-    public static IReadOnlyList<TItem> Sort<TItem>(
+    public static IReadOnlyList<TItem> Sort<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IReadOnlyList<TItem> source,
         IReadOnlyList<BitDataGridSortDescriptor> sorts,
         IReadOnlyDictionary<string, BitDataGridColumn<TItem>> columns)
@@ -139,7 +140,7 @@ public static class BitDataGridDataProcessor
         return ordered?.ToList() ?? source;
     }
 
-    public static List<BitDataGridGroup<TItem>> Group<TItem>(
+    public static List<BitDataGridGroup<TItem>> Group<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IReadOnlyList<TItem> source,
         IReadOnlyList<BitDataGridGroupDescriptor> groups,
         IReadOnlyDictionary<string, BitDataGridColumn<TItem>> columns)
@@ -158,7 +159,7 @@ public static class BitDataGridDataProcessor
         return BuildGroups(source, valid, columns, 0, string.Empty);
     }
 
-    private static List<BitDataGridGroup<TItem>> BuildGroups<TItem>(
+    private static List<BitDataGridGroup<TItem>> BuildGroups<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IReadOnlyList<TItem> source,
         IReadOnlyList<BitDataGridGroupDescriptor> groups,
         IReadOnlyDictionary<string, BitDataGridColumn<TItem>> columns,
@@ -222,7 +223,7 @@ public static class BitDataGridDataProcessor
         return result;
     }
 
-    public static List<BitDataGridAggregateResult> Aggregate<TItem>(
+    public static List<BitDataGridAggregateResult> Aggregate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IReadOnlyList<TItem> source,
         IEnumerable<BitDataGridColumn<TItem>> columns)
     {
@@ -250,7 +251,7 @@ public static class BitDataGridDataProcessor
         return results;
     }
 
-    private static object? ComputeAggregate<TItem>(IReadOnlyList<TItem> source, BitDataGridColumn<TItem> column)
+    private static object? ComputeAggregate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(IReadOnlyList<TItem> source, BitDataGridColumn<TItem> column)
     {
         var accessor = column.Accessor!;
         switch (column.Aggregate)

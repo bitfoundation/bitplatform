@@ -416,7 +416,7 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    internal static ValueTask BitUtilsRegisterNavigationKeys<T>(this IJSRuntime jsRuntime, ElementReference element, string[] keys, DotNetObjectReference<T> dotnetObj) where T : class
+    internal static ValueTask BitUtilsRegisterNavigationKeys<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(this IJSRuntime jsRuntime, ElementReference element, string[] keys, DotNetObjectReference<T> dotnetObj) where T : class
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.registerNavigationKeys", element, keys, dotnetObj);
     }

@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Linq.Expressions;
 using System.Reflection;
 
 namespace Bit.BlazorUI;
@@ -13,7 +14,7 @@ namespace Bit.BlazorUI;
 public static class BitDataGridQueryableProcessor
 {
     /// <summary>Applies the active filters then sorts onto the queryable (no paging).</summary>
-    public static IQueryable<TItem> Apply<TItem>(
+    public static IQueryable<TItem> Apply<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IQueryable<TItem> source,
         IReadOnlyList<BitDataGridFilterDescriptor> filters,
         IReadOnlyList<BitDataGridSortDescriptor> sorts,
@@ -21,7 +22,7 @@ public static class BitDataGridQueryableProcessor
         => ApplySorts(ApplyFilters(source, filters, columns), sorts, columns);
 
     /// <summary>Applies the quick-search term, then the filters and sorts, onto the queryable.</summary>
-    public static IQueryable<TItem> Apply<TItem>(
+    public static IQueryable<TItem> Apply<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IQueryable<TItem> source,
         string? search,
         IReadOnlyList<BitDataGridFilterDescriptor> filters,
@@ -39,7 +40,7 @@ public static class BitDataGridQueryableProcessor
     /// nothing a term could ever match, so it matches no row - the same contract as
     /// <see cref="BitDataGridDataProcessor.Search"/> over an in-memory source.
     /// </summary>
-    public static IQueryable<TItem> ApplySearch<TItem>(
+    public static IQueryable<TItem> ApplySearch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IQueryable<TItem> source,
         string? search,
         IEnumerable<BitDataGridColumn<TItem>> columns)
@@ -95,7 +96,7 @@ public static class BitDataGridQueryableProcessor
             => ReferenceEquals(node, _from) ? _to : base.VisitParameter(node);
     }
 
-    public static IQueryable<TItem> ApplyFilters<TItem>(
+    public static IQueryable<TItem> ApplyFilters<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IQueryable<TItem> source,
         IReadOnlyList<BitDataGridFilterDescriptor> filters,
         IReadOnlyDictionary<string, BitDataGridColumn<TItem>> columns)
@@ -111,7 +112,7 @@ public static class BitDataGridQueryableProcessor
         return source;
     }
 
-    public static IQueryable<TItem> ApplySorts<TItem>(
+    public static IQueryable<TItem> ApplySorts<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IQueryable<TItem> source,
         IReadOnlyList<BitDataGridSortDescriptor> sorts,
         IReadOnlyDictionary<string, BitDataGridColumn<TItem>> columns)
@@ -142,7 +143,7 @@ public static class BitDataGridQueryableProcessor
     /// Builds a translatable predicate for one filter descriptor, or <c>null</c> when the filter
     /// carries no criteria (empty value) or cannot be expressed for the member's type.
     /// </summary>
-    private static Expression<Func<TItem, bool>>? BuildPredicate<TItem>(
+    private static Expression<Func<TItem, bool>>? BuildPredicate<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         BitDataGridPropertyAccessor<TItem> accessor, BitDataGridFilterDescriptor filter)
     {
         var lambda = accessor.PropertyLambda;
@@ -171,7 +172,7 @@ public static class BitDataGridQueryableProcessor
     /// of the same per-member equalities a single <see cref="BitDataGridFilterOperator.Equals"/> builds.
     /// Members that cannot be coerced to the member type are dropped; a set left empty applies no filter.
     /// </summary>
-    private static Expression? BuildSetMatch<TItem>(
+    private static Expression? BuildSetMatch<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         BitDataGridPropertyAccessor<TItem> accessor, Expression member, BitDataGridFilterDescriptor filter, bool negate)
     {
         if (!BitDataGridDataProcessor.TryGetSetMembers(filter.Value, out var members) || members.Count == 0) return null;
@@ -283,7 +284,7 @@ public static class BitDataGridQueryableProcessor
             : Expression.AndAlso(Expression.Not(isNull), match);
     }
 
-    private static Expression? BuildComparison<TItem>(
+    private static Expression? BuildComparison<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         BitDataGridPropertyAccessor<TItem> accessor, Expression member, BitDataGridFilterDescriptor filter)
     {
         if (filter.Value is string s && string.IsNullOrWhiteSpace(s)) return null;

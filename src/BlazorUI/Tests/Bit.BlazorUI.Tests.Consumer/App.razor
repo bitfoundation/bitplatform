@@ -14,6 +14,16 @@
             <BitIcon IconName="@BitIconName.Add" />
             <BitBreadcrumb Items="_trail" AutoCollapse />
             <BitNav Items="_nav" />
+            <BitNavBar Items="_navBar" />
+            <BitNavPanel Items="_nav" />
+            <BitMenuButton Text="Menu" Items="_menu" />
+            <BitButtonGroup Items="_buttons" />
+            <BitChoiceGroup Items="_choices" @bind-Value="_choice" />
+            <BitTimeline Items="_timeline" />
+            <BitAccordionList Items="_accordion" />
+
+            @* An app's own item type, read by the names of its properties: what the trimming check is most about. *@
+            <BitDropdown Items="_fruits" NameSelectors="_fruitSelectors" @bind-Value="_fruit" />
 
             <BitDataGrid Items="_people">
                 <BitDataGridColumn Property="p => p.Name" Title="Name" />
@@ -70,7 +80,30 @@
         new("Alan", 41),
     ];
 
+    private string? _choice;
+    private string? _fruit = "b";
+
+    private readonly List<BitNavBarItem> _navBar = [new() { Text = "Home", Url = "/" }];
+    private readonly List<BitMenuButtonItem> _menu = [new() { Text = "Open", Key = "open" }];
+    private readonly List<BitButtonGroupItem> _buttons = [new() { Text = "Bold" }, new() { Text = "Italic" }];
+    private readonly List<BitChoiceGroupItem<string>> _choices = [new() { Text = "One", Value = "1" }, new() { Text = "Two", Value = "2" }];
+    private readonly List<BitTimelineItem> _timeline = [new() { PrimaryText = "Created" }];
+    private readonly List<BitAccordionListItem> _accordion = [new() { Title = "First", Description = "Body" }];
+
+    private readonly List<Fruit> _fruits = [new() { Title = "Apple", Code = "a" }, new() { Title = "Banana", Code = "b" }];
+    private readonly BitDropdownNameSelectors<Fruit, string> _fruitSelectors = new()
+    {
+        Text = { Name = nameof(Fruit.Title) },
+        Value = { Name = nameof(Fruit.Code) },
+    };
+
     private void ToggleModal() => _isModalOpen = _isModalOpen is false;
 
     private sealed record Person(string Name, int Age);
+
+    private sealed class Fruit
+    {
+        public string? Title { get; set; }
+        public string? Code { get; set; }
+    }
 }

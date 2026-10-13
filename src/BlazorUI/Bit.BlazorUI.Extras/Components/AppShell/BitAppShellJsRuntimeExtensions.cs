@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 internal static class BitAppShellJsRuntimeExtensions
 {
@@ -32,7 +34,7 @@ internal static class BitAppShellJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.AppShell.clearScrolls", url);
     }
 
-    internal static ValueTask BitAppShellSetupKeyboard<T>(this IJSRuntime jsRuntime,
+    internal static ValueTask BitAppShellSetupKeyboard<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(this IJSRuntime jsRuntime,
                                                           string id,
                                                           ElementReference element,
                                                           DotNetObjectReference<T> dotnetObj) where T : class

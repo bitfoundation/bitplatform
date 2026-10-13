@@ -5,7 +5,6 @@ using System.Reflection;
 
 namespace Bit.BlazorUI;
 
-[SuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "<Pending>")]
 internal static class ObjectExtensions
 {
     // These helpers sit on the render path of the item-based components (called one or more times per item
@@ -14,9 +13,19 @@ internal static class ObjectExtensions
     // without one of the optional properties would otherwise pay the failed lookup on every call.
     private static readonly ConcurrentDictionary<(Type Type, string Name), PropertyInfo?> _properties = new();
 
+    // The item types are read by the name of a property, which the trimmer cannot follow. What keeps those properties is
+    // the [DynamicallyAccessedMembers(PublicProperties)] on the TItem of every component that reads its items this way
+    // (BitItemPropertyReadersContractTests pins that), so an app's item type keeps its public properties wherever it
+    // is handed to one of them.
+    [UnconditionalSuppressMessage("Trimming", "IL2080", Justification = "The public properties of the item types are kept by the DynamicallyAccessedMembers annotation on the TItem of every component that reads items by property name.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "The public properties of the item types are kept by the DynamicallyAccessedMembers annotation on the TItem of every component that reads items by property name.")]
     private static PropertyInfo? GetPropertyInfo(Type type, string propertyName) =>
         _properties.GetOrAdd((type, propertyName), static key => key.Type.GetProperty(key.Name));
 
+    // The implicit operator is looked up on the type asked for, which the trimmer cannot see. The one the components
+    // rely on - an icon given by its name - is called directly below, so it is kept; any other is an app's own type,
+    // whose operator is kept when the app uses it, and a missing one falls back to Convert.ChangeType.
+    [UnconditionalSuppressMessage("Trimming", "IL2090", Justification = "BitIconInfo's operator is called directly; another type's implicit operator is kept by the app's own use of it, and Convert.ChangeType is the fallback.")]
     internal static T? GetValueFromProperty<T>(this object? obj, string propertyName, T? defaultValue = default)
     {
         var value = obj is null ? null : GetPropertyInfo(obj.GetType(), propertyName)?.GetValue(obj);
@@ -44,6 +53,11 @@ internal static class ObjectExtensions
         if (value is T tValue)
         {
             return tValue;
+        }
+
+        if (targetType == typeof(BitIconInfo) && value is string iconName)
+        {
+            return (BitIconInfo?)iconName is T icon ? icon : defaultValue;
         }
 
         var implicitOp = targetType.GetMethod("op_Implicit", [value.GetType()]);

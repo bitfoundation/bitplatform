@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The parameters for <see cref="BitBreadcrumb{TItem}"/> component.
@@ -169,7 +171,7 @@ public class BitBreadcrumbParams : BitComponentBaseParams, IBitComponentParams
     /// <param name="bitBreadcrumb">
     /// The <see cref="BitBreadcrumb{TItem}"/> instance whose properties will be updated. Cannot be null.
     /// </param>
-    public void UpdateParameters<TItem>(BitBreadcrumb<TItem> bitBreadcrumb) where TItem : class
+    public void UpdateParameters<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(BitBreadcrumb<TItem> bitBreadcrumb) where TItem : class
     {
         if (bitBreadcrumb is null) return;
 

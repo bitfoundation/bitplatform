@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.JSInterop;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -14,7 +15,7 @@ namespace Bit.BlazorUI;
 /// </summary>
 /// <typeparam name="TItem">The row item type.</typeparam>
 [CascadingTypeParameter(nameof(TItem))]
-public partial class BitDataGrid<TItem> : BitComponentBase
+public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : BitComponentBase
 {
     [Inject] private IJSRuntime JS { get; set; } = default!;
 

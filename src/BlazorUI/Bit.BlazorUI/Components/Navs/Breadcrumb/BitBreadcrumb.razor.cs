@@ -7,7 +7,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// Breadcrumbs should be used as a navigational aid in your app or site. They indicate the current page’s location within a hierarchy and help the user understand where they are in relation to the rest of that hierarchy.
 /// </summary>
-public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
+public partial class BitBreadcrumb<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : BitComponentBase where TItem : class
 {
     private bool _isCalloutOpen;
     private bool _optionsOrderDirty;

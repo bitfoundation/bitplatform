@@ -14,7 +14,7 @@ namespace Bit.BlazorUI;
 /// Give the group an accessible name through <see cref="BitComponentBase.AriaLabel"/>, since assistive technologies
 /// do not announce an unlabeled group or toolbar.
 /// </remarks>
-public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : class
+public partial class BitButtonGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : BitComponentBase where TItem : class
 {
     private int _optionKeySeed;
     private bool _autoFocusDone;

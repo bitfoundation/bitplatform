@@ -18,7 +18,7 @@ namespace Bit.BlazorUI;
 /// The defaults of every nav of a page can be set at once through a <see cref="BitNavParams"/> handed to a
 /// <see cref="BitParams"/>.
 /// </remarks>
-public partial class BitNav<TItem> : BitComponentBase where TItem : class
+public partial class BitNav<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : BitComponentBase where TItem : class
 {
     private const int TYPE_AHEAD_RESET_MS = 1000;
 

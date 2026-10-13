@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The parameters for <see cref="BitChoiceGroup{TItem, TValue}"/> component.
@@ -147,7 +149,7 @@ public class BitChoiceGroupParams : BitComponentBaseParams, IBitComponentParams
     /// <param name="bitChoiceGroup">
     /// The <see cref="BitChoiceGroup{TItem, TValue}"/> instance whose properties will be updated. Cannot be null.
     /// </param>
-    public void UpdateParameters<TItem, TValue>(BitChoiceGroup<TItem, TValue> bitChoiceGroup) where TItem : class, new()
+    public void UpdateParameters<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem, TValue>(BitChoiceGroup<TItem, TValue> bitChoiceGroup) where TItem : class, new()
     {
         if (bitChoiceGroup is null) return;
 

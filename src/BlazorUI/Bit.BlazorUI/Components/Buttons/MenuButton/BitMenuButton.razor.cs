@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// group headers, separators, links, keyboard shortcuts, a loading state, and full keyboard navigation with
 /// proper ARIA menu semantics.
 /// </summary>
-public partial class BitMenuButton<TItem> : BitComponentBase where TItem : class
+public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : BitComponentBase where TItem : class
 {
     // The typeahead of a menu resets after this long without a keystroke, which is what separates one
     // search from the next (the APG menu pattern leaves the exact value to the implementation).
