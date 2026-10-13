@@ -415,7 +415,7 @@ public partial class BitFileInputDemo
             Name = "Browse",
             Type = "() => Task",
             DefaultValue = "",
-            Description = "Opens the file browser dialog programmatically, allowing users to select files. If AutoReset is enabled, the input is reset before opening.",
+            Description = "Opens the file browser dialog programmatically, allowing users to select files. If AutoReset is enabled, the input is reset before opening. A disabled or read-only file input opens nothing.",
         },
         new()
         {
@@ -449,7 +449,7 @@ public partial class BitFileInputDemo
             Name = "Reset",
             Type = "() => Task",
             DefaultValue = "",
-            Description = "Clears all selected files and resets the file input to its initial state without invoking any callback.",
+            Description = "Clears all selected files and resets the file input to its initial state without invoking any callback. A bound Value is cleared along with the files, without the EditForm being told: a reset marks no field modified.",
         }
     ];
 

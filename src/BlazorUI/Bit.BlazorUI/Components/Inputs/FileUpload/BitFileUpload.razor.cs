@@ -59,11 +59,6 @@ public partial class BitFileUpload : BitInputBase<string?>
     private string _buttonId = default!;
     private string _descriptionId = default!;
     private ElementReference _inputRef;
-    // The value the list last wrote, or the one last pushed in from outside, which is how a value the consumer
-    // changed is told apart from one the component wrote itself.
-    private string? _valueParam;
-    // The names of the files of the value as the list last published them.
-    private string? _names;
     private ElementReference _labelRef;
     // The button of which file the focus is to be put on after the next render, with the neighbour to fall
     // back to. An action taken from inside a file item - removing it, starting, pausing or canceling its
@@ -185,6 +180,11 @@ public partial class BitFileUpload : BitInputBase<string?>
     /// Whether the file list and the upload state are cleared right before the file dialog opens, so that
     /// every browse starts from a clean slate - the list empties even if the dialog is then cancelled.
     /// </summary>
+    /// <remarks>
+    /// The reset is the one <see cref="Reset"/> does: a bound value follows the emptied list, but the EditContext is not
+    /// told, so a required field does not turn invalid while the dialog is open. The selection the dialog delivers is
+    /// validated as usual.
+    /// </remarks>
     [Parameter] public bool AutoReset { get; set; }
 
     /// <summary>
@@ -1096,7 +1096,7 @@ public partial class BitFileUpload : BitInputBase<string?>
 
         Announce();
 
-        await PublishValueAsync(notifyChange: true);
+        await PublishNamesAsync(notifyField: true, notifyChange: true);
 
         // and it can also free a slot up for the next file waiting to be uploaded, or settle the
         // batch as a whole when the file taken away was the last one still running.
@@ -1124,7 +1124,8 @@ public partial class BitFileUpload : BitInputBase<string?>
     /// Resets the file upload, taking the whole selection and its upload state back to where they started.
     /// The files of <see cref="PreloadedFiles"/> stay: they belong to the record rather than to this
     /// selection - except the ones already deleted from the server, which nothing on this side brings back.
-    /// A bound <see cref="BitInputBase{TValue}.Value"/> follows the list, without the base OnChange being invoked.
+    /// A bound <see cref="BitInputBase{TValue}.Value"/> follows the list, without the base OnChange being invoked or the
+    /// EditContext being told: a reset is the app's doing, and like a value the app sets it marks no field modified.
     /// </summary>
     public async Task Reset()
     {
@@ -1134,7 +1135,7 @@ public partial class BitFileUpload : BitInputBase<string?>
 
         if (IsDisposed) return;
 
-        await PublishValueAsync(notifyChange: false);
+        await PublishNamesAsync(notifyField: false, notifyChange: false);
 
         StateHasChanged();
     }
@@ -1329,14 +1330,21 @@ public partial class BitFileUpload : BitInputBase<string?>
 
         await base.OnParametersSetAsync();
 
-        var valuePushed = ValueHasBeenSet && Value != _valueParam;
+        // A value the consumer emptied - a form reset, a model cleared after a save - resets the selection it stood
+        // for, as Reset does. Any other value pushed in names files a browser cannot be handed from code, so it is
+        // left to the list, which writes its own back the next time it changes.
+        var emptied = TakePushedValue() && Value.HasNoValue();
 
-        if (valuePushed)
+        if (emptied && _HasPickedFiles)
         {
-            _valueParam = Value;
+            await ResetSelectionAsync();
+
+            if (IsDisposed) return;
         }
 
-        if (ShouldApplyPreloadedFiles())
+        var preloaded = ShouldApplyPreloadedFiles();
+
+        if (preloaded)
         {
             ApplyPreloadedFiles();
 
@@ -1345,18 +1353,14 @@ public partial class BitFileUpload : BitInputBase<string?>
             ApplyListValidations();
 
             Announce();
-
-            // the record the preloaded files belong to is what the value names from now on.
-            await PublishValueAsync(notifyChange: false);
         }
-        else if (valuePushed && Value.HasNoValue() && _HasPickedFiles)
-        {
-            // A value the consumer emptied - a form reset, a model cleared after a save - resets the selection it
-            // stood for, as Reset does. Any other value pushed in names files a browser cannot be handed from code,
-            // so it is left to the list, which writes its own back the next time it changes.
-            await ResetSelectionAsync();
 
-            _names = GetValueNames();
+        // Either way the value is brought in step with the list: the record the preloaded files belong to is what it
+        // names from now on, and they stay in it through a value the consumer emptied, as they stay through a Reset.
+        // Nobody picked anything, so the EditContext is not told - loading a record marks no field modified.
+        if (emptied || preloaded)
+        {
+            await PublishNamesAsync(notifyField: false, notifyChange: false);
         }
 
         if (_dropZoneRef is null) return;
@@ -1502,6 +1506,10 @@ public partial class BitFileUpload : BitInputBase<string?>
     private bool _AllowsDrop => AllowDrop && ReadOnly is false;
 
     private bool _AllowsPaste => AllowPaste && ReadOnly is false;
+
+    // The native file input of a read-only one is disabled as well, so that nothing reaches it from outside the
+    // browse button either - a label of the app's own pointed at InputId opens no dialog.
+    private bool _NativeInputDisabled => Disabled || ReadOnly;
 
     // "Upload all" is offered while a file that nobody has started yet - or that was paused, failed or was
     // canceled - is waiting for it; a file already on the wire or in the queue has been asked already.
@@ -1789,6 +1797,9 @@ public partial class BitFileUpload : BitInputBase<string?>
         // so they are invoked right before each request instead, and are left out here on purpose.
         var url = UploadRequestQueryStrings is null ? UploadUrl : AddQueryString(UploadUrl, UploadRequestQueryStrings);
 
+        // a read-only file upload takes no new files, however they reached its native input.
+        if (ReadOnly) return;
+
         if (Append is false)
         {
             // a selection replaces the selection, not the record: the files that are already on the server
@@ -1831,7 +1842,7 @@ public partial class BitFileUpload : BitInputBase<string?>
 
         Announce();
 
-        await PublishValueAsync(notifyChange: true);
+        await PublishNamesAsync(notifyField: true, notifyChange: true);
 
         if (IsDisposed) return;
 
@@ -2437,9 +2448,10 @@ public partial class BitFileUpload : BitInputBase<string?>
     }
 
     /// <summary>
-    /// The names of the files that are part of the value, joined with commas, or null when there is none.
+    /// Writes the names of the files that are part of the value into the Value - joined with commas, or null when
+    /// there is none - telling the EditContext and the base OnChange as asked.
     /// </summary>
-    private string? GetValueNames()
+    private Task PublishNamesAsync(bool notifyField, bool notifyChange)
     {
         var names = string.Join(",", _files.Where(f => f.Status is not (BitFileUploadStatus.NotAllowed
                                                                          or BitFileUploadStatus.Removed
@@ -2447,42 +2459,7 @@ public partial class BitFileUpload : BitInputBase<string?>
                                                                          or BitFileUploadStatus.Failed))
                                            .Select(f => f.Name));
 
-        return names.HasValue() ? names : null;
-    }
-
-    /// <summary>
-    /// Writes the names of the files of the value into the Value when they changed, telling the binding and the
-    /// EditContext and, for a change the user made, the base OnChange.
-    /// </summary>
-    private async Task PublishValueAsync(bool notifyChange)
-    {
-        var value = GetValueNames();
-
-        if (value == _names) return;
-
-        _names = value;
-
-        // A Value bound one way has nowhere to be written back to; the callbacks beside it are still told.
-        if ((ValueHasBeenSet && ValueChanged.HasDelegate is false) is false && value != Value)
-        {
-            // Recorded before the binding is told, since a consumer re-renders from inside the callback and the
-            // value it hands back must read as this one rather than as one pushed in from outside.
-            _valueParam = value;
-            Value = value;
-
-            await ValueChanged.InvokeAsync(value);
-
-            // An input bound to nothing has no field to report, and a validator handed one with no model would throw.
-            if (EditContext is not null && NoValidate is false && FieldIdentifier.Model is not null)
-            {
-                EditContext.NotifyFieldChanged(FieldIdentifier);
-            }
-        }
-
-        if (notifyChange)
-        {
-            await OnChange.InvokeAsync(value);
-        }
+        return PublishValueAsync(names.HasValue() ? names : null, notifyField, notifyChange);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
@@ -2514,10 +2491,14 @@ public partial class BitFileUpload : BitInputBase<string?>
                 Announce();
             }
 
-            await OnFilesChange.InvokeAsync([fileInfo]);
+            // a failed, canceled or removed upload takes its file out of the value, and a retry puts it back - told
+            // ahead of OnFilesChange, as a selection is. The field is validated again whatever moved it, but the base
+            // OnChange is for what the user did: a failure is the server's or the network's answer, not an edit.
+            await PublishNamesAsync(notifyField: true, notifyChange: uploadStatus is not BitFileUploadStatus.Failed);
 
-            // a failed, canceled or removed upload takes its file out of the value, and a retry puts it back.
-            await PublishValueAsync(notifyChange: true);
+            if (IsDisposed) return;
+
+            await OnFilesChange.InvokeAsync([fileInfo]);
         }
 
         switch (uploadStatus)

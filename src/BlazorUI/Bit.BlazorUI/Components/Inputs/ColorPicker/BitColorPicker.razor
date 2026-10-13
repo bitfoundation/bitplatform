@@ -354,15 +354,16 @@
         </div>
     }
 
-    @* The value's carrier in a form: what a post reads under Name, what Required is checked against, and where
-       the InputHtmlAttributes land. It is nothing to land on, so it stays out of the tab order and the
-       accessibility tree; the widgets above are what the user operates. *@
+    @* The value's carrier in a form: what a post reads under Name and where the InputHtmlAttributes land. It is
+       nothing to land on, so it stays out of the tab order and the accessibility tree; the widgets above are what
+       the user operates. Required deliberately stays off it: the native attribute on a control nobody can see makes
+       the browser block the submit of the form over a message it cannot show anywhere, so being required is left
+       to the validation rules of the model. *@
     <input @attributes="InputHtmlAttributes"
            type="text"
            name="@Name"
            tabindex="-1"
            aria-hidden="true"
-           required="@Required"
            readonly="@ReadOnly"
            class="bit-input-hidden"
            disabled="@Disabled"

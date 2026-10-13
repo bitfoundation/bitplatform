@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
@@ -2667,7 +2668,8 @@ public class BitColorPickerTests : BunitTestContext
 
         Assert.IsTrue(root.LastElementChild!.ClassList.Contains("bit-input-hidden"));
         Assert.AreEqual("brand", carrier.GetAttribute("name"));
-        Assert.IsTrue(carrier.HasAttribute("required"));
+        // Required stays off it: the browser would block the submit over a control nobody can see.
+        Assert.IsFalse(carrier.HasAttribute("required"));
         Assert.AreEqual("carrier", carrier.GetAttribute("data-test"));
         Assert.AreEqual("settings", carrier.GetAttribute("form"));
         Assert.AreEqual("#FF0000", carrier.GetAttribute("value"));
@@ -2826,7 +2828,7 @@ public class BitColorPickerTests : BunitTestContext
         Assert.AreEqual(readOnly, root.ClassList.Contains("bit-clp-rdl"));
         // A read-only picker asks for nothing, so only an editable one is marked required.
         Assert.AreEqual(readOnly is false, root.ClassList.Contains("bit-clp-req"));
-        Assert.IsTrue(carrier.HasAttribute("required"));
+        Assert.IsFalse(carrier.HasAttribute("required"));
         Assert.AreEqual(readOnly, carrier.HasAttribute("readonly"));
         Assert.AreEqual(readOnly ? "true" : null, com.Find(".bit-clp-rec").GetAttribute("aria-readonly"));
 
@@ -2868,5 +2870,49 @@ public class BitColorPickerTests : BunitTestContext
         com.Find(".bit-clp-rec").KeyDown("ArrowDown");
 
         Assert.AreEqual("#FCFCFC", com.FindComponent<BitColorPicker>().Instance.Hex);
+    }
+
+    [TestMethod]
+    public void BitColorPickerShouldRewriteItsValueInANewFormatWithoutMarkingTheFieldModified()
+    {
+        var model = new BitColorPickerTestModel { Value = "#FF0000" };
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(Context.Services);
+
+        RenderFragment Picker(BitColorFormat? format) => builder =>
+        {
+            builder.OpenComponent<BitColorPicker>(0);
+            builder.AddAttribute(1, nameof(BitColorPicker.Format), format);
+            builder.AddAttribute(2, nameof(BitColorPicker.ShowInputs), true);
+            builder.AddAttribute(3, nameof(BitColorPicker.Value), model.Value);
+            builder.AddAttribute(4, nameof(BitColorPicker.ValueChanged),
+                                 EventCallback.Factory.Create<string?>(this, v => model.Value = v));
+            builder.AddAttribute(5, nameof(BitColorPicker.ValueExpression),
+                                 (System.Linq.Expressions.Expression<Func<string?>>)(() => model.Value));
+            builder.CloseComponent();
+        };
+
+        var com = RenderComponent<CascadingValue<EditContext>>(parameters =>
+        {
+            parameters.Add(p => p.Value, editContext);
+            parameters.Add(p => p.ChildContent, Picker(null));
+        });
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.Value, editContext);
+            parameters.Add(p => p.ChildContent, Picker(BitColorFormat.Rgb));
+        });
+
+        // the app asked for another notation, which is no color anybody picked: the value is rewritten in it, but
+        // the field is neither marked modified nor validated.
+        Assert.AreEqual("rgb(255,0,0)", model.Value);
+        Assert.IsFalse(editContext.IsModified());
+
+        // a color the user picks is an edit like any other.
+        com.Find(".bit-clp-rec").KeyDown("ArrowDown");
+
+        Assert.AreNotEqual("rgb(255,0,0)", model.Value);
+        Assert.IsTrue(editContext.IsModified());
     }
 }

@@ -4141,7 +4141,7 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
     {
         UpdateSelectedItemsFromValues();
 
-        EditContext?.NotifyFieldChanged(FieldIdentifier);
+        NotifyFieldChanged();
     }
 
     private void SetIsSelected(TItem item, bool value)

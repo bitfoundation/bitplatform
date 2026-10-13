@@ -28,11 +28,6 @@ public partial class BitFileInput : BitInputBase<string?>
     private string? _announcement;
     private bool _announcementMarker;
     private ElementReference _inputRef;
-    // The value the selection last wrote, or the one last pushed in from outside, which is how a value the
-    // consumer changed is told apart from one the component wrote itself.
-    private string? _valueParam;
-    // The names of the valid files as the selection last published them.
-    private string? _names;
     private ElementReference _labelRef;
     private string _buttonId = default!;
     private string _descriptionId = default!;
@@ -111,6 +106,11 @@ public partial class BitFileInput : BitInputBase<string?>
     /// Whether the file input is automatically reset (cleared) before opening the file browser dialog,
     /// allowing the same file to be selected multiple times consecutively.
     /// </summary>
+    /// <remarks>
+    /// The reset is the one <see cref="Reset"/> does: a bound value follows the emptied list, but the EditContext is not
+    /// told, so a required field does not turn invalid while the dialog is open. The selection the dialog delivers is
+    /// validated as usual.
+    /// </remarks>
     [Parameter] public bool AutoReset { get; set; }
 
     /// <summary>
@@ -425,7 +425,8 @@ public partial class BitFileInput : BitInputBase<string?>
     /// <summary>
     /// Clears all selected files and resets the file input to its initial state without invoking
     /// <see cref="OnFilesChange"/>, <see cref="OnInvalid"/>, <see cref="OnRemove"/> or the base OnChange.
-    /// A bound <see cref="BitInputBase{TValue}.Value"/> is cleared along with the files.
+    /// A bound <see cref="BitInputBase{TValue}.Value"/> is cleared along with the files, without the EditContext being
+    /// told: a reset is the app's doing, and like a value the app sets it marks no field modified.
     /// </summary>
     public async Task Reset()
     {
@@ -435,7 +436,7 @@ public partial class BitFileInput : BitInputBase<string?>
 
         if (IsDisposed) return;
 
-        await PublishValueAsync(notifyChange: false);
+        await PublishNamesAsync(byUser: false);
 
         StateHasChanged();
     }
@@ -594,6 +595,10 @@ public partial class BitFileInput : BitInputBase<string?>
 
     private bool _AllowsPaste => AllowPaste && ReadOnly is false;
 
+    // The native file input of a read-only one is disabled as well, so that nothing reaches it from outside the
+    // browse button either - a label of the app's own pointed at InputId opens no dialog.
+    private bool _NativeInputDisabled => Disabled || ReadOnly;
+
 
 
     protected override string RootElementClass => "bit-fin";
@@ -650,16 +655,9 @@ public partial class BitFileInput : BitInputBase<string?>
         // A value the consumer emptied - a form reset, a model cleared after a save - clears the selection it stood
         // for. Any other value pushed in names files a browser cannot be handed from code, so it is left to the
         // selection, which writes its own back the next time it changes.
-        if (ValueHasBeenSet && Value != _valueParam)
+        if (TakePushedValue() && Value.HasNoValue() && _files.Count > 0)
         {
-            _valueParam = Value;
-
-            if (Value.HasNoValue() && _files.Count > 0)
-            {
-                await ClearSelectionAsync();
-
-                _names = null;
-            }
+            await ClearSelectionAsync();
         }
 
         await base.OnParametersSetAsync();
@@ -946,6 +944,9 @@ public partial class BitFileInput : BitInputBase<string?>
     {
         if (IsDisposed) return;
 
+        // a read-only file input takes no new files, however they reached its native input.
+        if (ReadOnly) return;
+
         if (Append is false)
         {
             _files.Clear();
@@ -1044,7 +1045,7 @@ public partial class BitFileInput : BitInputBase<string?>
     {
         Announce();
 
-        await PublishValueAsync(notifyChange: true);
+        await PublishNamesAsync(byUser: true);
 
         if (IsDisposed) return;
 
@@ -1080,39 +1081,14 @@ public partial class BitFileInput : BitInputBase<string?>
     }
 
     /// <summary>
-    /// Writes the names of the valid files into the Value when they changed, telling the binding and the
-    /// EditContext and, for a change the user made, the base OnChange.
+    /// Writes the names of the valid files into the Value, telling the EditContext and the base OnChange only of a
+    /// change the user made.
     /// </summary>
-    private async Task PublishValueAsync(bool notifyChange)
+    private Task PublishNamesAsync(bool byUser)
     {
         var names = string.Join(",", _files.Where(f => f.IsValid).Select(f => f.Name));
-        var value = names.HasValue() ? names : null;
 
-        if (value == _names) return;
-
-        _names = value;
-
-        // A Value bound one way has nowhere to be written back to; the callbacks beside it are still told.
-        if ((ValueHasBeenSet && ValueChanged.HasDelegate is false) is false && value != Value)
-        {
-            // Recorded before the binding is told, since a consumer re-renders from inside the callback and the
-            // value it hands back must read as this one rather than as one pushed in from outside.
-            _valueParam = value;
-            Value = value;
-
-            await ValueChanged.InvokeAsync(value);
-
-            // An input bound to nothing has no field to report, and a validator handed one with no model would throw.
-            if (EditContext is not null && NoValidate is false && FieldIdentifier.Model is not null)
-            {
-                EditContext.NotifyFieldChanged(FieldIdentifier);
-            }
-        }
-
-        if (notifyChange)
-        {
-            await OnChange.InvokeAsync(value);
-        }
+        return PublishValueAsync(names.HasValue() ? names : null, notifyField: byUser, notifyChange: byUser);
     }
 
     protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)

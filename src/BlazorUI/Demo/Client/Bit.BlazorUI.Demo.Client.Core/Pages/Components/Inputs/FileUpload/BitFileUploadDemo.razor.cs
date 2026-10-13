@@ -1376,14 +1376,14 @@ public partial class BitFileUploadDemo
             Name = "Browse",
             Type = "() => Task",
             DefaultValue = "",
-            Description = "Opens a file selection dialog.",
+            Description = "Opens a file selection dialog. A disabled or read-only file upload opens nothing.",
         },
         new()
         {
             Name = "Reset",
             Type = "() => Task",
             DefaultValue = "",
-            Description = "Resets the file upload, clearing the file list and the upload state. The files of PreloadedFiles stay, since they belong to the record rather than to this selection - except the ones already deleted from the server, which nothing on this side brings back.",
+            Description = "Resets the file upload, clearing the file list and the upload state. The files of PreloadedFiles stay, since they belong to the record rather than to this selection - except the ones already deleted from the server, which nothing on this side brings back. A bound Value follows the list, without the EditForm being told: a reset marks no field modified.",
         }
     ];
 

@@ -1473,13 +1473,13 @@ public partial class BitColorPicker : BitInputBase<string?>
         }
 
         // The form hears of the value only once it is the model's, and only when it actually moved: a step of a
-        // drag that rounds to the same string has changed nothing a validator could read.
+        // drag that rounds to the same string has changed nothing a validator could read. Nor does it hear of a
+        // value the picker only rewrote in another notation - a Format changed by the app - which nobody picked.
         if (value != previous)
         {
-            // An input bound to nothing has no field to report, and a validator handed one with no model would throw.
-            if (colorTaken && EditContext is not null && NoValidate is false && FieldIdentifier.Model is not null)
+            if (colorTaken && (notifyChange || final))
             {
-                EditContext.NotifyFieldChanged(FieldIdentifier);
+                NotifyFieldChanged();
             }
 
             if (notifyChange)

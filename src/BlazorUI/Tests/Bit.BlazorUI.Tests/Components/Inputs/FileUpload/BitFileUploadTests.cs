@@ -5,6 +5,8 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
@@ -3917,8 +3919,9 @@ public class BitFileUploadTests : BunitTestContext
         Assert.AreEqual(BitFileUploadStatus.Canceled, instance.Files[0].Status);
         Assert.IsNull(instance.Value);
 
-        // the base OnChange heard every move of the value, and only those.
-        CollectionAssert.AreEqual(new[] { "a.txt,b.txt", "a.txt", null, "a.txt", null }, values);
+        // the base OnChange heard every move of the value the user made, and only those: the failure was the
+        // server's answer rather than an edit, so it moved the value without being reported as a change.
+        CollectionAssert.AreEqual(new[] { "a.txt,b.txt", "a.txt", "a.txt", null }, values);
     }
 
     [TestMethod]
@@ -3975,7 +3978,8 @@ public class BitFileUploadTests : BunitTestContext
         Assert.IsTrue(root.LastElementChild!.ClassList.Contains("bit-input-hidden"));
         Assert.AreEqual("text", carrier.GetAttribute("type"));
         Assert.AreEqual("attachments", carrier.GetAttribute("name"));
-        Assert.IsTrue(carrier.HasAttribute("required"));
+        // Required stays off it: the browser would block the submit over a control nobody can see.
+        Assert.IsFalse(carrier.HasAttribute("required"));
         Assert.AreEqual("carrier", carrier.GetAttribute("data-test"));
         Assert.AreEqual("upload-form", carrier.GetAttribute("form"));
         Assert.AreEqual("-1", carrier.GetAttribute("tabindex"));
@@ -4015,12 +4019,14 @@ public class BitFileUploadTests : BunitTestContext
         await com.InvokeAsync(() => com.Instance.Upload());
         await com.InvokeAsync(() => com.Instance.__HandleChunkUpload(0, 500, "boom"));
 
-        // a status change hands over the one file it is about.
+        // a status change hands over the one file it is about; a failed upload is not an edit of the user's, so
+        // the base OnChange does not hear of the value it emptied.
         var last = filesChanges[^1];
         Assert.HasCount(1, last);
         Assert.AreEqual("a.txt", last[0].Name);
         Assert.AreEqual(BitFileUploadStatus.Failed, last[0].Status);
-        CollectionAssert.AreEqual(new[] { "a.txt", null }, values);
+        CollectionAssert.AreEqual(new[] { "a.txt" }, values);
+        Assert.IsNull(com.Instance.Value);
     }
 
     [TestMethod,
@@ -4058,10 +4064,12 @@ public class BitFileUploadTests : BunitTestContext
         com.Render(parameters => parameters.Add(p => p.Value, emptied));
 
         // a form reset or a model cleared after a save undoes the selection, as Reset does - the record's own
-        // files stay - and quietly, since the change came from the consumer rather than the user.
+        // files stay, and so the value names them again - and quietly, since the change came from the consumer
+        // rather than the user.
         Assert.AreEqual("invoice.pdf", com.Instance.Files.Single().Name);
         Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.FileUpload.reset"].Count);
-        Assert.AreEqual(2, valueChanges);
+        Assert.AreEqual("invoice.pdf", value);
+        Assert.AreEqual(3, valueChanges);
         Assert.AreEqual(1, filesChanges);
         Assert.AreEqual(1, changes);
     }
@@ -4270,7 +4278,7 @@ public class BitFileUploadTests : BunitTestContext
         Assert.IsTrue(upload.Required);
         Assert.AreEqual(readOnly, com.Find(".bit-upl").ClassList.Contains("bit-upl-rdl"));
         Assert.AreEqual(readOnly ? "true" : null, com.Find(".bit-upl-lbl").GetAttribute("aria-disabled"));
-        Assert.IsTrue(carrier.HasAttribute("required"));
+        Assert.IsFalse(carrier.HasAttribute("required"));
         Assert.AreEqual(readOnly, carrier.HasAttribute("readonly"));
     }
 
@@ -4302,7 +4310,136 @@ public class BitFileUploadTests : BunitTestContext
         Assert.IsNull(com.Find(".bit-upl-lbl").GetAttribute("aria-disabled"));
 
         // what the markup left unwritten still comes from the cascade.
-        Assert.IsTrue(com.Find("input.bit-input-hidden").HasAttribute("required"));
+        Assert.IsTrue(com.FindComponent<BitFileUpload>().Instance.Required);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldNameThePreloadedFilesAgainWhenTheValueIsEmptiedFromOutside()
+    {
+        string? value = null;
+        var changes = 0;
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "invoice.pdf", Size = 100, FileId = "server-1" }
+            ]);
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.ValueChanged, (string? v) => value = v);
+            parameters.Add(p => p.OnChange, () => changes++);
+        });
+
+        Assert.AreEqual("invoice.pdf", value);
+
+        // nothing was picked here, so there is no selection to reset - but the list still shows the record's file,
+        // and the value names it again rather than disagreeing with what is shown.
+        com.Render(parameters => parameters.Add(p => p.Value, (string?)null));
+
+        Assert.AreEqual("invoice.pdf", com.Instance.Files.Single().Name);
+        Assert.AreEqual("invoice.pdf", value);
+        Assert.AreEqual("invoice.pdf", com.Instance.Value);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.FileUpload.reset"]);
+        Assert.AreEqual(0, changes);
+    }
+
+    [TestMethod]
+    public void BitFileUploadPreloadedFilesShouldLeaveTheEditContextUnmodified()
+    {
+        var model = new BitFileUploadTestModel();
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(Context.Services);
+
+        var com = RenderComponent<CascadingValue<EditContext>>(parameters =>
+        {
+            parameters.Add(p => p.Value, editContext);
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitFileUpload>(0);
+                builder.AddAttribute(1, nameof(BitFileUpload.PreloadedFiles), (IReadOnlyCollection<BitFileInfo>)
+                [
+                    new() { Name = "invoice.pdf", Size = 100, FileId = "server-1" }
+                ]);
+                builder.AddAttribute(2, nameof(BitFileUpload.Value), model.Value);
+                builder.AddAttribute(3, nameof(BitFileUpload.ValueChanged),
+                                     EventCallback.Factory.Create<string?>(this, v => model.Value = v));
+                builder.AddAttribute(4, nameof(BitFileUpload.ValueExpression),
+                                     (System.Linq.Expressions.Expression<Func<string?>>)(() => model.Value));
+                builder.CloseComponent();
+            }));
+        });
+
+        // loading the record the form edits is not an edit of it: the value names its files, but no field is
+        // marked modified or validated before the user does anything.
+        Assert.AreEqual("invoice.pdf", model.Value);
+        Assert.IsFalse(editContext.IsModified());
+        Assert.IsFalse(editContext.GetValidationMessages().Any());
+    }
+
+    [TestMethod]
+    public void BitFileUploadReadOnlyShouldTakeNoSelectionThroughItsNativeInput()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var filesChanges = 0;
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.OnFilesChange, () => filesChanges++);
+        });
+
+        var nativeInput = com.Find(".bit-upl-fi");
+
+        // a label of the app's own pointed at InputId opens no dialog on a disabled native input...
+        Assert.IsTrue(nativeInput.HasAttribute("disabled"));
+        Assert.AreEqual("true", nativeInput.GetAttribute("aria-disabled"));
+
+        // ...and a selection that reaches it all the same is not taken.
+        nativeInput.Change(string.Empty);
+
+        Assert.IsEmpty(com.Instance.Files);
+        Assert.AreEqual(0, filesChanges);
+        Assert.IsNull(com.Instance.Value);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.FileUpload.setup"]);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldDeclareAFailedValidationOnItsBrowseButton()
+    {
+        var com = RenderComponent<BitFileUploadValidationTest>();
+
+        Assert.IsNull(com.Find(".bit-upl-lbl").GetAttribute("aria-invalid"));
+
+        com.Find("form").Submit();
+
+        // the input the value travels through is out of the accessibility tree, so the button the user operates is
+        // what tells a screen reader that the field is in error.
+        Assert.AreEqual("true", com.Find(".bit-upl-lbl").GetAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldUpdateTheValueBeforeReportingAStatusChange()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var order = new List<string>();
+        BitFileUpload? upload = null;
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.OnChange, (string? v) => order.Add($"value:{v}"));
+            parameters.Add(p => p.OnFilesChange, (BitFileInfo[] files) => order.Add($"files:{upload!.Value}"));
+        });
+
+        upload = com.Instance;
+
+        SelectFiles(com);
+        await com.InvokeAsync(() => upload.CancelUpload(upload.Files[0]));
+
+        // a status change reports the value ahead of the files, as a selection does, so a handler of either reads
+        // the value the change left behind.
+        CollectionAssert.AreEqual(new[] { "value:a.txt", "files:a.txt", "value:", "files:" }, order);
     }
 
     private void SetupFiles(BitFileInfo[] files)

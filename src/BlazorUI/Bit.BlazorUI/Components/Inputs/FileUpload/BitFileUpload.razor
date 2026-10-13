@@ -14,13 +14,15 @@
     else if (_ShowLabelButton)
     {
         @* A read-only file upload keeps its browse button focusable, as every read-only control keeps its place in
-           the tab order, and says it is unavailable rather than taking it away. *@
+           the tab order, and says it is unavailable rather than taking it away. A failed validation is declared on
+           the button too, since it is what the user operates: the input the value travels through is hidden. *@
         <button @ref="_labelRef"
                 @onclick="Browse"
                 type="button"
                 id="@_buttonId"
                 disabled="@(Disabled)"
                 aria-disabled="@(Disabled || ReadOnly ? "true" : null)"
+                aria-invalid="@(IsInvalid && Disabled is false ? "true" : null)"
                 aria-label="@AriaLabel"
                 aria-describedby="@(_HasDescription ? _descriptionId : null)"
                 style="@Styles?.Label"
@@ -58,8 +60,8 @@
            capture="@Capture"
            multiple="@Multiple"
            webkitdirectory="@Directory"
-           disabled="@(Disabled)"
-           aria-disabled="@(Disabled ? "true" : null)"
+           disabled="@_NativeInputDisabled"
+           aria-disabled="@(_NativeInputDisabled ? "true" : null)"
            aria-label="@AriaLabel"
            aria-labelledby="@(AriaLabel is null && _ShowLabelButton ? _buttonId : null)"
            aria-describedby="@(_HasDescription ? _descriptionId : null)"
@@ -136,16 +138,17 @@
 
     <div role="status" aria-live="polite" aria-atomic="true" class="bit-upl-lvr">@_announcement</div>
 
-    @* The value's carrier in a form - the names of the files of the value: what a post reads under Name, what
-       Required is checked against, and where the InputHtmlAttributes land. The native file input above cannot be
-       it, since the list the component keeps (appended to, preloaded, uploaded, removed) is not the one the browser
-       holds. It is nothing to land on, so it stays out of the tab order and the accessibility tree. *@
+    @* The value's carrier in a form - the names of the files of the value: what a post reads under Name and where
+       the InputHtmlAttributes land. The native file input above cannot be it, since the list the component keeps
+       (appended to, preloaded, uploaded, removed) is not the one the browser holds. It is nothing to land on, so it
+       stays out of the tab order and the accessibility tree. Required deliberately stays off it: the native attribute
+       on a control nobody can see makes the browser block the submit of the form over a message it cannot show
+       anywhere, so being required is left to the validation rules of the model. *@
     <input @attributes="InputHtmlAttributes"
            type="text"
            name="@Name"
            tabindex="-1"
            aria-hidden="true"
-           required="@Required"
            readonly="@ReadOnly"
            class="bit-input-hidden"
            disabled="@Disabled"
