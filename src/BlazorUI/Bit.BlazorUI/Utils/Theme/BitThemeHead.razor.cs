@@ -76,6 +76,15 @@ public partial class BitThemeHead : ComponentBase
     [Parameter] public string? DarkTheme { get; set; }
 
     /// <summary>
+    /// The <see cref="BitThemeCookie.PairCookieName"/> cookie of this request, the same value handed to
+    /// <see cref="BitThemeSsrOptions.PersistedThemePair"/>. A pair the visitor switched to at runtime
+    /// stands in for <see cref="LightTheme"/> / <see cref="DarkTheme"/>, so the tag is painted for the
+    /// visitor's design system; a <c>light</c> / <c>dark</c> marker moves the stored preference onto the
+    /// declared pair, as it does there; anything else is ignored.
+    /// </summary>
+    [Parameter] public string? PersistedThemePair { get; set; }
+
+    /// <summary>
     /// Theme name to browser-chrome color, as CSS colors. Defaults to
     /// <see cref="BitThemeSurfaces.BackgroundPrimary"/> - the page background of every registered
     /// preset, packaged or the app's own (the remarks on this type say how to narrow it). An app
@@ -112,8 +121,13 @@ public partial class BitThemeHead : ComponentBase
     /// never saw, which is what the correction script covers.
     /// </summary>
     private string? ResolvedTheme =>
-        BitThemeSsr.BuildRootThemeAttributeMap(PersistedPreference, new BitThemeSsrOptions { DefaultTheme = DefaultTheme })
-                   .TryGetValue(BitThemeAttributeNames.Theme, out var theme)
+        BitThemeSsr.BuildRootThemeAttributeMap(PersistedPreference, new BitThemeSsrOptions
+        {
+            DefaultTheme = DefaultTheme,
+            LightTheme = LightTheme,
+            DarkTheme = DarkTheme,
+            PersistedThemePair = PersistedThemePair,
+        }).TryGetValue(BitThemeAttributeNames.Theme, out var theme)
         ? theme as string
         : null;
 
@@ -121,10 +135,23 @@ public partial class BitThemeHead : ComponentBase
 
     // Normalized, as every other layer sees them: the attribute the client reads back carries the
     // normalized token, the maps are keyed by it, and IsDarkName tests it ordinally - so a pair
-    // written as "Fluent2-Dark" has to become that token before it is looked up or classified.
-    private string LightThemeName => BitThemeName.NormalizeToken(LightTheme, out _) ?? BitThemePresets.Light;
+    // written as "Fluent2-Dark" has to become that token before it is looked up or classified. The
+    // visitor's stored pair stands in for the declared one, as it does for the client. Resolved once
+    // per parameter set (OnParametersSet), since every color lookup of a render reads it.
+    private BitThemeSsrPair _pair;
 
-    private string DarkThemeName => BitThemeName.NormalizeToken(DarkTheme, out _) ?? BitThemePresets.Dark;
+    private string LightThemeName => _pair.Light;
+
+    private string DarkThemeName => _pair.Dark;
+
+
+
+    protected override void OnParametersSet()
+    {
+        _pair = BitThemeSsr.ResolveThemePair(LightTheme, DarkTheme, PersistedThemePair);
+
+        base.OnParametersSet();
+    }
 
     private string ResolveLightThemeColor() => ColorOf(LightThemeName, isDark: false);
 

@@ -45,8 +45,8 @@
         ThemeColorMeta = BitCss.Var.Color.Background.Primary.Main,
         // The site dresses in Fluent 2 by default, so the two names the OS-following resolution picks
         // between are the Fluent 2 pair rather than the core light / dark Fluent ones. A visitor who
-        // has already picked a design system in the header is painted from their localStorage instead
-        // and never reaches this.
+        // has picked another design system in the header has its pair in localStorage, which the
+        // inline script and the theme script read in place of this one.
         LightTheme = BitThemePresets.Fluent2Light,
         DarkTheme = BitThemePresets.Fluent2Dark,
     };

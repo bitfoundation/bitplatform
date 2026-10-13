@@ -477,6 +477,41 @@ private readonly BitNavParams[] navParams =
 ];";
 
     private readonly string example14RazorCode = @"
+<BitNav TItem=""BitNavOption"" Mode=""BitNavMode.Manual"" FitWidth>
+    <BitNavOption Text=""Inbox"" IconName=""@BitIconName.Inbox"" Badge=""12"" BadgeAriaLabel=""12 unread"" />
+    <BitNavOption Text=""Drafts"" IconName=""@BitIconName.EditMail"" Badge=""New"" />
+    <BitNavOption Text=""Sent"" IconName=""@BitIconName.Send"" Dot BadgeAriaLabel=""failed to send"" />
+    <BitNavOption Text=""Archive"" IconName=""@BitIconName.Archive"" />
+</BitNav>
+
+<BitNav TItem=""BitNavOption"" Mode=""BitNavMode.Manual"" FitWidth>
+    <ItemSuffixTemplate Context=""option"">
+        <span class=""nav-custom-suffix"" aria-hidden=""true"">@option.Data</span>
+    </ItemSuffixTemplate>
+    <ChildContent>
+        <BitNavOption Text=""Inbox"" IconName=""@BitIconName.Inbox"" Badge=""12"" Data=""@(""Ctrl+I"")"" />
+        <BitNavOption Text=""Drafts"" IconName=""@BitIconName.EditMail"" Data=""@(""Ctrl+D"")"" />
+        <BitNavOption Text=""Sent"" IconName=""@BitIconName.Send"" Data=""@(""Ctrl+S"")"" />
+    </ChildContent>
+</BitNav>
+
+<BitNav TItem=""BitNavOption"" Mode=""BitNavMode.Manual"" IconOnly>
+    <BitNavOption Text=""Inbox"" IconName=""@BitIconName.Inbox"" Badge=""12"" BadgeAriaLabel=""12 unread"" />
+    <BitNavOption Text=""Drafts"" IconName=""@BitIconName.EditMail"" Badge=""New"" />
+    <BitNavOption Text=""Sent"" IconName=""@BitIconName.Send"" Dot BadgeAriaLabel=""failed to send"" />
+    <BitNavOption Text=""Archive"" IconName=""@BitIconName.Archive"" />
+</BitNav>
+
+
+<style>
+    .nav-custom-suffix {
+        opacity: 0.6;
+        font-size: 11px;
+        font-family: monospace;
+    }
+</style>";
+
+    private readonly string example15RazorCode = @"
 <BitNav TItem=""BitNavOption"" FitWidth Color=""BitColor.Primary"" Mode=""BitNavMode.Manual"">
     <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" />
     <BitNavOption Text=""Products"" IconName=""@BitIconName.Product"" />
@@ -496,7 +531,7 @@ private readonly BitNavParams[] navParams =
 <BitNav TItem=""BitNavOption"" FitWidth Accent=""BitColor.Warning"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>
 <BitNav TItem=""BitNavOption"" FitWidth Accent=""BitColor.Error"" Mode=""BitNavMode.Manual"">@* ... the same options ... *@</BitNav>";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitNav TItem=""BitNavOption"" FitWidth>
@@ -522,7 +557,7 @@ private readonly BitNavParams[] navParams =
     </BitNavOption>
     <BitNavOption Text=""Iconography"" Icon=""bootstrapSmileIcon"" Url=""/iconography"" />
 </BitNav>";
-    private readonly string example15CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 private static readonly BitIconInfo fontAwesomeHomeIcon = BitIconInfo.Css(""fa-solid fa-house"");
 private static readonly BitIconInfo fontAwesomeCodeIcon = BitIconInfo.Fa(""solid code"");
 private static readonly BitIconInfo fontAwesomeTagIcon = BitIconInfo.Css(""fa-solid fa-tag"");
@@ -536,7 +571,7 @@ private static readonly BitIconInfo bootstrapCodeIcon = BitIconInfo.Bi(""code-sl
 private static readonly BitIconInfo bootstrapTagIcon = BitIconInfo.Bi(""tag-fill"");
 private static readonly BitIconInfo bootstrapSmileIcon = BitIconInfo.Bi(""emoji-smile"");";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitNav TItem=""BitNavOption"" FitWidth Size=""BitSize.Small"">
     <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" Description=""The main page"" />
     <BitNavOption Text=""Products"" IconName=""@BitIconName.Product"" Description=""All of the products"" />
@@ -547,7 +582,7 @@ private static readonly BitIconInfo bootstrapSmileIcon = BitIconInfo.Bi(""emoji-
 
 <BitNav TItem=""BitNavOption"" FitWidth Size=""BitSize.Large"">@* ... the same options ... *@</BitNav>";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitNav TItem=""BitNavOption"" Style=""max-width: max-content; border: 1px solid tomato;"">
     <BitNavOption Text=""Home"" IconName=""@BitIconName.Home"" />
     <BitNavOption Text=""Products"" IconName=""@BitIconName.Product"" />
@@ -624,7 +659,7 @@ private static readonly BitIconInfo bootstrapSmileIcon = BitIconInfo.Bi(""emoji-
     </BitNav>
 </div>";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <div dir=""rtl"">
     <BitNav TItem=""BitNavOption"" Dir=""BitDir.Rtl"">
         <BitNavOption Text=""پلتفرمِ بیت"" Description=""توضیحاتِ پلتفرمِ بیت"">

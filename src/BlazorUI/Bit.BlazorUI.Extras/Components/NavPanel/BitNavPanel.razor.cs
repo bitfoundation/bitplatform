@@ -295,6 +295,13 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public BitNavItemTemplateRenderMode ItemTemplateRenderMode { get; set; }
 
     /// <summary>
+    /// Used to render custom content at the end of every item, after its text and ahead of its badge, while the item
+    /// keeps its default content. The SuffixTemplate of an item takes precedence over it, and the toggled panel, which
+    /// is down to the icons of its items, keeps their badges alone.
+    /// </summary>
+    [Parameter] public RenderFragment<TItem>? ItemSuffixTemplate { get; set; }
+
+    /// <summary>
     /// A collection of items to display in the nav panel.
     /// </summary>
     [Parameter, CallOnSet(nameof(OnItemsSet))]

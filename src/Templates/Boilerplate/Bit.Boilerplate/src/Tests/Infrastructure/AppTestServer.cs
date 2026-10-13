@@ -2,6 +2,7 @@
 using Bunit;
 using Hangfire;
 using System.Net.Sockets;
+using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authorization;
@@ -422,36 +423,40 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
     */
     //#endif
     //#endif
+    /// <summary>Every port this test run has handed out, so no two test servers ever get the same one.</summary>
+    private static readonly ConcurrentDictionary<int, byte> handedOutPorts = new();
+
     /// <summary>
     /// A free port under <paramref name="host"/>. Kestrel binds localhost to both 127.0.0.1 and ::1 and fails when either
     /// is taken, so for localhost a port is only handed out once it is free on both.
     /// </summary>
-    private static string GenerateServerUrl(string host)
+    internal static string GenerateServerUrl(string host)
     {
         while (true)
         {
-            using var ipv4Listener = new TcpListener(IPAddress.Loopback, 0);
-            ipv4Listener.Start();
-            var port = ((IPEndPoint)ipv4Listener.LocalEndpoint).Port;
+            var port = Random.Shared.Next(20_000, 32_768);
 
-            if (host is "localhost" && Socket.OSSupportsIPv6)
-            {
-                using var ipv6Listener = new TcpListener(IPAddress.IPv6Loopback, port);
-                try
-                {
-                    ipv6Listener.Start();
-                }
-                catch (SocketException exception) when (exception.SocketErrorCode is SocketError.AddressAlreadyInUse)
-                {
-                    continue;
-                }
-                catch (SocketException)
-                {
-                    // No IPv6 loopback on this machine, which Kestrel skips as well.
-                }
-            }
+            if (handedOutPorts.TryAdd(port, 0) is false || IsTaken(IPAddress.Loopback, port))
+                continue;
+
+            if (host is "localhost" && Socket.OSSupportsIPv6 && IsTaken(IPAddress.IPv6Loopback, port))
+                continue;
 
             return $"http://{host}:{port}/";
+        }
+    }
+
+    private static bool IsTaken(IPAddress address, int port)
+    {
+        using var listener = new TcpListener(address, port);
+        try
+        {
+            listener.Start();
+            return false;
+        }
+        catch (SocketException exception)
+        {
+            return address.AddressFamily is AddressFamily.InterNetwork || exception.SocketErrorCode is SocketError.AddressAlreadyInUse or SocketError.AccessDenied;
         }
     }
 }

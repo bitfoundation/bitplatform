@@ -1,0 +1,56 @@
+﻿@using Bit.BlazorUI
+
+@* The lists go away together with their options, the way they do when the page hosting them is left; ShowFirst
+   removes the expanded option alone from lists that stay, the way a filtered list of options does. *@
+@if (Show)
+{
+    <BitAccordionList TItem="BitAccordionListOption" @bind-ExpandedKey="ExpandedKey">
+        @if (ShowFirst)
+        {
+            <BitAccordionListOption Key="first" Title="First">Body of the first</BitAccordionListOption>
+        }
+        <BitAccordionListOption Key="second" Title="Second">Body of the second</BitAccordionListOption>
+    </BitAccordionList>
+
+    <BitAccordionList TItem="BitAccordionListOption" Multiple="true" @bind-ExpandedKeys="ExpandedKeys">
+        @if (ShowFirst)
+        {
+            <BitAccordionListOption Key="first" Title="First">Body of the first</BitAccordionListOption>
+        }
+        <BitAccordionListOption Key="second" Title="Second">Body of the second</BitAccordionListOption>
+    </BitAccordionList>
+}
+
+@code {
+    [Parameter] public bool Show { get; set; } = true;
+
+    [Parameter] public bool ShowFirst { get; set; } = true;
+
+    public string? ExpandedKey
+    {
+        get => _expandedKey;
+        set
+        {
+            _expandedKey = value;
+            ExpandedKeyChanges.Add(value);
+        }
+    }
+
+    public IEnumerable<string>? ExpandedKeys
+    {
+        get => _expandedKeys;
+        set
+        {
+            _expandedKeys = value;
+            ExpandedKeysChanges.Add(value);
+        }
+    }
+
+    public List<string?> ExpandedKeyChanges { get; } = [];
+
+    public List<IEnumerable<string>?> ExpandedKeysChanges { get; } = [];
+
+    private string? _expandedKey = "first";
+
+    private IEnumerable<string>? _expandedKeys = ["first"];
+}

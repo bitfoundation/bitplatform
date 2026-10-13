@@ -1076,20 +1076,22 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
                 return;
             }
 
+            // The autofocus attribute is only honored by the browser for an element that is part of the
+            // initial document, which the input of an interactively rendered picker is not. A standalone
+            // picker carries the value in a hidden input nobody is meant to land on, so the hour input - the
+            // first part that is actually on the screen - takes the focus in its place.
+            // It is placed ahead of an initial IsOpen: a focus() brings the field into view, and a field it scrolls
+            // the page to would otherwise be moved out from under the callout just placed against it.
+            if (AutoFocus && Disabled is false)
+            {
+                await (Standalone ? _inputHourRef : InputElement).FocusSafelyAsync();
+            }
+
             // An initial IsOpen fired the OnSetIsOpen hook before the first render, when there was no
             // callout element to toggle yet, so the open state is applied here instead.
             if (IsOpen && Standalone is false)
             {
                 await ToggleCallout();
-            }
-
-            // The autofocus attribute is only honored by the browser for an element that is part of the
-            // initial document, which the input of an interactively rendered picker is not. A standalone
-            // picker carries the value in a hidden input nobody is meant to land on, so the hour input - the
-            // first part that is actually on the screen - takes the focus in its place.
-            if (AutoFocus && Disabled is false)
-            {
-                await (Standalone ? _inputHourRef : InputElement).FocusSafelyAsync();
             }
         }
         catch (JSDisconnectedException) { } // we can ignore this exception here

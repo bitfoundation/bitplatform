@@ -926,6 +926,62 @@ private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
 };";
 
     private readonly string example14RazorCode = @"
+<BitNav Items=""customBadgeNavItems"" NameSelectors=""badgeSelectors"" Mode=""BitNavMode.Manual"" FitWidth />
+
+<BitNav Items=""customSuffixNavItems"" NameSelectors=""badgeSelectors"" Mode=""BitNavMode.Manual"" FitWidth>
+    <ItemSuffixTemplate Context=""item"">
+        <span class=""nav-custom-suffix"" aria-hidden=""true"">@item.Shortcut</span>
+    </ItemSuffixTemplate>
+</BitNav>
+
+<BitNav Items=""customBadgeNavItems"" NameSelectors=""badgeSelectors"" Mode=""BitNavMode.Manual"" IconOnly />
+
+
+<style>
+    .nav-custom-suffix {
+        opacity: 0.6;
+        font-size: 11px;
+        font-family: monospace;
+    }
+</style>";
+    private readonly string example14CsharpCode = @"
+public class Section
+{
+    public string Text { get; set; } = string.Empty;
+    public string? ImageName { get; set; }
+    public int? Count { get; set; }
+    public string? Status { get; set; }
+    public string? StatusLabel { get; set; }
+    public bool NeedsAttention { get; set; }
+    public string? Shortcut { get; set; }
+}
+
+// The badge text is put together from the count of a section or its status, and the rest of the badge is
+// read off members of the section's own names.
+private static readonly BitNavNameSelectors<Section> badgeSelectors = new()
+{
+    IconName = { Name = nameof(Section.ImageName) },
+    Badge = { Selector = s => s.Count?.ToString() ?? s.Status },
+    BadgeAriaLabel = { Name = nameof(Section.StatusLabel) },
+    Dot = { Name = nameof(Section.NeedsAttention) },
+};
+
+private static readonly List<Section> customBadgeNavItems =
+[
+    new() { Text = ""Inbox"", ImageName = BitIconName.Inbox, Count = 12, StatusLabel = ""12 unread"" },
+    new() { Text = ""Drafts"", ImageName = BitIconName.EditMail, Status = ""New"" },
+    new() { Text = ""Sent"", ImageName = BitIconName.Send, NeedsAttention = true, StatusLabel = ""failed to send"" },
+    new() { Text = ""Archive"", ImageName = BitIconName.Archive },
+];
+
+private static readonly List<Section> customSuffixNavItems =
+[
+    new() { Text = ""Inbox"", ImageName = BitIconName.Inbox, Count = 12, Shortcut = ""Ctrl+I"" },
+    new() { Text = ""Drafts"", ImageName = BitIconName.EditMail, Shortcut = ""Ctrl+D"" },
+    new() { Text = ""Sent"", ImageName = BitIconName.Send, Shortcut = ""Ctrl+S"" },
+];";
+
+    private readonly string example15RazorCode = @"
 <BitNav FitWidth Color=""BitColor.Primary"" Items=""customColorNavItems"" NameSelectors=""sectionSelectors"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""customColorNavItems[0]"" />
 <BitNav FitWidth Color=""BitColor.Secondary"" Items=""customColorNavItems"" NameSelectors=""sectionSelectors"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""customColorNavItems[0]"" />
 <BitNav FitWidth Color=""BitColor.Tertiary"" Items=""customColorNavItems"" NameSelectors=""sectionSelectors"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""customColorNavItems[0]"" />
@@ -939,7 +995,7 @@ private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
 <BitNav FitWidth Accent=""BitColor.Success"" Items=""customColorNavItems"" NameSelectors=""sectionSelectors"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""customColorNavItems[0]"" />
 <BitNav FitWidth Accent=""BitColor.Warning"" Items=""customColorNavItems"" NameSelectors=""sectionSelectors"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""customColorNavItems[0]"" />
 <BitNav FitWidth Accent=""BitColor.Error"" Items=""customColorNavItems"" NameSelectors=""sectionSelectors"" Mode=""BitNavMode.Manual"" DefaultSelectedItem=""customColorNavItems[0]"" />";
-    private readonly string example14CsharpCode = @"
+    private readonly string example15CsharpCode = @"
 private static readonly List<Section> customColorNavItems =
 [
     new() { Text = ""Home"", ImageName = BitIconName.Home },
@@ -957,7 +1013,7 @@ private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
     IsSeparator = { Name = nameof(Section.IsDivider) },
 };";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitNav Items=""customExternalIconNavItems"" FitWidth NameSelectors=""sectionIconSelectors"" />
@@ -965,7 +1021,7 @@ private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
 <BitNav Items=""customBootstrapIconNavItems"" ChevronDownIcon=""bootstrapChevronIcon"" FitWidth NameSelectors=""sectionIconSelectors"" />";
-    private readonly string example15CsharpCode = @"
+    private readonly string example16CsharpCode = @"
 public class Section
 {
     public string Text { get; set; } = string.Empty;
@@ -1027,13 +1083,13 @@ private static readonly List<Section> customBootstrapIconNavItems =
     new() { Text = ""Iconography"", Icon = BitIconInfo.Bi(""emoji-smile""), Url = ""/iconography"" },
 ];";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitNav FitWidth Size=""BitSize.Small"" Items=""customSizeNavItems"" NameSelectors=""sectionSelectors"" />
 
 <BitNav FitWidth Size=""BitSize.Medium"" Items=""customSizeNavItems"" NameSelectors=""sectionSelectors"" />
 
 <BitNav FitWidth Size=""BitSize.Large"" Items=""customSizeNavItems"" NameSelectors=""sectionSelectors"" />";
-    private readonly string example16CsharpCode = @"
+    private readonly string example17CsharpCode = @"
 private static readonly List<Section> customSizeNavItems =
 [
     new() { Text = ""Home"", ImageName = BitIconName.Home, Comment = ""The main page"" },
@@ -1051,7 +1107,7 @@ private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
     IsSeparator = { Name = nameof(Section.IsDivider) },
 };";
 
-    private readonly string example17RazorCode = @"
+    private readonly string example18RazorCode = @"
 <BitNav Items=""customColorNavItems"" NameSelectors=""sectionSelectors"" Style=""max-width: max-content; border: 1px solid tomato;"" />
 
 <BitNav Items=""customColorNavItems"" NameSelectors=""sectionSelectors"" Class=""custom-class"" />
@@ -1094,7 +1150,7 @@ private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
 <div style=""--bit-Nav-item-min-height: 2rem; --bit-Nav-font-size: 0.8125rem; --bit-Nav-icon-color: var(--bit-clr-fg-sec);"">
     <BitNav Items=""customColorNavItems"" NameSelectors=""sectionSelectors"" FitWidth />
 </div>";
-    private readonly string example17CsharpCode = @"
+    private readonly string example18CsharpCode = @"
 private static readonly List<Section> customStyleClassNavItems =
 [
     new() { Text = ""Home"", ImageName = BitIconName.Home, Style = ""background: rgba(255,99,71,0.2);"" },
@@ -1157,11 +1213,11 @@ private static readonly BitNavNameSelectors<Section> sectionSelectors = new()
     IsSeparator = { Name = nameof(Section.IsDivider) },
 };";
 
-    private readonly string example18RazorCode = @"
+    private readonly string example19RazorCode = @"
 <div dir=""rtl"">
     <BitNav Dir=""BitDir.Rtl"" Items=""customRtlNavItems"" NameSelectors=""sectionSelectors"" />
 </div>";
-    private readonly string example18CsharpCode = @"
+    private readonly string example19CsharpCode = @"
 private static readonly List<Section> customRtlNavItems =
 [
     new()

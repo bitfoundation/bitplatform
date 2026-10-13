@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -1553,6 +1554,52 @@ public class BitDateRangePickerTests : BunitTestContext
         Assert.IsNotNull(component.Instance.Value);
         Assert.AreEqual(new DateTime(2024, 3, 1), component.Instance.Value!.StartDate!.Value.DateTime);
         Assert.AreEqual(new DateTime(2024, 3, 5), component.Instance.Value!.EndDate!.Value.DateTime);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerAllowTextInputShouldFocusTheInputWithoutScrollingWhenAClickOpensIt()
+    {
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.AllowTextInput, true);
+        });
+
+        // Read before the click: a re-render leaves the reference off the markup of an element it keeps.
+        var input = component.Find(".bit-dtrp-inp").GetAttribute("blazor:elementReference");
+
+        component.Find(".bit-dtrp-wrp").Click();
+
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+
+        // The field was just clicked, so it is in view, and a focus that scrolled to it would scroll a sticky
+        // header's container back to where the header sits in the flow.
+        Assert.AreEqual(1, focused.Count);
+        Assert.AreEqual(input, ((ElementReference)focused[0].Arguments[0]!).Id);
+        Assert.AreEqual(true, focused[0].Arguments[1]);
+    }
+
+    [TestMethod]
+    public async Task BitDateRangePickerAllowTextInputOpenCalloutShouldBringTheInputIntoView()
+    {
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.AllowTextInput, true);
+        });
+
+        var input = component.Find(".bit-dtrp-inp").GetAttribute("blazor:elementReference");
+
+        await component.InvokeAsync(() => component.Instance.OpenCallout());
+
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+
+        // Opened from anywhere on the page, so the field may well be out of view: the focus is what brings it there.
+        Assert.AreEqual(1, focused.Count);
+        Assert.AreEqual(input, ((ElementReference)focused[0].Arguments[0]!).Id);
+        Assert.AreEqual(false, focused[0].Arguments[1]);
     }
 
     [TestMethod]
@@ -4549,5 +4596,25 @@ public class BitDateRangePickerTests : BunitTestContext
         });
 
         Assert.AreEqual(readOnly, component.Find(".bit-dtrp-cal").ClassList.Contains("bit-dtrp-rol"));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldFocusTheInputBeforeAnInitialIsOpenPlacesTheCallout()
+    {
+        RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AutoFocus, true);
+        });
+
+        var identifiers = Context.JSInterop.Invocations.Select(i => i.Identifier).ToList();
+        var focus = identifiers.IndexOf("Blazor._internal.domWrapper.focus");
+        var toggle = identifiers.IndexOf("BitBlazorUI.Callouts.toggle");
+
+        // A focus() brings the field into view, and a field it scrolled the page to after the callout was placed
+        // against it would be moved out from under the callout - which the scroll then dismisses.
+        Assert.IsTrue(focus >= 0);
+        Assert.IsTrue(toggle >= 0);
+        Assert.IsTrue(focus < toggle);
     }
 }

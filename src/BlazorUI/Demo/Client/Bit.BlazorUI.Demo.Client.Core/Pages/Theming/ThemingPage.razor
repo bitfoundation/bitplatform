@@ -126,6 +126,10 @@
                 <BitText>
                     <code>bit-theme-view-transition</code> is purely presentational: when present, every theme swap (from <code>SetThemeAsync</code>, <code>ToggleDarkLightAsync</code>, the JS API, or an OS appearance change while following the system) runs inside <code>document.startViewTransition</code>, so the page cross-fades to the new palette instead of hard-swapping. It is checked live on every change - add or remove it at runtime to turn the effect on or off - and it is skipped automatically (falling back to an instant swap) in browsers without the View Transitions API and for users with <code>prefers-reduced-motion: reduce</code>. Style the animation itself in CSS via the standard <code>::view-transition-old(root)</code> / <code>::view-transition-new(root)</code> pseudo-elements (e.g. a circular reveal instead of the default cross-fade).
                 </BitText>
+
+                <BitText>
+                    With the transition on, the new theme is written onto the page a frame after the call, once the browser has captured the old frame. <code>GetCurrentThemeAsync</code> / <code>Theme.get()</code> return the new theme straight away, and the change is announced (<code>onChange</code>, <code>bit-theme-change</code>, <code>BitThemeNotifications.ThemeChanged</code>) once it is written, so a handler that reads the page - <code>getComputedStyle</code>, the <code>bit-theme</code> attribute - finds the new palette there.
+                </BitText>
             </DocSection>
 
             <DocSection Level="3" Id="theme-color-meta" Title="Browser chrome (PWA status bar)">
@@ -155,15 +159,42 @@
 
                 <ol>
                     <li>
-                        <code>bit-theme</code> / <code>bit-theme-default</code> &nbsp;&rarr;&nbsp; the base preset (<code>bit-theme</code> wins over <code>bit-theme-default</code> when both are present).
+                        <code>bit-theme-light</code> / <code>bit-theme-dark</code> &nbsp;&rarr;&nbsp; the light / dark pair (default <code>light</code> / <code>dark</code>). A pair the visitor switched to at runtime and that was stored (see below) takes its place.
                     </li>
                     <li>
-                        <code>bit-theme-system</code> (or a base value of <code>system</code>) &nbsp;&rarr;&nbsp; overrides the base preset with the OS choice, resolved from <code>prefers-color-scheme</code> using <code>bit-theme-light</code> / <code>bit-theme-dark</code> (default <code>light</code> / <code>dark</code>).
+                        <code>bit-theme</code> / <code>bit-theme-default</code> &nbsp;&rarr;&nbsp; the base preset (<code>bit-theme</code> wins over <code>bit-theme-default</code> when both are present). Under a stored pair, a light or dark base becomes that pair's theme of the same scheme.
                     </li>
                     <li>
-                        <code>bit-theme-persist</code> / <code>bit-theme-persist-cookie</code> &nbsp;&rarr;&nbsp; a stored preference overrides both. A concrete stored preset also stops the OS-following; a stored <code>system</code> keeps following and resolves like step 2.
+                        <code>bit-theme-system</code> (or a base value of <code>system</code>) &nbsp;&rarr;&nbsp; overrides the base preset with the OS choice, resolved from <code>prefers-color-scheme</code> using the pair.
+                    </li>
+                    <li>
+                        <code>bit-theme-persist</code> / <code>bit-theme-persist-cookie</code> &nbsp;&rarr;&nbsp; a stored preference overrides both. A concrete stored preset also stops the OS-following; a stored <code>system</code> keeps following and resolves like step 3. A stored preset that was the light or dark theme of the page's pair is restored as the pair's theme of the same scheme, so the visitor keeps their light or dark choice when the app switches presets; any other stored preset is restored as it is.
                     </li>
                 </ol>
+            </DocSection>
+
+            <DocSection Level="3" Id="theme-pair" Title="Switching the light / dark pair">
+
+                <BitText>
+                    <code>bit-theme-light</code> / <code>bit-theme-dark</code> say what "light" and "dark" mean: what <code>ToggleDarkLightAsync</code> flips between, and what following the OS resolves to. An app that lets its users pick a design system changes that pair at runtime, from C# or from JavaScript (<code>BitThemeSwitcher</code> does exactly this):
+                </BitText>
+
+                <CodeBox Language="csharp">// The visitor picked Material: "light" and "dark" now mean its two themes.
+await BitThemeManager.SetThemePairAsync(BitThemePresets.MaterialLight, BitThemePresets.MaterialDark);</CodeBox>
+
+                <CodeBox Language="js">BitBlazorUI.Theme.setPair('material-light', 'material-dark');</CodeBox>
+
+                <BitText>
+                    The visitor's own choice is kept. While they follow the OS, the new pair's theme for the OS scheme is applied and <code>system</code> stays their stored preference. Otherwise the applied theme moves to its counterpart in the new pair - <code>fluent2-dark</code> becomes <code>material-dark</code> - and so does a stored one. Both calls return the theme that is applied.
+                </BitText>
+
+                <BitText>
+                    The new pair is written to <code>bit-theme-light</code> / <code>bit-theme-dark</code>. With <code>bit-theme-persist</code> it is stored under <code>bit-theme-pair</code> (<code>BitThemeAttributeNames.ThemePairStorageKey</code>), and with <code>bit-theme-persist-cookie</code> it is mirrored into the <code>bit-theme-pair</code> cookie (<code>BitThemeCookie.PairCookieName</code>), so the next visit restores it ahead of the pair the page declares. Other tabs of the app follow it too. Switching back to the declared pair removes what was stored, so a later change of the page's own pair reaches the visitor again. A stored pair the page has since come to declare itself is removed the same way on the next visit.
+                </BitText>
+
+                <BitText>
+                    <b>A saved theme the pair no longer covers.</b> When the visitor pins the light or dark theme of the page's pair (the toggle does), <code>bit-theme-pair</code> holds <code>light</code> / <code>dark</code> beside it. So when an app later changes the pair its page declares (a rebrand from Fluent 2 to Material, say), a returning visitor's stored <code>fluent2-dark</code> is restored as <code>material-dark</code>, and stored that way. Any other stored theme is applied as it is: one the app pinned outside the pair with <code>SetThemeAsync</code> (<code>high-contrast</code>, or another design system's theme) is a choice of its own, and so is one stored before this marker existed - a design system picked with an earlier <code>BitThemeSwitcher</code> stays picked. An app that lets its users pick between presets should still switch the pair with <code>SetThemePairAsync</code> rather than set one theme of it, so the toggle and the OS resolve within the pick.
+                </BitText>
             </DocSection>
         </DocSection>
 
@@ -1275,6 +1306,9 @@ await BitThemeManager.SetThemeAsync(BitThemePresets.FluentDark);
 // Toggle between configured light / dark names.
 var newName = await BitThemeManager.ToggleDarkLightAsync();
 
+// Change which themes "light" and "dark" mean, keeping the user's light / dark / system choice.
+await BitThemeManager.SetThemePairAsync(BitThemePresets.Fluent2Light, BitThemePresets.Fluent2Dark);
+
 // Read the active name (null when JS interop is unavailable, e.g. prerender).
 var current = await BitThemeManager.GetCurrentThemeAsync();
 
@@ -1561,7 +1595,7 @@ await ThemeLoader.DetachStylesheetAsync("tenant-theme");</CodeBox>
                 The runtime <code>BitBlazorUI.Theme</code> object mirrors <code>BitThemeManager</code>. Use it from host pages, custom scripts, or component libraries that aren't Blazor.
             </BitText>
 
-            <BitText><b>get / set / toggle / useSystem</b> - preset and OS-following helpers.</BitText>
+            <BitText><b>get / set / toggle / setPair / useSystem</b> - preset and OS-following helpers.</BitText>
 
             <CodeBox Language="js">// Read the active theme name
 const current = BitBlazorUI.Theme.get();
@@ -1571,6 +1605,9 @@ BitBlazorUI.Theme.set('fluent-dark');
 
 // Toggle between configured light / dark names
 BitBlazorUI.Theme.toggleDarkLight();
+
+// Change the light / dark pair, keeping the user's light / dark / system choice
+BitBlazorUI.Theme.setPair('fluent2-light', 'fluent2-dark');
 
 // Re-follow the OS even after the user picked an explicit preset
 BitBlazorUI.Theme.useSystem();</CodeBox>
@@ -1597,7 +1634,7 @@ BitBlazorUI.Theme.clearAppliedTheme(document.body);</CodeBox>
             <BitText><b>onChange / isSystemDark / getPersisted</b> - observation helpers.</BitText>
 
             <CodeBox Language="js">// For the browser chrome itself, prefer bit-theme-color-meta (see "Browser chrome" below) -
-// it reads the live palette, which a callback cannot do while a view transition is pending.
+// it also follows an accent or a swapped stylesheet, which announce no theme change.
 BitBlazorUI.Theme.onChange((newTheme, oldTheme) => {
     document.body.classList.toggle('is-dark', newTheme.includes('dark'));
 });
@@ -1669,7 +1706,7 @@ BitBlazorUI.ExternalTheme.detach('tenant-theme');</CodeBox>
                 <CodeBox Language="razor">&lt;script&gt;@@BitThemeSsr.InlineHeadScriptBody&lt;/script&gt;</CodeBox>
 
                 <BitText>
-                    The script logic mirrors the runtime <code>BitBlazorUI.Theme</code>: with <code>bit-theme-persist</code>, the stored key <code>bit-current-theme</code> is read; with <code>bit-theme-persist-cookie</code>, the <code>bit-theme-preference</code> cookie is used as a fallback when <code>localStorage</code> holds no value; if the resolved value is <code>system</code>, <code>prefers-color-scheme</code> picks the light or dark name from <code>bit-theme-light</code> / <code>bit-theme-dark</code> (defaulting to <code>light</code> and <code>dark</code>).
+                    The script logic mirrors the runtime <code>BitBlazorUI.Theme</code>: with <code>bit-theme-persist</code>, the stored key <code>bit-current-theme</code> is read; with <code>bit-theme-persist-cookie</code>, the <code>bit-theme-preference</code> cookie is used as a fallback when <code>localStorage</code> holds no value; if the resolved value is <code>system</code>, <code>prefers-color-scheme</code> picks the light or dark name from <code>bit-theme-light</code> / <code>bit-theme-dark</code> (defaulting to <code>light</code> and <code>dark</code>), or from the pair stored under <code>bit-theme-pair</code> when the visitor switched it - read from <code>localStorage</code> first and, with <code>bit-theme-persist-cookie</code>, from the <code>bit-theme-pair</code> cookie when <code>localStorage</code> holds no value, the same order as the preference (see <BitLink Href="#theme-pair">Switching the light / dark pair</BitLink>).
                 </BitText>
             </DocSection>
 
@@ -1724,6 +1761,8 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
         ThemeColorMeta = BitCss.Var.Color.Background.Secondary.Main, // or true for the page background
         LightTheme = BitThemePresets.Fluent2Light,
         DarkTheme = BitThemePresets.Fluent2Dark,
+        // The pair a visitor switched to (SetThemePairAsync / BitThemeSwitcher), if any.
+        PersistedThemePair = HttpContext.Request.Cookies[BitThemeCookie.PairCookieName],
     };
 }
 
@@ -1733,6 +1772,7 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
     &lt;BitThemeHead PersistedPreference="@@preference"
                   LightTheme="@@themeOptions.LightTheme"
                   DarkTheme="@@themeOptions.DarkTheme"
+                  PersistedThemePair="@@themeOptions.PersistedThemePair"
                   ThemeColors="@@BitThemeSurfaces.BackgroundSecondary" /&gt;
     ...</CodeBox>
 
@@ -1877,7 +1917,7 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
             <BitText Element="h4" Typography="BitTypography.H5">Runtime</BitText>
 
             <ul>
-                <li><code>BitThemeManager</code>: <code>SetThemeAsync</code>, <code>ToggleDarkLightAsync</code>, <code>GetCurrentThemeAsync</code>, <code>GetCurrentPersistedThemeAsync</code>, <code>IsSystemInDarkModeAsync</code>, <code>ApplyBitThemeAsync</code>, <code>ClearBitThemeOverridesAsync</code>, <code>EnsureThemeNotificationsRegisteredAsync</code></li>
+                <li><code>BitThemeManager</code>: <code>SetThemeAsync</code>, <code>ToggleDarkLightAsync</code>, <code>SetThemePairAsync</code>, <code>GetCurrentThemeAsync</code>, <code>GetCurrentPersistedThemeAsync</code>, <code>IsSystemInDarkModeAsync</code>, <code>ApplyBitThemeAsync</code>, <code>ClearBitThemeOverridesAsync</code>, <code>EnsureThemeNotificationsRegisteredAsync</code></li>
                 <li><code>BitThemeProvider</code> (component): <code>Theme</code>, <code>RootElement</code>, <code>ThemeName</code>, <code>Frozen</code>, splatted attributes</li>
                 <li><code>BitThemeNotifications.ThemeChanged</code></li>
                 <li><code>BitThemeChangedEventArgs</code></li>
@@ -1908,7 +1948,7 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
                 <li><code>BitThemeSsrOptions</code> - the document-level setup the attribute builders emit</li>
                 <li><code>BitThemeHead</code> - the head half: first-paint script + <code>theme-color</code> tag</li>
                 <li><code>BitThemeSurfaces</code>: <code>BackgroundPrimary</code>, <code>BackgroundSecondary</code></li>
-                <li><code>BitThemeCookie.PreferenceCookieName</code></li>
+                <li><code>BitThemeCookie.PreferenceCookieName</code>, <code>BitThemeCookie.PairCookieName</code></li>
                 <li><code>bit-theme-persist-cookie</code> (attribute)</li>
                 <li><code>bit-theme-view-transition</code> (attribute)</li>
                 <li><code>bit-theme-color-meta</code> (attribute) - and <code>BitThemeAttributeNames</code>, the C# names of all of them</li>
@@ -1925,7 +1965,7 @@ BitThemeSsr.BuildRootThemeAttributes(preference, defaultTheme: BitThemePresets.F
             <BitText Element="h4" Typography="BitTypography.H5">JavaScript</BitText>
 
             <ul>
-                <li><code>BitBlazorUI.Theme</code>: <code>get</code>, <code>set</code>, <code>toggleDarkLight</code>, <code>useSystem</code>, <code>applyTheme</code>, <code>clearAppliedTheme</code>, <code>onChange</code>, <code>isSystemDark</code>, <code>getPersisted</code>, <code>init</code></li>
+                <li><code>BitBlazorUI.Theme</code>: <code>get</code>, <code>set</code>, <code>toggleDarkLight</code>, <code>setPair</code>, <code>useSystem</code>, <code>applyTheme</code>, <code>clearAppliedTheme</code>, <code>onChange</code>, <code>isSystemDark</code>, <code>getPersisted</code>, <code>init</code></li>
                 <li><code>BitBlazorUI.ThemeColorMeta</code>: <code>enable</code>, <code>disable</code>, <code>sync</code></li>
                 <li><code>BitBlazorUI.ExternalTheme</code>: <code>attach</code>, <code>detach</code></li>
             </ul>

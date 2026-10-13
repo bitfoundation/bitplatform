@@ -59,6 +59,45 @@ public sealed class BitThemeManagerTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task SetThemePairAsyncNormalizesBothNames()
+    {
+        var manager = new BitThemeManager(Services.GetRequiredService<IJSRuntime>());
+
+        await manager.SetThemePairAsync("  Material-Light ", "MATERIAL-dark");
+
+        // The pair lands on bit-theme-light / bit-theme-dark and from there on bit-theme, so it is
+        // normalized exactly as SetThemeAsync normalizes a single name.
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.Theme.setPair");
+        Assert.AreEqual("material-light", invocation.Arguments[0]);
+        Assert.AreEqual("material-dark", invocation.Arguments[1]);
+    }
+
+    [TestMethod]
+    public async Task SetThemePairAsyncWithBitThemeNamesWritesTheirValues()
+    {
+        var manager = new BitThemeManager(Services.GetRequiredService<IJSRuntime>());
+
+        await manager.SetThemePairAsync(BitThemeName.Custom("Brand-Light"), BitThemeName.Custom("Brand-Dark"));
+
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.Theme.setPair");
+        Assert.AreEqual("brand-light", invocation.Arguments[0]);
+        Assert.AreEqual("brand-dark", invocation.Arguments[1]);
+    }
+
+    [TestMethod]
+    public async Task SetThemePairAsyncForwardsABlankNameAsTheEmptyNoOp()
+    {
+        var manager = new BitThemeManager(Services.GetRequiredService<IJSRuntime>());
+
+        await manager.SetThemePairAsync("fluent2-light", "   ");
+
+        // The client script ignores a pair with a blank half rather than storing half a pair.
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.Theme.setPair");
+        Assert.AreEqual("fluent2-light", invocation.Arguments[0]);
+        Assert.AreEqual(string.Empty, invocation.Arguments[1]);
+    }
+
+    [TestMethod]
     public async Task NotifierIsRegisteredExactlyOnceAcrossManagerCalls()
     {
         var manager = CreateFullyWiredManager();
@@ -106,6 +145,7 @@ public sealed class BitThemeManagerTests : BunitTestContext
         // Every public method funnels through the registration step, which fails fast on a disposed
         // manager instead of reaching JS interop with a torn-down DotNetObjectReference.
         await Assert.ThrowsExactlyAsync<ObjectDisposedException>(async () => await manager.GetCurrentThemeAsync());
+        await Assert.ThrowsExactlyAsync<ObjectDisposedException>(async () => await manager.SetThemePairAsync("light", "dark"));
     }
 
     /// <summary>

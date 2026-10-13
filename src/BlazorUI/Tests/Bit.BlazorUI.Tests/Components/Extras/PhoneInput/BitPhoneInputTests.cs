@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Bunit;
@@ -972,6 +973,68 @@ public class BitPhoneInputTests : BunitTestContext
         component.Find("button.bit-phi-drp").KeyDown("Tab");
 
         Assert.IsFalse(component.Instance.IsOpen);
+    }
+
+    [TestMethod]
+    public void BitPhoneInputShouldFocusTheButtonWithoutScrollingWhenAListWithoutASearchBoxOpens()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.NoSearchBox, true);
+        });
+
+        // Read before the click: a re-render leaves the reference off the markup of an element it keeps.
+        var button = component.Find("button.bit-phi-drp").GetAttribute("blazor:elementReference");
+
+        component.Find("button.bit-phi-drp").Click();
+
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Single();
+
+        // A focus that scrolled the button into view would scroll a sticky header's container back to where the
+        // header sits in the flow.
+        Assert.AreEqual(button, ((ElementReference)focused.Arguments[0]!).Id);
+        Assert.AreEqual(true, focused.Arguments[1]);
+    }
+
+    [TestMethod]
+    [DataRow(true)]
+    [DataRow(false)]
+    public async Task BitPhoneInputShouldBringTheButtonIntoViewBeforeTheListIsPlacedWhenTheApiOpensIt(bool throughIsOpen)
+    {
+        var isOpen = false;
+        var component = RenderComponent<BitPhoneInput>(parameters =>
+        {
+            parameters.Add(p => p.NoSearchBox, true);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        var button = component.Find("button.bit-phi-drp").GetAttribute("blazor:elementReference");
+
+        if (throughIsOpen)
+        {
+            component.Render(parameters => parameters.Add(p => p.IsOpen, true));
+        }
+        else
+        {
+            await component.Instance.OpenAsync();
+        }
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Instance.IsOpen));
+
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Single();
+
+        // Opened from anywhere on the page, so the button may well be out of view: the focus brings it there - and
+        // does so before the list is placed against it, rather than moving it out from under a list already open.
+        Assert.AreEqual(button, ((ElementReference)focused.Arguments[0]!).Id);
+        Assert.AreEqual(false, focused.Arguments[1]);
+
+        var identifiers = Context.JSInterop.Invocations.Select(i => i.Identifier).ToList();
+        var toggle = identifiers.FindLastIndex(i => i == "BitBlazorUI.Callouts.toggle");
+
+        Assert.IsTrue(toggle >= 0);
+        Assert.IsTrue(identifiers.LastIndexOf("Blazor._internal.domWrapper.focus") < toggle);
     }
 
     [TestMethod]

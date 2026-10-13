@@ -1023,7 +1023,7 @@ public partial class BitScrollablePane : BitComponentBase
     [JSInvokable("OnScroll")]
     public async Task _OnScroll(BitScrollOffset offset)
     {
-        if (IsDisposed || offset is null) return;
+        if (IsDisposing || offset is null) return;
 
         await OnScroll.InvokeAsync(offset);
     }
@@ -1031,7 +1031,7 @@ public partial class BitScrollablePane : BitComponentBase
     [JSInvokable("OnScrollStart")]
     public async Task _OnScrollStart(BitScrollOffset offset)
     {
-        if (IsDisposed || offset is null) return;
+        if (IsDisposing || offset is null) return;
 
         await OnScrollStart.InvokeAsync(offset);
     }
@@ -1039,7 +1039,7 @@ public partial class BitScrollablePane : BitComponentBase
     [JSInvokable("OnScrollEnd")]
     public async Task _OnScrollEnd(BitScrollOffset offset)
     {
-        if (IsDisposed || offset is null) return;
+        if (IsDisposing || offset is null) return;
 
         await OnScrollEnd.InvokeAsync(offset);
     }
@@ -1047,7 +1047,7 @@ public partial class BitScrollablePane : BitComponentBase
     [JSInvokable("OnReached")]
     public async Task _OnReached(string edge)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         var callback = edge switch
         {

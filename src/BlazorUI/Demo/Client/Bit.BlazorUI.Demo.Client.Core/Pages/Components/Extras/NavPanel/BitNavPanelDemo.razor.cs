@@ -258,6 +258,13 @@ public partial class BitNavPanelDemo
         },
         new()
         {
+            Name = "ItemSuffixTemplate",
+            Type = "RenderFragment<TItem>?",
+            DefaultValue = "null",
+            Description = "Used to render custom content at the end of every item, after its text and ahead of its badge, while the item keeps its default content. The SuffixTemplate of an item wins over it, and the toggled panel, which is down to the icons of its items, keeps their badges alone.",
+        },
+        new()
+        {
             Name = "ItemTemplate",
             Type = "RenderFragment<TItem>?",
             DefaultValue = "null",

@@ -230,6 +230,8 @@
                 setCalloutWidth, fixedCalloutWidth, maxWindowWidth, true, maxHeight, arrowId, gap, preferredSide, alignment, noFlip, collisionPadding,
                 alignmentOffset, arrowPadding, rootId);
 
+            Callouts.recordAnchor(calloutId, component);
+
             return result;
         }
 
@@ -923,7 +925,49 @@
                     params.setCalloutWidth, params.fixedCalloutWidth, params.maxWindowWidth, false, params.maxHeight,
                     params.arrowId, params.gap, params.preferredSide, params.alignment, params.noFlip, params.collisionPadding,
                     params.alignmentOffset, params.arrowPadding, params.rootId);
+
+                Callouts.recordAnchor(params.calloutId, component);
             }
+        }
+
+        // Where the component of a callout was on the screen when the callout was last placed against it, which
+        // is what anchorsStayed tells a scroll that moved it from one that did not by. The center is what is kept,
+        // since a component easing back from a press (a button scaled down while it is held) is still where it was.
+        private static recordAnchor(calloutId: string, component: HTMLElement) {
+            const params = Callouts._params.get(calloutId);
+            if (params == null) return;
+
+            const rect = component.getBoundingClientRect();
+            params.anchorX = rect.left + rect.width / 2;
+            params.anchorY = rect.top + rect.height / 2;
+        }
+
+        // Whether a scroll of the given target left every callout it would dismiss still pointing at its component.
+        // A scroll of a container a component sits in does not always move the component: one in a sticky header
+        // of a scrolled container, or in a fixed bar, stays where it is - and a focus() bringing it into view still
+        // scrolls that container, which a click on it is enough to cause. A callout whose component has not moved
+        // is as much in place as it was before the scroll, so the scroll is no reason to dismiss it. The scroll of
+        // anything that is not around the components is not answered here and dismisses them as it always has.
+        public static anchorsStayed(target: EventTarget | null): boolean {
+            if (target instanceof Node === false) return false;
+
+            let stayed = false;
+            // Innermost first, down to the callout that is not dismissed by a scroll anyway, which is how far the
+            // dismissal this stands in the way of reaches (see replaceCurrent).
+            for (let i = Callouts._stack.length - 1; i >= 0 && Callouts._stack[i].noScrollDismiss !== true; i--) {
+                const params = Callouts._params.get(Callouts._stack[i].calloutId);
+                const component = params ? document.getElementById(params.componentId) : null;
+                if (params?.anchorX == null || params.anchorY == null || component == null) return false;
+                if (target.contains(component) === false) return false;
+
+                const rect = component.getBoundingClientRect();
+                if (Math.abs(rect.left + rect.width / 2 - params.anchorX) > 1
+                    || Math.abs(rect.top + rect.height / 2 - params.anchorY) > 1) return false;
+
+                stayed = true;
+            }
+
+            return stayed;
         }
 
         // Re-applies the space the scrollable content of an open callout cannot use. The parts that sit
@@ -1900,6 +1944,9 @@
         alignmentOffset: number;
         arrowPadding: number;
         rootId: string;
+        // The center of the component on the screen when the callout was last placed against it (see recordAnchor).
+        anchorX?: number;
+        anchorY?: number;
     }
 
     // Which side of the component the callout was placed on, as a physical side, so that the stylesheets

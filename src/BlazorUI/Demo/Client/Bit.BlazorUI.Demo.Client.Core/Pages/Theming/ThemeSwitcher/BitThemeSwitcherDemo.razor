@@ -30,6 +30,13 @@
             (see the <BitLink Href="/theming#presets">Presets</BitLink> section of the Theming page). This website
             links all three, which is why the switchers below actually re-skin it.
         </BitText>
+        <br />
+        <BitText>
+            Picking a design system switches the theme's light/dark pair (<code>BitThemeManager.SetThemePairAsync</code>)
+            rather than pinning one theme of it, so a visitor who follows the OS keeps following it in the new design
+            system, and on a page that persists the theme the pick is restored on the next visit (see
+            <BitLink Href="/theming#theme-pair">Switching the light / dark pair</BitLink>).
+        </BitText>
     </NotesTemplate>
     <Examples>
         <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">

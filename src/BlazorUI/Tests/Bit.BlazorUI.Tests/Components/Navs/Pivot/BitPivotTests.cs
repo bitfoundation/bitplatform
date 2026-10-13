@@ -2341,4 +2341,36 @@ public class BitPivotTests : BunitTestContext
 
         Assert.AreEqual("Delete", component.Find(".bit-pvti").GetAttribute("aria-keyshortcuts"));
     }
+
+    [TestMethod]
+    public void BitPivotShouldLeaveItsSelectionAloneWhileItIsDisposedTogetherWithItsItems()
+    {
+        // The script answers later, the way it does in a browser: the renderer disposes the items while the pivot
+        // is still awaiting its own teardown, before the base class has marked it disposed.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.Pivot.dispose", _ => true);
+
+        var component = RenderComponent<BitPivotTeardownTest>();
+
+        Assert.AreEqual(0, component.Instance.SelectedKeyChanges.Count);
+
+        component.Render(parameters => parameters.Add(p => p.Show, false));
+
+        Assert.AreEqual(1, dispose.Invocations.Count);
+        Assert.AreEqual(0, component.Instance.SelectedKeyChanges.Count);
+        Assert.AreEqual(0, component.Instance.OnChangeCount);
+        Assert.AreEqual("one", component.Instance.SelectedKey);
+
+        dispose.SetVoidResult();
+    }
+
+    [TestMethod]
+    public void BitPivotShouldStillMoveItsSelectionWhenTheSelectedItemIsRemovedFromAPivotThatStays()
+    {
+        var component = RenderComponent<BitPivotTeardownTest>();
+
+        component.Render(parameters => parameters.Add(p => p.ShowFirst, false));
+
+        CollectionAssert.AreEqual(new[] { "two" }, component.Instance.SelectedKeyChanges);
+        Assert.IsTrue(component.Find(".bit-pvti").ClassList.Contains("bit-pvti-sel"));
+    }
 }

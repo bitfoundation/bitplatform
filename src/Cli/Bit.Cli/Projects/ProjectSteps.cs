@@ -281,7 +281,11 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         if (await ContainerRuntimeProblemAsync(cancellationToken) is { } problem)
             return StepResult.Warning(skipped, problem.Detail, followUp, problem.Fix);
 
-        var start = await Aspire(["start", "--apphost", project.AppHostDirectory, "--non-interactive"], progress, TimeSpan.FromMinutes(30), cancellationToken);
+        var startTimeout = cli.Environment.GetVariable("ASPIRE_CLI_START_TIMEOUT") is null
+            ? new Dictionary<string, string?> { ["ASPIRE_CLI_START_TIMEOUT"] = "1200" }
+            : null;
+
+        var start = await Aspire(["start", "--apphost", project.AppHostDirectory, "--non-interactive"], progress, TimeSpan.FromMinutes(30), cancellationToken, startTimeout);
 
         if (start.Succeeded is false)
             return StepResult.FromProcess(start, "", failed, followUp) with { Status = StepStatus.Warning };
@@ -410,9 +414,9 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         return [.. new[] { "serverweb", "serverapi" }.Where(resource => text.Contains($"\"{resource}\"", StringComparison.Ordinal))];
     }
 
-    private Task<ProcessResult> Aspire(string[] arguments, Action<string> progress, TimeSpan timeout, CancellationToken cancellationToken)
+    private Task<ProcessResult> Aspire(string[] arguments, Action<string> progress, TimeSpan timeout, CancellationToken cancellationToken, IReadOnlyDictionary<string, string?>? environment = null)
     {
-        return Runner.RunAsync(new ProcessSpec { FileName = "aspire", Arguments = arguments, WorkingDirectory = project.Directory, OnOutputLine = progress, Timeout = timeout }, cancellationToken);
+        return Runner.RunAsync(new ProcessSpec { FileName = "aspire", Arguments = arguments, WorkingDirectory = project.Directory, Environment = environment, OnOutputLine = progress, Timeout = timeout }, cancellationToken);
     }
 
     public Task<StepResult> TrustAsync(Action<string> progress, CancellationToken cancellationToken)

@@ -361,4 +361,39 @@ public class BitAccordionListTests : BunitTestContext
         // A label on a plain container is dropped by a screen reader, so a splatted one makes the list a group too.
         Assert.AreEqual("group", root.GetAttribute("role"));
     }
+
+    [TestMethod]
+    public void BitAccordionListShouldLeaveItsExpandedKeysAloneWhileItIsDisposedTogetherWithItsOptions()
+    {
+        // The script answers later, the way it does in a browser: the renderer disposes the options while the lists
+        // are still awaiting their own teardown, before the base class has marked them disposed.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.Extras.disposePreventKeys", _ => true);
+
+        var component = RenderComponent<BitAccordionListTeardownTest>();
+
+        component.Render(parameters => parameters.Add(p => p.Show, false));
+
+        Assert.AreEqual(2, dispose.Invocations.Count);
+        Assert.AreEqual(0, component.Instance.ExpandedKeyChanges.Count);
+        Assert.AreEqual(0, component.Instance.ExpandedKeysChanges.Count);
+        Assert.AreEqual("first", component.Instance.ExpandedKey);
+        CollectionAssert.AreEqual(new[] { "first" }, component.Instance.ExpandedKeys!.ToArray());
+
+        dispose.SetVoidResult();
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldStillCollapseTheExpandedKeysWhenTheExpandedOptionIsRemovedFromAListThatStays()
+    {
+        var component = RenderComponent<BitAccordionListTeardownTest>();
+
+        component.Render(parameters => parameters.Add(p => p.ShowFirst, false));
+
+        component.WaitForAssertion(() =>
+        {
+            CollectionAssert.AreEqual(new string?[] { null }, component.Instance.ExpandedKeyChanges);
+            Assert.AreEqual(1, component.Instance.ExpandedKeysChanges.Count);
+            Assert.AreEqual(0, component.Instance.ExpandedKeysChanges[0]!.Count());
+        });
+    }
 }

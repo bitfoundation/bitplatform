@@ -189,7 +189,7 @@ public partial class BitMediaQuery : BitComponentBase
     [JSInvokable("OnMatchChange")]
     public async ValueTask _OnMatchChange(bool isMatched)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         try
         {

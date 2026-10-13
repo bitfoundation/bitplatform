@@ -463,10 +463,14 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
 // Anchor for map-pinned Blazor content. The chrome layer drives its transform every frame, so it
 // starts at the container origin and is moved from there; `visibility` is what hides it while the
 // anchor is off-screen, since a display:none element cannot be measured.
+// Placed by physical sides, never logical ones: every provider projects a point in pixels from the
+// container's top-left corner whatever the writing direction, so on a right-to-left map an inline-start
+// origin would put the anchor's box against the right edge and the popup a map's width away from its
+// marker. The popup's content still reads the way the map does.
 .bit-map-anchor {
     position: absolute;
-    inset-block-start: 0;
-    inset-inline-start: 0;
+    top: 0;
+    left: 0;
     z-index: $map-z-popup;
     // The transform positions the anchor point itself; this lifts the bubble above it and centres
     // it, the same relationship a map pin has to its tip.

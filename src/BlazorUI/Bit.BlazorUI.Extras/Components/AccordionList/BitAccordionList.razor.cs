@@ -672,6 +672,10 @@ public partial class BitAccordionList<TItem> : BitComponentBase where TItem : cl
 
     internal async Task UnregisterOption(BitAccordionListOption option)
     {
+        // The options unregister while they are being disposed, which also happens when the list goes away with
+        // them: collapsing the expanded ones would raise ExpandedKeyChanged for a choice nobody made.
+        if (IsDisposing) return;
+
         var item = (option as TItem)!;
 
         _items.Remove(item);

@@ -550,7 +550,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     {
         // The script keeps running for a moment after the component is gone (a debounced
         // change already in flight), and writing to a disposed component throws.
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         _value = value ?? string.Empty;
 
@@ -637,7 +637,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     [JSInvokable("OnToolbarShortcut")]
     public async Task _OnToolbarShortcut(string position)
     {
-        if (IsDisposed || int.TryParse(position, out var index) is false || index < 0) return;
+        if (IsDisposing || int.TryParse(position, out var index) is false || index < 0) return;
 
         var item = EnumerateToolbarItems(ActiveToolbar).ElementAtOrDefault(index);
         if (item is null || item.Type is not BitMarkdownEditorToolbarItemType.Custom || IsToolbarItemDisabled(item)) return;

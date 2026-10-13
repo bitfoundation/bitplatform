@@ -597,7 +597,7 @@ public partial class BitPanel : BitComponentBase
     [JSInvokable("OnTransitionEnd")]
     public async Task _OnTransitionEnd()
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         // The content of a closed panel is only taken out of the page once the panel has finished sliding
         // away with it, so the closing is still seen with something in it.

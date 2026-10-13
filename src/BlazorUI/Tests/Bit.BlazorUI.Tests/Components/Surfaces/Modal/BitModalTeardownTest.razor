@@ -1,0 +1,17 @@
+﻿@using Bit.BlazorUI
+
+@* The Modal goes away while it is open, the way it does when the page hosting it is left. *@
+@if (Show)
+{
+    <BitModal @bind-IsOpen="IsOpen" OnDismiss="() => Dismissals++">
+        <div>Content</div>
+    </BitModal>
+}
+
+@code {
+    [Parameter] public bool Show { get; set; } = true;
+
+    public bool IsOpen { get; set; } = true;
+
+    public int Dismissals { get; private set; }
+}

@@ -71,4 +71,15 @@ public static class BitThemeAttributeNames
 
     /// <summary><c>localStorage</c> key used by the client script when persistence is enabled.</summary>
     public const string ThemeStorageKey = "bit-current-theme";
+
+    /// <summary>
+    /// <c>localStorage</c> key the client script keeps, beside <see cref="ThemeStorageKey"/> and when
+    /// persistence is enabled, what the stored preference resolves against: the light / dark pair as
+    /// <c>"&lt;light&gt; &lt;dark&gt;"</c> once the visitor has switched it at runtime
+    /// (<see cref="BitThemeManager.SetThemePairAsync(string, string)"/>), which outranks
+    /// <see cref="ThemeLight"/> / <see cref="ThemeDark"/> on the next visit; otherwise <c>light</c> /
+    /// <c>dark</c> while the preference is that theme of the page's own pair, so it follows a later
+    /// change of that pair. Absent for any other preference, which is restored as it is.
+    /// </summary>
+    public const string ThemePairStorageKey = "bit-theme-pair";
 }
