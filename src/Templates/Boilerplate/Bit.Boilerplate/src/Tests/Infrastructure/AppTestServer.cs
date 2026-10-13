@@ -423,6 +423,7 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
     */
     //#endif
     //#endif
+    /// <summary>Every port this test run has handed out, so no two test servers ever get the same one.</summary>
     private static readonly ConcurrentDictionary<int, byte> handedOutPorts = new();
 
     /// <summary>
