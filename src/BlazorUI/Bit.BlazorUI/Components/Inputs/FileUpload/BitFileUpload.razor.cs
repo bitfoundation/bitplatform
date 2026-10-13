@@ -12,7 +12,18 @@ namespace Bit.BlazorUI;
 /// chunked and resumable uploads, a concurrency limit, pause/cancel, batch actions, automatic retries,
 /// validation, and server-side removal.
 /// </summary>
-public partial class BitFileUpload : BitComponentBase
+/// <remarks>
+/// It takes part in an EditForm like every other input. Its <see cref="BitInputBase{TValue}.Value"/> is the names of
+/// the files of the list joined with commas (<c>report.pdf,photo.png</c>), or null while it holds none, so a
+/// <c>[Required]</c> or a <c>[RegularExpression]</c> on the bound property validates the selection. Only the files
+/// that are still part of it count: one the validations rejected, or whose upload failed, was canceled or was removed,
+/// is left out, while a preloaded one and one still waiting to be uploaded are in. The files themselves are read
+/// through <see cref="Files"/> and the <see cref="OnFilesChange"/> callback. A browser cannot be handed files from
+/// code, so the value is the list's to write: one set from outside that empties it resets the selection (as
+/// <see cref="Reset"/> does, keeping the preloaded files), and any other is left until the list next changes and
+/// writes its own back.
+/// </remarks>
+public partial class BitFileUpload : BitInputBase<string?>
 {
     private const int MIN_CHUNK_SIZE = 512 * 1024; // 512 kb
     private const int MAX_CHUNK_SIZE = 10 * 1024 * 1024; // 10 mb
@@ -48,6 +59,11 @@ public partial class BitFileUpload : BitComponentBase
     private string _buttonId = default!;
     private string _descriptionId = default!;
     private ElementReference _inputRef;
+    // The value the list last wrote, or the one last pushed in from outside, which is how a value the consumer
+    // changed is told apart from one the component wrote itself.
+    private string? _valueParam;
+    // The names of the files of the value as the list last published them.
+    private string? _names;
     private ElementReference _labelRef;
     // The button of which file the focus is to be put on after the next render, with the neighbour to fall
     // back to. An action taken from inside a file item - removing it, starting, pausing or canceling its
@@ -465,10 +481,14 @@ public partial class BitFileUpload : BitComponentBase
     /// a selection, and with only the file that changed whenever a single status changes afterwards, so
     /// the current state of the batch is better read back from <see cref="Files"/> than from the argument.
     /// </summary>
-    [Parameter] public EventCallback<BitFileInfo[]> OnChange { get; set; }
+    /// <remarks>
+    /// The base <see cref="BitInputBase{TValue}.OnChange"/> reports the value alone - the names of the files that
+    /// are part of it - and only when that value actually moved.
+    /// </remarks>
+    [Parameter] public EventCallback<BitFileInfo[]> OnFilesChange { get; set; }
 
     /// <summary>
-    /// Callback invoked right after <see cref="OnChange"/> whenever a selection carries at least one file
+    /// Callback invoked right after <see cref="OnFilesChange"/> whenever a selection carries at least one file
     /// rejected by the validations, providing an array of only the rejected files along with their messages.
     /// </summary>
     [Parameter] public EventCallback<BitFileInfo[]> OnInvalid { get; set; }
@@ -1076,6 +1096,8 @@ public partial class BitFileUpload : BitComponentBase
 
         Announce();
 
+        await PublishValueAsync(notifyChange: true);
+
         // and it can also free a slot up for the next file waiting to be uploaded, or settle the
         // batch as a whole when the file taken away was the last one still running.
         await SettleFile();
@@ -1084,11 +1106,11 @@ public partial class BitFileUpload : BitComponentBase
     }
 
     /// <summary>
-    /// Opens a file selection dialog.
+    /// Opens a file selection dialog. A disabled or read-only file upload opens nothing.
     /// </summary>
     public async Task Browse()
     {
-        if (Disabled) return;
+        if (Disabled || ReadOnly) return;
 
         if (AutoReset)
         {
@@ -1102,11 +1124,42 @@ public partial class BitFileUpload : BitComponentBase
     /// Resets the file upload, taking the whole selection and its upload state back to where they started.
     /// The files of <see cref="PreloadedFiles"/> stay: they belong to the record rather than to this
     /// selection - except the ones already deleted from the server, which nothing on this side brings back.
+    /// A bound <see cref="BitInputBase{TValue}.Value"/> follows the list, without the base OnChange being invoked.
     /// </summary>
     public async Task Reset()
     {
         if (IsDisposed) return;
 
+        await ResetSelectionAsync();
+
+        if (IsDisposed) return;
+
+        await PublishValueAsync(notifyChange: false);
+
+        StateHasChanged();
+    }
+
+    /// <summary>
+    /// Gives focus to the browse button, which is what the user operates: the input the value travels through is
+    /// hidden, and so is the native file input. A file upload whose button is hidden or replaced by a
+    /// <see cref="LabelTemplate"/> has nothing of its own to focus.
+    /// </summary>
+    public override ValueTask FocusAsync() => FocusAsync(false);
+
+    /// <inheritdoc cref="FocusAsync()"/>
+    /// <param name="preventScroll">Whether the browser should leave the page where it is rather than scroll the
+    /// browse button into view.</param>
+    public override ValueTask FocusAsync(bool preventScroll)
+    {
+        if (Disabled || LabelTemplate is not null || _ShowLabelButton is false) return ValueTask.CompletedTask;
+
+        return _labelRef.FocusAsync(preventScroll);
+    }
+
+
+
+    private async Task ResetSelectionAsync()
+    {
         // a reset undoes what was picked here, and what is on the server was never picked here.
         var preloaded = _files.Where(f => f.IsPreloaded && f.Status is not BitFileUploadStatus.Removed).ToArray();
 
@@ -1121,8 +1174,6 @@ public partial class BitFileUpload : BitComponentBase
         await _js.BitFileUploadReset(UniqueId, _inputRef);
 
         Announce();
-
-        StateHasChanged();
     }
 
 
@@ -1253,6 +1304,8 @@ public partial class BitFileUpload : BitComponentBase
         ClassBuilder.Register(() => ShowDropArea ? "bit-upl-dra" : string.Empty);
 
         ClassBuilder.Register(() => LabelIconPlacement is BitPlacement.End ? "bit-upl-eni" : string.Empty);
+
+        ClassBuilder.Register(() => ReadOnly ? "bit-upl-rdl" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -1276,6 +1329,13 @@ public partial class BitFileUpload : BitComponentBase
 
         await base.OnParametersSetAsync();
 
+        var valuePushed = ValueHasBeenSet && Value != _valueParam;
+
+        if (valuePushed)
+        {
+            _valueParam = Value;
+        }
+
         if (ShouldApplyPreloadedFiles())
         {
             ApplyPreloadedFiles();
@@ -1285,6 +1345,18 @@ public partial class BitFileUpload : BitComponentBase
             ApplyListValidations();
 
             Announce();
+
+            // the record the preloaded files belong to is what the value names from now on.
+            await PublishValueAsync(notifyChange: false);
+        }
+        else if (valuePushed && Value.HasNoValue() && _HasPickedFiles)
+        {
+            // A value the consumer emptied - a form reset, a model cleared after a save - resets the selection it
+            // stood for, as Reset does. Any other value pushed in names files a browser cannot be handed from code,
+            // so it is left to the list, which writes its own back the next time it changes.
+            await ResetSelectionAsync();
+
+            _names = GetValueNames();
         }
 
         if (_dropZoneRef is null) return;
@@ -1310,8 +1382,8 @@ public partial class BitFileUpload : BitComponentBase
 
         _dotnetObj = DotNetObjectReference.Create(this);
 
-        _allowDrop = AllowDrop;
-        _allowPaste = AllowPaste;
+        _allowDrop = _AllowsDrop;
+        _allowPaste = _AllowsPaste;
         _expandDirectories = Directory;
         _dropZoneSelector = DropZoneSelector;
         _dragClass = GetDragClass();
@@ -1351,6 +1423,8 @@ public partial class BitFileUpload : BitComponentBase
 
     internal async Task HandleItemUpload(BitFileInfo file)
     {
+        if (ReadOnly) return;
+
         // the upload button is replaced by the pause and cancel pair of a running file.
         RequestFocus(file, BitFileUploadFocusTarget.Pause);
 
@@ -1359,6 +1433,8 @@ public partial class BitFileUpload : BitComponentBase
 
     internal async Task HandleItemPause(BitFileInfo file)
     {
+        if (ReadOnly) return;
+
         // the pause button is replaced by the resume (upload) button of a paused file.
         RequestFocus(file, BitFileUploadFocusTarget.Upload);
 
@@ -1367,6 +1443,8 @@ public partial class BitFileUpload : BitComponentBase
 
     internal async Task HandleItemCancel(BitFileInfo file)
     {
+        if (ReadOnly) return;
+
         // the cancel button is replaced by the retry (upload) button of a canceled file.
         RequestFocus(file, BitFileUploadFocusTarget.Upload);
 
@@ -1375,6 +1453,8 @@ public partial class BitFileUpload : BitComponentBase
 
     internal async Task HandleItemRemove(BitFileInfo file)
     {
+        if (ReadOnly) return;
+
         // the whole item goes away with its remove button, so the focus moves to the item that takes its
         // place - or to the one before it at the end of the list. A removal that fails leaves the item
         // where it was, and the focus then stays on the very button that was pressed.
@@ -1393,21 +1473,21 @@ public partial class BitFileUpload : BitComponentBase
     // an aria-disabled button still takes a click, so each handler asks for itself whether it has anything to do.
     private async Task HandleUploadAll()
     {
-        if (_CanUploadAll is false) return;
+        if (ReadOnly || _CanUploadAll is false) return;
 
         await Upload();
     }
 
     private async Task HandleCancelAll()
     {
-        if (_CanCancelAll is false) return;
+        if (ReadOnly || _CanCancelAll is false) return;
 
         await CancelUpload();
     }
 
     private async Task HandleClear()
     {
-        if (_CanClear is false) return;
+        if (ReadOnly || _CanClear is false) return;
 
         // the whole list goes away with the action bar, so the focus returns to where a new selection starts.
         RequestFocus(null, BitFileUploadFocusTarget.Upload);
@@ -1416,6 +1496,12 @@ public partial class BitFileUpload : BitComponentBase
     }
 
     private bool _HasPickedFiles => _files.Any(f => f.IsPreloaded is false && f.Status is not BitFileUploadStatus.Removed);
+
+    // A read-only file upload keeps showing its files but takes no new ones and gives none up, so it accepts no drop
+    // or paste either.
+    private bool _AllowsDrop => AllowDrop && ReadOnly is false;
+
+    private bool _AllowsPaste => AllowPaste && ReadOnly is false;
 
     // "Upload all" is offered while a file that nobody has started yet - or that was paused, failed or was
     // canceled - is waiting for it; a file already on the wire or in the queue has been asked already.
@@ -1564,14 +1650,14 @@ public partial class BitFileUpload : BitComponentBase
         var acceptedMimeTypes = GetDragAcceptedMimeTypes();
         var remainingSlots = GetRemainingSlots();
 
-        if (_allowDrop == AllowDrop && _allowPaste == AllowPaste && _expandDirectories == Directory &&
+        if (_allowDrop == _AllowsDrop && _allowPaste == _AllowsPaste && _expandDirectories == Directory &&
             _dropZoneSelector == DropZoneSelector && _dragClass == dragClass && _dragStyle == dragStyle &&
             _rejectClass == rejectClass && _rejectStyle == rejectStyle && _remainingSlots == remainingSlots &&
             (_acceptedMimeTypes ?? []).SequenceEqual(acceptedMimeTypes ?? [], StringComparer.Ordinal) &&
             (_acceptedMimeTypes is null) == (acceptedMimeTypes is null)) return;
 
-        _allowDrop = AllowDrop;
-        _allowPaste = AllowPaste;
+        _allowDrop = _AllowsDrop;
+        _allowPaste = _AllowsPaste;
         _expandDirectories = Directory;
         _dropZoneSelector = DropZoneSelector;
         _dragClass = dragClass;
@@ -1745,7 +1831,11 @@ public partial class BitFileUpload : BitComponentBase
 
         Announce();
 
-        await OnChange.InvokeAsync([.. _files]);
+        await PublishValueAsync(notifyChange: true);
+
+        if (IsDisposed) return;
+
+        await OnFilesChange.InvokeAsync([.. _files]);
 
         if (OnInvalid.HasDelegate)
         {
@@ -2346,6 +2436,62 @@ public partial class BitFileUpload : BitComponentBase
                (notAllowed > 0 ? $" {notAllowed} not allowed." : string.Empty);
     }
 
+    /// <summary>
+    /// The names of the files that are part of the value, joined with commas, or null when there is none.
+    /// </summary>
+    private string? GetValueNames()
+    {
+        var names = string.Join(",", _files.Where(f => f.Status is not (BitFileUploadStatus.NotAllowed
+                                                                         or BitFileUploadStatus.Removed
+                                                                         or BitFileUploadStatus.Canceled
+                                                                         or BitFileUploadStatus.Failed))
+                                           .Select(f => f.Name));
+
+        return names.HasValue() ? names : null;
+    }
+
+    /// <summary>
+    /// Writes the names of the files of the value into the Value when they changed, telling the binding and the
+    /// EditContext and, for a change the user made, the base OnChange.
+    /// </summary>
+    private async Task PublishValueAsync(bool notifyChange)
+    {
+        var value = GetValueNames();
+
+        if (value == _names) return;
+
+        _names = value;
+
+        // A Value bound one way has nowhere to be written back to; the callbacks beside it are still told.
+        if ((ValueHasBeenSet && ValueChanged.HasDelegate is false) is false && value != Value)
+        {
+            // Recorded before the binding is told, since a consumer re-renders from inside the callback and the
+            // value it hands back must read as this one rather than as one pushed in from outside.
+            _valueParam = value;
+            Value = value;
+
+            await ValueChanged.InvokeAsync(value);
+
+            // An input bound to nothing has no field to report, and a validator handed one with no model would throw.
+            if (EditContext is not null && NoValidate is false && FieldIdentifier.Model is not null)
+            {
+                EditContext.NotifyFieldChanged(FieldIdentifier);
+            }
+        }
+
+        if (notifyChange)
+        {
+            await OnChange.InvokeAsync(value);
+        }
+    }
+
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
+    {
+        result = value;
+        parsingErrorMessage = null;
+        return true;
+    }
+
     private async Task UpdateStatus(BitFileUploadStatus uploadStatus, BitFileInfo fileInfo)
     {
         if (uploadStatus is not BitFileUploadStatus.InProgress)
@@ -2368,7 +2514,10 @@ public partial class BitFileUpload : BitComponentBase
                 Announce();
             }
 
-            await OnChange.InvokeAsync([fileInfo]);
+            await OnFilesChange.InvokeAsync([fileInfo]);
+
+            // a failed, canceled or removed upload takes its file out of the value, and a retry puts it back.
+            await PublishValueAsync(notifyChange: true);
         }
 
         switch (uploadStatus)

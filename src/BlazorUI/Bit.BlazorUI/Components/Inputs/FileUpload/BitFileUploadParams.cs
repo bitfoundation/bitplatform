@@ -3,7 +3,7 @@
 /// <summary>
 /// The parameters for <see cref="BitFileUpload"/> component.
 /// </summary>
-public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
+public class BitFileUploadParams : BitInputBaseParams<string?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitFileUpload"/> cascading parameters within <see cref="BitParams"/>.
@@ -662,7 +662,7 @@ public class BitFileUploadParams : BitComponentBaseParams, IBitComponentParams
     {
         if (bitFileUpload is null) return;
 
-        UpdateBaseParameters(bitFileUpload);
+        UpdateInputBaseParameters(bitFileUpload);
 
         // The working chunk size is derived from ChunkSize and AutoChunkSize. A changed ChunkSize derives it through its
         // own [CallOnSet] hook; AutoChunkSize has none, so a change to it is followed here.

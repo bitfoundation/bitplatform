@@ -1,5 +1,5 @@
 ﻿@namespace Bit.BlazorUI
-@inherits BitComponentBase
+@inherits BitInputBase<string?>
 
 <div @ref="@RootElement" @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
@@ -13,6 +13,8 @@
     }
     else if (HideLabel is false)
     {
+        @* A read-only file input keeps its browse button focusable, as every read-only control keeps its place in
+           the tab order, and says it is unavailable rather than taking it away. *@
         <button @ref="_labelRef"
                 @onclick="Browse"
                 type="button"
@@ -20,7 +22,7 @@
                 title="@Title"
                 tabindex="@TabIndex"
                 disabled="@(Disabled)"
-                aria-disabled="@(Disabled ? "true" : null)"
+                aria-disabled="@(Disabled || ReadOnly ? "true" : null)"
                 aria-label="@AriaLabel"
                 aria-describedby="@(_HasDescription ? _descriptionId : null)"
                 style="@Styles?.Label"
@@ -170,7 +172,7 @@
                                     title="@removeTitle"
                                     tabindex="@TabIndex"
                                     disabled="@(Disabled)"
-                                    aria-disabled="@(Disabled ? "true" : null)"
+                                    aria-disabled="@(Disabled || ReadOnly ? "true" : null)"
                                     aria-label="@($"{removeTitle} {(folder.HasValue() ? file.RelativePath : file.Name)}")"
                                     aria-describedby="@(file.IsValid ? null : GetMessageId(file))"
                                     style="@Styles?.RemoveButton"
@@ -185,4 +187,20 @@
     }
 
     <div role="status" aria-live="polite" aria-atomic="true" class="bit-fin-lvr">@_announcement</div>
+
+    @* The value's carrier in a form - the names of the valid files: what a post reads under Name, what Required
+       is checked against, and where the InputHtmlAttributes land. The native file input above cannot be it, since
+       the list the component keeps (appended to, removed from) is not the one the browser holds. It is nothing to
+       land on, so it stays out of the tab order and the accessibility tree. *@
+    <input @attributes="InputHtmlAttributes"
+           type="text"
+           name="@Name"
+           tabindex="-1"
+           aria-hidden="true"
+           required="@Required"
+           readonly="@ReadOnly"
+           class="bit-input-hidden"
+           disabled="@Disabled"
+           aria-disabled="@GetInputAriaDisabled(Disabled)"
+           value="@CurrentValueAsString" />
 </div>

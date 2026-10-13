@@ -72,7 +72,7 @@
                              TItem="BitDropdownItem<string>" TValue="string" />
             </div>
             <div class="component-box">
-                <BitColorPicker ShowPreview="true" @bind-Color="@_selectedColor" ShowAlphaSlider="false">Default ColorPicker</BitColorPicker>
+                <BitColorPicker ShowPreview="true" @bind-Value="@_selectedColor" ShowAlphaSlider="false" />
             </div>
             <div class="component-box--transparent" style="height: fit-content;">
                 <BitToggle @bind-Value="_isToggleUnChecked" OnText="On" OffText="Off" />

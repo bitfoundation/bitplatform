@@ -312,7 +312,7 @@
                 break;
 
             case "file-upload":
-                <BitFileUpload Label="Upload" UploadUrl="/upload" OnChange="@(f => Log($"OnChange:{f.Length}"))" />
+                <BitFileUpload Label="Upload" UploadUrl="/upload" OnFilesChange="@(f => Log($"OnFilesChange:{f.Length}"))" />
                 break;
 
             case "otp-input":

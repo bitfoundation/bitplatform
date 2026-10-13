@@ -1,5 +1,5 @@
 ﻿@namespace Bit.BlazorUI
-@inherits BitComponentBase
+@inherits BitInputBase<string?>
 
 <div @ref="@RootElement" @attributes="DisabledAwareHtmlAttributes"
      id="@_Id"
@@ -13,12 +13,14 @@
     }
     else if (_ShowLabelButton)
     {
+        @* A read-only file upload keeps its browse button focusable, as every read-only control keeps its place in
+           the tab order, and says it is unavailable rather than taking it away. *@
         <button @ref="_labelRef"
                 @onclick="Browse"
                 type="button"
                 id="@_buttonId"
                 disabled="@(Disabled)"
-                aria-disabled="@(Disabled ? "true" : null)"
+                aria-disabled="@(Disabled || ReadOnly ? "true" : null)"
                 aria-label="@AriaLabel"
                 aria-describedby="@(_HasDescription ? _descriptionId : null)"
                 style="@Styles?.Label"
@@ -107,7 +109,7 @@
                 <button @onclick="HandleUploadAll"
                         type="button"
                         disabled="@(Disabled)"
-                        aria-disabled="@(Disabled || canUploadAll is false ? "true" : null)"
+                        aria-disabled="@(Disabled || ReadOnly || canUploadAll is false ? "true" : null)"
                         style="@Styles?.BatchActionButton"
                         class="bit-upl-bab @Classes?.BatchActionButton">
                     @UploadAllText
@@ -116,7 +118,7 @@
             <button @onclick="HandleCancelAll"
                     type="button"
                     disabled="@(Disabled)"
-                    aria-disabled="@(Disabled || canCancelAll is false ? "true" : null)"
+                    aria-disabled="@(Disabled || ReadOnly || canCancelAll is false ? "true" : null)"
                     style="@Styles?.BatchActionButton"
                     class="bit-upl-bab @Classes?.BatchActionButton">
                 @CancelAllText
@@ -124,7 +126,7 @@
             <button @onclick="HandleClear"
                     type="button"
                     disabled="@(Disabled)"
-                    aria-disabled="@(Disabled || canClear is false ? "true" : null)"
+                    aria-disabled="@(Disabled || ReadOnly || canClear is false ? "true" : null)"
                     style="@Styles?.BatchActionButton"
                     class="bit-upl-bab @Classes?.BatchActionButton">
                 @ClearText
@@ -133,4 +135,20 @@
     }
 
     <div role="status" aria-live="polite" aria-atomic="true" class="bit-upl-lvr">@_announcement</div>
+
+    @* The value's carrier in a form - the names of the files of the value: what a post reads under Name, what
+       Required is checked against, and where the InputHtmlAttributes land. The native file input above cannot be
+       it, since the list the component keeps (appended to, preloaded, uploaded, removed) is not the one the browser
+       holds. It is nothing to land on, so it stays out of the tab order and the accessibility tree. *@
+    <input @attributes="InputHtmlAttributes"
+           type="text"
+           name="@Name"
+           tabindex="-1"
+           aria-hidden="true"
+           required="@Required"
+           readonly="@ReadOnly"
+           class="bit-input-hidden"
+           disabled="@Disabled"
+           aria-disabled="@GetInputAriaDisabled(Disabled)"
+           value="@CurrentValueAsString" />
 </div>

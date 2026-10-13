@@ -13,17 +13,17 @@ public partial class BitColorPickerDemo
     </LabelTemplate>
 </BitColorPicker>
 
-<BitColorPicker Disabled Color=""#B34D4D"" />
+<BitColorPicker Disabled Value=""#B34D4D"" />
 
-<BitColorPicker ReadOnly ShowInputs @bind-Color=""readOnlyColor"" />";
+<BitColorPicker ReadOnly ShowInputs @bind-Value=""readOnlyColor"" />";
     private readonly string example1CsharpCode = @"
 private string readOnlyColor = ""#4D7FB3"";";
 
     private readonly string example2RazorCode = @"
-<BitColorPicker ShowAlphaSlider ShowPreview @bind-Color=""alphaColor"" @bind-Alpha=""alphaValue"" />
+<BitColorPicker ShowAlphaSlider ShowPreview @bind-Value=""alphaColor"" @bind-Alpha=""alphaValue"" />
 <div>Color: @alphaColor &nbsp; Alpha: @alphaValue</div>
 
-<BitColorPicker ShowPreview @bind-Color=""previewColor"" />
+<BitColorPicker ShowPreview @bind-Value=""previewColor"" />
 <div>Color: @previewColor</div>";
     private readonly string example2CsharpCode = @"
 private string alphaColor = ""#4D8CB3"";
@@ -33,16 +33,16 @@ private string previewColor = ""#5B8C5A"";";
     private readonly string example3RazorCode = @"
 <BitColorPicker ShowInputs ShowPreview ShowAlphaSlider
                 Format=""BitColorFormat.HexAlpha""
-                @bind-Color=""inputsAlphaColor"" />
+                @bind-Value=""inputsAlphaColor"" />
 <div>Color: @inputsAlphaColor</div>
 
 <BitColorPicker ShowInputs ShowPreview ShowInputsModeSwitch
-                @bind-InputsMode=""inputsMode"" @bind-Color=""inputsModeColor"" />
+                @bind-InputsMode=""inputsMode"" @bind-Value=""inputsModeColor"" />
 <div>Mode: @inputsMode &nbsp; Color: @inputsModeColor</div>
 
 <BitColorPicker ShowInputs ShowPreview
                 InputsMode=""BitColorInputsMode.Hsl""
-                @bind-Color=""hslInputsColor"" />
+                @bind-Value=""hslInputsColor"" />
 <div>Color: @hslInputsColor</div>";
     private readonly string example3CsharpCode = @"
 private string inputsAlphaColor = ""#4DB39980"";
@@ -51,16 +51,16 @@ private string inputsModeColor = ""#B34D6B"";
 private string hslInputsColor = ""hsl(150,45%,45%)"";";
 
     private readonly string example4RazorCode = @"
-<BitColorPicker ShowPreview Presets=""brandPresets"" @bind-Color=""presetColor"" />
+<BitColorPicker ShowPreview Presets=""brandPresets"" @bind-Value=""presetColor"" />
 <div>Color: @presetColor</div>
 
 <BitColorPicker ShowPreview ShowAlphaSlider
                 Presets=""alphaPresets""
                 Format=""BitColorFormat.Rgba""
-                @bind-Color=""alphaPresetColor"" />
+                @bind-Value=""alphaPresetColor"" />
 <div>Color: @alphaPresetColor</div>
 
-<BitColorPicker ShowPreview Presets=""rampPresets"" PresetsPerRow=""5"" @bind-Color=""rampPresetColor"" />
+<BitColorPicker ShowPreview Presets=""rampPresets"" PresetsPerRow=""5"" @bind-Value=""rampPresetColor"" />
 <div>Color: @rampPresetColor</div>";
     private readonly string example4CsharpCode = @"
 private static readonly string[] brandPresets =
@@ -84,7 +84,7 @@ private static readonly string[] rampPresets =
 private string rampPresetColor = ""#4A9BE2"";";
 
     private readonly string example5RazorCode = @"
-<BitColorPicker ShowEyeDropper ShowPreview ShowInputs @bind-Color=""eyeDropperColor"" />
+<BitColorPicker ShowEyeDropper ShowPreview ShowInputs @bind-Value=""eyeDropperColor"" />
 <div>Color: @eyeDropperColor</div>";
     private readonly string example5CsharpCode = @"
 private string eyeDropperColor = ""#5B8C5A"";";
@@ -92,15 +92,15 @@ private string eyeDropperColor = ""#5B8C5A"";";
     private readonly string example6RazorCode = @"
 <BitColorPicker ShowContrast ShowInputs ShowPreview
                 ContrastColor=""@contrastBackground""
-                @bind-Color=""contrastColor"" />
+                @bind-Value=""contrastColor"" />
 <div>@contrastColor on @contrastBackground</div>
 
-<BitColorPicker ShowPreview ShowInputs @bind-Color=""contrastBackground"" />
+<BitColorPicker ShowPreview ShowInputs @bind-Value=""contrastBackground"" />
 
 <BitColorPicker ShowContrast ShowAlphaSlider ShowPreview
                 ContrastColor=""#1B1A19""
                 Format=""BitColorFormat.Rgba""
-                @bind-Color=""contrastOnDarkColor"" />
+                @bind-Value=""contrastOnDarkColor"" />
 <div>Color: @contrastOnDarkColor</div>";
     private readonly string example6CsharpCode = @"
 private string contrastColor = ""#767676"";
@@ -108,7 +108,7 @@ private string contrastBackground = ""#FFFFFF"";
 private string contrastOnDarkColor = ""rgba(122,200,255,1)"";";
 
     private readonly string example7RazorCode = @"
-<BitColorPicker ShowAlphaSlider ShowPreview Format=""selectedFormat"" @bind-Color=""formatColor"" />
+<BitColorPicker ShowAlphaSlider ShowPreview Format=""selectedFormat"" @bind-Value=""formatColor"" />
 <div>Color: @formatColor</div>
 
 <BitChoiceGroup Horizontal
@@ -135,13 +135,13 @@ private BitColorFormat selectedFormat = BitColorFormat.Hex;
 private string formatColor = ""#B34D8C"";";
 
     private readonly string example8RazorCode = @"
-<BitColorPicker Color=""oneWayColor"" ShowPreview />
+<BitColorPicker Value=""@oneWayColor"" ShowPreview />
 @foreach (var (label, color) in oneWayOptions)
 {
     <BitButton OnClick=""() => oneWayColor = color"">@label</BitButton>
 }
 
-<BitColorPicker @bind-Color=""twoWayColor"" @bind-Alpha=""twoWayAlpha"" ShowAlphaSlider ShowPreview />
+<BitColorPicker @bind-Value=""twoWayColor"" @bind-Alpha=""twoWayAlpha"" ShowAlphaSlider ShowPreview />
 <BitTextField Label=""Enter a color"" @bind-Value=""twoWayColor"" Style=""width: 220px;"" />
 <div>Alpha: @twoWayAlpha</div>";
     private readonly string example8CsharpCode = @"
@@ -155,9 +155,9 @@ private double twoWayAlpha = 1;";
 
     private readonly string example9RazorCode = @"
 <BitColorPicker @ref=""colorPickerRef"" ShowAlphaSlider ShowPreview
-                OnChange=""HandleOnChange""
+                OnColorChange=""HandleOnColorChange""
                 OnChangeEnd=""HandleOnChangeEnd"" />
-<div>OnChange: @changeCount times, last @changedColor</div>
+<div>OnColorChange: @changeCount times, last @changedColor</div>
 <div>OnChangeEnd: @changeEndCount times, last @changedHex / @changedRgba</div>
 <BitButton OnClick=""() => colorPickerRef?.FocusAsync()"">Focus the picker</BitButton>
 
@@ -176,7 +176,7 @@ private string? changedHex;
 private string? changedRgba;
 private BitColorPicker? colorPickerRef;
 
-private void HandleOnChange(BitColorChangeEventArgs args)
+private void HandleOnColorChange(BitColorChangeEventArgs args)
 {
     changeCount++;
     changedColor = args.Color;
@@ -192,18 +192,18 @@ private void HandleOnChangeEnd(BitColorChangeEventArgs args)
     private readonly string example10RazorCode = @"
 <BitColorPicker ShowAlphaSlider ShowInputs ShowPreview
                 AriaLabel=""Choose the brand color""
-                @bind-Color=""accessibilityColor"" />
+                @bind-Value=""accessibilityColor"" />
 <div>Color: @accessibilityColor</div>
 
 <BitColorPicker ReadOnly ShowAlphaSlider ShowInputs ShowPreview
                 Presets=""brandPresets""
-                @bind-Color=""accessibilityColor"" />
+                @bind-Value=""accessibilityColor"" />
 
 <BitColorPicker Dir=""BitDir.Rtl"" ShowAlphaSlider ShowInputs ShowPreview ShowInputsModeSwitch
                 Texts=""persianTexts""
                 Label=""رنگ برند""
                 Presets=""brandPresets""
-                @bind-Color=""localizedColor"" />";
+                @bind-Value=""localizedColor"" />";
     private readonly string example10CsharpCode = @"
 private string accessibilityColor = ""#4DB3B3"";
 
@@ -241,14 +241,14 @@ private static readonly BitColorPickerTexts persianTexts = new()
 <BitColorPicker ShowSaturationArea=""false"" ShowHueSlider=""false"" ShowPreview
                 Presets=""brandPresets""
                 PresetsPerRow=""5""
-                @bind-Color=""paletteOnlyColor"" />
+                @bind-Value=""paletteOnlyColor"" />
 <div>Color: @paletteOnlyColor</div>
 
-<BitColorPicker ShowHueSlider=""false"" ShowPreview ShowInputs @bind-Color=""tintColor"" />
+<BitColorPicker ShowHueSlider=""false"" ShowPreview ShowInputs @bind-Value=""tintColor"" />
 <div>Color: @tintColor</div>
 
 <BitColorPicker ShowSaturationArea=""false"" ShowHueSlider=""false"" ShowInputs ShowInputsModeSwitch ShowPreview ShowAlphaSlider
-                @bind-Color=""fieldsOnlyColor"" />
+                @bind-Value=""fieldsOnlyColor"" />
 <div>Color: @fieldsOnlyColor</div>
 
 <BitCallout AutoFocus>
@@ -262,7 +262,7 @@ private static readonly BitColorPickerTexts persianTexts = new()
         <BitColorPicker ShowInputs Presets=""brandPresets""
                         Label=""Text color""
                         Style=""--bit-ColorPicker-padding: 0.75rem;""
-                        @bind-Color=""popoverColor"" />
+                        @bind-Value=""popoverColor"" />
     </Content>
 </BitCallout>";
     private readonly string example11CsharpCode = @"
@@ -279,17 +279,17 @@ private string popoverColor = ""#4A9BE2"";";
 
     private readonly string example12RazorCode = @"
 <BitParams Parameters=""@colorPickerParams"">
-    <BitColorPicker @bind-Color=""cascadedColor"" />
+    <BitColorPicker @bind-Value=""cascadedColor"" />
     <div>Color: @cascadedColor</div>
 
-    <BitColorPicker @bind-Color=""cascadedOtherColor"" />
+    <BitColorPicker @bind-Value=""cascadedOtherColor"" />
     <div>Color: @cascadedOtherColor</div>
 
-    <BitColorPicker Size=""BitSize.Small"" @bind-Color=""cascadedSmallColor"" />
+    <BitColorPicker Size=""BitSize.Small"" @bind-Value=""cascadedSmallColor"" />
 </BitParams>
 
 
-<BitColorPicker @bind-Color=""cascadedSmallColor"" />";
+<BitColorPicker @bind-Value=""cascadedSmallColor"" />";
     private readonly string example12CsharpCode = @"
 private readonly BitColorPickerParams[] colorPickerParams =
 [
@@ -310,6 +310,46 @@ private string cascadedOtherColor = ""rgba(74,155,226,1)"";
 private string cascadedSmallColor = ""rgba(126,74,226,1)"";";
 
     private readonly string example13RazorCode = @"
+<EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+    <DataAnnotationsValidator />
+
+    <BitColorPicker Required ShowInputs ShowPreview
+                    Label=""Brand color""
+                    @bind-Value=""validationModel.Color"" />
+    <ValidationMessage For=""@(() => validationModel.Color)"" />
+
+    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+</EditForm>
+<div>@validationResult</div>";
+    private readonly string example13CsharpCode = @"
+public class BitColorPickerDemoFormModel
+{
+    [Required(ErrorMessage = ""Pick a brand color"")]
+    public string? Color { get; set; }
+}
+
+private BitColorPickerDemoFormModel validationModel = new();
+private string? validationResult;
+
+private void HandleValidSubmit()
+{
+    validationResult = $""Submitted {validationModel.Color}"";
+}
+
+private void HandleInvalidSubmit()
+{
+    validationResult = null;
+}";
+    private const string example13ScssCode = @"
+.validation-message {
+    color: $bit-color-error;
+}";
+    private readonly DemoCodeFile[] example13CodeFiles =
+    [
+        new("BitColorPickerDemo.razor.scss", example13ScssCode),
+    ];
+
+    private readonly string example14RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
@@ -325,21 +365,21 @@ private string cascadedSmallColor = ""rgba(126,74,226,1)"";";
                 EyeDropperIcon=""@BitIconInfo.Bi(""eyedropper"")""
                 InputsModeSwitchIcon=""@BitIconInfo.Bi(""arrow-left-right"")"" />";
 
-    private readonly string example14RazorCode = @"
+    private readonly string example15RazorCode = @"
 <BitColorPicker Size=""BitSize.Small"" ShowAlphaSlider ShowInputs ShowPreview
-                Presets=""brandPresets"" @bind-Color=""smallColor"" />
+                Presets=""brandPresets"" @bind-Value=""smallColor"" />
 
 <BitColorPicker Size=""BitSize.Medium"" ShowAlphaSlider ShowInputs ShowPreview
-                Presets=""brandPresets"" @bind-Color=""mediumColor"" />
+                Presets=""brandPresets"" @bind-Value=""mediumColor"" />
 
 <BitColorPicker Size=""BitSize.Large"" ShowAlphaSlider ShowInputs ShowPreview
-                Presets=""brandPresets"" @bind-Color=""largeColor"" />";
-    private readonly string example14CsharpCode = @"
+                Presets=""brandPresets"" @bind-Value=""largeColor"" />";
+    private readonly string example15CsharpCode = @"
 private string smallColor = ""#C25E5E"";
 private string mediumColor = ""#5EC27A"";
 private string largeColor = ""#5E7AC2"";";
 
-    private readonly string example15RazorCode = @"
+    private readonly string example16RazorCode = @"
 <style>
     .custom-class {
         width: 100px;
@@ -403,8 +443,8 @@ private string largeColor = ""#5E7AC2"";";
     <BitColorPicker ShowInputs ShowPreview Size=""BitSize.Small"" />
 </div>";
 
-    private readonly string example16RazorCode = @"
+    private readonly string example17RazorCode = @"
 <BitColorPicker Dir=""BitDir.Rtl"" ShowAlphaSlider ShowPreview ShowInputs
-                Presets=""brandPresets"" @bind-Color=""rtlColor"" />
+                Presets=""brandPresets"" @bind-Value=""rtlColor"" />
 <div>@rtlColor</div>";
 }

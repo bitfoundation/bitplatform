@@ -43,6 +43,8 @@
 //   --bit-FileInput-file-name-color           color of the file name                           (default: $clr-fg-pri)
 //   --bit-FileInput-file-size-color           color of the file size and of the folder         (default: $clr-fg-sec)
 //   --bit-FileInput-error-color               message and border of an invalid file item       (default: $clr-err)
+//   --bit-FileInput-invalid-color             role color, and focus ring, of the browse button
+//                                             while the value fails the form's validation      (default: $clr-err / $clr-err-focus)
 //   --bit-FileInput-invalid-background        background of an invalid file item               (default: the item background)
 //   --bit-FileInput-preview-size              side of the thumbnail and of the type glyph      (default: spacing(5))
 //   --bit-FileInput-preview-radius            corner radius of the thumbnail                   (default: $shp-radius-sm)
@@ -571,6 +573,25 @@ $fin-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, lbl-hei
         --bit-fin-clr-hover: #{role($tokens, hover)};
         --bit-fin-clr-active: #{role($tokens, active)};
         --bit-fin-clr-focus: #{role($tokens, focus)};
+    }
+}
+
+// A value the form's validation rejects turns the browse button to the error role, the way an explicit Color would,
+// and ahead of one: the state the input is in outranks the look it was given, as the disabled state does.
+.bit-fin.bit-inv:not(.bit-dis) {
+    --bit-fin-clr: var(--bit-FileInput-invalid-color, #{$clr-err});
+    --bit-fin-clr-txt: #{$clr-err-text};
+    --bit-fin-clr-hover: #{$clr-err-hover};
+    --bit-fin-clr-active: #{$clr-err-active};
+    --bit-fin-clr-focus: var(--bit-FileInput-invalid-color, #{$clr-err-focus});
+}
+
+// A read-only file input keeps its buttons focusable and at full contrast - it is showing its files, not refusing
+// them - and only turns the pointer away, so they do not answer a hover they would not act on.
+.bit-fin-rdl {
+    .bit-fin-lbl, .bit-fin-rbt {
+        cursor: default;
+        pointer-events: none;
     }
 }
 

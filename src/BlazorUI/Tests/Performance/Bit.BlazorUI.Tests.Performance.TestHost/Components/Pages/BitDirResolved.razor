@@ -97,7 +97,7 @@
             <BitRating Value="_ratings[key]" ValueChanged="v => _ratings[key] = v" />
             <span class="value">@_ratings[key]</span>
         </div>
-        <div data-probe="colorpicker" style="width: 200px;"><BitColorPicker Color="@_colors[key]" ColorChanged="c => _colors[key] = c" /></div>
+        <div data-probe="colorpicker" style="width: 200px;"><BitColorPicker Value="@_colors[key]" ValueChanged="c => _colors[key] = c" /></div>
         <div data-probe="otp"><BitOtpInput Length="3" /></div>
         <div data-probe="carousel" style="width: 300px;">
             <BitCarousel>

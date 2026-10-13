@@ -93,6 +93,9 @@
 //   --bit-FileUpload-disabled-background        fill of a disabled browse button                (default: $clr-bg-dis)
 //   --bit-FileUpload-disabled-border-color      rule of a disabled browse button                (default: $clr-brd-dis)
 //
+//   --bit-FileUpload-invalid-color              role color, and focus ring, of the browse button
+//                                               while the value fails the form's validation     (default: $clr-err / $clr-err-focus)
+//
 //   The browse button colors and the disabled ones have a twin per variant, read ahead of the shared one, so a
 //   theme can set one look apart from the other two (Color still wins over both where it paints):
 //   --bit-FileUpload-fill-label-color                 browse button text at rest, Fill                      (default: --bit-FileUpload-label-color)
@@ -740,6 +743,27 @@ $upl-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, clr-tin
         --bit-upl-clr-focus: #{role($tokens, focus)};
         --bit-upl-clr-tint-8: #{translucent(role($tokens, main), 8%)};
         --bit-upl-clr-tint-10: #{translucent(role($tokens, main), 10%)};
+    }
+}
+
+// A value the form's validation rejects turns the role to the error one, the way an explicit Color would, and ahead
+// of one: the state the input is in outranks the look it was given, as the disabled state does.
+.bit-upl.bit-inv:not(.bit-dis) {
+    --bit-upl-clr: var(--bit-FileUpload-invalid-color, #{$clr-err});
+    --bit-upl-clr-txt: #{$clr-err-text};
+    --bit-upl-clr-hover: #{$clr-err-hover};
+    --bit-upl-clr-active: #{$clr-err-active};
+    --bit-upl-clr-focus: var(--bit-FileUpload-invalid-color, #{$clr-err-focus});
+    --bit-upl-clr-tint-8: #{translucent(var(--bit-FileUpload-invalid-color, #{$clr-err}), 8%)};
+    --bit-upl-clr-tint-10: #{translucent(var(--bit-FileUpload-invalid-color, #{$clr-err}), 10%)};
+}
+
+// A read-only file upload keeps its buttons focusable and at full contrast - it is showing its files, not refusing
+// them - and only turns the pointer away, so they do not answer a hover they would not act on.
+.bit-upl-rdl {
+    .bit-upl-lbl, .bit-upl-usi, .bit-upl-bab {
+        cursor: default;
+        pointer-events: none;
     }
 }
 

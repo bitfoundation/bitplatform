@@ -5,6 +5,86 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## vNext (after 10.6.2)
 
+### `BitColorPicker`, `BitFileInput` and `BitFileUpload` are form inputs ([#1530](https://github.com/bitfoundation/bitplatform/issues/1530))
+
+The three were the last inputs that did not derive from `BitInputBase<TValue>`, so none of them took part in an
+`EditForm`: a `[Required]` on the property they were bound to was only checked on submit, they never turned red,
+and a `ValidationMessage` beside them never updated as the user picked. All three now derive from
+`BitInputBase<string?>`, which gives them `Value` / `ValueChanged` / `ValueExpression` (`@bind-Value`),
+`DefaultValue`, `DisplayName`, `Name`, `Required`, `ReadOnly`, `NoValidate`, `InputHtmlAttributes` and the base
+`OnChange`, exactly as on every other input. Their `Bit*Params` derive from `BitInputBaseParams<string?>`, so
+`ReadOnly` and `Required` cascade through `BitParams` too.
+
+What a form reads from each:
+
+- **`BitColorPicker`**: the color, as the CSS string it has always been written in. A bound null stays null (the
+  picker shows white) until a color is picked, so a required picker starts invalid.
+- **`BitFileInput`**: the names of the valid files of the list joined with commas (`report.pdf,photo.png`), or
+  null while there is none. A file the component's own validations rejected is not part of it.
+- **`BitFileUpload`**: the names of the files that are part of the selection, joined the same way: a preloaded
+  file and one still waiting to upload count; one that was rejected, failed, was canceled or removed does not.
+
+A browser cannot be handed files from code, so the value of the two file components is theirs to write: setting
+it to null or empty from outside clears the selection (a form reset, a model cleared after a save), and any other
+value is left until the selection next changes.
+
+#### Renamed and removed parameters
+
+| Before | After |
+|---|---|
+| `BitColorPicker.Color` / `ColorChanged` (`@bind-Color`) | `Value` / `ValueChanged` (`@bind-Value`) |
+| `BitColorPicker.OnChange` (`EventCallback<BitColorChangeEventArgs>`) | `OnColorChange`; the base `OnChange` is now an `EventCallback<string?>` carrying the value |
+| `BitColorPicker.ReadOnly` | inherited from `BitInputBase`, same behaviour |
+| `BitColorPickerParams.ReadOnly` | inherited from `BitInputBaseParams`, same behaviour |
+| `BitFileInput.OnChange` (`EventCallback<BitFileInputInfo[]>`) | `OnFilesChange`; the base `OnChange` carries the value |
+| `BitFileUpload.OnChange` (`EventCallback<BitFileInfo[]>`) | `OnFilesChange`; the base `OnChange` carries the value |
+
+`BitColorPicker.OnChangeEnd` keeps its name and its `BitColorChangeEventArgs`. `BitColorPicker.FocusAsync` is now
+an override of the base one; `BitFileInput` and `BitFileUpload` gain `FocusAsync`, which focuses the browse button.
+
+```razor
+@* before *@
+<BitColorPicker @bind-Color="model.Color" OnChange="HandleColorChange" />
+<BitFileInput OnChange="HandleFilesChange" />
+<BitFileUpload OnChange="HandleFilesChange" UploadUrl="/upload" />
+
+@* after *@
+<BitColorPicker @bind-Value="model.Color" OnColorChange="HandleColorChange" />
+<BitFileInput OnFilesChange="HandleFilesChange" />
+<BitFileUpload OnFilesChange="HandleFilesChange" UploadUrl="/upload" />
+```
+
+An `OnChange` handler left in place either fails to compile (its parameter is not a `string`) or, for a handler
+of no parameters, silently moves to the base callback - which for the picker fires on the value only, and for the
+file components only when the value moves rather than on every status change. Rename it.
+
+#### Behaviour that changes without a rename
+
+- `BitFileInput` and `BitFileUpload` now have a `ReadOnly`: a read-only one opens no file dialog, takes no drop or
+  paste, and refuses its remove button (and, for the upload, its upload, pause, cancel, retry and batch buttons),
+  which stay focusable and carry `aria-disabled="true"`. `Browse()` does nothing on it either.
+- `BitFileInput.Reset()` and `BitFileUpload.Reset()` still invoke none of the change callbacks, but a bound
+  `Value` follows the cleared list through `ValueChanged`.
+- Each of the three renders one more element, a visually hidden `<input class="bit-input-hidden">` at the end of
+  its root that carries the value in a form: `Name`, `Required` and `InputHtmlAttributes` land on it. A selector
+  or test locator that took "the last input" of the component picks it up now.
+- A failed validation adds `bit-inv` to the root, as on every input: the picker's borders and focus ring and the
+  browse button of the file components turn to the error color (`--bit-ColorPicker-invalid-color`,
+  `--bit-FileInput-invalid-color`, `--bit-FileUpload-invalid-color`). A required picker with a label draws the
+  asterisk after it (`--bit-ColorPicker-required-color`).
+
+#### Known consumers in this repo that break
+
+The Boilerplate template (`src/Templates/Boilerplate`) is outside the BlazorUI edit boundary and was
+**not** updated:
+
+| File | Line | Use |
+|---|---|---|
+| `Boilerplate.Client.Core/Components/Pages/Categories/AddOrEditCategoryModal.razor` | 69 | `@bind-Color="category.Color"` -> `@bind-Value="category.Color"` (the `ValidationMessage` beside it then updates as the user picks) |
+| `Boilerplate.Client.Core/Components/Layout/AppAiChatPanel.razor` | 235 | `OnChange="HandleOnAttachmentChange"` -> `OnFilesChange="HandleOnAttachmentChange"` |
+
+(Paths are relative to `src/Templates/Boilerplate/Bit.Boilerplate/src/Client/`.)
+
 ### A modal container of an app's own reads its modals through `ModalReferences` ([#13558](https://github.com/bitfoundation/bitplatform/issues/13558))
 
 The list of modals `BitModalContainerBase<TReference, TParameters>` kept is no longer a `protected` field:

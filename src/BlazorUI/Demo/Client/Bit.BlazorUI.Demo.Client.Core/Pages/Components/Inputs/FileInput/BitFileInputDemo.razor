@@ -85,7 +85,7 @@
 
     <DemoExample Title="Removable" RazorCode="@example5RazorCode" Id="example5">
         <div>
-            <b>ShowRemoveButton</b> adds a remove button to each file, raising <b>OnRemove</b> and <b>OnChange</b>. The
+            <b>ShowRemoveButton</b> adds a remove button to each file, raising <b>OnRemove</b> and <b>OnFilesChange</b>. The
             focus moves on to the next remove button, or back to the browse button, so files can be removed in a row
             from the keyboard. <b>RemoveButtonIconName</b> swaps the icon.
         </div>
@@ -244,12 +244,12 @@
     <DemoExample Title="HideFileList" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
             <b>HideFileList</b> hides the built-in list while the selection keeps working, for an app that renders its
-            own view of the files from <b>OnChange</b>.
+            own view of the files from <b>OnFilesChange</b>.
         </div>
 
         <br />
 
-        <BitFileInput Label="Browse or drop files" Multiple HideFileList OnChange="@HandleOnHiddenListChange" />
+        <BitFileInput Label="Browse or drop files" Multiple HideFileList OnFilesChange="@HandleOnHiddenListChange" />
 
         <br />
 
@@ -267,15 +267,16 @@
 
     <DemoExample Title="Events" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
         <div>
-            <b>OnChange</b> fires with all the files after every change, <b>OnInvalid</b> right after it with only the
-            invalid ones, and <b>OnRemove</b> once per removed file. Content is never loaded eagerly:
+            <b>OnFilesChange</b> fires with all the files after every change, <b>OnInvalid</b> right after it with
+            only the invalid ones, and <b>OnRemove</b> once per removed file. The inherited <b>OnChange</b> reports the
+            <b>Value</b> alone - the names of the valid files - and only when it moved. Content is never loaded eagerly:
             <b>ReadContentAsync</b> reads one file, or every valid file when called without one.
         </div>
 
         <br />
 
         <BitFileInput @ref="eventsFileInput" Label="Select or drag and drop files" Multiple ShowRemoveButton
-                      MaxSize="1024 * 1024 * 1" OnChange="@HandleOnChange" OnInvalid="@HandleOnInvalid"
+                      MaxSize="1024 * 1024 * 1" OnFilesChange="@HandleOnFilesChange" OnInvalid="@HandleOnInvalid"
                       OnRemove="@HandleOnRemove" />
 
         <br />
@@ -359,7 +360,7 @@
 
         <br />
 
-        <BitFileInput @ref="publicApiFileInput" HideLabel Multiple OnChange="@(_ => StateHasChanged())" />
+        <BitFileInput @ref="publicApiFileInput" HideLabel Multiple OnFilesChange="@(_ => StateHasChanged())" />
 
         <br />
 
@@ -478,7 +479,39 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example20RazorCode" Id="example20">
+    <DemoExample Title="Validation" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode"
+                 CodeFiles="@example20CodeFiles" Id="example20">
+        <div>
+            Inside an <b>EditForm</b> the file input is a form field like any other. Its <b>Value</b> is the names of
+            the valid files joined with commas (<b>report.pdf,photo.png</b>), or null while it holds none, so a
+            <b>[Required]</b> or a <b>[RegularExpression]</b> on the bound property validates the selection. A file the
+            component's own rules reject (here, anything but a PDF or a Word document) is not part of the value, and
+            while the value is invalid the browse button turns to the error color. <b>Required</b> also marks the
+            hidden input the value travels in, which <b>Name</b> makes readable by a plain form post. A browser cannot
+            be handed files from code, but emptying the bound value clears the selection.
+        </div>
+
+        <br />
+
+        <div class="example-box">
+            <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                <DataAnnotationsValidator />
+
+                <BitFileInput Required ShowRemoveButton
+                              Label="Attach your resume"
+                              AllowedExtensions="@([".pdf", ".docx"])"
+                              @bind-Value="validationModel.Resume" />
+                <ValidationMessage For="@(() => validationModel.Resume)" />
+
+                <br />
+
+                <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+            </EditForm>
+            <div>@validationResult</div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example21RazorCode" Id="example21">
         <div>
             <b>Color</b> sets the theme color of the browse button, its focus ring and the drop indicator
             (<b>Primary</b> by default).
@@ -518,7 +551,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example21RazorCode" Id="example21">
+    <DemoExample Title="External Icons" RazorCode="@example22RazorCode" Id="example22">
         <div>
             <b>RemoveButtonIcon</b>, and whatever <b>FileIconSelector</b> returns, accept any icon library through
             <b>BitIconInfo.Fa()</b>, <b>BitIconInfo.Bi()</b> or <b>BitIconInfo.Css()</b>.
@@ -557,7 +590,7 @@
                       FileIconSelector="@(_ => BitIconInfo.Bi("file-earmark"))" />
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example22RazorCode" Id="example22">
+    <DemoExample Title="Size" RazorCode="@example23RazorCode" Id="example23">
         <div>
             <b>Size</b> scales the browse button, the file items, their thumbnails and their remove buttons together.
         </div>
@@ -575,7 +608,7 @@
         <BitFileInput Size="BitSize.Large" Label="Browse or drop a file" ShowPreview ShowRemoveButton />
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example23RazorCode" Id="example23">
+    <DemoExample Title="Style & Class" RazorCode="@example24RazorCode" Id="example24">
         <div>
             <b>Style</b> and <b>Class</b> target the root, <b>Styles</b> and <b>Classes</b> each part. Their
             <b>Dragging</b> entry applies to the root only while files hover over it.
@@ -648,7 +681,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example24RazorCode" Id="example24">
+    <DemoExample Title="RTL" RazorCode="@example25RazorCode" Id="example25">
         <div>
             Setting <b>Dir</b> to <b>BitDir.Rtl</b> mirrors the whole layout.
         </div>

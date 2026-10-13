@@ -1,0 +1,25 @@
+﻿@using Bit.BlazorUI.Tests.Components.Inputs.FileUpload
+
+<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
+    <DataAnnotationsValidator />
+
+    <BitFileUpload Required Multiple MaxSize="1024" @bind-Value="@TestModel.Value" />
+
+</EditForm>
+
+@code {
+    [Parameter] public BitFileUploadTestModel TestModel { get; set; } = new();
+
+    public int ValidCount { get; set; }
+    public int InvalidCount { get; set; }
+
+    private void HandleValidSubmit()
+    {
+        ValidCount++;
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        InvalidCount++;
+    }
+}

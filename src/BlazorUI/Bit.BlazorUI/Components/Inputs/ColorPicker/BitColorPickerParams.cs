@@ -5,12 +5,13 @@
 /// </summary>
 /// <remarks>
 /// It carries the shape of the picker - which controls it shows, how it is laid out, which palette it offers -
-/// and not the color it is on: <see cref="BitColorPicker.Color"/> and <see cref="BitColorPicker.Alpha"/> are the
-/// value of one picker rather than a setting shared by every picker under a <see cref="BitParams"/>. The two
-/// change callbacks are left off for the same reason, since what a page does with a new color is the one thing
-/// that belongs to the picker it came from.
+/// and not the color it is on: <see cref="BitInputBase{TValue}.Value"/> and <see cref="BitColorPicker.Alpha"/> are
+/// the value of one picker rather than a setting shared by every picker under a <see cref="BitParams"/>. The change
+/// callbacks are left off for the same reason, since what a page does with a new color is the one thing that
+/// belongs to the picker it came from. The form-wide <c>ReadOnly</c> and <c>Required</c> come from
+/// <see cref="BitInputBaseParams{TValue}"/>.
 /// </remarks>
-public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
+public class BitColorPickerParams : BitInputBaseParams<string?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitColorPicker"/> cascading parameters within <see cref="BitParams"/>.
@@ -41,7 +42,7 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
 
     /// <summary>
     /// The color the contrast readout measures the picked color against - the background it is going to be
-    /// read on. It accepts any of the notations the Color parameter does, and defaults to white.
+    /// read on. It accepts any of the notations the Value parameter does, and defaults to white.
     /// </summary>
     public string? ContrastColor { get; set; }
 
@@ -65,7 +66,7 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
 
     /// <summary>
     /// The CSS notation the color value is written in. When left unset the picker answers in the same
-    /// notation the Color arrived in.
+    /// notation the Value arrived in.
     /// </summary>
     public BitColorFormat? Format { get; set; }
 
@@ -93,7 +94,7 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
 
     /// <summary>
     /// The colors offered as a row of one-click swatches under the picker, in any of the notations the
-    /// Color parameter accepts. This is the parameter a brand palette is usually cascaded through, so that
+    /// Value parameter accepts. This is the parameter a brand palette is usually cascaded through, so that
     /// every picker on a page offers the same colors without repeating the list.
     /// </summary>
     public IEnumerable<string>? Presets { get; set; }
@@ -103,12 +104,6 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
     /// on a grid instead.
     /// </summary>
     public int? PresetsPerRow { get; set; }
-
-    /// <summary>
-    /// Makes the color picker read-only: the value is still shown at full contrast, but nothing about it
-    /// can be changed.
-    /// </summary>
-    public bool? ReadOnly { get; set; }
 
     /// <summary>
     /// Whether to show a slider for editing alpha value.
@@ -187,7 +182,7 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
     {
         if (bitColorPicker is null) return;
 
-        UpdateBaseParameters(bitColorPicker);
+        UpdateInputBaseParameters(bitColorPicker);
 
         if (AutoFocus.HasValue)
         {
@@ -254,11 +249,6 @@ public class BitColorPickerParams : BitComponentBaseParams, IBitComponentParams
         if (PresetsPerRow.HasValue)
         {
             bitColorPicker.TakeFromCascade(nameof(PresetsPerRow), PresetsPerRow.Value, static c => c.PresetsPerRow, static (c, v) => c.PresetsPerRow = v);
-        }
-
-        if (ReadOnly.HasValue)
-        {
-            bitColorPicker.TakeFromCascade(nameof(ReadOnly), ReadOnly.Value, static c => c.ReadOnly, static (c, v) => c.ReadOnly = v);
         }
 
         if (ShowAlphaSlider.HasValue)

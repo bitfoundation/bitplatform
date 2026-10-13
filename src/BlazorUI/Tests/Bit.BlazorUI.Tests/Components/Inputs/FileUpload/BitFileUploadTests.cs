@@ -3827,6 +3827,484 @@ public class BitFileUploadTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-upl-eni"));
     }
 
+    [TestMethod]
+    public void BitFileUploadValidationShouldRequireAFile()
+    {
+        var com = RenderComponent<BitFileUploadValidationTest>();
+
+        var form = com.Find("form");
+
+        Assert.IsFalse(com.Find(".bit-upl").ClassList.Contains("bit-inv"));
+
+        form.Submit();
+
+        Assert.AreEqual(0, com.Instance.ValidCount);
+        Assert.AreEqual(1, com.Instance.InvalidCount);
+        Assert.IsTrue(com.Find(".bit-upl").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", com.Find(".bit-input-hidden").GetAttribute("aria-invalid"));
+
+        // a selection of nothing but rejected files is still no value.
+        SetupFiles([new() { Name = "big.txt", Size = 9999, FileId = "1", Index = 0 }]);
+        com.Find(".bit-upl-fi").Change(string.Empty);
+
+        Assert.IsNull(com.Instance.TestModel.Value);
+        Assert.IsTrue(com.Find(".bit-upl").ClassList.Contains("bit-inv"));
+
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "2", Index = 0 },
+                    new() { Name = "big.txt", Size = 9999, FileId = "3", Index = 1 }]);
+        com.Find(".bit-upl-fi").Change(string.Empty);
+
+        // a file waiting to be uploaded is already part of the value, and the field is validated right away.
+        Assert.AreEqual("a.txt", com.Instance.TestModel.Value);
+        Assert.IsFalse(com.Find(".bit-upl").ClassList.Contains("bit-inv"));
+        Assert.IsNull(com.Find(".bit-input-hidden").GetAttribute("aria-invalid"));
+
+        form.Submit();
+
+        Assert.AreEqual(1, com.Instance.ValidCount);
+        Assert.AreEqual(1, com.Instance.InvalidCount);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadValueShouldFollowTheStatusOfTheFiles()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 },
+                    new() { Name = "b.txt", Size = 100, FileId = "2", Index = 1 },
+                    new() { Name = "big.txt", Size = 9999, FileId = "3", Index = 2 }]);
+
+        var values = new List<string?>();
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.MaxSize, 1024);
+            parameters.Add(p => p.OnChange, (string? value) => values.Add(value));
+        });
+
+        var instance = com.Instance;
+
+        SelectFiles(com);
+
+        // the pending files are part of the value, the rejected one is not.
+        Assert.AreEqual("a.txt,b.txt", instance.Value);
+        Assert.AreEqual("a.txt,b.txt", com.Find(".bit-input-hidden").GetAttribute("value"));
+
+        await com.InvokeAsync(() => instance.RemoveFile(instance.Files[1]));
+
+        Assert.AreEqual(BitFileUploadStatus.Removed, instance.Files[1].Status);
+        Assert.AreEqual("a.txt", instance.Value);
+
+        // a file on its way stays in the value.
+        await com.InvokeAsync(() => instance.Upload());
+
+        Assert.AreEqual(BitFileUploadStatus.InProgress, instance.Files[0].Status);
+        Assert.AreEqual("a.txt", instance.Value);
+
+        await com.InvokeAsync(() => instance.__HandleChunkUpload(0, 500, "boom"));
+
+        Assert.AreEqual(BitFileUploadStatus.Failed, instance.Files[0].Status);
+        Assert.IsNull(instance.Value);
+        Assert.IsFalse(com.Find(".bit-input-hidden").HasAttribute("value"));
+
+        // a retry puts it back, and a cancel takes it out again.
+        await com.InvokeAsync(() => instance.Upload(instance.Files[0]));
+
+        Assert.AreEqual(BitFileUploadStatus.InProgress, instance.Files[0].Status);
+        Assert.AreEqual("a.txt", instance.Value);
+
+        await com.InvokeAsync(() => instance.CancelUpload(instance.Files[0]));
+
+        Assert.AreEqual(BitFileUploadStatus.Canceled, instance.Files[0].Status);
+        Assert.IsNull(instance.Value);
+
+        // the base OnChange heard every move of the value, and only those.
+        CollectionAssert.AreEqual(new[] { "a.txt,b.txt", "a.txt", null, "a.txt", null }, values);
+    }
+
+    [TestMethod]
+    public void BitFileUploadValueShouldNameThePreloadedFilesWithoutReportingAChange()
+    {
+        SetupFiles([new() { Name = "b.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        string? value = null;
+        var valueChanges = 0;
+        var changes = new List<string?>();
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "invoice.pdf", Size = 100, FileId = "server-1" }
+            ]);
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.ValueChanged, (string? v) => { value = v; valueChanges++; });
+            parameters.Add(p => p.OnChange, (string? v) => changes.Add(v));
+        });
+
+        // the record's own files are what the value names from the start, which is no change the user made.
+        Assert.AreEqual("invoice.pdf", value);
+        Assert.AreEqual(1, valueChanges);
+        Assert.IsEmpty(changes);
+
+        SelectFiles(com);
+
+        Assert.AreEqual("invoice.pdf,b.txt", value);
+        CollectionAssert.AreEqual(new[] { "invoice.pdf,b.txt" }, changes);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldCarryItsValueInAHiddenInput()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.Name, "attachments");
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object>
+            {
+                ["data-test"] = "carrier",
+                ["form"] = "upload-form"
+            });
+        });
+
+        var root = com.Find(".bit-upl");
+        var carrier = com.Find("input.bit-input-hidden");
+
+        // the carrier is not the native file input, which holds what the browser picked rather than the list.
+        Assert.IsTrue(root.LastElementChild!.ClassList.Contains("bit-input-hidden"));
+        Assert.AreEqual("text", carrier.GetAttribute("type"));
+        Assert.AreEqual("attachments", carrier.GetAttribute("name"));
+        Assert.IsTrue(carrier.HasAttribute("required"));
+        Assert.AreEqual("carrier", carrier.GetAttribute("data-test"));
+        Assert.AreEqual("upload-form", carrier.GetAttribute("form"));
+        Assert.AreEqual("-1", carrier.GetAttribute("tabindex"));
+        Assert.AreEqual("true", carrier.GetAttribute("aria-hidden"));
+        Assert.IsFalse(carrier.HasAttribute("value"));
+        Assert.IsFalse(com.Find(".bit-upl-fi").HasAttribute("data-test"));
+
+        SelectFiles(com);
+
+        Assert.AreEqual("a.txt", com.Find("input.bit-input-hidden").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadShouldReportTheFilesThroughOnFilesChangeAndTheValueThroughOnChange()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 },
+                    new() { Name = "big.txt", Size = 9999, FileId = "2", Index = 1 }]);
+
+        var filesChanges = new List<BitFileInfo[]>();
+        var values = new List<string?>();
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.MaxSize, 1024);
+            parameters.Add(p => p.OnFilesChange, (BitFileInfo[] files) => filesChanges.Add(files));
+            parameters.Add(p => p.OnChange, (string? value) => values.Add(value));
+        });
+
+        SelectFiles(com);
+
+        // a selection hands the whole list over, the rejected file included; the value is what is left of it.
+        Assert.HasCount(1, filesChanges);
+        CollectionAssert.AreEqual(new[] { "a.txt", "big.txt" }, filesChanges[0].Select(f => f.Name).ToArray());
+        CollectionAssert.AreEqual(new[] { "a.txt" }, values);
+
+        await com.InvokeAsync(() => com.Instance.Upload());
+        await com.InvokeAsync(() => com.Instance.__HandleChunkUpload(0, 500, "boom"));
+
+        // a status change hands over the one file it is about.
+        var last = filesChanges[^1];
+        Assert.HasCount(1, last);
+        Assert.AreEqual("a.txt", last[0].Name);
+        Assert.AreEqual(BitFileUploadStatus.Failed, last[0].Status);
+        CollectionAssert.AreEqual(new[] { "a.txt", null }, values);
+    }
+
+    [TestMethod,
+        DataRow(null),
+        DataRow("")
+    ]
+    public void BitFileUploadShouldResetTheSelectionWhenTheValueIsEmptiedFromOutside(string? emptied)
+    {
+        SetupFiles([new() { Name = "b.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        string? value = null;
+        var valueChanges = 0;
+        var filesChanges = 0;
+        var changes = 0;
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.PreloadedFiles, (IReadOnlyCollection<BitFileInfo>)
+            [
+                new() { Name = "invoice.pdf", Size = 100, FileId = "server-1" }
+            ]);
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.ValueChanged, (string? v) => { value = v; valueChanges++; });
+            parameters.Add(p => p.OnFilesChange, () => filesChanges++);
+            parameters.Add(p => p.OnChange, () => changes++);
+        });
+
+        SelectFiles(com);
+
+        Assert.AreEqual("invoice.pdf,b.txt", value);
+        Assert.AreEqual(2, valueChanges);
+        Assert.AreEqual(1, filesChanges);
+        Assert.AreEqual(1, changes);
+
+        com.Render(parameters => parameters.Add(p => p.Value, emptied));
+
+        // a form reset or a model cleared after a save undoes the selection, as Reset does - the record's own
+        // files stay - and quietly, since the change came from the consumer rather than the user.
+        Assert.AreEqual("invoice.pdf", com.Instance.Files.Single().Name);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.FileUpload.reset"].Count);
+        Assert.AreEqual(2, valueChanges);
+        Assert.AreEqual(1, filesChanges);
+        Assert.AreEqual(1, changes);
+    }
+
+    [TestMethod]
+    public void BitFileUploadShouldLeaveTheSelectionAloneForAPushedValueThatNamesFiles()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        string? value = null;
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.ValueChanged, (string? v) => value = v);
+        });
+
+        SelectFiles(com);
+
+        Assert.AreEqual("a.txt", value);
+
+        // a browser cannot be handed files from code, so a value naming other files changes nothing.
+        com.Render(parameters => parameters.Add(p => p.Value, "other.txt"));
+
+        Assert.AreEqual("a.txt", com.Instance.Files.Single().Name);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.FileUpload.reset"].Count);
+
+        // the list writes its own value back the next time it changes.
+        SetupFiles([new() { Name = "b.txt", Size = 100, FileId = "2", Index = 0 }]);
+        SelectFiles(com);
+
+        Assert.AreEqual("b.txt", value);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadResetShouldPublishANullValueWithoutTheChangeCallbacks()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        string? value = null;
+        var valueChanges = 0;
+        var filesChanges = 0;
+        var changes = 0;
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.ValueChanged, (string? v) => { value = v; valueChanges++; });
+            parameters.Add(p => p.OnFilesChange, () => filesChanges++);
+            parameters.Add(p => p.OnChange, () => changes++);
+        });
+
+        SelectFiles(com);
+
+        Assert.AreEqual("a.txt", value);
+        Assert.AreEqual(1, valueChanges);
+        Assert.AreEqual(1, filesChanges);
+        Assert.AreEqual(1, changes);
+
+        await com.InvokeAsync(() => com.Instance.Reset());
+
+        // the binding follows the emptied list, but nothing reports a change the user did not make.
+        Assert.IsNull(value);
+        Assert.IsNull(com.Instance.Value);
+        Assert.AreEqual(2, valueChanges);
+        Assert.AreEqual(1, filesChanges);
+        Assert.AreEqual(1, changes);
+        Assert.IsEmpty(com.Instance.Files);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadReadOnlyShouldRefuseToChangeAPendingFile()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.ShowRemoveButton, true);
+            parameters.Add(p => p.ShowBatchActions, true);
+        });
+
+        SelectFiles(com);
+
+        com.Render(parameters => parameters.Add(p => p.ReadOnly, true));
+
+        var root = com.Find(".bit-upl");
+        var browse = com.Find(".bit-upl-lbl");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-upl-rdl"));
+        Assert.IsFalse(root.ClassList.Contains("bit-dis"));
+        Assert.IsTrue(com.Find("input.bit-input-hidden").HasAttribute("readonly"));
+
+        // every button stays in the tab order and says it is unavailable rather than being taken away.
+        Assert.AreEqual("true", browse.GetAttribute("aria-disabled"));
+        Assert.IsFalse(browse.HasAttribute("disabled"));
+        Assert.HasCount(2, com.FindAll(".bit-upl-usi"));
+        Assert.IsTrue(com.FindAll(".bit-upl-usi").All(b => b.GetAttribute("aria-disabled") == "true" && b.HasAttribute("disabled") is false));
+        Assert.HasCount(3, com.FindAll(".bit-upl-bab"));
+        Assert.IsTrue(com.FindAll(".bit-upl-bab").All(b => b.GetAttribute("aria-disabled") == "true" && b.HasAttribute("disabled") is false));
+
+        com.FindAll(".bit-upl-usi").Single(b => b.GetAttribute("title") == "Upload").Click();
+        com.FindAll(".bit-upl-usi").Single(b => b.GetAttribute("title") == "Remove").Click();
+        com.FindAll(".bit-upl-bab")[0].Click();
+        com.FindAll(".bit-upl-bab")[2].Click();
+
+        Assert.AreEqual(BitFileUploadStatus.Pending, com.Instance.Files.Single().Status);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.FileUpload.upload"].Count);
+
+        await browse.ClickAsync(new());
+        await com.InvokeAsync(() => com.Instance.Browse());
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.FileUpload.browse"].Count);
+
+        // an editable one browses again.
+        com.Render(parameters => parameters.Add(p => p.ReadOnly, false));
+
+        Assert.IsFalse(com.Find(".bit-upl").ClassList.Contains("bit-upl-rdl"));
+        Assert.IsNull(com.Find(".bit-upl-lbl").GetAttribute("aria-disabled"));
+
+        await com.InvokeAsync(() => com.Instance.Browse());
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.FileUpload.browse"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitFileUploadReadOnlyShouldRefuseToPauseOrCancelARunningFile()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 100, FileId = "1", Index = 0 }]);
+
+        var com = RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.ShowBatchActions, true);
+        });
+
+        SelectFiles(com);
+
+        await com.InvokeAsync(() => com.Instance.Upload());
+
+        Assert.AreEqual(BitFileUploadStatus.InProgress, com.Instance.Files[0].Status);
+
+        com.Render(parameters => parameters.Add(p => p.ReadOnly, true));
+
+        var buttons = com.FindAll(".bit-upl-usi");
+
+        CollectionAssert.AreEqual(new[] { "Pause", "Cancel" }, buttons.Select(b => b.GetAttribute("title")).ToArray());
+        Assert.IsTrue(buttons.All(b => b.GetAttribute("aria-disabled") == "true" && b.HasAttribute("disabled") is false));
+
+        buttons[0].Click();
+        com.FindAll(".bit-upl-usi")[1].Click();
+        // Cancel all.
+        com.FindAll(".bit-upl-bab")[1].Click();
+
+        Assert.AreEqual(BitFileUploadStatus.InProgress, com.Instance.Files[0].Status);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.FileUpload.pause"].Count);
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public void BitFileUploadReadOnlyShouldTurnDropAndPasteOff(bool readOnly)
+    {
+        RenderComponent<BitFileUpload>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, readOnly);
+            parameters.Add(p => p.AllowDrop, true);
+            parameters.Add(p => p.AllowPaste, true);
+        });
+
+        var args = Context.JSInterop.Invocations
+                                    .Single(i => i.Identifier == "BitBlazorUI.FileUpload.setupDragDrop").Arguments;
+
+        Assert.AreEqual(readOnly is false, args[4]);
+        Assert.AreEqual(readOnly is false, args[5]);
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public void BitFileUploadShouldTakeReadOnlyAndRequiredFromTheCascade(bool readOnly)
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitFileUploadParams
+            {
+                ReadOnly = readOnly,
+                Required = true
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitFileUpload>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var upload = com.FindComponent<BitFileUpload>().Instance;
+        var carrier = com.Find("input.bit-input-hidden");
+
+        Assert.AreEqual(readOnly, upload.ReadOnly);
+        Assert.IsTrue(upload.Required);
+        Assert.AreEqual(readOnly, com.Find(".bit-upl").ClassList.Contains("bit-upl-rdl"));
+        Assert.AreEqual(readOnly ? "true" : null, com.Find(".bit-upl-lbl").GetAttribute("aria-disabled"));
+        Assert.IsTrue(carrier.HasAttribute("required"));
+        Assert.AreEqual(readOnly, carrier.HasAttribute("readonly"));
+    }
+
+    [TestMethod]
+    public void BitFileUploadDirectReadOnlyShouldOverrideTheCascadedOne()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitFileUploadParams
+            {
+                ReadOnly = true,
+                Required = true
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitFileUpload>(0);
+                builder.AddAttribute(1, nameof(BitFileUpload.ReadOnly), false);
+                builder.CloseComponent();
+            });
+        });
+
+        // an explicit false is a written parameter like any other, so the cascade does not fill it in.
+        Assert.IsFalse(com.Find(".bit-upl").ClassList.Contains("bit-upl-rdl"));
+        Assert.IsNull(com.Find(".bit-upl-lbl").GetAttribute("aria-disabled"));
+
+        // what the markup left unwritten still comes from the cascade.
+        Assert.IsTrue(com.Find("input.bit-input-hidden").HasAttribute("required"));
+    }
+
     private void SetupFiles(BitFileInfo[] files)
     {
         Context.JSInterop.Setup<BitFileInfo[]>("BitBlazorUI.FileUpload.setup", _ => true).SetResult(files);

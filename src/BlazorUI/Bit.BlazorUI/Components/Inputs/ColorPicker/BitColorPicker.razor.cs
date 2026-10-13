@@ -10,11 +10,30 @@ namespace Bit.BlazorUI;
 /// from anywhere on the screen with the browser's eyedropper.
 /// </summary>
 /// <remarks>
+/// <para>
 /// The value is read and written in whichever CSS notation it arrives in - hexadecimal, <c>rgb()</c>,
 /// <c>hsl()</c>, a named color - unless a <see cref="Format"/> pins it to one, and the whole picker is
-/// operable from the keyboard.
+/// operable from the keyboard. Hexadecimal in three, four, six or eight digits, <c>rgb()</c> and <c>rgba()</c>,
+/// <c>hsl()</c> and <c>hsla()</c>, <c>hwb()</c>, <c>lab()</c> and <c>lch()</c>, <c>oklab()</c> and <c>oklch()</c>,
+/// <c>color(srgb ...)</c>, a CSS color keyword such as "tomato", and <c>transparent</c> are all understood, in both
+/// the comma-separated and the modern space-separated syntax - as are <c>hsv()</c> and <c>hsva()</c>, which are not
+/// CSS notations but the model the picker itself is built on. A null or unrecognized value shows white and is left
+/// as it is, so a required picker bound to nothing stays invalid until a color is actually picked.
+/// </para>
+/// <para>
+/// It takes part in an EditForm like every other input: the value is validated through the cascading EditContext,
+/// and the base <see cref="BitInputBase{TValue}.OnChange"/> reports the new value whenever it moves, a step of a drag
+/// included, beside the <see cref="OnColorChange"/> and <see cref="OnChangeEnd"/> that carry the color in every
+/// notation.
+/// </para>
+/// <para>
+/// A read-only picker still shows its color at full contrast, but nothing about it can be changed. Every control
+/// stays in the tab order and keeps its colors, since a read-only picker exists to be read: the widgets that hold a
+/// value declare <c>aria-readonly</c> or the native <c>readonly</c>, and the buttons that would change the color
+/// declare <c>aria-disabled</c>. Only a disabled picker leaves the interaction altogether.
+/// </para>
 /// </remarks>
-public partial class BitColorPicker : BitComponentBase
+public partial class BitColorPicker : BitInputBase<string?>
 {
     private bool _dragged;
     // Whether the picker is part-way through publishing a color it has just moved to, in which case the
@@ -94,21 +113,8 @@ public partial class BitColorPicker : BitComponentBase
     [Parameter, ResetClassBuilder] public BitColorPickerClassStyles? Classes { get; set; }
 
     /// <summary>
-    /// CSS-compatible string to describe the color.
-    /// </summary>
-    /// <remarks>
-    /// Hexadecimal in three, four, six or eight digits, <c>rgb()</c> and <c>rgba()</c>, <c>hsl()</c> and
-    /// <c>hsla()</c>, <c>hwb()</c>, <c>lab()</c> and <c>lch()</c>, <c>oklab()</c> and <c>oklch()</c>,
-    /// <c>color(srgb ...)</c>, a CSS color keyword such as "tomato", and <c>transparent</c> are all understood,
-    /// in both the comma-separated and the modern space-separated syntax - as are <c>hsv()</c> and
-    /// <c>hsva()</c>, which are not CSS notations but the model the picker itself is built on. Unless a
-    /// <see cref="Format"/> says otherwise the picker answers in the same notation it was given.
-    /// </remarks>
-    [Parameter, TwoWayBound] public string Color { get; set; } = "rgb(255,255,255)";
-
-    /// <summary>
     /// The color the contrast readout measures the picked color against - the background it is going to be
-    /// read on. It accepts any of the notations <see cref="Color"/> does, and defaults to white.
+    /// read on. It accepts any of the notations the <see cref="BitInputBase{TValue}.Value"/> does, and defaults to white.
     /// </summary>
     /// <remarks>
     /// A semi-transparent picked color is composited onto this one before the ratio is taken, since that is
@@ -142,7 +148,7 @@ public partial class BitColorPicker : BitComponentBase
 
     /// <summary>
     /// The CSS notation the color value is written in. When left unset the picker answers in the same
-    /// notation the <see cref="Color"/> arrived in, so a hexadecimal binding stays hexadecimal and an
+    /// notation the <see cref="BitInputBase{TValue}.Value"/> arrived in, so a hexadecimal binding stays hexadecimal and an
     /// <c>rgb()</c> one stays <c>rgb()</c>.
     /// </summary>
     [Parameter] public BitColorFormat? Format { get; set; }
@@ -187,9 +193,14 @@ public partial class BitColorPicker : BitComponentBase
     [Parameter] public RenderFragment? LabelTemplate { get; set; }
 
     /// <summary>
-    /// Callback for when the value changed. It fires on every step of a drag.
+    /// Callback for when the color changed, carrying it in every notation along with its alpha. It fires on
+    /// every step of a drag.
     /// </summary>
-    [Parameter] public EventCallback<BitColorChangeEventArgs> OnChange { get; set; }
+    /// <remarks>
+    /// The base <see cref="BitInputBase{TValue}.OnChange"/> reports the same moves with the value alone; this one
+    /// also reports a move of the alpha that the value's notation has no room for.
+    /// </remarks>
+    [Parameter] public EventCallback<BitColorChangeEventArgs> OnColorChange { get; set; }
 
     /// <summary>
     /// Callback for when the user finishes changing the value: the drag ends, the slider is released, a
@@ -197,13 +208,13 @@ public partial class BitColorPicker : BitComponentBase
     /// </summary>
     /// <remarks>
     /// This is the callback to hang expensive work off - saving, recoloring a document, a network call -
-    /// since <see cref="OnChange"/> fires for every frame of a drag while this one fires once at the end of it.
+    /// since <see cref="OnColorChange"/> fires for every frame of a drag while this one fires once at the end of it.
     /// </remarks>
     [Parameter] public EventCallback<BitColorChangeEventArgs> OnChangeEnd { get; set; }
 
     /// <summary>
     /// The colors offered as a row of one-click swatches under the picker, in any of the notations the
-    /// <see cref="Color"/> parameter accepts.
+    /// <see cref="BitInputBase{TValue}.Value"/> parameter accepts.
     /// </summary>
     /// <remarks>
     /// A swatch that carries its own alpha - an <c>rgba()</c> or an eight-digit hex - applies that alpha too,
@@ -217,18 +228,6 @@ public partial class BitColorPicker : BitComponentBase
     /// read in columns - a hue per column, a shade per row - in the arrangement it was written in.
     /// </summary>
     [Parameter] public int? PresetsPerRow { get; set; }
-
-    /// <summary>
-    /// Makes the color picker read-only: the value is still shown at full contrast, but nothing about it
-    /// can be changed.
-    /// </summary>
-    /// <remarks>
-    /// Every control stays in the tab order and keeps its colors, since a read-only picker exists to be read:
-    /// the widgets that hold a value declare <c>aria-readonly</c> or the native <c>readonly</c>, and the
-    /// buttons that would change the color declare <c>aria-disabled</c>. Only a disabled picker - one with
-    /// <see cref="BitComponentBase.Disabled"/> set - leaves the interaction altogether.
-    /// </remarks>
-    [Parameter, ResetClassBuilder] public bool ReadOnly { get; set; }
 
     /// <summary>
     /// Whether to show a slider for editing alpha value.
@@ -377,47 +376,53 @@ public partial class BitColorPicker : BitComponentBase
     /// added to a list - is focused with, since AutoFocus only fires once. A picker built without that area -
     /// see <see cref="ShowSaturationArea"/> - hands the focus to whichever of its controls comes first
     /// instead, so a palette picker is focused the same way. A disabled picker is not in the tab order and is
-    /// left alone; a read-only one is, and takes the focus like any other.
+    /// left alone; a read-only one is, and takes the focus like any other. The value travels through a hidden
+    /// input nobody is meant to land on, so this is what the focus goes to in its place.
     /// </remarks>
-    public ValueTask FocusAsync() => Disabled ? ValueTask.CompletedTask : FocusFirstAsync();
+    public override ValueTask FocusAsync() => Disabled ? ValueTask.CompletedTask : FocusFirstAsync(false);
+
+    /// <inheritdoc cref="FocusAsync()"/>
+    /// <param name="preventScroll">Whether the browser should leave the page where it is rather than scroll the
+    /// focused control into view.</param>
+    public override ValueTask FocusAsync(bool preventScroll) => Disabled ? ValueTask.CompletedTask : FocusFirstAsync(preventScroll);
 
     /// <summary>
     /// Moves the focus to the first control the picker actually renders, in the order they are rendered in.
     /// Every part above the text fields is optional, so the area a picker is normally focused at is not
     /// always there to be focused.
     /// </summary>
-    private ValueTask FocusFirstAsync()
+    private ValueTask FocusFirstAsync(bool preventScroll)
     {
-        if (ShowSaturationArea) return _saturationPickerRef.FocusAsync();
+        if (ShowSaturationArea) return _saturationPickerRef.FocusAsync(preventScroll);
 
         // Everything below carries the native disabled attribute on a picker with nowhere to report a change
         // to, and a disabled element cannot take the focus. The inputs mode switch is the exception: it moves
         // which numbers the color is read as rather than the color, so it is enabled wherever the picker is.
         if (_IsInputDisabled is false)
         {
-            if (ShowHueSlider) return _hueInputRef.FocusAsync();
+            if (ShowHueSlider) return _hueInputRef.FocusAsync(preventScroll);
 
-            if (ShowAlphaSlider) return _alphaSliderRef.FocusAsync();
+            if (ShowAlphaSlider) return _alphaSliderRef.FocusAsync(preventScroll);
 
-            if (_ShowEyeDropper) return _eyeDropperRef.FocusAsync();
+            if (_ShowEyeDropper) return _eyeDropperRef.FocusAsync(preventScroll);
 
             if (ShowInputs)
             {
                 // The alpha field is not a case of its own: it is only rendered beside the alpha slider,
                 // which would have taken the focus above.
-                if (_ShowHexField) return _hexInputRef.FocusAsync();
+                if (_ShowHexField) return _hexInputRef.FocusAsync(preventScroll);
 
-                if (_ChannelFields.Length > 0) return _channelInputRefs[0].FocusAsync();
+                if (_ChannelFields.Length > 0) return _channelInputRefs[0].FocusAsync(preventScroll);
             }
         }
 
-        if (ShowInputs && ShowInputsModeSwitch) return _inputsModeSwitchRef.FocusAsync();
+        if (ShowInputs && ShowInputsModeSwitch) return _inputsModeSwitchRef.FocusAsync(preventScroll);
 
         // The palette is the last part of the panel, and it is entered at the swatch the picker is already
         // on - the same one a Tab would land on.
         if (_IsInputDisabled is false && _presetRefs.Length > 0)
         {
-            return _presetRefs[Math.Clamp(_PresetTabStop, 0, _presetRefs.Length - 1)].FocusAsync();
+            return _presetRefs[Math.Clamp(_PresetTabStop, 0, _presetRefs.Length - 1)].FocusAsync(preventScroll);
         }
 
         return ValueTask.CompletedTask;
@@ -448,6 +453,8 @@ public partial class BitColorPicker : BitComponentBase
 
         ClassBuilder.Register(() => ReadOnly ? "bit-clp-rdl" : string.Empty);
 
+        ClassBuilder.Register(() => _IsRequired ? "bit-clp-req" : string.Empty);
+
         // Size publishes nothing while it is unset, which is what lets the stylesheet tell a default from a choice:
         // the public --bit-ColorPicker-* variables restyle the default and never an explicit value.
         ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-clp"));
@@ -465,6 +472,8 @@ public partial class BitColorPicker : BitComponentBase
         // while the picker initializes and a cascaded one applied there alone would arrive one lifecycle
         // step after the mode it is the default for has already been settled.
         CascadingParameters?.UpdateParameters(this);
+
+        SetDefaultValue();
 
         if (InputsModeHasBeenSet is false && DefaultInputsMode.HasValue)
         {
@@ -487,7 +496,10 @@ public partial class BitColorPicker : BitComponentBase
         // out do not get re-parsed as if the consumer had pushed a new color in. While the picker is
         // half-way through publishing one, that comparison cannot be made at all: see _publishing.
         var alphaChanged = _publishing is false && AlphaHasBeenSet && (first || Alpha != _alphaParam);
-        var colorChanged = _publishing is false && ColorHasBeenSet && (first || Color != _colorParam);
+        // A DefaultValue is a color pushed in like a bound one, but only ever on the first pass: after that, the
+        // value of an unbound picker is the one it wrote itself.
+        var colorChanged = _publishing is false && (first ? (ValueHasBeenSet || DefaultValueHasBeenSet)
+                                                          : (ValueHasBeenSet && Value != _colorParam));
 
         if (alphaChanged)
         {
@@ -496,11 +508,11 @@ public partial class BitColorPicker : BitComponentBase
 
         if (colorChanged)
         {
-            _colorParam = Color;
+            _colorParam = Value;
 
-            // An unrecognized string leaves the picker on white rather than throwing, the same white it
-            // starts on, so a half-typed color bound from a text field cannot break the page.
-            _color.Parse(Color, (alphaChanged || first) ? Alpha : _color.A);
+            // An unrecognized string - or none at all - leaves the picker on white rather than throwing, the same
+            // white it starts on, so a half-typed color bound from a text field cannot break the page.
+            _color.Parse(Value, (alphaChanged || first) ? Alpha : _color.A);
         }
         else if (alphaChanged)
         {
@@ -509,16 +521,18 @@ public partial class BitColorPicker : BitComponentBase
 
         _format = Format ?? BitInternalColor.DetectFormat(_colorParam) ?? BitColorFormat.Rgb;
 
-        // With nothing bound to them, the Color and Alpha parameters still report what the picker is on, so
+        // With nothing bound to them, the Value and Alpha parameters still report what the picker is on, so
         // that a @ref'd or uncontrolled picker can be read without a binding - and so that the color is
-        // written in the requested Format from the very first render.
-        if (ColorHasBeenSet is false)
+        // written in the requested Format from the very first render. A bound value is the consumer's and is
+        // never rewritten here: a null one stays null, which is what keeps a required picker invalid until a
+        // color has been picked.
+        if (ValueHasBeenSet is false)
         {
             var formatted = _color.ToString(_format);
 
-            if (Color != formatted)
+            if (Value != formatted)
             {
-                Color = formatted;
+                Value = formatted;
                 _colorParam = formatted;
             }
         }
@@ -545,7 +559,9 @@ public partial class BitColorPicker : BitComponentBase
 
             _formatEmitted = _format;
 
-            if (emitted is not null)
+            // A bound value that holds no color has nothing to rewrite: the white the picker shows in its place is
+            // not a color anyone picked, and writing it back would satisfy a required picker on its own.
+            if (emitted is not null && (ValueHasBeenSet is false || Value.HasValue()))
             {
                 await ChangeAsync(notifyChange: false);
             }
@@ -603,7 +619,7 @@ public partial class BitColorPicker : BitComponentBase
                 // a picker rendered into a page that is already up has to ask for the focus itself.
                 if (AutoFocus && Disabled is false)
                 {
-                    await FocusFirstAsync();
+                    await FocusFirstAsync(false);
                 }
             }
 
@@ -635,16 +651,23 @@ public partial class BitColorPicker : BitComponentBase
 
 
     /// <summary>
-    /// Whether a color the picker moved to would have anywhere to go. A Color bound one way, with no callback
+    /// Whether a color the picker moved to would have anywhere to go. A Value bound one way, with no callback
     /// beside it, is a value the consumer owns and the picker cannot write back to.
     /// </summary>
-    private bool _HasNowhereToReport => ColorHasBeenSet
-                                     && ColorChanged.HasDelegate is false
+    private bool _HasNowhereToReport => ValueHasBeenSet
+                                     && ValueChanged.HasDelegate is false
                                      && OnChange.HasDelegate is false
+                                     && OnColorChange.HasDelegate is false
                                      && OnChangeEnd.HasDelegate is false;
 
     /// <summary>
-    /// Whether a gesture is allowed to move the color. A one-way bound Color has nowhere to report a change
+    /// Whether the picker asks for a value: a disabled or read-only one asks for nothing, since nobody can give
+    /// it one.
+    /// </summary>
+    private bool _IsRequired => Required && Disabled is false && ReadOnly is false;
+
+    /// <summary>
+    /// Whether a gesture is allowed to move the color. A one-way bound Value has nowhere to report a change
     /// to, so the picker becomes a display of that value instead of pretending to accept edits.
     /// </summary>
     private bool _IsInteractive => Disabled is false && ReadOnly is false && _HasNowhereToReport is false;
@@ -768,7 +791,7 @@ public partial class BitColorPicker : BitComponentBase
     /// </summary>
     /// <remarks>
     /// Two pickers are not there to be operated at all. The disabled one says so, and looks it. The one whose
-    /// Color is bound one way with no callback beside it does not: it looks like an ordinary picker and only
+    /// Value is bound one way with no callback beside it does not: it looks like an ordinary picker and only
     /// has nowhere to report a change to, and a native range moves its own thumb - and a text field keeps
     /// what was typed into it - before any handler is reached, so it would be left showing a value it is not
     /// on. A read-only picker is neither: it is still showing a color to be read, so it keeps its controls
@@ -1092,7 +1115,7 @@ public partial class BitColorPicker : BitComponentBase
     }
 
     // A native range fires input while it is dragged and change once it is released, which is exactly the
-    // OnChange / OnChangeEnd pair. The last input and the change carry the same value though, so the second
+    // OnColorChange / OnChangeEnd pair. The last input and the change carry the same value though, so the second
     // of them only ends the gesture - it does not report a change that has already been reported.
     private async Task HandleOnHueInput(ChangeEventArgs args, bool final)
     {
@@ -1399,13 +1422,14 @@ public partial class BitColorPicker : BitComponentBase
     /// </summary>
     /// <param name="final">Whether this is the end of a gesture rather than a step of one.</param>
     /// <param name="notifyChange">
-    /// Whether OnChange should fire. The end of a drag has nothing new to report - the last move already
+    /// Whether OnColorChange should fire. The end of a drag has nothing new to report - the last move already
     /// reported it - so it only raises OnChangeEnd.
     /// </param>
     private async Task ChangeAsync(bool final = false, bool notifyChange = true)
     {
         var value = _color.ToString(_format);
         var alpha = _color.A;
+        var previous = Value;
 
         var colorTaken = false;
         var alphaTaken = false;
@@ -1416,10 +1440,10 @@ public partial class BitColorPicker : BitComponentBase
         {
             // Read back rather than assumed: a consumer is free to answer with a different color - clamping
             // it to a palette, rounding it, refusing it - and it is that answer the next render brings back.
-            colorTaken = await AssignColor(value);
+            colorTaken = await AssignValueAsync(value);
             if (colorTaken)
             {
-                _colorParam = Color;
+                _colorParam = Value;
             }
 
             alphaTaken = await AssignAlpha(alpha);
@@ -1437,15 +1461,31 @@ public partial class BitColorPicker : BitComponentBase
         // other, and the picker follows it. It could not be followed as it arrived, since it arrived while
         // the publish was still half-applied, so it is followed here instead - once, off the values that
         // came back, rather than off every render that carried them.
-        if (colorTaken && Color != value)
+        if (colorTaken && Value != value)
         {
-            _color.Parse(Color, alphaTaken ? Alpha : _color.A);
+            _color.Parse(Value, alphaTaken ? Alpha : _color.A);
 
-            value = Color;
+            value = Value ?? _color.ToString(_format);
         }
         else if (alphaTaken && Alpha != alpha)
         {
             _color.A = Alpha;
+        }
+
+        // The form hears of the value only once it is the model's, and only when it actually moved: a step of a
+        // drag that rounds to the same string has changed nothing a validator could read.
+        if (value != previous)
+        {
+            // An input bound to nothing has no field to report, and a validator handed one with no model would throw.
+            if (colorTaken && EditContext is not null && NoValidate is false && FieldIdentifier.Model is not null)
+            {
+                EditContext.NotifyFieldChanged(FieldIdentifier);
+            }
+
+            if (notifyChange)
+            {
+                await OnChange.InvokeAsync(value);
+            }
         }
 
         if (notifyChange || final)
@@ -1467,7 +1507,7 @@ public partial class BitColorPicker : BitComponentBase
 
             if (notifyChange)
             {
-                await OnChange.InvokeAsync(args);
+                await OnColorChange.InvokeAsync(args);
             }
 
             if (final)
@@ -1477,6 +1517,37 @@ public partial class BitColorPicker : BitComponentBase
         }
 
         StateHasChanged();
+    }
+
+    /// <summary>
+    /// Writes a color the picker moved to into the Value, unless it is bound one way and so has nowhere to be
+    /// written back to, and reports whether it was taken.
+    /// </summary>
+    private async Task<bool> AssignValueAsync(string value)
+    {
+        if (ValueHasBeenSet && ValueChanged.HasDelegate is false) return false;
+
+        if (Value == value) return true;
+
+        Value = value;
+
+        await ValueChanged.InvokeAsync(value);
+
+        return true;
+    }
+
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
+    {
+        if (value.HasNoValue() || BitInternalColor.IsValid(value))
+        {
+            result = value;
+            parsingErrorMessage = null;
+            return true;
+        }
+
+        result = default;
+        parsingErrorMessage = $"The {DisplayName ?? FieldIdentifier.FieldName} field is not a valid color.";
+        return false;
     }
 
     /// <summary>
