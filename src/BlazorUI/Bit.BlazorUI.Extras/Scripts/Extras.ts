@@ -298,6 +298,18 @@
             } catch (e) { console.error('BitBlazorUI.Extras.scrollOptionIntoView:', e); }
         }
 
+        // The IANA id of the time zone the browser runs in - the visitor's own, which on Blazor Server is
+        // not the one TimeZoneInfo.Local reads (the server's). Engines built on CLDR may answer with an id
+        // IANA has since renamed (Asia/Calcutta, Europe/Kiev), which the C# side resolves. Null where the
+        // engine cannot tell.
+        public static getTimeZone(): string | null {
+            try {
+                return Intl.DateTimeFormat().resolvedOptions().timeZone || null;
+            } catch {
+                return null;
+            }
+        }
+
         // Puts text on the clipboard, throwing when it could not be done so that the caller can tell.
         // The async Clipboard API is the only one that works without a user gesture heuristic, but it
         // is unavailable outside a secure context and in a few older browsers, so a hidden textarea and

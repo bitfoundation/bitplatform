@@ -42,8 +42,8 @@ public sealed class BitInputPlaceholderContractTests
     // the panels of BitRichTextEditor are taken away while it is disabled, and a disabled BitFullCalendar is read-only,
     // which opens neither its event dialog nor anything else holding a field. The only field of BitCountryPicker is the
     // search box of its list, which a disabled picker never opens; the placeholder of the picker itself is a text rather
-    // than a field's, greyed out with the rest of the disabled field.
-    private static readonly string[] NeverDisabled = ["BitRichTextEditor.scss", "BitFullCalendar.scss", "BitCountryPicker.scss"];
+    // than a field's, greyed out with the rest of the disabled field. BitTimeZonePicker is built the same way.
+    private static readonly string[] NeverDisabled = ["BitRichTextEditor.scss", "BitFullCalendar.scss", "BitCountryPicker.scss", "BitTimeZonePicker.scss"];
 
     [TestMethod]
     public void TheMixinResetsTheBrowsersOpacity()

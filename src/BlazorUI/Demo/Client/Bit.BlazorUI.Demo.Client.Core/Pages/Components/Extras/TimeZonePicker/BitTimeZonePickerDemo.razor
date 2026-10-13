@@ -1,0 +1,477 @@
+﻿@page "/components/timezonepicker"
+
+<PageOutlet Url="components/timezonepicker"
+            Title="TimeZonePicker"
+            Description="BitTimeZonePicker is a time zone selector: a searchable list of the IANA time zones with their offsets from UTC, places and countries, bound to a TimeZoneInfo or its id and the same on Blazor Server, WebAssembly and Hybrid." />
+
+<DemoPage Name="TimeZonePicker"
+          SecondaryNames="@(["TimeZoneSelector", "TimeZoneSelect", "TzPicker"])"
+          Description="BitTimeZonePicker picks a time zone out of a searchable list that shows the offset from UTC, the place and the country of each one - for the time zone of a profile, a meeting or a report, and for the TimeZone of the date and time pickers. Value is a TimeZoneInfo or the IANA id of the time zone, whichever it is bound to; the list is the same on every runtime, Windows ids and renamed IANA ids are recognized, the visitor's own time zone can be preselected from the browser, and the whole field is keyboard and screen-reader operable."
+          Parameters="componentParameters"
+          SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
+          CssVariables="componentCssVariables"
+          PublicMembers="componentPublicMembers"
+          GitHubExtrasUrl="TimeZonePicker/BitTimeZonePicker.razor"
+          GitHubDemoUrl="Extras/TimeZonePicker/BitTimeZonePickerDemo.razor">
+    <NotesTemplate>
+        <BitText>
+            To use this component, you need to install the
+            <BitLink Href="https://www.nuget.org/packages/Bit.BlazorUI.Extras" Target="_blank">
+                <BitTag Reversed
+                        Text="Bit.BlazorUI.Extras"
+                        Color="BitColor.SecondaryBackground"
+                        IconName="@BitIconName.NavigateExternalInline" />
+            </BitLink>
+            nuget package, as described in the Optional steps of the
+            <BitLink Href="/getting-started">Getting started</BitLink> page.
+        </BitText>
+        <br />
+        <BitText>
+            The offsets are read off the time zone data of the runtime. A Blazor WebAssembly app that strips that data
+            out (<code>&lt;InvariantTimezone&gt;true&lt;/InvariantTimezone&gt;</code>) knows UTC alone, so the list
+            offers nothing else there.
+        </BitText>
+    </NotesTemplate>
+    <Examples>
+        <DemoExample Title="Basic" RazorCode="@example1RazorCode" Id="example1">
+            <div>
+                The field opens a list of every time zone of <code>BitTimeZones.All</code> - UTC and every location
+                time zone of the IANA database - ordered west to east by its offset from UTC, each with its place and
+                country. <b>TValue</b> says what the value is: the IANA id as a <code>string</code>, or a
+                <code>TimeZoneInfo</code>. A bound value says it on its own. <b>Placeholder</b> fills the field while no
+                time zone is selected.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitTimeZonePicker TValue="string" Placeholder="Select a time zone" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Label & description" RazorCode="@example2RazorCode" Id="example2">
+            <div>
+                <b>Label</b> (or <b>LabelTemplate</b>) names the field and its list; a click on it moves the focus to
+                the field. <b>Required</b> adds the asterisk and <code>aria-required</code>. <b>Description</b> (or
+                <b>DescriptionTemplate</b>) writes a hint under the field, tied to it through
+                <code>aria-describedby</code>.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitTimeZonePicker TValue="string" Label="Time zone" Placeholder="Select a time zone" />
+                <BitTimeZonePicker TValue="string" Label="Meeting time zone" Required Placeholder="Select a time zone" />
+                <BitTimeZonePicker TValue="string"
+                                   Label="Display time zone"
+                                   Description="Dates and times are shown in this time zone."
+                                   Placeholder="Select a time zone" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Binding" RazorCode="@example3RazorCode" CsharpCode="@example3CsharpCode" Id="example3">
+            <div>
+                <b>Value</b> is two-way bindable to a <code>string</code> - the canonical IANA id, the one every runtime
+                reads back, and the natural thing to store - or to a <code>TimeZoneInfo</code>, ready for the
+                <b>TimeZone</b> of BitCalendar, BitDatePicker, BitDateRangePicker and BitTimePicker.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitTimeZonePicker Label="Bound to the id" Placeholder="Select a time zone" @bind-Value="boundTimeZoneId" />
+                <div>Id: @boundTimeZoneId</div>
+                <br />
+                <BitTimeZonePicker Label="Bound to a TimeZoneInfo" Placeholder="Select a time zone" @bind-Value="boundTimeZone" />
+                <div>Id: @boundTimeZone?.Id</div>
+                <div>Display name: @boundTimeZone?.DisplayName</div>
+                <div>Time there: @(boundTimeZone is null ? null : TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, boundTimeZone).ToString("t"))</div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="DefaultValue & DetectTimeZone" RazorCode="@example4RazorCode" CsharpCode="@example4CsharpCode" Id="example4">
+            <div>
+                An unbound picker starts on <b>DefaultValue</b>, and <b>OnChange</b> reports what is picked after it.
+                A value is recognized however it is written: a Windows id (<code>Iran Standard Time</code>) or an IANA id
+                since renamed (<code>Asia/Calcutta</code>) lands on its canonical time zone. <b>DetectTimeZone</b>
+                preselects the visitor's own time zone when the picker has no value - read from the browser, so on
+                Blazor Server it is the visitor's rather than the server's.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitTimeZonePicker Label="DefaultValue"
+                                   DefaultValue="@("Europe/Paris")"
+                                   OnChange="(string? id) => changedTimeZoneId = id" />
+                <div>Changed to: @changedTimeZoneId</div>
+                <br />
+                <BitTimeZonePicker Label="A Windows id" DefaultValue="@("Iran Standard Time")" />
+                <BitTimeZonePicker Label="A renamed IANA id" DefaultValue="@("Asia/Calcutta")" />
+                <br />
+                <BitTimeZonePicker Label="DetectTimeZone" DetectTimeZone @bind-Value="detectedTimeZoneId" />
+                <div>Detected: @detectedTimeZoneId</div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Custom time zones" RazorCode="@example5RazorCode" CsharpCode="@example5CsharpCode" Id="example5">
+            <div>
+                <b>TimeZones</b> replaces the built-in list (<code>BitTimeZones.All</code>) - filter it to narrow the
+                choice down. Whatever order it is given in, the list is shown by offset.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitTimeZonePicker TValue="string" Label="Europe only" TimeZones="europeanTimeZones" Placeholder="Select a time zone" />
+                <BitTimeZonePicker TValue="string" Label="Five offices" TimeZones="officeTimeZones" Placeholder="Select a time zone" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Preferred time zones" RazorCode="@example6RazorCode" CsharpCode="@example6CsharpCode" Id="example6">
+            <div>
+                <b>PreferredTimeZones</b> pins time zones to the top of the list, set apart from the rest by a rule. They
+                are written as ids, of any kind the picker recognizes.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitTimeZonePicker TValue="string" Label="Time zone" PreferredTimeZones="preferredTimeZones" Placeholder="Select a time zone" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Search box" RazorCode="@example7RazorCode" Id="example7">
+            <div>
+                The search matches places and countries (accents folded, word starts, so <code>sao pa</code> finds
+                Sao Paulo and <code>paris fr</code> finds Paris), ids (<code>Asia/Calcutta</code>, <code>UTC</code>),
+                the regions of the Windows names (<code>pacific</code>, <code>central europe</code>) and offsets
+                (<code>+3:30</code>, <code>utc-5</code>, <code>gmt+0530</code>; <code>+5</code> finds every zone of the
+                hour). The result count is announced to screen readers. Typing on the closed field opens it with the
+                search already started. <b>SearchBoxPlaceholder</b>, <b>SearchBoxAriaLabel</b> and
+                <b>NoResultsMessage</b> set its texts. <b>NoSearchBox</b> removes it; the field then answers to
+                type-ahead, open or closed.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitTimeZonePicker TValue="string"
+                                   Label="Search box"
+                                   Placeholder="Select a time zone"
+                                   SearchBoxPlaceholder="City, country or offset"
+                                   NoResultsMessage="No matching time zone" />
+                <BitTimeZonePicker TValue="string" Label="NoSearchBox" NoSearchBox Placeholder="Select a time zone" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Offsets & countries" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
+            <div>
+                The offsets are the ones in force now, daylight saving time included. <b>ReferenceDate</b> computes them
+                - and orders the list - for another moment, such as the date of an event. <b>NoOffset</b> leaves the
+                offsets out of the field and the list, and <b>NoCountry</b> the country names.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitTimeZonePicker Label="ReferenceDate (1 January)" ReferenceDate="januaryFirst" DefaultValue="@("America/New_York")" />
+                <BitTimeZonePicker Label="ReferenceDate (1 July)" ReferenceDate="julyFirst" DefaultValue="@("America/New_York")" />
+                <BitTimeZonePicker Label="NoOffset" NoOffset DefaultValue="@("Asia/Tokyo")" />
+                <BitTimeZonePicker Label="NoCountry" NoCountry DefaultValue="@("Asia/Tokyo")" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Templates" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
+            <div>
+                <b>ValueTemplate</b> renders the content of the field from the selected <b>BitTimeZone</b>,
+                <b>ItemTemplate</b> each row, and <b>NoResultsTemplate</b> the empty result.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitTimeZonePicker Label="Time zone" DefaultValue="@("Australia/Sydney")">
+                    <ValueTemplate Context="zone">
+                        <span>@(zone is null ? "Pick one" : $"{zone.Name} - {LocalTime(zone)}")</span>
+                    </ValueTemplate>
+                    <ItemTemplate Context="zone">
+                        <span style="flex:1 1 0;overflow:hidden;text-overflow:ellipsis">@zone.Name</span>
+                        <b>@LocalTime(zone)</b>
+                    </ItemTemplate>
+                    <NoResultsTemplate>
+                        <span>🔍 nothing here</span>
+                    </NoResultsTemplate>
+                </BitTimeZonePicker>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Validation" RazorCode="@example10RazorCode" CsharpCode="@example10CsharpCode" Id="example10">
+            <div>
+                Inside an <b>EditForm</b> the data annotations validate the bound time zone and the field gets
+                <code>aria-invalid</code>; <b>NoValidate</b> opts out. Outside a form, <b>Invalid</b> marks the field and
+                <b>ErrorMessage</b> (or <b>ErrorMessageTemplate</b>) also writes the reason under it, referenced by
+                <code>aria-describedby</code> and announced when it appears.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitTimeZonePicker Invalid Label="Invalid" DefaultValue="@("Europe/Madrid")" />
+                <BitTimeZonePicker Label="Office time zone"
+                                   ErrorMessage="We have no office there yet."
+                                   Description="Pick the time zone of one of our offices."
+                                   DefaultValue="@("America/Sao_Paulo")" />
+                <br />
+                <EditForm Model="validationModel" OnValidSubmit="() => submittedTimeZoneId = validationModel.TimeZoneId" novalidate>
+                    <DataAnnotationsValidator />
+                    <BitTimeZonePicker Label="Time zone"
+                                       Required
+                                       Placeholder="Select a time zone"
+                                       @bind-Value="validationModel.TimeZoneId" />
+                    <ValidationMessage For="() => validationModel.TimeZoneId" />
+                    <br />
+                    <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+                </EditForm>
+                @if (submittedTimeZoneId is not null)
+                {
+                    <div>Submitted: @submittedTimeZoneId</div>
+                }
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Disabled & ReadOnly" RazorCode="@example11RazorCode" Id="example11">
+            <div>
+                <b>Disabled</b> dims the field and takes it out of the tab order. <b>ReadOnly</b> keeps it focusable and
+                its time zone readable while refusing to open the list; the field drops its caret.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitTimeZonePicker Label="Disabled" Disabled DefaultValue="@("Europe/London")" />
+                <BitTimeZonePicker Label="ReadOnly" ReadOnly DefaultValue="@("Europe/London")" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Variants" RazorCode="@example12RazorCode" Id="example12">
+            <div>
+                <b>NoBorder</b> removes the frame, and <b>Underlined</b> keeps only a bottom rule that thickens on focus.
+                <b>Background</b> and <b>Border</b> take the fill and the frame from the neutral color kinds, for a field
+                on a surface other than the primary one.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitTimeZonePicker TValue="string" NoBorder Placeholder="NoBorder" />
+                <BitTimeZonePicker TValue="string" Underlined Placeholder="Underlined" />
+            </div>
+            <br />
+            <div class="example-box tzp-kind-box">
+                <BitTimeZonePicker TValue="string" Background="BitColorKind.Primary" Placeholder="Background Primary" />
+                <BitTimeZonePicker TValue="string" Background="BitColorKind.Secondary" Placeholder="Background Secondary" />
+                <BitTimeZonePicker TValue="string" Background="BitColorKind.Tertiary" Placeholder="Background Tertiary" />
+                <BitTimeZonePicker TValue="string" Background="BitColorKind.Transparent" Placeholder="Background Transparent" />
+                <BitTimeZonePicker TValue="string" Border="BitColorKind.Tertiary" Placeholder="Border Tertiary" />
+                <BitTimeZonePicker TValue="string" Border="BitColorKind.Transparent" Background="BitColorKind.Secondary" Placeholder="Border Transparent" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Callout" RazorCode="@example13RazorCode" Id="example13">
+            <div>
+                <b>DropDirection</b> (<code>TopAndBottom</code> by default, or <code>All</code>) and <b>MaxHeight</b> place
+                and size the list. The arrow keys wrap at its ends unless <b>NoWrapNavigation</b> is set; Home, End,
+                Page Up and Page Down move through it too, and Escape or Alt+Up close it. <b>Responsive</b> turns it into
+                a full-height side panel on small screens, with the Label and a close button
+                (<b>ResponsiveCloseIconName</b>, <b>ResponsiveCloseButtonAriaLabel</b>) - narrow the window to see it.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitTimeZonePicker TValue="string"
+                                   Label="DropDirection All + MaxHeight 200"
+                                   MaxHeight="200"
+                                   DropDirection="BitDropDirection.All"
+                                   Placeholder="Select a time zone" />
+                <BitTimeZonePicker TValue="string"
+                                   Label="NoWrapNavigation (open it and hold the up arrow)"
+                                   NoWrapNavigation
+                                   NoSearchBox
+                                   Placeholder="Select a time zone" />
+                <BitTimeZonePicker TValue="string" Label="Responsive" Responsive Placeholder="Select a time zone" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Events" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+            <div>
+                <b>OnChange</b> reports the picked time zone, <b>OnOpen</b> / <b>OnClose</b> follow the list,
+                <b>OnSearch</b> reports the search term, and <b>OnFocus</b> / <b>OnBlur</b> follow the field.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitTimeZonePicker TValue="TimeZoneInfo"
+                                   Label="Time zone"
+                                   Placeholder="Select a time zone"
+                                   OnChange="tz => eventTimeZone = tz"
+                                   OnSearch="s => searchedText = s"
+                                   OnOpen='() => calloutState = "opened"'
+                                   OnClose='() => calloutState = "closed"'
+                                   OnFocus='() => focusState = "focused"'
+                                   OnBlur='() => focusState = "blurred"' />
+                <div>Selected time zone: @eventTimeZone?.Id</div>
+                <div>Search text: @searchedText</div>
+                <div>Callout: @calloutState</div>
+                <div>Field: @focusState</div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Programmatic control" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
+            <div>
+                <b>IsOpen</b> is two-way bindable, and a reference offers <b>OpenAsync</b>, <b>CloseAsync</b>,
+                <b>SelectTimeZoneAsync</b> (by any id, or by a TimeZoneInfo, raising the same events picking it in the
+                list does), <b>SelectedTimeZone</b> and <b>FocusAsync</b>.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitTimeZonePicker @ref="controlledPicker"
+                                   TValue="string"
+                                   @bind-IsOpen="isCalloutOpen"
+                                   Label="Time zone"
+                                   Placeholder="Select a time zone" />
+            </div>
+            <br />
+            <BitStack Horizontal Wrap>
+                <BitButton OnClick="() => isCalloutOpen = !isCalloutOpen">Toggle the list</BitButton>
+                <BitButton OnClick='() => controlledPicker.SelectTimeZoneAsync("Asia/Tokyo")'>Select Tokyo</BitButton>
+                <BitButton OnClick="() => controlledPicker.SelectTimeZoneAsync(TimeZoneInfo.Utc)">Select UTC</BitButton>
+                <BitButton OnClick="async () => await controlledPicker.FocusAsync()">Focus</BitButton>
+            </BitStack>
+            <br />
+            <div>IsOpen: @isCalloutOpen</div>
+            <div>SelectedTimeZone: @controlledPicker?.SelectedTimeZone?.Name</div>
+        </DemoExample>
+
+        <DemoExample Title="Form submission" RazorCode="@example16RazorCode" CsharpCode="@example16CsharpCode" Id="example16">
+            <div>
+                For a plain HTML form, <b>Name</b> posts the canonical IANA id of the selected time zone through a hidden
+                field - whether the picker is bound to the id or to a TimeZoneInfo.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitTimeZonePicker Name="timeZone"
+                                   Label="Time zone"
+                                   Placeholder="Select a time zone"
+                                   @bind-Value="submissionTimeZone" />
+                <div>Posted as timeZone: @(BitTimeZones.Find(submissionTimeZone)?.Id)</div>
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Localization" RazorCode="@example17RazorCode" CsharpCode="@example17CsharpCode" Id="example17">
+            <div>
+                Every text the picker shows or announces can be translated. The names of the places and the countries
+                come from <b>TimeZones</b> - new <b>BitTimeZone</b> instances carrying the ids of the built-in ones; the
+                search box and the empty result take <b>SearchBoxPlaceholder</b>, <b>SearchBoxAriaLabel</b> and
+                <b>NoResultsMessage</b>; and <b>SearchResultsAnnouncement</b> phrases the result count a screen reader
+                hears.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitTimeZonePicker TValue="string"
+                                   Label="Zeitzone"
+                                   TimeZones="germanTimeZones"
+                                   Placeholder="Zeitzone auswählen"
+                                   SearchBoxPlaceholder="Suchen"
+                                   SearchBoxAriaLabel="Zeitzone suchen"
+                                   NoResultsMessage="Keine Zeitzone gefunden"
+                                   SearchResultsAnnouncement="@(count => count == 1 ? "1 Zeitzone gefunden" : $"{count} Zeitzonen gefunden")" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Cascading parameters" RazorCode="@example18RazorCode" CsharpCode="@example18CsharpCode" Id="example18">
+            <div>
+                <b>BitParams</b> hands a <b>BitTimeZonePickerParams</b> to every time zone picker under it - the time
+                zones an app offers, whether the visitor's own is detected, its look and its translated texts, set once,
+                whatever each picker is bound to. A picker keeps any parameter it sets itself. What belongs to one field
+                only (Value, DefaultValue, IsOpen, Name, Invalid, ErrorMessage and the events) is not cascaded.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitParams Parameters="@timeZonePickerParams">
+                    <BitTimeZonePicker TValue="string" Label="Takes the preferred time zones" />
+                    <BitTimeZonePicker TValue="TimeZoneInfo" Label="So does this one, bound to a TimeZoneInfo" />
+                    <BitTimeZonePicker TValue="string" Label="Its own Placeholder, the cascaded rest" Placeholder="Where are you?" />
+                </BitParams>
+                <br />
+                <BitTimeZonePicker TValue="string" Label="Outside the cascade" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Color" RazorCode="@example19RazorCode" Id="example19">
+            <div>
+                <b>Color</b> paints the frame and the focus ring in one of the general colors - a semantic one or a
+                neutral family. A <b>Border</b> kind, when set, takes the frame back and leaves Color the ring.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitTimeZonePicker TValue="string" Color="BitColor.Primary" Placeholder="Primary" />
+                <BitTimeZonePicker TValue="string" Color="BitColor.Secondary" Placeholder="Secondary" />
+                <BitTimeZonePicker TValue="string" Color="BitColor.Tertiary" Placeholder="Tertiary" />
+                <BitTimeZonePicker TValue="string" Color="BitColor.Info" Placeholder="Info" />
+                <BitTimeZonePicker TValue="string" Color="BitColor.Success" Placeholder="Success" />
+                <BitTimeZonePicker TValue="string" Color="BitColor.Warning" Placeholder="Warning" />
+                <BitTimeZonePicker TValue="string" Color="BitColor.SevereWarning" Placeholder="SevereWarning" />
+                <BitTimeZonePicker TValue="string" Color="BitColor.Error" Placeholder="Error" />
+                <BitTimeZonePicker TValue="string" Color="BitColor.PrimaryForeground" Placeholder="PrimaryForeground" />
+                <BitTimeZonePicker TValue="string" Color="BitColor.TertiaryBorder" Placeholder="TertiaryBorder" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="External Icons" RazorCode="@example20RazorCode" Id="example20">
+            <div>
+                <b>ResponsiveCloseIcon</b> takes the icon of the close button of the responsive panel from any CSS-class
+                based library (FontAwesome, Bootstrap Icons) as raw classes or through the <b>BitIconInfo</b> helpers, and
+                wins over <b>ResponsiveCloseIconName</b>. Reference the library's stylesheet in your app, and narrow the
+                window to see it.
+            </div>
+            <br />
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+            <div class="example-box">
+                <BitTimeZonePicker TValue="string"
+                                   Responsive
+                                   Label="Time zone"
+                                   ResponsiveCloseIcon="@BitIconInfo.Css("fa-solid fa-xmark")"
+                                   Placeholder="Select a time zone" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Size" RazorCode="@example21RazorCode" Id="example21">
+            <div>
+                <b>Size</b> scales the height, padding, text and list rows together.
+            </div>
+            <br />
+            <div class="example-box">
+                <BitTimeZonePicker Size="BitSize.Small" DefaultValue="@("America/Chicago")" />
+                <BitTimeZonePicker Size="BitSize.Medium" DefaultValue="@("America/Chicago")" />
+                <BitTimeZonePicker Size="BitSize.Large" DefaultValue="@("America/Chicago")" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="Style & Class" RazorCode="@example22RazorCode" CodeFiles="@example22CodeFiles" Id="example22">
+            <div>
+                The public <b>--bit-TimeZonePicker-*</b> custom properties (see the
+                <BitLink Href="#css-variables-section">CSS variables</BitLink> table) re-skin the field without a
+                selector: on <code>:root</code> for the whole app, on an ancestor for the pickers inside it, or in one
+                picker's <b>Style</b>. The time zone list is moved to the end of the body while it is open, yet it keeps
+                inheriting from the field and every ancestor of it, so a variable set in any of those places re-skins
+                the list as well. They restyle the default, not a choice: an explicit <b>Color</b>, <b>Background</b>,
+                <b>Border</b> or <b>Size</b> wins over the variables for what it sets.
+                <b>Style</b> and <b>Class</b> reach the root, <b>Styles</b> and <b>Classes</b> every part by name.
+            </div>
+            <br />
+            <div class="example-box">
+                <div>CSS variables on one picker (open its list too):</div>
+                <BitTimeZonePicker DefaultValue="@("Europe/Amsterdam")"
+                                   Style="--bit-TimeZonePicker-radius: 1.5rem; --bit-TimeZonePicker-focus-color: #7c4dff; --bit-TimeZonePicker-offset-color: #7c4dff; --bit-TimeZonePicker-item-selected-background: #ede7f6; --bit-TimeZonePicker-item-selected-color: #311b92; --bit-TimeZonePicker-callout-radius: 1rem;" />
+                <br />
+                <div>CSS variables on an ancestor (open its list too):</div>
+                <div class="tzp-brand-scope">
+                    <BitTimeZonePicker DefaultValue="@("Europe/Amsterdam")" />
+                </div>
+                <br />
+                <div>Style, Class, Styles and Classes:</div>
+                <BitTimeZonePicker DefaultValue="@("Europe/Amsterdam")"
+                                   Style="width: 250px;"
+                                   Class="custom-class"
+                                   Styles="@(new() { Field = "border-color: blueviolet;", ItemName = "color: blueviolet;" })"
+                                   Classes="@(new() { Text = "custom-text" })" />
+            </div>
+        </DemoExample>
+
+        <DemoExample Title="RTL" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" Id="example23">
+            <div>
+                <b>Dir="BitDir.Rtl"</b> mirrors the field, the callout and the responsive panel.
+            </div>
+            <br />
+            <div dir="rtl" class="example-box">
+                <BitTimeZonePicker TValue="string" Dir="BitDir.Rtl" TimeZones="persianTimeZones" Label="منطقه زمانی" Placeholder="یک منطقه زمانی انتخاب کنید" />
+            </div>
+        </DemoExample>
+    </Examples>
+</DemoPage>

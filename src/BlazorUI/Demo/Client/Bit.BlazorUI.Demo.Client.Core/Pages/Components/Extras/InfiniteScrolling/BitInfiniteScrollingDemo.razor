@@ -6,6 +6,7 @@
 
 <div>
     <DemoPage Name="InfiniteScrolling"
+              SecondaryNames="@(["InfiniteScroll", "LoadMore"])"
               Description="BitInfiniteScrolling fetches the next page from its ItemsProvider as soon as the end of the list comes into view, so nothing is loaded before it is needed. It renders the loading, empty, end and error states (each replaceable by a template), can load on demand through a Load more button (from the start or after a few automatic pages), run reversed to prepend older items without moving the reader, scroll sideways, or render as an accessible ARIA feed. A page in flight is cancelled when no longer needed, and the loaded items can be capped, keyed, edited from code and reset from a key."
               Parameters="componentParameters"
               CssVariables="componentCssVariables"

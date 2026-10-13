@@ -269,6 +269,14 @@ hosting one or more `DemoExample` sections. A multi-API component splits them ac
 tabs (`_..ItemDemo`, `_..CustomDemo`, `_..OptionDemo`), each with its own `.razor`, `.razor.cs` and
 `.razor.samples.cs`.
 
+- **`SecondaryNames` is the nav item's `Description`, exactly.** The `Description` of the component's item
+  in `Shared/MainLayout.razor.NavItems.cs` is the one list of what a component is also called - the
+  catalog, the search box and the MCP server read it from there - so the page's `DemoPage` passes the same
+  names, in the same order and spelling, split on the commas:
+  `Description = "Radio, RadioButton"` is `SecondaryNames="@(["Radio", "RadioButton"])"`. A nav item with
+  no `Description` means a page with no `SecondaryNames`. A new alias goes into the nav item first and is
+  then copied to the page, never added to the page alone; the words that only describe a component
+  (`Data`) stay in the nav.
 - **Order.** Component-specific sections first, starting with `Basic`; then the five near-identical
   look-and-feel ones, last and in this order: `Color`, `External Icons`, `Size`, `Style & Class`,
   `RTL`. A new section goes after the last component-specific one, before `Color`.

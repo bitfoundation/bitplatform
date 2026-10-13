@@ -51,6 +51,8 @@ public sealed class BitFieldLabelFontWeightContractTests
         (".bit-bfc-field-label", "Bit.BlazorUI.Extras/Components/FullCalendar/BitFullCalendar.scss"),
         (".bit-cnp-lbl", "Bit.BlazorUI.Extras/Components/CountryPicker/BitCountryPicker.scss"),
         (".bit-cnp-rlb", "Bit.BlazorUI.Extras/Components/CountryPicker/BitCountryPicker.scss"),
+        (".bit-tzp-lbl", "Bit.BlazorUI.Extras/Components/TimeZonePicker/BitTimeZonePicker.scss"),
+        (".bit-tzp-rlb", "Bit.BlazorUI.Extras/Components/TimeZonePicker/BitTimeZonePicker.scss"),
         (".bit-mde-lbl", "Bit.BlazorUI.Extras/Components/MarkdownEditor/BitMarkdownEditor.scss"),
         (".bit-phi-lbl", "Bit.BlazorUI.Extras/Components/PhoneInput/BitPhoneInput.scss"),
         (".bit-phi-rlb", "Bit.BlazorUI.Extras/Components/PhoneInput/BitPhoneInput.scss"),

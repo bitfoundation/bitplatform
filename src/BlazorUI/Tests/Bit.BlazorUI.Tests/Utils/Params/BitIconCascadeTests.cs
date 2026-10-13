@@ -39,6 +39,7 @@ public class BitIconCascadeTests : BunitTestContext
         [typeof(BitNav<>)] = [typeof(BitNavItem)],
         [typeof(BitNavPanel<>)] = [typeof(BitNavItem)],
         [typeof(BitNumberField<>)] = [typeof(int)],
+        [typeof(BitTimeZonePicker<>)] = [typeof(string)],
     };
 
 

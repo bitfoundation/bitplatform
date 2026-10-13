@@ -5,6 +5,7 @@
             Description="Renders any HTML tag - an anchor, a button, an input, an SVG shape or a custom element - with the styling, attribute, direction and state parameters of the bit BlazorUI." />
 
 <DemoPage Name="Element"
+          SecondaryNames="@(["DynamicElement", "Slot"])"
           Description="BitElement renders any tag - a div by default, or an anchor, a button, an input, an SVG shape, a custom element - with the parameters every bit BlazorUI component takes. Other attributes and events are splatted onto the tag, disabling follows what the tag supports, NoWrapper makes it a conditional wrapper, and the stopPropagation / preventDefault modifiers Razor only allows on plain elements are parameters."
           Parameters="componentParameters"
           PublicMembers="componentPublicMembers"

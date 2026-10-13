@@ -36,7 +36,7 @@ public class BitDisabledStateBrowserTests : PerformanceTestBase
         ["card"], ["dialog"], ["dialog-ok-off"], ["modal"], ["panel"],
         ["link"], ["element-div"],
         ["accentcolorswitcher"], ["themeswitcher"], ["chart"], ["countrypicker"], ["datagrid"], ["fullcalendar"], ["fullcalendar-week"],
-        ["markdowneditor"], ["markdownviewer"], ["pdfviewer-empty"], ["pdfviewer"], ["phoneinput"], ["richtexteditor"],
+        ["markdowneditor"], ["markdownviewer"], ["pdfviewer-empty"], ["pdfviewer"], ["phoneinput"], ["richtexteditor"], ["timezonepicker"],
         ["richtexteditor-readonly"],
     ];
 
