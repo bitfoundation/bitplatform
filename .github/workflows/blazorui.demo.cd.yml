@@ -337,13 +337,13 @@ jobs:
       run: cd src && dotnet workload install maui
 
     - name: Import Code-Signing Certificates
-      uses: apple-actions/import-codesign-certs@5142e029c445c10ffc7149d172e540235a065466 # v7.0.0
+      uses: apple-actions/import-codesign-certs@77ba2a2a8f5cfc8c405ebf3159f767c323e238f9 # v7.1.0
       with:
         p12-file-base64: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
         p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
 
     - name: Download Apple Provisioning Profiles
-      uses: Apple-Actions/download-provisioning-profiles@2126b5f86a0e2863cbf4d2d312112b22b943a594 # v6.1.0
+      uses: Apple-Actions/download-provisioning-profiles@230860ab5f632551a5f9a5e1d98a774485463888 # v7.0.0
       with:
         bundle-id: ${{ env.APP_BUNDLE_ID }}
         issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}
@@ -364,7 +364,7 @@ jobs:
 
     # App Store submission stays manual.
     - name: Upload to TestFlight
-      uses: apple-actions/upload-testflight-build@65a84cdb671ee2ccfa93710cd58e8f7b5d251967 # v5.5.1
+      uses: apple-actions/upload-testflight-build@155ea93be9ee6d5186c71f660a612f5eddb14510 # v5.6.0
       with:
         app-path: ${{ steps.ipa.outputs.path }}
         app-type: ios

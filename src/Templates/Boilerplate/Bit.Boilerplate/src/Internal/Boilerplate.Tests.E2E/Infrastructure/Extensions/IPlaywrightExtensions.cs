@@ -72,6 +72,9 @@ public static class IPlaywrightExtensions
         {
             await EnsureAndroidDeviceOnline();
 
+            await RunAdb("shell settings put secure autofill_service null");
+            await RunAdb("shell settings put secure stylus_handwriting_enabled 0");
+
             // Cleared, not just force-stopped: the app keeps its access token in Android Preferences, which outlives
             // both. A session inherited from an earlier run belongs to a user that run's cleanup has since deleted, so
             // the app would boot straight into UpdateSession's ResourceNotFoundException. App link verification lives

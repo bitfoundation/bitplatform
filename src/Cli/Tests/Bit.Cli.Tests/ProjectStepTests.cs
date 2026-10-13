@@ -248,6 +248,34 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public async Task AspireStart_Should_GiveTheAppHostTimeForItsFirstBuild()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["aspire"] = "aspire";
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+
+        await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
+
+        var start = host.Runner.Calls.Single(c => c.FileName is "aspire" && c.Arguments.FirstOrDefault() is "start");
+        Assert.AreEqual("1200", start.Environment?["ASPIRE_CLI_START_TIMEOUT"]);
+    }
+
+    [TestMethod]
+    public async Task AspireStart_Should_KeepTheUsersOwnStartTimeout()
+    {
+        using var host = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["ASPIRE_CLI_START_TIMEOUT"] = "60" });
+        host.Runner.Executables["aspire"] = "aspire";
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+
+        await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
+
+        var start = host.Runner.Calls.Single(c => c.FileName is "aspire" && c.Arguments.FirstOrDefault() is "start");
+        Assert.IsNull(start.Environment);
+    }
+
+    [TestMethod]
     public async Task AspireStart_Should_StartNothingWhenAspireCantUseDocker()
     {
         using var host = new TestHost(HostOs.Windows);

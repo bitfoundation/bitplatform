@@ -383,13 +383,13 @@ jobs:
           ServerAddress: ${{ vars.SERVER_ADDRESS }}
 
       - name: Import Code-Signing Certificates
-        uses: apple-actions/import-codesign-certs@5142e029c445c10ffc7149d172e540235a065466 # v7.0.0
+        uses: apple-actions/import-codesign-certs@77ba2a2a8f5cfc8c405ebf3159f767c323e238f9 # v7.1.0
         with:
           p12-file-base64: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_BASE64 }}
           p12-password: ${{ secrets.APPSTORE_CODE_SIGNING_CERTIFICATE_FILE_PASSWORD }}
 
       - name: Download Apple Provisioning Profiles
-        uses: Apple-Actions/download-provisioning-profiles@2126b5f86a0e2863cbf4d2d312112b22b943a594 # v6.1.0
+        uses: Apple-Actions/download-provisioning-profiles@230860ab5f632551a5f9a5e1d98a774485463888 # v7.0.0
         with:
           bundle-id: ${{ vars.APP_ID }}
           issuer-id: ${{ secrets.APPSTORE_API_KEY_ISSUER_ID }}

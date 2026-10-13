@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography.X509Certificates;
@@ -177,7 +176,7 @@ public class OpenIdConfigurationIntegrationTests
 
         var builder = WebApplication.CreateSlimBuilder();
 
-        builder.WebHost.UseUrls(GenerateServerUrl());
+        builder.WebHost.UseUrls(AppTestServer.GenerateServerUrl("127.0.0.1"));
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
         {
@@ -255,15 +254,6 @@ public class OpenIdConfigurationIntegrationTests
             Subject = new ClaimsIdentity(source.Claims.Where(claim => registeredClaims.Contains(claim.Type) is false)),
             SigningCredentials = new SigningCredentials(key, SecurityAlgorithms.RsaSha256Signature)
         });
-    }
-
-    private static string GenerateServerUrl()
-    {
-        using var listener = new TcpListener(IPAddress.Loopback, 0);
-        listener.Start();
-        var port = ((IPEndPoint)listener.LocalEndpoint).Port;
-        listener.Stop();
-        return $"http://127.0.0.1:{port}/";
     }
 
     private Task SignIn(AppClient client)
