@@ -32,6 +32,11 @@ window.addEventListener('scroll', (e: Event) => {
     // a scrollable the consumer put in it - is covered here.
     if (BitBlazorUI.Callouts.calloutContains(target)) return;
 
+    // A scroll of a container the components sit in that did not move them - a trigger in a sticky header of a
+    // scrolled container, which a focus() on it scrolls back to where the header sits in the flow - leaves the
+    // callouts pointing at what they were opened from, so there is nothing to dismiss them for.
+    if (BitBlazorUI.Callouts.anchorsStayed(e.target)) return;
+
     // On touch devices (notably iOS) focusing an input shows the virtual keyboard, which fires a
     // scroll event as the browser brings the field into view. That should not dismiss an open
     // callout while an editable element tied to that callout is focused.

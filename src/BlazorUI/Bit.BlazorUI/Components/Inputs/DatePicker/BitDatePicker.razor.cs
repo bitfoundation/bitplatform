@@ -1359,6 +1359,17 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                 {
                     await _js.BitSwipesSetup(_calloutId, 0.25m, BitPlacement.Top, ExplicitRtl, BitSwipeOrientation.Vertical, _dotnetObj);
                 }
+                // The autofocus attribute is only honored by the browser for an element that is part of the
+                // initial document, which the input of an interactively rendered picker is not, so the focus
+                // is placed from here instead. A standalone picker carries the value in a hidden input nobody
+                // is meant to land on, so it has nothing to focus.
+                // It is placed ahead of an initial IsOpen: a focus() brings the field into view, and a field it
+                // scrolls the page to would otherwise be moved out from under the callout just placed against it.
+                if (AutoFocus && Disabled is false && Standalone is false)
+                {
+                    await InputElement.FocusSafelyAsync();
+                }
+
                 // An initial IsOpen fired the OnSetIsOpen hook before the first render, when there was no
                 // callout element to toggle yet, so the open state is applied here instead - with the focus
                 // handling and the event of the hook, so a picker that starts open and one opened from the
@@ -1374,15 +1385,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                     }
 
                     await OnOpen.InvokeAsync();
-                }
-
-                // The autofocus attribute is only honored by the browser for an element that is part of the
-                // initial document, which the input of an interactively rendered picker is not, so the focus
-                // is placed from here instead. A standalone picker carries the value in a hidden input nobody
-                // is meant to land on, so it has nothing to focus.
-                if (AutoFocus && Disabled is false && Standalone is false)
-                {
-                    await InputElement.FocusSafelyAsync();
                 }
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
