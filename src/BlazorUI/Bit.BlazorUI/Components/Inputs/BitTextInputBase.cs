@@ -44,9 +44,9 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
     {
         _assignedTextInputParameters.Clear();
 
-        var parametersDictionary = (ParametersCache ??= parameters.ToDictionary() as Dictionary<string, object?>); ;
+        var parametersDictionary = TakeParametersDictionary(parameters);
 
-        foreach (var parameter in parametersDictionary!)
+        foreach (var parameter in parametersDictionary)
         {
             switch (parameter.Key)
             {
@@ -82,7 +82,11 @@ public abstract class BitTextInputBase<TValue> : BitInputBase<TValue>
             }
         }
 
-        return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary!));
+        // What is left reaches the base through ParametersCache, handed over right before the call and taken by the base
+        // as it starts, so a pass that throws on the way leaves none behind; a view built from it would only be an
+        // allocation nobody reads.
+        ParametersCache = parametersDictionary;
+        return base.SetParametersAsync(ParameterView.Empty);
     }
 
     private protected override bool IsSetByMarkup(string name) => _assignedTextInputParameters.Contains(name) || base.IsSetByMarkup(name);

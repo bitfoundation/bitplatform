@@ -205,7 +205,34 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 
 
 
+    /// <summary>
+    /// The parameters of the current pass that the classes above have not taken, handed down to the next base through
+    /// <see cref="TakeParametersDictionary"/>. A class sets it right before it calls the base, never while anything
+    /// of its own pass can still await, so a pass that overlaps another one never reads the other one's leftovers.
+    /// </summary>
     protected internal Dictionary<string, object?>? ParametersCache { get; set; }
+
+    /// <summary>
+    /// Takes the parameters of the current pass: the ones a derived class handed down through
+    /// <see cref="ParametersCache"/>, or else a dictionary of the given view's own. The cache is cleared as it is
+    /// taken, so a pass that throws before reaching this class leaves nothing behind for the next one to apply.
+    /// </summary>
+    private protected Dictionary<string, object?> TakeParametersDictionary(ParameterView parameters)
+    {
+        var parametersDictionary = ParametersCache;
+        ParametersCache = null;
+
+        if (parametersDictionary is not null) return parametersDictionary;
+
+        // Filled from the view itself rather than cast from ToDictionary, whose concrete type is no part of its contract.
+        parametersDictionary = [];
+        foreach (var parameter in parameters)
+        {
+            parametersDictionary[parameter.Name] = parameter.Value;
+        }
+
+        return parametersDictionary;
+    }
 
     // The arguments of the events Bit.BlazorUI.Events registers are filled in by System.Text.Json, through setters
     // nothing else calls, so a trimmed app would otherwise lose them and hand every handler empty fields. They are
@@ -216,8 +243,9 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     {
         _assignedParameters.Clear();
         _htmlAttributes.Clear();
-        var parametersDictionary = ParametersCache ?? new Dictionary<string, object?>(parameters.ToDictionary());
-        foreach (var parameter in parametersDictionary!)
+        // The dictionary is this pass's own, and removing an entry does not invalidate the enumerator of a dictionary.
+        var parametersDictionary = TakeParametersDictionary(parameters);
+        foreach (var parameter in parametersDictionary)
         {
             switch (parameter.Key)
             {
@@ -312,8 +340,6 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
 
         // A pass that leaves the parameter out keeps the dictionary passed before, as it keeps every other parameter.
         AddMissingHtmlAttributes(_htmlAttributesParameter);
-
-        ParametersCache = null;
 
         var restore = RestoreDroppedCascadeParameters();
 
