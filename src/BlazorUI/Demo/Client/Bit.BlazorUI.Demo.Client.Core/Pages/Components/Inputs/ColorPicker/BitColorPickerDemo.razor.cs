@@ -29,17 +29,10 @@ public partial class BitColorPickerDemo
         },
         new()
         {
-            Name = "Color",
-            Type = "string",
-            DefaultValue = "rgb(255,255,255)",
-            Description = "String describing the color. Hexadecimal in three, four, six or eight digits, rgb() and rgba(), hsl() and hsla(), hwb(), lab() and lch(), oklab() and oklch(), color(srgb ...), a CSS color keyword such as \"tomato\", and transparent are all understood, in both the comma-separated and the modern space-separated syntax, as are hsv() and hsva(), which are not CSS notations but the model the picker itself is built on.",
-        },
-        new()
-        {
             Name = "ContrastColor",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The color the contrast readout measures the picked color against - the background it is going to be read on. It accepts any of the notations Color does, and defaults to white.",
+            Description = "The color the contrast readout measures the picked color against - the background it is going to be read on. It accepts any of the notations Value does, and defaults to white.",
         },
         new()
         {
@@ -69,7 +62,7 @@ public partial class BitColorPickerDemo
             Name = "Format",
             Type = "BitColorFormat?",
             DefaultValue = "null",
-            Description = "The notation the color value is written in, CSS or the non-CSS hsv() and hsva(). When left unset the picker answers in the same notation the Color arrived in.",
+            Description = "The notation the color value is written in, CSS or the non-CSS hsv() and hsva(). When left unset the picker answers in the same notation the Value arrived in.",
             LinkType = LinkType.Link,
             Href = "#color-format-enum",
         },
@@ -112,14 +105,6 @@ public partial class BitColorPickerDemo
         },
         new()
         {
-            Name = "OnChange",
-            Type = "EventCallback<BitColorChangeEventArgs>",
-            Description = "Callback for when the value changed. It fires on every step of a drag.",
-            LinkType = LinkType.Link,
-            Href = "#color-change-event-args",
-        },
-        new()
-        {
             Name = "OnChangeEnd",
             Type = "EventCallback<BitColorChangeEventArgs>",
             Description = "Callback for when the user finishes changing the value: the drag ends, the slider is released, a text field is committed, or a preset is picked.",
@@ -128,10 +113,18 @@ public partial class BitColorPickerDemo
         },
         new()
         {
+            Name = "OnColorChange",
+            Type = "EventCallback<BitColorChangeEventArgs>",
+            Description = "Callback for when the color changed, carrying it in every notation along with its alpha. It fires on every step of a drag. The inherited OnChange reports the same moves with the Value alone; this one also reports a move of the alpha that the notation of the Value has no room for.",
+            LinkType = LinkType.Link,
+            Href = "#color-change-event-args",
+        },
+        new()
+        {
             Name = "Presets",
             Type = "IEnumerable<string>?",
             DefaultValue = "null",
-            Description = "The colors offered as a row of one-click swatches under the picker, in any of the notations the Color parameter accepts. A swatch that carries its own alpha applies that alpha too.",
+            Description = "The colors offered as a row of one-click swatches under the picker, in any of the notations the Value parameter accepts. A swatch that carries its own alpha applies that alpha too.",
         },
         new()
         {
@@ -139,13 +132,6 @@ public partial class BitColorPickerDemo
             Type = "int?",
             DefaultValue = "null",
             Description = "How many preset swatches are laid out per row. Left unset they simply wrap; setting it lays them out on a grid instead, which keeps a palette meant to be read in columns in the arrangement it was written in.",
-        },
-        new()
-        {
-            Name = "ReadOnly",
-            Type = "bool",
-            DefaultValue = "false",
-            Description = "Makes the color picker read-only: the value is still shown at full contrast and every control stays in the tab order, so the color can be read out, but nothing about it can be changed. The widgets that hold a value declare aria-readonly or the native readonly, and the buttons that would change the color declare aria-disabled.",
         },
         new()
         {
@@ -230,6 +216,13 @@ public partial class BitColorPickerDemo
             LinkType = LinkType.Link,
             Href = "#color-picker-texts",
         },
+        new()
+        {
+            Name = "Value",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The color, as a CSS color string - this is the parameter to bind (@bind-Value). Hexadecimal in three, four, six or eight digits, rgb() and rgba(), hsl() and hsla(), hwb(), lab() and lch(), oklab() and oklch(), color(srgb ...), a CSS color keyword such as \"tomato\", and transparent are all understood, in both the comma-separated and the modern space-separated syntax, as are hsv() and hsva(), which are not CSS notations but the model the picker itself is built on. A picked color is written back in the notation the Value arrived in, or in the one Format pins. A null or unrecognized value shows white and is left as it is, so a required picker bound to nothing stays invalid until a color is actually picked.",
+        },
     ];
 
     private readonly List<ComponentSubClass> componentSubClasses =
@@ -246,7 +239,7 @@ public partial class BitColorPickerDemo
                     Name = "Color",
                     Type = "string?",
                     DefaultValue = "null",
-                    Description = "The main color value of the changed color in the same format as the Color parameter of the ColorPicker."
+                    Description = "The main color value of the changed color in the same format as the Value parameter of the ColorPicker."
                 },
                 new()
                 {
@@ -574,6 +567,18 @@ public partial class BitColorPickerDemo
         },
         new()
         {
+            Name = "--bit-ColorPicker-required-color",
+            DefaultValue = "--bit-clr-req",
+            Description = "Color of the asterisk drawn after the label of a Required picker, after a LabelTemplate as well.",
+        },
+        new()
+        {
+            Name = "--bit-ColorPicker-invalid-color",
+            DefaultValue = "--bit-clr-err / --bit-clr-err-focus",
+            Description = "Color of every border the panel draws, and of the keyboard focus ring, while the value fails the validation of the EditForm it is in. It replaces --bit-ColorPicker-border-color and --bit-ColorPicker-focus-color for that time only.",
+        },
+        new()
+        {
             Name = "--bit-ColorPicker-saturation-height",
             DefaultValue = "29.5 spacing units",
             Description = "Height of the saturation-brightness area. It is also the row that gives way when the panel is pinned to a height smaller than its content. The Size parameter wins over it.",
@@ -880,11 +885,14 @@ public partial class BitColorPickerDemo
     private string mediumColor = "#5EC27A";
     private string largeColor = "#5E7AC2";
 
+    private BitColorPickerDemoFormModel validationModel = new();
+    private string? validationResult;
+
     private string rtlColor = "#B34D4D";
 
 
 
-    private void HandleOnChange(BitColorChangeEventArgs args)
+    private void HandleOnColorChange(BitColorChangeEventArgs args)
     {
         changeCount++;
         changedColor = args.Color;
@@ -895,5 +903,15 @@ public partial class BitColorPickerDemo
         changeEndCount++;
         changedHex = args.Hex;
         changedRgba = args.Rgba;
+    }
+
+    private void HandleValidSubmit()
+    {
+        validationResult = $"Submitted {validationModel.Color}";
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        validationResult = null;
     }
 }

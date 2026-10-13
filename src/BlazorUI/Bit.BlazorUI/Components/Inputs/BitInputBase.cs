@@ -33,6 +33,12 @@ public abstract class BitInputBase<TValue> : BitComponentBase
     // added to, which is then the one aria-invalid taken off again once the field is valid.
     private bool _hasAddedAriaInvalid;
 
+    // What an input that arrives at its value on its own (PublishValueAsync) last wrote into the Value or was last
+    // handed from outside, which is how a value the app pushed in is told apart from the one the binding hands back.
+    private TValue? _knownValue;
+    // What PublishValueAsync last arrived at, which is what a value bound one way - and so never written - moved from.
+    private TValue? _publishedValue;
+
     // The parameters of this class are taken out of the ParameterView below before it reaches
     // BitComponentBase, so the set that BitComponentBase tracks never sees them, and the one the source
     // generator writes only ever holds the parameters that the component itself declares. A cascade filling
@@ -449,14 +455,15 @@ public abstract class BitInputBase<TValue> : BitComponentBase
         {
             _parsingFailed = true;
 
-            // EditContext may be null if the input is not a child component of EditForm.
-            if (EditContext is not null)
+            // EditContext may be null if the input is not a child component of EditForm, and an input bound to nothing
+            // has no field to hold the message.
+            if (EditContext is not null && FieldIdentifier.Model is not null)
             {
                 _parsingValidationMessages ??= new ValidationMessageStore(EditContext);
                 _parsingValidationMessages.Add(FieldIdentifier, parsingErrorMessage);
 
                 // Since we're not writing to CurrentValue, we'll need to notify about modification from here
-                EditContext.NotifyFieldChanged(FieldIdentifier);
+                NotifyFieldChanged();
             }
         }
         else
@@ -480,10 +487,7 @@ public abstract class BitInputBase<TValue> : BitComponentBase
 
         await ValueChanged.InvokeAsync(value);
 
-        if (EditContext is not null && NoValidate is false)
-        {
-            EditContext.NotifyFieldChanged(FieldIdentifier);
-        }
+        NotifyFieldChanged();
 
         await OnChange.InvokeAsync(value);
     }
@@ -493,6 +497,77 @@ public abstract class BitInputBase<TValue> : BitComponentBase
         return (ValueHasBeenSet &&
                 ValueChanged.HasDelegate is false &&
                 OnChange.HasDelegate is false);
+    }
+
+    /// <summary>
+    /// Tells the cascading EditContext that the value of the field changed, which validates the field and marks it
+    /// modified - unless the input validates nothing or has no field to report. An input bound to nothing has a
+    /// FieldIdentifier with no model, which the EditContext cannot even look up and a validator would throw on.
+    /// </summary>
+    protected void NotifyFieldChanged()
+    {
+        if (EditContext is null || NoValidate || FieldIdentifier.Model is null) return;
+
+        EditContext.NotifyFieldChanged(FieldIdentifier);
+    }
+
+    /// <summary>
+    /// Whether the parameters pass that is running brought in a Value the app pushed from outside, as opposed to the
+    /// one <see cref="PublishValueAsync"/> wrote and the binding handed back. Each pushed value is reported once.
+    /// </summary>
+    private protected bool TakePushedValue()
+    {
+        if (ValueHasBeenSet is false || EqualityComparer<TValue>.Default.Equals(Value, _knownValue)) return false;
+
+        _knownValue = Value;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Publishes a value the input arrived at on its own rather than one typed into it - the names of a file
+    /// selection, say: written into the Value and handed to the binding whenever it differs from it, unless the Value
+    /// is bound one way and so has nowhere to be written back to.
+    /// </summary>
+    /// <param name="value">The value the input arrived at.</param>
+    /// <param name="notifyField">
+    /// Whether the EditContext is told, which validates the field and marks it modified. That is for a change the
+    /// user made; a value only brought in step with something the app did (a reset, the data it preloaded) marks
+    /// nothing, as a value the app pushes in marks nothing.
+    /// </param>
+    /// <param name="notifyChange">Whether <see cref="OnChange"/> hears of it, once the value actually moved.</param>
+    private protected async Task PublishValueAsync(TValue? value, bool notifyField, bool notifyChange)
+    {
+        var comparer = EqualityComparer<TValue>.Default;
+
+        // A Value bound one way with no ValueChanged beside it is the app's: it is never written, and what the value
+        // moved from is then the one last published rather than the one the app keeps pushing in.
+        var writable = (ValueHasBeenSet && ValueChanged.HasDelegate is false) is false;
+        var moved = comparer.Equals(value, writable ? Value : _publishedValue) is false;
+
+        _publishedValue = value;
+
+        if (moved is false) return;
+
+        if (writable)
+        {
+            // Recorded before the binding is told, since the app re-renders from inside the callback and the value it
+            // hands back must read as this one rather than as one pushed in from outside.
+            _knownValue = value;
+            Value = value;
+
+            await ValueChanged.InvokeAsync(value);
+
+            if (notifyField)
+            {
+                NotifyFieldChanged();
+            }
+        }
+
+        if (notifyChange)
+        {
+            await OnChange.InvokeAsync(value);
+        }
     }
 
 
@@ -506,7 +581,9 @@ public abstract class BitInputBase<TValue> : BitComponentBase
 
     private void UpdateValidationAttributes()
     {
-        if (EditContext is null || NoValidate) return;
+        // An input bound to nothing has no field to hold a message, and its FieldIdentifier cannot even be looked up:
+        // the lookup would throw out of the validation of every other field of the form.
+        if (EditContext is null || NoValidate || FieldIdentifier.Model is null) return;
 
         // The dictionary is the app's own, possibly shared by several inputs, so the attribute is added to and taken off
         // a copy of it, never the dictionary itself.

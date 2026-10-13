@@ -52,7 +52,7 @@
             <div class="showcase-preview-body">
                 @if (SelectedComponent?.Name == "ColorPicker")
                 {
-                    <BitColorPicker ShowAlphaSlider ShowPreview @bind-Alpha="Alpha" @bind-Color="@Color" />
+                    <BitColorPicker ShowAlphaSlider ShowPreview @bind-Alpha="Alpha" @bind-Value="@Color" />
                     <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
                         @Color &nbsp;·&nbsp; alpha @Alpha
                     </BitText>

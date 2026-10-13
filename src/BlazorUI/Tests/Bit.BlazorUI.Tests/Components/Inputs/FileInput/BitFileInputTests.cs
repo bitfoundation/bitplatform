@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Bunit;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Inputs.FileInput;
@@ -1791,6 +1793,530 @@ public class BitFileInputTests : BunitTestContext
 
         // the template owns what is inside the list, focusable or not, so the list does not compete with it.
         Assert.IsFalse(component.Find(".bit-fin-fl").HasAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitFileInputValidationShouldRequireAValidFile()
+    {
+        var component = RenderComponent<BitFileInputValidationTest>();
+
+        var form = component.Find("form");
+
+        Assert.IsFalse(component.Find(".bit-fin").ClassList.Contains("bit-inv"));
+
+        form.Submit();
+
+        Assert.AreEqual(0, component.Instance.ValidCount);
+        Assert.AreEqual(1, component.Instance.InvalidCount);
+        Assert.IsTrue(component.Find(".bit-fin").ClassList.Contains("bit-inv"));
+        Assert.AreEqual("true", component.Find(".bit-input-hidden").GetAttribute("aria-invalid"));
+
+        // a selection of nothing but rejected files is still no value.
+        SetupFiles([new() { Name = "big.txt", Size = 100, FileId = "1" }]);
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        Assert.IsNull(component.Instance.TestModel.Value);
+        Assert.IsTrue(component.Find(".bit-fin").ClassList.Contains("bit-inv"));
+
+        SetupFiles([new() { Name = "a.txt", Size = 10, FileId = "2" },
+                    new() { Name = "big.txt", Size = 100, FileId = "3" }]);
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        // the model receives the names of the valid files, and the field is validated right away.
+        Assert.AreEqual("a.txt", component.Instance.TestModel.Value);
+        Assert.IsFalse(component.Find(".bit-fin").ClassList.Contains("bit-inv"));
+        Assert.IsNull(component.Find(".bit-input-hidden").GetAttribute("aria-invalid"));
+
+        form.Submit();
+
+        Assert.AreEqual(1, component.Instance.ValidCount);
+        Assert.AreEqual(1, component.Instance.InvalidCount);
+    }
+
+    [TestMethod]
+    public async Task BitFileInputValueShouldJoinTheNamesOfTheValidFilesOnly()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 10, FileId = "1" },
+                    new() { Name = "big.txt", Size = 100, FileId = "2" },
+                    new() { Name = "c.txt", Size = 20, FileId = "3" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.MaxSize, 50);
+        });
+
+        var instance = component.Instance;
+
+        Assert.IsNull(instance.Value);
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        // the file the size validation rejected is in the list but not in the value.
+        Assert.HasCount(3, instance.Files);
+        Assert.AreEqual("a.txt,c.txt", instance.Value);
+        Assert.AreEqual("a.txt,c.txt", component.Find(".bit-input-hidden").GetAttribute("value"));
+
+        await component.InvokeAsync(() => instance.RemoveFile(instance.Files[0]));
+
+        Assert.AreEqual("c.txt", instance.Value);
+
+        await component.InvokeAsync(() => instance.RemoveFile(null));
+
+        Assert.IsNull(instance.Value);
+        Assert.IsFalse(component.Find(".bit-input-hidden").HasAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldCarryItsValueInAHiddenInput()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 10, FileId = "1" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Name, "attachments");
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object>
+            {
+                ["data-test"] = "carrier",
+                ["form"] = "upload-form"
+            });
+        });
+
+        var root = component.Find(".bit-fin");
+        var carrier = component.Find("input.bit-input-hidden");
+
+        // the carrier is not the native file input, which holds what the browser picked rather than the list.
+        Assert.IsTrue(root.LastElementChild!.ClassList.Contains("bit-input-hidden"));
+        Assert.AreEqual("text", carrier.GetAttribute("type"));
+        Assert.AreEqual("attachments", carrier.GetAttribute("name"));
+        // Required stays off it: the browser would block the submit over a control nobody can see.
+        Assert.IsFalse(carrier.HasAttribute("required"));
+        Assert.AreEqual("carrier", carrier.GetAttribute("data-test"));
+        Assert.AreEqual("upload-form", carrier.GetAttribute("form"));
+        Assert.AreEqual("-1", carrier.GetAttribute("tabindex"));
+        Assert.AreEqual("true", carrier.GetAttribute("aria-hidden"));
+        Assert.IsFalse(carrier.HasAttribute("value"));
+        Assert.IsFalse(component.Find(".bit-fin-fi").HasAttribute("data-test"));
+        Assert.IsFalse(component.Find(".bit-fin-fi").HasAttribute("name"));
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        Assert.AreEqual("a.txt", component.Find("input.bit-input-hidden").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldReportTheFilesThroughOnFilesChangeAndTheValueThroughOnChange()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 10, FileId = "1" },
+                    new() { Name = "big.txt", Size = 100, FileId = "2" }]);
+
+        var filesChanges = new List<BitFileInputInfo[]>();
+        var values = new List<string?>();
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.MaxSize, 50);
+            parameters.Add(p => p.OnFilesChange, (BitFileInputInfo[] files) => filesChanges.Add(files));
+            parameters.Add(p => p.OnChange, (string? value) => values.Add(value));
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        // the files callback hands over the whole list, the rejected file included; the value is the valid names.
+        Assert.HasCount(1, filesChanges);
+        CollectionAssert.AreEqual(new[] { "a.txt", "big.txt" }, filesChanges[0].Select(f => f.Name).ToArray());
+        CollectionAssert.AreEqual(new[] { "a.txt" }, values);
+
+        // the same selection again is a change of the files, not of the value.
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        Assert.HasCount(2, filesChanges);
+        Assert.HasCount(1, values);
+    }
+
+    [TestMethod,
+        DataRow(null),
+        DataRow("")
+    ]
+    public void BitFileInputShouldClearTheSelectionWhenTheValueIsEmptiedFromOutside(string? emptied)
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 10, FileId = "1" }]);
+
+        string? value = null;
+        var valueChanges = 0;
+        var filesChanges = 0;
+        var changes = 0;
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.ValueChanged, (string? v) => { value = v; valueChanges++; });
+            parameters.Add(p => p.OnFilesChange, () => filesChanges++);
+            parameters.Add(p => p.OnChange, () => changes++);
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        Assert.AreEqual("a.txt", value);
+        Assert.HasCount(1, component.Instance.Files);
+
+        component.Render(parameters => parameters.Add(p => p.Value, emptied));
+
+        // a form reset or a model cleared after a save clears the selection it stood for - quietly, since the
+        // change came from the consumer rather than the user.
+        Assert.IsEmpty(component.Instance.Files);
+        Assert.IsEmpty(component.FindAll(".bit-fin-itm"));
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.FileInput.reset"].Count);
+        Assert.AreEqual(1, valueChanges);
+        Assert.AreEqual(1, filesChanges);
+        Assert.AreEqual(1, changes);
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldLeaveTheSelectionAloneForAPushedValueThatNamesFiles()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 10, FileId = "1" }]);
+
+        string? value = null;
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.ValueChanged, (string? v) => value = v);
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        Assert.AreEqual("a.txt", value);
+
+        // a browser cannot be handed files from code, so a value naming other files changes nothing.
+        component.Render(parameters => parameters.Add(p => p.Value, "other.txt"));
+
+        Assert.HasCount(1, component.Instance.Files);
+        Assert.AreEqual("a.txt", component.Instance.Files[0].Name);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.FileInput.reset"].Count);
+
+        // the selection writes its own value back the next time it changes.
+        SetupFiles([new() { Name = "b.txt", Size = 10, FileId = "2" }]);
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        Assert.AreEqual("b.txt", value);
+    }
+
+    [TestMethod]
+    public async Task BitFileInputResetShouldPublishANullValueWithoutTheChangeCallbacks()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 10, FileId = "1" }]);
+
+        string? value = null;
+        var valueChanges = 0;
+        var filesChanges = 0;
+        var changes = 0;
+        var removes = 0;
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.ValueChanged, (string? v) => { value = v; valueChanges++; });
+            parameters.Add(p => p.OnFilesChange, () => filesChanges++);
+            parameters.Add(p => p.OnChange, () => changes++);
+            parameters.Add(p => p.OnRemove, () => removes++);
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        Assert.AreEqual("a.txt", value);
+        Assert.AreEqual(1, valueChanges);
+        Assert.AreEqual(1, filesChanges);
+        Assert.AreEqual(1, changes);
+
+        await component.InvokeAsync(() => component.Instance.Reset());
+
+        // the binding follows the emptied list, but nothing reports a change the user did not make.
+        Assert.IsNull(value);
+        Assert.IsNull(component.Instance.Value);
+        Assert.AreEqual(2, valueChanges);
+        Assert.AreEqual(1, filesChanges);
+        Assert.AreEqual(1, changes);
+        Assert.AreEqual(0, removes);
+        Assert.IsEmpty(component.Instance.Files);
+    }
+
+    [TestMethod]
+    public async Task BitFileInputReadOnlyShouldKeepTheFilesButRefuseEveryChange()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 10, FileId = "1" }]);
+
+        var removes = 0;
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.ShowRemoveButton, true);
+            parameters.Add(p => p.OnRemove, () => removes++);
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        component.Render(parameters => parameters.Add(p => p.ReadOnly, true));
+
+        var root = component.Find(".bit-fin");
+        var browse = component.Find(".bit-fin-lbl");
+        var remove = component.Find(".bit-fin-rbt");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-fin-rdl"));
+        Assert.IsFalse(root.ClassList.Contains("bit-dis"));
+
+        // the buttons stay in the tab order and say they are unavailable rather than being taken away.
+        Assert.AreEqual("true", browse.GetAttribute("aria-disabled"));
+        Assert.IsFalse(browse.HasAttribute("disabled"));
+        Assert.AreEqual("true", remove.GetAttribute("aria-disabled"));
+        Assert.IsFalse(remove.HasAttribute("disabled"));
+        Assert.IsTrue(component.Find("input.bit-input-hidden").HasAttribute("readonly"));
+
+        await remove.ClickAsync(new());
+
+        Assert.HasCount(1, component.Instance.Files);
+        Assert.AreEqual(0, removes);
+
+        await browse.ClickAsync(new());
+        await component.InvokeAsync(() => component.Instance.Browse());
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.FileInput.browse"].Count);
+
+        // an editable one browses again.
+        component.Render(parameters => parameters.Add(p => p.ReadOnly, false));
+
+        Assert.IsFalse(component.Find(".bit-fin").ClassList.Contains("bit-fin-rdl"));
+        Assert.IsNull(component.Find(".bit-fin-lbl").GetAttribute("aria-disabled"));
+
+        await component.InvokeAsync(() => component.Instance.Browse());
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.FileInput.browse"].Count);
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public void BitFileInputReadOnlyShouldTurnDropAndPasteOff(bool readOnly)
+    {
+        RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, readOnly);
+            parameters.Add(p => p.AllowDrop, true);
+            parameters.Add(p => p.AllowPaste, true);
+        });
+
+        var args = Context.JSInterop.Invocations
+                                    .Single(i => i.Identifier == "BitBlazorUI.FileInput.setupDragDrop").Arguments;
+
+        Assert.AreEqual(readOnly is false, args[4]);
+        Assert.AreEqual(readOnly is false, args[5]);
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public void BitFileInputShouldTakeReadOnlyAndRequiredFromTheCascade(bool readOnly)
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitFileInputParams
+            {
+                ReadOnly = readOnly,
+                Required = true
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitFileInput>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var fileInput = component.FindComponent<BitFileInput>().Instance;
+        var carrier = component.Find("input.bit-input-hidden");
+
+        Assert.AreEqual(readOnly, fileInput.ReadOnly);
+        Assert.IsTrue(fileInput.Required);
+        Assert.AreEqual(readOnly, component.Find(".bit-fin").ClassList.Contains("bit-fin-rdl"));
+        Assert.AreEqual(readOnly ? "true" : null, component.Find(".bit-fin-lbl").GetAttribute("aria-disabled"));
+        Assert.IsFalse(carrier.HasAttribute("required"));
+        Assert.AreEqual(readOnly, carrier.HasAttribute("readonly"));
+    }
+
+    [TestMethod]
+    public void BitFileInputDirectReadOnlyShouldOverrideTheCascadedOne()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitFileInputParams
+            {
+                ReadOnly = true,
+                Required = true
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitFileInput>(0);
+                builder.AddAttribute(1, nameof(BitFileInput.ReadOnly), false);
+                builder.CloseComponent();
+            });
+        });
+
+        // an explicit false is a written parameter like any other, so the cascade does not fill it in.
+        Assert.IsFalse(component.Find(".bit-fin").ClassList.Contains("bit-fin-rdl"));
+        Assert.IsNull(component.Find(".bit-fin-lbl").GetAttribute("aria-disabled"));
+
+        // what the markup left unwritten still comes from the cascade.
+        Assert.IsTrue(component.FindComponent<BitFileInput>().Instance.Required);
+    }
+
+    [TestMethod]
+    public async Task BitFileInputShouldClearAPushedValueWhenItsSelectionHoldsNoValidFile()
+    {
+        SetupFiles([new() { Name = "big.txt", Size = 100, FileId = "1" }]);
+
+        string? value = "old.pdf";
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.MaxSize, 50);
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.ValueChanged, (string? v) => value = v);
+        });
+
+        // a selection of nothing but rejected files holds no value, whatever value was pushed in before it.
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        Assert.IsNull(value);
+        Assert.IsNull(component.Instance.Value);
+
+        // and a reset clears a value pushed in from outside too, as it promises to.
+        component.Render(parameters => parameters.Add(p => p.Value, "older.pdf"));
+
+        await component.InvokeAsync(() => component.Instance.Reset());
+
+        Assert.IsNull(value);
+        Assert.IsNull(component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitFileInputReadOnlyShouldTakeNoSelectionThroughItsNativeInput()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 10, FileId = "1" }]);
+
+        var filesChanges = 0;
+        string? value = null;
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.ValueChanged, (string? v) => value = v);
+            parameters.Add(p => p.OnFilesChange, () => filesChanges++);
+        });
+
+        var nativeInput = component.Find(".bit-fin-fi");
+
+        // a label of the app's own pointed at InputId opens no dialog on a disabled native input...
+        Assert.IsTrue(nativeInput.HasAttribute("disabled"));
+        Assert.AreEqual("true", nativeInput.GetAttribute("aria-disabled"));
+
+        // ...and a selection that reaches it all the same is not taken.
+        nativeInput.Change(string.Empty);
+
+        Assert.AreEqual(0, component.Instance.Files?.Count ?? 0);
+        Assert.AreEqual(0, filesChanges);
+        Assert.IsNull(value);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.FileInput.setup"]);
+
+        // an editable one takes it again.
+        component.Render(parameters => parameters.Add(p => p.ReadOnly, false));
+
+        Assert.IsFalse(component.Find(".bit-fin-fi").HasAttribute("disabled"));
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        Assert.AreEqual("a.txt", value);
+        Assert.AreEqual(1, filesChanges);
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldDeclareAFailedValidationOnItsBrowseButton()
+    {
+        var component = RenderComponent<BitFileInputValidationTest>();
+
+        Assert.IsNull(component.Find(".bit-fin-lbl").GetAttribute("aria-invalid"));
+
+        component.Find("form").Submit();
+
+        // the input the value travels through is out of the accessibility tree, so the button the user operates is
+        // what tells a screen reader that the field is in error.
+        Assert.AreEqual("true", component.Find(".bit-fin-lbl").GetAttribute("aria-invalid"));
+
+        SetupFiles([new() { Name = "a.txt", Size = 10, FileId = "1" }]);
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        Assert.IsNull(component.Find(".bit-fin-lbl").GetAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public async Task BitFileInputResetShouldLeaveTheEditContextAlone()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 10, FileId = "1" }]);
+
+        var model = new BitFileInputTestModel();
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(Context.Services);
+
+        var component = RenderComponent<CascadingValue<EditContext>>(parameters =>
+        {
+            parameters.Add(p => p.Value, editContext);
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitFileInput>(0);
+                builder.AddAttribute(1, nameof(BitFileInput.AutoReset), true);
+                builder.AddAttribute(2, nameof(BitFileInput.Value), model.Value);
+                builder.AddAttribute(3, nameof(BitFileInput.ValueChanged),
+                                     EventCallback.Factory.Create<string?>(this, v => model.Value = v));
+                builder.AddAttribute(4, nameof(BitFileInput.ValueExpression),
+                                     (System.Linq.Expressions.Expression<Func<string?>>)(() => model.Value));
+                builder.CloseComponent();
+            }));
+        });
+
+        // a selection is the user's, so the field is validated and marked modified.
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        Assert.AreEqual("a.txt", model.Value);
+        Assert.IsTrue(editContext.IsModified());
+
+        editContext.MarkAsUnmodified();
+
+        // an AutoReset browse empties the list before the dialog opens: the value follows the list, but the field is
+        // neither validated nor marked modified, so a required one does not turn invalid while the dialog is open.
+        var fileInput = component.FindComponent<BitFileInput>();
+
+        await component.InvokeAsync(() => fileInput.Instance.Browse());
+
+        Assert.IsNull(model.Value);
+        Assert.AreEqual(0, fileInput.Instance.Files?.Count ?? 0);
+        Assert.IsFalse(editContext.IsModified());
+        Assert.IsFalse(editContext.GetValidationMessages().Any());
+        Assert.IsFalse(component.Find(".bit-fin").ClassList.Contains("bit-inv"));
+        Assert.IsNull(component.Find(".bit-fin-lbl").GetAttribute("aria-invalid"));
     }
 
     private void SetupFiles(BitFileInputInfo[] files)

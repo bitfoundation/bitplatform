@@ -82,6 +82,10 @@
         border-color: #0072CE;
         background-color: #eaf4fd;
     }
+
+    .validation-message {
+        color: var(--bit-clr-err);
+    }
 }
 
 .browse-file {

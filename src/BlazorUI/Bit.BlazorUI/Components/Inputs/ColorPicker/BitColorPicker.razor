@@ -1,5 +1,5 @@
 ﻿@namespace Bit.BlazorUI
-@inherits BitComponentBase
+@inherits BitInputBase<string?>
 
 @{
     var texts = _Texts;
@@ -20,6 +20,9 @@
     var describes = ShowContrast ? _ContrastId : null;
     var sliders = ShowHueSlider || ShowAlphaSlider;
     var (rootLabel, rootLabelledBy) = GetRootName();
+    @* A failed validation is declared on the widgets that hold the value, the same ones aria-readonly goes on:
+       a group carries neither state. *@
+    var ariaInvalid = ValueInvalid is true ? "true" : null;
 }
 
 @* The group role is the picker's own and is written after the splatted attributes on purpose. The disabled state is
@@ -74,6 +77,7 @@
              aria-valuetext="@_SaturationValueText"
              aria-label="@texts.SaturationAreaLabel"
              aria-readonly="@(readOnly ? "true" : null)"
+             aria-invalid="@ariaInvalid"
              aria-describedby="@describes"
              aria-disabled="@(Disabled ? "true" : null)"
              class="bit-clp-rec @Classes?.SaturationPicker">
@@ -112,7 +116,8 @@
                                    class="bit-clp-inp @Classes?.SliderInput"
                                    aria-valuetext="@_HueValueText"
                                    aria-describedby="@(ShowSaturationArea ? null : describes)"
-                                   aria-readonly="@(readOnly ? "true" : null)" />
+                                   aria-readonly="@(readOnly ? "true" : null)"
+                                   aria-invalid="@ariaInvalid" />
                         </div>
                     }
 
@@ -139,7 +144,8 @@
                                    class="bit-clp-inp @Classes?.SliderInput"
                                    aria-valuetext="@_AlphaValueText"
                                    aria-describedby="@(ShowSaturationArea || ShowHueSlider ? null : describes)"
-                                   aria-readonly="@(readOnly ? "true" : null)" />
+                                   aria-readonly="@(readOnly ? "true" : null)"
+                                   aria-invalid="@ariaInvalid" />
                         </div>
                     }
                 </div>
@@ -193,6 +199,7 @@
                            disabled="@disabled"
                            aria-disabled="@(disabled ? "true" : null)"
                            readonly="@readOnly"
+                           aria-invalid="@ariaInvalid"
                            tabindex="@(disabled ? "-1" : TabIndex)"
                            id="@($"{_Id}-hex")"
                            style="@Styles?.FieldInput"
@@ -219,6 +226,7 @@
                            disabled="@disabled"
                            aria-disabled="@(disabled ? "true" : null)"
                            readonly="@readOnly"
+                           aria-invalid="@ariaInvalid"
                            tabindex="@(disabled ? "-1" : TabIndex)"
                            id="@($"{_Id}-{name}")"
                            style="@Styles?.FieldInput"
@@ -241,6 +249,7 @@
                            disabled="@disabled"
                            aria-disabled="@(disabled ? "true" : null)"
                            readonly="@readOnly"
+                           aria-invalid="@ariaInvalid"
                            value="@_AlphaPercentValue"
                            tabindex="@(disabled ? "-1" : TabIndex)"
                            id="@($"{_Id}-alpha")"
@@ -344,4 +353,20 @@
             }
         </div>
     }
+
+    @* The value's carrier in a form: what a post reads under Name and where the InputHtmlAttributes land. It is
+       nothing to land on, so it stays out of the tab order and the accessibility tree; the widgets above are what
+       the user operates. Required deliberately stays off it: the native attribute on a control nobody can see makes
+       the browser block the submit of the form over a message it cannot show anywhere, so being required is left
+       to the validation rules of the model. *@
+    <input @attributes="InputHtmlAttributes"
+           type="text"
+           name="@Name"
+           tabindex="-1"
+           aria-hidden="true"
+           readonly="@ReadOnly"
+           class="bit-input-hidden"
+           disabled="@Disabled"
+           aria-disabled="@GetInputAriaDisabled(Disabled)"
+           value="@CurrentValueAsString" />
 </div>

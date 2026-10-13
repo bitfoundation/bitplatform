@@ -37,10 +37,10 @@
             </BitColorPicker>
             <br />
             <div>Disabled:</div>
-            <BitColorPicker Disabled Color="#B34D4D" />
+            <BitColorPicker Disabled Value="#B34D4D" />
             <br />
             <div>ReadOnly:</div>
-            <BitColorPicker ReadOnly ShowInputs @bind-Color="readOnlyColor" />
+            <BitColorPicker ReadOnly ShowInputs @bind-Value="readOnlyColor" />
         </div>
     </DemoExample>
 
@@ -52,11 +52,11 @@
         <br />
         <div class="example-box">
             <div>Alpha slider and preview:</div>
-            <BitColorPicker ShowAlphaSlider ShowPreview @bind-Color="alphaColor" @bind-Alpha="alphaValue" />
+            <BitColorPicker ShowAlphaSlider ShowPreview @bind-Value="alphaColor" @bind-Alpha="alphaValue" />
             <BitLabel>Color: @alphaColor &nbsp; Alpha: @alphaValue</BitLabel>
             <br />
             <div>Preview only:</div>
-            <BitColorPicker ShowPreview @bind-Color="previewColor" />
+            <BitColorPicker ShowPreview @bind-Value="previewColor" />
             <BitLabel>Color: @previewColor</BitLabel>
         </div>
     </DemoExample>
@@ -72,16 +72,16 @@
         <br />
         <div class="example-box">
             <div>Hex and RGB, with alpha:</div>
-            <BitColorPicker ShowInputs ShowPreview ShowAlphaSlider Format="BitColorFormat.HexAlpha" @bind-Color="inputsAlphaColor" />
+            <BitColorPicker ShowInputs ShowPreview ShowAlphaSlider Format="BitColorFormat.HexAlpha" @bind-Value="inputsAlphaColor" />
             <BitLabel>Color: @inputsAlphaColor</BitLabel>
             <br />
             <div>User-selectable mode (the button at the end of the row):</div>
             <BitColorPicker ShowInputs ShowPreview ShowInputsModeSwitch
-                            @bind-InputsMode="inputsMode" @bind-Color="inputsModeColor" />
+                            @bind-InputsMode="inputsMode" @bind-Value="inputsModeColor" />
             <BitLabel>Mode: @inputsMode &nbsp; Color: @inputsModeColor</BitLabel>
             <br />
             <div>Fixed to HSL:</div>
-            <BitColorPicker ShowInputs ShowPreview InputsMode="BitColorInputsMode.Hsl" @bind-Color="hslInputsColor" />
+            <BitColorPicker ShowInputs ShowPreview InputsMode="BitColorInputsMode.Hsl" @bind-Value="hslInputsColor" />
             <BitLabel>Color: @hslInputsColor</BitLabel>
         </div>
     </DemoExample>
@@ -96,15 +96,15 @@
         <br />
         <div class="example-box">
             <div>Brand palette:</div>
-            <BitColorPicker ShowPreview Presets="brandPresets" @bind-Color="presetColor" />
+            <BitColorPicker ShowPreview Presets="brandPresets" @bind-Value="presetColor" />
             <BitLabel>Color: @presetColor</BitLabel>
             <br />
             <div>One hue at four transparencies, plus "no color":</div>
-            <BitColorPicker ShowPreview ShowAlphaSlider Presets="alphaPresets" Format="BitColorFormat.Rgba" @bind-Color="alphaPresetColor" />
+            <BitColorPicker ShowPreview ShowAlphaSlider Presets="alphaPresets" Format="BitColorFormat.Rgba" @bind-Value="alphaPresetColor" />
             <BitLabel>Color: @alphaPresetColor</BitLabel>
             <br />
             <div>A shade ramp, five to a row:</div>
-            <BitColorPicker ShowPreview Presets="rampPresets" PresetsPerRow="5" @bind-Color="rampPresetColor" />
+            <BitColorPicker ShowPreview Presets="rampPresets" PresetsPerRow="5" @bind-Value="rampPresetColor" />
             <BitLabel>Color: @rampPresetColor</BitLabel>
         </div>
     </DemoExample>
@@ -117,7 +117,7 @@
         <br />
         <div class="example-box">
             <div>Click the eyedropper, then click anywhere on the screen:</div>
-            <BitColorPicker ShowEyeDropper ShowPreview ShowInputs @bind-Color="eyeDropperColor" />
+            <BitColorPicker ShowEyeDropper ShowPreview ShowInputs @bind-Value="eyeDropperColor" />
             <BitLabel>Color: @eyeDropperColor</BitLabel>
         </div>
     </DemoExample>
@@ -133,17 +133,17 @@
             <div>Text color against a page background:</div>
             <BitColorPicker ShowContrast ShowInputs ShowPreview
                             ContrastColor="@contrastBackground"
-                            @bind-Color="contrastColor" />
+                            @bind-Value="contrastColor" />
             <BitLabel>@contrastColor on @contrastBackground</BitLabel>
             <br />
             <div>Pick the background it is read on:</div>
-            <BitColorPicker ShowPreview ShowInputs @bind-Color="contrastBackground" />
+            <BitColorPicker ShowPreview ShowInputs @bind-Value="contrastBackground" />
             <br />
             <div>Against a dark surface, with transparency:</div>
             <BitColorPicker ShowContrast ShowAlphaSlider ShowPreview
                             ContrastColor="#1B1A19"
                             Format="BitColorFormat.Rgba"
-                            @bind-Color="contrastOnDarkColor" />
+                            @bind-Value="contrastOnDarkColor" />
             <BitLabel>Color: @contrastOnDarkColor</BitLabel>
         </div>
     </DemoExample>
@@ -156,7 +156,7 @@
         </div>
         <br />
         <div class="example-box">
-            <BitColorPicker ShowAlphaSlider ShowPreview Format="selectedFormat" @bind-Color="formatColor" />
+            <BitColorPicker ShowAlphaSlider ShowPreview Format="selectedFormat" @bind-Value="formatColor" />
             <BitLabel>Color: @formatColor</BitLabel>
             <br />
             <BitChoiceGroup Horizontal
@@ -183,15 +183,16 @@
 
     <DemoExample Title="Binding" RazorCode="@example8RazorCode" CsharpCode="@example8CsharpCode" Id="example8">
         <div>
-            A one-way <b>Color</b> with no callback makes the picker a display: the page drives it and its own controls
-            are inert. <b>@@bind-Color</b> makes it two-way. The parser takes hex (3, 4, 6, 8 digits), rgb(), hsl(),
+            The color is the picker's <b>Value</b>, a CSS color string. A one-way <b>Value</b> with no callback makes
+            the picker a display: the page drives it and its own controls are inert. <b>@@bind-Value</b> makes it
+            two-way. The parser takes hex (3, 4, 6, 8 digits), rgb(), hsl(),
             hsv(), hwb(), lab(), lch(), oklab(), oklch(), color(srgb ...), keywords and <b>transparent</b>; anything
             else leaves the color unchanged. <b>@@bind-Alpha</b> binds the transparency separately.
         </div>
         <br />
         <div class="example-box">
             <div>One-way:</div>
-            <BitColorPicker Color="oneWayColor" ShowPreview />
+            <BitColorPicker Value="@oneWayColor" ShowPreview />
             <div class="buttons">
                 @foreach (var (label, color) in oneWayOptions)
                 {
@@ -200,7 +201,7 @@
             </div>
             <br />
             <div>Two-way (try 'tomato', '#0f8', 'rgb(255 128 0 / 40%)', 'hwb(280 10% 20%)', 'oklch(0.7 0.18 200)'):</div>
-            <BitColorPicker @bind-Color="twoWayColor" @bind-Alpha="twoWayAlpha" ShowAlphaSlider ShowPreview />
+            <BitColorPicker @bind-Value="twoWayColor" @bind-Alpha="twoWayAlpha" ShowAlphaSlider ShowPreview />
             <BitTextField Label="Enter a color" @bind-Value="twoWayColor" Style="width: 220px;" />
             <BitLabel>Alpha: @twoWayAlpha</BitLabel>
         </div>
@@ -208,18 +209,19 @@
 
     <DemoExample Title="Events & API" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
         <div>
-            <b>OnChange</b> fires on every step of a drag; <b>OnChangeEnd</b> once per gesture (drag end, slider
+            <b>OnColorChange</b> fires on every step of a drag; <b>OnChangeEnd</b> once per gesture (drag end, slider
             release, field commit, preset) - use it for expensive work. Both pass a <b>BitColorChangeEventArgs</b> with
-            the color in every notation. A <b>@@ref</b> exposes the same readings (<b>Hex</b>, <b>Rgba</b>, <b>Hsl</b>,
+            the color in every notation. The inherited <b>OnChange</b> reports the same moves with the new
+            <b>Value</b> alone. A <b>@@ref</b> exposes the same readings (<b>Hex</b>, <b>Rgba</b>, <b>Hsl</b>,
             <b>Oklch</b>, <b>ColorDescription</b>, ...) and <b>FocusAsync</b>.
         </div>
         <br />
         <div class="example-box">
             <BitColorPicker @ref="colorPickerRef" ShowAlphaSlider ShowPreview
-                            OnChange="HandleOnChange"
+                            OnColorChange="HandleOnColorChange"
                             OnChangeEnd="HandleOnChangeEnd" />
             <BitButton OnClick="() => colorPickerRef?.FocusAsync()">Focus the picker</BitButton>
-            <BitLabel>OnChange: @changeCount times, last @changedColor</BitLabel>
+            <BitLabel>OnColorChange: @changeCount times, last @changedColor</BitLabel>
             <BitLabel>OnChangeEnd: @changeEndCount times, last @changedHex / @changedRgba</BitLabel>
             <br />
             <BitLabel>ColorDescription: @colorPickerRef?.ColorDescription</BitLabel>
@@ -250,13 +252,13 @@
             <div>Tab to the gradient, then use the arrow, Page, Home and End keys:</div>
             <BitColorPicker ShowAlphaSlider ShowInputs ShowPreview
                             AriaLabel="Choose the brand color"
-                            @bind-Color="accessibilityColor" />
+                            @bind-Value="accessibilityColor" />
             <BitLabel>Color: @accessibilityColor</BitLabel>
             <br />
             <div>Read-only: still reachable, still announced, refuses every change.</div>
             <BitColorPicker ReadOnly ShowAlphaSlider ShowInputs ShowPreview
                             Presets="brandPresets"
-                            @bind-Color="accessibilityColor" />
+                            @bind-Value="accessibilityColor" />
         </div>
         <br />
         <div dir="rtl">
@@ -265,7 +267,7 @@
                                 Texts="persianTexts"
                                 Label="رنگ برند"
                                 Presets="brandPresets"
-                                @bind-Color="localizedColor" />
+                                @bind-Value="localizedColor" />
             </div>
         </div>
     </DemoExample>
@@ -283,16 +285,16 @@
             <BitColorPicker ShowSaturationArea="false" ShowHueSlider="false" ShowPreview
                             Presets="brandPresets"
                             PresetsPerRow="5"
-                            @bind-Color="paletteOnlyColor" />
+                            @bind-Value="paletteOnlyColor" />
             <BitLabel>Color: @paletteOnlyColor</BitLabel>
             <br />
             <div>A tint picker, pinned to one hue:</div>
-            <BitColorPicker ShowHueSlider="false" ShowPreview ShowInputs @bind-Color="tintColor" />
+            <BitColorPicker ShowHueSlider="false" ShowPreview ShowInputs @bind-Value="tintColor" />
             <BitLabel>Color: @tintColor</BitLabel>
             <br />
             <div>Fields only:</div>
             <BitColorPicker ShowSaturationArea="false" ShowHueSlider="false" ShowInputs ShowInputsModeSwitch ShowPreview ShowAlphaSlider
-                            @bind-Color="fieldsOnlyColor" />
+                            @bind-Value="fieldsOnlyColor" />
             <BitLabel>Color: @fieldsOnlyColor</BitLabel>
             <br />
             <div>In a popover:</div>
@@ -307,7 +309,7 @@
                     <BitColorPicker ShowInputs Presets="brandPresets"
                                     Label="Text color"
                                     Style="--bit-ColorPicker-padding: 0.75rem;"
-                                    @bind-Color="popoverColor" />
+                                    @bind-Value="popoverColor" />
                 </Content>
             </BitCallout>
         </div>
@@ -316,30 +318,55 @@
     <DemoExample Title="Cascading parameters" RazorCode="@example12RazorCode" CsharpCode="@example12CsharpCode" Id="example12">
         <div>
             <b>BitParams</b> with a <b>BitColorPickerParams</b> sets defaults - shown parts, palette, format - for every
-            picker under it; a picker's own value always wins. <b>Color</b>, <b>Alpha</b> and the callbacks are not
+            picker under it; a picker's own value always wins. <b>Value</b>, <b>Alpha</b> and the callbacks are not
             cascaded, and the mode is cascaded as <b>DefaultInputsMode</b> so the user can still switch it.
         </div>
         <br />
         <div class="example-box">
             <BitParams Parameters="@colorPickerParams">
                 <div>Takes the palette, the inputs, the preview and the format from the cascade:</div>
-                <BitColorPicker @bind-Color="cascadedColor" />
+                <BitColorPicker @bind-Value="cascadedColor" />
                 <BitLabel>Color: @cascadedColor</BitLabel>
                 <br />
                 <div>The same, without repeating any of it:</div>
-                <BitColorPicker @bind-Color="cascadedOtherColor" />
+                <BitColorPicker @bind-Value="cascadedOtherColor" />
                 <BitLabel>Color: @cascadedOtherColor</BitLabel>
                 <br />
                 <div>Its own Size, the cascaded rest:</div>
-                <BitColorPicker Size="BitSize.Small" @bind-Color="cascadedSmallColor" />
+                <BitColorPicker Size="BitSize.Small" @bind-Value="cascadedSmallColor" />
             </BitParams>
             <br />
             <div>Outside the cascade, and back to the defaults:</div>
-            <BitColorPicker @bind-Color="cascadedSmallColor" />
+            <BitColorPicker @bind-Value="cascadedSmallColor" />
         </div>
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example13RazorCode" Id="example13">
+    <DemoExample Title="Validation" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" CodeFiles="@example13CodeFiles" Id="example13">
+        <div>
+            Inside an <b>EditForm</b> the picker is a form field like any other: <b>@@bind-Value</b> joins the
+            EditContext, every change is reported to it, and while the value is invalid every border the panel draws,
+            and its focus ring, turn red. A picker bound to nothing shows white without taking it as its value, so a
+            <b>Required</b> annotation keeps the form unsubmittable until a color is actually picked. <b>Required</b>
+            on the picker marks its label with an asterisk, and the value travels in a hidden input, so <b>Name</b>
+            also makes it readable by a plain form post.
+        </div>
+        <br />
+        <div class="example-box">
+            <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                <DataAnnotationsValidator />
+
+                <BitColorPicker Required ShowInputs ShowPreview
+                                Label="Brand color"
+                                @bind-Value="validationModel.Color" />
+                <ValidationMessage For="@(() => validationModel.Color)" />
+
+                <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+            </EditForm>
+            <div>@validationResult</div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="External Icons" RazorCode="@example14RazorCode" Id="example14">
         <div>
             <b>EyeDropperIconName</b> and <b>InputsModeSwitchIconName</b> take a bit icon name;
             <b>EyeDropperIcon</b> and <b>InputsModeSwitchIcon</b> take a <b>BitIconInfo</b> for external libraries
@@ -370,7 +397,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example14RazorCode" CsharpCode="@example14CsharpCode" Id="example14">
+    <DemoExample Title="Size" RazorCode="@example15RazorCode" CsharpCode="@example15CsharpCode" Id="example15">
         <div>
             <b>Size</b> scales the whole panel - gradient, tracks, thumbs, preview, swatches and type. <b>Medium</b> is
             the default.
@@ -378,17 +405,17 @@
         <br />
         <div class="example-box">
             <div>Small:</div>
-            <BitColorPicker Size="BitSize.Small" ShowAlphaSlider ShowInputs ShowPreview Presets="brandPresets" @bind-Color="smallColor" />
+            <BitColorPicker Size="BitSize.Small" ShowAlphaSlider ShowInputs ShowPreview Presets="brandPresets" @bind-Value="smallColor" />
             <br />
             <div>Medium:</div>
-            <BitColorPicker Size="BitSize.Medium" ShowAlphaSlider ShowInputs ShowPreview Presets="brandPresets" @bind-Color="mediumColor" />
+            <BitColorPicker Size="BitSize.Medium" ShowAlphaSlider ShowInputs ShowPreview Presets="brandPresets" @bind-Value="mediumColor" />
             <br />
             <div>Large:</div>
-            <BitColorPicker Size="BitSize.Large" ShowAlphaSlider ShowInputs ShowPreview Presets="brandPresets" @bind-Color="largeColor" />
+            <BitColorPicker Size="BitSize.Large" ShowAlphaSlider ShowInputs ShowPreview Presets="brandPresets" @bind-Value="largeColor" />
         </div>
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example15RazorCode" Id="example15">
+    <DemoExample Title="Style & Class" RazorCode="@example16RazorCode" Id="example16">
         <div>
             <b>Style</b> and <b>Class</b> reach the root; a fixed height shrinks the gradient, not the controls.
             <b>Styles</b> and <b>Classes</b> address each part by name (see
@@ -435,7 +462,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example16RazorCode" Id="example16">
+    <DemoExample Title="RTL" RazorCode="@example17RazorCode" Id="example17">
         <div>
             <b>Dir="BitDir.Rtl"</b> mirrors the whole panel: the saturation axis, both tracks, the thumbs, the arrow
             keys, the fields and the presets.
@@ -443,7 +470,7 @@
         <br />
         <div dir="rtl">
             <div class="example-box">
-                <BitColorPicker Dir="BitDir.Rtl" ShowAlphaSlider ShowPreview ShowInputs Presets="brandPresets" @bind-Color="rtlColor" />
+                <BitColorPicker Dir="BitDir.Rtl" ShowAlphaSlider ShowPreview ShowInputs Presets="brandPresets" @bind-Value="rtlColor" />
                 <BitLabel>@rtlColor</BitLabel>
             </div>
         </div>

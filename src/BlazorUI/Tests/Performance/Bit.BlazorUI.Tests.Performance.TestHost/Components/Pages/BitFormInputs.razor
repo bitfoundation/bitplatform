@@ -1,0 +1,135 @@
+﻿@page "/regression/form-inputs"
+@using System.ComponentModel.DataAnnotations
+
+<PageTitle>Form Inputs Regression</PageTitle>
+
+@* BitColorPicker, BitFileInput and BitFileUpload take part in an EditForm like every other input: each carries its value
+   in a hidden input the browser must not block the submit over, each tells the EditContext of what the user did and of
+   nothing else, and a read-only file input takes no files from a label of the page's own. An unbound text field sits in
+   the same form, since the validation of a bound field once threw out of the handler of an unbound one. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px; font-family: monospace;">
+    <p>Status: <span id="status">@_status</span></p>
+    <p>Valid: <span id="valid-count">@_validCount</span> Invalid: <span id="invalid-count">@_invalidCount</span></p>
+    <p>Modified: <span id="modified">@(_editContext.IsModified() ? "yes" : "no")</span></p>
+    <p>Color: <span id="color-value">@_model.Color</span></p>
+    <p>Files: <span id="files-value">@_model.Files</span></p>
+    <p>Uploads: <span id="uploads-value">@_model.Uploads</span></p>
+    <p>Uploads OnChange: <span id="uploads-changes">@string.Join("|", _uploadChanges)</span></p>
+    <p>Unbound: <span id="unbound-value">@_unboundValue</span></p>
+    <button id="btn-rgb" type="button" @onclick="() => _format = BitColorFormat.Rgb">RGB</button>
+    <button id="btn-clear-model" type="button" @onclick="ClearModel">Clear model</button>
+    <button id="btn-unmodified" type="button" @onclick="MarkUnmodified">Mark unmodified</button>
+</div>
+
+<EditForm id="form" EditContext="_editContext" OnValidSubmit="() => _validCount++" OnInvalidSubmit="() => _invalidCount++">
+    <DataAnnotationsValidator />
+
+    <div style="display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start;">
+        <div>
+            <BitColorPicker Id="picker" Required ShowInputs Format="_format" Presets="_presets" @bind-Value="_model.Color" />
+            <div id="color-msg"><ValidationMessage For="() => _model.Color" /></div>
+        </div>
+
+        <div>
+            <BitFileInput Id="files" Required AutoReset Multiple MaxSize="1024" @bind-Value="_model.Files" />
+            <div id="files-msg"><ValidationMessage For="() => _model.Files" /></div>
+        </div>
+
+        <div>
+            <BitFileUpload Id="uploads" Required Multiple UploadUrl="@_uploadUrl" PreloadedFiles="_preloaded"
+                           OnChange="(string? v) => RecordUploadChange(v)" @bind-Value="_model.Uploads" />
+            <div id="uploads-msg"><ValidationMessage For="() => _model.Uploads" /></div>
+            <label><input id="upload-fails" type="checkbox" @bind="_uploadFails" /> Upload fails</label>
+        </div>
+
+        <div>
+            <BitTextField Id="email" Label="Email" @bind-Value="_model.Email" />
+            <BitTextField Id="unbound" Label="Unbound" OnChange="(string? v) => _unboundValue = v" />
+        </div>
+    </div>
+
+    <button id="submit" type="submit">Submit</button>
+</EditForm>
+
+@* A read-only file input and file upload, each with a label of the page's own pointed at its native input: a press on
+   the label must open no dialog, since the native input is what a read-only one keeps from taking a selection. The
+   editable ones beside them prove the same label does open a dialog. *@
+<div style="display: flex; gap: 24px; padding: 20px;">
+    <BitFileInput @ref="_readOnlyInput" Id="ro-files" ReadOnly>
+        <LabelTemplate><label id="ro-files-label" for="@_readOnlyInput?.InputId">Pick (read-only input)</label></LabelTemplate>
+    </BitFileInput>
+    <BitFileInput @ref="_editableInput" Id="rw-files">
+        <LabelTemplate><label id="rw-files-label" for="@_editableInput?.InputId">Pick (editable input)</label></LabelTemplate>
+    </BitFileInput>
+    <BitFileUpload @ref="_readOnlyUpload" Id="ro-uploads" ReadOnly>
+        <LabelTemplate><label id="ro-uploads-label" for="@_readOnlyUpload?.InputId">Pick (read-only upload)</label></LabelTemplate>
+    </BitFileUpload>
+</div>
+
+@code {
+    private static readonly string[] _presets = ["#FF0000", "#00FF00", "#0000FF"];
+
+    private readonly FormModel _model = new() { Color = "#FF0000" };
+    private readonly List<string> _uploadChanges = [];
+    private EditContext _editContext = default!;
+    private BitColorFormat? _format;
+    private bool _uploadFails;
+    private string? _unboundValue;
+    private int _validCount;
+    private int _invalidCount;
+    private BitFileInput? _readOnlyInput;
+    private BitFileInput? _editableInput;
+    private BitFileUpload? _readOnlyUpload;
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
+    // interactive render moves it on, which is what the test waits for before it drives the page.
+    private string _status = "Loading";
+
+    private readonly IReadOnlyCollection<BitFileInfo> _preloaded =
+    [
+        new() { Name = "invoice.pdf", Size = 100, FileId = "server-1" }
+    ];
+
+    private string _uploadUrl => _uploadFails ? "/api/upload-fail" : "/api/upload";
+
+    protected override void OnInitialized()
+    {
+        _editContext = new EditContext(_model);
+        // the modified state is read off the page, so every field change and validation repaints it.
+        _editContext.OnFieldChanged += (_, _) => _ = InvokeAsync(StateHasChanged);
+        _editContext.OnValidationStateChanged += (_, _) => _ = InvokeAsync(StateHasChanged);
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        // the labels read the InputId of the components, which a @ref only hands over after the first render.
+        StateHasChanged();
+    }
+
+    private void RecordUploadChange(string? value) => _uploadChanges.Add(value ?? "null");
+
+    private void ClearModel()
+    {
+        _model.Files = null;
+        _model.Uploads = null;
+    }
+
+    private void MarkUnmodified()
+    {
+        _editContext.MarkAsUnmodified();
+        _uploadChanges.Clear();
+    }
+
+    private sealed class FormModel
+    {
+        [Required] public string? Color { get; set; }
+
+        [Required] public string? Files { get; set; }
+
+        [Required] public string? Uploads { get; set; }
+
+        [EmailAddress] public string? Email { get; set; }
+    }
+}

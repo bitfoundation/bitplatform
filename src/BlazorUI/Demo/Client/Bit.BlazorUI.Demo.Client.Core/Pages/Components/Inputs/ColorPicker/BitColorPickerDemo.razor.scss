@@ -46,4 +46,8 @@
         --bit-ColorPicker-focus-color: #7E4AE2;
         --bit-ColorPicker-field-background: #{$bit-color-background-primary};
     }
+
+    .validation-message {
+        color: $bit-color-error;
+    }
 }

@@ -1,0 +1,31 @@
+﻿@using Bit.BlazorUI.Tests.Components.Inputs.ColorPicker
+
+<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
+    <DataAnnotationsValidator />
+
+    <BitColorPicker Required
+                    ShowInputs
+                    ShowAlphaSlider
+                    Presets="@_presets"
+                    @bind-Value="@TestModel.Value" />
+
+</EditForm>
+
+@code {
+    private static readonly string[] _presets = ["#FF0000", "#00FF00"];
+
+    [Parameter] public BitColorPickerTestModel TestModel { get; set; } = new();
+
+    public int ValidCount { get; set; }
+    public int InvalidCount { get; set; }
+
+    private void HandleValidSubmit()
+    {
+        ValidCount++;
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        InvalidCount++;
+    }
+}
