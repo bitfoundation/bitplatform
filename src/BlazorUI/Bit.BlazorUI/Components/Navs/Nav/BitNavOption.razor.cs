@@ -28,6 +28,26 @@ public partial class BitNavOption : ComponentBase, IDisposable
     [Parameter] public string? AriaLabel { get; set; }
 
     /// <summary>
+    /// The badge text to render after the text of the nav option, for a count or a short status ("3", "New").
+    /// The option keeps its icon, its text and its states, and the badge is rendered after a custom template that
+    /// renders in the Normal mode too. Takes precedence over <see cref="Dot"/> when both are set.
+    /// </summary>
+    /// <remarks>
+    /// A group header in the Grouped render type does not render it, and neither does a separator or a template
+    /// rendered in the Replace mode, which takes the place of everything the option would render. The IconOnly nav pins
+    /// it to the corner of the icon.
+    /// </remarks>
+    [Parameter] public string? Badge { get; set; }
+
+    /// <summary>
+    /// The accessible description of the badge (or the dot) of the nav option, folded into the accessible name of
+    /// the option so a count that only exists as a colored bubble is not lost on a screen reader ("Inbox (3 unread)").
+    /// It falls back to the <see cref="Badge"/> text, and a <see cref="Dot"/> is only announced while this is set,
+    /// since a dot carries no text of its own.
+    /// </summary>
+    [Parameter] public string? BadgeAriaLabel { get; set; }
+
+    /// <summary>
     /// Custom CSS class for the nav option.
     /// </summary>
     [Parameter] public string? Class { get; set; }
@@ -51,6 +71,12 @@ public partial class BitNavOption : ComponentBase, IDisposable
     /// The description for the nav option.
     /// </summary>
     [Parameter] public string? Description { get; set; }
+
+    /// <summary>
+    /// Renders a small dot after the text of the nav option, to mark it as needing attention without showing a
+    /// number. Ignored while <see cref="Badge"/> is set.
+    /// </summary>
+    [Parameter] public bool Dot { get; set; }
 
     /// <summary>
     /// Aria label of the toggle button when the nav option is collapsed and can be expanded.
@@ -120,6 +146,19 @@ public partial class BitNavOption : ComponentBase, IDisposable
     /// Custom CSS style for the nav option.
     /// </summary>
     [Parameter] public string? Style { get; set; }
+
+    /// <summary>
+    /// The custom template to render at the end of the nav option, after its text and ahead of its badge, while
+    /// the option keeps its default content. Takes precedence over the ItemSuffixTemplate of the nav.
+    /// </summary>
+    /// <remarks>
+    /// It is rendered inside the anchor (or the button) the option is, so it holds content to look at - a counter,
+    /// a status, a shortcut - and never a control of its own: a nested interactive element cannot be reached or
+    /// named by assistive technologies. It is part of the accessible name of the option unless the option is named
+    /// through an aria-label, so mark what it draws with <c>aria-hidden="true"</c> when it repeats the badge. The
+    /// IconOnly nav, which is down to the icons of its options, does not render it.
+    /// </remarks>
+    [Parameter] public RenderFragment<BitNavOption>? SuffixTemplate { get; set; }
 
     /// <summary>
     /// Link target, specifies how to open the nav option's link.

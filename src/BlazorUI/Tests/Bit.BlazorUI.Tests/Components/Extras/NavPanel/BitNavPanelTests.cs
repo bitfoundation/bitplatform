@@ -62,6 +62,43 @@ public class BitNavPanelTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitNavPanelShouldRenderTheBadgesAndTheItemSuffixTemplateOfItsItems()
+    {
+        IList<BitNavItem> items =
+        [
+            new() { Text = "Inbox", Url = "/inbox", Badge = "3" },
+            new() { Text = "Alerts", Url = "/alerts", Dot = true },
+        ];
+
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.ItemSuffixTemplate, (BitNavItem item) => builder => builder.AddMarkupContent(0, "<span class='suffix'>s</span>"));
+        });
+
+        Assert.AreEqual("3", component.Find(".bit-nav-bdg").TextContent);
+        Assert.AreEqual(1, component.FindAll(".bit-nav-bdt").Count);
+        Assert.AreEqual(2, component.FindAll(".bit-nav-sfx .suffix").Count);
+    }
+
+    [TestMethod]
+    public void BitNavPanelShouldKeepTheBadgesAloneWhileToggled()
+    {
+        IList<BitNavItem> items = [new() { Text = "Inbox", Url = "/inbox", IconName = "Mail", Badge = "3" }];
+
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.IsToggled, true);
+            parameters.Add(p => p.ItemSuffixTemplate, (BitNavItem item) => builder => builder.AddMarkupContent(0, "<span class='suffix'>s</span>"));
+        });
+
+        Assert.AreEqual("3", component.Find(".bit-nav-bdg").TextContent);
+        Assert.AreEqual(0, component.FindAll(".suffix").Count);
+        Assert.AreEqual("Inbox (3)", component.Find(".bit-nav-ict").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
     public void BitNavPanelToggleButtonShouldToggleState()
     {
         var isToggled = false;

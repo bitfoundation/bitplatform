@@ -23,6 +23,16 @@ public partial class _BitNavCustomDemo
         IsSeparator = { Name = nameof(Section.IsDivider) },
     };
 
+    // The badge text is put together from the count of a section or its status, and the rest of the badge is
+    // read off members of the section's own names.
+    private static readonly BitNavNameSelectors<Section> badgeSelectors = new()
+    {
+        IconName = { Name = nameof(Section.ImageName) },
+        Badge = { Selector = s => s.Count?.ToString() ?? s.Status },
+        BadgeAriaLabel = { Name = nameof(Section.StatusLabel) },
+        Dot = { Name = nameof(Section.NeedsAttention) },
+    };
+
     private static readonly BitNavNameSelectors<CarMenu> carSelectors = new()
     {
         Text = { Name = nameof(CarMenu.Name) },
@@ -419,6 +429,21 @@ public partial class _BitNavCustomDemo
         new() { Text = "Home", ImageName = BitIconName.Home },
         new() { Text = "Products", ImageName = BitIconName.Product },
         new() { Text = "Settings", ImageName = BitIconName.Settings },
+    ];
+
+    private static readonly List<Section> customBadgeNavItems =
+    [
+        new() { Text = "Inbox", ImageName = BitIconName.Inbox, Count = 12, StatusLabel = "12 unread" },
+        new() { Text = "Drafts", ImageName = BitIconName.EditMail, Status = "New" },
+        new() { Text = "Sent", ImageName = BitIconName.Send, NeedsAttention = true, StatusLabel = "failed to send" },
+        new() { Text = "Archive", ImageName = BitIconName.Archive },
+    ];
+
+    private static readonly List<Section> customSuffixNavItems =
+    [
+        new() { Text = "Inbox", ImageName = BitIconName.Inbox, Count = 12, Shortcut = "Ctrl+I" },
+        new() { Text = "Drafts", ImageName = BitIconName.EditMail, Shortcut = "Ctrl+D" },
+        new() { Text = "Sent", ImageName = BitIconName.Send, Shortcut = "Ctrl+S" },
     ];
 
     private static readonly List<Section> customSizeNavItems =
