@@ -1,6 +1,6 @@
 {
     "template": "bit-bp",
-    "version": "10.7.0-pre-02",
+    "version": "11.0.0-pre-10",
     "name": "Boilerplate",
     "options": {
         "database": "bit-option-database",

@@ -19,7 +19,7 @@ public static class BcrdtServerInstructions
     /// and the build checks it against ReleaseVersion in Bit.Build.props (see the ReleaseVersionLiteral
     /// item in the .csproj), so a release cannot forget it.
     /// </summary>
-    public const string BcrdtVersion = "10.7.0-pre-02";
+    public const string BcrdtVersion = "11.0.0-pre-10";
 
     public static readonly string Text = $"""
         Bit.Bcrdt is real-time collaborative editing for .NET and Blazor, written natively in C#: a YATA-based CRDT engine
