@@ -139,6 +139,12 @@ namespace BitBlazorUI {
             // first), or storage was cleared (e.key null): adopt what is stored now without writing it
             // back - the configured pair when no pair is (a scheme marker, or nothing at all).
             if (e.key === PAIR_STORAGE_KEY || e.key === null) {
+                // A value written that is neither a pair nor a scheme marker is not the other tab's choice
+                // (a script of the page, a hand edit): left alone rather than taken for "no pair".
+                if (e.key !== null && e.newValue !== null) {
+                    const written = Theme.parsePairValue(e.newValue);
+                    if (!written.pair && !written.scheme) return;
+                }
                 const pair = Theme.readPersistedPair().pair;
                 const light = pair ? pair[0] : Theme._configuredLightTheme;
                 const dark = pair ? pair[1] : Theme._configuredDarkTheme;
@@ -533,6 +539,11 @@ namespace BitBlazorUI {
                 value = Theme.readCookie(PAIR_COOKIE_NAME);
             }
 
+            return Theme.parsePairValue(value);
+        }
+
+        /** Reads a PAIR_STORAGE_KEY value: a "<light> <dark>" pair, a "light" / "dark" scheme marker, or neither. */
+        private static parsePairValue(value: string | null): { pair: [string, string] | null, scheme: string | null } {
             const parts = (value || '').split(' ');
             return {
                 pair: parts.length === 2 && parts[0] && parts[1] ? [parts[0], parts[1]] : null,
