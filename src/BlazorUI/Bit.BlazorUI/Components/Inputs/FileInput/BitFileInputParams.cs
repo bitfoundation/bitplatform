@@ -3,7 +3,7 @@
 /// <summary>
 /// The parameters for <see cref="BitFileInput"/> component.
 /// </summary>
-public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
+public class BitFileInputParams : BitInputBaseParams<string?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitFileInput"/> cascading parameters within <see cref="BitParams"/>.
@@ -255,7 +255,7 @@ public class BitFileInputParams : BitComponentBaseParams, IBitComponentParams
     {
         if (bitFileInput is null) return;
 
-        UpdateBaseParameters(bitFileInput);
+        UpdateInputBaseParameters(bitFileInput);
 
         if (Accept.HasValue())
         {

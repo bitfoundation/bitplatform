@@ -13,6 +13,10 @@
 //   --bit-ColorPicker-border-color              color of every border the panel draws          (default: $clr-brd-pri)
 //   --bit-ColorPicker-focus-color               color of the keyboard focus ring               (default: $clr-pri-focus)
 //   --bit-ColorPicker-label-color               color of the label text                        (default: $clr-fg-pri)
+//   --bit-ColorPicker-required-color            color of the asterisk after the label of a
+//                                               required picker                                (default: $clr-req)
+//   --bit-ColorPicker-invalid-color             color of every border the panel draws, and of
+//                                               the focus ring, while the value is invalid     (default: $clr-err / $clr-err-focus)
 //   --bit-ColorPicker-saturation-height         height of the saturation-brightness area       (default: spacing(29.5))
 //   --bit-ColorPicker-saturation-radius         corner radius of that area                     (default: $shp-radius-control)
 //   --bit-ColorPicker-thumb-size                diameter of the saturation thumb and of the
@@ -125,6 +129,21 @@ $clp-private-properties:
             color: $clr-fg-dis;
         }
     }
+
+    // An invalid value redraws the borders and the focus ring every part already reads, so the error is
+    // visible on whichever control the user is standing on rather than only in the message beside the picker.
+    &.bit-inv:not(.bit-dis) {
+        --bit-clp-brd: var(--bit-ColorPicker-invalid-color, #{$clr-err});
+        --bit-clp-focus: var(--bit-ColorPicker-invalid-color, #{$clr-err-focus});
+    }
+}
+
+// The asterisk of a required picker, drawn after its label the way every other required input in the library
+// draws it - after a LabelTemplate as well, since it follows the container rather than the plain label.
+.bit-clp-req > .bit-clp-lbc::after {
+    content: " *";
+    color: var(--bit-ColorPicker-required-color, #{$clr-req});
+    padding-inline-end: spacing(1.5);
 }
 
 // A read-only picker keeps its full contrast - it is showing a value, not refusing one - and keeps every

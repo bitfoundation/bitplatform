@@ -84,7 +84,20 @@ app.MapGet("/regression/theme-host", (HttpContext context) =>
         """, "text/html");
 });
 
-app.MapGet("/api/server-errors", () => Results.Ok(Bit.BlazorUI.Tests.Performance.TestHost.ServerErrorLog.Entries.ToArray()));
+// What BitFileUpload sends its files to (/regression/form-inputs): one endpoint that takes every chunk, and one that
+// refuses every chunk, which is how an upload fails.
+app.MapPost("/api/upload", async (HttpRequest request) =>
+{
+    await request.Body.CopyToAsync(Stream.Null);
+    return Results.Ok();
+});
+app.MapPost("/api/upload-fail", async (HttpRequest request) =>
+{
+    await request.Body.CopyToAsync(Stream.Null);
+    return Results.StatusCode(StatusCodes.Status500InternalServerError);
+});
+
+app.MapGet("/api/server-errors",() => Results.Ok(Bit.BlazorUI.Tests.Performance.TestHost.ServerErrorLog.Entries.ToArray()));
 app.MapDelete("/api/server-errors", () =>
 {
     Bit.BlazorUI.Tests.Performance.TestHost.ServerErrorLog.Entries.Clear();

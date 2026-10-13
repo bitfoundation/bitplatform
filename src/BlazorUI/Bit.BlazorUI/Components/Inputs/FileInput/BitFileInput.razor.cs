@@ -9,7 +9,16 @@ namespace Bit.BlazorUI;
 /// The selected files' metadata is accessible from C# code, and their content can be pulled on demand either
 /// as a byte array (<see cref="ReadContentAsync"/>) or as a chunked stream (<see cref="OpenReadStreamAsync"/>).
 /// </summary>
-public partial class BitFileInput : BitComponentBase
+/// <remarks>
+/// It takes part in an EditForm like every other input. Its <see cref="BitInputBase{TValue}.Value"/> is the names of
+/// the valid files of the list joined with commas (<c>report.pdf,photo.png</c>), or null while it holds none, so a
+/// <c>[Required]</c> or a <c>[RegularExpression]</c> on the bound property validates the selection; a file the
+/// component's own validations rejected is not part of it. The files themselves are read through <see cref="Files"/>
+/// and the <see cref="OnFilesChange"/> callback. A browser cannot be handed files from code, so the value is the
+/// selection's to write: one set from outside that empties it clears the selection, and any other is left until
+/// the selection next changes and writes its own back.
+/// </remarks>
+public partial class BitFileInput : BitInputBase<string?>
 {
     private bool _allowDrop = true;
     private bool _allowPaste = true;
@@ -97,6 +106,11 @@ public partial class BitFileInput : BitComponentBase
     /// Whether the file input is automatically reset (cleared) before opening the file browser dialog,
     /// allowing the same file to be selected multiple times consecutively.
     /// </summary>
+    /// <remarks>
+    /// The reset is the one <see cref="Reset"/> does: a bound value follows the emptied list, but the EditContext is not
+    /// told, so a required field does not turn invalid while the dialog is open. The selection the dialog delivers is
+    /// validated as usual.
+    /// </remarks>
     [Parameter] public bool AutoReset { get; set; }
 
     /// <summary>
@@ -284,10 +298,14 @@ public partial class BitFileInput : BitComponentBase
     /// Callback invoked when the file selection changes, providing an array of <see cref="BitFileInputInfo"/> representing all selected files.
     /// It is also invoked after removing a file through the remove button or the <see cref="RemoveFile"/> method.
     /// </summary>
-    [Parameter] public EventCallback<BitFileInputInfo[]> OnChange { get; set; }
+    /// <remarks>
+    /// The base <see cref="BitInputBase{TValue}.OnChange"/> reports the same changes with the value alone - the names
+    /// of the valid files - and only when that value actually moved.
+    /// </remarks>
+    [Parameter] public EventCallback<BitFileInputInfo[]> OnFilesChange { get; set; }
 
     /// <summary>
-    /// Callback invoked right after <see cref="OnChange"/> whenever the file list holds at least one invalid file,
+    /// Callback invoked right after <see cref="OnFilesChange"/> whenever the file list holds at least one invalid file,
     /// providing an array of only the invalid files along with their validation messages.
     /// </summary>
     [Parameter] public EventCallback<BitFileInputInfo[]> OnInvalid { get; set; }
@@ -390,10 +408,11 @@ public partial class BitFileInput : BitComponentBase
     /// <summary>
     /// Opens the file browser dialog programmatically, allowing users to select files.
     /// If <see cref="AutoReset"/> is enabled, the input is reset before opening.
+    /// A disabled or read-only file input opens nothing.
     /// </summary>
     public async Task Browse()
     {
-        if (Disabled) return;
+        if (Disabled || ReadOnly) return;
 
         if (AutoReset)
         {
@@ -404,25 +423,20 @@ public partial class BitFileInput : BitComponentBase
     }
 
     /// <summary>
-    /// Clears all selected files and resets the file input to its initial state without invoking any callback.
+    /// Clears all selected files and resets the file input to its initial state without invoking
+    /// <see cref="OnFilesChange"/>, <see cref="OnInvalid"/>, <see cref="OnRemove"/> or the base OnChange.
+    /// A bound <see cref="BitInputBase{TValue}.Value"/> is cleared along with the files, without the EditContext being
+    /// told: a reset is the app's doing, and like a value the app sets it marks no field modified.
     /// </summary>
     public async Task Reset()
     {
         if (IsDisposed) return;
 
-        // clearing what is already empty changes nothing, so it is not worth an announcement - otherwise
-        // every AutoReset browse would tell the screen reader that no file is selected before the dialog opens.
-        var hadFiles = _files.Count > 0;
+        await ClearSelectionAsync();
 
-        _files.Clear();
-        _removeRefs.Clear();
+        if (IsDisposed) return;
 
-        await _js.BitFileInputReset(UniqueId, _inputRef);
-
-        if (hadFiles)
-        {
-            Announce();
-        }
+        await PublishNamesAsync(byUser: false);
 
         StateHasChanged();
     }
@@ -503,7 +517,7 @@ public partial class BitFileInput : BitComponentBase
 
     /// <summary>
     /// Removes a specific file from the selected files list, or clears all files when no file is specified,
-    /// invoking the <see cref="OnRemove"/> callback for each removed file and the <see cref="OnChange"/> callback afterwards.
+    /// invoking the <see cref="OnRemove"/> callback for each removed file and the <see cref="OnFilesChange"/> callback afterwards.
     /// </summary>
     /// <param name="fileInfo">The file to remove, or null to remove all files.</param>
     public async Task RemoveFile(BitFileInputInfo? fileInfo = null)
@@ -554,9 +568,36 @@ public partial class BitFileInput : BitComponentBase
         StateHasChanged();
     }
 
+    /// <summary>
+    /// Gives focus to the browse button, which is what the user operates: the input the value travels through is
+    /// hidden, and so is the native file input. A file input whose button is hidden or replaced by a
+    /// <see cref="LabelTemplate"/> has nothing of its own to focus.
+    /// </summary>
+    public override ValueTask FocusAsync() => FocusAsync(false);
+
+    /// <inheritdoc cref="FocusAsync()"/>
+    /// <param name="preventScroll">Whether the browser should leave the page where it is rather than scroll the
+    /// browse button into view.</param>
+    public override ValueTask FocusAsync(bool preventScroll)
+    {
+        if (Disabled || LabelTemplate is not null || HideLabel) return ValueTask.CompletedTask;
+
+        return _labelRef.FocusAsync(preventScroll);
+    }
+
 
 
     private bool _HasDescription => DescriptionTemplate is not null || Description.HasValue();
+
+    // A read-only file input keeps showing its files but takes no new ones and gives none up, so it accepts no drop
+    // or paste either.
+    private bool _AllowsDrop => AllowDrop && ReadOnly is false;
+
+    private bool _AllowsPaste => AllowPaste && ReadOnly is false;
+
+    // The native file input of a read-only one is disabled as well, so that nothing reaches it from outside the
+    // browse button either - a label of the app's own pointed at InputId opens no dialog.
+    private bool _NativeInputDisabled => Disabled || ReadOnly;
 
 
 
@@ -588,6 +629,8 @@ public partial class BitFileInput : BitComponentBase
         ClassBuilder.Register(() => LabelTemplate is not null || HideLabel ? "bit-fin-nlb" : string.Empty);
 
         ClassBuilder.Register(() => ShowDropZone ? "bit-fin-dzn" : string.Empty);
+
+        ClassBuilder.Register(() => ReadOnly ? "bit-fin-rdl" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -609,6 +652,14 @@ public partial class BitFileInput : BitComponentBase
     {
         CascadingParameters?.UpdateParameters(this);
 
+        // A value the consumer emptied - a form reset, a model cleared after a save - clears the selection it stood
+        // for. Any other value pushed in names files a browser cannot be handed from code, so it is left to the
+        // selection, which writes its own back the next time it changes.
+        if (TakePushedValue() && Value.HasNoValue() && _files.Count > 0)
+        {
+            await ClearSelectionAsync();
+        }
+
         await base.OnParametersSetAsync();
 
         if (_dropZoneRef is null) return;
@@ -625,8 +676,8 @@ public partial class BitFileInput : BitComponentBase
             return;
         }
 
-        _allowDrop = AllowDrop;
-        _allowPaste = AllowPaste;
+        _allowDrop = _AllowsDrop;
+        _allowPaste = _AllowsPaste;
         _expandDirectories = Directory;
         _dragClass = GetDragClass();
         _dragStyle = Styles?.Dragging;
@@ -652,6 +703,8 @@ public partial class BitFileInput : BitComponentBase
     // that place, to the last one when the list got shorter, or back to the browse button when nothing is left.
     private async Task HandleRemoveClick(BitFileInputInfo file)
     {
+        if (ReadOnly) return;
+
         var index = _files.IndexOf(file);
 
         await RemoveFile(file);
@@ -715,11 +768,11 @@ public partial class BitFileInput : BitComponentBase
         var dragClass = GetDragClass();
         var dragStyle = Styles?.Dragging;
 
-        if (_allowDrop == AllowDrop && _allowPaste == AllowPaste && _expandDirectories == Directory &&
+        if (_allowDrop == _AllowsDrop && _allowPaste == _AllowsPaste && _expandDirectories == Directory &&
             _dragClass == dragClass && _dragStyle == dragStyle) return;
 
-        _allowDrop = AllowDrop;
-        _allowPaste = AllowPaste;
+        _allowDrop = _AllowsDrop;
+        _allowPaste = _AllowsPaste;
         _expandDirectories = Directory;
         _dragClass = dragClass;
         _dragStyle = dragStyle;
@@ -891,6 +944,9 @@ public partial class BitFileInput : BitComponentBase
     {
         if (IsDisposed) return;
 
+        // a read-only file input takes no new files, however they reached its native input.
+        if (ReadOnly) return;
+
         if (Append is false)
         {
             _files.Clear();
@@ -989,7 +1045,11 @@ public partial class BitFileInput : BitComponentBase
     {
         Announce();
 
-        await OnChange.InvokeAsync([.. _files]);
+        await PublishNamesAsync(byUser: true);
+
+        if (IsDisposed) return;
+
+        await OnFilesChange.InvokeAsync([.. _files]);
 
         if (OnInvalid.HasDelegate is false) return;
 
@@ -998,6 +1058,44 @@ public partial class BitFileInput : BitComponentBase
         if (invalidFiles.Length == 0) return;
 
         await OnInvalid.InvokeAsync(invalidFiles);
+    }
+
+    /// <summary>
+    /// Empties the file list and the native input behind it, announcing it when there was anything to clear.
+    /// </summary>
+    private async Task ClearSelectionAsync()
+    {
+        // clearing what is already empty changes nothing, so it is not worth an announcement - otherwise
+        // every AutoReset browse would tell the screen reader that no file is selected before the dialog opens.
+        var hadFiles = _files.Count > 0;
+
+        _files.Clear();
+        _removeRefs.Clear();
+
+        await _js.BitFileInputReset(UniqueId, _inputRef);
+
+        if (hadFiles)
+        {
+            Announce();
+        }
+    }
+
+    /// <summary>
+    /// Writes the names of the valid files into the Value, telling the EditContext and the base OnChange only of a
+    /// change the user made.
+    /// </summary>
+    private Task PublishNamesAsync(bool byUser)
+    {
+        var names = string.Join(",", _files.Where(f => f.IsValid).Select(f => f.Name));
+
+        return PublishValueAsync(names.HasValue() ? names : null, notifyField: byUser, notifyChange: byUser);
+    }
+
+    protected override bool TryParseValueFromString(string? value, [MaybeNullWhen(false)] out string? result, [NotNullWhen(false)] out string? parsingErrorMessage)
+    {
+        result = value;
+        parsingErrorMessage = null;
+        return true;
     }
 
     private void Announce()

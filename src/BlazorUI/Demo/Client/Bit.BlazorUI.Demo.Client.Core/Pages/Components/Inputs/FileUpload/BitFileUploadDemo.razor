@@ -182,7 +182,7 @@
 
     <DemoExample Title="Events" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" CodeFiles="@example9CodeFiles" Id="example9">
         <div>
-            <b>OnChange</b>, <b>OnInvalid</b>, <b>OnUploading</b> (set per-file headers here), <b>OnProgress</b>,
+            <b>OnFilesChange</b>, <b>OnInvalid</b>, <b>OnUploading</b> (set per-file headers here), <b>OnProgress</b>,
             <b>OnUploadComplete</b> / <b>OnUploadFailed</b>, <b>OnRemoveComplete</b> / <b>OnRemoveFailed</b> and
             <b>OnAllUploadsComplete</b>. Each file carries the server's <b>ResponseStatus</b> (0 when unreachable) and
             <b>Message</b>. Try a file over 1 MB.
@@ -234,7 +234,7 @@
         <br />
         <BitFileUpload Label="Select or drag and drop files" UploadUrl="@ChunkedUploadUrl" Multiple ChunkedUpload
                        UploadRequestHttpHeadersProvider="@GetFreshAuthHeaders"
-                       OnChange="@(_ => StateHasChanged())" OnProgress="@(_ => StateHasChanged())" />
+                       OnFilesChange="@(_ => StateHasChanged())" OnProgress="@(_ => StateHasChanged())" />
         <br />
         <div>Requests so far: @tokenRequestCount</div>
         <br /><br />
@@ -311,7 +311,7 @@
         </div>
         <br />
         <BitFileUpload @ref="speedFileUpload" Label="Select or drag and drop files" UploadUrl="@UploadUrl" Multiple
-                       OnChange="@(_ => StateHasChanged())" OnProgress="@(_ => StateHasChanged())" />
+                       OnFilesChange="@(_ => StateHasChanged())" OnProgress="@(_ => StateHasChanged())" />
         <br />
         <BitProgress Percent="@(speedFileUpload?.OverallUploadProgress ?? 0)" ShowPercentNumber />
         <br />
@@ -341,7 +341,7 @@
         <br />
         <BitFileUpload @ref="hiddenViewFileUpload" Label="Select or drag and drop files" UploadUrl="@UploadUrl"
                        Multiple AutoUpload HideFileView
-                       OnChange="@(_ => StateHasChanged())" OnProgress="@(_ => StateHasChanged())" />
+                       OnFilesChange="@(_ => StateHasChanged())" OnProgress="@(_ => StateHasChanged())" />
         <br />
         @if (HiddenViewFiles.Any())
         {
@@ -502,7 +502,7 @@
 
     <DemoExample Title="Variant" RazorCode="@example20RazorCode" CsharpCode="@example20CsharpCode" CodeFiles="@example20CodeFiles" Id="example20">
         <div>
-            <b>Variant</b> sets how much of the <BitLink Href="#example22">Color</BitLink> the browse button carries:
+            <b>Variant</b> sets how much of the <BitLink Href="#example23">Color</BitLink> the browse button carries:
             <b>Fill</b> (default), <b>Outline</b> or <b>Text</b>. Disabled, every variant takes the neutral disabled look.
         </div>
         <br />
@@ -539,7 +539,38 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="Color" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" CodeFiles="@example22CodeFiles" Id="example22">
+    <DemoExample Title="Form validation" RazorCode="@example22RazorCode" CsharpCode="@example22CsharpCode" CodeFiles="@example22CodeFiles" Id="example22">
+        <div>
+            Inside an <b>EditForm</b> the file upload is a form field like any other. Its <b>Value</b> is the names of
+            the files that are part of the selection joined with commas (<b>report.pdf,photo.png</b>), or null while
+            there are none, so a <b>[Required]</b> or a <b>[RegularExpression]</b> on the bound property validates it.
+            A file waiting to be uploaded, and a preloaded one, count; one the validations rejected, or whose upload
+            failed, was canceled or was removed, does not. While the value is invalid the browse button turns to the
+            error color. <b>Required</b> also marks the hidden input the value travels in, which <b>Name</b> makes
+            readable by a plain form post, and emptying the bound value resets the selection.
+        </div>
+        <br />
+        <div class="example-content">
+            <EditForm Model="validationModel" OnValidSubmit="HandleValidSubmit" OnInvalidSubmit="HandleInvalidSubmit">
+                <DataAnnotationsValidator />
+
+                <BitFileUpload Required Multiple
+                               Label="Add attachments"
+                               UploadUrl="@UploadUrl"
+                               MaxSize="1024 * 1024 * 1"
+                               Description="Up to 1 MB per file."
+                               @bind-Value="validationModel.Attachments" />
+                <ValidationMessage For="@(() => validationModel.Attachments)" />
+
+                <br />
+
+                <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
+            </EditForm>
+            <div>@validationResult</div>
+        </div>
+    </DemoExample>
+
+    <DemoExample Title="Color" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" CodeFiles="@example23CodeFiles" Id="example23">
         <div>
             <b>Color</b> drives the browse button, the drop indicator, the progress bars, the hovered actions and the
             focus rings together.
@@ -575,7 +606,7 @@
         <BitFileUpload Label="Drop files here" UploadUrl="@UploadUrl" ShowDropArea Color="BitColor.Success" />
     </DemoExample>
 
-    <DemoExample Title="External Icons" RazorCode="@example23RazorCode" CsharpCode="@example23CsharpCode" CodeFiles="@example23CodeFiles" Id="example23">
+    <DemoExample Title="External Icons" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" CodeFiles="@example24CodeFiles" Id="example24">
         <div>
             <b>LabelIcon</b>, <b>UploadIcon</b>, <b>RetryIcon</b>, <b>PauseIcon</b>, <b>CancelIcon</b> and
             <b>RemoveIcon</b> take a <BitLink Href="#bit-icon-info">BitIconInfo</BitLink> or a raw class string from
@@ -630,7 +661,7 @@
                        RemoveIcon="@BitIconInfo.Bi("trash")" />
     </DemoExample>
 
-    <DemoExample Title="Size" RazorCode="@example24RazorCode" CsharpCode="@example24CsharpCode" CodeFiles="@example24CodeFiles" Id="example24">
+    <DemoExample Title="Size" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" CodeFiles="@example25CodeFiles" Id="example25">
         <div>
             <b>Size</b> scales the browse button, the items, the action buttons, the icons and the thumbnails together;
             <b>Medium</b> is the default.
@@ -643,7 +674,7 @@
         <BitFileUpload Label="Large" UploadUrl="@UploadUrl" Size="BitSize.Large" LabelIconName="Upload" ShowRemoveButton RemoveUrl="@RemoveUrl" />
     </DemoExample>
 
-    <DemoExample Title="Style & Class" RazorCode="@example25RazorCode" CsharpCode="@example25CsharpCode" CodeFiles="@example25CodeFiles" Id="example25">
+    <DemoExample Title="Style & Class" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" CodeFiles="@example26CodeFiles" Id="example26">
         <div>
             <b>Style</b> and <b>Class</b> land on the root; <b>Styles</b> and <b>Classes</b> reach every part, and
             their <b>Dragging</b> / <b>DraggingRejected</b> entries apply only during a drag.
@@ -702,7 +733,7 @@
         </div>
     </DemoExample>
 
-    <DemoExample Title="RTL" RazorCode="@example26RazorCode" CsharpCode="@example26CsharpCode" CodeFiles="@example26CodeFiles" Id="example26">
+    <DemoExample Title="RTL" RazorCode="@example27RazorCode" CsharpCode="@example27CsharpCode" CodeFiles="@example27CodeFiles" Id="example27">
         <div>
             <b>Dir="BitDir.Rtl"</b> mirrors the whole layout; the localizable texts complete it.
         </div>

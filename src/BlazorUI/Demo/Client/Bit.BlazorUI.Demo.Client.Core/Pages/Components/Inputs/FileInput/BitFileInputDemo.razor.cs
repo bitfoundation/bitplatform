@@ -272,9 +272,9 @@ public partial class BitFileInputDemo
         },
         new()
         {
-            Name = "OnChange",
+            Name = "OnFilesChange",
             Type = "EventCallback<BitFileInputInfo[]>",
-            Description = "Callback invoked when the file selection changes, providing an array of BitFileInputInfo representing all selected files. It is also invoked after removing a file through the remove button or the RemoveFile method.",
+            Description = "Callback invoked when the file selection changes, providing an array of BitFileInputInfo representing all selected files. It is also invoked after removing a file through the remove button or the RemoveFile method. The inherited OnChange reports the same changes with the Value alone - the names of the valid files - and only when that value actually moved.",
             LinkType = LinkType.Link,
             Href = "#file-input-info"
         },
@@ -282,7 +282,7 @@ public partial class BitFileInputDemo
         {
             Name = "OnInvalid",
             Type = "EventCallback<BitFileInputInfo[]>",
-            Description = "Callback invoked right after OnChange whenever the file list holds at least one invalid file, providing an array of only the invalid files along with their validation messages.",
+            Description = "Callback invoked right after OnFilesChange whenever the file list holds at least one invalid file, providing an array of only the invalid files along with their validation messages.",
             LinkType = LinkType.Link,
             Href = "#file-input-info"
         },
@@ -383,6 +383,13 @@ public partial class BitFileInputDemo
             LinkType = LinkType.Link,
             Href = "#variant-enum"
         },
+        new()
+        {
+            Name = "Value",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The names of the valid files of the list joined with commas (report.pdf,photo.png), or null while it holds none - this is the parameter to bind (@bind-Value), so a [Required] or a [RegularExpression] on the bound property validates the selection in an EditForm. A file the component's own validations rejected is not part of it. A browser cannot be handed files from code, so the value is the selection's to write: one set from outside that empties it clears the selection, and any other is left until the selection next changes and writes its own back. The files themselves are read through Files and OnFilesChange.",
+        },
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =
@@ -408,7 +415,7 @@ public partial class BitFileInputDemo
             Name = "Browse",
             Type = "() => Task",
             DefaultValue = "",
-            Description = "Opens the file browser dialog programmatically, allowing users to select files. If AutoReset is enabled, the input is reset before opening.",
+            Description = "Opens the file browser dialog programmatically, allowing users to select files. If AutoReset is enabled, the input is reset before opening. A disabled or read-only file input opens nothing.",
         },
         new()
         {
@@ -433,7 +440,7 @@ public partial class BitFileInputDemo
             Name = "RemoveFile",
             Type = "(BitFileInputInfo? fileInfo = null) => Task",
             DefaultValue = "",
-            Description = "Removes a specific file from the selected files list, or clears all files when no file is specified, invoking the OnRemove callback for each removed file and the OnChange callback afterwards.",
+            Description = "Removes a specific file from the selected files list, or clears all files when no file is specified, invoking the OnRemove callback for each removed file and the OnFilesChange callback afterwards.",
             LinkType = LinkType.Link,
             Href = "#file-input-info"
         },
@@ -442,7 +449,7 @@ public partial class BitFileInputDemo
             Name = "Reset",
             Type = "() => Task",
             DefaultValue = "",
-            Description = "Clears all selected files and resets the file input to its initial state without invoking any callback.",
+            Description = "Clears all selected files and resets the file input to its initial state without invoking any callback. A bound Value is cleared along with the files, without the EditForm being told: a reset marks no field modified.",
         }
     ];
 
@@ -966,6 +973,12 @@ public partial class BitFileInputDemo
         },
         new()
         {
+            Name = "--bit-FileInput-invalid-color",
+            DefaultValue = "--bit-clr-err / --bit-clr-err-focus",
+            Description = "Role color, and focus ring, of the browse button while the value fails the validation of the EditForm it is in. The failed validation wins over an explicit Color for that time.",
+        },
+        new()
+        {
             Name = "--bit-FileInput-invalid-background",
             DefaultValue = "--bit-FileInput-item-background",
             Description = "Background of an invalid file item. It matches a valid one by default so a rejected file still reads as a row of the list; a tint of the error color is the other reasonable choice.",
@@ -1098,11 +1111,11 @@ public partial class BitFileInputDemo
     private BitFileInputInfo[] eventsFiles = [];
     private readonly List<string> eventsLog = [];
 
-    private async Task HandleOnChange(BitFileInputInfo[] files)
+    private async Task HandleOnFilesChange(BitFileInputInfo[] files)
     {
         eventsFiles = files;
 
-        AddEventLog($"OnChange: {files.Length} file(s) selected");
+        AddEventLog($"OnFilesChange: {files.Length} file(s) selected");
 
         // reads the content of every valid file of the list.
         await eventsFileInput.ReadContentAsync();
@@ -1173,4 +1186,18 @@ public partial class BitFileInputDemo
             FileSizeFormatter = size => $"{size:N0} bytes"
         }
     ];
+
+
+    private BitFileInputDemoFormModel validationModel = new();
+    private string? validationResult;
+
+    private void HandleValidSubmit()
+    {
+        validationResult = $"Submitted {validationModel.Resume}";
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        validationResult = null;
+    }
 }

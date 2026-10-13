@@ -14,7 +14,7 @@ public partial class PopularComponents
             Code = """
                    <BitColorPicker ShowPreview ShowAlphaSlider
                                    @bind-Alpha="Alpha"
-                                   @bind-Color="Color" />
+                                   @bind-Value="Color" />
 
                    @code {
                        private double Alpha = 1;

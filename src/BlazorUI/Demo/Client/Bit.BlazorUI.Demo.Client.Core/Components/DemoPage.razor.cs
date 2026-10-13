@@ -577,7 +577,7 @@ public partial class DemoPage
 
 
     private readonly List<string> _inputComponents = [
-        "Calendar", "Checkbox", "ChoiceGroup", "DatePicker", "DateRangePicker", "Dropdown", "NumberField", "OtpInput", "Rating",
+        "Calendar", "Checkbox", "ChoiceGroup", "ColorPicker", "DatePicker", "DateRangePicker", "Dropdown", "FileInput", "FileUpload", "NumberField", "OtpInput", "Rating",
         "SearchBox", "TextField", "TimePicker", "CircularTimePicker", "Toggle", "TagsInput", "MarkdownEditor", "CountryPicker", "TimeZonePicker"
     ];
 

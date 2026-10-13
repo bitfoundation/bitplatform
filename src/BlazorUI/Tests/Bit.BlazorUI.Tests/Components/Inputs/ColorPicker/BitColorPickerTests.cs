@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
@@ -30,7 +31,7 @@ public class BitColorPickerTests : BunitTestContext
         {
             parameters.Add(p => p.ShowPreview, show);
             parameters.Add(p => p.ShowAlphaSlider, show);
-            parameters.Add(p => p.Color, "rgb(255,255,255)");
+            parameters.Add(p => p.Value, "rgb(255,255,255)");
         });
 
         if (show)
@@ -48,7 +49,7 @@ public class BitColorPickerTests : BunitTestContext
         }
     }
 
-    // A bound Color is echoed back exactly as it was given - it is a two-way parameter, not a normalizer -
+    // A bound Value is echoed back exactly as it was given - it is a two-way parameter, not a normalizer -
     // while the read-only notation properties always describe the color the picker is actually on.
     [TestMethod,
         DataRow("#FC5603", "#FC5603", "rgb(252,86,3)", 1),
@@ -59,24 +60,24 @@ public class BitColorPickerTests : BunitTestContext
     {
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.Color, color);
+            parameters.Add(p => p.Value, color);
             parameters.Add(p => p.Alpha, alpha);
         });
 
-        Assert.AreEqual(color, com.Instance.Color);
+        Assert.AreEqual(color, com.Instance.Value);
         Assert.AreEqual(hex, com.Instance.Hex);
         Assert.AreEqual(rgb, com.Instance.Rgb);
         Assert.AreEqual(alpha, com.Instance.Alpha);
     }
 
-    // With nothing bound to it, the Color parameter still reports the color the picker is on, so an
+    // With nothing bound to it, the Value parameter still reports the color the picker is on, so an
     // uncontrolled picker can be read without a binding.
     [TestMethod]
     public void BitColorPickerShouldStartOnOpaqueWhite()
     {
         var com = RenderComponent<BitColorPicker>();
 
-        Assert.AreEqual("rgb(255,255,255)", com.Instance.Color);
+        Assert.AreEqual("rgb(255,255,255)", com.Instance.Value);
         Assert.AreEqual("#FFFFFF", com.Instance.Hex);
         Assert.AreEqual("#FFFFFFFF", com.Instance.HexAlpha);
         Assert.AreEqual("rgba(255,255,255,1)", com.Instance.Rgba);
@@ -103,13 +104,13 @@ public class BitColorPickerTests : BunitTestContext
             parameters.Add(p => p.ShowAlphaSlider, true);
         });
 
-        // Uncontrolled, so the Color parameter is the picker's own answer in the requested notation.
+        // Uncontrolled, so the Value parameter is the picker's own answer in the requested notation.
         await com.InvokeAsync(() => com.Instance.HandlePointerMove(1, 0));
         await com.InvokeAsync(com.Instance.HandlePointerUp);
         com.Find(".bit-clp-hsd .bit-clp-inp").Input("0");
         com.Find(".bit-clp-asd .bit-clp-inp").Input("0.5");
 
-        Assert.AreEqual(expected, com.Instance.Color);
+        Assert.AreEqual(expected, com.Instance.Value);
     }
 
     // Left unset, the format is read off the value the picker was given, so a hexadecimal binding stays
@@ -126,7 +127,7 @@ public class BitColorPickerTests : BunitTestContext
 
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Bind(p => p.Color, color, v => color = v);
+            parameters.Bind(p => p.Value, color, v => color = v);
         });
 
         await com.InvokeAsync(() => com.Instance.HandlePointerMove(1, 0));
@@ -143,7 +144,7 @@ public class BitColorPickerTests : BunitTestContext
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.ShowAlphaSlider, true);
-            parameters.Bind(p => p.Color, color, v => color = v);
+            parameters.Bind(p => p.Value, color, v => color = v);
             parameters.Bind(p => p.Alpha, alpha, v => alpha = v);
         });
 
@@ -153,16 +154,16 @@ public class BitColorPickerTests : BunitTestContext
         Assert.AreEqual(0.25, com.Instance.Alpha);
     }
 
-    // A one-way Color has nowhere to report a change to, so the picker becomes a display of that value
+    // A one-way Value has nowhere to report a change to, so the picker becomes a display of that value
     // rather than pretending to accept edits.
     [TestMethod]
-    public async Task BitColorPickerShouldStayInertWithAOneWayColor()
+    public async Task BitColorPickerShouldStayInertWithAOneWayValue()
     {
         Context.JSInterop.Setup<bool>("BitBlazorUI.ColorPicker.isEyeDropperSupported").SetResult(true);
 
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.Color, "#FFFFFF");
+            parameters.Add(p => p.Value, "#FFFFFF");
             parameters.Add(p => p.ShowAlphaSlider, true);
             parameters.Add(p => p.ShowInputs, true);
             parameters.Add(p => p.ShowEyeDropper, true);
@@ -171,7 +172,7 @@ public class BitColorPickerTests : BunitTestContext
 
         await com.InvokeAsync(() => com.Instance.HandlePointerMove(1, 0));
 
-        Assert.AreEqual("#FFFFFF", com.Instance.Color);
+        Assert.AreEqual("#FFFFFF", com.Instance.Value);
         Assert.AreEqual("#FFFFFF", com.Instance.Hex);
 
         // Every control refuses the gesture at the element rather than in its handler: a native range moves
@@ -184,16 +185,16 @@ public class BitColorPickerTests : BunitTestContext
         Assert.IsTrue(com.Find(".bit-clp-eyd").HasAttribute("disabled"));
     }
 
-    // OnChange is a valid binding of its own: it is how an uncontrolled picker reports its result.
+    // OnColorChange is a valid binding of its own: it is how an uncontrolled picker reports its result.
     [TestMethod]
-    public async Task BitColorPickerShouldChangeWithOnChangeAlone()
+    public async Task BitColorPickerShouldChangeWithOnColorChangeAlone()
     {
         BitColorChangeEventArgs? args = null;
 
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.Color, "#FFFFFF");
-            parameters.Add(p => p.OnChange, (BitColorChangeEventArgs a) => args = a);
+            parameters.Add(p => p.Value, "#FFFFFF");
+            parameters.Add(p => p.OnColorChange, (BitColorChangeEventArgs a) => args = a);
         });
 
         await com.InvokeAsync(() => com.Instance.HandlePointerMove(1, 0));
@@ -215,7 +216,7 @@ public class BitColorPickerTests : BunitTestContext
         Assert.AreEqual("vibrant red", args.ColorDescription);
     }
 
-    // OnChange fires on every step of a drag; OnChangeEnd fires once, when the gesture is over.
+    // OnColorChange fires on every step of a drag; OnChangeEnd fires once, when the gesture is over.
     [TestMethod]
     public async Task BitColorPickerShouldRaiseOnChangeEndOnlyWhenTheGestureEnds()
     {
@@ -224,7 +225,7 @@ public class BitColorPickerTests : BunitTestContext
 
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.OnChange, () => changes++);
+            parameters.Add(p => p.OnColorChange, () => changes++);
             parameters.Add(p => p.OnChangeEnd, () => ends++);
         });
 
@@ -270,8 +271,8 @@ public class BitColorPickerTests : BunitTestContext
     {
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.Color, "#FF0000");
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.Value, "#FF0000");
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         await com.InvokeAsync(() => com.Instance.HandlePointerMove(x, y));
@@ -294,8 +295,8 @@ public class BitColorPickerTests : BunitTestContext
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.Dir, dir);
-            parameters.Add(p => p.Color, "#FF0000");
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.Value, "#FF0000");
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         await com.InvokeAsync(() => com.Instance.HandlePointerMove(0, 0));
@@ -314,8 +315,8 @@ public class BitColorPickerTests : BunitTestContext
     {
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.Color, "#FF0000");
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.Value, "#FF0000");
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         com.Find(".bit-clp-hsd .bit-clp-inp").Input("120");
@@ -330,8 +331,8 @@ public class BitColorPickerTests : BunitTestContext
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.ShowAlphaSlider, true);
-            parameters.Add(p => p.Color, "#FF0000");
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.Value, "#FF0000");
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         com.Find(".bit-clp-asd .bit-clp-inp").Input("0.4");
@@ -341,7 +342,7 @@ public class BitColorPickerTests : BunitTestContext
     }
 
     // The sliders report continuously while dragged and once more when released, which is the difference
-    // between OnChange and OnChangeEnd on a native range input.
+    // between OnColorChange and OnChangeEnd on a native range input.
     [TestMethod]
     public void BitColorPickerSlidersShouldReportBothChangeAndChangeEnd()
     {
@@ -350,7 +351,7 @@ public class BitColorPickerTests : BunitTestContext
 
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.OnChange, () => changes++);
+            parameters.Add(p => p.OnColorChange, () => changes++);
             parameters.Add(p => p.OnChangeEnd, () => ends++);
         });
 
@@ -373,7 +374,7 @@ public class BitColorPickerTests : BunitTestContext
 
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.OnChange, () => changes++);
+            parameters.Add(p => p.OnColorChange, () => changes++);
             parameters.Add(p => p.OnChangeEnd, () => ends++);
         });
 
@@ -393,7 +394,7 @@ public class BitColorPickerTests : BunitTestContext
 
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.OnChange, () => changes++);
+            parameters.Add(p => p.OnColorChange, () => changes++);
         });
 
         // The picker starts on opaque white, which is the top-left corner of the area.
@@ -413,7 +414,7 @@ public class BitColorPickerTests : BunitTestContext
     {
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.Color, "#FF0000");
+            parameters.Add(p => p.Value, "#FF0000");
         });
 
         var area = com.Find(".bit-clp-rec");
@@ -447,8 +448,8 @@ public class BitColorPickerTests : BunitTestContext
     {
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.Color, "hsv(210,60%,50%)");
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.Value, "hsv(210,60%,50%)");
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         com.Find(".bit-clp-rec").KeyDown(new KeyboardEventArgs { Key = key, ShiftKey = shift });
@@ -467,8 +468,8 @@ public class BitColorPickerTests : BunitTestContext
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.Dir, BitDir.Rtl);
-            parameters.Add(p => p.Color, "hsv(210,60%,50%)");
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.Value, "hsv(210,60%,50%)");
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         com.Find(".bit-clp-rec").KeyDown(key);
@@ -490,8 +491,8 @@ public class BitColorPickerTests : BunitTestContext
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.Dir, dir);
-            parameters.Add(p => p.Color, "hsv(210,60%,50%)");
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.Value, "hsv(210,60%,50%)");
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         com.Find(".bit-clp-rec").KeyDown(key);
@@ -508,7 +509,7 @@ public class BitColorPickerTests : BunitTestContext
 
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.OnChange, () => changes++);
+            parameters.Add(p => p.OnColorChange, () => changes++);
             parameters.Add(p => p.OnChangeEnd, () => ends++);
         });
 
@@ -532,7 +533,7 @@ public class BitColorPickerTests : BunitTestContext
 
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.OnChange, () => changes++);
+            parameters.Add(p => p.OnColorChange, () => changes++);
         });
 
         com.Find(".bit-clp-rec").KeyDown(key);
@@ -551,7 +552,7 @@ public class BitColorPickerTests : BunitTestContext
             parameters.Add(p => p.Disabled, isEnabled is false);
             parameters.Add(p => p.ShowAlphaSlider, true);
             parameters.Add(p => p.ShowInputs, true);
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         var root = com.Find(".bit-clp");
@@ -578,7 +579,7 @@ public class BitColorPickerTests : BunitTestContext
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.ReadOnly, readOnly);
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         var root = com.Find(".bit-clp");
@@ -662,7 +663,7 @@ public class BitColorPickerTests : BunitTestContext
         {
             parameters.Add(p => p.ShowInputs, true);
             parameters.Add(p => p.ShowAlphaSlider, true);
-            parameters.Add(p => p.Color, "rgba(255,0,0,0.5)");
+            parameters.Add(p => p.Value, "rgba(255,0,0,0.5)");
         });
 
         Assert.AreEqual(5, com.FindAll(".bit-clp-fin").Count);
@@ -686,7 +687,7 @@ public class BitColorPickerTests : BunitTestContext
         {
             parameters.Add(p => p.ShowInputs, true);
             parameters.Add(p => p.ShowAlphaSlider, true);
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         com.Find(".bit-clp-fhx .bit-clp-fin").Change(typed);
@@ -704,8 +705,8 @@ public class BitColorPickerTests : BunitTestContext
         {
             parameters.Add(p => p.ShowInputs, true);
             parameters.Add(p => p.ShowAlphaSlider, true);
-            parameters.Add(p => p.Color, "rgba(255,0,0,0.25)");
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.Value, "rgba(255,0,0,0.25)");
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         com.Find(".bit-clp-fhx .bit-clp-fin").Change("#00FF00");
@@ -726,8 +727,8 @@ public class BitColorPickerTests : BunitTestContext
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.ShowInputs, true);
-            parameters.Add(p => p.Color, "#FF0000");
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.Value, "#FF0000");
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         // The hexadecimal field comes first, so the channel fields start at the second input.
@@ -743,8 +744,8 @@ public class BitColorPickerTests : BunitTestContext
         {
             parameters.Add(p => p.ShowInputs, true);
             parameters.Add(p => p.ShowAlphaSlider, true);
-            parameters.Add(p => p.Color, "#FF0000");
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.Value, "#FF0000");
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         com.FindAll(".bit-clp-fin")[4].Change("40");
@@ -767,7 +768,7 @@ public class BitColorPickerTests : BunitTestContext
         {
             parameters.Add(p => p.ShowInputs, true);
             parameters.Add(p => p.InputsMode, mode);
-            parameters.Add(p => p.Color, "#4D7FB3");
+            parameters.Add(p => p.Value, "#4D7FB3");
         });
 
         Assert.AreEqual(hasHex, com.FindAll(".bit-clp-fhx").Count == 1);
@@ -798,7 +799,7 @@ public class BitColorPickerTests : BunitTestContext
         {
             parameters.Add(p => p.ShowInputs, true);
             parameters.Add(p => p.InputsMode, BitColorInputsMode.Hsl);
-            parameters.Add(p => p.Color, "#4D7FB3");
+            parameters.Add(p => p.Value, "#4D7FB3");
         });
 
         var fields = com.FindAll(".bit-clp-fin");
@@ -821,8 +822,8 @@ public class BitColorPickerTests : BunitTestContext
         {
             parameters.Add(p => p.ShowInputs, true);
             parameters.Add(p => p.InputsMode, BitColorInputsMode.Hsl);
-            parameters.Add(p => p.Color, "#4D7FB3");
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.Value, "#4D7FB3");
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         com.FindAll(".bit-clp-fin")[index].Change(typed);
@@ -841,8 +842,8 @@ public class BitColorPickerTests : BunitTestContext
         {
             parameters.Add(p => p.ShowInputs, true);
             parameters.Add(p => p.InputsMode, BitColorInputsMode.Hsv);
-            parameters.Add(p => p.Color, "#4D7FB3");
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.Value, "#4D7FB3");
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         com.FindAll(".bit-clp-fin")[index].Change(typed);
@@ -859,8 +860,8 @@ public class BitColorPickerTests : BunitTestContext
         {
             parameters.Add(p => p.ShowInputs, true);
             parameters.Add(p => p.InputsMode, BitColorInputsMode.Hsl);
-            parameters.Add(p => p.Color, "hsl(210.5,40.4%,50.6%)");
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.Value, "hsl(210.5,40.4%,50.6%)");
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         com.FindAll(".bit-clp-fin")[0].Change("120");
@@ -933,7 +934,7 @@ public class BitColorPickerTests : BunitTestContext
 
             if (oneWay)
             {
-                parameters.Add(p => p.Color, "#FF0000");
+                parameters.Add(p => p.Value, "#FF0000");
             }
         });
 
@@ -977,7 +978,7 @@ public class BitColorPickerTests : BunitTestContext
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.ShowInputs, true);
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         com.Find(".bit-clp-fhx .bit-clp-fin").Change(typed);
@@ -996,7 +997,7 @@ public class BitColorPickerTests : BunitTestContext
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.ShowInputs, true);
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         com.Find(".bit-clp-fhx .bit-clp-fin").Change("#00FF00");
@@ -1010,7 +1011,7 @@ public class BitColorPickerTests : BunitTestContext
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.Presets, ["#FF0000", "rgb(0,255,0)", "blue"]);
-            parameters.Add(p => p.Color, "#FF0000");
+            parameters.Add(p => p.Value, "#FF0000");
         });
 
         var presets = com.FindAll(".bit-clp-prt");
@@ -1034,7 +1035,7 @@ public class BitColorPickerTests : BunitTestContext
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.Presets, ["#FF0000", "rgba(0,0,255,0.5)"]);
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         com.FindAll(".bit-clp-prt")[0].Click();
@@ -1057,8 +1058,8 @@ public class BitColorPickerTests : BunitTestContext
         {
             parameters.Add(p => p.ShowAlphaSlider, true);
             parameters.Add(p => p.Presets, ["#00FF00"]);
-            parameters.Add(p => p.Color, "rgba(255,0,0,0.3)");
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.Value, "rgba(255,0,0,0.3)");
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         com.Find(".bit-clp-prt").Click();
@@ -1079,7 +1080,7 @@ public class BitColorPickerTests : BunitTestContext
         {
             parameters.Add(p => p.ShowAlphaSlider, true);
             parameters.Add(p => p.Presets, ["rgba(255,0,0,0.5)", "#FF0000"]);
-            parameters.Add(p => p.Color, "rgba(255,0,0,0.3)");
+            parameters.Add(p => p.Value, "rgba(255,0,0,0.3)");
         });
 
         var presets = com.FindAll(".bit-clp-prt");
@@ -1087,7 +1088,7 @@ public class BitColorPickerTests : BunitTestContext
         Assert.AreEqual("false", presets[0].GetAttribute("aria-pressed"));
         Assert.AreEqual("true", presets[1].GetAttribute("aria-pressed"));
 
-        com.Render(parameters => parameters.Add(p => p.Color, "rgba(255,0,0,0.5)"));
+        com.Render(parameters => parameters.Add(p => p.Value, "rgba(255,0,0,0.5)"));
 
         Assert.AreEqual("true", com.FindAll(".bit-clp-prt")[0].GetAttribute("aria-pressed"));
     }
@@ -1121,8 +1122,8 @@ public class BitColorPickerTests : BunitTestContext
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.Presets, ["#FF0000", "#00FF00", "#0000FF"]);
-            parameters.Add(p => p.Color, "#00FF00");
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.Value, "#00FF00");
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         Assert.AreEqual("toolbar", com.Find(".bit-clp-prs").GetAttribute("role"));
@@ -1133,7 +1134,7 @@ public class BitColorPickerTests : BunitTestContext
         CollectionAssert.AreEqual(new[] { "-1", "0", "-1" }, presets.Select(p => p.GetAttribute("tabindex")).ToArray());
 
         // With nothing of the palette picked, the first swatch is the way in.
-        com.Render(parameters => parameters.Add(p => p.Color, "#123456"));
+        com.Render(parameters => parameters.Add(p => p.Value, "#123456"));
 
         CollectionAssert.AreEqual(new[] { "0", "-1", "-1" }, com.FindAll(".bit-clp-prt").Select(p => p.GetAttribute("tabindex")).ToArray());
     }
@@ -1156,7 +1157,7 @@ public class BitColorPickerTests : BunitTestContext
         {
             parameters.Add(p => p.Presets, ["#FF0000", "#00FF00", "#0000FF", "#FFFF00", "#00FFFF", "#FF00FF"]);
             parameters.Add(p => p.PresetsPerRow, 3);
-            parameters.Add(p => p.OnChange, () => changes++);
+            parameters.Add(p => p.OnColorChange, () => changes++);
         });
 
         com.FindAll(".bit-clp-prt")[4].KeyDown(key);
@@ -1285,7 +1286,7 @@ public class BitColorPickerTests : BunitTestContext
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.ShowEyeDropper, true);
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         com.Find(".bit-clp-eyd").Click();
@@ -1303,8 +1304,8 @@ public class BitColorPickerTests : BunitTestContext
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.ShowEyeDropper, true);
-            parameters.Add(p => p.Color, "#FF0000");
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.Value, "#FF0000");
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         com.Find(".bit-clp-eyd").Click();
@@ -1339,7 +1340,7 @@ public class BitColorPickerTests : BunitTestContext
     {
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.Color, "hsv(210,25%,75%)");
+            parameters.Add(p => p.Value, "hsv(210,25%,75%)");
         });
 
         var style = com.Find(".bit-clp-thumb").GetAttribute("style");
@@ -1356,7 +1357,7 @@ public class BitColorPickerTests : BunitTestContext
             parameters.Add(p => p.ShowInputs, true);
             parameters.Add(p => p.ShowPreview, true);
             parameters.Add(p => p.ShowAlphaSlider, true);
-            parameters.Add(p => p.Color, "#FF0000");
+            parameters.Add(p => p.Value, "#FF0000");
             parameters.Add(p => p.Presets, ["#FF0000", "#00FF00"]);
             parameters.Add(p => p.Classes, new BitColorPickerClassStyles
             {
@@ -1407,7 +1408,7 @@ public class BitColorPickerTests : BunitTestContext
     {
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.Color, "rgb(1,2,3)");
+            parameters.Add(p => p.Value, "rgb(1,2,3)");
         });
 
         Assert.AreEqual("Color picker, black, Red 1 Green 2 Blue 3 selected.", com.Find(".bit-clp").GetAttribute("aria-label"));
@@ -1498,7 +1499,7 @@ public class BitColorPickerTests : BunitTestContext
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.ShowContrast, true);
-            parameters.Add(p => p.Color, color);
+            parameters.Add(p => p.Value, color);
             parameters.Add(p => p.ContrastColor, background);
         });
 
@@ -1520,28 +1521,28 @@ public class BitColorPickerTests : BunitTestContext
         {
             parameters.Add(p => p.ShowContrast, true);
             parameters.Add(p => p.ShowAlphaSlider, true);
-            parameters.Add(p => p.Color, "rgba(0,0,0,1)");
+            parameters.Add(p => p.Value, "rgba(0,0,0,1)");
             parameters.Add(p => p.ContrastColor, "#FFFFFF");
         });
 
         Assert.AreEqual("21:1", com.Find(".bit-clp-cnv").TextContent.Trim());
 
         // Half-transparent black over white is mid grey, which no longer clears the bar for body text.
-        com.Render(parameters => parameters.Add(p => p.Color, "rgba(0,0,0,0.5)"));
+        com.Render(parameters => parameters.Add(p => p.Value, "rgba(0,0,0,0.5)"));
 
         Assert.AreEqual("3.95:1", com.Find(".bit-clp-cnv").TextContent.Trim());
         Assert.IsTrue(com.FindAll(".bit-clp-cnb")[0].ClassList.Contains("bit-clp-cnf"));
     }
 
     // Left unset the readout measures against white, which is the background of most pages it will be
-    // dropped into, and it accepts any of the notations the Color parameter does.
+    // dropped into, and it accepts any of the notations the Value parameter does.
     [TestMethod]
     public void BitColorPickerContrastShouldDefaultToWhite()
     {
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.ShowContrast, true);
-            parameters.Add(p => p.Color, "#000000");
+            parameters.Add(p => p.Value, "#000000");
         });
 
         Assert.AreEqual("21:1", com.Find(".bit-clp-cnv").TextContent.Trim());
@@ -1638,19 +1639,19 @@ public class BitColorPickerTests : BunitTestContext
         Assert.AreEqual(value, com.Find(".bit-clp").GetAttribute(name));
     }
 
-    // The color is re-read from the Color parameter whenever the consumer pushes a new one in, and only
+    // The color is re-read from the Value parameter whenever the consumer pushes a new one in, and only
     // then: the strings the picker writes back out must not be re-parsed as if they were new values.
     [TestMethod]
     public void BitColorPickerShouldFollowThePushedColor()
     {
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.Color, "#FF0000");
+            parameters.Add(p => p.Value, "#FF0000");
         });
 
         Assert.AreEqual("#FF0000", com.Instance.Hex);
 
-        com.Render(parameters => parameters.Add(p => p.Color, "#00FF00"));
+        com.Render(parameters => parameters.Add(p => p.Value, "#00FF00"));
 
         Assert.AreEqual("#00FF00", com.Instance.Hex);
         Assert.AreEqual(120, Math.Round(com.Instance.Hsv.Hue));
@@ -1666,7 +1667,7 @@ public class BitColorPickerTests : BunitTestContext
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.Format, BitColorFormat.Hex);
-            parameters.Bind(p => p.Color, color, v => color = v);
+            parameters.Bind(p => p.Value, color, v => color = v);
         });
 
         Assert.AreEqual("#FF0000", color);
@@ -1676,7 +1677,7 @@ public class BitColorPickerTests : BunitTestContext
         com.Render(parameters =>
         {
             parameters.Add(p => p.Format, BitColorFormat.Hsl);
-            parameters.Bind(p => p.Color, color, v => color = v);
+            parameters.Bind(p => p.Value, color, v => color = v);
         });
 
         Assert.AreEqual("hsl(0,100%,50%)", color);
@@ -1693,18 +1694,18 @@ public class BitColorPickerTests : BunitTestContext
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.Format, BitColorFormat.Hex);
-            parameters.Add(p => p.OnChange, () => changes++);
+            parameters.Add(p => p.OnColorChange, () => changes++);
             parameters.Add(p => p.OnChangeEnd, () => ends++);
         });
 
         com.Render(parameters =>
         {
             parameters.Add(p => p.Format, BitColorFormat.Rgb);
-            parameters.Add(p => p.OnChange, () => changes++);
+            parameters.Add(p => p.OnColorChange, () => changes++);
             parameters.Add(p => p.OnChangeEnd, () => ends++);
         });
 
-        Assert.AreEqual("rgb(255,255,255)", com.Instance.Color);
+        Assert.AreEqual("rgb(255,255,255)", com.Instance.Value);
         Assert.AreEqual(0, changes);
         Assert.AreEqual(0, ends);
     }
@@ -1715,12 +1716,12 @@ public class BitColorPickerTests : BunitTestContext
     {
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.Color, "rgba(255,0,0,0.4)");
+            parameters.Add(p => p.Value, "rgba(255,0,0,0.4)");
         });
 
         Assert.AreEqual(0.4, com.Instance.Alpha);
 
-        com.Render(parameters => parameters.Add(p => p.Color, "#00FF0080"));
+        com.Render(parameters => parameters.Add(p => p.Value, "#00FF0080"));
 
         Assert.AreEqual(0.5, Math.Round(com.Instance.Alpha, 2));
     }
@@ -1755,7 +1756,7 @@ public class BitColorPickerTests : BunitTestContext
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
             parameters.Add(p => p.ShowAlphaSlider, true);
-            parameters.Add(p => p.Color, "hsva(210,50%,50%,0.25)");
+            parameters.Add(p => p.Value, "hsva(210,50%,50%,0.25)");
         });
 
         var hue = com.Find(".bit-clp-hsd .bit-clp-inp");
@@ -1772,7 +1773,7 @@ public class BitColorPickerTests : BunitTestContext
     {
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.Color, "#FF0000");
+            parameters.Add(p => p.Value, "#FF0000");
             parameters.Add(p => p.Alpha, 1d);
         });
 
@@ -1805,7 +1806,7 @@ public class BitColorPickerTests : BunitTestContext
             var com = RenderComponent<BitColorPicker>(parameters =>
             {
                 parameters.Add(p => p.ShowAlphaSlider, true);
-                parameters.Add(p => p.Color, "hsva(210.5,50%,50%,0.25)");
+                parameters.Add(p => p.Value, "hsva(210.5,50%,50%,0.25)");
             });
 
             Assert.AreEqual("0.25", com.Find(".bit-clp-asd .bit-clp-inp").GetAttribute("value"));
@@ -1819,7 +1820,7 @@ public class BitColorPickerTests : BunitTestContext
         }
     }
 
-    // A page holding @bind-Color re-renders from inside the binding callback, which lands the picker back
+    // A page holding @bind-Value re-renders from inside the binding callback, which lands the picker back
     // in OnParametersSet before the drag handler that raised the callback has returned. The value arriving
     // there is the one the picker itself has just written, so it must not be re-read: parsing it would
     // re-derive the hue from the eight-bit RGB the notation carries, and that derivation is coarse enough
@@ -1888,7 +1889,7 @@ public class BitColorPickerTests : BunitTestContext
 
         await com.InvokeAsync(() => picker.HandlePointerMove(0.2, 0.7));
 
-        Assert.AreEqual("#00FF00", com.Instance.Color);
+        Assert.AreEqual("#00FF00", com.Instance.Value);
         Assert.AreEqual("#00FF00", picker.Hex);
         Assert.AreEqual(120, picker.Hsv.Hue);
     }
@@ -1907,7 +1908,7 @@ public class BitColorPickerTests : BunitTestContext
             parameters.Add(p => p.ShowAlphaSlider, true);
             parameters.Add(p => p.ShowEyeDropper, true);
             parameters.Add(p => p.Presets, ["#FF0000"]);
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         var hue = com.Find(".bit-clp-hsd .bit-clp-inp");
@@ -1943,8 +1944,8 @@ public class BitColorPickerTests : BunitTestContext
         {
             parameters.Add(p => p.ReadOnly, true);
             parameters.Add(p => p.ShowAlphaSlider, true);
-            parameters.Add(p => p.Color, "#FF0000");
-            parameters.Add(p => p.OnChange, () => { });
+            parameters.Add(p => p.Value, "#FF0000");
+            parameters.Add(p => p.OnColorChange, () => { });
         });
 
         com.Find(".bit-clp-hsd .bit-clp-inp").Input("180");
@@ -2037,7 +2038,7 @@ public class BitColorPickerTests : BunitTestContext
         // the notation the picker answers in from its very first render.
         Assert.AreEqual(0, com.FindAll(".bit-clp-fhx").Count);
         Assert.AreEqual("Hue", com.FindAll(".bit-clp-fin")[0].GetAttribute("title"));
-        Assert.AreEqual("rgba(255,255,255,1)", com.FindComponent<BitColorPicker>().Instance.Color);
+        Assert.AreEqual("rgba(255,255,255,1)", com.FindComponent<BitColorPicker>().Instance.Value);
     }
 
     [TestMethod]
@@ -2144,14 +2145,14 @@ public class BitColorPickerTests : BunitTestContext
         Assert.AreEqual(2, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
     }
 
-    // A one-way bound Color leaves every field, swatch and slider natively disabled, and a disabled element
+    // A one-way bound Value leaves every field, swatch and slider natively disabled, and a disabled element
     // cannot take the focus. The inputs mode switch can: it moves which numbers the color is read as.
     [TestMethod]
     public async Task BitColorPickerShouldFocusTheInputsModeSwitchWhenEverythingElseIsDisabled()
     {
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.Color, "#FF0000");
+            parameters.Add(p => p.Value, "#FF0000");
             parameters.Add(p => p.ShowInputs, true);
             parameters.Add(p => p.ShowInputsModeSwitch, true);
             parameters.Add(p => p.ShowHueSlider, false);
@@ -2165,7 +2166,7 @@ public class BitColorPickerTests : BunitTestContext
         // With the switch gone there is nothing left that is focusable, and nothing is asked for.
         com.Render(parameters =>
         {
-            parameters.Add(p => p.Color, "#FF0000");
+            parameters.Add(p => p.Value, "#FF0000");
             parameters.Add(p => p.ShowInputs, true);
             parameters.Add(p => p.ShowHueSlider, false);
             parameters.Add(p => p.ShowSaturationArea, false);
@@ -2206,7 +2207,7 @@ public class BitColorPickerTests : BunitTestContext
             parameters.Add(p => p.ShowInputs, true);
             parameters.Add(p => p.ShowAlphaSlider, true);
             parameters.Add(p => p.Presets, ["#FF0000"]);
-            parameters.Add(p => p.Color, "#FF0000");
+            parameters.Add(p => p.Value, "#FF0000");
         });
 
         var area = com.Find(".bit-clp-rec");
@@ -2398,8 +2399,8 @@ public class BitColorPickerTests : BunitTestContext
 
         var com = RenderComponent<BitColorPicker>(parameters =>
         {
-            parameters.Add(p => p.Color, "hsv(210,60%,50%)");
-            parameters.Add(p => p.OnChange, () => changes++);
+            parameters.Add(p => p.Value, "hsv(210,60%,50%)");
+            parameters.Add(p => p.OnColorChange, () => changes++);
         });
 
         var area = com.Find(".bit-clp-rec");
@@ -2492,5 +2493,426 @@ public class BitColorPickerTests : BunitTestContext
 
         Assert.AreEqual("Brand color", root.GetAttribute("aria-label"));
         Assert.AreEqual("true", root.GetAttribute("aria-disabled"));
+    }
+
+    // Inside an EditForm the picker is validated like every other input: a required color bound to nothing fails the
+    // submit and marks the picker - its root, its carrier and every widget that holds the value - until a color is
+    // picked, from a swatch or typed into a field, which the model then receives.
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitColorPickerValidationShouldRequireAPickedColor(bool fromPreset)
+    {
+        var component = RenderComponent<BitColorPickerValidationTest>();
+
+        var form = component.Find("form");
+
+        Assert.IsFalse(component.Find(".bit-clp").ClassList.Contains("bit-inv"));
+
+        form.Submit();
+
+        Assert.AreEqual(0, component.Instance.ValidCount);
+        Assert.AreEqual(1, component.Instance.InvalidCount);
+        Assert.IsNull(component.Instance.TestModel.Value);
+
+        var root = component.Find(".bit-clp");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-inv"));
+        // A group carries no invalid state of its own: the widgets that hold the value do, and so does the carrier.
+        Assert.IsNull(root.GetAttribute("aria-invalid"));
+        Assert.AreEqual("true", component.Find(".bit-input-hidden").GetAttribute("aria-invalid"));
+        Assert.AreEqual("true", component.Find(".bit-clp-rec").GetAttribute("aria-invalid"));
+        Assert.AreEqual(2, component.FindAll(".bit-clp-inp").Count);
+        Assert.IsTrue(component.FindAll(".bit-clp-inp").All(i => i.GetAttribute("aria-invalid") == "true"));
+        Assert.AreEqual(5, component.FindAll(".bit-clp-fin").Count);
+        Assert.IsTrue(component.FindAll(".bit-clp-fin").All(i => i.GetAttribute("aria-invalid") == "true"));
+
+        if (fromPreset)
+        {
+            component.FindAll(".bit-clp-prt")[0].Click();
+        }
+        else
+        {
+            component.Find(".bit-clp-fhx .bit-clp-fin").Change("#FF0000");
+        }
+
+        // A null value has no notation to keep, so the picker answers in its default one.
+        Assert.AreEqual("rgb(255,0,0)", component.Instance.TestModel.Value);
+
+        // The field is validated as soon as the model has the color, before any submit.
+        Assert.IsFalse(component.Find(".bit-clp").ClassList.Contains("bit-inv"));
+        Assert.IsNull(component.Find(".bit-input-hidden").GetAttribute("aria-invalid"));
+        Assert.IsNull(component.Find(".bit-clp-rec").GetAttribute("aria-invalid"));
+        Assert.IsTrue(component.FindAll(".bit-clp-fin").All(i => i.HasAttribute("aria-invalid") is false));
+
+        form.Submit();
+
+        Assert.AreEqual(1, component.Instance.ValidCount);
+        Assert.AreEqual(1, component.Instance.InvalidCount);
+    }
+
+    // A bound null is the consumer's value, not a gap the picker fills: it shows white and leaves the value alone -
+    // on the first render and on every later one - which is what keeps a required picker invalid until a color is
+    // actually picked.
+    [TestMethod]
+    public async Task BitColorPickerShouldLeaveABoundNullValueAloneUntilAColorIsPicked()
+    {
+        string? value = null;
+        var changes = 0;
+
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.ValueChanged, (string? v) => { value = v; changes++; });
+        });
+
+        Assert.IsNull(com.Instance.Value);
+        Assert.AreEqual("#FFFFFF", com.Instance.Hex);
+        Assert.IsFalse(com.Find(".bit-input-hidden").HasAttribute("value"));
+
+        com.Render(parameters => parameters.Add(p => p.Value, (string?)null));
+
+        Assert.IsNull(com.Instance.Value);
+        Assert.AreEqual(0, changes);
+
+        await com.InvokeAsync(() => com.Instance.HandlePointerMove(1, 0));
+
+        Assert.AreEqual(1, changes);
+        Assert.AreEqual("rgb(255,0,0)", value);
+        Assert.AreEqual("rgb(255,0,0)", com.Instance.Value);
+    }
+
+    // A Format switched at runtime rewrites a bound color into the new notation, but a bound null holds no color to
+    // rewrite: writing back the white the picker shows in its place would satisfy a required picker on its own.
+    [TestMethod]
+    public void BitColorPickerShouldNotWriteABoundNullValueBackWhenTheFormatChanges()
+    {
+        string? value = null;
+        var changes = 0;
+
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.ValueChanged, (string? v) => { value = v; changes++; });
+        });
+
+        // Every parameter again, as a parent's re-render hands them over, with the Format switched.
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.Value, value);
+            parameters.Add(p => p.ValueChanged, (string? v) => { value = v; changes++; });
+            parameters.Add(p => p.Format, BitColorFormat.Hex);
+        });
+
+        Assert.AreEqual(0, changes);
+        Assert.IsNull(value);
+        Assert.IsNull(com.Instance.Value);
+    }
+
+    // DefaultValue seeds an uncontrolled picker, which then reports that color through its Value. It is a starting
+    // point only: from then on the value of an unbound picker is the one it wrote itself.
+    [TestMethod]
+    public void BitColorPickerShouldStartOnTheDefaultValue()
+    {
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, "#FF0000");
+        });
+
+        Assert.AreEqual("#FF0000", com.Instance.Value);
+        Assert.AreEqual("#FF0000", com.Instance.Hex);
+        Assert.AreEqual("#FF0000", com.Find(".bit-input-hidden").GetAttribute("value"));
+
+        com.Render(parameters => parameters.Add(p => p.DefaultValue, "#00FF00"));
+
+        Assert.AreEqual("#FF0000", com.Instance.Value);
+        Assert.AreEqual("#FF0000", com.Instance.Hex);
+    }
+
+    // A bound Value is the color the picker is on, whatever the DefaultValue beside it says.
+    [TestMethod]
+    public void BitColorPickerShouldPreferABoundValueOverTheDefaultValue()
+    {
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.Value, "#0000FF");
+            parameters.Add(p => p.ValueChanged, (string? _) => { });
+            parameters.Add(p => p.DefaultValue, "#FF0000");
+        });
+
+        Assert.AreEqual("#0000FF", com.Instance.Value);
+        Assert.AreEqual("#0000FF", com.Instance.Hex);
+    }
+
+    // The value travels through a hidden input, the last child of the root: what a post reads under the Name, what
+    // Required is checked against, and where the InputHtmlAttributes land. Nobody is meant to land on it.
+    [TestMethod]
+    public async Task BitColorPickerShouldCarryItsValueInAHiddenInput()
+    {
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.Value, "#FF0000");
+            parameters.Add(p => p.ValueChanged, (string? _) => { });
+            parameters.Add(p => p.Name, "brand");
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object>
+            {
+                ["data-test"] = "carrier",
+                ["form"] = "settings"
+            });
+        });
+
+        var root = com.Find(".bit-clp");
+        var carrier = com.Find("input.bit-input-hidden");
+
+        Assert.IsTrue(root.LastElementChild!.ClassList.Contains("bit-input-hidden"));
+        Assert.AreEqual("brand", carrier.GetAttribute("name"));
+        // Required stays off it: the browser would block the submit over a control nobody can see.
+        Assert.IsFalse(carrier.HasAttribute("required"));
+        Assert.AreEqual("carrier", carrier.GetAttribute("data-test"));
+        Assert.AreEqual("settings", carrier.GetAttribute("form"));
+        Assert.AreEqual("#FF0000", carrier.GetAttribute("value"));
+        Assert.AreEqual("-1", carrier.GetAttribute("tabindex"));
+        Assert.AreEqual("true", carrier.GetAttribute("aria-hidden"));
+        Assert.IsFalse(carrier.HasAttribute("readonly"));
+        Assert.IsFalse(carrier.HasAttribute("disabled"));
+
+        // The InputHtmlAttributes are the carrier's, not the root's.
+        Assert.IsFalse(root.HasAttribute("data-test"));
+
+        await com.InvokeAsync(() => com.Instance.HandlePointerMove(0, 0));
+
+        Assert.AreEqual("#FFFFFF", com.Find("input.bit-input-hidden").GetAttribute("value"));
+    }
+
+    // The carrier states what the picker is: read-only and disabled alike, the way a native input would.
+    [TestMethod,
+        DataRow(false, false),
+        DataRow(true, false),
+        DataRow(false, true)
+    ]
+    public void BitColorPickerHiddenInputShouldFollowReadOnlyAndDisabled(bool readOnly, bool disabled)
+    {
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, readOnly);
+            parameters.Add(p => p.Disabled, disabled);
+        });
+
+        var carrier = com.Find("input.bit-input-hidden");
+
+        Assert.AreEqual(readOnly, carrier.HasAttribute("readonly"));
+        Assert.AreEqual(disabled, carrier.HasAttribute("disabled"));
+        Assert.AreEqual(disabled ? "true" : null, carrier.GetAttribute("aria-disabled"));
+    }
+
+    // A required picker says so on its root - which is what draws the asterisk after its label - but only while it
+    // can be given a value: a read-only or a disabled one asks for nothing.
+    [TestMethod,
+        DataRow(false, false, true),
+        DataRow(true, false, false),
+        DataRow(false, true, false)
+    ]
+    public void BitColorPickerShouldMarkARequiredPickerOnlyWhileItCanBeGivenAValue(bool readOnly, bool disabled, bool expected)
+    {
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.ReadOnly, readOnly);
+            parameters.Add(p => p.Disabled, disabled);
+        });
+
+        Assert.AreEqual(expected, com.Find(".bit-clp").ClassList.Contains("bit-clp-req"));
+
+        // The class builder caches, so taking Required away has to reach the root on the next render.
+        com.Render(parameters => parameters.Add(p => p.Required, false));
+
+        Assert.IsFalse(com.Find(".bit-clp").ClassList.Contains("bit-clp-req"));
+    }
+
+    // OnColorChange carries the color in every notation on every step of a drag; the base OnChange reports the value
+    // alone, for the same steps. The end of the drag has nothing new to report to either - only OnChangeEnd hears it.
+    [TestMethod]
+    public async Task BitColorPickerShouldReportTheValueThroughOnChangeAndTheColorThroughOnColorChange()
+    {
+        var values = new List<string?>();
+        var colors = new List<BitColorChangeEventArgs>();
+        var ends = 0;
+
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.Value, "#FFFFFF");
+            parameters.Add(p => p.ValueChanged, (string? _) => { });
+            parameters.Add(p => p.OnChange, (string? v) => values.Add(v));
+            parameters.Add(p => p.OnColorChange, (BitColorChangeEventArgs a) => colors.Add(a));
+            parameters.Add(p => p.OnChangeEnd, () => ends++);
+        });
+
+        await com.InvokeAsync(() => com.Instance.HandlePointerMove(1, 0));
+
+        CollectionAssert.AreEqual(new[] { "#FF0000" }, values);
+        Assert.HasCount(1, colors);
+        Assert.AreEqual("#FF0000", colors[0].Hex);
+        Assert.AreEqual("rgb(255,0,0)", colors[0].Rgb);
+
+        await com.InvokeAsync(() => com.Instance.HandlePointerMove(1, 1));
+
+        CollectionAssert.AreEqual(new[] { "#FF0000", "#000000" }, values);
+        Assert.HasCount(2, colors);
+
+        await com.InvokeAsync(com.Instance.HandlePointerUp);
+
+        Assert.HasCount(2, values);
+        Assert.HasCount(2, colors);
+        Assert.AreEqual(1, ends);
+    }
+
+    // A move of the alpha that the value's notation has no room for leaves the value as it was, so the base OnChange
+    // has nothing to report; OnColorChange still carries it.
+    [TestMethod]
+    public void BitColorPickerOnChangeShouldSkipAnAlphaTheValueHasNoRoomFor()
+    {
+        var values = new List<string?>();
+        var colors = new List<BitColorChangeEventArgs>();
+
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowAlphaSlider, true);
+            parameters.Add(p => p.Value, "#FF0000");
+            parameters.Add(p => p.ValueChanged, (string? _) => { });
+            parameters.Add(p => p.OnChange, (string? v) => values.Add(v));
+            parameters.Add(p => p.OnColorChange, (BitColorChangeEventArgs a) => colors.Add(a));
+        });
+
+        com.Find(".bit-clp-asd .bit-clp-inp").Input("0.5");
+
+        Assert.AreEqual("#FF0000", com.Instance.Value);
+        Assert.IsEmpty(values);
+        Assert.HasCount(1, colors);
+        Assert.AreEqual(0.5, colors[0].Alpha);
+    }
+
+    // ReadOnly and Required are form-wide settings, so they cascade from the picker's params like every other input's.
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public void BitColorPickerShouldTakeReadOnlyAndRequiredFromTheCascade(bool readOnly)
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitColorPickerParams
+            {
+                ReadOnly = readOnly,
+                Required = true
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitColorPicker>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var picker = com.FindComponent<BitColorPicker>().Instance;
+        var root = com.Find(".bit-clp");
+        var carrier = com.Find("input.bit-input-hidden");
+
+        Assert.AreEqual(readOnly, picker.ReadOnly);
+        Assert.IsTrue(picker.Required);
+        Assert.AreEqual(readOnly, root.ClassList.Contains("bit-clp-rdl"));
+        // A read-only picker asks for nothing, so only an editable one is marked required.
+        Assert.AreEqual(readOnly is false, root.ClassList.Contains("bit-clp-req"));
+        Assert.IsFalse(carrier.HasAttribute("required"));
+        Assert.AreEqual(readOnly, carrier.HasAttribute("readonly"));
+        Assert.AreEqual(readOnly ? "true" : null, com.Find(".bit-clp-rec").GetAttribute("aria-readonly"));
+
+        com.Find(".bit-clp-rec").KeyDown("ArrowDown");
+
+        Assert.AreEqual(readOnly ? "#FFFFFF" : "#FCFCFC", picker.Hex);
+    }
+
+    // A ReadOnly written on the picker - false included - is a choice the cascade does not overwrite.
+    [TestMethod]
+    public void BitColorPickerDirectReadOnlyShouldOverrideTheCascadedOne()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitColorPickerParams
+            {
+                ReadOnly = true,
+                Required = true
+            }
+        };
+
+        var com = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitColorPicker>(0);
+                builder.AddAttribute(1, nameof(BitColorPicker.ReadOnly), false);
+                builder.CloseComponent();
+            });
+        });
+
+        var root = com.Find(".bit-clp");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-clp-rdl"));
+        // What the markup left unwritten still comes from the cascade.
+        Assert.IsTrue(root.ClassList.Contains("bit-clp-req"));
+
+        com.Find(".bit-clp-rec").KeyDown("ArrowDown");
+
+        Assert.AreEqual("#FCFCFC", com.FindComponent<BitColorPicker>().Instance.Hex);
+    }
+
+    [TestMethod]
+    public void BitColorPickerShouldRewriteItsValueInANewFormatWithoutMarkingTheFieldModified()
+    {
+        var model = new BitColorPickerTestModel { Value = "#FF0000" };
+        var editContext = new EditContext(model);
+        editContext.EnableDataAnnotationsValidation(Context.Services);
+
+        RenderFragment Picker(BitColorFormat? format) => builder =>
+        {
+            builder.OpenComponent<BitColorPicker>(0);
+            builder.AddAttribute(1, nameof(BitColorPicker.Format), format);
+            builder.AddAttribute(2, nameof(BitColorPicker.ShowInputs), true);
+            builder.AddAttribute(3, nameof(BitColorPicker.Value), model.Value);
+            builder.AddAttribute(4, nameof(BitColorPicker.ValueChanged),
+                                 EventCallback.Factory.Create<string?>(this, v => model.Value = v));
+            builder.AddAttribute(5, nameof(BitColorPicker.ValueExpression),
+                                 (System.Linq.Expressions.Expression<Func<string?>>)(() => model.Value));
+            builder.CloseComponent();
+        };
+
+        var com = RenderComponent<CascadingValue<EditContext>>(parameters =>
+        {
+            parameters.Add(p => p.Value, editContext);
+            parameters.Add(p => p.ChildContent, Picker(null));
+        });
+
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.Value, editContext);
+            parameters.Add(p => p.ChildContent, Picker(BitColorFormat.Rgb));
+        });
+
+        // the app asked for another notation, which is no color anybody picked: the value is rewritten in it, but
+        // the field is neither marked modified nor validated.
+        Assert.AreEqual("rgb(255,0,0)", model.Value);
+        Assert.IsFalse(editContext.IsModified());
+
+        // a color the user picks is an edit like any other.
+        com.Find(".bit-clp-rec").KeyDown("ArrowDown");
+
+        Assert.AreNotEqual("rgb(255,0,0)", model.Value);
+        Assert.IsTrue(editContext.IsModified());
     }
 }

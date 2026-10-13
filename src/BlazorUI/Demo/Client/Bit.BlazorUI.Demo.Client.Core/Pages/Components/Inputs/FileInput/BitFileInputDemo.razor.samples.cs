@@ -154,7 +154,7 @@ private string? AnnounceInFarsi(IReadOnlyList<BitFileInputInfo> files)
 }";
 
     private readonly string example12RazorCode = @"
-<BitFileInput Label=""Browse or drop files"" Multiple HideFileList OnChange=""@HandleOnHiddenListChange"" />
+<BitFileInput Label=""Browse or drop files"" Multiple HideFileList OnFilesChange=""@HandleOnHiddenListChange"" />
 
 <div>Custom file list:</div>
 @if (hiddenListFiles.Length == 0)
@@ -179,7 +179,7 @@ private void HandleOnHiddenListChange(BitFileInputInfo[] files)
               Multiple
               ShowRemoveButton
               MaxSize=""1024 * 1024 * 1""
-              OnChange=""@HandleOnChange""
+              OnFilesChange=""@HandleOnFilesChange""
               OnInvalid=""@HandleOnInvalid""
               OnRemove=""@HandleOnRemove"" />
 
@@ -208,11 +208,11 @@ private BitFileInput eventsFileInput = default!;
 private BitFileInputInfo[] eventsFiles = [];
 private readonly List<string> eventsLog = [];
 
-private async Task HandleOnChange(BitFileInputInfo[] files)
+private async Task HandleOnFilesChange(BitFileInputInfo[] files)
 {
     eventsFiles = files;
 
-    AddEventLog($""OnChange: {files.Length} file(s) selected"");
+    AddEventLog($""OnFilesChange: {files.Length} file(s) selected"");
 
     // reads the content of every valid file of the list.
     await eventsFileInput.ReadContentAsync();
@@ -394,7 +394,7 @@ private BitFileInput bitFileInput = default!;";
     ];
 
     private readonly string example15RazorCode = @"
-<BitFileInput @ref=""publicApiFileInput"" HideLabel Multiple OnChange=""@(_ => StateHasChanged())"" />
+<BitFileInput @ref=""publicApiFileInput"" HideLabel Multiple OnFilesChange=""@(_ => StateHasChanged())"" />
 
 <div class=""api-buttons"">
     <BitButton OnClick=""() => publicApiFileInput.Browse()"">Browse files</BitButton>
@@ -481,6 +481,49 @@ private readonly BitFileInputParams[] fileInputParams =
 ];";
 
     private readonly string example20RazorCode = @"
+<EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+    <DataAnnotationsValidator />
+
+    <BitFileInput Required ShowRemoveButton
+                  Label=""Attach your resume""
+                  AllowedExtensions=""@(["".pdf"", "".docx""])""
+                  @bind-Value=""validationModel.Resume"" />
+    <ValidationMessage For=""@(() => validationModel.Resume)"" />
+
+    <br />
+
+    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+</EditForm>
+<div>@validationResult</div>";
+    private readonly string example20CsharpCode = @"
+public class BitFileInputDemoFormModel
+{
+    [Required(ErrorMessage = ""Attach your resume"")]
+    public string? Resume { get; set; }
+}
+
+private BitFileInputDemoFormModel validationModel = new();
+private string? validationResult;
+
+private void HandleValidSubmit()
+{
+    validationResult = $""Submitted {validationModel.Resume}"";
+}
+
+private void HandleInvalidSubmit()
+{
+    validationResult = null;
+}";
+    private const string example20ScssCode = @"
+.validation-message {
+    color: var(--bit-clr-err);
+}";
+    private readonly DemoCodeFile[] example20CodeFiles =
+    [
+        new("BitFileInputDemo.razor.scss", example20ScssCode),
+    ];
+
+    private readonly string example21RazorCode = @"
 <BitFileInput Color=""BitColor.Primary"" Label=""Primary"" />
 <BitFileInput Color=""BitColor.Secondary"" Label=""Secondary"" />
 <BitFileInput Color=""BitColor.Tertiary"" Label=""Tertiary"" />
@@ -502,7 +545,7 @@ private readonly BitFileInputParams[] fileInputParams =
 <BitFileInput Color=""BitColor.SecondaryBorder"" Label=""SecondaryBorder"" />
 <BitFileInput Color=""BitColor.TertiaryBorder"" Label=""TertiaryBorder"" />";
 
-    private readonly string example21RazorCode = @"
+    private readonly string example22RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <BitFileInput Label=""Browse or drop a file"" ShowRemoveButton RemoveButtonIcon=""@(""fa-solid fa-trash-can"")"" />
@@ -526,14 +569,14 @@ private readonly BitFileInputParams[] fileInputParams =
               RemoveButtonIcon=""@BitIconInfo.Bi(""trash3-fill"")""
               FileIconSelector=""@(_ => BitIconInfo.Bi(""file-earmark""))"" />";
 
-    private readonly string example22RazorCode = @"
+    private readonly string example23RazorCode = @"
 <BitFileInput Size=""BitSize.Small"" Label=""Browse or drop a file"" ShowPreview ShowRemoveButton />
 
 <BitFileInput Size=""BitSize.Medium"" Label=""Browse or drop a file"" ShowPreview ShowRemoveButton />
 
 <BitFileInput Size=""BitSize.Large"" Label=""Browse or drop a file"" ShowPreview ShowRemoveButton />";
 
-    private readonly string example23RazorCode = @"
+    private readonly string example24RazorCode = @"
 <BitFileInput Label=""Styled file input""
               Style=""box-shadow: dodgerblue 0 0 1rem; border-radius: 1rem; padding: 0.5rem;"" />
 
@@ -574,7 +617,7 @@ private readonly BitFileInputParams[] fileInputParams =
     <BitFileInput Label=""Attach a cover letter"" ShowRemoveButton />
 </div>";
 
-    private readonly string example24RazorCode = @"
+    private readonly string example25RazorCode = @"
 <div dir=""rtl"">
     <BitFileInput Dir=""BitDir.Rtl""
                   Label=""انتخاب یا رها کردن فایل""

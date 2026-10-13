@@ -1715,20 +1715,6 @@ public partial class BitSlider : BitInputBase<double>
     }
 
     /// <summary>
-    /// Tells the EditContext that the range has moved, which is what a single-value slider already gets out
-    /// of SetCurrentValueAsync and what makes the validation of a ranged one run as the thumbs are dragged
-    /// rather than only when the form is submitted.
-    /// </summary>
-    private void NotifyFieldChanged()
-    {
-        // Without an expression to build it from there is no field to report, and the identifier of one that
-        // was never created cannot even be hashed.
-        if (EditContext is null || NoValidate || FieldIdentifier.Model is null) return;
-
-        EditContext.NotifyFieldChanged(FieldIdentifier);
-    }
-
-    /// <summary>
     /// Whether the range is pinned by a binding that has no way of being told about a change. Each of the
     /// three parameters that can carry the range blocks on its own: one bound one-way, with neither its
     /// Changed callback nor OnRangeChange to report to, is a value the parent means to control.

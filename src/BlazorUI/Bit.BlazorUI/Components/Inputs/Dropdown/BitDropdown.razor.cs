@@ -4144,7 +4144,7 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
     {
         UpdateSelectedItemsFromValues();
 
-        EditContext?.NotifyFieldChanged(FieldIdentifier);
+        NotifyFieldChanged();
     }
 
     private void SetIsSelected(TItem item, bool value)

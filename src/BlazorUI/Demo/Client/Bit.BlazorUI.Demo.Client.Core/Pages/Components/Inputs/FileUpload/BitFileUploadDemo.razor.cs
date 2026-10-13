@@ -405,9 +405,9 @@ public partial class BitFileUploadDemo
         },
         new()
         {
-            Name = "OnChange",
+            Name = "OnFilesChange",
             Type = "EventCallback<BitFileInfo[]>",
-            Description = "Callback for when file or files status change. It is invoked with the whole file list right after a selection, and with only the file that changed whenever a single status changes afterwards, so the current state of the batch is better read back from the Files property than from the argument.",
+            Description = "Callback for when file or files status change. It is invoked with the whole file list right after a selection, and with only the file that changed whenever a single status changes afterwards, so the current state of the batch is better read back from the Files property than from the argument. The inherited OnChange reports the Value alone - the names of the files that are part of it - and only when that value actually moved.",
             LinkType = LinkType.Link,
             Href = "#file-info"
         },
@@ -415,7 +415,7 @@ public partial class BitFileUploadDemo
         {
             Name = "OnInvalid",
             Type = "EventCallback<BitFileInfo[]>",
-            Description = "Callback invoked right after OnChange whenever a selection carries at least one file rejected by the validations, providing an array of only the rejected files along with their messages.",
+            Description = "Callback invoked right after OnFilesChange whenever a selection carries at least one file rejected by the validations, providing an array of only the rejected files along with their messages.",
             LinkType = LinkType.Link,
             Href = "#file-info"
         },
@@ -790,6 +790,13 @@ public partial class BitFileUploadDemo
             Description = "The visual variant of the browse button, which decides how much of the Color it carries: a full fill, only an outline, or neither.",
             LinkType = LinkType.Link,
             Href = "#variant-enum"
+        },
+        new()
+        {
+            Name = "Value",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The names of the files of the list joined with commas (report.pdf,photo.png), or null while it holds none - this is the parameter to bind (@bind-Value), so a [Required] or a [RegularExpression] on the bound property validates the selection in an EditForm. Only the files that are still part of it count: one the validations rejected, or whose upload failed, was canceled or was removed, is left out, while a preloaded one and one still waiting to be uploaded are in. A browser cannot be handed files from code, so the value is the list's to write: one set from outside that empties it resets the selection (as Reset does, keeping the preloaded files), and any other is left until the list next changes and writes its own back.",
         },
         new()
         {
@@ -1369,14 +1376,14 @@ public partial class BitFileUploadDemo
             Name = "Browse",
             Type = "() => Task",
             DefaultValue = "",
-            Description = "Opens a file selection dialog.",
+            Description = "Opens a file selection dialog. A disabled or read-only file upload opens nothing.",
         },
         new()
         {
             Name = "Reset",
             Type = "() => Task",
             DefaultValue = "",
-            Description = "Resets the file upload, clearing the file list and the upload state. The files of PreloadedFiles stay, since they belong to the record rather than to this selection - except the ones already deleted from the server, which nothing on this side brings back.",
+            Description = "Resets the file upload, clearing the file list and the upload state. The files of PreloadedFiles stay, since they belong to the record rather than to this selection - except the ones already deleted from the server, which nothing on this side brings back. A bound Value follows the list, without the EditForm being told: a reset marks no field modified.",
         }
     ];
 
@@ -1914,6 +1921,12 @@ public partial class BitFileUploadDemo
         },
         new()
         {
+            Name = "--bit-FileUpload-invalid-color",
+            DefaultValue = "--bit-clr-err / --bit-clr-err-focus",
+            Description = "Role color, and focus ring, of the browse button while the value fails the validation of the EditForm it is in - the drop indicator, the progress bars and the hovered actions follow it as they follow the Color. The failed validation wins over an explicit Color for that time.",
+        },
+        new()
+        {
             Name = "--bit-FileUpload-fill-disabled-background",
             DefaultValue = "--bit-FileUpload-disabled-background",
             Description = "Fill of a disabled browse button and of a disabled drop area of a Fill file upload alone, read ahead of --bit-FileUpload-disabled-background so a theme can set this variant apart from the others. The Color parameter leaves it alone.",
@@ -1965,6 +1978,9 @@ public partial class BitFileUploadDemo
     private string ChunkedUploadUrl => _configuration.GetApiUrl("api/FileUpload/UploadChunkedFile");
     private string NonExistingUploadUrl => _configuration.GetApiUrl("api/FileUpload/MissingUploadEndpoint");
     private string RemoveUrl => _configuration.GetApiUrl("api/FileUpload/RemoveFile");
+
+    private BitFileUploadDemoFormModel validationModel = new();
+    private string? validationResult;
 
     // the endpoints come from the injected configuration, so the cascaded parameters are built once the
     // injection has happened rather than in a field initializer - and once, so that the cascading value
@@ -2022,7 +2038,7 @@ public partial class BitFileUploadDemo
     private BitFileUpload? speedFileUpload;
     private BitFileUpload? hiddenViewFileUpload;
 
-    // OnChange reports a single file when its status changes and the whole selection when files are picked,
+    // OnFilesChange reports a single file when its status changes and the whole selection when files are picked,
     // so the summary is read back from the Files property instead of from the argument.
     private IEnumerable<BitFileInfo> HiddenViewFiles =>
         hiddenViewFileUpload?.Files.Where(f => f.Status != BitFileUploadStatus.Removed) ?? [];
@@ -2033,6 +2049,16 @@ public partial class BitFileUploadDemo
     private BitFileUpload bitFileUploadWithBrowseFile = default!;
 
     private bool FileUploadIsEmpty() => !bitFileUpload.Files.Any(f => f.Status != BitFileUploadStatus.Removed);
+
+    private void HandleValidSubmit()
+    {
+        validationResult = $"Submitted {validationModel.Attachments}";
+    }
+
+    private void HandleInvalidSubmit()
+    {
+        validationResult = null;
+    }
 
     private static string? ValidateEmptyFile(BitFileInfo file)
     {
@@ -2439,7 +2465,7 @@ private string ChunkedUploadUrl = ""/ChunkedUpload"";";
 
 <BitFileUpload Label=""Select or drag and drop files"" UploadUrl=""@ChunkedUploadUrl"" Multiple ChunkedUpload
                UploadRequestHttpHeadersProvider=""@GetFreshAuthHeaders""
-               OnChange=""@(_ => StateHasChanged())"" OnProgress=""@(_ => StateHasChanged())"" />
+               OnFilesChange=""@(_ => StateHasChanged())"" OnProgress=""@(_ => StateHasChanged())"" />
 
 <div>Requests so far: @tokenRequestCount</div>
 
@@ -2567,7 +2593,7 @@ private string ChunkedUploadUrl = ""/ChunkedUpload"";";
 
     private readonly string example15RazorCode = @"
 <BitFileUpload @ref=""speedFileUpload"" Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl"" Multiple
-               OnChange=""@(_ => StateHasChanged())"" OnProgress=""@(_ => StateHasChanged())"" />
+               OnFilesChange=""@(_ => StateHasChanged())"" OnProgress=""@(_ => StateHasChanged())"" />
 
 <BitProgress Percent=""@(speedFileUpload?.OverallUploadProgress ?? 0)"" ShowPercentNumber />
 
@@ -2593,7 +2619,7 @@ private string ChunkedUploadUrl = ""/ChunkedUpload"";";
 
 <BitFileUpload @ref=""hiddenViewFileUpload"" Label=""Select or drag and drop files"" UploadUrl=""@UploadUrl""
                Multiple AutoUpload HideFileView
-               OnChange=""@(_ => StateHasChanged())"" OnProgress=""@(_ => StateHasChanged())"" />
+               OnFilesChange=""@(_ => StateHasChanged())"" OnProgress=""@(_ => StateHasChanged())"" />
 
 @if (HiddenViewFiles.Any())
 {
@@ -2616,7 +2642,7 @@ private BitFileUpload? hiddenViewFileUpload;
 private IEnumerable<BitFileInfo> SpeedFiles =>
     speedFileUpload?.Files.Where(f => f.Status != BitFileUploadStatus.Removed) ?? [];
 
-// OnChange reports a single file when its status changes and the whole selection when files are picked,
+// OnFilesChange reports a single file when its status changes and the whole selection when files are picked,
 // so the summary is read back from the Files property instead of from the argument.
 private IEnumerable<BitFileInfo> HiddenViewFiles =>
     hiddenViewFileUpload?.Files.Where(f => f.Status != BitFileUploadStatus.Removed) ?? [];";
@@ -3041,6 +3067,53 @@ private readonly BitFileUploadParams[] fileUploadParams =
     private readonly DemoCodeFile[] example21CodeFiles = [uploadRemoveServerFile];
 
     private readonly string example22RazorCode = @"
+<EditForm Model=""validationModel"" OnValidSubmit=""HandleValidSubmit"" OnInvalidSubmit=""HandleInvalidSubmit"">
+    <DataAnnotationsValidator />
+
+    <BitFileUpload Required Multiple
+                   Label=""Add attachments""
+                   UploadUrl=""@UploadUrl""
+                   MaxSize=""1024 * 1024 * 1""
+                   Description=""Up to 1 MB per file.""
+                   @bind-Value=""validationModel.Attachments"" />
+    <ValidationMessage For=""@(() => validationModel.Attachments)"" />
+
+    <br />
+
+    <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
+</EditForm>
+<div>@validationResult</div>";
+    private readonly string example22CsharpCode = @"
+public class BitFileUploadDemoFormModel
+{
+    [Required(ErrorMessage = ""Add at least one attachment"")]
+    public string? Attachments { get; set; }
+}
+
+private string UploadUrl = ""/Upload"";
+private BitFileUploadDemoFormModel validationModel = new();
+private string? validationResult;
+
+private void HandleValidSubmit()
+{
+    validationResult = $""Submitted {validationModel.Attachments}"";
+}
+
+private void HandleInvalidSubmit()
+{
+    validationResult = null;
+}";
+    private const string example22ScssCode = @"
+.validation-message {
+    color: var(--bit-clr-err);
+}";
+    private readonly DemoCodeFile[] example22CodeFiles =
+    [
+        new("BitFileUploadDemo.razor.scss", example22ScssCode),
+        uploadServerFile,
+    ];
+
+    private readonly string example23RazorCode = @"
 <BitFileUpload Label=""Primary"" UploadUrl=""@UploadUrl"" Color=""BitColor.Primary"" />
 <BitFileUpload Label=""Secondary"" UploadUrl=""@UploadUrl"" Color=""BitColor.Secondary"" />
 <BitFileUpload Label=""Tertiary"" UploadUrl=""@UploadUrl"" Color=""BitColor.Tertiary"" />
@@ -3061,11 +3134,11 @@ private readonly BitFileUploadParams[] fileUploadParams =
 <BitFileUpload Label=""TertiaryBorder"" UploadUrl=""@UploadUrl"" Color=""BitColor.TertiaryBorder"" />
 
 <BitFileUpload Label=""Drop files here"" UploadUrl=""@UploadUrl"" ShowDropArea Color=""BitColor.Success"" />";
-    private readonly string example22CsharpCode = @"
+    private readonly string example23CsharpCode = @"
 private string UploadUrl = ""/Upload"";";
-    private readonly DemoCodeFile[] example22CodeFiles = [uploadServerFile];
+    private readonly DemoCodeFile[] example23CodeFiles = [uploadServerFile];
 
-    private readonly string example23RazorCode = @"
+    private readonly string example24RazorCode = @"
 <link rel=""stylesheet"" href=""https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css"" />
 
 <div>FontAwesome:</div>
@@ -3111,23 +3184,23 @@ private string UploadUrl = ""/Upload"";";
                RetryIcon=""@BitIconInfo.Bi(""arrow-repeat"")""
                CancelIcon=""@BitIconInfo.Bi(""x-circle"")""
                RemoveIcon=""@BitIconInfo.Bi(""trash"")"" />";
-    private readonly string example23CsharpCode = @"
-private string UploadUrl = ""/Upload"";
-private string RemoveUrl = ""/Remove"";";
-    private readonly DemoCodeFile[] example23CodeFiles = [uploadRemoveServerFile];
-
-    private readonly string example24RazorCode = @"
-<BitFileUpload Label=""Small"" UploadUrl=""@UploadUrl"" Size=""BitSize.Small"" LabelIconName=""Upload"" ShowRemoveButton RemoveUrl=""@RemoveUrl"" />
-
-<BitFileUpload Label=""Medium"" UploadUrl=""@UploadUrl"" Size=""BitSize.Medium"" LabelIconName=""Upload"" ShowRemoveButton RemoveUrl=""@RemoveUrl"" />
-
-<BitFileUpload Label=""Large"" UploadUrl=""@UploadUrl"" Size=""BitSize.Large"" LabelIconName=""Upload"" ShowRemoveButton RemoveUrl=""@RemoveUrl"" />";
     private readonly string example24CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private string RemoveUrl = ""/Remove"";";
     private readonly DemoCodeFile[] example24CodeFiles = [uploadRemoveServerFile];
 
     private readonly string example25RazorCode = @"
+<BitFileUpload Label=""Small"" UploadUrl=""@UploadUrl"" Size=""BitSize.Small"" LabelIconName=""Upload"" ShowRemoveButton RemoveUrl=""@RemoveUrl"" />
+
+<BitFileUpload Label=""Medium"" UploadUrl=""@UploadUrl"" Size=""BitSize.Medium"" LabelIconName=""Upload"" ShowRemoveButton RemoveUrl=""@RemoveUrl"" />
+
+<BitFileUpload Label=""Large"" UploadUrl=""@UploadUrl"" Size=""BitSize.Large"" LabelIconName=""Upload"" ShowRemoveButton RemoveUrl=""@RemoveUrl"" />";
+    private readonly string example25CsharpCode = @"
+private string UploadUrl = ""/Upload"";
+private string RemoveUrl = ""/Remove"";";
+    private readonly DemoCodeFile[] example25CodeFiles = [uploadRemoveServerFile];
+
+    private readonly string example26RazorCode = @"
 <style>
     .custom-class {
         padding: 0.5rem;
@@ -3208,12 +3281,12 @@ private string RemoveUrl = ""/Remove"";";
     <BitFileUpload Label=""A drop area under the same ancestor"" ShowDropArea
                    UploadUrl=""@UploadUrl"" ShowRemoveButton RemoveUrl=""@RemoveUrl"" />
 </div>";
-    private readonly string example25CsharpCode = @"
+    private readonly string example26CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private string RemoveUrl = ""/Remove"";";
-    private readonly DemoCodeFile[] example25CodeFiles = [uploadRemoveServerFile];
+    private readonly DemoCodeFile[] example26CodeFiles = [uploadRemoveServerFile];
 
-    private readonly string example26RazorCode = @"
+    private readonly string example27RazorCode = @"
 <div dir=""rtl"">
     <BitFileUpload Dir=""BitDir.Rtl""
                    Label=""انتخاب یا رها کردن فایل""
@@ -3232,8 +3305,8 @@ private string RemoveUrl = ""/Remove"";";
                    SuccessfulUploadMessage=""بارگذاری فایل موفق بود""
                    FailedUploadMessage=""بارگذاری فایل شکست خورد"" />
 </div>";
-    private readonly string example26CsharpCode = @"
+    private readonly string example27CsharpCode = @"
 private string UploadUrl = ""/Upload"";
 private string RemoveUrl = ""/Remove"";";
-    private readonly DemoCodeFile[] example26CodeFiles = [uploadRemoveServerFile];
+    private readonly DemoCodeFile[] example27CodeFiles = [uploadRemoveServerFile];
 }
