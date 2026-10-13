@@ -48,7 +48,14 @@ public partial class BitThemeSwitcherDemo
             Name = "InitialTheme",
             Type = "string?",
             DefaultValue = "null",
-            Description = "The theme to reflect until the applied one can be read back, which takes JS interop and therefore a first interactive render. Hand it the theme the app persisted (the bit-theme-preference cookie, which the client mirrors the choice into when the host page opts in with the bit-theme-persist-cookie attribute) so prerendered markup shows the visitor's own design system instead of showing the first item until hydration.",
+            Description = "The theme to reflect until the applied one can be read back, which takes JS interop and therefore a first interactive render. Hand it the theme the app persisted (the bit-theme-preference cookie, which the client mirrors the choice into when the host page opts in with the bit-theme-persist-cookie attribute) so prerendered markup shows the visitor's own design system instead of showing the first item until hydration. A visitor who follows the OS has system stored there, which names no design system - InitialThemePair does.",
+        },
+        new()
+        {
+            Name = "InitialThemePair",
+            Type = "string?",
+            DefaultValue = "null",
+            Description = "The light / dark pair to reflect until the applied theme can be read back, for when InitialTheme names no design system (a visitor following the OS). Hand it the bit-theme-pair cookie, which the client mirrors a picked design system into beside the preference cookie; anything but a \"<light> <dark>\" pair is ignored.",
         },
         new()
         {

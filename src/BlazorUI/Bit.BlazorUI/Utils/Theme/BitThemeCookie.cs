@@ -18,4 +18,15 @@ public static class BitThemeCookie
 {
     /// <summary>Suggested cookie name for the abstract theme key (e.g. <c>system</c>, <c>dark</c>, <c>fluent-light</c>).</summary>
     public const string PreferenceCookieName = "bit-theme-preference";
+
+    /// <summary>
+    /// Cookie the client mirrors <see cref="BitThemeAttributeNames.ThemePairStorageKey"/> into, alongside
+    /// <see cref="PreferenceCookieName"/>: a light / dark pair switched at runtime
+    /// (<see cref="BitThemeManager.SetThemePairAsync(string, string)"/>) as
+    /// <c>"&lt;light&gt; &lt;dark&gt;"</c>, or <c>light</c> / <c>dark</c> while the preference is that theme
+    /// of the page's own pair. Hand it to <see cref="BitThemeSsrOptions.PersistedThemePair"/> (and
+    /// <see cref="BitThemeHead.PersistedThemePair"/>, <c>BitThemeSwitcher.InitialThemePair</c>) so the
+    /// server paints the visitor's design system too.
+    /// </summary>
+    public const string PairCookieName = "bit-theme-pair";
 }

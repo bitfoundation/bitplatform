@@ -41,6 +41,8 @@ public sealed class BitThemeAttributeNamesContractTests
             ["THEME_COLOR_VARIABLE"] = BitThemeAttributeNames.ThemeColorVariable,
             ["STORAGE_KEY"] = BitThemeAttributeNames.ThemeStorageKey,
             ["COOKIE_NAME"] = BitThemeCookie.PreferenceCookieName,
+            ["PAIR_STORAGE_KEY"] = BitThemeAttributeNames.ThemePairStorageKey,
+            ["PAIR_COOKIE_NAME"] = BitThemeCookie.PairCookieName,
         };
 
         foreach (var (name, value) in expected)
