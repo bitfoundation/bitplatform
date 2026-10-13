@@ -413,10 +413,17 @@ $tzp-private-properties: sz-fs, sz-h, sz-pad, sz-itm-h, role-main, role-focus, k
     color: var(--bit-TimeZonePicker-item-selected-color, var(--bit-tzp-itm-clr));
     background-color: var(--bit-TimeZonePicker-item-selected-background, #{$clr-bg-sec});
 
+    // The row is taken out of the adjustment as a whole, so its offset and its country, which paint colors of their
+    // own, are given the pair too.
     @media (forced-colors: active) {
         color: HighlightText;
         forced-color-adjust: none;
         background-color: Highlight;
+
+        .bit-tzp-ofs,
+        .bit-tzp-icn {
+            color: HighlightText;
+        }
     }
 }
 

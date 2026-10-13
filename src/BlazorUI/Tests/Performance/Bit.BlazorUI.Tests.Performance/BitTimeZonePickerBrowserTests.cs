@@ -131,8 +131,17 @@ public class BitTimeZonePickerBrowserTests : PerformanceTestBase
         await Expect(Page.Locator("#v-detected")).Not.ToBeEmptyAsync();
         var detected = await Page.Locator("#v-detected").TextContentAsync();
 
-        Assert.IsTrue(detected == browserTimeZone || browserTimeZone is "Asia/Calcutta" or "Europe/Kiev" or "Asia/Saigon" or "Asia/Rangoon" or "Asia/Katmandu",
-                      $"The browser runs in {browserTimeZone}, the field detected {detected}.");
+        var expected = browserTimeZone switch
+        {
+            "Asia/Calcutta" => "Asia/Kolkata",
+            "Europe/Kiev" => "Europe/Kyiv",
+            "Asia/Saigon" => "Asia/Ho_Chi_Minh",
+            "Asia/Rangoon" => "Asia/Yangon",
+            "Asia/Katmandu" => "Asia/Kathmandu",
+            _ => browserTimeZone
+        };
+
+        Assert.AreEqual(expected, detected, $"The browser runs in {browserTimeZone}, the field detected {detected}.");
         await Expect(Field("#detect").Locator(".bit-tzp-txt")).ToHaveTextAsync(new Regex(".+"));
     }
 

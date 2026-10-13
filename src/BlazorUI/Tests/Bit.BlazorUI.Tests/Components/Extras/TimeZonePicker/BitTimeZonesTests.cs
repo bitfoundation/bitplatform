@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.TimeZonePicker;
@@ -85,6 +86,33 @@ public class BitTimeZonesTests
         var tehran = TimeZoneInfo.FindSystemTimeZoneById("Asia/Tehran");
 
         Assert.AreEqual("Asia/Tehran", BitTimeZones.Find(tehran)?.Id);
+    }
+
+    [TestMethod]
+    [DataRow("Europe/Vienna")]
+    [DataRow("Europe/Berlin")]
+    public void BitTimeZoneShouldResolveItsTimeZoneInfoBackToItself(string id)
+    {
+        var zone = BitTimeZones.Find(id)!;
+
+        Assert.AreSame(zone, BitTimeZones.Find(zone.TimeZoneInfo));
+
+        // A Windows runtime that cannot convert IANA ids finds both under the Windows id they share, which Find resolves
+        // to Berlin alone - so the zone found by it is renamed to the zone's own id, keeping the rules of the Windows one.
+        var withId = typeof(BitTimeZones).GetMethod("WithId", BindingFlags.NonPublic | BindingFlags.Static)!;
+        var windowsZone = TimeZoneInfo.FindSystemTimeZoneById(zone.WindowsId!);
+        var renamed = (TimeZoneInfo)withId.Invoke(null, [windowsZone, zone.Id])!;
+
+        Assert.AreEqual(zone.Id, renamed.Id);
+        Assert.AreSame(zone, BitTimeZones.Find(renamed));
+        Assert.IsTrue(renamed.SupportsDaylightSavingTime);
+
+        foreach (var at in new[] { new DateTimeOffset(2026, 1, 15, 12, 0, 0, TimeSpan.Zero), new DateTimeOffset(2026, 7, 15, 12, 0, 0, TimeSpan.Zero),
+                                   new DateTimeOffset(2026, 3, 29, 0, 30, 0, TimeSpan.Zero), new DateTimeOffset(2026, 3, 29, 1, 30, 0, TimeSpan.Zero),
+                                   new DateTimeOffset(2010, 7, 15, 12, 0, 0, TimeSpan.Zero) })
+        {
+            Assert.AreEqual(windowsZone.GetUtcOffset(at), renamed.GetUtcOffset(at), at.ToString("O"));
+        }
     }
 
     [TestMethod]

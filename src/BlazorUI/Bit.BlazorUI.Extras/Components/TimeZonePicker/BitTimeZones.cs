@@ -156,9 +156,26 @@ public static partial class BitTimeZones
         }
 
         // A Windows runtime that cannot convert IANA ids (NLS mode, or an id newer than its ICU) still has the zone under
-        // its Windows id.
-        if (windowsId is not null && TimeZoneInfo.TryFindSystemTimeZoneById(windowsId, out info)) return info;
+        // its Windows id. That id is shared by every zone of the table it stands for (W. Europe Standard Time is Berlin,
+        // Vienna, Rome, ...) and Find resolves it to only one of them, so the zone is handed back under its own id.
+        if (windowsId is not null && TimeZoneInfo.TryFindSystemTimeZoneById(windowsId, out info)) return WithId(info, Find(id)?.Id ?? id);
 
         return null;
+    }
+
+    // The same time zone - its offset, its names and its adjustment rules - under another id.
+    internal static TimeZoneInfo WithId(TimeZoneInfo info, string id)
+    {
+        if (string.Equals(info.Id, id, StringComparison.OrdinalIgnoreCase)) return info;
+
+        try
+        {
+            return TimeZoneInfo.CreateCustomTimeZone(id, info.BaseUtcOffset, info.DisplayName, info.StandardName, info.DaylightName, info.GetAdjustmentRules());
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidTimeZoneException)
+        {
+            // Rules a runtime hands out but would not take back: the zone is still right, only under its Windows id.
+            return info;
+        }
     }
 }

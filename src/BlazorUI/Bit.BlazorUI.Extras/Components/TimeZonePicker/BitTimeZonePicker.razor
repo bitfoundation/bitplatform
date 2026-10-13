@@ -146,7 +146,11 @@
      style="@GetOverlayStyles()"
      class="bit-tzp-ovl @Classes?.Overlay"></div>
 
+@* A responsive panel is never display:none on a small screen - it only fades and slides out of view - so a closed one
+   is made inert, or the Tab key would still walk into it. The render that opens it clears that before the callout is
+   shown and its search box focused (see OnAfterRenderAsync). *@
 <div id="@_calloutId"
+     inert="@(Responsive && IsCalloutShown is false)"
      style="@Styles?.Callout"
      class="bit-tzp-cal @SizeClass @ColorClass @(Responsive ? "bit-tzp-res" : null) @(Dir is BitDir.Rtl ? "bit-rtl" : null) @Classes?.Callout">
 
