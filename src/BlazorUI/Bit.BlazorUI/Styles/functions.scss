@@ -390,6 +390,30 @@ $html-font-size: 16px;
 }
 
 /*
+ * forced-hidden-border
+ * --------------------------------------------------
+ * A part that reserves a border's room with a transparent border - so that a state drawing it (a selection, an
+ * accented edge) moves no content when it comes and goes, or only for the room itself - shows that border under
+ * forced colors: the mode forces every border color to a system one and keeps no transparency for it, so every
+ * row or tab of the component carries the edge that was meant for one of them, or for none.
+ *   - Included in the part's forced-colors block (it carries no media query of its own), it draws the border in
+ *     Canvas, the color the mode paints the part's background in, so the border vanishes and keeps its width.
+ *   - It holds only where the part sits on Canvas: a part the mode leaves a background of its own (one opted out
+ *     with forced-color-adjust: none) paints its border to match that background instead.
+ *   - An edge that has to stay visible - the selected item's, or one continuing a rule behind the part - is set
+ *     after it, in the same block, at the same weight or more.
+ *
+ * Usage:
+ *   @media (forced-colors: active) {
+ *       .bit-xyz-itm { @include forced-hidden-border; }
+ *       .bit-xyz-sel { border-color: Highlight; }
+ *   }
+ */
+@mixin forced-hidden-border {
+    border-color: Canvas;
+}
+
+/*
  * input-placeholder($color)
  * --------------------------------------------------
  * The hint an input or a textarea shows while it is empty, painted from the theme rather than left

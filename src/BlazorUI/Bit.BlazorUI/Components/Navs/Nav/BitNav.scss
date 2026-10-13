@@ -25,7 +25,7 @@
 //   --bit-Nav-selected-hover-icon-color icon color of the selected item while hovered or pressed (default: --bit-Nav-selected-icon-color)
 //   --bit-Nav-selected-hover-description-color description color of the selected item while hovered or pressed (default: --bit-Nav-selected-description-color)
 //   --bit-Nav-indicator-color        leading bar of the selected item               (default: $clr-pri)
-//   --bit-Nav-indicator-width        thickness of that bar                          (default: $shp-border-width-thick)
+//   --bit-Nav-indicator-width        thickness of that bar, never under $shp-border-width-thick in forced colors (default: $shp-border-width-thick)
 //   --bit-Nav-item-radius            corner radius of an item                       (default: $shp-radius-control)
 //   --bit-Nav-item-min-height        smallest height of an item                     (default: spacing(6))
 //   --bit-Nav-item-padding           padding of an item                             (default: spacing(0.5))
@@ -714,8 +714,13 @@ $nav-private-properties: item-font-size, item-min-height, icon-size, des-font-si
     // other, so every row would carry a bar and the selected one would differ by its color alone. The bar of an item
     // that is not selected is drawn in Canvas instead - the item's own background here, so it vanishes - and keeps its
     // width, so no content moves when the selection does. The selected item's rule follows at the same weight and wins.
+    // The bar being the one mark of the selection left in this mode, it is never thinner than the thick stroke: a nav
+    // whose --bit-Nav-indicator-width removes it, to mark the selection by its fill alone, would lose the selection
+    // along with the fill. A wider bar is kept, and every item takes the same width, so nothing moves either. A
+    // unitless 0 is no length inside max(), which then falls back on the medium border width the browsers draw.
     .bit-nav-ict {
-        border-color: Canvas;
+        @include forced-hidden-border;
+        border-inline-start-width: max(var(--bit-Nav-indicator-width, #{$shp-border-width-thick}), #{$shp-border-width-thick});
     }
 
     .bit-nav-sel,

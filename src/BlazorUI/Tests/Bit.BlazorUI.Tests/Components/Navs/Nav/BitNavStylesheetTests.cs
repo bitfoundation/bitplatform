@@ -238,22 +238,35 @@ public class BitNavStylesheetTests
     [TestMethod]
     public void BitNavShouldDrawTheBarOfTheSelectedItemAloneInForcedColors()
     {
-        var forced = SourceFiles.GetScssBlock(ReadStylesheet(), "@media (forced-colors: active) {");
+        const string forcedColors = "@media (forced-colors: active)";
+        const string item = ".bit-nav-ict";
+        const string selected = ".bit-nav-sel, .bit-nav-sca";
+        const string hidden = "@include forced-hidden-border";
+        const string floor = "border-inline-start-width: max(var(--bit-Nav-indicator-width, #{$shp-border-width-thick}), #{$shp-border-width-thick})";
+
+        // Every rule of the forced-colors block that touches a border, in the order written, nested ones included. Any
+        // border declaration counts - a style, a width, a shorthand of any side - since each can hide the bar or move the
+        // content when the selection does.
+        var borderRules = SourceFiles.GetScssRules(ReadStylesheet())
+            .Where(rule => rule.Ancestors.Contains(forcedColors))
+            .Select(rule => (Header: Regex.Replace(rule.Header, @"\s+", " "),
+                             Ancestors: string.Join(" > ", rule.Ancestors),
+                             Borders: rule.Declarations.Where(d => d.StartsWith("border", StringComparison.Ordinal) || d.StartsWith(hidden, StringComparison.Ordinal))
+                                                       .Select(d => Regex.Replace(d, @"\s+", " "))
+                                                       .ToArray()))
+            .Where(rule => rule.Borders.Length > 0)
+            .ToArray();
 
         // The transparent border every item reserves the bar with is forced to a system color like any other, so the
-        // items that are not selected draw it in Canvas, their own background in this mode, and the selected ones -
-        // later in the block, at the same weight - in Highlight.
-        var item = SourceFiles.GetScssBlock(forced, "\n    .bit-nav-ict {");
-        var selected = SourceFiles.GetScssBlock(forced, "\n    .bit-nav-sel,\n    .bit-nav-sca {");
-
-        StringAssert.Contains(item, "border-color: Canvas;");
-        StringAssert.Contains(selected, "border-color: Highlight;");
-        Assert.IsTrue(forced.IndexOf(item, StringComparison.Ordinal) < forced.IndexOf(selected, StringComparison.Ordinal),
-                      "The rule hiding the bar comes after the selected item's, which it would then override.");
-
-        // The bar keeps its width, so no content moves when the selection does.
-        Assert.IsFalse(forced.Contains("border-inline-start-width"), "The bar's width changes in forced colors.");
-        Assert.IsFalse(Regex.IsMatch(forced, @"border(-inline-start)?\s*:"), "The bar's border is redefined in forced colors.");
+        // items draw it in Canvas, their own background in this mode, at a width the public variable cannot take below
+        // the thick stroke - the bar being the one mark of the selection left - and the selected ones in Highlight. Two
+        // rules, both straight in the block, and nothing else there touching a border. The list is in the order the
+        // parser read the rules in, so it also pins the selected item's rule after the item's, which weighs the same and
+        // so wins by coming later - a copy of the item's rule after it would be a third entry.
+        CollectionAssert.AreEqual(new[] { $"{item}: {hidden}; {floor}", $"{selected}: border-color: Highlight" },
+                                  borderRules.Select(rule => $"{rule.Header}: {string.Join("; ", rule.Borders)}").ToArray(),
+                                  "The forced-colors block draws the bar some other way than the two rules that hide it and then mark the selection, in that order.");
+        Assert.IsTrue(borderRules.All(rule => rule.Ancestors == forcedColors), "A border rule of the forced-colors block is nested in another rule.");
     }
 
     private static string ReadStylesheet() => SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Navs", "Nav", "BitNav.scss");
