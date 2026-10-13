@@ -241,6 +241,8 @@ public partial class BitDropdownDemo
             Type = "BitDropDirection",
             DefaultValue = "BitDropDirection.TopAndBottom",
             Description = "Determines the allowed drop directions of the callout.",
+            LinkType = LinkType.Link,
+            Href = "#drop-direction-enum",
         },
         new()
         {
@@ -1842,6 +1844,7 @@ public partial class BitDropdownDemo
         },
         DemoSharedEnums.BitSize(),
         DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitDropDirection(),
     ];
     private readonly List<ComponentParameter> componentPublicMembers =
     [

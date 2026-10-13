@@ -21,8 +21,20 @@ internal static class BitPdfPredictor
         int bpc = bitsPerComponent <= 0 ? 8 : bitsPerComponent;
         int cols = Math.Max(1, columns);
 
-        int bytesPerPixel = Math.Max(1, (colorsSafe * bpc + 7) / 8);
-        int rowBytes = (cols * colorsSafe * bpc + 7) / 8;
+        // /Colors, /Columns and /BitsPerComponent come straight from the file, so the
+        // row geometry is computed in long: in int a hostile combination wraps (16383
+        // colors x 16385 columns x 16 bits is 2^32 - 16) into a negative row length and
+        // a zero PNG stride. A row (or pixel) that does not fit an int - far beyond any
+        // real image - decodes to nothing, as Flate data that does not inflate does, so
+        // every caller degrades the way it already does for a damaged stream.
+        long bitsPerPixel = (long)colorsSafe * bpc;
+        long rowBits = bitsPerPixel * cols;
+        if ((rowBits + 7) / 8 >= int.MaxValue)
+        {
+            return [];
+        }
+        int bytesPerPixel = Math.Max(1, (int)((bitsPerPixel + 7) / 8));
+        int rowBytes = (int)((rowBits + 7) / 8);
 
         return predictor == 2
             ? ApplyTiff(data, colorsSafe, bpc, cols, rowBytes)
@@ -135,6 +147,12 @@ internal static class BitPdfPredictor
         // Each PNG-predicted row is prefixed with a one-byte filter type.
         int stride = rowBytes + 1;
         int rows = data.Length / stride;
+        if (rows == 0)
+        {
+            // Not one whole row: nothing to decode, and no reason to allocate the
+            // (possibly huge, file-declared) previous-row buffer below.
+            return [];
+        }
         var output = new byte[rows * rowBytes];
         var previous = new byte[rowBytes];
 

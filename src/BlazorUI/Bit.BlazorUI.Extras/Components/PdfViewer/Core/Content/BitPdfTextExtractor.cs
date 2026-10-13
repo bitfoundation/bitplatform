@@ -108,7 +108,21 @@ public static class BitPdfTextExtractor
             }
         }
 
-        Run(page.GetContentBytes(), page.Resources, 0);
+        // A content stream that fails to decode has no text, the way the renderer draws
+        // nothing for it (BitPdfHtmlRenderer.Render catches the same failure): one
+        // damaged page must not fail the viewer's search or text extraction for the
+        // whole document.
+        byte[] content;
+        try
+        {
+            content = page.GetContentBytes();
+        }
+        catch
+        {
+            return string.Empty;
+        }
+
+        Run(content, page.Resources, 0);
         return sb.ToString();
     }
 

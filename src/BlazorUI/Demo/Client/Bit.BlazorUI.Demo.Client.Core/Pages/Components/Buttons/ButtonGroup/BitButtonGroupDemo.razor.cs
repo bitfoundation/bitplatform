@@ -746,6 +746,8 @@ public partial class BitButtonGroupDemo
                    Type = "BitLinkRels?",
                    DefaultValue = "null",
                    Description = "The rel attribute of the link when the item renders as an anchor (by providing the Href property). When Target is _blank and no opener-related rel is given, noopener is added automatically.",
+                   LinkType = LinkType.Link,
+                   Href = "#link-rels-enum",
                },
                new()
                {
@@ -942,6 +944,8 @@ public partial class BitButtonGroupDemo
                    Type = "BitLinkRels?",
                    DefaultValue = "null",
                    Description = "The rel attribute of the link when the option renders as an anchor (by providing the Href parameter). When Target is _blank and no opener-related rel is given, noopener is added automatically.",
+                   LinkType = LinkType.Link,
+                   Href = "#link-rels-enum",
                },
                new()
                {
@@ -1382,6 +1386,7 @@ public partial class BitButtonGroupDemo
             ]
         },
         DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitLinkRels(),
         DemoSharedEnums.BitSize()
     ];
 }

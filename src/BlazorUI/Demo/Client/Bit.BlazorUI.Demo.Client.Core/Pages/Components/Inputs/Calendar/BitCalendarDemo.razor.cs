@@ -1418,7 +1418,9 @@ public partial class BitCalendarDemo
                     Name = "Color",
                     Type = "BitColor?",
                     DefaultValue = "null",
-                    Description = "The color of the indicator dot the event puts on its day. Without one the dot takes the color of the calendar itself."
+                    Description = "The color of the indicator dot the event puts on its day. Without one the dot takes the color of the calendar itself.",
+                    LinkType = LinkType.Link,
+                    Href = "#color-enum"
                 },
                 new()
                 {

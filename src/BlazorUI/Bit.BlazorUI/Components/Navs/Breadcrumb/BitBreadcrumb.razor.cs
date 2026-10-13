@@ -40,6 +40,9 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     private ElementReference _overflowButtonRef;
     private ElementReference _itemContainerRef;
     private DotNetObjectReference<BitBreadcrumb<TItem>> _dotnetObj = default!;
+    // The resize observer gets a reference of its own: its unregistering disposes the reference it was handed, and
+    // the one above still has to answer the overflow callout (and a later observer) after collapsing is turned off.
+    private DotNetObjectReference<BitBreadcrumb<TItem>>? _resizeDotnetObj;
 
     private string _calloutId = default!;
     private string _overlayId = default!;
@@ -552,7 +555,8 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
                 try
                 {
-                    await _js.BitObserversRegisterResize(_Id, RootElement, _dotnetObj);
+                    _resizeDotnetObj = DotNetObjectReference.Create(this);
+                    await _js.BitObserversRegisterResize(_Id, RootElement, _resizeDotnetObj);
                 }
                 catch (JSDisconnectedException) { } // the circuit is gone, nothing to observe
                 catch (JSException) { } // without the observer the trail is measured on renders only
@@ -574,10 +578,14 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
             try
             {
-                await _js.BitObserversUnregisterResize(_Id, RootElement, _dotnetObj);
+                await _js.BitObserversUnregisterResize(_Id, RootElement, _resizeDotnetObj!); // created along with the registration
             }
             catch (JSDisconnectedException) { } // the circuit is gone, the observer went with it
             catch (JSException) { } // the element of the observer may already be gone with its parent
+
+            // Released here too, for the unregistering that never reached the script; releasing it twice is harmless.
+            _resizeDotnetObj?.Dispose();
+            _resizeDotnetObj = null;
         }
 
         // The overflow button is gone with the collapsing it undid, taking the focus it held with it, so a
@@ -1657,7 +1665,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
             {
                 if (_resizeObserverRegistered)
                 {
-                    await _js.BitObserversUnregisterResize(_Id, RootElement, _dotnetObj);
+                    await _js.BitObserversUnregisterResize(_Id, RootElement, _resizeDotnetObj!); // created along with the registration
                 }
 
                 await _js.BitCalloutClearCallout(_calloutId);
@@ -1667,5 +1675,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
 
             _dotnetObj.Dispose();
         }
+
+        _resizeDotnetObj?.Dispose();
     }
 }

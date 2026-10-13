@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -334,7 +335,7 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
     /// <param name="bitNumberField">
     /// The <see cref="BitNumberField{TValue}"/> instance whose properties will be updated. Cannot be null.
     /// </param>
-    public void UpdateParameters<TValue>(BitNumberField<TValue> bitNumberField)
+    public void UpdateParameters<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue>(BitNumberField<TValue> bitNumberField)
     {
         if (bitNumberField is null) return;
 

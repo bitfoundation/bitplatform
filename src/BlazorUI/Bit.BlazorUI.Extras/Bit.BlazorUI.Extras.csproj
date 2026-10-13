@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <Import Project="../../Bit.Build.props" />
+    <Import Project="../Bit.BlazorUI.PackageValidation.props" />
 
     <PropertyGroup>
         <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
@@ -73,13 +74,21 @@
 
     <Target Name="BeforeBuildTasksOnCrossTargeting" BeforeTargets="DispatchToInnerBuilds" DependsOnTargets="BeforeBuildTasks" Condition=" '$(IsCrossTargetingBuild)' == 'true' AND '$(DesignTimeBuild)' != 'true' " />
 
-    <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
-        <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
+    <!-- A CI build installs exactly what package-lock.json pins (npm ci), so the tools a package is built with are the
+         ones reviewed; a local build keeps npm install, which also takes in a package.json edited by hand. -->
+    <Target Name="InstallNodejsDependencies" Inputs="package.json;package-lock.json" Outputs="node_modules\.package-lock.json">
+        <Exec Condition=" '$(CI)' == 'true' " Command="npm ci" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition=" '$(CI)' != 'true' " Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles)" Outputs="wwwroot/scripts/bit.blazorui.extras.js">
+    <!-- The stamp is per configuration, so a Release build after a Debug one minifies the script even when no .ts file
+         changed in between. The minifier is held to the target tsconfig.json compiles to (ES2019): left to its own
+         default it writes newer syntax (?? and ?.) back into the script, which the engines ES2019 is there for reject. -->
+    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles)" Outputs="wwwroot/scripts/bit.blazorui.extras.js;$(BaseIntermediateOutputPath)$(Configuration)\bit.blazorui.extras.js.stamp">
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/scripts/bit.blazorui.extras.js --minify --outfile=wwwroot/scripts/bit.blazorui.extras.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/scripts/bit.blazorui.extras.js --minify --target=es2019 --outfile=wwwroot/scripts/bit.blazorui.extras.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <MakeDir Directories="$(BaseIntermediateOutputPath)$(Configuration)" />
+        <Touch Files="$(BaseIntermediateOutputPath)$(Configuration)\bit.blazorui.extras.js.stamp" AlwaysCreate="true" />
     </Target>
 
     <Target Name="BuildCss" Inputs="@(ScssFiles)" Outputs="wwwroot/styles/bit.blazorui.extras.css;wwwroot/styles/bit.blazorui.material.css;wwwroot/styles/bit.blazorui.cupertino.css;wwwroot/styles/bit.blazorui.fluent2.css">

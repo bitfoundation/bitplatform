@@ -1053,8 +1053,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         // of them, one of the adjacent months filling the grid, scrolls the calendar onto its own month.
         if (IsInDisplayedMonths(selectedDate.Date) is false)
         {
-            _currentYear = _culture.Calendar.GetYear(selectedDate);
-            _currentMonth = _culture.Calendar.GetMonth(selectedDate);
+            _currentYear = _culture.DateTimeFormat.Calendar.GetYear(selectedDate);
+            _currentMonth = _culture.DateTimeFormat.Calendar.GetMonth(selectedDate);
         }
 
         if (_currentYear != previousYear || _currentMonth != previousMonth)
@@ -1213,7 +1213,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private void GenerateCalendarData(DateTime dateTime)
     {
-        var calendar = _culture.Calendar;
+        var calendar = _culture.DateTimeFormat.Calendar;
 
         // A date the culture's calendar does not support has no year or month to be read off it, so the view
         // opens on the nearest date it does - the Hebrew calendar of .NET, for one, starts in 1583.
@@ -1323,7 +1323,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         _monthTitles[monthIndex] = $"{GetMonthName(year, month)} {year}";
 
         var days = _daysOfMonths[monthIndex];
-        var calendar = _culture.Calendar;
+        var calendar = _culture.DateTimeFormat.Calendar;
         int daysInMonth = calendar.GetDaysInMonth(year, month);
         int firstDayOfWeek = (int)GetFirstDayOfWeek();
         int dayOfWeek;
@@ -1416,7 +1416,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     {
         try
         {
-            return new DateTime(year, month, day, _culture.Calendar);
+            return new DateTime(year, month, day, _culture.DateTimeFormat.Calendar);
         }
         catch (ArgumentException)
         {
@@ -1432,7 +1432,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         var date = TryCreateDate(year, month, 1);
         if (date.HasValue) return date.Value;
 
-        var calendar = _culture.Calendar;
+        var calendar = _culture.DateTimeFormat.Calendar;
         var (minYear, minMonth) = GetMinCalendarYearMonth();
 
         return year == minYear && month <= minMonth
@@ -1445,7 +1445,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     // MinDate and MaxDate bound it.
     private (int Year, int Month) GetMinCalendarYearMonth()
     {
-        var calendar = _culture.Calendar;
+        var calendar = _culture.DateTimeFormat.Calendar;
         var minDate = calendar.MinSupportedDateTime;
 
         return (calendar.GetYear(minDate), calendar.GetMonth(minDate));
@@ -1454,7 +1454,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// <inheritdoc cref="GetMinCalendarYearMonth"/>
     private (int Year, int Month) GetMaxCalendarYearMonth()
     {
-        var calendar = _culture.Calendar;
+        var calendar = _culture.DateTimeFormat.Calendar;
         var maxDate = calendar.MaxSupportedDateTime;
 
         return (calendar.GetYear(maxDate), calendar.GetMonth(maxDate));
@@ -1469,7 +1469,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// <inheritdoc cref="GetMonthsInCurrentYear"/>
     private int GetMonthsInYear(int year)
     {
-        return _culture.Calendar.GetMonthsInYear(year);
+        return _culture.DateTimeFormat.Calendar.GetMonthsInYear(year);
     }
 
     // A culture whose month names are the thirteen of a Hebrew leap year names the months of a common year
@@ -1537,7 +1537,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     private int GetDayOfCurrentMonth(DateTime date)
     {
-        return _culture.Calendar.GetDayOfMonth(date);
+        return _culture.DateTimeFormat.Calendar.GetDayOfMonth(date);
     }
 
     private bool IsGoToTodayButtonDisabled(int todayYear, int todayMonth, bool showYearPicker = false)
@@ -1595,7 +1595,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
             date = _daysOfMonths[monthIndex][weekIndex, day];
         }
 
-        return _culture.Calendar.GetWeekOfYear(date!.Value, WeekNumberRule ?? CalendarWeekRule.FirstFullWeek, GetFirstDayOfWeek());
+        return _culture.DateTimeFormat.Calendar.GetWeekOfYear(date!.Value, WeekNumberRule ?? CalendarWeekRule.FirstFullWeek, GetFirstDayOfWeek());
     }
 
     private void ToggleMonthPickerOverlay()
@@ -1720,8 +1720,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
             if (max.HasValue)
             {
                 var maxDate = GetDateTime(max.Value);
-                var maxDateYear = _culture.Calendar.GetYear(maxDate);
-                var maxDateMonth = _culture.Calendar.GetMonth(maxDate);
+                var maxDateYear = _culture.DateTimeFormat.Calendar.GetYear(maxDate);
+                var maxDateMonth = _culture.DateTimeFormat.Calendar.GetMonth(maxDate);
 
                 if (CompareYearMonth(lastYear, lastMonth, maxDateYear, maxDateMonth) >= 0) return false;
             }
@@ -1735,8 +1735,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
             if (min.HasValue)
             {
                 var minDate = GetDateTime(min.Value);
-                var minDateYear = _culture.Calendar.GetYear(minDate);
-                var minDateMonth = _culture.Calendar.GetMonth(minDate);
+                var minDateYear = _culture.DateTimeFormat.Calendar.GetYear(minDate);
+                var minDateMonth = _culture.DateTimeFormat.Calendar.GetMonth(minDate);
 
                 if (CompareYearMonth(_currentYear, _currentMonth, minDateYear, minDateMonth) <= 0) return false;
             }
@@ -1769,8 +1769,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         var minDate = GetMinDate();
 
         return (
-                (isNext && maxDate.HasValue && _culture.Calendar.GetYear(GetDateTime(maxDate.Value)) == _currentYear) ||
-                (isNext is false && minDate.HasValue && _culture.Calendar.GetYear(GetDateTime(minDate.Value)) == _currentYear)
+                (isNext && maxDate.HasValue && _culture.DateTimeFormat.Calendar.GetYear(GetDateTime(maxDate.Value)) == _currentYear) ||
+                (isNext is false && minDate.HasValue && _culture.DateTimeFormat.Calendar.GetYear(GetDateTime(minDate.Value)) == _currentYear)
                ) is false;
     }
 
@@ -1785,8 +1785,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         var minDate = GetMinDate();
 
         return (
-                (isNext && maxDate.HasValue && _culture.Calendar.GetYear(GetDateTime(maxDate.Value)) < _yearPickerStartYear + 12) ||
-                (isNext is false && minDate.HasValue && _culture.Calendar.GetYear(GetDateTime(minDate.Value)) >= _yearPickerStartYear)
+                (isNext && maxDate.HasValue && _culture.DateTimeFormat.Calendar.GetYear(GetDateTime(maxDate.Value)) < _yearPickerStartYear + 12) ||
+                (isNext is false && minDate.HasValue && _culture.DateTimeFormat.Calendar.GetYear(GetDateTime(minDate.Value)) >= _yearPickerStartYear)
                ) is false;
     }
 
@@ -1851,8 +1851,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         if (max.HasValue)
         {
             var maxDate = GetDateTime(max.Value);
-            var maxDateYear = _culture.Calendar.GetYear(maxDate);
-            var maxDateMonth = _culture.Calendar.GetMonth(maxDate);
+            var maxDateYear = _culture.DateTimeFormat.Calendar.GetYear(maxDate);
+            var maxDateMonth = _culture.DateTimeFormat.Calendar.GetMonth(maxDate);
 
             if (_currentYear > maxDateYear || (_currentYear == maxDateYear && month > maxDateMonth)) return true;
         }
@@ -1861,8 +1861,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         if (min.HasValue)
         {
             var minDate = GetDateTime(min.Value);
-            var minDateYear = _culture.Calendar.GetYear(minDate);
-            var minDateMonth = _culture.Calendar.GetMonth(minDate);
+            var minDateYear = _culture.DateTimeFormat.Calendar.GetYear(minDate);
+            var minDateMonth = _culture.DateTimeFormat.Calendar.GetMonth(minDate);
 
             if (_currentYear < minDateYear || (_currentYear == minDateYear && month < minDateMonth)) return true;
         }
@@ -1879,8 +1879,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         // MinDate and MaxDate - the year picker can show them at the edges of its ranges.
         return year < GetMinCalendarYearMonth().Year
             || year > GetMaxCalendarYearMonth().Year
-            || (maxDate.HasValue && year > _culture.Calendar.GetYear(GetDateTime(maxDate.Value)))
-            || (minDate.HasValue && year < _culture.Calendar.GetYear(GetDateTime(minDate.Value)));
+            || (maxDate.HasValue && year > _culture.DateTimeFormat.Calendar.GetYear(GetDateTime(maxDate.Value)))
+            || (minDate.HasValue && year < _culture.DateTimeFormat.Calendar.GetYear(GetDateTime(minDate.Value)));
     }
 
     private (string style, string klass) GetDayButtonCss(DateTime date, int monthIndex)
@@ -2001,11 +2001,11 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         if (CurrentValue.HasValue is false) return;
 
         var currentValue = GetDateTime(CurrentValue.Value);
-        var currentValueYear = _culture.Calendar.GetYear(currentValue);
-        var currentValueMonth = _culture.Calendar.GetMonth(currentValue);
-        var currentValueDay = _culture.Calendar.GetDayOfMonth(currentValue);
+        var currentValueYear = _culture.DateTimeFormat.Calendar.GetYear(currentValue);
+        var currentValueMonth = _culture.DateTimeFormat.Calendar.GetMonth(currentValue);
+        var currentValueDay = _culture.DateTimeFormat.Calendar.GetDayOfMonth(currentValue);
 
-        var date = _culture.Calendar.ToDateTime(currentValueYear, currentValueMonth, currentValueDay, _hour, _minute, 0, 0);
+        var date = _culture.DateTimeFormat.Calendar.ToDateTime(currentValueYear, currentValueMonth, currentValueDay, _hour, _minute, 0, 0);
         CurrentValue = new(date, _timeZone.GetUtcOffset(date));
     }
 
@@ -2050,7 +2050,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     {
         var (year, month) = _monthsOfView[monthIndex];
 
-        return _culture.Calendar.GetYear(date) == year && _culture.Calendar.GetMonth(date) == month;
+        return _culture.DateTimeFormat.Calendar.GetYear(date) == year && _culture.DateTimeFormat.Calendar.GetMonth(date) == month;
     }
 
     /// <inheritdoc cref="IsInMonth"/>
@@ -2368,7 +2368,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     {
         try
         {
-            return _culture.Calendar.AddMonths(date, months);
+            return _culture.DateTimeFormat.Calendar.AddMonths(date, months);
         }
         catch (ArgumentException)
         {
@@ -2381,7 +2381,7 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     {
         try
         {
-            return _culture.Calendar.AddYears(date, years);
+            return _culture.DateTimeFormat.Calendar.AddYears(date, years);
         }
         catch (ArgumentException)
         {
@@ -2452,8 +2452,8 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
         // its month going forward, so the day the keyboard lands on is where it was reached from.
         if (IsInDisplayedMonths(target) is false)
         {
-            var year = _culture.Calendar.GetYear(target);
-            var month = _culture.Calendar.GetMonth(target);
+            var year = _culture.DateTimeFormat.Calendar.GetYear(target);
+            var month = _culture.DateTimeFormat.Calendar.GetMonth(target);
 
             (_currentYear, _currentMonth) = CompareYearMonth(year, month, _currentYear, _currentMonth) < 0
                 ? (year, month)

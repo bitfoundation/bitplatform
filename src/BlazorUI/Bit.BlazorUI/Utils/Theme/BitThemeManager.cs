@@ -4,10 +4,10 @@ namespace Bit.BlazorUI;
 
 /// <summary>
 /// Bridges Blazor to the client <c>BitTheme</c> script: preset names on the <c>bit-theme</c> attribute vs inline CSS variables from <see cref="BitTheme"/>.
-/// <see cref="SetThemeAsync"/> selects packaged Fluent CSS for <c>:root[bit-theme]</c>.
+/// <see cref="SetThemeAsync(string)"/> selects packaged Fluent CSS for <c>:root[bit-theme]</c>.
 /// <see cref="ApplyBitThemeAsync"/> sets <c>--bit-*</c> variables on the target element (default <c>document.body</c>), overriding stylesheet defaults for that subtree.
 /// Nested <see cref="BitThemeProvider"/> scopes overrides to its root element.
-/// Theme swaps (from <see cref="SetThemeAsync"/>, <see cref="ToggleDarkLightAsync"/>, or OS-driven
+/// Theme swaps (from <see cref="SetThemeAsync(string)"/>, <see cref="ToggleDarkLightAsync"/>, or OS-driven
 /// updates) animate via the View Transitions API when the document element carries the
 /// <see cref="BitThemeAttributeNames.ThemeViewTransition"/> marker attribute.
 /// </summary>

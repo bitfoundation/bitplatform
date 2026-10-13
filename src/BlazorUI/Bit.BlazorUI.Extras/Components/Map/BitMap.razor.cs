@@ -2418,7 +2418,9 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         var due = ViewAnnouncementThrottle - (DateTimeOffset.UtcNow - _lastAnnouncementAt);
         if (due < TimeSpan.Zero) due = TimeSpan.Zero;
 
-        _ = Task.Run(async () =>
+        // Run on the renderer's dispatcher rather than the thread pool: the wait ends in fields the renderer reads,
+        // the consumer's ViewAnnouncementFormatter and its OnInteropError handler, which may render.
+        _ = InvokeAsync(async () =>
         {
             try
             {
@@ -2440,7 +2442,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
                 // unobserved exception on the finalizer thread rather than at the consumer.
                 await RaiseInteropError(BitMapInteropErrorSource.Callback, ex, nameof(AnnounceViewChanges));
             }
-        }, cts.Token);
+        });
     }
 
     private async ValueTask SetLoadState(BitMapLoadState state, Exception? error = null)

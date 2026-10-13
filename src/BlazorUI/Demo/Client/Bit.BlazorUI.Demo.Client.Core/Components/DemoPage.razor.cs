@@ -507,63 +507,72 @@ public partial class DemoPage
         },
     ];
 
-    private readonly List<ComponentSubEnum> _componentBaseSubEnums =
-    [
-        new()
-        {
-            Id = "component-visibility",
-            Name = "BitVisibility",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Visible",
-                    Value="0",
-                    Description="The content of the component is visible.",
-                },
-                new()
-                {
-                    Name= "Hidden",
-                    Value="1",
-                    Description="The content of the component is hidden, but the space it takes on the page remains (visibility:hidden).",
-                },
-                new()
-                {
-                    Name= "Collapsed",
-                    Value="2",
-                    Description="The component is hidden (display:none).",
-                }
-            ]
-        },
-        new()
-        {
-            Id = "component-dir",
-            Name = "BitDir",
-            Description = "",
-            Items =
-            [
-                new()
-                {
-                    Name= "Ltr",
-                    Value="0",
-                    Description="Ltr (left to right) is to be used for languages that are written from the left to the right (like English).",
-                },
-                new()
-                {
-                    Name= "Rtl",
-                    Value="1",
-                    Description="Rtl (right to left) is to be used for languages that are written from the right to the left (like Arabic).",
-                },
-                new()
-                {
-                    Name= "Auto",
-                    Value="2",
-                    Description="Auto lets the user agent decide. It uses a basic algorithm as it parses the characters inside the element until it finds a character with a strong directionality, then applies that directionality to the whole element.",
-                }
-            ]
-        }
-    ];
+    private readonly List<ComponentSubEnum> _componentBaseSubEnums = [ComponentVisibilityEnum(), ComponentDirEnum()];
+
+    /// <summary>
+    /// The BitVisibility table every page of a component inheriting BitComponentBase shows, anchored under
+    /// #component-visibility. A page of a component that does not inherit it, but documents a parameter of this
+    /// type all the same (BitParams), adds it to its own SubEnums - one table, never a copy of it.
+    /// </summary>
+    public static ComponentSubEnum ComponentVisibilityEnum() => new()
+    {
+        Id = "component-visibility",
+        Name = "BitVisibility",
+        Description = "",
+        Items =
+        [
+            new()
+            {
+                Name= "Visible",
+                Value="0",
+                Description="The content of the component is visible.",
+            },
+            new()
+            {
+                Name= "Hidden",
+                Value="1",
+                Description="The content of the component is hidden, but the space it takes on the page remains (visibility:hidden).",
+            },
+            new()
+            {
+                Name= "Collapsed",
+                Value="2",
+                Description="The component is hidden (display:none).",
+            }
+        ]
+    };
+
+    /// <summary>
+    /// The BitDir table every page of a component inheriting BitComponentBase shows, anchored under #component-dir;
+    /// added to its own SubEnums by a page that documents a parameter of this type without inheriting it (BitParams).
+    /// </summary>
+    public static ComponentSubEnum ComponentDirEnum() => new()
+    {
+        Id = "component-dir",
+        Name = "BitDir",
+        Description = "",
+        Items =
+        [
+            new()
+            {
+                Name= "Ltr",
+                Value="0",
+                Description="Ltr (left to right) is to be used for languages that are written from the left to the right (like English).",
+            },
+            new()
+            {
+                Name= "Rtl",
+                Value="1",
+                Description="Rtl (right to left) is to be used for languages that are written from the right to the left (like Arabic).",
+            },
+            new()
+            {
+                Name= "Auto",
+                Value="2",
+                Description="Auto lets the user agent decide. It uses a basic algorithm as it parses the characters inside the element until it finds a character with a strong directionality, then applies that directionality to the whole element.",
+            }
+        ]
+    };
 
 
 

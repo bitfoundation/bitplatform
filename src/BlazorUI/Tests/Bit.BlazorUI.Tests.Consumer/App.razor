@@ -1,0 +1,76 @@
+﻿@* Markup across the packages the way an app writes it - two-way bindings, generic components whose type arguments are
+   inferred, templates, cascades - compiled as C# 12. *@
+
+<BitThemeProvider>
+    <BitParams Parameters="@([new BitButtonParams { Variant = BitVariant.Outline }])">
+        <BitStack Gap="1rem">
+            <BitButton OnClick="ToggleModal">Open</BitButton>
+            <BitTextField Label="Name" @bind-Value="_name" />
+            <BitNumberField Label="Age" @bind-Value="_age" />
+            <BitToggle Label="Subscribe" @bind-Value="_subscribe" />
+            <BitDropdown Label="Color" Items="_colors" @bind-Value="_color" />
+            <BitDatePicker Label="Birthday" @bind-Value="_birthday" />
+            <BitTagsInput Label="Tags" @bind-Value="_tags" />
+            <BitIcon IconName="@BitIconName.Add" />
+            <BitBreadcrumb Items="_trail" AutoCollapse />
+            <BitNav Items="_nav" />
+
+            <BitDataGrid Items="_people">
+                <BitDataGridColumn Property="p => p.Name" Title="Name" />
+                <BitDataGridColumn Property="p => p.Age" Title="Age" Align="BitTextAlign.End" />
+            </BitDataGrid>
+
+            <BitRichTextEditor @bind-Value="_html" />
+            <BitMarkdownViewer Markdown="# Hello" />
+            <BitThemeSwitcher />
+            <BitCountryPicker @bind-Value="_country" />
+            <BitTimeZonePicker @bind-Value="_timeZone" />
+        </BitStack>
+    </BitParams>
+</BitThemeProvider>
+
+<BitModal @bind-IsOpen="_isModalOpen">
+    <BitText>@ThemeChoices.Describe(_theme)</BitText>
+</BitModal>
+
+@code {
+    private string? _name;
+    private int _age;
+    private bool _subscribe;
+    private string? _color;
+    private DateTimeOffset? _birthday;
+    private ICollection<string>? _tags;
+    private string? _html;
+    private BitCountry? _country;
+    private string? _timeZone;
+    private string? _theme = BitThemePresets.Light;
+    private bool _isModalOpen;
+
+    private readonly List<BitDropdownItem<string>> _colors =
+    [
+        new() { Text = "Red", Value = "red" },
+        new() { Text = "Green", Value = "green" },
+    ];
+
+    private readonly List<BitBreadcrumbItem> _trail =
+    [
+        new() { Text = "Home", Href = "/" },
+        new() { Text = "Docs", Href = "/docs", IsSelected = true },
+    ];
+
+    private readonly List<BitNavItem> _nav =
+    [
+        new() { Text = "Home", Url = "/" },
+        new() { Text = "Settings", ChildItems = [new() { Text = "Profile", Url = "/profile" }] },
+    ];
+
+    private readonly List<Person> _people =
+    [
+        new("Ada", 36),
+        new("Alan", 41),
+    ];
+
+    private void ToggleModal() => _isModalOpen = _isModalOpen is false;
+
+    private sealed record Person(string Name, int Age);
+}

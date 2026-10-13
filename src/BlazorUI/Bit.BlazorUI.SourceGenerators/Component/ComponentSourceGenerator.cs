@@ -77,6 +77,15 @@ public class ComponentSourceGenerator : IIncrementalGenerator
         var callOnSetAsyncAttr = attrs.SingleOrDefault(a => a.AttributeClass?.ToDisplayString() == "Bit.BlazorUI.CallOnSetAsyncAttribute");
         var callOnSetAsyncName = callOnSetAsyncAttr?.ConstructorArguments.FirstOrDefault().Value as string;
 
+        // A [CallOnSet] naming a method that returns a Task or a ValueTask would have the generated code call it
+        // without awaiting it: its work would run on past the parameter pass, and whatever it throws would go
+        // unobserved. Such a hook is awaited like a [CallOnSetAsync] one instead.
+        if (callOnSetName is not null && callOnSetAsyncName is null && ReturnsAwaitable(containingType, callOnSetName))
+        {
+            callOnSetAsyncName = callOnSetName;
+            callOnSetName = null;
+        }
+
         var classNameForCode = BuildClassNameForCode(containingType);
         var isBaseTypeComponentBase = containingType.BaseType is not null &&
             componentBaseType is not null &&
@@ -115,6 +124,27 @@ public class ComponentSourceGenerator : IIncrementalGenerator
         var member = bitComponentBaseType.GetMembers(memberName).FirstOrDefault();
 
         return member is not null && compilation.IsSymbolAccessibleWithin(member, type);
+    }
+
+    /// <summary>
+    /// Whether the parameterless method of the type (or of one of its base types) the name points at returns a Task
+    /// or a ValueTask, generic or not.
+    /// </summary>
+    private static bool ReturnsAwaitable(INamedTypeSymbol type, string methodName)
+    {
+        for (var current = type; current is not null; current = current.BaseType)
+        {
+            var method = current.GetMembers(methodName).OfType<IMethodSymbol>().FirstOrDefault(m => m.Parameters.Length == 0);
+
+            if (method is null) continue;
+
+            var returnType = method.ReturnType.OriginalDefinition.ToDisplayString();
+
+            return returnType is "System.Threading.Tasks.Task" or "System.Threading.Tasks.Task<TResult>"
+                              or "System.Threading.Tasks.ValueTask" or "System.Threading.Tasks.ValueTask<TResult>";
+        }
+
+        return false;
     }
 
     /// <summary>

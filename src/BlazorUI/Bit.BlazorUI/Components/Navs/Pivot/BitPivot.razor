@@ -37,10 +37,14 @@
             @* The arrow, Home, End, Enter, Space and Delete keys of the tabs pattern are all handled
                on the tablist, so a single handler covers every item that bubbles its keydown here.
                Their default action is suppressed by UpdatePreventedKeys, on a listener of the browser's
-               own, since Blazor's preventDefault directive cannot be decided per key. *@
+               own, since Blazor's preventDefault directive cannot be decided per key.
+               tabindex="-1" keeps the tablist itself out of the tab order: a header that scrolls (the
+               Slide overflow) is a scroll container, which Firefox gives a tab stop of its own ahead of
+               the selected tab, and the tabs pattern promises one stop for the whole header. *@
             <div @ref="_headerRef"
                  @onkeydown="HandleOnKeyDown"
                  id="@_HeaderId"
+                 tabindex="-1"
                  role="tablist"
                  aria-label="@AriaLabel"
                  aria-labelledby="@AriaLabelledBy"

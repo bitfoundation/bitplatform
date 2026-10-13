@@ -354,6 +354,8 @@ public partial class BitPersonaDemo
             Type = "BitLinkRels?",
             DefaultValue = "null",
             Description = "Sets the rel attribute of the coin when Href renders it as a link. When Target is _blank, noopener is added to it, unless it already says NoOpener, NoReferrer or Opener.",
+            LinkType = LinkType.Link,
+            Href = "#link-rels-enum",
         },
         new()
         {
@@ -1022,6 +1024,7 @@ public partial class BitPersonaDemo
         },
         DemoSharedEnums.BitVariant(),
         DemoSharedEnums.BitImageLoading(),
+        DemoSharedEnums.BitLinkRels(),
     ];
 
 

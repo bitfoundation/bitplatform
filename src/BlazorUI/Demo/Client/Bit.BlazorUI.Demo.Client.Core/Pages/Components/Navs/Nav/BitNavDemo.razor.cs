@@ -762,6 +762,8 @@ public partial class BitNavDemo
                    Type = "BitLinkRels?",
                    DefaultValue = "null",
                    Description = "The rel attribute of the link of the nav item. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
+                   LinkType = LinkType.Link,
+                   Href = "#link-rels-enum",
                },
                new()
                {
@@ -981,6 +983,8 @@ public partial class BitNavDemo
                    Type = "BitLinkRels?",
                    DefaultValue = "null",
                    Description = "The rel attribute of the link of the nav option. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
+                   LinkType = LinkType.Link,
+                   Href = "#link-rels-enum",
                },
                new()
                {
@@ -1420,6 +1424,7 @@ public partial class BitNavDemo
         DemoSharedEnums.BitNavRenderType(),
         DemoSharedEnums.BitNavAriaCurrent(),
         DemoSharedEnums.BitNavItemTemplateRenderMode(),
+        DemoSharedEnums.BitLinkRels(),
         DemoSharedEnums.BitSize(),
     ];
 }

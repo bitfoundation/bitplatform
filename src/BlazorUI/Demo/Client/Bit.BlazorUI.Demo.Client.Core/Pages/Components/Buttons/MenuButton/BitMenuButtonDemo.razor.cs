@@ -1006,6 +1006,8 @@ public partial class BitMenuButtonDemo
                    Type = "BitLinkRels?",
                    DefaultValue = "null",
                    Description = "The rel attribute of the link of the item. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
+                   LinkType = LinkType.Link,
+                   Href = "#link-rels-enum",
                },
                new()
                {
@@ -1177,6 +1179,8 @@ public partial class BitMenuButtonDemo
                    Type = "BitLinkRels?",
                    DefaultValue = "null",
                    Description = "The rel attribute of the link of the option. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
+                   LinkType = LinkType.Link,
+                   Href = "#link-rels-enum",
                },
                new()
                {
@@ -1668,6 +1672,7 @@ public partial class BitMenuButtonDemo
         DemoSharedEnums.BitButtonType(),
         DemoSharedEnums.BitColor(),
         DemoSharedEnums.BitDropDirection(),
+        DemoSharedEnums.BitLinkRels(),
         DemoSharedEnums.BitSize(),
         DemoSharedEnums.BitVariant(),
     ];

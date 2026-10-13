@@ -43,8 +43,10 @@ internal sealed class BitPdfPostScriptFunction : BitPdfFunction
         {
             pos++;
         }
-        var program = ParseBlock(tokens, ref pos);
-        return new BitPdfPostScriptFunction(program, domain.Length >= 2 ? domain : [0, 1], range);
+        var program = ParseBlock(tokens, ref pos, depth: 0);
+        // A program nested deeper than MaxBlockDepth is not one this engine runs: the
+        // function is unsupported, as any other it cannot build.
+        return program is null ? null : new BitPdfPostScriptFunction(program, domain.Length >= 2 ? domain : [0, 1], range);
     }
 
     public override double[] Eval(double[] input)
@@ -229,8 +231,18 @@ internal sealed class BitPdfPostScriptFunction : BitPdfFunction
         return tokens;
     }
 
-    private static List<object> ParseBlock(List<string> tokens, ref int pos)
+    // Each '{' is one recursive ParseBlock frame (and one Run frame when the block
+    // runs), so hostile braces would otherwise overflow the stack - an uncatchable
+    // crash of the whole process. Real programs nest an if/ifelse a few levels deep.
+    private const int MaxBlockDepth = 100;
+
+    /// <summary>Parses one <c>{ ... }</c> block, or returns <c>null</c> when it nests past <see cref="MaxBlockDepth"/>.</summary>
+    private static List<object>? ParseBlock(List<string> tokens, ref int pos, int depth)
     {
+        if (depth >= MaxBlockDepth)
+        {
+            return null;
+        }
         var block = new List<object>();
         if (pos < tokens.Count && tokens[pos] == "{")
         {
@@ -241,7 +253,11 @@ internal sealed class BitPdfPostScriptFunction : BitPdfFunction
             string t = tokens[pos];
             if (t == "{")
             {
-                block.Add(ParseBlock(tokens, ref pos));
+                if (ParseBlock(tokens, ref pos, depth + 1) is not { } inner)
+                {
+                    return null;
+                }
+                block.Add(inner);
             }
             else
             {

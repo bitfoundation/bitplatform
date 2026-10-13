@@ -270,7 +270,7 @@ public partial class BitFcTimelineMonthView
         // so we don't make a JS round-trip on every render of a non-current month.
         // Compare using the active culture's calendar since the rendered month follows that
         // calendar system, not the Gregorian one.
-        var cal = State.Culture.Calendar;
+        var cal = State.Culture.DateTimeFormat.Calendar;
         var today = State.Today;
         if (cal.GetYear(State.SelectedDate) != cal.GetYear(today) ||
             cal.GetMonth(State.SelectedDate) != cal.GetMonth(today))

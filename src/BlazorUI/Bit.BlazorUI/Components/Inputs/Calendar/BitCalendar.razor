@@ -3,8 +3,8 @@
 
 @{
     var today = GetToday();
-    var todayYear = _culture.Calendar.GetYear(today);
-    var todayMonth = _culture.Calendar.GetMonth(today);
+    var todayYear = _culture.DateTimeFormat.Calendar.GetYear(today);
+    var todayMonth = _culture.DateTimeFormat.Calendar.GetMonth(today);
     var focusableDay = GetFocusableDay();
     var isInvalid = ValueInvalid is true;
 

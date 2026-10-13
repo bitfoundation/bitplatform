@@ -60,11 +60,16 @@
             if (!element || !(element instanceof Element)) return;
 
             try {
+                // A second registration under the same id replaces the first, whose observer would otherwise keep
+                // calling .NET on its own. The reference it was handed is left alone: it may be this one again.
+                Observers._resizeObservers[id]?.disconnect();
+
                 const observer = new ResizeObserver(entries => {
                     const entry = entries[0];
                     if (!entry) return;
 
-                    obj.invokeMethodAsync("OnResize", entry.contentRect);
+                    // A component disposed while a resize was on its way rejects the call; that is nobody's error.
+                    obj.invokeMethodAsync("OnResize", entry.contentRect).catch(() => { });
                 });
                 observer.observe(element);
 
@@ -74,16 +79,22 @@
             }
         }
 
+        // Releases the reference it is handed whether or not an observer was registered for the id, or its element
+        // is still there: the components count on this call to release it (BitCarousel), and an element already gone
+        // with its parent or a registration that never happened would otherwise leave the reference tracked forever.
         public static unregisterResize(id: string, element: HTMLElement, obj: DotNetObject) {
-            if (!element || !(element instanceof Element)) return;
-
             try {
                 const observer = Observers._resizeObservers[id];
-                if (!observer) return;
+                if (observer) {
+                    observer.disconnect();
+                    delete Observers._resizeObservers[id];
+                }
+            } catch (err) {
+                console.error(err);
+            }
 
-                observer.unobserve(element);
-                delete Observers._resizeObservers[id];
-                obj.dispose();
+            try {
+                obj?.dispose();
             } catch (err) {
                 console.error(err);
             }

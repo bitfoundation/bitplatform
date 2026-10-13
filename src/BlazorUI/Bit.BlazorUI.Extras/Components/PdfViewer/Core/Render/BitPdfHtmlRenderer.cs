@@ -137,10 +137,36 @@ public sealed class BitPdfHtmlRenderer
     /// </summary>
     private void Op(params object?[] op)
     {
-        if (_ocHiddenAtDepth < 0)
+        // An op holding a non-finite number (a CTM or font size that overflowed to
+        // Infinity, a NaN from it) cannot be painted, and JSON has no way to write the
+        // number: serializing it would throw and fail the WHOLE page. So that one op is
+        // dropped - the HTML backend writes such a value into CSS the browser ignores,
+        // so the page renders the same in both modes. The clip save/restore pair ("g"
+        // and "G") carries no numbers, so dropping an op never unbalances them.
+        if (_ocHiddenAtDepth < 0 && AllFinite(op))
         {
             _ops!.Add(op);
         }
+    }
+
+    /// <summary>True when every number in <paramref name="values"/>, nested arrays included, is finite.</summary>
+    private static bool AllFinite(object?[] values)
+    {
+        foreach (object? value in values)
+        {
+            bool finite = value switch
+            {
+                double d => double.IsFinite(d),
+                double[] array => Array.TrueForAll(array, double.IsFinite),
+                object?[] nested => AllFinite(nested),
+                _ => true,
+            };
+            if (!finite)
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     /// <summary>Rounds a display-list coordinate to keep the ops JSON compact.</summary>
@@ -289,7 +315,7 @@ public sealed class BitPdfHtmlRenderer
             sb.Append(string.Create(CultureInfo.InvariantCulture,
                 $"<canvas data-bit-pdv-canvas width=\"{(int)Math.Ceiling(viewW)}\" height=\"{(int)Math.Ceiling(viewH)}\" " +
                 $"style=\"position:absolute;left:0;top:0;width:{viewW:0.##}px;height:{viewH:0.##}px\"></canvas>"));
-            CanvasOpsJson = System.Text.Json.JsonSerializer.Serialize(_ops);
+            CanvasOpsJson = System.Text.Json.JsonSerializer.Serialize(_ops, BitExtrasJsonContext.Default.ListObjectArray);
         }
         // The painted layer is a picture of the text, not the text: its glyphs may be
         // private-use codepoints, its images carry no description, and every word in it
@@ -2284,6 +2310,17 @@ public sealed class BitPdfHtmlRenderer
     // this the fill degrades to a solid color to bound the generated DOM.
     private const int MaxTiles = 4000;
 
+    // Maximum number of cells across NESTED tiling fills: a cell whose content fills
+    // with a tiling pattern again (itself, or another) multiplies the cell count at
+    // every level, so MaxTiles alone bounds one level but not the product - a pattern
+    // that selects itself in its own cell ran to MaxFormDepth levels and out of
+    // memory. A nested fill that would push the product past this degrades to a solid
+    // fill, the same as one fill with too many cells.
+    private const long MaxNestedTiles = 16000;
+
+    // The cell count of the tiling fills the current content is nested in (1 at the page).
+    private long _tileProduct = 1;
+
     /// <summary>
     /// Renders a tiling pattern (PatternType 1) fill: the pattern cell's content
     /// stream is replayed across an XStep/YStep grid that covers the fill path's
@@ -2345,6 +2382,11 @@ public sealed class BitPdfHtmlRenderer
         {
             return false;
         }
+        long tileProduct = _tileProduct * tileCount;
+        if (tileProduct > MaxNestedTiles)
+        {
+            return false;
+        }
 
         double[] bbox = pd.Get("BBox") is List<object?> bb && bb.Count >= 4
             ? [Num(bb[0]), Num(bb[1]), Num(bb[2]), Num(bb[3])]
@@ -2359,13 +2401,22 @@ public sealed class BitPdfHtmlRenderer
         }
         _html.Append('\'').Append(clipData).Append("')\">");
 
-        for (int j = jStart; j <= jEnd; j++)
+        long outerProduct = _tileProduct;
+        _tileProduct = tileProduct;
+        try
         {
-            for (int i = iStart; i <= iEnd; i++)
+            for (int j = jStart; j <= jEnd; j++)
             {
-                BitPdfMatrix cellCtm = BitPdfMatrix.Concat(patToDevice, new BitPdfMatrix(1, 0, 0, 1, i * xStep, j * yStep));
-                RunPatternCell(patStream, cellCtm, patRes, bbox);
+                for (int i = iStart; i <= iEnd; i++)
+                {
+                    BitPdfMatrix cellCtm = BitPdfMatrix.Concat(patToDevice, new BitPdfMatrix(1, 0, 0, 1, i * xStep, j * yStep));
+                    RunPatternCell(patStream, cellCtm, patRes, bbox);
+                }
             }
+        }
+        finally
+        {
+            _tileProduct = outerProduct;
         }
 
         _html.Append("</div>");

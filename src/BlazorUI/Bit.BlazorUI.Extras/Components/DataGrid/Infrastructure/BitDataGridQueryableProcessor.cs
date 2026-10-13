@@ -1,4 +1,5 @@
 ﻿using System.Linq.Expressions;
+using System.Reflection;
 
 namespace Bit.BlazorUI;
 
@@ -335,6 +336,13 @@ public static class BitDataGridQueryableProcessor
         }
     }
 
+    private static readonly PropertyInfo DateTimeDate = typeof(DateTime).GetProperty(nameof(DateTime.Date))!;
+    private static readonly PropertyInfo DateTimeOffsetDate = typeof(DateTimeOffset).GetProperty(nameof(DateTimeOffset.Date))!;
+    private static readonly PropertyInfo NullableDateTimeValue = typeof(DateTime?).GetProperty(nameof(Nullable<DateTime>.Value))!;
+    private static readonly PropertyInfo NullableDateTimeHasValue = typeof(DateTime?).GetProperty(nameof(Nullable<DateTime>.HasValue))!;
+    private static readonly PropertyInfo NullableDateTimeOffsetValue = typeof(DateTimeOffset?).GetProperty(nameof(Nullable<DateTimeOffset>.Value))!;
+    private static readonly PropertyInfo NullableDateTimeOffsetHasValue = typeof(DateTimeOffset?).GetProperty(nameof(Nullable<DateTimeOffset>.HasValue))!;
+
     // Builds a calendar-day (in)equality for a DateTime/DateTimeOffset member and a midnight operand,
     // via the .Date property (which LINQ providers translate, e.g. EF Core → CONVERT(date, ...));
     // DateTimeOffset.Date uses the row's own offset, matching the in-memory behavior. Returns null
@@ -353,15 +361,20 @@ public static class BitDataGridQueryableProcessor
         else
             return null;
 
+        // The members are named on the two closed types they can belong to rather than looked up by name on the
+        // member's type, so the trimmer sees which ones are used and keeps them.
+        var isDateTime = underlying == typeof(DateTime);
         var nullable = member.Type != underlying;
-        var valueExpr = nullable ? Expression.Property(member, "Value") : member;
-        var dateExpr = Expression.Property(valueExpr, nameof(DateTime.Date));
+        var valueExpr = nullable
+            ? Expression.Property(member, isDateTime ? NullableDateTimeValue : NullableDateTimeOffsetValue)
+            : member;
+        var dateExpr = Expression.Property(valueExpr, isDateTime ? DateTimeDate : DateTimeOffsetDate);
         var dayConst = Expression.Constant(day, typeof(DateTime));
 
         if (!nullable)
             return negate ? Expression.NotEqual(dateExpr, dayConst) : Expression.Equal(dateExpr, dayConst);
 
-        var hasValue = Expression.Property(member, "HasValue");
+        var hasValue = Expression.Property(member, isDateTime ? NullableDateTimeHasValue : NullableDateTimeOffsetHasValue);
         return negate
             ? Expression.OrElse(Expression.Not(hasValue), Expression.NotEqual(dateExpr, dayConst))
             : Expression.AndAlso(hasValue, Expression.Equal(dateExpr, dayConst));

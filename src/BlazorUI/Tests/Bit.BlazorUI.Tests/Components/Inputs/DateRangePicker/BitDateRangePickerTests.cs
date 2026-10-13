@@ -180,29 +180,37 @@ public class BitDateRangePickerTests : BunitTestContext
         }
     }
 
-    //[TestMethod,
-    //    DataRow(false),
-    //    DataRow(true)
-    //]
-    //public void BitDateRangePickerShowCloseButtonTest(bool showCloseButton)
-    //{
-    //    Context.JSInterop.Mode = JSRuntimeMode.Loose;
-    //    var component = RenderComponent<BitDateRangePicker>(parameters =>
-    //    {
-    //        parameters.Add(p => p.ShowCloseButton, showCloseButton);
-    //    });
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public void BitDateRangePickerShowCloseButtonTest(bool showCloseButton)
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowCloseButton, showCloseButton);
+        });
 
-    //    var closeBtnElms = component.FindAll(".bit-dtrp-cbtn");
+        // The close button shares the nav buttons' class, so it is told apart by the name it is announced by.
+        var closeBtnElms = component.FindAll("button[aria-label='Close date range picker']");
 
-    //    if (showCloseButton)
-    //    {
-    //        Assert.AreEqual(1, closeBtnElms.Count);
-    //    }
-    //    else
-    //    {
-    //        Assert.AreEqual(0, closeBtnElms.Count);
-    //    }
-    //}
+        Assert.HasCount(showCloseButton ? 1 : 0, closeBtnElms);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldNotRenderACloseButtonWhenStandalone()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowCloseButton, true);
+            parameters.Add(p => p.Standalone, true);
+        });
+
+        // A standalone calendar is not in a callout, so there is nothing for the button to close.
+        Assert.HasCount(0, component.FindAll("button[aria-label='Close date range picker']"));
+    }
 
     [TestMethod,
         DataRow(false),

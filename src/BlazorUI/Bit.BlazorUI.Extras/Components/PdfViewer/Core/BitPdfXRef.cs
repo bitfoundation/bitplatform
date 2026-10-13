@@ -134,14 +134,16 @@ public sealed class BitPdfXRef : IBitPdfXRef
             return; // fall through to recovery
         }
 
-        var queue = new Queue<int>();
+        // Each queued section remembers whether a hybrid file's /XRefStm named it: only
+        // that stream may fill in the entries its classic table left free (see ReadXRefStream).
+        var queue = new Queue<(int Offset, bool IsXRefStm)>();
         var visited = new HashSet<int>();
-        queue.Enqueue(start);
+        queue.Enqueue((start, false));
         bool firstSection = true;
 
         while (queue.Count > 0)
         {
-            int offset = queue.Dequeue();
+            (int offset, bool isXRefStm) = queue.Dequeue();
             if (offset < 0 || offset >= _source.Length - _startOffset || !visited.Add(offset))
             {
                 continue;
@@ -150,7 +152,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
             BitPdfDict? sectionTrailer;
             try
             {
-                sectionTrailer = ReadSection(offset);
+                sectionTrailer = ReadSection(offset, isXRefStm);
             }
             catch (Exception ex)
             {
@@ -178,11 +180,11 @@ public sealed class BitPdfXRef : IBitPdfXRef
 
             if (sectionTrailer.GetRaw("XRefStm") is double xrefStm)
             {
-                queue.Enqueue((int)xrefStm);
+                queue.Enqueue(((int)xrefStm, true));
             }
             if (sectionTrailer.GetRaw("Prev") is double prev)
             {
-                queue.Enqueue((int)prev);
+                queue.Enqueue(((int)prev, false));
             }
         }
     }
@@ -224,7 +226,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
         }
     }
 
-    private BitPdfDict? ReadSection(int offset)
+    private BitPdfDict? ReadSection(int offset, bool isXRefStm)
     {
         // Stored offsets are relative to the %PDF header; probe.Pos is already an
         // absolute buffer index once the substream starts there.
@@ -237,7 +239,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
         }
 
         // Otherwise it must be an indirect xref stream object: "n g obj << >> stream".
-        return ReadXRefStream(offset);
+        return ReadXRefStream(offset, isXRefStm);
     }
 
     private BitPdfDict ReadXRefTable(BitPdfLexer lexer)
@@ -297,7 +299,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
             ?? throw new BitPdfFormatException("Trailer is not a dictionary.");
     }
 
-    private BitPdfDict ReadXRefStream(int offset)
+    private BitPdfDict ReadXRefStream(int offset, bool isXRefStm)
     {
         var parser = new BitPdfParser(new BitPdfLexer(_source.CreateStream(offset + _startOffset)), this, _reader);
         if (parser.GetObj() is not BitPdfBaseStream stream || stream.Dict is null)
@@ -357,9 +359,12 @@ public sealed class BitPdfXRef : IBitPdfXRef
                 int num = objStart + i;
                 // In a hybrid-reference file the classic section marks compressed
                 // objects as free; the parallel /XRefStm carries their real
-                // entries. Let a cross-reference stream override an existing *free*
-                // entry (but never a real one, preserving newer-section priority).
-                if (_entries.TryGetValue(num, out var existing) && existing.Type != EntryType.Free)
+                // entries. Let THAT stream override an existing *free* entry (but
+                // never a real one, preserving newer-section priority). Any other
+                // stream is an older section reached through /Prev, where a free
+                // entry from a newer section is a deletion and must stand.
+                if (_entries.TryGetValue(num, out var existing)
+                    && (!isXRefStm || existing.Type != EntryType.Free))
                 {
                     continue;
                 }
@@ -440,14 +445,31 @@ public sealed class BitPdfXRef : IBitPdfXRef
         // generation). A mismatch means the xref offset is wrong (off-by-N,
         // damaged table); rebuild by scanning once and retry from the corrected
         // offset rather than silently returning the wrong object.
-        if (!HeaderMatches(entry.Field2, reference.Num, reference.Gen) && !_scanned)
+        if (!HeaderMatches(entry.Field2, reference.Num, reference.Gen))
         {
-            _scanned = true;
-            RebuildByScanning();
-            if (_entries.TryGetValue(reference.Num, out var corrected)
-                && corrected.Type == EntryType.Uncompressed)
+            if (!_scanned)
             {
-                entry = corrected;
+                _scanned = true;
+                RebuildByScanning();
+                if (_entries.TryGetValue(reference.Num, out var corrected))
+                {
+                    if (corrected.Type == EntryType.Compressed)
+                    {
+                        return FetchCompressed(corrected);
+                    }
+                    if (corrected.Type == EntryType.Uncompressed)
+                    {
+                        entry = corrected;
+                    }
+                }
+            }
+
+            // Still another object (or none) at the offset - the stale one, or the scan
+            // found no such object: the requested object is not in the file. Parsing
+            // there would hand back a different object under this reference.
+            if (!HeaderMatches(entry.Field2, reference.Num, reference.Gen))
+            {
+                return null;
             }
         }
 

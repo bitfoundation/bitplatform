@@ -2221,7 +2221,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         // A single pass over Values (which may be long after a select all) instead of a lookup per
         // selected item, so ordering the selection stays linear in the size of the selection.
+        // A null value never goes in (it has nullIndex of its own), so the notnull key of the dictionary holds.
+#pragma warning disable CS8714
         var indexes = new Dictionary<TValue, int>(Comparer);
+#pragma warning restore CS8714
         var nullIndex = -1;
         var index = 0;
         foreach (var value in Values)

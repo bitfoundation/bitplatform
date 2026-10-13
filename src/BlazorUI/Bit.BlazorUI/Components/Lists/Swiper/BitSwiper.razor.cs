@@ -1468,12 +1468,17 @@ public partial class BitSwiper : BitComponentBase
 
         if (_dotnetObj is not null)
         {
-            //_dotnetObj.Dispose(); // it is getting disposed in the following js call:
             try
             {
+                // The script releases the reference along with the swiper.
                 await _js.BitSwiperDispose(_Id);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
+            catch (JSException) { } // the call never reached the script, which is what the release below is for
+
+            // Released here too, for a disposal that never reached the script (or a swiper that was never set up
+            // there); releasing it twice is harmless.
+            _dotnetObj.Dispose();
         }
 
         await base.DisposeAsync(disposing);

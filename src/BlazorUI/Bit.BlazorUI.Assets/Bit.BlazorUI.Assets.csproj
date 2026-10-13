@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <Import Project="../../Bit.Build.props" />
+    <Import Project="../Bit.BlazorUI.PackageValidation.props" />
 
     <PropertyGroup>
         <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
@@ -46,8 +47,11 @@
 
     <Target Name="BeforeBuildTasksOnCrossTargeting" BeforeTargets="DispatchToInnerBuilds" DependsOnTargets="BeforeBuildTasks" Condition=" '$(IsCrossTargetingBuild)' == 'true' AND '$(DesignTimeBuild)' != 'true' " />
 
-    <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
-        <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
+    <!-- A CI build installs exactly what package-lock.json pins (npm ci), so the tools a package is built with are the
+         ones reviewed; a local build keeps npm install, which also takes in a package.json edited by hand. -->
+    <Target Name="InstallNodejsDependencies" Inputs="package.json;package-lock.json" Outputs="node_modules\.package-lock.json">
+        <Exec Condition=" '$(CI)' == 'true' " Command="npm ci" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition=" '$(CI)' != 'true' " Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
     <Target Name="BuildCss" Inputs="@(ScssFiles)" Outputs="wwwroot/styles/bit.blazorui.assets.css">

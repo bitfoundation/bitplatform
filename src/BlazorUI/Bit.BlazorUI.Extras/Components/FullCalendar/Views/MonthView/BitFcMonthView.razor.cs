@@ -65,7 +65,7 @@ public partial class BitFcMonthView
         if (payload.Args.Key is "PageUp" or "PageDown")
         {
             var sign = payload.Args.Key == "PageDown" ? 1 : -1;
-            var calendar = State.Culture.Calendar;
+            var calendar = State.Culture.DateTimeFormat.Calendar;
             try
             {
                 FocusDateBeyondGrid(payload.Args.ShiftKey

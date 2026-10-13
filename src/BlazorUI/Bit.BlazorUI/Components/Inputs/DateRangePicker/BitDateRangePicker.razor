@@ -156,9 +156,9 @@
 
             @{
                 var today = GetToday();
-                var todayYear = _culture.Calendar.GetYear(today);
-                var todayMonth = _culture.Calendar.GetMonth(today);
-                var todayDay = _culture.Calendar.GetDayOfMonth(today);
+                var todayYear = _culture.DateTimeFormat.Calendar.GetYear(today);
+                var todayMonth = _culture.DateTimeFormat.Calendar.GetMonth(today);
+                var todayDay = _culture.DateTimeFormat.Calendar.GetDayOfMonth(today);
                 var showTimePicker = ShowTimePicker && ((_showTimePickerAsOverlayInternal && _isTimePickerOverlayOnTop) || _showTimePickerAsOverlayInternal is false);
             }
 
@@ -510,7 +510,7 @@
 
                                         if (month > monthsInYear) continue;
 
-                                        var monthName = _culture.DateTimeFormat.GetMonthName(month);
+                                        var monthName = GetMonthName(_currentYear, month);
                                         var disabled = Disabled || IsMonthOutOfMinAndMaxDate(month);
                                         var selected = month == _currentMonth;
                                         <button @onclick="() => SelectMonth(month)"
@@ -533,7 +533,7 @@
                                             }
                                             else
                                             {
-                                                @_culture.DateTimeFormat.GetAbbreviatedMonthName(month)
+                                                @GetAbbreviatedMonthName(_currentYear, month)
                                             }
                                         </button>
                                     }

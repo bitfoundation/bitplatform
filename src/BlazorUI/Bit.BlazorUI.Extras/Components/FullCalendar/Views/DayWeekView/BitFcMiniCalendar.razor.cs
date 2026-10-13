@@ -57,7 +57,7 @@ public partial class BitFcMiniCalendar
             DateTime paged;
             try
             {
-                paged = args.ShiftKey ? State.Culture.Calendar.AddYears(date, sign) : State.Culture.Calendar.AddMonths(date, sign);
+                paged = args.ShiftKey ? State.Culture.DateTimeFormat.Calendar.AddYears(date, sign) : State.Culture.DateTimeFormat.Calendar.AddMonths(date, sign);
             }
             catch (ArgumentOutOfRangeException)
             {
@@ -133,7 +133,7 @@ public partial class BitFcMiniCalendar
     {
         _lastSyncedSelectedDate = State.SelectedDate;
         _lastSyncedCultureName = State.Culture.Name;
-        _lastSyncedCalendarType = State.Culture.Calendar.GetType();
+        _lastSyncedCalendarType = State.Culture.DateTimeFormat.Calendar.GetType();
         _displayMonth = StartOfDisplayMonth(State.SelectedDate);
     }
 
@@ -146,25 +146,25 @@ public partial class BitFcMiniCalendar
         // culture name because two cultures can share a name while using different calendars.
         if (_lastSyncedSelectedDate != State.SelectedDate
             || !string.Equals(_lastSyncedCultureName, State.Culture.Name, StringComparison.Ordinal)
-            || _lastSyncedCalendarType != State.Culture.Calendar.GetType())
+            || _lastSyncedCalendarType != State.Culture.DateTimeFormat.Calendar.GetType())
         {
             _lastSyncedSelectedDate = State.SelectedDate;
             _lastSyncedCultureName = State.Culture.Name;
-            _lastSyncedCalendarType = State.Culture.Calendar.GetType();
+            _lastSyncedCalendarType = State.Culture.DateTimeFormat.Calendar.GetType();
             _displayMonth = StartOfDisplayMonth(State.SelectedDate);
         }
     }
 
     private DateTime StartOfDisplayMonth(DateTime date)
     {
-        var cal = State.Culture.Calendar;
+        var cal = State.Culture.DateTimeFormat.Calendar;
         // Preserve the source era so era-based calendars (e.g. Japanese) rebuild the month in the
         // same era; the era-less ToDateTime overload can otherwise select the wrong era or throw.
         return cal.ToDateTime(cal.GetYear(date), cal.GetMonth(date), 1, 0, 0, 0, 0, cal.GetEra(date));
     }
 
-    private void PrevMonth() => _displayMonth = State.Culture.Calendar.AddMonths(_displayMonth, -1);
-    private void NextMonth() => _displayMonth = State.Culture.Calendar.AddMonths(_displayMonth, 1);
+    private void PrevMonth() => _displayMonth = State.Culture.DateTimeFormat.Calendar.AddMonths(_displayMonth, -1);
+    private void NextMonth() => _displayMonth = State.Culture.DateTimeFormat.Calendar.AddMonths(_displayMonth, 1);
 
     private void SelectDate(DateTime date)
     {

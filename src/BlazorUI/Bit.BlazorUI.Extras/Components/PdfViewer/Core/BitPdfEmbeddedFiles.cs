@@ -118,7 +118,7 @@ internal static class BitPdfEmbeddedFiles
         {
             Name = string.IsNullOrWhiteSpace(name) ? "attachment" : name,
             Description = (xref.FetchIfRef(spec.Get("Desc")) as BitPdfString)?.AsText(),
-            MimeType = (stream.Dict.Get("Subtype") as BitPdfName)?.Value?.Replace("#2F", "/", StringComparison.Ordinal),
+            MimeType = (stream.Dict?.Get("Subtype") as BitPdfName)?.Value?.Replace("#2F", "/", StringComparison.Ordinal),
             PageNumber = pageNumber,
             Content = content,
         });
