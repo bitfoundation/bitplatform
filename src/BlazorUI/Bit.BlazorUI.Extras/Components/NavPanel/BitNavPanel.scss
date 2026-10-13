@@ -370,15 +370,7 @@ $npn-private-properties: w, tw;
 
 // The live region of the search: read by a screen reader, invisible on the page.
 .bit-npn-lvr {
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    border: 0;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 .bit-nav-apri {

@@ -352,17 +352,7 @@ $cht-side-steps: (lgd: 1, sub: 2, ttl: 3);
 }
 
 .bit-cht-sr {
-    top: auto;
-    left: auto;
-    width: 1px;
-    border: 0;
-    height: 1px;
-    margin: -1px;
-    padding: 0;
-    position: absolute;
-    overflow: hidden;
-    white-space: nowrap;
-    clip: rect(0, 0, 0, 0);
+    @include visually-hidden;
 }
 
 // ---- animations ----

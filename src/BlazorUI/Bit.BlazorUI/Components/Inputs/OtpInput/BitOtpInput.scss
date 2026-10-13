@@ -181,15 +181,7 @@ $otp-private-properties: size, fontsize, dsc-fontsize, clr, clr-focus;
 //so it is taken out of the layout without being taken out of the accessibility tree the way display:none
 //or visibility:hidden would.
 .bit-otp-sts {
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    border-width: 0;
-    overflow: hidden;
-    white-space: nowrap;
-    position: absolute;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 .bit-otp-inp {

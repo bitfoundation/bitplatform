@@ -477,15 +477,7 @@ $ctp-private-properties: rl-clr, rl-text, rl-focus, inp-h, inp-fs, lbl-fs, clk-s
 // Announced but never drawn: clipped rather than sized to nothing or hidden outright, both of which take the
 // element out of the accessibility tree in some engines and would silence the live region with it.
 .bit-ctp-lvr {
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    border: 0;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 .bit-ctp-tlb {

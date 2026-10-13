@@ -155,15 +155,7 @@ $ptr-private-properties: color;
 // everyone else. It stays in the render tree rather than being display:none, which would take it out of the
 // accessibility tree along with the layout and leave the live region with nothing to announce.
 .bit-ptr-vhd {
-    border: 0;
-    padding: 0;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 // A forced-colors mode strips the shadow and repaints the fill in the page's own Canvas, which leaves the disc

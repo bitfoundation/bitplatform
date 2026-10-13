@@ -356,15 +356,7 @@ $tfl-private-properties: font-size, line-height, min-height, icon-font-size, btn
 // Visually hidden, but still read out: the element only exists to give aria-describedby something to
 // point at.
 .bit-tfl-dsc {
-    border: 0;
-    padding: 0;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 .bit-tfl-rpb {

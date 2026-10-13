@@ -3207,15 +3207,7 @@ button.bit-bfc-cell-add-hint:focus-visible {
 
 /* Read by assistive technology, never drawn: the live count of the agenda search. */
 .bit-bfc-sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
+    @include visually-hidden;
 }
 
 /* ===== Focus, restated =====

@@ -298,15 +298,7 @@ $tgb-private-properties: clr-txt, clr, clr-hover, clr-active, clr-focus, clr-dar
 // out of the flow rather than hidden, since display:none is also hidden from the readers they are written for.
 .bit-tgb-sts,
 .bit-tgb-dsc {
-    border: 0;
-    padding: 0;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 // Every color the Color role paints is read from the role first - published only by an explicit Color (see

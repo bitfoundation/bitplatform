@@ -132,15 +132,7 @@
 // that is read out rather than seen. The condition is inside :where() so the rule weighs no more than its one
 // class, and a Class or Classes.Root rule of the page still overrides it on source order.
 .bit-lbl-vhd:where(:not(:focus-within), :focus) {
-    padding: 0;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
-    clip: rect(0 0 0 0);
+    @include visually-hidden;
 }
 
 // A forced-colors mode repaints the text of a disabled label in the ordinary text color, which takes away the one

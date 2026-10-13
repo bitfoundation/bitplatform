@@ -258,15 +258,7 @@ $rtg-private-properties: clr, clr-hover, clr-active, clr-focus, size, lbl-size, 
 }
 
 .bit-rtg-alb {
-    border: 0;
-    padding: 0;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 // A flex container rather than an inline-block, so that the box is exactly the icon it holds. An

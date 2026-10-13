@@ -151,15 +151,7 @@ $ldn-private-properties: clr, sz, lfs, stroke, spd, sz-def, lfs-def;
 // is neither drawn nor counted as one of the root's flex items - a hidden in-flow child would still
 // earn a gap of its own between the drawing and the edge of the component.
 .bit-ldn-srt {
-    border: 0;
-    padding: 0;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 .bit-ldn-ltp {

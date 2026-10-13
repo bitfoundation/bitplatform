@@ -1065,17 +1065,7 @@ $pdv-private-properties: scale;
 /* The polite live region: read by assistive technology, never seen. Clipped rather
    than display:none, which would take it out of the accessibility tree entirely. */
 .bit-pdv-sr {
-    top: auto;
-    left: -1px;
-    width: 1px;
-    height: 1px;
-    border: none;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 /* The open-file control is the file input itself, laid transparently over a

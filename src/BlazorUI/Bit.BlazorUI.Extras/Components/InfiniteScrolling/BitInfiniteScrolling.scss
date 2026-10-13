@@ -131,16 +131,7 @@ $isc-ring-room: calc(#{$shp-focus-ring-offset} + #{$shp-focus-ring-width});
 
 // The always-present live region: out of sight, but never out of the accessibility tree.
 .bit-isc-sts {
-    border: 0;
-    padding: 0;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
-    clip: rect(0 0 0 0);
+    @include visually-hidden;
 }
 
 .bit-isc-ldg,

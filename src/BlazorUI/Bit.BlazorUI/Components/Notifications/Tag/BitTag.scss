@@ -302,15 +302,7 @@ $tag-private-properties:
 // has to live somewhere in the DOM to be pointed at. Taken out of the layout without being taken out of the
 // accessibility tree, which display:none or visibility:hidden would both do.
 .bit-tag-vhd {
-    border: 0;
-    padding: 0;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 .bit-tag-rvs {

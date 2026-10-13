@@ -171,15 +171,7 @@ $_block-spacing: var(--bit-MarkdownViewer-block-spacing, 1em);
     // for, and out of a copied selection.
     .bit-mdv-sr-only,
     .bit-mdv-new-tab {
-        border: 0;
-        padding: 0;
-        width: 1px;
-        height: 1px;
-        margin: -1px;
-        overflow: hidden;
-        position: absolute;
-        white-space: nowrap;
-        clip-path: inset(50%);
+        @include visually-hidden;
         user-select: none;
         -webkit-user-select: none;
     }

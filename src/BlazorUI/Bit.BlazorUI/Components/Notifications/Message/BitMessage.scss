@@ -173,15 +173,7 @@ $msg-private-properties:
 // Said by a screen reader as the first thing in the announced region, and never seen: the icon it stands for is
 // hidden from assistive technology, and this text is hidden from everyone else.
 .bit-msg-ilb {
-    border: 0;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 // The title carries the type of the message whatever element it is rendered as, so a heading brings its

@@ -171,15 +171,7 @@ $bdg-private-properties:
 // them out of the accessibility tree along with the layout.
 .bit-bdg-vhd,
 .bit-bdg-lvr {
-    border: 0;
-    padding: 0;
-    width: 1px;
-    height: 1px;
-    margin: -1px;
-    overflow: hidden;
-    position: absolute;
-    white-space: nowrap;
-    clip-path: inset(50%);
+    @include visually-hidden;
 }
 
 // A badge with a click handler is a button, so it takes the pointer back from the overlay layer and
