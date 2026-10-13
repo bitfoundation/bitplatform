@@ -559,11 +559,12 @@ public partial class BitFullCalendar : BitComponentBase
             }
         }
 
-        // A bound View/Mode the state refuses can resolve to the value that is already active, which
-        // emits no state change and so reaches no reconciliation through HandleStateChanged. Reconcile
-        // explicitly here so the corrected value is always pushed back into the binding. This is an
-        // echo of the parameters just applied, so it stays silent (raiseEvents: false) like the
-        // reconciliations queued during the parameter-application window.
+        // The one reconciliation of this parameter pass: HandleStateChanged leaves every state change
+        // raised while the parameters were applied to it, since only now have the bound View/Mode/Date
+        // reached the state. It also covers a bound View/Mode the state refuses, which can resolve to
+        // the value that is already active and so emit no state change at all, pushing the corrected
+        // value back into the binding. This is an echo of the parameters just applied, so it stays
+        // silent (raiseEvents: false).
         InvokeAsync(() => ReconcileBoundState(raiseEvents: false));
 
         base.OnParametersSet();
@@ -886,14 +887,20 @@ public partial class BitFullCalendar : BitComponentBase
 
     private void HandleStateChanged()
     {
-        // Capture the flag now: the queued callback may run after OnParametersSet's finally block
-        // has reset _applyingParameters to false, which would otherwise wrongly raise events.
-        var applyingParameters = _applyingParameters;
+        // A change raised while OnParametersSet applies the parameters (a sync of the resources, the
+        // views, the read-only flag) is left to the reconciliation OnParametersSet runs once the bound
+        // values are applied, and to the render that follows it. Reconciling here would compare the
+        // bound View/Mode/Date against a state they have not reached yet, and write the state's
+        // values back over them: InvokeAsync does not queue the work while on the renderer's
+        // dispatcher, it runs it at once, still ahead of ApplyBoundState.
+        if (_applyingParameters)
+            return;
+
         InvokeAsync(async () =>
         {
-            var settingsChanged = applyingParameters is false && SyncSettingsFromState();
+            var settingsChanged = SyncSettingsFromState();
 
-            await ReconcileBoundState(raiseEvents: !applyingParameters);
+            await ReconcileBoundState(raiseEvents: true);
 
             if (settingsChanged)
                 await OnSettingsChange.InvokeAsync(Settings);
