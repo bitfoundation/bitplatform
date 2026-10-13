@@ -115,7 +115,7 @@ public partial class BitDialogDemo
             Name = "Color",
             Type = "BitColor?",
             DefaultValue = "null",
-            Description = "The general color of the Dialog, which its Ok and Cancel buttons, the Ok spinner and the focus ring of both are painted in. Defaults to Primary.",
+            Description = "The general color of the Dialog, which its Ok and Cancel buttons, the Ok spinner and the focus ring of both are painted in. It wins over the --bit-Dialog-ok-button-* and --bit-Dialog-cancel-button-* CSS variables wherever it paints; left unset, the buttons follow those variables and then Primary.",
             LinkType = LinkType.Link,
             Href = "#color-enum",
         },
@@ -827,6 +827,102 @@ public partial class BitDialogDemo
             Name = "--bit-Dialog-message-color",
             DefaultValue = "--bit-clr-fg-sec",
             Description = "Color of the message.",
+        },
+        new()
+        {
+            Name = "--bit-Dialog-ok-button-background",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Background of the Ok button. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Dialog-ok-button-color",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "Text color of the Ok button, and the color of the spinner it shows while OnOk runs (--bit-clr-pri-dark when unset). The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Dialog-ok-button-border-color",
+            DefaultValue = "the background",
+            Description = "Border color of the Ok button, at rest, on hover and while pressed; unset, the border takes the background of each state. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Dialog-ok-button-hover-background",
+            DefaultValue = "--bit-clr-pri-hover",
+            Description = "Background of the Ok button on hover. Falls back to --bit-Dialog-ok-button-background when that is set, so a restyled button is not handed back the primary color under the pointer. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Dialog-ok-button-hover-color",
+            DefaultValue = "the text color",
+            Description = "Text color of the Ok button on hover. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Dialog-ok-button-active-background",
+            DefaultValue = "--bit-clr-pri-active",
+            Description = "Background of the Ok button while pressed. Falls back to the hover background, then the background, when either is set. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Dialog-ok-button-active-color",
+            DefaultValue = "the hover text color",
+            Description = "Text color of the Ok button while pressed. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Dialog-ok-button-radius",
+            DefaultValue = "--bit-shp-radius-button",
+            Description = "Corner radius of the Ok button.",
+        },
+        new()
+        {
+            Name = "--bit-Dialog-cancel-button-background",
+            DefaultValue = "transparent",
+            Description = "Background of the Cancel button at rest, e.g. a neutral fill in place of the outline. Still applies under an explicit Color, which paints only the text and border of the button at rest.",
+        },
+        new()
+        {
+            Name = "--bit-Dialog-cancel-button-color",
+            DefaultValue = "--bit-clr-pri",
+            Description = "Text color of the Cancel button. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Dialog-cancel-button-border-color",
+            DefaultValue = "the text color",
+            Description = "Border color of the Cancel button, at rest, on hover and while pressed; unset, the border takes the text color at rest and the background of the state on hover and while pressed. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Dialog-cancel-button-hover-background",
+            DefaultValue = "--bit-clr-pri-hover",
+            Description = "Background of the Cancel button on hover. It does not fall back to --bit-Dialog-cancel-button-background: the outline fills under the pointer, so set it along with --bit-Dialog-cancel-button-hover-color. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Dialog-cancel-button-hover-color",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "Text color of the Cancel button on hover, on the hover background. It does not fall back to --bit-Dialog-cancel-button-color, which is meant for the outline at rest. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Dialog-cancel-button-active-background",
+            DefaultValue = "--bit-clr-pri-active",
+            Description = "Background of the Cancel button while pressed. Falls back to the hover background when that is set. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Dialog-cancel-button-active-color",
+            DefaultValue = "--bit-clr-pri-text",
+            Description = "Text color of the Cancel button while pressed. Falls back to the hover text color when that is set. The Color parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Dialog-cancel-button-radius",
+            DefaultValue = "--bit-shp-radius-button",
+            Description = "Corner radius of the Cancel button.",
         },
     ];
 

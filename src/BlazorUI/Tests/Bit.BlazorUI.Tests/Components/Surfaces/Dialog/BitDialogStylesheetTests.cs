@@ -33,7 +33,26 @@ public class BitDialogStylesheetTests
         "--bit-Dialog-title-font-weight",
         "--bit-Dialog-subtitle-color",
         "--bit-Dialog-message-color",
+        "--bit-Dialog-ok-button-background",
+        "--bit-Dialog-ok-button-color",
+        "--bit-Dialog-ok-button-border-color",
+        "--bit-Dialog-ok-button-hover-background",
+        "--bit-Dialog-ok-button-hover-color",
+        "--bit-Dialog-ok-button-active-background",
+        "--bit-Dialog-ok-button-active-color",
+        "--bit-Dialog-ok-button-radius",
+        "--bit-Dialog-cancel-button-background",
+        "--bit-Dialog-cancel-button-color",
+        "--bit-Dialog-cancel-button-border-color",
+        "--bit-Dialog-cancel-button-hover-background",
+        "--bit-Dialog-cancel-button-hover-color",
+        "--bit-Dialog-cancel-button-active-background",
+        "--bit-Dialog-cancel-button-active-color",
+        "--bit-Dialog-cancel-button-radius",
     ];
+
+    // The role colors an explicit Color publishes on the root, which every color read of the buttons ranks first.
+    private static readonly string[] _roleColors = ["clr", "clr-txt", "clr-hover", "clr-active", "clr-focus", "clr-spn"];
 
     // Read off the style the C# side writes on the surface, since it only applies where no size was given.
     private const string MaxWidthVariable = "--bit-Dialog-max-width";
@@ -157,6 +176,84 @@ public class BitDialogStylesheetTests
         StringAssert.Contains(GetRule(rules, "bct"), "&[aria-busy=\"true\"] {\n            cursor: progress;\n        }");
         Assert.IsFalse(rules.Contains("&[aria-disabled=\"true\"] {"), "The busy Ok button is dimmed along with the spinner it holds.");
         StringAssert.Contains(GetRule(rules, "okb"), "&:hover:not(:disabled):not([aria-disabled=\"true\"])");
+    }
+
+    [TestMethod]
+    public void BitDialogRootShouldLeaveTheRoleColorsUnsetUntilAColorIsGiven()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // Declared at the primary role on every root, they would win over the public button variables whether or not
+        // a Color was asked for; unset, only the role class of an explicit Color publishes them.
+        var names = SourceFiles.GetPrivatePropertyLists(SourceFiles.StripScssComments(stylesheet))
+                               .Single(list => list.Name == "dlg-private-properties")
+                               .Names;
+
+        foreach (var name in _roleColors)
+        {
+            Assert.IsTrue(names.Contains(name), $"--bit-dlg-{name} is not reset on the root.");
+        }
+
+        var root = Regex.Match(GetRules(stylesheet), @"\n\.bit-dlg \{.*?\n\}", RegexOptions.Singleline).Value;
+        Assert.IsFalse(Regex.IsMatch(root, @"--bit-dlg-clr[a-z-]*:\s*#\{"), "The root declares a role color at a default, which outranks the public button variables.");
+    }
+
+    [TestMethod]
+    public void BitDialogButtonsShouldRankAnExplicitColorBeforeTheirPublicVariables()
+    {
+        var rules = GetRules(ReadStylesheet());
+
+        foreach (var button in new[] { "okb", "cnb" })
+        {
+            var rule = GetRule(rules, button);
+
+            // Every role color the button reads is read with the public chain as its fallback, never the other way round.
+            Assert.IsFalse(Regex.IsMatch(rule, @"var\(--bit-Dialog-[a-z-]+,\s*var\(--bit-dlg-clr"), $"The {button} reads a public variable before the Color.");
+
+            Assert.IsFalse(Regex.IsMatch(rule, @"var\(--bit-dlg-clr[a-z-]*\)"), $"The {button} reads a role color with no fallback, which an uncolored Dialog leaves unset.");
+        }
+
+        StringAssert.Contains(GetRule(rules, "okb"), "background-color: var(--bit-dlg-okb-bg, var(--bit-dlg-clr, #{$dlg-okb-background}));");
+        StringAssert.Contains(rules, "$dlg-okb-background: var(--bit-Dialog-ok-button-background, #{$clr-pri});");
+        StringAssert.Contains(GetRule(rules, "cnb"), "color: var(--bit-dlg-cnb-clr, var(--bit-dlg-clr, #{$dlg-cnb-color}));");
+        StringAssert.Contains(rules, "$dlg-cnb-color: var(--bit-Dialog-cancel-button-color, #{$clr-pri});");
+
+        // The transparent outline at rest is the Cancel button's recipe rather than the Dialog's color, so its public
+        // background still applies under an explicit Color.
+        StringAssert.Contains(GetRule(rules, "cnb"), "background-color: var(--bit-dlg-cnb-bg, var(--bit-Dialog-cancel-button-background, transparent));");
+    }
+
+    [TestMethod]
+    public void BitDialogButtonStatesShouldFallBackOnlyWhereTheyStayReadable()
+    {
+        var rules = GetRules(ReadStylesheet());
+
+        // The filled Ok button restyled at rest is not handed back the primary colors under the pointer or while pressed.
+        StringAssert.Contains(rules, "$dlg-okb-hover-background: var(--bit-Dialog-ok-button-hover-background, var(--bit-Dialog-ok-button-background, #{$clr-pri-hover}));");
+        StringAssert.Contains(rules, "$dlg-okb-active-background: var(--bit-Dialog-ok-button-active-background, var(--bit-Dialog-ok-button-hover-background, var(--bit-Dialog-ok-button-background, #{$clr-pri-active})));");
+
+        // The Cancel button is an outline that fills under the pointer, so its states take the primary fill and text
+        // until they are given values of their own: a color or background meant for the outline at rest would be
+        // unreadable on that fill.
+        StringAssert.Contains(rules, "$dlg-cnb-hover-background: var(--bit-Dialog-cancel-button-hover-background, #{$clr-pri-hover});");
+        StringAssert.Contains(rules, "$dlg-cnb-hover-color: var(--bit-Dialog-cancel-button-hover-color, #{$clr-pri-text});");
+        StringAssert.Contains(rules, "$dlg-cnb-active-background: var(--bit-Dialog-cancel-button-active-background, var(--bit-Dialog-cancel-button-hover-background, #{$clr-pri-active}));");
+        StringAssert.Contains(rules, "$dlg-cnb-active-color: var(--bit-Dialog-cancel-button-active-color, var(--bit-Dialog-cancel-button-hover-color, #{$clr-pri-text}));");
+
+        // The states move the private variables the rule at rest paints from, the role color of an explicit Color first.
+        StringAssert.Contains(GetRule(rules, "okb"), "--bit-dlg-okb-bg: var(--bit-dlg-clr-hover, #{$dlg-okb-hover-background});");
+        StringAssert.Contains(GetRule(rules, "cnb"), "--bit-dlg-cnb-bg: var(--bit-dlg-clr-active, #{$dlg-cnb-active-background});");
+    }
+
+    [TestMethod]
+    public void BitDialogButtonsShouldTakeTheirRadiusAtTheWeightOfAClass()
+    {
+        var rules = GetRules(ReadStylesheet());
+
+        // On the band's descendant rule it would outrank a single class passed through Classes.OkButton / CancelButton.
+        Assert.IsFalse(GetRule(rules, "bct").Contains("border-radius: $shp-radius-button"), "The band sets the radius of its buttons.");
+        StringAssert.Contains(GetRule(rules, "okb"), "border-radius: var(--bit-Dialog-ok-button-radius, #{$shp-radius-button});");
+        StringAssert.Contains(GetRule(rules, "cnb"), "border-radius: var(--bit-Dialog-cancel-button-radius, #{$shp-radius-button});");
     }
 
     /// <summary>

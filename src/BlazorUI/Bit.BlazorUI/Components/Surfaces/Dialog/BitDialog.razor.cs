@@ -254,6 +254,10 @@ public partial class BitDialog : BitComponentBase
     /// <see cref="AutoFocusButton"/> pointed at the safe answer. The color reaches the Ok button, the
     /// outline of the Cancel button, the Ok spinner and the focus ring of both, and leaves the rest of the
     /// Dialog - the surface, the title, the message - alone.
+    /// <br />
+    /// An explicit color wins over the <c>--bit-Dialog-ok-button-*</c> and <c>--bit-Dialog-cancel-button-*</c>
+    /// CSS variables wherever it paints; left unset, the buttons follow those variables and then the primary
+    /// role, which is how an app restyles the actions of every Dialog at once.
     /// </remarks>
     [Parameter, ResetClassBuilder]
     public BitColor? Color { get; set; }
