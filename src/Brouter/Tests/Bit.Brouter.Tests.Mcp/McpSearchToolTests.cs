@@ -48,6 +48,52 @@ public class McpSearchToolTests
     }
 
     [TestMethod]
+    public async Task A_question_about_the_built_in_constraints_points_to_the_constraint_catalog()
+    {
+        // The docs page and the custom-constraint API both mention constraints, but only the catalog
+        // tool lists the built-in ones - and a caller who never hears of it writes a custom
+        // constraint for "int" instead of using the one Brouter already ships. The titles are the
+        // entries that can only be what found it: the catalog for a question about the list, a row
+        // for a word that row's token does not say.
+        (string Query, string[] Titles)[] questions =
+        [
+            ("built-in route constraints", ["Built-in constraint catalog"]),
+            ("number", ["{value:int}", "{value:long}", "{value:decimal}", "{value:min(10)}", "{value:max(10)}", "{value:range(1,10)}"]),
+            ("boolean", ["{value:bool}"]),
+            ("guid route parameter", ["{value:guid}", "Built-in constraint catalog"]),
+            ("{id:int}", ["{value:int}", "Built-in constraint catalog"]),
+        ];
+
+        foreach (var (query, titles) in questions)
+        {
+            var result = await SearchAsync(query, limit: 8);
+
+            Assert.IsTrue(result.Hits.Any(hit => hit.Tool == "GetBrouterRouteConstraints()" && titles.Contains(hit.Title)),
+                $"'{query}' surfaced none of [{string.Join(", ", titles)}]. It found: {string.Join(", ", result.Hits.Select(hit => $"{hit.Title} ({hit.Tool})"))}.");
+        }
+    }
+
+    [TestMethod]
+    public async Task The_constraint_catalog_does_not_crowd_out_other_answers()
+    {
+        // Every constraint entry is read through the same call with no argument, so a second one is
+        // a hit that sends the caller nowhere new - and the catalog as a whole shares a word with most
+        // questions about routes without being their answer.
+        string[] queries = ["route", "nested route", "route data", "file", "length", "what must a guard return", "page number"];
+
+        foreach (var query in queries)
+        {
+            var result = await SearchAsync(query, limit: 8);
+
+            Assert.IsTrue(result.Hits.Count(hit => hit.Tool == "GetBrouterRouteConstraints()") <= 1,
+                $"'{query}' spent several hits on GetBrouterRouteConstraints: {string.Join(", ", result.Hits.Select(hit => hit.Title))}.");
+
+            Assert.IsFalse(result.Hits.Any(hit => hit.Title == "Built-in constraint catalog"),
+                $"'{query}' surfaced the whole constraint catalog: {string.Join(", ", result.Hits.Select(hit => hit.Title))}.");
+        }
+    }
+
+    [TestMethod]
     public async Task Searching_for_a_member_by_name_surfaces_the_member_itself()
     {
         // Someone typing a member name wants the member, not only the pages that discuss it - and

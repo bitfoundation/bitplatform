@@ -75,6 +75,21 @@ public static class BrouterSearchIndex
         "there", "here", "have", "has", "get", "got", "let", "one", "two", "per", "via", "onto"
     };
 
+    /// <summary>
+    /// The words a caller uses for a constraint before they know its token: "a parameter that must
+    /// be a number" is int, long, decimal or a numeric bound, and none of those rows says "number".
+    /// </summary>
+    private static readonly Dictionary<string, string> _constraintSynonyms = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["int"] = "number numeric integer",
+        ["long"] = "number numeric integer",
+        ["decimal"] = "number numeric",
+        ["min"] = "number numeric",
+        ["max"] = "number numeric",
+        ["range"] = "number numeric",
+        ["bool"] = "boolean",
+    };
+
     public static BrouterSearchResultDto Search(string? query, int limit)
     {
         var terms = Tokenize(query);
@@ -101,8 +116,9 @@ public static class BrouterSearchIndex
             .ThenBy(hit => hit.Entry.Title, StringComparer.OrdinalIgnoreCase)
             // Two entries that would be read through the same call under the same name are one hit:
             // a method with two overloads is two members and one place to read about them, and the
-            // second copy costs a hit out of the caller's budget to say nothing new.
-            .DistinctBy(hit => (hit.Entry.Title, hit.Entry.Tool))
+            // second copy costs a hit out of the caller's budget to say nothing new. A call that takes
+            // no argument returns the same text whichever entry led to it, so its name does not count.
+            .DistinctBy(hit => hit.Entry.Tool.EndsWith("()", StringComparison.Ordinal) ? (string.Empty, hit.Entry.Tool) : (hit.Entry.Title, hit.Entry.Tool))
             .ToArray();
 
         var take = Math.Clamp(limit, 1, MaxHits);
@@ -333,10 +349,25 @@ public static class BrouterSearchIndex
             }
         }
 
+        // The catalog as a whole, for the question that asks for the list itself ("built-in
+        // constraints") rather than for one of its rows. Its title stays clear of "route" and its
+        // vocabulary is left empty on purpose: either would put the whole table in front of every
+        // question that happens to share a word with one of its rows, and the rows answer those.
+        entries.Add(new Entry("Route constraint", "Built-in constraint catalog", null,
+            "GetBrouterRouteConstraints()", BrouterConstraintReference.Render(), string.Empty));
+
         foreach (var constraint in ConstraintCatalog.All)
         {
+            // A row is one token and a one-line rule, so it is found by "int" and by nothing a caller
+            // says before they know the token - "guid route parameter", "a parameter that must be a
+            // number". Every row constrains a route parameter, and the synonyms are how its rule is
+            // phrased then. The rows share one parameterless call, so however many of them match, a
+            // search spends one hit on them.
+            var synonyms = _constraintSynonyms.GetValueOrDefault(constraint.Kind);
+
             entries.Add(new Entry("Route constraint", $"{{value:{constraint.Token}}}", constraint.Category,
-                "GetBrouterRouteConstraints()", constraint.Rule, constraint.Kind));
+                "GetBrouterRouteConstraints()", constraint.Rule,
+                $"{constraint.Kind} route parameter {synonyms}".TrimEnd()));
         }
 
         foreach (var file in BrouterSourceCatalog.SourceFiles)
