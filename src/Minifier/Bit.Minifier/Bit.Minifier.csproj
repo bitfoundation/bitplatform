@@ -51,7 +51,9 @@
 
     <Target Name="_BitMinifierIncludeTool">
         <ItemGroup>
-            <TfmSpecificPackageFile Include="$(OutDir)Bit.Minifier.dll;$(OutDir)Bit.Minifier.runtimeconfig.json;$(OutDir)Mono.Cecil.dll" PackagePath="tools\" />
+            <TfmSpecificPackageFile Include="$(OutDir)Bit.Minifier.dll" PackagePath="tools\Bit.Minifier.dll" />
+            <TfmSpecificPackageFile Include="$(OutDir)Bit.Minifier.runtimeconfig.json" PackagePath="tools\Bit.Minifier.runtimeconfig.json" />
+            <TfmSpecificPackageFile Include="$(OutDir)Mono.Cecil.dll" PackagePath="tools\Mono.Cecil.dll" />
         </ItemGroup>
     </Target>
 
