@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -341,6 +342,122 @@ public class BitDirResolvedBrowserTests : PerformanceTestBase
             await Task.Delay(1000);
             Assert.AreEqual("true", await Page.Locator("#open").TextContentAsync());
         }
+    }
+
+    // A map's marker popup sits over its marker in a map that reads either way, with the auto-pan the open asks for and
+    // without it (#13592): the anchor is moved by the provider's projected point, which is in pixels from the
+    // container's left edge whatever the direction, so an inline-start origin put it a map's width to the right on a
+    // right-to-left map - out of sight without the pan, and away from its marker with it. The markers by the edges need
+    // the pan, so it is made, inside the map's border; the wide popup cannot fit, so the pan brings in its start edge,
+    // the one the map's direction names, whether the page or the map's own Dir names it.
+    [TestMethod,
+        DataRow("ltr", false, "inside"),
+        DataRow("ltr", true, "inside"),
+        DataRow("rtl", false, "inside"),
+        DataRow("rtl", true, "inside"),
+        DataRow("ltr", false, "start"),
+        DataRow("ltr", true, "start"),
+        DataRow("rtl", false, "start"),
+        DataRow("rtl", true, "start"),
+        DataRow("ltr", true, "end"),
+        DataRow("rtl", true, "end"),
+        DataRow("map-rtl", true, "end"),
+        DataRow("ltr", true, "wide"),
+        DataRow("rtl", true, "wide"),
+        DataRow("map-rtl", true, "wide")]
+    public async Task TheMapPopupSitsOverItsMarkerInEitherDirection(string dir, bool pan, string marker)
+    {
+        await Page.GotoAsync($"{BaseUrl}/regression/dir-resolved-map?dir={dir}&pan={(pan ? "true" : "false")}&marker={marker}");
+        await WaitForStatus("Ready");
+
+        var icon = Page.Locator(".bit-map .leaflet-marker-icon").First;
+        await icon.WaitForAsync(new() { Timeout = DefaultTimeout });
+
+        var before = await WaitForMapToSettle("before", popup: false, movedFrom: null, polls: 2);
+
+        // Playwright waits for the marker to be visible, stable and the one receiving the click.
+        await icon.ClickAsync();
+
+        await Page.Locator(".bit-map-popup").WaitForAsync(new() { Timeout = DefaultTimeout });
+
+        // A pan the popup needs is waited for as the marker moving and then coming to rest; with none to make, the map is
+        // watched for a second, longer than the chrome's bound on how long a popup's size may settle (500ms) and its pan
+        // animate after it, so a pan made after all still shows up as the marker having moved.
+        var expectPan = pan && marker is not "inside";
+        var read = expectPan
+            ? await WaitForMapToSettle("after", popup: true, movedFrom: [before["markerLeft"], before["markerTop"]], polls: 2)
+            : await WaitForMapToSettle("after", popup: true, movedFrom: null, polls: 5);
+
+        var rtl = dir is not "ltr";
+        var context = $"{dir}, pan {pan}, {marker}";
+        var moved = Math.Abs(read["markerLeft"] - before["markerLeft"]) >= 1 || Math.Abs(read["markerTop"] - before["markerTop"]) >= 1;
+        const double margin = 8;
+
+        Assert.AreEqual(expectPan, moved, $"The map {(moved ? "was" : "was not")} panned ({context}).");
+        Assert.AreEqual(read["markerCentre"], read["popupCentre"], 2, $"The popup is not centred over its marker ({context}).");
+        Assert.IsTrue(read["popupBottom"] < read["markerBottom"], $"The popup is not above its marker ({context}).");
+
+        var placement = $"popup {read["popupLeft"]}..{read["popupRight"]} x {read["popupTop"]}..{read["popupBottom"]} in {read["frameLeft"]}..{read["frameRight"]} x {read["frameTop"]}..{read["frameBottom"]}; {context}";
+
+        if (marker is "inside")
+        {
+            Assert.IsTrue(read["popupLeft"] >= read["frameLeft"] && read["popupRight"] <= read["frameRight"] && read["popupTop"] >= read["frameTop"],
+                $"The popup is outside the map ({placement}).");
+        }
+        else if (pan is false)
+        {
+            // What makes the pan rows mean something: as it opens, the popup does not fit.
+            Assert.IsTrue(read["popupLeft"] < read["frameLeft"] + margin || read["popupRight"] > read["frameRight"] - margin || read["popupTop"] < read["frameTop"] + margin,
+                $"The popup fits as it opens, so there is no pan to make ({placement}).");
+        }
+        else if (marker is "wide")
+        {
+            Assert.IsTrue(read["popupRight"] - read["popupLeft"] > read["frameRight"] - read["frameLeft"], $"The popup is not wider than the map ({placement}).");
+            Assert.IsTrue(read["popupTop"] >= read["frameTop"] + margin - 1.5, $"The popup is not brought in at the top ({placement}).");
+
+            if (rtl) Assert.AreEqual(read["frameRight"] - margin, read["popupRight"], 1.5, $"The pan does not bring in the popup's right edge ({placement}).");
+            else Assert.AreEqual(read["frameLeft"] + margin, read["popupLeft"], 1.5, $"The pan does not bring in the popup's left edge ({placement}).");
+        }
+        else
+        {
+            // The frame is the canvas, inside the map's border, so the margin is kept from the border rather than eaten by it.
+            Assert.IsTrue(read["popupLeft"] >= read["frameLeft"] + margin - 1.5 && read["popupRight"] <= read["frameRight"] - margin + 1.5
+                          && read["popupTop"] >= read["frameTop"] + margin - 1.5 && read["popupBottom"] <= read["frameBottom"] - margin + 1.5,
+                $"The pan does not bring the popup inside the map ({placement}).");
+        }
+
+        // Only the anchor is placed physically: the popup's content still reads the way the map does.
+        Assert.AreEqual(rtl ? "rtl" : "ltr", await Page.Locator(".bit-map-popup").EvaluateAsync<string>("el => getComputedStyle(el).direction"));
+    }
+
+    // The marker, its popup and the canvas they are placed in, read once they have stayed where they are for as many polls
+    // in a row (200ms apart) - and, given where the marker was, once it has moved from there too.
+    private async Task<Dictionary<string, double>> WaitForMapToSettle(string key, bool popup, double[]? movedFrom, int polls)
+    {
+        var handle = await Page.WaitForFunctionAsync(@"(arg) => {
+            const rect = selector => document.querySelector(selector)?.getBoundingClientRect();
+            const m = rect('.bit-map .leaflet-marker-icon'), f = rect('.bit-map-canvas');
+            const p = arg.popup ? rect('.bit-map-popup') : null;
+            if (!m || !f || (arg.popup && (!p || p.width === 0))) return null;
+
+            const now = JSON.stringify([m.left, m.top, p?.left, p?.top, p?.width, p?.height].map(v => v === undefined ? null : Math.round(v)));
+            const last = window.__mapSettle;
+            if (!last || last.key !== arg.key || last.now !== now) {
+                window.__mapSettle = { key: arg.key, now, count: 1 };
+                return null;
+            }
+            if (arg.movedFrom && Math.abs(m.left - arg.movedFrom[0]) < 1 && Math.abs(m.top - arg.movedFrom[1]) < 1) return null;
+            if (++last.count < arg.polls) return null;
+
+            return JSON.stringify({
+                markerLeft: m.left, markerTop: m.top, markerCentre: (m.left + m.right) / 2, markerBottom: m.bottom,
+                popupLeft: p?.left ?? 0, popupRight: p?.right ?? 0, popupTop: p?.top ?? 0, popupBottom: p?.bottom ?? 0,
+                popupCentre: p ? (p.left + p.right) / 2 : 0,
+                frameLeft: f.left, frameRight: f.right, frameTop: f.top, frameBottom: f.bottom,
+            });
+        }", new { key, popup, movedFrom, polls }, new() { Timeout = DefaultTimeout, PollingInterval = 200 });
+
+        return JsonSerializer.Deserialize<Dictionary<string, double>>(await handle.JsonValueAsync<string>())!;
     }
 
     private async Task WaitForFocus(string set, string probe, string text)

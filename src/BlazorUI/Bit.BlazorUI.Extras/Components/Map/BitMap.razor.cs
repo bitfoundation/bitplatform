@@ -38,7 +38,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
 
     // Snapshot of the options the chrome was last attached with, so a re-render that changed
     // none of them doesn't pay an interop round-trip.
-    private (string?, bool, bool, string, string, bool, bool, bool)? _chromeSignature;
+    private (string?, bool, bool, string, string, bool, bool, bool, bool?)? _chromeSignature;
 
     // Last viewport the map reported. Two-way camera binding is diffed against it, which is what
     // stops the parameter -> map -> callback -> parameter round trip from looping forever.
@@ -2282,6 +2282,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
                 ["escapeToExit"] = EscapeToExit,
                 ["keyboardNavigation"] = ProviderKeyboardNavigation,
                 ["respectReducedMotion"] = RespectReducedMotion && ForceAnimation is false,
+                ["explicitRtl"] = ExplicitRtl,
             });
         }
         catch (Exception ex)
@@ -2295,7 +2296,7 @@ public partial class BitMap<TMapProvider> : BitComponentBase
     /// Everything the chrome is configured from, as one comparable value. Used to skip a
     /// re-attach when a re-render did not actually change any of it.
     /// </summary>
-    private (string?, bool, bool, string, string, bool, bool, bool) BuildChromeSignature() => (
+    private (string?, bool, bool, string, string, bool, bool, bool, bool?) BuildChromeSignature() => (
         _activeProvider?.JsObjectName,
         AutoResize,
         CooperativeGestures,
@@ -2303,7 +2304,8 @@ public partial class BitMap<TMapProvider> : BitComponentBase
         CooperativeGesturesTouchHint,
         EscapeToExit,
         ProviderKeyboardNavigation,
-        RespectReducedMotion && ForceAnimation is false);
+        RespectReducedMotion && ForceAnimation is false,
+        ExplicitRtl);
 
     /// <summary>
     /// Whether the active provider lets the keyboard pan and zoom. A provider that is not built on

@@ -613,6 +613,31 @@ public class BitMapTests : BunitTestContext
         Assert.AreEqual(false, options["respectReducedMotion"], "ForceAnimation opts the keyboard moves back into animating");
     }
 
+    // The popup's auto-pan favours its start edge when it cannot fit, so the chrome is handed the direction Dir names and
+    // reads the one the map is laid out in only when Dir names none (#13592).
+    [TestMethod]
+    public void BitMapShouldHandTheDirectionToTheChrome()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        var options = (Dictionary<string, object?>)Context.JSInterop.Invocations.Single(i => i.Identifier == CHROME_ATTACH).Arguments[4]!;
+        Assert.IsNull(options["explicitRtl"], "An unset Dir leaves the direction to the page");
+
+        component.Render(parameters => parameters.Add(p => p.Dir, BitDir.Rtl));
+
+        var attaches = Context.JSInterop.Invocations.Where(i => i.Identifier == CHROME_ATTACH).ToList();
+        Assert.AreEqual(2, attaches.Count, "A change of Dir re-attaches the chrome");
+        Assert.AreEqual(true, ((Dictionary<string, object?>)attaches[1].Arguments[4]!)["explicitRtl"]);
+
+        component.Render(parameters => parameters.Add(p => p.Dir, BitDir.Auto));
+
+        attaches = Context.JSInterop.Invocations.Where(i => i.Identifier == CHROME_ATTACH).ToList();
+        Assert.AreEqual(3, attaches.Count);
+        Assert.IsNull(((Dictionary<string, object?>)attaches[2].Arguments[4]!)["explicitRtl"], "Auto takes the direction of the content");
+    }
+
     [TestMethod]
     public void BitMapShouldTranslateTheRoleDescription()
     {

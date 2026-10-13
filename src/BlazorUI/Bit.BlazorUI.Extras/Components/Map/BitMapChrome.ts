@@ -21,6 +21,8 @@
         keyboardNavigation: boolean;
         /** Make a keyboard pan or zoom jump instead of animating under a reduced-motion preference. */
         respectReducedMotion: boolean;
+        /** The direction the map's Dir names (true for right to left), or null to read the one the root is laid out in. */
+        explicitRtl: boolean | null;
     };
 
     type ChromeState = {
@@ -362,11 +364,13 @@
         private static _panIntoView(s: ChromeState, id: string, anchorElement: HTMLElement, animate: boolean) {
             const popup = (anchorElement.firstElementChild as HTMLElement | null) ?? anchorElement;
             const box = popup.getBoundingClientRect();
-            const frame = s.root.getBoundingClientRect();
+            // The canvas fills the root's padding box, which is also what the anchor is placed in, so a border the
+            // app gives the map is outside the frame rather than counted as room the popup can sit under.
+            const frame = s.canvas.getBoundingClientRect();
             if (box.width === 0 && box.height === 0) return;
 
             const margin = 8;
-            const rtl = getComputedStyle(s.root).direction === 'rtl';
+            const rtl = s.options.explicitRtl ?? Utils.isRtl(s.root);
             const overLeft = frame.left + margin - box.left;
             const overRight = box.right - (frame.right - margin);
             const overTop = frame.top + margin - box.top;
