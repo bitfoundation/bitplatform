@@ -451,7 +451,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     public async Task _Scroll(double scrollOffset, double viewportSize, int seq = -1, double crossSize = -1,
                               double headSize = double.NaN, double tailSize = double.NaN)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         var viewportChanged = Math.Abs(viewportSize - _viewportSize) > 0.5;
         int prevRenderStart = _renderStart, prevRenderEnd = _renderEnd;
@@ -526,7 +526,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     [JSInvokable("ItemsMeasured")]
     public async Task _ItemsMeasured(int[] indices, double[] sizes)
     {
-        if (IsDisposed || Dynamic is false || _tree is null || indices.Length == 0 || indices.Length != sizes.Length) return;
+        if (IsDisposing || Dynamic is false || _tree is null || indices.Length == 0 || indices.Length != sizes.Length) return;
 
         // The first track that starts in view: the resize of an item cut by the leading edge then moves only its hidden
         // part, rather than everything in view below it.
@@ -611,7 +611,7 @@ public partial class BitVirtualize<TItem> : BitComponentBase
     [JSInvokable("KeyNavigate")]
     public async Task _KeyNavigate(string key, int focusedIndex = -1)
     {
-        if (IsDisposed || _initialized is false || _itemCount == 0) return;
+        if (IsDisposing || _initialized is false || _itemCount == 0) return;
 
         // The item the user focused (e.g. by clicking it) is where navigation continues from.
         if (focusedIndex >= 0 && focusedIndex < _itemCount)

@@ -2,6 +2,10 @@
 
 var builder = WebApplication.CreateBuilder(args);
 
+// The errors the host logs are kept for the browser tests to read (/api/server-errors): a component that throws while
+// it is disposed, or a circuit an unhandled exception tears down, shows nothing on the page.
+builder.Logging.AddProvider(new Bit.BlazorUI.Tests.Performance.TestHost.ServerErrorLog());
+
 // Add services to the container.
 // The services the components read of the library's own - the theme and the accent color switchers, the page
 // visibility the carousels pause on - and the HttpClient BitFileUpload uploads with.
@@ -45,6 +49,13 @@ app.MapGet("/api/gc-info", () =>
     GC.Collect(GC.MaxGeneration, GCCollectionMode.Forced, blocking: true);
     var allocatedMB = GC.GetTotalMemory(forceFullCollection: false) / (1024.0 * 1024.0);
     return Results.Ok(new { allocatedMB });
+});
+
+app.MapGet("/api/server-errors", () => Results.Ok(Bit.BlazorUI.Tests.Performance.TestHost.ServerErrorLog.Entries.ToArray()));
+app.MapDelete("/api/server-errors", () =>
+{
+    Bit.BlazorUI.Tests.Performance.TestHost.ServerErrorLog.Entries.Clear();
+    return Results.Ok();
 });
 
 app.Run();

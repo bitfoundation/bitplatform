@@ -690,7 +690,7 @@ public partial class BitOverlay : BitComponentBase
     {
         // The key is the keyboard's equivalent of a click on the layer, so whatever takes the click's dismissal
         // away (Blocking, being disabled) takes the key's as well.
-        if (IsDisposed || IsOpen is false || Disabled || Blocking || NoDismissOnEscape) return;
+        if (IsDisposing || IsOpen is false || Disabled || Blocking || NoDismissOnEscape) return;
 
         if (await AssignIsOpen(false) is false) return;
 

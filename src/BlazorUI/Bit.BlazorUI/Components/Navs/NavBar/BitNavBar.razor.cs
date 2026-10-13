@@ -169,7 +169,7 @@ public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
     // keeps the registration that child has just made.
     internal void UnregisterItemElement(TItem item, ElementReference element)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         if (_itemElements.TryGetValue(item, out var registered) && registered.Id != element.Id) return;
 

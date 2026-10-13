@@ -982,7 +982,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
     {
         // The list may have been closed by something else - an outside click, the IsOpen parameter - while this
         // call was on its way, and closing it again would reach the JS side to toggle a callout that is not shown.
-        if (IsDisposed || IsOpen is false) return;
+        if (IsDisposing || IsOpen is false) return;
 
         await CloseCallout();
 

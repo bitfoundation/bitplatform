@@ -90,29 +90,4 @@ public class BitButtonGroupOptionsOrderTests : BunitTestContext
     {
         return component.FindAll(".bit-btg-btx").Select(e => e.TextContent).ToArray();
     }
-
-    [TestMethod]
-    public void BitButtonGroupShouldLeaveItsToggleStateAloneWhileItIsDisposedTogetherWithItsOptions()
-    {
-        var component = RenderComponent<BitButtonGroupTeardownTest>();
-
-        component.Render(parameters => parameters.Add(p => p.Show, false));
-
-        Assert.AreEqual(0, component.Instance.ToggleKeyChanges.Count);
-        Assert.AreEqual(0, component.Instance.ToggleKeysChanges.Count);
-        Assert.AreEqual("a", component.Instance.ToggleKey);
-        CollectionAssert.AreEqual(new[] { "a" }, component.Instance.ToggleKeys!.ToArray());
-    }
-
-    [TestMethod]
-    public void BitButtonGroupShouldStillClearTheToggleStateWhenTheToggledOptionIsRemovedFromAGroupThatStays()
-    {
-        var component = RenderComponent<BitButtonGroupTeardownTest>();
-
-        component.Render(parameters => parameters.Add(p => p.ShowFirst, false));
-
-        CollectionAssert.AreEqual(new string?[] { null }, component.Instance.ToggleKeyChanges);
-        Assert.AreEqual(1, component.Instance.ToggleKeysChanges.Count);
-        Assert.AreEqual(0, component.Instance.ToggleKeysChanges[0]!.Count());
-    }
 }

@@ -1160,6 +1160,8 @@ public partial class BitFileUpload : BitComponentBase
     [JSInvokable("HandleChunkUpload")]
     public async Task __HandleChunkUpload(int fileIndex, int responseStatus, string responseText)
     {
+        if (IsDisposing) return;
+
         if (GetFileByUploaderIndex(fileIndex) is not { } file) return;
 
         // whatever this response says, the request it answers is over and the file is free again.
@@ -1202,7 +1204,7 @@ public partial class BitFileUpload : BitComponentBase
                     await Task.Delay(delay);
                 }
 
-                if (IsDisposed) return;
+                if (IsDisposing) return;
 
                 // the file may have been paused, canceled, removed or reset while the delay was pending,
                 // in which case that outcome stands instead of being overwritten by this stale failure.

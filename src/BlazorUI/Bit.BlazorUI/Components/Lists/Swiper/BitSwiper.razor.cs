@@ -765,7 +765,7 @@ public partial class BitSwiper : BitComponentBase
     [JSInvokable("OnStateChange")]
     public async Task _OnStateChange(BitSwiperState state)
     {
-        if (IsDisposed || state is null) return;
+        if (IsDisposing || state is null) return;
 
         var previousIndex = _index;
         var wasAtStart = _atStart;
@@ -827,7 +827,7 @@ public partial class BitSwiper : BitComponentBase
             await OnChange.InvokeAsync(_index);
 
             // The handler may have taken the swiper away (navigating off the page, for one).
-            if (IsDisposed) return;
+            if (IsDisposing) return;
         }
 
         // Only a move counts at the start: the place the swiper is first laid out on is not one.
@@ -835,7 +835,7 @@ public partial class BitSwiper : BitComponentBase
         {
             await OnReachStart.InvokeAsync();
 
-            if (IsDisposed) return;
+            if (IsDisposing) return;
         }
 
         // The end is reached by moving to it or, in a swiper everything fits in, by having it in view already;
@@ -872,6 +872,10 @@ public partial class BitSwiper : BitComponentBase
 
     internal void UnregisterItem(BitSwiperItem item)
     {
+        // The items unregister while they are being disposed, which also happens when the swiper goes away with
+        // them: re-indexing the ones that are left is work for a swiper that is gone.
+        if (IsDisposing) return;
+
         if (_allItems.Remove(item) is false) return;
 
         // The indices of the items are what the accessible names and the current item marker are written
@@ -881,8 +885,6 @@ public partial class BitSwiper : BitComponentBase
         {
             _allItems[i].Index = i;
         }
-
-        if (IsDisposing) return;
 
         StateHasChanged();
     }

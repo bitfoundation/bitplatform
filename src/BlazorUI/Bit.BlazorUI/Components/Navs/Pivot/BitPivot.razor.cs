@@ -705,7 +705,7 @@ public partial class BitPivot : BitComponentBase
     [JSInvokable("OnSetOverflowItems")]
     public void OnSetOverflowItems(int[] indexes)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         ApplyOverflowItems(indexes);
     }
@@ -713,7 +713,7 @@ public partial class BitPivot : BitComponentBase
     [JSInvokable("OnSetSlideState")]
     public void OnSetSlideState(bool hasOverflow, bool atStart, bool atEnd)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         _slideHasOverflow = hasOverflow;
         _slideAtStart = atStart;

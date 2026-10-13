@@ -365,14 +365,21 @@ public class BitAccordionListTests : BunitTestContext
     [TestMethod]
     public void BitAccordionListShouldLeaveItsExpandedKeysAloneWhileItIsDisposedTogetherWithItsOptions()
     {
+        // The script answers later, the way it does in a browser: the renderer disposes the options while the lists
+        // are still awaiting their own teardown, before the base class has marked them disposed.
+        var dispose = Context.JSInterop.SetupVoid("BitBlazorUI.Extras.disposePreventKeys", _ => true);
+
         var component = RenderComponent<BitAccordionListTeardownTest>();
 
         component.Render(parameters => parameters.Add(p => p.Show, false));
 
+        Assert.AreEqual(2, dispose.Invocations.Count);
         Assert.AreEqual(0, component.Instance.ExpandedKeyChanges.Count);
         Assert.AreEqual(0, component.Instance.ExpandedKeysChanges.Count);
         Assert.AreEqual("first", component.Instance.ExpandedKey);
         CollectionAssert.AreEqual(new[] { "first" }, component.Instance.ExpandedKeys!.ToArray());
+
+        dispose.SetVoidResult();
     }
 
     [TestMethod]

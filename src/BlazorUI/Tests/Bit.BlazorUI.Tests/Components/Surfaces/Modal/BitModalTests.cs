@@ -2011,6 +2011,29 @@ public class BitModalTests : BunitTestContext
         Assert.AreEqual(innerContainerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"][^1].Arguments[0]);
     }
 
+    [TestMethod]
+    public async Task BitModalShouldNotDismissOnAnEscapeTheScriptSendsWhileItIsBeingDisposed()
+    {
+        // The script answers later, the way it does in a browser: the Modal's reference stays alive while it awaits
+        // its own teardown, before the base class has marked it disposed, so an Escape sent in that window still
+        // reaches it - and is not a dismissal of a Modal that is going away anyway.
+        var unwatch = Context.JSInterop.SetupVoid("BitBlazorUI.Utils.unwatchEscape", _ => true);
+
+        var component = RenderComponent<BitModalTeardownTest>();
+        var modal = component.FindComponent<BitModal>().Instance;
+
+        component.Render(parameters => parameters.Add(p => p.Show, false));
+
+        Assert.AreEqual(1, unwatch.Invocations.Count);
+
+        await component.InvokeAsync(modal._OnEscape);
+
+        Assert.AreEqual(0, component.Instance.Dismissals);
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        unwatch.SetVoidResult();
+    }
+
 
     private void HandleIsOpenChanged(bool isOpen) => isModalOpen = isOpen;
 }

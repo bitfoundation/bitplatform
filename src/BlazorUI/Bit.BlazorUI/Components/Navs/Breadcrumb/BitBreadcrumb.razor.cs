@@ -342,7 +342,7 @@ public partial class BitBreadcrumb<TItem> : BitComponentBase where TItem : class
     [JSInvokable("OnResize")]
     public void _OnResize(ContentRect _)
     {
-        if (IsDisposed || IsAutoCollapsing is false) return;
+        if (IsDisposing || IsAutoCollapsing is false) return;
 
         _measurePasses = 0;
         _measureRequested = true;
