@@ -168,14 +168,6 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    // The watch Callouts.setupKeyboard registers for the focus going into a popup the pointer opened (see
-    // Utils.setupFocusIn), released on its own when the keyboard takes the popup over some other way.
-    internal static ValueTask BitUtilsDisposeFocusIn(this IJSRuntime jsRuntime, string elementId)
-    {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Utils.disposeFocusIn", elementId);
-    }
-
-
     // Reports, through the OnEscapeVerdict callback, as each Escape goes down inside the element, whether it
     // belongs to something in there - an open popup of a component in its content, an IME composition, a
     // surface nested inside it - rather than to the surface itself; see Utils.setupEscapeGuard.

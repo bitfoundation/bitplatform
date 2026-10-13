@@ -1,0 +1,80 @@
+﻿@page "/regression/callout-keyboard-handover"
+
+<PageTitle>Callout Keyboard Handover Regression</PageTitle>
+
+@* The keyboard handling an open callout registers on the JS side - Escape, the Tab key kept inside it or handed back
+   to the page after its trigger, the focus going into one the pointer opened watched for - and the focus moved into
+   it, for the two components that hand it over in one call: BitDropMenu (Callouts.setupMenuKeyboard) and BitCallout
+   (Callouts.setupKeyboard). Each case is rendered on its own (?case=), between two fields the Tab key and the Escape
+   are pressed from. TrapFocus can be switched while the drop menu is open through #toggle-trap, clicked from a
+   script, since the overlay of the open callout takes every press of the pointer. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>Callout Keyboard Handover (@Case)</h3>
+    <button id="toggle-trap" @onclick="() => _trapFocus = !_trapFocus">Toggle TrapFocus</button>
+    <div id="metrics" style="font-family: monospace;">
+        <p>Open: <span id="open-state">@(_isOpen ? "open" : "closed")</span></p>
+        <p>TrapFocus: <span id="trap-state">@(_trapFocus ? "on" : "off")</span></p>
+        <p>Status: <span id="status">@_status</span></p>
+    </div>
+</div>
+
+<div style="padding: 20px; display: flex; gap: 16px; align-items: center;">
+    <input id="before" placeholder="before" />
+
+    @switch (Case)
+    {
+        case "callout":
+            <BitCallout Id="callout" @bind-IsOpen="_isOpen" TrapFocus="_trapFocus">
+                <Anchor>
+                    <button id="callout-anchor" type="button">Callout</button>
+                </Anchor>
+                <Content>
+                    <div style="padding: 16px; display: flex; gap: 8px;">
+                        <button id="item1" type="button">One</button>
+                        <button id="item2" type="button">Two</button>
+                    </div>
+                </Content>
+            </BitCallout>
+            break;
+
+        default:
+            <BitDropMenu Id="menu" Text="Menu" @bind-IsOpen="_isOpen" TrapFocus="_trapFocus" AutoFocus="AutoFocus"
+                         OpenOnHover="Hover" HoverCloseDelay="300">
+                <Body>
+                    <div style="padding: 16px; display: flex; gap: 8px;">
+                        <button id="item1" type="button">One</button>
+                        <button id="item2" type="button">Two</button>
+                    </div>
+                </Body>
+            </BitDropMenu>
+            break;
+    }
+
+    <input id="after" placeholder="after" />
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "case")] public string? Case { get; set; }
+    [SupplyParameterFromQuery(Name = "trap")] public bool Trap { get; set; }
+    [SupplyParameterFromQuery(Name = "autofocus")] public bool AutoFocus { get; set; }
+    [SupplyParameterFromQuery(Name = "hover")] public bool Hover { get; set; }
+
+    private bool _isOpen;
+    private bool _trapFocus;
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
+    // interactive render moves it on, which is what the test waits for before it drives the page.
+    private string _status = "Loading";
+
+    protected override void OnInitialized()
+    {
+        _trapFocus = Trap;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+}

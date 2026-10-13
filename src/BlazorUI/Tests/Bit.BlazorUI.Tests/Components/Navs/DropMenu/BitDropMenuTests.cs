@@ -1015,10 +1015,10 @@ public class BitDropMenuTests : BunitTestContext
         component.Find(".bit-drm-btn").Click();
         Assert.AreEqual("true", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
 
-        // A callout opened by a click names no trigger, so only a key pressed inside it closes it.
-        var setup = KeyboardSetups().Single(i => i.Arguments[3] is true);
+        // A callout opened by a click is not the pointer's, so only a key pressed inside it closes it.
+        var setup = KeyboardSetups().Single(i => KeyboardMode(i) is not null);
         Assert.AreEqual(component.Find(".bit-drm-cal").Id, setup.Arguments[0]);
-        Assert.IsNull(setup.Arguments[4]);
+        Assert.AreNotEqual("focusIn", KeyboardMode(setup));
 
         await component.InvokeAsync(() => component.Instance._OnEscape());
 
@@ -1041,8 +1041,9 @@ public class BitDropMenuTests : BunitTestContext
         component.Find(".bit-drm").MouseEnter();
 
         // A callout opened by hovering is shown wherever the focus is, so the root is named as the trigger and an
-        // Escape pressed anywhere else dismisses it too (WCAG 1.4.13).
+        // Escape pressed anywhere else dismisses it too (WCAG 1.4.13), which is what the pointer's mode registers.
         var hovered = LastEscapeSetup();
+        Assert.AreEqual("focusIn", KeyboardMode(hovered));
         Assert.AreEqual(component.Find(".bit-drm").Id, hovered.Arguments[4]);
 
         component.Find(".bit-drm").MouseLeave();
@@ -1052,7 +1053,7 @@ public class BitDropMenuTests : BunitTestContext
 
         // The same drop menu opened by a click leaves a key pressed outside it to whatever the focus is on.
         var clicked = LastEscapeSetup();
-        Assert.IsNull(clicked.Arguments[4]);
+        Assert.AreEqual("tabOut", KeyboardMode(clicked));
         Assert.AreEqual(2, CountEscapeSetups());
     }
 
@@ -1236,9 +1237,11 @@ public class BitDropMenuTests : BunitTestContext
         component.Find(".bit-drm").MouseEnter();
         Assert.AreEqual(1, CountFocusInSetups());
 
-        // The keyboard taking it over from the button releases the watch along with the hover handling.
+        // The keyboard taking it over from the button switches the mode, which releases the watch along with the
+        // hover handling.
         component.Find(".bit-drm-btn").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
-        Assert.AreEqual(1, CountInvocations("BitBlazorUI.Utils.disposeFocusIn"));
+        Assert.AreEqual("tabOut", KeyboardMode(KeyboardSetups().Last()));
+        Assert.AreEqual(1, CountFocusInSetups());
     }
 
     [TestMethod]
@@ -1255,13 +1258,13 @@ public class BitDropMenuTests : BunitTestContext
         component.Find(".bit-drm").MouseEnter();
 
         var hovered = LastEscapeSetup();
-        Assert.AreEqual(component.Find(".bit-drm").Id, hovered.Arguments[4]);
+        Assert.AreEqual("focusIn", KeyboardMode(hovered));
 
         component.Find(".bit-drm-btn").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
 
         // From here on an Escape pressed elsewhere - in a dialog opened from the content - is not the callout's.
         var taken = LastEscapeSetup();
-        Assert.IsNull(taken.Arguments[4]);
+        Assert.AreEqual("tabOut", KeyboardMode(taken));
         Assert.AreEqual(2, CountEscapeSetups());
     }
 
@@ -2121,7 +2124,10 @@ public class BitDropMenuTests : BunitTestContext
             parameters.Add(p => p.TrapFocus, false);
         });
 
-        Assert.AreEqual(1, CountInvocations("BitBlazorUI.Utils.disposeFocusTrap"));
+        // Switching back takes the trap back in the same call.
+        Assert.AreEqual("tabOut", KeyboardMode(KeyboardSetups().Last()));
+        Assert.AreEqual(2, CountTabOutSetups());
+        Assert.AreEqual(0, CountPieceByPieceKeyboardCalls());
     }
 
     [TestMethod]
@@ -2818,10 +2824,10 @@ public class BitDropMenuTests : BunitTestContext
 
         component.Find(".bit-drm-btn").Click();
 
-        var setup = KeyboardSetups().Single(i => i.Arguments[6] is not null);
+        var setup = KeyboardSetups().Single(i => KeyboardMode(i) == "tabOut");
 
         Assert.AreEqual(component.Find(".bit-drm-cal").Id, setup.Arguments[0]);
-        Assert.AreEqual(component.Find(".bit-drm-btn").Id, setup.Arguments[6]);
+        Assert.AreEqual(component.Find(".bit-drm-btn").Id, setup.Arguments[3]);
         Assert.AreEqual(0, CountKeyboardDisposals());
 
         component.Find(".bit-drm-ovl").Click();
@@ -2856,13 +2862,10 @@ public class BitDropMenuTests : BunitTestContext
         // and the focus moving in, so the Escape, the Tab key and the focus go over together.
         var setup = KeyboardSetups().Single();
         Assert.AreEqual(component.Find(".bit-drm-cal").Id, setup.Arguments[0]);
-        Assert.AreEqual(false, setup.Arguments[2]);
-        Assert.AreEqual(true, setup.Arguments[3]);
-        Assert.IsNull(setup.Arguments[4]);
-        Assert.AreEqual(trapFocus, setup.Arguments[5]);
-        Assert.AreEqual(trapFocus ? null : component.Find(".bit-drm-btn").Id, setup.Arguments[6]);
-        Assert.AreEqual(false, setup.Arguments[7]);
-        Assert.AreEqual(autoFocus || trapFocus || fromKeyboard, setup.Arguments[8]);
+        Assert.AreEqual(trapFocus ? "focusTrap" : "tabOut", KeyboardMode(setup));
+        Assert.AreEqual(component.Find(".bit-drm-btn").Id, setup.Arguments[3]);
+        Assert.AreEqual(component.Find(".bit-drm").Id, setup.Arguments[4]);
+        Assert.AreEqual(autoFocus || trapFocus || fromKeyboard, FocusesCallout(setup));
         Assert.AreEqual(0, CountPieceByPieceKeyboardCalls());
 
         component.Find(".bit-drm-btn").KeyDown(new KeyboardEventArgs { Key = "Escape" });
@@ -2892,12 +2895,9 @@ public class BitDropMenuTests : BunitTestContext
         // The pointer's callout answers an Escape pressed anywhere and watches for the focus going in, and neither
         // traps the Tab key nor takes the focus.
         var setup = KeyboardSetups().Single();
-        Assert.AreEqual(true, setup.Arguments[3]);
+        Assert.AreEqual("focusIn", KeyboardMode(setup));
         Assert.AreEqual(component.Find(".bit-drm").Id, setup.Arguments[4]);
-        Assert.AreEqual(false, setup.Arguments[5]);
-        Assert.IsNull(setup.Arguments[6]);
-        Assert.AreEqual(true, setup.Arguments[7]);
-        Assert.AreEqual(false, setup.Arguments[8]);
+        Assert.AreEqual(false, FocusesCallout(setup));
 
         component.Find(".bit-drm").MouseLeave();
         component.WaitForAssertion(() => Assert.AreEqual("false", component.Find(".bit-drm-btn").GetAttribute("aria-expanded")));
@@ -2920,17 +2920,73 @@ public class BitDropMenuTests : BunitTestContext
         component.Find(".bit-drm").MouseEnter();
         component.Find(".bit-drm-btn").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
 
-        // The watch on the focus going in is the one piece left behind by the switch, taken back on its own; the
-        // narrowed Escape, the Tab key and the focus go over together.
-        Assert.AreEqual(1, CountInvocations("BitBlazorUI.Utils.disposeFocusIn"));
-
+        // The switch takes the watch on the focus going in back, and the narrowed Escape, the Tab key and the
+        // focus go over with it, all in the one call the key costs.
         var taken = KeyboardSetups().Last();
         Assert.AreEqual(2, KeyboardSetups().Count());
-        Assert.AreEqual(true, taken.Arguments[3]);
-        Assert.IsNull(taken.Arguments[4]);
-        Assert.AreEqual(component.Find(".bit-drm-btn").Id, taken.Arguments[6]);
-        Assert.AreEqual(false, taken.Arguments[7]);
-        Assert.AreEqual(true, taken.Arguments[8]);
+        Assert.AreEqual("tabOut", KeyboardMode(taken));
+        Assert.AreEqual(true, FocusesCallout(taken));
+        Assert.AreEqual(0, CountPieceByPieceKeyboardCalls());
+    }
+
+    [TestMethod]
+    public async Task BitDropMenuShouldLeaveNothingRegisteredWhenItClosesWhileTheKeyboardIsBeingHandedOver()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isHoverDevice", _ => true).SetResult(true);
+
+        // The call the keyboard taking over sends is held on its way, the way a slow circuit holds it.
+        var takeOver = Context.JSInterop.SetupVoid("BitBlazorUI.Callouts.setupMenuKeyboard", i => i.Arguments[5] is true);
+
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+            parameters.Add(p => p.OpenOnHover, true);
+        });
+
+        component.Find(".bit-drm").MouseEnter();
+        component.Find(".bit-drm-btn").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+
+        Assert.AreEqual(2, KeyboardSetups().Count());
+
+        // Escape closes the callout while the call is still on its way: the release goes after it, so the JS side
+        // ends up with nothing registered.
+        await component.InvokeAsync(() => component.Instance._OnEscape());
+
+        Assert.AreEqual("false", component.Find(".bit-drm-btn").GetAttribute("aria-expanded"));
+        Assert.AreEqual(1, CountKeyboardDisposals());
+
+        var invocations = Context.JSInterop.Invocations.Select(i => i.Identifier).ToList();
+        Assert.IsTrue(invocations.LastIndexOf("BitBlazorUI.Callouts.setupMenuKeyboard") < invocations.IndexOf("BitBlazorUI.Callouts.disposeKeyboard"));
+
+        takeOver.SetVoidResult();
+
+        // The call coming back registers nothing more, and the next opening starts over from nothing registered.
+        Assert.AreEqual(2, KeyboardSetups().Count());
+
+        component.Find(".bit-drm").MouseLeave();
+        component.Find(".bit-drm").MouseEnter();
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, KeyboardSetups().Count()));
+        Assert.AreEqual("focusIn", KeyboardMode(KeyboardSetups().Last()));
+        Assert.AreEqual(0, CountPieceByPieceKeyboardCalls());
+    }
+
+    [TestMethod]
+    public void BitDropMenuShouldOnlyMoveTheFocusWhenTheKeyboardAsksForACalloutItAlreadyOwns()
+    {
+        var component = RenderComponent<BitDropMenu>(parameters =>
+        {
+            parameters.Add(p => p.Text, "Menu");
+        });
+
+        component.Find(".bit-drm-btn").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+        component.Find(".bit-drm-btn").KeyDown(new KeyboardEventArgs { Key = "ArrowDown" });
+
+        // The second key asks for the focus alone: nothing is registered again.
+        var again = KeyboardSetups().Last();
+        Assert.AreEqual(2, KeyboardSetups().Count());
+        Assert.IsNull(KeyboardMode(again));
+        Assert.AreEqual(true, FocusesCallout(again));
     }
 
     [TestMethod]
@@ -2945,13 +3001,23 @@ public class BitDropMenuTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.TrapFocus, true));
 
-        Assert.AreEqual(1, CountInvocations("BitBlazorUI.Utils.disposeTabOut"));
+        // Each switch is one call, which takes the previous mode back on the JS side; a parameter changing moves
+        // no focus.
+        Assert.AreEqual("focusTrap", KeyboardMode(KeyboardSetups().Last()));
+        Assert.AreEqual(false, FocusesCallout(KeyboardSetups().Last()));
         Assert.AreEqual(1, CountFocusTrapSetups());
 
         component.Render(parameters => parameters.Add(p => p.TrapFocus, false));
 
-        Assert.AreEqual(1, CountInvocations("BitBlazorUI.Utils.disposeFocusTrap"));
+        Assert.AreEqual("tabOut", KeyboardMode(KeyboardSetups().Last()));
         Assert.AreEqual(2, CountTabOutSetups());
+        Assert.AreEqual(3, KeyboardSetups().Count());
+        Assert.AreEqual(0, CountPieceByPieceKeyboardCalls());
+
+        // A parameter change that switches nothing sends nothing.
+        component.Render(parameters => parameters.Add(p => p.Text, "Other"));
+
+        Assert.AreEqual(3, KeyboardSetups().Count());
     }
 
     [TestMethod]
@@ -3090,26 +3156,31 @@ public class BitDropMenuTests : BunitTestContext
         return Context.JSInterop.Invocations.Count(i => i.Identifier == identifier);
     }
 
-    // The keyboard handling of the open callout is handed over in one call (Callouts.setupKeyboard), each piece by an
-    // argument of its own, and taken back in one (Callouts.disposeKeyboard); only a switch while the callout is open
-    // takes a single piece back on its own.
+    // The keyboard handling of the open callout is handed over in one call (Callouts.setupMenuKeyboard) - the mode it
+    // switches to (null leaving it as it is), the button, the root and whether the focus goes in - and taken back in
+    // one (Callouts.disposeKeyboard).
     private IEnumerable<JSRuntimeInvocation> KeyboardSetups()
     {
-        return Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Callouts.setupKeyboard");
+        return Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Callouts.setupMenuKeyboard");
     }
 
-    // The trigger an Escape pressed outside the callout is answered for is its argument 4.
-    private JSRuntimeInvocation LastEscapeSetup() => KeyboardSetups().Last(i => i.Arguments[3] is true);
+    private static string? KeyboardMode(JSRuntimeInvocation setup) => (string?)setup.Arguments[2];
 
-    private int CountEscapeSetups() => KeyboardSetups().Count(i => i.Arguments[3] is true);
+    private static bool FocusesCallout(JSRuntimeInvocation setup) => setup.Arguments[5] is true;
 
-    private int CountFocusTrapSetups() => KeyboardSetups().Count(i => i.Arguments[5] is true);
+    // Every mode registers the Escape: answered anywhere outside the callout and the root (argument 4) for "focusIn",
+    // the one a callout the pointer opened is in, and only inside the callout for the others.
+    private JSRuntimeInvocation LastEscapeSetup() => KeyboardSetups().Last(i => KeyboardMode(i) is not null);
 
-    private int CountTabOutSetups() => KeyboardSetups().Count(i => i.Arguments[6] is not null);
+    private int CountEscapeSetups() => KeyboardSetups().Count(i => KeyboardMode(i) is not null);
 
-    private int CountFocusInSetups() => KeyboardSetups().Count(i => i.Arguments[7] is true);
+    private int CountFocusTrapSetups() => KeyboardSetups().Count(i => KeyboardMode(i) == "focusTrap");
 
-    private int CountCalloutFocuses() => KeyboardSetups().Count(i => i.Arguments[8] is true);
+    private int CountTabOutSetups() => KeyboardSetups().Count(i => KeyboardMode(i) == "tabOut");
+
+    private int CountFocusInSetups() => KeyboardSetups().Count(i => KeyboardMode(i) == "focusIn");
+
+    private int CountCalloutFocuses() => KeyboardSetups().Count(FocusesCallout);
 
     private int CountKeyboardDisposals() => CountInvocations("BitBlazorUI.Callouts.disposeKeyboard");
 
@@ -3119,7 +3190,7 @@ public class BitDropMenuTests : BunitTestContext
         "BitBlazorUI.Utils.setupFocusTrap", "BitBlazorUI.Utils.disposeFocusTrap",
         "BitBlazorUI.Utils.setupTabOut", "BitBlazorUI.Utils.disposeTabOut",
         "BitBlazorUI.Utils.setupFocusIn", "BitBlazorUI.Utils.disposeFocusIn",
-        "BitBlazorUI.Utils.focusFirstElement"
+        "BitBlazorUI.Utils.focusFirstElement", "BitBlazorUI.Callouts.setupKeyboard"
     ];
 
     private int CountPieceByPieceKeyboardCalls()

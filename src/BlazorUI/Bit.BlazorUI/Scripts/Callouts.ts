@@ -1752,14 +1752,12 @@
             Callouts.remove(calloutId, false);
         }
 
-        // Hands the keyboard over to an opening callout (BitCallout, BitDropMenu) in one call rather than one per
-        // piece, since each is a round trip of its own on a server-rendered page and all of them stand between the
-        // click and the focus moving into the callout: the element the focus is on is remembered (to be handed back
-        // to on close), Escape is listened for on the page, Tab and Shift+Tab are kept inside the callout, or the
-        // callout is put into the tab order after its trigger, the focus going into it is watched for (see
-        // Utils.setupFocusIn), and last the focus is moved into it - once everything that answers the keys there
-        // is in place. Each is asked for on its own, and the ones the component has already set up are not asked
-        // for again. Reports whether a focus origin was remembered.
+        // Hands the keyboard over to an opening BitCallout in one call rather than one per piece, since each
+        // is a round trip of its own on a server-rendered page and all of them stand between the click and the
+        // focus moving into the callout: the element the focus is on is remembered (to be handed back to on
+        // close), Escape is listened for on the page, Tab and Shift+Tab are kept inside the callout, or the
+        // callout is put into the tab order after its trigger. Each is asked for on its own, and the ones the
+        // component has already set up are not asked for again. Reports whether a focus origin was remembered.
         public static setupKeyboard(
             calloutId: string,
             dotnetObj: DotNetObject,
@@ -1767,9 +1765,7 @@
             escape: boolean,
             escapeTriggerId: string | null,
             focusTrap: boolean,
-            tabOutTriggerId: string | null,
-            focusIn: boolean = false,
-            focusFirst: boolean = false) {
+            tabOutTriggerId: string | null) {
             const captured = captureFocusOrigin && Utils.captureFocusOrigin(calloutId);
 
             if (escape) {
@@ -1784,20 +1780,65 @@
                 Utils.setupTabOut(calloutId, tabOutTriggerId, dotnetObj);
             }
 
-            if (focusIn) {
-                Utils.setupFocusIn(calloutId, dotnetObj);
-            }
-
-            if (focusFirst) {
-                Utils.focusFirstElement(calloutId);
-            }
-
             return captured;
         }
 
-        // Takes back everything setupKeyboard may have set up for a closing callout, in one call. Each of the
-        // disposals is a no-op for what was never set up. The remembered focus origin is only forgotten when the
-        // component is not about to hand the focus back to it.
+        // The keyboard handling of an open BitDropMenu, brought to the mode asked for and the focus moved into the
+        // callout, in one call rather than one per piece: on a server-rendered page each would be a round trip of
+        // its own, all of them standing between the key and the focus moving in. The modes, of which exactly one is
+        // registered while the callout is open:
+        // - 'focusIn': a callout the pointer opened. Escape pressed anywhere outside it and the root counts as well
+        //   (WCAG 1.4.13), and the focus going into it is watched for (see Utils.setupFocusIn), since that is the
+        //   keyboard taking it over. It takes no part in the tab order.
+        // - 'focusTrap': Tab and Shift+Tab are kept inside it.
+        // - 'tabOut': it is put into the tab order right after its trigger.
+        // Switching modes takes back what the previous one registered, so the component never has to ask for that
+        // separately. A null mode leaves what is registered as it is, for the keyboard only asking for the focus.
+        // The focus goes in last, once everything that answers the keys there is in place, and whatever happens to
+        // the registrations: it is what the key pressed was for.
+        public static setupMenuKeyboard(
+            calloutId: string,
+            dotnetObj: DotNetObject,
+            mode: 'focusIn' | 'focusTrap' | 'tabOut' | null,
+            triggerId: string,
+            rootId: string,
+            focusFirst: boolean) {
+            try {
+                if (!mode) return;
+
+                // Registering it again replaces the registration before it, which is how the keyboard taking over a
+                // callout the pointer opened narrows its Escape down to the one pressed inside the callout.
+                Utils.setupEscape(calloutId, dotnetObj, mode === 'focusIn' ? rootId : null);
+
+                if (mode !== 'focusIn') {
+                    Utils.disposeFocusIn(calloutId);
+                }
+
+                if (mode !== 'focusTrap') {
+                    Utils.disposeFocusTrap(calloutId);
+                }
+
+                if (mode !== 'tabOut') {
+                    Utils.disposeTabOut(calloutId);
+                }
+
+                if (mode === 'focusIn') {
+                    Utils.setupFocusIn(calloutId, dotnetObj);
+                } else if (mode === 'focusTrap') {
+                    Utils.setupFocusTrap(calloutId);
+                } else {
+                    Utils.setupTabOut(calloutId, triggerId, dotnetObj);
+                }
+            } finally {
+                if (focusFirst) {
+                    Utils.focusFirstElement(calloutId);
+                }
+            }
+        }
+
+        // Takes back everything setupKeyboard or setupMenuKeyboard may have set up for a closing callout, in one
+        // call. Each of the disposals is a no-op for what was never set up. The remembered focus origin is only
+        // forgotten when the component is not about to hand the focus back to it.
         public static disposeKeyboard(calloutId: string, forgetFocusOrigin: boolean) {
             Utils.disposeFocusTrap(calloutId);
             Utils.disposeTabOut(calloutId);
