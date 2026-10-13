@@ -4,16 +4,25 @@
 
 @* A BitMap whose marker popup opens in a map that reads the way the query string says (#13592): every provider projects
    a point in pixels from the container's left edge whatever the direction, so the popup sits over its marker either
-   way, with the auto-pan the open asks for (?pan=true) and without it. *@
+   way, with the auto-pan the open asks for (?pan=true) and without it. ?dir=map-rtl names the direction through the
+   map's own Dir in a page that reads left to right. ?marker= picks the one marker drawn: inside (its popup fits as it
+   opens), start (its popup crosses the left edge), end (the right and top edges) or wide (a popup wider than the map,
+   whose start edge the pan favours). The map has a border, which the pan's frame leaves out. *@
 <div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
     <h3>Dir Resolved Map Regression</h3>
     <p>Status: <span id="status">@_status</span></p>
 </div>
 
-<div dir="@Dir" style="width: 800px; height: 400px;">
-    <BitMap TMapProvider="BitLeafletMapProvider" Provider="_provider" Markers="_markers" PopupAutoPan="Pan">
+<div dir="@(Dir is "rtl" ? "rtl" : "ltr")" style="width: 800px; height: 400px;">
+    <BitMap TMapProvider="BitLeafletMapProvider"
+            Provider="_provider"
+            Markers="_markers"
+            PopupAutoPan="Pan"
+            Dir="@(Dir is "map-rtl" ? BitDir.Rtl : (BitDir?)null)"
+            Style="--bit-Map-border: 6px solid black; --bit-Map-popup-max-width: none;"
+            OnReady="HandleReady">
         <MarkerPopupTemplate Context="marker">
-            <b class="popup-title">@marker.Alt</b>
+            <b class="popup-title" style="@(marker.Id is "wide" ? "display: block; width: 1000px;" : null)">@marker.Alt</b>
         </MarkerPopupTemplate>
     </BitMap>
 </div>
@@ -23,19 +32,34 @@
 
     [SupplyParameterFromQuery] public bool Pan { get; set; }
 
+    [SupplyParameterFromQuery] public string? Marker { get; set; }
+
+    // Zoom 12 over Vienna: about 2913px to a degree of longitude and 4370px to one of latitude, so each marker is placed
+    // by its offset in pixels from the centre of the 788x388 canvas.
     private readonly BitLeafletMapProvider _provider = new() { Center = new(48.2082, 16.3738), Zoom = 12 };
 
-    // West of the centre, so that on a right-to-left map an inline-start origin would push the popup past the map's
-    // right edge rather than leave it inside by chance.
-    private readonly List<BitMapMarker> _markers = [new() { Id = "opera", Position = new(48.2029, 16.3290), Alt = "Vienna State Opera" }];
+    private static readonly Dictionary<string, BitMapMarker> Markers = new()
+    {
+        // 130px west of the centre, so that on a right-to-left map an inline-start origin would push the popup past the
+        // map's right edge rather than leave it inside by chance.
+        ["inside"] = new() { Id = "inside", Position = new(48.2029, 16.3290), Alt = "Vienna State Opera" },
+        // 20px from the left edge, halfway down: the popup centred over it crosses the left edge.
+        ["start"] = new() { Id = "start", Position = new(48.1990, 16.2454), Alt = "Schönbrunn Palace Park" },
+        // 20px from the right edge and 34px from the top: the popup crosses the right edge and the top one.
+        ["end"] = new() { Id = "end", Position = new(48.2448, 16.5022), Alt = "Danube Island North" },
+        // Below the centre, with a popup wider than the map: the pan can only bring one of its sides in.
+        ["wide"] = new() { Id = "wide", Position = new(48.1945, 16.3738), Alt = "Belvedere" },
+    };
+
+    private List<BitMapMarker> _markers = [];
 
     private string _status = "Loading";
 
-    protected override void OnAfterRender(bool firstRender)
+    protected override void OnInitialized()
     {
-        if (firstRender is false) return;
-
-        _status = "Ready";
-        StateHasChanged();
+        _markers = [Markers[Marker ?? "inside"]];
     }
+
+    // Raised once the markers are on the map, so the test clicks a marker that is there to be clicked.
+    private void HandleReady() => _status = "Ready";
 }

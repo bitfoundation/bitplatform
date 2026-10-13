@@ -11,5 +11,6 @@ declare namespace BitBlazorUI {
         static firstFocusable(container: ParentNode, skip?: (el: HTMLElement) => boolean): HTMLElement | null;
         static findFocusable(scope: ParentNode, from: Node, forward: boolean, skip?: (el: HTMLElement) => boolean): HTMLElement | null;
         static isInNestedSurface(node: Node | null, boundary: Element): boolean;
+        static isRtl(element: HTMLElement): boolean;
     }
 }

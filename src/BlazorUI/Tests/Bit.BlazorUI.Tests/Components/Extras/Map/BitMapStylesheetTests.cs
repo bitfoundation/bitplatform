@@ -91,21 +91,28 @@ public class BitMapStylesheetTests
 
     // The anchor is moved by the point a provider projects, which is in pixels from the container's top-left corner in
     // every writing direction, so it starts there too: an inline-start origin is the right edge on a right-to-left map,
-    // and puts the popup a map's width away from its marker (#13592).
+    // and puts the popup a map's width away from its marker (#13592). Every rule reaching the anchor is read declaration
+    // by declaration: the one offset it may set is the physical top-left one, and a mixin, whose output the source does
+    // not show, may not set it at all. Where the popup lands is BitDirResolvedBrowserTests' to check.
     [TestMethod]
     public void BitMapShouldAnchorThePopupToTheTopLeftCornerInEveryDirection()
     {
-        var block = ReadBlock(".bit-map-anchor");
+        var rules = SourceFiles.GetScssRules(ReadStylesheet())
+                               .Where(r => r.Header.Contains(".bit-map-anchor") || r.Ancestors.Any(a => a.Contains(".bit-map-anchor")))
+                               .ToList();
 
-        StringAssert.Contains(block, "top: 0;");
-        StringAssert.Contains(block, "left: 0;");
-        Assert.DoesNotContain("inset-inline", block);
-        Assert.DoesNotContain("inset-block", block);
-        Assert.DoesNotContain("right:", block);
+        var own = rules.Single(r => r.Header == ".bit-map-anchor" && r.Ancestors.Count == 0);
+        CollectionAssert.IsSubsetOf(new[] { "position: absolute", "top: 0", "left: 0" }, own.Declarations.ToArray());
 
-        var chrome = SourceFiles.Read("Bit.BlazorUI.Extras", "Components", "Map", "BitMapChrome.ts");
+        foreach (var declaration in rules.SelectMany(r => r.Declarations))
+        {
+            Assert.IsFalse(declaration.StartsWith('@'), $"The anchor's origin is hidden behind a mixin or an at-rule: {declaration}");
 
-        StringAssert.Contains(chrome, "anchor.element.style.transform = `translate(${Math.round(point.x)}px, ${Math.round(point.y)}px)`;");
+            var property = declaration.Split(':')[0].Trim();
+            if (Regex.IsMatch(property, @"^(inset(-.+)?|top|right|bottom|left)$") is false) continue;
+
+            Assert.IsTrue(declaration is "top: 0" or "left: 0", $"The anchor is placed by another offset than its physical top-left corner: {declaration}");
+        }
     }
 
     // A loader slows down under reduced motion rather than stopping, and the motion tokens are what do that - and what
