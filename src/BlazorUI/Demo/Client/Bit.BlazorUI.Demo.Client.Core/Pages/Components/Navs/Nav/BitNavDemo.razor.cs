@@ -537,6 +537,24 @@ public partial class BitNavDemo
             DefaultValue = "--bit-clr-err",
             Description = "Fill of the badge and the dot of an item; it keeps it in every state of the item.",
         },
+        new()
+        {
+            Name = "--bit-Nav-badge-font-size",
+            DefaultValue = "--bit-tpg-fs-2xs",
+            Description = "Text size of the badge of an item. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-badge-height",
+            DefaultValue = "--bit-siz-badge-md",
+            Description = "Height of the badge of an item, which is also its smallest width, so a one-digit count stays round. The Size parameter wins over it.",
+        },
+        new()
+        {
+            Name = "--bit-Nav-badge-dot-size",
+            DefaultValue = "--bit-siz-badge-dot-md",
+            Description = "Diameter of the dot of an item. The Size parameter wins over it.",
+        },
     ];
 
     private readonly List<ComponentParameter> componentPublicMembers =

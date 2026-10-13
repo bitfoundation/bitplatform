@@ -153,6 +153,85 @@ public class BitNavBadgeBrowserTests : PerformanceTestBase
         Assert.AreEqual(0, await Page.Locator(Row("rtl", Plain, ".bit-nav-sfx")).CountAsync());
     }
 
+    [TestMethod]
+    public async Task BitNav_Badge_FollowsTheSizeOfTheNav()
+    {
+        await Open(Page);
+
+        var small = await Rect(Row("size-sm", Inbox, ".bit-nav-bdg"));
+        var medium = await Rect(Row("ltr", Inbox, ".bit-nav-bdg"));
+        var large = await Rect(Row("size-lg", Inbox, ".bit-nav-bdg"));
+        var smallDot = await Rect(Row("size-sm", Dot, ".bit-nav-bdt"));
+        var mediumDot = await Rect(Row("ltr", Dot, ".bit-nav-bdt"));
+        var largeDot = await Rect(Row("size-lg", Dot, ".bit-nav-bdt"));
+
+        Assert.IsTrue(small.Height < medium.Height && medium.Height < large.Height,
+            $"The badge height does not grow with the Size: {small.Height}, {medium.Height}, {large.Height}.");
+        Assert.IsTrue(smallDot.Height < mediumDot.Height && mediumDot.Height < largeDot.Height,
+            $"The dot does not grow with the Size: {smallDot.Height}, {mediumDot.Height}, {largeDot.Height}.");
+        // A one-digit count is no wider than it is tall, and a two-digit one is still at least as wide.
+        Assert.IsTrue(medium.Width >= medium.Height - 0.5, "The badge is narrower than it is tall.");
+    }
+
+    [TestMethod]
+    public async Task BitNav_Badge_ReadsThePublicSizeVariables_ButAnExplicitSizeWins()
+    {
+        await Open(Page);
+
+        var badge = await Rect(Row("size-var", Inbox, ".bit-nav-bdg"));
+        var dot = await Rect(Row("size-var", Dot, ".bit-nav-bdt"));
+
+        Assert.AreEqual(30, badge.Height, 0.5, "The badge does not read --bit-Nav-badge-height.");
+        Assert.AreEqual(14, dot.Height, 0.5, "The dot does not read --bit-Nav-badge-dot-size.");
+        await Expect(Page.Locator(Row("size-var", Inbox, ".bit-nav-bdg"))).ToHaveCSSAsync("font-size", "13px");
+
+        var explicitBadge = await Rect(Row("size-var-explicit", Inbox, ".bit-nav-bdg"));
+        var smallBadge = await Rect(Row("size-sm", Inbox, ".bit-nav-bdg"));
+        var explicitDot = await Rect(Row("size-var-explicit", Dot, ".bit-nav-bdt"));
+        var smallDot = await Rect(Row("size-sm", Dot, ".bit-nav-bdt"));
+
+        Assert.AreEqual(smallBadge.Height, explicitBadge.Height, 0.5, "The variable wins over the explicit Size.");
+        Assert.AreEqual(smallDot.Height, explicitDot.Height, 0.5, "The dot variable wins over the explicit Size.");
+    }
+
+    [TestMethod]
+    public async Task BitNav_Badge_IsDimmedInADisabledNav()
+    {
+        await Open(Page);
+
+        var opacity = await Page.EvalOnSelectorAsync<string>(Row("disabled", Inbox, ".bit-nav-bdg"), "e => getComputedStyle(e).opacity");
+        var dotOpacity = await Page.EvalOnSelectorAsync<string>(Row("disabled", Dot, ".bit-nav-bdt"), "e => getComputedStyle(e).opacity");
+
+        Assert.IsTrue(double.Parse(opacity, System.Globalization.CultureInfo.InvariantCulture) < 1, "The badge of a disabled nav is not dimmed.");
+        Assert.IsTrue(double.Parse(dotOpacity, System.Globalization.CultureInfo.InvariantCulture) < 1, "The dot of a disabled nav is not dimmed.");
+        // Still in its own colors, only dimmed.
+        await AssertBadgeColors(Row("disabled", Inbox, ".bit-nav-bdg"));
+    }
+
+    [TestMethod]
+    public async Task BitNav_NestedNav_KeepsItsBadgeInTheRowAndUndimmed()
+    {
+        await Open(Page);
+
+        const string inner = "#nested .bit-nav .bit-nav .bit-nav-ict";
+        var item = await Rect($"{inner} .bit-nav-itm");
+        var icon = await Rect($"{inner} .bit-nav-iic");
+        var badge = await Rect($"{inner} .bit-nav-bdg");
+
+        // In the row of its own item, after the icon, rather than pinned over the corner of it.
+        await Expect(Page.Locator($"{inner} .bit-nav-itm")).Not.ToHaveClassAsync(new System.Text.RegularExpressions.Regex(@"bit-nav-icb"));
+        await Expect(Page.Locator($"{inner} .bit-nav-sfx")).ToHaveCSSAsync("position", "static");
+        Assert.IsTrue(badge.Left >= icon.Right, "The inner badge is not after its icon.");
+        Assert.IsTrue(badge.Right <= item.Right + 0.5, "The inner badge left its row.");
+        await Expect(Page.Locator($"{inner} .bit-nav-bdg")).ToHaveCSSAsync("opacity", "1");
+
+        // The outer item is the disabled rail item, so its own badge is cornered and dimmed.
+        var outer = "#nested > .bit-nav > .bit-nav-lst > li:nth-child(1) > .bit-nav-ict > .bit-nav-mct > .bit-nav-itm > .bit-nav-sfx";
+        await Expect(Page.Locator(outer)).ToHaveCSSAsync("position", "absolute");
+        var outerOpacity = await Page.EvalOnSelectorAsync<string>($"{outer} > .bit-nav-bdg", "e => getComputedStyle(e).opacity");
+        Assert.IsTrue(double.Parse(outerOpacity, System.Globalization.CultureInfo.InvariantCulture) < 1, "The disabled rail item's badge is not dimmed.");
+    }
+
     private async Task AssertBadgeColors(string selector)
     {
         await Expect(Page.Locator(selector)).ToHaveCSSAsync("color", BadgeColor);

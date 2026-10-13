@@ -53,9 +53,10 @@
         // template rendered in its place, so an item marked with a count keeps its icon, its text and its states.
         // Only an item that renders its own anchor (or button) has one: a group header, a separator and a template
         // that replaces the item render none, and the rail keeps the badge alone, pinned to the icon.
-        var isReplaced = (template is not null && templateRenderMode is BitNavItemTemplateRenderMode.Replace) ||
-                         (Nav.ItemTemplate is not null && Nav.ItemTemplateRenderMode is BitNavItemTemplateRenderMode.Replace);
-        var hasEnd = isGroupHeader is false && isSeparator is false && isReplaced is false;
+        var replacingTemplate = template is not null && templateRenderMode is BitNavItemTemplateRenderMode.Replace ? template
+                              : Nav.ItemTemplate is not null && Nav.ItemTemplateRenderMode is BitNavItemTemplateRenderMode.Replace ? Nav.ItemTemplate
+                              : null;
+        var hasEnd = isGroupHeader is false && isSeparator is false && replacingTemplate is null;
         var badge = hasEnd ? Nav.GetBadge(Item) : null;
         var dot = hasEnd && badge.HasNoValue() && Nav.GetDot(Item);
         var suffixTemplate = hasEnd && Nav.IconOnly is false ? (Nav.GetSuffixTemplate(Item) ?? Nav.ItemSuffixTemplate) : null;
@@ -76,7 +77,9 @@
                 badgeHint = $" ({badgeLabel})";
             }
         }
-        var hasSuffix = suffixTemplate is not null || badge.HasValue() || dot || badgeHint is not null;
+        var hasSuffix = suffixTemplate is not null || badge.HasValue() || dot;
+        // The rail pins its badge to the corner of the item, which the item says with a class of its own.
+        var cornerBadgeClass = hasSuffix && Nav.IconOnly ? "bit-nav-icb" : null;
         // A collapsed branch that holds the selected item borrows its look, so the way to the current page
         // stays visible while the branch leading to it is closed.
         var isSelectedAncestor = isSelected is false && childItems.Any() && isExpanded is false && Nav.HasSelectedDescendant(Item);
@@ -242,13 +245,9 @@
             var chevronStyle = $"min-width:{Nav.IndentPadding}px;{Nav.Styles?.ToggleButton}";
 
 
-            @if (template is not null && templateRenderMode is BitNavItemTemplateRenderMode.Replace)
+            @if (replacingTemplate is not null)
             {
-                @template(Item)
-            }
-            else if (Nav.ItemTemplate is not null && Nav.ItemTemplateRenderMode is BitNavItemTemplateRenderMode.Replace)
-            {
-                @Nav.ItemTemplate(Item)
+                @replacingTemplate(Item)
             }
             else
             {
@@ -305,7 +304,7 @@
                             </span>
                         }
                         <div style="@GetItemStyles()"
-                             class="bit-nav-itm @GetItemClasses()">
+                             class="bit-nav-itm @cornerBadgeClass @GetItemClasses()">
                             @if (template is not null)
                             {
                                 @template(Item)

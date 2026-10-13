@@ -42,6 +42,37 @@
             </ItemTemplate>
         </BitNav>
     </section>
+
+    @* The badge and dot sizes of each Size, then the public size variables, which an explicit Size wins over. *@
+    <section id="size-sm">
+        <BitNav TItem="BitNavItem" Items="_items" Mode="BitNavMode.Manual" Style="width: 240px" Size="BitSize.Small" />
+    </section>
+
+    <section id="size-lg">
+        <BitNav TItem="BitNavItem" Items="_items" Mode="BitNavMode.Manual" Style="width: 240px" Size="BitSize.Large" />
+    </section>
+
+    <section id="size-var" style="--bit-Nav-badge-height: 30px; --bit-Nav-badge-dot-size: 14px; --bit-Nav-badge-font-size: 13px;">
+        <BitNav TItem="BitNavItem" Items="_items" Mode="BitNavMode.Manual" Style="width: 240px" />
+    </section>
+
+    <section id="size-var-explicit" style="--bit-Nav-badge-height: 30px; --bit-Nav-badge-dot-size: 14px; --bit-Nav-badge-font-size: 13px;">
+        <BitNav TItem="BitNavItem" Items="_items" Mode="BitNavMode.Manual" Style="width: 240px" Size="BitSize.Small" />
+    </section>
+
+    <section id="disabled">
+        <BitNav TItem="BitNavItem" Items="_items" Mode="BitNavMode.Manual" Style="width: 240px" Disabled />
+    </section>
+
+    @* A nav rendered inside an item template of a rail whose item is disabled: the rail's corner and the disabled
+       item's dimming are the outer nav's alone, so the inner nav keeps its badge in the row and at full strength. *@
+    <section id="nested">
+        <BitNav TItem="BitNavItem" Items="_hosts" Mode="BitNavMode.Manual" IconOnly>
+            <ItemTemplate Context="host">
+                <BitNav TItem="BitNavItem" Items="_inner" Mode="BitNavMode.Manual" Style="width: 240px" />
+            </ItemTemplate>
+        </BitNav>
+    </section>
 </div>
 
 @code {
@@ -59,6 +90,16 @@
         new() { Key = "long", Text = "An item whose text is far too long to fit beside its badge", IconName = BitIconName.Mail, Badge = "New" },
         new() { Key = "dot", Text = "Sent", IconName = BitIconName.Send, Dot = true },
         new() { Key = "plain", Text = "Archive", IconName = BitIconName.Archive },
+    ];
+
+    private readonly List<BitNavItem> _hosts =
+    [
+        new() { Key = "host", Text = "Host", IconName = BitIconName.Inbox, Badge = "9", IsDisabled = true },
+    ];
+
+    private readonly List<BitNavItem> _inner =
+    [
+        new() { Key = "inner", Text = "Inner", IconName = BitIconName.Mail, Badge = "7" },
     ];
 
     private string _status = "Loading";

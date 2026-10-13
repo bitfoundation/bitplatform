@@ -2985,6 +2985,9 @@ public class BitNavTests : BunitTestContext
         Assert.AreEqual(0, component.FindAll(".suffix").Count);
         Assert.AreEqual("Products (12)", container.GetAttribute("aria-label"));
         Assert.AreEqual(1, component.FindAll(".bit-nav-sfx").Count);
+        // The item that pins the badge to its corner says so itself, so the rule never reaches a nav inside a template.
+        Assert.IsTrue(container.QuerySelector(".bit-nav-itm")!.ClassList.Contains("bit-nav-icb"));
+        Assert.AreEqual(1, component.FindAll(".bit-nav-icb").Count);
     }
 
     [TestMethod]
