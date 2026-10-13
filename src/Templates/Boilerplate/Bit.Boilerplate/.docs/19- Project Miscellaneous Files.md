@@ -223,7 +223,7 @@ These namespaces are **automatically imported** in every C# file, eliminating th
 
 Instead of this in each `.csproj`:
 ```xml
-<PackageReference Include="Bit.BlazorUI" Version="11.0.0-pre-08" />
+<PackageReference Include="Bit.BlazorUI" Version="11.0.0-pre-09" />
 ```
 
 You write this in `.csproj`:
@@ -233,7 +233,7 @@ You write this in `.csproj`:
 
 And the version is defined centrally in `Directory.Packages.props`:
 ```xml
-<PackageVersion Include="Bit.BlazorUI" Version="11.0.0-pre-08" />
+<PackageVersion Include="Bit.BlazorUI" Version="11.0.0-pre-09" />
 ```
 
 **Benefits**:
@@ -244,8 +244,8 @@ And the version is defined centrally in `Directory.Packages.props`:
 **Example packages included**:
 
 ```xml
-<PackageVersion Include="Bit.BlazorUI" Version="11.0.0-pre-08" />
-<PackageVersion Include="Bit.Butil" Version="11.0.0-pre-08" />
+<PackageVersion Include="Bit.BlazorUI" Version="11.0.0-pre-09" />
+<PackageVersion Include="Bit.Butil" Version="11.0.0-pre-09" />
 <PackageVersion Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.0" />
 <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0" />
 <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.21" />
