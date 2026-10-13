@@ -1552,7 +1552,45 @@ public class BitFullCalendarState
         }
     }
 
-    private void NotifyStateChanged() => OnStateChanged?.Invoke();
+    // While an update is open (BeginUpdate / EndUpdate), the changes it makes are announced once, when
+    // it ends, rather than one notification per setter: a subscriber never sees the intermediate
+    // states of a pass that applies many values at once (the component's parameters).
+    private int _updateDepth;
+    private bool _stateChangedDuringUpdate;
+
+    /// <summary>
+    /// Opens an update: every <see cref="OnStateChanged"/> it would raise is held back until the
+    /// matching <see cref="EndUpdate"/>, which raises one for all of them. Updates nest; only the
+    /// outermost one announces.
+    /// </summary>
+    internal void BeginUpdate() => _updateDepth++;
+
+    /// <summary>
+    /// Closes an update opened by <see cref="BeginUpdate"/>, raising one <see cref="OnStateChanged"/>
+    /// if anything changed while it was open.
+    /// </summary>
+    internal void EndUpdate()
+    {
+        if (_updateDepth is 0 || --_updateDepth > 0)
+            return;
+
+        if (_stateChangedDuringUpdate is false)
+            return;
+
+        _stateChangedDuringUpdate = false;
+        OnStateChanged?.Invoke();
+    }
+
+    private void NotifyStateChanged()
+    {
+        if (_updateDepth > 0)
+        {
+            _stateChangedDuringUpdate = true;
+            return;
+        }
+
+        OnStateChanged?.Invoke();
+    }
 
     // The last range actually reported. Several interactions move the selected date without moving
     // the range it sits in - clicking another day of the week that is already on screen, for one -
