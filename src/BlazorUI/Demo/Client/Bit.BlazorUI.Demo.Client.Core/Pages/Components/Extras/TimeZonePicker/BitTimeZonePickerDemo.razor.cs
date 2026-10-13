@@ -469,7 +469,7 @@ public partial class BitTimeZonePickerDemo
     private string calloutState = "closed";
     private string focusState = "blurred";
     private bool isCalloutOpen;
-    private bool validationSubmitted;
+    private string? submittedTimeZoneId;
     private TimeZoneInfo? submissionTimeZone;
     private BitTimeZonePicker<string> controlledPicker = default!;
     private readonly BitTimeZonePickerValidationModel validationModel = new();

@@ -109,7 +109,7 @@ private static string LocalTime(BitTimeZone zone) => zone.TimeZoneInfo is { } ti
                    Description=""Pick the time zone of one of our offices.""
                    DefaultValue=""@(""America/Sao_Paulo"")"" />
 
-<EditForm Model=""validationModel"" OnValidSubmit=""() => validationSubmitted = true"" novalidate>
+<EditForm Model=""validationModel"" OnValidSubmit=""() => submittedTimeZoneId = validationModel.TimeZoneId"" novalidate>
     <DataAnnotationsValidator />
     <BitTimeZonePicker Label=""Time zone""
                        Required
@@ -119,9 +119,9 @@ private static string LocalTime(BitTimeZone zone) => zone.TimeZoneInfo is { } ti
     <BitButton ButtonType=""BitButtonType.Submit"">Submit</BitButton>
 </EditForm>
 
-@if (validationSubmitted)
+@if (submittedTimeZoneId is not null)
 {
-    <div>Submitted: @validationModel.TimeZoneId</div>
+    <div>Submitted: @submittedTimeZoneId</div>
 }";
     private readonly string example10CsharpCode = @"
 public class BitTimeZonePickerValidationModel
@@ -130,7 +130,7 @@ public class BitTimeZonePickerValidationModel
     public string? TimeZoneId { get; set; }
 }
 
-private bool validationSubmitted;
+private string? submittedTimeZoneId;
 private readonly BitTimeZonePickerValidationModel validationModel = new();";
 
     private readonly string example11RazorCode = @"

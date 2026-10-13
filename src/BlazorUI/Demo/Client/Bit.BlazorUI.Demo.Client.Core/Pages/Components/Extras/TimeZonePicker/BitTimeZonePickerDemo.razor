@@ -204,7 +204,7 @@
                                    Description="Pick the time zone of one of our offices."
                                    DefaultValue="@("America/Sao_Paulo")" />
                 <br />
-                <EditForm Model="validationModel" OnValidSubmit="() => validationSubmitted = true" novalidate>
+                <EditForm Model="validationModel" OnValidSubmit="() => submittedTimeZoneId = validationModel.TimeZoneId" novalidate>
                     <DataAnnotationsValidator />
                     <BitTimeZonePicker Label="Time zone"
                                        Required
@@ -214,9 +214,9 @@
                     <br />
                     <BitButton ButtonType="BitButtonType.Submit">Submit</BitButton>
                 </EditForm>
-                @if (validationSubmitted)
+                @if (submittedTimeZoneId is not null)
                 {
-                    <div>Submitted: @validationModel.TimeZoneId</div>
+                    <div>Submitted: @submittedTimeZoneId</div>
                 }
             </div>
         </DemoExample>
