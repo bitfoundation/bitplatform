@@ -40,7 +40,9 @@
                own, since Blazor's preventDefault directive cannot be decided per key.
                tabindex="-1" keeps the tablist itself out of the tab order: a header that scrolls (the
                Slide overflow) is a scroll container, which Firefox gives a tab stop of its own ahead of
-               the selected tab, and the tabs pattern promises one stop for the whole header. *@
+               the selected tab, and the tabs pattern promises one stop for the whole header. The click
+               focus the same tabindex would give the tablist's own padding is turned away by the script
+               half (setupKeys), so the focus never rests on the header without a tab. *@
             <div @ref="_headerRef"
                  @onkeydown="HandleOnKeyDown"
                  id="@_HeaderId"

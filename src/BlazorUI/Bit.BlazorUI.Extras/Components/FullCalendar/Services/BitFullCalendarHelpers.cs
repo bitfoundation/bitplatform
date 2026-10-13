@@ -563,14 +563,14 @@ public static class BitFullCalendarHelpers
     /// </summary>
     public static DateTime StartOfCulturalMonth(DateTime date, CultureInfo? culture = null)
     {
-        var cal = (culture ?? CultureInfo.CurrentUICulture).Calendar;
+        var cal = (culture ?? CultureInfo.CurrentUICulture).DateTimeFormat.Calendar;
         return date.Date.AddDays(1 - cal.GetDayOfMonth(date));
     }
 
     /// <summary>Last day of the cultural month containing <paramref name="date"/> (era-safe).</summary>
     public static DateTime EndOfCulturalMonth(DateTime date, CultureInfo? culture = null)
     {
-        var cal = (culture ?? CultureInfo.CurrentUICulture).Calendar;
+        var cal = (culture ?? CultureInfo.CurrentUICulture).DateTimeFormat.Calendar;
         return cal.AddMonths(StartOfCulturalMonth(date, culture), 1).AddDays(-1);
     }
 

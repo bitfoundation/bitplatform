@@ -1,7 +1,7 @@
 ﻿namespace BitBlazorUI {
     export class Pivot {
         private static _instances: Record<string, PivotInstance> = {};
-        private static _keyHandlers: Record<string, { element: HTMLElement, handler: (e: KeyboardEvent) => void }> = {};
+        private static _keyHandlers: Record<string, { element: HTMLElement, handler: (e: KeyboardEvent) => void, mouseDownHandler: (e: MouseEvent) => void }> = {};
 
         public static setup(
             id: string,
@@ -135,7 +135,20 @@
 
             header.addEventListener('keydown', handler);
 
-            Pivot._keyHandlers[headerId] = { element: header, handler };
+            // The tablist carries tabindex="-1" to keep a scrolling header out of the tab order (Firefox gives a
+            // scroll container a tab stop of its own), which also makes it focusable by a click on its own padding.
+            // That focus would belong to no tab, and the keys the handler above takes would then act on the tab the
+            // component last knew of; so a press on the header itself - never on a tab or anything inside it - leaves
+            // the focus where it is, as it did before the tablist became focusable at all.
+            const mouseDownHandler = (e: MouseEvent) => {
+                if (e.target === header) {
+                    e.preventDefault();
+                }
+            };
+
+            header.addEventListener('mousedown', mouseDownHandler);
+
+            Pivot._keyHandlers[headerId] = { element: header, handler, mouseDownHandler };
         }
 
         public static disposeKeys(headerId: string) {
@@ -143,6 +156,7 @@
             if (!entry) return;
 
             entry.element.removeEventListener('keydown', entry.handler);
+            entry.element.removeEventListener('mousedown', entry.mouseDownHandler);
             delete Pivot._keyHandlers[headerId];
         }
 

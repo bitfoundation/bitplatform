@@ -214,6 +214,16 @@ internal sealed class BitCascadeMap
             _onSet = FindHook(target, CallOnSetAttributeName);
             _onSetAsync = FindHook(target, CallOnSetAsyncAttributeName);
 
+            // A [CallOnSet] naming a method that returns a Task or a ValueTask is awaited like a [CallOnSetAsync]
+            // one, which is the rule the source generator applies to the markup path (ComponentSourceGenerator's
+            // ReturnsAwaitable): a value applied through a params object then runs the hook on the same path as
+            // one set in markup, instead of dropping the task it returns and whatever it throws.
+            if (_onSetAsync is null && _onSet is not null && ReturnsAwaitable(_onSet))
+            {
+                _onSetAsync = _onSet;
+                _onSet = null;
+            }
+
             var attributes = target.GetCustomAttributesData();
 
             ResetsClass = attributes.Any(a => a.AttributeType.FullName == ResetClassBuilderAttributeName);
@@ -332,6 +342,15 @@ internal sealed class BitCascadeMap
             return target.DeclaringType?.GetMethod(name,
                                                    BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
                                                    Type.EmptyTypes);
+        }
+
+        private static bool ReturnsAwaitable(MethodInfo hook)
+        {
+            var returnType = hook.ReturnType;
+            var definition = returnType.IsGenericType ? returnType.GetGenericTypeDefinition() : returnType;
+
+            return definition == typeof(Task) || definition == typeof(Task<>)
+                || definition == typeof(ValueTask) || definition == typeof(ValueTask<>);
         }
     }
 

@@ -305,6 +305,17 @@ public class BitPdfUnsupportedInputTests : BunitTestContext
         Assert.IsNull(OpenEverything(bytes));
     }
 
+    // BitPdfColorSpace.Create indexed the stream of an ICCBased array after checking only that the
+    // array was not empty, so a one-element [/ICCBased] threw out of every render and extraction
+    // instead of degrading to a device space the way every other malformed space does.
+    [TestMethod]
+    public void AnICCBasedSpaceWithNoStreamShouldFallBackToADeviceSpace()
+    {
+        byte[] bytes = Hostile("/CS1 cs 0.5 scn 0 0 1 1 re f", "/ColorSpace << /CS1 [/ICCBased] >>");
+
+        Assert.IsNull(OpenEverything(bytes));
+    }
+
     // BitPdfFunction.Create and BitPdfStitchingFunction built sub-functions with no cycle
     // guard; they now resolve within a BitPdfResolveScope.
     [TestMethod]

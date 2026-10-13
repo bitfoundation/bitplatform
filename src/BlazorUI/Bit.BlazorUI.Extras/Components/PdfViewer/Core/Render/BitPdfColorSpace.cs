@@ -104,7 +104,9 @@ public abstract class BitPdfColorSpace
             switch (kind)
             {
                 case "ICCBased":
-                    if (xref.FetchIfRef(arr[1]) is BitPdfBaseStream icc && icc.Dict is not null)
+                    // A one-element [/ICCBased] (a damaged file) names no stream; it degrades to RGB
+                    // like every other malformed space here rather than throwing out of Create.
+                    if (arr.Count > 1 && xref.FetchIfRef(arr[1]) is BitPdfBaseStream icc && icc.Dict is not null)
                     {
                         int n = icc.Dict.Get("N") is double dn ? (int)dn : 3;
                         return n switch { 1 => Gray, 4 => Cmyk, _ => Rgb };

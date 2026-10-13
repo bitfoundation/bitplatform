@@ -419,4 +419,30 @@ public class BitPdfXRefTests
         Assert.AreEqual("Base", PageText(document));
         Assert.IsNull(document.XRef.Fetch(new BitPdfRef(6, 0)));
     }
+
+    // The /XRefStm of a hybrid section fills in the entries ITS OWN classic table left free. An
+    // older hybrid section reached through /Prev used to fill in any free entry, so an object the
+    // newest table had deleted came back from the older section's stream.
+    [TestMethod]
+    public void AnObjectDeletedByAnUpdateShouldStayDeletedPastAnOlderHybridSection()
+    {
+        var file = new BitPdfEngineTestFile();
+        file.Obj(1, "<< /Type /Catalog /Pages 2 0 R >>");
+        file.Obj(2, "<< /Type /Pages /Kids [3 0 R] /Count 1 >>");
+        file.Obj(3, PageBody);
+        file.Stream(4, BitPdfEngineTestFile.ShowText("Hybrid"));
+        file.Obj(5, FontBody);
+        var (data, first) = ObjectStream((6, "<< /Title (Deleted by the update) >>"));
+        file.Stream(7, data, $"/Type /ObjStm /N 1 /First {first}");
+        int xrefStm = file.XRefStream(8, "", [(6, 2, 7, 0)], withPrev: false);
+        file.XRefTable($"/Size 9 /Root 1 0 R /Info 6 0 R /XRefStm {xrefStm}", [0, 1, 2, 3, 4, 5, 7, 8], freeEntries: [6], withPrev: false);
+        // The update deletes object 6; its /Prev leads to the hybrid section above.
+        file.XRefTable("/Size 9 /Root 1 0 R", [], freeEntries: [6]);
+
+        var document = BitPdfDocument.Load(file.ToArray());
+
+        Assert.AreEqual("Hybrid", PageText(document));
+        Assert.IsNull(document.XRef.Fetch(new BitPdfRef(6, 0)));
+        Assert.IsNull(document.Metadata.Title);
+    }
 }

@@ -2365,27 +2365,11 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         return (year, month);
     }
 
-    // A culture whose month names are the thirteen of a Hebrew leap year names the months of a common year
-    // one place further along that table from the seventh on - the thirteenth name is the second Adar, which
-    // a common year does not have. .NET's own formatter makes the same shift, so a month read off the names
-    // directly would be spelled differently from the very date the picker is showing (BitCalendar does the same).
-    private string GetMonthName(int year, int month) => _culture.DateTimeFormat.GetMonthName(GetMonthNameIndex(year, month));
+    // The month names go through BitMonthNames, which spells them the way the culture's formatter spells the date
+    // being shown (the shift of a thirteen-name Hebrew table in a common year).
+    private string GetMonthName(int year, int month) => BitMonthNames.GetMonthName(_culture, year, month);
 
-    /// <inheritdoc cref="GetMonthName"/>
-    private string GetAbbreviatedMonthName(int year, int month) => _culture.DateTimeFormat.GetAbbreviatedMonthName(GetMonthNameIndex(year, month));
-
-    /// <inheritdoc cref="GetMonthName"/>
-    private int GetMonthNameIndex(int year, int month)
-    {
-        if (month < 7) return month;
-
-        // Only a culture whose table really does hold thirteen names shifts: everywhere else the thirteenth
-        // entry is the empty string every DateTimeFormatInfo pads its twelve names with.
-        var monthNames = _culture.DateTimeFormat.MonthNames;
-        if (monthNames.Length < 13 || monthNames[12].HasNoValue()) return month;
-
-        return _culture.DateTimeFormat.Calendar.GetMonthsInYear(year) == 13 ? month : month + 1;
-    }
+    private string GetAbbreviatedMonthName(int year, int month) => BitMonthNames.GetAbbreviatedMonthName(_culture, year, month);
 
     private void GenerateSingleMonthData(int monthIndex, int year, int month)
     {

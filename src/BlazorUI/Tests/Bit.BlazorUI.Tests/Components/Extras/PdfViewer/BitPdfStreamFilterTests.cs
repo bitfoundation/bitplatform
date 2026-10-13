@@ -439,4 +439,19 @@ public class BitPdfStreamFilterTests
         var document = BitPdfDocument.Load(BitPdfEngineTestFile.SinglePage(data, "/Filter /FlateDecode " + parms));
         _ = document.Pages[0].ExtractText();
     }
+
+    // The byte length of a row is bounded, but with sub-byte samples the SAMPLE count of a row is
+    // up to eight times larger, and ApplyTiff multiplied it in int: a row whose bytes fit still
+    // wrapped its sample count negative, and the data came back un-predicted rather than rejected.
+    [TestMethod]
+    public void ATiffPredictorWhoseSampleCountOverflowsShouldDecodeToNothing()
+    {
+        // 16383 colors x 200000 columns is 3.3e9 samples, over int.MaxValue, in 4.1e8 bytes, under it.
+        const string parms = "/DecodeParms << /Predictor 2 /Colors 16383 /Columns 200000 /BitsPerComponent 1 >>";
+        byte[] data = BitPdfEngineTestFile.Zlib(BitPdfEngineTestFile.ShowText("x"));
+
+        byte[] decoded = Decode(data, "/Filter /FlateDecode " + parms);
+
+        Assert.AreEqual(0, decoded.Length);
+    }
 }

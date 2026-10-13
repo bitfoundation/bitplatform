@@ -26,10 +26,13 @@ internal static class BitPdfPredictor
         // colors x 16385 columns x 16 bits is 2^32 - 16) into a negative row length and
         // a zero PNG stride. A row (or pixel) that does not fit an int - far beyond any
         // real image - decodes to nothing, as Flate data that does not inflate does, so
-        // every caller degrades the way it already does for a damaged stream.
+        // every caller degrades the way it already does for a damaged stream. The sample
+        // count of a row is bounded on its own: with sub-byte samples it is up to eight
+        // times the byte length, so a row whose bytes fit could still wrap it in int.
         long bitsPerPixel = (long)colorsSafe * bpc;
+        long samplesPerRow = (long)colorsSafe * cols;
         long rowBits = bitsPerPixel * cols;
-        if ((rowBits + 7) / 8 >= int.MaxValue)
+        if ((rowBits + 7) / 8 >= int.MaxValue || samplesPerRow >= int.MaxValue)
         {
             return [];
         }

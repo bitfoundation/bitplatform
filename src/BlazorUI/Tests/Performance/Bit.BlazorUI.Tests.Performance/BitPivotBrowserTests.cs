@@ -240,7 +240,33 @@ public class BitPivotBrowserTests : PerformanceTestBase
         await ExpectFocused("slide", "Tab 1");
     }
 
+    [TestMethod]
+    public async Task BitPivot_ClickOnTheHeadersOwnPadding_FocusesNeitherTheTablistNorATab()
+    {
+        await Open();
 
+        var before = Probe("manual").Locator(".before");
+        await before.FocusAsync();
+
+        // The tablist carries tabindex="-1" to stay out of the tab order, which would also let a click on its own
+        // padding focus it - a focus that belongs to no tab, and that the keyboard handler of the header would then
+        // act on. The header is wider than its five tabs, so the press lands past the last of them, on the header.
+        var header = Probe("manual").Locator("[role=tablist]");
+        var box = await header.BoundingBoxAsync() ?? throw new AssertFailedException("The header has no box.");
+        var lastTab = await Tab("manual", "Tab 5").BoundingBoxAsync() ?? throw new AssertFailedException("Tab 5 has no box.");
+        Assert.IsTrue(lastTab.X + lastTab.Width < box.X + box.Width - 20, "The header has padding past its last tab.");
+
+        await header.ClickAsync(new() { Position = new() { X = box.Width - 8, Y = box.Height / 2 } });
+
+        await Expect(header).Not.ToBeFocusedAsync();
+        await Expect(Probe("manual").Locator("[role=tab]:focus")).ToHaveCountAsync(0);
+        await Expect(before).ToBeFocusedAsync();
+
+        // Nothing changed hands: the keys of the header do not act on a focus that is not on a tab.
+        await Page.Keyboard.PressAsync("ArrowRight");
+        await ExpectSelected("manual", "Tab 1", "1");
+        await Expect(before).ToBeFocusedAsync();
+    }
 
     private async Task Open()
     {

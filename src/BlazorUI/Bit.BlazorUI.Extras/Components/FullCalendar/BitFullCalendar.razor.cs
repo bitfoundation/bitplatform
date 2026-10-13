@@ -509,7 +509,7 @@ public partial class BitFullCalendar : BitComponentBase
             // was switched), and a name-only check would skip the required SetCulture when only the
             // calendar changed - leaving the calendar rendering against the previous calendar system.
             if (!string.Equals(resolved.Name, State.Culture.Name, StringComparison.Ordinal)
-                || resolved.Calendar.GetType() != State.Culture.DateTimeFormat.Calendar.GetType())
+                || resolved.DateTimeFormat.Calendar.GetType() != State.Culture.DateTimeFormat.Calendar.GetType())
                 State.SetCulture(resolved);
 
             // The keyboard and pointer handlers map a physical direction onto earlier/later through the state,
