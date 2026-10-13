@@ -82,7 +82,8 @@ public class ComponentSourceGenerator : IIncrementalGenerator
             componentBaseType is not null &&
             SymbolEqualityComparer.Default.Equals(containingType.BaseType, componentBaseType);
         var inheritsFromBit = InheritsFromBitComponentBase(containingType, bitComponentBaseType);
-        var tracksSetByMarkup = inheritsFromBit && CanOverrideIsSetByMarkup(containingType, compilation, bitComponentBaseType!);
+        var tracksSetByMarkup = inheritsFromBit && CanAccessBitComponentBaseMember(containingType, compilation, bitComponentBaseType!, "IsSetByMarkup");
+        var takesParametersDictionary = inheritsFromBit && CanAccessBitComponentBaseMember(containingType, compilation, bitComponentBaseType!, "TakeParametersDictionary");
         var isCascadedParams = tracksSetByMarkup && IsCascadedParams(prop, compilation);
 
         return new BlazorParameter(
@@ -101,16 +102,17 @@ public class ComponentSourceGenerator : IIncrementalGenerator
             CallOnSetMethodName: callOnSetName,
             CallOnSetAsyncMethodName: callOnSetAsyncName,
             TracksSetByMarkup: tracksSetByMarkup,
+            TakesParametersDictionary: takesParametersDictionary,
             IsCascadedParams: isCascadedParams);
     }
 
     /// <summary>
-    /// Whether the class can add its own parameters to the IsSetByMarkup answer of BitComponentBase, which it only
-    /// can from inside the assemblies that see that internal member.
+    /// Whether the class can use an internal member of BitComponentBase (add its own parameters to the IsSetByMarkup
+    /// answer, take the dictionary of a pass), which it only can from inside the assemblies that see that member.
     /// </summary>
-    private static bool CanOverrideIsSetByMarkup(INamedTypeSymbol type, Compilation compilation, INamedTypeSymbol bitComponentBaseType)
+    private static bool CanAccessBitComponentBaseMember(INamedTypeSymbol type, Compilation compilation, INamedTypeSymbol bitComponentBaseType, string memberName)
     {
-        var member = bitComponentBaseType.GetMembers("IsSetByMarkup").FirstOrDefault();
+        var member = bitComponentBaseType.GetMembers(memberName).FirstOrDefault();
 
         return member is not null && compilation.IsSymbolAccessibleWithin(member, type);
     }
@@ -147,7 +149,8 @@ public class ComponentSourceGenerator : IIncrementalGenerator
         var className = classInfo.ClassNameForCode;
         var twoWayParameters = parameters.Where(p => p.IsTwoWayBound).ToArray();
         var isBaseTypeComponentBase = classInfo.IsBaseTypeComponentBase;
-        var doesSupportParametersViewCache = classInfo.InheritsFromBitComponentBase;
+        var takesParametersDictionary = classInfo.TakesParametersDictionary;
+        var awaitsOnSet = parameters.Any(p => string.IsNullOrWhiteSpace(p.CallOnSetAsyncMethodName) is false);
 
         StringBuilder builder = new StringBuilder($@"using System;
 using System.Linq;
@@ -166,6 +169,10 @@ namespace {namespaceName}
     {{
 ");
         builder.AppendLine("        private readonly HashSet<string> __assignedParameters = [];");
+        if (awaitsOnSet)
+        {
+            builder.AppendLine("        private int __setParametersPass;");
+        }
         builder.AppendLine("");
         foreach (var par in twoWayParameters)
         {
@@ -178,6 +185,10 @@ namespace {namespaceName}
         public override async Task SetParametersAsync(ParameterView parameters)
         {{");
         builder.AppendLine($"            __assignedParameters.Clear();");
+        if (awaitsOnSet)
+        {
+            builder.AppendLine($"            var __pass = ++__setParametersPass;");
+        }
         foreach (var par in twoWayParameters)
         {
             builder.AppendLine($"            {par.PropertyName}HasBeenSet = false;");
@@ -188,12 +199,20 @@ namespace {namespaceName}
         {
             builder.AppendLine($"            {par.PropertyName} = default!;");
         }
-        // ToDictionary builds a new dictionary on every call, so it is the one this pass owns: no copy of it is needed,
-        // and none to enumerate either, since removing an entry does not invalidate the enumerator of a dictionary.
-        builder.AppendLine("            var parametersDictionary = (Dictionary<string, object?>)parameters.ToDictionary();");
-        if (doesSupportParametersViewCache)
+        // The dictionary is this pass's own, so it needs no copy to enumerate: removing an entry does not invalidate the
+        // enumerator of a dictionary. It is filled from the view itself rather than cast from ToDictionary, whose
+        // concrete type is no part of its contract.
+        if (takesParametersDictionary)
         {
-            builder.AppendLine("            ParametersCache = parametersDictionary;");
+            builder.AppendLine("            var parametersDictionary = TakeParametersDictionary(parameters);");
+        }
+        else
+        {
+            builder.AppendLine("            var parametersDictionary = new Dictionary<string, object?>();");
+            builder.AppendLine("            foreach (var parameter in parameters)");
+            builder.AppendLine("            {");
+            builder.AppendLine("                parametersDictionary[parameter.Name] = parameter.Value;");
+            builder.AppendLine("            }");
         }
         builder.AppendLine("            foreach (var parameter in parametersDictionary)");
         builder.AppendLine("            {");
@@ -235,7 +254,13 @@ namespace {namespaceName}
             }
             if (string.IsNullOrWhiteSpace(par.CallOnSetAsyncMethodName) is false)
             {
-                builder.AppendLine($"                       if (notEquals{paramName}) await {par.CallOnSetAsyncMethodName}();");
+                // A pass that started while this one awaited has assigned every parameter anew and goes on to the base
+                // itself, so this one stops: what is left of it is older than what that one already set.
+                builder.AppendLine($"                       if (notEquals{paramName})");
+                builder.AppendLine("                       {");
+                builder.AppendLine($"                           await {par.CallOnSetAsyncMethodName}();");
+                builder.AppendLine("                           if (__pass != __setParametersPass) return;");
+                builder.AppendLine("                       }");
             }
             builder.AppendLine("                       parametersDictionary.Remove(parameter.Key);");
             builder.AppendLine("                       break;");
@@ -252,21 +277,17 @@ namespace {namespaceName}
         }
         builder.AppendLine("                }");
         builder.AppendLine("            }");
-        if (isBaseTypeComponentBase)
+        // What is left reaches a BitComponentBase through ParametersCache, set only now that nothing of this pass awaits
+        // any more, so no other pass can take it in between; the base reads it ahead of the view it is handed. A class
+        // right on ComponentBase hands it nothing, as every parameter left is one ComponentBase has no property for.
+        if (takesParametersDictionary)
         {
-            builder.AppendLine("            await base.SetParametersAsync(ParameterView.Empty);");
+            builder.AppendLine("            ParametersCache = parametersDictionary;");
         }
-        else
-        {
-            if (doesSupportParametersViewCache)
-            {
-                builder.AppendLine("            await base.SetParametersAsync(ParameterView.Empty);");
-            }
-            else
-            {
-                builder.AppendLine("            await base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary));");
-            }
-        }
+        var baseParameters = isBaseTypeComponentBase || takesParametersDictionary
+            ? "ParameterView.Empty"
+            : "ParameterView.FromDictionary(parametersDictionary)";
+        builder.AppendLine($"            await base.SetParametersAsync({baseParameters});");
         builder.AppendLine(@"        }");
 
         builder.AppendLine("");

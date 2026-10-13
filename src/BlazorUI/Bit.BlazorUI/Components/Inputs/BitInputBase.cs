@@ -168,9 +168,9 @@ public abstract class BitInputBase<TValue> : BitComponentBase
 
         _assignedInputParameters.Clear();
 
-        var parametersDictionary = (ParametersCache ??= parameters.ToDictionary() as Dictionary<string, object?>);
+        var parametersDictionary = TakeParametersDictionary(parameters);
 
-        foreach (var parameter in parametersDictionary!)
+        foreach (var parameter in parametersDictionary)
         {
             switch (parameter.Key)
             {
@@ -279,8 +279,9 @@ public abstract class BitInputBase<TValue> : BitComponentBase
         }
 
         // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc. What is left reaches the
-        // base through ParametersCache, which it reads ahead of the view it is handed, so a view built from it would
-        // only be an allocation nobody reads.
+        // base through ParametersCache, handed over right before the call and taken by the base as it starts, so a pass
+        // that throws on the way leaves none behind; a view built from it would only be an allocation nobody reads.
+        ParametersCache = parametersDictionary;
         return base.SetParametersAsync(ParameterView.Empty);
     }
 

@@ -17,4 +17,7 @@ internal readonly record struct BlazorParameter(
     string? CallOnSetMethodName,
     string? CallOnSetAsyncMethodName,
     bool TracksSetByMarkup,
+    // Whether the class sees the internal TakeParametersDictionary of BitComponentBase, and so hands its leftovers on
+    // through ParametersCache rather than through a view built from them.
+    bool TakesParametersDictionary,
     bool IsCascadedParams);
