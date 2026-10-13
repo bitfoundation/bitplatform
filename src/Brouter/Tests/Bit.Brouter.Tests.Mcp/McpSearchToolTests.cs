@@ -48,6 +48,30 @@ public class McpSearchToolTests
     }
 
     [TestMethod]
+    public async Task A_question_about_the_built_in_constraints_points_to_the_constraint_catalog()
+    {
+        // The docs page and the custom-constraint API both mention constraints, but only the catalog
+        // tool lists the built-in ones - and a caller who never hears of it writes a custom
+        // constraint for "int" instead of using the one Brouter already ships.
+        string[] queries =
+        [
+            "a route parameter that must be a number",
+            "route constraint int",
+            "{id:int}",
+            "built-in route constraints",
+            "guid route parameter",
+        ];
+
+        foreach (var query in queries)
+        {
+            var result = await SearchAsync(query, limit: 8);
+
+            Assert.IsTrue(result.Hits.Any(hit => hit.Tool == "GetBrouterRouteConstraints()"),
+                $"'{query}' never pointed to GetBrouterRouteConstraints. It found: {string.Join(", ", result.Hits.Select(hit => $"{hit.Title} ({hit.Tool})"))}.");
+        }
+    }
+
+    [TestMethod]
     public async Task Searching_for_a_member_by_name_surfaces_the_member_itself()
     {
         // Someone typing a member name wants the member, not only the pages that discuss it - and

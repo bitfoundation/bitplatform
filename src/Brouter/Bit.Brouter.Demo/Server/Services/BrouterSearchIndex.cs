@@ -333,6 +333,18 @@ public static class BrouterSearchIndex
             }
         }
 
+        // The catalog as a whole, not only its rows. A row is one token and a one-line rule, so it is
+        // found by "int" and by nothing a caller says when they do not know the token yet - "a route
+        // parameter that must be a number" matched the docs page and the custom-constraint API, and
+        // never the one tool that lists what is built in. The vocabulary is how a question about a
+        // constraint is phrased before the caller knows what Brouter calls it, kept to words that
+        // say "constraint" - a general one such as "file" or "pattern" would put the catalog above
+        // the material every other question with that word in it is after.
+        entries.Add(new Entry("Route constraint", "Built-in route constraints", null,
+            "GetBrouterRouteConstraints()", BrouterConstraintReference.Render(),
+            "constraint must number numeric integer boolean " +
+            string.Join(' ', ConstraintCatalog.All.Select(constraint => constraint.Kind))));
+
         foreach (var constraint in ConstraintCatalog.All)
         {
             entries.Add(new Entry("Route constraint", $"{{value:{constraint.Token}}}", constraint.Category,
