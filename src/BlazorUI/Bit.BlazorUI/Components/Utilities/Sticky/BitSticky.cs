@@ -326,7 +326,7 @@ public partial class BitSticky : BitComponentBase
         // here after the component is gone, where there is nothing left to re-render - or after it
         // was disabled, where the report is of a stickiness that is already off and nothing would be
         // left to clear the state it latched.
-        if (IsDisposed || Disabled) return;
+        if (IsDisposing || Disabled) return;
 
         await SetStuckEdges((BitStickyEdges)edges);
     }

@@ -499,7 +499,7 @@ public partial class BitBasicList<TItem> : BitComponentBase
     [JSInvokable("OnIntersect")]
     public async Task _OnIntersect()
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
         if (_ShowSentinel is false) return;
 
         await InvokeAsync(async () => await LoadMoreItems(false));

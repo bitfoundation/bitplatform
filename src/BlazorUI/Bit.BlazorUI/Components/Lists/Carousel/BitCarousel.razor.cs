@@ -729,7 +729,7 @@ public partial class BitCarousel : BitComponentBase
     [JSInvokable("OnResize")]
     public async Task _OnResize(ContentRect rect)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         // The size the responsive options are matched against (and the slides are sized from) is the one
         // of the container the observer is registered on, which is exactly what it reports here.
@@ -759,6 +759,10 @@ public partial class BitCarousel : BitComponentBase
 
     internal void UnregisterItem(BitCarouselItem carouselItem)
     {
+        // The items unregister while they are being disposed, which also happens when the carousel goes away with
+        // them: re-indexing the ones that are left and laying them out again is work for a carousel that is gone.
+        if (IsDisposing) return;
+
         if (_allItems.Remove(carouselItem) is false) return;
 
         // The indices of the items are what every calculation of the carousel is written in terms of, so
@@ -767,8 +771,6 @@ public partial class BitCarousel : BitComponentBase
         {
             _allItems[i].Index = i;
         }
-
-        if (IsDisposed) return;
 
         _needsReset = true;
 
@@ -1793,7 +1795,7 @@ public partial class BitCarousel : BitComponentBase
     [JSInvokable("OnNavigationKey")]
     public async Task _OnNavigationKey(string key, string? origin, string? originId)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         try
         {

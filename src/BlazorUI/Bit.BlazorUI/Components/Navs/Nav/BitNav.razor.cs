@@ -187,7 +187,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
 
     internal void UnregisterOption(BitNavOption option)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         var item = (option as TItem)!;
 
@@ -217,7 +217,7 @@ public partial class BitNav<TItem> : BitComponentBase where TItem : class
     // keeps the registration that child has just made.
     internal void UnregisterItemElement(TItem item, ElementReference element)
     {
-        if (IsDisposed) return;
+        if (IsDisposing) return;
 
         if (_itemElements.TryGetValue(item, out var registered) && registered.Id != element.Id) return;
 

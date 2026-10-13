@@ -1,0 +1,39 @@
+﻿@using Bit.BlazorUI
+
+@* The pivot goes away together with its items, the way it does when the page hosting it is left; ShowFirst removes
+   the selected item alone from a pivot that stays, the way a dismissed tab does. Slide sets the pivot's script up, so
+   its disposal has a JS call to await before the base class marks it disposed. *@
+@if (Show)
+{
+    <BitPivot OverflowBehavior="BitPivotOverflowBehavior.Slide"
+              @bind-SelectedKey="SelectedKey"
+              OnChange="() => OnChangeCount++">
+        @if (ShowFirst)
+        {
+            <BitPivotItem Key="one" HeaderText="One">One</BitPivotItem>
+        }
+        <BitPivotItem Key="two" HeaderText="Two">Two</BitPivotItem>
+    </BitPivot>
+}
+
+@code {
+    [Parameter] public bool Show { get; set; } = true;
+
+    [Parameter] public bool ShowFirst { get; set; } = true;
+
+    public string? SelectedKey
+    {
+        get => _selectedKey;
+        set
+        {
+            _selectedKey = value;
+            SelectedKeyChanges.Add(value);
+        }
+    }
+
+    public List<string?> SelectedKeyChanges { get; } = [];
+
+    public int OnChangeCount { get; private set; }
+
+    private string? _selectedKey = "one";
+}
