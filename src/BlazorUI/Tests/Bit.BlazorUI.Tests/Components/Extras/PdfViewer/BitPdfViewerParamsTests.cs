@@ -137,8 +137,8 @@ public class BitPdfViewerParamsTests : BunitTestContext
 
         Assert.AreEqual(BitPdfScrollMode.Wrapped, viewer.Instance.CurrentScrollMode);
         Assert.AreEqual(BitPdfCursorTool.Pan, viewer.Instance.CurrentCursorTool);
-        Assert.AreEqual(1, component.FindAll(".bit-pdv-pages.bit-pdv-w").Count);
-        Assert.AreEqual(1, component.FindAll(".bit-pdv-surface.bit-pdv-pan").Count);
+        Assert.AreEqual(1, viewer.FindAll(".bit-pdv-pages.bit-pdv-w").Count);
+        Assert.AreEqual(1, viewer.FindAll(".bit-pdv-surface.bit-pdv-pan").Count);
     }
 
     [TestMethod]

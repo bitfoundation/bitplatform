@@ -170,12 +170,41 @@ public static partial class BitTimeZones
 
         try
         {
-            return TimeZoneInfo.CreateCustomTimeZone(id, info.BaseUtcOffset, info.DisplayName, info.StandardName, info.DaylightName, info.GetAdjustmentRules());
+            return TimeZoneInfo.CreateCustomTimeZone(id, info.BaseUtcOffset, info.DisplayName, info.StandardName, info.DaylightName, InOrder(info.GetAdjustmentRules()));
         }
         catch (Exception ex) when (ex is ArgumentException or InvalidTimeZoneException)
         {
             // Rules a runtime hands out but would not take back: the zone is still right, only under its Windows id.
             return info;
         }
+    }
+
+    // The rules a runtime reading tzdata (Linux, macOS) hands out are cut to whole days, so one ending on the day of a
+    // transition and the next starting on it share that day (Berlin's 1945 and 1947 rules, the rule after its last
+    // listed year), which CreateCustomTimeZone refuses as overlapping. The later rule starts the day after instead:
+    // the earlier one still covers the day of its own transition.
+    private static TimeZoneInfo.AdjustmentRule[] InOrder(TimeZoneInfo.AdjustmentRule[] rules)
+    {
+        var inOrder = new List<TimeZoneInfo.AdjustmentRule>(rules.Length);
+
+        foreach (var rule in rules)
+        {
+            if (inOrder.Count > 0 && rule.DateStart <= inOrder[^1].DateEnd)
+            {
+                var start = inOrder[^1].DateEnd.AddDays(1);
+
+                if (start > rule.DateEnd) continue;
+
+                inOrder.Add(TimeZoneInfo.AdjustmentRule.CreateAdjustmentRule(start, rule.DateEnd, rule.DaylightDelta,
+                                                                             rule.DaylightTransitionStart, rule.DaylightTransitionEnd,
+                                                                             rule.BaseUtcOffsetDelta));
+            }
+            else
+            {
+                inOrder.Add(rule);
+            }
+        }
+
+        return [.. inOrder];
     }
 }
