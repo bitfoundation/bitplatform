@@ -381,9 +381,10 @@ public partial class BitFullCalendar : BitComponentBase
     private BitFullCalendarView _lastView;
     private BitFullCalendarMode _lastMode;
     private DateTime _lastDate;
-    // True while OnParametersSet pushes parameter/default values into the state. Suppresses the
-    // OnViewChange/OnModeChange callbacks for those echoes while still keeping the bound
-    // View/Mode/Date parameters in sync with the resulting state.
+    // True while OnParametersSet pushes parameter/default values into the state. HandleStateChanged
+    // does nothing at all for the change announced in that window - no settings sync, no
+    // reconciliation, no OnViewChange/OnModeChange - since the bound View/Mode/Date have not all
+    // reached the state yet; OnParametersSetAsync reconciles them once, silently, after it.
     private bool _applyingParameters;
     // While applying parameters, several state setters (SetCulture, SetMode/SetView, SetSelectedDate)
     // can each emit a date-range change in one pass. We coalesce them here and raise only the final
@@ -492,10 +493,12 @@ public partial class BitFullCalendar : BitComponentBase
         Settings ??= new();
         Texts ??= new();
 
-        // Mark the parameter-application window so state changes triggered below (events, resources,
-        // view, mode, date) keep the bound View/Mode/Date parameters in sync without raising
-        // OnViewChange/OnModeChange.
+        // Mark the parameter-application window. The state changes made below (events, resources,
+        // views, view, mode, date) are held in one update of the state, announced once when it ends,
+        // and that announcement is ignored by HandleStateChanged: the bound View/Mode/Date are brought
+        // back in sync by the one silent reconciliation OnParametersSetAsync runs after the window.
         _applyingParameters = true;
+        State.BeginUpdate();
         try
         {
             _colorScheme = new BitFullCalendarColorScheme(EventColorOptions);
@@ -539,9 +542,29 @@ public partial class BitFullCalendar : BitComponentBase
 
             ApplySettings();
         }
+        catch
+        {
+            // The pass failed partway, so the reconciliation after it never runs. Take what the state
+            // reached as the new baseline: what the parameters did is then never mistaken for a change
+            // the user made, raising OnViewChange/OnModeChange on the next state change, while a bound
+            // value that disagrees with the state is still pushed back silently by the next reconciliation.
+            _lastView = State.View;
+            _lastMode = State.Mode;
+            _lastDate = State.SelectedDate;
+            throw;
+        }
         finally
         {
-            _applyingParameters = false;
+            try
+            {
+                // The one announcement of every change the pass made, sent while the window is still
+                // open so HandleStateChanged leaves it to the reconciliation OnParametersSetAsync runs.
+                State.EndUpdate();
+            }
+            finally
+            {
+                _applyingParameters = false;
+            }
         }
 
         // Raise the single coalesced date-range change (if any) now that all parameter-driven
@@ -559,18 +582,21 @@ public partial class BitFullCalendar : BitComponentBase
             }
         }
 
-        // A bound View/Mode the state refuses can resolve to the value that is already active, which
-        // emits no state change and so reaches no reconciliation through HandleStateChanged. Reconcile
-        // explicitly here so the corrected value is always pushed back into the binding. This is an
-        // echo of the parameters just applied, so it stays silent (raiseEvents: false) like the
-        // reconciliations queued during the parameter-application window.
-        InvokeAsync(() => ReconcileBoundState(raiseEvents: false));
-
         base.OnParametersSet();
     }
 
     protected override async Task OnParametersSetAsync()
     {
+        // The one reconciliation of a parameter pass: HandleStateChanged leaves the state change the
+        // pass announced to it, since only once the pass is over have the bound View/Mode/Date reached
+        // the state. It also covers a bound View/Mode the state refuses, which can resolve to the value
+        // that is already active and so announce no change at all, pushing the corrected value back
+        // into the binding. This is an echo of the parameters just applied, so it stays silent
+        // (raiseEvents: false). It is awaited, so a binding handler that throws fails the pass rather
+        // than vanishing in a discarded task, and the render that ends the pass comes after the
+        // bindings are settled even when a handler awaits.
+        await ReconcileBoundState(raiseEvents: false);
+
         // A prerender or a static SSR page never renders a second time, so the first range is reported here, and
         // awaited, rather than after the first render (see OnAfterRender): only the events fetched before it ends
         // make it into the HTML sent before the page is interactive. The range is the state's alone, so nothing it
@@ -886,14 +912,19 @@ public partial class BitFullCalendar : BitComponentBase
 
     private void HandleStateChanged()
     {
-        // Capture the flag now: the queued callback may run after OnParametersSet's finally block
-        // has reset _applyingParameters to false, which would otherwise wrongly raise events.
-        var applyingParameters = _applyingParameters;
         InvokeAsync(async () =>
         {
-            var settingsChanged = applyingParameters is false && SyncSettingsFromState();
+            // The change OnParametersSet announces at the end of its window is left to the
+            // reconciliation OnParametersSetAsync runs after it, and to the render that follows. The
+            // flag is read in here, on the renderer's dispatcher, never on the thread that announced
+            // the change: one announced from elsewhere while the window is open runs once it has
+            // closed, and is reconciled rather than dropped.
+            if (_applyingParameters)
+                return;
 
-            await ReconcileBoundState(raiseEvents: !applyingParameters);
+            var settingsChanged = SyncSettingsFromState();
+
+            await ReconcileBoundState(raiseEvents: true);
 
             if (settingsChanged)
                 await OnSettingsChange.InvokeAsync(Settings);

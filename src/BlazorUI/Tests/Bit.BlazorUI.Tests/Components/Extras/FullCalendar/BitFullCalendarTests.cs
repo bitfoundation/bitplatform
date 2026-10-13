@@ -549,6 +549,176 @@ public class BitFullCalendarTests : BunitTestContext
         Assert.AreEqual(BitFullCalendarView.Day, component.Instance.View);
     }
 
+    // Syncing the views, the resources or the read-only flag changes the state ahead of the bound
+    // values; the reconciliation that change raises must not write the state's defaults back over them.
+
+    [TestMethod]
+    public void BitFullCalendarShouldOpenOnABoundViewTheViewsAllow()
+    {
+        var view = BitFullCalendarView.Week;
+
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Views, [BitFullCalendarView.Day, BitFullCalendarView.Week, BitFullCalendarView.Month]);
+            parameters.Bind(p => p.View, view, v => view = v);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(BitFullCalendarView.Week, component.Instance.State.View);
+            Assert.AreEqual(BitFullCalendarView.Week, view, "the binding keeps its starting value");
+        });
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldOpenOnABoundTimelineMode()
+    {
+        var mode = BitFullCalendarMode.Timeline;
+
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.Resources, Resources());
+            parameters.Bind(p => p.Mode, mode, m => mode = m);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(BitFullCalendarMode.Timeline, component.Instance.State.Mode);
+            Assert.AreEqual(BitFullCalendarMode.Timeline, mode, "the binding keeps its starting value");
+        });
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldOpenOnABoundDateTheViewsAllow()
+    {
+        // Captured once, so a run crossing midnight still compares against the date it bound.
+        var expected = DateTime.Today.AddDays(40);
+        var date = expected;
+
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Views, [BitFullCalendarView.Day, BitFullCalendarView.Week]);
+            parameters.Bind(p => p.Date, date, d => date = d);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(expected, component.Instance.State.SelectedDate);
+            Assert.AreEqual(expected, date, "the binding keeps its starting value");
+        });
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldOpenAReadOnlyCalendarOnItsBoundView()
+    {
+        var view = BitFullCalendarView.Week;
+
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Bind(p => p.View, view, v => view = v);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(BitFullCalendarView.Week, component.Instance.State.View);
+            Assert.AreEqual(BitFullCalendarView.Week, view, "the binding keeps its starting value");
+        });
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldApplyABoundViewThatChangesWithTheEvents()
+    {
+        var view = BitFullCalendarView.Month;
+
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Bind(p => p.View, view, v => view = v);
+        });
+
+        // A parent replacing its events and moving the bound view in the same render.
+        view = BitFullCalendarView.Week;
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Bind(p => p.View, view, v => view = v);
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(BitFullCalendarView.Week, component.Instance.State.View);
+            Assert.AreEqual(BitFullCalendarView.Week, view, "the binding keeps the new value");
+        });
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldNotReportAChangeForABoundViewItOpensOn()
+    {
+        var view = BitFullCalendarView.Week;
+        var pushed = new List<BitFullCalendarView>();
+        var raised = 0;
+
+        RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Views, [BitFullCalendarView.Day, BitFullCalendarView.Week, BitFullCalendarView.Month]);
+            parameters.Bind(p => p.View, view, v =>
+            {
+                pushed.Add(v);
+                view = v;
+            });
+            parameters.Add(p => p.OnViewChange, (BitFullCalendarView _) => raised++);
+        });
+
+        // Not even for a moment: the views synced ahead of the bound view must not hand the binding
+        // the view the state started on.
+        CollectionAssert.AreEqual(new List<BitFullCalendarView>(), pushed, "the binding was handed a view it never asked for");
+        Assert.AreEqual(0, raised, "applying the bound value is not a change the user made");
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldAnnounceAParameterPassOnce()
+    {
+        var view = BitFullCalendarView.Month;
+
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Bind(p => p.View, view, v => view = v);
+        });
+
+        var announced = 0;
+        component.Instance.State.OnStateChanged += () => announced++;
+
+        // Events, resources, views, read-only and the view itself all change in one pass.
+        view = BitFullCalendarView.Week;
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.Resources, Resources());
+            parameters.Add(p => p.Views, [BitFullCalendarView.Day, BitFullCalendarView.Week]);
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Bind(p => p.View, view, v => view = v);
+        });
+
+        Assert.AreEqual(1, announced, "a subscriber sees the intermediate states of one parameter pass");
+        Assert.AreEqual(BitFullCalendarView.Week, component.Instance.State.View);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldSurfaceAFailureOfTheBindingItReconcilesWith()
+    {
+        // A bound view the views exclude is corrected back into the binding by the reconciliation of
+        // the pass, so a handler that fails there fails the render instead of vanishing.
+        var failure = Assert.ThrowsExactly<InvalidOperationException>(() => RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Views, [BitFullCalendarView.Day, BitFullCalendarView.Week]);
+            parameters.Add(p => p.View, BitFullCalendarView.Month);
+            parameters.Add(p => p.ViewChanged, EventCallback.Factory.Create<BitFullCalendarView>(this, (BitFullCalendarView _) => throw new InvalidOperationException("binding")));
+        }));
+
+        Assert.AreEqual("binding", failure.Message);
+    }
+
     #endregion
 
     #region Settings round-trip
