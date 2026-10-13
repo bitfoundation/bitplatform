@@ -112,8 +112,11 @@ public sealed class BitMarkdownRenderer
         }
     }
 
-    // Kept in step with the .bit-mdv-sr-only rule in BitMarkdownViewer.scss.
-    private const string ScreenReaderOnlyStyle = "border:0;padding:0;width:1px;height:1px;margin:-1px;overflow:hidden;position:absolute;white-space:nowrap;clip-path:inset(50%);user-select:none;-webkit-user-select:none";
+    // What the .bit-mdv-sr-only rule of BitMarkdownViewer.scss compiles to - the visually-hidden mixin of
+    // functions.scss and the user-select after it - written out for a page without the stylesheet.
+    // BitVisuallyHiddenContractTests compares the two declaration by declaration, so the mixin cannot change
+    // without this changing with it.
+    private const string ScreenReaderOnlyStyle = "border:0;padding:0;width:1px;height:1px;margin:-1px;overflow:hidden;position:absolute;white-space:nowrap;clip:rect(0 0 0 0);clip-path:inset(50%);user-select:none;-webkit-user-select:none";
 
     /// <summary>Renders a sequence of nodes.</summary>
     public void WriteNodes(RenderTreeBuilder builder, IEnumerable<BitMarkdownNode> nodes)

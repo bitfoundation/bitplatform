@@ -126,10 +126,12 @@ public partial class BitImageStylesheetTests
     public void BitImageShouldHideTheTextAlternativeOnlyVisually()
     {
         // display:none or visibility:hidden would take the stand-in out of the accessibility tree along with
-        // the image it stands in for, which is the one thing it is there to avoid.
+        // the image it stands in for, which is the one thing it is there to avoid. The stand-in is hidden through
+        // the visually-hidden mixin (BitVisuallyHiddenContractTests pins what the mixin does); what this pins is
+        // that it is hidden that way, and that no rule of its own - a nested state included - hides it further.
         var block = RuleOf(ReadStylesheet(), ".bit-img-alt");
 
-        StringAssert.Contains(block, "@include visually-hidden;");
+        StringAssert.Contains(SourceFiles.GetScssDeclarations(block, ".bit-img-alt {"), "@include visually-hidden;");
         Assert.IsFalse(block.Contains("display: none"));
         Assert.IsFalse(block.Contains("visibility: hidden"));
     }

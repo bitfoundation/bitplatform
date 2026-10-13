@@ -1066,7 +1066,6 @@ $pdv-private-properties: scale;
    than display:none, which would take it out of the accessibility tree entirely. */
 .bit-pdv-sr {
     @include visually-hidden;
-    left: -1px;
 }
 
 /* The open-file control is the file input itself, laid transparently over a

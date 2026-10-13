@@ -357,8 +357,8 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
 // the screen to park the link above. It anchors to .bit-hdr-gut, and being absolutely positioned it is
 // out of the flow, so the flex line of the container lays out the content of the header alone.
 .bit-hdr-skp {
-    @include visually-hidden;
     top: 0;
+    position: absolute;
     inset-inline-start: 0;
     // The link is only drawn while it has the focus, and the focus changes the variables it is painted from rather
     // than its colors: a link the app paints through Classes.SkipLink keeps that paint once it is shown, instead
@@ -368,14 +368,16 @@ $hdr-private-properties: bg, on, fg, brd, bg-dis, fg-dis, pad-y, pad-x;
     color: var(--bit-hdr-skp-clr);
     background-color: var(--bit-hdr-skp-bg);
 
+    // Hidden while it does not have the focus, so the focused link is drawn without taking back anything the mixin
+    // set. The condition is inside :where() so the rule weighs no more than its one class, and a Classes.SkipLink
+    // rule of the page still overrides it on source order.
+    &:where(:not(:focus)) {
+        @include visually-hidden;
+    }
+
     &:focus {
         // z-index keeps the focused link above the content of the header it lands on top of.
         z-index: 1;
-        margin: 0;
-        width: auto;
-        height: auto;
-        overflow: visible;
-        clip-path: none;
         border-radius: $shp-radius-control;
         --bit-hdr-skp-clr: var(--bit-Header-skip-link-color, #{$clr-pri-text});
         --bit-hdr-skp-bg: var(--bit-Header-skip-link-background, #{$clr-pri});

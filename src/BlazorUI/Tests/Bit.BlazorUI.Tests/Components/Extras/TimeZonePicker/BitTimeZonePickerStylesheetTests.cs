@@ -71,12 +71,17 @@ public partial class BitTimeZonePickerStylesheetTests
     [TestMethod]
     public void BitTimeZonePickerShouldKeepItsSeparatorsInTheAccessibilityTree()
     {
-        // A separator only a screen reader reads is clipped out of sight, never display:none or visibility:hidden.
-        var separator = SourceFiles.GetScssDeclarations(ReadStylesheet(), "\n.bit-tzp-sep {");
+        // A separator only a screen reader reads is hidden through the visually-hidden mixin, which keeps it in the
+        // accessibility tree (BitVisuallyHiddenContractTests pins what the mixin does). What this pins is that the
+        // separator is hidden that way, and that no rule of its own - a nested state included - takes it out of the
+        // tree after all.
+        var stylesheet = ReadStylesheet();
+        var separator = SourceFiles.GetScssDeclarations(stylesheet, "\n.bit-tzp-sep {");
+        var block = SourceFiles.GetScssBlock(stylesheet, "\n.bit-tzp-sep {");
 
         StringAssert.Contains(separator, "@include visually-hidden;");
-        Assert.IsFalse(separator.Contains("display: none"));
-        Assert.IsFalse(separator.Contains("visibility: hidden"));
+        Assert.IsFalse(block.Contains("display: none"));
+        Assert.IsFalse(block.Contains("visibility: hidden"));
     }
 
     [TestMethod]

@@ -340,12 +340,23 @@ $html-font-size: 16px;
  * part that shows none. display:none and visibility:hidden would hide it from the screen readers it
  * is written for as well, and a box sized to nothing is dropped from the tree by some of them, so it
  * keeps one pixel and is clipped away from it.
+ *   - The pixel stays where the element would have been laid out, and the negative margin draws it
+ *     back over that spot, so it adds nothing to the scrollable overflow of a container it sits at
+ *     the edge of. It is never parked off-screen with an offset: a left of -10000px makes an RTL
+ *     page, or any container that scrolls to the left, scroll by that much.
+ *   - No border and no padding, so the pixel is the whole box; nowrap, so the box does not wrap its
+ *     text a word per line, which some screen readers then read without the spaces between words.
+ *   - clip-path does the clipping (it also takes the pixel out of hit-testing), and clip, which only
+ *     an absolutely positioned box honours, stays beside it for the WebViews a Hybrid app may run in
+ *     that predate unprefixed clip-path.
  *   - Every component hides its screen-reader-only text through this one mixin, never a copy of it,
- *     so a change to the technique is made once (BitVisuallyHiddenContractTests).
+ *     so a change to the technique is made once (BitVisuallyHiddenContractTests). Markup built for a
+ *     page without the stylesheet (BitMarkdownRenderer's inline style) is the one place it is spelled
+ *     out, and that test pins it to these declarations.
  *   - What the element needs beyond it (an anchor, a user-select) is declared after the include.
  *   - A part that is shown again on a state (a skip link on focus) is hidden under a selector that
- *     stops matching in that state, or resets what the mixin set: the size, the overflow, the clip
- *     and the margin.
+ *     stops matching in that state (`.bit-xyz-skp:where(:not(:focus))`), so nothing the mixin sets
+ *     has to be taken back one declaration at a time.
  *
  * Usage:
  *   .bit-xyz-dsc,
@@ -362,6 +373,7 @@ $html-font-size: 16px;
     overflow: hidden;
     position: absolute;
     white-space: nowrap;
+    clip: rect(0 0 0 0);
     clip-path: inset(50%);
 }
 
@@ -372,10 +384,13 @@ $html-font-size: 16px;
  * of a radio group, what a screen reader says about a checkbox - while the component draws what is
  * seen in its place (a label, a box). It is hidden the way visually-hidden hides text, and on top of
  * that it is never painted and never the target of the pointer, so its pixel neither shows a native
- * focus outline nor takes a click meant for the label drawn over it.
+ * focus outline nor takes a click meant for the label drawn over it. Its margin is zeroed again: the
+ * control is positioned against the part drawn for it, and a focus that scrolls it into view has to
+ * scroll to that part, not to a pixel past its edge.
  */
 @mixin visually-hidden-control {
     @include visually-hidden;
+    margin: 0;
     opacity: 0;
     pointer-events: none;
 }
