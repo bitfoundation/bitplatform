@@ -94,6 +94,7 @@ public class ComponentSourceGenerator : IIncrementalGenerator
             InheritsFromBitComponentBase: inheritsFromBit,
             PropertyName: prop.Name,
             PropertyType: prop.Type.ToDisplayString(),
+            NeedsNullGuard: prop.Type.IsReferenceType is false && prop.Type.OriginalDefinition.SpecialType != SpecialType.System_Nullable_T,
             ResetClassBuilder: resetClassBuilder,
             ResetStyleBuilder: resetStyleBuilder,
             IsTwoWayBound: isTwoWayBound,
@@ -187,16 +188,14 @@ namespace {namespaceName}
         {
             builder.AppendLine($"            {par.PropertyName} = default!;");
         }
+        // ToDictionary builds a new dictionary on every call, so it is the one this pass owns: no copy of it is needed,
+        // and none to enumerate either, since removing an entry does not invalidate the enumerator of a dictionary.
+        builder.AppendLine("            var parametersDictionary = (Dictionary<string, object?>)parameters.ToDictionary();");
         if (doesSupportParametersViewCache)
         {
-            builder.AppendLine("            var parametersDictionary = new Dictionary<string, object?>(parameters.ToDictionary());");
             builder.AppendLine("            ParametersCache = parametersDictionary;");
         }
-        else
-        {
-            builder.AppendLine("            var parametersDictionary = new Dictionary<string, object?>(parameters.ToDictionary());");
-        }
-        builder.AppendLine("            foreach (var parameter in parametersDictionary.ToArray())");
+        builder.AppendLine("            foreach (var parameter in parametersDictionary)");
         builder.AppendLine("            {");
         builder.AppendLine("                switch (parameter.Key)");
         builder.AppendLine("                {");
@@ -211,7 +210,12 @@ namespace {namespaceName}
             {
                 builder.AppendLine($"                       {paramName}HasBeenSet = true;");
             }
-            builder.AppendLine($"                       var {varName} = parameter.Value is null ? default! : ({paramType})parameter.Value;");
+            // The null check is only there for the types a cast of null would throw on, so any other type is assigned in
+            // one step: a branch fewer per parameter, and less IL for the WebAssembly interpreter to walk.
+            var value = par.NeedsNullGuard
+                ? $"parameter.Value is null ? default! : ({paramType})parameter.Value"
+                : $"({paramType})parameter.Value!";
+            builder.AppendLine($"                       var {varName} = {value};");
             if (par.ResetClassBuilder || par.ResetStyleBuilder || string.IsNullOrWhiteSpace(par.CallOnSetMethodName) is false || string.IsNullOrWhiteSpace(par.CallOnSetAsyncMethodName) is false)
             {
                 builder.AppendLine($"                       var notEquals{paramName} = EqualityComparer<{paramType}>.Default.Equals({paramName}, {varName}) is false;");

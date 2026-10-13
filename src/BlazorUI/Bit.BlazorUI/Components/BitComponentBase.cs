@@ -216,8 +216,9 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     {
         _assignedParameters.Clear();
         _htmlAttributes.Clear();
-        var parametersDictionary = ParametersCache ?? new Dictionary<string, object?>(parameters.ToDictionary());
-        foreach (var parameter in parametersDictionary!)
+        // ToDictionary builds a new dictionary on every call, so it is this pass's own and needs no copy.
+        var parametersDictionary = ParametersCache ?? (Dictionary<string, object?>)parameters.ToDictionary();
+        foreach (var parameter in parametersDictionary)
         {
             switch (parameter.Key)
             {

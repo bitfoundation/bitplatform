@@ -9,6 +9,8 @@ internal readonly record struct BlazorParameter(
     bool InheritsFromBitComponentBase,
     string PropertyName,
     string PropertyType,
+    // A cast of null is null for anything but a non-nullable value type, so only such a type needs the branch around it.
+    bool NeedsNullGuard,
     bool ResetClassBuilder,
     bool ResetStyleBuilder,
     bool IsTwoWayBound,

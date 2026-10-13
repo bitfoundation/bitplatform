@@ -389,8 +389,10 @@ public abstract class BitLoadingBase : BitComponentBase
             }
         }
 
-        // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc.
-        return base.SetParametersAsync(ParameterView.FromDictionary(parametersDictionary!));
+        // For derived components, retain the usual lifecycle with OnInit/OnParametersSet/etc. What is left reaches the
+        // base through ParametersCache, which it reads ahead of the view it is handed, so a view built from it would
+        // only be an allocation nobody reads.
+        return base.SetParametersAsync(ParameterView.Empty);
     }
 
 
