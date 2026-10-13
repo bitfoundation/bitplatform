@@ -847,9 +847,7 @@
                 // The nearest surface owns the key whatever it goes on to do with it, so an outer one never
                 // answers an Escape an inner one has already seen - a dialog, a panel, a modal or an open callout
                 // nested inside this one - nor do the surfaces around it (see _escapeSurfaceOwners).
-                const nested = Utils.claimSurfaceEscape(e, element);
-                (e as KeyboardEvent & { __bitSurfaceEscape?: boolean }).__bitSurfaceEscape = true;
-                if (nested) return;
+                if (Utils.claimSurfaceEscape(e, element)) return;
 
                 if (Utils.isComposingKey(e) || e.defaultPrevented) return;
 
@@ -1347,7 +1345,7 @@
         // A press is the layer's only when nothing had the better claim to it: an input method composing, an open
         // callout anywhere in the page (a dropdown or a menu closes its own popup on the same key), a control that
         // answered the key by preventing its default, or another surface the focus is inside of - a dialog or a
-        // panel opened over the layer, or a modal opened from inside its content. With the focus outside of every surface, only the
+        // panel opened over the layer or from inside its content, or a modal opened from inside its content. With the focus outside of every surface, only the
         // layer watched last - the one opened last, so the topmost - answers, and one press closes one layer. The
         // same goes for the focus inside a layer covering the page, among the layers covering the page: one opened
         // over it has the say, not the layer the focus happens to be in. A
@@ -1379,8 +1377,10 @@
 
                 if (claimed.has(e) || e.defaultPrevented) return;
 
-                // A dialog surface of the library already answered the key (Utils.setupSurfaceEscape).
-                if ((e as any).__bitSurfaceEscape) return;
+                // A surface of the library the key went through - a dialog, an open panel, a modal - answered it, or
+                // refused it, as the one it was pressed in, even when the surface is part of what this layer hosts (see
+                // _escapeSurfaceOwners).
+                if (Utils._escapeSurfaceOwners.has(e)) return;
 
                 const target = e.target as Node | null;
 

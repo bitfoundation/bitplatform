@@ -1,0 +1,100 @@
+﻿@page "/regression/nested-surface-escape"
+
+<PageTitle>Nested Surface Escape Regression</PageTitle>
+
+@* One Escape closes one surface, the innermost one: a Dialog opened from inside a DropMenu's popup, a DropMenu opened
+   from inside a Dialog, a Dialog opened from inside another one, and a Dialog or a Panel opened from inside an
+   Overlay's content each close alone, and the surface around them closes on the next press. The surfaces do not stop
+   the key, so the outer one tells the inner one's press from its own through the owner the inner one recorded as the
+   key went by (Utils._escapeSurfaceOwners). Each case is rendered on its own (?case=). *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>Nested Surface Escape Regression (@Case)</h3>
+    <button id="btn-open-outer" @onclick="() => _outerOpen = true">Open outer</button>
+    <div id="metrics" style="font-family: monospace;">
+        <p>Outer: <span id="outer-state">@(_outerOpen ? "open" : "closed")</span></p>
+        <p>Inner: <span id="inner-state">@(_innerOpen ? "open" : "closed")</span></p>
+        <p>Status: <span id="status">@_status</span></p>
+    </div>
+</div>
+
+@switch (Case)
+{
+    case "menu-dialog":
+        <div style="padding: 20px;">
+            <BitDropMenu Id="outer-trigger" Text="Menu" @bind-IsOpen="_outerOpen">
+                <Body>
+                    <div style="padding: 16px;">
+                        <button id="btn-open-inner" @onclick="() => _innerOpen = true">Open dialog</button>
+                        <BitDialog @bind-IsOpen="_innerOpen" Title="Inner dialog">
+                            <Body><input id="inner-input" /></Body>
+                        </BitDialog>
+                    </div>
+                </Body>
+            </BitDropMenu>
+        </div>
+        break;
+
+    case "dialog-menu":
+        <BitDialog @bind-IsOpen="_outerOpen" AutoFocus="false" Title="Outer dialog">
+            <Body>
+                <input id="outer-input" />
+                <BitDropMenu Id="inner-trigger" Text="Menu" @bind-IsOpen="_innerOpen">
+                    <Body>
+                        <div style="padding: 16px;"><input id="inner-input" /></div>
+                    </Body>
+                </BitDropMenu>
+            </Body>
+        </BitDialog>
+        break;
+
+    case "dialog-dialog":
+        <BitDialog @bind-IsOpen="_outerOpen" AutoFocus="false" Title="Outer dialog">
+            <Body>
+                <button id="btn-open-inner" @onclick="() => _innerOpen = true">Open dialog</button>
+                <BitDialog @bind-IsOpen="_innerOpen" Title="Inner dialog">
+                    <Body><input id="inner-input" /></Body>
+                </BitDialog>
+            </Body>
+        </BitDialog>
+        break;
+
+    case "overlay-dialog":
+        <BitOverlay @bind-IsOpen="_outerOpen">
+            <div style="padding: 16px; background: white;">
+                <button id="btn-open-inner" @onclick="() => _innerOpen = true">Open dialog</button>
+                <BitDialog @bind-IsOpen="_innerOpen" Title="Inner dialog">
+                    <Body><input id="inner-input" /></Body>
+                </BitDialog>
+            </div>
+        </BitOverlay>
+        break;
+
+    case "overlay-panel":
+        <BitOverlay @bind-IsOpen="_outerOpen">
+            <div style="padding: 16px; background: white;">
+                <button id="btn-open-inner" @onclick="() => _innerOpen = true">Open panel</button>
+                <BitPanel @bind-IsOpen="_innerOpen">
+                    <input id="inner-input" />
+                </BitPanel>
+            </div>
+        </BitOverlay>
+        break;
+}
+
+@code {
+    [SupplyParameterFromQuery(Name = "case")] public string? Case { get; set; }
+
+    private bool _outerOpen;
+    private bool _innerOpen;
+    // "Loading" is shown in the SSR pre-rendered HTML before the SignalR circuit connects; only the first
+    // interactive render moves it on, which is what the test waits for before it drives the page.
+    private string _status = "Loading";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+}
