@@ -231,6 +231,34 @@ public class BitPivotStylesheetTests
         StringAssert.Contains(block, "background-color: var(--bit-Pivot-divider-color, #{$clr-brd-sec});");
     }
 
+    [TestMethod]
+    public void BitPivotShouldFrameTheSelectedOutlineTabAloneInForcedColors()
+    {
+        const string forcedColors = "@media (forced-colors: active)";
+
+        var stylesheet = ReadStylesheet();
+        var rules = SourceFiles.GetScssRules(SourceFiles.GetScssBlock(stylesheet, "\n@mixin outline-edges(")).Skip(1).ToArray();
+        var outline = SourceFiles.GetScssRules(SourceFiles.GetScssBlock(stylesheet, "\n.bit-pvt-oln {")).Skip(1).ToArray();
+        static string Declarations(SourceFiles.ScssRule[] rules, string header) =>
+            string.Join("; ", rules.Single(r => r.Ancestors.Contains(forcedColors) && Regex.Replace(r.Header, @"\s+", " ") == header).Declarations);
+
+        // Every tab hides the edges it reserves; the selected one is framed, open on the panel's side, and accented in the
+        // system selection color.
+        Assert.AreEqual("@include forced-hidden-border", Declarations(rules, "#{$itm}"));
+        Assert.AreEqual("border-color: CanvasText; border-#{$near}-color: Canvas; border-#{$far}-color: Highlight", Declarations(rules, "#{$sel}"));
+        Assert.AreEqual("border-#{$far}-color: GrayText", Declarations(rules, "&.bit-dis #{$sel}, #{$sel}.bit-dis"));
+
+        // A hidden edge lying over the rule would cut it under every tab, so the rule is laid over the tabs there, and the
+        // selected tab - open to it - and a focused one, whose ring the rule would cover, over the rule.
+        Assert.AreEqual("z-index: 1", Declarations(outline, "#{$hwr}::before"));
+        Assert.AreEqual("z-index: 2", Declarations(outline, "#{$sel}"));
+        Assert.AreEqual("z-index: 2", Declarations(outline, "&:focus-visible"));
+
+        // The forced rules weigh what the ones they replace do, so they win by coming after every one of them.
+        var forced = rules.Select(r => r.Header == forcedColors || r.Ancestors.Contains(forcedColors)).ToArray();
+        Assert.IsTrue(forced.SkipWhile(f => f is false).All(f => f), "A rule of the outline edges comes after their forced-colors block.");
+    }
+
 
 
     private static (System.Collections.Generic.List<string> Documented, string Body) SplitStylesheet()

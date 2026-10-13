@@ -230,6 +230,11 @@
             <BitBreadcrumb TItem="BitBreadcrumbItem" Items="_breadcrumbItems" Color="BitColor.PrimaryBackground" />
             break;
 
+        // The test opens the overflow menu, whose rows reserve a border's room.
+        case "breadcrumb-open":
+            <BitBreadcrumb TItem="BitBreadcrumbItem" Items="_breadcrumbItems" MaxDisplayedItems="1" />
+            break;
+
         case "dropmenu":
             <BitDropMenu Text="Default"><div>Body</div></BitDropMenu>
             <BitDropMenu Text="Primary" Color="BitColor.Primary"><div>Body</div></BitDropMenu>
@@ -243,12 +248,20 @@
             <BitDropMenu Text="Open" Color="BitColor.Primary" IsOpen="true"><div>Body of the menu</div></BitDropMenu>
             break;
 
+        // Manual, so the default selection holds: an automatic nav selects by the URL, which none of these items match.
+        // The third one holds its selection in a collapsed branch (.bit-nav-sca), the fourth is the rail.
         case "nav":
             <div style="width: 260px;">
-                <BitNav TItem="BitNavItem" Items="_navItems" Accent="BitColor.Primary" DefaultSelectedItem="_navItems[0]" />
+                <BitNav TItem="BitNavItem" Items="_navItems" Mode="BitNavMode.Manual" Accent="BitColor.Primary" DefaultSelectedItem="_navItems[0]" />
             </div>
             <div style="width: 260px;">
-                <BitNav TItem="BitNavItem" Items="_navItems" Color="BitColor.PrimaryBackground" />
+                <BitNav TItem="BitNavItem" Items="_navItems" Mode="BitNavMode.Manual" Color="BitColor.PrimaryBackground" DefaultSelectedItem="_navItems[0]" />
+            </div>
+            <div style="width: 260px;">
+                <BitNav TItem="BitNavItem" Items="_navItems" Mode="BitNavMode.Manual" DefaultSelectedItem="_navItems[1].ChildItems[0]" />
+            </div>
+            <div>
+                <BitNav TItem="BitNavItem" Items="_navItems" Mode="BitNavMode.Manual" IconOnly DefaultSelectedItem="_navItems[0]" />
             </div>
             break;
 
@@ -271,6 +284,22 @@
                 <BitPivotItem HeaderText="Second">Two</BitPivotItem>
             </BitPivot>
             <BitPivot HeaderType="BitPivotHeaderType.Outline" Color="BitColor.PrimaryBackground">
+                <BitPivotItem HeaderText="First">One</BitPivotItem>
+                <BitPivotItem HeaderText="Second">Two</BitPivotItem>
+            </BitPivot>
+            break;
+
+        // Every edge an Outline tab reserves, for each position of the header, and a disabled selection.
+        case "pivot-outline":
+            @foreach (var position in new[] { BitPlacement.Top, BitPlacement.Bottom, BitPlacement.Start, BitPlacement.End })
+            {
+                <BitPivot HeaderType="BitPivotHeaderType.Outline" Placement="position">
+                    <BitPivotItem HeaderText="First">One</BitPivotItem>
+                    <BitPivotItem HeaderText="Second">Two</BitPivotItem>
+                    <BitPivotItem HeaderText="Third">Three</BitPivotItem>
+                </BitPivot>
+            }
+            <BitPivot HeaderType="BitPivotHeaderType.Outline" Disabled>
                 <BitPivotItem HeaderText="First">One</BitPivotItem>
                 <BitPivotItem HeaderText="Second">Two</BitPivotItem>
             </BitPivot>

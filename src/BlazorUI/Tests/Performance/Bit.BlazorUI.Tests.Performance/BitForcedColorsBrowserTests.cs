@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Bit.BlazorUI.Tests.Performance;
@@ -40,7 +41,7 @@ public class BitForcedColorsBrowserTests : PerformanceTestBase
         "fileinput", "fileupload", "numberfield", "rating", "searchbox", "slider", "tagsinput", "textfield", "timepicker", "toggle",
         "header", "footer",
         "carousel", "swiper", "timeline",
-        "breadcrumb", "dropmenu", "dropmenu-open", "nav", "navbar", "pagination", "pivot",
+        "breadcrumb", "breadcrumb-open", "dropmenu", "dropmenu-open", "nav", "navbar", "pagination", "pivot", "pivot-outline",
         "badge", "message", "persona", "snackbar", "tag",
         "progress",
         "card", "dialog", "dialog-background", "dialog-ok-off", "dialog-busy", "splitter", "tooltip",
@@ -158,6 +159,214 @@ public class BitForcedColorsBrowserTests : PerformanceTestBase
         AssertReadable([.. await ReadUnreadableText()], $"under keyboard focus, {scheme} contrast theme");
     }
 
+    // Every item reserves the bar of the selection with a transparent border, which the mode forces to a system color on
+    // every row; only the selected item and a collapsed branch holding it may show it, and the bar keeps one width on
+    // every item, never under the thick stroke - it is the one mark of the selection left - whatever the public width says.
+    [DataTestMethod]
+    [DataRow("dark", null)]
+    [DataRow("light", null)]
+    [DataRow("dark", "0")]
+    [DataRow("dark", "0px")]
+    [DataRow("dark", "6px")]
+    public async Task BitNav_UnderForcedColors_DrawsTheBarOfTheSelectedItemAlone(string scheme, string? indicatorWidth)
+    {
+        await Open("nav", scheme);
+
+        // The third nav holds its selection in the group, which collapses into a branch drawn as the selected item.
+        await Page.Locator("#case .bit-nav").Nth(2).Locator("button.bit-nav-ict").ClickAsync();
+        await Page.WaitForSelectorAsync("#case .bit-nav-sca");
+        await Page.Mouse.MoveAsync(1, 1);
+
+        if (indicatorWidth is not null)
+        {
+            await Page.EvaluateAsync("w => document.documentElement.style.setProperty('--bit-Nav-indicator-width', w)", indicatorWidth);
+        }
+
+        var palette = await ReadPalette();
+        var items = await ReadEdges("#case .bit-nav-ict", ".bit-nav-sel, .bit-nav-sca");
+        var thick = await Page.EvaluateAsync<double>("""
+            () => {
+                const probe = document.createElement('div');
+                probe.style.cssText = 'border-left: var(--bit-shp-brd-width-thick) solid;';
+                document.body.append(probe);
+                const width = parseFloat(getComputedStyle(probe).borderLeftWidth);
+                probe.remove();
+                return width;
+            }
+            """);
+
+        Assert.IsTrue(items.Count(i => i.Selected) >= 4, "The page holds no selected item or collapsed branch holding one.");
+        Assert.IsTrue(items.Any(i => i.Selected is false), "The page holds no item that is not selected.");
+
+        var failures = new List<string>();
+        var widths = items.Select(i => i.InlineStart.Width).Distinct().ToArray();
+        if (widths.Length != 1) failures.Add($"The bars differ in width, so the content moves with the selection: {string.Join(", ", widths)}.");
+        if (widths.Min() < Math.Max(thick, indicatorWidth == "6px" ? 6 : 0)) failures.Add($"The bar is {widths.Min()}px wide, under the {thick}px of the thick stroke or the width asked for.");
+
+        foreach (var item in items)
+        {
+            if (item.Selected)
+            {
+                if (item.InlineStart.Color != palette.Highlight || item.InlineStart.Color == item.Behind) failures.Add($"The bar of the selected {item.Name} is {item.InlineStart.Color} on {item.Behind}, not the system Highlight.");
+            }
+            else if (item.InlineStart.Color != (palette.Forcing ? item.Behind : palette.Canvas))
+            {
+                failures.Add($"The {item.Name} that is not selected draws its bar, {item.InlineStart.Color} on {item.Behind}.");
+            }
+        }
+
+        Assert.AreEqual(0, failures.Count, string.Join("\n", failures));
+    }
+
+    // The rows of the overflow menu reserve a border's room, which the mode would draw around each of them.
+    [DataTestMethod]
+    [DataRow("dark")]
+    [DataRow("light")]
+    public async Task BitBreadcrumb_UnderForcedColors_DrawsNoFrameAroundTheOverflowRows(string scheme)
+    {
+        await Open("breadcrumb-open", scheme);
+
+        var palette = await ReadPalette();
+        var rows = await ReadEdges(".bit-brc-ofi, .bit-brc-ofn", null);
+
+        Assert.IsTrue(rows.Length >= 2, "The overflow menu holds no rows.");
+
+        var failures = rows.SelectMany(row => row.Sides)
+                           .Where(side => side.Edge.Color != (palette.Forcing ? side.Row.Behind : palette.Canvas))
+                           .Select(side => $"The {side.Name} edge of {side.Row.Name} is drawn, {side.Edge.Color} on {side.Row.Behind}.")
+                           .ToArray();
+
+        Assert.AreEqual(0, failures.Length, string.Join("\n", failures));
+    }
+
+    // Every Outline tab reserves the frame of the selection; the mode would box every tab alike and close the selected one
+    // off from the panel. The tabs that are not selected hide every edge, the selected one is framed in CanvasText, open on
+    // the panel's side and accented in Highlight (GrayText disabled), and the rule is laid over the tabs, the selected one
+    // over the rule, so it runs on under every tab.
+    [DataTestMethod]
+    [DataRow("dark")]
+    [DataRow("light")]
+    public async Task BitPivot_UnderForcedColors_FramesTheSelectedOutlineTabAlone(string scheme)
+    {
+        await Open("pivot-outline", scheme);
+
+        var palette = await ReadPalette();
+        var tabs = await ReadEdges("#case .bit-pvt-oln > .bit-pvt-hwr > .bit-pvt-hct > .bit-pvti", ".bit-pvti-sel");
+        var layers = await Page.EvaluateAsync<string[]>("""
+            () => [...document.querySelectorAll('#case .bit-pvt-oln')].map(p =>
+                getComputedStyle(p.querySelector(':scope > .bit-pvt-hwr'), '::before').zIndex + '/' + getComputedStyle(p.querySelector('.bit-pvti-sel')).zIndex)
+            """);
+
+        Assert.AreEqual(5, layers.Length, "The page holds no Outline pivot for every placement and a disabled one.");
+        Assert.AreEqual(5, tabs.Count(t => t.Selected), "Not every Outline pivot holds a selected tab.");
+
+        var failures = layers.Where(l => l != "1/2").Select(l => $"The rule and the selected tab are not stacked rule over tabs, selected tab over rule: {l}.").ToList();
+
+        foreach (var tab in tabs)
+        {
+            var (far, near) = tab.Placement switch
+            {
+                "bit-pvt-btm" => ("bottom", "top"),
+                "bit-pvt-sta" => ("left", "right"),
+                "bit-pvt-end" => ("right", "left"),
+                _ => ("top", "bottom"),
+            };
+
+            foreach (var side in tab.Sides)
+            {
+                var expected = tab.Selected is false ? (palette.Forcing ? tab.Behind : palette.Canvas)
+                             : side.Name == near ? (palette.Forcing ? tab.Own : palette.Canvas)
+                             : side.Name == far ? (tab.Disabled ? palette.GrayText : palette.Highlight)
+                             : palette.CanvasText;
+
+                if (side.Edge.Color != expected) failures.Add($"[{tab.Placement}] The {side.Name} edge of {tab.Name} is {side.Edge.Color} on {tab.Behind}, not {expected}.");
+            }
+        }
+
+        Assert.AreEqual(0, failures.Count, string.Join("\n", failures));
+    }
+
+    private sealed record Edge(string Color, double Width);
+
+    private sealed record EdgedPart(string Name, bool Selected, bool Disabled, string Placement, string Own, string Behind, Edge Top, Edge Right, Edge Bottom, Edge Left, Edge InlineStart)
+    {
+        public IEnumerable<(string Name, Edge Edge, EdgedPart Row)> Sides => [("top", Top, this), ("right", Right, this), ("bottom", Bottom, this), ("left", Left, this)];
+    }
+
+    private sealed record Palette(bool Forcing, string Canvas, string CanvasText, string Highlight, string GrayText);
+
+    // Playwright builds a returned object through a parameterless constructor, which a positional record has none of.
+    private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
+
+    // The system colors as this engine computes them, and whether it repaints the page from them at all: WebKit only
+    // matches the query, so there the forced-colors blocks are checked for the colors they declare rather than against
+    // backgrounds the engine never forces to Canvas.
+    private async Task<Palette> ReadPalette()
+    {
+        return JsonSerializer.Deserialize<Palette>(await Page.EvaluateAsync<string>("""
+            () => {
+                const resolve = color => {
+                    const probe = document.createElement('div');
+                    probe.style.cssText = `color: ${color}; forced-color-adjust: none;`;
+                    document.body.append(probe);
+                    const value = getComputedStyle(probe).color;
+                    probe.remove();
+                    return value;
+                };
+                return JSON.stringify({
+                    forcing: CSS.supports('forced-color-adjust', 'none'),
+                    canvas: resolve('Canvas'),
+                    canvasText: resolve('CanvasText'),
+                    highlight: resolve('Highlight'),
+                    grayText: resolve('GrayText'),
+                });
+            }
+            """), Json)!;
+    }
+
+    // The border edges of every element the selector finds, with the background it paints and the nearest opaque one
+    // behind its border - its own, or an ancestor's - which an edge meant to vanish has to match.
+    private async Task<EdgedPart[]> ReadEdges(string selector, string? selected)
+    {
+        return JsonSerializer.Deserialize<EdgedPart[]>(await Page.EvaluateAsync<string>("""
+            ([selector, selected]) => {
+                const channels = value => (value.match(/[\d.]+/g) || []).map(Number);
+                const opaque = color => { const alpha = channels(color)[3]; return alpha === undefined || alpha > 0.5; };
+                const behind = element => {
+                    for (let e = element; e; e = e.parentElement) {
+                        const color = getComputedStyle(e).backgroundColor;
+                        if (opaque(color)) return color;
+                    }
+                    // Nothing paints one: what shows is the canvas itself.
+                    const probe = document.createElement('div');
+                    probe.style.cssText = 'color: Canvas; forced-color-adjust: none;';
+                    document.body.append(probe);
+                    const canvas = getComputedStyle(probe).color;
+                    probe.remove();
+                    return canvas;
+                };
+                const edge = (style, side) => ({ color: style[`border${side}Color`], width: parseFloat(style[`border${side}Width`]) });
+                return JSON.stringify([...document.querySelectorAll(selector)].map(e => {
+                    const style = getComputedStyle(e);
+                    const root = e.closest('.bit-pvt, .bit-nav, .bit-brc, .bit-brc-cal');
+                    return {
+                        name: `${e.tagName.toLowerCase()}.${[...e.classList].join('.')} "${e.textContent.trim().slice(0, 12)}"`,
+                        selected: !!selected && e.matches(selected),
+                        disabled: !!e.closest('.bit-dis'),
+                        placement: [...(root?.classList ?? [])].find(c => /^bit-pvt-(top|btm|sta|end)$/.test(c)) ?? '',
+                        own: style.backgroundColor,
+                        behind: behind(e),
+                        top: edge(style, 'Top'),
+                        right: edge(style, 'Right'),
+                        bottom: edge(style, 'Bottom'),
+                        left: edge(style, 'Left'),
+                        inlineStart: edge(style, 'InlineStart'),
+                    };
+                }));
+            }
+            """, new[] { selector, selected }), Json)!;
+    }
+
     // A part that cannot be brought up is a failure of its own, reported with the others rather than ending the run.
     private async Task<bool> TryOpen(string part, string scheme, List<string> failures)
     {
@@ -190,6 +399,11 @@ public class BitForcedColorsBrowserTests : PerformanceTestBase
                 // Pressed, the Ok button waits on a callback that never ends, held shut through aria-disabled alone.
                 await Page.Locator(".bit-dlg-okb").ClickAsync();
                 await Page.WaitForSelectorAsync(".bit-dlg-okb[aria-busy='true']");
+                break;
+
+            case "breadcrumb-open":
+                await Page.Locator(".bit-brc-obt").ClickAsync();
+                await Page.WaitForSelectorAsync(".bit-brc-ofi");
                 break;
 
             case "header":

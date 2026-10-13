@@ -466,6 +466,13 @@ $brc-private-properties:
     .bit-brc-cal {
         border: $shp-border-width $shp-border-style CanvasText;
     }
+
+    // The rows of that menu reserve a border's room with a transparent one, which this mode forces to a system color,
+    // boxing every row in a frame of its own inside the menu's.
+    .bit-brc-ofi,
+    .bit-brc-ofn {
+        @include forced-hidden-border;
+    }
 }
 
 

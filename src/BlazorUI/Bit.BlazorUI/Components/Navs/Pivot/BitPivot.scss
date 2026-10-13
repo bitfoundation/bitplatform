@@ -450,6 +450,29 @@ $pvt-private-properties:
     #{$sel}.bit-dis {
         border-#{$far}-color: var(--bit-pvt-clr-dis);
     }
+
+    // forced-colors: the mode forces the transparent edges to a system color, which would box every tab alike and close
+    // the selected one off from the panel. A tab that is not selected hides its edges in the Canvas behind it - the
+    // one facing the panel too, which the rule is laid over in this mode (see .bit-pvt-oln). The selected tab is framed
+    // in CanvasText, open on the panel's side (Canvas, the fill it covers the rule with), and its accented edge is the
+    // system Highlight - the selection the Tab type and the line indicator are drawn in here - or GrayText while it is
+    // disabled. These rules carry the weight of the ones above, and come after them.
+    @media (forced-colors: active) {
+        #{$itm} {
+            @include forced-hidden-border;
+        }
+
+        #{$sel} {
+            border-color: CanvasText;
+            border-#{$near}-color: Canvas;
+            border-#{$far}-color: Highlight;
+        }
+
+        &.bit-dis #{$sel},
+        #{$sel}.bit-dis {
+            border-#{$far}-color: GrayText;
+        }
+    }
 }
 
 // The selected tab is drawn from the rule between the header and the panel: it is bordered in the rule's color,
@@ -471,6 +494,26 @@ $pvt-private-properties:
 
     #{$tab}::before {
         display: none;
+    }
+
+    // forced-colors: a tab hides the edges it reserves in Canvas there (see outline-edges), the edge lying over the
+    // rule included, which would cut the rule under every tab. The rule is laid over the tabs instead, as it shows
+    // through their transparent edges outside the mode, and the selected tab over the rule, which it is open to; so
+    // is a tab showing its focus ring, whose foot the rule would otherwise cover.
+    @media (forced-colors: active) {
+        #{$hwr}::before {
+            z-index: 1;
+        }
+
+        #{$sel} {
+            z-index: 2;
+        }
+
+        #{$itm} {
+            &:focus-visible {
+                z-index: 2;
+            }
+        }
     }
 
     #{$sel} {
@@ -1172,8 +1215,9 @@ $pvt-private-properties:
         }
     }
 
-    // A background role is the page's own color, Canvas here, which the More button holding the selection and the
-    // accented edge of a selected Outline tab are drawn in - invisible in every engine. It is the text color here.
+    // A background role is the page's own color, Canvas here, which the More button holding the selection is drawn
+    // in - invisible in every engine. It is the text color here. (The accented edge of a selected Outline tab, which
+    // reads it too, is the system Highlight in this mode - see outline-edges.)
     @each $role in $bit-background-color-roles {
         .bit-pvt-#{$role} {
             --bit-pvt-role-main: CanvasText;

@@ -445,7 +445,7 @@ public partial class BitNavDemo
         {
             Name = "--bit-Nav-indicator-width",
             DefaultValue = "--bit-shp-brd-width-thick",
-            Description = "Thickness of the leading bar of the selected item; 0 removes it.",
+            Description = "Thickness of the leading bar of the selected item; 0 removes it. In forced colors (Windows contrast themes) the bar is the one mark of the selection left, so there it is never thinner than --bit-shp-brd-width-thick.",
         },
         new()
         {
