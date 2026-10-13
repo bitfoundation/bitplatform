@@ -86,6 +86,11 @@ namespace BitBlazorUI {
         fromInit?: boolean;
         /** Reserved for internal OS refresh paths (same as normal set without touching follow-system flags). */
         internalOsRefresh?: boolean;
+        /**
+         * Mirrors what another tab stored: applied without writing it back, since the storage already holds it -
+         * and holds anything that tab wrote after it too, which a write-back of this older value would clobber.
+         */
+        fromOtherTab?: boolean;
     }
 
     export class Theme {
@@ -154,8 +159,8 @@ namespace BitBlazorUI {
                 return;
             }
             // Mirror the other tab's intent (including a switch to "system"); set() resolves and
-            // re-cascades. storage events never fire in the tab that wrote, so this cannot loop.
-            Theme.set(next);
+            // re-cascades, without writing back what the other tab stored.
+            Theme.set(next, { fromOtherTab: true });
         };
 
         private static _dotnetNotifier: DotNetObject | null = null;
@@ -342,7 +347,9 @@ namespace BitBlazorUI {
             if (!resolved) return Theme._currentTheme;
             Theme._currentTheme = resolved;
 
-            Theme.writePersisted(themeName);
+            if (options?.fromOtherTab !== true) {
+                Theme.writePersisted(themeName);
+            }
 
             const oldTheme = document.documentElement.getAttribute(Theme.THEME_ATTRIBUTE) || '';
 
