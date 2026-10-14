@@ -13,6 +13,8 @@ Do **not** modify code. Report findings with a file path, a line reference, and 
 
 ### Blazor Components
 - [ ] Uses Bit.BlazorUI components (not raw HTML elements)
+- [ ] Every parameter set on a Bit.BlazorUI component exists on it (an unknown name compiles and lands on the element as a plain HTML attribute, so a renamed parameter silently does nothing)
+- [ ] Does not repeat a default that `AppBitParams` already sets for that component
 - [ ] Event handlers wrapped with `WrapHandled`
 - [ ] Enhanced lifecycle methods (`OnInitAsync`, `OnParamsSetAsync`, `OnAfterFirstRenderAsync`)
 - [ ] Code-behind in `.razor.cs` (no `@code` blocks)
@@ -22,7 +24,7 @@ Do **not** modify code. Report findings with a file path, a line reference, and 
 ### Theming
 - [ ] Uses `BitColor` enum for component color parameters, `BitCss.Class` for CSS classes, and `BitCss.Var` for inline style CSS variables in C#/Razor (no hardcoded colors)
 - [ ] Uses `$bit-color-*` SCSS variables (no hex/rgb colors)
-- [ ] Uses `::deep` for Bit component style overrides
+- [ ] Styles Bit components through their parameters, `Classes` / `Styles` parts or public `--bit-<Component>-*` variables, and no `::deep` rule selects the library's own `.bit-*` classes
 
 ### API Controllers
 - [ ] Inherits `AppControllerBase`

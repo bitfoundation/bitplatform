@@ -328,6 +328,12 @@
   <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
     <value>行已删除</value>
   </data>
+    <data name="DataGridAnnouncementSearched" xml:space="preserve">
+    <value>正在搜索 {0}</value>
+  </data>
+    <data name="DataGridAnnouncementSearchCleared" xml:space="preserve">
+    <value>已清除搜索</value>
+  </data>
   <!-- Boilerplate strings -->
   <data name="Active" xml:space="preserve">
     <value>活动</value>
@@ -1580,9 +1586,6 @@
   <data name="Users" xml:space="preserve">
     <value>用户</value>
   </data>
-  <data name="UsersWithCount" xml:space="preserve">
-    <value>用户 {0}</value>
-  </data>
   <data name="Features" xml:space="preserve">
     <value>功能</value>
   </data>
@@ -1638,9 +1641,6 @@
   </data>
   <data name="DeleteRole" xml:space="preserve">
     <value>删除用户组</value>
-  </data>
-  <data name="Sessions" xml:space="preserve">
-    <value>会话 {0}</value>
   </data>
   <data name="DeleteUser" xml:space="preserve">
     <value>删除用户</value>

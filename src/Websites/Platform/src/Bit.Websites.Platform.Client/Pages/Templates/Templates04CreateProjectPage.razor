@@ -261,7 +261,7 @@
         <div class="interview-nav">
             <BitButton Variant="BitVariant.Outline"
                        IconName="ChevronLeft"
-                       IsEnabled="@(stepIndex > 0)"
+                       Disabled="@(stepIndex is 0)"
                        OnClick="WrapHandled(GoBack)">Back</BitButton>
             <div class="nav-forward">
                 @if (CanSkip)

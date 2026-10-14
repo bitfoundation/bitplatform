@@ -1,11 +1,5 @@
 @import '../../../Styles/abstracts/_bit-css-variables.scss';
 
-.diagnostic-report {
-    padding: 1rem;
-    max-width: 60rem;
-    margin: 0 auto;
-}
-
 .pairs {
     display: grid;
     grid-template-columns: max-content minmax(0, 1fr);

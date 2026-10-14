@@ -7,7 +7,6 @@ public partial class ProductsPage
 {
     private bool isLoading;
     private bool isSmallScreen;
-    private string? searchQuery;
     private bool isDeleteDialogOpen;
     private ProductDto? deletingProduct;
 
@@ -42,9 +41,9 @@ public partial class ProductsPage
             }
 
             var queriedRequest = productController.WithQuery(query.ToString());
-            var data = await (string.IsNullOrWhiteSpace(searchQuery)
+            var data = await (string.IsNullOrWhiteSpace(req.Search)
                         ? queriedRequest.GetProducts(req.CancellationToken)
-                        : queriedRequest.SearchProducts(searchQuery, req.CancellationToken));
+                        : queriedRequest.SearchProducts(req.Search, req.CancellationToken));
 
             return new BitDataGridReadResult<ProductDto>(data!.Items!, (int)data!.TotalCount);
         }
@@ -88,8 +87,7 @@ public partial class ProductsPage
 
     private async Task HandleOnSearch(string value)
     {
-        searchQuery = value;
-        await RefreshData();
+        await dataGrid!.SearchAsync(value);
     }
 
     //#if (brouter == true)

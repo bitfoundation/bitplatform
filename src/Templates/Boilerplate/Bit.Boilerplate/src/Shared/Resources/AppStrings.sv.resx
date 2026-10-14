@@ -328,6 +328,12 @@
   <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
     <value>Raden har tagits bort</value>
   </data>
+    <data name="DataGridAnnouncementSearched" xml:space="preserve">
+    <value>Söker efter {0}</value>
+  </data>
+    <data name="DataGridAnnouncementSearchCleared" xml:space="preserve">
+    <value>Sökningen rensad</value>
+  </data>
   <!-- Boilerplate strings -->
   <data name="Active" xml:space="preserve">
     <value>Aktiv</value>
@@ -1580,9 +1586,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   <data name="Users" xml:space="preserve">
     <value>Användare</value>
   </data>
-  <data name="UsersWithCount" xml:space="preserve">
-    <value>Användare {0}</value>
-  </data>
   <data name="Features" xml:space="preserve">
     <value>Funktioner</value>
   </data>
@@ -1638,9 +1641,6 @@ Efter att ha nått {0} kommer extra inloggningar att ha reducerade funktioner.</
   </data>
   <data name="DeleteRole" xml:space="preserve">
     <value>Ta bort användargrupp</value>
-  </data>
-  <data name="Sessions" xml:space="preserve">
-    <value>Sessioner {0}</value>
   </data>
   <data name="DeleteUser" xml:space="preserve">
     <value>Ta bort användare</value>

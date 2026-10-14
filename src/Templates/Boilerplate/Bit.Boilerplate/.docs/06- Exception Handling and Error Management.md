@@ -364,14 +364,14 @@ From [`src/Client/Boilerplate.Client.Core/Components/Pages/Identity/SignIn/SignI
     
     <!-- Form fields -->
     
-    <BitButton ButtonType="BitButtonType.Submit" AutoLoading IsEnabled="isWaiting is false">
+    <BitButton ButtonType="BitButtonType.Submit" AutoLoading Disabled="isWaiting">
         @Localizer[nameof(AppStrings.SignIn)]
     </BitButton>
 </EditForm>
 
 <BitButton OnClick="WrapHandled(PasswordlessSignIn)" 
            IconName="@BitIconName.Fingerprint"
-           IsEnabled="isWaiting is false">
+           Disabled="isWaiting">
     Passwordless Sign-In
 </BitButton>
 ```

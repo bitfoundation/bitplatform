@@ -44,7 +44,7 @@
             <BitDropdown TItem="BitDropdownItem<int>" TValue="int"
                          Items="refreshIntervals"
                          @bind-Value="refreshSeconds"
-                         IsEnabled="autoRefresh"
+                         Disabled="autoRefresh is false"
                          AriaLabel="Refresh interval"
                          FitWidth />
             <BitButton Variant="BitVariant.Outline"
@@ -57,7 +57,7 @@
 
         @if (loadError is not null)
         {
-            <BitMessage Color="BitColor.Error" Variant="BitVariant.Outline" Title="Couldn't read the health report">
+            <BitMessage Color="BitColor.Error" Variant="BitVariant.Outline" AutoMultiline Title="Couldn't read the health report">
                 <ChildContent>
                     @loadError
                     @if (report is not null)
@@ -66,7 +66,7 @@
                     }
                 </ChildContent>
                 <Actions>
-                    <BitButton Size="BitSize.Small" Variant="BitVariant.Text" Class="no-wrap" OnClick="WrapHandled(Load)">Try again</BitButton>
+                    <BitButton Size="BitSize.Small" Variant="BitVariant.Text" NoWrap OnClick="WrapHandled(Load)">Try again</BitButton>
                 </Actions>
             </BitMessage>
         }
@@ -106,11 +106,11 @@
             @if (loadError is null)
             {
                 <BitStack Gap="1rem" HorizontalAlign="BitAlignment.Stretch" aria-busy="true">
-                    <BitShimmer Width="100%" Height="11rem" Radius="0.75rem" Label="Loading the health report" />
+                    <BitShimmer Height="11rem" Radius="0.75rem" Label="Loading the health report" />
                     <div class="check-grid">
                         @for (var i = 0; i < 6; i++)
                         {
-                            <BitShimmer Width="100%" Height="13rem" Radius="0.75rem" />
+                            <BitShimmer Height="13rem" Radius="0.75rem" />
                         }
                     </div>
                 </BitStack>
@@ -121,7 +121,7 @@
             <BitCard FullWidth NoShadow Class="@($"hero {ToneClass(OverallTone)}")">
                 <BitStack Horizontal Wrap VerticalAlign="BitAlignment.Center" Gap="2rem">
 
-                    <BitStack FitWidth FitHeight HorizontalAlign="BitAlignment.Center" Gap="0.25rem" Class="hero-gauge">
+                    <BitStack FitSize NoShrink HorizontalAlign="BitAlignment.Center" Gap="0.25rem">
                         <BitChart Config="gaugeChart" Width="9.5rem" Height="9.5rem" AriaLabel="Checks by status" />
                         <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground">
                             @Count(StatusFilter.Healthy) of @checks.Count checks passed
@@ -162,7 +162,7 @@
                         })
                         {
                             var count = Count(filter);
-                            <BitCard NoShadow Hoverable FullWidth
+                            <BitCard NoShadow FullWidth
                                      Class="@($"stat {ToneClass(tone)} {(count is 0 ? "empty" : "")}")"
                                      OnClick="WrapHandled(() => ShowOnly(filter))"
                                      AriaLabel="@($"{count} {label}, show them")">
@@ -182,7 +182,7 @@
 
             @if (Count(StatusFilter.Attention) is > 0 and var attentionCount)
             {
-                <BitMessage Color="ToneColor(OverallTone)" Variant="BitVariant.Outline">
+                <BitMessage Color="ToneColor(OverallTone)" Variant="BitVariant.Outline" AutoMultiline>
                     <ChildContent>
                         <BitText Element="span" Typography="BitTypography.Inherit" Weight="BitFontWeight.Semibold">
                             @attentionCount @(attentionCount is 1 ? "check needs" : "checks need") attention:
@@ -190,7 +190,7 @@
                         @string.Join(", ", checks.Where(c => c.Tone is not Tone.Healthy).Select(c => c.Title))
                     </ChildContent>
                     <Actions>
-                        <BitButton Size="BitSize.Small" Variant="BitVariant.Text" Class="no-wrap" OnClick="WrapHandled(() => ShowOnly(StatusFilter.Attention))">Show them</BitButton>
+                        <BitButton Size="BitSize.Small" Variant="BitVariant.Text" NoWrap OnClick="WrapHandled(() => ShowOnly(StatusFilter.Attention))">Show them</BitButton>
                     </Actions>
                 </BitMessage>
             }
@@ -214,10 +214,10 @@
                     {
                         var count = Count(filter);
                         <BitTag Variant="BitVariant.Outline"
-                                Shape="BitTagShape.Circular"
+                                Shape="BitShape.Pill"
                                 Color="@(tone is Tone.Neutral ? BitColor.Primary : ToneColor(tone))"
                                 Text="@($"{label} · {count}")"
-                                IsEnabled="@(filter is StatusFilter.All || count > 0)"
+                                Disabled="@(filter is not StatusFilter.All && count is 0)"
                                 Selected="@(statusFilter == filter)"
                                 SelectedChanged="@(_ => SetFilter(filter))" />
                     }
@@ -229,7 +229,7 @@
 
                 @if (visible.Length is 0)
                 {
-                    <BitStack HorizontalAlign="BitAlignment.Center" Gap="0.5rem" Class="empty-state">
+                    <BitStack HorizontalAlign="BitAlignment.Center" Gap="0.5rem" Padding="3rem 1rem">
                         <BitIcon IconName="@BitIconName.ClearFilter" Size="BitSize.Large" Color="BitColor.SecondaryForeground" />
                         <BitText Typography="BitTypography.Subtitle1">No check matches</BitText>
                         <BitButton Variant="BitVariant.Text" OnClick="WrapHandled(ClearFilters)">Clear the filters</BitButton>
@@ -257,9 +257,9 @@
 
                                         <BitStack Horizontal FitHeight VerticalAlign="BitAlignment.Start" Gap="0.75rem">
                                             <BitIcon IconName="@check.IconName" Class="check-icon" />
-                                            <BitStack Gap="0" FitHeight FillContent Class="check-title">
-                                                <BitText Typography="BitTypography.Subtitle1" NoWrap Title="@check.Title">@check.Title</BitText>
-                                                <BitText Typography="BitTypography.Caption2" Color="BitColor.SecondaryForeground" Monospace NoWrap Title="@check.Name">@check.Name</BitText>
+                                            <BitStack Gap="0" FitHeight FillContent Shrinkable>
+                                                <BitText Typography="BitTypography.Subtitle1" NoWrap title="@check.Title">@check.Title</BitText>
+                                                <BitText Typography="BitTypography.Caption2" Color="BitColor.SecondaryForeground" Monospace NoWrap title="@check.Name">@check.Name</BitText>
                                             </BitStack>
                                             <BitTag Size="BitSize.Small"
                                                     Class="status-tag"
@@ -281,7 +281,7 @@
 
                                         @if (check.ExceptionSummary is { } summary)
                                         {
-                                            <BitText Typography="BitTypography.Caption1" Monospace BreakWord LineClamp="3" Class="exception-summary" Title="@summary">@summary</BitText>
+                                            <BitText Typography="BitTypography.Caption1" Monospace BreakWord LineClamp="3" Class="exception-summary" title="@summary">@summary</BitText>
                                         }
 
                                         <BitStack Gap="0.3rem" FitHeight>
@@ -295,7 +295,7 @@
                                                 <BitSpacer />
                                                 @if (check.VerifiedAt is { } verifiedAt)
                                                 {
-                                                    <BitTooltip Classes="@(new() { Tooltip = "tip-end" })"
+                                                    <BitTooltip Alignment="BitPlacement.End"
                                                                 Text="@($"A healthy result is reused for {check.CacheDuration?.TotalMinutes:N0} min, so probes don't turn into paid calls. A failure is checked again on every probe.")">
                                                         <BitStack Horizontal FitWidth VerticalAlign="BitAlignment.Center" Gap="0.25rem">
                                                             <BitIcon IconName="@BitIconName.History" Size="BitSize.Small" Color="BitColor.SecondaryForeground" />
@@ -307,6 +307,7 @@
                                             @if (check.TimeoutUsage is { } usage)
                                             {
                                                 <BitProgress Rounded
+                                                             Meter
                                                              Percent="usage"
                                                              Thickness="4"
                                                              Color="UsageColor(usage)"
@@ -361,14 +362,14 @@
                                             <BitStack Horizontal Wrap FitHeight VerticalAlign="BitAlignment.Center" Gap="0.3rem">
                                                 @if (check.IsCritical)
                                                 {
-                                                    <BitTooltip Classes="@(new() { Tooltip = "tip-start" })"
+                                                    <BitTooltip Alignment="BitPlacement.Start"
                                                                 Text="If this fails, /health answers 503 and load balancers stop sending traffic to this instance.">
                                                         <BitTag Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Health" Text="Readiness" />
                                                     </BitTooltip>
                                                 }
                                                 @if (check.IsLiveness)
                                                 {
-                                                    <BitTooltip Classes="@(new() { Tooltip = "tip-start" })" Text="Also runs on /alive, the liveness probe.">
+                                                    <BitTooltip Alignment="BitPlacement.Start" Text="Also runs on /alive, the liveness probe.">
                                                         <BitTag Size="BitSize.Small" Variant="BitVariant.Text" IconName="@BitIconName.Heart" Text="Liveness" />
                                                     </BitTooltip>
                                                 }
@@ -419,7 +420,7 @@
                                             <BitButton Size="BitSize.Small"
                                                        IconName="@buttonIcon"
                                                        IsLoading="@(runningTest == manual.Test)"
-                                                       IsEnabled="@(runningTest is ManualTest.None)"
+                                                       Disabled="@(runningTest is not ManualTest.None)"
                                                        OnClick="WrapHandled(() => RunTest(manual.Test))">
                                                 @buttonText
                                             </BitButton>

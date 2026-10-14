@@ -328,6 +328,12 @@
   <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
     <value>Zeile gelöscht</value>
   </data>
+    <data name="DataGridAnnouncementSearched" xml:space="preserve">
+    <value>Suche nach {0}</value>
+  </data>
+    <data name="DataGridAnnouncementSearchCleared" xml:space="preserve">
+    <value>Suche entfernt</value>
+  </data>
   <!-- Boilerplate strings -->
   <data name="Active" xml:space="preserve">
     <value>Aktiv</value>
@@ -1580,9 +1586,6 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   <data name="Users" xml:space="preserve">
     <value>Benutzer</value>
   </data>
-  <data name="UsersWithCount" xml:space="preserve">
-    <value>Benutzer {0}</value>
-  </data>
   <data name="Features" xml:space="preserve">
     <value>Funktionen</value>
   </data>
@@ -1638,9 +1641,6 @@ Nach Erreichen von {0} haben zusätzliche Anmeldungen reduzierte Funktionen.</va
   </data>
   <data name="DeleteRole" xml:space="preserve">
     <value>Benutzergruppe löschen</value>
-  </data>
-  <data name="Sessions" xml:space="preserve">
-    <value>Sitzungen {0}</value>
   </data>
   <data name="DeleteUser" xml:space="preserve">
     <value>Benutzer löschen</value>
