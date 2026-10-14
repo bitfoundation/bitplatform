@@ -28,6 +28,8 @@
     <link rel="stylesheet" href="css/theme.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="css/motion-samples.css" />
+    @* Plays the prerendered enter animations (BmPrerenderMode.Animate, set in AddDemoServices). *@
+    <link rel="stylesheet" href="_content/Bit.Bmotion/bit-bmotion.css" />
 
     @* The theme is applied here, in the head, rather than from js/demo.js at the end of the body:
        the stylesheets key off the data-theme attribute, and setting it after the first paint would
@@ -49,10 +51,11 @@
 </head>
 
 <body>
-    @* Prerendered on the server, then hydrated by the WebAssembly runtime. Bit.Bmotion is inert
-       during the prerender pass - it only touches the browser from OnAfterRenderAsync and event
-       handlers - so the markup is served with every element at its Initial state and the
-       animations start once the runtime takes over. See Layout/MainLayout.razor for the
+    @* Prerendered on the server, then hydrated by the WebAssembly runtime. The C# engine can't run
+       during the prerender pass, so Bit.Bmotion (in BmPrerenderMode.Animate) serves each element at
+       rest with its enter animation compiled to CSS - it plays as soon as the HTML arrives, and the
+       runtime takes the element over where that animation got to. Gestures and everything else
+       start once the runtime is interactive. See Layout/MainLayout.razor for the
        RendererInfo-driven hydration hint. *@
     <Routes @rendermode="InteractiveWebAssembly" />
 

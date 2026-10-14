@@ -9,11 +9,13 @@ namespace Bit.Bmotion;
 /// </summary>
 public sealed class BmotionInterop : IBmotionInterop
 {
+    private readonly IJSRuntime _js;
     private readonly Lazy<Task<IJSObjectReference>> _moduleTask;
 
     public BmotionInterop(IJSRuntime js)
     {
         ArgumentNullException.ThrowIfNull(js);
+        _js = js;
         IsInProcess = js is IJSInProcessRuntime;
         _moduleTask = new Lazy<Task<IJSObjectReference>>(
             () => js.InvokeAsync<IJSObjectReference>(
@@ -26,6 +28,57 @@ public sealed class BmotionInterop : IBmotionInterop
     /// library only functions on WebAssembly. This is checked before the rAF loop starts.
     /// </summary>
     public bool IsInProcess { get; }
+
+    /// <summary>
+    /// <c>true</c> while the components are being prerendered or statically rendered on the server.
+    /// Read live: a circuit's runtime only becomes usable once the circuit attaches to it.
+    /// </summary>
+    public bool IsPrerendering => IsStaticRuntime(_js);
+
+    // A scope with no browser gets one of two framework-internal runtimes: static SSR's placeholder
+    // (every call throws), or - in apps with Server interactivity - a circuit runtime no circuit has
+    // attached to. Neither type is public, so they are recognised by name.
+    [UnconditionalSuppressMessage("Trimming", "IL2075",
+        Justification = "RemoteJSRuntime only exists in Blazor Server apps, which are never trimmed; a missing property reads as interactive.")]
+    private static bool IsStaticRuntime(IJSRuntime js)
+    {
+        if (OperatingSystem.IsBrowser()) return false;
+        var type = js.GetType();
+        if (type.Name == "UnsupportedJavaScriptRuntime") return true;
+        if (type.Name == "RemoteJSRuntime")
+            return type.GetProperty("IsInitialized")?.GetValue(js) is false;
+        return false;
+    }
+
+    /// <summary>
+    /// How long the prerendered page's CSS animations have been running: the time since the page
+    /// first painted, which is when animations in parsed markup start. Synchronous, so WebAssembly only.
+    /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2026",
+        Justification = "Deserializes only JsonElement and double, which System.Text.Json handles without reflection over user types.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050",
+        Justification = "Deserializes only JsonElement and double, which need no runtime code generation.")]
+    public double? GetPrerenderedAnimationElapsedMs()
+    {
+        if (_js is not IJSInProcessRuntime js) return null;
+        try
+        {
+            double? firstPaint = null;
+            var paints = js.Invoke<System.Text.Json.JsonElement>("performance.getEntriesByType", "paint");
+            foreach (var entry in paints.EnumerateArray())
+            {
+                if (entry.TryGetProperty("startTime", out var start) && start.TryGetDouble(out var ms))
+                    firstPaint = firstPaint is null ? ms : Math.Min(firstPaint.Value, ms);
+            }
+            if (firstPaint is null) return null;
+            return Math.Max(0, js.Invoke<double>("performance.now") - firstPaint.Value);
+        }
+        catch
+        {
+            // Unknown elapsed time just means the element lands at rest instead of continuing.
+            return null;
+        }
+    }
 
     private async ValueTask<IJSObjectReference> Module() => await _moduleTask.Value;
 

@@ -23,4 +23,13 @@ public sealed class BitBmotionOptions
     /// <see cref="BmCssSafeMode.Throw"/> when binding untrusted end-user input to those props.
     /// </summary>
     public BmCssSafeMode CssSafeMode { get; set; } = BmCssSafeMode.Off;
+
+    /// <summary>
+    /// What elements render while the page is prerendered or statically rendered on the server.
+    /// Defaults to <see cref="BmPrerenderMode.Initial"/> (the <c>Initial</c> state, animating once
+    /// interactive); <see cref="BmPrerenderMode.Final"/> renders visible content at rest and
+    /// <see cref="BmPrerenderMode.Animate"/> plays the enter animation in CSS before the runtime loads.
+    /// A <see cref="Bmotion.Prerender"/> set on an element overrides this.
+    /// </summary>
+    public BmPrerenderMode Prerender { get; set; } = BmPrerenderMode.Initial;
 }

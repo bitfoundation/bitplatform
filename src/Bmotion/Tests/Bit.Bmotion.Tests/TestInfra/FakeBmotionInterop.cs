@@ -23,6 +23,14 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
     /// <summary>Simulates WASM (synchronous interop) when true, Blazor Server when false.</summary>
     public bool IsInProcess { get; set; } = true;
 
+    /// <summary>Simulates a prerendering / static-SSR scope (no browser attached) when true.</summary>
+    public bool IsPrerendering { get; set; }
+
+    /// <summary>Value returned by <see cref="GetPrerenderedAnimationElapsedMs"/>.</summary>
+    public double? PrerenderedAnimationElapsedMs { get; set; }
+
+    public double? GetPrerenderedAnimationElapsedMs() => PrerenderedAnimationElapsedMs;
+
     /// <summary>Value returned by <see cref="PrefersReducedMotionAsync"/>.</summary>
     public bool PrefersReducedMotion { get; set; }
 

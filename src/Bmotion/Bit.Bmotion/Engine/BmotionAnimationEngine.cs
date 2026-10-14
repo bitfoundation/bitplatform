@@ -262,6 +262,18 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     }
 
     /// <summary>
+    /// Records an element's resting target without animating to it - for an element the runtime
+    /// takes over already at rest because it was prerendered there. The values are already in the
+    /// DOM, so nothing is flushed; the target only becomes the base a gesture layer reverts to,
+    /// exactly as an <c>Animate</c> played with <c>setAsBase</c> would have left it.
+    /// </summary>
+    internal void SetBaseAnimation(string elementId, Dictionary<string, object?> values, BmotionTransitionConfig? transition)
+    {
+        if (_elements.TryGetValue(elementId, out var state))
+            state.SetBaseAnimation(values, transition);
+    }
+
+    /// <summary>
     /// Pauses rAF transform writes for an element for <paramref name="durationMs"/> so a WAAPI FLIP
     /// layout animation can own the transform without the engine fighting it each frame.
     /// </summary>
@@ -990,7 +1002,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         }
     }
 
-    private static double[] SampleTweenProgress(BmotionTransitionConfig config)
+    internal static double[] SampleTweenProgress(BmotionTransitionConfig config)
     {
         var ease = BmEaseFunctions.Get(config);
         const int sampleCount = 33;
@@ -1005,7 +1017,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     /// velocity is zero - the ODE is linear) and returns the eased-progress samples plus the
     /// settling duration. Null when the spring doesn't settle within 20 s.
     /// </summary>
-    private static (double[] Samples, double DurationMs)? SampleSpringProgress(BmotionTransitionConfig config)
+    internal static (double[] Samples, double DurationMs)? SampleSpringProgress(BmotionTransitionConfig config)
     {
         var sampling = config.Clone();
         sampling.Delay = 0;
@@ -1034,7 +1046,7 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         return (samples.ToArray(), (samples.Count - 1) * stepMs);
     }
 
-    private static string BuildLinearEasing(double[] samples)
+    internal static string BuildLinearEasing(double[] samples)
     {
         var sb = new System.Text.StringBuilder("linear(");
         for (int i = 0; i < samples.Length; i++)

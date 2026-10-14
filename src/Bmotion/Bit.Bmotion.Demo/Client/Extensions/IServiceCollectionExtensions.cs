@@ -18,7 +18,10 @@ public static class IServiceCollectionExtensions
     /// </param>
     public static IServiceCollection AddDemoServices(this IServiceCollection services, string? baseAddress = null)
     {
-        services.AddBitBmotionServices();
+        // The site is prerendered: enter animations play in CSS straight from the served HTML, so a
+        // page doesn't sit at its Initial state (often invisible) while the runtime downloads, and the
+        // runtime then takes each element over where the CSS left it instead of replaying the enter.
+        services.AddBitBmotionServices(o => o.Prerender = BmPrerenderMode.Animate);
 
         services.AddScoped(_ => baseAddress is null
             ? new HttpClient()
