@@ -1,7 +1,14 @@
 ﻿::deep {
+    // Side by side while both fit, one under the other on a phone: the timelines share the row from a basis
+    // of nothing, so a line breaks only where the narrowest each of them can be no longer fits.
     .example-content {
         gap: 0.5rem;
         display: flex;
+        flex-wrap: wrap;
+
+        > * {
+            flex: 1 1 0;
+        }
     }
 
     // A dot template stands in for the dot of the timeline, so it takes the size of a medium dot

@@ -1,4 +1,5 @@
-﻿@import '../../../../Styles/abstracts/_bit-css-variables.scss';
+﻿@import '../../../../Styles/abstracts/_media-queries.scss';
+@import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
 // Every example needs a bounded flex container for the spacer to have leftover space to work with,
 // and visible children so the space it generates is actually legible on the page.
@@ -9,6 +10,17 @@
     align-items: center;
     box-sizing: border-box;
     border: 1px solid $bit-color-border-secondary;
+}
+
+// A fixed spacer never shrinks, so on a phone a row of boxes and fixed spaces wider than the preview
+// moves what no longer fits onto another line instead of running past it. Only the row gap is set: a
+// column gap would add to every spacer's own space. The MinGap rows are left alone, since being
+// squeezed is what they show.
+@include sm {
+    .demo-row:not(.demo-resizable) {
+        row-gap: 0.5rem;
+        flex-wrap: wrap;
+    }
 }
 
 .demo-col {

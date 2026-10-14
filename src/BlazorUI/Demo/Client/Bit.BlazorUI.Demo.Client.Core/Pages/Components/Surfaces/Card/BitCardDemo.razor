@@ -248,20 +248,22 @@
             NoReferrer or Opener - Opener is the one way to hand the new tab its opener back.
         </div>
         <br /><br />
-        <BitCard Href="https://blazorui.bitplatform.dev" Target="_blank"
-                 Title="bit BlazorUI" Subtitle="blazorui.bitplatform.dev" IconName="@BitIconName.Globe" Width="20rem">
-            <Actions>
-                <BitButton Variant="BitVariant.Text" IconOnly Title="@(isPinned ? "Unpin" : "Pin")"
-                           IconName="@(isPinned ? BitIconName.PinnedFill : BitIconName.Pinned)"
-                           OnClick="() => isPinned = !isPinned" />
-            </Actions>
-            <ChildContent>
-                <BitText Typography="BitTypography.Body2">The whole card is the link; the pin is not. Pinned: @isPinned</BitText>
-            </ChildContent>
-            <Footer>
-                <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_blank">GitHub</BitLink>
-            </Footer>
-        </BitCard>
+        <div class="card-row">
+            <BitCard Href="https://blazorui.bitplatform.dev" Target="_blank"
+                     Title="bit BlazorUI" Subtitle="blazorui.bitplatform.dev" IconName="@BitIconName.Globe" Width="20rem">
+                <Actions>
+                    <BitButton Variant="BitVariant.Text" IconOnly Title="@(isPinned ? "Unpin" : "Pin")"
+                               IconName="@(isPinned ? BitIconName.PinnedFill : BitIconName.Pinned)"
+                               OnClick="() => isPinned = !isPinned" />
+                </Actions>
+                <ChildContent>
+                    <BitText Typography="BitTypography.Body2">The whole card is the link; the pin is not. Pinned: @isPinned</BitText>
+                </ChildContent>
+                <Footer>
+                    <BitLink Href="https://github.com/bitfoundation/bitplatform" Target="_blank">GitHub</BitLink>
+                </Footer>
+            </BitCard>
+        </div>
     </DemoExample>
 
     <DemoExample Title="Loading" RazorCode="@example9RazorCode" CsharpCode="@example9CsharpCode" Id="example9">
@@ -529,16 +531,18 @@
     <DemoExample Title="RTL" RazorCode="@example19RazorCode" Id="example19">
         <div>Use <b>Dir="BitDir.Rtl"</b> to mirror the whole card: the icon, the actions and a horizontal cover all swap sides.</div>
         <br /><br />
-        <BitCard Dir="BitDir.Rtl" Title="کارت" Subtitle="یک زیرعنوان" IconName="@BitIconName.Album" Width="20rem">
-            <Actions>
-                <BitButton Variant="BitVariant.Text" IconOnly IconName="@BitIconName.More" Title="بیشتر" />
-            </Actions>
-            <ChildContent>
-                <BitText Typography="BitTypography.Body2">بیت بلیزور یو آی، کامپوننت‌های بومی، قابل تنظیم و ...</BitText>
-            </ChildContent>
-            <Footer>
-                <BitButton Size="BitSize.Small">باز کردن</BitButton>
-            </Footer>
-        </BitCard>
+        <div class="card-row">
+            <BitCard Dir="BitDir.Rtl" Title="کارت" Subtitle="یک زیرعنوان" IconName="@BitIconName.Album" Width="20rem">
+                <Actions>
+                    <BitButton Variant="BitVariant.Text" IconOnly IconName="@BitIconName.More" Title="بیشتر" />
+                </Actions>
+                <ChildContent>
+                    <BitText Typography="BitTypography.Body2">بیت بلیزور یو آی، کامپوننت‌های بومی، قابل تنظیم و ...</BitText>
+                </ChildContent>
+                <Footer>
+                    <BitButton Size="BitSize.Small">باز کردن</BitButton>
+                </Footer>
+            </BitCard>
+        </div>
     </DemoExample>
 </DemoPage>

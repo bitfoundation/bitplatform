@@ -144,11 +144,12 @@
                            DividerIconName="@BitIconName.CaretRightSolid8"
                            OverflowIconName="@BitIconName.ChevronDown"
                            MaxDisplayedItems="3"
-                           OverflowIndex="2" />
+                           OverflowIndex="2"
+                           Wrap />
         </div>
         <div>
             <div>IconPlacement End</div>
-            <BitBreadcrumb Items="BreadcrumbItemsWithIcon" IconPlacement="BitPlacement.End" />
+            <BitBreadcrumb Items="BreadcrumbItemsWithIcon" IconPlacement="BitPlacement.End" Wrap />
         </div>
         <div>
             <div>Icon-only root with an AriaLabel & DividerText</div>
@@ -295,22 +296,22 @@
         <div>
             <div>Implicit string conversion (auto-detects external icons)</div>
             <BitBreadcrumb Items="BreadcrumbItemsWithExternalIcon1"
-                           MaxDisplayedItems="3" OverflowIndex="2" />
+                           MaxDisplayedItems="3" OverflowIndex="2" Wrap />
         </div>
         <div>
             <div>BitIconInfo.Css (uses CSS classes directly)</div>
             <BitBreadcrumb Items="BreadcrumbItemsWithExternalIcon2"
-                           MaxDisplayedItems="3" OverflowIndex="2" />
+                           MaxDisplayedItems="3" OverflowIndex="2" Wrap />
         </div>
         <div>
             <div>BitIconInfo.Fa (FontAwesome helper)</div>
             <BitBreadcrumb Items="BreadcrumbItemsWithExternalIcon3"
-                           MaxDisplayedItems="3" OverflowIndex="2" />
+                           MaxDisplayedItems="3" OverflowIndex="2" Wrap />
         </div>
         <div>
             <div>BitIconInfo.Bi (Bootstrap Icons helper)</div>
             <BitBreadcrumb Items="BreadcrumbItemsWithExternalIcon4"
-                           MaxDisplayedItems="3" OverflowIndex="2" />
+                           MaxDisplayedItems="3" OverflowIndex="2" Wrap />
         </div>
     </div>
 </DemoExample>

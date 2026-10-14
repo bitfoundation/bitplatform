@@ -14,6 +14,7 @@
 .example-content {
     width: 18rem;
     display: flex;
+    max-width: 100%;
     flex-flow: column wrap;
 }
 

@@ -90,7 +90,7 @@ public partial class BitHeaderDemo
         <BitButton Size=""BitSize.Small"">Share</BitButton>
     </ChildContent>
     <ExtensionContent>
-        <BitPivot HeaderOnly AriaLabel=""Project sections"">
+        <BitPivot HeaderOnly AriaLabel=""Project sections"" OverflowBehavior=""BitPivotOverflowBehavior.Scroll"" Style=""min-width: 0"">
             <BitPivotItem HeaderText=""Overview"" />
             <BitPivotItem HeaderText=""Issues"" />
             <BitPivotItem HeaderText=""Pull requests"" />

@@ -147,11 +147,12 @@
                            DividerIconName="@BitIconName.CaretRightSolid8"
                            OverflowIconName="@BitIconName.ChevronDown"
                            MaxDisplayedItems="3"
-                           OverflowIndex="2" />
+                           OverflowIndex="2"
+                           Wrap />
         </div>
         <div>
             <div>IconPlacement End</div>
-            <BitBreadcrumb Items="CustomBreadcrumbItemsWithIcon" NameSelectors="nameSelectors" IconPlacement="BitPlacement.End" />
+            <BitBreadcrumb Items="CustomBreadcrumbItemsWithIcon" NameSelectors="nameSelectors" IconPlacement="BitPlacement.End" Wrap />
         </div>
         <div>
             <div>Icon-only root with an AriaLabel & DividerText</div>
@@ -300,25 +301,25 @@
             <div>Implicit string conversion (auto-detects external icons)</div>
             <BitBreadcrumb Items="CustomBreadcrumbItemsWithExternalIcon1"
                            NameSelectors="nameSelectors"
-                           MaxDisplayedItems="3" OverflowIndex="2" />
+                           MaxDisplayedItems="3" OverflowIndex="2" Wrap />
         </div>
         <div>
             <div>BitIconInfo.Css (uses CSS classes directly)</div>
             <BitBreadcrumb Items="CustomBreadcrumbItemsWithExternalIcon2"
                            NameSelectors="nameSelectors"
-                           MaxDisplayedItems="3" OverflowIndex="2" />
+                           MaxDisplayedItems="3" OverflowIndex="2" Wrap />
         </div>
         <div>
             <div>BitIconInfo.Fa (FontAwesome helper)</div>
             <BitBreadcrumb Items="CustomBreadcrumbItemsWithExternalIcon3"
                            NameSelectors="nameSelectors"
-                           MaxDisplayedItems="3" OverflowIndex="2" />
+                           MaxDisplayedItems="3" OverflowIndex="2" Wrap />
         </div>
         <div>
             <div>BitIconInfo.Bi (Bootstrap Icons helper)</div>
             <BitBreadcrumb Items="CustomBreadcrumbItemsWithExternalIcon4"
                            NameSelectors="nameSelectors"
-                           MaxDisplayedItems="3" OverflowIndex="2" />
+                           MaxDisplayedItems="3" OverflowIndex="2" Wrap />
         </div>
     </div>
 </DemoExample>

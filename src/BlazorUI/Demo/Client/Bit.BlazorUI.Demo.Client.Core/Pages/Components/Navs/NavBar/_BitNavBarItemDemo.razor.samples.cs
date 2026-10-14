@@ -412,7 +412,7 @@ private static readonly List<BitNavBarItem> basicNavBarItems =
 ];";
 
     private readonly string example15RazorCode = @"
-<BitStack Horizontal>
+<BitStack Horizontal Wrap>
     <BitButton OnClick=""AddDynamicItem"">Add item</BitButton>
     <BitButton OnClick=""RemoveDynamicItem"">Remove item</BitButton>
     <BitButton OnClick=""ReverseDynamicItems"">Reverse items</BitButton>

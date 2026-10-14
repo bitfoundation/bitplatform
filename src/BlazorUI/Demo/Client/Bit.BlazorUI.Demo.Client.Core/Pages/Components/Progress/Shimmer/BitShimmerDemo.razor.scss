@@ -23,3 +23,9 @@
     align-items: center;
     grid-template-columns: auto 1fr 1fr;
 }
+
+// The longest role names are single words that would hold the label column wider than a phone leaves room
+// for, so they break where they have to.
+.color-grid > div {
+    overflow-wrap: anywhere;
+}

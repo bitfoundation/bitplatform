@@ -356,7 +356,7 @@ private void HandleEnter()
                 Min=""0"" Max=""10"" Step=""2"" @bind-Value=""apiValue"" />
 <div>value: [@apiValue]</div>
 
-<BitStack Horizontal Gap=""0.5rem"">
+<BitStack Horizontal Wrap Gap=""0.5rem"">
     <BitButton OnClick=""() => apiNumberField?.DecrementAsync()"">Decrement</BitButton>
     <BitButton OnClick=""() => apiNumberField?.IncrementAsync()"">Increment</BitButton>
     <BitButton Variant=""BitVariant.Outline"" OnClick=""() => apiNumberField?.ClearAsync()"">Clear</BitButton>

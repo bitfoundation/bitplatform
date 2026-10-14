@@ -426,6 +426,10 @@ pre {
 code {
     line-height: 1.6;
     font-family: var(--demo-font-mono);
+    // A type or member name is one long word with no break opportunity in it, so inline code in the
+    // prose would otherwise run past the edge of a phone's screen and scroll the whole page. A
+    // highlighted block in a <pre> does not wrap, so this only ever reaches inline code.
+    overflow-wrap: break-word;
 
     span {
         font-family: inherit;

@@ -21,7 +21,6 @@ public partial class _BitBreadcrumbCustomDemo
     private readonly List<PageInfo> CustomBreadcrumbItemsWithTarget =
     [
         new() { Name = "Custom 1", Address = "/components/breadcrumb" },
-        new() { Name = "Custom 2", Address = "/components/breadcrumb" },
         new() { Name = "bit BlazorUI", Address = "https://blazorui.bitplatform.dev", OpenIn = "_blank", Tooltip = "Opens the bit BlazorUI website in a new tab" },
         new() { Name = "Custom 4", Address = "/components/breadcrumb", IsCurrent = true }
     ];

@@ -211,6 +211,8 @@ $nav-private-properties: item-font-size, item-min-height, icon-size, des-font-si
 
 .bit-nav-ftw {
     width: fit-content;
+    // Never wider than its container, so the items' ellipsis shows instead of the nav overflowing.
+    max-width: 100%;
 }
 
 .bit-nav-flw {

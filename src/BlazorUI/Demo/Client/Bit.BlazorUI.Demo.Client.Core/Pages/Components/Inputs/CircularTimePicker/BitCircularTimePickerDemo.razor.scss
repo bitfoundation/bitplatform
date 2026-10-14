@@ -4,6 +4,7 @@
 .example-content {
     display: flex;
     width: 18.25rem;
+    max-width: 100%;
     flex-flow: column wrap;
 }
 

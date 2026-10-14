@@ -59,6 +59,9 @@ $prs-private-properties:
     box-shadow: none;
     color: var(--bit-Persona-primary-color, #{$clr-fg-pri});
     width: fit-content;
+    // Never wider than its container: the texts are nowrap with an ellipsis (.bit-prs-det has min-width: 0
+    // for it), which only shows once the persona itself is held to the room it has.
+    max-width: 100%;
     position: relative;
     align-items: center;
     box-sizing: border-box;

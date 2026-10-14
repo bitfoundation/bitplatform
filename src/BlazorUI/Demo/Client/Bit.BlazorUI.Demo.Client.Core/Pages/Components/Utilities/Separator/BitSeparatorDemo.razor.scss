@@ -1,4 +1,6 @@
-﻿.example-content {
+﻿@import '../../../../Styles/abstracts/_media-queries.scss';
+
+.example-content {
     gap: 0.75rem;
     display: flex;
     flex-flow: column nowrap;
@@ -22,6 +24,22 @@
 .taller {
     gap: 2rem;
     height: 12rem;
+}
+
+// On a phone the two sign-in labels wrap inside their 6rem row instead of holding one line each and
+// running past the preview.
+@include sm {
+    .medium {
+        white-space: normal;
+    }
+}
+
+// The rows of four items and three vertical lines close up on the smallest screens, so they still fit
+// on one line.
+@include xs {
+    .tall {
+        gap: 0.5rem;
+    }
 }
 
 .list {

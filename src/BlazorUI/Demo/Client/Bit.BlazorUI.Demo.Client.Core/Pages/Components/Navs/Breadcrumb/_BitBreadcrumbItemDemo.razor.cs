@@ -21,7 +21,6 @@ public partial class _BitBreadcrumbItemDemo
     private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithTarget =
     [
         new() { Text = "Item 1", Href = "/components/breadcrumb" },
-        new() { Text = "Item 2", Href = "/components/breadcrumb" },
         new() { Text = "bit BlazorUI", Href = "https://blazorui.bitplatform.dev", Target = "_blank", Title = "Opens the bit BlazorUI website in a new tab" },
         new() { Text = "Item 4", Href = "/components/breadcrumb", IsSelected = true }
     ];

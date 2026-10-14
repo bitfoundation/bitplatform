@@ -1,8 +1,12 @@
-﻿.example-content {
+﻿// The badges overhang the top-end corner of their hosts, so the row keeps the same room the gap leaves
+// between them free at its end too, where a host wrapped last onto a narrow line would push its badge past
+// the edge of the preview.
+.example-content {
     gap: 3rem;
     display: flex;
     flex-wrap: wrap;
     align-items: center;
+    padding-inline-end: 3rem;
 }
 
 ::deep {
