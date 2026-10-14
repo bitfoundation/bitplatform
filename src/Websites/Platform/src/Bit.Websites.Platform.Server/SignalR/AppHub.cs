@@ -56,7 +56,7 @@ public partial class AppHub : Hub
             Name = "bitplatform",
             Endpoint = mcpEndpoint,
             TransportMode = HttpTransportMode.StreamableHttp
-        }), new() { }, loggerFactory, cancellationToken); // provides the per product tools (bit BlazorUI, Bmotion, Brouter, Butil, Bswup, ...), the bitplatform source code tools and the general AskGitHubRepository tool
+        }), new() { }, loggerFactory, cancellationToken); // provides the per product tools (bit BlazorUI, Bmotion, Bonboarding, Brouter, Butil, Bswup, ...), the bitplatform source code tools and the general AskGitHubRepository tool
         var bitplatformMcpTools = await bitplatformMcp.ListToolsAsync(cancellationToken: cancellationToken);
 
 

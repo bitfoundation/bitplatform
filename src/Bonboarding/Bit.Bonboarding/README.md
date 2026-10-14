@@ -60,6 +60,12 @@ await BonboardingService.StartOnceAsync(tour); // skipped if the user already fi
 - Analytics-grade events and pluggable persistence and localization.
 - Blazor Server, WebAssembly and Web App (including prerendering) on .NET 8, 9 and 10.
 
+## For AI agents
+
+The demo site hosts an MCP server at `https://bonboarding.bitplatform.dev/mcp` (also served through
+`https://bitplatform.dev/mcp`) that answers from the shipped library: its API, its guide, its theme
+variables and its placement engine.
+
 ## Documentation
 
 The full guide - targeting, branching, multi-page tours, persistence, theming, headless rendering,

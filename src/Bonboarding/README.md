@@ -107,12 +107,43 @@ BonboardingTour / Step          Markup that builds a BonboardingTourDefinition. 
 The separation is the point: the engine has no opinion about rendering, the layout engine has no
 opinion about the DOM, and the browser layer has no opinion about tours.
 
+## MCP server
+
+The demo hosts a [Model Context Protocol](https://modelcontextprotocol.io) server at `/mcp`, so an AI
+agent building tours reads the library itself - its compiled API documentation, this guide, its
+stylesheet and the demo's working tours - instead of guessing at an API it half remembers. It is also
+served, version by version, through `https://bitplatform.dev/mcp` next to the other bit libraries.
+
+```json
+{
+  "mcpServers": {
+    "bonboarding": { "type": "http", "url": "https://bonboarding.bitplatform.dev/mcp" }
+  }
+}
+```
+
+| Tool | What it answers |
+|---|---|
+| `SearchBonboarding` | Everything at once - the guide, every public member, the theme variables and the demo sources - each hit with the exact follow-up call |
+| `GetBonboardingSetupGuide` | The complete wiring for one render mode: `server`, `wasm`, `auto` or `standalone-wasm` |
+| `GetBonboardingGuideSection` | One section of this guide, or the index of sections |
+| `GetBonboardingApi` | One public type with every parameter, property and method, its real default and its documentation - or the index of types |
+| `GetBonboardingThemeVariables` | Every `--bit-bonboarding-*` variable with its light and dark value |
+| `InspectBonboardingPlacement` | Where the library's own placement engine puts a popover for a given target, popover and viewport, and why |
+| `GetBonboardingSourceFile` | One demo file verbatim, or the index of files |
+
+Every tool is read-only. The same material is exposed as `bonboarding://` resources, and the
+`add-bonboarding-to-app`, `implement-bonboarding-tour` and `debug-bonboarding-tour` prompts walk an
+agent through the common jobs in the right order. Every tool is also a plain `GET` under
+`/api/mcp/...`, for reading in a browser exactly what an agent is handed.
+
 ## Repository layout
 
 ```
 Bit.Bonboarding                 The library
-Bit.Bonboarding.Demo            Demo application (Blazor Web App: Server + Client)
+Bit.Bonboarding.Demo            Demo application (Blazor Web App: Server + Client) and the MCP server
 Tests/Bit.Bonboarding.Tests     Engine, layout and component tests
+Tests/Bit.Bonboarding.Tests.Mcp The MCP server, exercised over the protocol
 ```
 
 ## Documentation
