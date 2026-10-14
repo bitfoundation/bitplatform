@@ -3,9 +3,15 @@
 export class App {
     // For additional details, see the JsBridge.cs file.
     private static jsBridgeObj: DotNetObject;
+    private static credentialsGet?: CredentialsContainer['get'];
+    private static smsOtpRequestId = 0;
 
-    public static registerJsBridge(dotnetObj: DotNetObject) {
+    public static registerJsBridge(dotnetObj: DotNetObject, receivesSmsOtp: boolean) {
         App.jsBridgeObj = dotnetObj;
+
+        if (receivesSmsOtp) {
+            App.provideWebOtp();
+        }
     }
 
     public static showDiagnostic() {
@@ -65,6 +71,42 @@ export class App {
         bswupProgress.config({ autoReload });
 
         bswup.checkForUpdate();
+    }
+
+    private static provideWebOtp() {
+        const credentials = navigator.credentials;
+        if (!credentials || App.credentialsGet) return;
+
+        App.credentialsGet = credentials.get.bind(credentials);
+        credentials.get = (options?: CredentialRequestOptions & { otp?: unknown }) =>
+            options?.otp ? App.receiveSmsOtp(options.signal) : App.credentialsGet!(options);
+
+        (window as any).OTPCredential ??= class { };
+    }
+
+    private static async receiveSmsOtp(signal?: AbortSignal) {
+        if (signal?.aborted) throw new DOMException('The request was aborted.', 'AbortError');
+
+        const requestId = ++App.smsOtpRequestId;
+        const cancel = () => {
+            if (requestId === App.smsOtpRequestId) {
+                App.jsBridgeObj.invokeMethodAsync('CancelSmsOtp');
+            }
+        };
+
+        signal?.addEventListener('abort', cancel);
+
+        try {
+            const code = await App.jsBridgeObj.invokeMethodAsync<string | null>('ReceiveSmsOtp');
+
+            if (!code || signal?.aborted || requestId !== App.smsOtpRequestId) {
+                throw new DOMException('The request was aborted.', 'AbortError');
+            }
+
+            return { id: '', type: 'otp', code } as Credential;
+        } finally {
+            signal?.removeEventListener('abort', cancel);
+        }
     }
 }
 

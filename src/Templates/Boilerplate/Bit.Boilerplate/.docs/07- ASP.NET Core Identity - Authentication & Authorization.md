@@ -23,7 +23,9 @@ Everything the UI offers reduces to one of these:
 
 1. **Identifier + password** - identifier being a username, email or phone number.
 2. **Identifier + OTP** - a 6-digit code delivered by email or SMS. Delivered as a clickable email link, this is
-   what users call a "magic link".
+   what users call a "magic link". The SMS ends with an `@<host> #<code>` line, which browsers read through the
+   WebOTP API and the Android app through Google's SMS User Consent API, so the code fills itself in once the user
+   allows it.
 
 Every other sign-in button - Google, GitHub, a passkey, a push notification code - finishes by generating an OTP
 and performing an **automatic OTP sign-in** behind the scenes.

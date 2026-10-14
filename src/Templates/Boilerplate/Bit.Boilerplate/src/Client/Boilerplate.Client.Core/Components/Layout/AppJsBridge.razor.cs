@@ -3,6 +3,9 @@ namespace Boilerplate.Client.Core.Components.Layout;
 public partial class AppJsBridge
 {
     private DotNetObjectReference<AppJsBridge>? dotnetObj;
+    private ISmsOtpReceiver? smsOtpReceiver;
+    private CancellationTokenSource? smsOtpCts;
+
     /// <summary>
     /// at the rendering time of this component (the component is added to the `RootLayout`)
     /// it registers an instance of the `DotNetObjectReference` into the js code (look at the `App.ts` file), 
@@ -14,7 +17,9 @@ public partial class AppJsBridge
 
         dotnetObj = DotNetObjectReference.Create(this);
 
-        await JSRuntime.InvokeVoidAsync("App.registerJsBridge", dotnetObj);
+        smsOtpReceiver = ScopedServices.GetService<ISmsOtpReceiver>();
+
+        await JSRuntime.InvokeVoidAsync("App.registerJsBridge", dotnetObj, smsOtpReceiver?.IsSupported is true);
     }
 
 
@@ -33,9 +38,45 @@ public partial class AppJsBridge
         PubSubService.Publish(message, payload);
     }
 
+    [JSInvokable(nameof(ReceiveSmsOtp))]
+    public async Task<string?> ReceiveSmsOtp()
+    {
+        CancelSmsOtp();
+
+        using var cts = smsOtpCts = new CancellationTokenSource();
+
+        try
+        {
+            return await smsOtpReceiver!.ReceiveOtp(cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            return null;
+        }
+        catch (Exception exp)
+        {
+            ExceptionHandler.Handle(exp, ExceptionDisplayKind.None);
+            return null;
+        }
+        finally
+        {
+            if (smsOtpCts == cts)
+            {
+                smsOtpCts = null;
+            }
+        }
+    }
+
+    [JSInvokable(nameof(CancelSmsOtp))]
+    public void CancelSmsOtp()
+    {
+        smsOtpCts?.Cancel();
+    }
+
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         dotnetObj?.Dispose();
+        CancelSmsOtp();
 
         await base.DisposeAsync(disposing);
     }
