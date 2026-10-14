@@ -58,8 +58,13 @@ public class PrerenderCssTests
                 StringAssert.Contains(css, $"@keyframes bm-{property}-{n}{{");
 
         StringAssert.Contains(css, "@keyframes bm-opacity-3{0%{opacity:var(--bm-opacity-0)}50%{opacity:var(--bm-opacity-1)}100%{opacity:var(--bm-opacity-2)}}");
-        StringAssert.Contains(css, "[style*=\";--bm-a:\"]{animation:var(--bm-a)}");
-        StringAssert.Contains(css, "@media (prefers-reduced-motion:reduce){[style*=\";--bm-a:\"]{animation:var(--bm-ar,var(--bm-a))}}");
+        // No leading ';' on the animation hooks: they must still match once the browser has
+        // reserialized the attribute as "--bm-a: ..." after a CSSOM write.
+        StringAssert.Contains(css, "[style*=\"--bm-a:\"]{animation:var(--bm-a)}");
+        StringAssert.Contains(css, "[style*=\"--bm-af:\"]{animation:var(--bm-af)}");
+        // Only an element that declares both lists itself follows the OS preference.
+        StringAssert.Contains(css, "@media (prefers-reduced-motion:reduce){[style*=\"--bm-af:\"]{animation:var(--bm-ar)}}");
+        Assert.IsFalse(css.Contains("var(--bm-ar,"), "the reduced list must never fall back onto another element's");
         StringAssert.Contains(css, "[style*=\";--bm-nj-opacity:\"]{opacity:var(--bm-nj-opacity)!important}");
     }
 
@@ -143,6 +148,18 @@ public class PrerenderCssTests
     }
 
     [TestMethod]
+    public void SharedSpringEasing_IsDeclaredOnce()
+    {
+        var plan = Compile(Bm.To(opacity: 0, x: 0), Bm.To(opacity: 1, x: 100), Bm.Spring(stiffness: 300, damping: 20), withReduced: true);
+        var css = plan.BuildAnimationDeclarations(BmotionPrerenderMotionPolicy.FollowOs);
+
+        // transform and opacity in the full list, opacity again in the reduced one: one curve.
+        Assert.AreEqual(1, css.Split("linear(").Length - 1, css);
+        Assert.AreEqual(3, css.Split("var(--bm-e0)").Length - 1, css);
+        StringAssert.Contains(css, ";--bm-e0:linear(");
+    }
+
+    [TestMethod]
     public void Repeat_MapsToIterationsAndDirection()
     {
         var plan = Compile(Bm.To(rotate: 0), Bm.To(rotate: 360), Bm.Tween(1, ease: BmEase.Linear, repeat: BmRepeat.Mirror()));
@@ -170,6 +187,13 @@ public class PrerenderCssTests
         var plan = Compile(null, Bm.To(x: new double[] { 0, -10, 10, -10, 10, -5, 0 }), Bm.Tween(0.6));
         Assert.AreEqual(0, plan.Tracks.Count);
         Assert.AreEqual(string.Empty, plan.BuildAnimationDeclarations(BmotionPrerenderMotionPolicy.Full));
+    }
+
+    [TestMethod]
+    public void EvenTimes_Animate()
+    {
+        var plan = Compile(null, Bm.To(opacity: new double[] { 0, 1, 0.5 }), Bm.Tween(0.6, times: [0, 0.5, 1]));
+        Assert.AreEqual(1, plan.Tracks.Count);
     }
 
     [TestMethod]
@@ -232,8 +256,24 @@ public class PrerenderCssTests
         var plan = Compile(Bm.To(opacity: 0, y: 20), Bm.To(opacity: 1, y: 0), Bm.Tween(0.5, ease: BmEase.Linear), withReduced: true);
         var css = plan.BuildAnimationDeclarations(BmotionPrerenderMotionPolicy.FollowOs);
 
-        StringAssert.Contains(css, ";--bm-a:bm-transform-2 500ms linear 0ms 1 normal backwards,bm-opacity-2 500ms linear 0ms 1 normal backwards");
+        StringAssert.Contains(css, ";--bm-af:bm-transform-2 500ms linear 0ms 1 normal backwards,bm-opacity-2 500ms linear 0ms 1 normal backwards");
         StringAssert.Contains(css, ";--bm-ar:bm-opacity-2 500ms linear 0ms 1 normal backwards");
+        Assert.IsFalse(css.Contains("--bm-a:"), css);
+    }
+
+    [TestMethod]
+    public void FixedPolicies_DeclareOnlyTheirOwnList()
+    {
+        var plan = Compile(Bm.To(opacity: 0, y: 20), Bm.To(opacity: 1, y: 0), Bm.Tween(0.5, ease: BmEase.Linear), withReduced: true);
+
+        // Nested under an element that follows the OS preference, a fixed-policy element must not
+        // pick up that element's reduced list: it declares nothing the stylesheet would read as one.
+        foreach (var policy in new[] { BmotionPrerenderMotionPolicy.Full, BmotionPrerenderMotionPolicy.Reduced })
+        {
+            var css = plan.BuildAnimationDeclarations(policy);
+            StringAssert.StartsWith(css, ";--bm-a:");
+            Assert.IsFalse(css.Contains("--bm-ar") || css.Contains("--bm-af"), css);
+        }
     }
 
     [TestMethod]

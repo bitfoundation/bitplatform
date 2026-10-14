@@ -926,12 +926,14 @@ builder.Services.AddBitBmotionServices(o => o.Prerender = BmPrerenderMode.Animat
 | `Animate` | The resting state plus the enter animation compiled to **pure CSS**, playing the moment the HTML arrives | On WebAssembly it continues the CSS animation from where it got to; elsewhere it lands at rest. Never replayed |
 
 Blazor doesn't hydrate prerendered markup - the interactive renderer throws it away and renders
-every component again. That is why `Final`/`Animate` also affect the takeover: the prerendering
-pass persists a marker through `PersistentComponentState`, and elements mounting in the runtime's
-first render render straight into their resting state instead of jumping back to `Initial` and
-playing their enter a second time. Elements that mount later (after data loads, on navigation) are
-new content and enter normally. An enter animation that repeats forever has no resting state, so
-the runtime restarts it.
+every component again. That is why `Final`/`Animate` also affect the takeover: every element
+prerendered at rest inside an interactive island persists an entry through
+`PersistentComponentState` (to that island's runtime), and an element mounting in the runtime's
+first render claims one and renders straight into its resting state instead of jumping back to
+`Initial` and playing its enter a second time. Entries are matched by what the element looks like at
+rest, so content that only exists once interactive finds none and enters normally, as do elements
+that mount later (after data loads, on navigation). An enter animation that repeats forever has no
+resting state, so the runtime restarts it.
 
 How `Animate` works, and what it covers:
 
@@ -943,7 +945,7 @@ How `Animate` works, and what it covers:
   origins included), `delayChildren`, `BeforeChildren`, `TransitionSpeed`, loops and mirrors, and
   keyframe sequences of up to 6 evenly spaced frames all compile. So do transforms, opacity, colours
   (when `Initial` gives a starting colour), sizes, filters, shadows and path drawing.
-- Anything CSS can't play faithfully - inertia, arcs, springs with initial velocity, custom `times`,
+- Anything CSS can't play faithfully - inertia, arcs, springs with initial velocity, unevenly spaced `times`,
   differing per-segment `eases`, `RepeatDelay`, `BmRepeatType.Reverse`, `AfterChildren`, transform
   components with different transitions - renders at rest instead. An SVG `d` morph can't be served
   at rest at all, so that element keeps the `Initial` behaviour.

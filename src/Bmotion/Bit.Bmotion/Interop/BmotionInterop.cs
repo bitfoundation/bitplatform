@@ -51,31 +51,33 @@ public sealed class BmotionInterop : IBmotionInterop
     }
 
     /// <summary>
-    /// How long the prerendered page's CSS animations have been running: the time since the page
-    /// first painted, which is when animations in parsed markup start. Synchronous, so WebAssembly only.
+    /// How long the CSS animation of the prerendered element with id <paramref name="elementId"/>
+    /// has been running - read off the element itself, which is still in the DOM while the runtime
+    /// renders the markup that replaces it, so it is right however late that markup arrived
+    /// (streamed, or brought in by enhanced navigation). Synchronous, so WebAssembly only.
     /// </summary>
     [UnconditionalSuppressMessage("Trimming", "IL2026",
-        Justification = "Deserializes only JsonElement and double, which System.Text.Json handles without reflection over user types.")]
+        Justification = "Deserializes only JsonElement, which System.Text.Json handles without reflection over user types.")]
     [UnconditionalSuppressMessage("AOT", "IL3050",
-        Justification = "Deserializes only JsonElement and double, which need no runtime code generation.")]
-    public double? GetPrerenderedAnimationElapsedMs()
+        Justification = "Deserializes only JsonElement, which needs no runtime code generation.")]
+    public double? GetPrerenderedAnimationElapsedMs(string elementId)
     {
         if (_js is not IJSInProcessRuntime js) return null;
         try
         {
-            double? firstPaint = null;
-            var paints = js.Invoke<System.Text.Json.JsonElement>("performance.getEntriesByType", "paint");
-            foreach (var entry in paints.EnumerateArray())
-            {
-                if (entry.TryGetProperty("startTime", out var start) && start.TryGetDouble(out var ms))
-                    firstPaint = firstPaint is null ? ms : Math.Min(firstPaint.Value, ms);
-            }
-            if (firstPaint is null) return null;
-            return Math.Max(0, js.Invoke<double>("performance.now") - firstPaint.Value);
+            using var element = js.Invoke<IJSInProcessObjectReference>("document.getElementById", elementId);
+            using var animations = element.Invoke<IJSInProcessObjectReference>("getAnimations");
+            // Every animation in the element's list started when the element did; a local time
+            // counts from there, delay included - the same origin the prerendered delays use.
+            var timing = animations.Invoke<System.Text.Json.JsonElement>("0.effect.getComputedTiming");
+            return timing.TryGetProperty("localTime", out var local) && local.TryGetDouble(out var ms)
+                ? Math.Max(0, ms)
+                : null;
         }
         catch
         {
-            // Unknown elapsed time just means the element lands at rest instead of continuing.
+            // No such element, or no animation still playing on it: there is nothing to continue,
+            // so the element lands at rest.
             return null;
         }
     }

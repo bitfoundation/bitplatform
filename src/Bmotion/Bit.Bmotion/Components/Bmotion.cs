@@ -377,11 +377,16 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     // attached. _restsAtMount: the element may render at rest, pending CompileRestPlan. _restPlan: the
     // resting state it renders instead of Initial - statically, or when the runtime replaces
     // prerendered markup (_takenOverAtRest), where the enter animation is skipped.
+    // _prerenderSignature/_prerenderOrdinal: the entry the prerendering pass persists for the element.
+    // _prerenderedId: the id of the prerendered markup the runtime took the element over from.
     private BmPrerenderMode _prerenderMode;
     private bool _isStaticRender;
     private bool _restsAtMount;
     private BmotionPrerenderPlan? _restPlan;
     private bool _takenOverAtRest;
+    private string? _prerenderSignature;
+    private int? _prerenderOrdinal;
+    private string? _prerenderedId;
 
     // ════════════════════════════════════════════════════════════════════════════
     // Rendering
@@ -486,6 +491,16 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // conflicts (CSS last-declaration-wins). Track the merge here to detect a consumer-driven
         // style rewrite on later renders (see OnAfterRenderAsync).
         var motionStyle = BuildInitialStyle();
+        // A changed consumer style makes Blazor rewrite the whole attribute. The continued CSS
+        // animation the runtime took over (BuildPrerenderAnimation) must not go with it: its delay
+        // was computed for the first render, so writing it again would replay it from back there.
+        if (_restingStyleCache != null && _injected && authorStyle != _lastAuthorStyle)
+        {
+            motionStyle = _initialStyleCache = _restingStyleCache;
+            _restingStyleCache = null;
+        }
+        _injected = true;
+        _lastAuthorStyle = authorStyle;
         _pendingStyle = string.IsNullOrEmpty(authorStyle) ? motionStyle : motionStyle + authorStyle;
 
         // Auto-inject pathLength="1" (unless authored) so normalized [0,1] dasharray coordinates
@@ -501,13 +516,27 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // then on), so compute it once and reuse the cached string on subsequent renders.
         if (_initialStyleCache != null) return _initialStyleCache;
         CompileRestPlan();
-        var style = _restPlan is { } plan
-            ? plan.SettledStyle + BuildPrerenderAnimation(plan)
-            : ResolveInitialProps()?.ToCssStyleString(TransformTemplate) ?? string.Empty;
-        if (_isStaticRender && WhileInView != null) style += BuildNoScriptInView();
+        string style;
+        if (_restPlan is { } plan)
+        {
+            style = plan.SettledStyle;
+            var animation = BuildPrerenderAnimation(plan);
+            if (_takenOverAtRest && animation.Length > 0) _restingStyleCache = style;
+            style += animation;
+        }
+        else
+        {
+            style = ResolveInitialProps()?.ToCssStyleString(TransformTemplate) ?? string.Empty;
+        }
+        if (_isStaticRender && _prerenderMode != BmPrerenderMode.Initial && WhileInView != null) style += BuildNoScriptInView();
         return _initialStyleCache = style;
     }
     private string? _initialStyleCache;
+    // The taken-over element's style without the continued CSS animation, the consumer's style last
+    // injected, and whether anything has been injected yet (see PlanInjection).
+    private string? _restingStyleCache;
+    private string? _lastAuthorStyle;
+    private bool _injected;
 
     private BmProps? ResolveInitialProps()
     {
@@ -531,9 +560,12 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     private void PlanPrerender()
     {
         _prerenderMode = Prerender ?? Options.Prerender;
-        if (_prerenderMode == BmPrerenderMode.Initial) return;
-
         _isStaticRender = DetectStaticRender();
+        // Every element mounting in the runtime takes part, whatever its mode: the first one to
+        // mount marks the render that replaces the prerendered markup.
+        if (!_isStaticRender) PrerenderState.NoteMount();
+
+        if (_prerenderMode == BmPrerenderMode.Initial) return;
         if (!_isStaticRender && !PrerenderState.IsHydrating) return;
 
         // A scroll timeline drives the target from scroll position, and its starting point is Initial.
@@ -556,23 +588,54 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             ResolveInitialProps()?.ToJsDictionary(), enter.Props.ToJsDictionary(), enter.Full, enter.Reduced, TransformTemplate);
         if (plan is null) return;
 
+        // An animation that repeats forever never comes to rest, so there is nothing to take over
+        // at: the runtime restarts it as if nothing had been prerendered.
+        var signature = BmotionPrerenderState.Signature(_prerenderMode, plan.SettledStyle);
         if (_isStaticRender)
         {
             _restPlan = plan;
-            PrerenderState.MarkPrerendered(PersistPrerenderMarkerAsync);
+            if (!plan.IsInfinite && MayBecomeInteractive())
+            {
+                _prerenderSignature = signature;
+                _prerenderOrdinal = PrerenderState.MarkPrerendered(signature, PersistPrerenderEntryAsync);
+            }
         }
-        else if (!plan.IsInfinite)
+        else if (!plan.IsInfinite && PrerenderState.Claim(signature) is { } prerenderedId)
         {
-            // An animation that repeats forever never comes to rest, so there is nothing to take
-            // over at: the runtime restarts it as if nothing had been prerendered.
+            // Only an element the prerendering pass actually rendered at rest is taken over at rest;
+            // content that exists only once interactive finds no entry and enters normally.
             _restPlan = plan;
             _takenOverAtRest = true;
+            _prerenderedId = prerenderedId;
         }
     }
 
     // A method of the component rather than a lambda: Blazor infers which interactive runtime the
-    // persisted state is for from the component that registered the callback.
-    private Task PersistPrerenderMarkerAsync() => PrerenderState.PersistMarkerAsync();
+    // persisted state is for from the component that registered the callback. _id is read here, at
+    // persist time, because the id the markup carries is settled only once the element has rendered.
+    private Task PersistPrerenderEntryAsync()
+        => _prerenderOrdinal is int ordinal
+            ? PrerenderState.PersistEntry(_prerenderSignature!, ordinal, _id)
+            : Task.CompletedTask;
+
+    /// <summary>
+    /// Whether the prerendered element will be rendered again by an interactive runtime - false for
+    /// static SSR content outside any interactive island, which nothing takes over.
+    /// </summary>
+    private bool MayBecomeInteractive()
+    {
+#if NET9_0_OR_GREATER
+        try
+        {
+            return AssignedRenderMode is not null;
+        }
+        catch
+        {
+            // A renderer that reports no render mode (a test renderer, say): assume it might.
+        }
+#endif
+        return true;
+    }
 
     private bool DetectStaticRender()
     {
@@ -611,8 +674,11 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             var props = Variants?.Get(name, Custom) ?? VariantCtx.Variants?.Get(name, Custom);
             if (props is null) return null;
             // Reduced motion drops the stagger delay, exactly as BuildEffectiveTransitionWithDelay does.
-            var reduced = BuildReducedTransition(BuildNormalTransition(props));
-            var full = BuildNormalTransition(props) ?? new BmotionTransitionConfig();
+            // The reduced transition animates its retained properties with the normal one itself,
+            // so the delay goes on a copy.
+            var normal = BuildNormalTransition(props);
+            var reduced = BuildReducedTransition(normal);
+            var full = normal?.Clone() ?? new BmotionTransitionConfig();
             double delay = VariantCtx.GetChildDelay(_variantChildIndex);
             if (delay > 0) full.Delay += delay;
             return (props, full, reduced);
@@ -622,8 +688,8 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
 
     /// <summary>
     /// The declarations that play the prerendered CSS animation: from the start in the prerendering
-    /// pass, or from wherever it has got to when the runtime takes over (WebAssembly can read that
-    /// synchronously; elsewhere the element just lands at rest).
+    /// pass, or from wherever the prerendered markup's animation has got to when the runtime takes
+    /// over (WebAssembly can read that synchronously; elsewhere the element just lands at rest).
     /// </summary>
     private string BuildPrerenderAnimation(BmotionPrerenderPlan plan)
     {
@@ -632,8 +698,11 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         double elapsedMs = 0;
         if (_takenOverAtRest)
         {
-            if (PrerenderState.ElapsedMs is not double elapsed) return string.Empty;
-            elapsedMs = elapsed;
+            double? elapsed;
+            try { elapsed = Interop.GetPrerenderedAnimationElapsedMs(_prerenderedId!); }
+            catch { elapsed = null; }
+            if (elapsed is not double known) return string.Empty;
+            elapsedMs = known;
         }
         var declarations = plan.BuildAnimationDeclarations(PrerenderMotionPolicy(), elapsedMs);
         // Closed with ';' because the consumer's own style is appended straight after.

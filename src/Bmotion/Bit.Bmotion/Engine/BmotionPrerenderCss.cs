@@ -55,7 +55,8 @@ internal sealed class BmotionPrerenderPlan
 
     /// <summary>
     /// The custom-property declarations that hook the element up to the library stylesheet: the
-    /// animation lists and every keyframe value they reference. Empty when nothing animates.
+    /// animation lists, the easings they share and every keyframe value they reference. Empty when
+    /// nothing animates.
     /// <para>
     /// <paramref name="elapsedMs"/> continues the animation from that far in - used when the runtime
     /// takes over an element whose prerendered animation is still playing. Animations that would
@@ -64,48 +65,91 @@ internal sealed class BmotionPrerenderPlan
     /// </summary>
     public string BuildAnimationDeclarations(BmotionPrerenderMotionPolicy policy, double elapsedMs = 0)
     {
-        var used = new HashSet<BmotionPrerenderTrack>();
-        var full = policy == BmotionPrerenderMotionPolicy.Reduced ? null : BuildList(static t => t.Full, elapsedMs, used);
-        var reduced = policy == BmotionPrerenderMotionPolicy.Full ? null : BuildList(static t => t.Reduced, elapsedMs, used);
+        var full = policy == BmotionPrerenderMotionPolicy.Reduced ? null : Playing(static t => t.Full, elapsedMs);
+        var reduced = policy == BmotionPrerenderMotionPolicy.Full ? null : Playing(static t => t.Reduced, elapsedMs);
+        if (full is null && reduced is null) return string.Empty;
 
+        var easings = ShareEasings(full, reduced);
         var sb = new StringBuilder();
+        // Each policy writes its own variables, and the stylesheet reads only the ones the element's
+        // own style attribute declares - never a list inherited from an animated ancestor whose
+        // policy differs.
         switch (policy)
         {
-            case BmotionPrerenderMotionPolicy.Full when full is not null:
-                AppendDeclaration(sb, BmotionPrerenderCss.AnimationVariable, full);
+            case BmotionPrerenderMotionPolicy.Full:
+                AppendDeclaration(sb, BmotionPrerenderCss.AnimationVariable, BuildList(full!, elapsedMs, easings));
                 break;
-            case BmotionPrerenderMotionPolicy.Reduced when reduced is not null:
-                AppendDeclaration(sb, BmotionPrerenderCss.AnimationVariable, reduced);
-                break;
-            case BmotionPrerenderMotionPolicy.FollowOs when full is not null || reduced is not null:
-                AppendDeclaration(sb, BmotionPrerenderCss.AnimationVariable, full ?? "none");
-                AppendDeclaration(sb, BmotionPrerenderCss.ReducedAnimationVariable, reduced ?? "none");
+            case BmotionPrerenderMotionPolicy.Reduced:
+                AppendDeclaration(sb, BmotionPrerenderCss.AnimationVariable, BuildList(reduced!, elapsedMs, easings));
                 break;
             default:
-                return string.Empty;
+                AppendDeclaration(sb, BmotionPrerenderCss.FollowOsAnimationVariable, full is null ? "none" : BuildList(full, elapsedMs, easings));
+                AppendDeclaration(sb, BmotionPrerenderCss.ReducedAnimationVariable, reduced is null ? "none" : BuildList(reduced, elapsedMs, easings));
+                break;
         }
+
+        foreach (var (easing, variable) in easings)
+            AppendDeclaration(sb, variable, easing);
 
         foreach (var track in Tracks)
         {
-            if (!used.Contains(track)) continue;
+            if (!Plays(full, track) && !Plays(reduced, track)) continue;
             for (int i = 0; i < track.Frames.Length; i++)
                 AppendDeclaration(sb, BmotionPrerenderCss.FrameVariable(track.CssProperty, i), track.Frames[i]);
         }
         return sb.ToString();
     }
 
-    private string? BuildList(Func<BmotionPrerenderTrack, BmotionPrerenderTiming?> select, double elapsedMs, HashSet<BmotionPrerenderTrack> used)
+    /// <summary>The tracks still playing <paramref name="elapsedMs"/> in, with their timing; <c>null</c> when none is.</summary>
+    private List<PlayingTrack>? Playing(Func<BmotionPrerenderTrack, BmotionPrerenderTiming?> select, double elapsedMs)
     {
-        StringBuilder? list = null;
+        List<PlayingTrack>? playing = null;
         foreach (var track in Tracks)
         {
             if (select(track) is not { } timing) continue;
             if (!timing.IsInfinite && timing.EndMs <= elapsedMs) continue;
-            used.Add(track);
-            list = list is null ? new StringBuilder() : list.Append(',');
+            (playing ??= []).Add(new PlayingTrack(track, timing));
+        }
+        return playing;
+    }
+
+    private static bool Plays(List<PlayingTrack>? playing, BmotionPrerenderTrack track)
+        => playing?.Exists(p => ReferenceEquals(p.Track, track)) ?? false;
+
+    /// <summary>
+    /// A long easing (a sampled <c>linear()</c> curve) that several animations play with - the
+    /// properties sharing a spring, or one property in both motion lists - is declared once in a
+    /// custom property and referenced, instead of being repeated in every animation.
+    /// </summary>
+    private static Dictionary<string, string> ShareEasings(List<PlayingTrack>? full, List<PlayingTrack>? reduced)
+    {
+        var counts = new Dictionary<string, int>(StringComparer.Ordinal);
+        foreach (var playing in (List<PlayingTrack>?[])[full, reduced])
+        {
+            if (playing is null) continue;
+            foreach (var (_, timing) in playing)
+                if (timing.Easing.Length > MinSharedEasingLength)
+                    counts[timing.Easing] = counts.GetValueOrDefault(timing.Easing) + 1;
+        }
+
+        var shared = new Dictionary<string, string>(StringComparer.Ordinal);
+        foreach (var (easing, count) in counts)
+            if (count > 1) shared[easing] = BmotionPrerenderCss.EasingVariable(shared.Count);
+        return shared;
+    }
+
+    // Below this, a reference (var(--bm-e0) plus the declaration it reads) saves nothing.
+    private const int MinSharedEasingLength = 32;
+
+    private static string BuildList(List<PlayingTrack> playing, double elapsedMs, Dictionary<string, string> easings)
+    {
+        var list = new StringBuilder();
+        foreach (var (track, timing) in playing)
+        {
+            if (list.Length > 0) list.Append(',');
             list.Append(BmotionPrerenderCss.KeyframesName(track.CssProperty, track.Frames.Length))
                 .Append(' ').Append(BmotionCssFormat.Num(timing.DurationMs)).Append("ms")
-                .Append(' ').Append(timing.Easing)
+                .Append(' ').Append(easings.TryGetValue(timing.Easing, out var variable) ? $"var({variable})" : timing.Easing)
                 .Append(' ').Append(BmotionCssFormat.Num(timing.DelayMs - elapsedMs)).Append("ms")
                 .Append(' ').Append(timing.IsInfinite ? "infinite" : timing.Iterations.ToString(System.Globalization.CultureInfo.InvariantCulture))
                 .Append(timing.Alternate ? " alternate" : " normal")
@@ -113,11 +157,13 @@ internal sealed class BmotionPrerenderPlan
                 // resting state first). Not forwards: the resting state is the inline style itself.
                 .Append(" backwards");
         }
-        return list?.ToString();
+        return list.ToString();
     }
 
-    // The leading ';' is what the stylesheet's attribute selectors key on, so a variable can never be
-    // mistaken for the tail of a longer one (--bm-nj-color vs --bm-nj-background-color).
+    private readonly record struct PlayingTrack(BmotionPrerenderTrack Track, BmotionPrerenderTiming Timing);
+
+    // The leading ';' is what the no-script selectors key on, so a variable can never be mistaken
+    // for the tail of a longer one (--bm-nj-color vs --bm-nj-background-color).
     private static void AppendDeclaration(StringBuilder sb, string name, string value)
         => sb.Append(';').Append(name).Append(':').Append(value);
 }
@@ -140,10 +186,13 @@ internal static class BmotionPrerenderCss
     /// <summary>The most keyframes one prerendered property can have (the stylesheet's upper bound).</summary>
     internal const int MaxFrames = 6;
 
-    /// <summary>Holds the element's <c>animation</c> list.</summary>
+    /// <summary>Holds the element's <c>animation</c> list when its motion policy is fixed.</summary>
     internal const string AnimationVariable = "--bm-a";
 
-    /// <summary>Holds the <c>animation</c> list used under <c>prefers-reduced-motion: reduce</c>.</summary>
+    /// <summary>Holds the full <c>animation</c> list of an element that follows the OS motion preference.</summary>
+    internal const string FollowOsAnimationVariable = "--bm-af";
+
+    /// <summary>Holds the list that element plays under <c>prefers-reduced-motion: reduce</c>.</summary>
     internal const string ReducedAnimationVariable = "--bm-ar";
 
     /// <summary>
@@ -168,6 +217,9 @@ internal static class BmotionPrerenderCss
 
     internal static string FrameVariable(string cssProperty, int frame) => $"--bm-{cssProperty}-{frame}";
 
+    /// <summary>Carries an easing several of an element's animations share.</summary>
+    internal static string EasingVariable(int index) => $"--bm-e{index}";
+
     /// <summary>Carries the value a property takes when scripting is off (see <see cref="BuildNoScriptDeclarations"/>).</summary>
     internal static string NoScriptVariable(string cssProperty) => $"--bm-nj-{cssProperty}";
 
@@ -181,10 +233,15 @@ internal static class BmotionPrerenderCss
         sb.Append("/* Bit.Bmotion prerender stylesheet. Lets elements prerendered with BmPrerenderMode.Animate play their enter\n");
         sb.Append("   animation before the runtime loads. Generated by BmotionPrerenderCss.BuildStylesheet - edit that, not this file. */\n");
 
-        var hook = $"[style*=\";{AnimationVariable}:\"]";
+        // Keyed on the name and colon only, with no leading ';': once the engine writes a style
+        // through the CSSOM, the browser reserializes the attribute as "name: value" - and the
+        // animation has to keep playing. Neither name is the tail of another variable's.
+        var hook = $"[style*=\"{AnimationVariable}:\"]";
+        var followOsHook = $"[style*=\"{FollowOsAnimationVariable}:\"]";
         sb.Append(hook).Append("{animation:var(").Append(AnimationVariable).Append(")}\n");
-        sb.Append("@media (prefers-reduced-motion:reduce){").Append(hook)
-          .Append("{animation:var(").Append(ReducedAnimationVariable).Append(",var(").Append(AnimationVariable).Append("))}}\n");
+        sb.Append(followOsHook).Append("{animation:var(").Append(FollowOsAnimationVariable).Append(")}\n");
+        sb.Append("@media (prefers-reduced-motion:reduce){").Append(followOsHook)
+          .Append("{animation:var(").Append(ReducedAnimationVariable).Append(")}}\n");
 
         // Without scripting nothing can ever reveal a WhileInView element, so show it as it would be in view.
         sb.Append("@media (scripting:none){");
@@ -537,60 +594,34 @@ internal static class BmotionPrerenderCss
     /// <summary>The CSS timing for one transition, or <c>null</c> when CSS can't play it faithfully.</summary>
     internal static BmotionPrerenderTiming? BuildTiming(BmotionTransitionConfig config, int frameCount)
     {
-        if (config.Type == BmotionTransitionType.Inertia) return null;
-        if (config.RepeatDelay > 0) return null;
-        // Reverse plays forwards once and backwards after that - two different animations.
-        if (config.RepeatType == BmRepeatType.Reverse && (config.IsInfiniteRepeat || config.Repeat > 0)) return null;
-        // Keyframe offsets are the stylesheet's evenly spaced percentages.
-        if (config.Times is { } times && !IsEvenlySpaced(times)) return null;
-        if (!double.IsFinite(config.Delay)) return null;
+        if (!BmotionBrowserTiming.CanPlay(config)) return null;
 
-        double durationMs;
-        string easing;
+        Func<double, double>? ease = null;
         if (config.Type == BmotionTransitionType.Spring)
         {
-            // A spring's curve depends on the distance it covers once it has initial velocity, and
-            // a keyframe sequence isn't a spring's to shape.
-            if (frameCount != 2 || config.Velocity != 0) return null;
-            if (BmotionAnimationEngine.SampleSpringProgress(config) is not { } sampled) return null;
-            durationMs = sampled.DurationMs;
-            easing = BmotionAnimationEngine.BuildLinearEasing(sampled.Samples);
+            // A spring's curve covers the whole move; a keyframe sequence isn't a spring's to shape.
+            if (frameCount != 2) return null;
         }
         else
         {
-            if (!(config.Duration > 0) || !double.IsFinite(config.Duration)) return null;
             // CSS eases every keyframe segment alike, which is also what a single ease means to the
             // keyframes driver; differing per-segment eases can't be expressed.
             if (config.Eases is { Length: > 1 } && frameCount > 2) return null;
-            durationMs = config.Duration * 1000;
-            easing = config.Eases is null && BmEaseFunctions.HasFaithfulCssEasing(config)
-                ? BmEaseFunctions.ToCssString(config)
-                : BmotionAnimationEngine.BuildLinearEasing(Sample(BmEaseFunctions.GetSegmentEases(config, frameCount - 1)[0]));
+            ease = BmEaseFunctions.GetSegmentEases(config, frameCount - 1)[0];
         }
 
+        if (BmotionBrowserTiming.SampleProgress(config, ease) is not { } sampled) return null;
+        // Nothing can ask the browser about linear() support while prerendering, so it is assumed
+        // (springs and curves CSS has no keyword for need it), and an exact keyword is used
+        // wherever one exists.
+        var easing = BmotionBrowserTiming.ChooseEasing(config, sampled.Samples, linearSupported: true, preferKeyword: true);
+        if (easing is null) return null;
+
         return new BmotionPrerenderTiming(
-            durationMs,
+            sampled.DurationMs,
             easing,
             config.Delay * 1000,
             config.IsInfiniteRepeat ? -1 : config.Repeat + 1,
             config.RepeatType == BmRepeatType.Mirror);
-    }
-
-    private static double[] Sample(Func<double, double> ease)
-    {
-        // The same resolution the compositor offload samples tweens at.
-        const int sampleCount = 33;
-        var samples = new double[sampleCount];
-        for (int i = 0; i < sampleCount; i++)
-            samples[i] = ease((double)i / (sampleCount - 1));
-        return samples;
-    }
-
-    private static bool IsEvenlySpaced(double[] times)
-    {
-        if (times.Length < 2) return true;
-        for (int i = 0; i < times.Length; i++)
-            if (Math.Abs(times[i] - ((double)i / (times.Length - 1))) > 1e-6) return false;
-        return true;
     }
 }

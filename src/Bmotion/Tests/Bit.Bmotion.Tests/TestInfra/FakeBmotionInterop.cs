@@ -29,7 +29,14 @@ internal sealed class FakeBmotionInterop : IBmotionInterop
     /// <summary>Value returned by <see cref="GetPrerenderedAnimationElapsedMs"/>.</summary>
     public double? PrerenderedAnimationElapsedMs { get; set; }
 
-    public double? GetPrerenderedAnimationElapsedMs() => PrerenderedAnimationElapsedMs;
+    /// <summary>The prerendered element ids <see cref="GetPrerenderedAnimationElapsedMs"/> was asked about.</summary>
+    public List<string> PrerenderedAnimationQueries { get; } = new();
+
+    public double? GetPrerenderedAnimationElapsedMs(string elementId)
+    {
+        PrerenderedAnimationQueries.Add(elementId);
+        return PrerenderedAnimationElapsedMs;
+    }
 
     /// <summary>Value returned by <see cref="PrefersReducedMotionAsync"/>.</summary>
     public bool PrefersReducedMotion { get; set; }
