@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <title>Belemetry samples (Auto)</title>
+    <link rel="stylesheet" href="_content/Bit.Belemetry.Samples.Core/app.css" />
+    @* One browser script for the whole visit, whether a page runs on a circuit or in WebAssembly. *@
+    <BelemetryScript />
+    <HeadOutlet @rendermode="InteractiveAuto" />
+</head>
+
+<body>
+    <Routes @rendermode="InteractiveAuto" />
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>

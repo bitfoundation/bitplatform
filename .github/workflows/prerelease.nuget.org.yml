@@ -138,6 +138,11 @@ jobs:
     - name: dotnet pack Bmotion
       run: dotnet pack src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj --output . --configuration Release
 
+    - name: dotnet build Belemetry
+      run: dotnet build src/Belemetry/Bit.Belemetry/Bit.Belemetry.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Belemetry
+      run: dotnet pack src/Belemetry/Bit.Belemetry/Bit.Belemetry.csproj --output . --configuration Release
+
     - name: dotnet build CodeAnalyzers
       run: dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack CodeAnalyzer

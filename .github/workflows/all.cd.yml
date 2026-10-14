@@ -59,6 +59,12 @@ jobs:
     uses: ./.github/workflows/bmotion.demo.cd.yml
     secrets: inherit
 
+  belemetry_demo:
+    name: belemetry demo
+    if: inputs.server
+    uses: ./.github/workflows/belemetry.demo.cd.yml
+    secrets: inherit
+
   brouter_demo:
     name: brouter demo
     if: inputs.server

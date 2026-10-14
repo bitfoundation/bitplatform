@@ -1,0 +1,62 @@
+@page "/privacy"
+@implements IDisposable
+@inject IBelemetryConsent Consent
+
+<PageTitle>Privacy - Belemetry samples</PageTitle>
+
+<h1>Privacy settings</h1>
+
+<p>Each feature can be granted or revoked on its own. Revoking one discards its queued data and clears what it stored on this device.</p>
+
+@if (_ready)
+{
+    <p>Decided: @(Consent.IsDecided ? "yes" : "not yet")</p>
+
+    <ul class="features">
+        @foreach (var feature in _features)
+        {
+            <li>
+                <label>
+                    <input type="checkbox" checked="@Consent.IsGranted(feature)" @onchange="e => ToggleAsync(feature, e.Value is true)" />
+                    @feature
+                </label>
+            </li>
+        }
+    </ul>
+}
+else
+{
+    <p>Loading...</p>
+}
+
+@code {
+    private static readonly BelemetryFeatures[] _features =
+    [
+        BelemetryFeatures.Errors, BelemetryFeatures.PageViews, BelemetryFeatures.Interactions, BelemetryFeatures.Performance,
+        BelemetryFeatures.Dependencies, BelemetryFeatures.Sessions, BelemetryFeatures.UserTracking, BelemetryFeatures.Logs,
+        BelemetryFeatures.Traces, BelemetryFeatures.Metrics, BelemetryFeatures.Persistence, BelemetryFeatures.Events,
+    ];
+
+    private bool _ready;
+
+    protected override void OnInitialized() => Consent.Changed += OnConsentChanged;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        await Consent.RefreshAsync();
+        _ready = true;
+        StateHasChanged();
+    }
+
+    private async Task ToggleAsync(BelemetryFeatures feature, bool granted)
+    {
+        if (granted) await Consent.GrantAsync(feature);
+        else await Consent.RevokeAsync(feature);
+    }
+
+    private void OnConsentChanged(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Consent.Changed -= OnConsentChanged;
+}

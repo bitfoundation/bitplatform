@@ -1,0 +1,49 @@
+@* A minimal consent banner. Belemetry sends nothing until the user decides (Consent.Default is None): records are
+   held in memory, then sent for what the user grants and dropped for the rest. The choice is remembered on the device,
+   so the banner only shows on the first visit - and the Privacy page can change it later. *@
+
+@implements IDisposable
+@inject IBelemetryConsent Consent
+
+@if (_ready && Consent.IsDecided is false)
+{
+    <div class="consent-banner" role="dialog" aria-label="Telemetry consent">
+        <p>
+            This sample collects telemetry - errors, page views, clicks and performance - to show what Belemetry does.
+            Nothing is sent until you choose.
+        </p>
+        <div class="consent-actions">
+            <button id="consent-accept" @onclick="AcceptAllAsync">Accept all</button>
+            <button id="consent-essential" @onclick="EssentialOnlyAsync">Diagnostics only</button>
+            <button id="consent-reject" @onclick="RejectAsync">Reject</button>
+        </div>
+    </div>
+}
+
+@code {
+    private bool _ready;
+
+    protected override void OnInitialized() => Consent.Changed += OnConsentChanged;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        // The decision lives in the browser (Server) or is only known after the script started (WebAssembly), so the
+        // banner waits for the first interactive render: a prerendered banner would flash for users who already chose.
+        await Consent.RefreshAsync();
+        _ready = true;
+        StateHasChanged();
+    }
+
+    private async Task AcceptAllAsync() => await Consent.SetAsync(BelemetryFeatures.All);
+
+    // What troubleshooting needs, without the analytics features that describe how someone uses the app.
+    private async Task EssentialOnlyAsync() => await Consent.SetAsync(BelemetryFeatures.Diagnostics);
+
+    private async Task RejectAsync() => await Consent.SetAsync(BelemetryFeatures.None);
+
+    private void OnConsentChanged(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Consent.Changed -= OnConsentChanged;
+}

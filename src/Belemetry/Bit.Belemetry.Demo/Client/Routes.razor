@@ -1,0 +1,11 @@
+<Router AppAssembly="typeof(Routes).Assembly" NotFoundPage="typeof(Pages.NotFoundPage)">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1, h2" />
+    </Found>
+</Router>
+
+@* Connects the browser script (started early by <BelemetryScript /> in App.razor's head) to .NET once
+   the app is interactive: consent and the session flow both ways, and the WebAssembly pipeline gets
+   its unload flush. Placed once, here, so every page has it; it renders nothing. *@
+<BelemetryInitializer />

@@ -165,5 +165,23 @@
                 </div>
             </text>
         },
+        new()
+        {
+            Title = "Telemetry without the weight",
+            Subtitle = "bit Belemetry · OpenTelemetry for every Blazor app",
+            LinkUrl = Urls.Belemetry,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Belemetry collects page views, web vitals, JS errors and fetch calls in the browser plus ILogger,
+                    Activity and Meter data in .NET, and exports it over OTLP or to Azure Monitor - in WebAssembly,
+                    Server and Hybrid apps, without the OpenTelemetry packages, and with per-feature GDPR consent.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>builder.Services.AddBitBelemetryServices(o =>
+    o.AddOtlpExporter("http://localhost:4318"));</CodeBox>
+                </div>
+            </text>
+        },
     ];
 }

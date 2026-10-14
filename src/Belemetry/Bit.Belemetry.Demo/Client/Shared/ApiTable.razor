@@ -1,0 +1,115 @@
+@implements IDisposable
+@inject IApiReference Api
+@inject PersistentComponentState AppState
+
+@* The API table of a docs page, reflected - never typed out.
+
+   The rows come from the server's catalog of the shipped Bit.Belemetry assembly and its XML
+   documentation (the same one the MCP server's GetBelemetryApiDetails answers from): the member names,
+   their types, the default a freshly constructed options object actually has, and the summary a
+   developer sees in IntelliSense. A table here therefore cannot document an option that does not
+   exist, or a default the library does not have.
+
+   While prerendering, the server reads the catalog directly and the rows travel to the browser in
+   the persisted component state, so the table is in the served HTML and is not fetched a second time
+   when the WebAssembly runtime takes over. *@
+
+<div class="api-table-wrap">
+    @if (_info is null)
+    {
+        <p class="api-loading" role="status">
+            @(_failed ? $"The reference of {TypeName} could not be loaded." : $"Loading the reference of {TypeName}...")
+        </p>
+    }
+    else
+    {
+        <p class="api-title">
+            <code>@_info.Name</code>
+            <span class="api-kind">@_info.Kind</span>
+        </p>
+
+        @if (string.IsNullOrWhiteSpace(_info.Summary) is false)
+        {
+            <p class="api-summary">@_info.Summary</p>
+        }
+
+        @if (_rows.Length > 0)
+        {
+            <div class="doc-table-wrap">
+                <table class="doc-table api-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">@(_isEnum ? "Value" : "Name")</th>
+                            <th scope="col">@(_isEnum ? "Number" : "Type")</th>
+                            @if (_isEnum is false)
+                            {
+                                <th scope="col">Default</th>
+                            }
+                            <th scope="col">Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var member in _rows)
+                        {
+                            <tr>
+                                <td><code>@member.Name@member.Signature</code></td>
+                                <td>
+                                    @if (_isEnum)
+                                    {
+                                        <code>@member.Default</code>
+                                    }
+                                    else
+                                    {
+                                        <code>@member.Type</code>
+                                    }
+                                </td>
+                                @if (_isEnum is false)
+                                {
+                                    <td>@if (member.Default is not null) { <code>@member.Default</code> }</td>
+                                }
+                                <td>@member.Summary</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    /// <summary>The public Bit.Belemetry type to reflect, e.g. <c>BelemetryConsentOptions</c>.</summary>
+    [Parameter, EditorRequired] public string TypeName { get; set; } = "";
+
+    /// <summary>Which member kinds to list. Defaults to everything a caller uses: properties, parameters, methods, events and enum values.</summary>
+    [Parameter] public string[] Kinds { get; set; } = ["Parameter", "Property", "EnumValue", "Method", "Event"];
+
+    private ApiTypeInfo? _info;
+    private ApiMemberInfo[] _rows = [];
+    private bool _isEnum;
+    private bool _failed;
+    private PersistingComponentStateSubscription _persisting;
+
+    private string Key => $"belemetry-api:{TypeName}";
+
+    protected override async Task OnInitializedAsync()
+    {
+        _persisting = AppState.RegisterOnPersisting(() =>
+        {
+            if (_info is not null) AppState.PersistAsJson(Key, _info);
+            return Task.CompletedTask;
+        });
+
+        if (AppState.TryTakeFromJson<ApiTypeInfo>(Key, out var restored) is false || restored is null)
+        {
+            restored = await Api.GetAsync(TypeName);
+        }
+
+        _info = restored;
+        _failed = restored is null;
+        _isEnum = restored?.Kind == "Enum";
+        _rows = restored is null ? [] : [.. restored.Members.Where(m => Kinds.Contains(m.Kind))];
+    }
+
+    public void Dispose() => _persisting.Dispose();
+}

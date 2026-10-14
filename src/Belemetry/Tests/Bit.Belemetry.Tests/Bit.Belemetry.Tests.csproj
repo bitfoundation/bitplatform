@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>..\..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MSTest" Version="4.5.1" />
+        <PackageReference Include="bunit" Version="2.11.3" />
+        <!-- The OTLP protobuf conformance tests decode Belemetry's hand-written bytes with types generated from the
+             vendored official opentelemetry-proto files (v1.11.1). Messages only: the service stubs are not needed. -->
+        <PackageReference Include="Google.Protobuf" Version="3.35.0" />
+        <PackageReference Include="Grpc.Tools" Version="2.80.0" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Protobuf Include="Protos/**/*.proto" ProtoRoot="Protos" GrpcServices="None" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.Belemetry\Bit.Belemetry.csproj" />
+    </ItemGroup>
+
+</Project>

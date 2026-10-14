@@ -1,0 +1,76 @@
+body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: #1b1b1f;
+    background: #fafafa;
+}
+
+.topbar {
+    display: flex;
+    gap: 1rem;
+    padding: 0.75rem 1.5rem;
+    background: #0065ef;
+}
+
+.topbar a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.topbar a.active {
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+main {
+    max-width: 56rem;
+    padding: 1rem 1.5rem 8rem;
+}
+
+section {
+    margin-bottom: 1.5rem;
+}
+
+button {
+    margin: 0 0.5rem 0.5rem 0;
+    padding: 0.4rem 0.9rem;
+    border: 1px solid #0065ef;
+    border-radius: 4px;
+    color: #0065ef;
+    background: #fff;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #e8f0fe;
+}
+
+[data-belemetry-ignore] {
+    display: inline-block;
+}
+
+.status {
+    padding: 0.5rem 0.75rem;
+    border-left: 3px solid #0065ef;
+    background: #fff;
+}
+
+.features {
+    list-style: none;
+    padding: 0;
+}
+
+.consent-banner {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 1rem 1.5rem;
+    border-top: 1px solid #d0d0d7;
+    background: #fff;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.consent-banner p {
+    margin-top: 0;
+}

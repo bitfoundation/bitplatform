@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <title>Belemetry samples (WebAssembly)</title>
+    <link rel="stylesheet" href="_content/Bit.Belemetry.Samples.Core/app.css" />
+    @* Starts the browser script before the WebAssembly runtime has even downloaded. *@
+    <BelemetryScript />
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+<body>
+    <Routes @rendermode="InteractiveWebAssembly" />
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>

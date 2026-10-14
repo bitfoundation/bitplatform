@@ -1,0 +1,13 @@
+{
+    "profiles": {
+        "Bit.Belemetry.Samples.Server": {
+            "commandName": "Project",
+            "dotnetRunMessages": true,
+            "launchBrowser": true,
+            "applicationUrl": "https://localhost:7391;http://localhost:5391",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        }
+    }
+}

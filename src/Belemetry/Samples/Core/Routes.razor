@@ -1,0 +1,18 @@
+@* The interactive root of every sample. <BelemetryInitializer /> connects the browser script to .NET once the app
+   is interactive: it syncs consent and the user, and (in WebAssembly and MAUI) hands browser records to the .NET
+   pipeline or flushes it on unload. Place it once, here or in the main layout. *@
+
+<BelemetryInitializer />
+
+<Router AppAssembly="typeof(Routes).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="typeof(MainLayout)">
+            <h1>Not found</h1>
+            <p>Nothing lives at this address.</p>
+        </LayoutView>
+    </NotFound>
+</Router>

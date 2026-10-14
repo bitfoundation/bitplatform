@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    <title>Belemetry samples (Server)</title>
+    <link rel="stylesheet" href="_content/Bit.Belemetry.Samples.Core/app.css" />
+    @* The browser script and its configuration, rendered statically into the head: telemetry starts before Blazor
+       boots, so the initial page load, web vitals and early errors are seen too. *@
+    <BelemetryScript />
+    <HeadOutlet @rendermode="InteractiveServer" />
+</head>
+
+<body>
+    <Routes @rendermode="InteractiveServer" />
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>
