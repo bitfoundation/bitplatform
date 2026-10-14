@@ -14,6 +14,11 @@
         <SupportedPlatform Include="browser" />
     </ItemGroup>
 
+    <!-- Hand-written copies of ReleaseVersion, verified against it on build (see Bit.Build.props). -->
+    <ItemGroup>
+        <ReleaseVersionLiteral Include="wwwroot\bit-besql.js" />
+    </ItemGroup>
+
     <ItemGroup>
         <PackageReference Include="Microsoft.JSInterop" Version="8.0.0" Condition="'$(TargetFramework)' == 'net8.0'" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.0" Condition="'$(TargetFramework)' == 'net8.0'" />
