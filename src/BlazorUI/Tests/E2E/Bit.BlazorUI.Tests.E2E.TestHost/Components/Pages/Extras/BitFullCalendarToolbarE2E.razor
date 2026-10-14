@@ -1,0 +1,156 @@
+﻿@page "/e2e/full-calendar/toolbar"
+
+<PageTitle>BitFullCalendar E2E - views, toolbar and lifecycle</PageTitle>
+
+@* The toolbar and the frame around a calendar: the Views it offers (and the bound View clamped into them),
+   HideHeader / HideFilters / HideSettings, the root's HtmlAttributes and Visibility, IsLoading driven by
+   OnDateChange, mounting and unmounting, and a calendar inside a BitModal. "Today" is pinned to Wednesday
+   2025-07-16 10:30. *@
+<E2ESection Id="views-week-day" Title="Views: Week and Day">
+    <BitFullCalendar Id="wd-cal" CultureName="en-US" TimeProvider="Clock" Views="_weekDay" />
+</E2ESection>
+
+<E2ESection Id="views-single" Title="Views: Month only">
+    <BitFullCalendar Id="single-cal" CultureName="en-US" TimeProvider="Clock" Views="_monthOnly" />
+</E2ESection>
+
+<E2ESection Id="views-clamped" Title="Views: Month and Agenda, bound View = Day">
+    <button id="btn-clamped-year" @onclick="() => _clampedView = BitFullCalendarView.Year">View = Year</button>
+    <BitFullCalendar Id="clamped-cal" CultureName="en-US" TimeProvider="Clock" Views="_monthAgenda" @bind-View="_clampedView" />
+    <span id="clamped-view">@_clampedView</span>
+</E2ESection>
+
+<E2ESection Id="hide" Title="HideHeader, HideFilters, HideSettings">
+    <button id="btn-hide-header" @onclick="() => _hideHeader = !_hideHeader">Toggle HideHeader</button>
+    <BitFullCalendar Id="hide-cal" CultureName="en-US" TimeProvider="Clock" HideHeader="_hideHeader" />
+    <BitFullCalendar Id="trim-cal" CultureName="en-US" TimeProvider="Clock" HideFilters HideSettings />
+</E2ESection>
+
+<E2ESection Id="attrs" Title="HtmlAttributes and Visibility">
+    <button id="btn-visibility-hidden" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-visibility-collapsed" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+    <button id="btn-visibility-visible" @onclick="() => _visibility = BitVisibility.Visible">Visible</button>
+    <BitFullCalendar Id="attrs-cal"
+                     CultureName="en-US"
+                     TimeProvider="Clock"
+                     Visibility="_visibility"
+                     HtmlAttributes="_htmlAttributes" />
+    <BitFullCalendar Id="unnamed-cal" CultureName="en-US" TimeProvider="Clock" HideFilters HideSettings Views="_monthOnly" />
+</E2ESection>
+
+<E2ESection Id="loading" Title="IsLoading driven by OnDateChange">
+    <BitFullCalendar Id="loading-cal"
+                     CultureName="en-US"
+                     TimeProvider="Clock"
+                     Events="_loadedEvents"
+                     IsLoading="_isLoading"
+                     OnDateChange="LoadRange" />
+    <button id="btn-finish-load" @onclick="() => _release?.TrySetResult()">Finish loading</button>
+    <span id="loaded">@_loaded</span>
+    <span id="load-count">@_loadCount</span>
+</E2ESection>
+
+<E2ESection Id="motion" Title="Reduced motion and ForceAnimation">
+    <BitFullCalendar Id="motion-cal" CultureName="en-US" TimeProvider="Clock" Events="_events" IsLoading HideFilters HideSettings />
+    <BitFullCalendar Id="motion-fam-cal" CultureName="en-US" TimeProvider="Clock" Events="_events" IsLoading ForceAnimation HideFilters HideSettings />
+</E2ESection>
+
+<E2ESection Id="defaults" Title="DefaultDate, and Views with repeated and unknown entries">
+    <BitFullCalendar Id="default-date-cal" CultureName="en-US" TimeProvider="Clock" DefaultDate="new DateTime(2025, 12, 10)" OnDateChange="args => _defaultDateRange = args.Start.ToString(DateFormat)" />
+    <span id="default-date-range">@_defaultDateRange</span>
+    <BitFullCalendar Id="dupes-cal" CultureName="en-US" TimeProvider="Clock" Views="_dupeViews" />
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Mount and unmount">
+    <button id="btn-mount" @onclick="() => _mounted = !_mounted">Toggle the calendar</button>
+    @if (_mounted)
+    {
+        <BitFullCalendar Id="mounted-cal" CultureName="en-US" TimeProvider="Clock" Events="_events" DefaultView="BitFullCalendarView.Week" />
+    }
+</E2ESection>
+
+<E2ESection Id="modal" Title="Inside a BitModal">
+    <button id="btn-open-modal" @onclick="() => _modalOpen = true">Open the modal</button>
+    <span id="modal-open">@_modalOpen</span>
+    <BitModal @bind-IsOpen="_modalOpen">
+        <div style="width: 900px; padding: 8px;">
+            <BitFullCalendar Id="modal-cal" CultureName="en-US" TimeProvider="Clock" Events="_events" />
+        </div>
+    </BitModal>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly TimeProvider Clock = new PinnedClock(new DateTimeOffset(2025, 7, 16, 10, 30, 0, TimeSpan.Zero));
+
+    private static readonly DateTime Today = new(2025, 7, 16);
+
+    private readonly BitFullCalendarView[] _weekDay = [BitFullCalendarView.Week, BitFullCalendarView.Day];
+    private readonly BitFullCalendarView[] _monthOnly = [BitFullCalendarView.Month];
+    private readonly BitFullCalendarView[] _monthAgenda = [BitFullCalendarView.Month, BitFullCalendarView.Agenda];
+    private readonly BitFullCalendarView[] _dupeViews = [BitFullCalendarView.Day, BitFullCalendarView.Day, (BitFullCalendarView)99, BitFullCalendarView.Week];
+
+    private const string DateFormat = "yyyy-MM-dd";
+    private string? _defaultDateRange;
+
+    private BitFullCalendarView _clampedView = BitFullCalendarView.Day;
+    private bool _hideHeader;
+    private BitVisibility _visibility;
+    private bool _mounted = true;
+    private bool _modalOpen;
+
+    private readonly Dictionary<string, object> _htmlAttributes = new()
+    {
+        ["data-testid"] = "calendar-under-test",
+        ["title"] = "A calendar",
+        ["aria-label"] = "Named by an attribute"
+    };
+
+    private readonly List<BitFullCalendarEvent> _events =
+    [
+        new() { Id = "l1", Title = "Planning", StartDate = Today.AddHours(9), EndDate = Today.AddHours(10), Color = "blue" },
+    ];
+
+    private List<BitFullCalendarEvent> _loadedEvents = [];
+    private bool _isLoading;
+    private string? _loaded;
+    private int _loadCount;
+    private int _loadRequest;
+
+    // A load after the first one waits for the test to release it (#btn-finish-load), so the loading state stays on
+    // screen as long as the test reads it; the first one - the prerender's and the first render's - completes at once.
+    private TaskCompletionSource? _release;
+
+    private async Task LoadRange(BitFullCalendarDateChangeEventArgs args)
+    {
+        // Only the latest request is applied, and only it ends the loading state.
+        var request = ++_loadRequest;
+        _isLoading = true;
+        if (_loadCount > 0)
+        {
+            _release = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            StateHasChanged();
+            await _release.Task;
+        }
+        if (request != _loadRequest) return;
+
+        var events = new List<BitFullCalendarEvent>();
+        for (var day = args.Start.Date; day <= args.End.Date; day = day.AddDays(7))
+        {
+            events.Add(new() { Id = $"load-{day:yyyyMMdd}", Title = $"Loaded {day:MMM d}", StartDate = day.AddHours(10), EndDate = day.AddHours(11), Color = "orange" });
+        }
+
+        _loadedEvents = events;
+        _loadCount++;
+        _loaded = $"{args.Start:yyyy-MM-dd}|{args.End:yyyy-MM-dd}|{events.Count}";
+        _isLoading = false;
+    }
+
+    private sealed class PinnedClock(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+
+        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
+    }
+}

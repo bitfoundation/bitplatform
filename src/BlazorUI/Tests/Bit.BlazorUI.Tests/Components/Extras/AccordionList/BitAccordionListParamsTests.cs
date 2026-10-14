@@ -228,7 +228,7 @@ public class BitAccordionListParamsTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitAccordionListShouldTakeACascadedReadOnlyAndCollapsible()
+    public void BitAccordionListShouldTakeACascadedReadOnly()
     {
         var component = RenderWithParams(new BitAccordionListParams { ReadOnly = true });
 
@@ -285,4 +285,121 @@ public class BitAccordionListParamsTests : BunitTestContext
         Assert.AreEqual(2, component.FindAll(".bit-acd-exp").Count);
         Assert.AreEqual(2, component.FindAll(".bit-acd-sm").Count);
     }
+
+    [TestMethod]
+    public void BitAccordionListShouldTakeACascadedCollapsible()
+    {
+        var component = RenderWithParams(new BitAccordionListParams { Collapsible = false },
+            builder => builder.AddAttribute(2, nameof(BitAccordionList<BitAccordionListItem>.DefaultExpandedKey), "a"));
+
+        Assert.AreEqual(1, component.FindAll(".bit-acd-exp").Count);
+
+        // The last expanded item of a non-collapsible list stays open under its own header's click.
+        component.FindAll(".bit-acd-hdr")[0].Click();
+
+        Assert.AreEqual(1, component.FindAll(".bit-acd-exp").Count);
+        Assert.AreEqual("true", component.FindAll(".bit-acd-hdr")[0].GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldTakeTheCascadedLayoutValues()
+    {
+        var component = RenderWithParams(new BitAccordionListParams
+        {
+            MaxHeight = "100px",
+            TransitionDuration = 250,
+            ExpandOnPrint = true,
+            NoBorder = true,
+            HideExpanderIcon = true,
+        });
+
+        var first = component.FindAll(".bit-acd")[0];
+
+        Assert.IsTrue(first.ClassList.Contains("bit-acd-mxh"));
+        Assert.IsTrue(first.ClassList.Contains("bit-acd-eop"));
+        Assert.IsTrue(first.ClassList.Contains("bit-acd-nbd"));
+        StringAssert.Contains(first.GetAttribute("style"), "--bit-acd-max-h:100px");
+        StringAssert.Contains(first.GetAttribute("style"), "--bit-acd-dur-full:250ms");
+        Assert.AreEqual(0, component.FindAll(".bit-acd-eiw").Count);
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldTakeACascadedExpandedExpanderIconName()
+    {
+        var component = RenderWithParams(new BitAccordionListParams { ExpandedExpanderIconName = "ChevronUp" },
+            builder => builder.AddAttribute(2, nameof(BitAccordionList<BitAccordionListItem>.DefaultExpandedKey), "a"));
+
+        Assert.AreEqual(1, component.FindAll(".bit-acd-exp .bit-icon--ChevronUp").Count);
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldTakeACascadedNoExpanderRotation()
+    {
+        var component = RenderWithParams(new BitAccordionListParams { NoExpanderRotation = true },
+            builder => builder.AddAttribute(2, nameof(BitAccordionList<BitAccordionListItem>.DefaultExpandedKey), "a"));
+
+        Assert.IsFalse(component.FindAll(".bit-acd-eiw")[0].ClassList.Contains("bit-ico--r180"));
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldTakeTheCascadedContentValues()
+    {
+        var component = RenderWithParams(new BitAccordionListParams
+        {
+            LazyContent = true,
+            UnmountOnCollapse = true,
+        }, items: GetItemsWithBodies());
+
+        var panel = () => component.FindAll(".bit-acd-con")[0].TextContent.Trim();
+
+        Assert.AreEqual(string.Empty, panel(), "LazyContent delays the body until the first expansion.");
+
+        component.FindAll(".bit-acd-hdr")[0].Click();
+        Assert.AreEqual("Body A", panel());
+
+        component.FindAll(".bit-acd-hdr")[0].Click();
+        Assert.AreEqual(string.Empty, panel(), "UnmountOnCollapse takes the body out again.");
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldTakeACascadedHiddenUntilFound()
+    {
+        var component = RenderWithParams(new BitAccordionListParams { HiddenUntilFound = true }, items: GetItemsWithBodies());
+
+        var panels = component.FindAll(".bit-acd-con");
+
+        Assert.AreEqual(3, panels.Count);
+        Assert.IsTrue(panels.All(p => p.GetAttribute("hidden") == "until-found"));
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldTakeACascadedNavigableAndNoNavigationLoop()
+    {
+        var component = RenderWithParams(new BitAccordionListParams { Navigable = false, NoNavigationLoop = true });
+
+        // A list that is not navigable registers no key suppression, which is the one observable of Navigable here.
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Extras.setPreventKeys"));
+
+        var list = component.FindComponent<BitAccordionList<BitAccordionListItem>>().Instance;
+
+        Assert.IsFalse(list.Navigable);
+        Assert.IsTrue(list.NoNavigationLoop);
+    }
+
+    [TestMethod]
+    public void BitAccordionListShouldTakeACascadedScrollIntoViewOnExpand()
+    {
+        var component = RenderWithParams(new BitAccordionListParams { ScrollIntoViewOnExpand = true });
+
+        component.FindAll(".bit-acd-hdr")[1].Click();
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Extras.scrollIntoView")));
+    }
+
+    private static List<BitAccordionListItem> GetItemsWithBodies() =>
+    [
+        new() { Key = "a", Title = "Item A", Body = item => builder => builder.AddContent(0, "Body A") },
+        new() { Key = "b", Title = "Item B", Body = item => builder => builder.AddContent(0, "Body B") },
+        new() { Key = "c", Title = "Item C", Body = item => builder => builder.AddContent(0, "Body C") },
+    ];
 }

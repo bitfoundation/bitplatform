@@ -276,6 +276,115 @@ public class BitDatePickerCultureTests : BunitTestContext
 
     #endregion
 
+    #region de-DE, en-US and the invariant culture (GregorianCalendar)
+
+    // A culture of the Gregorian calendar still decides the day its week starts on, the spelling of a date and the
+    // clock a time is written in; every expectation is read off the culture itself, since ICU and NLS spell a pattern
+    // differently (a narrow no-break space before the designator, among others).
+    [TestMethod,
+        DataRow("de-DE"),
+        DataRow("en-US"),
+        DataRow("")
+    ]
+    public void BitDatePickerShouldLayOutAGregorianCultureOnItsOwnWeekAndWriteItsOwnDate(string name)
+    {
+        var culture = CultureInfo.GetCultureInfo(name);
+        DateTimeOffset? value = null;
+
+        var component = Render(culture, Utc(2025, 3, 15), p => p.Bind(x => x.Value, value, v => value = v));
+
+        Assert.AreEqual($"{culture.DateTimeFormat.GetMonthName(3)} 2025", GetMonthTitle(component));
+        Assert.HasCount(31, GetInMonthDays(component));
+
+        var headers = component.FindAll(".bit-dtp-dgh .bit-dtp-wlb");
+
+        // de-DE starts its week on Monday, en-US and the invariant culture on Sunday.
+        Assert.AreEqual(culture.DateTimeFormat.GetDayName(culture.DateTimeFormat.FirstDayOfWeek), headers[0].GetAttribute("aria-label"));
+        // The first of March 2025 is a Saturday.
+        Assert.AreEqual(((int)DayOfWeek.Saturday - (int)culture.DateTimeFormat.FirstDayOfWeek + 7) % 7, GetColumnOfFirstDay(component));
+
+        // None of them reads right to left.
+        Assert.IsFalse(component.Find(".bit-dtp").ClassList.Contains("bit-rtl"));
+
+        GetDayButton(component, "20").Click();
+
+        Assert.AreEqual(Utc(2025, 3, 20), value);
+        Assert.AreEqual(new DateTime(2025, 3, 20).ToString(culture.DateTimeFormat.ShortDatePattern, culture), component.Find(".bit-dtp-inp").GetAttribute("value"));
+    }
+
+    [TestMethod,
+        DataRow("de-DE"),
+        DataRow("en-US"),
+        DataRow("")
+    ]
+    public void BitDatePickerShouldReadADateTypedTheWayTheCultureWritesIt(string name)
+    {
+        var culture = CultureInfo.GetCultureInfo(name);
+        DateTimeOffset? value = null;
+
+        var component = Render(culture, Utc(2025, 3, 15), p =>
+        {
+            p.Add(x => x.AllowTextInput, true);
+            p.Bind(x => x.Value, value, v => value = v);
+        });
+
+        // dd.MM.yyyy under de-DE, M/d/yyyy under en-US, MM/dd/yyyy under the invariant culture.
+        var typed = new DateTime(2025, 4, 2).ToString(culture.DateTimeFormat.ShortDatePattern, culture);
+
+        component.Find(".bit-dtp-inp").Input(typed);
+
+        Assert.AreEqual(Utc(2025, 4, 2), value);
+        Assert.AreEqual(typed, component.Find(".bit-dtp-inp").GetAttribute("value"));
+        Assert.AreEqual($"{culture.DateTimeFormat.GetMonthName(4)} 2025", GetMonthTitle(component));
+    }
+
+    [TestMethod,
+        DataRow("de-DE"),
+        DataRow("en-US"),
+        DataRow("")
+    ]
+    public void BitDatePickerShouldReadATimeTypedInTheClockOfTheCulture(string name)
+    {
+        var culture = CultureInfo.GetCultureInfo(name);
+        DateTimeOffset? value = null;
+
+        var component = Render(culture, Utc(2025, 3, 15), p =>
+        {
+            p.Add(x => x.AllowTextInput, true);
+            p.Add(x => x.ShowTimePicker, true);
+            p.Bind(x => x.Value, value, v => value = v);
+        });
+
+        // A twenty-four hour clock under de-DE and the invariant culture, a twelve hour one with its designator under
+        // en-US: the picker reads the clock the culture writes whatever TimeFormat it shows its own time in.
+        var typed = new DateTime(2025, 3, 20, 14, 5, 0).ToString($"{culture.DateTimeFormat.ShortDatePattern} {culture.DateTimeFormat.ShortTimePattern}", culture);
+
+        component.Find(".bit-dtp-inp").Input(typed);
+
+        Assert.AreEqual(new DateTimeOffset(new DateTime(2025, 3, 20, 14, 5, 0), TimeSpan.Zero), value);
+        Assert.AreEqual("14", component.FindAll(".bit-dtp-tin")[0].GetAttribute("value"));
+        Assert.AreEqual("5", component.FindAll(".bit-dtp-tin")[1].GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldRefuseADateTypedInAnotherCulturesSpelling()
+    {
+        DateTimeOffset? value = null;
+
+        var component = Render(CultureInfo.GetCultureInfo("de-DE"), Utc(2025, 3, 15), p =>
+        {
+            p.Add(x => x.AllowTextInput, true);
+            p.Bind(x => x.Value, value, v => value = v);
+        });
+
+        // The American spelling of the second of April is not a German date.
+        component.Find(".bit-dtp-inp").Input("4/2/2025");
+
+        Assert.IsNull(value);
+    }
+
+    #endregion
+
     private IRenderedComponent<BitDatePicker> Render(CultureInfo culture, DateTimeOffset startingValue, Action<ComponentParameterCollectionBuilder<BitDatePicker>>? more = null)
     {
         return RenderComponent<BitDatePicker>(parameters =>

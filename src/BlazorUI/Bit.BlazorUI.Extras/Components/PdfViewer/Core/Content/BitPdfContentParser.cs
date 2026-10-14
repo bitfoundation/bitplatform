@@ -112,6 +112,12 @@ public sealed class BitPdfContentParser
             {
                 array.Add(ReadArray());
             }
+            // A dictionary inside an array (a property list among the operands of BDC) is one element, not the
+            // delimiters, keys and values it is written with.
+            else if (token is BitPdfCmd { Value: "<<" })
+            {
+                array.Add(ReadDict());
+            }
             else
             {
                 array.Add(token);

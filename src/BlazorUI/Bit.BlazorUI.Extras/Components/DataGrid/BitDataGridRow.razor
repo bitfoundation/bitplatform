@@ -39,12 +39,14 @@
         </div>
     }
 
+    @* aria-expanded is written as a string on both toggles: a bool renders an empty attribute when true and none at all
+       when false, which tells assistive tech neither state. *@
     @if (Grid.HasDetailColumn)
     {
         specialColIndex++;
         <div class="bit-dtg-cell bit-dtg-cell-detail bit-dtg-sticky" style="@Grid.DetailStickyStyle" role="gridcell" aria-colindex="@specialColIndex" @onclick:stopPropagation="true">
             <button disabled="@(Grid.Disabled)" aria-disabled="@(Grid.Disabled ? "true" : null)" type="button" class="bit-dtg-icon-btn" tabindex="@CellControlTabIndex"
-                    @onclick="() => Grid.ToggleDetailAsync(Item)" aria-label="@Grid.Strings.ToggleDetailsLabel" aria-expanded="@Grid.IsDetailExpanded(Item)">
+                    @onclick="() => Grid.ToggleDetailAsync(Item)" aria-label="@Grid.Strings.ToggleDetailsLabel" aria-expanded="@(Grid.IsDetailExpanded(Item) ? "true" : "false")">
                 <span class="@(Grid.IsDetailExpanded(Item) ? null : "bit-dtg-dir-glyph")" aria-hidden="true">@(Grid.IsDetailExpanded(Item) ? "▾" : "▸")</span>
             </button>
         </div>
@@ -185,7 +187,7 @@
                         @onkeydown:stopPropagation="true"
                         disabled="@toggleDisabled"
                         aria-disabled="@(toggleDisabled ? "true" : null)"
-                        aria-label="@Grid.Strings.ToggleChildrenLabel" aria-expanded="@Grid.IsTreeRowExpanded(Item)"
+                        aria-label="@Grid.Strings.ToggleChildrenLabel" aria-expanded="@(Grid.IsTreeRowExpanded(Item) ? "true" : "false")"
                         aria-busy="@(Grid.IsTreeNodeLoading(Item) ? "true" : null)">
                     <span class="@(Grid.IsTreeNodeLoading(Item) || Grid.IsTreeRowExpanded(Item) ? null : "bit-dtg-dir-glyph")" aria-hidden="true">@(Grid.IsTreeNodeLoading(Item) ? "…" : Grid.IsTreeRowExpanded(Item) ? "▾" : "▸")</span>
                 </button>

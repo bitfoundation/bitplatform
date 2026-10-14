@@ -499,6 +499,10 @@
 
         @if (_passwordRequest is not null)
         {
+            // Which request the dialog below was drawn for: the focus is only handed to it once it is on the page (see
+            // OnAfterRenderAsync), since an after-render pass still running from before the request can reach that
+            // point while the render that draws it is yet to come.
+            _passwordDialogRenderedFor = _passwordRequest;
             @* data-bit-esc on the dialog claims the Escape that cancels it (OnPasswordDialogKeyDown, and the box's own
                OnPasswordKeyDown inside it, see Utils.claimEscape), so a dialog the viewer sits in does not close on
                that same press. The dialog is only rendered while it is open, and every plain Escape in it cancels it. *@

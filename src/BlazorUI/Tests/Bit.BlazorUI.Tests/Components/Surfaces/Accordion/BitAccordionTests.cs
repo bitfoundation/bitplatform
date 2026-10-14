@@ -2740,6 +2740,34 @@ public class BitAccordionTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitAccordionShouldNotThrowWhenItIsDisposedWhileACloseIsStillWaitingOnTheBrowser()
+    {
+        // The close of a HiddenUntilFound panel waits for the browser to report its transitions over; a page that
+        // navigates away meanwhile disposes the accordion first, and the answer landing afterwards must find
+        // nothing left to render.
+        var wait = Context.JSInterop.SetupVoid("BitBlazorUI.Accordion.waitForTransitions", _ => true);
+
+        var com = RenderComponent<BitAccordion>(parameters =>
+        {
+            parameters.Add(p => p.HiddenUntilFound, true);
+            parameters.Add(p => p.DefaultIsExpanded, true);
+        });
+
+        com.Find(".bit-acd-hdr").Click();
+
+        Assert.AreEqual(1, wait.Invocations.Count);
+
+        await Context.DisposeComponentsAsync();
+
+        wait.SetVoidResult();
+
+        // A turn of the queue is enough for the continuation to run and stand down; nothing is waited for again.
+        await Task.Yield();
+
+        Assert.AreEqual(1, wait.Invocations.Count);
+    }
+
+    [TestMethod]
     public void BitAccordionShouldKeepASplattedAriaLabel()
     {
         var component = Context.Render(builder =>

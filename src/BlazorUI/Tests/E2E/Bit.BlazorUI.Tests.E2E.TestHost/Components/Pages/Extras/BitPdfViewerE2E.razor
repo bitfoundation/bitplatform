@@ -1,0 +1,360 @@
+﻿@page "/e2e/pdf-viewer"
+@inject NavigationManager Nav
+@inject IWebHostEnvironment Env
+
+<PageTitle>BitPdfViewer E2E</PageTitle>
+
+<h1>BitPdfViewer</h1>
+
+<E2ESection Id="main" Title="Basic, binding, events and public API">
+    <div class="api-bar">
+        <button id="btn-set-page" @onclick="() => _page = 3">Page 3</button>
+        <button id="btn-set-zoom" @onclick="() => _zoom = 1.5">Zoom 1.5</button>
+        <button id="btn-set-rotation" @onclick="() => _rotation = 90">Rotation 90</button>
+        <button id="btn-api-next" @onclick="() => _main!.NextPage()">NextPage</button>
+        <button id="btn-api-prev" @onclick="() => _main!.PrevPage()">PrevPage</button>
+        <button id="btn-api-first" @onclick="() => _main!.FirstPage()">FirstPage</button>
+        <button id="btn-api-last" @onclick="() => _main!.LastPage()">LastPage</button>
+        <button id="btn-api-goto" @onclick="() => _main!.GoToPage(2)">GoToPage 2</button>
+        <button id="btn-api-zoom-in" @onclick="() => _main!.ZoomIn()">ZoomIn</button>
+        <button id="btn-api-zoom-out" @onclick="() => _main!.ZoomOut()">ZoomOut</button>
+        <button id="btn-api-set-zoom" @onclick="() => _main!.SetZoom(2)">SetZoom 2</button>
+        <button id="btn-api-fit-page" @onclick="() => _main!.SetZoomMode(BitPdfZoomMode.FitPage)">FitPage</button>
+        <button id="btn-api-actual" @onclick="() => _main!.SetZoomMode(BitPdfZoomMode.ActualSize)">ActualSize</button>
+        <button id="btn-api-horizontal" @onclick="() => _main!.SetScrollMode(BitPdfScrollMode.Horizontal)">Horizontal</button>
+        <button id="btn-api-spread-odd" @onclick="() => _main!.SetSpreadMode(BitPdfSpreadMode.Odd)">Spread odd</button>
+        <button id="btn-api-pan" @onclick="() => _main!.SetCursorTool(BitPdfCursorTool.Pan)">Pan</button>
+        <button id="btn-api-rotate-cw" @onclick="() => _main!.RotateClockwise()">RotateCW</button>
+        <button id="btn-api-rotate-ccw" @onclick="() => _main!.RotateCounterClockwise()">RotateCCW</button>
+        <button id="btn-api-search" @onclick='() => _main!.Search("keyword")'>Search</button>
+        <button id="btn-api-find-next" @onclick="() => _main!.FindNext()">FindNext</button>
+        <button id="btn-api-find-prev" @onclick="() => _main!.FindPrevious()">FindPrevious</button>
+        <button id="btn-api-clear-search" @onclick="() => _main!.ClearSearch()">ClearSearch</button>
+        <button id="btn-api-bookmarks" @onclick="() => _main!.ShowSidebar(BitPdfSidebar.Bookmarks)">Bookmarks</button>
+        <button id="btn-api-properties" @onclick="() => _main!.ToggleProperties()">Properties</button>
+        <button id="btn-api-presentation" @onclick="() => _main!.TogglePresentationMode()">Presentation</button>
+        <button id="btn-api-download" @onclick="() => _main!.Download()">Download</button>
+        <button id="btn-api-print" @onclick="() => _main!.Print()">Print</button>
+        <button id="btn-api-print-current" @onclick="() => _main!.PrintCurrentPage()">PrintCurrent</button>
+        <button id="btn-api-text" @onclick="ReadText">ExtractText</button>
+        <button id="btn-api-selected" @onclick="ReadSelected">GetSelectedText</button>
+        <button id="btn-api-clear-selection" @onclick="() => _main!.ClearSelection()">ClearSelection</button>
+        <button id="btn-api-info" @onclick="ReadInfo">Info</button>
+        <button id="btn-api-open-bytes" @onclick="OpenBytesAsync">OpenAsync bytes</button>
+        <button id="btn-cancel-download" @onclick="() => _cancelDownload = !_cancelDownload">Cancel download: @_cancelDownload</button>
+        <button id="btn-cancel-print" @onclick="() => _cancelPrint = !_cancelPrint">Cancel print: @_cancelPrint</button>
+    </div>
+    <div>
+        Page: <span id="page-value">@_page</span>
+        Zoom: <span id="zoom-value">@_zoom.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture)</span>
+        Rotation: <span id="rotation-value">@_rotation</span>
+    </div>
+    <div>
+        Loaded: <span id="loaded-count">@_loadedCount</span>
+        Rendered: <span id="rendered-pages">@string.Join(",", _renderedPages.Order())</span>
+        PageChanged: <span id="page-changed">@string.Join(",", _pageChanges)</span>
+        ZoomChanged: <span id="zoom-changed">@_zoomChanges</span>
+        RotationChanged: <span id="rotation-changed">@string.Join(",", _rotationChanges)</span>
+        Sidebar: <span id="sidebar-changed">@string.Join(",", _sidebarChanges)</span>
+        Progress: <span id="progress">@_progressSeen</span>
+        Error: <span id="error">@_error</span>
+        Warnings: <span id="warnings">@_warnings</span>
+        FileOpened: <span id="file-opened">@_fileOpened</span>
+        Downloading: <span id="downloading">@_downloading</span>
+        Printing: <span id="printing">@_printing</span>
+    </div>
+    <pre id="api-result">@_apiResult</pre>
+    <BitPdfViewer @ref="_main"
+                  Id="pdv-main"
+                  Source="_mainSource"
+                  AllowDropFile
+                  Height="600px"
+                  @bind-CurrentPage="_page"
+                  @bind-Zoom="_zoom"
+                  @bind-Rotation="_rotation"
+                  OnDocumentLoaded="() => _loadedCount++"
+                  OnPageRendered="p => _renderedPages.Add(p)"
+                  OnPageChanged="p => _pageChanges.Add(p)"
+                  OnZoomChanged="z => _zoomChanges++"
+                  OnRotationChanged="r => _rotationChanges.Add(r)"
+                  OnSidebarChanged="s => _sidebarChanges.Add(s.ToString())"
+                  OnProgress="p => _progressSeen = true"
+                  OnError="e => _error = e"
+                  OnWarnings="w => _warnings = w.Count"
+                  OnFileOpened="s => _fileOpened = s.FileName"
+                  OnDownloading="HandleDownloading"
+                  OnPrinting="HandlePrinting" />
+</E2ESection>
+
+<E2ESection Id="dimensions" Title="Height and Width">
+    <BitPdfViewer Id="pdv-dims" Source="_bytesSource" Height="400px" Width="500px" />
+</E2ESection>
+
+<E2ESection Id="toolbar" Title="Toolbar">
+    <BitPdfViewer Id="pdv-notoolbar" Source="_bytesSource" ShowToolbar="false" Height="300px" />
+    <select id="toolbar-select" @bind="_toolbarName">
+        @foreach (var name in Enum.GetNames<BitPdfToolbarItems>())
+        {
+            <option value="@name">@name</option>
+        }
+    </select>
+    <span id="toolbar-name">@_toolbarName</span>
+    <BitPdfViewer Id="pdv-items" Source="_bytesSource" ToolbarItems="SelectedToolbar" Height="300px">
+        <ToolbarStartTemplate>
+            <button class="tpl-start" @onclick="() => context.LastPage()">Start @context.PageCount</button>
+        </ToolbarStartTemplate>
+        <ToolbarEndTemplate>
+            <span class="tpl-end">End @context.CurrentPage</span>
+        </ToolbarEndTemplate>
+    </BitPdfViewer>
+</E2ESection>
+
+<E2ESection Id="sidebars" Title="Sidebars">
+    <BitPdfViewer Id="pdv-sidebar" Source="_bytesSource" DefaultSidebar="BitPdfSidebar.Thumbnails" Height="450px" MaxRenderedThumbnailCount="10" />
+</E2ESection>
+
+<E2ESection Id="zoom" Title="Zoom">
+    <BitPdfViewer Id="pdv-zoom" Source="_bytesSource" Height="450px" InitialZoomMode="BitPdfZoomMode.FitPage"
+                  ZoomPresets="_presets" MinZoom="0.5" MaxZoom="2" ZoomStep="1.5" />
+    <BitPdfViewer Id="pdv-zoom-actual" Source="_bytesSource" Height="300px" InitialZoomMode="BitPdfZoomMode.ActualSize" ForceAnimation />
+</E2ESection>
+
+<E2ESection Id="layout" Title="Page layout">
+    <BitPdfViewer Id="pdv-layout" Source="_bytesSource" Height="500px" ScrollMode="BitPdfScrollMode.Wrapped" SpreadMode="BitPdfSpreadMode.Odd" CursorTool="BitPdfCursorTool.Pan" />
+</E2ESection>
+
+<E2ESection Id="rendering" Title="Rendering">
+    <BitPdfViewer Id="pdv-canvas" Source="_bytesSource" Height="450px" RenderMode="BitPdfRenderMode.Canvas" BackgroundRendering TextCoalescing="BitPdfTextCoalescing.Compact" MaxRenderedPageCount="2" />
+</E2ESection>
+
+<E2ESection Id="encrypted" Title="Encrypted documents">
+    <BitPdfViewer Id="pdv-encrypted" Source="_encryptedSource" Height="300px" OnError="e => _encryptedError = e" />
+    <div>Error: <span id="encrypted-error">@_encryptedError</span></div>
+    <BitPdfViewer Id="pdv-encrypted-known" Source="_encryptedKnownSource" Height="300px" />
+    <BitPdfViewer Id="pdv-encrypted-callback" Source="_encryptedSource" Height="300px" OnPasswordRequested="RequestPasswordAsync" />
+    <div>Asked: <span id="password-asked">@_passwordAsked</span></div>
+    <BitPdfViewer Id="pdv-encrypted-noprompt" Source="_encryptedSource" Height="200px" ShowPasswordPrompt="false" OnError="e => _noPromptError = e" />
+    <div>No prompt error: <span id="noprompt-error">@_noPromptError</span></div>
+</E2ESection>
+
+<E2ESection Id="states" Title="Loading, empty and error states">
+    <BitPdfViewer Id="pdv-empty" Height="200px" />
+    <BitPdfViewer Id="pdv-empty-tpl" Height="200px">
+        <EmptyTemplate><span class="tpl-empty">Nothing yet</span></EmptyTemplate>
+    </BitPdfViewer>
+    <BitPdfViewer Id="pdv-broken" Source="_brokenSource" Height="200px" OnError="e => _brokenError = e" />
+    <div>Broken: <span id="broken-error">@_brokenError</span></div>
+    <BitPdfViewer Id="pdv-broken-tpl" Source="_brokenSource" Height="200px">
+        <ErrorTemplate><span class="tpl-error">Failed: @context</span></ErrorTemplate>
+    </BitPdfViewer>
+    <BitPdfViewer Id="pdv-missing" Source="_missingSource" Height="200px" OnError="e => _missingError = e" />
+    <div>Missing: <span id="missing-error">@_missingError</span></div>
+    <button id="btn-load-slow" @onclick="LoadSlow">Load slow</button>
+    <BitPdfViewer Id="pdv-slow" Source="_slowSource" Height="200px">
+        <LoadingTemplate><span class="tpl-loading">Loading please wait</span></LoadingTemplate>
+    </BitPdfViewer>
+    <BitPdfViewer Id="pdv-open" Source="_openSource" Height="300px" ToolbarItems="BitPdfToolbarItems.OpenFile | BitPdfToolbarItems.Navigation | BitPdfToolbarItems.Title"
+                  OnFileOpened="HandleFileOpened" MaxOpenFileSize="100000" OnError="e => _openError = e" AllowDropFile />
+    <div>Opened: <span id="opened-name">@_openedName</span> Error: <span id="open-error">@_openError</span></div>
+    <BitPdfViewer Id="pdv-open-self" Height="300px" ToolbarItems="BitPdfToolbarItems.OpenFile | BitPdfToolbarItems.Title" />
+</E2ESection>
+
+<E2ESection Id="localization" Title="Localization">
+    <BitPdfViewer Id="pdv-localized" Source="_bytesSource" Height="300px" Texts="_germanTexts" />
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <span id="disabled-value">@_disabled</span>
+    <BitPdfViewer Id="pdv-disabled" Source="_bytesSource" Height="300px" Disabled="_disabled" DefaultSidebar="BitPdfSidebar.Bookmarks"
+                  @onclick="() => _disabledClicks++" @onkeydown="() => _disabledKeys++" @onmouseover="() => _disabledHovers++" />
+    <div>Clicks: <span id="disabled-clicks">@_disabledClicks</span> Keys: <span id="disabled-keys">@_disabledKeys</span> Hovers: <span id="disabled-hovers">@_disabledHovers</span></div>
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <BitParams Parameters="_viewerParams">
+        <BitPdfViewer Id="pdv-cascaded" Source="_bytesSource" />
+        <BitPdfViewer Id="pdv-cascaded-own" Source="_bytesSource" ToolbarItems="BitPdfToolbarItems.All" />
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style and Class">
+    <BitPdfViewer Id="pdv-style" Source="_bytesSource" Height="300px" Style="border-color: rgb(255, 99, 71); margin-top: 7px;" Class="custom-class" />
+    <BitPdfViewer Id="pdv-styles" Source="_bytesSource" Height="300px" DefaultSidebar="BitPdfSidebar.Thumbnails"
+                  Classes="@(new() { Root = "c-root", Toolbar = "c-toolbar", ToolbarButton = "c-button", Title = "c-title", Body = "c-body", Thumbnails = "c-thumbs", Thumbnail = "c-thumb", Surface = "c-surface", Page = "c-page" })"
+                  Styles="@(new() { Root = "outline: 3px solid rgb(1, 1, 1);", Toolbar = "background: rgb(2, 2, 2);", ToolbarButton = "color: rgb(3, 3, 3);", Title = "color: rgb(4, 4, 4);", Body = "padding-top: 3px;", Thumbnails = "background: rgb(5, 5, 5);", Thumbnail = "outline: 1px solid rgb(6, 6, 6);", Surface = "background: rgb(7, 7, 7);", Page = "outline: 2px solid rgb(8, 8, 8);" })" />
+    <div id="pdv-vars-host" style="@CssVariablesStyle">
+        <BitPdfViewer Id="pdv-vars" Source="_bytesSource" />
+    </div>
+    <BitPdfViewer Id="pdv-vars-default" Source="_bytesSource" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitPdfViewer Id="pdv-rtl" Dir="BitDir.Rtl" Source="_bytesSource" Height="300px" />
+    <div dir="rtl">
+        <BitPdfViewer Id="pdv-rtl-inherited" Source="_bytesSource" Height="300px" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="base" Title="Visibility, HtmlAttributes and AriaLabel">
+    <button id="btn-visibility" @onclick="CycleVisibility">Cycle visibility</button>
+    <span id="visibility">@_visibility</span>
+    <BitPdfViewer Id="pdv-visibility" Source="_bytesSource" Height="250px" Visibility="_visibility" HtmlAttributes="_attributes" AriaLabel="Quarterly report" />
+</E2ESection>
+
+<E2ESection Id="unmount" Title="Unmount">
+    <button id="btn-toggle-mount" @onclick="() => _mounted = !_mounted">Toggle mount</button>
+    <span id="mounted">@_mounted</span>
+    @if (_mounted)
+    {
+        <BitPdfViewer Id="pdv-unmount" Source="_bytesSource" Height="250px" />
+    }
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string CssVariablesStyle = "--bit-PdfViewer-color: rgb(11, 12, 13); --bit-PdfViewer-background: rgb(21, 22, 23); --bit-PdfViewer-border-color: rgb(1, 2, 3); --bit-PdfViewer-border-width: 4px; --bit-PdfViewer-border-radius: 13px; --bit-PdfViewer-divider-color: rgb(4, 5, 6); --bit-PdfViewer-height: 333px; --bit-PdfViewer-width: 444px; --bit-PdfViewer-toolbar-background: rgb(31, 32, 33); --bit-PdfViewer-button-size: 41px; --bit-PdfViewer-button-radius: 9px; --bit-PdfViewer-field-background: rgb(41, 42, 43); --bit-PdfViewer-field-border-color: rgb(51, 52, 53); --bit-PdfViewer-surface-padding: 27px; --bit-PdfViewer-page-gap: 31px; --bit-PdfViewer-page-background: rgb(61, 62, 63); --bit-PdfViewer-page-filter: invert(1);";
+
+    private BitPdfViewer? _main;
+    private BitPdfSource _mainSource = default!;
+    private BitPdfSource _bytesSource = default!;
+    private BitPdfSource _encryptedSource = default!;
+    private BitPdfSource _encryptedKnownSource = default!;
+    private BitPdfSource _brokenSource = default!;
+    private BitPdfSource _missingSource = default!;
+    private BitPdfSource? _slowSource;
+    private byte[] _sampleBytes = [];
+
+    private int _page = 1;
+    private double _zoom = 1;
+    private int _rotation;
+    private int _loadedCount;
+    private readonly HashSet<int> _renderedPages = [];
+    private readonly List<int> _pageChanges = [];
+    private int _zoomChanges;
+    private readonly List<int> _rotationChanges = [];
+    private readonly List<string> _sidebarChanges = [];
+    private bool _progressSeen;
+    private string? _error;
+    private int? _warnings;
+    private string? _fileOpened;
+    private string? _downloading;
+    private string? _printing;
+    private bool _cancelDownload;
+    private bool _cancelPrint;
+    private string? _apiResult;
+    private string _toolbarName = nameof(BitPdfToolbarItems.All);
+    private BitPdfToolbarItems SelectedToolbar => Enum.Parse<BitPdfToolbarItems>(_toolbarName);
+    private readonly double[] _presets = [0.5, 1, 2];
+    private string? _encryptedError;
+    private int _passwordAsked;
+    private string? _noPromptError;
+    private string? _brokenError;
+    private string? _missingError;
+    private string? _openedName;
+    private BitPdfSource? _openSource;
+
+    // The page drives Source itself once it handles OnFileOpened.
+    private void HandleFileOpened(BitPdfSource source)
+    {
+        _openedName = source.FileName;
+        _openSource = source;
+    }
+    private string? _openError;
+    private bool _disabled = true;
+    private int _disabledClicks;
+    private int _disabledKeys;
+    private int _disabledHovers;
+    private bool _mounted = true;
+    private BitVisibility _visibility = BitVisibility.Visible;
+    private readonly Dictionary<string, object> _attributes = new() { ["data-test"] = "pdv-data", ["title"] = "Viewer title" };
+
+    private void CycleVisibility()
+    {
+        _visibility = _visibility switch
+        {
+            BitVisibility.Visible => BitVisibility.Hidden,
+            BitVisibility.Hidden => BitVisibility.Collapsed,
+            _ => BitVisibility.Visible
+        };
+    }
+
+    private readonly BitPdfViewerTexts _germanTexts = new()
+    {
+        ToolbarAriaLabel = "PDF-Werkzeugleiste",
+        NextPage = "Nächste Seite",
+        PreviousPage = "Vorherige Seite",
+        ZoomIn = "Vergrößern",
+        ZoomOut = "Verkleinern",
+        Download = "Herunterladen",
+        PageAriaLabelFormat = "Seite {0}",
+    };
+
+    private readonly BitPdfViewerParams[] _viewerParams =
+    [
+        new()
+        {
+            Height = "350px",
+            ToolbarItems = BitPdfToolbarItems.Navigation | BitPdfToolbarItems.Zoom,
+            Classes = new() { Toolbar = "cascaded-toolbar" },
+        }
+    ];
+
+    protected override void OnInitialized()
+    {
+        _sampleBytes = File.ReadAllBytes(Path.Combine(Env.WebRootPath, "samples", "pdf-sample.pdf"));
+        _mainSource = BitPdfSource.FromUrl(Abs("samples/pdf-sample.pdf"), "pdf-sample.pdf");
+        _bytesSource = BitPdfSource.FromBytes(_sampleBytes, "pdf-sample.pdf");
+        var encrypted = File.ReadAllBytes(Path.Combine(Env.WebRootPath, "samples", "pdf-encrypted.pdf"));
+        _encryptedSource = BitPdfSource.FromBytes(encrypted, "pdf-encrypted.pdf");
+        _encryptedKnownSource = BitPdfSource.FromBytes(encrypted, "pdf-encrypted.pdf").WithPassword("hunter2");
+        _brokenSource = BitPdfSource.FromUrl(Abs("samples/pdf-not-a-pdf.pdf"), "pdf-not-a-pdf.pdf");
+        _missingSource = BitPdfSource.FromUrl(Abs("samples/pdf-missing-file.pdf"), "pdf-missing-file.pdf");
+    }
+
+    private string Abs(string relative) => Nav.ToAbsoluteUri(relative).ToString();
+
+    // The address of a server the test runs itself, which answers only when the test says so: the one way to hold a
+    // load open long enough to see the loading state, since the document is fetched by the server, not the browser.
+    [SupplyParameterFromQuery(Name = "slowUrl")] public string? SlowUrl { get; set; }
+
+    private void LoadSlow() => _slowSource = BitPdfSource.FromUrl(SlowUrl ?? Abs("samples/pdf-sample.pdf"), "slow.pdf");
+
+    private async Task HandleDownloading(BitPdfDownloadArgs args)
+    {
+        _downloading = args.FileName;
+        args.Cancel = _cancelDownload;
+        args.FileName = "renamed-sample.pdf";
+        await Task.CompletedTask;
+    }
+
+    private void HandlePrinting(BitPdfPrintArgs args)
+    {
+        _printing = $"{args.FromPage}-{args.ToPage}";
+        args.Cancel = _cancelPrint;
+    }
+
+    private Task<string?> RequestPasswordAsync()
+    {
+        _passwordAsked++;
+        return Task.FromResult<string?>(_passwordAsked == 1 ? "wrong" : "hunter2");
+    }
+
+    private void ReadText()
+    {
+        var all = _main!.ExtractText(" | ");
+        var page2 = _main.ExtractPageText(2);
+        _apiResult = $"text:{page2}##{all}";
+    }
+
+    private async Task ReadSelected() => _apiResult = "selected:" + await _main!.GetSelectedText();
+
+    private void ReadInfo()
+    {
+        var m = _main!.Metadata;
+        _apiResult = $"info:{_main.PageCount}|{m?.Title}|{m?.Author}|{_main.IsEncrypted}|{_main.PdfVersion}|{_main.FileSize}|{_main.HasOutline}:{_main.Outline.Count}|{_main.HasAttachments}:{_main.Attachments.Count}|{_main.HasLayers}:{_main.Layers.Count}|{_main.GetBytes()?.Length}|{_main.ZoomMode}|{_main.CurrentScrollMode}|{_main.CurrentSpreadMode}|{_main.CurrentCursorTool}|{_main.Sidebar}|{_main.IsSearchOpen}:{_main.SearchQuery}:{_main.SearchMatchIndex}/{_main.SearchMatchCount}|{_main.IsPresenting}";
+    }
+
+    private async Task OpenBytesAsync() => await _main!.OpenAsync(BitPdfSource.FromBytes(_sampleBytes, "opened-by-api.pdf"));
+}

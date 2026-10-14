@@ -398,6 +398,32 @@ public class BitPdfXRefTests
         Assert.IsNull(document.XRef.Fetch(new BitPdfRef(9, 0)));
     }
 
+    // When an entry's offset holds another object, the rebuild scan may find the requested object
+    // inside an object stream rather than at an offset of its own; it used to be looked for among
+    // the uncompressed entries only, and answered null although the scan had just indexed it.
+    [TestMethod]
+    public void AnEntryWithAStaleOffsetShouldBeFetchedFromTheObjectStreamTheScanFindsItIn()
+    {
+        var file = new BitPdfEngineTestFile("%PDF-1.5\n");
+        file.Obj(1, "<< /Type /Catalog /Pages 2 0 R >>");
+        file.Obj(2, "<< /Type /Pages /Kids [3 0 R] /Count 1 >>");
+        file.Obj(3, PageBody);
+        file.Stream(4, BitPdfEngineTestFile.ShowText("Stale"));
+        file.Obj(5, FontBody);
+        var (data, first) = ObjectStream((6, "<< /Title (Compressed after all) >>"));
+        file.Stream(7, data, $"/Type /ObjStm /N 1 /First {first}");
+        // The table claims object 6 lives on its own at the font's offset.
+        file.Offsets[6] = file.Offsets[5];
+        file.XRefTable("/Size 8 /Root 1 0 R /Info 6 0 R", [0, 1, 2, 3, 4, 5, 6, 7]);
+
+        var document = BitPdfDocument.Load(file.ToArray());
+
+        Assert.AreEqual("Compressed after all", document.Metadata.Title);
+        Assert.AreEqual("Compressed after all", ((BitPdfString)((BitPdfDict)document.XRef.Fetch(new BitPdfRef(6, 0))!).Get("Title")!).AsText());
+        Assert.IsTrue(document.Warnings.Count > 0, "The stale offset was answered without a rebuild.");
+        Assert.AreEqual("Stale", PageText(document));
+    }
+
     // Only a hybrid file's /XRefStm may fill in an entry a newer section left free. Any older
     // xref stream used to as well, so an object an update deleted through an xref stream came
     // back from the stream it was deleted from.

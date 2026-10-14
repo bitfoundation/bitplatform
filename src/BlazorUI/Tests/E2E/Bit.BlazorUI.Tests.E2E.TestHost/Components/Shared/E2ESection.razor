@@ -1,0 +1,15 @@
+﻿@* One titled section of a page, with the id a test reaches it by: every page is a run of these, one per feature. *@
+<section id="@Id" class="e2e-section" @attributes="Attributes">
+    <h2 class="e2e-section-title">@Title</h2>
+    @ChildContent
+</section>
+
+@code {
+    [Parameter, EditorRequired] public string Id { get; set; } = default!;
+
+    [Parameter, EditorRequired] public string Title { get; set; } = default!;
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? Attributes { get; set; }
+}

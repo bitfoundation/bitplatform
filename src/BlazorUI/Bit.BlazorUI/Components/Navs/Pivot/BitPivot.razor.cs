@@ -433,6 +433,11 @@ public partial class BitPivot : BitComponentBase
                                             ? GetMenuItemId(_menuFocusIndex)
                                             : null;
 
+    // The overflow menu and the button that opens it act on Escape in .NET (HandleMenuKeyDown, HandleMoreKeyDown)
+    // exactly while the menu is open, so that is when they claim the press from the surface the pivot sits in
+    // (data-bit-esc, see Utils.claimEscape): a closed menu leaves the key to the dialog around the pivot.
+    private string? EscapeClaim => _isMenuOpen ? "claim" : null;
+
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
@@ -923,9 +928,11 @@ public partial class BitPivot : BitComponentBase
         return $"{_MenuId}-{index}";
     }
 
-    internal async Task SelectItem(BitPivotItem item)
+    internal async Task SelectItem(BitPivotItem item, bool fromKey = false)
     {
-        if (SelectedKeyHasBeenSet && SelectedKeyChanged.HasDelegate is false) return;
+        // A key bound one way is the parent's to move: the user cannot move it, but a new key the parent hands down
+        // is followed like any other, or the pivot would stay on the tab it started on whatever the parent says.
+        if (fromKey is false && SelectedKeyHasBeenSet && SelectedKeyChanged.HasDelegate is false) return;
 
         if (item == _selectedItem) return;
 
@@ -1384,12 +1391,20 @@ public partial class BitPivot : BitComponentBase
         // be moved to either.
         if (GetItemReorderable(_allItems[newIndex]) is false) return;
 
+        // The handler moves the item in the markup, which moves the element of the tab without registering anything,
+        // so the order the header is laid out in is read back once the render that moved it has gone through: the arrow
+        // keys and the indexes of the next reorder go by it. Asked for on both sides of the handler, since a handler
+        // that awaits lets that render through before it returns.
+        _orderCheckNeeded = true;
+
         await OnItemReorder.InvokeAsync(new BitPivotReorderEventArgs
         {
             Item = item,
             OldIndex = oldIndex,
             NewIndex = newIndex
         });
+
+        _orderCheckNeeded = true;
     }
 
     // The items are registered as they are created, which stops being the order they are declared in as
@@ -1525,7 +1540,7 @@ public partial class BitPivot : BitComponentBase
             return;
         }
 
-        _ = SelectItem(newItem);
+        _ = SelectItem(newItem, fromKey: true);
     }
 
     // The new key cannot be honored, so the bound value goes back to the key of the item that is

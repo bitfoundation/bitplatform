@@ -1,0 +1,19 @@
+﻿@page "/e2e/menu-button/autofocus"
+
+<PageTitle>BitMenuButton AutoFocus E2E</PageTitle>
+
+@* AutoFocus acts on the first render only, so it gets a page of its own where nothing else asks for the focus. *@
+<E2ESection Id="autofocus" Title="AutoFocus">
+    <input id="autofocus-before" aria-label="before" />
+    <BitMenuButton Id="mnb-autofocus-hidden" AutoFocus AriaHidden Text="Hidden" Items="_hidden" />
+    <BitMenuButton Id="mnb-autofocus-disabled" AutoFocus Disabled Text="Disabled" Items="_disabled" />
+    <BitMenuButton Id="mnb-autofocus" AutoFocus Text="Focused on load" Items="_items" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly List<BitMenuButtonItem> _hidden = [new() { Key = "a", Text = "A" }];
+    private readonly List<BitMenuButtonItem> _disabled = [new() { Key = "a", Text = "A" }];
+    private readonly List<BitMenuButtonItem> _items = [new() { Key = "a", Text = "A" }, new() { Key = "b", Text = "B" }];
+}

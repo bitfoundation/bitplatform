@@ -1,0 +1,363 @@
+﻿@page "/e2e/error-boundary"
+@inject NavigationManager Navigation
+
+<PageTitle>BitErrorBoundary E2E</PageTitle>
+
+<h1>BitErrorBoundary</h1>
+
+@* Every child that throws is a component of its own (a BitButton whose OnClick throws, a component that throws while it
+   renders or initializes), since a boundary catches what the components inside it throw - an exception thrown by a
+   handler of this page's own would be routed to this page instead. *@
+
+<E2ESection Id="basic" Title="Basic">
+    <BitErrorBoundary Id="erb-basic">
+        <BitButton Id="basic-throw" OnClick="Throw">Throw</BitButton>
+        <span id="basic-content">Content</span>
+    </BitErrorBoundary>
+</E2ESection>
+
+<E2ESection Id="title-message" Title="Title and Message">
+    <BitErrorBoundary Id="erb-title" Title="This report could not be built" Message="Try again in a minute.">
+        <BitButton Id="title-throw" OnClick="Throw">Throw</BitButton>
+    </BitErrorBoundary>
+    <BitErrorBoundary Id="erb-no-title" Title="" Message="Only a message.">
+        <BitButton Id="no-title-throw" OnClick="Throw">Throw</BitButton>
+    </BitErrorBoundary>
+    <BitErrorBoundary Id="erb-bare" Title="" HideIcon HideRefreshButton HideHomeButton HideRecoverButton>
+        <BitButton Id="bare-throw" OnClick="Throw">Throw</BitButton>
+    </BitErrorBoundary>
+</E2ESection>
+
+<E2ESection Id="icon" Title="Icon">
+    <BitErrorBoundary Id="erb-icon-name" IconName="@BitIconName.ErrorBadge">
+        <BitButton Id="icon-name-throw" OnClick="Throw">Throw</BitButton>
+    </BitErrorBoundary>
+    <BitErrorBoundary Id="erb-icon-template">
+        <ChildContent>
+            <BitButton Id="icon-template-throw" OnClick="Throw">Throw</BitButton>
+        </ChildContent>
+        <IconTemplate>
+            <span id="custom-icon" aria-hidden="true">!</span>
+        </IconTemplate>
+    </BitErrorBoundary>
+    <BitErrorBoundary Id="erb-hide-icon" HideIcon>
+        <BitButton Id="hide-icon-throw" OnClick="Throw">Throw</BitButton>
+    </BitErrorBoundary>
+    <BitErrorBoundary Id="erb-external-icon" Icon="@BitIconInfo.Css("my-icon-lib my-icon-warning")" IconName="@BitIconName.ErrorBadge">
+        <BitButton Id="external-icon-throw" OnClick="Throw">Throw</BitButton>
+    </BitErrorBoundary>
+</E2ESection>
+
+<E2ESection Id="details" Title="Exception details">
+    <BitErrorBoundary Id="erb-details" ShowException ShowCopyButton>
+        <BitButton Id="details-throw" OnClick="Throw">Throw</BitButton>
+    </BitErrorBoundary>
+    <BitErrorBoundary Id="erb-details-custom" ShowException ShowCopyButton ExceptionLabel="Server response" CopyText="Copy it" CopiedText="Done">
+        <BitButton Id="details-custom-throw" OnClick="Throw">Throw</BitButton>
+    </BitErrorBoundary>
+    <BitErrorBoundary Id="erb-details-unlabeled" ShowException ExceptionLabel="">
+        <BitButton Id="details-unlabeled-throw" OnClick="Throw">Throw</BitButton>
+    </BitErrorBoundary>
+</E2ESection>
+
+<E2ESection Id="actions" Title="Actions">
+    <BitErrorBoundary Id="erb-actions" HomeUrl="/e2e/error-boundary?home=1" HomeText="Back home" RecoverText="Try again" RefreshText="Reload">
+        <BitButton Id="actions-throw" OnClick="Throw">Throw</BitButton>
+    </BitErrorBoundary>
+    <BitErrorBoundary Id="erb-additional" HideRefreshButton HideHomeButton>
+        <ChildContent>
+            <BitButton Id="additional-throw" OnClick="Throw">Throw</BitButton>
+        </ChildContent>
+        <AdditionalButtons>
+            <BitButton Id="additional-report" OnClick="() => _reportCount++">Report</BitButton>
+        </AdditionalButtons>
+    </BitErrorBoundary>
+    <BitErrorBoundary Id="erb-footer" @ref="_footerBoundary">
+        <ChildContent>
+            <BitButton Id="footer-throw" OnClick="Throw">Throw</BitButton>
+        </ChildContent>
+        <Footer>
+            <BitButton Id="footer-retry" OnClick="() => _footerBoundary!.Recover()">Retry</BitButton>
+        </Footer>
+    </BitErrorBoundary>
+    <div>Reports: <span id="report-count">@_reportCount</span></div>
+</E2ESection>
+
+<E2ESection Id="templates" Title="ErrorTemplate and ErrorContent">
+    <BitErrorBoundary Id="erb-template">
+        <ChildContent>
+            <BitButton Id="template-throw" OnClick="Throw">Throw</BitButton>
+        </ChildContent>
+        <ErrorTemplate Context="error">
+            <div id="template-ui">
+                <span id="template-message">@error.Exception.Message</span>
+                <button id="template-recover" type="button" @onclick="error.Recover">Recover from template</button>
+            </div>
+        </ErrorTemplate>
+    </BitErrorBoundary>
+    <BitErrorBoundary Id="erb-content">
+        <ChildContent>
+            <BitButton Id="content-throw" OnClick="Throw">Throw</BitButton>
+        </ChildContent>
+        <ErrorContent Context="ex">
+            <div id="content-ui">ErrorContent: @ex.Message</div>
+        </ErrorContent>
+    </BitErrorBoundary>
+    <BitErrorBoundary Id="erb-both">
+        <ChildContent>
+            <BitButton Id="both-throw" OnClick="Throw">Throw</BitButton>
+        </ChildContent>
+        <ErrorTemplate Context="error">
+            <div id="both-template">ErrorTemplate wins</div>
+        </ErrorTemplate>
+        <ErrorContent Context="ex">
+            <div id="both-content">ErrorContent</div>
+        </ErrorContent>
+    </BitErrorBoundary>
+</E2ESection>
+
+<E2ESection Id="events" Title="OnError and OnRecover">
+    <BitErrorBoundary Id="erb-events" OnError="HandleError" OnRecover="HandleRecover">
+        <BitButton Id="events-throw" OnClick="Throw">Throw</BitButton>
+    </BitErrorBoundary>
+    <div>Errors: <span id="error-count">@_errorCount</span> last: <span id="last-error">@_lastError</span></div>
+    <div>Recoveries: <span id="recover-count">@_recoverCount</span> reason: <span id="last-reason">@_lastReason</span></div>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="An exception thrown while rendering">
+    <button id="btn-render-throw" type="button" @onclick="() => _renderThrows = true">Make the child throw while it renders</button>
+    <button id="btn-render-fix" type="button" @onclick="() => _renderThrows = false">Fix the child</button>
+    <BitErrorBoundary Id="erb-render" @ref="_renderBoundary" NoLogging>
+        <DynamicComponent Type="typeof(RenderThrower)" Parameters="@(new Dictionary<string, object> { ["Throws"] = _renderThrows })" />
+    </BitErrorBoundary>
+    <button id="btn-render-recover" type="button" @onclick="() => _renderBoundary!.Recover()">Recover through the reference</button>
+    <div>Caught: <span id="render-caught">@(_renderBoundary?.CaughtException?.Message ?? "-")</span></div>
+    <button id="btn-render-read" type="button" @onclick="StateHasChanged">Read CaughtException</button>
+</E2ESection>
+
+<E2ESection Id="capture" Title="Capture and CaptureAsync">
+    <button id="btn-capture" type="button" @onclick="CaptureFromReference">Capture through the reference</button>
+    <BitErrorBoundary Id="erb-capture" @ref="_captureBoundary" ShowException NoLogging OnError="e => _capturedMessage = e.Message">
+        <DynamicComponent Type="typeof(BackgroundLoader)" />
+    </BitErrorBoundary>
+    <div>Captured: <span id="captured-message">@_capturedMessage</span></div>
+</E2ESection>
+
+<E2ESection Id="recover-keys" Title="RecoverKeys">
+    <BitErrorBoundary Id="erb-keys" RecoverKeys="@(new object?[] { _record })" OnRecover="HandleRecover" NoLogging>
+        <BitButton Id="keys-throw" OnClick="Throw">Throw (record @_record)</BitButton>
+    </BitErrorBoundary>
+    <button id="btn-record-same" type="button" @onclick="() => _record = _record">Same record</button>
+    <button id="btn-record-next" type="button" @onclick="() => _record++">Next record</button>
+</E2ESection>
+
+<E2ESection Id="recover-navigation" Title="RecoverOnNavigation">
+    <BitErrorBoundary Id="erb-nav" RecoverOnNavigation OnRecover="HandleRecover" NoLogging>
+        <BitButton Id="nav-throw" OnClick="Throw">Throw</BitButton>
+    </BitErrorBoundary>
+    <BitErrorBoundary Id="erb-no-nav" NoLogging>
+        <BitButton Id="no-nav-throw" OnClick="Throw">Throw</BitButton>
+    </BitErrorBoundary>
+    <button id="btn-navigate" type="button" @onclick="NavigateInPlace">Navigate</button>
+</E2ESection>
+
+<E2ESection Id="accessibility" Title="AutoFocus, HeadingLevel and a live region of the page's own">
+    <BitErrorBoundary Id="erb-autofocus" AutoFocus HeadingLevel="2" Message="The focus moves here." NoLogging>
+        <BitButton Id="autofocus-throw" OnClick="Throw">Throw</BitButton>
+    </BitErrorBoundary>
+    <BitErrorBoundary Id="erb-live" role="status" NoLogging>
+        <BitButton Id="live-throw" OnClick="Throw">Throw</BitButton>
+    </BitErrorBoundary>
+    <BitErrorBoundary Id="erb-splat" HtmlAttributes="_splat" NoLogging>
+        <BitButton Id="splat-throw" OnClick="Throw">Throw</BitButton>
+    </BitErrorBoundary>
+    <BitErrorBoundary Id="erb-heading-clamp" HeadingLevel="9" NoLogging>
+        <BitButton Id="heading-clamp-throw" OnClick="Throw">Throw</BitButton>
+    </BitErrorBoundary>
+</E2ESection>
+
+<E2ESection Id="params" Title="Cascading parameters">
+    <BitParams Parameters="_params">
+        <BitErrorBoundary Id="erb-params-1" NoLogging>
+            <BitButton Id="params-1-throw" OnClick="Throw">Throw</BitButton>
+        </BitErrorBoundary>
+        <BitErrorBoundary Id="erb-params-2" Title="Its own title" NoLogging>
+            <BitButton Id="params-2-throw" OnClick="Throw">Throw</BitButton>
+        </BitErrorBoundary>
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style, Class, Styles, Classes, CSS variables">
+    <BitErrorBoundary Id="erb-styles"
+                      Message="Styled"
+                      NoLogging
+                      ShowException
+                      ShowCopyButton
+                      Class="custom-root-class"
+                      Style="outline: 2px dashed rgb(255, 0, 0)"
+                      Styles="@(new() { Root = "padding: 9px", Header = "margin-top: 2px", Icon = "opacity: 0.5", Title = "color: rgb(0, 0, 255)", Message = "color: rgb(0, 128, 0)", Exception = "max-height: 50px", Footer = "margin-bottom: 3px", RefreshButton = new() { Root = "border-radius: 4px" }, HomeButton = new() { Root = "border-radius: 5px" }, RecoverButton = new() { Root = "border-radius: 6px" }, CopyButton = new() { Root = "border-radius: 7px" } })"
+                      Classes="@(new() { Root = "c-root", Header = "c-header", Icon = "c-icon", Title = "c-title", Message = "c-message", Exception = "c-exception", Footer = "c-footer", RefreshButton = new() { Root = "c-refresh" }, HomeButton = new() { Root = "c-home" }, RecoverButton = new() { Root = "c-recover" }, CopyButton = new() { Root = "c-copy" } })">
+        <BitButton Id="styles-throw" OnClick="Throw">Throw</BitButton>
+    </BitErrorBoundary>
+    <div style="--bit-ErrorBoundary-background: rgb(255, 240, 240); --bit-ErrorBoundary-align: start; --bit-ErrorBoundary-padding: 13px; --bit-ErrorBoundary-title-color: rgb(128, 0, 0); --bit-ErrorBoundary-message-color: rgb(0, 0, 128); --bit-ErrorBoundary-radius: 8px; --bit-ErrorBoundary-border: 1px solid rgb(255, 0, 0);">
+        <BitErrorBoundary Id="erb-vars" Message="Variables" NoLogging>
+            <BitButton Id="vars-throw" OnClick="Throw">Throw</BitButton>
+        </BitErrorBoundary>
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL and Body">
+    <BitErrorBoundary Id="erb-rtl" Dir="BitDir.Rtl" Title="اوه، مشکلی پیش آمد" NoLogging>
+        <BitButton Id="rtl-throw" OnClick="Throw">Throw</BitButton>
+    </BitErrorBoundary>
+    <div dir="rtl">
+        <BitErrorBoundary Id="erb-rtl-inherited" NoLogging>
+            <BitButton Id="rtl-inherited-throw" OnClick="Throw">Throw</BitButton>
+        </BitErrorBoundary>
+    </div>
+    <BitErrorBoundary Id="erb-body" NoLogging>
+        <Body><span id="body-content">From Body</span></Body>
+        <ChildContent><span id="child-content">From ChildContent</span></ChildContent>
+    </BitErrorBoundary>
+</E2ESection>
+
+<E2ESection Id="maximum" Title="MaximumErrorCount">
+    <BitErrorBoundary Id="erb-maximum" MaximumErrorCount="1" NoLogging>
+        <BitButton Id="maximum-throw" OnClick="Throw">Throw</BitButton>
+    </BitErrorBoundary>
+</E2ESection>
+
+<E2ESection Id="logging" Title="Logging">
+    <BitErrorBoundary Id="erb-logged">
+        <BitButton Id="logged-throw" OnClick="Throw">Throw</BitButton>
+    </BitErrorBoundary>
+    <BitErrorBoundary Id="erb-unlogged" NoLogging>
+        <BitButton Id="unlogged-throw" OnClick="Throw">Throw</BitButton>
+    </BitErrorBoundary>
+</E2ESection>
+
+<E2ESection Id="runtime" Title="Unmounted while errored">
+    <button id="btn-mount" type="button" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <BitErrorBoundary Id="erb-runtime" NoLogging ShowCopyButton>
+            <BitButton Id="runtime-throw" OnClick="Throw">Throw</BitButton>
+        </BitErrorBoundary>
+    }
+    <div>Mounted: <span id="runtime-mounted">@_mounted</span></div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private int _throwCount;
+    private int _reportCount;
+    private int _errorCount;
+    private string? _lastError;
+    private int _recoverCount;
+    private string? _lastReason;
+    private bool _renderThrows;
+    private int _record = 1;
+    private string? _capturedMessage;
+    private bool _mounted = true;
+
+    private readonly Dictionary<string, object> _splat = new()
+    {
+        ["class"] = "splat-class",
+        ["style"] = "margin-left: 4px",
+        ["data-testid"] = "erb-splat-attrs",
+        ["aria-live"] = "polite",
+    };
+
+    private BitErrorBoundary? _footerBoundary;
+    private BitErrorBoundary? _renderBoundary;
+    private BitErrorBoundary? _captureBoundary;
+
+    private readonly BitErrorBoundaryParams[] _params =
+    [
+        new()
+        {
+            Title = "Cascaded title",
+            Message = "Cascaded message",
+            HideHomeButton = true,
+            RecoverText = "Cascaded recover",
+            Class = "cascaded-class",
+        },
+    ];
+
+    private void Throw()
+    {
+        throw new InvalidOperationException($"Boom {++_throwCount}");
+    }
+
+    private void HandleError(Exception exception)
+    {
+        _errorCount++;
+        _lastError = exception.Message;
+    }
+
+    private void HandleRecover(BitErrorBoundaryRecoverReason reason)
+    {
+        _recoverCount++;
+        _lastReason = reason.ToString();
+    }
+
+    private void CaptureFromReference()
+    {
+        _captureBoundary!.Capture(new InvalidOperationException("Captured through the reference"));
+    }
+
+    private void NavigateInPlace()
+    {
+        Navigation.NavigateTo($"/e2e/error-boundary?n={Guid.NewGuid():N}");
+    }
+
+    /// <summary>Throws while it renders whenever it is told to.</summary>
+    public class RenderThrower : ComponentBase
+    {
+        [Parameter] public bool Throws { get; set; }
+
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        {
+            if (Throws) throw new InvalidOperationException("Thrown while rendering");
+
+            builder.OpenElement(0, "span");
+            builder.AddAttribute(1, "id", "render-content");
+            builder.AddContent(2, "Rendered");
+            builder.CloseElement();
+        }
+    }
+
+    /// <summary>Hands the boundary it sits in an exception thrown where nothing awaits it.</summary>
+    public class BackgroundLoader : ComponentBase
+    {
+        [CascadingParameter] public BitErrorBoundary? Boundary { get; set; }
+
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, "button");
+            builder.AddAttribute(1, "id", "btn-capture-async");
+            builder.AddAttribute(2, "type", "button");
+            builder.AddAttribute(3, "onclick", EventCallback.Factory.Create(this, Load));
+            builder.AddContent(4, "Load in the background");
+            builder.CloseElement();
+        }
+
+        private void Load()
+        {
+            _ = Task.Run(async () =>
+            {
+                await Task.Delay(100);
+
+                try
+                {
+                    throw new InvalidOperationException("Failed in the background");
+                }
+                catch (Exception ex)
+                {
+                    if (Boundary is not null) await Boundary.CaptureAsync(ex);
+                }
+            });
+        }
+    }
+}

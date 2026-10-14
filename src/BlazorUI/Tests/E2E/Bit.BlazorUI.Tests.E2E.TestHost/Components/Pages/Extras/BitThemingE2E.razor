@@ -1,0 +1,238 @@
+﻿@page "/e2e/theming"
+@implements IDisposable
+@inject BitThemeManager ThemeManager
+@inject BitThemeNotifications ThemeNotifications
+@inject BitExternalThemeLoader ExternalThemeLoader
+@inject IJSRuntime JS
+
+<PageTitle>Theming API E2E</PageTitle>
+
+<h1>Theming API</h1>
+
+@* Outside every provider: what the document's own theme paints. *@
+<div id="outside-surface" style="background-color: var(--bit-clr-bg-pri); padding: 4px;">
+    <BitButton Id="outside-button">Outside</BitButton>
+</div>
+
+<E2ESection Id="provider" Title="BitThemeProvider scoping a theme to a region">
+    <BitThemeProvider Theme="_regionTheme" id="provider-root" class="provider-class" data-region="brand">
+        <BitButton Id="provider-button">Inside</BitButton>
+        <div id="provider-surface" style="background-color: var(--bit-clr-bg-pri); padding: 4px;">Surface</div>
+        <DynamicComponent Type="typeof(ThemeReader)" Parameters="@(new Dictionary<string, object> { ["ReaderId"] = "provider-reader" })" />
+    </BitThemeProvider>
+    <button id="btn-provider-change" type="button" @onclick="ChangeRegionTheme">Assign another theme</button>
+    <button id="btn-provider-clear" type="button" @onclick="() => _regionTheme = null">Clear the theme</button>
+</E2ESection>
+
+<E2ESection Id="provider-shape" Title="A family alias re-declared inside a provider">
+    <BitThemeProvider Theme="_shapeTheme" id="shape-root">
+        <BitButton Id="shape-button">Rounded</BitButton>
+    </BitThemeProvider>
+</E2ESection>
+
+<E2ESection Id="nested" Title="Nested providers merge">
+    <BitThemeProvider Theme="_outerTheme" id="nested-outer">
+        <BitButton Id="nested-outer-button">Outer</BitButton>
+        <BitThemeProvider Theme="_innerTheme" id="nested-inner">
+            <BitButton Id="nested-inner-button">Inner</BitButton>
+            <div id="nested-inner-surface" style="background-color: var(--bit-clr-bg-pri); padding: 4px;">Inner surface</div>
+            <DynamicComponent Type="typeof(ThemeReader)" Parameters="@(new Dictionary<string, object> { ["ReaderId"] = "nested-reader" })" />
+        </BitThemeProvider>
+        @* No theme of its own: renders its content with no element, and the outer cascade still reaches it. *@
+        <BitThemeProvider id="nested-pass-through">
+            <DynamicComponent Type="typeof(ThemeReader)" Parameters="@(new Dictionary<string, object> { ["ReaderId"] = "pass-through-reader" })" />
+        </BitThemeProvider>
+    </BitThemeProvider>
+</E2ESection>
+
+<E2ESection Id="named" Title="ThemeName, RootElement and attributes">
+    <BitThemeProvider Theme="_namedTheme" ThemeName="brand" RootElement="section" id="named-root" style="display: block; border: 3px solid rgb(0, 0, 0);">
+        <BitButton Id="named-button">Named</BitButton>
+        <DynamicComponent Type="typeof(NamedThemeReader)" />
+        <DynamicComponent Type="typeof(ThemeReader)" Parameters="@(new Dictionary<string, object> { ["ReaderId"] = "unnamed-reader" })" />
+    </BitThemeProvider>
+</E2ESection>
+
+<E2ESection Id="frozen" Title="Frozen">
+    <BitThemeProvider Theme="_mutableTheme" id="live-root">
+        <BitButton Id="live-button">Live</BitButton>
+    </BitThemeProvider>
+    <BitThemeProvider Theme="_mutableTheme" Frozen id="frozen-root">
+        <BitButton Id="frozen-button">Frozen</BitButton>
+    </BitThemeProvider>
+    <button id="btn-mutate" type="button" @onclick="MutateTheme">Mutate the theme in place</button>
+    <button id="btn-reassign" type="button" @onclick="ReassignTheme">Assign a new theme</button>
+</E2ESection>
+
+<E2ESection Id="no-theme" Title="A provider with nothing to apply">
+    <BitThemeProvider id="noop-provider" class="noop-class">
+        <span id="noop-child">Child</span>
+    </BitThemeProvider>
+</E2ESection>
+
+<E2ESection Id="apply" Title="ApplyBitThemeAsync / ClearBitThemeOverridesAsync">
+    <button id="btn-apply-body" type="button" @onclick="ApplyToBody">Apply to body</button>
+    <button id="btn-clear-body" type="button" @onclick="ClearBody">Clear body</button>
+    <div @ref="_scopedRef" id="scoped-target">
+        <BitButton Id="scoped-button">Scoped</BitButton>
+    </div>
+    <button id="btn-apply-scoped" type="button" @onclick="ApplyToScoped">Apply to the element</button>
+    <button id="btn-clear-scoped" type="button" @onclick="ClearScoped">Clear the element</button>
+    <button id="btn-apply-seed" type="button" @onclick="ApplySeed">Apply a dark theme from a seed</button>
+</E2ESection>
+
+<E2ESection Id="manager" Title="BitThemeManager">
+    <button id="btn-set-dark" type="button" @onclick="SetDark">SetThemeAsync("  DARK ")</button>
+    <button id="btn-set-light-typed" type="button" @onclick="SetLightTyped">SetThemeAsync(BitThemeName.Light)</button>
+    <button id="btn-toggle" type="button" @onclick="Toggle">ToggleDarkLightAsync</button>
+    <button id="btn-get" type="button" @onclick="Get">GetCurrentThemeAsync</button>
+    <button id="btn-set-blank" type="button" @onclick="SetBlank">SetThemeAsync("")</button>
+    <button id="btn-set-system" type="button" @onclick="SetSystem">SetThemeAsync(BitThemeName.System)</button>
+    <button id="btn-is-system-dark" type="button" @onclick="ReadSystemDark">IsSystemInDarkModeAsync</button>
+    <button id="btn-get-persisted" type="button" @onclick="ReadPersisted">GetCurrentPersistedThemeAsync</button>
+    <button id="btn-set-pair" type="button" @onclick="SetPair">SetThemePairAsync(fluent-light, fluent-dark)</button>
+    <button id="btn-set-cupertino" type="button" @onclick="SetCupertino">SetThemeAsync(cupertino-light)</button>
+    <button id="btn-ensure" type="button" @onclick="Ensure">EnsureThemeNotificationsRegisteredAsync</button>
+    <div>Result: <span id="manager-result">@_managerResult</span></div>
+    <div>System dark: <span id="system-dark">@_systemDark</span></div>
+    <div>Persisted: <span id="persisted">@_persisted</span></div>
+    <div>Ensured: <span id="ensured">@_ensured</span></div>
+</E2ESection>
+
+<E2ESection Id="notifications" Title="BitThemeNotifications.ThemeChanged">
+    <div>Count: <span id="notified-count">@_notifiedCount</span></div>
+    <div>New: <span id="notified-new">@_notifiedNew</span></div>
+    <div>Old: <span id="notified-old">@_notifiedOld</span></div>
+</E2ESection>
+
+<E2ESection Id="external-bundle" Title="BitExternalThemeLoader">
+    <button id="btn-attach-bundle" type="button" @onclick="AttachBundle">Attach the Cupertino bundle</button>
+    <button id="btn-detach-bundle" type="button" @onclick="DetachBundle">Detach it</button>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private BitTheme? _regionTheme = CreateTheme("#8A2BE2", "#FFF8DC");
+    private readonly BitTheme _shapeTheme = new() { Shape = new() { BorderRadius = "12px" } };
+    private readonly BitTheme _outerTheme = CreateTheme("#8A2BE2", "#FFF8DC");
+    private readonly BitTheme _innerTheme = CreateTheme("#228B22", null);
+    private readonly BitTheme _namedTheme = CreateTheme("#DC143C", null);
+    private BitTheme _mutableTheme = CreateTheme("#8A2BE2", null);
+
+    private ElementReference _scopedRef;
+
+    private string? _managerResult;
+    private string? _systemDark;
+    private string? _persisted;
+    private string? _ensured;
+
+    private int _notifiedCount;
+    private string? _notifiedNew;
+    private string? _notifiedOld;
+
+    protected override void OnInitialized()
+    {
+        ThemeNotifications.ThemeChanged += HandleThemeChanged;
+    }
+
+    private static BitTheme CreateTheme(string primary, string? background)
+    {
+        var theme = new BitTheme();
+        theme.Color.Primary.Main = primary;
+        if (background is not null) theme.Color.Background.Primary = background;
+        return theme;
+    }
+
+    private void HandleThemeChanged(object? sender, BitThemeChangedEventArgs e)
+    {
+        _ = InvokeAsync(() =>
+        {
+            _notifiedCount++;
+            _notifiedNew = e.NewTheme;
+            _notifiedOld = e.OldTheme;
+            StateHasChanged();
+        });
+    }
+
+    private void ChangeRegionTheme() => _regionTheme = CreateTheme("#FF8C00", "#F0FFFF");
+
+    private void MutateTheme() => _mutableTheme.Color.Primary.Main = "#228B22";
+
+    private void ReassignTheme() => _mutableTheme = CreateTheme("#DC143C", null);
+
+    private async Task ApplyToBody() => await ThemeManager.ApplyBitThemeAsync(CreateTheme("#FF8C00", null));
+
+    private async Task ClearBody() => await ThemeManager.ClearBitThemeOverridesAsync();
+
+    private async Task ApplyToScoped() => await ThemeManager.ApplyBitThemeAsync(CreateTheme("#228B22", null), _scopedRef);
+
+    private async Task ClearScoped() => await ThemeManager.ClearBitThemeOverridesAsync(_scopedRef);
+
+    private async Task ApplySeed() => await ThemeManager.ApplyBitThemeAsync(BitThemeFactory.CreateDarkThemeFromSeed("#0F9D58"));
+
+    private async Task SetDark() => _managerResult = await ThemeManager.SetThemeAsync("  DARK ");
+
+    private async Task SetLightTyped() => _managerResult = await ThemeManager.SetThemeAsync(BitThemeName.Light);
+
+    private async Task Toggle() => _managerResult = await ThemeManager.ToggleDarkLightAsync();
+
+    private async Task Get() => _managerResult = await ThemeManager.GetCurrentThemeAsync();
+
+    private async Task SetBlank() => _managerResult = await ThemeManager.SetThemeAsync("");
+
+    private async Task SetSystem() => _managerResult = await ThemeManager.SetThemeAsync(BitThemeName.System);
+
+    private async Task ReadSystemDark() => _systemDark = (await ThemeManager.IsSystemInDarkModeAsync()).ToString();
+
+    private async Task ReadPersisted() => _persisted = await ThemeManager.GetCurrentPersistedThemeAsync() ?? "(none)";
+
+    private async Task SetPair() => _managerResult = await ThemeManager.SetThemePairAsync(BitThemeName.FluentLight, BitThemeName.FluentDark);
+
+    private async Task SetCupertino() => _managerResult = await ThemeManager.SetThemeAsync(BitThemePresets.CupertinoLight);
+
+    private async Task Ensure()
+    {
+        await ThemeManager.EnsureThemeNotificationsRegisteredAsync();
+        _ensured = "yes";
+    }
+
+    private async Task AttachBundle() => await ExternalThemeLoader.AttachStylesheetAsync("e2e-cupertino-bundle", "/_content/Bit.BlazorUI.Extras/styles/bit.blazorui.cupertino.css");
+
+    private async Task DetachBundle() => await ExternalThemeLoader.DetachStylesheetAsync("e2e-cupertino-bundle");
+
+    public void Dispose()
+    {
+        ThemeNotifications.ThemeChanged -= HandleThemeChanged;
+    }
+
+    /// <summary>Writes the BitTheme it receives through the unnamed cascade into the page.</summary>
+    public class ThemeReader : ComponentBase
+    {
+        [CascadingParameter] public BitTheme? Theme { get; set; }
+
+        [Parameter] public string ReaderId { get; set; } = default!;
+
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, "span");
+            builder.AddAttribute(1, "id", ReaderId);
+            builder.AddContent(2, Theme is null ? "(none)" : $"{Theme.Color.Primary.Main ?? "-"}|{Theme.Color.Background.Primary ?? "-"}");
+            builder.CloseElement();
+        }
+    }
+
+    /// <summary>Writes the BitTheme it receives through the cascade named "brand" into the page.</summary>
+    public class NamedThemeReader : ComponentBase
+    {
+        [CascadingParameter(Name = "brand")] public BitTheme? Theme { get; set; }
+
+        protected override void BuildRenderTree(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, "span");
+            builder.AddAttribute(1, "id", "named-reader");
+            builder.AddContent(2, Theme?.Color.Primary.Main ?? "(none)");
+            builder.CloseElement();
+        }
+    }
+}

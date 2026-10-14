@@ -1107,6 +1107,17 @@ public partial class BitPanel : BitComponentBase
     {
         if (NoSwipe || IsDisposed) return;
 
+        // A pass of the parameters that overlapped this one - a second change arriving while the first was still
+        // waiting on the browser - may have registered the gesture in the meantime. Swipes.setup adds a
+        // registration rather than replacing one, so that one is taken back first: left in place, every drag
+        // would be reported twice, and once its reference was released, through a reference that no longer exists.
+        if (_swipesKey is not null)
+        {
+            await DisposeSwipes();
+
+            if (NoSwipe || IsDisposed) return;
+        }
+
         _swipesKey = GetSwipesKey();
 
         var position = EffectivePosition;
@@ -1138,6 +1149,11 @@ public partial class BitPanel : BitComponentBase
 
         _swipesKey = null;
 
+        // Taken off the field before the round trip, so a registration an overlapping pass makes while this one
+        // waits keeps the reference it was handed rather than having it released from under it here.
+        var dotnetObj = _swipesDotnetObj;
+        _swipesDotnetObj = null;
+
         try
         {
             await _js.BitSwipesDispose(_containerId);
@@ -1146,8 +1162,7 @@ public partial class BitPanel : BitComponentBase
 
         // Swipes.setup can bail out before it registers anything, leaving nothing for Swipes.dispose to
         // release, so the reference is also released here (disposing it is idempotent).
-        _swipesDotnetObj?.Dispose();
-        _swipesDotnetObj = null;
+        dotnetObj?.Dispose();
     }
 
     private async Task SetupTransitionEnd()

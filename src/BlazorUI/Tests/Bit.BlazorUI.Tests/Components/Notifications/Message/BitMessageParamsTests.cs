@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -15,6 +17,146 @@ namespace Bit.BlazorUI.Tests.Components.Notifications.Message;
 [TestClass]
 public class BitMessageParamsTests : BunitTestContext
 {
+    // What a message says - its content, its title, the words that stand in for its icon, its role and urgency, the
+    // focus it takes - and the state and the callbacks of one showing of it are written per message, so they have no
+    // place on the params object.
+    private static readonly string[] _notCascaded =
+    [
+        nameof(BitMessage.CascadingParameters),
+        nameof(BitMessage.Actions),
+        nameof(BitMessage.AutoFocus),
+        nameof(BitMessage.ChildContent),
+        nameof(BitMessage.Content),
+        nameof(BitMessage.Dismissed),
+        nameof(BitMessage.DismissedChanged),
+        nameof(BitMessage.Expanded),
+        nameof(BitMessage.ExpandedChanged),
+        nameof(BitMessage.IconAriaLabel),
+        nameof(BitMessage.IconTemplate),
+        nameof(BitMessage.OnDismiss),
+        nameof(BitMessage.OnDismissing),
+        nameof(BitMessage.Politeness),
+        nameof(BitMessage.Role),
+        nameof(BitMessage.Title),
+        nameof(BitMessage.TitleTemplate),
+    ];
+
+    [TestMethod]
+    public void BitMessageParamsShouldCarryEveryParameterThatIsNotPerMessage()
+    {
+        // A parameter added to the message without its counterpart here is one a BitParams cascade silently ignores.
+        var baseParameters = typeof(BitComponentBase).GetProperties().Select(p => p.Name).ToHashSet();
+
+        var parameters = typeof(BitMessage).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                                           .Where(p => p.GetCustomAttribute<ParameterAttribute>() is not null)
+                                           .Select(p => p.Name)
+                                           .Where(n => baseParameters.Contains(n) is false && _notCascaded.Contains(n) is false);
+
+        foreach (var name in parameters)
+        {
+            Assert.IsNotNull(typeof(BitMessageParams).GetProperty(name), $"BitMessageParams has no {name}.");
+        }
+    }
+
+    [TestMethod]
+    public void BitMessageParamsShouldCoverEveryParameterItNames()
+    {
+        // The other direction: a params property that points at nothing is silently ignored by the cascade.
+        foreach (var property in typeof(BitMessageParams).GetProperties())
+        {
+            if (property.Name == nameof(IBitComponentParams.Name)) continue;
+
+            var target = typeof(BitMessage).GetProperty(property.Name);
+
+            Assert.IsNotNull(target, $"BitMessage has no {property.Name}.");
+            Assert.IsTrue(target.IsDefined(typeof(ParameterAttribute), true), $"BitMessage.{property.Name} is not a parameter.");
+        }
+    }
+
+    [TestMethod]
+    public void BitMessageShouldApplyCascadedBaseParameters()
+    {
+        var component = RenderWithParams(new BitMessageParams
+        {
+            Dir = BitDir.Rtl,
+            Disabled = true,
+            Dismissible = true,
+            Class = "cascaded",
+            Id = "cascaded-id",
+            AriaLabel = "Heads up",
+            HtmlAttributes = new() { ["data-cascaded"] = "yes" },
+        });
+
+        var root = component.Find(".bit-msg");
+
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-dis"));
+        Assert.IsTrue(root.ClassList.Contains("cascaded"));
+        Assert.AreEqual("cascaded-id", root.Id);
+        Assert.AreEqual("yes", root.GetAttribute("data-cascaded"));
+        // A cascaded label names the message, which makes it a group the way the message's own label does.
+        Assert.AreEqual("Heads up", root.GetAttribute("aria-label"));
+        Assert.AreEqual("group", root.GetAttribute("role"));
+
+        // The cascaded Disabled reaches the dismiss button the way the message's own does.
+        var dismiss = component.Find(".bit-msg-dmb");
+        Assert.IsTrue(dismiss.HasAttribute("disabled"));
+        Assert.AreEqual("true", dismiss.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldApplyTheCascadedIconsAndEscapeShortcut()
+    {
+        var component = RenderWithParams(new BitMessageParams
+        {
+            Icon = BitIconInfo.Css("cascaded-icon"),
+            IconName = "Warning",
+            DismissIcon = BitIconInfo.Css("cascaded-xmark"),
+            DismissIconName = "ChromeClose",
+            Dismissible = true,
+            DismissOnEscape = true,
+            DelayedAnnouncement = true,
+        });
+
+        // A cascaded Icon wins over a cascaded IconName, the way it does on the message itself.
+        Assert.IsTrue(component.Find(".bit-msg-ico").ClassList.Contains("cascaded-icon"));
+        Assert.IsFalse(component.Find(".bit-msg-ico").ClassList.Contains("bit-icon--Warning"));
+        Assert.IsTrue(component.Find(".bit-msg-dmi").ClassList.Contains("cascaded-xmark"));
+
+        // The Escape shortcut is wired up and claimed off the cascaded value, and the delayed text has landed by now.
+        Assert.AreEqual("claim", component.Find(".bit-msg").GetAttribute("data-bit-esc"));
+        component.WaitForAssertion(() => Assert.AreEqual("Hello", component.Find(".bit-msg-cnt").TextContent.Trim()));
+
+        component.Find(".bit-msg").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsEmpty(component.FindAll(".bit-msg"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldApplyTheCascadedExpanderIcons()
+    {
+        var component = RenderWithParams(new BitMessageParams
+        {
+            Truncate = true,
+            ExpandIcon = BitIconInfo.Css("cascaded-expand"),
+            ExpandIconName = "ChevronDown",
+            CollapseIcon = BitIconInfo.Css("cascaded-collapse"),
+            CollapseIconName = "ChevronUp",
+            CollapseAriaLabel = "Show less",
+        });
+
+        var icon = component.Find(".bit-msg-exi");
+        Assert.IsTrue(icon.ClassList.Contains("cascaded-expand"));
+        // A custom expand glyph already points down, so it is not turned over.
+        Assert.IsFalse(icon.ClassList.Contains("bit-ico-r180"));
+
+        component.Find(".bit-msg-exb").Click();
+
+        Assert.IsTrue(component.Find(".bit-msg-exi").ClassList.Contains("cascaded-collapse"));
+        Assert.AreEqual("Show less", component.Find(".bit-msg-exb").GetAttribute("aria-label"));
+    }
+
     private IRenderedComponent<BitParams> RenderWithParams(BitMessageParams messageParams, Action<RenderTreeBuilder>? extraAttributes = null)
     {
         return RenderComponent<BitParams>(parameters =>

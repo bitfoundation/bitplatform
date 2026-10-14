@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.RichTextEditor;
@@ -2204,6 +2205,33 @@ public class BitRichTextEditorTests : BunitTestContext
         // A tightened allowlist has to clean what is already loaded, not just future input.
         Assert.IsTrue(Context.JSInterop.Invocations["BitBlazorUI.RichTextEditor.sanitizeHtml"].Count > before);
         Context.JSInterop.VerifyInvoke("BitBlazorUI.RichTextEditor.updateOptions");
+    }
+
+    [TestMethod]
+    public void BitRichTextEditorShouldKeepAValueItCannotSanitizeOutOfTheEditorWithoutFailingTheParameterPass()
+    {
+        SetupJsInterop();
+
+        // The generated SetParametersAsync awaits the Value hook, so a bridge that is gone - the circuit, or the interop
+        // itself - would otherwise fail the whole parameter pass of the page.
+        foreach (var exception in new Exception[] { new JSDisconnectedException("circuit gone"), new JSException("interop unavailable") })
+        {
+            Context.JSInterop.Setup<string>("BitBlazorUI.RichTextEditor.sanitizeHtml", _ => true).SetException(exception);
+
+            string? bound = null;
+            var component = RenderComponent<BitRichTextEditor>(parameters =>
+            {
+                parameters.Add(p => p.ValueChanged, EventCallback.Factory.Create<string?>(this, v => bound = v));
+            });
+            var pushed = InvokeCount("BitBlazorUI.RichTextEditor.setHtml");
+
+            component.Render(parameters => parameters.Add(p => p.Value, "<p><script>alert(1)</script>dirty</p>"));
+
+            // Nothing unsanitized reaches the editor or the binding: the editor keeps its content and the page its value.
+            Assert.AreEqual(pushed, InvokeCount("BitBlazorUI.RichTextEditor.setHtml"), exception.GetType().Name);
+            Assert.IsNull(bound, exception.GetType().Name);
+            Assert.AreEqual("<p><script>alert(1)</script>dirty</p>", component.Instance.Value, exception.GetType().Name);
+        }
     }
 
     [TestMethod]

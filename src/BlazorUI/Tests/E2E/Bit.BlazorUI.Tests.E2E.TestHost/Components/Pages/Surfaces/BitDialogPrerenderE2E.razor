@@ -1,0 +1,17 @@
+﻿@page "/e2e/dialog/prerender"
+
+<PageTitle>BitDialog prerender E2E</PageTitle>
+
+<h1>BitDialog prerendered open</h1>
+
+<E2ESection Id="default-open" Title="DefaultIsOpen: uncontrolled and open from the first render">
+    <span id="default-dismiss">@_dismissed</span>
+    <BitDialog Id="default-open-dialog" DefaultIsOpen="true" Modeless AutoFocus="false" Position="BitPosition.BottomRight"
+               Title="Prerendered dialog" Message="Open before the circuit connects." OnDismiss="() => _dismissed++" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private int _dismissed;
+}

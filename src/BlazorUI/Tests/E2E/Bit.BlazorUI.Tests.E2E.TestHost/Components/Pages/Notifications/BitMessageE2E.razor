@@ -1,0 +1,417 @@
+﻿@page "/e2e/message"
+@using System.Diagnostics
+
+<PageTitle>BitMessage E2E</PageTitle>
+
+@* A fixed width keeps what folds, wraps and clips the same on every machine. *@
+<style>
+    .msg-box { width: 420px; display: flex; flex-direction: column; gap: 8px; }
+    .msg-narrow { width: 260px; }
+</style>
+
+<E2ESection Id="basic" Title="Basic">
+    <div class="msg-box" id="basic-box">
+        <BitMessage Id="basic-msg">This is a Message.</BitMessage>
+    </div>
+</E2ESection>
+
+<E2ESection Id="variant" Title="Variant">
+    <div class="msg-box">
+        <BitMessage Id="var-fill" Variant="BitVariant.Fill">Fill</BitMessage>
+        <BitMessage Id="var-outline" Variant="BitVariant.Outline">Outline</BitMessage>
+        <BitMessage Id="var-text" Variant="BitVariant.Text">Text</BitMessage>
+        <BitMessage Id="var-outline-tinted" Variant="BitVariant.Outline" Tinted>Outline, Tinted</BitMessage>
+        <BitMessage Id="var-text-tinted" Variant="BitVariant.Text" Tinted>Text, Tinted</BitMessage>
+        <BitMessage Id="var-fill-tinted" Variant="BitVariant.Fill" Tinted>Fill, Tinted</BitMessage>
+    </div>
+</E2ESection>
+
+<E2ESection Id="multiline" Title="Multiline">
+    <div class="msg-box">
+        <BitMessage Id="ml-single">@LongText</BitMessage>
+        <BitMessage Id="ml-multi" Multiline>@LongText</BitMessage>
+        <BitMessage Id="ml-max" Multiline MaxLines="2">@LongText</BitMessage>
+    </div>
+    <div class="msg-box" style="width: @(_autoWidth)px;" id="auto-box">
+        <BitMessage Id="ml-auto" AutoMultiline>AutoMultiline: the import finished, and 14 of its 320 rows need attention.</BitMessage>
+        <BitMessage Id="ml-auto-actions" AutoMultiline>
+            <Content>A draft of this page was recovered from your last session.</Content>
+            <Actions><button id="auto-restore">Restore</button></Actions>
+        </BitMessage>
+    </div>
+    <button id="btn-auto-narrow" @onclick="() => _autoWidth = 240">Narrow</button>
+    <button id="btn-auto-wide" @onclick="() => _autoWidth = 1100">Wide</button>
+</E2ESection>
+
+<E2ESection Id="truncate" Title="Truncate">
+    <div class="msg-box">
+        <BitMessage Id="tr-bound" Truncate @bind-Expanded="_truncateExpanded">@LongText</BitMessage>
+        <span id="tr-expanded">@_truncateExpanded</span>
+        <button id="btn-tr-set-expanded" @onclick="() => _truncateExpanded = !_truncateExpanded">Toggle Expanded</button>
+
+        <BitMessage Id="tr-methods" @ref="_truncatedMessage" Truncate>@LongText</BitMessage>
+        <button id="btn-tr-expand" @onclick="() => _truncatedMessage!.ExpandAsync()">Expand</button>
+        <button id="btn-tr-collapse" @onclick="() => _truncatedMessage!.CollapseAsync()">Collapse</button>
+        <button id="btn-tr-toggle" @onclick="() => _truncatedMessage!.ToggleExpandAsync()">Toggle</button>
+
+        <BitMessage Id="tr-short" Truncate>Fits on its line.</BitMessage>
+        <BitMessage Id="tr-max" Multiline Truncate MaxLines="2">@LongText</BitMessage>
+        <BitMessage Id="tr-labels" Truncate ExpandAriaLabel="Show more" CollapseAriaLabel="Show less">@LongText</BitMessage>
+    </div>
+</E2ESection>
+
+<E2ESection Id="title" Title="Title">
+    <div class="msg-box">
+        <BitMessage Id="ttl-inline" Title="Heads up">Your session expires in 5 minutes.</BitMessage>
+        <BitMessage Id="ttl-multi" Multiline Title="Upload failed">The file could not be uploaded because it exceeds the 25 MB limit.</BitMessage>
+        <BitMessage Id="ttl-template" Multiline>
+            <TitleTemplate>Saved to <a id="ttl-link" href="#title">your workspace</a></TitleTemplate>
+            <Content>Everyone with access can see this version now.</Content>
+        </BitMessage>
+        <BitMessage Id="ttl-h3" Multiline TitleElement="h3" Title="A heading title">Rendered as an h3.</BitMessage>
+    </div>
+</E2ESection>
+
+<E2ESection Id="alignment" Title="Alignment, Square and Elevation">
+    <div class="msg-box">
+        @foreach (var alignment in _alignments)
+        {
+            <BitMessage Id="@($"al-{alignment}")" Alignment="alignment" HideIcon>@alignment</BitMessage>
+        }
+        <BitMessage Id="al-default" HideIcon>Default</BitMessage>
+        <BitMessage Id="sq-default">Rounded</BitMessage>
+        <BitMessage Id="sq-square" Square>Square</BitMessage>
+        <BitMessage Id="el-runtime" Elevation="_elevation">Elevated</BitMessage>
+        <BitMessage Id="el-out-of-range" Elevation="25">Out of range</BitMessage>
+        <span id="elevation">@_elevation</span>
+        <button id="btn-el-8" @onclick="() => _elevation = 8">8</button>
+        <button id="btn-el-0" @onclick="() => _elevation = 0">0</button>
+    </div>
+</E2ESection>
+
+<E2ESection Id="dismiss" Title="Dismiss">
+    <div class="msg-box">
+        <BitMessage Id="dm-self" Dismissible @bind-Dismissed="_selfDismissed" OnDismiss="() => _selfDismissCount++">Removes itself.</BitMessage>
+        <span id="dm-self-dismissed">@_selfDismissed</span>
+        <span id="dm-self-count">@_selfDismissCount</span>
+        <button id="btn-dm-self-back" @onclick="() => _selfDismissed = false">Bring back</button>
+        <button id="btn-dm-self-dismiss" @onclick="() => _selfDismissed = true">Dismiss from outside</button>
+
+        <BitMessage Id="dm-report" OnDismiss="() => _reportCount++">Reports the dismissal only.</BitMessage>
+        <span id="dm-report-count">@_reportCount</span>
+
+        <BitMessage Id="dm-guarded" Dismissible DismissOnEscape OnDismissing="HandleDismissing" @bind-Dismissed="_guardedDismissed">
+            Guarded. <button id="dm-guarded-inner">Inner</button>
+        </BitMessage>
+        <span id="dm-attempts">@_dismissAttempts</span>
+        <span id="dm-reasons">@string.Join(",", _reasons)</span>
+        <span id="dm-guarded-dismissed">@_guardedDismissed</span>
+        <button id="btn-dm-guarded-back" @onclick="() => { _guardedDismissed = false; _dismissAttempts = 0; _reasons.Clear(); }">Bring back</button>
+
+        <BitMessage Id="dm-method" @ref="_methodMessage" Dismissible @bind-Dismissed="_methodDismissed" OnDismissing="args => _methodReason = args.Reason.ToString()">Dismissed by DismissAsync.</BitMessage>
+        <span id="dm-method-reason">@_methodReason</span>
+        <button id="btn-dm-method" @onclick="() => _methodMessage!.DismissAsync()">DismissAsync</button>
+        <span id="dm-method-dismissed">@_methodDismissed</span>
+
+        <BitMessage Id="dm-escape-only" DismissOnEscape Dismissible TabIndex="0" @bind-Dismissed="_escapeOnlyDismissed">Escape without a button press.</BitMessage>
+        <span id="dm-escape-only-dismissed">@_escapeOnlyDismissed</span>
+
+        <BitMessage Id="dm-labels" Dismissible DismissAriaLabel="Close notice">Custom dismiss label.</BitMessage>
+    </div>
+</E2ESection>
+
+<E2ESection Id="auto-dismiss" Title="Auto-dismiss">
+    <div class="msg-box">
+        <BitMessage Id="ad-basic" AutoDismissTime="TimeSpan.FromMilliseconds(1200)" Dismissible @bind-Dismissed="_adBasicDismissed" OnDismiss="() => _adBasicElapsed = _adBasicWatch.ElapsedMilliseconds">Gone soon.</BitMessage>
+        <button id="btn-ad-basic" @onclick="() => { _adBasicElapsed = -1; _adBasicWatch.Restart(); _adBasicDismissed = false; }">Show</button>
+        <span id="ad-basic-dismissed">@_adBasicDismissed</span>
+        <span id="ad-basic-elapsed">@_adBasicElapsed</span>
+
+        <BitMessage Id="ad-progress" @ref="_progressMessage" AutoDismissTime="TimeSpan.FromMilliseconds(1500)" ShowAutoDismissProgress Dismissed="_adProgressDismissed" DismissedChanged="HandleProgressDismissedChanged">
+            Bound only, with a bar. <button id="ad-progress-inner">Inner</button>
+        </BitMessage>
+        <button id="btn-ad-progress" @onclick="() => { _adProgressElapsed = -1; _adProgressWatch.Restart(); _adProgressDismissed = false; }">Show</button>
+        <button id="btn-ad-pause" @onclick="() => _progressMessage!.PauseAutoDismiss()">Pause</button>
+        <button id="btn-ad-resume" @onclick="() => _progressMessage!.ResumeAutoDismiss()">Resume</button>
+        <span id="ad-progress-dismissed">@_adProgressDismissed</span>
+        <span id="ad-progress-elapsed">@_adProgressElapsed</span>
+
+        <BitMessage Id="ad-refused" AutoDismissTime="TimeSpan.FromMilliseconds(800)" ShowAutoDismissProgress Dismissible @bind-Dismissed="_adRefusedDismissed" OnDismissing="HandleAutoRefusing">Refused once.</BitMessage>
+        <button id="btn-ad-refused" @onclick="() => { _adRefusals = 0; _adRefusedDismissed = false; }">Show</button>
+        <span id="ad-refusals">@_adRefusals</span>
+        <span id="ad-refused-dismissed">@_adRefusedDismissed</span>
+
+        <BitMessage Id="ad-blur" AutoDismissTime="TimeSpan.FromMilliseconds(1500)" PauseOnWindowBlur PauseOnPageHidden Dismissible @bind-Dismissed="_adBlurDismissed">Waits while the window is blurred.</BitMessage>
+        <button id="btn-ad-blur" @onclick="() => _adBlurDismissed = false">Show</button>
+        <span id="ad-blur-dismissed">@_adBlurDismissed</span>
+
+        <BitMessage Id="ad-time" AutoDismissTime="_adTime" Dismissible @bind-Dismissed="_adTimeDismissed">Time changed at runtime.</BitMessage>
+        <button id="btn-ad-time" @onclick="() => _adTime = TimeSpan.FromMilliseconds(600)">Arm</button>
+        <span id="ad-time-dismissed">@_adTimeDismissed</span>
+    </div>
+</E2ESection>
+
+<E2ESection Id="actions" Title="Actions">
+    <div class="msg-box">
+        <BitMessage Id="act-single">
+            <Content>A draft was recovered.</Content>
+            <Actions><button id="act-restore" @onclick="() => _actionClicks++">Restore</button></Actions>
+        </BitMessage>
+        <BitMessage Id="act-multi" Multiline Title="Connection lost" Color="BitColor.Warning" OnDismiss="() => { }">
+            <Content>The last three changes could not be saved because the server could not be reached.</Content>
+            <Actions><button id="act-retry" @onclick="() => _actionClicks++">Retry now</button><button>Work offline</button></Actions>
+        </BitMessage>
+        <span id="action-clicks">@_actionClicks</span>
+    </div>
+</E2ESection>
+
+<E2ESection Id="icons" Title="Icons">
+    <div class="msg-box">
+        <BitMessage Id="ic-custom" IconName="@BitIconName.CheckMark">A custom icon.</BitMessage>
+        <BitMessage Id="ic-dismiss" OnDismiss="() => { }" DismissIconName="@BitIconName.Blocked2Solid">A custom dismiss icon.</BitMessage>
+        <BitMessage Id="ic-expander" Truncate ExpandIconName="@BitIconName.ChevronDownEnd" CollapseIconName="@BitIconName.ChevronUpEnd">@LongText</BitMessage>
+        <BitMessage Id="ic-template">
+            <IconTemplate><span id="ic-template-mark">*</span></IconTemplate>
+            <Content>A template in place of the icon.</Content>
+        </BitMessage>
+        <BitMessage Id="ic-hidden" HideIcon>No icon.</BitMessage>
+    </div>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <div class="msg-box">
+        <BitMessage Id="a11y-icon-label" Color="BitColor.Error" IconAriaLabel="Error">The payment could not be authorized.</BitMessage>
+        <BitMessage Id="a11y-role" Color="BitColor.Error" Role="status">Error colored, a status.</BitMessage>
+        <BitMessage Id="a11y-polite" Color="BitColor.Error" Politeness="BitPoliteness.Polite">Polite alert.</BitMessage>
+        <BitMessage Id="a11y-assertive" Politeness="BitPoliteness.Assertive">Assertive status.</BitMessage>
+        <BitMessage Id="a11y-off" Politeness="BitPoliteness.Off">Off.</BitMessage>
+        <BitMessage Id="a11y-none" Color="BitColor.Error" Role="none">Not announced.</BitMessage>
+        <BitMessage Id="a11y-aria-label" AriaLabel="Import report">Named by its label.</BitMessage>
+        <BitMessage Id="a11y-delayed" DelayedAnnouncement Dismissible @bind-Dismissed="_delayedDismissed">Announced one render later.</BitMessage>
+        <button id="btn-delayed" @onclick="() => _delayedDismissed = false">Show delayed</button>
+        <BitMessage Id="a11y-autofocus" AutoFocus Dismissible Title="Action required" Color="BitColor.SevereWarning" @bind-Dismissed="_autoFocusDismissed">This message took the focus.</BitMessage>
+        <button id="btn-autofocus" @onclick="() => _autoFocusDismissed = false">Show auto-focused</button>
+        <BitMessage Id="a11y-focusable" @ref="_focusableMessage" TabIndex="0">Focusable on demand.</BitMessage>
+        <button id="btn-focus" @onclick="() => _focusableMessage!.FocusAsync()">FocusAsync</button>
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <div class="msg-box" id="disabled-box" @onclick="() => _disabledBoxClicks++">
+        <BitMessage Id="dis-msg" Disabled="_messageDisabled" Truncate Dismissible DismissOnEscape ShowAutoDismissProgress Color="BitColor.Warning" Title="Licence expiring"
+                    AutoDismissTime="_disabledTime" @bind-Dismissed="_disabledDismissed" OnDismiss="() => _disabledDismissCount++">
+            @LongText
+        </BitMessage>
+        <span id="dis-dismissed">@_disabledDismissed</span>
+        <span id="dis-dismiss-count">@_disabledDismissCount</span>
+        <span id="dis-box-clicks">@_disabledBoxClicks</span>
+    </div>
+    <button id="btn-dis-toggle" @onclick="() => _messageDisabled = !_messageDisabled">Toggle disabled</button>
+    <button id="btn-dis-arm" @onclick="() => _disabledTime = TimeSpan.FromMilliseconds(700)">Arm countdown</button>
+</E2ESection>
+
+<E2ESection Id="cascade" Title="Cascading parameters">
+    <BitParams Parameters="@_messageParams">
+        <div class="msg-box">
+            <BitMessage Id="cas-1" Color="BitColor.Success">Saved.</BitMessage>
+            <BitMessage Id="cas-2" Color="BitColor.Warning">@LongText</BitMessage>
+            <BitMessage Id="cas-3" Color="BitColor.Error" Variant="BitVariant.Fill">Keeps its own Fill variant.</BitMessage>
+        </div>
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    <div class="msg-box">
+        @foreach (var color in _colors)
+        {
+            <BitMessage Id="@($"clr-{color}")" Color="color">@color</BitMessage>
+            <BitMessage Id="@($"clr-otl-{color}")" Color="color" Variant="BitVariant.Outline">@color</BitMessage>
+            <BitMessage Id="@($"clr-tnt-{color}")" Color="color" Variant="BitVariant.Text" Tinted>@color</BitMessage>
+        }
+        <BitMessage Id="clr-runtime" Color="_runtimeColor">Runtime color</BitMessage>
+        <button id="btn-color-success" @onclick="() => _runtimeColor = BitColor.Success">Success</button>
+    </div>
+</E2ESection>
+
+<E2ESection Id="external-icons" Title="External Icons">
+    <div class="msg-box">
+        <BitMessage Id="ext-string" Icon="@("fa-solid fa-circle-info")">String icon.</BitMessage>
+        <BitMessage Id="ext-dismiss" OnDismiss="() => { }" DismissIcon="@BitIconInfo.Fa("solid xmark")">Fa dismiss.</BitMessage>
+        <BitMessage Id="ext-bi" Icon="@BitIconInfo.Bi("check-circle-fill")">Bi icon.</BitMessage>
+        <BitMessage Id="ext-expander" Truncate Icon="@BitIconInfo.Css("bi bi-x-octagon-fill")" ExpandIcon="@BitIconInfo.Bi("chevron-double-down")" CollapseIcon="@BitIconInfo.Bi("chevron-double-up")">@LongText</BitMessage>
+    </div>
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <div class="msg-box">
+        @foreach (var size in _sizes)
+        {
+            <BitMessage Id="@($"size-{size}")" Size="size" OnDismiss="() => { }" AutoDismissTime="TimeSpan.FromHours(1)" ShowAutoDismissProgress>@size</BitMessage>
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style and Class">
+    <div class="msg-box">
+        <BitMessage Id="sc-style" Style="padding: 8px; font-style: italic;">Styled.</BitMessage>
+        <BitMessage Id="sc-class" Class="custom-class">Classed.</BitMessage>
+        <BitMessage Id="sc-styles" Multiline Title="Styled title" OnDismiss="() => { }" Truncate MaxLines="1" IconAriaLabel="Info" AutoDismissTime="TimeSpan.FromHours(1)" ShowAutoDismissProgress
+                    Styles="@(new() { Root = "margin-top: 3px;", RootContainer = "padding-top: 1px;", Container = "padding-bottom: 2px;", IconContainer = "opacity: 0.8;", Icon = "color: rgb(255, 0, 0);", IconLabel = "font-size: 5px;", ContentContainer = "padding-left: 3px;", ContentWrapper = "padding-right: 4px;", Title = "color: rgb(139, 0, 0);", Content = "color: rgb(138, 43, 226);", Actions = "gap: 13px;", ExpanderButton = "opacity: 0.7;", ExpanderIcon = "color: rgb(0, 128, 0);", DismissButton = "opacity: 0.6;", DismissIcon = "font-size: 17px;", AutoDismissProgress = "height: 7px;", AutoDismissProgressBar = "opacity: 0.5;" })">
+            <Content>@LongText</Content>
+            <Actions><button>Ok</button></Actions>
+        </BitMessage>
+        <BitMessage Id="sc-classes" Multiline Title="Classed title" OnDismiss="() => { }" Truncate MaxLines="1" IconAriaLabel="Info" AutoDismissTime="TimeSpan.FromHours(1)" ShowAutoDismissProgress
+                    Classes="@(new() { Root = "c-root", RootContainer = "c-rct", Container = "c-con", IconContainer = "c-ict", Icon = "c-ico", IconLabel = "c-ilb", ContentContainer = "c-cnc", ContentWrapper = "c-cnw", Title = "c-ttl", Content = "c-cnt", Actions = "c-act", ExpanderButton = "c-exb", ExpanderIcon = "c-exi", DismissButton = "c-dmb", DismissIcon = "c-dmi", AutoDismissProgress = "c-prg", AutoDismissProgressBar = "c-prb" })">
+            <Content>@LongText</Content>
+            <Actions><button>Ok</button></Actions>
+        </BitMessage>
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div class="msg-box">
+        <BitMessage Id="rtl-msg" Dir="BitDir.Rtl" OnDismiss="() => { }" AutoDismissTime="TimeSpan.FromHours(1)" ShowAutoDismissProgress>پیام خبری</BitMessage>
+        <div dir="rtl">
+            <BitMessage Id="rtl-inherited" OnDismiss="() => { }" AutoDismissTime="TimeSpan.FromHours(1)" ShowAutoDismissProgress>پیام خبری</BitMessage>
+        </div>
+        <BitMessage Id="ltr-msg" OnDismiss="() => { }">Left to right.</BitMessage>
+    </div>
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div class="msg-box" style="--bit-Message-background: rgb(102, 51, 153); --bit-Message-color: rgb(255, 255, 255); --bit-Message-border-color: rgb(0, 128, 0); --bit-Message-radius: 9px; --bit-Message-font-size: 19px; --bit-Message-title-color: rgb(255, 215, 0); --bit-Message-title-font-weight: 300; --bit-Message-icon-color: rgb(0, 255, 255); --bit-Message-icon-size: 26px; --bit-Message-progress-color: rgb(255, 0, 0); --bit-Message-progress-height: 6px; --bit-Message-shadow: rgb(0, 0, 0) 0px 0px 5px 0px; --bit-Message-border-width: 3px; --bit-Message-line-height: 30px; --bit-Message-focus-color: rgb(255, 0, 255);">
+        <BitMessage Id="cv-msg" Title="Title" OnDismiss="() => { }" AutoDismissTime="TimeSpan.FromHours(1)" ShowAutoDismissProgress>Custom.</BitMessage>
+        <BitMessage Id="cv-explicit" Color="BitColor.Error" Size="BitSize.Small" Square Elevation="1">Explicit color, size, square, elevation.</BitMessage>
+    </div>
+    <div class="msg-box" style="--bit-Message-outline-border-color: rgb(255, 0, 0);">
+        <BitMessage Id="cv-twin-outline" Variant="BitVariant.Outline">Outline twin.</BitMessage>
+        <BitMessage Id="cv-twin-fill">Fill keeps its border.</BitMessage>
+    </div>
+</E2ESection>
+
+<E2ESection Id="dialog" Title="Inside a dialog">
+    <button id="btn-open-dialog" @onclick="() => { _dialogMessageDismissed = false; _dialogOpen = true; }">Open dialog</button>
+    <span id="dialog-open">@_dialogOpen</span>
+    <span id="dialog-message-dismissed">@_dialogMessageDismissed</span>
+    <BitDialog @bind-IsOpen="_dialogOpen" Title="Dialog" ShowOkButton="false" ShowCancelButton="false" AutoFocus="false">
+        <Body>
+            <BitMessage Id="dlg-msg" Dismissible DismissOnEscape @bind-Dismissed="_dialogMessageDismissed">In the dialog.</BitMessage>
+            <button id="dlg-inner-btn">Inner</button>
+        </Body>
+    </BitDialog>
+</E2ESection>
+
+<E2ESection Id="base" Title="Base parameters">
+    <div class="msg-box">
+        <BitMessage Id="vis-hidden" Visibility="BitVisibility.Hidden">Hidden</BitMessage>
+        <BitMessage Id="vis-collapsed" Visibility="BitVisibility.Collapsed">Collapsed</BitMessage>
+        <BitMessage Id="html-attrs" HtmlAttributes="@(new() { ["data-test"] = "msg-attr", ["aria-describedby"] = "basic" })">Attributes</BitMessage>
+    </div>
+</E2ESection>
+
+<E2ESection Id="unmount" Title="Unmount">
+    @if (_showUnmount)
+    {
+        <div id="unmount-host" class="msg-box">
+            <BitMessage Truncate DismissOnEscape Dismissible AutoDismissTime="TimeSpan.FromSeconds(30)" PauseOnWindowBlur ShowAutoDismissProgress>@LongText</BitMessage>
+            <BitMessage AutoMultiline>@LongText</BitMessage>
+        </div>
+    }
+    <button id="btn-unmount" @onclick="() => _showUnmount = !_showUnmount">Toggle</button>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string LongText = "Fourteen of the 320 rows could not be imported because their Email column was empty or held a value the address parser did not recognize. Every other row was imported and is already visible in the contacts list.";
+
+    private int _autoWidth = 1100;
+    private bool _truncateExpanded;
+    private BitMessage? _truncatedMessage;
+    private int _elevation = 0;
+
+    private bool _selfDismissed;
+    private int _selfDismissCount;
+    private int _reportCount;
+    private bool _guardedDismissed;
+    private int _dismissAttempts;
+    private readonly List<BitMessageDismissReason> _reasons = [];
+    private BitMessage? _methodMessage;
+    private bool _methodDismissed;
+    private string? _methodReason;
+    private bool _escapeOnlyDismissed;
+
+    private bool _adBasicDismissed = true;
+    private long _adBasicElapsed = -1;
+    private readonly Stopwatch _adBasicWatch = new();
+    private BitMessage? _progressMessage;
+    private bool _adProgressDismissed = true;
+    private long _adProgressElapsed = -1;
+    private readonly Stopwatch _adProgressWatch = new();
+    private bool _adRefusedDismissed = true;
+    private int _adRefusals;
+    private bool _adBlurDismissed = true;
+    private TimeSpan? _adTime;
+    private bool _adTimeDismissed;
+
+    private int _actionClicks;
+    private bool _delayedDismissed = true;
+    private bool _autoFocusDismissed = true;
+    private BitMessage? _focusableMessage;
+
+    private bool _messageDisabled = true;
+    private bool _disabledDismissed;
+    private int _disabledDismissCount;
+    private int _disabledBoxClicks;
+    private TimeSpan? _disabledTime;
+
+    private BitColor? _runtimeColor;
+    private bool _dialogOpen;
+    private bool _dialogMessageDismissed;
+    private bool _showUnmount = true;
+
+    private readonly BitAlignment[] _alignments =
+    [
+        BitAlignment.Start, BitAlignment.End, BitAlignment.Center, BitAlignment.SpaceBetween,
+        BitAlignment.SpaceAround, BitAlignment.SpaceEvenly, BitAlignment.Baseline, BitAlignment.Stretch
+    ];
+
+    private readonly BitColor[] _colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground,
+        BitColor.TertiaryForeground, BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    private readonly BitSize[] _sizes = [BitSize.Small, BitSize.Medium, BitSize.Large];
+
+    private readonly BitMessageParams[] _messageParams =
+    [
+        new() { Variant = BitVariant.Outline, Square = true, Truncate = true }
+    ];
+
+    private void HandleDismissing(BitMessageDismissArgs args)
+    {
+        _dismissAttempts++;
+        _reasons.Add(args.Reason);
+
+        // The first attempt is refused.
+        if (_dismissAttempts == 1) args.Cancel = true;
+    }
+
+    private void HandleProgressDismissedChanged(bool dismissed)
+    {
+        _adProgressDismissed = dismissed;
+        if (dismissed) _adProgressElapsed = _adProgressWatch.ElapsedMilliseconds;
+    }
+
+    private void HandleAutoRefusing(BitMessageDismissArgs args)
+    {
+        if (args.Reason is not BitMessageDismissReason.AutoDismiss) return;
+
+        _adRefusals++;
+
+        if (_adRefusals == 1) args.Cancel = true;
+    }
+}

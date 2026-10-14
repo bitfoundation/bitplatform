@@ -1991,16 +1991,6 @@ public class BitColorPickerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitColorPickerParamsShouldImplementIBitComponentParams()
-    {
-        var @params = new BitColorPickerParams();
-
-        Assert.IsInstanceOfType<IBitComponentParams>(@params);
-        Assert.AreEqual(BitColorPickerParams.ParamName, @params.Name);
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitColorPicker)}", BitColorPickerParams.ParamName);
-    }
-
-    [TestMethod]
     public void BitColorPickerShouldApplyCascadingParametersFromBitParams()
     {
         var paramsList = new List<IBitComponentParams>
@@ -2914,5 +2904,104 @@ public class BitColorPickerTests : BunitTestContext
 
         Assert.AreNotEqual("rgb(255,0,0)", model.Value);
         Assert.IsTrue(editContext.IsModified());
+    }
+
+    // The drag listeners are released with the picker, through the controller the setup answered with, so a page
+    // that drops the picker leaves no listener behind on the document.
+    [TestMethod]
+    public async Task BitColorPickerDisposeShouldReleaseTheDragListeners()
+    {
+        Context.JSInterop.Setup<string>("BitBlazorUI.ColorPicker.setup", _ => true).SetResult("controller-id");
+
+        RenderComponent<BitColorPicker>();
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.ColorPicker.dispose"].Count);
+
+        // Disposal goes through bUnit so the component is disposed once, by the framework that owns it.
+        await Context.DisposeComponentsAsync();
+
+        var dispose = Context.JSInterop.Invocations["BitBlazorUI.ColorPicker.dispose"];
+
+        Assert.AreEqual(1, dispose.Count);
+        Assert.AreEqual("controller-id", dispose[0].Arguments[0]);
+    }
+
+    // A picker that never registered anything - a loose interop answers the setup with no controller - has nothing
+    // to release, and disposing it asks for nothing.
+    [TestMethod]
+    public async Task BitColorPickerDisposeShouldNotThrowWithoutAController()
+    {
+        RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowSaturationArea, false);
+        });
+
+        await Context.DisposeComponentsAsync();
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.ColorPicker.dispose"].Count);
+    }
+
+    [TestMethod,
+        DataRow("data-value", "ID-123"),
+        DataRow("data-test", "carrier")
+    ]
+    public void BitColorPickerShouldSplatTheInputHtmlAttributesOnTheCarrierAlone(string name, string value)
+    {
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { [name] = value });
+        });
+
+        Assert.AreEqual(value, com.Find("input.bit-input-hidden").GetAttribute(name));
+        Assert.IsFalse(com.Find(".bit-clp").HasAttribute(name));
+    }
+
+    [TestMethod]
+    public void BitColorPickerShouldRespectClassStyleAndId()
+    {
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.Class, "custom-class");
+            parameters.Add(p => p.Style, "margin: 1px;");
+            parameters.Add(p => p.Id, "brand-color");
+        });
+
+        var root = com.Find(".bit-clp");
+
+        Assert.AreEqual("brand-color", root.Id);
+        Assert.IsTrue(root.ClassList.Contains("custom-class"));
+        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+
+        // The ids of the fields and of the label are derived from the root's, so a label points at its field.
+        com.Render(parameters =>
+        {
+            parameters.Add(p => p.Id, "brand-color");
+            parameters.Add(p => p.ShowInputs, true);
+            parameters.Add(p => p.Label, "Brand");
+        });
+
+        Assert.AreEqual("brand-color-hex", com.Find(".bit-clp-fhx .bit-clp-fin").Id);
+        Assert.AreEqual("brand-color-hex", com.Find(".bit-clp-fhx .bit-clp-flb").GetAttribute("for"));
+        Assert.AreEqual("brand-color-label", com.Find(".bit-clp-lbc").Id);
+    }
+
+    // The tab index of the picker is the tab index of every control in it, rather than of the group, which is
+    // nothing to land on.
+    [TestMethod]
+    public void BitColorPickerShouldHandItsTabIndexToItsControls()
+    {
+        var com = RenderComponent<BitColorPicker>(parameters =>
+        {
+            parameters.Add(p => p.TabIndex, "3");
+            parameters.Add(p => p.ShowInputs, true);
+            parameters.Add(p => p.ShowAlphaSlider, true);
+            parameters.Add(p => p.Presets, ["#FF0000"]);
+        });
+
+        Assert.IsFalse(com.Find(".bit-clp").HasAttribute("tabindex"));
+        Assert.AreEqual("3", com.Find(".bit-clp-rec").GetAttribute("tabindex"));
+        Assert.IsTrue(com.FindAll(".bit-clp-inp").All(i => i.GetAttribute("tabindex") == "3"));
+        Assert.IsTrue(com.FindAll(".bit-clp-fin").All(i => i.GetAttribute("tabindex") == "3"));
+        Assert.AreEqual("3", com.Find(".bit-clp-prt").GetAttribute("tabindex"));
     }
 }

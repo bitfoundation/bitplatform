@@ -1,0 +1,527 @@
+﻿@page "/e2e/map"
+@using System.Globalization
+
+<PageTitle>BitMap E2E</PageTitle>
+
+<h1>BitMap</h1>
+
+@* Leaflet ships inside the Extras package, and every map here draws its tiles from one image of the host, so the page
+   makes no request off this machine. *@
+
+<E2ESection Id="basic" Title="Basic">
+    <div class="map-box">
+        <BitMap TMapProvider="BitLeafletMapProvider" Id="map-basic" Provider="_basicProvider"
+                OnReady="() => _readyCount++"
+                OnLoadStateChanged="s => _states.Add(s.ToString())" />
+    </div>
+    <span id="ready-count">@_readyCount</span>
+    <span id="load-states">@string.Join(",", _states)</span>
+</E2ESection>
+
+<E2ESection Id="markers" Title="Markers">
+    <div class="map-box">
+        <BitMap @ref="_markersMap" TMapProvider="BitLeafletMapProvider" Id="map-markers" Provider="_markersProvider"
+                Markers="_markers"
+                OnMarkerClick="id => { _markerClicks++; _lastMarker = id; }"
+                OnMarkerDragEnd="HandleDragEnd" />
+    </div>
+    <span id="marker-clicks">@_markerClicks</span>
+    <span id="marker-last">@(_lastMarker ?? "none")</span>
+    <span id="drag-end">@(_dragEnd ?? "none")</span>
+    <button id="btn-add-marker" @onclick="AddMarker">AddMarker</button>
+    <button id="btn-remove-marker" @onclick="@(async () => await _markersMap.RemoveMarker("big-ben"))">RemoveMarker</button>
+    <button id="btn-move-marker" @onclick="MoveMarker">SetMarkerPosition</button>
+    <button id="btn-open-popup" @onclick="@(async () => await _markersMap.OpenMarkerPopup("tower"))">OpenMarkerPopup</button>
+    <button id="btn-close-popup" @onclick="async () => _closed = await _markersMap.CloseMarkerPopup()">CloseMarkerPopup</button>
+    <button id="btn-sync-markers" @onclick="SyncMarkers">SyncMarkers</button>
+    <button id="btn-clear-markers" @onclick="@(async () => await _markersMap.ClearMarkers())">ClearMarkers</button>
+    <button id="btn-fit-markers" @onclick="FitMarkers">FitBoundsToMarkers</button>
+    <button id="btn-param-markers" @onclick="ReplaceMarkersParameter">Replace the Markers parameter</button>
+    <span id="popup-closed">@_closed</span>
+    <span id="fit-zoom">@(_fitZoom ?? "none")</span>
+</E2ESection>
+
+<E2ESection Id="popup" Title="Popup template">
+    <div class="map-box">
+        <BitMap @ref="_popupMap" TMapProvider="BitLeafletMapProvider" Id="map-popup" Provider="_popupProvider"
+                Markers="_popupMarkers" PopupCloseLabel="Close the details"
+                OnPopupOpened="m => { _popupOpened++; _popupMarker = m.Id; }"
+                OnPopupClosed="() => _popupClosed++">
+            <MarkerPopupTemplate Context="marker">
+                <div class="popup-body-content">
+                    <b class="popup-title">@marker.Alt</b>
+                    <button id="btn-popup-visit" @onclick="() => _visits++">Record a visit</button>
+                </div>
+            </MarkerPopupTemplate>
+        </BitMap>
+    </div>
+    <span id="popup-opened">@_popupOpened</span>
+    <span id="popup-closed-count">@_popupClosed</span>
+    <span id="popup-marker">@(_popupMarker ?? "none")</span>
+    <span id="visits">@_visits</span>
+    <button id="btn-open-template-popup" @onclick="@(async () => await _popupMap.OpenPopup("louvre"))">OpenPopup</button>
+    <button id="btn-close-template-popup" @onclick="@(async () => await _popupMap.ClosePopup())">ClosePopup</button>
+</E2ESection>
+
+<E2ESection Id="clustering" Title="Clustering">
+    <div class="map-box">
+        <BitMap TMapProvider="BitLeafletMapProvider" Id="map-cluster" Provider="_clusterProvider"
+                Markers="_clusterMarkers" Clustering="_clustering"
+                OnClusterClick="e => { _clusterClicks++; _clusterCount = e.Count; }"
+                OnViewChanged="HandleClusterView" />
+    </div>
+    <button id="btn-toggle-clustering" @onclick="() => _clustering = _clustering is null ? _clusterOptions : null">Toggle clustering</button>
+    <span id="cluster-clicks">@_clusterClicks</span>
+    <span id="cluster-count">@_clusterCount</span>
+    <span id="cluster-zoom">@(_clusterZoom ?? "none")</span>
+</E2ESection>
+
+<E2ESection Id="camera" Title="Camera & events">
+    <div class="map-box">
+        <BitMap @ref="_cameraMap" TMapProvider="BitLeafletMapProvider" Id="map-camera" Provider="_cameraProvider"
+                @bind-Center="_center" @bind-Zoom="_zoom"
+                OnClick="p => _clicked = Fmt(p)"
+                OnDoubleClick="p => _doubleClicked = Fmt(p)"
+                OnContextMenu="p => _contextMenu = Fmt(p)"
+                OnViewChanged="HandleCameraView"
+                OnInteropError="HandleInteropError" />
+    </div>
+    <span id="center">@(_center is { } c ? Fmt(c) : "null")</span>
+    <span id="zoom">@(_zoom?.ToString("F1", CultureInfo.InvariantCulture) ?? "null")</span>
+    <span id="clicked">@(_clicked ?? "none")</span>
+    <span id="double-clicked">@(_doubleClicked ?? "none")</span>
+    <span id="context-menu">@(_contextMenu ?? "none")</span>
+    <span id="view-changes">@_viewChanges</span>
+    <span id="last-view">@(_lastView ?? "none")</span>
+    <span id="read-view">@(_readView ?? "none")</span>
+    <span id="projected">@(_projected ?? "none")</span>
+    <button id="btn-center-paris" @onclick="() => _center = new(48.8566, 2.3522)">Bind the centre to Paris</button>
+    <button id="btn-zoom-5" @onclick="() => _zoom = 5">Bind the zoom to 5</button>
+    <button id="btn-set-view" @onclick="SetViewRome">SetView(Rome, 10)</button>
+    <button id="btn-fly-to" @onclick="FlyToTokyo">FlyTo(Tokyo, 8)</button>
+    <button id="btn-set-zoom" @onclick="@(async () => await _cameraMap.SetZoom(7, animate: false))">SetZoom(7)</button>
+    <button id="btn-zoom-in" @onclick="@(async () => await _cameraMap.ZoomIn(animate: false))">ZoomIn</button>
+    <button id="btn-zoom-out" @onclick="@(async () => await _cameraMap.ZoomOut(animate: false))">ZoomOut</button>
+    <button id="btn-pan-by" @onclick="@(async () => await _cameraMap.PanBy(100, 0, animate: false))">PanBy(100, 0)</button>
+    <button id="btn-pan-to" @onclick="PanToLondon">PanTo(London)</button>
+    <button id="btn-fit-bounds" @onclick="FitLondonBounds">FitBounds</button>
+    <button id="btn-get-view" @onclick="ReadView">GetView</button>
+    <button id="btn-project" @onclick="ProjectCenter">Project</button>
+    <button id="btn-locate" @onclick="Locate">Locate</button>
+    <span id="located">@(_located ?? "none")</span>
+    <span id="interop-error">@(_interopError ?? "none")</span>
+</E2ESection>
+
+<E2ESection Id="keyboard" Title="Keyboard & announcements">
+    <div class="map-box">
+        <BitMap TMapProvider="BitLeafletMapProvider" Id="map-keyboard" Provider="_keyboardProvider"
+                AriaLabel="Map of central London" RoleDescription="street map"
+                KeyboardInstructions="Arrows pan, plus and minus zoom."
+                AnnounceViewChanges ViewAnnouncementThrottle="TimeSpan.FromMilliseconds(10)"
+                ViewAnnouncementFormatter="FormatAnnouncement"
+                OnViewChanged="HandleKeyboardView" />
+    </div>
+    <button id="btn-after-map">After the map</button>
+    <span id="keyboard-view">@(_keyboardView ?? "none")</span>
+    <div class="map-box">
+        <BitMap TMapProvider="BitLeafletMapProvider" Id="map-no-escape" Provider="_noEscapeProvider" EscapeToExit="false" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="marker-list" Title="Marker list">
+    <div class="map-box-list">
+        <BitMap TMapProvider="BitLeafletMapProvider" Id="map-list" Provider="_listProvider" Markers="_markers"
+                MarkerListMode="BitMapMarkerListMode.Visible" MarkerListCaption="London landmarks" MarkerListZoom="16"
+                @bind-Center="_listCenter" @bind-Zoom="_listZoom" />
+    </div>
+    <span id="list-center">@(_listCenter is { } lc ? Fmt(lc) : "null")</span>
+    <span id="list-zoom">@(_listZoom?.ToString("F1", CultureInfo.InvariantCulture) ?? "null")</span>
+    <div class="map-box-list">
+        <BitMap TMapProvider="BitLeafletMapProvider" Id="map-list-sr" Provider="_listSrProvider" Markers="_markers"
+                MarkerListMode="BitMapMarkerListMode.ScreenReaderOnly" />
+    </div>
+    <div class="map-box-list">
+        <BitMap TMapProvider="BitLeafletMapProvider" Id="map-list-template" Provider="_listTemplateProvider" Markers="_markers"
+                MarkerListMode="BitMapMarkerListMode.Visible">
+            <MarkerListTemplate Context="markers">
+                <ul class="custom-marker-list">
+                    @foreach (var m in markers)
+                    {
+                        <li>@m.Alt</li>
+                    }
+                </ul>
+            </MarkerListTemplate>
+        </BitMap>
+    </div>
+</E2ESection>
+
+<E2ESection Id="vectors" Title="Vector layers">
+    <div class="map-box">
+        <BitMap @ref="_vectorMap" TMapProvider="BitLeafletMapProvider" Id="map-vectors" Provider="_vectorProvider"
+                OnVectorClick="HandleVectorClick"
+                OnGeoJsonFeatureClick="HandleGeoJsonClick" />
+    </div>
+    <button id="btn-add-polygon" @onclick="AddPolygon">AddPolygon</button>
+    <button id="btn-add-polyline" @onclick="AddPolyline">AddPolyline</button>
+    <button id="btn-add-circle" @onclick="AddCircle">AddCircle</button>
+    <button id="btn-add-rectangle" @onclick="AddRectangle">AddRectangle</button>
+    <button id="btn-add-geojson" @onclick="AddGeoJson">AddGeoJson</button>
+    <button id="btn-hide-polygon" @onclick="HidePolygon">SetLayerVisible(polygon, false)</button>
+    <button id="btn-style-polygon" @onclick="StylePolygon">SetLayerStyle</button>
+    <button id="btn-remove-line" @onclick="@(async () => await _vectorMap.RemoveLayer("line"))">RemoveLayer(line)</button>
+    <button id="btn-clear-vectors" @onclick="@(async () => await _vectorMap.ClearVectorLayers())">ClearVectorLayers</button>
+    <button id="btn-add-overlay" @onclick="AddOverlay">AddTileOverlay</button>
+    <button id="btn-dim-overlay" @onclick="@(async () => await _vectorMap.SetTileOverlayOpacity("labels", 0.3))">SetTileOverlayOpacity</button>
+    <button id="btn-hide-overlay" @onclick="HideOverlay">SetTileOverlayVisible(false)</button>
+    <button id="btn-remove-overlay" @onclick="@(async () => await _vectorMap.RemoveTileOverlay("labels"))">RemoveTileOverlay</button>
+    <span id="vector-click">@(_vectorClick ?? "none")</span>
+    <span id="geo-click">@(_geoClick ?? "none")</span>
+    <span id="layer-visible">@_layerVisible</span>
+    <span id="overlay-visible">@_overlayVisible</span>
+</E2ESection>
+
+<E2ESection Id="overlay" Title="ChildContent & cooperative gestures">
+    <div class="map-box">
+        <BitMap @ref="_overlayMap" TMapProvider="BitLeafletMapProvider" Id="map-overlay" Provider="_overlayProvider"
+                CooperativeGestures @bind-Zoom="_overlayZoom">
+            <div class="map-toolbar">
+                <button id="btn-overlay-zoom" @onclick="@(async () => await _overlayMap.ZoomIn(animate: false))">Zoom in</button>
+            </div>
+        </BitMap>
+    </div>
+    <span id="overlay-zoom">@(_overlayZoom?.ToString("F1", CultureInfo.InvariantCulture) ?? "null")</span>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <div class="map-box-list">
+        <BitMap TMapProvider="BitLeafletMapProvider" Id="map-disabled" Provider="_disabledProvider" Disabled="_disabled"
+                Markers="_markers" MarkerListMode="BitMapMarkerListMode.Visible" />
+    </div>
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style, Class & css variables">
+    <div id="map-vars-scope" style="--bit-Map-height: 250px; --bit-Map-border: 3px solid rgb(255, 0, 0); --bit-Map-radius: 12px; --bit-Map-disabled-opacity: 0.25; width: 600px;">
+        <BitMap TMapProvider="BitLeafletMapProvider" Id="map-vars" Provider="_varsProvider" Disabled />
+    </div>
+    <div class="map-box">
+        <BitMap TMapProvider="BitLeafletMapProvider" Id="map-styled" Provider="_styledProvider"
+                Class="custom-class" Style="outline: 2px solid rgb(1, 2, 3);"
+                Classes="@(new() { Root = "custom-root", Canvas = "custom-canvas", Instructions = "custom-help" })"
+                Styles="@(new() { Canvas = "background: rgb(250, 250, 210);" })" />
+    </div>
+    <div class="map-box-list">
+        <BitParams Parameters="_params">
+            <BitMap TMapProvider="BitLeafletMapProvider" Id="map-params" Provider="_paramsProvider" Markers="_markers" />
+        </BitParams>
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div class="map-box">
+        <BitMap TMapProvider="BitLeafletMapProvider" Id="map-rtl" Dir="BitDir.Rtl" Provider="_rtlProvider" AriaLabel="نقشه" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="dialog" Title="Inside a dialog">
+    <button id="btn-open-dialog" @onclick="() => _dialogOpen = true">Open dialog</button>
+    <BitDialog Id="map-dialog" @bind-IsOpen="_dialogOpen" Title="Map dialog">
+        <Body>
+            <div class="map-box">
+                <BitMap TMapProvider="BitLeafletMapProvider" Id="map-in-dialog" Provider="_dialogProvider" Markers="_popupMarkers">
+                    <MarkerPopupTemplate Context="marker"><b class="dialog-popup">@marker.Alt</b></MarkerPopupTemplate>
+                </BitMap>
+            </div>
+        </Body>
+    </BitDialog>
+    <span id="dialog-open">@_dialogOpen</span>
+</E2ESection>
+
+<E2ESection Id="failed" Title="Failed & unsupported">
+    <button id="btn-show-failed" @onclick="() => _showFailed = true">Show a map that fails</button>
+    @if (_showFailed)
+    {
+        <div class="map-box">
+            <BitMap TMapProvider="FailingProvider" Id="map-failed" OnLoadStateChanged="s => _failedState = s.ToString()" />
+        </div>
+        <div class="map-box">
+            <BitMap TMapProvider="FailingProvider" Id="map-failed-template">
+                <ErrorTemplate Context="error"><span class="custom-error">No map today</span></ErrorTemplate>
+            </BitMap>
+        </div>
+    }
+    <span id="failed-state">@(_failedState ?? "none")</span>
+</E2ESection>
+
+<E2ESection Id="lazy" Title="LazyLoad">
+    <div style="height: 1400px;" id="lazy-spacer">Spacer</div>
+    <div class="map-box">
+        <BitMap TMapProvider="BitLeafletMapProvider" Id="map-lazy" Provider="_lazyProvider" LazyLoad LazyLoadRootMargin="0px"
+                OnLoadStateChanged="s => _lazyState = s.ToString()" />
+    </div>
+    <span id="lazy-state">@(_lazyState ?? "Idle")</span>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    <button id="btn-unmount" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <div class="map-box">
+            <BitMap TMapProvider="BitLeafletMapProvider" Id="map-unmount" Provider="_unmountProvider" Markers="_markers"
+                    Clustering="_clusterOptions" />
+        </div>
+    }
+    <span id="mounted">@_mounted</span>
+</E2ESection>
+
+<style>
+    .map-box { width: 600px; height: 400px; }
+    /* A map with its marker list beside it: the list is a sibling of the map, so the box grows with it. */
+    .map-box-list { width: 600px; --bit-Map-height: 400px; }
+    .map-toolbar { position: absolute; top: 8px; right: 8px; }
+</style>
+
+<E2EStatus />
+
+@code {
+    public const string TileUrl = "samples/map-tile.png?z={z}&x={x}&y={y}";
+
+    // A provider whose script is not there: the asset load fails and the map reports Failed.
+    public sealed class FailingProvider : BitMapProviderBase
+    {
+        public override string Key => "failing";
+        public override string JsObjectName => "BitMapFailingE2E";
+        public override IReadOnlyList<string> Scripts => ["samples/no-such-map-library.js"];
+        public override object BuildOptionsPayload() => GetCommonOptions();
+    }
+
+    private static BitLeafletMapProvider Leaflet(double lat = 51.505, double lng = -0.09, double zoom = 13) => new()
+    {
+        TileUrl = TileUrl,
+        Center = new(lat, lng),
+        Zoom = zoom
+    };
+
+    private readonly BitLeafletMapProvider _basicProvider = Leaflet();
+    private readonly BitLeafletMapProvider _markersProvider = Leaflet();
+    private readonly BitLeafletMapProvider _popupProvider = Leaflet(48.8606, 2.3376, 14);
+    private readonly BitLeafletMapProvider _clusterProvider = Leaflet();
+    private readonly BitLeafletMapProvider _cameraProvider = Leaflet();
+    private readonly BitLeafletMapProvider _keyboardProvider = Leaflet();
+    private readonly BitLeafletMapProvider _noEscapeProvider = Leaflet();
+    private readonly BitLeafletMapProvider _listProvider = Leaflet();
+    private readonly BitLeafletMapProvider _listSrProvider = Leaflet();
+    private readonly BitLeafletMapProvider _listTemplateProvider = Leaflet();
+    private readonly BitLeafletMapProvider _vectorProvider = Leaflet();
+    private readonly BitLeafletMapProvider _overlayProvider = Leaflet();
+    private readonly BitLeafletMapProvider _disabledProvider = Leaflet();
+    private readonly BitLeafletMapProvider _varsProvider = Leaflet();
+    private readonly BitLeafletMapProvider _styledProvider = Leaflet();
+    private readonly BitLeafletMapProvider _paramsProvider = Leaflet();
+    private readonly BitLeafletMapProvider _rtlProvider = Leaflet();
+    private readonly BitLeafletMapProvider _lazyProvider = Leaflet();
+    private readonly BitLeafletMapProvider _unmountProvider = Leaflet();
+    private readonly BitLeafletMapProvider _dialogProvider = Leaflet(48.8606, 2.3376, 14);
+
+    private IEnumerable<BitMapMarker> _markers =
+    [
+        new() { Id = "big-ben", Position = new(51.5007, -0.1246), Alt = "Big Ben", Title = "Big Ben tower", PopupText = "The clock tower", Draggable = true },
+        new() { Id = "tower", Position = new(51.5055, -0.0754), Alt = "Tower Bridge", TooltipText = "A bascule bridge", PopupText = "Opened in 1894", Color = "rgb(0, 128, 0)" },
+        new() { Id = "st-pauls", Position = new(51.5138, -0.0984), Alt = "St Paul's Cathedral", IconUrl = "samples/flags/jp.svg", IconWidth = 30, IconHeight = 20, IconAnchorX = 15, IconAnchorY = 10 }
+    ];
+
+    private readonly IEnumerable<BitMapMarker> _popupMarkers =
+    [
+        new() { Id = "louvre", Position = new(48.8606, 2.3376), Alt = "The Louvre" },
+        new() { Id = "orsay", Position = new(48.8600, 2.3266), Alt = "Musée d'Orsay" }
+    ];
+
+    private readonly IEnumerable<BitMapMarker> _clusterMarkers =
+    [
+        .. Enumerable.Range(0, 10).Select(i => new BitMapMarker { Id = $"c{i}", Position = new(51.505 + (i % 5) * 0.0004, -0.09 + (i / 5) * 0.0005), Alt = $"Cafe {i}" }),
+        new() { Id = "far", Position = new(51.52, -0.13), Alt = "Far away" }
+    ];
+
+    private static readonly BitMapClustering _clusterOptions = new() { RadiusPixels = 60 };
+    private BitMapClustering? _clustering = _clusterOptions;
+
+    private readonly BitMapParams[] _params =
+    [
+        new()
+        {
+            RoleDescription = "cascaded map",
+            KeyboardInstructions = "Cascaded instructions.",
+            MarkerListMode = BitMapMarkerListMode.Visible,
+            MarkerListCaption = "Cascaded caption"
+        }
+    ];
+
+    private int _readyCount;
+    private readonly List<string> _states = [];
+
+    private BitMap<BitLeafletMapProvider> _markersMap = default!;
+    private int _markerClicks;
+    private string? _lastMarker;
+    private string? _dragEnd;
+    private bool _closed;
+    private string? _fitZoom;
+
+    private BitMap<BitLeafletMapProvider> _popupMap = default!;
+    private int _popupOpened;
+    private int _popupClosed;
+    private string? _popupMarker;
+    private int _visits;
+
+    private int _clusterClicks;
+    private int _clusterCount;
+    private string? _clusterZoom;
+
+    private BitMap<BitLeafletMapProvider> _cameraMap = default!;
+    private BitMapLatLng? _center = new(51.505, -0.09);
+    private double? _zoom = 13;
+    private string? _clicked;
+    private string? _doubleClicked;
+    private string? _contextMenu;
+    private int _viewChanges;
+    private string? _lastView;
+    private string? _readView;
+    private string? _projected;
+    private string? _located;
+    private string? _interopError;
+
+    private string? _keyboardView;
+
+    private BitMapLatLng? _listCenter = new(51.505, -0.09);
+    private double? _listZoom = 13;
+
+    private BitMap<BitLeafletMapProvider> _vectorMap = default!;
+    private string? _vectorClick;
+    private string? _geoClick;
+    private bool _layerVisible = true;
+    private bool _overlayVisible = true;
+
+    private BitMap<BitLeafletMapProvider> _overlayMap = default!;
+    private double? _overlayZoom = 13;
+
+    private bool _disabled = true;
+    private bool _dialogOpen;
+    private bool _showFailed;
+    private string? _failedState;
+    private string? _lazyState;
+    private bool _mounted = true;
+
+    private void HandleClusterView(BitMapViewState v) => _clusterZoom = v.Zoom.ToString("F1", CultureInfo.InvariantCulture);
+
+    private void HandleDragEnd(BitMapMarkerDragEndArgs e) => _dragEnd = $"{e.Id}|{Fmt(e.Position)}";
+
+    private void HandleCameraView(BitMapViewState v)
+    {
+        _viewChanges++;
+        _lastView = $"{Fmt(v.Center)}|{v.Zoom.ToString("F1", CultureInfo.InvariantCulture)}";
+    }
+
+    private static string FormatAnnouncement(BitMapViewState v) => $"Zoom {v.Zoom.ToString("F0", CultureInfo.InvariantCulture)}";
+
+    private void HandleKeyboardView(BitMapViewState v) => _keyboardView = $"{Fmt(v.Center)}|{v.Zoom.ToString("F1", CultureInfo.InvariantCulture)}";
+
+    private void HandleVectorClick(BitMapVectorClickArgs e) => _vectorClick = $"{e.LayerId}|{e.Kind}";
+
+    private void HandleGeoJsonClick(BitMapGeoJsonFeatureClickArgs e) => _geoClick = $"{e.LayerId}|{e.Properties.GetProperty("name").GetString()}";
+
+    private static string Fmt(BitMapLatLng p) => string.Create(CultureInfo.InvariantCulture, $"{p.Latitude:F4},{p.Longitude:F4}");
+
+    private async Task AddMarker()
+    {
+        await _markersMap.AddMarker(new() { Id = "added", Position = new(51.505, -0.09), Alt = "Added marker" });
+    }
+
+    private async Task SyncMarkers()
+    {
+        await _markersMap.SyncMarkers(
+        [
+            new() { Id = "synced-1", Position = new(51.506, -0.091), Alt = "Synced one" },
+            new() { Id = "synced-2", Position = new(51.504, -0.089), Alt = "Synced two" }
+        ]);
+    }
+
+    private async Task FitMarkers()
+    {
+        await _markersMap.FitBoundsToMarkers(animate: false);
+        var view = await _markersMap.GetView();
+        _fitZoom = view.Zoom.ToString("F1", CultureInfo.InvariantCulture);
+    }
+
+    private void ReplaceMarkersParameter()
+    {
+        _markers = [new() { Id = "only", Position = new(51.505, -0.09), Alt = "The only marker" }];
+    }
+
+    private async Task ReadView()
+    {
+        var view = await _cameraMap.GetView();
+        _readView = $"{Fmt(view.Center)}|{view.Zoom.ToString("F1", CultureInfo.InvariantCulture)}|{(view.Bounds.SouthWest.Latitude < view.Center.Latitude && view.Bounds.NorthEast.Latitude > view.Center.Latitude)}";
+    }
+
+    private async Task ProjectCenter()
+    {
+        var view = await _cameraMap.GetView();
+        var point = await _cameraMap.Project(view.Center);
+        _projected = point is { } p ? string.Create(CultureInfo.InvariantCulture, $"{p.X:F0},{p.Y:F0}") : "null";
+    }
+
+    private void HandleInteropError(BitMapInteropErrorArgs e) => _interopError = $"{e.Source}|{e.Context}";
+
+    private async Task Locate()
+    {
+        var result = await _cameraMap.Locate(new() { TimeoutMilliseconds = 3000, Zoom = 12 });
+        _located = result is null ? "null" : Fmt(result.Position);
+    }
+
+    private async Task AddPolygon()
+    {
+        await _vectorMap.AddPolygon("polygon", [new(51.51, -0.10), new(51.51, -0.08), new(51.50, -0.08), new(51.50, -0.10)],
+            new() { Color = "rgb(255, 0, 0)", FillColor = "rgb(255, 0, 0)", FillOpacity = 0.4 });
+    }
+
+    private async Task AddPolyline() => await _vectorMap.AddPolyline("line", [new(51.51, -0.12), new(51.50, -0.06)], new() { Color = "rgb(0, 0, 255)", Weight = 6 });
+
+    private async Task AddCircle() => await _vectorMap.AddCircle("circle", new(51.505, -0.09), 300);
+
+    private async Task AddRectangle() => await _vectorMap.AddRectangle("rect", new(new(51.495, -0.11), new(51.498, -0.105)));
+
+    private async Task StylePolygon() => await _vectorMap.SetLayerStyle("polygon", new() { Color = "rgb(0, 128, 0)", FillColor = "rgb(0, 128, 0)" });
+
+    private async Task MoveMarker() => await _markersMap.SetMarkerPosition("tower", new(51.5072, -0.1));
+
+    private async Task SetViewRome() => await _cameraMap.SetView(new(41.9028, 12.4964), 10, animate: false);
+
+    private async Task FlyToTokyo() => await _cameraMap.FlyTo(new(35.6762, 139.6503), 8);
+
+    private async Task PanToLondon() => await _cameraMap.PanTo(new(51.505, -0.09), animate: false);
+
+    private async Task FitLondonBounds() => await _cameraMap.FitBounds(new(new(51.4, -0.3), new(51.6, 0.1)), animate: false);
+
+    private async Task AddGeoJson()
+    {
+        const string geoJson = """{"type":"FeatureCollection","features":[{"type":"Feature","properties":{"name":"Square"},"geometry":{"type":"Polygon","coordinates":[[[-0.075,51.497],[-0.065,51.497],[-0.065,51.502],[-0.075,51.502],[-0.075,51.497]]]}}]}""";
+        await _vectorMap.AddGeoJson("geo", geoJson, new() { Color = "rgb(128, 0, 128)" });
+    }
+
+    private async Task HidePolygon()
+    {
+        await _vectorMap.SetLayerVisible("polygon", false);
+        _layerVisible = _vectorMap.IsLayerVisible("polygon");
+    }
+
+    private async Task AddOverlay()
+    {
+        await _vectorMap.AddTileOverlay(new() { Id = "labels", UrlTemplate = "samples/map-tile.png?overlay=1&z={z}&x={x}&y={y}", Opacity = 0.8 });
+        _overlayVisible = _vectorMap.IsTileOverlayVisible("labels");
+    }
+
+    private async Task HideOverlay()
+    {
+        await _vectorMap.SetTileOverlayVisible("labels", false);
+        _overlayVisible = _vectorMap.IsTileOverlayVisible("labels");
+    }
+}

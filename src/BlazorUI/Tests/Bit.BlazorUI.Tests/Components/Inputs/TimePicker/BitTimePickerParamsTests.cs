@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -376,5 +377,134 @@ public class BitTimePickerParamsTests : BunitTestContext
 
         Assert.IsFalse(component.Find(".bit-tpc-cac").HasAttribute("data-cascaded"));
         Assert.IsEmpty(component.FindComponent<BitTimePicker>().Instance.CalloutHtmlAttributes);
+    }
+
+    // What belongs to one field alone - the open state of its callout and the rejection it is currently showing - is
+    // written per picker, so it has no place on the params object; its value and callbacks neither.
+    private static readonly string[] _notCascaded =
+    [
+        nameof(BitTimePicker.CascadingParameters),
+        nameof(BitTimePicker.IsOpen),
+        nameof(BitTimePicker.Invalid),
+        nameof(BitTimePicker.ErrorMessage),
+        nameof(BitTimePicker.ErrorMessageTemplate),
+    ];
+
+    private static bool IsCallback(Type type)
+    {
+        return type == typeof(EventCallback) || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(EventCallback<>));
+    }
+
+    [TestMethod]
+    public void BitTimePickerParamsShouldCarryEveryParameterThatIsNotPerPicker()
+    {
+        // A parameter added to the picker without being added here is one a BitParams ancestor silently cannot set.
+        var parameters = typeof(BitTimePicker).GetProperties(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.DeclaredOnly)
+                                              .Where(p => p.GetCustomAttributes(typeof(ParameterAttribute), false).Length > 0)
+                                              .Where(p => IsCallback(p.PropertyType) is false)
+                                              .Select(p => p.Name)
+                                              .Where(n => _notCascaded.Contains(n) is false)
+                                              .ToList();
+
+        var missing = parameters.Where(name => typeof(BitTimePickerParams).GetProperty(name) is null).ToList();
+
+        Assert.AreEqual(0, missing.Count, "BitTimePickerParams is missing: " + string.Join(", ", missing));
+    }
+
+    [TestMethod]
+    public void BitTimePickerParamsShouldApplyTheRulesTemplatesAndIcons()
+    {
+        var paramsList = new List<IBitComponentParams>
+        {
+            new BitTimePickerParams
+            {
+                Standalone = true,
+                ShowSeconds = true,
+                AllowedHours = h => h % 2 == 0,
+                AllowedMinutes = m => m % 15 == 0,
+                AllowedSeconds = s => s % 30 == 0,
+                Icon = BitIconInfo.Css("my-clock"),
+                IncreaseHourIcon = BitIconInfo.Css("my-hour-up"),
+                DecreaseHourIcon = BitIconInfo.Css("my-hour-down"),
+                IncreaseMinuteIconName = "Up",
+                DecreaseMinuteIconName = "Down",
+                IncreaseSecondIconName = "Up",
+                DecreaseSecondIconName = "Down",
+                CloseButtonIconName = "ChromeClose",
+                ClearButtonIconName = "ChromeClose",
+                CalloutHeaderTemplate = builder => builder.AddMarkupContent(0, "<b class=\"tpl-header\">h</b>"),
+                CalloutFooterTemplate = builder => builder.AddMarkupContent(0, "<b class=\"tpl-footer\">f</b>"),
+                DescriptionTemplate = builder => builder.AddMarkupContent(0, "<b class=\"tpl-description\">d</b>"),
+                LabelTemplate = builder => builder.AddMarkupContent(0, "<b class=\"tpl-label\">l</b>"),
+                Classes = new() { Root = "cascaded-root", HourInput = "cascaded-hour" },
+                Styles = new() { Root = "--s: root;", HourInput = "--s: hour;" },
+                Dir = BitDir.Rtl,
+                Disabled = true,
+            }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, paramsList);
+            parameters.AddChildContent(RenderTimePicker(builder =>
+            {
+                builder.AddAttribute(1, nameof(BitTimePicker.Value), new TimeSpan(10, 30, 0));
+                builder.AddAttribute(2, nameof(BitTimePicker.ValueChanged), EventCallback.Factory.Create<TimeSpan?>(this, (TimeSpan? _) => { }));
+            }));
+        });
+
+        var instance = component.FindComponent<BitTimePicker>().Instance;
+        var root = component.Find(".bit-tpc");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-tpc-sta"));
+        Assert.IsTrue(root.ClassList.Contains("cascaded-root"));
+        Assert.IsTrue(root.ClassList.Contains("bit-dis"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+        StringAssert.Contains(root.GetAttribute("style"), "--s: root;");
+        Assert.AreEqual(3, component.FindAll(".bit-tpc-tin").Count);
+
+        var hourInput = component.FindAll(".bit-tpc-tin")[0];
+        Assert.IsTrue(hourInput.ClassList.Contains("cascaded-hour"));
+        Assert.AreEqual("--s: hour;", hourInput.GetAttribute("style"));
+
+        Assert.IsTrue(component.Find("button[title='Increase hour'] > i").ClassList.Contains("my-hour-up"));
+        Assert.IsTrue(component.Find("button[title='Decrease hour'] > i").ClassList.Contains("my-hour-down"));
+        Assert.IsTrue(component.Find("button[title='Increase minute'] > i").ClassList.Contains("bit-icon--Up"));
+        Assert.IsTrue(component.Find("button[title='Decrease second'] > i").ClassList.Contains("bit-icon--Down"));
+
+        Assert.IsNotNull(component.Find(".bit-tpc-chd > .tpl-header"));
+        Assert.IsNotNull(component.Find(".bit-tpc-cft > .tpl-footer"));
+        Assert.IsNotNull(component.Find(".bit-tpc-des > .tpl-description"));
+        Assert.IsNotNull(component.Find(".bit-tpc > label > .tpl-label"));
+
+        // The predicates and the icons of the parts a standalone picker does not draw still reach the instance.
+        Assert.IsNotNull(instance.AllowedHours);
+        Assert.IsNotNull(instance.AllowedMinutes);
+        Assert.IsNotNull(instance.AllowedSeconds);
+        Assert.AreEqual("my-clock", instance.Icon?.GetCssClasses());
+        Assert.AreEqual("ChromeClose", instance.CloseButtonIconName);
+        Assert.AreEqual("ChromeClose", instance.ClearButtonIconName);
+    }
+
+    [TestMethod]
+    public void BitTimePickerParamsShouldNotBeAffectedByAnEmptyParamsObject()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitTimePickerParams() });
+            parameters.AddChildContent(RenderTimePicker());
+        });
+
+        var root = component.Find(".bit-tpc");
+        var instance = component.FindComponent<BitTimePicker>().Instance;
+
+        Assert.AreEqual("bit-tpc", root.GetAttribute("class"));
+        Assert.AreEqual(2, component.FindAll(".bit-tpc-tin").Count);
+        Assert.AreEqual(BitTimeFormat.TwentyFourHours, instance.TimeFormat);
+        Assert.AreEqual(1, instance.MinuteStep);
+        Assert.AreEqual("Clock", instance.CalloutAriaLabel);
+        Assert.IsNull(instance.Culture);
+        Assert.AreEqual(0, component.FindAll(".bit-tpc-lbl").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-tpc-act").Count);
     }
 }

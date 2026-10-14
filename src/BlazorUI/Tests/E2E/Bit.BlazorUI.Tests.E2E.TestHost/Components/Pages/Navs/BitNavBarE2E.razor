@@ -1,0 +1,587 @@
+﻿@page "/e2e/nav-bar"
+
+<PageTitle>BitNavBar E2E</PageTitle>
+
+@* The BitNavBarItem API of BitNavBar in every configuration its E2E tests drive. The automatic mode, which needs real
+   navigations, lives on /e2e/nav-bar/url; the custom generic items and the BitNavBarOption API have pages of their own. *@
+
+<E2ESection Id="basic" Title="Basic">
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-basic" Items="_basicItems" AriaLabel="Main" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <button id="btn-toggle-disabled" @onclick="() => _barDisabled = !_barDisabled">Toggle disabled</button>
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-disabled"
+                   Items="_disabledBarItems"
+                   Disabled="_barDisabled"
+                   Mode="BitNavMode.Manual"
+                   OnItemClick="(BitNavBarItem item) => _disabledItemClicks++"
+                   @onclick="() => _disabledRootClicks++"
+                   @onkeydown="() => _disabledRootKeys++">
+            <HeaderTemplate><button id="disabled-header-button" @onclick="() => _disabledHeaderClicks++">Header</button></HeaderTemplate>
+        </BitNavBar>
+        <BitNavBar Id="nbr-item-disabled" Items="_itemDisabledItems" Mode="BitNavMode.Manual" />
+    </div>
+    <p>
+        Item clicks: <span id="disabled-item-clicks">@_disabledItemClicks</span>,
+        root clicks: <span id="disabled-root-clicks">@_disabledRootClicks</span>,
+        root keys: <span id="disabled-root-keys">@_disabledRootKeys</span>,
+        header clicks: <span id="disabled-header-clicks">@_disabledHeaderClicks</span>
+    </p>
+</E2ESection>
+
+<E2ESection Id="manual" Title="Manual mode">
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-manual-default" Items="_manualDefaultItems" Mode="BitNavMode.Manual" DefaultSelectedItem="_manualDefaultItems[1]" />
+
+        <BitNavBar Id="nbr-manual-bound" TItem="BitNavBarItem" Items="_manualBoundItems" Mode="BitNavMode.Manual" @bind-SelectedItem="_boundSelected" OnSelectItem="(BitNavBarItem item) => _boundSelectCount++" />
+        <p>Bound: <span id="bound-selected">@(_boundSelected?.Text ?? "none")</span>, selects: <span id="bound-select-count">@_boundSelectCount</span></p>
+        <button id="btn-select-profile" @onclick="() => _boundSelected = _manualBoundItems[3]">Select Profile</button>
+        <button id="btn-clear-selection" @onclick="() => _boundSelected = null">Clear</button>
+
+        <BitNavBar Id="nbr-selected-key" TItem="BitNavBarItem" Items="_keyItems" Mode="BitNavMode.Manual" @bind-SelectedKey="_selectedKey" />
+        <p>Key: <span id="selected-key">@(_selectedKey ?? "none")</span></p>
+        <button id="btn-key-search" @onclick="SetKeySearch">Key search</button>
+        <button id="btn-key-unknown" @onclick="SetKeyUnknown">Key unknown</button>
+
+        <BitNavBar Id="nbr-default-key" Items="_defaultKeyItems" Mode="BitNavMode.Manual" DefaultSelectedKey="alerts" />
+
+        <BitNavBar Id="nbr-oneway" Items="_oneWayItems" Mode="BitNavMode.Manual" SelectedItem="_oneWayItems[0]" />
+        <BitNavBar Id="nbr-oneway-key" Items="_oneWayKeyItems" Mode="BitNavMode.Manual" SelectedKey="profile" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="labels" Title="Labels">
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-icononly" Items="_iconOnlyItems" IconOnly />
+        <BitNavBar Id="nbr-hide-unselected" Items="_hideItems" HideUnselectedText Mode="BitNavMode.Manual" DefaultSelectedItem="_hideItems[0]" />
+        <BitNavBar Id="nbr-inline" Items="_inlineItems" InlineText />
+    </div>
+</E2ESection>
+
+<E2ESection Id="width" Title="Width and Alignment">
+    <div id="width-container" style="width: 700px;">
+        <BitNavBar Id="nbr-default-width" Items="_widthDefaultItems" />
+        <BitNavBar Id="nbr-fit" Items="_fitItems" FitWidth />
+        <BitNavBar Id="nbr-full" Items="_fullItems" FullWidth />
+        <BitNavBar Id="nbr-justified" Items="_justifiedItems" Justified />
+        @foreach (var (name, alignment) in _alignments)
+        {
+            <BitNavBar Id="@($"nbr-align-{name}")" Items="_alignmentItems[name]" Alignment="alignment" />
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="selection" Title="Selection">
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-selected-icon" Items="_selectedIconItems" Mode="BitNavMode.Manual" DefaultSelectedItem="_selectedIconItems[0]" />
+        <BitNavBar Id="nbr-filled" Items="_filledItems" Filled Mode="BitNavMode.Manual" DefaultSelectedItem="_filledItems[0]" />
+        <BitNavBar Id="nbr-line" Items="_lineItems" Indicator="BitNavBarIndicator.Line" Mode="BitNavMode.Manual" DefaultSelectedItem="_lineItems[0]" />
+        <BitNavBar Id="nbr-line-flip" Items="_lineFlipItems" Indicator="BitNavBarIndicator.Line" FlipIndicator Mode="BitNavMode.Manual" DefaultSelectedItem="_lineFlipItems[0]" />
+        <BitNavBar Id="nbr-pill" Items="_pillItems" Indicator="BitNavBarIndicator.Pill" Mode="BitNavMode.Manual" DefaultSelectedItem="_pillItems[0]" />
+        <BitNavBar Id="nbr-pill-filled" Items="_pillFilledItems" Indicator="BitNavBarIndicator.Pill" Filled Mode="BitNavMode.Manual" DefaultSelectedItem="_pillFilledItems[0]" />
+        <BitNavBar Id="nbr-indicator-none" Items="_indicatorNoneItems" Indicator="BitNavBarIndicator.None" Mode="BitNavMode.Manual" DefaultSelectedItem="_indicatorNoneItems[0]" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="scrollable" Title="Scrollable">
+    <button id="btn-select-last" @onclick="() => _scrollSelected = _scrollItems[^1]">Select the last item</button>
+    <button id="btn-select-first" @onclick="() => _scrollSelected = _scrollItems[0]">Select the first item</button>
+    <button id="btn-scroll-into-view" @onclick="() => _scrollNav.ScrollItemIntoView(_scrollItems[9])">Scroll item 10 into view</button>
+    <div id="scroll-container" style="width: 320px;">
+        <BitNavBar @ref="_scrollNav" Id="nbr-scroll" TItem="BitNavBarItem" Scrollable Mode="BitNavMode.Manual" Items="_scrollItems" @bind-SelectedItem="_scrollSelected" />
+    </div>
+    <p>Scroll selected: <span id="scroll-selected">@_scrollSelected?.Text</span></p>
+    <div style="width: 320px;">
+        <BitNavBar Id="nbr-squeezed" Items="_squeezedItems" Mode="BitNavMode.Manual" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="header-footer" Title="Header and Footer">
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-hf" Items="_headerFooterItems">
+            <HeaderTemplate><span id="hf-header">Logo</span></HeaderTemplate>
+            <FooterTemplate><button id="hf-footer">More</button></FooterTemplate>
+        </BitNavBar>
+    </div>
+</E2ESection>
+
+<E2ESection Id="vertical" Title="Vertical">
+    <BitNavBar Id="nbr-vertical" Items="_verticalItems" Vertical FitWidth Mode="BitNavMode.Manual" />
+    <BitNavBar Id="nbr-vertical-line" Items="_verticalLineItems" Vertical FitWidth InlineText Indicator="BitNavBarIndicator.Line" Mode="BitNavMode.Manual" DefaultSelectedItem="_verticalLineItems[0]" />
+    <BitNavBar Id="nbr-vertical-line-flip" Items="_verticalLineFlipItems" Vertical FitWidth InlineText Indicator="BitNavBarIndicator.Line" FlipIndicator Mode="BitNavMode.Manual" DefaultSelectedItem="_verticalLineFlipItems[0]" />
+    <BitNavBar Id="nbr-vertical-center" Items="_verticalCenterItems" Vertical FitWidth IconOnly Alignment="BitAlignment.Center" Style="height: 400px;">
+        <HeaderTemplate><span id="vc-header">H</span></HeaderTemplate>
+        <FooterTemplate><span id="vc-footer">F</span></FooterTemplate>
+    </BitNavBar>
+    <button id="btn-vertical-last" @onclick="() => _verticalScrollSelected = _verticalScrollItems[^1]">Select the last rail item</button>
+    <BitNavBar Id="nbr-vertical-scroll" TItem="BitNavBarItem" Items="_verticalScrollItems" Scrollable Vertical FitWidth Style="height: 200px;" Mode="BitNavMode.Manual" @bind-SelectedItem="_verticalScrollSelected" />
+</E2ESection>
+
+<E2ESection Id="badge" Title="Badge">
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-badge" Items="_badgeItems" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-item-template" Items="_itemTemplateItems" Mode="BitNavMode.Manual" OnItemClick="(BitNavBarItem item) => _templateClicked = item.Text">
+            <ItemTemplate Context="item">
+                <span class="custom-item">Custom: @item.Text</span>
+            </ItemTemplate>
+        </BitNavBar>
+        <p>Template clicked: <span id="template-clicked">@_templateClicked</span></p>
+        <BitNavBar Id="nbr-own-template" Items="_ownTemplateItems" Mode="BitNavMode.Manual" />
+        <BitNavBar Id="nbr-replace-template" Items="_replaceTemplateItems" Mode="BitNavMode.Manual" ItemTemplateRenderMode="BitNavItemTemplateRenderMode.Replace">
+            <ItemTemplate Context="item">
+                <button class="replaced-control">Replaced: @item.Text</button>
+            </ItemTemplate>
+        </BitNavBar>
+    </div>
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <button id="btn-toggle-reselectable" @onclick="() => _reselectable = !_reselectable">Toggle reselectable</button>
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-events"
+                   Items="_eventItems"
+                   Mode="BitNavMode.Manual"
+                   Reselectable="_reselectable"
+                   OnItemClick="(BitNavBarItem item) => { _clickCount++; _lastClicked = item.Text; }"
+                   OnSelectItem="(BitNavBarItem item) => { _selectCount++; _lastSelected = item?.Text; }" />
+    </div>
+    <p>
+        Clicks: <span id="event-click-count">@_clickCount</span> (<span id="event-last-clicked">@_lastClicked</span>),
+        selects: <span id="event-select-count">@_selectCount</span> (<span id="event-last-selected">@_lastSelected</span>)
+    </p>
+</E2ESection>
+
+<E2ESection Id="keyboard" Title="Keyboard">
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-keyboard" Items="_keyboardItems" Mode="BitNavMode.Manual" />
+        <BitNavBar Id="nbr-single-tab" Items="_singleTabItems" SingleTabStop Mode="BitNavMode.Manual" DefaultSelectedItem="_singleTabItems[1]" />
+        <BitNavBar Id="nbr-wrap" Items="_wrapItems" WrapNavigation SingleTabStop Mode="BitNavMode.Manual" DefaultSelectedItem="_wrapItems[1]" />
+        <BitNavBar Id="nbr-select-on-focus" Items="_selectOnFocusItems" SelectOnFocus SingleTabStop Mode="BitNavMode.Manual" DefaultSelectedItem="_selectOnFocusItems[1]" OnSelectItem="(BitNavBarItem item) => _focusSelected = item?.Text" />
+        <p>Focus selected: <span id="focus-selected">@_focusSelected</span></p>
+        <BitNavBar Id="nbr-select-on-focus-auto" Items="_selectOnFocusAutoItems" SelectOnFocus />
+    </div>
+    <input id="after-bars" aria-label="After the bars" />
+</E2ESection>
+
+<E2ESection Id="dynamic" Title="Dynamic items">
+    <button id="btn-add-item" @onclick="AddDynamicItem">Add item</button>
+    <button id="btn-remove-item" @onclick="RemoveDynamicItem">Remove item</button>
+    <button id="btn-reverse-items" @onclick="() => _dynamicItems.Reverse()">Reverse items</button>
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-dynamic" TItem="BitNavBarItem" Items="_dynamicItems" Mode="BitNavMode.Manual" @bind-SelectedItem="_dynamicSelected" />
+    </div>
+    <p>Dynamic selected: <span id="dynamic-selected">@(_dynamicSelected?.Text ?? "none")</span></p>
+</E2ESection>
+
+<E2ESection Id="params" Title="Cascading parameters">
+    <div style="width: 600px;">
+        <BitParams Parameters="@([_navBarParams])">
+            <BitNavBar Id="nbr-params-all" Items="_paramsAllItems" DefaultSelectedItem="_paramsAllItems[0]" />
+            <BitNavBar Id="nbr-params-own" Items="_paramsOwnItems" DefaultSelectedItem="_paramsOwnItems[0]" Indicator="BitNavBarIndicator.Line" />
+        </BitParams>
+    </div>
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-color-default" Items="_colorDefaultItems" Mode="BitNavMode.Manual" DefaultSelectedItem="_colorDefaultItems[0]" />
+        @foreach (var (name, color) in _colors)
+        {
+            var items = _colorItems[name];
+            var filledItems = _filledColorItems[name];
+            <BitNavBar Id="@($"nbr-color-{name}")" Color="color" Items="items" Mode="BitNavMode.Manual" DefaultSelectedItem="items[0]" Indicator="BitNavBarIndicator.Line" />
+            <BitNavBar Id="@($"nbr-filled-{name}")" Color="color" Filled Items="filledItems" Mode="BitNavMode.Manual" DefaultSelectedItem="filledItems[0]" />
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="external-icons" Title="External icons">
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-external" Items="_externalIconItems" Mode="BitNavMode.Manual" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-size-default" Items="_sizeDefaultItems" />
+        <BitNavBar Id="nbr-size-small" Items="_sizeSmallItems" Size="BitSize.Small" />
+        <BitNavBar Id="nbr-size-medium" Items="_sizeMediumItems" Size="BitSize.Medium" />
+        <BitNavBar Id="nbr-size-large" Items="_sizeLargeItems" Size="BitSize.Large" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style and Class">
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-style" Items="_styleItems" Style="border: 3px solid rgb(255, 99, 71);" />
+        <BitNavBar Id="nbr-class" Items="_classItems" Class="custom-class" />
+        <BitNavBar Id="nbr-item-style" Items="_itemStyleItems" />
+        <BitNavBar Id="nbr-styles"
+                   Items="_stylesItems"
+                   Mode="BitNavMode.Manual"
+                   DefaultSelectedItem="_stylesItems[0]"
+                   Styles="@(new() { Root = "background-color: rgb(42, 42, 42);",
+                                     Container = "column-gap: 9px;",
+                                     Header = "color: rgb(1, 1, 1);",
+                                     Footer = "color: rgb(2, 2, 2);",
+                                     Item = "border-top: 2px solid rgb(3, 3, 3);",
+                                     SelectedItem = "border-bottom: 2px solid rgb(4, 4, 4);",
+                                     ItemIcon = "color: rgb(5, 5, 5);",
+                                     ItemIconContainer = "opacity: 0.75;",
+                                     ItemText = "letter-spacing: 2px;",
+                                     ItemBadge = "background-color: rgb(6, 6, 6);",
+                                     ItemWrapper = "outline: 1px solid rgb(7, 7, 7);" })">
+            <HeaderTemplate>H</HeaderTemplate>
+            <FooterTemplate>F</FooterTemplate>
+        </BitNavBar>
+        <BitNavBar Id="nbr-classes"
+                   Items="_classesItems"
+                   Mode="BitNavMode.Manual"
+                   DefaultSelectedItem="_classesItems[0]"
+                   Classes="@(new() { Root = "custom-root",
+                                      Container = "custom-container",
+                                      Header = "custom-header",
+                                      Footer = "custom-footer",
+                                      Item = "custom-item",
+                                      SelectedItem = "custom-selected-item",
+                                      ItemIcon = "custom-item-icon",
+                                      ItemIconContainer = "custom-icon-container",
+                                      ItemText = "custom-item-text",
+                                      ItemBadge = "custom-item-badge",
+                                      ItemWrapper = "custom-item-wrapper" })">
+            <HeaderTemplate>H</HeaderTemplate>
+            <FooterTemplate>F</FooterTemplate>
+        </BitNavBar>
+        <div id="vars-host" style="--bit-NavBar-background: rgb(10, 20, 30); --bit-NavBar-border-radius: 11px; --bit-NavBar-padding-block: 5px; --bit-NavBar-padding-inline: 6px; --bit-NavBar-gap: 7px; --bit-NavBar-item-color: rgb(40, 50, 60); --bit-NavBar-item-border-radius: 13px; --bit-NavBar-item-padding: 9px; --bit-NavBar-item-min-size: 70px; --bit-NavBar-icon-size: 25px; --bit-NavBar-text-size: 15px; --bit-NavBar-selected-color: rgb(200, 0, 0); --bit-NavBar-selected-background: rgb(0, 0, 100); --bit-NavBar-selected-font-weight: 800; --bit-NavBar-indicator-color: rgb(0, 150, 0); --bit-NavBar-indicator-thickness: 5px; --bit-NavBar-indicator-inset: 10px; --bit-NavBar-badge-color: rgb(255, 255, 0); --bit-NavBar-badge-background: rgb(0, 128, 128); --bit-NavBar-shadow: rgb(255, 0, 0) 0px 0px 4px 0px; --bit-NavBar-disabled-color: rgb(120, 120, 120); --bit-NavBar-item-hover-color: rgb(0, 200, 200); --bit-NavBar-item-hover-background: rgb(220, 220, 0);">
+            <BitNavBar Id="nbr-vars" Items="_varsItems" Indicator="BitNavBarIndicator.Line" Mode="BitNavMode.Manual" DefaultSelectedItem="_varsItems[0]" />
+            <BitNavBar Id="nbr-vars-explicit" Items="_varsExplicitItems" Color="BitColor.Success" Size="BitSize.Small" Indicator="BitNavBarIndicator.Line" Mode="BitNavMode.Manual" DefaultSelectedItem="_varsExplicitItems[0]" />
+        </div>
+        <div style="--bit-NavBar-focus-color: rgb(255, 0, 255);">
+            <BitNavBar Id="nbr-focus-color" Items="_focusColorItems" Mode="BitNavMode.Manual" />
+        </div>
+        <button id="btn-cycle-visibility" @onclick="CycleVisibility">Cycle visibility</button>
+        <span id="visibility-state">@_visibility</span>
+        <BitNavBar Id="nbr-visibility" Items="_visibilityItems" Visibility="_visibility" />
+        <BitNavBar Id="nbr-html-attributes" Items="_htmlAttributeItems" data-test="bar-data" HtmlAttributes="@(new() { ["data-extra"] = "extra-value" })" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-rtl" Dir="BitDir.Rtl" Items="_rtlItems" Mode="BitNavMode.Manual" />
+        <div dir="rtl">
+            <BitNavBar Id="nbr-rtl-inherited" Items="_rtlInheritedItems" Mode="BitNavMode.Manual" />
+        </div>
+        <BitNavBar Id="nbr-rtl-scroll" Dir="BitDir.Rtl" Items="_rtlScrollItems" Scrollable Mode="BitNavMode.Manual" Style="width: 300px;" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="api" Title="Public API">
+    <button id="btn-api-select" @onclick="() => _apiNav.SelectItem(_apiItems[2])">Select Alerts</button>
+    <button id="btn-api-select-none" @onclick="() => _apiNav.SelectItem(null)">Select none</button>
+    <button id="btn-api-focus" @onclick="() => _apiNav.FocusItem(_apiItems[3])">Focus Profile</button>
+    <div style="width: 600px;">
+        <BitNavBar @ref="_apiNav" Id="nbr-api" Items="_apiItems" Mode="BitNavMode.Manual" OnSelectItem="(BitNavBarItem item) => _apiSelected = item?.Text" />
+    </div>
+    <p>API selected: <span id="api-selected">@(_apiSelected ?? "none")</span></p>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-aria-current" Items="_ariaCurrentItems" Mode="BitNavMode.Manual" />
+        <BitNavBar Id="nbr-newtab" Items="_newTabItems" />
+        <BitNavBar Id="nbr-newtab-custom" Items="_newTabCustomItems" NewTabHint="(new window)" />
+        <BitNavBar Id="nbr-newtab-none" Items="_newTabNoneItems" NoNewTabHint />
+        <BitNavBar Id="nbr-safearea" Items="_safeAreaItems" SafeArea />
+    </div>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    <button id="btn-toggle-mount" @onclick="() => _showLifecycle = !_showLifecycle">Toggle mount</button>
+    <button id="btn-toggle-vertical" @onclick="() => _lifecycleVertical = !_lifecycleVertical">Toggle vertical</button>
+    <span id="lifecycle-mounted">@_showLifecycle</span>
+    @if (_showLifecycle)
+    {
+        <div style="width: 600px;">
+            <BitNavBar Id="nbr-lifecycle" Items="_lifecycleItems" Vertical="_lifecycleVertical" Mode="BitNavMode.Manual" Scrollable />
+        </div>
+    }
+</E2ESection>
+
+<E2ESection Id="motion" Title="Motion">
+    <div style="width: 600px;">
+        <BitNavBar Id="nbr-motion" Items="_motionItems" Indicator="BitNavBarIndicator.Line" Mode="BitNavMode.Manual" DefaultSelectedItem="_motionItems[0]" />
+        <BitNavBar Id="nbr-motion-force" Items="_motionForceItems" Indicator="BitNavBarIndicator.Line" Mode="BitNavMode.Manual" DefaultSelectedItem="_motionForceItems[0]" ForceAnimation />
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static List<BitNavBarItem> Four() =>
+    [
+        new() { Text = "Home", IconName = BitIconName.Home, Key = "home" },
+        new() { Text = "Search", IconName = BitIconName.Search, Key = "search" },
+        new() { Text = "Alerts", IconName = BitIconName.Ringer, Key = "alerts" },
+        new() { Text = "Profile", IconName = BitIconName.Contact, Key = "profile" },
+    ];
+
+    private readonly List<BitNavBarItem> _basicItems =
+    [
+        new() { Text = "Home", IconName = BitIconName.Home, Url = "/e2e/nav-bar/url/home" },
+        new() { Text = "Search", IconName = BitIconName.Search, Url = "/e2e/nav-bar/url/search", Title = "Search tip" },
+        new() { Text = "Alerts", IconName = BitIconName.Ringer },
+        new() { Text = "Profile", IconName = BitIconName.Contact, Url = "/e2e/nav-bar/url/profile" },
+    ];
+
+    private bool _barDisabled = true;
+    private int _disabledItemClicks;
+    private int _disabledRootClicks;
+    private int _disabledRootKeys;
+    private int _disabledHeaderClicks;
+    private readonly List<BitNavBarItem> _disabledBarItems =
+    [
+        new() { Text = "Link", IconName = BitIconName.Home, Url = "/e2e/nav-bar/url/link", Target = "_blank" },
+        new() { Text = "Button", IconName = BitIconName.Search },
+    ];
+    private readonly List<BitNavBarItem> _itemDisabledItems =
+    [
+        new() { Text = "Home", IconName = BitIconName.Home },
+        new() { Text = "Off link", IconName = BitIconName.Blocked, Url = "/e2e/nav-bar/url/off", IsDisabled = true },
+        new() { Text = "Off button", IconName = BitIconName.Lock, IsDisabled = true },
+        new() { Text = "Profile", IconName = BitIconName.Contact },
+    ];
+
+    private readonly List<BitNavBarItem> _manualDefaultItems = Four();
+    private readonly List<BitNavBarItem> _manualBoundItems = Four();
+    private BitNavBarItem? _boundSelected;
+    private int _boundSelectCount;
+    private readonly List<BitNavBarItem> _keyItems = Four();
+    private string? _selectedKey;
+
+    private void SetKeySearch() => _selectedKey = "search";
+
+    private void SetKeyUnknown() => _selectedKey = "unknown";
+    private readonly List<BitNavBarItem> _defaultKeyItems = Four();
+    private readonly List<BitNavBarItem> _oneWayItems = Four();
+    private readonly List<BitNavBarItem> _oneWayKeyItems = Four();
+
+    private readonly List<BitNavBarItem> _iconOnlyItems = Four();
+    private readonly List<BitNavBarItem> _hideItems = Four();
+    private readonly List<BitNavBarItem> _inlineItems = Four();
+
+    private readonly List<BitNavBarItem> _widthDefaultItems = Four();
+    private readonly List<BitNavBarItem> _fitItems = Four();
+    private readonly List<BitNavBarItem> _fullItems = Four();
+    private readonly List<BitNavBarItem> _justifiedItems =
+    [
+        new() { Text = "A", IconName = BitIconName.Home },
+        new() { Text = "A rather long label", IconName = BitIconName.Search },
+        new() { Text = "Mid label", IconName = BitIconName.Ringer },
+    ];
+
+    private static readonly (string Name, BitAlignment Alignment)[] _alignments =
+    [
+        ("start", BitAlignment.Start),
+        ("end", BitAlignment.End),
+        ("center", BitAlignment.Center),
+        ("space-between", BitAlignment.SpaceBetween),
+        ("space-around", BitAlignment.SpaceAround),
+        ("space-evenly", BitAlignment.SpaceEvenly),
+        ("baseline", BitAlignment.Baseline),
+        ("stretch", BitAlignment.Stretch),
+    ];
+    private readonly Dictionary<string, List<BitNavBarItem>> _alignmentItems = _alignments.ToDictionary(a => a.Name, _ => Four());
+
+    private readonly List<BitNavBarItem> _selectedIconItems =
+    [
+        new() { Text = "Home", IconName = BitIconName.Home, SelectedIconName = BitIconName.HomeSolid },
+        new() { Text = "Favorite", IconName = BitIconName.FavoriteStar, SelectedIconName = BitIconName.FavoriteStarFill },
+        new() { Text = "Plain", IconName = BitIconName.Ringer },
+    ];
+    private readonly List<BitNavBarItem> _filledItems = Four();
+    private readonly List<BitNavBarItem> _lineItems = Four();
+    private readonly List<BitNavBarItem> _lineFlipItems = Four();
+    private readonly List<BitNavBarItem> _pillItems = Four();
+    private readonly List<BitNavBarItem> _pillFilledItems = Four();
+    private readonly List<BitNavBarItem> _indicatorNoneItems = Four();
+
+    private BitNavBar<BitNavBarItem> _scrollNav = default!;
+    private readonly List<BitNavBarItem> _scrollItems = [.. Enumerable.Range(1, 15).Select(i => new BitNavBarItem { Text = $"Item {i}", IconName = BitIconName.Page, Key = $"item-{i}" })];
+    private BitNavBarItem? _scrollSelected;
+    private readonly List<BitNavBarItem> _squeezedItems = [.. Enumerable.Range(1, 15).Select(i => new BitNavBarItem { Text = $"Item {i}", IconName = BitIconName.Page })];
+
+    private readonly List<BitNavBarItem> _headerFooterItems = Four();
+
+    private readonly List<BitNavBarItem> _verticalItems = Four();
+    private readonly List<BitNavBarItem> _verticalLineItems = Four();
+    private readonly List<BitNavBarItem> _verticalLineFlipItems = Four();
+    private readonly List<BitNavBarItem> _verticalCenterItems = Four();
+    private readonly List<BitNavBarItem> _verticalScrollItems = [.. Enumerable.Range(1, 12).Select(i => new BitNavBarItem { Text = $"Rail {i}", IconName = BitIconName.Page })];
+    private BitNavBarItem? _verticalScrollSelected;
+
+    private readonly List<BitNavBarItem> _badgeItems =
+    [
+        new() { Text = "Inbox", IconName = BitIconName.Mail, Badge = "12" },
+        new() { Text = "Chat", IconName = BitIconName.Chat, Badge = "3", BadgeAriaLabel = "3 unread chats" },
+        new() { Text = "Alerts", IconName = BitIconName.Ringer, Dot = true, BadgeAriaLabel = "New alerts" },
+        new() { Text = "Silent", IconName = BitIconName.Contact, Dot = true },
+        new() { Text = "No icon", Badge = "7" },
+        new() { Text = "Named", IconName = BitIconName.Home, AriaLabel = "Custom", Badge = "1" },
+    ];
+
+    private readonly List<BitNavBarItem> _itemTemplateItems = Four();
+    private string? _templateClicked;
+    private readonly List<BitNavBarItem> _ownTemplateItems =
+    [
+        new() { Text = "Home", IconName = BitIconName.Home },
+        new() { Text = "Own", Template = item => @<span class="own-template">Own: @item.Text</span> },
+        new() { Text = "New", TemplateRenderMode = BitNavItemTemplateRenderMode.Replace, Template = item => @<button class="own-replaced">@item.Text</button> },
+        new() { Text = "Profile", IconName = BitIconName.Contact },
+    ];
+    private readonly List<BitNavBarItem> _replaceTemplateItems = Four();
+
+    private bool _reselectable;
+    private readonly List<BitNavBarItem> _eventItems = Four();
+    private int _clickCount;
+    private string? _lastClicked;
+    private int _selectCount;
+    private string? _lastSelected;
+
+    private readonly List<BitNavBarItem> _keyboardItems =
+    [
+        new() { Text = "Home", IconName = BitIconName.Home },
+        new() { Text = "Search", IconName = BitIconName.Search },
+        new() { Text = "Off", IconName = BitIconName.Blocked, IsDisabled = true },
+        new() { Text = "Alerts", IconName = BitIconName.Ringer },
+        new() { Text = "Profile", IconName = BitIconName.Contact },
+    ];
+    private readonly List<BitNavBarItem> _singleTabItems = Four();
+    private readonly List<BitNavBarItem> _wrapItems = Four();
+    private readonly List<BitNavBarItem> _selectOnFocusItems = Four();
+    private string? _focusSelected;
+    private readonly List<BitNavBarItem> _selectOnFocusAutoItems = Four();
+
+    private readonly List<BitNavBarItem> _dynamicItems = Four();
+    private BitNavBarItem? _dynamicSelected;
+    private int _dynamicCounter;
+
+    private void AddDynamicItem() => _dynamicItems.Add(new() { Text = $"Added {++_dynamicCounter}", IconName = BitIconName.Add });
+
+    private void RemoveDynamicItem() => _dynamicItems.RemoveAt(_dynamicItems.Count - 1);
+
+    private readonly BitNavBarParams _navBarParams = new() { Mode = BitNavMode.Manual, Filled = true, Indicator = BitNavBarIndicator.Pill, Color = BitColor.Error, IconOnly = true };
+    private readonly List<BitNavBarItem> _paramsAllItems = Four();
+    private readonly List<BitNavBarItem> _paramsOwnItems = Four();
+
+    private static readonly (string Name, BitColor Color)[] _colors =
+    [
+        ("primary", BitColor.Primary),
+        ("secondary", BitColor.Secondary),
+        ("tertiary", BitColor.Tertiary),
+        ("info", BitColor.Info),
+        ("success", BitColor.Success),
+        ("warning", BitColor.Warning),
+        ("severe-warning", BitColor.SevereWarning),
+        ("error", BitColor.Error),
+        ("primary-background", BitColor.PrimaryBackground),
+        ("secondary-background", BitColor.SecondaryBackground),
+        ("tertiary-background", BitColor.TertiaryBackground),
+        ("primary-foreground", BitColor.PrimaryForeground),
+        ("secondary-foreground", BitColor.SecondaryForeground),
+        ("tertiary-foreground", BitColor.TertiaryForeground),
+        ("primary-border", BitColor.PrimaryBorder),
+        ("secondary-border", BitColor.SecondaryBorder),
+        ("tertiary-border", BitColor.TertiaryBorder),
+    ];
+    private readonly Dictionary<string, List<BitNavBarItem>> _colorItems = _colors.ToDictionary(c => c.Name, _ => Four());
+    private readonly Dictionary<string, List<BitNavBarItem>> _filledColorItems = _colors.ToDictionary(c => c.Name, _ => Four());
+    private readonly List<BitNavBarItem> _colorDefaultItems = Four();
+
+    private readonly List<BitNavBarItem> _externalIconItems =
+    [
+        new() { Text = "Css", Icon = BitIconInfo.Css("my-icon my-icon-house"), SelectedIcon = BitIconInfo.Css("my-icon my-icon-house-solid") },
+        new() { Text = "Bootstrap", Icon = BitIconInfo.Bi("gear"), IconName = BitIconName.Home, SelectedIconName = BitIconName.HomeSolid },
+        new() { Text = "FontAwesome", Icon = BitIconInfo.Fa("solid house") },
+    ];
+
+    private readonly List<BitNavBarItem> _sizeDefaultItems = Four();
+    private readonly List<BitNavBarItem> _sizeSmallItems = Four();
+    private readonly List<BitNavBarItem> _sizeMediumItems = Four();
+    private readonly List<BitNavBarItem> _sizeLargeItems = Four();
+
+    private readonly List<BitNavBarItem> _styleItems = Four();
+    private readonly List<BitNavBarItem> _classItems = Four();
+    private readonly List<BitNavBarItem> _itemStyleItems =
+    [
+        new() { Text = "Styled", IconName = BitIconName.Home, Style = "background-color: rgb(1, 2, 3);" },
+        new() { Text = "Classed", IconName = BitIconName.Search, Class = "item-class" },
+    ];
+    private readonly List<BitNavBarItem> _stylesItems = [new() { Text = "Inbox", IconName = BitIconName.Mail, Badge = "2" }, new() { Text = "Other", IconName = BitIconName.Home }];
+    private readonly List<BitNavBarItem> _classesItems = [new() { Text = "Inbox", IconName = BitIconName.Mail, Badge = "2" }, new() { Text = "Other", IconName = BitIconName.Home }];
+    private readonly List<BitNavBarItem> _varsItems =
+    [
+        new() { Text = "Selected", IconName = BitIconName.Mail, Badge = "4" },
+        new() { Text = "Other", IconName = BitIconName.Home },
+        new() { Text = "Off", IconName = BitIconName.Blocked, IsDisabled = true },
+    ];
+    private readonly List<BitNavBarItem> _varsExplicitItems = [new() { Text = "Selected", IconName = BitIconName.Mail }, new() { Text = "Other", IconName = BitIconName.Home }];
+    private readonly List<BitNavBarItem> _focusColorItems = Four();
+
+    private BitVisibility _visibility = BitVisibility.Visible;
+    private readonly List<BitNavBarItem> _visibilityItems = Four();
+
+    private void CycleVisibility()
+    {
+        _visibility = _visibility switch
+        {
+            BitVisibility.Visible => BitVisibility.Hidden,
+            BitVisibility.Hidden => BitVisibility.Collapsed,
+            _ => BitVisibility.Visible
+        };
+    }
+
+    private readonly List<BitNavBarItem> _htmlAttributeItems = Four();
+
+    private readonly List<BitNavBarItem> _rtlItems = Four();
+    private readonly List<BitNavBarItem> _rtlInheritedItems = Four();
+    private readonly List<BitNavBarItem> _rtlScrollItems = [.. Enumerable.Range(1, 12).Select(i => new BitNavBarItem { Text = $"Rtl {i}", IconName = BitIconName.Page })];
+
+    private BitNavBar<BitNavBarItem> _apiNav = default!;
+    private readonly List<BitNavBarItem> _apiItems = Four();
+    private string? _apiSelected;
+
+    private readonly List<BitNavBarItem> _ariaCurrentItems =
+    [
+        new() { Text = "Page", AriaCurrent = BitNavAriaCurrent.Page },
+        new() { Text = "Step", AriaCurrent = BitNavAriaCurrent.Step },
+        new() { Text = "Location", AriaCurrent = BitNavAriaCurrent.Location },
+        new() { Text = "Date", AriaCurrent = BitNavAriaCurrent.Date },
+        new() { Text = "Time", AriaCurrent = BitNavAriaCurrent.Time },
+        new() { Text = "True", AriaCurrent = BitNavAriaCurrent.True },
+    ];
+    private readonly List<BitNavBarItem> _newTabItems =
+    [
+        new() { Text = "Blank", IconName = BitIconName.Home, Url = "https://example.com/", Target = "_blank" },
+        new() { Text = "Rel", IconName = BitIconName.Home, Url = "https://example.org/", Target = "_blank", Rel = BitLinkRels.NoReferrer },
+        new() { Text = "Labeled", IconName = BitIconName.Home, AriaLabel = "Labeled link", Url = "https://example.net/", Target = "_blank" },
+    ];
+    private readonly List<BitNavBarItem> _newTabCustomItems = [new() { Text = "Blank", IconName = BitIconName.Home, Url = "https://example.com/", Target = "_blank" }];
+    private readonly List<BitNavBarItem> _newTabNoneItems = [new() { Text = "Blank", IconName = BitIconName.Home, Url = "https://example.com/", Target = "_blank" }];
+    private readonly List<BitNavBarItem> _safeAreaItems = Four();
+
+    private bool _showLifecycle = true;
+    private bool _lifecycleVertical;
+    private readonly List<BitNavBarItem> _lifecycleItems = Four();
+
+    private readonly List<BitNavBarItem> _motionItems = Four();
+    private readonly List<BitNavBarItem> _motionForceItems = Four();
+}

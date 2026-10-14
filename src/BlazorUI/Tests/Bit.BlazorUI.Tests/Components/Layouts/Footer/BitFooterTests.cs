@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Layouts.Footer;
@@ -1391,6 +1392,69 @@ public class BitFooterTests : BunitTestContext
         });
 
         Assert.AreEqual(2, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Footers.setup"));
+    }
+
+    [TestMethod]
+    public async Task BitFooterShouldTakeTheScrollListenerOffWhenItIsDisposed()
+    {
+        RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.Fixed, true);
+            parameters.Add(p => p.Id, "site-footer");
+        });
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Footers.dispose"));
+
+        await Context.DisposeComponentsAsync();
+
+        // The registration is keyed by the id it was attached under, so that is the one taken down.
+        var disposes = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Footers.dispose").ToArray();
+
+        Assert.AreEqual(1, disposes.Length);
+        Assert.AreEqual("site-footer", disposes[0].Arguments[0]);
+    }
+
+    [TestMethod]
+    public async Task BitFooterShouldDisposeWithoutTouchingTheScriptWhenItNeverAttached()
+    {
+        RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+        });
+
+        // A footer in the flow never set the listener up, so there is nothing for it to take down either.
+        await Context.DisposeComponentsAsync();
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier.StartsWith("BitBlazorUI.Footers")));
+    }
+
+    [TestMethod]
+    public void BitFooterShouldHandEverythingTheScriptReadsToItInOrder()
+    {
+        var component = RenderComponent<BitFooter>(parameters =>
+        {
+            parameters.Add(p => p.Reveal, true);
+            parameters.Add(p => p.ElevateOnScroll, true);
+            parameters.Add(p => p.ScrollPadding, true);
+            parameters.Add(p => p.ScrollTarget, "#shell");
+            parameters.Add(p => p.RevealOffset, 24);
+            parameters.Add(p => p.Sticky, true);
+            parameters.Add(p => p.Id, "site-footer");
+        });
+
+        // The order is the signature of Footers.setup(id, dotnetObj, revealOffset, reveal, elevate, scrollTarget, scrollPadding).
+        var setup = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.Footers.setup");
+
+        Assert.AreEqual(7, setup.Arguments.Count);
+        Assert.AreEqual("site-footer", setup.Arguments[0]);
+        Assert.IsInstanceOfType<DotNetObjectReference<BitFooter>>(setup.Arguments[1]);
+        Assert.AreEqual(24, setup.Arguments[2]);
+        Assert.AreEqual(true, setup.Arguments[3]);
+        Assert.AreEqual(true, setup.Arguments[4]);
+        Assert.AreEqual("#shell", setup.Arguments[5]);
+        Assert.AreEqual(true, setup.Arguments[6]);
+        Assert.AreSame(component.Instance, ((DotNetObjectReference<BitFooter>)setup.Arguments[1]!).Value);
     }
 
     [TestMethod]

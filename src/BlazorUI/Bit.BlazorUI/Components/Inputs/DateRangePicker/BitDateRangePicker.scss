@@ -258,6 +258,14 @@ $dtrp-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-body, rl-focus
     }
 }
 
+// The callout does not sit inside the root element, so a direction the culture implies - which leaves no dir
+// attribute behind to inherit - has to be restated here. It mirrors the whole callout: the presets and the day picker
+// lead on the right and the days of a week run from the right edge of the grid, which is the order the arrow keys
+// already move in for such a culture.
+.bit-dtrp-cal.bit-dtrp-rtl {
+    direction: rtl;
+}
+
 // The AM/PM segments lead the times in a picker laid out right to left, whatever made it so: its Dir, the page's
 // direction or its content's (:dir), or its culture, which only the class on the callout says - reached through
 // child combinators, so a picker nested in this one's callout keeps its own direction.

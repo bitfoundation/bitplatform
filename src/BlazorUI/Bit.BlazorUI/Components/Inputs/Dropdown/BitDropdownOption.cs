@@ -134,7 +134,7 @@ public partial class BitDropdownOption<TValue> : ComponentBase, IDisposable
             _lastIsHidden = IsHidden;
             _lastIsDisabled = IsDisabled;
 
-            Parent?.NotifyOptionParametersChanged();
+            Parent?.NotifyOptionParametersChanged(this);
         }
 
         base.OnParametersSet();

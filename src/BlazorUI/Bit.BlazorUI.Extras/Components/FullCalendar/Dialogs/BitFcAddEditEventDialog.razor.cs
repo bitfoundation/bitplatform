@@ -437,7 +437,7 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         // BitFcEventDetailsDialog so the add/edit dialog behaves like a true modal.
         if (firstRender)
         {
-            await BitFcDialogInterop.SetupAsync(JS, _dialogRef);
+            await BitFcDialogInterop.SetupAsync(JS, _dialogRef, _dialogTitleId);
             await EscapeWatch.WatchAsync(_dialogRef);
         }
 
@@ -713,6 +713,6 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     {
         State.OnStateChanged -= HandleStateChanged;
         await EscapeWatch.DisposeAsync();
-        await BitFcDialogInterop.TeardownAsync(JS, _dialogRef);
+        await BitFcDialogInterop.TeardownAsync(JS, _dialogTitleId);
     }
 }

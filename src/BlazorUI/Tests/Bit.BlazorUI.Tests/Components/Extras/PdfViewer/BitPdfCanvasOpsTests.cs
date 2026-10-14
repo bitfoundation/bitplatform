@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Linq;
+using System.Text;
 using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -109,6 +110,28 @@ public class BitPdfCanvasOpsTests
             codes.Append(op[0].GetString()).Append(' ');
         }
         Assert.AreEqual("f s t ", codes.ToString());
+    }
+
+    [TestMethod]
+    public void AnOpHoldingANonFiniteNumberShouldBeDroppedAndTheOthersKept()
+    {
+        // The fill is finite and stays; the text run under a CTM that overflowed to Infinity cannot be
+        // written as JSON and is dropped on its own, rather than failing the whole page.
+        string json = CanvasOps("1 0 0 rg 10 20 50 30 re f 1e308 0 0 1e308 0 0 cm 1e308 0 0 1e308 0 0 cm BT /F1 12 Tf (x) Tj ET");
+
+        Assert.AreEqual("""[["f","M10 180 L60 180 L60 150 L10 150 Z",false,"rgb(255,0,0)",1,""]]""", json);
+    }
+
+    [TestMethod]
+    public void AClipGroupAroundANonFiniteOpShouldStayBalanced()
+    {
+        // The save ("g") and restore ("G") of a clip carry no numbers, so dropping the text op inside them
+        // never leaves the group open on the replay side.
+        string json = CanvasOps("q 0 0 100 100 re W n 1e308 0 0 1e308 0 0 cm 1e308 0 0 1e308 0 0 cm BT /F1 12 Tf (x) Tj ET Q 0 1 0 rg 0 0 5 5 re f");
+
+        using var parsed = JsonDocument.Parse(json);
+        var codes = parsed.RootElement.EnumerateArray().Select(op => op[0].GetString()).ToArray();
+        CollectionAssert.AreEqual(new[] { "g", "G", "f" }, codes);
     }
 
     [TestMethod]

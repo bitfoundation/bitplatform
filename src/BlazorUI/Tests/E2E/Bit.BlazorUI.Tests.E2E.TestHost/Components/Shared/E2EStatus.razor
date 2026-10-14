@@ -1,0 +1,21 @@
+﻿@* The one line every page carries: "Loading" in the prerendered HTML, "Ready" once the first interactive render has
+   run, which is what E2ETestBase.OpenAsync waits for before a test drives the page. A page that has something of its
+   own to say puts it in Status. *@
+<p class="e2e-status">Status: <span id="status">@(Status ?? _status)</span></p>
+
+@code {
+    /// <summary>
+    /// What the page says instead of "Ready", once it is set - "Saved", "Done" - for a test to wait for.
+    /// </summary>
+    [Parameter] public string? Status { get; set; }
+
+    private string _status = "Loading";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+}

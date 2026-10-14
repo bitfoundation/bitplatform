@@ -1180,8 +1180,10 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
         return item.Type switch
         {
             BitMarkdownEditorToolbarItemType.Custom => item.AlwaysEnabled is false,
-            // A menu is still worth opening while read-only when something inside it is.
-            BitMarkdownEditorToolbarItemType.Dropdown => item.Children?.Any(c => IsToolbarItemDisabled(c) is false) is not true,
+            // A menu is still worth opening while read-only when something inside it is. A separator is never
+            // disabled, and is nothing to open a menu for.
+            BitMarkdownEditorToolbarItemType.Dropdown => item.Children?.Any(c => c.Type is not BitMarkdownEditorToolbarItemType.Separator &&
+                                                                                 IsToolbarItemDisabled(c) is false) is not true,
             BitMarkdownEditorToolbarItemType.Command or
             BitMarkdownEditorToolbarItemType.Undo or
             BitMarkdownEditorToolbarItemType.Redo or

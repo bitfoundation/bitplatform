@@ -1,0 +1,21 @@
+﻿@page "/e2e/menu-button/drop"
+
+<PageTitle>BitMenuButton DropDirection E2E</PageTitle>
+
+@* Two menu buttons pinned to the middle of the left edge of the viewport, with menus taller than the room above or
+   below them, so where each one opens is down to its DropDirection alone. *@
+<div style="position: fixed; left: 8px; top: calc(50% - 44px);">
+    <BitMenuButton Id="mnb-drop-topbottom" Text="TopAndBottom" Items="_topBottom" DropDirection="BitDropDirection.TopAndBottom" />
+</div>
+<div style="position: fixed; left: 8px; top: calc(50% + 8px);">
+    <BitMenuButton Id="mnb-drop-all" Text="All" Items="_all" DropDirection="BitDropDirection.All" />
+</div>
+
+<div style="position: fixed; right: 8px; top: 8px;">
+    <E2EStatus />
+</div>
+
+@code {
+    private readonly List<BitMenuButtonItem> _topBottom = Enumerable.Range(1, 14).Select(i => new BitMenuButtonItem { Key = $"t{i}", Text = $"Item {i}" }).ToList();
+    private readonly List<BitMenuButtonItem> _all = Enumerable.Range(1, 14).Select(i => new BitMenuButtonItem { Key = $"a{i}", Text = $"Item {i}" }).ToList();
+}

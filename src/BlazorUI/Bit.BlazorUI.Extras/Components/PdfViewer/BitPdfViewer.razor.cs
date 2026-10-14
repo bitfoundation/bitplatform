@@ -183,6 +183,7 @@ public partial class BitPdfViewer : BitComponentBase
     // The built-in password dialog. The load parks on this completion source while
     // the reader types; submitting or cancelling completes it.
     private TaskCompletionSource<string?>? _passwordRequest;
+    private TaskCompletionSource<string?>? _passwordDialogRenderedFor; // the request the dialog on the page was drawn for
     private string _passwordInput = "";
     private bool _passwordRejected; // a password was supplied and turned out wrong
     private ElementReference _passwordInputRef;
@@ -2484,7 +2485,9 @@ public partial class BitPdfViewer : BitComponentBase
 
         // Likewise the password box: a dialog the reader cannot type into without
         // first clicking it would be a poor way to ask.
-        if (_focusPasswordPending && _passwordRequest is not null)
+        // Only once the dialog is on the page: a pass still running from a render before the request would otherwise
+        // hand the trap an element reference that was never captured, which fails in the browser and ends the circuit.
+        if (_focusPasswordPending && _passwordRequest is not null && ReferenceEquals(_passwordDialogRenderedFor, _passwordRequest))
         {
             _focusPasswordPending = false;
             try
@@ -2957,6 +2960,15 @@ public partial class BitPdfViewer : BitComponentBase
                     // Source or a disposal; don't prompt on a load already superseded.
                     if (IsDisposed || version != _loadVersion) return;
 
+                    // Before the first render (a prerender above all) nobody can answer the built-in dialog, and
+                    // awaiting it would hold the server's response open for good. The loading state stays up for
+                    // the first render, which opens the document again and asks then (see _loadDeferred).
+                    if (OnPasswordRequested is null && ShowPasswordPrompt && IsRendered is false)
+                    {
+                        _loadDeferred = true;
+                        return;
+                    }
+
                     string? entered = OnPasswordRequested is not null
                         ? await OnPasswordRequested()
                         : ShowPasswordPrompt ? await PromptForPasswordAsync(ex.WasProvided) : null;
@@ -3053,7 +3065,8 @@ public partial class BitPdfViewer : BitComponentBase
         {
             // Only the load that still owns _loadVersion may clear the progress
             // bar; a superseded load finishing late must not hide the newer one's.
-            if (version == _loadVersion)
+            // A load deferred to the first render keeps it up until that render retries.
+            if (version == _loadVersion && _loadDeferred is false)
             {
                 _loading = false;
                 _progress = null;

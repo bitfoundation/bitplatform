@@ -73,6 +73,7 @@
                         aria-label="@(OverflowAriaLabel ?? "More")"
                         aria-controls="@_MenuId"
                         aria-expanded="@(_isMenuOpen ? "true" : "false")"
+                        data-bit-esc="@EscapeClaim"
                         @onclick="ToggleMenu"
                         @onkeydown="HandleMoreKeyDown"
                         class="bit-pvti bit-pvt-mor @(_IsSelectedOverflowed ? "bit-pvt-mor-sel" : null) @Classes?.OverflowButton">
@@ -124,7 +125,10 @@
 
                 @* The menu takes the focus on itself and points at the item it is on with an
                    aria-activedescendant, which the WAI-ARIA menu pattern offers as the alternative to
-                   moving the real focus from one of its items to the next. *@
+                   moving the real focus from one of its items to the next.
+                   data-bit-esc claims the Escape HandleMenuKeyDown (and HandleMoreKeyDown on the button
+                   above) closes the open menu with (see Utils.claimEscape), so a dialog around the pivot
+                   waits for the next press rather than closing on the same one. *@
                 <div @ref="_menuRef"
                      style="display:@(_isMenuOpen ? "block" : "none");@Styles?.OverflowCallout"
                      id="@_MenuId"
@@ -132,6 +136,7 @@
                      tabindex="-1"
                      aria-label="@(OverflowAriaLabel ?? "More")"
                      aria-activedescendant="@_ActiveMenuItemId"
+                     data-bit-esc="@EscapeClaim"
                      @onkeydown="HandleMenuKeyDown"
                      class="bit-pvt-mnc @Classes?.OverflowCallout">
                     @for (var i = 0; i < _overflowItems.Count; i++)

@@ -412,8 +412,10 @@ public partial class BitMessageBox : BitComponentBase
 
     // What FocusAsync does imperatively, written into the markup: the layer the message box is the content
     // of - a modal, a panel, a callout - focuses the element marked with autofocus every time it opens,
-    // which is what a message box that is kept mounted between showings needs. OnAfterRenderAsync's call
-    // is what covers the message box rendered on its own, where nothing else is looking for the mark.
+    // which is what a message box that is kept mounted between showings needs. The button itself covers the
+    // message box rendered on its own, where nothing else is looking for the mark: a BitButton given AutoFocus
+    // takes the focus on its first render. That makes the button the one owner of the first-render focus, so the
+    // message box does not focus it again itself - two owners would move the focus twice.
     private bool _AutoFocusAction(BitMessageBoxResult action) => AutoFocus && action == _DefaultAction;
 
     // The fallback FocusAsync falls back to: a set with no action buttons in it, or a footer of the
@@ -494,18 +496,6 @@ public partial class BitMessageBox : BitComponentBase
 
         base.OnParametersSet();
     }
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender && AutoFocus)
-        {
-            await FocusAsync();
-        }
-
-        await base.OnAfterRenderAsync(firstRender);
-    }
-
-
 
     // Tertiary is the neutral the footer has always been drawn in, so a message box that says nothing
     // about its buttons looks exactly as it did before the two color parameters existed.

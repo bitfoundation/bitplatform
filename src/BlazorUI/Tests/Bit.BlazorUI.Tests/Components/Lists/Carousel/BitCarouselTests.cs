@@ -2355,16 +2355,16 @@ public partial class BitCarouselTests : BunitTestContext
         // The first page cannot go back, so the button that would is out of the way.
         component.WaitForAssertion(() =>
         {
-            StringAssert.Contains(component.Find(".bit-csl-rbt").GetAttribute("style"), "display:none");
-            Assert.IsFalse(component.Find(".bit-csl-lbt").GetAttribute("style")!.Contains("display:none"));
+            StringAssert.Contains(component.Find(".bit-csl-rbt").GetAttribute("style") ?? "", "display:none");
+            Assert.IsFalse(component.Find(".bit-csl-lbt").GetAttribute("style")?.Contains("display:none") is true);
         });
 
         component.FindAll(".bit-csl-dot")[2].Click();
 
         component.WaitForAssertion(() =>
         {
-            StringAssert.Contains(component.Find(".bit-csl-lbt").GetAttribute("style"), "display:none");
-            Assert.IsFalse(component.Find(".bit-csl-rbt").GetAttribute("style")!.Contains("display:none"));
+            StringAssert.Contains(component.Find(".bit-csl-lbt").GetAttribute("style") ?? "", "display:none");
+            Assert.IsFalse(component.Find(".bit-csl-rbt").GetAttribute("style")?.Contains("display:none") is true);
         });
     }
 
@@ -2378,8 +2378,8 @@ public partial class BitCarouselTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.IsFalse(component.Find(".bit-csl-lbt").GetAttribute("style")!.Contains("display:none"));
-            Assert.IsFalse(component.Find(".bit-csl-rbt").GetAttribute("style")!.Contains("display:none"));
+            Assert.IsFalse(component.Find(".bit-csl-lbt").GetAttribute("style")?.Contains("display:none") is true);
+            Assert.IsFalse(component.Find(".bit-csl-rbt").GetAttribute("style")?.Contains("display:none") is true);
         });
     }
 

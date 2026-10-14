@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
@@ -229,6 +230,37 @@ public class BitFullCalendarMiniCalendarTests : BunitTestContext
 
         Assert.AreEqual("July 2026", Title(component));
         Assert.IsTrue(Day(component, new DateTime(2026, 7, 7)).ClassList.Contains("selected"));
+    }
+
+    [TestMethod]
+    public void BitFullCalendarMiniCalendarShouldFollowACalendarSwitchedOnACultureOfTheSameName()
+    {
+        // DateTimeFormat.Calendar is the documented way of switching the calendar of a culture: the name stays, and so
+        // does CultureInfo.Calendar (the culture's default), so the month shown has to follow the calendar the format
+        // reads rather than either of those.
+        var hijri = CultureInfo.GetCultureInfo("ar-SA");
+        var gregorian = (CultureInfo)hijri.Clone();
+        gregorian.DateTimeFormat.Calendar = new GregorianCalendar();
+
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, new List<BitFullCalendarEvent>());
+            parameters.Add(p => p.Culture, hijri);
+            parameters.Add(p => p.DefaultDate, Anchor);
+            parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
+            parameters.Add(p => p.TimeProvider, new FixedTimeProvider(Anchor.AddHours(11)));
+        });
+
+        var umAlQura = hijri.DateTimeFormat.Calendar;
+        Assert.AreEqual($"{hijri.DateTimeFormat.GetMonthName(umAlQura.GetMonth(Anchor))} {umAlQura.GetYear(Anchor)}", Title(component));
+        Assert.AreNotEqual(31, Days(component).Count(d => d.ClassList.Contains("other-month") is false));
+
+        component.Render(parameters => parameters.Add(p => p.Culture, gregorian));
+
+        // March 2026 of the Gregorian calendar: its own month name and its thirty-one days.
+        Assert.AreEqual($"{gregorian.DateTimeFormat.GetMonthName(3)} 2026", Title(component));
+        Assert.AreEqual(31, Days(component).Count(d => d.ClassList.Contains("other-month") is false));
+        Assert.IsTrue(Day(component, Anchor).ClassList.Contains("selected"));
     }
 
     [TestMethod]

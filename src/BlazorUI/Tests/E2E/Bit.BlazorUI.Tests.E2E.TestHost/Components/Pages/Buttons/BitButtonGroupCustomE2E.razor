@@ -1,0 +1,357 @@
+﻿@page "/e2e/button-group/custom"
+
+<PageTitle>BitButtonGroup E2E (custom items)</PageTitle>
+
+@* The custom-item API of BitButtonGroup: a class of the page's own, every field of the component mapped onto it through
+   NameSelectors - some by property name, some by selector. The sections, their ids and their data are those of the
+   item-level sections of /e2e/button-group, so the same tests drive both. *@
+<h1>BitButtonGroup (custom items)</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitButtonGroup Id="grp-basic" Items="@(L("grp-basic", Basic))" NameSelectors="_selectors" OnItemClick="(Op item) => _clicked = item.Name" />
+    <span id="basic-clicked">@_clicked</span>
+</E2ESection>
+
+<E2ESection Id="variant" Title="Variant">
+    @foreach (var variant in Enum.GetValues<BitVariant>())
+    {
+        <div>
+            <BitButtonGroup Id="@($"grp-variant-{variant}")" Variant="variant" Items="@(L($"grp-variant-{variant}", Basic))" NameSelectors="_selectors" />
+            <BitButtonGroup Id="@($"grp-variant-disitem-{variant}")" Variant="variant" Items="@(L($"grp-variant-disitem-{variant}", DisabledItem))" NameSelectors="_selectors" />
+            <BitButtonGroup Id="@($"grp-variant-dis-{variant}")" Variant="variant" Items="@(L($"grp-variant-dis-{variant}", Basic))" NameSelectors="_selectors" Disabled />
+        </div>
+    }
+</E2ESection>
+
+<E2ESection Id="icon" Title="Icon, IconOnly &amp; ReversedIcon">
+    <BitButtonGroup Id="grp-icon" Items="@(L("grp-icon", Icons))" NameSelectors="_selectors" />
+    <BitButtonGroup Id="grp-icononly" Items="@(L("grp-icononly", Icons))" NameSelectors="_selectors" IconOnly />
+    <BitButtonGroup Id="grp-onlyicon" Items="@(L("grp-onlyicon", OnlyIcons))" NameSelectors="_selectors" />
+    <BitButtonGroup Id="grp-reversed" Items="@(L("grp-reversed", Reversed))" NameSelectors="_selectors" />
+    <BitButtonGroup Id="grp-ext-icons" Items="@(L("grp-ext-icons", ExternalIcons))" NameSelectors="_selectors" Toggle />
+</E2ESection>
+
+<E2ESection Id="toggle" Title="Toggle">
+    <BitButtonGroup Id="grp-toggle" Toggle Items="@(L("grp-toggle", Toggles))" NameSelectors="_selectors" OnToggleChange="(Op item) => _toggleChanges.Add(item.Id!)" />
+    <span id="toggle-changes">@string.Join(",", _toggleChanges)</span>
+    <span id="toggle-selected">@string.Join(",", L("grp-toggle", Toggles).Where(o => o.Selected).Select(o => o.Id))</span>
+    <br />
+    <BitButtonGroup Id="grp-toggle-bind" Toggle Items="@(L("grp-toggle-bind", Toggles))" NameSelectors="_selectors" @bind-ToggleKey="_toggleKey" />
+    <span id="toggle-key">@(_toggleKey ?? "null")</span>
+    <button id="btn-toggle-key-forward" type="button" @onclick="SetToggleKeyForward">Set forward</button>
+    <button id="btn-toggle-key-clear" type="button" @onclick="() => _toggleKey = null">Clear</button>
+    <br />
+    <BitButtonGroup Id="grp-toggle-default" Toggle Items="@(L("grp-toggle-default", Toggles))" NameSelectors="_selectors" DefaultToggleKey="forward" />
+    <BitButtonGroup Id="grp-toggle-fixed" Toggle FixedToggle Items="@(L("grp-toggle-fixed", Toggles))" NameSelectors="_selectors" DefaultToggleKey="play" />
+</E2ESection>
+
+<E2ESection Id="vertical" Title="Vertical">
+    <BitButtonGroup Id="grp-vertical" Vertical Items="@(L("grp-vertical", Basic))" NameSelectors="_selectors" />
+    <BitButtonGroup Id="grp-vertical-toggle" Vertical Toggle Items="@(L("grp-vertical-toggle", Basic))" NameSelectors="_selectors" />
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <BitButtonGroup Id="grp-events" Items="@(L("grp-events", EventItems))" NameSelectors="_selectors" OnItemClick="(Op item) => _itemClicks.Add(item.Id!)" />
+    <span id="events-item-clicks">@string.Join(",", _itemClicks)</span>
+    <span id="events-own-clicks">@_ownClicks</span>
+</E2ESection>
+
+<E2ESection Id="multiple" Title="Multiple">
+    <BitButtonGroup Id="grp-multi" SelectionMode="BitSelectionMode.Multiple" Items="@(L("grp-multi", Formats))" NameSelectors="_selectors" @bind-ToggleKeys="_toggleKeys"
+                    OnToggleChange="(Op item) => _multiChanges++" />
+    <span id="multi-keys">@string.Join(",", _toggleKeys ?? [])</span>
+    <span id="multi-changes">@_multiChanges</span>
+    <button id="btn-multi-set" type="button" @onclick="SetToggleKeysWithUnknown">Set italic + unknown</button>
+    <br />
+    <BitButtonGroup Id="grp-multi-max" SelectionMode="BitSelectionMode.Multiple" MaxToggles="_maxToggles" Items="@(L("grp-multi-max", Formats))" NameSelectors="_selectors" @bind-ToggleKeys="_maxKeys" />
+    <span id="multi-max-keys">@string.Join(",", _maxKeys ?? [])</span>
+    <button id="btn-max-1" type="button" @onclick="() => _maxToggles = 1">Max 1</button>
+    <br />
+    <BitButtonGroup Id="grp-multi-fixed" SelectionMode="BitSelectionMode.Multiple" FixedToggle Items="@(L("grp-multi-fixed", Formats))" NameSelectors="_selectors" DefaultToggleKeys="@(["bold"])" />
+</E2ESection>
+
+<E2ESection Id="indicator" Title="SelectionIndicator">
+    <BitButtonGroup Id="grp-indicator" ShowSelectionIndicator Toggle Items="@(L("grp-indicator", Basic))" NameSelectors="_selectors" DefaultToggleKey="edit" />
+    <BitButtonGroup Id="grp-indicator-none" ShowSelectionIndicator Items="@(L("grp-indicator-none", Basic))" NameSelectors="_selectors" />
+</E2ESection>
+
+<E2ESection Id="loading-badge" Title="Loading &amp; Badge">
+    <BitButtonGroup Id="grp-loading" Items="@(L("grp-loading", Loading))" NameSelectors="_selectors" OnItemClick="(Op item) => _loadingClicks.Add(item.Id!)" />
+    <span id="loading-clicks">@string.Join(",", _loadingClicks)</span>
+    <BitButtonGroup Id="grp-badge" Items="@(L("grp-badge", Badges))" NameSelectors="_selectors" />
+    <BitButtonGroup Id="grp-badge-icononly" IconOnly Items="@(L("grp-badge-icononly", Badges))" NameSelectors="_selectors" />
+</E2ESection>
+
+<E2ESection Id="links" Title="Links">
+    <BitButtonGroup Id="grp-links" Items="@(L("grp-links", Links))" NameSelectors="_selectors" />
+    <BitButtonGroup Id="grp-links-toggle" Toggle Items="@(L("grp-links-toggle", Links))" NameSelectors="_selectors" @bind-ToggleKey="_linkKey" />
+    <span id="links-key">@(_linkKey ?? "null")</span>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <BitButtonGroup Id="grp-template" Items="@(L("grp-template", Templated))" NameSelectors="_selectors" />
+    <BitButtonGroup Id="grp-itemtemplate" Items="@(L("grp-itemtemplate", Basic))" NameSelectors="_selectors">
+        <ItemTemplate Context="item"><b class="tpl-item">@item.Name</b></ItemTemplate>
+    </BitButtonGroup>
+</E2ESection>
+
+<E2ESection Id="tooltips" Title="Tooltips">
+    <BitButtonGroup Id="grp-titles" IconOnly Items="@(L("grp-titles", Titles))" NameSelectors="_selectors" />
+    <BitButtonGroup Id="grp-toggle-titles" Toggle Items="@(L("grp-toggle-titles", ToggleTitles))" NameSelectors="_selectors" />
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <input id="a11y-before" aria-label="before" />
+    <BitButtonGroup Id="grp-radio" AriaLabel="Text alignment" Toggle Items="@(L("grp-radio", Alignments))" NameSelectors="_selectors" @bind-ToggleKey="_alignKey" />
+    <span id="radio-key">@(_alignKey ?? "null")</span>
+    <input id="a11y-after" aria-label="after" />
+    <BitButtonGroup Id="grp-no-select-on-focus" AriaLabel="Committed with Space" Toggle SelectOnFocus="false" Items="@(L("grp-no-select-on-focus", Alignments))" NameSelectors="_selectors" @bind-ToggleKey="_commitKey" />
+    <span id="commit-key">@(_commitKey ?? "null")</span>
+    <BitButtonGroup Id="grp-interactive" AriaLabel="Operations with a disabled button" DisabledInteractive Items="@(L("grp-interactive", DisabledItem))" NameSelectors="_selectors"
+                    OnItemClick="(Op item) => _interactiveClicks.Add(item.Id!)" />
+    <span id="interactive-clicks">@string.Join(",", _interactiveClicks)</span>
+    <BitButtonGroup Id="grp-toolbar" AriaLabel="Operations" Items="@(L("grp-toolbar", DisabledItem))" NameSelectors="_selectors" />
+    <BitButtonGroup Id="grp-not-navigable" AriaLabel="Operations" Navigable="false" Items="@(L("grp-not-navigable", Basic))" NameSelectors="_selectors" />
+</E2ESection>
+
+<E2ESection Id="item-styles" Title="Item Class &amp; Style">
+    <BitButtonGroup Id="grp-item-styles" Items="@(L("grp-item-styles", Styled))" NameSelectors="_selectors" />
+</E2ESection>
+
+<E2ESection Id="dynamic" Title="Re-render">
+    <BitButtonGroup Id="grp-dynamic" Toggle Items="_dynamicItems" NameSelectors="_selectors" DefaultToggleKey="b" />
+    <button id="btn-add-item" type="button" @onclick="AddDynamicItem">Add item</button>
+    <button id="btn-remove-item" type="button" @onclick="RemoveDynamicItem">Remove first item</button>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    @if (_mounted)
+    {
+        <BitButtonGroup Id="grp-mounted" Toggle Items="@(L("grp-mounted", Basic))" NameSelectors="_selectors" DefaultToggleKey="add" />
+    }
+    <button id="btn-unmount" type="button" @onclick="() => _mounted = !_mounted">Toggle mount</button>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private string? _clicked = "none";
+    private readonly List<string> _toggleChanges = [];
+    private string? _toggleKey;
+    private readonly List<string> _itemClicks = [];
+    private int _ownClicks;
+    private IEnumerable<string>? _toggleKeys = [];
+    private int _multiChanges;
+    private IEnumerable<string>? _maxKeys = [];
+    private int? _maxToggles = 2;
+    private readonly List<string> _loadingClicks = [];
+    private string? _linkKey;
+    private string? _alignKey;
+    private string? _commitKey;
+    private readonly List<string> _interactiveClicks = [];
+    private List<Op> _dynamicItems = [new() { Id = "a", Name = "A" }, new() { Id = "b", Name = "B" }];
+    private int _dynamicCounter;
+    private bool _mounted = true;
+
+    // Every field of the component, half of them by property name and half by selector.
+    private readonly BitButtonGroupNameSelectors<Op> _selectors = new()
+    {
+        AriaLabel = { Name = nameof(Op.Label) },
+        Badge = { Selector = i => i.Count },
+        Class = { Name = nameof(Op.Css) },
+        Href = { Selector = i => i.Url },
+        Icon = { Selector = i => i.Symbol },
+        IconName = { Name = nameof(Op.Glyph) },
+        IsDisabled = { Selector = i => i.Off },
+        IsLoading = { Name = nameof(Op.Busy) },
+        Key = { Name = nameof(Op.Id) },
+        OffIcon = { Selector = i => i.OffSymbol },
+        OffIconName = { Name = nameof(Op.OffGlyph) },
+        OffText = { Selector = i => i.OffName },
+        OffTitle = { Name = nameof(Op.OffTip) },
+        OnIcon = { Selector = i => i.OnSymbol },
+        OnIconName = { Selector = i => i.OnGlyph },
+        OnText = { Name = nameof(Op.OnName) },
+        OnTitle = { Selector = i => i.OnTip },
+        OnClick = { Selector = i => i.Clicked },
+        ReversedIcon = { Name = nameof(Op.Flipped) },
+        Rel = { Selector = i => i.Relation },
+        Style = { Selector = i => i.Inline },
+        Target = { Name = nameof(Op.UrlTarget) },
+        Template = { Selector = i => i.Content },
+        Text = { Name = nameof(Op.Name) },
+        Title = { Selector = i => i.Tip },
+        IsToggled = { Name = nameof(Op.Selected) },
+    };
+
+    private readonly Dictionary<string, List<Op>> _lists = [];
+
+    private List<Op> L(string id, Func<List<Op>> factory)
+    {
+        if (_lists.TryGetValue(id, out var list) is false)
+        {
+            _lists[id] = list = factory();
+        }
+
+        return list;
+    }
+
+    private void SetToggleKeyForward() => _toggleKey = "forward";
+
+    private void SetToggleKeysWithUnknown() => _toggleKeys = ["italic", "nope"];
+
+    private static List<Op> Basic() =>
+    [
+        new() { Id = "add", Name = "Add" },
+        new() { Id = "edit", Name = "Edit" },
+        new() { Id = "delete", Name = "Delete" }
+    ];
+
+    private static List<Op> DisabledItem() =>
+    [
+        new() { Id = "add", Name = "Add" },
+        new() { Id = "edit", Name = "Edit", Off = true },
+        new() { Id = "delete", Name = "Delete" }
+    ];
+
+    private static List<Op> Icons() =>
+    [
+        new() { Id = "add", Name = "Add", Glyph = BitIconName.Add },
+        new() { Id = "edit", Name = "Edit", Glyph = BitIconName.Edit },
+        new() { Id = "delete", Name = "Delete", Glyph = BitIconName.Delete }
+    ];
+
+    private static List<Op> OnlyIcons() =>
+    [
+        new() { Id = "add", Label = "Add", Glyph = BitIconName.Add },
+        new() { Id = "edit", Label = "Edit", Glyph = BitIconName.Edit },
+        new() { Id = "delete", Label = "Delete", Glyph = BitIconName.Delete }
+    ];
+
+    private static List<Op> Reversed() =>
+    [
+        new() { Id = "add", Name = "Add", Glyph = BitIconName.Add, Flipped = true },
+        new() { Id = "edit", Name = "Edit", Glyph = BitIconName.Edit, Flipped = true },
+        new() { Id = "delete", Name = "Delete", Glyph = BitIconName.Delete }
+    ];
+
+    private static List<Op> ExternalIcons() =>
+    [
+        new() { Id = "home", Name = "Home", Symbol = BitIconInfo.Css("fa-solid fa-house"), OnSymbol = BitIconInfo.Bi("house-fill"), OffSymbol = BitIconInfo.Bi("house") },
+        new() { Id = "gear", Name = "Gear", Symbol = BitIconInfo.Fa("solid gear") }
+    ];
+
+    private static List<Op> Toggles() =>
+    [
+        new() { Id = "back", OnName = "Back (2X)", OffName = "Back (1X)", OnGlyph = BitIconName.RewindTwoX, OffGlyph = BitIconName.Rewind, OnTip = "Slow down", OffTip = "Rewind" },
+        new() { Id = "play", OnName = "Pause", OffName = "Play", OnGlyph = BitIconName.Pause, OffGlyph = BitIconName.Play },
+        new() { Id = "forward", OnName = "Forward (2X)", OffName = "Forward (1X)", OnGlyph = BitIconName.FastForwardTwoX, OffGlyph = BitIconName.FastForward }
+    ];
+
+    private List<Op> EventItems() =>
+    [
+        new() { Id = "increase", Name = "Increase", Glyph = BitIconName.Add, Clicked = _ => _ownClicks++ },
+        new() { Id = "reset", Name = "Reset", Glyph = BitIconName.Reset, Clicked = _ => _ownClicks = 0 },
+        new() { Id = "decrease", Name = "Decrease", Glyph = BitIconName.Remove, Clicked = _ => _ownClicks-- }
+    ];
+
+    private static List<Op> Formats() =>
+    [
+        new() { Id = "bold", Name = "Bold", Glyph = BitIconName.Bold },
+        new() { Id = "italic", Name = "Italic", Glyph = BitIconName.Italic },
+        new() { Id = "underline", Name = "Underline", Glyph = BitIconName.Underline }
+    ];
+
+    private static List<Op> Loading() =>
+    [
+        new() { Id = "save", Name = "Save", Glyph = BitIconName.Save, Busy = true },
+        new() { Id = "sync", Name = "Sync", Glyph = BitIconName.Sync },
+        new() { Id = "upload", Name = "Upload", Glyph = BitIconName.Upload }
+    ];
+
+    private static List<Op> Badges() =>
+    [
+        new() { Id = "inbox", Name = "Inbox", Glyph = BitIconName.Inbox, Count = "3" },
+        new() { Id = "drafts", Name = "Drafts", Glyph = BitIconName.Edit, Count = "12" },
+        new() { Id = "sent", Name = "Sent", Glyph = BitIconName.Send }
+    ];
+
+    private static List<Op> Links() =>
+    [
+        new() { Id = "home", Name = "Home", Url = "/", UrlTarget = "_blank" },
+        new() { Id = "docs", Name = "Docs", Url = "https://example.com", Relation = BitLinkRels.NoFollow, UrlTarget = "_blank" },
+        new() { Id = "self", Name = "Self", Url = "e2e/button-group/custom#links" }
+    ];
+
+    private static List<Op> Templated() =>
+    [
+        new() { Id = "custom", Name = "Custom", Content = item => @<span class="tpl-own">@item.Name template</span> },
+        new() { Id = "plain", Name = "Plain" }
+    ];
+
+    private static List<Op> Titles() =>
+    [
+        new() { Id = "bold", Name = "Bold", Glyph = BitIconName.Bold, Tip = "Bold (Ctrl+B)" },
+        new() { Id = "italic", Name = "Italic", Glyph = BitIconName.Italic, Tip = "Italic (Ctrl+I)" }
+    ];
+
+    private static List<Op> ToggleTitles() =>
+    [
+        new() { Id = "mute", Name = "Mute", Glyph = BitIconName.Microphone, OnTip = "Unmute", OffTip = "Mute", Tip = "Microphone" },
+        new() { Id = "video", Name = "Video", Glyph = BitIconName.Video, Tip = "Camera" }
+    ];
+
+    private static List<Op> Alignments() =>
+    [
+        new() { Id = "left", Name = "Left", Glyph = BitIconName.AlignLeft },
+        new() { Id = "center", Name = "Center", Glyph = BitIconName.AlignCenter },
+        new() { Id = "right", Name = "Right", Glyph = BitIconName.AlignRight }
+    ];
+
+    private static List<Op> Styled() =>
+    [
+        new() { Id = "classed", Name = "Classed", Css = "item-own-class" },
+        new() { Id = "styled", Name = "Styled", Inline = "color: rgb(255, 0, 255);" }
+    ];
+
+    private void AddDynamicItem()
+    {
+        _dynamicCounter++;
+        _dynamicItems = [.. _dynamicItems, new() { Id = $"n{_dynamicCounter}", Name = $"New {_dynamicCounter}" }];
+    }
+
+    private void RemoveDynamicItem()
+    {
+        if (_dynamicItems.Count > 0) _dynamicItems = _dynamicItems.Skip(1).ToList();
+    }
+
+    public sealed class Op
+    {
+        public string? Id { get; set; }
+        public string? Name { get; set; }
+        public string? Glyph { get; set; }
+        public BitIconInfo? Symbol { get; set; }
+        public bool Flipped { get; set; }
+        public bool Off { get; set; }
+        public string? Css { get; set; }
+        public string? Inline { get; set; }
+        public Action<Op>? Clicked { get; set; }
+        public string? OnGlyph { get; set; }
+        public string? OffGlyph { get; set; }
+        public BitIconInfo? OnSymbol { get; set; }
+        public BitIconInfo? OffSymbol { get; set; }
+        public string? OnName { get; set; }
+        public string? OffName { get; set; }
+        public string? OnTip { get; set; }
+        public string? OffTip { get; set; }
+        public bool Selected { get; set; }
+        public string? Label { get; set; }
+        public string? Count { get; set; }
+        public string? Url { get; set; }
+        public string? UrlTarget { get; set; }
+        public BitLinkRels? Relation { get; set; }
+        public bool Busy { get; set; }
+        public string? Tip { get; set; }
+        public RenderFragment<Op>? Content { get; set; }
+    }
+}

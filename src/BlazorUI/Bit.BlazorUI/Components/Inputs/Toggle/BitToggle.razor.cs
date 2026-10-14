@@ -94,6 +94,12 @@ public partial class BitToggle : BitInputBase<bool>
     /// <summary>
     /// If true, the toggle automatically receives focus when the page renders (rendered as the <c>autofocus</c> attribute).
     /// </summary>
+    /// <remarks>
+    /// The <c>autofocus</c> attribute is rendered for a statically rendered page, where the browser acts on it while
+    /// parsing the document; an interactively rendered toggle is focused from code after its first render instead,
+    /// since by then the parse the attribute belongs to is long over. A disabled toggle is skipped either way unless
+    /// <see cref="AllowDisabledFocus"/> keeps it focusable.
+    /// </remarks>
     [Parameter] public bool AutoFocus { get; set; }
 
     /// <summary>
@@ -494,6 +500,15 @@ public partial class BitToggle : BitInputBase<bool>
         // The hidden checkbox is the form value carrier of the toggle, not something the user is ever meant
         // to land on, so FocusAsync is pointed at the switch button that actually holds the tab stop instead.
         InputElement = _buttonRef;
+
+        // The autofocus attribute is only honoured while the browser is parsing the document, which is never
+        // when the markup arrives from an interactive render - so the attribute alone covers the statically
+        // rendered page and nothing else. The focus is moved here for the rest, skipping a toggle that cannot
+        // take it, the same as the attribute does.
+        if (firstRender && AutoFocus && (Disabled is false || AllowDisabledFocus))
+        {
+            await _buttonRef.FocusSafelyAsync();
+        }
 
         await base.OnAfterRenderAsync(firstRender);
     }

@@ -2186,6 +2186,17 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         // calendar is actually displaying, rather than on wherever the keyboard left it last time.
         _focusedYearCell = null;
         _focusedMonthCell = null;
+
+        // The toggle that was activated goes away with the grid it headed, so the focus is handed to the grid
+        // that takes its place - otherwise it drops onto the body, out of the callout that is still open.
+        if (_showMonthPicker)
+        {
+            FocusMonthCell(GetFocusableMonth());
+        }
+        else
+        {
+            FocusYearCell(GetFocusableYear());
+        }
     }
 
     private async Task HandleMonthChange(bool isNext)

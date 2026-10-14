@@ -3349,4 +3349,101 @@ public class BitMessageTests : BunitTestContext
         Assert.IsFalse(root.HasAttribute("aria-labelledby"));
         Assert.IsFalse(root.HasAttribute("aria-describedby"));
     }
+
+    [TestMethod]
+    public void BitMessageShouldWatchTheEscapeClaimOnlyWhileItDismissesOnEscape()
+    {
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Dismissible, true);
+            parameters.Add(p => p.DismissOnEscape, true);
+            parameters.AddChildContent("Hello");
+        });
+
+        // The key handler hears every Escape pressed inside the message, so the browser is asked to tell it which
+        // are its own for as long as it claims the key at all.
+        var watches = Context.JSInterop.Invocations["BitBlazorUI.Utils.watchEscapeClaim"];
+        Assert.HasCount(1, watches);
+        Assert.AreEqual(component.Instance.UniqueId, watches[0].Arguments[0]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchEscapeClaim"]);
+
+        component.Render(parameters => parameters.Add(p => p.DismissOnEscape, false));
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchEscapeClaim"]);
+        Assert.IsFalse(component.Find(".bit-msg").HasAttribute("data-bit-esc"));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldNotWatchTheEscapeClaimWithoutDismissOnEscape()
+    {
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Dismissible, true);
+            parameters.AddChildContent("Hello");
+        });
+
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.watchEscapeClaim"]);
+    }
+
+    [TestMethod]
+    public void BitMessageShouldLeaveAnEscapeSomethingInsideItTookFirst()
+    {
+        var dismissCount = 0;
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Dismissible, true);
+            parameters.Add(p => p.DismissOnEscape, true);
+            parameters.Add(p => p.OnDismiss, () => dismissCount++);
+            parameters.AddChildContent("Hello");
+        });
+
+        // The browser says the press belongs to a component inside the message - a field clearing on it, a surface
+        // rendered there - ahead of the keydown Blazor dispatches, so the message leaves that press alone...
+        component.InvokeAsync(() => component.Instance._OnEscapeVerdict(true));
+        component.Find(".bit-msg").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, dismissCount);
+        Assert.HasCount(1, component.FindAll(".bit-msg"));
+
+        // ...and the verdict is spent with it: the next press, which the browser says is the message's own, dismisses.
+        component.InvokeAsync(() => component.Instance._OnEscapeVerdict(false));
+        component.Find(".bit-msg").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(1, dismissCount);
+        Assert.IsEmpty(component.FindAll(".bit-msg"));
+    }
+
+    [TestMethod]
+    public async Task BitMessageShouldStopWatchingTheEscapeClaimWhenItIsDisposed()
+    {
+        RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Dismissible, true);
+            parameters.Add(p => p.DismissOnEscape, true);
+            parameters.AddChildContent("Hello");
+        });
+
+        await Context.DisposeComponentsAsync();
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unwatchEscapeClaim"]);
+    }
+
+    [TestMethod]
+    public async Task BitMessageShouldSurviveAnEscapeWatchThatCannotBeStopped()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.Utils.unwatchEscapeClaim").SetException(new JSException("BitBlazorUI.Utils is not defined"));
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Dismissible, true);
+            parameters.Add(p => p.DismissOnEscape, true);
+            parameters.AddChildContent("Hello");
+        });
+
+        // A script that is gone by the time the message leaves is not a reason for the disposal to throw.
+        component.Render(parameters => parameters.Add(p => p.DismissOnEscape, false));
+
+        await Context.DisposeComponentsAsync();
+    }
 }

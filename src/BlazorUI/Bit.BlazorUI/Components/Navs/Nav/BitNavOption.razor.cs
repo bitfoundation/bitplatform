@@ -3,6 +3,8 @@
 public partial class BitNavOption : ComponentBase, IDisposable
 {
     private bool _disposed;
+    private bool _isExpanded;
+    private bool? _isExpandedParameter;
 
 
 
@@ -114,7 +116,25 @@ public partial class BitNavOption : ComponentBase, IDisposable
     /// <summary>
     /// Whether or not the nav option is in an expanded state.
     /// </summary>
-    [Parameter] public bool IsExpanded { get; set; }
+    /// <remarks>
+    /// The value given is the state the option starts in, and the state it moves to whenever the value given changes;
+    /// in between, the option keeps whatever the reader (or the nav's API) expanded or collapsed it to.
+    /// </remarks>
+    [Parameter]
+    public bool IsExpanded
+    {
+        get => _isExpanded;
+        set
+        {
+            // The markup hands its value over again on every render of the nav (the options are its content), so only
+            // a value that differs from the last one handed over is applied: re-applying the same one would undo every
+            // toggle of the reader at once, and an option written as expanded could never be collapsed.
+            if (_isExpandedParameter == value) return;
+
+            _isExpandedParameter = value;
+            _isExpanded = value;
+        }
+    }
 
     /// <summary>
     /// Indicates that the nav option should render as a separator.
@@ -198,6 +218,10 @@ public partial class BitNavOption : ComponentBase, IDisposable
 
 
     internal int Depth => Parent is null ? 0 : Parent.Depth + 1;
+
+    // The expansion state the nav moves the option to, which the IsExpanded handed over by the markup only replaces
+    // once that value changes.
+    internal void SetExpanded(bool value) => _isExpanded = value;
 
     internal void InternalRecursiveStateHasChanged()
     {

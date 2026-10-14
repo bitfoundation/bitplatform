@@ -24,6 +24,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     private string _menuId = default!;
     private string _calloutId = default!;
     private string _overlayId = default!;
+    private bool _autoFocus;
     private bool _focusFirstItemOnOpen;
     private int _hoverToken;
     private bool _hasSubmenus;
@@ -569,11 +570,17 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
         StyleBuilder.Register(() => Toggle && Split && IsToggled ? Styles?.Toggled : string.Empty);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitMenuButtonParams))]
     protected override async Task OnInitializedAsync()
     {
         _menuId = $"BitMenuButton-{UniqueId}-menu";
         _calloutId = $"BitMenuButton-{UniqueId}-callout";
         _overlayId = $"BitMenuButton-{UniqueId}-overlay";
+
+        // The cascade is read here as well as in OnParametersSet because DefaultIsToggled (and the Split and Toggle
+        // it depends on) is acted on while initializing, which is before OnParametersSet has run for the first time -
+        // a cascaded one applied only there would come too late to seed anything.
+        CascadingParameters?.UpdateParameters(this);
 
         if (Split && Toggle && IsToggledHasBeenSet is false && DefaultIsToggled.HasValue)
         {
@@ -663,6 +670,15 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
                 await _js.BitMenuButtonsSetup(_Id, _calloutId);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
+
+            // The autofocus attribute is written on the header button, but a browser honors it only while the
+            // document is still loading: an interactive render replaces the prerendered markup that took the focus,
+            // and a WebAssembly page or a menu button rendered later never gets that far. So the first render gives
+            // the focus itself, by the very rule the attribute is written by.
+            if (_autoFocus && IsDisposed is false)
+            {
+                await _operatorButtonRef.FocusSafelyAsync();
+            }
         }
     }
 

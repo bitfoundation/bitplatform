@@ -3399,6 +3399,121 @@ public class BitMapTests : BunitTestContext
         Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == CHROME_CANCEL_WAIT_VISIBLE));
     }
 
+    // ---------------------------------------------------------------- view announcements
+
+    [TestMethod]
+    public async Task BitMapShouldNotAnnounceAViewChangeUnlessAskedTo()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 5));
+
+        // The live region is always there, so a later announcement has a region to land in, but it stays empty.
+        Assert.AreEqual(string.Empty, component.Find(".bit-map-live").TextContent);
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldAnnounceASettledViewInTheBuiltInWording()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.AnnounceViewChanges, true);
+        });
+
+        await component.Instance._OnViewChanged(ViewPayload(12.34567, -5.5, 5.4));
+
+        // Four decimals of the centre and a whole zoom level, in the page's own number format.
+        Assert.AreEqual($"Map centred at {12.34567:F4}, {-5.5:F4}, zoom level {5.4:F0}.", component.Find(".bit-map-live").TextContent);
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldNudgeARepeatedAnnouncementSoItIsSpokenAgain()
+    {
+        // A screen reader ignores a live region whose text did not change, so the same view twice is announced
+        // through a trailing zero-width space - a change of text, not of what is spoken.
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.AnnounceViewChanges, true);
+            parameters.Add(p => p.ViewAnnouncementThrottle, TimeSpan.Zero);
+            parameters.Add<Func<BitMapViewState, string>?>(p => p.ViewAnnouncementFormatter, v => $"zoom {v.Zoom:F0}");
+        });
+
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 5));
+        Assert.AreEqual("zoom 5", component.Find(".bit-map-live").TextContent);
+
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 5));
+        Assert.AreEqual("zoom 5​", component.Find(".bit-map-live").TextContent);
+
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 5));
+        Assert.AreEqual("zoom 5", component.Find(".bit-map-live").TextContent, "the nudge alternates rather than piling up");
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldHoldBackAViewInsideTheThrottleWindow()
+    {
+        SetupSuccessfulMount();
+
+        var formatted = new List<double>();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.AnnounceViewChanges, true);
+            parameters.Add(p => p.ViewAnnouncementThrottle, TimeSpan.FromHours(1));
+            parameters.Add<Func<BitMapViewState, string>?>(p => p.ViewAnnouncementFormatter, v =>
+            {
+                formatted.Add(v.Zoom);
+                return $"zoom {v.Zoom:F0}";
+            });
+        });
+
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 5));
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 6));
+
+        // The second view is kept for the end of the window rather than spoken over the first or dropped.
+        Assert.AreEqual("zoom 5", component.Find(".bit-map-live").TextContent);
+        CollectionAssert.AreEqual(new[] { 5d }, formatted);
+
+        // Disposal takes the held-back announcement with it rather than leaving a timer behind.
+        await component.Instance.DisposeAsync();
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldSpeakTheLastHeldBackViewOnTheRenderersDispatcher()
+    {
+        // The trailing announcement ends in the consumer's formatter and a render, so it runs on the renderer's
+        // dispatcher rather than on a thread-pool thread (Task.Run), which could render concurrently.
+        SetupSuccessfulMount();
+
+        var formatted = new List<(double Zoom, bool OnDispatcher)>();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.AnnounceViewChanges, true);
+            parameters.Add(p => p.ViewAnnouncementThrottle, TimeSpan.FromMilliseconds(100));
+            parameters.Add<Func<BitMapViewState, string>?>(p => p.ViewAnnouncementFormatter, v =>
+            {
+                formatted.Add((v.Zoom, Renderer.Dispatcher.CheckAccess()));
+                return $"zoom {v.Zoom:F0}";
+            });
+        });
+
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 5));
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 6));
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 7));
+
+        component.WaitForAssertion(() => Assert.AreEqual("zoom 7", component.Find(".bit-map-live").TextContent), TimeSpan.FromSeconds(10));
+
+        // The view superseded inside the window is never spoken; the last one is, from the dispatcher.
+        CollectionAssert.AreEqual(new[] { 5d, 7d }, formatted.Select(f => f.Zoom).ToArray());
+        Assert.IsTrue(formatted[^1].OnDispatcher);
+    }
+
     /// <summary>A popup body with no content of its own, for tests that only care about the shell.</summary>
     private static readonly Microsoft.AspNetCore.Components.RenderFragment<BitMapMarker> EmptyPopupTemplate =
         _ => builder => builder.AddContent(0, string.Empty);

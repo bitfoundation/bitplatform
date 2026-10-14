@@ -1,0 +1,98 @@
+﻿@page "/e2e/data-grid/export"
+
+@* BitDataGrid's exports: the toolbar's CSV and Excel buttons (ExportFileName, Exportable, ExportValue, every matching
+   row rather than the page, ExcelExportStyled, the frozen pane), the selected-rows exports, ToCsv / ToCsvAsync, the
+   default file name, and an infinite-scrolling grid asking its provider for every row. *@
+
+<PageTitle>BitDataGrid export E2E</PageTitle>
+
+<h1>BitDataGrid export</h1>
+
+<E2ESection Id="export" Title="CSV and Excel export">
+    <button id="btn-export-selected-csv" type="button" @onclick="() => _exportGrid.ExportCsvAsync(selectedOnly: true)">ExportCsvAsync(selected)</button>
+    <button id="btn-export-selected-excel" type="button" @onclick="() => _exportGrid.ExportExcelAsync(selectedOnly: true)">ExportExcelAsync(selected)</button>
+    <button id="btn-to-csv" type="button" @onclick="() => _csv = _exportGrid.ToCsv()">ToCsv</button>
+    <button id="btn-to-csv-selected" type="button" @onclick="ToCsvSelected">ToCsvAsync(selected)</button>
+    <button id="btn-to-excel" type="button" @onclick="ToExcel">ToExcelAsync</button>
+    <pre id="csv-text">@_csv</pre>
+    <span id="excel-size">@_excelSize</span>
+    <BitDataGrid @ref="_exportGrid" TItem="Product" Id="grid-export" Items="@_products" KeyField="p => p.Id"
+                 Filterable="true" FilterDebounce="0" Pageable="true" PageSize="3"
+                 SelectionMode="BitSelectionMode.Multiple"
+                 ShowCsvExport="true" ShowExcelExport="true" ExcelExportStyled="true" ExportFileName="products">
+        <BitDataGridColumn Property="p => p.Id" Width="80px" Frozen="true" Filterable="false" />
+        <BitDataGridColumn Property="p => p.Name" Width="180px" />
+        <BitDataGridColumn Property="p => p.Price" Width="100px" />
+        <BitDataGridColumn Property="p => p.ReleaseDate" Title="Released" Format="yyyy-MM-dd" Width="120px" />
+        <BitDataGridColumn Property="p => p.Supplier" Exportable="false" />
+        <BitDataGridColumn ColumnId="Value" Title="Value" ExportValue="@(p => p.Price * p.Stock)">
+            <Template Context="p"><b>@(p.Price * p.Stock)</b></Template>
+        </BitDataGridColumn>
+        <BitDataGridColumn ColumnId="Note" Title="Note">
+            <Template Context="p"><i>no value to export</i></Template>
+        </BitDataGridColumn>
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="export-default" Title="Default file name">
+    <BitDataGrid TItem="Product" Id="grid-export-default" Items="@_products" ShowCsvExport="true">
+        <BitDataGridColumn Property="p => p.Id" />
+        <BitDataGridColumn Property="p => p.Name" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="export-infinite" Title="Export of an infinite-scrolling grid">
+    <BitDataGrid TItem="Product" Id="grid-export-infinite" OnLoadMore="LoadMoreAsync" LoadMoreBatchSize="20" Height="240px" ShowCsvExport="true" ExportFileName="all-rows">
+        <BitDataGridColumn Property="p => p.Id" />
+        <BitDataGridColumn Property="p => p.Name" />
+    </BitDataGrid>
+    <p>load requests <span id="infinite-requests">@_infiniteLog</span></p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public class Product
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public decimal Price { get; set; }
+        public int Stock { get; set; }
+        public DateTime ReleaseDate { get; set; }
+        public string Supplier { get; set; } = "";
+    }
+
+    private readonly List<Product> _products =
+    [
+        new() { Id = 1, Name = "Laptop", Price = 1200, Stock = 5, ReleaseDate = new(2023, 5, 1), Supplier = "Acme" },
+        new() { Id = 2, Name = "Desk, oak", Price = 300, Stock = 2, ReleaseDate = new(2022, 1, 15), Supplier = "Globex" },
+        new() { Id = 3, Name = "=SUM(A1)", Price = 10, Stock = 1, ReleaseDate = new(2021, 11, 20), Supplier = "Initech" },
+        new() { Id = 4, Name = "Lamp", Price = 45, Stock = 30, ReleaseDate = new(2023, 2, 10), Supplier = "Acme" },
+        new() { Id = 5, Name = "Say \"hi\"", Price = 5, Stock = 3, ReleaseDate = new(2024, 3, 5), Supplier = "Globex" },
+        new() { Id = 6, Name = "Mug", Price = 10, Stock = 200, ReleaseDate = new(2022, 9, 9), Supplier = "Umbrella" },
+    ];
+
+    private readonly List<Product> _infiniteAll = Enumerable.Range(1, 55).Select(i => new Product { Id = i, Name = $"Row {i:00}" }).ToList();
+
+    private BitDataGrid<Product> _exportGrid = default!;
+    private string _csv = "";
+    private string _excelSize = "";
+    private string _infiniteLog = "";
+
+    private async Task ToCsvSelected() => _csv = await _exportGrid.ToCsvAsync(selectedOnly: true);
+
+    private async Task ToExcel()
+    {
+        var bytes = await _exportGrid.ToExcelAsync();
+        _excelSize = bytes.Length > 1000 && bytes[0] == (byte)'P' && bytes[1] == (byte)'K' ? "zip" : $"unexpected {bytes.Length}";
+    }
+
+    private async Task<BitDataGridReadResult<Product>> LoadMoreAsync(BitDataGridReadRequest request)
+    {
+        await Task.Delay(50, request.CancellationToken);
+        _infiniteLog += $"[{request.Skip},{request.Take?.ToString() ?? "all"}]";
+        await InvokeAsync(StateHasChanged);
+        var rows = _infiniteAll.Skip(request.Skip).Take(request.Take ?? _infiniteAll.Count).ToList();
+        return new BitDataGridReadResult<Product>(rows, 0);
+    }
+}

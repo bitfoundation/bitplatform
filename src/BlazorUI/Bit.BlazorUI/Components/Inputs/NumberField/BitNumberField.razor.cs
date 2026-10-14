@@ -44,6 +44,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private ElementReference _buttonDecrement;
     private bool _announceValue;
     private bool _isSpinButtonPressed;
+    private bool _isSpinButtonClick;
     private bool _isSelfValueChangePending;
     private string? _uncommittedImmediateText;
     private int _selfValueChangeVersion;
@@ -959,7 +960,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
         else if (NormalizeDigits)
         {
-            value = NormalizeUnicodeDigits(value);
+            // The Arabic decimal separator becomes the decimal separator of the culture the text is read in next:
+            // the field's own for the plain text, and the formatting culture's for a NumberFormat (whose separators
+            // MapCultureSeparatorsToInvariant maps below). A '.' would be no separator at all in a culture like fa-IR,
+            // so a fraction typed there could never be parsed.
+            var decimalSeparator = (NumberFormat is null ? ValueCulture : FormatCulture).NumberFormat.NumberDecimalSeparator;
+            value = NormalizeUnicodeDigits(value, decimalSeparator);
             digitsNormalized = string.Equals(value, originalValue, StringComparison.Ordinal) is false;
         }
 
@@ -1250,7 +1256,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     private bool IsDisplayDigitEquivalent(string? originalValue, TValue value)
     {
-        return string.Equals(NormalizeUnicodeDigits(originalValue), FormatValueAsString(value), StringComparison.Ordinal);
+        return string.Equals(NormalizeUnicodeDigits(originalValue, ValueCulture.NumberFormat.NumberDecimalSeparator), FormatValueAsString(value), StringComparison.Ordinal);
     }
 
     protected override string? FormatValueAsString(TValue? value)
@@ -1613,6 +1619,15 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     private async Task HandleOnInputContainerClick()
     {
+        // A click that bubbled up from a spin button is the button's own: its press has already put the focus where it
+        // belongs, or deliberately left it where it was - a touch tap, so that no soft keyboard slides up, and an
+        // assistive technology's activation (see HandleOnPointerDown and HandleOnButtonClick).
+        if (_isSpinButtonClick)
+        {
+            _isSpinButtonClick = false;
+            return;
+        }
+
         // Clicking the input itself already focused it, so the interop round trip is skipped there.
         if (Disabled || HideInput || _hasFocus) return;
 
@@ -1631,6 +1646,9 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     private async Task HandleOnButtonClick(MouseEventArgs e, bool isIncrement)
     {
+        // Set before anything else: the same click reaches HandleOnInputContainerClick next, as it bubbles.
+        _isSpinButtonClick = true;
+
         if (e.Detail != 0) return;
 
         if (Disabled || ReadOnly || InvalidValueBinding()) return;
@@ -2076,6 +2094,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
 
         result = Snap(result);
+
+        // A step is rounded to the precision exactly as a typed value is (TryParseValueFromString), and before the
+        // value is published: three steps of 0.1 add up to 0.30000000000000004 in floating point, which the binding
+        // would otherwise receive while the input, normalized afterwards, shows 0.3.
+        result = Normalize(result);
+
         result = CheckMinAndMax(result);
 
         // The value is being changed via the spin buttons / wheel / arrow keys, so any preserved
@@ -2266,7 +2290,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         return result;
     }
 
-    private static string? NormalizeUnicodeDigits(string? value)
+    /// <summary>
+    /// Maps every Unicode decimal digit to its Latin equivalent, the Arabic decimal separator to
+    /// <paramref name="decimalSeparator"/> (the one of the culture the result is parsed in next) and drops the Arabic
+    /// thousands separator.
+    /// </summary>
+    private static string? NormalizeUnicodeDigits(string? value, string decimalSeparator = ".")
     {
         if (value.HasNoValue()) return value;
 
@@ -2317,7 +2346,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             // Decimal separator emitted by Persian/Arabic keyboard layouts.
             if (c is '٫') // U+066B ARABIC DECIMAL SEPARATOR
             {
-                sb.Append('.');
+                sb.Append(decimalSeparator);
                 changed = true;
                 continue;
             }

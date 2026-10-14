@@ -1426,6 +1426,7 @@ public partial class BitSwiper : BitComponentBase
         }
         catch (ObjectDisposedException) { } // the renderer went away between the tick and the dispatch
         catch (JSDisconnectedException) { } // the circuit went away while the items were being moved
+        catch (TaskCanceledException) { } // the move was cancelled along with the circuit, which is going away
         catch (Exception ex)
         {
             // An exception that escapes an async void handler takes the whole process down, so anything

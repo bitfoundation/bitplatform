@@ -277,6 +277,11 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
 
         InvalidateInputTarget();
 
+        // The indexes of the options after the removed one have moved, and they feed the generated input ids and
+        // whatever an item template renders off them, so each option is pushed a re-render; the parent's own
+        // StateHasChanged does not reach an option whose parameters have not changed.
+        RefreshOptions();
+
         StateHasChanged();
     }
 
@@ -504,6 +509,12 @@ public partial class BitChoiceGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     // neither submitted nor validated, so announcing it as required would say the opposite of what the
     // label shows and of what the form does with it.
     internal bool IsRequired => Disabled is false && Required;
+
+    // A Value bound one way with nothing to write a change back through keeps the choice it was given, so the click
+    // that would move the native selection away from it is cancelled the way a read-only group's is. Otherwise the
+    // radio that was clicked stays checked in the DOM - posted with the form, announced as the checked one and
+    // holding the tab stop - while the group shows the value it is bound to.
+    internal bool IsSelectionLocked => ReadOnly || InvalidValueBinding();
 
     // Same reasoning as the label: the description element is only rendered when there is a description to
     // show, so its id only joins the reference then. This attribute sits after the HtmlAttributes splat in

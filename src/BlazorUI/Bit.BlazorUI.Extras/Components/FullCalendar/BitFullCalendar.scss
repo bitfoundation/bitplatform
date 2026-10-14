@@ -123,11 +123,11 @@ $bfc-private-properties: evt-color;
 
 /* The calendar's own controls are plain HTML buttons, inputs and selects. A browser draws those in its
    system font and colours (buttontext, field) rather than inheriting them, which in a dark scheme puts
-   black text on the dark surface - so every one of them inherits the calendar's type and colour. */
-.bit-bfc button,
-.bit-bfc input,
-.bit-bfc select,
-.bit-bfc textarea {
+   black text on the dark surface - so every one of them inherits the calendar's type and colour. The rule weighs
+   nothing (:where), as all it has to outrank is the browser's own: weighing a class and an element, it outranked the
+   colour every control of the calendar paints itself in, and drew the primary and danger buttons, today's day and
+   every selected choice in the text colour on the accent rather than in --bit-FullCalendar-accent-text-color. */
+:where(.bit-bfc) :where(button, input, select, textarea) {
     font-family: inherit;
     color: inherit;
 }
@@ -2158,7 +2158,7 @@ button.bit-bfc-dropdown-item:hover {
     transform: translateX(calc(#{$siz-switch-w-sm} - #{$siz-switch-h-sm}));
 }
 
-[dir="rtl"] .bit-bfc-toggle.checked .bit-bfc-toggle-thumb {
+.bit-bfc-rtl .bit-bfc-toggle.checked .bit-bfc-toggle-thumb {
     transform: translateX(calc(#{$siz-switch-h-sm} - #{$siz-switch-w-sm}));
 }
 
@@ -2634,79 +2634,83 @@ button.bit-bfc-cell-add-hint:focus-visible {
     transform: scaleX(-1);
 }
 
+/* Every right-to-left rule below is keyed on bit-bfc-rtl the same way, never on a [dir="rtl"] ancestor: that one
+   also matched the dir of the page around a calendar laid out left to right (an English calendar on a Persian
+   page), whose grids then ran right to left under a left-to-right toolbar and against its arrow keys. */
+
 /* Month grid: columns flow right-to-left */
-[dir="rtl"] .bit-bfc-month-header {
+.bit-bfc-rtl .bit-bfc-month-header {
     direction: rtl;
 }
 
-[dir="rtl"] .bit-bfc-month-grid {
+.bit-bfc-rtl .bit-bfc-month-grid {
     direction: rtl;
 }
 
 /* Week header + timegrid */
-[dir="rtl"] .bit-bfc-week-header {
+.bit-bfc-rtl .bit-bfc-week-header {
     direction: rtl;
 }
 
-[dir="rtl"] .bit-bfc-week-layout {
+.bit-bfc-rtl .bit-bfc-week-layout {
     direction: rtl;
 }
 
-[dir="rtl"] .bit-bfc-week-scroll {
+.bit-bfc-rtl .bit-bfc-week-scroll {
     direction: rtl;
 }
 
-[dir="rtl"] .bit-bfc-timegrid-days {
+.bit-bfc-rtl .bit-bfc-timegrid-days {
     direction: rtl;
 }
 
 /* Day view: sidebar moves to the left side */
-[dir="rtl"] .bit-bfc-day-layout {
+.bit-bfc-rtl .bit-bfc-day-layout {
     direction: rtl;
 }
 
-[dir="rtl"] .bit-bfc-day-main>.bit-bfc-timegrid-wrapper {
+.bit-bfc-rtl .bit-bfc-day-main>.bit-bfc-timegrid-wrapper {
     direction: rtl;
 }
 
 /* Year view mini-grids */
-[dir="rtl"] .bit-bfc-year {
+.bit-bfc-rtl .bit-bfc-year {
     direction: rtl;
 }
 
-[dir="rtl"] .bit-bfc-year-weekdays {
+.bit-bfc-rtl .bit-bfc-year-weekdays {
     direction: rtl;
 }
 
-[dir="rtl"] .bit-bfc-year-days {
+.bit-bfc-rtl .bit-bfc-year-days {
     direction: rtl;
 }
 
 /* Agenda view */
-[dir="rtl"] .bit-bfc-agenda-item {
+.bit-bfc-rtl .bit-bfc-agenda-item {
     direction: rtl;
 }
 
 /* Mini-calendar */
-[dir="rtl"] .bit-bfc-mini-calendar {
+.bit-bfc-rtl .bit-bfc-mini-calendar {
     direction: rtl;
 }
 
 /* Dialog / toast */
-[dir="rtl"] .bit-bfc-dialog {
+.bit-bfc-rtl .bit-bfc-dialog {
     direction: rtl;
 }
 
-[dir="rtl"] .bit-bfc-toast {
+.bit-bfc-rtl .bit-bfc-toast {
     direction: rtl;
 }
 
 /* Text alignment helpers */
-[dir="rtl"] .bit-bfc-day-header {
+.bit-bfc-rtl .bit-bfc-day-header {
     direction: rtl;
 }
 
-[dir="rtl"] .bit-bfc-happening-now {
+.bit-bfc-rtl .bit-bfc-happening-now {
     direction: rtl;
 }
 
@@ -3146,15 +3150,15 @@ button.bit-bfc-cell-add-hint:focus-visible {
 
 /* RTL: the resource gutter stays on the leading edge - the corner and the resource cells pin to
    inset-inline-start, which the right-to-left rows below map to the right side of the scroller. */
-[dir="rtl"] .bit-bfc-tl-grid {
+.bit-bfc-rtl .bit-bfc-tl-grid {
     direction: rtl;
 }
 
-[dir="rtl"] .bit-bfc-tl-time-header {
+.bit-bfc-rtl .bit-bfc-tl-time-header {
     direction: rtl;
 }
 
-[dir="rtl"] .bit-bfc-tl-row {
+.bit-bfc-rtl .bit-bfc-tl-row {
     direction: rtl;
 }
 

@@ -11,7 +11,7 @@ public partial class BitNav<TItem>
 
         if (item is BitNavOption navOption)
         {
-            navOption.IsExpanded = value;
+            navOption.SetExpanded(value);
         }
 
         if (NameSelectors is null) return;
@@ -384,6 +384,10 @@ public partial class BitNav<TItem>
         {
             return NameSelectors.IsExpanded.Selector!(item) ?? false;
         }
+
+        // Nor does a custom item type without a member of that name, NameSelectors or not: reporting the default
+        // instead would leave every branch of it collapsed for good, since there is nothing to write a toggle to.
+        if (item.HasProperty(NameSelectors.IsExpanded.Name) is false) return null;
 
         return item.GetValueFromProperty(NameSelectors.IsExpanded.Name, false);
     }

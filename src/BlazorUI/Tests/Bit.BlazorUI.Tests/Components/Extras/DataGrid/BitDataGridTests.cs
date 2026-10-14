@@ -1081,6 +1081,68 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual(2, component.Instance.TotalCount);
     }
 
+    public class OffsetDatedRow
+    {
+        public string Name { get; set; } = string.Empty;
+        public DateTime? Created { get; set; }
+        public DateTimeOffset Shipped { get; set; }
+    }
+
+    // The other two shapes a date member takes: a nullable DateTime, whose null never falls on a day, and a plain
+    // DateTimeOffset, whose day is read in the row's own offset. Each is built from members named on its own closed
+    // type (BitDataGridQueryableProcessor.BuildDayEquality), so the four shapes are pinned apart.
+    [TestMethod]
+    public async Task QueryableDateEqualsFiltersCoverNullableDateTimeAndPlainDateTimeOffset()
+    {
+        var rows = new List<OffsetDatedRow>
+        {
+            new() { Name = "Morning", Created = new DateTime(2024, 5, 1, 8, 30, 0), Shipped = new DateTimeOffset(2024, 5, 1, 23, 0, 0, TimeSpan.FromHours(2)) },
+            new() { Name = "Unknown", Created = null, Shipped = new DateTimeOffset(2024, 5, 2, 1, 0, 0, TimeSpan.Zero) },
+            new() { Name = "NextDay", Created = new DateTime(2024, 5, 2, 0, 0, 0), Shipped = new DateTimeOffset(2024, 5, 2, 10, 0, 0, TimeSpan.Zero) },
+        };
+
+        RenderFragment columns = builder =>
+        {
+            builder.OpenComponent<BitDataGridColumn<OffsetDatedRow>>(0);
+            builder.AddComponentParameter(1, "Field", "Name");
+            builder.CloseComponent();
+            builder.OpenComponent<BitDataGridColumn<OffsetDatedRow>>(2);
+            builder.AddComponentParameter(3, "Field", "Created");
+            builder.CloseComponent();
+            builder.OpenComponent<BitDataGridColumn<OffsetDatedRow>>(4);
+            builder.AddComponentParameter(5, "Field", "Shipped");
+            builder.CloseComponent();
+        };
+
+        var component = RenderComponent<BitDataGrid<OffsetDatedRow>>(parameters =>
+        {
+            parameters.Add(p => p.Items, rows.AsQueryable());
+            parameters.Add(p => p.ChildContent, columns);
+        });
+
+        string[] Names() => component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-message-row)")
+            .Select(r => r.QuerySelector(".bit-dtg-cell")!.TextContent.Trim()).ToArray();
+
+        // A nullable DateTime: the whole day matches, and a null is never equal to a day and always not-equal.
+        await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Created", BitDataGridFilterOperator.Equals, new DateTime(2024, 5, 1)));
+        CollectionAssert.AreEqual(new[] { "Morning" }, Names());
+
+        await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Created", BitDataGridFilterOperator.NotEquals, new DateTime(2024, 5, 1)));
+        CollectionAssert.AreEqual(new[] { "Unknown", "NextDay" }, Names());
+
+        // A plain DateTimeOffset: the day is the row's own (23:00 +02:00 is still May 1), with no null to leave out.
+        await component.InvokeAsync(() => component.Instance.ClearFiltersAsync());
+        await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Shipped", BitDataGridFilterOperator.Equals, new DateTimeOffset(2024, 5, 2, 0, 0, 0, TimeSpan.Zero)));
+        CollectionAssert.AreEqual(new[] { "Unknown", "NextDay" }, Names());
+
+        await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Shipped", BitDataGridFilterOperator.NotEquals, new DateTimeOffset(2024, 5, 2, 0, 0, 0, TimeSpan.Zero)));
+        CollectionAssert.AreEqual(new[] { "Morning" }, Names());
+
+        // A set of days takes the same path once per member.
+        await component.InvokeAsync(() => component.Instance.ApplyFilterAsync("Shipped", BitDataGridFilterOperator.In, new[] { new DateTimeOffset(2024, 5, 1, 0, 0, 0, TimeSpan.Zero) }));
+        CollectionAssert.AreEqual(new[] { "Morning" }, Names());
+    }
+
     private static IReadOnlyList<string> FirstDatedCellTexts(IRenderedComponent<BitDataGrid<DatedRow>> component)
         => component.FindAll(".bit-dtg-body > .bit-dtg-row:not(.bit-dtg-message-row):not(.bit-dtg-placeholder-row)")
             .Select(r => r.QuerySelector(".bit-dtg-cell")!.TextContent.Trim())
@@ -2772,13 +2834,13 @@ public class BitDataGridTests : BunitTestContext
     // --------------------------------------------------------- Search debounce
 
     [TestMethod]
-    public async Task SearchBoxDebouncesBurstsOfTypingIntoASingleSearch()
+    public void SearchBoxDebouncesBurstsOfTypingIntoASingleSearch()
     {
         var searches = 0;
         var component = RenderGrid(configure: parameters =>
         {
             parameters.Add(p => p.ShowSearchBox, true);
-            parameters.Add(p => p.SearchDebounce, 300);
+            parameters.Add(p => p.SearchDebounce, 60);
             parameters.Add(p => p.SearchTextChanged, (string? _) => searches++);
         });
 
@@ -2791,8 +2853,8 @@ public class BitDataGridTests : BunitTestContext
         Assert.AreEqual(0, searches);
         Assert.IsNull(component.Instance.ActiveSearch);
 
-        await Task.Delay(1000);
-        component.WaitForAssertion(() => Assert.AreEqual("che", component.Instance.ActiveSearch));
+        // The render the applied term causes is what the wait picks up, rather than a fixed sleep past the debounce.
+        component.WaitForAssertion(() => Assert.AreEqual("che", component.Instance.ActiveSearch), TimeSpan.FromSeconds(2));
         Assert.AreEqual(1, searches, "a burst of keystrokes must issue exactly one search");
         CollectionAssert.AreEqual(new[] { "Cherry" }, FirstCellTexts(component).ToArray());
     }

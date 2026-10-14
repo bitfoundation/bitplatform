@@ -1,0 +1,214 @@
+﻿@page "/e2e/dropdown/style"
+@using System.Reflection
+
+@* The look of BitDropdown: every BitColor, every BitSize, Styles and Classes reaching every part of the field and the
+   callout, and right-to-left layout from Dir and from an ancestor's dir. *@
+
+<PageTitle>BitDropdown style E2E</PageTitle>
+
+<h1>BitDropdown style</h1>
+
+<E2ESection Id="colors" Title="Color">
+    <div style="width: 300px">
+        <BitDropdown Id="dd-color-none"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="No color"
+                     MultiSelect
+                     Items="@L("color-none")"
+                     DefaultValues="@(["f-app"])" />
+        @foreach (var color in Enum.GetValues<BitColor>())
+        {
+            <BitDropdown @key="color"
+                         Id="@($"dd-color-{color}")"
+                         TItem="BitDropdownItem<string>" TValue="string"
+                         Label="@color.ToString()"
+                         MultiSelect
+                         Color="color"
+                         Items="@L($"color-{color}")"
+                         DefaultValues="@(["f-app"])" />
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="sizes" Title="Size">
+    <div style="width: 300px">
+        <BitDropdown Id="dd-size-none"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="No size"
+                     ShowSearchBox
+                     Items="@L("size-none")"
+                     DefaultValue="@string.Empty" />
+        @foreach (var size in Enum.GetValues<BitSize>())
+        {
+            <BitDropdown @key="size"
+                         Id="@($"dd-size-{size}")"
+                         TItem="BitDropdownItem<string>" TValue="string"
+                         Label="@size.ToString()"
+                         ShowSearchBox
+                         Size="size"
+                         Items="@L($"size-{size}")"
+                         DefaultValue="@string.Empty" />
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="styles-classes" Title="Styles and Classes">
+    <div style="width: 360px">
+        <BitDropdown Id="dd-sc-multi"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="Every part"
+                     MultiSelect
+                     Chips
+                     ShowSelectAll
+                     ShowSearchBox
+                     ShowClearButton
+                     HighlightSearch
+                     Immediate
+                     MaxDisplayedItems="1"
+                     Prefix="Pre"
+                     Suffix="Suf"
+                     Description="The description"
+                     ErrorMessage="The error"
+                     Styles="_styles"
+                     Classes="_classes"
+                     Items="_iconItems1"
+                     DefaultValues="@(["f-app", "f-ban"])">
+            <CalloutHeaderTemplate><span>Header</span></CalloutHeaderTemplate>
+            <CalloutFooterTemplate><span>Footer</span></CalloutFooterTemplate>
+        </BitDropdown>
+        <BitDropdown Id="dd-sc-single"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="Single parts"
+                     ShowSearchBox
+                     MinSearchLength="3"
+                     Styles="_styles"
+                     Classes="_classes"
+                     Items="_iconItems2"
+                     DefaultValue="@string.Empty" />
+        <BitDropdown Id="dd-sc-empty"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="Empty parts"
+                     Styles="_styles"
+                     Classes="_classes"
+                     Items="_noItems" />
+        <BitDropdown Id="dd-sc-loading"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="Loading parts"
+                     IsLoading
+                     Styles="_styles"
+                     Classes="_classes"
+                     Items="@L("sc-loading")"
+                     DefaultValue="@string.Empty" />
+        <BitDropdown Id="dd-sc-combo"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="Combo parts"
+                     Combo
+                     Dynamic
+                     Styles="_styles"
+                     Classes="_classes"
+                     Items="@L("sc-combo")"
+                     DefaultValue="@string.Empty" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="Right to left">
+    <div style="width: 400px">
+        <BitDropdown Id="dd-ltr"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="Left to right"
+                     MultiSelect
+                     ShowSearchBox
+                     Items="@L("ltr")"
+                     DefaultValues="@(["f-app"])" />
+        <BitDropdown Id="dd-rtl"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="Right to left"
+                     Dir="BitDir.Rtl"
+                     MultiSelect
+                     ShowSearchBox
+                     Items="@L("rtl")"
+                     DefaultValues="@(["f-app"])" />
+        <BitDropdown Id="dd-rtl-preserve"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="Right to left, own width"
+                     Dir="BitDir.Rtl"
+                     PreserveCalloutWidth
+                     Items="@L("rtl-preserve")"
+                     DefaultValue="@string.Empty" />
+        <BitDropdown Id="dd-ltr-combo"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="Left to right combo"
+                     Combo
+                     Items="@L("ltr-combo")"
+                     DefaultValue="@string.Empty" />
+        <BitDropdown Id="dd-rtl-combo"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="Right to left combo"
+                     Dir="BitDir.Rtl"
+                     Combo
+                     Items="@L("rtl-combo")"
+                     DefaultValue="@string.Empty" />
+        <div dir="rtl">
+            <BitDropdown Id="dd-rtl-inherit"
+                         TItem="BitDropdownItem<string>" TValue="string"
+                         Label="Inherited right to left"
+                         MultiSelect
+                         Items="@L("rtl-inherit")"
+                         DefaultValues="@(["f-app"])" />
+        </div>
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly Dictionary<string, List<BitDropdownItem<string>>> _lists = [];
+
+    private List<BitDropdownItem<string>> L(string key)
+    {
+        if (_lists.TryGetValue(key, out var list) is false)
+        {
+            _lists[key] = list =
+            [
+                new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
+                new() { Text = "Apple", Value = "f-app" },
+                new() { Text = "Banana", Value = "f-ban" },
+                new() { Text = "Grape", Value = "f-gra" },
+            ];
+        }
+
+        return list;
+    }
+
+    private static List<BitDropdownItem<string>> IconItems() =>
+    [
+        new() { ItemType = BitDropdownItemType.Header, Text = "Fruits" },
+        new() { Text = "Apple", Value = "f-app", IconName = "Heart" },
+        new() { Text = "Banana", Value = "f-ban" },
+        new() { ItemType = BitDropdownItemType.Divider },
+        new() { Text = "Grape", Value = "f-gra" },
+    ];
+
+    private readonly List<BitDropdownItem<string>> _iconItems1 = IconItems();
+    private readonly List<BitDropdownItem<string>> _iconItems2 = IconItems();
+    private readonly List<BitDropdownItem<string>> _noItems = [];
+
+    // Every part gets a style and a class named after it, so a test can tell which element each one reached.
+    private readonly BitDropdownClassStyles _styles = Mark(name => $"--part-{name}: 1;");
+    private readonly BitDropdownClassStyles _classes = Mark(name => $"c-{name}");
+
+    private static BitDropdownClassStyles Mark(Func<string, string> value)
+    {
+        var styles = new BitDropdownClassStyles();
+
+        foreach (var property in typeof(BitDropdownClassStyles).GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        {
+            if (property.PropertyType == typeof(string) && property.CanWrite)
+            {
+                property.SetValue(styles, value(property.Name));
+            }
+        }
+
+        return styles;
+    }
+}

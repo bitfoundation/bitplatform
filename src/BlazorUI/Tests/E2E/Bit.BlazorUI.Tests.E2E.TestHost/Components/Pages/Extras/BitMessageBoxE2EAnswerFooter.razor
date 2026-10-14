@@ -1,0 +1,11 @@
+﻿@* A footer of the page's own for a message box the service shows: it takes the box as a cascading parameter and
+   answers it through AnswerAsync, the way the docs say a component in a service box's template does. *@
+<button id="@($"{IdPrefix}-answer-yes")" @onclick="() => MessageBox!.AnswerAsync(BitMessageBoxResult.Yes)">Answer yes</button>
+<button id="@($"{IdPrefix}-answer-no")" @onclick="() => MessageBox!.AnswerAsync(BitMessageBoxResult.No)">Answer no</button>
+<span id="@($"{IdPrefix}-has-box")">@(MessageBox is not null)</span>
+
+@code {
+    [CascadingParameter] public BitMessageBox? MessageBox { get; set; }
+
+    [Parameter] public string IdPrefix { get; set; } = "footer";
+}

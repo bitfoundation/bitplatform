@@ -53,6 +53,8 @@
     // disabled one that is not kept focusable, must not pull the focus on the first render - a hand-written
     // autofocus included.
     var autoFocus = (AutoFocus || GetSplattedAttribute("autofocus") is not null) && ariaHidden is false && (Disabled is false || AllowDisabledFocus);
+    // Kept for the focus call of the first render (see OnAfterRenderAsync), so the two can never disagree.
+    _autoFocus = autoFocus;
 
     RenderFragment content = @<text>
         @if (template is not null)

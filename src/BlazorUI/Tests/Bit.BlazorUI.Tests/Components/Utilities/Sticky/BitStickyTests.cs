@@ -1252,6 +1252,60 @@ public class BitStickyTests : BunitTestContext
         component.MarkupMatches(@"<hr class=""bit-stk bit-stk-top"" id:ignore>");
     }
 
+    [TestMethod]
+    public async Task BitStickyShouldReadTheStateAgainOnRefreshWhileTheDetectionIsAttached()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.StuckClass, "my-stuck");
+        });
+
+        var id = component.Find("div").Id;
+
+        await component.Instance.RefreshAsync();
+
+        // A layout change none of the observers can see is answered by asking the script to read the state again,
+        // for the registration it was attached under.
+        var refresh = Refreshes().Single();
+
+        Assert.AreEqual(id, refresh.Arguments[0]);
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldDisposeTheScriptWithTheComponent()
+    {
+        var component = RenderComponent<BitSticky>(parameters =>
+        {
+            parameters.Add(p => p.ScrollPadding, true);
+        });
+
+        var id = component.Find("div").Id;
+
+        Assert.HasCount(1, Setups());
+
+        await component.Instance.DisposeAsync();
+
+        // The registration holds the element and its listeners, so a sticky taken off the page takes it with it -
+        // under the id it was attached with - and a second disposal has nothing left to take.
+        var disposal = Disposals().Single();
+
+        Assert.AreEqual(id, disposal.Arguments[0]);
+
+        await component.Instance.DisposeAsync();
+
+        Assert.HasCount(1, Disposals());
+    }
+
+    [TestMethod]
+    public async Task BitStickyShouldNotDisposeAScriptItNeverAttached()
+    {
+        var component = RenderComponent<BitSticky>();
+
+        await component.Instance.DisposeAsync();
+
+        Assert.IsEmpty(Disposals());
+    }
+
     private List<Bunit.JSRuntimeInvocation> Setups()
     {
         return Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Stickies.setup").ToList();

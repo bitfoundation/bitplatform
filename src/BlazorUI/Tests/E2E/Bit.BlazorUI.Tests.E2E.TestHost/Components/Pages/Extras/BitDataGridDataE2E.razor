@@ -1,0 +1,189 @@
+﻿@page "/e2e/data-grid/data"
+
+@* BitDataGrid's data modes: row virtualization of a tall local list, column virtualization, OnRead with paging and the
+   Loading state (and the cancellation of a superseded request), OnRead with virtualization and server-side aggregates,
+   OnLoadMore infinite scrolling, and an IQueryable source. *@
+
+<PageTitle>BitDataGrid data modes E2E</PageTitle>
+
+<h1>BitDataGrid data modes</h1>
+
+<E2ESection Id="virtual" Title="Row virtualization">
+    <BitDataGrid TItem="Row" Id="grid-virtual" Items="@_tall" Virtualize="true" Height="300px" RowHeight="36">
+        <BitDataGridColumn Property="r => r.Id" Width="100px" />
+        <BitDataGridColumn Property="r => r.Name" Width="200px" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="virtual-columns" Title="Column virtualization">
+    <div style="width: 600px;">
+        <BitDataGrid TItem="Row" Id="grid-virtual-columns" Items="@_wide" Virtualize="true" VirtualizeColumns="true" Height="260px">
+            <BitDataGridColumn Property="r => r.Id" Width="80px" Frozen="true" />
+            @for (var c = 1; c <= 40; c++)
+            {
+                var column = c;
+                <BitDataGridColumn ColumnId="@($"c{column}")" Title="@($"C{column:00}")" Width="100px">
+                    <Template Context="row">@(row.Id * 100 + column)</Template>
+                </BitDataGridColumn>
+            }
+        </BitDataGrid>
+    </div>
+</E2ESection>
+
+<E2ESection Id="server" Title="Server-side paging">
+    <BitDataGrid TItem="Row" Id="grid-server" OnRead="ReadServerAsync" Loading="_serverLoading"
+                 Pageable="true" PageSize="10" Filterable="true" ShowSearchBox="true" SearchDebounce="0" FilterDebounce="0">
+        <BitDataGridColumn Property="r => r.Id" Filterable="false" />
+        <BitDataGridColumn Property="r => r.Name" />
+    </BitDataGrid>
+    <p>requests <span id="server-requests">@_serverRequests</span> | cancelled <span id="server-cancelled">@_serverCancelled</span> | last <span id="server-last">@_serverLast</span></p>
+</E2ESection>
+
+<E2ESection Id="server-virtual" Title="Server-side virtualization">
+    <BitDataGrid TItem="Row" Id="grid-server-virtual" OnRead="ReadServerVirtualAsync" Virtualize="true" Height="300px" RowHeight="36" ShowFooter="true">
+        <BitDataGridColumn Property="r => r.Id" Width="100px" />
+        <BitDataGridColumn Property="r => r.Name" Width="200px" />
+        <BitDataGridColumn Property="r => r.Amount" Width="150px" Aggregate="BitDataGridAggregateType.Sum" />
+    </BitDataGrid>
+    <p>virtual requests <span id="virtual-requests">@_virtualRequests</span> | max skip <span id="virtual-max-skip">@_virtualMaxSkip</span></p>
+</E2ESection>
+
+<E2ESection Id="infinite" Title="Infinite scrolling">
+    <BitDataGrid TItem="Row" Id="grid-infinite" OnLoadMore="LoadMoreAsync" LoadMoreBatchSize="20" Height="300px" RowHeight="36">
+        <BitDataGridColumn Property="r => r.Id" />
+        <BitDataGridColumn Property="r => r.Name" />
+    </BitDataGrid>
+    <p>batches <span id="infinite-batches">@_infiniteBatches</span> | last <span id="infinite-last">@_infiniteLast</span></p>
+</E2ESection>
+
+<E2ESection Id="skeleton" Title="The loading skeleton">
+    @* The second batch waits for the page, so the skeleton row stays for as long as a test needs to read it. *@
+    <button id="btn-release-skeleton" type="button" @onclick="() => _skeletonGate.TrySetResult()">Release the second batch</button>
+    <BitDataGrid TItem="Row" Id="grid-skeleton" OnLoadMore="LoadGatedAsync" LoadMoreBatchSize="5" Height="150px">
+        <BitDataGridColumn Property="r => r.Id" />
+        <BitDataGridColumn Property="r => r.Name" />
+    </BitDataGrid>
+    <BitDataGrid TItem="Row" Id="grid-skeleton-fam" OnLoadMore="LoadGatedAsync" LoadMoreBatchSize="5" Height="150px" ForceAnimation="true">
+        <BitDataGridColumn Property="r => r.Id" />
+        <BitDataGridColumn Property="r => r.Name" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="queryable" Title="IQueryable source">
+    <BitDataGrid TItem="Row" Id="grid-queryable" Items="@_queryable" Filterable="true" FilterDebounce="0" Pageable="true" PageSize="5">
+        <BitDataGridColumn Property="r => r.Id" Filterable="false" />
+        <BitDataGridColumn Property="r => r.Name" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public class Row
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public int Amount { get; set; }
+    }
+
+    private static List<Row> Rows(int count) => Enumerable.Range(1, count).Select(i => new Row { Id = i, Name = $"Item {i:0000}", Amount = i }).ToList();
+
+    private readonly List<Row> _tall = Rows(5000);
+    private readonly List<Row> _wide = Rows(200);
+    private readonly List<Row> _serverAll = Rows(95);
+    private readonly List<Row> _serverVirtualAll = Rows(2000);
+    private readonly List<Row> _infiniteAll = Rows(55);
+    private readonly IQueryable<Row> _queryable = Rows(23).AsQueryable();
+
+    private bool _serverLoading;
+    private int _serverRequests;
+    private int _serverCancelled;
+    private string _serverLast = "";
+    private int _virtualRequests;
+    private int _virtualMaxSkip;
+    private int _infiniteBatches;
+    private string _infiniteLast = "";
+
+    private static IEnumerable<Row> Query(IEnumerable<Row> source, BitDataGridReadRequest request)
+    {
+        var query = source;
+        foreach (var filter in request.Filters)
+        {
+            if (filter.ColumnId == nameof(Row.Name) && filter.Value is string text)
+                query = query.Where(r => r.Name.Contains(text, StringComparison.OrdinalIgnoreCase));
+        }
+        if (string.IsNullOrEmpty(request.Search) is false)
+            query = query.Where(r => r.Name.Contains(request.Search, StringComparison.OrdinalIgnoreCase));
+        foreach (var sort in request.Sorts.Take(1))
+        {
+            query = sort.ColumnId == nameof(Row.Name)
+                ? (sort.Direction == BitDataGridSortDirection.Descending ? query.OrderByDescending(r => r.Name) : query.OrderBy(r => r.Name))
+                : (sort.Direction == BitDataGridSortDirection.Descending ? query.OrderByDescending(r => r.Id) : query.OrderBy(r => r.Id));
+        }
+        return query;
+    }
+
+    private async Task<BitDataGridReadResult<Row>> ReadServerAsync(BitDataGridReadRequest request)
+    {
+        _serverRequests++;
+        _serverLoading = true;
+        await InvokeAsync(StateHasChanged);
+        try
+        {
+            await Task.Delay(400, request.CancellationToken);
+            var matching = Query(_serverAll, request).ToList();
+            var items = matching.Skip(request.Skip).Take(request.Take ?? matching.Count).ToList();
+            _serverLast = $"skip {request.Skip}, take {request.Take}, sorts {string.Join(";", request.Sorts.Select(s => $"{s.ColumnId}:{s.Direction}"))}, filters {request.Filters.Count}, search {request.Search}, total {matching.Count}";
+            return new BitDataGridReadResult<Row>(items, matching.Count);
+        }
+        catch (OperationCanceledException)
+        {
+            _serverCancelled++;
+            throw;
+        }
+        finally
+        {
+            if (request.CancellationToken.IsCancellationRequested is false)
+            {
+                _serverLoading = false;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+
+    private async Task<BitDataGridReadResult<Row>> ReadServerVirtualAsync(BitDataGridReadRequest request)
+    {
+        await Task.Delay(100, request.CancellationToken);
+        _virtualRequests++;
+        _virtualMaxSkip = Math.Max(_virtualMaxSkip, request.Skip);
+        await InvokeAsync(StateHasChanged);
+        var items = _serverVirtualAll.Skip(request.Skip).Take(request.Take ?? _serverVirtualAll.Count).ToList();
+        var total = _serverVirtualAll.Sum(r => r.Amount);
+        return new BitDataGridReadResult<Row>(items, _serverVirtualAll.Count)
+        {
+            Aggregates = [new() { ColumnId = nameof(Row.Amount), Type = BitDataGridAggregateType.Sum, Value = total, FormattedValue = $"{total} in all" }]
+        };
+    }
+
+    private readonly TaskCompletionSource _skeletonGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    // A full first batch at once, then a short one of three - which ends the list - once the page lets it through. The
+    // second is asked for by the script that watches the scroll, so only an interactive grid ever waits on the gate: a
+    // prerender waits for every load it starts, and would never finish.
+    private async Task<BitDataGridReadResult<Row>> LoadGatedAsync(BitDataGridReadRequest request)
+    {
+        if (request.Skip == 0) return new BitDataGridReadResult<Row>(_tall.Take(5).ToList(), 0);
+        await _skeletonGate.Task.WaitAsync(request.CancellationToken);
+        return new BitDataGridReadResult<Row>(_tall.Skip(request.Skip).Take(3).ToList(), 0);
+    }
+
+    private async Task<BitDataGridReadResult<Row>> LoadMoreAsync(BitDataGridReadRequest request)
+    {
+        await Task.Delay(300, request.CancellationToken);
+        var batch = _infiniteAll.Skip(request.Skip).Take(request.Take ?? _infiniteAll.Count).ToList();
+        _infiniteBatches++;
+        _infiniteLast = $"skip {request.Skip}, take {request.Take}, got {batch.Count}";
+        await InvokeAsync(StateHasChanged);
+        return new BitDataGridReadResult<Row>(batch, 0);
+    }
+}

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -105,6 +106,33 @@ public class BitFullCalendarYearViewTests : BunitTestContext
 
         // May 2, 2026 is a Saturday, so it is not drawn at all.
         Assert.IsFalse(component.FindAll(".bit-bfc-year-day.has-events").Any(d => d.Id.EndsWith("20260502")));
+    }
+
+    [TestMethod]
+    public void BitFullCalendarYearViewShouldLayTheYearOutInTheCalendarOfTheDateTimeFormat()
+    {
+        // DateTimeFormat.Calendar is the documented way of switching the calendar of a culture; CultureInfo.Calendar
+        // stays the culture's default (Um Al Qura for ar-SA), so the year has to be read off the former: the twelve
+        // Gregorian months of 2026, named by the culture, rather than the Hijri year the anchor falls in.
+        var culture = (CultureInfo)CultureInfo.GetCultureInfo("ar-SA").Clone();
+        culture.DateTimeFormat.Calendar = new GregorianCalendar();
+
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, SpreadEvents());
+            parameters.Add(p => p.Culture, culture);
+            parameters.Add(p => p.DefaultDate, Anchor);
+            parameters.Add(p => p.DefaultView, BitFullCalendarView.Year);
+            parameters.Add(p => p.TimeProvider, new FixedTimeProvider(Anchor.AddHours(11)));
+        });
+
+        Assert.AreEqual("2026", component.Find(".bit-bfc-header-title").TextContent.Trim());
+        CollectionAssert.AreEqual(
+            Enumerable.Range(1, 12).Select(m => culture.DateTimeFormat.GetMonthName(m)).ToArray(),
+            component.FindAll(".bit-bfc-year-month-title").Select(t => t.TextContent.Trim()).ToArray());
+        // March is the third grid, and holds today.
+        Assert.IsNotNull(component.FindAll(".bit-bfc-year-month")[2].QuerySelector(".bit-bfc-year-day.has-events[aria-current='date']"));
+        Assert.AreEqual(31, component.FindAll(".bit-bfc-year-month")[2].QuerySelectorAll(".bit-bfc-year-day:not(.other-month)").Length);
     }
 
     [TestMethod]

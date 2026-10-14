@@ -453,6 +453,21 @@ public partial class BitNav<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         return NoCollapse || GetChildItems(item).Count == 0;
     }
 
+    // The template that renders in place of the anchor (or the button) of an item, if one does: the template of the
+    // item in the Replace mode, or the nav's ItemTemplate in the Replace mode for an item without a template of its
+    // own. The template of an item wins over the nav's, so the mode that goes with it wins as well.
+    internal RenderFragment<TItem>? GetReplacingTemplate(TItem item)
+    {
+        var template = GetTemplate(item);
+
+        if (template is not null)
+        {
+            return GetTemplateRenderMode(item) is BitNavItemTemplateRenderMode.Replace ? template : null;
+        }
+
+        return ItemTemplate is not null && ItemTemplateRenderMode is BitNavItemTemplateRenderMode.Replace ? ItemTemplate : null;
+    }
+
     internal bool GetItemExpanded(TItem item)
     {
         var isExpanded = GetIsExpanded(item);
@@ -929,8 +944,9 @@ public partial class BitNav<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
             {
                 if (GetIsSeparator(item)) continue;
 
-                // A static group header is a label that takes no focus, but its group is walked all the same.
-                if (GetIsDisabled(item) is false && IsStaticGroupHeader(item, areRoots) is false)
+                // A static group header is a label that takes no focus, and an item a template renders in place of its
+                // anchor (or button) has no element of the nav's to focus at all, but their children are walked all the same.
+                if (GetIsDisabled(item) is false && IsStaticGroupHeader(item, areRoots) is false && IsReplacedByTemplate(item, areRoots) is false)
                 {
                     result.Add(item);
                 }
@@ -955,7 +971,7 @@ public partial class BitNav<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         {
             if (GetIsSeparator(item)) continue;
 
-            if (GetIsDisabled(item) is false) return item;
+            if (GetIsDisabled(item) is false && IsReplacedByTemplate(item, false) is false) return item;
 
             var childItems = GetChildItems(item);
             if (childItems.Count > 0 && IsItemOpen(item))
@@ -966,6 +982,19 @@ public partial class BitNav<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         }
 
         return null;
+    }
+
+    // Whether a template renders in place of the element of an item - its anchor (or button), or its header button
+    // in the Grouped render type - which leaves the template owning its focus and the keyboard nothing to stop on.
+    private bool IsReplacedByTemplate(TItem item, bool isRoot)
+    {
+        if (isRoot is false || RenderType is not BitNavRenderType.Grouped) return GetReplacingTemplate(item) is not null;
+
+        var template = GetTemplate(item);
+
+        return template is not null
+                ? GetTemplateRenderMode(item) is BitNavItemTemplateRenderMode.Replace
+                : HeaderTemplate is not null && HeaderTemplateRenderMode is BitNavItemTemplateRenderMode.Replace;
     }
 
     // An item is on screen when every branch it is nested in is expanded. Its own expansion state says

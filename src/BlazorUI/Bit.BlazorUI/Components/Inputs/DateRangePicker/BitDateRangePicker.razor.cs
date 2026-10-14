@@ -2118,6 +2118,13 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                 await ToggleCallout();
 
                 await OnClose.InvokeAsync();
+
+                // The day that was activated is inside the callout that just closed, so the focus has to be
+                // handed back to the input - otherwise a keyboard selection drops the focus onto the body.
+                if (IsOpen is false)
+                {
+                    await InputElement.FocusSafelyAsync();
+                }
             }
         }
 
@@ -2127,9 +2134,21 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             {
                 (_endTimeHour, _startTimeHour) = (_startTimeHour, _endTimeHour);
                 (_endTimeMinute, _startTimeMinute) = (_startTimeMinute, _endTimeMinute);
-            }
 
-            (curValue.EndDate, curValue.StartDate) = (curValue.StartDate, curValue.EndDate);
+                (curValue.EndDate, curValue.StartDate) = (curValue.StartDate, curValue.EndDate);
+            }
+            else
+            {
+                // A day picked before the start is the start of the range and the day picked first its end, each at
+                // the time of the end it now is - the start time on the earlier day, the end time on the later one -
+                // so a range picked backwards covers exactly what the same two days picked forwards do, rather than
+                // carrying the end time onto its first day and the start time onto its last.
+                var startDateTime = curValue.EndDate.Value.DateTime.Date.AddHours(_startTimeHour).AddMinutes(_startTimeMinute);
+                var endDateTime = curValue.StartDate.Value.DateTime.Date.AddHours(_endTimeHour).AddMinutes(_endTimeMinute);
+
+                curValue.StartDate = new DateTimeOffset(startDateTime, _timeZone.GetUtcOffset(startDateTime));
+                curValue.EndDate = new DateTimeOffset(endDateTime, _timeZone.GetUtcOffset(endDateTime));
+            }
         }
 
         if (curValue.EndDate.HasValue && MaxRange.HasValue)
@@ -2243,6 +2262,12 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             await ToggleCallout();
 
             await OnClose.InvokeAsync();
+
+            // The preset that was activated is inside the callout that just closed, so the focus goes back to the input.
+            if (IsOpen is false)
+            {
+                await InputElement.FocusSafelyAsync();
+            }
         }
     }
 
@@ -2343,6 +2368,17 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         // calendar is actually displaying, rather than on wherever the keyboard left it last time.
         _focusedYearCell = null;
         _focusedMonthCell = null;
+
+        // The toggle that was activated goes away with the grid it headed, so the focus is handed to the grid
+        // that takes its place - otherwise it drops onto the body, out of the callout that is still open.
+        if (_showMonthPicker)
+        {
+            FocusMonthCell(GetFocusableMonth());
+        }
+        else
+        {
+            FocusYearCell(GetFocusableYear());
+        }
     }
 
     private async Task HandleMonthChange(bool isNext)
@@ -3882,6 +3918,19 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         // for the whole duration of the press. Its lifetime is owned by the cancellation token source
         // instead, which HandleOnPointerUpOrOut and DisposeAsync cancel.
         _ = ContinuousChangeTimeAfterDelay(isNext, isHour, isStartTime, _cancellationTokenSource);
+    }
+
+    // A press of a spin button that came from the keyboard rather than from a pointer: Enter and the space bar fire a
+    // click and no pointer event at all, so without this the buttons would be reachable by keyboard and do nothing. A
+    // click that follows a real press carries the number of that press in its detail, which is what tells the two
+    // apart - and keeps a pointer press from stepping the time twice.
+    private async Task HandleOnSpinClick(MouseEventArgs e, bool isNext, bool isHour, bool isStartTime)
+    {
+        if (e.Detail != 0) return;
+        if (ReadOnly) return;
+        if (Disabled) return;
+
+        await ChangeTime(isNext, isHour, isStartTime);
     }
 
     private async Task ContinuousChangeTimeAfterDelay(bool isNext, bool isHour, bool isStartTime, CancellationTokenSource cts)

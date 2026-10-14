@@ -62,8 +62,10 @@
     {
         if (Grid.CellNavigationActive && Grid.ShouldFocusCell(Item, ColIndex))
         {
+            var focusVersion = Grid.FocusVersion;
             Grid.ClearFocusPending();
             try { await _el.FocusAsync(); } catch { /* element may have been removed */ }
+            Grid.SettleFocusMove(focusVersion);
         }
     }
 

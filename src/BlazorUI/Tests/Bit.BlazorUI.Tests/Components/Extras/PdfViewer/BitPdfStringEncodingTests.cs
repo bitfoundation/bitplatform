@@ -82,9 +82,19 @@ public class BitPdfStringEncodingTests
     [TestMethod]
     [DataRow("(a\r\nb)")]
     [DataRow("(a\rb)")]
+    [DataRow("(a\nb)")]
     public void AnUnescapedEndOfLineInALiteralStringShouldBeReadAsALineFeed(string pdf)
     {
         Assert.AreEqual("a\nb", Latin1(pdf));
+    }
+
+    [TestMethod]
+    public void AnEscapedCarriageReturnInALiteralStringShouldStayACarriageReturn()
+    {
+        // Only the bare end-of-line marker is normalized: the \r escape names the byte itself, and a
+        // CR LF pair split by the escape is a CR followed by a bare LF.
+        Assert.AreEqual("a\rb", Latin1(@"(a\rb)"));
+        Assert.AreEqual("a\r\nb", Latin1("(a\\r\nb)"));
     }
 
     // ----- Hexadecimal strings and names -----

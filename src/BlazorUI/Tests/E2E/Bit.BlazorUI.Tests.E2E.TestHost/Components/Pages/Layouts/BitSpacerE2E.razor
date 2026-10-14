@@ -1,0 +1,266 @@
+﻿@page "/e2e/spacer"
+
+<PageTitle>BitSpacer E2E</PageTitle>
+
+@* The rows are fixed in width and their boxes in size, so the room a spacer takes is a number the tests can compute. *@
+<style>
+    .spc-row { display: flex; width: 600px; align-items: center; background: #f4f4f4; }
+    .spc-col { display: flex; flex-direction: column; height: 400px; width: 200px; background: #f4f4f4; }
+    .spc-box { width: 100px; height: 40px; flex-shrink: 0; background: #ccc; box-sizing: border-box; }
+    .spc-squeeze { width: 150px; flex-shrink: 1; min-width: 0; }
+    .spc-list { list-style: none; margin: 0; padding: 0; }
+    .spc-custom { background-color: rgb(0, 128, 0); }
+</style>
+
+<E2ESection Id="basic" Title="Basic: one flexible spacer pushes its neighbours to the two ends">
+    <div class="spc-row" id="basic-row">
+        <div class="spc-box" id="basic-a">A</div>
+        <BitSpacer Id="basic-spacer" />
+        <div class="spc-box" id="basic-b">B</div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="even" Title="Several flexible spacers split the room evenly">
+    <div class="spc-row" id="even-row">
+        <div class="spc-box" id="even-a">A</div>
+        <BitSpacer Id="even-s1" />
+        <div class="spc-box" id="even-b">B</div>
+        <BitSpacer Id="even-s2" />
+        <div class="spc-box" id="even-c">C</div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="container-gap" Title="A container gap is added on both sides of a spacer">
+    <div class="spc-row" style="gap: 10px">
+        <div class="spc-box" id="cgap-a">A</div>
+        <BitSpacer Width="20" />
+        <div class="spc-box" id="cgap-b">B</div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="width" Title="Width: a fixed gap in pixels that does not grow">
+    <div class="spc-row">
+        <div class="spc-box" id="width-a">A</div>
+        <BitSpacer Id="width-spacer" Width="@_width" />
+        <div class="spc-box" id="width-b">B</div>
+    </div>
+    <button id="btn-width" @onclick="() => _width = 96">Width 96</button>
+</E2ESection>
+
+<E2ESection Id="gap" Title="Gap: a fixed gap in any CSS length">
+    <div class="spc-row">
+        <div class="spc-box" id="gap-a">1rem</div>
+        <BitSpacer Id="gap-rem" Gap="1rem" />
+        <div class="spc-box" id="gap-b">10%</div>
+        <BitSpacer Id="gap-pct" Gap="10%" />
+        <div class="spc-box" id="gap-c">4ch</div>
+        <BitSpacer Id="gap-var" Gap="var(--spc-my-gap)" Style="--spc-my-gap: 22px" />
+        <div class="spc-box" id="gap-d">end</div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="precedence" Title="Gap wins over Width and Size, Width over Size">
+    <div class="spc-row">
+        <div class="spc-box" id="prec-a">A</div>
+        <BitSpacer Id="prec-gap" Gap="10px" Width="50" Size="BitSize.Large" />
+        <div class="spc-box" id="prec-b">B</div>
+        <BitSpacer Id="prec-width" Width="50" Size="BitSize.Large" />
+        <div class="spc-box" id="prec-c">C</div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="vertical" Title="Vertical: Height, Vertical Gap and a flexible spacer in a column">
+    <div class="spc-col" id="vertical-col">
+        <div class="spc-box" id="vert-a">Height 32</div>
+        <BitSpacer Id="vert-height" Height="32" />
+        <div class="spc-box" id="vert-b">Vertical Gap 3rem</div>
+        <BitSpacer Id="vert-gap" Vertical Gap="3rem" />
+        <div class="spc-box" id="vert-c">Flexible</div>
+        <BitSpacer Id="vert-flex" />
+        <div class="spc-box" id="vert-d">Bottom</div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="grow" Title="Grow: the leftover room split in proportion">
+    <div class="spc-row">
+        <div class="spc-box" id="grow-a">A</div>
+        <BitSpacer Id="grow-1" Grow="1" />
+        <div class="spc-box" id="grow-b">B</div>
+        <BitSpacer Id="grow-2" Grow="2" />
+        <div class="spc-box" id="grow-c">C</div>
+    </div>
+    <div class="spc-row">
+        <div class="spc-box" id="growf-a">A</div>
+        <BitSpacer Id="grow-fixed" Grow="5" Width="10" />
+        <div class="spc-box" id="growf-b">B</div>
+        <BitSpacer />
+        <div class="spc-box">C</div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="min-gap" Title="MinGap: the floor of a flexible spacer in a squeezed row">
+    <div class="spc-row" style="width: 200px">
+        <div class="spc-box spc-squeeze" id="min-a">MinGap</div>
+        <BitSpacer Id="min-spacer" MinGap="2rem" />
+        <div class="spc-box spc-squeeze" id="min-b">2rem</div>
+    </div>
+    <div class="spc-row" style="width: 200px">
+        <div class="spc-box spc-squeeze" id="nomin-a">No</div>
+        <BitSpacer Id="nomin-spacer" />
+        <div class="spc-box spc-squeeze" id="nomin-b">MinGap</div>
+    </div>
+    <div class="spc-row" style="width: 200px">
+        <div class="spc-box spc-squeeze" id="minfix-a">Fixed</div>
+        <BitSpacer Id="minfix-spacer" Width="8" MinGap="5rem" />
+        <div class="spc-box spc-squeeze" id="minfix-b">ignores it</div>
+    </div>
+    <div class="spc-col" style="height: 100px">
+        <div class="spc-box" style="flex-shrink: 1; min-height: 0; height: 80px" id="minv-a">A</div>
+        <BitSpacer Id="minv-spacer" Vertical MinGap="30px" />
+        <div class="spc-box" style="flex-shrink: 1; min-height: 0; height: 80px" id="minv-b">B</div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="element" Title="Element: an li inside a list">
+    <ul class="spc-row spc-list" id="element-list">
+        <li class="spc-box">Home</li>
+        <BitSpacer Id="element-spacer" Element="li" />
+        <li class="spc-box" id="element-last">Sign in</li>
+    </ul>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility: hidden by default, a named separator when labelled">
+    <div class="spc-row">
+        <div class="spc-box">A</div>
+        <BitSpacer Id="a11y-plain" />
+        <div class="spc-box">B</div>
+        <BitSpacer Id="a11y-labelled" AriaLabel="Support" />
+        <div class="spc-box">C</div>
+    </div>
+    <div class="spc-col" style="height: 200px">
+        <div class="spc-box">A</div>
+        <BitSpacer Id="a11y-vertical" Vertical Gap="8px" AriaLabel="Vertical" />
+        <div class="spc-box">B</div>
+        <BitSpacer Id="a11y-height" Height="8" AriaLabel="Height only" />
+        <div class="spc-box">C</div>
+    </div>
+    <div class="spc-row">
+        <BitSpacer Id="a11y-override" AriaLabel="Overridden" HtmlAttributes="@_a11yOverride" />
+        <BitSpacer Id="a11y-html-label" HtmlAttributes="@_a11yHtmlLabel" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters: BitParams hands its defaults down">
+    <BitParams Parameters="@_spacerParams">
+        <div class="spc-row">
+            <div class="spc-box" id="casc-a">Cascaded</div>
+            <BitSpacer Id="casc-1" />
+            <div class="spc-box" id="casc-b">1.5rem</div>
+            <BitSpacer Id="casc-own" Gap="4rem" />
+            <div class="spc-box" id="casc-c">4rem</div>
+        </div>
+    </BitParams>
+    <div class="spc-row">
+        <div class="spc-box" id="casc-out-a">Outside</div>
+        <BitSpacer Id="casc-out" />
+        <div class="spc-box" id="casc-out-b">Flexible</div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="size" Title="Size: the spacing scale of the theme">
+    <div class="spc-row">
+        <div class="spc-box" id="size-a">Small</div>
+        <BitSpacer Id="size-sm" Size="BitSize.Small" />
+        <div class="spc-box" id="size-b">Medium</div>
+        <BitSpacer Id="size-md" Size="BitSize.Medium" />
+        <div class="spc-box" id="size-c">Large</div>
+        <BitSpacer Id="size-lg" Size="BitSize.Large" />
+        <div class="spc-box" id="size-d">End</div>
+    </div>
+    <div class="spc-col" style="height: auto">
+        <div class="spc-box" id="sizev-a">Vertical Small</div>
+        <BitSpacer Id="sizev-sm" Vertical Size="BitSize.Small" />
+        <div class="spc-box" id="sizev-b">Vertical Large</div>
+        <BitSpacer Id="sizev-lg" Vertical Size="BitSize.Large" />
+        <div class="spc-box" id="sizev-c">End</div>
+    </div>
+    <div class="spc-row" style="--bit-Spacer-large-size: 6rem; --bit-Spacer-small-size: 3px; --bit-Spacer-medium-size: 13px">
+        <div class="spc-box" id="sizevar-a">Large, re-sized</div>
+        <BitSpacer Id="sizevar-lg" Size="BitSize.Large" />
+        <div class="spc-box" id="sizevar-b">Small</div>
+        <BitSpacer Id="sizevar-sm" Size="BitSize.Small" />
+        <div class="spc-box" id="sizevar-c">Medium</div>
+        <BitSpacer Id="sizevar-md" Size="BitSize.Medium" />
+        <div class="spc-box" id="sizevar-d">End</div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style, Class, HtmlAttributes, Visibility">
+    <div class="spc-row" id="style-row">
+        <div class="spc-box">Style</div>
+        <BitSpacer Id="style-spacer" Style="min-width: 4rem; background: tomato" />
+        <div class="spc-box">Class</div>
+        <BitSpacer Id="class-spacer" Class="spc-custom" Width="30" />
+        <div class="spc-box">End</div>
+        <BitSpacer Id="attr-spacer" Width="5" HtmlAttributes="@_attrs" data-own="yes" />
+    </div>
+    <div class="spc-row">
+        <div class="spc-box" id="vis-a">A</div>
+        <BitSpacer Id="vis-spacer" Width="50" Visibility="@_visibility" />
+        <div class="spc-box" id="vis-b">B</div>
+    </div>
+    <button id="btn-hidden" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-collapsed" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+    <button id="btn-visible" @onclick="() => _visibility = BitVisibility.Visible">Visible</button>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled: the root carries bit-dis">
+    <div class="spc-row">
+        <BitSpacer Id="disabled-spacer" Disabled="@_disabled" />
+    </div>
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL: the fixed space is a logical inline-start margin">
+    <div class="spc-row" dir="rtl" id="rtl-row">
+        <div class="spc-box" id="rtl-a">Start</div>
+        <BitSpacer Id="rtl-inherited" Width="64" />
+        <div class="spc-box" id="rtl-b">Middle</div>
+        <BitSpacer />
+        <div class="spc-box" id="rtl-c">End</div>
+    </div>
+    <div class="spc-row">
+        <div class="spc-box" id="dir-a">Start</div>
+        <BitSpacer Id="dir-spacer" Width="64" Dir="BitDir.Rtl" Style="height: 20px; background: gold" />
+        <div class="spc-box" id="dir-b">Middle</div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle: mounted and unmounted at runtime">
+    <div class="spc-row">
+        <div class="spc-box">A</div>
+        @if (_mounted)
+        {
+            <BitSpacer Id="mount-spacer" Width="40" />
+        }
+        <div class="spc-box">B</div>
+    </div>
+    <button id="btn-unmount" @onclick="() => _mounted = false">Unmount</button>
+    <button id="btn-mount" @onclick="() => _mounted = true">Mount</button>
+    <span id="mounted">@_mounted</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private int _width = 32;
+    private bool _disabled = true;
+    private bool _mounted = true;
+    private BitVisibility _visibility = BitVisibility.Visible;
+
+    private readonly BitSpacerParams[] _spacerParams = [new() { Gap = "1.5rem" }];
+
+    private readonly Dictionary<string, object> _a11yOverride = new() { ["role"] = "none", ["aria-hidden"] = "true" };
+    private readonly Dictionary<string, object> _a11yHtmlLabel = new() { ["aria-label"] = "From attributes" };
+    private readonly Dictionary<string, object> _attrs = new() { ["data-test"] = "spacer", ["title"] = "A spacer" };
+}

@@ -52,8 +52,8 @@ public class BitCalendarStylesheetTests
         }
 
         Assert.IsTrue(stylesheet.IndexOf("\n.bit-cal {", System.StringComparison.Ordinal) < stylesheet.IndexOf("\n    .bit-cal-#{$role} {", System.StringComparison.Ordinal),
-                      "The role classes come before the root that resets what they publish.");
+                      "The root that resets what the role classes publish comes before them, so they still win on the root that carries them.");
         Assert.IsTrue(stylesheet.IndexOf("\n.bit-cal {", System.StringComparison.Ordinal) < stylesheet.IndexOf("\n.bit-cal-sm {", System.StringComparison.Ordinal),
-                      "The size classes come before the root that resets what they publish.");
+                      "The root that resets what the size classes publish comes before them, so they still win on the root that carries them.");
     }
 }

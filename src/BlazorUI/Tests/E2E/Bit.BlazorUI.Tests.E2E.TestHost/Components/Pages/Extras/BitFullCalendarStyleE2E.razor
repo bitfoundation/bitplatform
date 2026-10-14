@@ -1,0 +1,134 @@
+﻿@page "/e2e/full-calendar/style"
+
+<PageTitle>BitFullCalendar E2E - styling, theme and cascade</PageTitle>
+
+@* How a calendar is re-skinned: Style/Class and the Styles/Classes of every part, every public --bit-FullCalendar-*
+   variable set on an ancestor, the dark theme of a [bit-theme] scope, and the BitParams cascade of a
+   BitFullCalendarParams. "Today" is pinned to Wednesday 2025-07-16 10:30. *@
+<E2ESection Id="styled" Title="Style, Class, Styles and Classes">
+    <BitFullCalendar Id="styled-cal"
+                     CultureName="en-US"
+                     TimeProvider="Clock"
+                     Events="_events"
+                     Class="my-calendar"
+                     Style="border: 2px dashed rgb(255, 0, 0)"
+                     Styles="_styles"
+                     Classes="_classes" />
+</E2ESection>
+
+<E2ESection Id="vars" Title="Public CSS variables on an ancestor">
+    <div id="vars-host" style="@VarsStyle">
+        <BitFullCalendar Id="vars-cal"
+                         CultureName="en-US"
+                         TimeProvider="Clock"
+                         Events="_varEvents"
+                         Settings="_varSettings"
+                         DefaultView="BitFullCalendarView.Week" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="theme" Title="Light and dark theme">
+    <div id="light-host">
+        <BitFullCalendar Id="light-cal" CultureName="en-US" TimeProvider="Clock" Events="_events" HideFilters HideSettings />
+    </div>
+    <div id="dark-host" bit-theme="dark">
+        <BitFullCalendar Id="dark-cal" CultureName="en-US" TimeProvider="Clock" Events="_events" HideFilters HideSettings />
+    </div>
+</E2ESection>
+
+<E2ESection Id="params" Title="BitParams cascade">
+    <BitParams Parameters="_calendarParams">
+        <BitFullCalendar Id="cascade-1" Events="_events" OnSettingsChange="_ => _cascadeChanges++" />
+        <BitFullCalendar Id="cascade-2" Events="_events" Views="null" HideFilters="false" />
+    </BitParams>
+    <span id="cascade-changes">@_cascadeChanges</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly TimeProvider Clock = new PinnedClock(new DateTimeOffset(2025, 7, 16, 10, 30, 0, TimeSpan.Zero));
+
+    private static readonly DateTime Today = new(2025, 7, 16);
+
+    private const string VarsStyle =
+        "--bit-FullCalendar-background: rgb(10, 20, 30);" +
+        "--bit-FullCalendar-secondary-background: rgb(11, 21, 31);" +
+        "--bit-FullCalendar-hover-background: rgb(12, 22, 32);" +
+        "--bit-FullCalendar-color: rgb(13, 23, 33);" +
+        "--bit-FullCalendar-secondary-color: rgb(14, 24, 34);" +
+        "--bit-FullCalendar-muted-color: rgb(15, 25, 35);" +
+        "--bit-FullCalendar-border-color: rgb(16, 26, 36);" +
+        "--bit-FullCalendar-control-border-color: rgb(17, 27, 37);" +
+        "--bit-FullCalendar-accent-color: rgb(18, 28, 38);" +
+        "--bit-FullCalendar-accent-hover-color: rgb(19, 29, 39);" +
+        "--bit-FullCalendar-accent-text-color: rgb(20, 30, 40);" +
+        "--bit-FullCalendar-event-color: rgb(21, 31, 41);" +
+        "--bit-FullCalendar-event-border-radius: 9px;" +
+        "--bit-FullCalendar-background-event-opacity: 0.5;" +
+        "--bit-FullCalendar-today-background: rgb(22, 32, 42);" +
+        "--bit-FullCalendar-selection-background: rgb(23, 33, 43);" +
+        "--bit-FullCalendar-off-hours-background: rgb(24, 34, 44);" +
+        "--bit-FullCalendar-now-indicator-color: rgb(25, 35, 45);" +
+        "--bit-FullCalendar-border-radius: 13px;" +
+        "--bit-FullCalendar-height: 450px;" +
+        "--bit-FullCalendar-hour-height: 48px;" +
+        "--bit-FullCalendar-time-gutter-width: 90px;" +
+        "--bit-FullCalendar-week-number-width: 50px;" +
+        "--bit-FullCalendar-month-cell-min-height: 140px;" +
+        "--bit-FullCalendar-dialog-max-width: 300px;";
+
+    private readonly BitFullCalendarClassStyles _styles = new()
+    {
+        Root = "outline: 3px solid rgb(0, 0, 255)",
+        Header = "background-color: rgb(1, 2, 3)",
+        Body = "padding-top: 7px",
+        Event = "font-weight: 700",
+        Dialog = "border-top: 4px solid rgb(9, 8, 7)"
+    };
+
+    private readonly BitFullCalendarClassStyles _classes = new()
+    {
+        Root = "root-class",
+        Header = "header-class",
+        Body = "body-class",
+        Event = "event-class",
+        Dialog = "dialog-class"
+    };
+
+    private readonly List<BitFullCalendarEvent> _events =
+    [
+        new() { Id = "s1", Title = "Planning", StartDate = Today.AddHours(9), EndDate = Today.AddHours(10), Color = "blue", CssClass = "own-class" },
+        new() { Id = "s2", Title = "Review", StartDate = Today.AddDays(1).AddHours(14), EndDate = Today.AddDays(1).AddHours(15), Color = "green" },
+    ];
+
+    private readonly BitFullCalendarSettings _varSettings = new() { HighlightBusinessHours = true, ShowWeekNumbers = true, StartOfDayHour = 8 };
+
+    private readonly List<BitFullCalendarEvent> _varEvents =
+    [
+        new() { Id = "v1", Title = "Unknown color", StartDate = Today.AddHours(9), EndDate = Today.AddHours(10), Color = "legacy" },
+        new() { Id = "v2", Title = "Band", StartDate = Today.AddHours(11), EndDate = Today.AddHours(12), Color = "#000000", IsBackground = true },
+    ];
+
+    private readonly BitFullCalendarParams[] _calendarParams =
+    [
+        new()
+        {
+            Views = [BitFullCalendarView.Week, BitFullCalendarView.Month],
+            DefaultView = BitFullCalendarView.Month,
+            HideFilters = true,
+            CultureName = "en-US",
+            TimeProvider = Clock,
+            Settings = new() { Use24HourFormat = false, BadgeVariant = BitFullCalendarBadgeVariant.Dot }
+        }
+    ];
+
+    private int _cascadeChanges;
+
+    private sealed class PinnedClock(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+
+        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
+    }
+}

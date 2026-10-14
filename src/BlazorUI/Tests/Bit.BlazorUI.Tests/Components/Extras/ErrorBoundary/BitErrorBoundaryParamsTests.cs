@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Bunit;
 using Bunit.TestDoubles;
 using Microsoft.AspNetCore.Components;
@@ -12,6 +13,54 @@ namespace Bit.BlazorUI.Tests.Components.Extras.ErrorBoundary;
 
 public partial class BitErrorBoundaryTests
 {
+    // What a boundary is about rather than how it looks - the content it watches over, its id, its callbacks and the
+    // state behind one error - is written per boundary, so it has no place on the params object.
+    private static readonly string[] _notCascaded =
+    [
+        nameof(BitErrorBoundary.Body),
+        nameof(BitErrorBoundary.CascadingParameters),
+        nameof(BitErrorBoundary.ChildContent),
+        nameof(BitErrorBoundary.ErrorContent),
+        nameof(BitErrorBoundary.HtmlAttributes),
+        nameof(BitErrorBoundary.Id),
+        nameof(BitErrorBoundary.OnError),
+        nameof(BitErrorBoundary.OnRecover),
+        nameof(BitErrorBoundary.RecoverKeys),
+    ];
+
+    [TestMethod]
+    public void BitErrorBoundaryParamsShouldCarryEveryParameterThatIsNotPerBoundary()
+    {
+        var parameters = typeof(BitErrorBoundary).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                                                 .Where(p => p.GetCustomAttribute<ParameterAttribute>() is not null)
+                                                 .Select(p => p.Name)
+                                                 .Where(n => _notCascaded.Contains(n) is false);
+
+        foreach (var name in parameters)
+        {
+            Assert.IsNotNull(typeof(BitErrorBoundaryParams).GetProperty(name), $"BitErrorBoundaryParams has no {name}.");
+        }
+    }
+
+    // Icon, IconName and IconTemplate are one setting, so a boundary that picked its icon through one of them takes
+    // none of the others from the cascade.
+    [TestMethod]
+    public void BitErrorBoundaryShouldKeepItsOwnIconOverACascadedIconTemplate()
+    {
+        var component = RenderInBitParams(new BitErrorBoundaryParams
+        {
+            IconTemplate = b => b.AddMarkupContent(0, "<span class=\"cascaded-icon\">!</span>"),
+            Icon = BitIconInfo.Css("cascaded-css-icon"),
+        },
+        (nameof(BitErrorBoundary.IconName), "ErrorBadge"));
+
+        var icon = component.Find(".bit-erb-ico");
+
+        StringAssert.Contains(icon.ClassName, "bit-icon--ErrorBadge");
+        Assert.IsFalse(icon.ClassName!.Contains("cascaded-css-icon", StringComparison.Ordinal));
+        Assert.Throws<ElementNotFoundException>(() => component.Find(".cascaded-icon"));
+    }
+
     [TestMethod]
     public void BitErrorBoundaryParamsShouldHaveCorrectParamName()
     {

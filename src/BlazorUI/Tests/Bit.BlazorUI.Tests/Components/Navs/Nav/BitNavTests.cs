@@ -2011,7 +2011,11 @@ public class BitNavTests : BunitTestContext
         DataRow(BitNavMatch.Exact, "/products?page=2", "/products"),
         DataRow(BitNavMatch.Exact, "/products#top", "/products"),
         DataRow(BitNavMatch.Exact, "/products", "products"),
+        DataRow(BitNavMatch.Exact, "/products", "./products"),
+        DataRow(BitNavMatch.Exact, "/products/", "/products/"),
         DataRow(BitNavMatch.Prefix, "/Products/1", "/products"),
+        DataRow(BitNavMatch.Prefix, "/products/1", "/products/"),
+        DataRow(BitNavMatch.Prefix, "/products#top", "/products"),
         DataRow(BitNavMatch.Prefix, "/products/1?page=2", "/products")]
     public void BitNavShouldCompareTheUrlsTheWayTheBrowserTreatsThem(BitNavMatch match, string url, string itemUrl)
     {
@@ -2731,6 +2735,63 @@ public class BitNavTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitNavShouldLetTheNormalTemplateOfAnItemWinOverAReplacingItemTemplate()
+    {
+        var items = BasicItems();
+        items[0].Template = item => builder => builder.AddMarkupContent(0, $"<span class='own'>{item.Text}</span>");
+
+        var component = RenderNav(items, p =>
+        {
+            p.Add(c => c.ItemTemplate, (BitNavItem item) => builder => builder.AddMarkupContent(0, $"<span class='shared'>{item.Text}</span>"));
+            p.Add(c => c.ItemTemplateRenderMode, BitNavItemTemplateRenderMode.Replace);
+        });
+
+        // The template of an item wins over the nav's, and so does the mode that goes with it: the first item keeps
+        // its container with its own template inside, while the other two are replaced by the nav's.
+        Assert.AreEqual(1, component.FindAll(".bit-nav-ict .own").Count);
+        Assert.AreEqual(2, component.FindAll(".shared").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-nav-ict .shared").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-nav-ict").Count);
+    }
+
+    [TestMethod]
+    public void BitNavShouldLetTheNormalTemplateOfAGroupHeaderWinOverAReplacingHeaderTemplate()
+    {
+        var items = TreeItems();
+        items[0].Template = item => builder => builder.AddMarkupContent(0, $"<span class='own-header'>{item.Text}</span>");
+
+        var component = RenderNav(items, p =>
+        {
+            p.Add(c => c.RenderType, BitNavRenderType.Grouped);
+            p.Add(c => c.HeaderTemplate, (BitNavItem item) => builder => builder.AddMarkupContent(0, $"<span class='custom-header'>{item.Text}</span>"));
+            p.Add(c => c.HeaderTemplateRenderMode, BitNavItemTemplateRenderMode.Replace);
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-nav-gcb .own-header").Count);
+        Assert.AreEqual(1, component.FindAll(".custom-header").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-nav-gcb .custom-header").Count);
+    }
+
+    [TestMethod]
+    public void BitNavShouldStepOverAnItemItsTemplateReplacesWithTheDownArrow()
+    {
+        var items = BasicItems();
+        items[1].Template = item => builder => builder.AddMarkupContent(0, $"<span class='own'>{item.Text}</span>");
+        items[1].TemplateRenderMode = BitNavItemTemplateRenderMode.Replace;
+
+        var component = RenderNav(items);
+
+        component.FindAll(".bit-nav-ict")[0].FocusIn();
+        PressKey(component, "ArrowDown");
+
+        // The replaced item has no element of the nav's to take the focus, so the arrow lands on the item after it.
+        var focused = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].ToList();
+
+        Assert.AreEqual(1, focused.Count);
+        focused[0].Arguments[0].ShouldBeElementReferenceTo(component.FindAll(".bit-nav-ict")[1]);
+    }
+
+    [TestMethod]
     public void BitNavShouldRenderTheHeaderTemplateInsideTheGroupHeader()
     {
         var component = RenderNav(TreeItems(), p =>
@@ -3342,6 +3403,37 @@ public class BitNavTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitNavShouldToggleACustomItemWithoutAnExpansionMember()
+    {
+        var items = new List<NavBadgeRecord>
+        {
+            new() { Label = "Fruits" }
+        };
+
+        // NavBadgeRecord has no IsExpanded (nor any other bool to map it to), so the nav keeps the state itself.
+        var children = new Dictionary<NavBadgeRecord, List<NavBadgeRecord>> { [items[0]] = [new() { Label = "Apple" }] };
+
+        var component = RenderComponent<BitNav<NavBadgeRecord>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.NameSelectors, new BitNavNameSelectors<NavBadgeRecord>
+            {
+                Text = { Name = nameof(NavBadgeRecord.Label) },
+                ChildItems = { Selector = item => children.TryGetValue(item, out var list) ? list : [] },
+            });
+        });
+
+        component.Find(".bit-nav-ict").Click();
+
+        Assert.AreEqual(2, component.FindAll(".bit-nav-ict").Count);
+        Assert.IsTrue(component.Instance.IsItemExpanded(items[0]));
+
+        component.FindAll(".bit-nav-ict")[0].Click();
+
+        Assert.AreEqual(1, component.FindAll(".bit-nav-ict").Count);
+    }
+
+    [TestMethod]
     public void BitNavShouldRenderACustomItemWithoutAnyNameSelectors()
     {
         var items = new List<NavOpaqueItem> { new() { Whatever = "Home" }, new() { Whatever = "Contact" } };
@@ -3408,6 +3500,33 @@ public class BitNavTests : BunitTestContext
 
         // An expanded branch is one that is not hidden, which is what is asserted: the style attribute may
         // well carry other declarations one day without the branch being collapsed by them.
+        Assert.IsFalse(IsHidden(component.Find(".bit-nav-ict").ParentElement!.QuerySelector("ul")!.GetAttribute("style")));
+    }
+
+    [TestMethod]
+    public void BitNavShouldCollapseAnOptionWrittenAsExpanded()
+    {
+        var component = RenderComponent<BitNav<BitNavOption>>(parameters =>
+        {
+            parameters.AddChildContent<BitNavOption>(o =>
+            {
+                o.Add(p => p.Text, "Fruits");
+                o.Add(p => p.IsExpanded, true);
+                o.AddChildContent<BitNavOption>(c => c.Add(p => p.Text, "Apple"));
+            });
+        });
+
+        Assert.IsFalse(IsHidden(component.Find(".bit-nav-ict").ParentElement!.QuerySelector("ul")!.GetAttribute("style")));
+
+        // The markup hands IsExpanded="true" over again as the nav re-renders its content, which must not undo the
+        // collapse the click asked for.
+        component.Find(".bit-nav-ict").Click();
+
+        Assert.IsTrue(IsHidden(component.Find(".bit-nav-ict").ParentElement!.QuerySelector("ul")!.GetAttribute("style")));
+        Assert.AreEqual("false", component.Find(".bit-nav-ict").GetAttribute("aria-expanded"));
+
+        component.Find(".bit-nav-ict").Click();
+
         Assert.IsFalse(IsHidden(component.Find(".bit-nav-ict").ParentElement!.QuerySelector("ul")!.GetAttribute("style")));
     }
 

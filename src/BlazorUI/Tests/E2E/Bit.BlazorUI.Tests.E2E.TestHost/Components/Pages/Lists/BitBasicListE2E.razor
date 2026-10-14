@@ -1,0 +1,367 @@
+﻿@page "/e2e/basic-list"
+
+<PageTitle>BitBasicList E2E</PageTitle>
+
+@* Every row is 40px tall and every list a known height, so what is rendered, where and how far a list scrolls are
+   numbers a test can compute. *@
+<style>
+    .bsl-row { height: 40px; box-sizing: border-box; border-bottom: 1px solid #eee; padding: 0 8px; }
+    .bsl-card { width: 100px; height: 60px; flex-shrink: 0; box-sizing: border-box; border: 1px solid #ccc; }
+    .bsl-box { width: 400px; border: 1px solid #999; }
+    .bsl-root-class { outline: 2px solid rgb(1, 1, 1); }
+    .bsl-header-class { letter-spacing: 1px; }
+    .bsl-items-class { letter-spacing: 2px; }
+    .bsl-footer-class { letter-spacing: 3px; }
+    .bsl-loading-class { letter-spacing: 4px; }
+    .bsl-lmb-class { letter-spacing: 5px; }
+    .bsl-lmt-class { letter-spacing: 6px; }
+</style>
+
+<E2ESection Id="sec-basic" Title="Items with a RowTemplate, and the default template">
+    <BitBasicList Id="basic" Items="_people" Class="bsl-box">
+        <RowTemplate Context="person">
+            <div role="listitem" class="bsl-row">Name: <strong>@person.Name</strong></div>
+        </RowTemplate>
+    </BitBasicList>
+    <BitBasicList Id="default-template" Items="_fruits" Class="bsl-box" Style="height: 150px" />
+</E2ESection>
+
+<E2ESection Id="sec-empty" Title="EmptyContent">
+    <BitBasicList Id="empty" Items="_noPeople" AriaLabel="Nobody" Class="bsl-box" Style="height: 100px">
+        <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
+        <EmptyContent><div id="empty-content">Nobody to show here yet.</div></EmptyContent>
+    </BitBasicList>
+    <BitBasicList Id="empty-provider" TItem="Person" ItemsProvider="EmptyProvider" Class="bsl-box" Style="height: 100px">
+        <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
+        <EmptyContent><div id="empty-provider-content">The provider came back empty.</div></EmptyContent>
+    </BitBasicList>
+    <BitBasicList Id="empty-virtualize" Virtualize ItemSize="40" Items="_noPeople" Class="bsl-box" Style="height: 100px">
+        <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
+        <EmptyContent><div id="empty-virtualize-content">Nothing to virtualize.</div></EmptyContent>
+    </BitBasicList>
+</E2ESection>
+
+<E2ESection Id="sec-header-footer" Title="HeaderTemplate and FooterTemplate">
+    <BitBasicList Id="header-footer" Items="_people" Class="bsl-box" Style="height: 200px">
+        <HeaderTemplate><div id="list-header" style="position: sticky; top: 0; height: 30px; background: #ddd">People (@_people.Count)</div></HeaderTemplate>
+        <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
+        <FooterTemplate><div id="list-footer" style="height: 30px">- end of the list -</div></FooterTemplate>
+    </BitBasicList>
+    <BitBasicList Id="header-sticky-part" Items="_people" Class="bsl-box" Style="height: 200px" Styles="@(new() { Header = "position: sticky; top: 0; z-index: 1; background: #ddd" })">
+        <HeaderTemplate><div id="sticky-part-header" style="height: 30px">People</div></HeaderTemplate>
+        <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
+    </BitBasicList>
+</E2ESection>
+
+<E2ESection Id="sec-loading" Title="Loading, LoadingLabel, LoadingTemplate, OnLoadingChange">
+    <button id="btn-loading" @onclick="() => _loading = !_loading">Toggle loading</button>
+    <BitBasicList Id="loading" Items="_people" Loading="_loading" LoadingLabel="Fetching people..." Class="bsl-box" Style="height: 150px">
+        <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
+    </BitBasicList>
+    <BitBasicList Id="loading-template" Items="_people" Loading="_loading" Class="bsl-box" Style="height: 150px">
+        <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
+        <LoadingTemplate><div id="custom-loading">Custom loading template</div></LoadingTemplate>
+    </BitBasicList>
+    <span id="loading-changes">@string.Join(",", _loadingChanges)</span>
+    <button id="btn-release-all" @onclick="ReleaseAllProvider">Release the provider</button>
+    <BitBasicList Id="provider-all" TItem="Person" ItemsProvider="AllProvider" OnLoadingChange="v => _loadingChanges.Add(v)" Class="bsl-box" Style="height: 150px">
+        <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
+    </BitBasicList>
+    <span id="all-request">@_allRequest</span>
+</E2ESection>
+
+<E2ESection Id="sec-virtualize" Title="Virtualize, ItemSize, OverscanCount">
+    <BitBasicList Id="virtualize" Virtualize ItemSize="40" OverscanCount="3" Items="_lotsOfPeople" Class="bsl-box" Style="height: 400px">
+        <RowTemplate Context="person"><div @key="person.Id" role="listitem" class="bsl-row" data-id="@person.Id">Person @person.Id</div></RowTemplate>
+    </BitBasicList>
+    <BitBasicList Id="virtualize-overscan" Virtualize ItemSize="40" OverscanCount="10" Items="_lotsOfPeople" Class="bsl-box" Style="height: 400px">
+        <RowTemplate Context="person"><div @key="person.Id" role="listitem" class="bsl-row">Person @person.Id</div></RowTemplate>
+    </BitBasicList>
+</E2ESection>
+
+<E2ESection Id="sec-provider" Title="ItemsProvider with Virtualize, VirtualizePlaceholder, ItemsProviderDelay">
+    <span id="provider-calls">@_providerCalls</span>
+    <span id="provider-last">@_providerLast</span>
+    <BitBasicList Id="provider" @ref="_providerList" Virtualize ItemSize="40" ItemsProviderDelay="200" TItem="Person" ItemsProvider="VirtualProvider" Class="bsl-box" Style="height: 400px">
+        <RowTemplate Context="person"><div @key="person.Id" role="listitem" class="bsl-row" data-id="@person.Id">Product @person.Id</div></RowTemplate>
+        <VirtualizePlaceholder><div role="listitem" class="bsl-row bsl-placeholder">Loading...</div></VirtualizePlaceholder>
+    </BitBasicList>
+    <button id="btn-refresh-provider" @onclick="() => _providerList!.RefreshDataAsync()">Refresh the provider list</button>
+</E2ESection>
+
+<E2ESection Id="sec-load-more" Title="LoadMore, LoadMoreSize, LoadMoreText, LoadMoreTemplate, OnLoadMore">
+    <span id="load-more-count">@_loadMoreCount</span>
+    <span id="load-more-calls">@_loadMoreCalls</span>
+    <BitBasicList Id="load-more" LoadMore LoadMoreSize="10" LoadMoreText="Show 10 more" Items="_people45" OnLoadMore="c => { _loadMoreCount = c; _loadMoreCalls++; }" Class="bsl-box" Style="height: 250px">
+        <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
+    </BitBasicList>
+    <span id="template-count">@_templateCount</span>
+    <button id="btn-release-page" @onclick="ReleasePageProvider">Release the page</button>
+    <BitBasicList Id="load-more-template" LoadMore LoadMoreSize="10" TItem="Person" ItemsProvider="PageProvider" OnLoadMore="c => _templateCount = c" Class="bsl-box" Style="height: 250px">
+        <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
+        <LoadMoreTemplate Context="isLoadingMore">
+            <div id="load-more-template-content" style="padding: 8px">@(isLoadingMore ? "Loading the next page..." : "Load more people")</div>
+        </LoadMoreTemplate>
+    </BitBasicList>
+    <span id="virtualized-load-more-count">@_virtualizedLoadMoreCount</span>
+    <BitBasicList Id="load-more-virtualize" LoadMore Virtualize ItemSize="40" LoadMoreSize="20" Items="_lotsOfPeople" OnLoadMore="c => _virtualizedLoadMoreCount = c" Class="bsl-box" Style="height: 300px">
+        <RowTemplate Context="person"><div @key="person.Id" role="listitem" class="bsl-row">Person @person.Id</div></RowTemplate>
+    </BitBasicList>
+</E2ESection>
+
+<E2ESection Id="sec-auto-load" Title="AutoLoad and AutoLoadThreshold">
+    <span id="auto-count">@_autoCount</span>
+    <BitBasicList Id="auto-load" LoadMore AutoLoad LoadMoreSize="10" Items="_lotsOfPeople" OnLoadMore="c => _autoCount = c" Class="bsl-box" Style="height: 300px">
+        <RowTemplate Context="person"><div role="listitem" class="bsl-row">Person @person.Id</div></RowTemplate>
+    </BitBasicList>
+    <span id="threshold-count">@_thresholdCount</span>
+    <BitBasicList Id="auto-load-threshold" LoadMore AutoLoad AutoLoadThreshold="150" LoadMoreSize="10" Items="_lotsOfPeople" OnLoadMore="c => _thresholdCount = c" Class="bsl-box" Style="height: 300px">
+        <RowTemplate Context="person"><div role="listitem" class="bsl-row">Person @person.Id</div></RowTemplate>
+    </BitBasicList>
+</E2ESection>
+
+<E2ESection Id="sec-layout" Title="Horizontal, Styles.Items and the Fit/Full sizes">
+    <BitBasicList Id="horizontal" Horizontal Items="_people" Style="width: 400px">
+        <RowTemplate Context="person"><div role="listitem" class="bsl-card">@person.Name</div></RowTemplate>
+    </BitBasicList>
+    <BitBasicList Id="grid-items" Items="_people" Class="bsl-box" Style="height: 200px" Styles="@(new() { Items = "display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px" })">
+        <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
+    </BitBasicList>
+    <div style="width: 500px; height: 300px; display: flex; align-items: flex-start">
+        <BitBasicList Id="full-size" FullSize Items="_fruits" />
+    </div>
+    <div style="width: 500px; height: 300px">
+        <BitBasicList Id="full-width" FullWidth Items="_fruits" />
+        <BitBasicList Id="full-height" FullHeight Items="_fruits" />
+    </div>
+    <div style="width: 500px">
+        <BitBasicList Id="fit-size" FitSize Items="_fruits" />
+        <BitBasicList Id="fit-width" FitWidth Items="_fruits" />
+        <BitBasicList Id="fit-height" FitHeight Items="_fruits" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-scrolling" Title="ScrollToStartAsync, ScrollToEndAsync, ScrollToOffsetAsync, ScrollToIndexAsync, RefreshDataAsync, LoadMoreAsync">
+    <button id="btn-scroll-end" @onclick="() => _scrollList!.ScrollToEndAsync()">Scroll to end</button>
+    <button id="btn-scroll-start" @onclick="() => _scrollList!.ScrollToStartAsync()">Scroll to start</button>
+    <button id="btn-scroll-offset" @onclick="() => _scrollList!.ScrollToOffsetAsync(123)">Scroll to 123</button>
+    <button id="btn-scroll-index" @onclick="() => _scrollList!.ScrollToIndexAsync(50)">Scroll to #50</button>
+    <button id="btn-scroll-index-smooth" @onclick="() => _scrollList!.ScrollToIndexAsync(70, true)">Scroll smoothly to #70</button>
+    <button id="btn-add" @onclick="AddPerson">Add a person in place</button>
+    <button id="btn-refresh" @onclick="() => _scrollList!.RefreshDataAsync()">Refresh</button>
+    <BitBasicList Id="scroll-list" @ref="_scrollList" Items="_mutablePeople" Class="bsl-box" Style="height: 200px">
+        <HeaderTemplate><div style="height: 30px">Header</div></HeaderTemplate>
+        <RowTemplate Context="person"><div role="listitem" class="bsl-row" id="@($"sl-{person.Id}")">@person.Id - @person.Name</div></RowTemplate>
+    </BitBasicList>
+    <button id="btn-virtual-index" @onclick="() => _virtualScrollList!.ScrollToIndexAsync(500)">Scroll the virtualized list to #500</button>
+    <BitBasicList Id="virtual-scroll-list" @ref="_virtualScrollList" Virtualize ItemSize="40" Items="_lotsOfPeople" Class="bsl-box" Style="height: 200px">
+        <RowTemplate Context="person"><div @key="person.Id" role="listitem" class="bsl-row" id="@($"vsl-{person.Id}")">Person @person.Id</div></RowTemplate>
+    </BitBasicList>
+    <button id="btn-load-more-async" @onclick="() => _apiLoadMoreList!.LoadMoreAsync()">LoadMoreAsync</button>
+    <span id="api-load-more-count">@_apiLoadMoreCount</span>
+    <BitBasicList Id="api-load-more" @ref="_apiLoadMoreList" LoadMore LoadMoreSize="5" Items="_people45" OnLoadMore="c => _apiLoadMoreCount = c" Class="bsl-box" Style="height: 150px">
+        <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
+    </BitBasicList>
+</E2ESection>
+
+<E2ESection Id="sec-a11y" Title="Role, AriaLabel, aria-busy, TabIndex and the focus after the last page">
+    <BitBasicList Id="a11y" Items="_people" AriaLabel="Team members" Class="bsl-box" Style="height: 150px">
+        <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
+    </BitBasicList>
+    <BitBasicList Id="a11y-no-role" Items="_people" Role="@null" AriaLabel="No role" Class="bsl-box" Style="height: 100px">
+        <RowTemplate Context="person"><div class="bsl-row">@person.Name</div></RowTemplate>
+    </BitBasicList>
+    <BitBasicList Id="a11y-custom-role" Items="_people" Role="listbox" Class="bsl-box" Style="height: 100px">
+        <RowTemplate Context="person"><div role="option" aria-selected="false" class="bsl-row">@person.Name</div></RowTemplate>
+    </BitBasicList>
+    <BitBasicList Id="a11y-tabindex" Items="_people" TabIndex="0" Class="bsl-box" Style="height: 100px">
+        <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
+    </BitBasicList>
+    <span id="focus-count">@_focusCount</span>
+    <button id="btn-release-busy" @onclick="ReleaseBusyProvider">Release the busy page</button>
+    <BitBasicList Id="a11y-focus" LoadMore LoadMoreSize="10" TItem="Person" ItemsProvider="BusyProvider" LoadingLabel="Loading more team members..."
+                  AriaLabel="Loadable" OnLoadMore="c => _focusCount = c" Class="bsl-box" Style="height: 150px">
+        <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
+    </BitBasicList>
+</E2ESection>
+
+<E2ESection Id="sec-cascading" Title="BitBasicListParams">
+    <BitParams Parameters="@_listParams">
+        <BitBasicList Id="casc" Items="_people45" Class="bsl-box" Style="height: 150px">
+            <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
+        </BitBasicList>
+        <BitBasicList Id="casc-own" Items="_people45" LoadMoreText="Its own text" Class="bsl-box" Style="height: 150px">
+            <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
+        </BitBasicList>
+    </BitParams>
+    <BitBasicList Id="casc-out" Items="_people45" Class="bsl-box" Style="height: 150px">
+        <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
+    </BitBasicList>
+</E2ESection>
+
+<E2ESection Id="sec-style" Title="Style, Class, Styles, Classes, Visibility, Disabled">
+    <BitBasicList Id="styled" LoadMore LoadMoreSize="3" Items="_people" Loading="_styledLoading"
+                  Class="bsl-root-class" Style="width: 400px; height: 220px; border: 1px solid tomato"
+                  Styles="@(new() { Root = "padding: 1px", Header = "padding: 2px", Items = "padding: 3px", Footer = "padding: 4px", LoadingContent = "margin: 5px", LoadMoreButton = "margin: 6px", LoadMoreText = "color: rgb(255, 99, 71)" })"
+                  Classes="@(new() { Root = "bsl-extra-root", Header = "bsl-header-class", Items = "bsl-items-class", Footer = "bsl-footer-class", LoadingContent = "bsl-loading-class", LoadMoreButton = "bsl-lmb-class", LoadMoreText = "bsl-lmt-class" })">
+        <HeaderTemplate>Header</HeaderTemplate>
+        <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
+        <FooterTemplate>Footer</FooterTemplate>
+    </BitBasicList>
+    <button id="btn-styled-loading" @onclick="() => _styledLoading = !_styledLoading">Toggle loading</button>
+    <BitBasicList Id="vis" Items="_people" Visibility="_visibility" Class="bsl-box" Style="height: 100px" />
+    <button id="btn-hidden-vis" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-collapsed-vis" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+    <span id="disabled-count">@_disabledCount</span>
+    <BitBasicList Id="disabled" Disabled="_disabled" LoadMore LoadMoreSize="5" Items="_people45" OnLoadMore="c => _disabledCount = c" Class="bsl-box" Style="height: 150px">
+        <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
+    </BitBasicList>
+    <BitBasicList Id="disabled-template" Disabled="_disabled" LoadMore LoadMoreSize="5" Items="_people45" Class="bsl-box" Style="height: 150px">
+        <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
+        <LoadMoreTemplate Context="busy"><div style="padding: 8px">More</div></LoadMoreTemplate>
+    </BitBasicList>
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+</E2ESection>
+
+<E2ESection Id="sec-css-vars" Title="The --bit-BasicList-* variables">
+    <div style="--bit-BasicList-height: 180px; --bit-BasicList-load-more-color: rgb(1, 2, 3); --bit-BasicList-load-more-background: rgb(4, 5, 6); --bit-BasicList-load-more-hover-color: rgb(7, 8, 9); --bit-BasicList-load-more-hover-background: rgb(10, 11, 12); --bit-BasicList-load-more-active-background: rgb(13, 14, 15); --bit-BasicList-load-more-font-size: 19px; --bit-BasicList-load-more-font-weight: 300; --bit-BasicList-load-more-padding: 7px; --bit-BasicList-loading-padding: 9px; --bit-BasicList-loading-color: rgb(16, 17, 18); --bit-BasicList-spinner-size: 30px; --bit-BasicList-spinner-color: rgb(19, 20, 21); --bit-BasicList-disabled-color: rgb(22, 23, 24); --bit-BasicList-focus-color: rgb(25, 26, 27)">
+        <BitBasicList Id="vars" LoadMore LoadMoreSize="3" Items="_people" Class="bsl-box" TabIndex="0">
+            <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
+        </BitBasicList>
+        <BitBasicList Id="vars-loading" Loading Items="_people" Class="bsl-box" />
+        <BitBasicList Id="vars-disabled" Disabled LoadMore LoadMoreSize="3" Items="_people" Class="bsl-box" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-rtl" Title="RTL">
+    <BitBasicList Id="rtl" Dir="BitDir.Rtl" Horizontal Items="_people" Style="width: 400px">
+        <RowTemplate Context="person"><div role="listitem" class="bsl-card">@person.Name</div></RowTemplate>
+    </BitBasicList>
+    <div dir="rtl">
+        <BitBasicList Id="rtl-inherited" Horizontal Items="_people" Style="width: 400px">
+            <RowTemplate Context="person"><div role="listitem" class="bsl-card">@person.Name</div></RowTemplate>
+        </BitBasicList>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-lifecycle" Title="Lifecycle">
+    @if (_mounted)
+    {
+        <BitBasicList Id="mount-list" LoadMore AutoLoad Virtualize ItemSize="40" LoadMoreSize="10" Items="_lotsOfPeople" Class="bsl-box" Style="height: 150px">
+            <RowTemplate Context="person"><div role="listitem" class="bsl-row">Person @person.Id</div></RowTemplate>
+        </BitBasicList>
+    }
+    <button id="btn-unmount" @onclick="() => _mounted = false">Unmount</button>
+    <button id="btn-mount" @onclick="() => _mounted = true">Mount</button>
+    <span id="mounted">@_mounted</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public record Person(int Id, string Name);
+
+    private readonly List<Person> _people = Enumerable.Range(1, 10).Select(i => new Person(i, $"Person {i}")).ToList();
+    private readonly List<Person> _people45 = Enumerable.Range(1, 45).Select(i => new Person(i, $"Member {i}")).ToList();
+    private readonly List<Person> _lotsOfPeople = Enumerable.Range(0, 2000).Select(i => new Person(i, $"Person {i}")).ToList();
+    private readonly List<Person> _noPeople = [];
+    private readonly List<Person> _mutablePeople = Enumerable.Range(1, 100).Select(i => new Person(i, $"Person {i}")).ToList();
+    private readonly List<string> _fruits = ["Apple", "Banana", "Cherry", "Date"];
+
+    private bool _loading;
+    private bool _styledLoading;
+    private readonly List<bool> _loadingChanges = [];
+    private string _allRequest = "";
+    private TaskCompletionSource _allGate = new();
+
+    private int _providerCalls;
+    private string _providerLast = "";
+    private BitBasicList<Person>? _providerList;
+
+    private int _loadMoreCount;
+    private int _loadMoreCalls;
+    private int _templateCount;
+    private TaskCompletionSource? _pageGate;
+    private int _virtualizedLoadMoreCount;
+
+    private int _autoCount;
+    private int _thresholdCount;
+
+    private BitBasicList<Person>? _scrollList;
+    private BitBasicList<Person>? _virtualScrollList;
+    private BitBasicList<Person>? _apiLoadMoreList;
+    private int _apiLoadMoreCount;
+
+    private int _focusCount;
+    private TaskCompletionSource? _busyGate;
+
+    private int _disabledCount;
+    private bool _disabled = true;
+    private bool _mounted = true;
+    private BitVisibility _visibility = BitVisibility.Visible;
+
+    private readonly BitBasicListParams[] _listParams = [new() { LoadMore = true, LoadMoreSize = 5, LoadMoreText = "More from the cascade" }];
+
+    private ValueTask<BitBasicListItemsProviderResult<Person>> EmptyProvider(BitBasicListItemsProviderRequest<Person> request)
+    {
+        return ValueTask.FromResult(BitBasicListItemsProviderResult.Empty<Person>());
+    }
+
+    // Held until the page releases it, so a test sees the loading state for as long as it needs to.
+    private async ValueTask<BitBasicListItemsProviderResult<Person>> AllProvider(BitBasicListItemsProviderRequest<Person> request)
+    {
+        _allRequest = $"{request.StartIndex}:{request.Count}";
+        // A prerender waits for every pending load before it sends the page, so it is not held.
+        if (RendererInfo.IsInteractive) await _allGate.Task;
+        return BitBasicListItemsProviderResult.From<Person>(_people.Take(5).ToList());
+    }
+
+    private void ReleaseAllProvider() => _allGate.TrySetResult();
+
+    private async ValueTask<BitBasicListItemsProviderResult<Person>> VirtualProvider(BitBasicListItemsProviderRequest<Person> request)
+    {
+        _providerCalls++;
+        _providerLast = $"{request.StartIndex}:{request.Count}";
+        _ = InvokeAsync(StateHasChanged);
+        await Task.Delay(300, request.CancellationToken);
+        var count = Math.Max(0, Math.Min(request.Count, 1000 - request.StartIndex));
+        var items = Enumerable.Range(request.StartIndex, count).Select(i => new Person(i, $"Product {i}")).ToList();
+        return BitBasicListItemsProviderResult.From<Person>(items, 1000);
+    }
+
+    // Every page after the first waits for the page to release it, so the template's busy state can be seen.
+    private async ValueTask<BitBasicListItemsProviderResult<Person>> PageProvider(BitBasicListItemsProviderRequest<Person> request)
+    {
+        if (request.StartIndex > 0)
+        {
+            _pageGate = new();
+            _ = InvokeAsync(StateHasChanged);
+            await _pageGate.Task;
+        }
+        var count = Math.Max(0, Math.Min(request.Count, 25 - request.StartIndex));
+        var items = Enumerable.Range(request.StartIndex, count).Select(i => new Person(i, $"Paged {i}")).ToList();
+        return BitBasicListItemsProviderResult.From<Person>(items, 25);
+    }
+
+    private void ReleasePageProvider() => _pageGate?.TrySetResult();
+
+    private async ValueTask<BitBasicListItemsProviderResult<Person>> BusyProvider(BitBasicListItemsProviderRequest<Person> request)
+    {
+        if (request.StartIndex > 0)
+        {
+            _busyGate = new();
+            await _busyGate.Task;
+        }
+        var count = Math.Max(0, Math.Min(request.Count, 15 - request.StartIndex));
+        var items = Enumerable.Range(request.StartIndex, count).Select(i => new Person(i, $"Busy {i}")).ToList();
+        return BitBasicListItemsProviderResult.From<Person>(items, 15);
+    }
+
+    private void ReleaseBusyProvider() => _busyGate?.TrySetResult();
+
+    private void AddPerson()
+    {
+        var id = _mutablePeople.Count + 1;
+        _mutablePeople.Add(new Person(id, $"Added {id}"));
+    }
+}

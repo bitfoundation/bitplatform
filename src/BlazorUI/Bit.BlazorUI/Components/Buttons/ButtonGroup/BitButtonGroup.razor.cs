@@ -1265,7 +1265,7 @@ public partial class BitButtonGroup<[DynamicallyAccessedMembers(DynamicallyAcces
                 if (onIcon is not null) return onIcon;
 
                 var onIconName = GetOnIconName(item);
-                if (onIconName.HasValue()) return new BitIconInfo(onIconName!);
+                if (onIconName.HasValue()) return BitIconInfo.Bit(onIconName!);
             }
             else
             {
@@ -1273,7 +1273,7 @@ public partial class BitButtonGroup<[DynamicallyAccessedMembers(DynamicallyAcces
                 if (offIcon is not null) return offIcon;
 
                 var offIconName = GetOffIconName(item);
-                if (offIconName.HasValue()) return new BitIconInfo(offIconName!);
+                if (offIconName.HasValue()) return BitIconInfo.Bit(offIconName!);
             }
         }
 

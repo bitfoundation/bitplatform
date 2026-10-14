@@ -149,6 +149,8 @@ public class BitDataGridComponentBaseTests : BunitTestContext
         foreach (var control in component.FindAll(".bit-dtg button, .bit-dtg input, .bit-dtg select"))
         {
             Assert.IsTrue(control.HasAttribute("disabled"), control.OuterHtml);
+            // The disabled contract: a native control rendered disabled writes both attributes.
+            Assert.AreEqual("true", control.GetAttribute("aria-disabled"), control.OuterHtml);
         }
     }
 

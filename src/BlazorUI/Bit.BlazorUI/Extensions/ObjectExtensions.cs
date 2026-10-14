@@ -22,6 +22,13 @@ internal static class ObjectExtensions
     private static PropertyInfo? GetPropertyInfo(Type type, string propertyName) =>
         _properties.GetOrAdd((type, propertyName), static key => key.Type.GetProperty(key.Name));
 
+    // Whether the type of an item has a property of that name at all, to tell an item type that has nowhere to keep a
+    // value apart from one whose property simply holds the default.
+    internal static bool HasProperty(this object? obj, string propertyName)
+    {
+        return obj is not null && GetPropertyInfo(obj.GetType(), propertyName) is not null;
+    }
+
     // The implicit operator is looked up on the type asked for, which the trimmer cannot see. The one the components
     // rely on - an icon given by its name - is called directly below, so it is kept; any other is an app's own type,
     // whose operator is kept when the app uses it, and a missing one falls back to Convert.ChangeType.

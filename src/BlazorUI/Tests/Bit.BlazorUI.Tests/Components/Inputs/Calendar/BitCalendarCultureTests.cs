@@ -333,6 +333,111 @@ public class BitCalendarCultureTests : BunitTestContext
 
     #endregion
 
+    #region de-DE, en-US and the invariant culture (GregorianCalendar)
+
+    [TestMethod]
+    public void BitCalendarShouldStartTheWeekOnMondayAndNameTheMonthsOfADeDeCulture()
+    {
+        var culture = CultureInfo.GetCultureInfo("de-DE");
+
+        var component = Render(culture, Utc(2025, 3, 15));
+
+        var headers = component.FindAll(".bit-cal-dgh .bit-cal-wlb");
+
+        Assert.IsInstanceOfType<GregorianCalendar>(culture.Calendar);
+        Assert.AreEqual(DayOfWeek.Monday, culture.DateTimeFormat.FirstDayOfWeek);
+        Assert.AreEqual($"{culture.DateTimeFormat.GetMonthName(3)} 2025", GetMonthTitle(component));
+        Assert.AreEqual(culture.DateTimeFormat.GetDayName(DayOfWeek.Monday), headers[0].GetAttribute("aria-label"));
+        Assert.AreEqual(culture.DateTimeFormat.GetDayName(DayOfWeek.Sunday), headers[6].GetAttribute("aria-label"));
+        Assert.HasCount(31, GetInMonthDays(component));
+
+        // 1 March 2025 is a Saturday, the sixth day of a week that starts on Monday.
+        Assert.AreEqual(5, GetColumnOfFirstDay(component));
+    }
+
+    [TestMethod]
+    public void BitCalendarShouldAnnounceTheSelectionInTheShortDateOfADeDeCulture()
+    {
+        var culture = CultureInfo.GetCultureInfo("de-DE");
+        DateTimeOffset? value = null;
+
+        var component = Render(culture, Utc(2025, 3, 15), p => p.Bind(x => x.Value, value, v => value = v));
+
+        GetDayButton(component, "15").Click();
+
+        Assert.AreEqual(Utc(2025, 3, 15), value);
+        Assert.AreEqual(new DateTime(2025, 3, 15).ToString(culture.DateTimeFormat.LongDatePattern, culture), GetDayButton(component, "15").GetAttribute("aria-label"));
+        // The selection is announced in the culture's own short date - day first, dotted.
+        Assert.Contains("15.03.2025", component.Find(".bit-cal-sdt").TextContent);
+    }
+
+    [TestMethod]
+    public void BitCalendarDateFormatShouldWinOverTheShortDatePatternOfTheCulture()
+    {
+        var component = Render(CultureInfo.GetCultureInfo("de-DE"), Utc(2025, 3, 15), p =>
+        {
+            p.Add(x => x.DateFormat, "yyyy-MM-dd");
+            p.Add(x => x.Value, Utc(2025, 3, 15));
+        });
+
+        Assert.Contains("2025-03-15", component.Find(".bit-cal-sdt").TextContent);
+        Assert.IsFalse(component.Find(".bit-cal-sdt").TextContent.Contains("15.03.2025"));
+    }
+
+    [TestMethod]
+    public void BitCalendarShouldStartTheWeekOnSundayInAnEnUsCulture()
+    {
+        var culture = CultureInfo.GetCultureInfo("en-US");
+
+        var component = Render(culture, Utc(2025, 3, 15));
+
+        var headers = component.FindAll(".bit-cal-dgh .bit-cal-wlb");
+
+        Assert.AreEqual(DayOfWeek.Sunday, culture.DateTimeFormat.FirstDayOfWeek);
+        Assert.AreEqual("March 2025", GetMonthTitle(component));
+        Assert.AreEqual("Sunday", headers[0].GetAttribute("aria-label"));
+        Assert.AreEqual("Saturday", headers[6].GetAttribute("aria-label"));
+
+        // 1 March 2025 is a Saturday, the last day of a week that starts on Sunday.
+        Assert.AreEqual(6, GetColumnOfFirstDay(component));
+    }
+
+    [TestMethod]
+    public void BitCalendarInvariantCultureShouldLayOutTheGregorianMonthAndAnnounceTheIsoLikeShortDate()
+    {
+        DateTimeOffset? value = null;
+
+        var component = Render(CultureInfo.InvariantCulture, Utc(2025, 3, 15), p => p.Bind(x => x.Value, value, v => value = v));
+
+        Assert.AreEqual("March 2025", GetMonthTitle(component));
+        Assert.HasCount(31, GetInMonthDays(component));
+        Assert.AreEqual(6, GetColumnOfFirstDay(component));
+        Assert.IsFalse(component.Find(".bit-cal").ClassList.Contains("bit-rtl"));
+
+        GetDayButton(component, "15").Click();
+
+        Assert.AreEqual(Utc(2025, 3, 15), value);
+        Assert.Contains("03/15/2025", component.Find(".bit-cal-sdt").TextContent);
+    }
+
+    [TestMethod]
+    public void BitCalendarShouldNavigateAcrossTheGregorianNewYearInADeDeCulture()
+    {
+        var culture = CultureInfo.GetCultureInfo("de-DE");
+        DateTimeOffset? changedMonth = null;
+
+        var component = Render(culture, Utc(2025, 12, 15), p => p.Add(x => x.OnMonthChange, (DateTimeOffset m) => changedMonth = m));
+
+        component.Find(NEXT_MONTH).Click();
+
+        Assert.AreEqual($"{culture.DateTimeFormat.GetMonthName(1)} 2026", GetMonthTitle(component));
+        Assert.HasCount(31, GetInMonthDays(component));
+        Assert.AreEqual(Utc(2026, 1, 1), changedMonth);
+        Assert.AreEqual("2026", component.Find(".bit-cal-mwp .bit-cal-ptb").TextContent.Trim());
+    }
+
+    #endregion
+
     private IRenderedComponent<BitCalendar> Render(CultureInfo culture, DateTimeOffset startingValue, Action<ComponentParameterCollectionBuilder<BitCalendar>>? more = null)
     {
         return RenderComponent<BitCalendar>(parameters =>

@@ -1170,9 +1170,18 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     // Called by an option when its own parameters change, so the cached search results (which hold
     // the option instances themselves) cannot be reused after the data they were computed from changed.
-    internal void NotifyOptionParametersChanged()
+    // The field shows the text of the selected options, and the render that handed an option its new
+    // parameters drew the field before they arrived, so a selected option renders the dropdown again.
+    internal void NotifyOptionParametersChanged(BitDropdownOption<TValue> option)
     {
         _optionsVersion++;
+
+        if (IsDisposing) return;
+
+        if (option is TItem item && _selectedItems.Contains(item))
+        {
+            StateHasChanged();
+        }
     }
 
     // Everything derived from the current set of items: the search result and the set it is looked up
@@ -2620,8 +2629,11 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
         if (mode != BitDropdownFocusMode.Selected) return -1;
         if (Virtualize is false || ItemsProvider is not null) return -1;
 
+        // With nothing selected the first row is the one to reach, and it is index 0: on the first opening of the list
+        // that row is only rendered by the reveal this call follows, which Dropdowns.focusItem waits for when it is
+        // handed an index - handed none, it finds no rows yet and leaves the focus on the field.
         var selected = _selectedItems.FirstOrDefault();
-        if (selected is null) return -1;
+        if (selected is null) return 0;
 
         var index = 0;
         foreach (var item in GetDisplayItems())

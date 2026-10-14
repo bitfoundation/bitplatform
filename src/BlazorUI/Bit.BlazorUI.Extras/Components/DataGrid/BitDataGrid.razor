@@ -317,6 +317,7 @@
                                           aria-valuemax="@column.MaxWidth"
                                           @onpointerdown="e => StartResizeAsync(column, e.ClientX)"
                                           @onpointerdown:stopPropagation="true"
+                                          @onpointerup="ReleaseResizeHandle"
                                           @ondblclick="() => AutoFitAsync(column)"
                                           @ondblclick:stopPropagation="true"
                                           @onkeydown="e => OnResizerKeyDownAsync(column, e)"

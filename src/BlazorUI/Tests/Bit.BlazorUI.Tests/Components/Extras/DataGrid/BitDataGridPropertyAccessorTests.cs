@@ -28,6 +28,7 @@ public class BitDataGridPropertyAccessorTests
         public string? Name { get; set; }
         public Address? Address { get; set; }
         public Money Price { get; set; }
+        public Money? MaybePrice { get; set; }
         public Fruit Fruit { get; set; }
         public Guid Key { get; set; }
         public DateOnly Day { get; set; }
@@ -136,6 +137,42 @@ public class BitDataGridPropertyAccessorTests
 
         var model = new Model { Price = new Money { Amount = 3 } };
         Assert.AreEqual(3m, accessor.GetValue(model));
+    }
+
+    [TestMethod]
+    public void NestedPathThroughANullableStructReadsTheValueAndNullsOutOnNone()
+    {
+        // The intermediate is unwrapped to its underlying struct for the next segment to resolve on; a null one
+        // yields null rather than dereferencing, and the path stays read-only like any struct intermediate.
+        var accessor = BitDataGridPropertyAccessor<Model>.For("MaybePrice.Amount");
+
+        Assert.AreEqual(typeof(decimal), accessor.PropertyType);
+        Assert.AreEqual(7m, accessor.GetValue(new Model { MaybePrice = new Money { Amount = 7 } }));
+        Assert.IsNull(accessor.GetValue(new Model()));
+        Assert.IsFalse(accessor.CanWrite);
+
+        var model = new Model { MaybePrice = new Money { Amount = 1 } };
+        accessor.SetValue(model, "9");
+        Assert.AreEqual(1m, model.MaybePrice!.Value.Amount, "a write through a struct copy must not be pretended");
+    }
+
+    [TestMethod]
+    public void PropertyLambdaLiftsTheLeafBehindANullableStructIntermediate()
+    {
+        var accessor = BitDataGridPropertyAccessor<Model>.For("MaybePrice.Amount");
+        var lambda = (Expression<Func<Model, decimal?>>)accessor.PropertyLambda;
+
+        var items = new[]
+        {
+            new Model { Name = "b", MaybePrice = new Money { Amount = 5 } },
+            new Model { Name = "a", MaybePrice = null },
+            new Model { Name = "c", MaybePrice = new Money { Amount = 2 } },
+        }.AsQueryable();
+
+        CollectionAssert.AreEqual(new[] { "a", "c", "b" }, items.OrderBy(lambda).Select(x => x.Name).ToList(), "a null intermediate sorts as a null key, not throws");
+
+        var getAmount = lambda.Compile();
+        CollectionAssert.AreEqual(new[] { "b" }, items.AsEnumerable().Where(x => getAmount(x) > 3).Select(x => x.Name).ToList());
     }
 
     [TestMethod]

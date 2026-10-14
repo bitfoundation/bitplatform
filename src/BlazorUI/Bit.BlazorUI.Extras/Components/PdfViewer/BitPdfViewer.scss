@@ -592,6 +592,13 @@ $pdv-private-properties: scale;
     @include pdv-inset-ring;
 }
 
+/* A link hotspot lies over the words it is written on, and so does the selection layer, which comes later in the
+   page and would take the click on those words for the start of a selection. Lifted above it, the hotspot follows
+   the link wherever it is clicked; a selection still starts anywhere beside it. */
+.bit-pdv-page .bit-pdv-html-page > a {
+    z-index: 1;
+}
+
 /* The coalesced selection/text layer sits on top of the painted content. Its
    container is transparent to pointer events so link annotations underneath stay
    clickable; each text span opts back in so dragging over it selects. */

@@ -1,0 +1,31 @@
+﻿@page "/"
+@using System.Reflection
+
+<PageTitle>Bit.BlazorUI E2E Test Host</PageTitle>
+
+<h1>Bit.BlazorUI E2E Test Host</h1>
+<p>Each page under <code>/e2e/&lt;component&gt;</code> hosts one component in every configuration its E2E tests drive.</p>
+
+<ul id="pages">
+    @foreach (var (route, name) in _pages)
+    {
+        <li><a href="@route">@name</a></li>
+    }
+</ul>
+
+<E2EStatus />
+
+@code {
+    private List<(string Route, string Name)> _pages = [];
+
+    protected override void OnInitialized()
+    {
+        // Every routable page of the host, read off its route attribute, so the list never lags the pages.
+        _pages = typeof(Program).Assembly.GetTypes()
+            .Where(t => typeof(IComponent).IsAssignableFrom(t))
+            .SelectMany(t => t.GetCustomAttributes<RouteAttribute>(true).Select(a => (a.Template, t.Name)))
+            .Where(p => p.Template.StartsWith("/e2e/", StringComparison.Ordinal) && p.Template.Contains('{') is false)
+            .OrderBy(p => p.Template, StringComparer.Ordinal)
+            .ToList();
+    }
+}

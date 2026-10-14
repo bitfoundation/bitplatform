@@ -1,0 +1,515 @@
+﻿@page "/e2e/breadcrumb"
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>BitBreadcrumb E2E</PageTitle>
+
+<h1>BitBreadcrumb</h1>
+
+@* Every feature of BitBreadcrumb in its three APIs - BitBreadcrumbItem, a custom class through NameSelectors, and
+   BitBreadcrumbOption markup - one section each. The links point back at this page (?step=N), so following one keeps
+   the page and only moves the address, which the page writes out. *@
+
+<p>Url: <span id="url">@_url</span>, last clicked: <span id="clicked">@_clicked</span>, clicks: <span id="click-count">@_clickCount</span></p>
+
+<E2ESection Id="basic" Title="Items: links, IsSelected, OnItemClick">
+    <BitBreadcrumb Id="bc-basic" Items="_basicItems" OnItemClick="(BitBreadcrumbItem item) => Clicked(item.Text)" />
+</E2ESection>
+
+<E2ESection Id="selected-as-text" Title="SelectedItemAsText">
+    <BitBreadcrumb Id="bc-selected-text" Items="_basicItems" SelectedItemAsText />
+    <BitBreadcrumb Id="bc-selected-text-label" Items="_iconOnlySelected" SelectedItemAsText />
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitBreadcrumb Id="bc-disabled" Items="_basicItems" Disabled="_disabled" MaxDisplayedItems="3" OverflowIndex="1"
+                   OnItemClick="(BitBreadcrumbItem item) => _disabledClicks++"
+                   @ondblclick="() => _disabledActivations++"
+                   @onpointerdown="() => _disabledActivations++"
+                   @onmouseover="() => _disabledHovers++" />
+    <button id="btn-toggle-disabled" type="button" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <p>Clicks: <span id="disabled-clicks">@_disabledClicks</span>, page activations: <span id="disabled-activations">@_disabledActivations</span>, page hovers: <span id="disabled-hovers">@_disabledHovers</span></p>
+    <BitBreadcrumb Id="bc-item-disabled" Items="_disabledItems" OnItemClick="(BitBreadcrumbItem item) => Clicked(item.Text)" />
+    <BitBreadcrumb Id="bc-button-disabled" Items="_buttonDisabledItems" OnItemClick="(BitBreadcrumbItem item) => Clicked(item.Text)" />
+</E2ESection>
+
+<E2ESection Id="target" Title="Target, NewTabHint, NoNewTabHint">
+    <BitBreadcrumb Id="bc-target" Items="_targetItems" />
+    <BitBreadcrumb Id="bc-target-hint" Items="_targetItems" NewTabHint="(new window)" />
+    <BitBreadcrumb Id="bc-target-no-hint" Items="_targetItems" NoNewTabHint />
+</E2ESection>
+
+<E2ESection Id="overflow" Title="MaxDisplayedItems, OverflowIndex, AriaLabel, OverflowAriaLabel">
+    <BitBreadcrumb Id="bc-max-2" Items="_basicItems" MaxDisplayedItems="2" OnItemClick="(BitBreadcrumbItem item) => Clicked(item.Text)" />
+    <BitBreadcrumb Id="bc-max-3-idx-1" Items="_basicItems" MaxDisplayedItems="3" OverflowIndex="1" />
+    <BitBreadcrumb Id="bc-max-3-idx-2" Items="_basicItems" MaxDisplayedItems="3" OverflowIndex="2" AriaLabel="You are here" OverflowAriaLabel="Show hidden levels" />
+    <BitBreadcrumb Id="bc-max-idx-past" Items="_basicItems" MaxDisplayedItems="2" OverflowIndex="5" />
+    <button id="btn-max-runtime" type="button" @onclick="() => _runtimeMax = _runtimeMax == 0 ? 2u : 0u">Toggle MaxDisplayedItems</button>
+    <BitBreadcrumb Id="bc-max-runtime" Items="_basicItems" MaxDisplayedItems="_runtimeMax" />
+</E2ESection>
+
+<E2ESection Id="keyboard" Title="Overflow menu keyboard">
+    <button id="before-keyboard" type="button">Before</button>
+    <BitBreadcrumb Id="bc-keyboard" Items="_phoneticItems" MaxDisplayedItems="2" OnItemClick="(BitBreadcrumbItem item) => Clicked(item.Text)" />
+    <button id="after-keyboard" type="button">After</button>
+</E2ESection>
+
+<E2ESection Id="truncation" Title="MaxItemWidth, Wrap, Scrollable">
+    <div id="box-default" style="width:300px;overflow:hidden">
+        <BitBreadcrumb Id="bc-long-default" Items="_longItems" />
+    </div>
+    <div id="box-max-width" style="width:300px">
+        <BitBreadcrumb Id="bc-long-max-width" Items="_longItemsNoTitle" MaxItemWidth="5rem" />
+    </div>
+    <div id="box-wrap" style="width:300px">
+        <BitBreadcrumb Id="bc-long-wrap" Items="_longItems" Wrap />
+    </div>
+    <div id="box-scroll" style="width:300px">
+        <BitBreadcrumb Id="bc-long-scroll" Items="_longItems" Scrollable />
+    </div>
+</E2ESection>
+
+<E2ESection Id="auto-collapse" Title="AutoCollapse">
+    <div id="box-auto" style="width:1000px">
+        <BitBreadcrumb Id="bc-auto" Items="_longItemsNoTitle" AutoCollapse />
+    </div>
+    <div id="box-auto-idx" style="width:1000px">
+        <BitBreadcrumb Id="bc-auto-idx" Items="_longItemsNoTitle" AutoCollapse OverflowIndex="1" />
+    </div>
+    <div id="box-auto-wrap" style="width:300px">
+        <BitBreadcrumb Id="bc-auto-wrap" Items="_longItemsNoTitle" AutoCollapse Wrap />
+    </div>
+</E2ESection>
+
+<E2ESection Id="expand-overflow" Title="ExpandOverflow">
+    <BitBreadcrumb Id="bc-expand" Items="_sixItems" ExpandOverflow MaxDisplayedItems="3" OverflowIndex="1" OnItemClick="(BitBreadcrumbItem item) => Clicked(item.Text)" />
+</E2ESection>
+
+<E2ESection Id="icons" Title="Icons, IconPlacement, DividerIconName, DividerText, OverflowIconName">
+    <BitBreadcrumb Id="bc-icons" Items="_iconItems" DividerIconName="@BitIconName.CaretRightSolid8" OverflowIconName="@BitIconName.ChevronDown" MaxDisplayedItems="3" OverflowIndex="2" />
+    <BitBreadcrumb Id="bc-icons-end" Items="_iconItems" IconPlacement="BitPlacement.End" />
+    <BitBreadcrumb Id="bc-home" Items="_homeItems" DividerText="/" />
+</E2ESection>
+
+<E2ESection Id="templates" Title="DividerIconTemplate, ItemTemplate, OverflowTemplate, OverflowIconTemplate">
+    <BitBreadcrumb Id="bc-divider-template" Items="_basicItems">
+        <DividerIconTemplate>
+            <span class="custom-divider">»</span>
+        </DividerIconTemplate>
+    </BitBreadcrumb>
+    <BitBreadcrumb Id="bc-item-template" Items="_basicItems" MaxDisplayedItems="3" OverflowIndex="2">
+        <ItemTemplate Context="item">
+            <b class="tpl-item">[@item.Text]</b>
+        </ItemTemplate>
+        <OverflowTemplate Context="item">
+            <i class="tpl-overflow">(@item.Text)</i>
+        </OverflowTemplate>
+        <OverflowIconTemplate>
+            <span class="tpl-overflow-icon">+</span>
+        </OverflowIconTemplate>
+    </BitBreadcrumb>
+    <BitBreadcrumb Id="bc-own-template" Items="_templateItems" MaxDisplayedItems="3" OverflowIndex="1">
+        <ItemTemplate Context="item">
+            <b class="tpl-item">[@item.Text]</b>
+        </ItemTemplate>
+    </BitBreadcrumb>
+</E2ESection>
+
+<E2ESection Id="events" Title="OnItemClick, item OnClick, dynamic items">
+    <BitBreadcrumb Id="bc-dynamic" Items="_dynamicItems" MaxDisplayedItems="4" OverflowIndex="1" SelectedItemAsText
+                   OnItemClick="(BitBreadcrumbItem item) => GoUpTo(item)" />
+    <button id="btn-add-item" type="button" @onclick="AddItem">Add item</button>
+    <span id="dynamic-count">@_dynamicItems.Count</span>
+    <BitBreadcrumb Id="bc-own-click" Items="_ownClickItems" />
+    <span id="own-click">@_ownClick</span>
+</E2ESection>
+
+<E2ESection Id="structured-data" Title="StructuredData">
+    <div id="structured-box">
+        <BitBreadcrumb Id="bc-structured" Items="_basicItems" StructuredData MaxDisplayedItems="3" OverflowIndex="2" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="params" Title="BitParams cascade">
+    <BitParams Parameters="_breadcrumbParams">
+        <BitBreadcrumb Id="bc-params" Items="_basicItems" />
+        <BitBreadcrumb Id="bc-params-own" Items="_basicItems" DividerText="›" />
+        <BitBreadcrumb Id="bc-params-options" TItem="BitBreadcrumbOption">
+            <BitBreadcrumbOption Text="Option 1" Href="/e2e/breadcrumb?step=1" />
+            <BitBreadcrumbOption Text="Option 2" Href="/e2e/breadcrumb?step=2" />
+            <BitBreadcrumbOption Text="Option 3" Href="/e2e/breadcrumb?step=3" />
+            <BitBreadcrumbOption Text="Option 4" Href="/e2e/breadcrumb?step=4" IsSelected />
+        </BitBreadcrumb>
+    </BitParams>
+    <BitBreadcrumb Id="bc-params-outside" Items="_basicItems" />
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    <BitBreadcrumb Id="bc-color-none" Items="_basicItems" />
+    @foreach (var color in _colors)
+    {
+        <BitBreadcrumb Id="@($"bc-color-{color}")" Items="_basicItems" Color="color" />
+    }
+</E2ESection>
+
+<E2ESection Id="external-icons" Title="External icons">
+    <BitBreadcrumb Id="bc-ext" Items="_externalIconItems" />
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <BitBreadcrumb Id="bc-size-none" Items="_basicItems" MaxDisplayedItems="3" OverflowIndex="2" />
+    <BitBreadcrumb Id="bc-size-Small" Items="_basicItems" Size="BitSize.Small" MaxDisplayedItems="3" OverflowIndex="2" />
+    <BitBreadcrumb Id="bc-size-Medium" Items="_basicItems" Size="BitSize.Medium" MaxDisplayedItems="3" OverflowIndex="2" />
+    <BitBreadcrumb Id="bc-size-Large" Items="_basicItems" Size="BitSize.Large" MaxDisplayedItems="3" OverflowIndex="2" />
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style, Class, item Style/Class, Styles, Classes, Visibility, HtmlAttributes">
+    <BitBreadcrumb Id="bc-class" Items="_basicItems" Class="custom-class" />
+    <BitBreadcrumb Id="bc-style" Items="_basicItems" Style="font-style: italic; margin-left: 17px;" />
+    <BitBreadcrumb Id="bc-item-style" Items="_styledItems" />
+    <BitBreadcrumb Id="bc-styles" Items="_overflowSelectedItems" MaxDisplayedItems="2" IconPlacement="BitPlacement.Start"
+                   Styles="@(new() { Root = "padding-top: 3px;",
+                                     Overlay = "background-color: rgba(0, 0, 0, 0.2);",
+                                     ItemContainer = "padding-bottom: 5px;",
+                                     OverflowButton = "color: rgb(1, 2, 3);",
+                                     OverflowButtonIcon = "color: rgb(4, 5, 6);",
+                                     ItemWrapper = "padding-left: 2px;",
+                                     Item = "color: rgb(7, 8, 9);",
+                                     ItemIcon = "color: rgb(10, 11, 12);",
+                                     ItemText = "letter-spacing: 1px;",
+                                     SelectedItem = "background-color: rgb(13, 14, 15);",
+                                     Divider = "padding-right: 4px;",
+                                     DividerIcon = "color: rgb(16, 17, 18);",
+                                     Callout = "border: 2px solid rgb(19, 20, 21);",
+                                     CalloutContainer = "padding-top: 6px;",
+                                     OverflowItemWrapper = "padding-left: 3px;",
+                                     OverflowItem = "color: rgb(22, 23, 24);",
+                                     OverflowItemIcon = "color: rgb(25, 26, 27);",
+                                     OverflowItemText = "letter-spacing: 2px;",
+                                     OverflowSelectedItem = "background-color: rgb(28, 29, 30);" })" />
+    <BitBreadcrumb Id="bc-classes" Items="_overflowSelectedItems" MaxDisplayedItems="2"
+                   Classes="@(new() { Root = "c-root", Overlay = "c-overlay", ItemContainer = "c-container",
+                                      OverflowButton = "c-obt", OverflowButtonIcon = "c-obt-icon", ItemWrapper = "c-wrapper",
+                                      Item = "c-item", ItemIcon = "c-item-icon", ItemText = "c-item-text", SelectedItem = "c-selected",
+                                      Divider = "c-divider", DividerIcon = "c-divider-icon", Callout = "c-callout",
+                                      CalloutContainer = "c-callout-container", OverflowItemWrapper = "c-ofi-wrapper",
+                                      OverflowItem = "c-ofi", OverflowItemIcon = "c-ofi-icon", OverflowItemText = "c-ofi-text",
+                                      OverflowSelectedItem = "c-ofi-selected" })" />
+    <BitBreadcrumb Id="bc-styles-sel" Items="_basicItems"
+                   Styles="@(new() { SelectedItem = "background-color: rgb(13, 14, 15);" })"
+                   Classes="@(new() { SelectedItem = "c-selected" })" />
+    <BitBreadcrumb Id="bc-visibility" Items="_basicItems" Visibility="_visibility" />
+    <button id="btn-visibility-hidden" type="button" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-visibility-collapsed" type="button" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+    <button id="btn-visibility-visible" type="button" @onclick="() => _visibility = BitVisibility.Visible">Visible</button>
+    <BitBreadcrumb Id="bc-attrs" Items="_basicItems" data-test="breadcrumb-attr" aria-label="Splatted trail" />
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div id="css-vars-ancestor" style="--bit-Breadcrumb-color: rgb(124, 58, 237); --bit-Breadcrumb-selected-color: rgb(190, 24, 93); --bit-Breadcrumb-divider-color: rgb(167, 139, 250); --bit-Breadcrumb-item-radius: 9px; --bit-Breadcrumb-font-size: 19px; --bit-Breadcrumb-item-height: 40px; --bit-Breadcrumb-divider-spacing: 7px; --bit-Breadcrumb-selected-font-weight: 800; --bit-Breadcrumb-callout-background: rgb(10, 20, 30); --bit-Breadcrumb-callout-radius: 12px; --bit-Breadcrumb-hover-background: rgb(240, 230, 220);">
+        <BitBreadcrumb Id="bc-css-vars" Items="_basicItems" MaxDisplayedItems="3" OverflowIndex="1" />
+        <BitBreadcrumb Id="bc-css-vars-color" Items="_basicItems" Color="BitColor.Error" Size="BitSize.Small" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitBreadcrumb Id="bc-rtl" Dir="BitDir.Rtl" Items="_basicItems" MaxDisplayedItems="3" OverflowIndex="1" />
+    <div dir="rtl">
+        <BitBreadcrumb Id="bc-rtl-inherited" Items="_basicItems" />
+    </div>
+    <BitBreadcrumb Id="bc-ltr" Items="_basicItems" />
+</E2ESection>
+
+<E2ESection Id="escape-dialog" Title="Overflow menu inside a dialog">
+    <button id="btn-open-dialog" type="button" @onclick="() => _dialogOpen = true">Open dialog</button>
+    <span id="dialog-state">@(_dialogOpen ? "open" : "closed")</span>
+    <BitDialog @bind-IsOpen="_dialogOpen" AutoFocus="false" Title="Dialog">
+        <Body>
+            <BitBreadcrumb Id="bc-in-dialog" Items="_basicItems" MaxDisplayedItems="2" />
+        </Body>
+    </BitDialog>
+</E2ESection>
+
+<E2ESection Id="custom" Title="Custom class through NameSelectors">
+    <BitBreadcrumb Id="bc-custom" Items="_crumbs" NameSelectors="_crumbSelectors" MaxDisplayedItems="3" OverflowIndex="1" />
+    <span id="custom-clicked">@_customClicked</span>
+</E2ESection>
+
+<E2ESection Id="options" Title="BitBreadcrumbOption markup">
+    <BitBreadcrumb Id="bc-options" TItem="BitBreadcrumbOption" MaxDisplayedItems="_optionsMax" OverflowIndex="1">
+        <BitBreadcrumbOption Text="Option 1" Href="/e2e/breadcrumb?step=1" />
+        @if (_showMiddleOption)
+        {
+            <BitBreadcrumbOption Text="Option middle" OnClick="@(() => Clicked("Option middle"))" />
+        }
+        <BitBreadcrumbOption Text="@_optionTwoText" OnClick="() => Clicked(_optionTwoText)" IconName="@BitIconName.Folder" />
+        <BitBreadcrumbOption Text="Option 3" OnClick="@(() => Clicked("Option 3"))" IsDisabled="_optionThreeDisabled" />
+        <BitBreadcrumbOption Text="Option 4" IsSelected Title="The current option" Class="option-four" Style="text-decoration: underline;" />
+    </BitBreadcrumb>
+    <button id="btn-toggle-middle" type="button" @onclick="() => _showMiddleOption = !_showMiddleOption">Toggle middle option</button>
+    <button id="btn-rename-two" type="button" @onclick="@(() => _optionTwoText = "Option two")">Rename option 2</button>
+    <button id="btn-disable-three" type="button" @onclick="() => _optionThreeDisabled = !_optionThreeDisabled">Toggle option 3</button>
+    <button id="btn-options-max" type="button" @onclick="() => _optionsMax = _optionsMax == 0 ? 3u : 0u">Toggle options max</button>
+    <BitBreadcrumb Id="bc-reorder" TItem="BitBreadcrumbOption" AutoReorderOptions>
+        @foreach (var name in _orderedNames)
+        {
+            <BitBreadcrumbOption @key="name" Key="@name" Text="@name" />
+        }
+    </BitBreadcrumb>
+    <button id="btn-reverse" type="button" @onclick="() => _orderedNames.Reverse()">Reverse</button>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Unmount while the overflow menu is open">
+    <button id="btn-toggle-mounted" type="button" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    <span id="mounted-state">@_mounted</span>
+    @if (_mounted)
+    {
+        <BitBreadcrumb Id="bc-unmount" Items="_basicItems" MaxDisplayedItems="2" />
+    }
+</E2ESection>
+
+<div style="height:400px" aria-hidden="true"></div>
+
+<E2EStatus />
+
+@code {
+    public class Crumb
+    {
+        public string? Name { get; set; }
+        public string? Address { get; set; }
+        public bool Current { get; set; }
+        public bool Off { get; set; }
+        public string? Css { get; set; }
+        public string? Tooltip { get; set; }
+        public string? Glyph { get; set; }
+    }
+
+    private static readonly BitColor[] _colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground,
+        BitColor.TertiaryForeground, BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    private readonly List<BitBreadcrumbItem> _basicItems =
+    [
+        new() { Text = "Item 1", Href = "/e2e/breadcrumb?step=1" },
+        new() { Text = "Item 2", Href = "/e2e/breadcrumb?step=2" },
+        new() { Text = "Item 3", Href = "/e2e/breadcrumb?step=3" },
+        new() { Text = "Item 4", Href = "/e2e/breadcrumb?step=4", IsSelected = true }
+    ];
+
+    private readonly List<BitBreadcrumbItem> _iconOnlySelected =
+    [
+        new() { Text = "Item 1", Href = "/e2e/breadcrumb?step=1" },
+        new() { IconName = BitIconName.Home, AriaLabel = "Current home", IsSelected = true }
+    ];
+
+    private readonly List<BitBreadcrumbItem> _disabledItems =
+    [
+        new() { Text = "Item 1", Href = "/e2e/breadcrumb?step=1", IsDisabled = true },
+        new() { Text = "Item 2", Href = "/e2e/breadcrumb?step=2", IsDisabled = true },
+        new() { Text = "Item 3", Href = "/e2e/breadcrumb?step=3" },
+        new() { Text = "Item 4", Href = "/e2e/breadcrumb?step=4", IsSelected = true }
+    ];
+
+    private readonly List<BitBreadcrumbItem> _buttonDisabledItems =
+    [
+        new() { Text = "Button 1", IsDisabled = true },
+        new() { Text = "Button 2" },
+        new() { Text = "Button 3", IsSelected = true }
+    ];
+
+    private readonly List<BitBreadcrumbItem> _targetItems =
+    [
+        new() { Text = "Item 1", Href = "/e2e/breadcrumb?step=1" },
+        new() { Text = "Site", Href = "/e2e/breadcrumb?step=site", Target = "_blank", Title = "Opens in a new tab" },
+        new() { Text = "Labelled", Href = "/e2e/breadcrumb?step=labelled", Target = "_blank", AriaLabel = "Labelled site" },
+        new() { Text = "Item 4", Href = "/e2e/breadcrumb?step=4", IsSelected = true, Rel = BitLinkRels.NoFollow }
+    ];
+
+    private readonly List<BitBreadcrumbItem> _phoneticItems =
+    [
+        new() { Text = "Alpha" },
+        new() { Text = "Bravo" },
+        new() { Text = "Charlie" },
+        new() { Text = "Delta" },
+        new() { Text = "Echo", IsSelected = true }
+    ];
+
+    private readonly List<BitBreadcrumbItem> _longItems =
+    [
+        new() { Text = "Very long folder name 1", Href = "/e2e/breadcrumb?step=1", Title = "Folder 1" },
+        new() { Text = "Very long folder name 2", Href = "/e2e/breadcrumb?step=2", Title = "Folder 2" },
+        new() { Text = "Very long folder name 3", Href = "/e2e/breadcrumb?step=3", Title = "Folder 3" },
+        new() { Text = "Very long folder name 4", Href = "/e2e/breadcrumb?step=4", Title = "Folder 4", IsSelected = true }
+    ];
+
+    private readonly List<BitBreadcrumbItem> _longItemsNoTitle =
+    [
+        new() { Text = "Very long folder name 1", Href = "/e2e/breadcrumb?step=1" },
+        new() { Text = "Very long folder name 2", Href = "/e2e/breadcrumb?step=2" },
+        new() { Text = "Very long folder name 3", Href = "/e2e/breadcrumb?step=3" },
+        new() { Text = "Very long folder name 4", Href = "/e2e/breadcrumb?step=4", IsSelected = true }
+    ];
+
+    private readonly List<BitBreadcrumbItem> _sixItems =
+    [
+        new() { Text = "Item 1" },
+        new() { Text = "Item 2" },
+        new() { Text = "Item 3" },
+        new() { Text = "Item 4" },
+        new() { Text = "Item 5" },
+        new() { Text = "Item 6", IsSelected = true }
+    ];
+
+    private readonly List<BitBreadcrumbItem> _iconItems =
+    [
+        new() { Text = "Item 1", Href = "/e2e/breadcrumb?step=1", IconName = BitIconName.Home },
+        new() { Text = "Item 2", Href = "/e2e/breadcrumb?step=2", IconName = BitIconName.Folder },
+        new() { Text = "Item 3", Href = "/e2e/breadcrumb?step=3", IconName = BitIconName.Document, IconPlacement = BitPlacement.Start },
+        new() { Text = "Item 4", Href = "/e2e/breadcrumb?step=4", IsSelected = true, IconName = BitIconName.Page }
+    ];
+
+    private readonly List<BitBreadcrumbItem> _homeItems =
+    [
+        new() { IconName = BitIconName.Home, AriaLabel = "Home", Href = "/e2e/breadcrumb?step=home" },
+        new() { Text = "Item 2", Href = "/e2e/breadcrumb?step=2" },
+        new() { Text = "Item 3", Href = "/e2e/breadcrumb?step=3", IsSelected = true }
+    ];
+
+    private readonly List<BitBreadcrumbItem> _templateItems =
+    [
+        new() { Text = "Item 1", Href = "/e2e/breadcrumb?step=1", Template = item => @<span class="own-tpl" style="color: rgb(0, 128, 0)">@item.Text</span>, OverflowTemplate = item => @<span class="own-overflow-tpl">~@item.Text</span> },
+        new() { Text = "Item 2", Href = "/e2e/breadcrumb?step=2", OverflowTemplate = item => @<span class="own-overflow-tpl">~@item.Text</span> },
+        new() { Text = "Item 3", Href = "/e2e/breadcrumb?step=3" },
+        new() { Text = "Item 4", Href = "/e2e/breadcrumb?step=4", IsSelected = true }
+    ];
+
+    private readonly List<BitBreadcrumbItem> _dynamicItems =
+    [
+        new() { Text = "Level 1" },
+        new() { Text = "Level 2" },
+        new() { Text = "Level 3" },
+        new() { Text = "Level 4", IsSelected = true }
+    ];
+
+    private List<BitBreadcrumbItem> _ownClickItems = [];
+
+    private readonly List<BitBreadcrumbItem> _externalIconItems =
+    [
+        new() { Text = "Home", Icon = "fa-solid fa-house" },
+        new() { Text = "Products", Icon = BitIconInfo.Css("fa-solid fa-box") },
+        new() { Text = "Electronics", Icon = BitIconInfo.Fa("solid microchip") },
+        new() { Text = "Laptops", Icon = BitIconInfo.Bi("laptop-fill"), IconName = BitIconName.Home, IsSelected = true }
+    ];
+
+    private readonly List<BitBreadcrumbItem> _styledItems =
+    [
+        new() { Text = "Item 1", Href = "/e2e/breadcrumb?step=1", Class = "custom-item-1", Style = "color: rgb(30, 144, 255);" },
+        new() { Text = "Item 2", Href = "/e2e/breadcrumb?step=2", Class = "custom-item-2" },
+        new() { Text = "Item 3", Href = "/e2e/breadcrumb?step=3", IsSelected = true, Style = "color: rgb(0, 255, 255);" }
+    ];
+
+    private readonly List<BitBreadcrumbItem> _overflowSelectedItems =
+    [
+        new() { Text = "Item 1", Href = "/e2e/breadcrumb?step=1", IsSelected = true, IconName = BitIconName.Home },
+        new() { Text = "Item 2", Href = "/e2e/breadcrumb?step=2", IconName = BitIconName.Folder },
+        new() { Text = "Item 3", Href = "/e2e/breadcrumb?step=3", IconName = BitIconName.Folder },
+        new() { Text = "Item 4", Href = "/e2e/breadcrumb?step=4", IconName = BitIconName.Page }
+    ];
+
+    private readonly BitBreadcrumbParams[] _breadcrumbParams =
+    [
+        new() { DividerText = "/", MaxDisplayedItems = 3, OverflowIndex = 1, SelectedItemAsText = true }
+    ];
+
+    private readonly List<Crumb> _crumbs =
+    [
+        new() { Name = "Root", Address = "/e2e/breadcrumb?step=root", Glyph = BitIconName.Home, Tooltip = "The root" },
+        new() { Name = "Docs", Address = "/e2e/breadcrumb?step=docs", Off = true },
+        new() { Name = "Guides", Css = "guides-crumb" },
+        new() { Name = "Intro", Current = true }
+    ];
+
+    private BitBreadcrumbNameSelectors<Crumb> _crumbSelectors = default!;
+
+    private string _url = "";
+    private string? _clicked;
+    private int _clickCount;
+
+    private bool _disabled = true;
+    private int _disabledClicks;
+    private int _disabledActivations;
+    private int _disabledHovers;
+
+    private uint _runtimeMax;
+    private string? _ownClick;
+    private BitVisibility _visibility = BitVisibility.Visible;
+    private bool _dialogOpen;
+    private string? _customClicked;
+
+    private bool _showMiddleOption;
+    private string _optionTwoText = "Option 2";
+    private bool _optionThreeDisabled;
+    private uint _optionsMax;
+    private readonly List<string> _orderedNames = ["Apple", "Banana", "Cherry"];
+
+    private bool _mounted = true;
+
+    protected override void OnInitialized()
+    {
+        _crumbSelectors = new()
+        {
+            Text = { Selector = c => c.Name },
+            Href = { Name = nameof(Crumb.Address) },
+            IsSelected = { Selector = c => c.Current },
+            IsDisabled = { Name = nameof(Crumb.Off) },
+            Class = { Selector = c => c.Css },
+            Title = { Name = nameof(Crumb.Tooltip) },
+            IconName = { Selector = c => c.Glyph },
+            OnClick = c => { _customClicked = c.Name; InvokeAsync(StateHasChanged); }
+        };
+
+        _ownClickItems =
+        [
+            new() { Text = "Own 1", OnClick = item => { _ownClick = item.Text; InvokeAsync(StateHasChanged); } },
+            new() { Text = "Own 2", OnClick = item => { _ownClick = item.Text; InvokeAsync(StateHasChanged); }, IsSelected = true }
+        ];
+
+        Navigation.LocationChanged += OnLocationChanged;
+        _url = new Uri(Navigation.Uri).PathAndQuery;
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        _url = new Uri(e.Location).PathAndQuery;
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void Clicked(string? text)
+    {
+        _clicked = text;
+        _clickCount++;
+    }
+
+    // Going back up to an item drops the levels below it, which makes it the current page.
+    private void GoUpTo(BitBreadcrumbItem item)
+    {
+        var index = _dynamicItems.IndexOf(item);
+        _dynamicItems.RemoveRange(index + 1, _dynamicItems.Count - index - 1);
+        item.IsSelected = true;
+    }
+
+    private void AddItem()
+    {
+        _dynamicItems[^1].IsSelected = false;
+        _dynamicItems.Add(new() { Text = $"Level {_dynamicItems.Count + 1}", IsSelected = true });
+    }
+}

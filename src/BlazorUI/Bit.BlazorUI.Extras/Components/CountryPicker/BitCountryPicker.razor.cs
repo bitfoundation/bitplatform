@@ -21,6 +21,13 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
     private bool _searchBoxKeysWired;
     private bool _internalIsOpenChange;
     private bool _pendingCalloutToggle;
+
+    // Whether the callout is shown on the page, which is not yet the case in a render that runs while the handler
+    // opening it is still awaiting: that render has IsOpen already, but the callout is only shown once the toggle is
+    // asked for, so a scroll of its active option made there would be a scroll of a hidden list - lost, and marked
+    // done all the same, which left the selected option out of sight on the first opening.
+    private bool _isCalloutDisplayed;
+
     private bool _lastCanOpen = true;
     private string? _announcement;
     private bool _announcementMarker;
@@ -395,6 +402,8 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
     {
         if (IsOpen is false) return;
 
+        _isCalloutDisplayed = false;
+
         // The JS side has already hidden this callout to make room for another one, or because the focus moved on
         // from both the field and the list, so the state is brought in line without toggling it a second time.
         if (await AssignIsOpenInternal(false) is false) return;
@@ -631,7 +640,7 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
 
         // Keep the active option visible during keyboard navigation. Done after render so the option element is
         // guaranteed to exist and the callout is laid out.
-        if (IsCalloutShown && _list.ActiveIndex >= 0 && _list.ActiveIndex != _list.LastScrolledIndex)
+        if (_isCalloutDisplayed && IsCalloutShown && _list.ActiveIndex >= 0 && _list.ActiveIndex != _list.LastScrolledIndex)
         {
             _list.LastScrolledIndex = _list.ActiveIndex;
             await _js.BitExtrasScrollOptionIntoView(GetOptionId(_list.ActiveIndex));
@@ -1169,7 +1178,7 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
             isCalloutOpen: shown,
             responsiveMode: Responsive ? BitResponsiveMode.Panel : BitResponsiveMode.None,
             dropDirection: DropDirection,
-            isRtl: Dir is BitDir.Rtl,
+            isRtl: ExplicitRtl,
             scrollContainerId: _scrollContainerId,
             scrollOffset: NoSearchBox ? 0 : 32,
             headerId: "",
@@ -1184,6 +1193,8 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
 
         // Registered in the same call that showed the list, after the same lookups the showing depends on.
         _tabOutRegistered = tabOut;
+
+        _isCalloutDisplayed = shown;
     }
 
     private Task HandleOnSearchInput(ChangeEventArgs e) => ApplySearchText(e.Value?.ToString());

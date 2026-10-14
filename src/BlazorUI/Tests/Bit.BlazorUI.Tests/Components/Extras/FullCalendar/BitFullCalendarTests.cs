@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
@@ -1191,6 +1192,35 @@ public class BitFullCalendarTests : BunitTestContext
         });
 
         Assert.AreEqual("rtl", component.Find(".bit-bfc").GetAttribute("dir"));
+    }
+
+    [TestMethod]
+    public void BitFullCalendarShouldFollowACalendarSwitchedOnACultureOfTheSameName()
+    {
+        // DateTimeFormat.Calendar is the documented way of switching the calendar of a culture: the name stays, and so
+        // does CultureInfo.Calendar (the culture's default), so only the calendar the format reads tells the two apart.
+        var hijri = CultureInfo.GetCultureInfo("ar-SA");
+        var gregorian = (CultureInfo)hijri.Clone();
+        gregorian.DateTimeFormat.Calendar = new GregorianCalendar();
+        var anchor = new DateTime(2026, 3, 18);
+
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.Culture, hijri);
+            parameters.Add(p => p.DefaultDate, anchor);
+        });
+
+        Assert.IsInstanceOfType<UmAlQuraCalendar>(component.Instance.State.Culture.DateTimeFormat.Calendar);
+        Assert.AreEqual(anchor.ToString("Y", hijri), component.Find(".bit-bfc-header-title").TextContent.Trim());
+
+        component.Render(parameters => parameters.Add(p => p.Culture, gregorian));
+
+        // The state took the switched culture, and the month grid is laid out in its calendar: March 2026, 31 days.
+        Assert.IsInstanceOfType<GregorianCalendar>(component.Instance.State.Culture.DateTimeFormat.Calendar);
+        Assert.AreEqual(anchor.ToString("Y", gregorian), component.Find(".bit-bfc-header-title").TextContent.Trim());
+        Assert.AreNotEqual(anchor.ToString("Y", hijri), component.Find(".bit-bfc-header-title").TextContent.Trim());
+        Assert.AreEqual(31, component.FindAll(".bit-bfc-month-cell:not(.other-month)").Count);
     }
 
     [TestMethod]

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
@@ -679,6 +680,109 @@ public class BitThemeSwitcherBehaviorTests : BunitTestContext
         });
 
         Assert.IsTrue(component.Find(".bit-ths").GetAttribute("style")!.Contains("display:none"));
+    }
+
+    [TestMethod]
+    public void BitThemeSwitcherShouldKeepItsPlaceWhenHidden()
+    {
+        RegisterServices();
+
+        var component = RenderComponent<BitThemeSwitcher>(parameters =>
+        {
+            parameters.Add(p => p.Visibility, BitVisibility.Hidden);
+            parameters.Add(p => p.Style, "gap:2rem");
+        });
+
+        var style = component.Find(".bit-ths").GetAttribute("style")!;
+        StringAssert.Contains(style, "visibility:hidden");
+        StringAssert.Contains(style, "gap:2rem");
+    }
+
+    #endregion
+
+    #region Splatted attributes and prerendering
+
+    [TestMethod]
+    public void BitThemeSwitcherShouldSplatTheHtmlAttributesOnTheRoot()
+    {
+        RegisterServices();
+
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitThemeSwitcher>(0);
+            builder.AddAttribute(1, "data-test", "root");
+            builder.AddAttribute(2, "lang", "fa");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-ths");
+
+        Assert.AreEqual("root", root.GetAttribute("data-test"));
+        Assert.AreEqual("fa", root.GetAttribute("lang"));
+        // The attributes are the root's alone.
+        Assert.IsNull(component.Find(".bit-ths-lgt").GetAttribute("data-test"));
+        Assert.IsNull(component.Find(".bit-ths-dds").GetAttribute("data-test"));
+    }
+
+    [TestMethod]
+    [DataRow(false)]
+    [DataRow(true)]
+    public void BitThemeSwitcherShouldDropTheSplattedActivationHandlersWhileDisabled(bool disabled)
+    {
+        RegisterServices();
+        var clicks = 0;
+        var hovers = 0;
+
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitThemeSwitcher>(0);
+            builder.AddAttribute(1, nameof(BitThemeSwitcher.Disabled), disabled);
+            builder.AddAttribute(2, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => clicks++));
+            builder.AddAttribute(3, "onmouseover", EventCallback.Factory.Create<MouseEventArgs>(this, () => hovers++));
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-ths");
+
+        // A click of a scheme button bubbles up to the root, and a screen reader dispatches one to a disabled button
+        // whatever its pointer-events say; a hover only follows the pointer and is kept.
+        Assert.AreEqual(disabled is false, root.HasAttribute("blazor:onclick"));
+        Assert.IsTrue(root.HasAttribute("blazor:onmouseover"));
+
+        root.MouseOver();
+
+        Assert.AreEqual(1, hovers);
+        Assert.AreEqual(0, clicks);
+    }
+
+    [TestMethod]
+    public async Task BitThemeSwitcherShouldPrerenderTheInitialDesignSystemAndBothSchemeButtons()
+    {
+        // No OnAfterRender runs before the page is interactive, so the applied theme is never read back: the picker shows
+        // what InitialTheme names, and both scheme buttons are in the markup for the stylesheet to pick between.
+        var html = await Prerenderer.RenderAsync<BitThemeSwitcher>(new Dictionary<string, object?>
+        {
+            [nameof(BitThemeSwitcher.InitialTheme)] = BitThemePresets.MaterialDark,
+        });
+
+        var document = new AngleSharp.Html.Parser.HtmlParser().ParseDocument($"<!DOCTYPE html><html><body>{html}</body></html>");
+
+        Assert.AreEqual("Material", document.QuerySelector(".bit-ths-dds .bit-drp-tdp")!.TextContent.Trim());
+        Assert.AreEqual(1, document.QuerySelectorAll(".bit-ths-drk").Length);
+        Assert.AreEqual(1, document.QuerySelectorAll(".bit-ths-lgt").Length);
+        Assert.AreEqual("group", document.QuerySelector(".bit-ths")!.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public async Task BitThemeSwitcherShouldPrerenderOnlyTheRequestedParts()
+    {
+        var html = await Prerenderer.RenderAsync<BitThemeSwitcher>(new Dictionary<string, object?>
+        {
+            [nameof(BitThemeSwitcher.NoDesignSystem)] = true,
+        });
+
+        Assert.IsFalse(html.Contains("bit-ths-dds"));
+        StringAssert.Contains(html, "bit-ths-csb");
     }
 
     #endregion

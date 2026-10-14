@@ -1,0 +1,40 @@
+﻿@namespace Bit.BlazorUI.Tests.Components.Inputs.ChoiceGroup
+@using System.Collections.Generic
+
+@* A choice group bound to a required choice inside an EditForm, so the tests can watch the invalid state come and go
+   with the submits and the picks. *@
+
+<EditForm Model="@TestModel" OnValidSubmit="@HandleValidSubmit" OnInvalidSubmit="@HandleInvalidSubmit">
+    <DataAnnotationsValidator />
+
+    <BitChoiceGroup TItem="BitChoiceGroupItem<string>" TValue="string"
+                    Items="Items"
+                    Required="Required"
+                    NoValidate="NoValidate"
+                    @bind-Value="@TestModel.Choice" />
+
+    <ValidationMessage For="@(() => TestModel.Choice)" />
+</EditForm>
+
+@code {
+    [Parameter] public bool Required { get; set; }
+
+    [Parameter] public bool NoValidate { get; set; }
+
+    [Parameter] public BitChoiceGroupTestModel TestModel { get; set; } = new();
+
+    [Parameter]
+    public List<BitChoiceGroupItem<string>> Items { get; set; } =
+    [
+        new() { Text = "Item A", Value = "A" },
+        new() { Text = "Item B", Value = "B" },
+    ];
+
+    public int ValidCount { get; set; }
+
+    public int InvalidCount { get; set; }
+
+    private void HandleValidSubmit() => ValidCount++;
+
+    private void HandleInvalidSubmit() => InvalidCount++;
+}

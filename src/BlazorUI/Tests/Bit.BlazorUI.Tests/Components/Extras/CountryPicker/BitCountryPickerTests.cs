@@ -1677,6 +1677,22 @@ public class BitCountryPickerTests : BunitTestContext
                                 .Arguments[1]!;
     }
 
+    [TestMethod,
+        DataRow(null, null),
+        DataRow(BitDir.Rtl, true),
+        DataRow(BitDir.Ltr, false),
+        DataRow(BitDir.Auto, null)]
+    public void BitCountryPickerShouldHandTheCalloutOnlyADirectionItsDirNames(BitDir? dir, bool? expected)
+    {
+        var component = RenderComponent<BitCountryPicker>(parameters => parameters.Add(p => p.Dir, dir));
+
+        component.Find("button.bit-cnp-fld").Click();
+
+        // A Dir left unset inherits the page's direction, and Auto takes the content's: the script reads it off the
+        // element itself then (isRtl: null), rather than being told the page is left to right.
+        Assert.AreEqual(expected, LastToggle().Arguments[9]);
+    }
+
     private int CountInvocations(string identifier)
     {
         return Context.JSInterop.Invocations.Count(i => i.Identifier == identifier);

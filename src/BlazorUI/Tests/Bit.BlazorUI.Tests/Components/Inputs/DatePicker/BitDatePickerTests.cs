@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading.Tasks;
 using Bunit;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -104,12 +107,8 @@ public class BitDatePickerTests : BunitTestContext
             parameters.Add(p => p.OnChange, () => changedDateValue++);
         });
 
-        var dateItems = component.FindAll(".bit-dtp-dbt");
-
-        Random random = new();
-        int randomNumber = random.Next(0, dateItems.Count - 1);
-
-        dateItems[randomNumber].Click();
+        // A day of the displayed month rather than one picked at random, so a failure is the same failure every run.
+        component.FindAll(".bit-dtp-dbt").First(b => b.TextContent.Trim() == "20" && b.ClassList.Contains("bit-dtp-dbo") is false).Click();
 
         Assert.AreEqual(count, changedDateValue);
     }
@@ -118,6 +117,7 @@ public class BitDatePickerTests : BunitTestContext
     public void BitDatePickerCalendarSelectTodayDate()
     {
         var isOpen = true;
+        var today = GetLocalDate(2026, 1, 15);
 
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
 
@@ -125,17 +125,16 @@ public class BitDatePickerTests : BunitTestContext
         {
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
             parameters.Add(p => p.Disabled, false);
+            parameters.Add(p => p.Today, today);
         });
 
         Assert.IsNull(component.Instance.Value);
 
-        var today = component.Find(".bit-dtp-dtd");
+        component.Find(".bit-dtp-dtd").Click();
 
-        today.Click();
-
+        // The picked day is today's date at the start of the day, in the offset of the component's time zone.
         Assert.IsNotNull(component.Instance.Value);
-        Assert.AreEqual(component.Instance.Value.Value.Date, DateTimeOffset.Now.Date);
-        Assert.AreEqual(component.Instance.Value.Value.Offset, DateTimeOffset.Now.Offset);
+        Assert.AreEqual(today, component.Instance.Value);
     }
 
     [TestMethod]
@@ -170,7 +169,6 @@ public class BitDatePickerTests : BunitTestContext
 
         Assert.AreEqual(1, component.Instance.ValidCount);
         Assert.AreEqual(1, component.Instance.InvalidCount);
-        Assert.AreEqual(component.Instance.ValidCount, component.Instance.InvalidCount);
     }
 
     [TestMethod]
@@ -3237,7 +3235,8 @@ public class BitDatePickerTests : BunitTestContext
 
         component.FindAll(".bit-dtp-tbt")[0].PointerDown();
 
-        await Task.Delay(600);
+        // Long enough for a spin that had started to have stepped again, short enough not to hold the suite up.
+        await Task.Delay(50);
 
         Assert.AreEqual(11, value!.Value.Hour);
 
@@ -5011,5 +5010,663 @@ public class BitDatePickerTests : BunitTestContext
         Assert.IsTrue(focus >= 0);
         Assert.IsTrue(toggle >= 0);
         Assert.IsTrue(focus < toggle);
+    }
+
+    // ── The field and its chrome ──────────────────────────────────────────────
+
+    [TestMethod]
+    public void BitDatePickerShouldRespectUnderlinedHasBorderAndIconPlacement()
+    {
+        var component = RenderComponent<BitDatePicker>();
+
+        var root = component.Find(".bit-dtp");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-dtp-und"));
+        Assert.IsFalse(root.ClassList.Contains("bit-dtp-nbd"));
+        Assert.IsFalse(root.ClassList.Contains("bit-dtp-lic"));
+        Assert.IsFalse(root.ClassList.Contains("bit-dtp-sta"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Underlined, true);
+            parameters.Add(p => p.HasBorder, false);
+            parameters.Add(p => p.IconPlacement, BitPlacement.Start);
+        });
+
+        root = component.Find(".bit-dtp");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-dtp-und"));
+        Assert.IsTrue(root.ClassList.Contains("bit-dtp-nbd"));
+        Assert.IsTrue(root.ClassList.Contains("bit-dtp-lic"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerStandaloneShouldCarryTheValueInAHiddenInput()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Name, "birthday");
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.DateFormat, "yyyy-MM-dd");
+            parameters.Add(p => p.Value, GetLocalDate(2026, 1, 15));
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { ["data-test"] = "carrier" });
+        });
+
+        Assert.IsTrue(component.Find(".bit-dtp").ClassList.Contains("bit-dtp-sta"));
+        // No field to click, no overlay to click away: the calendar below is the picker.
+        Assert.IsEmpty(component.FindAll(".bit-dtp-wrp"));
+        Assert.IsEmpty(component.FindAll(".bit-dtp-ovl"));
+
+        var carrier = component.Find("input.bit-input-hidden");
+
+        Assert.AreEqual("2026-01-15", carrier.GetAttribute("value"));
+        Assert.AreEqual("birthday", carrier.GetAttribute("name"));
+        Assert.AreEqual("-1", carrier.GetAttribute("tabindex"));
+        Assert.AreEqual("carrier", carrier.GetAttribute("data-test"));
+        Assert.IsTrue(carrier.HasAttribute("readonly"));
+    }
+
+    [TestMethod,
+        DataRow(false, true),
+        DataRow(true, false)
+    ]
+    public void BitDatePickerShouldMarkARequiredPickerOnlyWhileEnabled(bool disabled, bool expected)
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.Disabled, disabled);
+        });
+
+        // The class is what draws the asterisk after the label, which a disabled picker asks nothing for.
+        Assert.AreEqual(expected, component.Find(".bit-dtp").ClassList.Contains("bit-dtp-req"));
+        Assert.IsTrue(component.Find(".bit-dtp-inp").HasAttribute("required"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldFollowTheFocusOfItsField()
+    {
+        var focus = 0;
+        var focusIn = 0;
+        var focusOut = 0;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.OnFocus, () => focus++);
+            parameters.Add(p => p.OnFocusIn, () => focusIn++);
+            parameters.Add(p => p.OnFocusOut, () => focusOut++);
+            parameters.Add(p => p.Classes, new BitDatePickerClassStyles { Focused = "custom-focused" });
+            parameters.Add(p => p.Styles, new BitDatePickerClassStyles { Focused = "outline: 1px;" });
+        });
+
+        Assert.IsFalse(component.Find(".bit-dtp").ClassList.Contains("bit-dtp-foc"));
+
+        component.Find(".bit-dtp-inp").FocusIn();
+
+        var root = component.Find(".bit-dtp");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-dtp-foc"));
+        Assert.IsTrue(root.ClassList.Contains("custom-focused"));
+        StringAssert.Contains(root.GetAttribute("style"), "outline: 1px;");
+        Assert.AreEqual(1, focusIn);
+
+        component.Find(".bit-dtp-inp").Focus();
+
+        Assert.AreEqual(1, focus);
+
+        component.Find(".bit-dtp-inp").FocusOut();
+
+        root = component.Find(".bit-dtp");
+
+        Assert.AreEqual(1, focusOut);
+        Assert.IsFalse(root.ClassList.Contains("bit-dtp-foc"));
+        Assert.IsFalse(root.ClassList.Contains("custom-focused"));
+        Assert.IsFalse((root.GetAttribute("style") ?? string.Empty).Contains("outline: 1px;"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerDisabledShouldReportNoFocus()
+    {
+        var focusIn = 0;
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+            parameters.Add(p => p.OnFocusIn, () => focusIn++);
+        });
+
+        component.Find(".bit-dtp-inp").FocusIn();
+
+        Assert.AreEqual(0, focusIn);
+        Assert.IsFalse(component.Find(".bit-dtp").ClassList.Contains("bit-dtp-foc"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldRenderItsLabelAndPlaceholder()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Birthday");
+            parameters.Add(p => p.Placeholder, "Pick a day");
+            parameters.Add(p => p.Classes, new BitDatePickerClassStyles { Label = "custom-label" });
+            parameters.Add(p => p.Styles, new BitDatePickerClassStyles { Label = "color: red;" });
+        });
+
+        var label = component.Find("label.bit-dtp-lbl");
+        var input = component.Find(".bit-dtp-inp");
+
+        Assert.AreEqual("Birthday", label.TextContent.Trim());
+        Assert.AreEqual(input.Id, label.GetAttribute("for"));
+        Assert.AreEqual(label.Id, input.GetAttribute("aria-labelledby"));
+        Assert.IsTrue(label.ClassList.Contains("custom-label"));
+        Assert.AreEqual("color: red;", label.GetAttribute("style"));
+        Assert.AreEqual("Pick a day", input.GetAttribute("placeholder"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerWithoutALabelShouldNotLabelItsInput()
+    {
+        var component = RenderComponent<BitDatePicker>();
+
+        Assert.IsEmpty(component.FindAll("label"));
+        Assert.IsNull(component.Find(".bit-dtp-inp").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldRespectTheFieldIcon()
+    {
+        var component = RenderComponent<BitDatePicker>();
+
+        Assert.IsTrue(component.Find(".bit-dtp-ico").ClassList.Contains("bit-icon--CalendarMirrored"));
+
+        component.Render(parameters => parameters.Add(p => p.IconName, "Calendar"));
+
+        Assert.IsTrue(component.Find(".bit-dtp-ico").ClassList.Contains("bit-icon--Calendar"));
+
+        // The BitIconInfo wins when both are set, which is how an external icon library is used.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Calendar");
+            parameters.Add(p => p.Icon, BitIconInfo.Css("fa-solid fa-calendar-days"));
+        });
+
+        Assert.IsTrue(component.Find(".bit-dtp-ico").ClassList.Contains("fa-calendar-days"));
+        Assert.IsFalse(component.Find(".bit-dtp-ico").ClassList.Contains("bit-icon--Calendar"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldRenderTheIconTemplateInPlaceOfTheIcon()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IconTemplate, "<b class=\"custom-icon\">x</b>");
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-dtp-ico"));
+        Assert.IsNotNull(component.Find(".bit-dtp-icn .custom-icon"));
+    }
+
+    [TestMethod,
+        DataRow(BitVisibility.Visible, null),
+        DataRow(BitVisibility.Hidden, "visibility:hidden"),
+        DataRow(BitVisibility.Collapsed, "display:none")
+    ]
+    public void BitDatePickerShouldRespectVisibility(BitVisibility visibility, string? expectedStyle)
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Visibility, visibility);
+        });
+
+        var style = component.Find(".bit-dtp").GetAttribute("style") ?? string.Empty;
+
+        if (expectedStyle is null)
+        {
+            Assert.IsFalse(style.Contains("visibility:hidden", StringComparison.Ordinal));
+            Assert.IsFalse(style.Contains("display:none", StringComparison.Ordinal));
+        }
+        else
+        {
+            StringAssert.Contains(style, expectedStyle);
+        }
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldRespectClassStyleAndId()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Class, "custom-class");
+            parameters.Add(p => p.Style, "margin: 1px;");
+            parameters.Add(p => p.Id, "birthday-picker");
+        });
+
+        var root = component.Find(".bit-dtp");
+
+        Assert.AreEqual("birthday-picker", root.Id);
+        Assert.IsTrue(root.ClassList.Contains("custom-class"));
+        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+    }
+
+    [TestMethod,
+        DataRow(BitDir.Rtl, "rtl", true),
+        DataRow(BitDir.Ltr, "ltr", false)
+    ]
+    public void BitDatePickerShouldRenderTheExplicitDirOnItsRoot(BitDir dir, string expected, bool rtl)
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Dir, dir);
+        });
+
+        var root = component.Find(".bit-dtp");
+
+        Assert.AreEqual(expected, root.GetAttribute("dir"));
+        Assert.AreEqual(rtl, root.ClassList.Contains("bit-rtl"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldWriteTabIndexAriaLabelAndNameOnItsInput()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.TabIndex, "3");
+            parameters.Add(p => p.AriaLabel, "Birthday");
+            parameters.Add(p => p.Name, "birthday");
+        });
+
+        var input = component.Find(".bit-dtp-inp");
+
+        Assert.AreEqual("3", input.GetAttribute("tabindex"));
+        Assert.AreEqual("Birthday", input.GetAttribute("aria-label"));
+        Assert.AreEqual("birthday", input.GetAttribute("name"));
+        // The root is nothing to land on or to name: the field is.
+        Assert.IsFalse(component.Find(".bit-dtp").HasAttribute("tabindex"));
+        Assert.IsFalse(component.Find(".bit-dtp").HasAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldSplatTheInputHtmlAttributesOnTheInputAndTheHtmlAttributesOnTheRoot()
+    {
+        // Arbitrary HTML attributes are captured by BitComponentBase from unmatched parameters, so they are
+        // supplied as raw component attributes, as real markup would.
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitDatePicker>(0);
+            builder.AddAttribute(1, "data-root", "yes");
+            builder.AddAttribute(2, nameof(BitDatePicker.InputHtmlAttributes), new Dictionary<string, object> { ["data-input"] = "yes" });
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-dtp");
+        var input = component.Find(".bit-dtp-inp");
+
+        Assert.AreEqual("yes", root.GetAttribute("data-root"));
+        Assert.IsFalse(root.HasAttribute("data-input"));
+        Assert.AreEqual("yes", input.GetAttribute("data-input"));
+        Assert.IsFalse(input.HasAttribute("data-root"));
+    }
+
+    [TestMethod,
+        DataRow(true, false, 1),
+        DataRow(false, false, 0),
+        DataRow(true, true, 0)
+    ]
+    public void BitDatePickerShouldSetUpTheSwipeOnlyWhenResponsiveAndNotStandalone(bool responsive, bool standalone, int expected)
+    {
+        RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Responsive, responsive);
+            parameters.Add(p => p.Standalone, standalone);
+        });
+
+        // The swipe dismisses the callout, and standalone there is no callout to dismiss.
+        Assert.AreEqual(expected, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Swipes.setup"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldHandItsCalloutTheDropDirectionAndTheResponsiveMode()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.DropDirection, BitDropDirection.All);
+            parameters.Add(p => p.Responsive, true);
+        });
+
+        component.Find(".bit-dtp-wrp").Click();
+
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        Assert.AreEqual(BitResponsiveMode.Top, toggle.Arguments[7]); // responsiveMode
+        Assert.AreEqual(BitDropDirection.All, toggle.Arguments[8]); // dropDirection
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldRenderTheDayMonthAndYearCellTemplates()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            // Today, so the calendar opens on January 2026 and today is the day in the tab sequence.
+            parameters.Add(p => p.Today, GetLocalDate(2026, 1, 15));
+            parameters.Add(p => p.DayCellTemplate, d => $"<span class=\"day-cell\">{d.Day}</span>");
+            parameters.Add(p => p.MonthCellTemplate, m => $"<span class=\"month-cell\">{m.Month}</span>");
+            parameters.Add(p => p.YearCellTemplate, y => $"<span class=\"year-cell\">{y}</span>");
+        });
+
+        Assert.AreEqual(component.FindAll(".bit-dtp-dbt").Count, component.FindAll(".bit-dtp-dbt .day-cell").Count);
+        Assert.AreEqual("15", component.Find(".bit-dtp-dbt[tabindex='0'] .day-cell").TextContent);
+        Assert.HasCount(12, component.FindAll(".bit-dtp-mwp .month-cell"));
+        Assert.AreEqual("1", component.FindAll(".bit-dtp-mwp .month-cell")[0].TextContent);
+
+        component.Find(".bit-dtp-mwp .bit-dtp-ptb").Click();
+
+        Assert.HasCount(12, component.FindAll(".bit-dtp-mwp .year-cell"));
+        Assert.AreEqual("2025", component.FindAll(".bit-dtp-mwp .year-cell")[0].TextContent);
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldNameItsNavigationButtonsWithTheGivenTitles()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.StartingValue, GetLocalDate(2026, 1, 15));
+            parameters.Add(p => p.GoToPrevMonthTitle, "Back a month");
+            parameters.Add(p => p.GoToNextMonthTitle, "On a month");
+            parameters.Add(p => p.GoToPrevYearTitle, "Back to {0}");
+            parameters.Add(p => p.GoToNextYearTitle, "On to {0}");
+            parameters.Add(p => p.YearPickerToggleTitle, "Pick a year of {0}");
+            parameters.Add(p => p.YearRangePickerToggleTitle, "Pick a month of {0} to {1}");
+            parameters.Add(p => p.GoToPrevYearRangeTitle, "Back to {0}-{1}");
+            parameters.Add(p => p.GoToNextYearRangeTitle, "On to {0}-{1}");
+        });
+
+        foreach (var title in new[] { "Back a month", "On a month", "Back to 2025", "On to 2027", "Pick a year of 2026" })
+        {
+            Assert.AreEqual(title, component.Find($"button[title='{title}']").GetAttribute("aria-label"));
+        }
+
+        component.Find(".bit-dtp-mwp .bit-dtp-ptb").Click();
+
+        // The year picker opens on the range that starts one year before the displayed one: 2025 - 2036.
+        foreach (var title in new[] { "Pick a month of 2025 to 2036", "Back to 2013-2024", "On to 2037-2048" })
+        {
+            Assert.AreEqual(title, component.Find($"button[title='{title}']").GetAttribute("aria-label"));
+        }
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldShowTheMonthPickerAsAnOverlayWhenAsked()
+    {
+        // Standalone, so the overlay state comes from the parameters instead of the width of the window.
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.ShowMonthPickerAsOverlay, true);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.StartingValue, GetLocalDate(2026, 1, 15));
+            parameters.Add(p => p.MonthPickerToggleTitle, "Months of {0}");
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-dtp-mwp"));
+
+        // The month title is the way into the overlay, and says so.
+        var toggle = component.Find(".bit-dtp-dwp .bit-dtp-ptb");
+
+        Assert.AreEqual("Months of January 2026", toggle.GetAttribute("title"));
+        Assert.AreEqual("Months of January 2026", toggle.GetAttribute("aria-label"));
+
+        toggle.Click();
+
+        // The overlay takes the day picker's place rather than sitting beside it.
+        Assert.HasCount(1, component.FindAll(".bit-dtp-mwp"));
+        Assert.IsEmpty(component.FindAll(".bit-dtp-dwp"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldNameTheCloseButtonWithItsTitle()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowCloseButton, true);
+            parameters.Add(p => p.CloseButtonTitle, "Shut the calendar");
+        });
+
+        var close = component.Find("button[title='Shut the calendar']");
+
+        Assert.AreEqual("Shut the calendar", close.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldNameTheTimePickerToggleWithItsTitles()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.ShowTimePickerAsOverlay, true);
+            parameters.Add(p => p.ShowTimePickerTitle, "Show the clock");
+            parameters.Add(p => p.HideTimePickerTitle, "Hide the clock");
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-dtp-twp"));
+
+        var show = component.Find("button[aria-label='Show the clock']");
+
+        Assert.AreEqual("Show the clock", show.GetAttribute("title"));
+
+        show.Click();
+
+        Assert.HasCount(1, component.FindAll(".bit-dtp-twp"));
+
+        var hide = component.Find("button[aria-label='Hide the clock']");
+
+        Assert.AreEqual("Hide the clock", hide.GetAttribute("title"));
+
+        hide.Click();
+
+        Assert.IsEmpty(component.FindAll(".bit-dtp-twp"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldApplyTheClassesAndStylesOfTodayAndTheSelectedDay()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.Today, GetLocalDate(2026, 1, 15));
+            parameters.Add(p => p.Value, GetLocalDate(2026, 1, 20));
+            parameters.Add(p => p.Classes, new BitDatePickerClassStyles { TodayDayButton = "custom-today", SelectedDayButton = "custom-selected", DayButton = "custom-day" });
+            parameters.Add(p => p.Styles, new BitDatePickerClassStyles { TodayDayButton = "color: red;", SelectedDayButton = "color: blue;", DayButton = "padding: 1px;" });
+        });
+
+        var today = component.Find(".bit-dtp-dtd");
+        var selected = component.Find(".bit-dtp-dbs");
+        var other = component.FindAll(".bit-dtp-dbt").First(b => b.TextContent.Trim() == "10");
+
+        Assert.IsTrue(today.ClassList.Contains("custom-today"));
+        Assert.IsTrue(today.ClassList.Contains("custom-day"));
+        Assert.IsFalse(today.ClassList.Contains("custom-selected"));
+        StringAssert.Contains(today.GetAttribute("style"), "color: red;");
+        StringAssert.Contains(today.GetAttribute("style"), "padding: 1px;");
+
+        Assert.IsTrue(selected.ClassList.Contains("custom-selected"));
+        Assert.IsFalse(selected.ClassList.Contains("custom-today"));
+        StringAssert.Contains(selected.GetAttribute("style"), "color: blue;");
+
+        Assert.IsTrue(other.ClassList.Contains("custom-day"));
+        Assert.IsFalse(other.ClassList.Contains("custom-today"));
+        Assert.IsFalse(other.ClassList.Contains("custom-selected"));
+        Assert.AreEqual("padding: 1px;", other.GetAttribute("style"));
+    }
+
+    // The messages a typed text is refused with name the field - by its DisplayName ahead of the name of the bound
+    // property - and tell an unreadable text from a day the picker itself refuses.
+    [TestMethod]
+    public void BitDatePickerShouldNameTheFieldInItsParsingMessages()
+    {
+        var model = new BitDatePickerTestModel();
+        var editContext = new EditContext(model);
+
+        var component = RenderComponent<CascadingValue<EditContext>>(parameters =>
+        {
+            parameters.Add(p => p.Value, editContext);
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitDatePicker>(0);
+                builder.AddAttribute(1, nameof(BitDatePicker.AllowTextInput), true);
+                builder.AddAttribute(2, nameof(BitDatePicker.DateFormat), "dd/MM/yyyy");
+                builder.AddAttribute(3, nameof(BitDatePicker.DisplayName), "Birthday");
+                builder.AddAttribute(4, nameof(BitDatePicker.DisabledDaysOfWeek), new[] { DayOfWeek.Saturday });
+                builder.AddAttribute(5, nameof(BitDatePicker.Value), model.Value);
+                builder.AddAttribute(6, nameof(BitDatePicker.ValueChanged), EventCallback.Factory.Create<DateTimeOffset?>(this, v => model.Value = v));
+                builder.AddAttribute(7, nameof(BitDatePicker.ValueExpression), (Expression<Func<DateTimeOffset?>>)(() => model.Value));
+                builder.CloseComponent();
+            }));
+        });
+
+        component.Find(".bit-dtp-inp").Input("nonsense");
+
+        CollectionAssert.AreEqual(new[] { "The Birthday field is not valid." }, editContext.GetValidationMessages().ToArray());
+        Assert.IsNull(model.Value);
+
+        // 17 January 2026 is a Saturday: readable, but a day the calendar disables.
+        component.Find(".bit-dtp-inp").Input("17/01/2026");
+
+        CollectionAssert.AreEqual(new[] { "The Birthday field is not an allowed date." }, editContext.GetValidationMessages().ToArray());
+        Assert.IsNull(model.Value);
+
+        component.Find(".bit-dtp-inp").Input("16/01/2026");
+
+        Assert.IsEmpty(editContext.GetValidationMessages());
+        Assert.AreEqual(new DateTime(2026, 1, 16), model.Value!.Value.Date);
+    }
+
+    [TestMethod]
+    public async Task BitDatePickerDisposeShouldReleaseItsJsResources()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.Responsive, true);
+        });
+
+        var calloutId = component.Find(".bit-dtp-cal").Id;
+
+        // Disposal goes through bUnit so the component is disposed once, by the framework that owns it.
+        await Context.DisposeComponentsAsync();
+
+        // The keys, the swipe and the relocated callout are all registered under the callout's id, and released by it.
+        foreach (var identifier in new[] { "BitBlazorUI.Callouts.clear", "BitBlazorUI.Swipes.dispose", "BitBlazorUI.Calendars.dispose" })
+        {
+            var call = Context.JSInterop.Invocations.Single(i => i.Identifier == identifier);
+
+            Assert.AreEqual(calloutId, call.Arguments[0]);
+        }
+    }
+
+    // ── The BitParams cascade ─────────────────────────────────────────────────
+
+    // Whether one picker's callout is open, and the rejection the app asserted on it, are the state of that picker.
+    private static readonly string[] _notCascaded =
+    [
+        nameof(BitDatePicker.CascadingParameters),
+        nameof(BitDatePicker.ErrorMessage),
+        nameof(BitDatePicker.ErrorMessageTemplate),
+        nameof(BitDatePicker.Invalid),
+        nameof(BitDatePicker.IsOpen),
+    ];
+
+    [TestMethod]
+    public void BitDatePickerParamsShouldCarryEveryParameterThatIsNotPerPicker()
+    {
+        // The parameters of the input base and of the component base are carried by the base params classes.
+        var baseParameters = typeof(BitInputBase<DateTimeOffset?>).GetProperties().Select(p => p.Name).ToHashSet();
+
+        var parameters = typeof(BitDatePicker).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                                              .Where(p => p.GetCustomAttribute<ParameterAttribute>() is not null)
+                                              // An event is wired per picker, never cascaded.
+                                              .Where(p => IsEventCallback(p.PropertyType) is false)
+                                              .Select(p => p.Name)
+                                              .Where(n => baseParameters.Contains(n) is false && _notCascaded.Contains(n) is false);
+
+        foreach (var name in parameters)
+        {
+            Assert.IsNotNull(typeof(BitDatePickerParams).GetProperty(name), $"BitDatePickerParams has no {name}.");
+        }
+    }
+
+    [TestMethod]
+    public void BitDatePickerParamsUpdateParametersShouldIgnoreANullPicker()
+    {
+        var @params = new BitDatePickerParams { Color = BitColor.Success };
+
+        @params.UpdateParameters(null!);
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldTakeTheCalloutHtmlAttributesFromTheCascadeUnlessItWroteItsOwn()
+    {
+        var cascaded = new List<IBitComponentParams>
+        {
+            new BitDatePickerParams { CalloutHtmlAttributes = new Dictionary<string, object> { ["data-cascaded"] = "yes" } }
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, cascaded);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDatePicker>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        Assert.AreEqual("yes", component.Find(".bit-dtp-cac").GetAttribute("data-cascaded"));
+
+        // A dictionary the picker wrote for itself is its choice, which the cascade leaves alone.
+        var own = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, cascaded);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDatePicker>(0);
+                builder.AddAttribute(1, nameof(BitDatePicker.CalloutHtmlAttributes), new Dictionary<string, object> { ["data-own"] = "yes" });
+                builder.CloseComponent();
+            });
+        });
+
+        Assert.AreEqual("yes", own.Find(".bit-dtp-cac").GetAttribute("data-own"));
+        Assert.IsFalse(own.Find(".bit-dtp-cac").HasAttribute("data-cascaded"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerParamsShouldMergeTheHtmlAttributes()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, [new BitDatePickerParams
+            {
+                HtmlAttributes = new Dictionary<string, object> { ["data-cascaded"] = "yes", ["data-both"] = "from-cascade" }
+            }]);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDatePicker>(0);
+                builder.AddAttribute(1, "data-both", "from-instance");
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-dtp");
+
+        Assert.AreEqual("yes", root.GetAttribute("data-cascaded"));
+        // What the instance wrote for itself is never replaced by the cascade.
+        Assert.AreEqual("from-instance", root.GetAttribute("data-both"));
+    }
+
+    private static bool IsEventCallback(Type type)
+    {
+        return type == typeof(EventCallback) || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(EventCallback<>));
     }
 }

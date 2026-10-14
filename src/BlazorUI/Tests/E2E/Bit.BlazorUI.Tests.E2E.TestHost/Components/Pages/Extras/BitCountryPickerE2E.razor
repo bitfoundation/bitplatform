@@ -1,0 +1,308 @@
+﻿@page "/e2e/country-picker"
+
+<PageTitle>BitCountryPicker E2E</PageTitle>
+
+<h1>BitCountryPicker</h1>
+
+<E2ESection Id="basic" Title="Basic & binding">
+    <BitCountryPicker Id="cnp-basic" Placeholder="Select a country" @bind-Value="_basicValue" />
+    <span id="basic-value">@(_basicValue?.Iso2 ?? "null")</span>
+    <button id="btn-set-japan" @onclick="() => _basicValue = BitCountries.Japan">Set Japan</button>
+    <button id="btn-clear" @onclick="() => _basicValue = null">Clear</button>
+</E2ESection>
+
+<E2ESection Id="label" Title="Label & description">
+    <BitCountryPicker Id="cnp-label" Label="Country" Placeholder="Select a country" />
+    <BitCountryPicker Id="cnp-required" Label="Nationality" Required Placeholder="Select a country" />
+    <BitCountryPicker Id="cnp-description" Label="Residence" Description="Where you have lived." Placeholder="Select a country" />
+    <BitCountryPicker Id="cnp-label-template" Placeholder="Select a country">
+        <LabelTemplate><b class="custom-label">Templated label</b></LabelTemplate>
+        <DescriptionTemplate><i class="custom-description">Templated description</i></DescriptionTemplate>
+    </BitCountryPicker>
+    <BitCountryPicker Id="cnp-aria" AriaLabel="Pick a market" Title="Market field" Placeholder="Select a country" />
+</E2ESection>
+
+<E2ESection Id="defaults" Title="DefaultValue & DefaultCountry">
+    <BitCountryPicker Id="cnp-default-value" DefaultValue="BitCountries.Canada" OnChange="c => _changed = c" />
+    <span id="default-changed">@(_changed?.Iso2 ?? "null")</span>
+    <BitCountryPicker Id="cnp-default-country" DefaultCountry="BitCountries.Germany" />
+</E2ESection>
+
+<E2ESection Id="custom" Title="Custom countries">
+    <BitCountryPicker Id="cnp-countries" Countries="_customCountries" Placeholder="Select a country" />
+    <BitCountryPicker Id="cnp-exclude" ExcludeCountries="_excludedCountries" Placeholder="Select a country" />
+    <BitCountryPicker Id="cnp-preferred" PreferredCountries="_preferredCountries" Placeholder="Select a country" />
+</E2ESection>
+
+<E2ESection Id="search" Title="Search box">
+    <BitCountryPicker Id="cnp-search" Placeholder="Select a country" SearchBoxPlaceholder="Country or ISO code"
+                      NoResultsMessage="No matching country" @bind-Value="_searchValue" />
+    <span id="search-value">@(_searchValue?.Iso2 ?? "null")</span>
+    <BitCountryPicker Id="cnp-nosearch" NoSearchBox Placeholder="Select a country" @bind-Value="_noSearchValue" />
+    <span id="nosearch-value">@(_noSearchValue?.Iso2 ?? "null")</span>
+</E2ESection>
+
+<E2ESection Id="flags" Title="Flags">
+    <BitCountryPicker Id="cnp-noflags" NoFlags DefaultValue="BitCountries.Japan" />
+    <BitCountryPicker Id="cnp-flag-selector" FlagUrlSelector="GetFlagUrl" DefaultValue="BitCountries.Canada" Countries="_customCountries" />
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <BitCountryPicker Id="cnp-templates" DefaultValue="BitCountries.Portugal">
+        <ValueTemplate Context="country">
+            <span class="value-template">@(country is null ? "Pick one" : $"{country.Name} ({country.Iso3})")</span>
+        </ValueTemplate>
+        <ItemTemplate Context="country">
+            <span class="item-template">@country.Name / @country.Iso2</span>
+        </ItemTemplate>
+        <NoResultsTemplate>
+            <span class="no-results-template">nothing here</span>
+        </NoResultsTemplate>
+    </BitCountryPicker>
+</E2ESection>
+
+<E2ESection Id="validation" Title="Validation">
+    <BitCountryPicker Id="cnp-invalid" Invalid DefaultValue="BitCountries.Spain" />
+    <BitCountryPicker Id="cnp-error" ErrorMessage="We do not ship there yet." Description="EU only." DefaultValue="BitCountries.Brazil" />
+    <BitCountryPicker Id="cnp-error-template" DefaultValue="BitCountries.Brazil">
+        <ErrorMessageTemplate><b class="custom-error">Templated error</b></ErrorMessageTemplate>
+    </BitCountryPicker>
+    <EditForm Model="_model" OnValidSubmit="() => _submitted = true" novalidate>
+        <DataAnnotationsValidator />
+        <BitCountryPicker Id="cnp-form" Label="Nationality" Required Placeholder="Select a country" @bind-Value="_model.Nationality" />
+        <ValidationMessage For="() => _model.Nationality" />
+        <button id="btn-submit" type="submit">Submit</button>
+    </EditForm>
+    <EditForm Model="_model2" novalidate>
+        <DataAnnotationsValidator />
+        <BitCountryPicker Id="cnp-form-novalidate" NoValidate Placeholder="Not validated" @bind-Value="_model2.Other" />
+        <div id="novalidate-message"><ValidationMessage For="() => _model2.Other" /></div>
+        <button id="btn-submit-2" type="submit">Submit</button>
+    </EditForm>
+    <span id="submitted">@(_submitted ? $"Submitted: {_model.Nationality?.Iso2}" : "not submitted")</span>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled & ReadOnly">
+    <BitCountryPicker Id="cnp-disabled" Disabled="_disabled" DefaultValue="BitCountries.Spain"
+                      HtmlAttributes="@(new() { ["onpointerdown"] = EventCallback.Factory.Create<PointerEventArgs>(this, () => _pagePointerDowns++), ["ondblclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _pageDblClicks++) })" />
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <span id="page-pointerdowns">@_pagePointerDowns</span>
+    <span id="page-dblclicks">@_pageDblClicks</span>
+    <BitCountryPicker Id="cnp-readonly" ReadOnly DefaultValue="BitCountries.Spain" />
+</E2ESection>
+
+<E2ESection Id="variants" Title="Variants">
+    <BitCountryPicker Id="cnp-plain" Placeholder="Plain" />
+    <BitCountryPicker Id="cnp-noborder" NoBorder Placeholder="NoBorder" />
+    <BitCountryPicker Id="cnp-underlined" Underlined Placeholder="Underlined" />
+    <BitCountryPicker Id="cnp-bg-primary" Background="BitColorKind.Primary" Placeholder="Primary" />
+    <BitCountryPicker Id="cnp-bg-secondary" Background="BitColorKind.Secondary" Placeholder="Secondary" />
+    <BitCountryPicker Id="cnp-bg-tertiary" Background="BitColorKind.Tertiary" Placeholder="Tertiary" />
+    <BitCountryPicker Id="cnp-bg-transparent" Background="BitColorKind.Transparent" Placeholder="Transparent" />
+    <BitCountryPicker Id="cnp-brd-primary" Border="BitColorKind.Primary" Placeholder="Primary" />
+    <BitCountryPicker Id="cnp-brd-secondary" Border="BitColorKind.Secondary" Placeholder="Secondary" />
+    <BitCountryPicker Id="cnp-brd-tertiary" Border="BitColorKind.Tertiary" Placeholder="Tertiary" />
+    <BitCountryPicker Id="cnp-brd-transparent" Border="BitColorKind.Transparent" Placeholder="Transparent" />
+</E2ESection>
+
+<E2ESection Id="callout" Title="Callout">
+    <BitCountryPicker Id="cnp-maxheight" MaxHeight="200" DropDirection="BitDropDirection.All" Placeholder="Select a country" />
+    <BitCountryPicker Id="cnp-nowrap" NoWrapNavigation NoSearchBox Placeholder="Select a country" />
+    <BitCountryPicker Id="cnp-wrap" NoSearchBox Placeholder="Select a country" />
+    <BitCountryPicker Id="cnp-responsive" Responsive Label="Responsive country" Placeholder="Select a country"
+                      ResponsiveCloseButtonAriaLabel="Close the list" />
+    <BitCountryPicker Id="cnp-responsive-icon" Responsive Label="Icon" ResponsiveCloseIcon="@BitIconInfo.Css("my-close-icon")" />
+    <BitCountryPicker Id="cnp-responsive-iconname" Responsive Label="Icon name" ResponsiveCloseIconName="@BitIconName.ChromeClose" />
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <BitCountryPicker Id="cnp-events" Placeholder="Select a country"
+                      OnChange="c => { _eventChange = c?.Iso2; _changeCount++; }"
+                      OnSearch="s => { _searched = s; _searchCount++; }"
+                      OnOpen="() => _openCount++"
+                      OnClose="() => _closeCount++"
+                      OnFocus="() => _focusCount++"
+                      OnBlur="() => _blurCount++" />
+    <span id="ev-change">@(_eventChange ?? "null")</span>
+    <span id="ev-change-count">@_changeCount</span>
+    <span id="ev-search">@(_searched ?? "null")</span>
+    <span id="ev-search-count">@_searchCount</span>
+    <span id="ev-open">@_openCount</span>
+    <span id="ev-close">@_closeCount</span>
+    <span id="ev-focus">@_focusCount</span>
+    <span id="ev-blur">@_blurCount</span>
+</E2ESection>
+
+<E2ESection Id="programmatic" Title="Programmatic control">
+    <BitCountryPicker @ref="_controlled" Id="cnp-controlled" @bind-IsOpen="_isOpen" @bind-Value="_controlledValue"
+                      Placeholder="Select a country" OnChange="() => _controlledChanges++" />
+    <button id="btn-toggle-open" @onclick="() => _isOpen = !_isOpen">Toggle IsOpen</button>
+    <button id="btn-open" @onclick="() => _controlled.OpenAsync()">OpenAsync</button>
+    <button id="btn-close" @onclick="() => _controlled.CloseAsync()">CloseAsync</button>
+    <button id="btn-select-japan" @onclick="() => _controlled.SelectCountryAsync(BitCountries.Japan)">SelectCountryAsync</button>
+    <button id="btn-focus" @onclick="async () => await _controlled.FocusAsync()">FocusAsync</button>
+    <span id="is-open">@_isOpen</span>
+    <span id="controlled-value">@(_controlledValue?.Iso2 ?? "null")</span>
+    <span id="controlled-changes">@_controlledChanges</span>
+</E2ESection>
+
+<E2ESection Id="form" Title="Form submission">
+    <form id="plain-form">
+        <BitCountryPicker Id="cnp-named" Name="country" DefaultValue="BitCountries.France" />
+    </form>
+</E2ESection>
+
+<E2ESection Id="localization" Title="Localization">
+    <BitCountryPicker Id="cnp-german" Countries="_germanCountries" Placeholder="Land auswählen"
+                      SearchBoxPlaceholder="Suchen" SearchBoxAriaLabel="Land suchen" NoResultsMessage="Kein Land gefunden"
+                      SearchResultsAnnouncement="@(count => count == 1 ? "1 Land gefunden" : $"{count} Länder gefunden")" />
+</E2ESection>
+
+<E2ESection Id="params" Title="Cascading parameters">
+    <BitParams Parameters="_params">
+        <BitCountryPicker Id="cnp-params" />
+        <BitCountryPicker Id="cnp-params-own" DefaultCountry="BitCountries.Brazil" NoBorder="false" />
+    </BitParams>
+    <BitCountryPicker Id="cnp-params-outside" />
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    @foreach (var (color, name) in Colors)
+    {
+        <BitCountryPicker Id="@($"cnp-color-{name}")" Color="color" Placeholder="@name" />
+    }
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <BitCountryPicker Id="cnp-size-small" Size="BitSize.Small" DefaultValue="BitCountries.UnitedStates" />
+    <BitCountryPicker Id="cnp-size-medium" Size="BitSize.Medium" DefaultValue="BitCountries.UnitedStates" />
+    <BitCountryPicker Id="cnp-size-large" Size="BitSize.Large" DefaultValue="BitCountries.UnitedStates" />
+</E2ESection>
+
+<E2ESection Id="style" Title="Style & Class">
+    <BitCountryPicker Id="cnp-vars" DefaultValue="BitCountries.Netherlands"
+                      Style="--bit-CountryPicker-radius: 12px; --bit-CountryPicker-border-color: rgb(255, 0, 0); --bit-CountryPicker-item-selected-background: rgb(237, 231, 246); --bit-CountryPicker-callout-radius: 9px; --bit-CountryPicker-background: rgb(255, 255, 0);" />
+    <div id="vars-scope" style="--bit-CountryPicker-color: rgb(0, 128, 0); --bit-CountryPicker-callout-background: rgb(240, 248, 255); --bit-CountryPicker-item-height: 50px;">
+        <BitCountryPicker Id="cnp-vars-scope" DefaultValue="BitCountries.Netherlands" />
+    </div>
+    <BitCountryPicker Id="cnp-vars-wins" Color="BitColor.Error" Size="BitSize.Large"
+                      Style="--bit-CountryPicker-border-color: rgb(0, 0, 255); --bit-CountryPicker-min-height: 80px;" />
+    <BitCountryPicker Id="cnp-styled" DefaultValue="BitCountries.Netherlands"
+                      Style="width: 250px;" Class="custom-class"
+                      Styles="@(new() { Field = "border-color: rgb(138, 43, 226);", ItemName = "color: rgb(138, 43, 226);", Callout = "outline: 3px solid rgb(1, 2, 3);" })"
+                      Classes="@(new() { Text = "custom-text", Item = "custom-item", Callout = "custom-callout", SearchBox = "custom-search", Caret = "custom-caret", Flag = "custom-flag" })" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div dir="rtl">
+        <BitCountryPicker Id="cnp-rtl" Dir="BitDir.Rtl" Countries="_customCountries" Label="کشور" Placeholder="یک کشور انتخاب کنید" />
+        <BitCountryPicker Id="cnp-rtl-inherited" Countries="_customCountries" Placeholder="inherited" DefaultValue="BitCountries.Japan" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="dialog" Title="Inside a dialog">
+    <button id="btn-open-dialog" @onclick="() => _dialogOpen = true">Open dialog</button>
+    <BitDialog Id="cnp-dialog" @bind-IsOpen="_dialogOpen" Title="Dialog">
+        <Body>
+            <BitCountryPicker Id="cnp-in-dialog" Placeholder="Select a country" />
+        </Body>
+    </BitDialog>
+    <span id="dialog-open">@_dialogOpen</span>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    <button id="btn-unmount" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <BitCountryPicker Id="cnp-unmount" Placeholder="Select a country" />
+    }
+    <span id="mounted">@_mounted</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public class ValidationModel
+    {
+        [Required(ErrorMessage = "Select your nationality.")]
+        public BitCountry? Nationality { get; set; }
+    }
+
+    public class OtherModel
+    {
+        [Required(ErrorMessage = "Other is required.")]
+        public BitCountry? Other { get; set; }
+    }
+
+    private static readonly (BitColor Color, string Name)[] Colors =
+    [
+        (BitColor.Primary, "primary"), (BitColor.Secondary, "secondary"), (BitColor.Tertiary, "tertiary"),
+        (BitColor.Info, "info"), (BitColor.Success, "success"), (BitColor.Warning, "warning"),
+        (BitColor.SevereWarning, "severewarning"), (BitColor.Error, "error"),
+        (BitColor.PrimaryBackground, "primarybackground"), (BitColor.SecondaryBackground, "secondarybackground"),
+        (BitColor.TertiaryBackground, "tertiarybackground"), (BitColor.PrimaryForeground, "primaryforeground"),
+        (BitColor.SecondaryForeground, "secondaryforeground"), (BitColor.TertiaryForeground, "tertiaryforeground"),
+        (BitColor.PrimaryBorder, "primaryborder"), (BitColor.SecondaryBorder, "secondaryborder"),
+        (BitColor.TertiaryBorder, "tertiaryborder")
+    ];
+
+    private static readonly BitCountry[] _customCountries =
+        [BitCountries.Canada, BitCountries.Germany, BitCountries.Japan, BitCountries.Brazil, BitCountries.Australia];
+
+    private static readonly BitCountry[] _excludedCountries = [BitCountries.Canada, BitCountries.Germany, BitCountries.Japan];
+
+    private static readonly BitCountry[] _preferredCountries = [BitCountries.Japan, BitCountries.Brazil];
+
+    private static readonly BitCountry[] _germanCountries =
+    [
+        new("Deutschland", "49", "DE", "DEU"),
+        new("Österreich", "43", "AT", "AUT"),
+        new("Schweiz", "41", "CH", "CHE"),
+        new("Frankreich", "33", "FR", "FRA")
+    ];
+
+    private readonly BitCountryPickerParams[] _params =
+    [
+        new()
+        {
+            DefaultCountry = BitCountries.Japan,
+            Countries = _customCountries,
+            Placeholder = "Cascaded placeholder",
+            NoBorder = true,
+            Size = BitSize.Small
+        }
+    ];
+
+    private BitCountry? _basicValue;
+    private BitCountry? _changed;
+    private BitCountry? _searchValue;
+    private BitCountry? _noSearchValue;
+
+    private readonly ValidationModel _model = new();
+    private readonly OtherModel _model2 = new();
+    private bool _submitted;
+
+    private bool _disabled = true;
+    private int _pagePointerDowns;
+    private int _pageDblClicks;
+
+    private string? _eventChange;
+    private int _changeCount;
+    private string? _searched;
+    private int _searchCount;
+    private int _openCount;
+    private int _closeCount;
+    private int _focusCount;
+    private int _blurCount;
+
+    private BitCountryPicker _controlled = default!;
+    private bool _isOpen;
+    private BitCountry? _controlledValue;
+    private int _controlledChanges;
+
+    private bool _dialogOpen;
+    private bool _mounted = true;
+
+    private static string? GetFlagUrl(BitCountry country) =>
+        country.Iso2 is "CA" or "DE" or "JP" ? $"samples/flags/{country.Iso2.ToLowerInvariant()}.svg" : null;
+}

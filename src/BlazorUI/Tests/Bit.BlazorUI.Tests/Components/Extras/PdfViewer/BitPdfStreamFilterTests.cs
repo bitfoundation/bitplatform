@@ -418,9 +418,34 @@ public class BitPdfStreamFilterTests
         var html = document.Pages.Select(p => new BitPdfHtmlRenderer(p, document.XRef).Render()).ToList();
         StringAssert.Contains(html[1], "Page two");
         Assert.AreEqual("Page two", document.Pages[1].ExtractText().Trim());
-        _ = document.Pages[0].ExtractText();
+        // Data that does not inflate decodes to nothing, so the page has no text - and no exception.
+        Assert.AreEqual(string.Empty, document.Pages[0].ExtractText());
         _ = document.Pages[2].ExtractText();
         _ = document.Pages[3].ExtractText();
+    }
+
+    [TestMethod]
+    public void APngPredictorGivenLessThanOneRowShouldDecodeToNothing()
+    {
+        // Ten bytes of a 101-byte stride: not one whole row, so there is nothing to un-predict - and no
+        // previous-row buffer of the declared (and possibly huge) width to allocate for it.
+        byte[] data = BitPdfEngineTestFile.Zlib(Enumerable.Range(0, 10).Select(i => (byte)i).ToArray());
+
+        byte[] decoded = Decode(data, "/Filter /FlateDecode /DecodeParms << /Predictor 12 /Columns 100 >>");
+
+        Assert.AreEqual(0, decoded.Length);
+    }
+
+    [TestMethod]
+    public void APngPredictorShouldDropATrailingPartialRow()
+    {
+        // Two whole rows and half of a third: the two are decoded, the fragment is not.
+        byte[] pixels = Enumerable.Range(0, 8).Select(i => (byte)(i * 31)).ToArray();
+        byte[] predicted = [.. BitPdfEngineTestFile.PngPredict(pixels, rowBytes: 4, filterType: 1), 2, 9, 9];
+
+        byte[] decoded = Decode(BitPdfEngineTestFile.Zlib(predicted), "/Filter /FlateDecode /DecodeParms << /Predictor 12 /Columns 4 >>");
+
+        CollectionAssert.AreEqual(pixels, decoded);
     }
 
     // BitPdfPredictor.Apply computed the row length in int, which this /DecodeParms wraps to

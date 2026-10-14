@@ -97,9 +97,12 @@ $chg-private-properties: clr, clr-bg, clr-hover, clr-dis, clr-dis-text, clr-focu
     --bit-chg-justify-content: flex-start;
 
     // Wins over the "fit-content" above through the extra class, so the declaration order
-    // of the two rules in this file cannot silently decide which width applies.
+    // of the two rules in this file cannot silently decide which width applies. The padding of the
+    // group is counted inside that width, so a full width group ends at the edge of its container
+    // rather than past it, whether or not the page resets box-sizing itself.
     &.bit-chg-flw {
         width: 100%;
+        box-sizing: border-box;
     }
 
     &.bit-chg-req {

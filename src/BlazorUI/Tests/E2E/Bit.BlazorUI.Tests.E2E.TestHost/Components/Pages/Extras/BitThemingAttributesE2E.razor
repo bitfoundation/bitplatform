@@ -1,0 +1,67 @@
+﻿@page "/e2e/theming/attributes"
+@implements IDisposable
+@inject BitThemeManager ThemeManager
+@inject BitThemeNotifications ThemeNotifications
+@inject BitAccentColorService AccentColorService
+
+<PageTitle>Theme HTML attributes E2E</PageTitle>
+
+@* The host page's <html> carries no theme attribute, so this page writes the ones its query names (every parameter whose
+   name starts with bit-theme, e.g. ?bit-theme-system=&bit-theme-color-meta=) onto it, the way a host page would carry
+   them - before the theme script self-initializes from them at the end of <body>. The inline script is prerendered into
+   <head>, so it runs while the document is still being parsed. *@
+<HeadContent>
+    @((MarkupString)AttributesScript)
+</HeadContent>
+
+<h1>Theme HTML attributes</h1>
+
+<div id="probe-surface" style="background-color: var(--bit-clr-bg-pri); padding: 4px;">
+    <BitButton Id="probe-button">Probe</BitButton>
+</div>
+
+<E2ESection Id="actions" Title="Theme actions">
+    <button id="btn-toggle" type="button" @onclick="Toggle">ToggleDarkLightAsync</button>
+    <button id="btn-get" type="button" @onclick="Get">GetCurrentThemeAsync</button>
+    <button id="btn-accent" type="button" @onclick="ApplyAccent">Apply an accent</button>
+    <div>Result: <span id="result">@_result</span></div>
+    <div>ThemeChanged: <span id="notified-count">@_notifiedCount</span> - <span id="notified-new">@_notifiedNew</span></div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string AttributesScript =
+        "<script>(function(){var p=new URLSearchParams(location.search);" +
+        "p.forEach(function(v,k){if(k.indexOf('bit-theme')===0)document.documentElement.setAttribute(k,v);});})();</script>";
+
+    private string? _result;
+    private int _notifiedCount;
+    private string? _notifiedNew;
+
+    protected override void OnInitialized()
+    {
+        ThemeNotifications.ThemeChanged += HandleThemeChanged;
+    }
+
+    private void HandleThemeChanged(object? sender, BitThemeChangedEventArgs e)
+    {
+        _ = InvokeAsync(() =>
+        {
+            _notifiedCount++;
+            _notifiedNew = e.NewTheme;
+            StateHasChanged();
+        });
+    }
+
+    private async Task Toggle() => _result = await ThemeManager.ToggleDarkLightAsync();
+
+    private async Task Get() => _result = await ThemeManager.GetCurrentThemeAsync();
+
+    private async Task ApplyAccent() => await AccentColorService.ApplyAsync(BitAccentColorPresets.Green);
+
+    public void Dispose()
+    {
+        ThemeNotifications.ThemeChanged -= HandleThemeChanged;
+    }
+}

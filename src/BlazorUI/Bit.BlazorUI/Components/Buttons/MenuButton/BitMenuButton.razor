@@ -38,6 +38,8 @@
     var autoFocus = (AutoFocus || GetSplattedAttribute("autofocus") is not null)
                         && ariaHidden is false
                         && (Disabled is false || DisabledInteractive);
+    // Kept for the focus call of the first render (see OnAfterRenderAsync), so the two can never disagree.
+    _autoFocus = autoFocus;
     // A disabled menu button kept interactive stays focusable, so aria-disabled carries its state alone.
     var nativeDisabled = Disabled && DisabledInteractive is false;
 }

@@ -1,0 +1,472 @@
+﻿@page "/e2e/card"
+
+<PageTitle>BitCard E2E</PageTitle>
+
+@* The classes the Class / Classes sections hand the parts, styled here so a test can read their effect back. *@
+<style>
+    .e2e-crd-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-start; }
+    .e2e-crd-class { outline: 3px dashed rgb(1, 2, 3); }
+    .e2e-crd-root { letter-spacing: 1px; }
+    .e2e-crd-title { color: rgb(10, 20, 30); }
+    .e2e-crd-icon { color: rgb(40, 50, 60); }
+    .e2e-crd-body { font-style: italic; }
+    .e2e-crd-selected { text-decoration: underline; }
+</style>
+
+<h1>BitCard</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitCard Id="crd-basic"><p id="crd-basic-content" style="margin: 0;">A padded surface around its content.</p></BitCard>
+</E2ESection>
+
+<E2ESection Id="dimensions" Title="Width, Height, Min/Max, FullWidth, FullHeight, FullSize, ScrollableBody">
+    <div class="e2e-crd-row">
+        <BitCard Id="crd-dim" Width="14rem" Height="8rem" ScrollableBody>
+            @for (var i = 1; i <= 12; i++)
+            {
+                <div>Scrolling line @i</div>
+            }
+        </BitCard>
+        <BitCard Id="crd-min" MinWidth="10rem" MaxWidth="18rem">Short.</BitCard>
+        <BitCard Id="crd-max" MinWidth="10rem" MaxWidth="18rem">A long line of text that would make the card much wider than eighteen rem if nothing held it back.</BitCard>
+        <BitCard Id="crd-minh" MinHeight="6rem">MinHeight.</BitCard>
+        <BitCard Id="crd-maxh" MaxHeight="5rem" ScrollableBody>
+            @for (var i = 1; i <= 12; i++)
+            {
+                <div>Capped line @i</div>
+            }
+        </BitCard>
+        <BitCard Id="crd-scb" Title="Scrollable" Height="12rem" Width="14rem" ScrollableBody>
+            <ChildContent>
+                @for (var i = 1; i <= 20; i++)
+                {
+                    <div>Body line @i</div>
+                }
+            </ChildContent>
+            <Footer><span id="crd-scb-footer">Footer stays</span></Footer>
+        </BitCard>
+    </div>
+    <div id="crd-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 16px;">
+        <BitCard Id="crd-fs-1" FullSize>FullSize.</BitCard>
+        <BitCard Id="crd-fs-2" FullSize>So a card with more to say makes the whole row taller, and every card in the row follows it. Even more words here to wrap.</BitCard>
+        <BitCard Id="crd-fs-3" FullSize>One height.</BitCard>
+    </div>
+    <div id="crd-fw-box" style="width: 500px; margin-top: 16px;">
+        <BitCard Id="crd-fw" FullWidth>FullWidth.</BitCard>
+    </div>
+    <div id="crd-fh-box" style="height: 150px; width: 200px; margin-top: 16px;">
+        <BitCard Id="crd-fh" FullHeight>FullHeight.</BitCard>
+    </div>
+</E2ESection>
+
+<E2ESection Id="header" Title="Title, Subtitle, IconName, HeadingLevel, IconTemplate, HeaderTemplate">
+    <div class="e2e-crd-row">
+        <BitCard Id="crd-header" Title="bit BlazorUI" Subtitle="Native Blazor components" Width="18rem">
+            <span id="crd-header-body">A title and a subtitle.</span>
+        </BitCard>
+        <BitCard Id="crd-icon" Title="Deployment" Subtitle="Succeeded" IconName="Rocket" HeadingLevel="3" Width="18rem">
+            An icon and a heading.
+        </BitCard>
+        <BitCard Id="crd-icontpl" Title="Ada Lovelace" Subtitle="Author" Width="18rem">
+            <IconTemplate><span id="crd-icontpl-avatar" style="display: inline-block; width: 32px; height: 32px; border-radius: 50%; background: rgb(200, 0, 0);"></span></IconTemplate>
+            <ChildContent>An IconTemplate keeps the title.</ChildContent>
+        </BitCard>
+        <BitCard Id="crd-hdrtpl" Title="Hidden title" Width="18rem">
+            <HeaderTemplate><span id="crd-hdrtpl-content">A custom header</span></HeaderTemplate>
+            <ChildContent>A HeaderTemplate replaces the title.</ChildContent>
+        </BitCard>
+        <BitCard Id="crd-badlevel" Title="No heading" HeadingLevel="9" Width="18rem">Out of range.</BitCard>
+    </div>
+</E2ESection>
+
+<E2ESection Id="actions" Title="Actions, Footer, FloatingActions, Divider">
+    <div class="e2e-crd-row">
+        <BitCard Id="crd-actions" Title="Weekly report" Subtitle="Updated an hour ago" Width="20rem">
+            <Actions><button id="crd-act-btn" type="button" @onclick="() => _actClicks++">More</button></Actions>
+            <ChildContent><span id="crd-actions-body">Actions beside the title.</span></ChildContent>
+            <Footer><button id="crd-ftr-btn" type="button" @onclick="() => _ftrClicks++">Open</button></Footer>
+        </BitCard>
+        <BitCard Id="crd-divider" Divider Title="Divided" Width="20rem">
+            <ChildContent><span>A body under a divider.</span></ChildContent>
+            <Footer><span>A footer</span></Footer>
+        </BitCard>
+        <BitCard Id="crd-floating" Width="16rem">
+            <FloatingActions><button id="crd-fab" type="button" @onclick="() => _starred = !_starred">@(_starred ? "Unstar" : "Star")</button></FloatingActions>
+            <ChildContent><span>The star floats over the corner. Starred: <span id="crd-starred">@_starred</span></span></ChildContent>
+        </BitCard>
+    </div>
+    <span id="act-clicks">@_actClicks</span>
+    <span id="ftr-clicks">@_ftrClicks</span>
+</E2ESection>
+
+<E2ESection Id="cover" Title="ImageUrl, ImageHeight, ImagePosition, ImageAlt, ImageLoading, CoverRatio, Reversed, Cover">
+    <div class="e2e-crd-row">
+        <BitCard Id="crd-cover" Title="Mount Rainier" Subtitle="Washington" Width="18rem"
+                 ImageUrl="samples/surfaces-card-cover.svg" ImageHeight="9rem" ImagePosition="top" ImageAlt="A mountain at dusk">
+            Cropped by ImageHeight.
+        </BitCard>
+        <BitCard Id="crd-ratio" Title="Widescreen" Width="18rem" ImageLoading="BitImageLoading.Lazy"
+                 ImageUrl="samples/surfaces-card-cover.svg" CoverRatio="16 / 9">
+            CoverRatio keeps the ratio.
+        </BitCard>
+        <BitCard Id="crd-reversed" Reversed Title="Caption first" Width="18rem" ImageUrl="samples/surfaces-card-cover.svg" CoverRatio="16 / 9">
+            Reversed puts the picture last.
+        </BitCard>
+        <BitCard Id="crd-cover-tpl" Title="Custom cover" Width="18rem">
+            <Cover><div id="crd-cover-tpl-art" style="height: 100px; background: rgb(0, 101, 239);"></div></Cover>
+            <ChildContent>The Cover template takes the place of the image.</ChildContent>
+        </BitCard>
+        <BitCard Id="crd-cover-only" Width="12rem" ImageUrl="samples/surfaces-card-cover.svg" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="horizontal" Title="Horizontal, CoverWidth">
+    <div class="e2e-crd-row">
+        <BitCard Id="crd-hrz" Horizontal Width="26rem" Title="Thumbnail" ImageUrl="samples/surfaces-card-cover.svg">A thumbnail and a summary.</BitCard>
+        <BitCard Id="crd-hrz-cw" Horizontal Width="26rem" CoverWidth="8rem" Title="Narrower" ImageUrl="samples/surfaces-card-cover.svg">CoverWidth pins the width.</BitCard>
+        <BitCard Id="crd-hrz-rev" Horizontal Reversed Width="26rem" CoverWidth="8rem" Title="Trailing" ImageUrl="samples/surfaces-card-cover.svg">A trailing cover.</BitCard>
+        <BitCard Id="crd-hrz-rtl" Horizontal Dir="BitDir.Rtl" Width="26rem" CoverWidth="8rem" Title="راست به چپ" ImageUrl="samples/surfaces-card-cover.svg">آینه.</BitCard>
+    </div>
+</E2ESection>
+
+<E2ESection Id="click" Title="OnClick, Selected, Disabled, StopPropagation">
+    <div class="e2e-crd-row">
+        <BitCard @ref="_clickRef" Id="crd-click" OnClick="HandleClick" Title="Clickable" Subtitle="Press me" Width="14rem">
+            <Actions><button id="crd-click-reset" type="button" @onclick="() => _clickCount = 0">Reset</button></Actions>
+            <ChildContent><span id="crd-click-body">Clicked <span id="click-count">@_clickCount</span> times.</span></ChildContent>
+            <Footer><button id="crd-click-footer" type="button" @onclick="() => _clickFooter++">Footer</button></Footer>
+        </BitCard>
+        <BitCard Id="crd-click-dis" OnClick="() => _disabledClicks++" Disabled Title="Disabled" Width="14rem">Answers nothing.</BitCard>
+        <BitCard Id="crd-sel" @bind-Selected="_selected" Title="Backups" Subtitle="$4 / month" Width="14rem">Selected: <span id="sel-value">@_selected</span></BitCard>
+        <BitCard Id="crd-sel-fixed" Selected Title="Selected ready-made" Width="14rem">Shown selected.</BitCard>
+    </div>
+    <span id="click-button">@_clickButton</span>
+    <span id="click-footer">@_clickFooter</span>
+    <span id="disabled-clicks">@_disabledClicks</span>
+    <button id="btn-select" type="button" @onclick="() => _selected = !_selected">Select from the page</button>
+    <div id="crd-parent" @onclick="() => _parentClicks++" style="display: flex; gap: 16px; margin-top: 16px;">
+        <BitCard Id="crd-stop" StopPropagation OnClick="() => _stopClicks++" Title="StopPropagation" Width="14rem">Stops.</BitCard>
+        <BitCard Id="crd-nostop" OnClick="() => _stopClicks++" Title="Bubbles" Width="14rem">Bubbles.</BitCard>
+    </div>
+    <span id="parent-clicks">@_parentClicks</span>
+    <span id="stop-clicks">@_stopClicks</span>
+    <button id="btn-focus-card" type="button" @onclick="() => _clickRef.FocusAsync()">Focus the card</button>
+    <button id="btn-focus-plain" type="button" @onclick="() => _plainRef.FocusAsync()">Focus a plain card</button>
+    <BitCard @ref="_plainRef" Id="crd-focus-plain" TabIndex="0" Width="14rem">Focusable through TabIndex.</BitCard>
+</E2ESection>
+
+<E2ESection Id="link" Title="Href, Target, Rel, Download">
+    <div class="e2e-crd-row">
+        <BitCard Id="crd-link" Href="e2e/card?navigated=1" Title="bit BlazorUI" Subtitle="blazorui.bitplatform.dev" IconName="Globe" Width="20rem">
+            <Actions><button id="crd-link-pin" type="button" @onclick="() => _pinned = !_pinned">Pin</button></Actions>
+            <ChildContent><span id="crd-link-body">The whole card is the link. Pinned: <span id="pinned">@_pinned</span></span></ChildContent>
+        </BitCard>
+        <BitCard Id="crd-link-blank" Href="https://example.com/" Target="_blank" Title="New tab" Width="14rem">Opens in a new tab.</BitCard>
+        <BitCard Id="crd-link-rel" Href="https://example.com/" Target="_blank" Rel="BitLinkRels.NoFollow" Title="NoFollow" Width="14rem">NoFollow.</BitCard>
+        <BitCard Id="crd-link-opener" Href="https://example.com/" Target="_blank" Rel="BitLinkRels.Opener" Title="Opener" Width="14rem">Opener.</BitCard>
+        <BitCard Id="crd-link-dl" Href="samples/surfaces-card-cover.svg" Download="cover.svg" Title="Download" Width="14rem">Download.</BitCard>
+        <BitCard Id="crd-link-aria" Href="e2e/card" AriaLabel="Read the guide" Title="Guide" Width="14rem">Named by AriaLabel.</BitCard>
+        <BitCard Id="crd-link-dis" Href="e2e/card?navigated=1" Disabled Title="Disabled link" Width="14rem">Goes nowhere.</BitCard>
+    </div>
+</E2ESection>
+
+<E2ESection Id="loading" Title="Loading, LoadingTemplate">
+    <button id="btn-loading" type="button" @onclick="() => _loading = !_loading">Toggle loading</button>
+    <div class="e2e-crd-row">
+        <BitCard Id="crd-loading" Loading="_loading" Title="Weekly report" Subtitle="Updated an hour ago" Width="20rem">
+            <span id="crd-loading-body">Once loaded, this is what the card had to say.</span>
+        </BitCard>
+        <BitCard Id="crd-loading-tpl" Loading="_loading" Title="Custom placeholder" Width="20rem">
+            <LoadingTemplate><div id="crd-loading-custom" style="height: 64px; background: rgb(220, 220, 220);"></div></LoadingTemplate>
+            <ChildContent><span id="crd-loading-tpl-body">Brought its own placeholder.</span></ChildContent>
+        </BitCard>
+        <BitCard Id="crd-loading-force" Loading ForceAnimation Title="Forced animation" Width="20rem" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="elevation" Title="Elevation, NoShadow, Hoverable">
+    <div>
+        @foreach (var level in new[] { 0, 1, 4, 8, 9, 16, 24 })
+        {
+            var l = level;
+            <button id="@($"btn-elev-{l}")" type="button" @onclick="() => _elevation = l">@l</button>
+        }
+    </div>
+    <div class="e2e-crd-row" style="padding: 16px 0 32px;">
+        <BitCard Id="crd-elev" Elevation="_elevation" Title="Elevation" Width="14rem" />
+        <BitCard Id="crd-elev-hover" Elevation="4" OnClick="() => { }" Title="Elevated button" Width="14rem" />
+        <BitCard Id="crd-noshadow" NoShadow Title="NoShadow" Width="14rem" />
+        <BitCard Id="crd-hoverable" Hoverable Title="Hoverable" Width="14rem" />
+        <BitCard Id="crd-plain" Title="Plain" Width="14rem" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="appearance" Title="Outlined, Border, Background, Square, NoPadding">
+    <div class="e2e-crd-row">
+        <BitCard Id="crd-outlined" Outlined Title="Outlined" Width="12rem" />
+        <BitCard Id="crd-square" Square Outlined Title="Square" Width="12rem" />
+        <BitCard Id="crd-nopad" NoPadding Outlined Width="12rem"><span id="crd-nopad-content">NoPadding.</span></BitCard>
+        @foreach (var (name, kind) in _kinds)
+        {
+            <BitCard Id="@($"crd-br-{name}")" Border="kind" NoShadow Title="@($"Border {name}")" Width="12rem" />
+        }
+    </div>
+    <div class="e2e-crd-row" style="padding: 16px; background: rgb(128, 128, 128); margin-top: 16px;">
+        @foreach (var (name, kind) in _kinds)
+        {
+            <BitCard Id="@($"crd-bg-{name}")" Background="kind" Title="@($"Background {name}")" Width="12rem" />
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <ul role="list" aria-label="Latest guides" style="list-style: none; margin: 0; padding: 0; display: flex; gap: 16px;">
+        <li><BitCard Id="crd-a11y-link" Href="e2e/card" Title="Theming" Subtitle="5 min read" HeadingLevel="3" Width="16rem">Tokens.</BitCard></li>
+        <li><BitCard Id="crd-a11y-label" AriaLabel="Release notes" Title="Release notes" Width="16rem">Named group.</BitCard></li>
+    </ul>
+    <span id="external-label">Labelled from outside</span>
+    <div class="e2e-crd-row">
+        <BitCard Id="crd-a11y-lb" aria-labelledby="external-label" Width="16rem">Labelled by another element.</BitCard>
+        <div role="listbox" aria-label="Plans">
+            <BitCard Id="crd-option" role="option" OnClick="() => _optionClicks++" Selected="_optionSelected" Title="Option card" Width="16rem">An option.</BitCard>
+        </div>
+        <div role="list">
+            <BitCard Id="crd-listitem" role="listitem" OnClick="() => _listItemClicks++" Title="List item card" Width="16rem">A list item.</BitCard>
+        </div>
+        <BitCard Id="crd-body-named" OnClick="() => { }" Width="16rem"><span>Named by its body.</span></BitCard>
+    </div>
+    <span id="option-clicks">@_optionClicks</span>
+    <span id="listitem-clicks">@_listItemClicks</span>
+    <button id="btn-option-select" type="button" @onclick="() => _optionSelected = !_optionSelected">Select the option</button>
+</E2ESection>
+
+<E2ESection Id="vars" Title="CSS variables">
+    <div id="vars-shape" class="e2e-crd-row" style="--bit-Card-radius: 16px; --bit-Card-padding: 20px; --bit-Card-shadow: none; --bit-Card-border-width: 1px; --bit-Card-border-color: rgb(1, 100, 200); --bit-Card-hover-shadow: rgb(0, 0, 0) 0px 0px 10px 0px;">
+        <BitCard Id="crd-var-1" Hoverable Title="Soft" Width="14rem" />
+        <BitCard Id="crd-var-wins" Border="BitColorKind.Primary" Square Title="Border wins" Width="14rem" />
+    </div>
+    <div id="vars-color" class="e2e-crd-row" style="margin-top: 16px; --bit-Card-background: rgb(30, 27, 75); --bit-Card-color: rgb(224, 231, 255); --bit-Card-subtitle-color: rgb(165, 180, 252); --bit-Card-divider-color: rgb(67, 56, 202); --bit-Card-selected-color: rgb(251, 191, 36); --bit-Card-title-font-weight: 700; --bit-Card-hover-background: rgb(49, 46, 129); --bit-Card-title-font-size: 22px; --bit-Card-subtitle-font-size: 11px; --bit-Card-icon-size: 30px; --bit-Card-gap: 7px;">
+        <BitCard Id="crd-var-brand" Divider Title="Brand" Subtitle="Custom colors" IconName="Album" Width="14rem">
+            <ChildContent>A body.</ChildContent>
+            <Footer>A footer</Footer>
+        </BitCard>
+        <BitCard Id="crd-var-sel" @bind-Selected="_brandSelected" Title="Selectable" Width="14rem" />
+    </div>
+    <div class="e2e-crd-row" style="margin-top: 16px;">
+        <BitCard Id="crd-overlay" CoverOverlay Title="Olympic" Subtitle="Washington" Width="18rem" Height="14rem"
+                 ImageUrl="samples/surfaces-card-cover.svg"
+                 Style="--bit-Card-scrim: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.3)); --bit-Card-color: rgb(255, 255, 255);">
+            Read against the scrim.
+        </BitCard>
+    </div>
+</E2ESection>
+
+<E2ESection Id="params" Title="BitParams cascade">
+    <BitParams Parameters="@_params">
+        <div class="e2e-crd-row">
+            <BitCard Id="crd-par-1" Title="Inbox" Subtitle="12 unread">Outlined, small, divided.</BitCard>
+            <BitCard Id="crd-par-own" Title="Tasks" Size="BitSize.Large">Keeps its own Size.</BitCard>
+        </div>
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="colors" Title="Color and Variant">
+    @foreach (var (color, suffix) in _colors)
+    {
+        <div class="e2e-crd-row" style="margin-bottom: 8px;">
+            <BitCard Id="@($"crd-c-{suffix}-fill")" Color="color" Variant="BitVariant.Fill" Title="@($"{color}")" Subtitle="Fill" Width="10rem" />
+            <BitCard Id="@($"crd-c-{suffix}-outline")" Color="color" Variant="BitVariant.Outline" Title="@($"{color}")" Subtitle="Outline" Width="10rem" />
+            <BitCard Id="@($"crd-c-{suffix}-text")" Color="color" Variant="BitVariant.Text" Title="@($"{color}")" Subtitle="Text" Width="10rem" />
+            <BitCard Id="@($"crd-c-{suffix}-default")" Color="color" Title="@($"{color}")" Subtitle="Default variant" Width="10rem" />
+        </div>
+    }
+    <div class="e2e-crd-row">
+        <BitCard Id="crd-variant-only" Variant="BitVariant.Outline" Title="Variant without a Color" Width="10rem" />
+        <BitCard Id="crd-c-dis-fill" Disabled Color="BitColor.Primary" Variant="BitVariant.Fill" Title="Disabled fill" Width="10rem" />
+        <BitCard Id="crd-c-dis-outline" Disabled Color="BitColor.Success" Variant="BitVariant.Outline" Title="Disabled outline" Width="10rem" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="icons" Title="External icons">
+    <div class="e2e-crd-row">
+        <BitCard Id="crd-ext-css" Icon="@BitIconInfo.Css("e2e-ext fa-solid fa-house")" Title="House" Width="12rem" />
+        <BitCard Id="crd-ext-bi" Icon="@BitIconInfo.Bi("github")" Title="GitHub" Width="12rem" />
+        <BitCard Id="crd-ext-fa" Icon="@BitIconInfo.Fa("solid rocket")" Title="Rocket" Width="12rem" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="sizes" Title="Size">
+    <div class="e2e-crd-row">
+        <BitCard Id="crd-sm" Size="BitSize.Small" Title="Small" Subtitle="s" IconName="Album" Width="14rem">Small.</BitCard>
+        <BitCard Id="crd-md" Size="BitSize.Medium" Title="Medium" Subtitle="s" IconName="Album" Width="14rem">Medium.</BitCard>
+        <BitCard Id="crd-lg" Size="BitSize.Large" Title="Large" Subtitle="s" IconName="Album" Width="14rem">Large.</BitCard>
+    </div>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style, Class, Styles, Classes">
+    <div class="e2e-crd-row">
+        <BitCard Id="crd-style" Style="border: 2px solid rgb(147, 112, 219);" Width="14rem">Styled.</BitCard>
+        <BitCard Id="crd-class" Class="e2e-crd-class" Width="14rem">Classed.</BitCard>
+        <BitCard Id="crd-styles" Title="Styles" Subtitle="Per part" IconName="Color" Width="18rem" ImageUrl="samples/surfaces-card-cover.svg" ImageHeight="3rem"
+                 Styles="@(new() { Root = "border: 1px solid rgb(0, 139, 139);",
+                                   Header = "border-bottom: 1px solid rgb(0, 139, 139);",
+                                   Title = "color: rgb(0, 139, 139);",
+                                   Subtitle = "color: rgb(0, 100, 100);",
+                                   Icon = "color: rgb(0, 139, 139);",
+                                   HeaderText = "letter-spacing: 2px;",
+                                   Body = "font-weight: 700;",
+                                   Footer = "font-style: italic;",
+                                   Main = "background-color: rgb(240, 255, 255);",
+                                   Cover = "opacity: 0.5;",
+                                   Image = "border-radius: 4px;",
+                                   Actions = "padding: 3px;" })">
+            <Actions><span>A</span></Actions>
+            <ChildContent>Every part can be styled.</ChildContent>
+            <Footer>Footer</Footer>
+        </BitCard>
+        <BitCard Id="crd-classes" Title="Classes" IconName="Color" Width="18rem" @bind-Selected="_classesSelected"
+                 Classes="@(new() { Root = "e2e-crd-root", Title = "e2e-crd-title", Icon = "e2e-crd-icon", Body = "e2e-crd-body", Selected = "e2e-crd-selected", Link = "e2e-crd-link" })">
+            Every part can take a class.
+        </BitCard>
+        <BitCard Id="crd-styles-sel" Title="Selected style" Selected Styles="@(new() { Selected = "background-color: rgb(255, 228, 225);", Link = "outline-offset: 5px;" })" OnClick="() => { }" Width="14rem" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitCard Id="crd-rtl" Dir="BitDir.Rtl" Title="کارت" Subtitle="زیرعنوان" IconName="Album" Width="20rem">
+        <Actions><button type="button" id="crd-rtl-act">بیشتر</button></Actions>
+        <ChildContent>بیت بلیزور یو آی</ChildContent>
+    </BitCard>
+    <div dir="rtl">
+        <BitCard Id="crd-rtl-inh" Title="Inherited" IconName="Album" Width="20rem">
+            <Actions><button type="button" id="crd-rtl-inh-act">More</button></Actions>
+            <ChildContent>Inherited direction.</ChildContent>
+        </BitCard>
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled drops the page's handlers">
+    <div class="e2e-crd-row">
+        <BitCard Id="crd-dis-handler" Disabled="_handlerDisabled" @onclick="() => _pageClicks++" @onmouseover="() => _pageHovers++" Title="Page handlers" Width="14rem">
+            <button id="crd-dis-inner" type="button" @onclick="() => _innerClicks++">Inner</button>
+        </BitCard>
+        <BitCard Id="crd-en-handler" @onclick="() => _enabledPageClicks++" Title="Enabled handlers" Width="14rem">Enabled.</BitCard>
+    </div>
+    <button id="btn-enable-handler" type="button" @onclick="() => _handlerDisabled = !_handlerDisabled">Toggle disabled</button>
+    <span id="page-clicks">@_pageClicks</span>
+    <span id="page-hovers">@_pageHovers</span>
+    <span id="inner-clicks">@_innerClicks</span>
+    <span id="enabled-page-clicks">@_enabledPageClicks</span>
+</E2ESection>
+
+<E2ESection Id="base" Title="Visibility, HtmlAttributes, re-render, unmount">
+    <div class="e2e-crd-row">
+        <BitCard Id="crd-vis-hidden" Visibility="BitVisibility.Hidden" Width="10rem">Hidden.</BitCard>
+        <BitCard Id="crd-vis-collapsed" Visibility="BitVisibility.Collapsed" Width="10rem">Collapsed.</BitCard>
+        <BitCard Id="crd-attrs" data-e2e="custom" HtmlAttributes="@_attrs" Width="10rem">Attributes.</BitCard>
+        <BitCard Id="crd-rr" Title="@_rrTitle" Size="_rrSize" Color="_rrColor" Width="12rem">Re-rendered.</BitCard>
+        @if (_showUnmount)
+        {
+            <BitCard Id="crd-um" OnClick="() => { }" Loading Title="Unmounted" Width="10rem" />
+        }
+    </div>
+    <button id="btn-rr" type="button" @onclick="Rerender">Change parameters</button>
+    <button id="btn-unmount" type="button" @onclick="() => _showUnmount = !_showUnmount">Unmount</button>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private int _actClicks;
+    private int _ftrClicks;
+    private bool _starred;
+
+    private BitCard _clickRef = default!;
+    private BitCard _plainRef = default!;
+    private int _clickCount;
+    private string _clickButton = "";
+    private int _clickFooter;
+    private int _disabledClicks;
+    private bool _selected;
+    private int _parentClicks;
+    private int _stopClicks;
+
+    private bool _pinned;
+
+    private bool _loading = true;
+
+    private int? _elevation = 0;
+
+    private readonly (string Name, BitColorKind Kind)[] _kinds =
+    [
+        ("primary", BitColorKind.Primary),
+        ("secondary", BitColorKind.Secondary),
+        ("tertiary", BitColorKind.Tertiary),
+        ("transparent", BitColorKind.Transparent),
+    ];
+
+    private int _optionClicks;
+    private int _listItemClicks;
+    private bool _optionSelected;
+
+    private bool _brandSelected;
+
+    private readonly BitCardParams[] _params =
+    [
+        new()
+        {
+            Outlined = true,
+            Size = BitSize.Small,
+            Divider = true,
+        }
+    ];
+
+    private readonly (BitColor Color, string Suffix)[] _colors =
+    [
+        (BitColor.Primary, "pri"),
+        (BitColor.Secondary, "sec"),
+        (BitColor.Tertiary, "ter"),
+        (BitColor.Info, "inf"),
+        (BitColor.Success, "suc"),
+        (BitColor.Warning, "wrn"),
+        (BitColor.SevereWarning, "swr"),
+        (BitColor.Error, "err"),
+        (BitColor.PrimaryBackground, "pbg"),
+        (BitColor.SecondaryBackground, "sbg"),
+        (BitColor.TertiaryBackground, "tbg"),
+        (BitColor.PrimaryForeground, "pfg"),
+        (BitColor.SecondaryForeground, "sfg"),
+        (BitColor.TertiaryForeground, "tfg"),
+        (BitColor.PrimaryBorder, "pbr"),
+        (BitColor.SecondaryBorder, "sbr"),
+        (BitColor.TertiaryBorder, "tbr"),
+    ];
+
+    private bool _classesSelected;
+
+    private bool _handlerDisabled = true;
+    private int _pageClicks;
+    private int _pageHovers;
+    private int _innerClicks;
+    private int _enabledPageClicks;
+
+    private readonly Dictionary<string, object> _attrs = new() { ["data-extra"] = "from-dictionary" };
+
+    private string _rrTitle = "Before";
+    private BitSize? _rrSize = BitSize.Small;
+    private BitColor? _rrColor;
+    private bool _showUnmount = true;
+
+    private void HandleClick(MouseEventArgs e)
+    {
+        _clickCount++;
+        _clickButton = e.Button.ToString();
+    }
+
+    private void Rerender()
+    {
+        _rrTitle = "After";
+        _rrSize = BitSize.Large;
+        _rrColor = BitColor.Error;
+    }
+}

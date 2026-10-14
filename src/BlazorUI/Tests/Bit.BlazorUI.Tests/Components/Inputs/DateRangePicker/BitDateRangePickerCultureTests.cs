@@ -224,6 +224,90 @@ public class BitDateRangePickerCultureTests : BunitTestContext
 
     #endregion
 
+    #region de-DE, en-US and the invariant culture (GregorianCalendar)
+
+    // A culture of the Gregorian calendar still decides the day its week starts on and the spelling of a date; every
+    // expectation is read off the culture itself, since ICU and NLS spell a pattern differently.
+    [TestMethod,
+        DataRow("de-DE"),
+        DataRow("en-US"),
+        DataRow("")
+    ]
+    public void BitDateRangePickerShouldLayOutAGregorianCultureOnItsOwnWeekAndWriteItsOwnRange(string name)
+    {
+        var culture = CultureInfo.GetCultureInfo(name);
+        BitDateRangePickerValue? value = null;
+
+        var component = Render(culture, Utc(2025, 3, 15), p => p.Bind(x => x.Value, value, v => value = v));
+
+        Assert.AreEqual($"{culture.DateTimeFormat.GetMonthName(3)} 2025", GetMonthTitle(component));
+        Assert.HasCount(31, GetInMonthDays(component));
+
+        var headers = component.FindAll(".bit-dtrp-dgh .bit-dtrp-wlb");
+
+        // de-DE starts its week on Monday, en-US and the invariant culture on Sunday.
+        Assert.AreEqual(culture.DateTimeFormat.GetDayName(culture.DateTimeFormat.FirstDayOfWeek), headers[0].GetAttribute("aria-label"));
+        // The first of March 2025 is a Saturday.
+        Assert.AreEqual(((int)DayOfWeek.Saturday - (int)culture.DateTimeFormat.FirstDayOfWeek + 7) % 7, GetColumnOfFirstDay(component));
+        Assert.IsFalse(component.Find(".bit-dtrp").ClassList.Contains("bit-rtl"));
+
+        GetDayButton(component, "20").Click();
+        GetDayButton(component, "25").Click();
+
+        Assert.IsNotNull(value);
+        Assert.AreEqual(Utc(2025, 3, 20), value.StartDate);
+        Assert.AreEqual(Utc(2025, 3, 25).Add(EndOfDay), value.EndDate);
+
+        var pattern = culture.DateTimeFormat.ShortDatePattern;
+        Assert.AreEqual($"Start: {new DateTime(2025, 3, 20).ToString(pattern, culture)} - End: {new DateTime(2025, 3, 25).ToString(pattern, culture)}",
+                        component.Find(".bit-dtrp-inp").GetAttribute("value"));
+    }
+
+    [TestMethod,
+        DataRow("de-DE"),
+        DataRow("en-US"),
+        DataRow("")
+    ]
+    public void BitDateRangePickerShouldReadARangeTypedTheWayTheCultureWritesIt(string name)
+    {
+        var culture = CultureInfo.GetCultureInfo(name);
+        BitDateRangePickerValue? value = null;
+
+        var component = Render(culture, Utc(2025, 3, 15), p =>
+        {
+            p.Add(x => x.AllowTextInput, true);
+            p.Bind(x => x.Value, value, v => value = v);
+        });
+
+        var pattern = culture.DateTimeFormat.ShortDatePattern;
+
+        component.Find(".bit-dtrp-inp").Change($"Start: {new DateTime(2025, 4, 2).ToString(pattern, culture)} - End: {new DateTime(2025, 4, 9).ToString(pattern, culture)}");
+
+        Assert.IsNotNull(value);
+        Assert.AreEqual(Utc(2025, 4, 2), value.StartDate);
+        Assert.AreEqual(Utc(2025, 4, 9), value.EndDate);
+        Assert.AreEqual($"{culture.DateTimeFormat.GetMonthName(4)} 2025", GetMonthTitle(component));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldRefuseARangeTypedInAnotherCulturesSpelling()
+    {
+        BitDateRangePickerValue? value = null;
+
+        var component = Render(CultureInfo.GetCultureInfo("de-DE"), Utc(2025, 3, 15), p =>
+        {
+            p.Add(x => x.AllowTextInput, true);
+            p.Bind(x => x.Value, value, v => value = v);
+        });
+
+        // The American spelling of the days is not a German date.
+        component.Find(".bit-dtrp-inp").Change("Start: 4/2/2025 - End: 4/9/2025");
+
+        Assert.IsNull(value);
+    }
+
+    #endregion
+
     private IRenderedComponent<BitDateRangePicker> Render(CultureInfo culture, DateTimeOffset startingDate, Action<ComponentParameterCollectionBuilder<BitDateRangePicker>>? more = null)
     {
         return RenderComponent<BitDateRangePicker>(parameters =>

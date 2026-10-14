@@ -297,10 +297,13 @@ public class BitSeparatorTests : BunitTestContext
                                   </div>");
     }
 
+    // Only Start, Center and End mean anything along the line; every other placement centers the content.
     [TestMethod,
         DataRow(BitPlacement.Start),
         DataRow(BitPlacement.Center),
-        DataRow(BitPlacement.End)
+        DataRow(BitPlacement.End),
+        DataRow(BitPlacement.Top),
+        DataRow(BitPlacement.Bottom)
     ]
     public void BitSeparatorShouldRespectAlignContent(BitPlacement alignContent)
     {

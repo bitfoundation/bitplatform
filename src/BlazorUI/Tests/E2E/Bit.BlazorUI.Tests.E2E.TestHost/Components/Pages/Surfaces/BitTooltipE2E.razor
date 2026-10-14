@@ -1,0 +1,280 @@
+﻿@page "/e2e/tooltip"
+
+<PageTitle>BitTooltip E2E</PageTitle>
+
+@* The tooltips here start hidden and are driven by the pointer, the keyboard and the page; the ones that start shown
+   to be measured are on /e2e/tooltip/shown, so none of them lies over an anchor a test points at. *@
+<style>
+    .e2e-ttp-row { display: flex; gap: 48px; align-items: center; flex-wrap: wrap; padding: 48px 0 16px; }
+    .e2e-ttp-away { display: inline-block; margin-inline-start: 200px; }
+</style>
+
+<h1>BitTooltip</h1>
+
+<E2ESection Id="basic" Title="Text, hover, focus, Disabled, DefaultIsShown">
+    <div class="e2e-ttp-row">
+        <BitTooltip Id="ttp-basic" Text="This is the tooltip text">
+            <button id="ttp-basic-anchor" type="button">Hover over me</button>
+        </BitTooltip>
+        <BitTooltip Id="ttp-disabled" Text="This tooltip never shows" Disabled>
+            <button id="ttp-disabled-anchor" type="button">Disabled tooltip</button>
+        </BitTooltip>
+        <BitTooltip Id="ttp-disabled-button" Text="Sign in first to save anything">
+            <button id="ttp-disabled-button-anchor" type="button" disabled aria-disabled="true">Save</button>
+        </BitTooltip>
+        <span id="away-basic" class="e2e-ttp-away">Away</span>
+    </div>
+</E2ESection>
+
+<E2ESection Id="triggers" Title="ShowOnHover, ShowOnFocus, ShowOnClick, HideOnClick">
+    <div class="e2e-ttp-row">
+        <BitTooltip Id="ttp-nofocus" Text="Shown by the pointer only" ShowOnFocus="false">
+            <button id="ttp-nofocus-anchor" type="button">Pointer only</button>
+        </BitTooltip>
+        <BitTooltip Id="ttp-nohover" Text="Shown by the keyboard only" ShowOnHover="false">
+            <button id="ttp-nohover-anchor" type="button">Keyboard only</button>
+        </BitTooltip>
+        <BitTooltip Id="ttp-click" Text="Toggled by a click" ShowOnClick ShowOnHover="false" ShowOnFocus="false">
+            <button id="ttp-click-anchor" type="button">Click me</button>
+        </BitTooltip>
+        <BitTooltip Id="ttp-hideclick" Text="A click takes me away" HideOnClick>
+            <button id="ttp-hideclick-anchor" type="button" @onclick="() => _hideClickAnchorClicks++">Press me</button>
+        </BitTooltip>
+        <button id="ttp-after" type="button">After</button>
+        <span id="away-triggers" class="e2e-ttp-away">Away</span>
+    </div>
+    <span id="hideclick-anchor-clicks">@_hideClickAnchorClicks</span>
+</E2ESection>
+
+<E2ESection Id="touch" Title="TouchHideDelay, TouchShowDelay, NoTouch">
+    <div class="e2e-ttp-row">
+        <BitTooltip Id="ttp-touch" Text="Shown by a tap" TouchHideDelay="800" OnShow="() => _touchShows++">
+            <button id="ttp-touch-anchor" type="button" @onclick="() => _touchAnchorClicks++">Tap me</button>
+        </BitTooltip>
+        <BitTooltip Id="ttp-longpress" Text="Pressed and held" TouchShowDelay="700">
+            <button id="ttp-longpress-anchor" type="button">Hold me</button>
+        </BitTooltip>
+        <BitTooltip Id="ttp-notouch" Text="Never shown by a touch" NoTouch>
+            <button id="ttp-notouch-anchor" type="button" @onclick="() => _noTouchAnchorClicks++">No touch</button>
+        </BitTooltip>
+    </div>
+    <span id="touch-shows">@_touchShows</span>
+    <span id="touch-anchor-clicks">@_touchAnchorClicks</span>
+    <span id="notouch-anchor-clicks">@_noTouchAnchorClicks</span>
+</E2ESection>
+
+<E2ESection Id="delays" Title="ShowDelay, HideDelay, BitTooltipGroup">
+    <div class="e2e-ttp-row">
+        <BitTooltip Id="ttp-showdelay" Text="Waited 700ms for you" ShowDelay="700">
+            <button id="ttp-showdelay-anchor" type="button">Show delay</button>
+        </BitTooltip>
+        <BitTooltip Id="ttp-hidedelay" Text="Staying for a second" HideDelay="1000">
+            <button id="ttp-hidedelay-anchor" type="button">Hide delay</button>
+        </BitTooltip>
+        <span id="away-delays" class="e2e-ttp-away">Away</span>
+    </div>
+    <div class="e2e-ttp-row">
+        <BitTooltipGroup ShowDelay="700" HideDelay="100" SkipDelay="1500">
+            <BitTooltip @ref="_g1" Id="ttp-g1" Text="Waited for, like the first of a row"><button id="ttp-g1-anchor" type="button">Bold</button></BitTooltip>
+            <BitTooltip @ref="_g2" Id="ttp-g2" Text="Shown at once, while the last one is fresh"><button id="ttp-g2-anchor" type="button">Italic</button></BitTooltip>
+            <BitTooltip Id="ttp-g3" Text="I keep the delay I was given" ShowDelay="0"><button id="ttp-g3-anchor" type="button">Underline</button></BitTooltip>
+        </BitTooltipGroup>
+        <button id="btn-show-g12" type="button" @onclick="ShowGroupPair">Show Bold, then Italic</button>
+        <span id="away-group" class="e2e-ttp-away">Away</span>
+    </div>
+    <div class="e2e-ttp-row">
+        <BitTooltipGroup AllowMultiple>
+            <BitTooltip @ref="_m1" Id="ttp-m1" Text="One of many"><button id="ttp-m1-anchor" type="button">Many one</button></BitTooltip>
+            <BitTooltip @ref="_m2" Id="ttp-m2" Text="Another of many"><button id="ttp-m2-anchor" type="button">Many two</button></BitTooltip>
+        </BitTooltipGroup>
+        <button id="btn-show-many" type="button" @onclick="ShowMany">Show both</button>
+    </div>
+</E2ESection>
+
+<E2ESection Id="interactive" Title="Interactive">
+    <div class="e2e-ttp-row">
+        <BitTooltip Id="ttp-itr" Placement="BitPlacement.Bottom" Text="Move onto me and I will stay. Select this text.">
+            <button id="ttp-itr-anchor" type="button">Interactive</button>
+        </BitTooltip>
+        <BitTooltip Id="ttp-noitr" Interactive="false" Placement="BitPlacement.Bottom" Text="Move onto me and I am gone.">
+            <button id="ttp-noitr-anchor" type="button">Not interactive</button>
+        </BitTooltip>
+        <span id="away-itr" class="e2e-ttp-away">Away</span>
+    </div>
+</E2ESection>
+
+<E2ESection Id="template" Title="Template, Anchor, LazyRender">
+    <div class="e2e-ttp-row">
+        <BitTooltip Id="ttp-tpl" Placement="BitPlacement.Bottom">
+            <Anchor><button id="ttp-tpl-anchor" type="button">Template</button></Anchor>
+            <Template><span id="ttp-tpl-content">Rich <b>content</b></span></Template>
+        </BitTooltip>
+        <BitTooltip Id="ttp-lazy" LazyRender Placement="BitPlacement.Bottom" Text="Rendered on first show">
+            <button id="ttp-lazy-anchor" type="button">Lazy</button>
+        </BitTooltip>
+        <BitTooltip Id="ttp-empty">
+            <button id="ttp-empty-anchor" type="button">Nothing to say</button>
+        </BitTooltip>
+        <span id="away-tpl" class="e2e-ttp-away">Away</span>
+    </div>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Relationship, TooltipId, Escape, NoDismissOnEscape">
+    <div class="e2e-ttp-row">
+        <BitTooltip Id="ttp-label" Text="Save the current document" Relationship="BitTooltipRelationship.Label">
+            <button id="ttp-label-anchor" type="button" aria-hidden="false">S</button>
+        </BitTooltip>
+        <BitTooltip Id="ttp-desc" Text="Everything you have written since the last save">
+            <button id="ttp-desc-anchor" type="button">Revert</button>
+        </BitTooltip>
+        <BitTooltip @ref="_noneRef" Id="ttp-none" Text="Discard" Relationship="BitTooltipRelationship.None">
+            <button id="ttp-none-anchor" type="button" aria-describedby="@_noneTooltipId">Trash</button>
+        </BitTooltip>
+        <BitTooltip Id="ttp-noesc" Text="Escape leaves me alone" NoDismissOnEscape>
+            <button id="ttp-noesc-anchor" type="button">No Escape</button>
+        </BitTooltip>
+        <BitTooltip Id="ttp-own" Text="The anchor keeps its own description">
+            <button id="ttp-own-anchor" type="button" aria-describedby="own-description">Own</button>
+        </BitTooltip>
+        <span id="own-description">An own description</span>
+    </div>
+</E2ESection>
+
+<E2ESection Id="binding" Title="@@bind-IsShown, IsShown, Show, Hide, Toggle, events">
+    <div class="e2e-ttp-row">
+        <button id="btn-bind" type="button" @onclick="() => _isShown = !_isShown">Toggle bound</button>
+        <span id="bind-value">@_isShown</span>
+        <BitTooltip Id="ttp-bind" @bind-IsShown="_isShown" Text="Bound to the toggle" Placement="BitPlacement.Bottom">
+            <button id="ttp-bind-anchor" type="button">Bound</button>
+        </BitTooltip>
+        <BitTooltip Id="ttp-ctl" IsShown="_controlled" Text="The page alone decides" Placement="BitPlacement.Bottom">
+            <button id="ttp-ctl-anchor" type="button">Controlled</button>
+        </BitTooltip>
+        <button id="btn-ctl" type="button" @onclick="() => _controlled = !_controlled">Toggle controlled</button>
+    </div>
+    <div class="e2e-ttp-row">
+        <button id="btn-m-show" type="button" @onclick="() => _mRef.Show()">Show</button>
+        <button id="btn-m-hide" type="button" @onclick="() => _mRef.Hide()">Hide</button>
+        <button id="btn-m-toggle" type="button" @onclick="() => _mRef.Toggle()">Toggle</button>
+        <BitTooltip @ref="_mRef" Id="ttp-m" Text="Driven from the buttons" Placement="BitPlacement.Bottom" ShowDelay="2000" HideDelay="2000"
+                    OnShow="() => _shows++" OnHide="() => _hides++" OnToggle="(bool v) => { _toggles++; _lastToggle = v.ToString(); }">
+            <span id="ttp-m-anchor">Methods</span>
+        </BitTooltip>
+        <span id="ev-shows">@_shows</span>
+        <span id="ev-hides">@_hides</span>
+        <span id="ev-toggles">@_toggles</span>
+        <span id="ev-last">@_lastToggle</span>
+    </div>
+</E2ESection>
+
+<E2ESection Id="params" Title="BitParams cascade">
+    <div class="e2e-ttp-row">
+        <BitParams Parameters="@_params">
+            <BitTooltip Id="ttp-par-1" Text="Bold"><button id="ttp-par-1-anchor" type="button">B</button></BitTooltip>
+            <BitTooltip Id="ttp-par-own" Text="Underline, in my own color" Color="BitColor.Secondary" Placement="BitPlacement.Top"><button id="ttp-par-own-anchor" type="button">U</button></BitTooltip>
+        </BitParams>
+        <span id="away-params" class="e2e-ttp-away">Away</span>
+    </div>
+</E2ESection>
+
+<E2ESection Id="in-modal" Title="A tooltip inside a modal">
+    <button id="btn-open-modal" type="button" @onclick="() => _modalOpen = true">Open the modal</button>
+    <span id="modal-open">@_modalOpen</span>
+    <BitModal @bind-IsOpen="_modalOpen">
+        <div style="padding: 48px 24px 24px;">
+            <BitTooltip Id="ttp-in-modal" Text="Escape closes me first">
+                <button id="ttp-in-modal-anchor" type="button">In a modal</button>
+            </BitTooltip>
+        </div>
+    </BitModal>
+</E2ESection>
+
+<E2ESection Id="base" Title="Visibility, HtmlAttributes, re-render, unmount">
+    <div class="e2e-ttp-row">
+        <BitTooltip Id="ttp-vis-hidden" Visibility="BitVisibility.Hidden" Text="Hidden"><span>Hidden</span></BitTooltip>
+        <BitTooltip Id="ttp-vis-collapsed" Visibility="BitVisibility.Collapsed" Text="Collapsed"><span>Collapsed</span></BitTooltip>
+        <BitTooltip Id="ttp-attrs" data-e2e="custom" HtmlAttributes="@_attrs" Text="Attributes"><span>Attributes</span></BitTooltip>
+        <BitTooltip Id="ttp-rr" Text="@_rrText" Color="_rrColor" Placement="_rrPlacement" IsShown="_rrShown"><span id="ttp-rr-anchor">Re-rendered</span></BitTooltip>
+        <button id="btn-rr" type="button" @onclick="Rerender">Change parameters</button>
+        @if (_showUnmount)
+        {
+            <BitTooltip Id="ttp-um" Text="Unmounted while shown" HideDelay="500" TouchHideDelay="500"><button id="ttp-um-anchor" type="button">Unmounted</button></BitTooltip>
+        }
+        <button id="btn-unmount" type="button" @onclick="() => _showUnmount = !_showUnmount">Unmount</button>
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private int _hideClickAnchorClicks;
+    private int _touchShows;
+    private int _touchAnchorClicks;
+    private int _noTouchAnchorClicks;
+
+    private BitTooltip _noneRef = default!;
+    private string? _noneTooltipId;
+
+    private bool _isShown;
+    private bool _controlled;
+
+    private BitTooltip _mRef = default!;
+    private int _shows;
+    private int _hides;
+    private int _toggles;
+    private string _lastToggle = "";
+
+    private BitTooltip _m1 = default!;
+    private BitTooltip _m2 = default!;
+    private BitTooltip _g1 = default!;
+    private BitTooltip _g2 = default!;
+
+    private readonly BitTooltipParams[] _params =
+    [
+        new()
+        {
+            Placement = BitPlacement.Bottom,
+            Color = BitColor.Primary,
+            HideArrow = true,
+        }
+    ];
+
+    private bool _modalOpen;
+
+    private readonly Dictionary<string, object> _attrs = new() { ["data-extra"] = "from-dictionary" };
+
+    private string _rrText = "Before";
+    private BitColor? _rrColor;
+    private BitPlacement _rrPlacement = BitPlacement.Top;
+    private bool _rrShown;
+    private bool _showUnmount = true;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false || _noneRef is null) return;
+
+        // The id of the surface, for an anchor that points at it by hand.
+        _noneTooltipId = _noneRef.TooltipId;
+        StateHasChanged();
+    }
+
+    private async Task ShowMany()
+    {
+        await _m1.Show();
+        await _m2.Show();
+    }
+
+    private async Task ShowGroupPair()
+    {
+        await _g1.Show();
+        await _g2.Show();
+    }
+
+    private void Rerender()
+    {
+        _rrText = "After";
+        _rrColor = BitColor.Error;
+        _rrPlacement = BitPlacement.Bottom;
+        _rrShown = true;
+    }
+}

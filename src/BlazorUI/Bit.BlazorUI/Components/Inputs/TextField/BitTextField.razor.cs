@@ -1475,6 +1475,10 @@ public partial class BitTextField : BitTextInputBase<string?>
 
     private async Task HandleOnRevealPasswordClick()
     {
+        // The button is natively disabled along with the field, but a click a script or an assistive technology
+        // dispatches still reaches the handler, so the guard every other handler of the field carries is here too.
+        if (Disabled) return;
+
         // The click handler already runs on the renderer synchronization context, so it takes the direct
         // route instead of asking the dispatcher for one it is already on.
         RevealPassword();

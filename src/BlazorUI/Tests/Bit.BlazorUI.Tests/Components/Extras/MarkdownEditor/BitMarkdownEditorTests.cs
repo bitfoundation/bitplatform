@@ -651,12 +651,30 @@ public class BitMarkdownEditorTests : BunitTestContext
 
         component.Find("[data-cmd=preview]").Click();
         Assert.AreEqual(BitMarkdownEditorMode.Split, component.Instance.Mode);
+        Assert.AreEqual(BitMarkdownEditorMode.Split, mode);
 
         await component.Instance._OnShortcut("mode");
         Assert.AreEqual(BitMarkdownEditorMode.Preview, component.Instance.Mode);
+        Assert.AreEqual(BitMarkdownEditorMode.Preview, mode);
 
         await component.Instance._OnShortcut("mode");
         Assert.AreEqual(BitMarkdownEditorMode.Edit, component.Instance.Mode);
+        Assert.AreEqual(BitMarkdownEditorMode.Edit, mode);
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownEditorShouldNotCycleAModeBoundOneWay()
+    {
+        var component = RenderComponent<BitMarkdownEditor>(parameters =>
+        {
+            parameters.Add(p => p.Mode, BitMarkdownEditorMode.Edit);
+        });
+
+        await component.Instance._OnShortcut("mode");
+
+        // A Mode written without a binding is the page's decision, and nothing is announced for a cycle that did not happen.
+        Assert.AreEqual(BitMarkdownEditorMode.Edit, component.Instance.Mode);
+        Assert.AreEqual(string.Empty, component.Find(".bit-mde-ann").TextContent);
     }
 
     [TestMethod]

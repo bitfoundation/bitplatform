@@ -56,7 +56,9 @@
                         }
                         else
                         {
-                            <span> @Texts.AtWord @BitFullCalendarHelpers.FormatTime(Event.StartDate, State.Use24HourFormat, State.Culture)</span>
+                            @* The leading space is part of the expression: a space standing alone at the start of the
+                               span is whitespace the Razor compiler trims, which ran the date and the word together. *@
+                            <span>@($" {Texts.AtWord} {BitFullCalendarHelpers.FormatTime(Event.StartDate, State.Use24HourFormat, State.Culture)}")</span>
                         }
                     </div>
                 </div>
@@ -76,7 +78,7 @@
                         }
                         else
                         {
-                            <span> @Texts.AtWord @BitFullCalendarHelpers.FormatTime(Event.EndDate, State.Use24HourFormat, State.Culture)</span>
+                            <span>@($" {Texts.AtWord} {BitFullCalendarHelpers.FormatTime(Event.EndDate, State.Use24HourFormat, State.Culture)}")</span>
                         }
                     </div>
                 </div>
