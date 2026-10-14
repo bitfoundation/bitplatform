@@ -20,6 +20,20 @@ public interface IBmotionInterop : IAsyncDisposable
     /// </summary>
     bool IsInProcess { get; }
 
+    /// <summary>
+    /// <c>true</c> while the components are being prerendered or statically rendered on the server:
+    /// no browser is attached, so no interop call can succeed. Defaults to <c>false</c>.
+    /// </summary>
+    bool IsPrerendering => false;
+
+    /// <summary>
+    /// How long, in ms, the CSS animation of the prerendered element with id
+    /// <paramref name="elementId"/> has been running, read synchronously while the runtime renders
+    /// the markup that replaces it; <c>null</c> when that isn't possible (only WebAssembly has
+    /// synchronous interop) or nothing is playing on it any more. Defaults to <c>null</c>.
+    /// </summary>
+    double? GetPrerenderedAnimationElapsedMs(string elementId) => null;
+
     // Every generic T below propagates DotNetObjectReference<T>'s trim annotation so trimmed/AOT
     // apps keep T's public ([JSInvokable]) methods for the JS→.NET callbacks.
 
