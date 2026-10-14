@@ -35,26 +35,26 @@ bit new MyApp
 
 # 🧰 What's inside
 
-### UI
+## UI
 
 - [***bit BlazorUI***](https://blazorui.bitplatform.dev) (`Bit.BlazorUI`): 90+ high-performance, accessible components with Dark and Light themes and RTL support, split across `Bit.BlazorUI`, `Bit.BlazorUI.Extras` (DataGrid, Chart, PdfViewer, RichTextEditor, Map, FullCalendar, CountryPicker, TimeZonePicker, and more), `Bit.BlazorUI.Icons` and `Bit.BlazorUI.Assets`.
 - [***Bmotion***](src/Bmotion/README.md) (`Bit.Bmotion`): A Blazor-native animation library inspired by Motion (Framer Motion), with springs, gestures, keyframes, variants, drag, layout (FLIP) and exit animations. The animation math runs in C#, so there's no JavaScript to wire up.
 
-### App infrastructure
+## App infrastructure
 
 - [***Brouter***](src/Brouter/README.md) (`Bit.Brouter`): A modern, declarative, nestable router for Blazor with async guards, data loaders, named routes, query string binding and global navigation hooks. It's the default router in bit Boilerplate.
 - [***Butil***](src/Butil/README.md) (`Bit.Butil`): The browser platform in C#. The DOM, storage, media, sensors, crypto, workers and more, exposed as injectable, strongly-typed services, so you don't have to drop back to JavaScript.
 - [***Besql***](src/Besql/README.md) (`Bit.Besql`): EF Core and SQLite in the browser, for offline-capable web apps that save data locally and sync later.
 - [***Bswup***](src/Bswup/README.md) (`Bit.Bswup`): Turns your Blazor app into a PWA with service-worker update progress, and works with prerendering for an experience like GitHub's or Reddit's.
 
-### Build & tooling
+## Build & tooling
 
 - [***bit CLI***](src/Cli/README.md) (`Bit.Cli`): Creates bitplatform projects (`bit new`), sets up cloned ones (`bit setup`), cleans build outputs, renames or removes projects, translates `.resx` files with an LLM, and decodes stack traces minified by Bit.Minifier.
 - [***Minifier***](src/Minifier/README.md) (`Bit.Minifier`): Shrinks the .NET assemblies a Blazor WebAssembly app downloads by stripping non-public names and compiler-only attributes after trimming. Install it and publish in Release; there's nothing else to set up.
 - [***BlazorES2019***](src/BlazorES2019/README.md) (`Bit.BlazorES2019`): An ES2019 build of the Blazor scripts, so apps also run on older browsers and WebViews (for example Safari before 16.4).
 - [***Code Analyzers***](src/CodeAnalyzers/README.md) (`Bit.CodeAnalyzers`) and [***Source Generators***](src/SourceGenerators/README.md) (`Bit.SourceGenerators`): Analyzers that enforce our best practices, and source generators that improve code quality and performance.
 
-### Project templates
+## Project templates
 
 - [***bit Boilerplate***](src/Templates/Boilerplate/Readme.md) (`Bit.Boilerplate`): A free, full-stack, cloud-ready project template that brings these libraries together. It builds unified Web, Android, iOS, Windows and macOS apps from a single codebase, with native platform integration and support for third-party Java, Kotlin, Swift, Objective-C and JavaScript libraries. You choose which features to include when you create the project, such as identity (passwordless, 2FA, SSO), multilingual support with RTL, offline database and sync, caching, OpenTelemetry, an AI chatbot with RAG, .NET Aspire, and CI/CD pipelines.
 - [***bit BlazorEmpty***](src/Templates/BlazorEmpty/Readme.md) (`Bit.BlazorEmpty`): A minimal Blazor template for starting from scratch.
