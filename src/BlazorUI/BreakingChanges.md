@@ -3,7 +3,7 @@
 Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`, `Bit.BlazorUI.Extras`,
 `Bit.BlazorUI.Assets`), newest version first, each with what to change in your code.
 
-## vNext (after 10.6.2)
+## 10.7.0 (first shipped in 10.7.0-pre-01)
 
 ### `BitColorPicker`, `BitFileInput` and `BitFileUpload` are form inputs ([#1530](https://github.com/bitfoundation/bitplatform/issues/1530))
 

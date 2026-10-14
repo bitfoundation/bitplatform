@@ -174,7 +174,20 @@ public static class Services
             // Stateless: no session state is kept between requests, so the endpoint keeps working when the
             // site runs behind a load balancer without session affinity. Nothing is lost by it here, since
             // the proxied tools are documentation lookups that never call back into the client.
-            .WithHttpTransport(options => options.Stateless = true)
+            .WithHttpTransport(options =>
+            {
+                options.Stateless = true;
+                // Invoked on every request in stateless mode, so the instructions name the release answering this one.
+                options.ConfigureSessionOptions = (httpContext, serverOptions, cancellationToken) =>
+                {
+                    if (httpContext.RequestServices.GetRequiredService<McpVersions>().Describe(httpContext.Request.Query["v"].FirstOrDefault()) is { } release)
+                    {
+                        serverOptions.ServerInstructions = $"{serverOptions.ServerInstructions} {release}";
+                    }
+
+                    return Task.CompletedTask;
+                };
+            })
             .WithListToolsHandler(async (request, cancellationToken) => new ListToolsResult
             {
                 Tools = [.. await request.Services!.GetRequiredService<McpProxyService>().ListTools(RequestedVersion(request.Services!), cancellationToken)]

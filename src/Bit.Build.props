@@ -61,6 +61,24 @@
         <EnableSingleFileAnalyzer>false</EnableSingleFileAnalyzer>
     </PropertyGroup>
 
+    <!-- Some files carry a hand-written copy of ReleaseVersion (the version a script reports at runtime, Info.Version
+         and the like). A project lists each of them as a ReleaseVersionLiteral, and the build fails when one of them
+         does not hold ReleaseVersion as a quoted literal, so a version bump that misses a file is caught by CI instead
+         of shipping a runtime version that disagrees with the package. The quotes keep a stale 10.7.0-pre-01 from
+         passing for 10.7.0. -->
+    <Target Name="VerifyReleaseVersionLiterals" BeforeTargets="BeforeBuild" Condition=" '@(ReleaseVersionLiteral)' != '' ">
+        <PropertyGroup>
+            <_ReleaseVersionLiteralPattern>['"]$([System.Text.RegularExpressions.Regex]::Escape('$(ReleaseVersion)'))['"]</_ReleaseVersionLiteralPattern>
+        </PropertyGroup>
+        <ItemGroup>
+            <_StaleReleaseVersionLiteral Include="@(ReleaseVersionLiteral)"
+                                         Condition=" !$([System.Text.RegularExpressions.Regex]::IsMatch($([System.IO.File]::ReadAllText('%(FullPath)')), '$(_ReleaseVersionLiteralPattern)')) " />
+        </ItemGroup>
+        <Error Condition=" '@(_StaleReleaseVersionLiteral)' != '' " ContinueOnError="ErrorAndContinue"
+               File="%(_StaleReleaseVersionLiteral.FullPath)"
+               Text="%(_StaleReleaseVersionLiteral.Identity) does not declare the release version '$(ReleaseVersion)' (see ReleaseVersion in Bit.Build.props). Update its version literal." />
+    </Target>
+
     <!-- README and LICENSE -->
     <PropertyGroup>
         <SignAssembly>True</SignAssembly>
