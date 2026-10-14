@@ -1,0 +1,31 @@
+﻿namespace Bit.Bonboarding;
+
+/// <summary>Everything the browser layer needs to make one step live.</summary>
+public sealed record BonboardingStepActivation
+{
+    public required string SessionId { get; init; }
+    public required BonboardingTargetDescriptor Target { get; init; }
+
+    /// <summary>Folded into the spotlight and into the rectangle used for positioning.</summary>
+    public IReadOnlyList<BonboardingTargetDescriptor>? AdditionalTargets { get; init; }
+
+    /// <summary>Keep polling the DOM through a mutation observer until the target appears.</summary>
+    public bool WaitForTarget { get; init; }
+
+    /// <summary>Milliseconds before <see cref="WaitForTarget"/> gives up. Zero waits forever.</summary>
+    public int WaitTimeoutMs { get; init; }
+
+    /// <summary>One of <c>smooth</c>, <c>instant</c>, <c>auto</c> or <c>none</c>.</summary>
+    public required string Scroll { get; init; }
+
+    public double ScrollPadding { get; init; }
+
+    /// <summary>One of <c>blocked</c>, <c>target</c> or <c>free</c>.</summary>
+    public required string Interaction { get; init; }
+
+    public bool CloseOnEscape { get; init; }
+
+    public bool KeyboardNavigation { get; init; }
+
+    public BonboardingAdvanceTriggerDescriptor? AdvanceOn { get; init; }
+}

@@ -1,0 +1,177 @@
+﻿@page "/"
+@inject IBonboardingService BonboardingService
+
+<PageTitle>Bit.Bonboarding</PageTitle>
+
+<div class="topbar">
+    <h1>A native Blazor onboarding library</h1>
+    <span class="pill">No JavaScript tour engine</span>
+</div>
+
+<p class="lede">
+    Multi-step product tours, spotlights, contextual hints and full application walkthroughs, written
+    in C# and Razor. The browser layer does nothing but measure, observe and route keys; every
+    decision about what to show and when lives in the engine.
+</p>
+
+<div class="row" style="margin-bottom:2rem">
+    <button type="button" class="btn btn-primary" @onclick="StartTourAsync">Take the tour</button>
+    <button type="button" class="btn" @onclick="RestartTourAsync">Restart from the beginning</button>
+    <a class="btn" href="placement">Explore the API</a>
+</div>
+
+<AppWindow />
+
+<h2>The whole tour, in markup</h2>
+
+<p class="muted">
+    This is the tour running above. Steps point at elements through
+    <code>data-bonboarding-anchor</code> attributes, so they survive re-renders and work with elements that
+    do not exist yet.
+</p>
+
+<pre><code>@MarkupExample</code></pre>
+
+<h2>Or as data</h2>
+
+<p class="muted">
+    The declarative components build a <code>BonboardingTourDefinition</code>. Constructing one directly is
+    equally supported, and is what you want when tours come from configuration or a database.
+</p>
+
+<pre><code>@CodeExample</code></pre>
+
+<h2>What is in the box</h2>
+
+<div class="grid">
+    <div class="card">
+        <h3>Positioning that behaves</h3>
+        <p class="muted">
+            Collision-aware placement computed in C#: shift before flip, arrow clamping, viewport
+            padding, and correct behaviour for targets larger than the screen.
+        </p>
+    </div>
+    <div class="card">
+        <h3>Elements that are not there yet</h3>
+        <p class="muted">
+            Wait, skip, centre or fail. Waiting uses a mutation observer rather than a polling
+            timer, and a target replaced by a re-render is rebound rather than reported as lost.
+        </p>
+    </div>
+    <div class="card">
+        <h3>Accessibility built in</h3>
+        <p class="muted">
+            Dialog semantics, focus trap and restoration, keyboard navigation, live-region
+            announcements, reduced motion and forced-colors support.
+        </p>
+    </div>
+    <div class="card">
+        <h3>Branching and conditions</h3>
+        <p class="muted">
+            Steps can be gated, tours can fork, and Back follows the path the user actually took
+            rather than the declaration order.
+        </p>
+    </div>
+    <div class="card">
+        <h3>Route-aware</h3>
+        <p class="muted">
+            A tour can span pages. Navigate away mid-tour and it waits for you instead of dragging
+            you back.
+        </p>
+    </div>
+    <div class="card">
+        <h3>Yours to restyle</h3>
+        <p class="muted">
+            Public CSS variables, per-step templates, or a completely headless popover that still
+            gets measurement, placement and focus management for free.
+        </p>
+    </div>
+</div>
+
+@* The tour itself. It renders nothing; BonboardingRoot in the layout displays it. *@
+<BonboardingTour @ref="_tour" Id="welcome" Title="Welcome tour" Version="1">
+
+    <BonboardingStep Id="intro"
+                     Title="Welcome aboard"
+                     Description="A two minute look around. Use the arrow keys, or press Escape at any point to leave." />
+
+    <BonboardingStep Id="create"
+                     Anchor="new-project"
+                     Title="Create a project"
+                     Description="Everything starts here. Projects hold your environments, members and billing."
+                     Placement="BonboardingPlacement.Bottom" />
+
+    <BonboardingStep Id="search"
+                     Anchor="search"
+                     Title="Find anything"
+                     Description="Search across every project you can see. It matches names, tags and members."
+                     Placement="BonboardingPlacement.Bottom" />
+
+    <BonboardingStep Id="metrics"
+                     Anchor="metrics"
+                     Title="Your numbers at a glance"
+                     Description="Usage updates hourly. The spotlight can cover a whole region, not just a single control."
+                     Placement="BonboardingPlacement.Top" />
+
+    <BonboardingStep Id="settings"
+                     Anchor="settings"
+                     Title="Make it yours"
+                     Description="Theme, locale, notifications and API keys all live under settings."
+                     Placement="BonboardingPlacement.BottomEnd" />
+
+    <BonboardingStep Id="done"
+                     Title="That is the tour"
+                     Description="Every page in the sidebar demonstrates one capability in more depth."
+                     DoneLabel="Finish" />
+
+</BonboardingTour>
+
+@code {
+    private BonboardingTour? _tour;
+
+    private Task StartTourAsync() => _tour is null ? Task.CompletedTask : _tour.StartAsync();
+
+    private Task RestartTourAsync() => _tour is null ? Task.CompletedTask : _tour.RestartAsync();
+
+    private const string MarkupExample = """
+        <BonboardingTour @ref="tour" Id="welcome">
+            <BonboardingStep Anchor="new-project"
+                             Title="Create a project"
+                             Description="Everything starts here." />
+
+            <BonboardingStep Anchor="search"
+                             Title="Find anything"
+                             Placement="BonboardingPlacement.Bottom"
+                             Description="Search across every project you can see." />
+        </BonboardingTour>
+
+        @* Mark the targets, anywhere in your markup: *@
+        <button data-bonboarding-anchor="new-project">New project</button>
+        """;
+
+    private const string CodeExample = """
+        var tour = new BonboardingTourDefinition
+        {
+            Id = "welcome",
+            Steps =
+            {
+                new BonboardingStepDefinition
+                {
+                    Id = "create",
+                    Target = BonboardingStepTarget.Anchor("new-project"),
+                    Title = "Create a project",
+                    Description = "Everything starts here.",
+                },
+                new BonboardingStepDefinition
+                {
+                    Id = "search",
+                    Target = "#search-box",          // a CSS selector converts implicitly
+                    Placement = BonboardingPlacement.Bottom,
+                    Title = "Find anything",
+                },
+            },
+        };
+
+        await BonboardingService.StartOnceAsync(tour);       // skipped if the user already finished it
+        """;
+}

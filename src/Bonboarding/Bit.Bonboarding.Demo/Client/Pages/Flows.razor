@@ -1,0 +1,256 @@
+﻿@page "/flows"
+@inject IBonboardingService BonboardingService
+
+<PageTitle>Conditional and branching flows</PageTitle>
+
+<h1>Conditional &amp; branching</h1>
+
+<p class="lede">
+    Not every user should see every step. Steps can be gated by a condition, tours can fork on an
+    answer, and Back walks the path the user actually took rather than the order the steps were
+    declared in.
+</p>
+
+<h2>Conditional steps</h2>
+
+<p class="muted">
+    The billing step only appears for an administrator, and the progress indicator counts only the
+    steps that will actually be shown. Change the role and run the tour again.
+</p>
+
+<div class="card" style="margin-bottom:1.25rem">
+    <div class="row" style="align-items:flex-end">
+        <div class="field">
+            <label for="role">Signed in as</label>
+            <select id="role" @bind="_role">
+                <option value="Viewer">Viewer</option>
+                <option value="Member">Member</option>
+                <option value="Administrator">Administrator</option>
+            </select>
+        </div>
+
+        <div class="field">
+            <label for="beta">Feature flag</label>
+            <select id="beta" @bind="_betaEnabled">
+                <option value="false">Beta off</option>
+                <option value="true">Beta on</option>
+            </select>
+        </div>
+
+        <button type="button" class="btn btn-primary" @onclick="StartConditionalAsync">Run the conditional tour</button>
+    </div>
+</div>
+
+<AppWindow>
+    @if (_betaEnabled)
+    {
+        <div class="tile" data-bonboarding-anchor="beta-panel">
+            <div class="tile-title">Beta</div>
+            <div class="tile-value">Insights</div>
+        </div>
+    }
+</AppWindow>
+
+<h2>Branching on an answer</h2>
+
+<p class="muted">
+    Footer buttons carry an effect. Combined with <code>BonboardingStepActionEffect.GoTo</code> this is the
+    whole of a branching tour: no state machine to write.
+</p>
+
+<div class="row" style="margin-bottom:1rem">
+    <button type="button" class="btn btn-primary" @onclick="StartBranchingAsync">Run the branching tour</button>
+    @if (_branchTaken is not null)
+    {
+        <span class="pill">Branch taken: @_branchTaken</span>
+    }
+</div>
+
+<pre><code>@BranchExample</code></pre>
+
+<h2>Validation before advancing</h2>
+
+<p class="muted">
+    <code>CanAdvance</code> blocks the forward button until the step is satisfied. Here the tour will
+    not move on until the field contains something.
+</p>
+
+<div class="row" style="margin-bottom:1rem">
+    <input type="text" data-bonboarding-anchor="project-name" placeholder="Project name" @bind="_projectName" @bind:event="oninput" />
+    <button type="button" class="btn btn-primary" @onclick="StartValidatingAsync">Run the validating tour</button>
+</div>
+
+@code {
+    private string _role = "Viewer";
+    private bool _betaEnabled;
+    private string _projectName = string.Empty;
+    private string? _branchTaken;
+
+    private bool IsAdministrator => _role == "Administrator";
+
+    private Task StartConditionalAsync() => BonboardingService.StartAsync(new BonboardingTourDefinition
+    {
+        Id = "conditional",
+        Persist = false,
+        Progress = BonboardingProgressStyle.Text,
+        Steps =
+        {
+            new BonboardingStepDefinition
+            {
+                Id = "start",
+                Target = BonboardingStepTarget.Anchor("new-project"),
+                Title = "Everyone sees this",
+                Description = $"You are signed in as {_role}.",
+            },
+            new BonboardingStepDefinition
+            {
+                Id = "billing",
+                Target = BonboardingStepTarget.Anchor("billing"),
+                Title = "Billing",
+                Description = "Only administrators are shown this step, and only they count it in the progress.",
+                // Conditions are re-evaluated on every transition, so they may depend on state that
+                // earlier steps changed.
+                When = _ => ValueTask.FromResult(IsAdministrator),
+            },
+            new BonboardingStepDefinition
+            {
+                Id = "beta",
+                Target = BonboardingStepTarget.Anchor("beta-panel"),
+                Title = "Beta insights",
+                Description = "Gated on the feature flag, and on the element actually being rendered.",
+                When = _ => ValueTask.FromResult(_betaEnabled),
+            },
+            new BonboardingStepDefinition
+            {
+                Id = "end",
+                Target = BonboardingStepTarget.Anchor("account"),
+                Title = "Your account",
+                Description = "Sign out and preferences live here.",
+            },
+        },
+    });
+
+    private Task StartBranchingAsync()
+    {
+        _branchTaken = null;
+
+        return BonboardingService.StartAsync(new BonboardingTourDefinition
+        {
+            Id = "branching",
+            Persist = false,
+            Progress = BonboardingProgressStyle.None,
+            Steps =
+            {
+                new BonboardingStepDefinition
+                {
+                    Id = "ask",
+                    Title = "What brings you here?",
+                    Description = "The rest of the tour depends on your answer.",
+                    ShowNext = false,
+                    Actions =
+                    [
+                        new BonboardingStepAction
+                        {
+                            Id = "designer",
+                            Label = "I design",
+                            Style = BonboardingStepActionStyle.Primary,
+                            Effect = BonboardingStepActionEffect.GoTo,
+                            TargetStepId = "design",
+                            OnClick = Remember("design"),
+                        },
+                        new BonboardingStepAction
+                        {
+                            Id = "developer",
+                            Label = "I build",
+                            Style = BonboardingStepActionStyle.Primary,
+                            Effect = BonboardingStepActionEffect.GoTo,
+                            TargetStepId = "build",
+                            OnClick = Remember("build"),
+                        },
+                    ],
+                },
+                new BonboardingStepDefinition
+                {
+                    Id = "design",
+                    Target = BonboardingStepTarget.Anchor("metrics"),
+                    Title = "For designers",
+                    Description = "Usage numbers first: they tell you which screens matter.",
+                    // Skip over the developer branch on the way out.
+                    ResolveNext = _ => ValueTask.FromResult<string?>("shared"),
+                },
+                new BonboardingStepDefinition
+                {
+                    Id = "build",
+                    Target = BonboardingStepTarget.Anchor("settings"),
+                    Title = "For developers",
+                    Description = "API keys and webhooks are under settings.",
+                },
+                new BonboardingStepDefinition
+                {
+                    Id = "shared",
+                    Target = BonboardingStepTarget.Anchor("account"),
+                    Title = "Wherever you came from",
+                    Description = "Press Back: it returns to the branch you took, not to the step above this one.",
+                    DoneLabel = "Finish",
+                },
+            },
+        });
+
+        Func<BonboardingStepContext, ValueTask> Remember(string branch) => _ =>
+        {
+            _branchTaken = branch;
+            StateHasChanged();
+            return ValueTask.CompletedTask;
+        };
+    }
+
+    private Task StartValidatingAsync() => BonboardingService.StartAsync(new BonboardingTourDefinition
+    {
+        Id = "validating",
+        Persist = false,
+        Steps =
+        {
+            new BonboardingStepDefinition
+            {
+                Id = "name",
+                Target = BonboardingStepTarget.Anchor("project-name"),
+                Title = "Name your project",
+                Description = "Next stays inert until this field has a value. Type something, then press Next.",
+                Interaction = BonboardingInteractionMode.TargetOnly,
+                CanAdvance = _ => ValueTask.FromResult(!string.IsNullOrWhiteSpace(_projectName)),
+            },
+            new BonboardingStepDefinition
+            {
+                Id = "confirmed",
+                Title = "Thank you",
+                Description = $"A tour can read and validate application state at any point.",
+            },
+        },
+    });
+
+    private const string BranchExample = """
+        new BonboardingStepDefinition
+        {
+            Id = "ask",
+            Title = "What brings you here?",
+            ShowNext = false,
+            Actions =
+            [
+                new BonboardingStepAction
+                {
+                    Label = "I design",
+                    Style = BonboardingStepActionStyle.Primary,
+                    Effect = BonboardingStepActionEffect.GoTo,
+                    TargetStepId = "design",
+                },
+                new BonboardingStepAction
+                {
+                    Label = "I build",
+                    Style = BonboardingStepActionStyle.Primary,
+                    Effect = BonboardingStepActionEffect.GoTo,
+                    TargetStepId = "build",
+                },
+            ],
+        }
+        """;
+}

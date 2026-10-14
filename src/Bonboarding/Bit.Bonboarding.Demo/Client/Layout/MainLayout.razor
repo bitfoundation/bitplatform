@@ -1,0 +1,47 @@
+﻿@inherits LayoutComponentBase
+@inject IBonboardingService BonboardingService
+
+<div class="shell" data-theme="@(_dark ? "dark" : "light")">
+    <aside class="sidebar">
+        <a class="brand" href="">
+            <span class="brand-mark" aria-hidden="true">B</span>
+            <span>Bit.Bonboarding</span>
+        </a>
+
+        <nav class="nav">
+            <NavLink href="" Match="NavLinkMatch.All">Overview</NavLink>
+
+            <div class="nav-heading">Guides</div>
+            <NavLink href="placement">Placement &amp; spotlight</NavLink>
+            <NavLink href="dynamic">Dynamic targets</NavLink>
+            <NavLink href="flows">Conditional &amp; branching</NavLink>
+            <NavLink href="workspace">Multi-page tour</NavLink>
+
+            <div class="nav-heading">Customise</div>
+            <NavLink href="theming">Theming &amp; RTL</NavLink>
+            <NavLink href="headless">Headless UI</NavLink>
+            <NavLink href="events">Events &amp; persistence</NavLink>
+        </nav>
+
+        <div style="margin-top:1.5rem">
+            <button type="button" class="btn" @onclick="ToggleTheme">
+                @(_dark ? "Light theme" : "Dark theme")
+            </button>
+        </div>
+    </aside>
+
+    <main class="main">
+        @Body
+    </main>
+</div>
+
+@* One host renders every tour the application starts, wherever it is started from. *@
+@* Dark mode forces tours dark; in light mode each tour keeps its own theme setting, which is
+   what lets the theming page demonstrate the option. *@
+<BonboardingRoot Theme="@(_dark ? BonboardingTheme.Dark : null)" />
+
+@code {
+    private bool _dark;
+
+    private void ToggleTheme() => _dark = !_dark;
+}

@@ -1,0 +1,392 @@
+﻿/*
+ * Demo application styles. Hand-written on purpose: the library must look good next to an app
+ * that does not use any CSS framework, and the demo should prove it.
+ */
+
+:root {
+    --ui-bg: #f7f8fa;
+    --ui-surface: #ffffff;
+    --ui-surface-2: #f1f3f6;
+    --ui-text: #14161a;
+    --ui-muted: #5c6270;
+    --ui-border: #e3e6ea;
+    --ui-accent: #2563eb;
+    --ui-accent-soft: #eaf0fe;
+    --ui-radius: 12px;
+    --ui-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 8px 24px -12px rgba(16, 24, 40, 0.22);
+    --ui-sidebar: 15rem;
+    color-scheme: light;
+}
+
+[data-theme="dark"] {
+    --ui-bg: #0f1115;
+    --ui-surface: #16181d;
+    --ui-surface-2: #1e2128;
+    --ui-text: #f2f4f7;
+    --ui-muted: #a2aab8;
+    --ui-border: #2a2e37;
+    --ui-accent: #6ea8fe;
+    --ui-accent-soft: #1c2740;
+    --ui-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 28px -14px rgba(0, 0, 0, 0.8);
+    color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: var(--ui-bg);
+    color: var(--ui-text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 {
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin: 0 0 0.5rem;
+}
+
+h1 { font-size: 1.9rem; font-weight: 660; }
+h2 { font-size: 1.3rem; font-weight: 620; margin-top: 2.25rem; }
+h3 { font-size: 1.02rem; font-weight: 600; }
+
+p { margin: 0 0 1rem; }
+
+a { color: var(--ui-accent); }
+
+code {
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.85em;
+    background: var(--ui-surface-2);
+    border-radius: 5px;
+    padding: 0.1em 0.35em;
+}
+
+pre {
+    background: var(--ui-surface-2);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--ui-radius);
+    padding: 0.9rem 1rem;
+    overflow-x: auto;
+    font-size: 0.82rem;
+    line-height: 1.55;
+}
+
+pre code { background: none; padding: 0; font-size: inherit; }
+
+/* ---- Shell ------------------------------------------------------------- */
+
+.shell {
+    background: var(--ui-bg);
+    color: var(--ui-text);
+    display: grid;
+    grid-template-columns: var(--ui-sidebar) minmax(0, 1fr);
+    min-height: 100vh;
+}
+
+.sidebar {
+    border-inline-end: 1px solid var(--ui-border);
+    background: var(--ui-surface);
+    padding: 1.25rem 1rem;
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 640;
+    letter-spacing: -0.02em;
+    margin-bottom: 1.25rem;
+    text-decoration: none;
+    color: inherit;
+}
+
+.brand-mark {
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 8px;
+    background: linear-gradient(140deg, var(--ui-accent), #7c3aed);
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+.nav { display: flex; flex-direction: column; gap: 0.125rem; }
+
+.nav-heading {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--ui-muted);
+    margin: 1rem 0 0.4rem 0.6rem;
+}
+
+.nav a {
+    display: block;
+    padding: 0.4rem 0.6rem;
+    border-radius: 8px;
+    color: var(--ui-text);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.nav a:hover { background: var(--ui-surface-2); }
+
+.nav a.active {
+    background: var(--ui-accent-soft);
+    color: var(--ui-accent);
+    font-weight: 560;
+}
+
+.main { padding: 2rem 2.5rem 5rem; max-width: 62rem; }
+
+.topbar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.75rem;
+    flex-wrap: wrap;
+}
+
+.topbar .spacer { margin-inline-start: auto; }
+
+.lede {
+    color: var(--ui-muted);
+    font-size: 1.02rem;
+    max-width: 46rem;
+    margin-bottom: 1.75rem;
+}
+
+/* ---- Pieces ------------------------------------------------------------- */
+
+.card {
+    background: var(--ui-surface);
+    border: 1px solid var(--ui-border);
+    border-radius: var(--ui-radius);
+    padding: 1.1rem 1.25rem;
+    box-shadow: var(--ui-shadow);
+}
+
+.grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+
+.row {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.9rem;
+    border-radius: 9px;
+    border: 1px solid var(--ui-border);
+    background: var(--ui-surface);
+    color: var(--ui-text);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 550;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.btn:hover { background: var(--ui-surface-2); }
+
+.btn:focus-visible {
+    outline: 2px solid var(--ui-accent);
+    outline-offset: 2px;
+}
+
+.btn-primary {
+    background: var(--ui-accent);
+    border-color: var(--ui-accent);
+    color: #fff;
+}
+
+.btn-primary:hover { filter: brightness(1.06); background: var(--ui-accent); }
+
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.pill {
+    display: inline-block;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: var(--ui-surface-2);
+    border: 1px solid var(--ui-border);
+    font-size: 0.72rem;
+    font-weight: 560;
+    color: var(--ui-muted);
+}
+
+.muted { color: var(--ui-muted); }
+
+.note {
+    border-inline-start: 3px solid var(--ui-accent);
+    background: var(--ui-accent-soft);
+    border-radius: 0 8px 8px 0;
+    padding: 0.7rem 0.9rem;
+    font-size: 0.9rem;
+    margin: 1rem 0;
+}
+
+label { font-size: 0.85rem; font-weight: 550; display: block; margin-bottom: 0.25rem; }
+
+select, input[type="text"], input[type="number"] {
+    font: inherit;
+    font-size: 0.875rem;
+    padding: 0.4rem 0.55rem;
+    border-radius: 8px;
+    border: 1px solid var(--ui-border);
+    background: var(--ui-surface);
+    color: var(--ui-text);
+    min-width: 9rem;
+}
+
+.field { min-width: 10rem; }
+
+table { border-collapse: collapse; width: 100%; font-size: 0.85rem; }
+
+th, td {
+    text-align: start;
+    padding: 0.45rem 0.6rem;
+    border-bottom: 1px solid var(--ui-border);
+    vertical-align: top;
+}
+
+th { font-weight: 600; color: var(--ui-muted); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+
+/* ---- Fake product surfaces used as tour targets -------------------------- */
+
+.app-window {
+    border: 1px solid var(--ui-border);
+    border-radius: var(--ui-radius);
+    background: var(--ui-surface);
+    overflow: hidden;
+    box-shadow: var(--ui-shadow);
+}
+
+.app-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.6rem 0.85rem;
+    border-bottom: 1px solid var(--ui-border);
+    background: var(--ui-surface-2);
+    flex-wrap: wrap;
+}
+
+.app-body { display: grid; grid-template-columns: 11rem minmax(0, 1fr); min-height: 16rem; }
+
+.app-side {
+    border-inline-end: 1px solid var(--ui-border);
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    font-size: 0.85rem;
+}
+
+.app-side span { padding: 0.3rem 0.5rem; border-radius: 7px; }
+.app-side span.sel { background: var(--ui-accent-soft); color: var(--ui-accent); font-weight: 560; }
+
+.app-main { padding: 1rem; display: flex; flex-direction: column; gap: 0.75rem; }
+
+.tile {
+    border: 1px solid var(--ui-border);
+    border-radius: 10px;
+    padding: 0.75rem 0.9rem;
+    background: var(--ui-surface);
+}
+
+.tile-title { font-size: 0.78rem; color: var(--ui-muted); }
+.tile-value { font-size: 1.35rem; font-weight: 640; letter-spacing: -0.02em; }
+
+.playground {
+    position: relative;
+    border: 1px dashed var(--ui-border);
+    border-radius: var(--ui-radius);
+    background: var(--ui-surface);
+    height: 22rem;
+    overflow: auto;
+}
+
+.playground-inner {
+    position: relative;
+    width: 100%;
+    height: 40rem;
+}
+
+.dot-target {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 5.5rem;
+    height: 2.5rem;
+    border-radius: 9px;
+    border: 1px solid var(--ui-border);
+    background: var(--ui-surface-2);
+    font-size: 0.78rem;
+    font-weight: 560;
+}
+
+.log {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.76rem;
+    max-height: 20rem;
+    overflow: auto;
+    border: 1px solid var(--ui-border);
+    border-radius: var(--ui-radius);
+    background: var(--ui-surface);
+}
+
+.log-row { display: flex; gap: 0.75rem; padding: 0.3rem 0.7rem; border-bottom: 1px solid var(--ui-border); }
+.log-row:last-child { border-bottom: none; }
+.log-time { color: var(--ui-muted); }
+.log-kind { font-weight: 600; min-width: 9rem; }
+
+/* A deliberately custom-styled popover, used by the headless example. */
+.brand-popover {
+    --bit-bonboarding-surface: #101828;
+    --bit-bonboarding-text: #f9fafb;
+    --bit-bonboarding-text-muted: #cbd5e1;
+    --bit-bonboarding-border: #1f2a3d;
+    --bit-bonboarding-accent: #f59e0b;
+    --bit-bonboarding-accent-text: #1f1300;
+    --bit-bonboarding-radius: 6px;
+}
+
+@media (max-width: 60rem) {
+    .shell { grid-template-columns: 1fr; }
+
+    .sidebar {
+        position: static;
+        height: auto;
+        border-inline-end: none;
+        border-bottom: 1px solid var(--ui-border);
+    }
+
+    .main { padding: 1.5rem 1.25rem 4rem; }
+
+    .app-body { grid-template-columns: 1fr; }
+    .app-side { border-inline-end: none; border-bottom: 1px solid var(--ui-border); flex-direction: row; flex-wrap: wrap; }
+}

@@ -1,0 +1,183 @@
+﻿@page "/theming"
+@inject IBonboardingService BonboardingService
+
+<PageTitle>Theming and RTL</PageTitle>
+
+<h1>Theming &amp; RTL</h1>
+
+<p class="lede">
+    Every value in the default look is a CSS custom property under <code>.bit-bonboarding-root</code>. Restyling
+    the library is a matter of overriding variables in your own stylesheet, with no selector fights
+    and no framework to install.
+</p>
+
+<div class="card" style="margin-bottom:1.25rem">
+    <div class="row" style="align-items:flex-end">
+        <div class="field">
+            <label for="theme">Theme</label>
+            <select id="theme" @bind="_theme">
+                @foreach (var value in Enum.GetValues<BonboardingTheme>())
+                {
+                    <option value="@value">@value</option>
+                }
+            </select>
+        </div>
+
+        <div class="field">
+            <label for="direction">Direction</label>
+            <select id="direction" @bind="_direction">
+                @foreach (var value in Enum.GetValues<BonboardingDirection>())
+                {
+                    <option value="@value">@value</option>
+                }
+            </select>
+        </div>
+
+        <div class="field">
+            <label for="progress">Progress</label>
+            <select id="progress" @bind="_progress">
+                @foreach (var value in Enum.GetValues<BonboardingProgressStyle>())
+                {
+                    <option value="@value">@value</option>
+                }
+            </select>
+        </div>
+
+        <div class="field">
+            <label for="skin">Skin</label>
+            <select id="skin" @bind="_skin">
+                <option value="">Default</option>
+                <option value="brand-popover">Brand (amber on navy)</option>
+            </select>
+        </div>
+
+        <button type="button" class="btn btn-primary" @onclick="StartAsync">Run the tour</button>
+    </div>
+</div>
+
+<AppWindow />
+
+<h2>Localisation</h2>
+
+<p class="muted">
+    Button text comes from an <code>BonboardingLabels</code> instance, set globally or per tour. For
+    resource files or a translation service, register your own
+    <code>IBonboardingLocalizer</code> instead.
+</p>
+
+<div class="row" style="margin-bottom:1rem">
+    <button type="button" class="btn" @onclick='() => StartLocalizedAsync("en")'>English</button>
+    <button type="button" class="btn" @onclick='() => StartLocalizedAsync("de")'>Deutsch</button>
+    <button type="button" class="btn" @onclick='() => StartLocalizedAsync("ar")'>العربية (RTL)</button>
+</div>
+
+<h2>The variables</h2>
+
+<pre><code>@ThemeExample</code></pre>
+
+<p class="muted">
+    Direction affects more than text alignment: in a right-to-left tour the arrow keys swap, and
+    <code>Start</code> and <code>End</code> alignments mirror.
+</p>
+
+@code {
+    private BonboardingTheme _theme = BonboardingTheme.System;
+    private BonboardingDirection _direction = BonboardingDirection.Auto;
+    private BonboardingProgressStyle _progress = BonboardingProgressStyle.Dots;
+    private string _skin = string.Empty;
+
+    private Task StartAsync() => BonboardingService.StartAsync(BuildTour(
+        id: "theming",
+        labels: null,
+        direction: _direction));
+
+    private Task StartLocalizedAsync(string culture)
+    {
+        var (labels, direction) = culture switch
+        {
+            "de" => (new BonboardingLabels
+            {
+                Next = "Weiter",
+                Previous = "Zurück",
+                Skip = "Überspringen",
+                Done = "Fertig",
+                Close = "Schließen",
+                DialogLabel = "Produktrundgang",
+                ProgressFormat = "{0} von {1}",
+                StepAnnouncementFormat = "Schritt {0} von {1}. {2}",
+                ProgressLabel = "Fortschritt",
+                WaitingAnnouncement = "Warten auf den nächsten Teil der Seite.",
+            }, BonboardingDirection.LeftToRight),
+
+            "ar" => (new BonboardingLabels
+            {
+                Next = "التالي",
+                Previous = "السابق",
+                Skip = "تخطي",
+                Done = "إنهاء",
+                Close = "إغلاق",
+                DialogLabel = "جولة المنتج",
+                ProgressFormat = "{0} من {1}",
+                StepAnnouncementFormat = "الخطوة {0} من {1}. {2}",
+                ProgressLabel = "التقدم",
+                WaitingAnnouncement = "في انتظار الجزء التالي من الصفحة.",
+            }, BonboardingDirection.RightToLeft),
+
+            _ => (new BonboardingLabels(), BonboardingDirection.LeftToRight),
+        };
+
+        return BonboardingService.StartAsync(BuildTour($"theming-{culture}", labels, direction));
+    }
+
+    private BonboardingTourDefinition BuildTour(string id, BonboardingLabels? labels, BonboardingDirection direction) => new()
+    {
+        Id = id,
+        Persist = false,
+        Theme = _theme,
+        Direction = direction,
+        Progress = _progress,
+        Labels = labels,
+        PopoverClass = string.IsNullOrEmpty(_skin) ? null : _skin,
+        Steps =
+        {
+            new BonboardingStepDefinition
+            {
+                Id = "create",
+                Target = BonboardingStepTarget.Anchor("new-project"),
+                Title = "Create a project",
+                Description = "The default look is deliberately quiet, so it sits inside your product rather than on top of it.",
+            },
+            new BonboardingStepDefinition
+            {
+                Id = "usage",
+                Target = BonboardingStepTarget.Anchor("usage"),
+                Title = "Usage",
+                Description = "Colours, radii, shadows, spacing and motion are all custom properties.",
+                Placement = BonboardingPlacement.Bottom,
+            },
+            new BonboardingStepDefinition
+            {
+                Id = "settings",
+                Target = BonboardingStepTarget.Anchor("settings"),
+                Title = "Settings",
+                Description = "Change the skin above to see a completely different visual identity, with no library changes.",
+                Placement = BonboardingPlacement.BottomEnd,
+            },
+        },
+    };
+
+    private const string ThemeExample = """
+        /* Your stylesheet, loaded after the library's. */
+        .bit-bonboarding-root {
+            --bit-bonboarding-accent: #f59e0b;
+            --bit-bonboarding-accent-text: #1f1300;
+            --bit-bonboarding-surface: #101828;
+            --bit-bonboarding-text: #f9fafb;
+            --bit-bonboarding-radius: 6px;
+            --bit-bonboarding-duration: 160ms;
+        }
+
+        /* Or scope it to one tour with PopoverClass. */
+        .checkout-tour { --bit-bonboarding-accent: #16a34a; }
+        """;
+}

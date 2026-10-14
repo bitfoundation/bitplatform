@@ -1,0 +1,566 @@
+﻿/*!
+ * Bit.Bonboarding default theme.
+ *
+ * Every value below is a custom property under .bit-bonboarding-root, so an application can restyle the whole
+ * library from its own stylesheet without overriding a single selector:
+ *
+ *   .bit-bonboarding-root { --bit-bonboarding-accent: #6d28d9; --bit-bonboarding-radius: 4px; }
+ *
+ * No external CSS framework is used or assumed.
+ */
+
+.bit-bonboarding-root {
+    /* ---- Palette (light) ---- */
+    --bit-bonboarding-surface: #ffffff;
+    --bit-bonboarding-surface-subtle: #f6f7f9;
+    --bit-bonboarding-text: #14161a;
+    --bit-bonboarding-text-muted: #5c6270;
+    --bit-bonboarding-border: #e3e6ea;
+    --bit-bonboarding-border-strong: #cfd4dc;
+
+    --bit-bonboarding-accent: #2563eb;
+    --bit-bonboarding-accent-hover: #1d4ed8;
+    --bit-bonboarding-accent-active: #1e40af;
+    --bit-bonboarding-accent-text: #ffffff;
+    --bit-bonboarding-accent-soft: rgba(37, 99, 235, 0.12);
+
+    --bit-bonboarding-danger: #dc2626;
+    --bit-bonboarding-danger-hover: #b91c1c;
+
+    --bit-bonboarding-overlay: 0, 0, 0;
+    --bit-bonboarding-overlay-opacity: 0.55;
+
+    --bit-bonboarding-spotlight-ring: rgba(255, 255, 255, 0.9);
+    --bit-bonboarding-spotlight-glow: rgba(37, 99, 235, 0.35);
+
+    /* ---- Shape and depth ---- */
+    --bit-bonboarding-radius: 14px;
+    --bit-bonboarding-radius-sm: 8px;
+    --bit-bonboarding-radius-pill: 999px;
+    --bit-bonboarding-shadow: 0 1px 2px rgba(16, 24, 40, 0.08), 0 12px 32px -8px rgba(16, 24, 40, 0.28);
+    --bit-bonboarding-focus-ring: 0 0 0 2px var(--bit-bonboarding-surface), 0 0 0 4px var(--bit-bonboarding-accent);
+
+    /* ---- Typography ---- */
+    --bit-bonboarding-font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --bit-bonboarding-font-size: 0.9375rem;
+    --bit-bonboarding-font-size-sm: 0.8125rem;
+    --bit-bonboarding-title-size: 1.0625rem;
+    --bit-bonboarding-title-weight: 620;
+    --bit-bonboarding-line-height: 1.55;
+
+    /* ---- Metrics ---- */
+    --bit-bonboarding-popover-width: 22rem;
+    --bit-bonboarding-popover-max-height: min(70vh, 34rem);
+    --bit-bonboarding-space: 1rem;
+    --bit-bonboarding-arrow: 10px;
+
+    /* ---- Motion (overridden inline when reduced motion is honoured) ---- */
+    --bit-bonboarding-duration: 220ms;
+    --bit-bonboarding-ease: cubic-bezier(0.22, 0.9, 0.3, 1);
+
+    --bit-bonboarding-z: 9000;
+
+    position: fixed;
+    inset: 0;
+    z-index: var(--bit-bonboarding-z);
+    pointer-events: none;
+    font-family: var(--bit-bonboarding-font);
+    font-size: var(--bit-bonboarding-font-size);
+    line-height: var(--bit-bonboarding-line-height);
+    color: var(--bit-bonboarding-text);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+/* ---- Dark theme -------------------------------------------------------- */
+
+.bit-bonboarding-root[data-bonboarding-theme="dark"] {
+    --bit-bonboarding-surface: #16181d;
+    --bit-bonboarding-surface-subtle: #1e2128;
+    --bit-bonboarding-text: #f2f4f7;
+    --bit-bonboarding-text-muted: #a2aab8;
+    --bit-bonboarding-border: #2a2e37;
+    --bit-bonboarding-border-strong: #3a404b;
+
+    --bit-bonboarding-accent: #6ea8fe;
+    --bit-bonboarding-accent-hover: #8bbaff;
+    --bit-bonboarding-accent-active: #a8ccff;
+    --bit-bonboarding-accent-text: #0b1220;
+    --bit-bonboarding-accent-soft: rgba(110, 168, 254, 0.16);
+
+    --bit-bonboarding-danger: #f87171;
+    --bit-bonboarding-danger-hover: #fca5a5;
+
+    --bit-bonboarding-overlay: 0, 0, 0;
+    --bit-bonboarding-overlay-opacity: 0.68;
+
+    --bit-bonboarding-spotlight-ring: rgba(255, 255, 255, 0.42);
+    --bit-bonboarding-spotlight-glow: rgba(110, 168, 254, 0.32);
+
+    --bit-bonboarding-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 16px 40px -10px rgba(0, 0, 0, 0.7);
+    --bit-bonboarding-focus-ring: 0 0 0 2px var(--bit-bonboarding-surface), 0 0 0 4px var(--bit-bonboarding-accent);
+}
+
+/* ---- Overlay and spotlight --------------------------------------------- */
+
+.bit-bonboarding-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(var(--bit-bonboarding-overlay), var(--bit-bonboarding-overlay-opacity));
+    opacity: 0;
+    animation: bit-bonboarding-fade-in var(--bit-bonboarding-duration) var(--bit-bonboarding-ease) forwards;
+}
+
+.bit-bonboarding-overlay[data-bonboarding-interactive="true"] {
+    pointer-events: auto;
+    cursor: default;
+}
+
+/*
+ * The spotlight is a transparent box whose enormous outer shadow does the dimming. That keeps the
+ * hole perfectly sharp at any zoom level and lets a single element be animated between steps.
+ */
+.bit-bonboarding-spotlight {
+    position: fixed;
+    box-shadow:
+        0 0 0 9999px rgba(var(--bit-bonboarding-overlay), var(--bit-bonboarding-overlay-opacity)),
+        0 0 0 1px var(--bit-bonboarding-spotlight-ring) inset,
+        0 0 0 4px var(--bit-bonboarding-spotlight-glow);
+    pointer-events: none;
+    opacity: 0;
+    animation: bit-bonboarding-fade-in var(--bit-bonboarding-duration) var(--bit-bonboarding-ease) forwards;
+    transition:
+        left var(--bit-bonboarding-duration) var(--bit-bonboarding-ease),
+        top var(--bit-bonboarding-duration) var(--bit-bonboarding-ease),
+        width var(--bit-bonboarding-duration) var(--bit-bonboarding-ease),
+        height var(--bit-bonboarding-duration) var(--bit-bonboarding-ease),
+        border-radius var(--bit-bonboarding-duration) var(--bit-bonboarding-ease);
+}
+
+/* Blockers make the spotlight hole clickable while the rest of the page is not. */
+.bit-bonboarding-blocker {
+    position: fixed;
+    pointer-events: auto;
+    background: transparent;
+}
+
+/* ---- Popover ------------------------------------------------------------ */
+
+.bit-bonboarding-popover {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: var(--bit-bonboarding-popover-width);
+    max-width: calc(100vw - 2rem);
+    max-height: var(--bit-bonboarding-popover-max-height);
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    background: var(--bit-bonboarding-surface);
+    color: var(--bit-bonboarding-text);
+    border: 1px solid var(--bit-bonboarding-border);
+    border-radius: var(--bit-bonboarding-radius);
+    box-shadow: var(--bit-bonboarding-shadow);
+    pointer-events: auto;
+    opacity: 0;
+    transform: translate3d(0, 0, 0);
+    transition:
+        transform var(--bit-bonboarding-duration) var(--bit-bonboarding-ease),
+        opacity var(--bit-bonboarding-duration) var(--bit-bonboarding-ease);
+    outline: none;
+}
+
+/* Hidden until the first measurement lands, so it is never seen at the wrong position. */
+.bit-bonboarding-popover[data-bonboarding-placed="false"] {
+    visibility: hidden;
+}
+
+.bit-bonboarding-popover[data-bonboarding-placed="true"] {
+    opacity: 1;
+}
+
+.bit-bonboarding-popover:focus-visible {
+    box-shadow: var(--bit-bonboarding-shadow), var(--bit-bonboarding-focus-ring);
+}
+
+.bit-bonboarding-popover-inner {
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+/* ---- Arrow -------------------------------------------------------------- */
+
+.bit-bonboarding-arrow {
+    position: absolute;
+    width: var(--bit-bonboarding-arrow);
+    height: var(--bit-bonboarding-arrow);
+    background: var(--bit-bonboarding-surface);
+    border: 1px solid var(--bit-bonboarding-border);
+    transform: rotate(45deg);
+    pointer-events: none;
+}
+
+.bit-bonboarding-popover[data-bonboarding-side="bottom"] .bit-bonboarding-arrow {
+    top: calc(var(--bit-bonboarding-arrow) / -2);
+    border-right: none;
+    border-bottom: none;
+    border-top-left-radius: 3px;
+}
+
+.bit-bonboarding-popover[data-bonboarding-side="top"] .bit-bonboarding-arrow {
+    bottom: calc(var(--bit-bonboarding-arrow) / -2);
+    border-left: none;
+    border-top: none;
+    border-bottom-right-radius: 3px;
+}
+
+.bit-bonboarding-popover[data-bonboarding-side="right"] .bit-bonboarding-arrow {
+    left: calc(var(--bit-bonboarding-arrow) / -2);
+    border-right: none;
+    border-top: none;
+    border-bottom-left-radius: 3px;
+}
+
+.bit-bonboarding-popover[data-bonboarding-side="left"] .bit-bonboarding-arrow {
+    right: calc(var(--bit-bonboarding-arrow) / -2);
+    border-left: none;
+    border-bottom: none;
+    border-top-right-radius: 3px;
+}
+
+/* ---- Header ------------------------------------------------------------- */
+
+.bit-bonboarding-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: var(--bit-bonboarding-space) var(--bit-bonboarding-space) 0.5rem;
+}
+
+.bit-bonboarding-title {
+    margin: 0;
+    font-size: var(--bit-bonboarding-title-size);
+    font-weight: var(--bit-bonboarding-title-weight);
+    letter-spacing: -0.011em;
+    line-height: 1.35;
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.bit-bonboarding-close {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin: -0.25rem -0.25rem 0 0;
+    padding: 0;
+    border: none;
+    border-radius: var(--bit-bonboarding-radius-sm);
+    background: transparent;
+    color: var(--bit-bonboarding-text-muted);
+    cursor: pointer;
+    transition: background-color var(--bit-bonboarding-duration) var(--bit-bonboarding-ease), color var(--bit-bonboarding-duration) var(--bit-bonboarding-ease);
+}
+
+.bit-bonboarding-close:hover {
+    background: var(--bit-bonboarding-surface-subtle);
+    color: var(--bit-bonboarding-text);
+}
+
+.bit-bonboarding-close:focus-visible {
+    outline: none;
+    box-shadow: var(--bit-bonboarding-focus-ring);
+}
+
+.bit-bonboarding-close svg {
+    width: 1rem;
+    height: 1rem;
+    display: block;
+}
+
+/* ---- Body --------------------------------------------------------------- */
+
+.bit-bonboarding-body {
+    padding: 0 var(--bit-bonboarding-space);
+    color: var(--bit-bonboarding-text-muted);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    min-height: 0;
+    flex: 1 1 auto;
+}
+
+/* A step with no title should not sit tight against the top edge. */
+.bit-bonboarding-popover[data-bonboarding-untitled="true"] .bit-bonboarding-body {
+    padding-top: var(--bit-bonboarding-space);
+}
+
+.bit-bonboarding-body > :first-child { margin-top: 0; }
+.bit-bonboarding-body > :last-child { margin-bottom: 0; }
+
+.bit-bonboarding-description {
+    margin: 0;
+    overflow-wrap: anywhere;
+}
+
+/* ---- Footer ------------------------------------------------------------- */
+
+.bit-bonboarding-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: var(--bit-bonboarding-space);
+    padding-top: 0.875rem;
+    flex-wrap: wrap;
+}
+
+.bit-bonboarding-footer-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-inline-start: auto;
+    flex-wrap: wrap;
+}
+
+/* ---- Buttons ------------------------------------------------------------ */
+
+.bit-bonboarding-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+    padding: 0.4375rem 0.875rem;
+    font: inherit;
+    font-size: var(--bit-bonboarding-font-size-sm);
+    font-weight: 550;
+    line-height: 1.4;
+    border-radius: var(--bit-bonboarding-radius-sm);
+    border: 1px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+        background-color var(--bit-bonboarding-duration) var(--bit-bonboarding-ease),
+        border-color var(--bit-bonboarding-duration) var(--bit-bonboarding-ease),
+        color var(--bit-bonboarding-duration) var(--bit-bonboarding-ease);
+}
+
+.bit-bonboarding-button:focus-visible {
+    outline: none;
+    box-shadow: var(--bit-bonboarding-focus-ring);
+}
+
+.bit-bonboarding-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.bit-bonboarding-button-primary {
+    background: var(--bit-bonboarding-accent);
+    color: var(--bit-bonboarding-accent-text);
+    border-color: var(--bit-bonboarding-accent);
+}
+
+.bit-bonboarding-button-primary:hover:not(:disabled) {
+    background: var(--bit-bonboarding-accent-hover);
+    border-color: var(--bit-bonboarding-accent-hover);
+}
+
+.bit-bonboarding-button-primary:active:not(:disabled) {
+    background: var(--bit-bonboarding-accent-active);
+    border-color: var(--bit-bonboarding-accent-active);
+}
+
+.bit-bonboarding-button-secondary {
+    background: var(--bit-bonboarding-surface);
+    color: var(--bit-bonboarding-text);
+    border-color: var(--bit-bonboarding-border-strong);
+}
+
+.bit-bonboarding-button-secondary:hover:not(:disabled) {
+    background: var(--bit-bonboarding-surface-subtle);
+}
+
+.bit-bonboarding-button-ghost {
+    background: transparent;
+    color: var(--bit-bonboarding-text-muted);
+    border-color: transparent;
+    padding-inline: 0.5rem;
+}
+
+.bit-bonboarding-button-ghost:hover:not(:disabled) {
+    background: var(--bit-bonboarding-surface-subtle);
+    color: var(--bit-bonboarding-text);
+}
+
+.bit-bonboarding-button-danger {
+    background: var(--bit-bonboarding-danger);
+    color: #fff;
+    border-color: var(--bit-bonboarding-danger);
+}
+
+.bit-bonboarding-button-danger:hover:not(:disabled) {
+    background: var(--bit-bonboarding-danger-hover);
+    border-color: var(--bit-bonboarding-danger-hover);
+}
+
+/* ---- Progress ----------------------------------------------------------- */
+
+.bit-bonboarding-progress-text {
+    font-size: var(--bit-bonboarding-font-size-sm);
+    color: var(--bit-bonboarding-text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.bit-bonboarding-progress-dots {
+    display: flex;
+    align-items: center;
+    gap: 0.3125rem;
+}
+
+.bit-bonboarding-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: var(--bit-bonboarding-radius-pill);
+    background: var(--bit-bonboarding-border-strong);
+    transition: background-color var(--bit-bonboarding-duration) var(--bit-bonboarding-ease), width var(--bit-bonboarding-duration) var(--bit-bonboarding-ease);
+}
+
+.bit-bonboarding-dot[data-bonboarding-state="done"] {
+    background: var(--bit-bonboarding-accent-soft);
+}
+
+.bit-bonboarding-dot[data-bonboarding-state="current"] {
+    width: 18px;
+    background: var(--bit-bonboarding-accent);
+}
+
+.bit-bonboarding-progress-bar {
+    position: relative;
+    flex: 1 1 4rem;
+    height: 4px;
+    max-width: 8rem;
+    border-radius: var(--bit-bonboarding-radius-pill);
+    background: var(--bit-bonboarding-surface-subtle);
+    overflow: hidden;
+}
+
+.bit-bonboarding-progress-bar-fill {
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0;
+    bottom: 0;
+    background: var(--bit-bonboarding-accent);
+    border-radius: inherit;
+    transition: width var(--bit-bonboarding-duration) var(--bit-bonboarding-ease);
+}
+
+/* ---- Waiting state ------------------------------------------------------ */
+
+.bit-bonboarding-waiting {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: var(--bit-bonboarding-space);
+    color: var(--bit-bonboarding-text-muted);
+    font-size: var(--bit-bonboarding-font-size-sm);
+}
+
+.bit-bonboarding-spinner {
+    width: 1rem;
+    height: 1rem;
+    flex: 0 0 auto;
+    border: 2px solid var(--bit-bonboarding-border-strong);
+    border-top-color: var(--bit-bonboarding-accent);
+    border-radius: 50%;
+    animation: bit-bonboarding-spin 700ms linear infinite;
+}
+
+/* ---- Utilities ---------------------------------------------------------- */
+
+.bit-bonboarding-sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+@keyframes bit-bonboarding-fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes bit-bonboarding-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ---- Compact viewports --------------------------------------------------- */
+
+@media (max-width: 34rem) {
+    .bit-bonboarding-root {
+        --bit-bonboarding-popover-width: calc(100vw - 1.5rem);
+        --bit-bonboarding-popover-max-height: min(62vh, 30rem);
+        --bit-bonboarding-space: 0.875rem;
+    }
+
+    .bit-bonboarding-footer {
+        gap: 0.375rem;
+    }
+}
+
+/* Touch targets need to clear 24x24 CSS pixels to satisfy WCAG 2.2 target size. */
+@media (pointer: coarse) {
+    .bit-bonboarding-root {
+        --bit-bonboarding-font-size-sm: 0.875rem;
+    }
+
+    .bit-bonboarding-button {
+        padding: 0.5625rem 1rem;
+        min-height: 2.25rem;
+    }
+
+    .bit-bonboarding-close {
+        width: 2.25rem;
+        height: 2.25rem;
+    }
+}
+
+/*
+ * Reduced motion is also honoured in C# by zeroing --bit-bonboarding-duration, which covers transitions. This
+ * additionally stops the entry animations and the waiting spinner.
+ */
+@media (prefers-reduced-motion: reduce) {
+    .bit-bonboarding-root[data-bonboarding-reduced-motion="true"] .bit-bonboarding-overlay,
+    .bit-bonboarding-root[data-bonboarding-reduced-motion="true"] .bit-bonboarding-spotlight {
+        animation: none;
+        opacity: 1;
+    }
+
+    .bit-bonboarding-root[data-bonboarding-reduced-motion="true"] .bit-bonboarding-spinner {
+        animation-duration: 1600ms;
+    }
+}
+
+/* ---- High contrast ------------------------------------------------------- */
+
+@media (forced-colors: active) {
+    .bit-bonboarding-popover {
+        border: 1px solid CanvasText;
+        box-shadow: none;
+    }
+
+    .bit-bonboarding-spotlight {
+        outline: 2px solid Highlight;
+    }
+
+    .bit-bonboarding-button {
+        border: 1px solid ButtonText;
+    }
+}

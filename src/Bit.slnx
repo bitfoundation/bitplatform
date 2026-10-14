@@ -50,6 +50,17 @@
     <Project Path="Bmotion/Tests/Bit.Bmotion.Tests/Bit.Bmotion.Tests.csproj" />
     <Project Path="Bmotion/Tests/Bit.Bmotion.Tests.Mcp/Bit.Bmotion.Tests.Mcp.csproj" />
   </Folder>
+  <Folder Name="/Bonboarding/">
+    <File Path="Bonboarding/README.md" />
+    <Project Path="Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj" />
+  </Folder>
+  <Folder Name="/Bonboarding/Bit.Bonboarding.Demo/">
+    <Project Path="Bonboarding/Bit.Bonboarding.Demo/Client/Bit.Bonboarding.Demo.Client.csproj" />
+    <Project Path="Bonboarding/Bit.Bonboarding.Demo/Server/Bit.Bonboarding.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Bonboarding/Tests/">
+    <Project Path="Bonboarding/Tests/Bit.Bonboarding.Tests/Bit.Bonboarding.Tests.csproj" />
+  </Folder>
   <Folder Name="/BlazorES2019/">
     <Project Path="BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj" />
   </Folder>

@@ -14,11 +14,13 @@ public partial class CodebaseMemoryCli
     /// The parts of the repository that get indexed, and so the only code the source tools reach.
     /// What is left out answers for itself elsewhere on this endpoint: BlazorUI, Bmotion, Brouter, Butil
     /// and Bswup each have their own MCP server here, written for the library rather than grepped out of it.
+    /// Bonboarding has no MCP server of its own yet, so its source is indexed like the build time projects.
     /// </summary>
     internal static readonly string[] IndexedPaths =
     [
         "src/Besql",
         "src/BlazorES2019",
+        "src/Bonboarding",
         "src/CodeAnalyzers",
         "src/Minifier",
         "src/ResxTranslator",

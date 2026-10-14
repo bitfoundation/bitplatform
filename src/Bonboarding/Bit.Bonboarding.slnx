@@ -1,0 +1,17 @@
+﻿<Solution>
+  <Folder Name="/.Solution Items/">
+    <File Path="../../.gitignore" />
+    <File Path="../.editorconfig" />
+    <File Path="../Bit.Build.props" />
+    <File Path="../global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Bit.Bonboarding.Demo/">
+    <Project Path="Bit.Bonboarding.Demo/Client/Bit.Bonboarding.Demo.Client.csproj" />
+    <Project Path="Bit.Bonboarding.Demo/Server/Bit.Bonboarding.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Bit.Bonboarding.Tests/Bit.Bonboarding.Tests.csproj" />
+  </Folder>
+  <Project Path="Bit.Bonboarding/Bit.Bonboarding.csproj" />
+</Solution>

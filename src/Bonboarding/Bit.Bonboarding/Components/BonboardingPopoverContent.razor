@@ -1,0 +1,134 @@
+﻿@namespace Bit.Bonboarding
+
+@* The default popover chrome. Replaced wholesale by BonboardingRoot.ChildContent, a tour Template
+   or a step Template, so nothing here is load-bearing for the engine. *@
+
+<div class="bit-bonboarding-popover-inner">
+
+    @if (Model.Step.Header is not null)
+    {
+        @Model.Step.Header(Model)
+    }
+    else if (!string.IsNullOrEmpty(Model.Title) || ShowClose)
+    {
+        <div class="bit-bonboarding-header">
+            @if (!string.IsNullOrEmpty(Model.Title))
+            {
+                <h2 class="bit-bonboarding-title" id="@TitleId">@Model.Title</h2>
+            }
+
+            @if (ShowClose)
+            {
+                <button type="button"
+                        class="bit-bonboarding-close"
+                        aria-label="@Model.Labels.Close"
+                        data-bonboarding-action="close"
+                        @onclick="Model.CloseAsync">
+                    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" focusable="false">
+                        <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
+                    </svg>
+                </button>
+            }
+        </div>
+    }
+
+    @if (Model.Step.Body is not null)
+    {
+        <div class="bit-bonboarding-body">@Model.Step.Body(Model)</div>
+    }
+    else if (!string.IsNullOrEmpty(Model.Description))
+    {
+        <div class="bit-bonboarding-body">
+            <p class="bit-bonboarding-description" id="@DescriptionId">@Model.Description</p>
+        </div>
+    }
+
+    @if (Model.Step.Footer is not null)
+    {
+        @Model.Step.Footer(Model)
+    }
+    else if (HasFooter)
+    {
+        <div class="bit-bonboarding-footer">
+            <BonboardingProgress Model="Model" />
+
+            <div class="bit-bonboarding-footer-actions">
+                @if (Options.ShowSkip && !Model.IsLast)
+                {
+                    <button type="button"
+                            class="bit-bonboarding-button bit-bonboarding-button-ghost"
+                            data-bonboarding-action="skip"
+                            @onclick="Model.SkipAsync">@Model.SkipLabel</button>
+                }
+
+                @if (Options.ShowPrevious && !Model.IsFirst)
+                {
+                    <button type="button"
+                            class="bit-bonboarding-button bit-bonboarding-button-secondary"
+                            data-bonboarding-action="previous"
+                            @onclick="Model.PreviousAsync">@Model.PreviousLabel</button>
+                }
+
+                @if (Model.Step.Actions is { Count: > 0 } actions)
+                {
+                    @foreach (var action in actions)
+                    {
+                        <button type="button"
+                                class="@BonboardingCss.Classes("bit-bonboarding-button", StyleClass(action.Style), action.CssClass)"
+                                data-bonboarding-action="@(action.Id ?? action.Label)"
+                                data-bonboarding-autofocus="@(action.AutoFocus ? "true" : null)"
+                                disabled="@IsDisabled(action)"
+                                @onclick="() => Model.InvokeAsync(action)">@action.Label</button>
+                    }
+                }
+
+                @if (Options.ShowNext)
+                {
+                    <button type="button"
+                            class="bit-bonboarding-button bit-bonboarding-button-primary"
+                            data-bonboarding-action="next"
+                            data-bonboarding-autofocus="@(HasCustomAutoFocus ? null : "true")"
+                            @onclick="Model.NextAsync">@Model.NextLabel</button>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>The step being rendered, together with the commands that drive the tour.</summary>
+    [Parameter, EditorRequired] public required BonboardingStepRenderContext Model { get; set; }
+
+    /// <summary>Id the dialog points at with <c>aria-labelledby</c>.</summary>
+    [Parameter] public string? TitleId { get; set; }
+
+    /// <summary>Id the dialog points at with <c>aria-describedby</c>.</summary>
+    [Parameter] public string? DescriptionId { get; set; }
+
+    private BonboardingEffectiveStepOptions Options => Model.Options;
+
+    private bool ShowClose => Options.ShowClose;
+
+    private bool HasFooter
+        => Options.ShowNext
+        || Options.ShowSkip
+        || Options.ShowPrevious
+        || Options.Progress != BonboardingProgressStyle.None
+        || Model.Step.Actions is { Count: > 0 };
+
+    private bool HasCustomAutoFocus => Model.Step.Actions?.Any(action => action.AutoFocus) == true;
+
+    private bool IsDisabled(BonboardingStepAction action)
+        => action.IsDisabled is not null
+            && action.IsDisabled(new BonboardingStepContext(Model.Session, Model.Step, Model.Index, ServiceProvider));
+
+    [Inject] private IServiceProvider ServiceProvider { get; set; } = default!;
+
+    private static string StyleClass(BonboardingStepActionStyle style) => style switch
+    {
+        BonboardingStepActionStyle.Primary => "bit-bonboarding-button-primary",
+        BonboardingStepActionStyle.Ghost => "bit-bonboarding-button-ghost",
+        BonboardingStepActionStyle.Danger => "bit-bonboarding-button-danger",
+        _ => "bit-bonboarding-button-secondary",
+    };
+}

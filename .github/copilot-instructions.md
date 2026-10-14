@@ -48,6 +48,7 @@
 **RULE 1:** If a task (question, code modification or review) involves the use of bit BlazorUI components (e.g., `BitButton`, `BitTooltip`, `BitTextField`),
 or refers to `bitplatform`, `bit Bswup`, `bit Butil`, `bit Bmotion`, `bit Brouter`, or `bit Boilerplate`, or involves UI components without explicitly specifying their UI toolkit,
 you **MUST** use the `bitplatform` MCP server's tools - start with the matching `Search<Library>` tool (e.g. `SearchBitBlazorUI`, `SearchBswup`, `SearchButil`, `SearchBmotion`, `SearchBrouter`) and follow the calls it names - to find the correct implementation and usage patterns before writing or changing any code.
+`bit Bonboarding` has no `Search` tool yet: for it, read `src/Bonboarding/README.md` and the library source instead.
 
 **End of RULE 1**
 
