@@ -17,6 +17,7 @@ public partial class AppJsBridge
 
         dotnetObj = DotNetObjectReference.Create(this);
 
+        // Optional: only the Android app registers one, and App.ts provides WebOTP only when it is there and supported.
         smsOtpReceiver = ScopedServices.GetService<ISmsOtpReceiver>();
 
         await JSRuntime.InvokeVoidAsync("App.registerJsBridge", dotnetObj, smsOtpReceiver?.IsSupported is true);
@@ -41,6 +42,7 @@ public partial class AppJsBridge
     [JSInvokable(nameof(ReceiveSmsOtp))]
     public async Task<string?> ReceiveSmsOtp()
     {
+        // One wait at a time: a newer BitOtpInput (e.g. the second one on ConfirmPage) replaces the pending request.
         CancelSmsOtp();
 
         using var cts = smsOtpCts = new CancellationTokenSource();

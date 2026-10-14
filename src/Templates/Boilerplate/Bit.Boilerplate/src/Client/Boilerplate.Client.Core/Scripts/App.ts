@@ -73,20 +73,24 @@ export class App {
         bswup.checkForUpdate();
     }
 
+    // Android's WebView has no WebOTP, so the app answers BitOtpInput's navigator.credentials.get({ otp }) itself (See ISmsOtpReceiver).
     private static provideWebOtp() {
         const credentials = navigator.credentials;
         if (!credentials || App.credentialsGet) return;
 
+        // Only OTP requests are taken over; every other credential request (passkeys etc.) still goes to the WebView.
         App.credentialsGet = credentials.get.bind(credentials);
         credentials.get = (options?: CredentialRequestOptions & { otp?: unknown }) =>
             options?.otp ? App.receiveSmsOtp(options.signal) : App.credentialsGet!(options);
 
+        // Callers (BitOtpInput, Butil's WebOtp) feature-detect WebOTP by this global before calling get.
         (window as any).OTPCredential ??= class { };
     }
 
     private static async receiveSmsOtp(signal?: AbortSignal) {
         if (signal?.aborted) throw new DOMException('The request was aborted.', 'AbortError');
 
+        // A newer request replaces the pending one (See AppJsBridge.ReceiveSmsOtp), so only the newest may cancel the native wait.
         const requestId = ++App.smsOtpRequestId;
         const cancel = () => {
             if (requestId === App.smsOtpRequestId) {

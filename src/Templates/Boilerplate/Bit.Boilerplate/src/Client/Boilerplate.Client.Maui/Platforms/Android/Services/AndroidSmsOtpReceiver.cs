@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 
 namespace Boilerplate.Client.Maui.Platforms.Android.Services;
 
+// Google's SMS User Consent API: it shows the "Allow" sheet for the next SMS and needs no SMS permission.
 public partial class AndroidSmsOtpReceiver : ISmsOtpReceiver
 {
     public bool IsSupported => GoogleApiAvailability.Instance.IsGooglePlayServicesAvailable(Platform.AppContext) is ConnectionResult.Success;
@@ -22,10 +23,12 @@ public partial class AndroidSmsOtpReceiver : ISmsOtpReceiver
         var message = new TaskCompletionSource<string?>(TaskCreationOptions.RunContinuationsAsynchronously);
         var receiver = new SmsConsentReceiver(message);
 
+        // SendPermission makes sure only Google Play services can deliver this broadcast.
         ContextCompat.RegisterReceiver(context, receiver, new IntentFilter(SmsRetriever.SmsRetrievedAction), SmsRetriever.SendPermission, null, ContextCompat.ReceiverExported);
 
         try
         {
+            // Only an SMS that arrives after this call is offered, for up to five minutes.
             await SmsRetriever.GetClient(context).StartSmsUserConsent(null);
 
             using var registration = cancellationToken.Register(() => message.TrySetCanceled(cancellationToken));
@@ -40,6 +43,7 @@ public partial class AndroidSmsOtpReceiver : ISmsOtpReceiver
         }
     }
 
+    // The "@host #code" line the server adds to every OTP SMS for WebOTP.
     [GeneratedRegex(@"^@\S+ #(\S+)", RegexOptions.Multiline)]
     private static partial Regex WebOtpLine();
 
@@ -47,6 +51,7 @@ public partial class AndroidSmsOtpReceiver : ISmsOtpReceiver
     {
         public override void OnReceive(Context? context, Intent? intent)
         {
+            // A replaced or canceled wait can still get the broadcast, and must not open the sheet.
             if (intent is null || message.Task.IsCompleted) return;
 
             var status = IntentCompat.GetParcelableExtra(intent, SmsRetriever.ExtraStatus, Java.Lang.Class.FromType(typeof(Statuses))) as Statuses;
@@ -58,6 +63,7 @@ public partial class AndroidSmsOtpReceiver : ISmsOtpReceiver
                 return;
             }
 
+            // Registered on demand rather than in MainActivity.OnCreate, and dropped once the user answers.
             ActivityResultLauncher? launcher = null;
             launcher = activity.ActivityResultRegistry.Register(nameof(AndroidSmsOtpReceiver), new ActivityResultContracts.StartActivityForResult(), new ConsentResultCallback(result =>
             {
