@@ -130,15 +130,6 @@ public static class ProjectOptionCatalog
         },
         new()
         {
-            Key = "realProject",
-            Title = "Fast restarts",
-            Summary = "Keeps the project's containers running between runs, so debugging a real project starts fast.",
-            Flag = "--realProject",
-            GetBool = s => s.RealProject,
-            SetBool = (s, v) => s.RealProject = v
-        },
-        new()
-        {
             Key = "signalR",
             Title = "Live updates and AI chatbot",
             Summary = "The server pushes changes to open apps in real time, and the AI chatbot comes with it.",
