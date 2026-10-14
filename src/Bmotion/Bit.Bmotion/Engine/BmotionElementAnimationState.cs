@@ -806,10 +806,10 @@ internal sealed class BmotionElementAnimationState
     private static bool IsColorProp(string key)
         => _colorProps.Contains(key) || key.EndsWith("color", StringComparison.OrdinalIgnoreCase);
 
-    private static double DefaultTransformValue(string key) =>
+    internal static double DefaultTransformValue(string key) =>
         key is "scale" or "scaleX" or "scaleY" ? 1.0 : 0.0;
 
-    private static double DefaultNumericValue(string key) =>
+    internal static double DefaultNumericValue(string key) =>
         key is "opacity" or "pathLength" ? 1.0 : 0.0;
 
     private static bool TryGetDoubleArray(object? value, out double[]? result)

@@ -14,8 +14,15 @@ namespace Bit.Bmotion;
 /// On <b>Blazor Server</b> the compositor path still works (it needs only async interop), so
 /// enter/exit/hover/tap/variant animations on transform + opacity play normally; features that
 /// require the per-frame loop - inertia, color/dimension interpolation, keyframe arrays, drag,
-/// motion values - degrade to instant state changes. The library is inert during server-side
-/// prerendering (animations start once the circuit/runtime is interactive).
+/// motion values - degrade to instant state changes.
+/// </para>
+/// <para>
+/// <b>Prerendering / static SSR:</b> no browser is attached, so the engine doesn't run. By default
+/// elements render their <c>Initial</c> state and animate once interactive;
+/// <see cref="BitBmotionOptions.Prerender"/> can instead render them at rest
+/// (<see cref="BmPrerenderMode.Final"/>) or play the enter animation in pure CSS before the runtime
+/// loads (<see cref="BmPrerenderMode.Animate"/>, which needs <c>_content/Bit.Bmotion/bit-bmotion.css</c>
+/// linked in the page head).
 /// </para>
 /// </remarks>
 public static class BitBmotion
@@ -62,6 +69,9 @@ public static class BitBmotion
 
         // Shared-element (LayoutId) rect registry - one per scope, like the engine
         services.AddScoped<BmotionLayoutRegistry>();
+
+        // Carries "prerendered at rest" from the prerendering pass to the runtime that replaces it.
+        services.AddScoped<BmotionPrerenderState>();
 
         // Higher-level services
         // BmotionScrollTracker is owned and disposed by the consuming component (like
