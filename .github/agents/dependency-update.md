@@ -117,6 +117,8 @@ resizetizer and is not held.
 graph still brings `Fragment.Ktx` 1.8.9.x. R8 then fails the Android build with
 `Type androidx.fragment.app.FragmentKt is defined multiple times`. Move it only once something else in
 the graph already brings `Fragment.Ktx` 1.9.0 (an empty stub), rather than pinning Ktx in the template.
+`Xamarin.GooglePlayServices.Auth.Api.Phone` is held at 118.3.1 for the same reason: 118.3.1.1 pulls
+`GooglePlayServices.Basement` 118.10.0.3, which brings Fragment 1.9.0.
 
 **Linux runners are held at `ubuntu-24.04`**, in the GitHub workflows and the Azure DevOps `vmImage`.
 `ubuntu-26.04` defaults to JDK 25 (`(default)` in the image readme's Java table), and .NET for Android
