@@ -17,7 +17,7 @@ public partial class AppJsBridge
 
         dotnetObj = DotNetObjectReference.Create(this);
 
-        // Optional: only the Android app registers one, and App.ts provides WebOTP only when it is there and supported.
+        // Optional: only the Android app registers one, and Scripts/SmsOtp.ts provides WebOTP only when it is there and supported.
         smsOtpReceiver = ScopedServices.GetService<ISmsOtpReceiver>();
 
         await JSRuntime.InvokeVoidAsync("App.registerJsBridge", dotnetObj, smsOtpReceiver?.IsSupported is true);
