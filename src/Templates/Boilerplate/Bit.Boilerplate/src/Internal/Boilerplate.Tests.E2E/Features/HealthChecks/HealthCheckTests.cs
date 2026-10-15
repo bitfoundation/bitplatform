@@ -1,3 +1,6 @@
+using System.Net.Http.Json;
+using Boilerplate.Shared.Features.Diagnostic;
+
 namespace Boilerplate.Tests.E2E.Features.HealthChecks;
 
 /// <summary>
@@ -89,6 +92,46 @@ public partial class HealthCheckTests
         using var response = await Send(DeployedApps.AdminPanelApi, "health");
         var publicStatus = (await response.Content.ReadAsStringAsync(TestContext.CancellationToken)).Trim();
         Assert.AreEqual(report.Status, publicStatus, $"GetHealth says {report.Status} ({summary}), /health says {publicStatus}.");
+    }
+
+    [TestMethod]
+    [DataRow(DeployedApps.AdminPanelApi, DeployedApps.AdminPanel, DisplayName = "AdminPanelApi and AdminPanel")]
+    [DataRow(DeployedApps.TodoApi, DeployedApps.Todo, DisplayName = "TodoApi and Todo")]
+    [DataRow(DeployedApps.Sales, null, DisplayName = "Sales (integrated API)")]
+    public async Task DetailedReport_Should_ShowEveryCheckHealthyOrNotConfigured(string api, string? webApp)
+    {
+        DeployedApiClientProvider.SkipWithoutGlobalAdminCredentials();
+
+        await using var ownApiClient = api is DeployedApps.AdminPanelApi
+            ? null
+            : await DeployedApiClientProvider.SignInGlobalAdminOn(api, TestContext.CancellationToken);
+
+        var apiClient = ownApiClient ?? await DeployedApiClientProvider.GetGlobalApiClient(TestContext.CancellationToken);
+
+        try
+        {
+            string[] hosts = webApp is null ? [api] : [api, webApp];
+            List<string> failures = [];
+
+            foreach (var host in hosts)
+            {
+                var report = await apiClient.HttpClient.GetFromJsonAsync<HealthReportDto>(new Uri(new Uri(host), "healthz"), JsonSerializerOptions.Web, TestContext.CancellationToken);
+
+                Assert.IsNotNull(report, $"{host}healthz returned no report.");
+
+                failures.AddRange(report.Entries
+                    .Where(entry => entry.Value.Status is not HealthCheckStatus.Healthy
+                        && (entry.Value.Status is not HealthCheckStatus.Degraded || entry.Value.Description?.Contains("is not configured", StringComparison.Ordinal) is not true))
+                    .Select(entry => $"{host}healthz '{entry.Key}' is {entry.Value.Status}: {entry.Value.Description}"));
+            }
+
+            Assert.IsEmpty(failures, string.Join(Environment.NewLine, failures));
+        }
+        finally
+        {
+            if (ownApiClient is not null)
+                await ownApiClient.Services.GetRequiredService<AuthManager>().SignOut(CancellationToken.None);
+        }
     }
 
     private async Task<HttpResponseMessage> Send(string host, string path)
