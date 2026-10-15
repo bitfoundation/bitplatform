@@ -154,8 +154,8 @@ What it needs, all of it already on this machine:
   account out within a minute. The helper therefore signs it in once before any stage (`GlobalAdminTwoFactorCodeTests`)
   and starts nothing when that fails; the account's password is the user's to fix.
 - **The apps to itself.** The Android and Windows stages clear the apps' data, and the Windows stage moves the
-  machine's own app data aside and puts it back at the end. Don't run the helper's `android` or `windows` while
-  those stages run.
+  machine's own app data aside and puts it back at the end. The Android stage also clears the emulator's Chrome and
+  texts the emulator the SMS the deployment sent. Don't run the helper's `android` or `windows` while those stages run.
 
 Triage every failure:
 

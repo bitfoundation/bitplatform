@@ -37,6 +37,18 @@ public sealed class WindowsAppOpener : IAppOpener
     }
 }
 
+public sealed class AndroidChromeAppOpener : IAppOpener
+{
+    public async Task<IPage?> TryOpen(AppTestBase test, App app)
+    {
+        var (page, stop) = await test.Playwright.LaunchAndroidChrome(DeployedApps.AddressOf(app));
+
+        test.RegisterForCleanup(stop);
+
+        return page;
+    }
+}
+
 public sealed class AndroidAppOpener : IAppOpener
 {
     public async Task<IPage?> TryOpen(AppTestBase test, App app)
