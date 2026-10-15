@@ -92,6 +92,7 @@
         <AndroidResource Include="Platforms\Android\Resources\**\styles.xml" />
         <GoogleServicesJson Condition="Exists('Platforms\Android\google-services.json')" Include="Platforms\Android\google-services.json" />
         <AndroidAotProfile Condition="Exists('custom.aprof')" Include="custom.aprof" />
+        <PackageReference Include="Xamarin.GooglePlayServices.Auth.Api.Phone" />
         <!--/+:msbuild-conditional:noEmit -->
         <PackageReference Condition=" '$(notification)' == 'true' OR '$(notification)' == ''" Include="Xamarin.Firebase.Messaging" />
         <!--/-:msbuild-conditional:noEmit -->
