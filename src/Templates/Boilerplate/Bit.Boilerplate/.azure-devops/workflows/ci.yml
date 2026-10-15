@@ -13,7 +13,7 @@ jobs:
   displayName: 'CI build'
 
   pool:
-    vmImage: 'ubuntu-24.04'
+    vmImage: 'ubuntu-26.04'
 
   steps:
   - task: UseDotNet@2
@@ -40,7 +40,7 @@ jobs:
   displayName: 'CI test'
 
   pool:
-    vmImage: 'ubuntu-24.04'
+    vmImage: 'ubuntu-26.04'
 
   steps:
   - task: UseDotNet@2
