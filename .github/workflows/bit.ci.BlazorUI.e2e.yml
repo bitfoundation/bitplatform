@@ -58,7 +58,7 @@ jobs:
   e2e-BlazorUI:
     needs: plan
     name: E2E ${{ matrix.browser }} / ${{ matrix.mode }}
-    runs-on: ubuntu-26.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 180
 
     strategy:
