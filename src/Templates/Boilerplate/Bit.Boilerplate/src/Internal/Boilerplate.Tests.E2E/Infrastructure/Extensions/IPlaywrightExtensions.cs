@@ -143,17 +143,38 @@ public static class IPlaywrightExtensions
 
             await RunAdb($"forward tcp:{localPort} localabstract:chrome_devtools_remote");
 
-            var browser = await playwright.ConnectWithRetry($"http://localhost:{localPort}", noDefaults: true);
+            async Task StopChrome()
+            {
+                await RunAdb($"forward --remove tcp:{localPort}", allowNonZeroExit: true);
+                await RunAdb($"shell pm clear {chromeAndroidPackage}", allowNonZeroExit: true);
+                await RunAdb("shell am clear-debug-app", allowNonZeroExit: true);
+                await RunAdb("shell rm -f /data/local/tmp/chrome-command-line", allowNonZeroExit: true);
+            }
 
-            var page = browser.SinglePage();
+            IBrowser? browser = null;
+            IPage page;
 
-            await AnswerConsentBanner(page);
+            try
+            {
+                browser = await playwright.ConnectWithRetry($"http://localhost:{localPort}", noDefaults: true);
+
+                page = browser.SinglePage();
+
+                await AnswerConsentBanner(page);
+            }
+            catch
+            {
+                if (browser is not null)
+                    await browser.CloseAsync();
+
+                await StopChrome();
+                throw;
+            }
 
             return (page, async () =>
             {
                 await browser.CloseAsync();
-                await RunAdb($"forward --remove tcp:{localPort}", allowNonZeroExit: true);
-                await RunAdb($"shell am force-stop {chromeAndroidPackage}");
+                await StopChrome();
             }
             );
         }
@@ -161,6 +182,11 @@ public static class IPlaywrightExtensions
         public async Task SendAndroidSms(string sender, string text)
         {
             await EnsureAndroidDeviceOnline();
+
+            var serial = (await RunAdb("get-serialno")).Trim();
+
+            if (serial.StartsWith("emulator-", StringComparison.Ordinal) is false)
+                Assert.Inconclusive($"Only an emulator can be texted, and '{serial}' is a physical device.");
 
             var escaped = text.ReplaceLineEndings("\\n").Replace("\"", "\\\"", StringComparison.Ordinal);
 
