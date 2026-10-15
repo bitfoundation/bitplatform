@@ -77,7 +77,8 @@ public class BitParamsContractTests
     {
         // A params object is applied from the synchronous OnParametersSet, where TakeFromCascade runs the [CallOnSet]
         // hook of what it writes but has no way to await a [CallOnSetAsync] one - nor a [CallOnSet] one that returns
-        // a Task or a ValueTask, which the generated code and BitCascadeParameter both await like a [CallOnSetAsync].
+        // a Task or a ValueTask, which the generated code awaits like a [CallOnSetAsync] one and a params object
+        // would drop.
         var hooked = new List<string>();
 
         foreach (var (component, cascade) in Readers())

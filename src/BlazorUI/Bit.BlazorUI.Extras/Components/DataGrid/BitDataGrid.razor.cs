@@ -1967,9 +1967,11 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
 
         // Cell mode commits when the focus leaves the open cell - to another cell, another control or the
         // page - which only a DOM listener can see: the focusout's relatedTarget is not in Blazor's event args.
-        // Each of these JS bridges is claimed before its call is awaited and released again if the call fails: the
-        // OnAfterRenderAsync of a render that lands while the call is in flight would otherwise attach a second one, whose
-        // listeners then answer every event twice (a touch drop moving two rows) and outlive the grid's disposal.
+        // Each of these JS bridges is claimed before its call is awaited and released again however the call fails:
+        // the OnAfterRenderAsync of a render that lands while the call is in flight would otherwise attach a second
+        // one, whose listeners then answer every event twice (a touch drop moving two rows) and outlive the grid's
+        // disposal. A failure of the interop itself (IsInteropFailure) is swallowed so a later render retries it;
+        // anything else is rethrown.
         if (Editable && IsCellEditMode && !_cellEditBlurAttached)
         {
             _cellEditBlurAttached = true;
@@ -1978,8 +1980,11 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             {
                 _cellEditBlurHandle = await JS.InvokeAsync<IJSObjectReference>("BitBlazorUI.DataGrid.initCellEditBlur", RootElement, _gridSelfRef);
             }
-            catch (JSException) { _cellEditBlurAttached = false; }
-            catch (JSDisconnectedException) { _cellEditBlurAttached = false; }
+            catch (Exception ex)
+            {
+                _cellEditBlurAttached = false;
+                if (IsInteropFailure(ex) is false) throw;
+            }
         }
 
         if (_focusAfterRender is { } focusTargets)
@@ -2029,10 +2034,13 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
                 _pointerReorderHandle = await JS.InvokeAsync<IJSObjectReference>(
                     "BitBlazorUI.DataGrid.initPointerReorder", RootElement, _gridSelfRef);
             }
-            // Released on failure, so a failed init (transient JS error) is retried on a later render instead of
-            // permanently disabling touch reorder.
-            catch (JSException) { _pointerReorderAttached = false; }
-            catch (JSDisconnectedException) { _pointerReorderAttached = false; }
+            // Released on failure, so a failed init (transient JS error, a timed-out call) is retried on a later render
+            // instead of permanently disabling touch reorder.
+            catch (Exception ex)
+            {
+                _pointerReorderAttached = false;
+                if (IsInteropFailure(ex) is false) throw;
+            }
         }
 
         // Column virtualization needs the viewport's horizontal scroll offset and width, which Blazor
@@ -2047,8 +2055,11 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
                     "BitBlazorUI.DataGrid.initHorizontalScroll", _infiniteViewport, _gridSelfRef, HScrollReportThresholdPx);
             }
             // Released on failure so a failed init retries on a later render.
-            catch (JSException) { _hScrollAttached = false; }
-            catch (JSDisconnectedException) { _hScrollAttached = false; }
+            catch (Exception ex)
+            {
+                _hScrollAttached = false;
+                if (IsInteropFailure(ex) is false) throw;
+            }
         }
 
         // The keys pressed in a surface rendered in a cell's or a header's template reach their handlers too, which the
@@ -2062,8 +2073,11 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
                 await JS.InvokeVoidAsync("BitBlazorUI.DataGrid.watchNestedSurfaceKeys", RootElement, _gridSelfRef);
             }
             // Released on failure so a failed call retries on a later render.
-            catch (JSException) { _nestedSurfaceKeysWatched = false; }
-            catch (JSDisconnectedException) { _nestedSurfaceKeysWatched = false; }
+            catch (Exception ex)
+            {
+                _nestedSurfaceKeysWatched = false;
+                if (IsInteropFailure(ex) is false) throw;
+            }
         }
 
         if (!_stickyBandsAttached)
@@ -2074,16 +2088,28 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
                 _stickyBandsHandle = await JS.InvokeAsync<IJSObjectReference>("BitBlazorUI.DataGrid.observeStickyBands", _infiniteViewport);
             }
             // Released on failure so a failed init retries on a later render.
-            catch (JSException) { _stickyBandsAttached = false; }
-            catch (JSDisconnectedException) { _stickyBandsAttached = false; }
+            catch (Exception ex)
+            {
+                _stickyBandsAttached = false;
+                if (IsInteropFailure(ex) is false) throw;
+            }
         }
 
         if (IsInfiniteMode && !_infiniteObserverAttached)
         {
             _infiniteObserverAttached = true;
             _infiniteSelfRef ??= DotNetObjectReference.Create(this);
-            _infiniteHandle = await JS.InvokeAsync<IJSObjectReference>(
-                "BitBlazorUI.DataGrid.initInfiniteScroll", _infiniteViewport, _infiniteSelfRef, 200);
+            try
+            {
+                _infiniteHandle = await JS.InvokeAsync<IJSObjectReference>(
+                    "BitBlazorUI.DataGrid.initInfiniteScroll", _infiniteViewport, _infiniteSelfRef, 200);
+            }
+            // Released on failure so a failed init retries on a later render.
+            catch (Exception ex)
+            {
+                _infiniteObserverAttached = false;
+                if (IsInteropFailure(ex) is false) throw;
+            }
         }
         else if (!IsInfiniteMode && _infiniteObserverAttached)
         {
@@ -2108,6 +2134,12 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             _infiniteSelfRef = null;
         }
     }
+
+    // Whether an interop call failed in a way a later render may simply retry: a script error, the circuit going away,
+    // the call timing out or being cancelled with the renderer's teardown, or the JS runtime of a WebAssembly host
+    // disposed before the component.
+    private static bool IsInteropFailure(Exception ex)
+        => ex is JSException or JSDisconnectedException or OperationCanceledException or ObjectDisposedException;
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {

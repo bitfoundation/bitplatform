@@ -2505,13 +2505,18 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
     // Walks the (year, month) pair the given number of months forward or backward, in the months of the
     // culture's own calendar - not every year of every calendar has twelve of them (a leap year of the
-    // Hebrew calendar has thirteen).
+    // Hebrew calendar has thirteen) - and stops at the first and the last month that calendar supports,
+    // since a year outside its range cannot even be asked how many months it has.
     private (int year, int month) AddMonths(int year, int month, int offset)
     {
         var calendar = _culture.DateTimeFormat.Calendar;
+        var (minYear, minMonth) = GetMinCalendarYearMonth();
+        var (maxYear, maxMonth) = GetMaxCalendarYearMonth();
 
         while (offset > 0)
         {
+            if (year > maxYear || (year == maxYear && month >= maxMonth)) break;
+
             if (month < calendar.GetMonthsInYear(year))
             {
                 month++;
@@ -2527,6 +2532,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         while (offset < 0)
         {
+            if (year < minYear || (year == minYear && month <= minMonth)) break;
+
             if (month > 1)
             {
                 month--;
@@ -2541,6 +2548,22 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         }
 
         return (year, month);
+    }
+
+    private (int Year, int Month) GetMinCalendarYearMonth()
+    {
+        var calendar = _culture.DateTimeFormat.Calendar;
+        var minDate = calendar.MinSupportedDateTime;
+
+        return (calendar.GetYear(minDate), calendar.GetMonth(minDate));
+    }
+
+    private (int Year, int Month) GetMaxCalendarYearMonth()
+    {
+        var calendar = _culture.DateTimeFormat.Calendar;
+        var maxDate = calendar.MaxSupportedDateTime;
+
+        return (calendar.GetYear(maxDate), calendar.GetMonth(maxDate));
     }
 
     // The month names go through BitMonthNames, which spells them the way the culture's formatter spells the date

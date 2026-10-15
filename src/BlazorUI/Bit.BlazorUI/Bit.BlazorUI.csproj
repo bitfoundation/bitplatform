@@ -91,12 +91,18 @@
         <Exec Condition=" '$(CI)' != 'true' " Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <!-- The stamp is per configuration, so a Release build after a Debug one minifies the script even when no .ts file
-         changed in between. The minifier is held to the target tsconfig.json compiles to (ES2019): left to its own
-         default it writes newer syntax (?? and ?.) back into the script, which the engines ES2019 is there for reject. -->
+    <!-- The stamp is per configuration, and a build takes every other configuration's stamp away, so switching from one
+         configuration to another rebuilds the script either way even when no .ts file changed in between: a Release
+         build after a Debug one minifies it, and a Debug build after a Release one writes it readable again. The
+         minifier is held to the target tsconfig.json compiles to (ES2019): left to its own default it writes newer
+         syntax (?? and ?.) back into the script, which the engines ES2019 is there for reject. -->
     <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles)" Outputs="wwwroot\scripts\bit.blazorui.js;$(BaseIntermediateOutputPath)$(Configuration)\bit.blazorui.js.stamp">
         <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
         <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/scripts/bit.blazorui.js --minify --target=es2019 --outfile=wwwroot/scripts/bit.blazorui.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <ItemGroup>
+            <_OtherConfigurationScriptStamps Include="$(BaseIntermediateOutputPath)*\bit.blazorui.js.stamp" Exclude="$(BaseIntermediateOutputPath)$(Configuration)\bit.blazorui.js.stamp" />
+        </ItemGroup>
+        <Delete Files="@(_OtherConfigurationScriptStamps)" />
         <MakeDir Directories="$(BaseIntermediateOutputPath)$(Configuration)" />
         <Touch Files="$(BaseIntermediateOutputPath)$(Configuration)\bit.blazorui.js.stamp" AlwaysCreate="true" />
     </Target>

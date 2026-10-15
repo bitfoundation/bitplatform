@@ -566,6 +566,23 @@ public class BitCalendarE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task TimePicker_ClickingATimeInput_SelectsItsTextSoADigitReplacesIt()
+    {
+        await OpenAsync(Url);
+
+        const string id = "cal-time";
+        await Day(id, "2024-03-20").ClickAsync();
+        await Expect(Span("time-value")).ToHaveTextAsync("2024-03-20 00:00 +00:00");
+
+        // WebKit collapses the selection the focus made to a caret at the press point of the click, which the calendar
+        // answers by selecting the text again once the press is released: the digit typed next replaces the hour
+        // rather than being added to it.
+        await HourInput(id).ClickAsync();
+        await Page.Keyboard.TypeAsync("5");
+        await Expect(HourInput(id)).ToHaveValueAsync("5");
+    }
+
+    [TestMethod]
     public async Task TimePicker_TwelveHours_HasAnAmPmPairAndNoNowButton()
     {
         await OpenAsync(Url);

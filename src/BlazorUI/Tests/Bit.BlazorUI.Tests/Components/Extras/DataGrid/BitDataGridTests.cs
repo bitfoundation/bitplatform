@@ -1256,6 +1256,24 @@ public class BitDataGridTests : BunitTestContext
     }
 
     [TestMethod]
+    public void AJsBridgeWhoseCallTimesOutIsAttachedAgainOnALaterRender()
+    {
+        // The bridge is claimed before its call is awaited, so a call that fails in any way - here one that timed out,
+        // as a slow circuit's does - has to release it again: the render goes on, and the next one attaches the bridge.
+        Context.JSInterop.SetupVoid("BitBlazorUI.DataGrid.watchNestedSurfaceKeys", _ => true)
+                         .SetException(new TaskCanceledException("interop call timed out"));
+
+        var grid = RenderGrid();
+        var attempts = Context.JSInterop.Invocations["BitBlazorUI.DataGrid.watchNestedSurfaceKeys"].Count;
+
+        Assert.IsTrue(attempts >= 1);
+
+        grid.Render();
+
+        Assert.AreEqual(attempts + 1, Context.JSInterop.Invocations["BitBlazorUI.DataGrid.watchNestedSurfaceKeys"].Count);
+    }
+
+    [TestMethod]
     public async Task ColumnVirtualizationRendersOnlyViewportWindow()
     {
         RenderFragment columns = builder =>

@@ -25,7 +25,11 @@ public abstract class E2ETestBase
     private static readonly SemaphoreSlim _browserLock = new(1, 1);
     private static IPlaywright? _playwright;
     private static IBrowser? _browser;
+    // How many tests have a context open on each browser, guarded by _browserLock: the test classes run beside each
+    // other on one browser, so one that is retired is closed only once the last of them has let go of it.
+    private static readonly Dictionary<IBrowser, int> _browserUsers = [];
 
+    private IBrowser? _contextBrowser;
     private IBrowserContext? _context;
     private readonly List<string> _pageErrors = [];
     private readonly List<string> _consoleErrors = [];
@@ -107,17 +111,20 @@ public abstract class E2ETestBase
             }
         }
 
+        IBrowser browser;
         await _browserLock.WaitAsync();
         try
         {
-            _browser ??= await LaunchBrowserAsync();
+            browser = _browser ??= await LaunchBrowserAsync();
+            _browserUsers[browser] = _browserUsers.GetValueOrDefault(browser) + 1;
+            _contextBrowser = browser;
         }
         finally
         {
             _browserLock.Release();
         }
 
-        _context = await _browser.NewContextAsync(ContextOptions);
+        _context = await browser.NewContextAsync(ContextOptions);
         await _context.AddCookiesAsync([new Cookie { Name = "e2e-render-mode", Value = RenderMode, Url = BaseUrl }]);
         Page = await _context.NewPageAsync();
         Page.SetDefaultTimeout(DefaultTimeout);
@@ -140,6 +147,8 @@ public abstract class E2ETestBase
     {
         try
         {
+            var broken = false;
+
             if (_context is not null)
             {
                 try
@@ -150,12 +159,18 @@ public abstract class E2ETestBase
                 {
                     // Firefox's driver can fail to tear down a context that opened popups, and a browser left in that
                     // state fails to close every context after it; the next test launches a fresh one instead.
-                    await DiscardBrowserAsync();
+                    broken = true;
                 }
                 finally
                 {
                     _context = null;
                 }
+            }
+
+            if (_contextBrowser is { } browser)
+            {
+                _contextBrowser = null;
+                await ReleaseBrowserAsync(browser, broken);
             }
         }
         finally
@@ -308,21 +323,47 @@ public abstract class E2ETestBase
         }
     }
 
-    private static async Task DiscardBrowserAsync()
+    /// <summary>
+    /// Lets go of the browser a test ran on. A broken one is retired - the next test to start launches a fresh
+    /// browser - but closed only once no test is left on it: the tests of the other classes running beside this one
+    /// share it, and closing it under them would fail every one of them as if the component had.
+    /// </summary>
+    private static async Task ReleaseBrowserAsync(IBrowser browser, bool broken)
     {
+        IBrowser? retired = null;
+
         await _browserLock.WaitAsync();
         try
         {
-            if (_browser is not null) await _browser.CloseAsync();
+            if (broken && ReferenceEquals(_browser, browser)) _browser = null;
+
+            var users = _browserUsers.GetValueOrDefault(browser) - 1;
+
+            if (users > 0)
+            {
+                _browserUsers[browser] = users;
+            }
+            else
+            {
+                _browserUsers.Remove(browser);
+
+                if (ReferenceEquals(_browser, browser) is false) retired = browser;
+            }
+        }
+        finally
+        {
+            _browserLock.Release();
+        }
+
+        if (retired is null) return;
+
+        try
+        {
+            await retired.CloseAsync();
         }
         catch (PlaywrightException)
         {
             // already unusable; the driver reaps it with the Playwright instance
-        }
-        finally
-        {
-            _browser = null;
-            _browserLock.Release();
         }
     }
 

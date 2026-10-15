@@ -385,20 +385,23 @@
         // grow - by its padding on every fit - and never shrink to content narrower than itself.
         public static measureColumnContentWidth(root: HTMLElement, ariaColIndex: number): number {
             if (!root) return 0;
-            const cells = root.querySelectorAll(`[aria-colindex="${ariaColIndex}"]`);
-            let widest = 0;
-            cells.forEach(node => {
+            const cells: HTMLElement[] = [];
+            root.querySelectorAll(`[aria-colindex="${ariaColIndex}"]`).forEach(node => {
                 const cell = node as HTMLElement;
                 // A spanning cell's content belongs to several columns, so it would over-size this one.
                 if (cell.style.gridColumn) return;
                 // The filter row's editors stretch to the column (.bit-dtg-filter-wrap is width:100%), so their
                 // own width is the column's current one: auto-fit is about the header and the data.
                 if (cell.closest('.bit-dtg-filter-row')) return;
-                const width = cell.style.width;
-                cell.style.width = 'max-content';
-                widest = Math.max(widest, cell.getBoundingClientRect().width);
-                cell.style.width = width;
+                cells.push(cell);
             });
+            // Every cell is switched to its content's width before any is measured, and all are put back after the
+            // last: a measurement between two writes would lay the whole grid out again once per cell.
+            const widths = cells.map(cell => cell.style.width);
+            cells.forEach(cell => cell.style.width = 'max-content');
+            let widest = 0;
+            cells.forEach(cell => widest = Math.max(widest, cell.getBoundingClientRect().width));
+            cells.forEach((cell, i) => cell.style.width = widths[i]);
             // A couple of pixels of slack keeps the fitted column from re-clipping on sub-pixel rounding.
             return widest > 0 ? Math.ceil(widest) + 2 : 0;
         }

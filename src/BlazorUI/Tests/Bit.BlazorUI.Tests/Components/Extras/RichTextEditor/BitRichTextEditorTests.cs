@@ -2212,9 +2212,16 @@ public class BitRichTextEditorTests : BunitTestContext
     {
         SetupJsInterop();
 
-        // The generated SetParametersAsync awaits the Value hook, so a bridge that is gone - the circuit, or the interop
-        // itself - would otherwise fail the whole parameter pass of the page.
-        foreach (var exception in new Exception[] { new JSDisconnectedException("circuit gone"), new JSException("interop unavailable") })
+        // The generated SetParametersAsync awaits the Value hook, so a bridge that is gone - the circuit, the interop
+        // itself, a call that timed out, a runtime disposed first - would otherwise fail the whole parameter pass of
+        // the page.
+        foreach (var exception in new Exception[]
+                 {
+                     new JSDisconnectedException("circuit gone"),
+                     new JSException("interop unavailable"),
+                     new TaskCanceledException("interop call timed out"),
+                     new ObjectDisposedException("JSRuntime")
+                 })
         {
             Context.JSInterop.Setup<string>("BitBlazorUI.RichTextEditor.sanitizeHtml", _ => true).SetException(exception);
 

@@ -852,8 +852,9 @@ public partial class BitRichTextEditor : BitComponentBase
         if ((Value ?? "") == _currentHtml) return; // originated from the editor
 
         var html = Value ?? "";
-        // The generated SetParametersAsync awaits this hook, so a circuit that went away mid-call ends it here
-        // rather than failing the parameter pass: there is no editor left to push the value into.
+        // The generated SetParametersAsync awaits this hook, so an interop call that fails mid-way - the circuit gone,
+        // the call timed out, the runtime disposed - ends it here rather than failing the parameter pass and with it
+        // the parent's render.
         try
         {
             // Sanitize any non-empty HTML through the bridge regardless of SanitizationPolicy: the
@@ -881,6 +882,8 @@ public partial class BitRichTextEditor : BitComponentBase
         }
         catch (JSDisconnectedException) { return; } // circuit gone; nothing to sync the value into
         catch (JSException) { return; } // interop unavailable; nothing unsanitized is pushed, the editor keeps its content
+        catch (OperationCanceledException) { return; } // timed out, or the renderer is being torn down; as above
+        catch (ObjectDisposedException) { return; } // the JS runtime of a WebAssembly host went first; as above
 
         // Keep the bound model in sync with the sanitized/rendered content: if the policy
         // stripped anything, write the cleaned HTML back so @bind-Value never holds the

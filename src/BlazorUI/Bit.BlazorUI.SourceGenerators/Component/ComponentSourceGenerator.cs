@@ -79,8 +79,9 @@ public class ComponentSourceGenerator : IIncrementalGenerator
 
         // A [CallOnSet] naming a method that returns a Task or a ValueTask would have the generated code call it
         // without awaiting it: its work would run on past the parameter pass, and whatever it throws would go
-        // unobserved. Such a hook is awaited like a [CallOnSetAsync] one instead - and BitCascadeParameter applies the
-        // same rule to a value applied through a params object, so the two paths run it alike.
+        // unobserved. Such a hook is awaited like a [CallOnSetAsync] one instead. A params object applies its values
+        // from the synchronous OnParametersSet, which can await neither, so BitParamsContractTests fails on a
+        // parameter a params type supplies whose hook is either one.
         if (callOnSetName is not null && callOnSetAsyncName is null && ReturnsAwaitable(containingType, callOnSetName))
         {
             callOnSetAsyncName = callOnSetName;
