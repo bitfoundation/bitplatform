@@ -133,7 +133,10 @@ rest of ASP.NET Core moves on. A NU1608 on Npgsql in a restore means this was mi
 defaults to JDK 25 (`(default)` in the image readme's Java table), which .NET for Android accepts from .NET 11
 RC2 on (`LatestSupportedJavaVersion` 25.0.99 in `Xamarin.Android.Common.props.in`). develop stays on
 `ubuntu-24.04`, since .NET for Android 10 accepts up to 21, so a runner pin that comes over from develop moves
-to `ubuntu-26.04` here.
+to `ubuntu-26.04` here. The two BlazorUI workflows (`bit.ci.BlazorUI.yml`, `bit.ci.BlazorUI.e2e.yml`) stay on
+`ubuntu-24.04`: their calendar tests take `ar-SA` for a culture whose default calendar is Umm al-Qura, which is
+the system ICU's data, and the ICU of `ubuntu-26.04` defaults it to Gregorian. Move them once those tests set the
+calendar themselves.
 
 When a held pin's rationale no longer holds — the oldest supported SDK moved, TS 7 was adopted
 repo-wide — say so in the report rather than acting on it.
