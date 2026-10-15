@@ -16,7 +16,7 @@ public static partial class IAndroidServiceCollectionExtensions
         {
             // Services being registered here can get injected in Maui/Android.
 
-            services.AddSingleton<ISmsOtpReceiver, AndroidSmsOtpReceiver>();
+            services.AddSingleton<IAndroidAppWebOtpService, AndroidAppWebOtpService>();
 
             //#if (notification == true)
             services.AddSingleton<IPushNotificationService, AndroidPushNotificationService>();

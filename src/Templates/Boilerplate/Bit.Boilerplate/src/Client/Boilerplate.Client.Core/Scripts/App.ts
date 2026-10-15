@@ -1,16 +1,16 @@
 //+:cnd:noEmit
 
-import { SmsOtp } from './SmsOtp';
+import { AndroidAppWebOtp } from './AndroidAppWebOtp';
 
 export class App {
     // For additional details, see the JsBridge.cs file.
     private static jsBridgeObj: DotNetObject;
 
-    public static registerJsBridge(dotnetObj: DotNetObject, receivesSmsOtp: boolean) {
+    public static registerJsBridge(dotnetObj: DotNetObject, hasAndroidAppWebOtp: boolean) {
         App.jsBridgeObj = dotnetObj;
 
-        if (receivesSmsOtp) {
-            SmsOtp.provideWebOtp(dotnetObj);
+        if (hasAndroidAppWebOtp) {
+            AndroidAppWebOtp.provide(dotnetObj);
         }
     }
 

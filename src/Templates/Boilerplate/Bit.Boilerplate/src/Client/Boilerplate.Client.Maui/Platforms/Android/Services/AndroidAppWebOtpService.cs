@@ -13,7 +13,7 @@ using System.Text.RegularExpressions;
 namespace Boilerplate.Client.Maui.Platforms.Android.Services;
 
 // Google's SMS User Consent API: it shows the "Allow" sheet for the next SMS and needs no SMS permission.
-public partial class AndroidSmsOtpReceiver : ISmsOtpReceiver
+public partial class AndroidAppWebOtpService : IAndroidAppWebOtpService
 {
     public bool IsSupported => GoogleApiAvailability.Instance.IsGooglePlayServicesAvailable(Platform.AppContext) is ConnectionResult.Success;
 
@@ -65,7 +65,7 @@ public partial class AndroidSmsOtpReceiver : ISmsOtpReceiver
 
             // Registered on demand rather than in MainActivity.OnCreate, and dropped once the user answers.
             ActivityResultLauncher? launcher = null;
-            launcher = activity.ActivityResultRegistry.Register(nameof(AndroidSmsOtpReceiver), new ActivityResultContracts.StartActivityForResult(), new ConsentResultCallback(result =>
+            launcher = activity.ActivityResultRegistry.Register(nameof(AndroidAppWebOtpService), new ActivityResultContracts.StartActivityForResult(), new ConsentResultCallback(result =>
             {
                 launcher?.Unregister();
                 message.TrySetResult(result?.ResultCode is (int)Result.Ok ? result.Data?.GetStringExtra(SmsRetriever.ExtraSmsMessage) : null);

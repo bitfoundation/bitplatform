@@ -3,8 +3,8 @@ namespace Boilerplate.Client.Core.Components.Layout;
 public partial class AppJsBridge
 {
     private DotNetObjectReference<AppJsBridge>? dotnetObj;
-    private ISmsOtpReceiver? smsOtpReceiver;
-    private CancellationTokenSource? smsOtpCts;
+    private IAndroidAppWebOtpService? androidAppWebOtpService;
+    private CancellationTokenSource? androidAppWebOtpCts;
 
     /// <summary>
     /// at the rendering time of this component (the component is added to the `RootLayout`)
@@ -17,10 +17,10 @@ public partial class AppJsBridge
 
         dotnetObj = DotNetObjectReference.Create(this);
 
-        // Optional: only the Android app registers one, and Scripts/SmsOtp.ts provides WebOTP only when it is there and supported.
-        smsOtpReceiver = ScopedServices.GetService<ISmsOtpReceiver>();
+        // Optional: only the Android app registers one, and Scripts/AndroidAppWebOtp.ts provides WebOTP only when it is there and supported.
+        androidAppWebOtpService = ScopedServices.GetService<IAndroidAppWebOtpService>();
 
-        await JSRuntime.InvokeVoidAsync("App.registerJsBridge", dotnetObj, smsOtpReceiver?.IsSupported is true);
+        await JSRuntime.InvokeVoidAsync("App.registerJsBridge", dotnetObj, androidAppWebOtpService?.IsSupported is true);
     }
 
 
@@ -39,17 +39,17 @@ public partial class AppJsBridge
         PubSubService.Publish(message, payload);
     }
 
-    [JSInvokable(nameof(ReceiveSmsOtp))]
-    public async Task<string?> ReceiveSmsOtp()
+    [JSInvokable(nameof(ReceiveAndroidAppWebOtp))]
+    public async Task<string?> ReceiveAndroidAppWebOtp()
     {
         // One wait at a time: a newer BitOtpInput (e.g. the second one on ConfirmPage) replaces the pending request.
-        CancelSmsOtp();
+        CancelAndroidAppWebOtp();
 
-        using var cts = smsOtpCts = new CancellationTokenSource();
+        using var cts = androidAppWebOtpCts = new CancellationTokenSource();
 
         try
         {
-            return await smsOtpReceiver!.ReceiveOtp(cts.Token);
+            return await androidAppWebOtpService!.ReceiveOtp(cts.Token);
         }
         catch (OperationCanceledException)
         {
@@ -62,23 +62,23 @@ public partial class AppJsBridge
         }
         finally
         {
-            if (smsOtpCts == cts)
+            if (androidAppWebOtpCts == cts)
             {
-                smsOtpCts = null;
+                androidAppWebOtpCts = null;
             }
         }
     }
 
-    [JSInvokable(nameof(CancelSmsOtp))]
-    public void CancelSmsOtp()
+    [JSInvokable(nameof(CancelAndroidAppWebOtp))]
+    public void CancelAndroidAppWebOtp()
     {
-        smsOtpCts?.Cancel();
+        androidAppWebOtpCts?.Cancel();
     }
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
         dotnetObj?.Dispose();
-        CancelSmsOtp();
+        CancelAndroidAppWebOtp();
 
         await base.DisposeAsync(disposing);
     }
