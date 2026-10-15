@@ -13,6 +13,18 @@ runner (`D:\Runner`) is what the CD workflows deploy through, and the Android em
 the test suite all live on it. How the machine is put together, and how to rebuild it, is in
 `G:\My Drive\Bit Demo Assets\Infrastructure\README.md`.
 
+Two rules for working on it:
+
+- **Memory is short.** The emulator alone takes over 3 GB. Run one heavy thing at a time - the emulator, Docker
+  Desktop and what runs in it, an Aspire app, the dev container - and stop whatever you started once it isn't needed:
+  the emulator and Docker Desktop if they were off, and any local app or `dotnet watch`. Never run
+  `dotnet build-server shutdown`: other sessions build on this machine too.
+- **Read the configuration before changing it.** Before any fix to the machine itself (IIS, permissions, folders,
+  tools), query what it really is: an app pool's identity (`appcmd list apppool /text:processModel.userName`,
+  elevated), the deployed `appsettings.json` under `C:\inetpub\<site>`, a tool's version. PlatformWebsite's app pool,
+  for one, runs as the machine owner's account, not as ApplicationPoolIdentity, and a fix that assumed the default
+  made things worse.
+
 ## Inputs
 
 Up to two GitHub Actions links, in any order. Each may point at a run, one of its attempts (`/attempts/2`) or one of
@@ -93,9 +105,34 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    Run a flaky test often enough to watch it fail before the fix and not after - under load, when the failure is
    about timing.
 
+   What has cost time here before:
+
+   - The template tree's tests start its Aspire app host first, with every container it has (SQL Server, PostgreSQL,
+     MySQL, Keycloak, both Redis, the S3 storage, MailPit), so they need Docker Desktop and are slow to start; that
+     start once hung for over 15 minutes. A generated project starts only its own few containers.
+   - Install a packed template with `--debug:custom-hive <folder>` on both `dotnet new install` and `dotnet new`, so
+     the machine's own Bit.Boilerplate template stays as it is; `bit new` already uses a private hive in its home
+     (`BIT_CLI_HOME`).
+   - For a project with no containers at all: `--database Sqlite --aspire false --redis false`. With
+     `--advancedTests`, keep `--signalR` and a `--module`, or the tests don't compile. `dotnet new` adds no EF
+     migration, so add one in Server.Api before testing (`dotnet dnx dotnet-ef --yes -- migrations add Initial
+     --output-dir Infrastructure/Data/Migrations`), or every test fails on a missing table. On Sqlite about 18 tests
+     fail with "database is locked", since they share one file; CI never sees that.
+   - A UI test in WebAssembly mode that fails at boot, with "Failed to find a valid digest in the 'integrity'
+     attribute" in the browser console, is a stale Client.Web build, not code: delete Client.Web's `obj` and `bin`
+     for its target framework and rebuild.
+   - Dozens of Razor errors (RZ...) in files nobody touched come from the shared compiler server's state: build with
+     `UseSharedCompilation=false`.
+   - The Linux-only Chromium flakes (Brouter, some template UI tests) don't reproduce on Windows; they need CI or a
+     Linux container.
+   - Afterwards remove the containers, volumes and leftover `dcp` processes the repro left. Never the `redis`
+     container, which the demos use, nor another project's containers.
+
 4. Fix the cause. A timeout grows only when what it waits for is legitimately slow, and a retry that hides a race is
    not a fix. Template changes follow `src/Templates/Boilerplate/Bit.Boilerplate/AGENTS.md`, `[mirror]` comments
-   included.
+   included. Files under `src/Templates/Boilerplate/Bit.Boilerplate` are UTF-8 without a BOM - its own
+   `.editorconfig` says so - and CI's `dotnet format` fails on a BOM; check new files with
+   `dotnet format whitespace <slnx> --verify-no-changes --include <folder>`.
 
 5. Commit on the run's branch and ask before pushing. A CI run on the pushed branch is the final proof:
    `gh workflow run all.ci.yml -R bitfoundation/bitplatform --ref <branch>`. Re-running a failed job
@@ -179,6 +216,11 @@ What it needs, all of it already on this machine:
 - **The apps to itself.** The Android and Windows stages clear the apps' data, and the Windows stage moves the
   machine's own app data aside and puts it back at the end. The Android stage also clears the emulator's Chrome and
   texts the emulator the SMS the deployment sent. Don't run the helper's `android` or `windows` while those stages run.
+- **No system sheets on the emulator.** Google Password Manager's "Save password?" sheet after a sign-in and Gboard's
+  stylus tour each swallow a Back press, and the Android two-factor back navigation test then fails with the soft
+  keyboard "still open" as if the app were wrong. `android` and the Android stage turn the device's autofill service
+  and stylus handwriting off, so a new or wiped AVD gets them too. The Android stage's WebView videos are blank:
+  `adb exec-out screencap -p` shows what is really on the screen.
 
 Triage every failure:
 
@@ -201,9 +243,27 @@ Triage every failure:
 3. Name it: a test bug, a product bug, the infrastructure (the mac, the emulator, an outside service's outage), or
    flaky. Fix the first two at their cause, as in step 1.
 
+Two failures on .NET 11 are known gaps of third-party libraries; report them as known and don't triage them: the
+template's MySQL provider doesn't work there (All CI keeps its MySQL job off), and CommunityToolkit.Datasync doesn't
+sync, so the offline Todo test that waits for an item added offline to reach the server fails every time. Check them
+again once those libraries support .NET 11.
+
 **A fix is proven only by the next CD.** The suite tests the deployed build, so a fix to the template or to a demo
 reaches it only through another All CD run on the fixed commit. Verify what can be verified locally, commit, and say
 plainly which failures stay until that CD.
+
+**Trying an Android fix before its CD.** Build the template tree's `Client.Maui` against the live AdminPanel: point
+Client.Core's `ServerAddress` at the AdminPanel API and the Maui project's `WebAppUrl` at the AdminPanel web app, as
+temporary edits. Build with `-p:Version=<APP_VERSION>`, or the live API answers with "Time for an update" and blocks
+the flow. Keep the template's own application id, so the official AdminPanel app stays installed, and point the
+suite's AdminPanel Android app id in `DeployedApps.cs` at it for the local run only. The AVD has little free space,
+so build one ABI (a temporary `<RuntimeIdentifiers>android-x64</RuntimeIdentifiers>` in the csproj; a global
+`-p:RuntimeIdentifier` breaks the build) and, if it still doesn't fit, lower the low-storage limit for the run with
+`adb shell settings put global sys_storage_threshold_max_bytes 104857600`. `adb` is under
+`C:\Program Files (x86)\Android\android-sdk\platform-tools`; in Git Bash, `MSYS_NO_PATHCONV=1` keeps device paths
+intact, and host paths then need forward slashes. Afterwards revert every edit, uninstall the test app, delete that
+storage setting, run `am clear-debug-app`, remove `/data/local/tmp/chrome-command-line`, `pm clear com.android.chrome`,
+and `adb emu kill` if the emulator was off before.
 
 A fix in a bit library does not have to wait for its release: the demos take the libraries as packages, and
 `prerelease_packages` swaps nuget.org's for the fix's. Ask the user to run Prerelease nuget packages on the fix's
@@ -247,6 +307,15 @@ does not serve silently gets the newest one it does.
 Like an E2E failure, an MCP problem is fixed in `src/Websites/Platform` or in the library's own MCP server, and goes
 away only after the next CD.
 
+A website fix that goes through its AI chat client can be tried here without a key. The site registers that client
+only when `AppSettings:OpenAI:ChatApiKey` is set and sends it to `AppSettings:OpenAI:ChatEndpoint`, so give it any key
+and point the endpoint at a small local stand-in that answers `POST /v1/chat/completions` with a `chat.completion`
+JSON (its message content a JSON string where the code asks for structured output; a 400 for a marker phrase to try
+the failure path). Run the server project with those two settings as environment variables, in Development, and
+drive the page with Playwright. In Development the pages use server interactivity, so their calls never show in the
+browser's network events: set the `Microsoft.AspNetCore.Hosting.Diagnostics` log level to Information and count the
+request lines in the server's log. Stop the site and the stand-in afterwards; a running site locks the build output.
+
 ## 5. bit Boilerplate's dev container
 
 A new project's dev container is the .NET SDK image with Docker inside it. When it's created, it installs bit and runs
@@ -284,6 +353,11 @@ alive for its idle time. `aspire` checks that the way a developer meets it:
 - `-Sha` works as for `devcontainer`; the Bit packages come from nuget.org at the version the template asks for.
 - It takes about half an hour, most of it the idle wait, and a few GB of Docker Desktop's memory while the app runs.
   Start it in the background early and go on with the other steps, but never next to `devcontainer`.
+
+Two things are expected and are not failures. `dotnet test` and a `dotnet run` or `aspire start` re-create each
+other's containers, since the test host picks random ports and the ports are part of the lifecycle key. And a run
+that was killed, as closing its terminal does, leaves DCP's own `tunnel-proxy-...` container behind, a few MB, which
+the next Aspire run removes and the idle stop doesn't touch.
 
 A failure is fixed in the template like a CI failure, and the next `aspire -Sha` on the fix proves it.
 

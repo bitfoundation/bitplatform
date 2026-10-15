@@ -228,6 +228,15 @@ function Get-AndroidDevices {
 }
 
 # Exactly one device, since adb and the E2E suite both address "the" device. With none, the first AVD is booted.
+function Disable-AndroidSystemSheets {
+    foreach ($setting in @{ autofill_service = 'null'; stylus_handwriting_enabled = '0' }.GetEnumerator()) {
+        if ((Invoke-Adb shell settings get secure $setting.Key).Trim() -ne $setting.Value) {
+            Invoke-Adb shell settings put secure $setting.Key $setting.Value | Out-Null
+            Write-Host "Set the device's $($setting.Key) to $($setting.Value)."
+        }
+    }
+}
+
 function Initialize-AndroidDevice {
     $devices = Get-AndroidDevices
 
@@ -236,6 +245,7 @@ function Initialize-AndroidDevice {
     }
 
     if ($devices.Count -eq 1) {
+        Disable-AndroidSystemSheets
         return
     }
 
@@ -255,6 +265,7 @@ function Initialize-AndroidDevice {
 
     while ((Get-Date) -lt $deadline) {
         if ((Get-AndroidDevices).Count -eq 1 -and (Invoke-Adb shell getprop sys.boot_completed).Trim() -eq '1') {
+            Disable-AndroidSystemSheets
             return
         }
 
@@ -674,6 +685,10 @@ function Invoke-E2EStages {
                 Initialize-Adb
                 $env:ANDROID_HOME = $script:androidSdk
                 $env:PATH = "$(Join-Path $script:androidSdk 'platform-tools');$env:PATH"
+
+                if ((Get-AndroidDevices).Count -eq 1) {
+                    Disable-AndroidSystemSheets
+                }
             }
 
             $testFilter = "TestCategory=$($settings.Category)" + $(if ($Filter) { "&$Filter" })
