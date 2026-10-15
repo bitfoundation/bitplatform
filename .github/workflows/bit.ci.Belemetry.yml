@@ -1,8 +1,7 @@
 name: bit platform CI - Belemetry
 
-# One pipeline per package: the build/unit stage gates the browser, hybrid and publish-gate stages below, so a
-# broken build fails once instead of burning a runner per E2E leg. See
-# src/Belemetry/Tests/Bit.Belemetry.Tests.E2E/README.md for what each E2E job proves and how to run it locally.
+# Build plus the unit, browser-script, MCP and hosting tests. The browser E2E suites and the trimmed/AOT publish
+# gate are in bit.ci.Belemetry.e2e.yml and run on demand only.
 
 on:
   workflow_dispatch:
@@ -18,9 +17,6 @@ permissions:
   contents: read
 
 jobs:
-
-  # Stage 1 - build, unit, MCP, source-generator and hosting tests. Every stage below depends on this one, so
-  # its `if:` is the single switch that skips the whole pipeline on Release/Prerelease/Version PRs.
   build-Belemetry:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
     name: build Bit.Belemetry
@@ -58,6 +54,8 @@ jobs:
     - name: dotnet build
       run: dotnet build src/Belemetry/Bit.Belemetry.slnx
 
+    # The test steps run from inside src so src/global.json's "test" runner setting applies
+    # (from the repo root the SDK falls back to the unsupported VSTest path).
     - name: dotnet test
       run: cd src/Belemetry/Tests/Bit.Belemetry.Tests && dotnet test --no-build
 
@@ -65,198 +63,7 @@ jobs:
       run: cd src/Belemetry/Tests/bit-belemetry-js && npm ci && npm test
 
     - name: dotnet test (MCP server and OTLP receiver)
-      # Run from inside src so src/global.json's "test" runner setting applies
-      # (from the repo root the SDK falls back to the unsupported VSTest path).
       run: cd src/Belemetry/Tests/Bit.Belemetry.Tests.Mcp && dotnet test --no-build
 
     - name: dotnet test (hosting - every render mode over HTTP, net8.0/net9.0/net10.0)
-      # Browser, hybrid and trimmed/AOT publish coverage are the stages below.
       run: cd src/Belemetry/Tests/Bit.Belemetry.Tests.Hosting && dotnet test --no-build
-
-  # Stage 2 - every web render mode (static SSR, Server, WebAssembly, Auto, with and without prerendering) in
-  # Chromium, on each runtime the library ships for.
-  e2e-web:
-    needs: build-Belemetry
-    name: Belemetry E2E - web render modes (${{ matrix.framework }})
-    runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        framework: [ net10.0, net9.0, net8.0 ]
-
-    steps:
-    - name: Checkout source code
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      with:
-          persist-credentials: false
-
-    - name: Setup .NET 10.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-      with:
-        global-json-file: src/global.json
-
-    - name: Setup .NET 9.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-      with:
-        dotnet-version: 9.0.x
-
-    - name: Setup .NET 8.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-      with:
-        dotnet-version: 8.0.x
-
-    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-      with:
-        node-version: 24
-
-    - name: Build the web harness host
-      run: dotnet build src/Belemetry/Tests/Bit.Belemetry.Tests.Harness.Web/Bit.Belemetry.Tests.Harness.Web.csproj -c Release -f ${{ matrix.framework }}
-
-    - name: Build the E2E suite
-      run: dotnet build src/Belemetry/Tests/Bit.Belemetry.Tests.E2E/Bit.Belemetry.Tests.E2E.csproj -c Release
-
-    - name: Install Playwright Chromium
-      run: pwsh src/Belemetry/Tests/Bit.Belemetry.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
-
-    - name: Run E2E tests
-      env:
-        BELEMETRY_E2E_FRAMEWORK: ${{ matrix.framework }}
-        BELEMETRY_E2E_CONFIGURATION: Release
-        BELEMETRY_E2E_SKIP_BUILD: 1
-      # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
-      run: >
-        cd src/Belemetry/Tests/Bit.Belemetry.Tests.E2E &&
-        dotnet test -c Release --no-build
-        --filter "FullyQualifiedName!~HybridModeTests"
-        --report-trx --report-trx-filename belemetry-e2e-web-${{ matrix.framework }}.trx
-
-    - name: Upload test results
-      if: always()
-      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-      with:
-        name: belemetry-e2e-web-${{ matrix.framework }}
-        path: '**/belemetry-e2e-web-*.trx'
-        if-no-files-found: ignore
-
-  # Stage 2 - Blazor Hybrid: the harness in a WinForms BlazorWebView, driven through WebView2's DevTools port.
-  e2e-hybrid:
-    needs: build-Belemetry
-    name: Belemetry E2E - Blazor Hybrid (WebView2)
-    runs-on: windows-2025
-
-    steps:
-    - name: Checkout source code
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      with:
-          persist-credentials: false
-
-    - name: Setup .NET 10.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-      with:
-        global-json-file: src/global.json
-
-    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-      with:
-        node-version: 24
-
-    # windows-2025 ships the Edge browser but not the WebView2 Runtime, which BlazorWebView needs.
-    - name: Install the WebView2 Runtime
-      shell: pwsh
-      run: |
-        $clientKey = 'HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}'
-        $version = (Get-ItemProperty $clientKey -ErrorAction SilentlyContinue).pv
-        if (-not $version -or $version -eq '0.0.0.0') {
-          $installer = Join-Path $env:RUNNER_TEMP 'MicrosoftEdgeWebview2Setup.exe'
-          Invoke-WebRequest 'https://go.microsoft.com/fwlink/p/?LinkId=2124703' -OutFile $installer
-          Start-Process $installer -ArgumentList '/silent', '/install' -Wait
-          $version = (Get-ItemProperty $clientKey -ErrorAction SilentlyContinue).pv
-        }
-        if (-not $version -or $version -eq '0.0.0.0') { throw 'The WebView2 Runtime did not install.' }
-        Write-Host "WebView2 Runtime $version"
-
-    - name: Build the hybrid harness host
-      run: dotnet build src/Belemetry/Tests/Bit.Belemetry.Tests.Harness.Hybrid/Bit.Belemetry.Tests.Harness.Hybrid.csproj -c Release
-
-    - name: Build the E2E suite
-      run: dotnet build src/Belemetry/Tests/Bit.Belemetry.Tests.E2E/Bit.Belemetry.Tests.E2E.csproj -c Release
-
-    # No Playwright browser download: it attaches to the WebView2 Runtime installed above.
-    - name: Run hybrid E2E tests
-      env:
-        BELEMETRY_E2E_CONFIGURATION: Release
-        BELEMETRY_E2E_SKIP_BUILD: 1
-      run: >
-        cd src/Belemetry/Tests/Bit.Belemetry.Tests.E2E &&
-        dotnet test -c Release --no-build
-        --filter "FullyQualifiedName~HybridModeTests"
-        --report-trx --report-trx-filename belemetry-e2e-hybrid.trx
-
-    - name: Upload test results
-      if: always()
-      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-      with:
-        name: belemetry-e2e-hybrid
-        path: '**/belemetry-e2e-hybrid.trx'
-        if-no-files-found: ignore
-
-  # Stage 3 - publishes the harness the way a WebAssembly app ships - trimmed, and in a second leg AOT-compiled -
-  # failing on any trim analysis warning, then runs the browser suite against that published output. Trimming is
-  # where the .NET pipeline that runs in the browser (collectors, serializers, the JS bridge) would break, and none
-  # of it is visible in a Debug build.
-  publish-gate:
-    needs: build-Belemetry
-    name: Belemetry publish gate (${{ matrix.name }})
-    runs-on: ubuntu-24.04
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-        - name: trimmed
-          properties: ''
-        - name: aot
-          properties: '-p:RunAOTCompilation=true'
-
-    steps:
-    - name: Checkout source code
-      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      with:
-          persist-credentials: false
-
-    - name: Setup .NET 10.0
-      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
-      with:
-        global-json-file: src/global.json
-
-    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-      with:
-        node-version: 24
-
-    - name: Install wasm-tools
-      if: matrix.name == 'aot'
-      run: dotnet workload install wasm-tools
-
-    - name: Publish the web harness host (fails on trim/AOT warnings from Bit.Belemetry)
-      run: bash src/Belemetry/Tests/Bit.Belemetry.Tests.E2E/publish-gate.sh ${{ github.workspace }}/artifacts/harness-${{ matrix.name }} ${{ matrix.properties }}
-
-    - name: Build the E2E suite
-      run: dotnet build src/Belemetry/Tests/Bit.Belemetry.Tests.E2E/Bit.Belemetry.Tests.E2E.csproj -c Release
-
-    - name: Install Playwright Chromium
-      run: pwsh src/Belemetry/Tests/Bit.Belemetry.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
-
-    - name: Run E2E tests against the published host
-      env:
-        BELEMETRY_E2E_PUBLISHED_HOST: ${{ github.workspace }}/artifacts/harness-${{ matrix.name }}
-      run: >
-        cd src/Belemetry/Tests/Bit.Belemetry.Tests.E2E &&
-        dotnet test -c Release --no-build
-        --filter "FullyQualifiedName!~HybridModeTests"
-        --report-trx --report-trx-filename belemetry-publish-${{ matrix.name }}.trx
-
-    - name: Upload test results
-      if: always()
-      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-      with:
-        name: belemetry-publish-${{ matrix.name }}
-        path: '**/belemetry-publish-*.trx'
-        if-no-files-found: ignore
