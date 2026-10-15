@@ -289,6 +289,12 @@ Triage every failure:
 3. Name it: a test bug, a product bug, the infrastructure (the mac, the emulator, an outside service's outage), or
    flaky. Fix the first two at their cause, as in step 1.
 
+A download size that grew is broken down by file before it is called growth. The published `.br` of each file sits
+next to it in `C:\inetpub\<site>\wwwroot`, and that is what has to arrive: a response larger than it, or chunked with
+no `Content-Length`, was compressed again on the way. Compare the libraries' assets and the trimmed WebAssembly files
+with a publish of the commit the expected sizes were measured on. The service worker's own scripts, its asset list
+included, report no size to Playwright, so the total leaves them out.
+
 Two failures on .NET 11 are known gaps of third-party libraries; report them as known and don't triage them: the
 template's MySQL provider doesn't work there (All CI keeps its MySQL job off), and CommunityToolkit.Datasync doesn't
 sync, so the offline Todo test that waits for an item added offline to reach the server fails every time. Check them
