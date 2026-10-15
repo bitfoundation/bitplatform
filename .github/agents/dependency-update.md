@@ -191,6 +191,13 @@ belongs to (`# v2.0.0`), so the comment records a version rather than a branch.
 
 Runner images (`runs-on`) are part of this: no `ubuntu-latest`, pin the concrete image.
 
+**Xcode follows the iOS workload.** The iOS jobs pin a runner image and `setup-xcode`'s `xcode-version`, and both
+must give the Xcode that .NET for iOS asks for: the `RecommendedXcodeVersion` in `Versions.plist` of the
+`Microsoft.iOS.Sdk.net<tfm>_<x.y>` pack whose version the newest workload set of the SDK's band names
+(`Microsoft.NET.Workloads.<band>` on NuGet). A workload set can raise it without any SDK bump, and then every iOS
+build fails with "This version of .NET for iOS requires Xcode ...". When the `macOS-*` image doesn't have that Xcode,
+use GitHub's image that does (`xcode-27` for Xcode 27).
+
 ### Azure DevOps
 
 Tasks are major-versioned (`UseDotNet@2`, `FileTransform@2`). The newest major is the highest
