@@ -328,6 +328,12 @@
   <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
     <value>Fila eliminada</value>
   </data>
+    <data name="DataGridAnnouncementSearched" xml:space="preserve">
+    <value>Buscando {0}</value>
+  </data>
+    <data name="DataGridAnnouncementSearchCleared" xml:space="preserve">
+    <value>Se borró la búsqueda</value>
+  </data>
   <!-- Boilerplate strings -->
   <data name="Active" xml:space="preserve">
     <value>Activo</value>
@@ -1580,9 +1586,6 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   <data name="Users" xml:space="preserve">
     <value>Usuarios</value>
   </data>
-  <data name="UsersWithCount" xml:space="preserve">
-    <value>Usuarios {0}</value>
-  </data>
   <data name="Features" xml:space="preserve">
     <value>Características</value>
   </data>
@@ -1638,9 +1641,6 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
   </data>
   <data name="DeleteRole" xml:space="preserve">
     <value>Eliminar grupo de usuarios</value>
-  </data>
-  <data name="Sessions" xml:space="preserve">
-    <value>Sesiones {0}</value>
   </data>
   <data name="DeleteUser" xml:space="preserve">
     <value>Eliminar usuario</value>

@@ -4,9 +4,8 @@
     <BitModal @bind-IsOpen="isOpen"
               FullSize
               Class="modal"
-              OnDismiss="() => searchText = null"
-              Styles="@(new() { Content = "overflow:auto" })">
-        <BitStack FillContent Class="container">
+              OnDismiss="() => searchText = null">
+        <BitStack FillContent Padding="1rem">
             <BitStack Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
                 <BitText Typography="BitTypography.H3">Diagnostic</BitText>
                 <BitSpacer />
@@ -33,7 +32,6 @@
                     <BitToggleButton Variant="BitVariant.Text"
                                      Color="BitColor.Secondary"
                                      OnChange="_ => FilterLogs()"
-                                     Style="width:2rem;height:2rem"
                                      @bind-IsChecked="enableRegExp"
                                      Title="Enable Regular Expression"
                                      IconName="@BitIconName.FilterSettings" />
@@ -62,18 +60,21 @@
 
                 <BitButton IconOnly
                            Title="Sort"
+                           AriaLabel="Sort"
                            OnClick="HandleOnSortClick"
                            Color="BitColor.SecondaryBackground"
                            IconName="@(isDescendingSort? BitIconName.SortDown: BitIconName.SortUp)" />
                 &nbsp;
                 <BitButton IconOnly
                            Title="Reload logs"
+                           AriaLabel="Reload logs"
                            OnClick="ReloadLogs"
                            IconName="@BitIconName.Refresh"
                            Color="BitColor.SecondaryBackground" />
 
                 <BitButton IconOnly
                            Title="Clear logs"
+                           AriaLabel="Clear logs"
                            OnClick="ClearLogs"
                            IconName="@BitIconName.Delete"
                            Color="BitColor.SecondaryBackground" />
@@ -82,12 +83,14 @@
                    WrapHandled would defeat the only thing it does. *@
                 <BitButton IconOnly
                            Title="Throw test error"
+                           AriaLabel="Throw test error"
                            OnClick="ThrowTestException"
                            IconName="@BitIconName.Error"
                            Color="BitColor.SecondaryBackground" />
 
                 <BitButton IconOnly AutoLoading
                            Title="Open dev tools"
+                           AriaLabel="Open dev tools"
                            Color="BitColor.SecondaryBackground"
                            OnClick="WrapHandled(OpenDevTools)"
                            IconName="@BitIconName.DeveloperTools" />
@@ -96,6 +99,7 @@
                 {
                     <BitButton IconOnly
                                Title="Call GC"
+                               AriaLabel="Call GC"
                                IconName="@BitIconName.RecycleBin"
                                OnClick="WrapHandled(CallGC)"
                                Color="BitColor.SecondaryBackground" />
@@ -104,6 +108,7 @@
                 <BitButton IconOnly
                            AutoLoading
                            Title="Clear app files"
+                           AriaLabel="Clear app files"
                            IconName="@BitIconName.RemoveFrom"
                            OnClick="WrapHandled(ClearAppFiles)"
                            Color="BitColor.SecondaryBackground" />
@@ -111,6 +116,7 @@
                 <BitButton IconOnly
                            AutoLoading
                            Title="Update app"
+                           AriaLabel="Update app"
                            IconName="@BitIconName.UpdateRestore"
                            OnClick="WrapHandled(UpdateApp)"
                            Color="BitColor.SecondaryBackground" />
@@ -123,16 +129,18 @@
                           Items="indexedFilteredLogs">
                 <EmptyContent>Nothing to show!</EmptyContent>
                 <RowTemplate Context="logIndex">
-                    <BitStack @key="TimeZoneService.ToLocalTime(logIndex.item.CreatedOn)" Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
+                    <BitStack @key="TimeZoneService.ToLocalTime(logIndex.item.CreatedOn)" role="listitem" Horizontal AutoHeight VerticalAlign="BitAlignment.Center">
                         <BitText Style="min-width:7rem">@($"{logIndex.index + 1}. [{TimeZoneService.ToLocalTime(logIndex.item.CreatedOn).ToString("HH:mm:ss")}]")</BitText>
                         <BitButton IconOnly
                                    Title="Copy"
+                                   AriaLabel="Copy"
                                    Color="BitColor.Info"
                                    Variant="BitVariant.Text"
                                    IconName="@BitIconName.Copy"
                                    OnClick="WrapHandled(() => CopyLog(logIndex.item))" />
                         <BitButton IconOnly
                                    Title="Details"
+                                   AriaLabel="Details"
                                    Color="BitColor.Info"
                                    Variant="BitVariant.Text"
                                    IconName="@BitIconName.DiagnosticDataViewerApp"

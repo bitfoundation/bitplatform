@@ -41,6 +41,7 @@
                                             <BitTextField @bind-Value="model.Email"
                                                           TabIndex="1"
                                                           Type="BitInputType.Email"
+                                                          AutoComplete="@BitAutoCompleteValue.UserName"
                                                           Immediate DebounceTime="500"
                                                           Label="@Localizer[nameof(AppStrings.Email)]"
                                                           Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
@@ -49,8 +50,7 @@
                                         else
                                         {
                                             <BitPhoneInput @bind-Value="model.PhoneNumber"
-                                                          AutoFocus TabIndex="1" FullWidth
-                                                          DefaultCountry="@BitCountries.Current"
+                                                          AutoFocus TabIndex="1"
                                                           Immediate DebounceTime="500"
                                                           Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
                                                           Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
@@ -61,8 +61,9 @@
                                             <br />
                                             <BitTextField @bind-Value="model.Password"
                                                           TabIndex="2"
-                                                          CanRevealPassword="true"
+                                                          CanRevealPassword
                                                           Type="BitInputType.Password"
+                                                          AriaLabel="@Localizer[nameof(AppStrings.Password)]"
                                                           AutoComplete="@BitAutoCompleteValue.CurrentPassword"
                                                           Placeholder="@Localizer[nameof(AppStrings.PasswordPlaceholder)]">
                                                 <LabelTemplate>
@@ -88,7 +89,6 @@
                                                    IsLoading="isWaiting"
                                                    Variant="BitVariant.Text"
                                                    Color="BitColor.Tertiary"
-                                                   IsEnabled="isWaiting is false"
                                                    ButtonType="BitButtonType.Button"
                                                    IconName="@BitIconName.Fingerprint"
                                                    Title="@Localizer[nameof(AppStrings.SignInWithPasskeyButtonText)]"
@@ -109,7 +109,6 @@
                                             </BitText>
                                         }
                                         <BitButton IsLoading="isWaiting"
-                                                   IsEnabled="isWaiting is false"
                                                    ButtonType="BitButtonType.Submit">
                                             @Localizer[nameof(AppStrings.Continue)]
                                         </BitButton>
@@ -122,7 +121,7 @@
                                                ButtonType="BitButtonType.Button"
                                                OnClick="WrapHandled(() => SendOtp(resend: true))"
                                                Variant="@(internalSignInPanelType is SignInPanelType.Otp ? BitVariant.Fill : BitVariant.Outline)"
-                                               IsEnabled="@(isWaiting is false && (model.Email is not null || model.PhoneNumber is not null))">
+                                               Disabled="@(model.Email is null && model.PhoneNumber is null)">
                                         @(currentTab == SignInPanelTab.Email ? Localizer[nameof(AppStrings.SendMagicLinkButtonText)] : Localizer[nameof(AppStrings.SendOtpButtonText)])
                                     </BitButton>
                                 }
@@ -141,7 +140,7 @@
                                 {
                                     <BitText Align="BitTextAlign.Center" Typography="BitTypography.Body2">
                                         @Localizer[nameof(AppStrings.DontHaveAccountMessage)]
-                                        <BitLink Href="@($"{PageUrls.SignUp}?return-url={Uri.EscapeDataString(GetSafeReturnUrl())}")">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
+                                        <BitLink Underlined Href="@($"{PageUrls.SignUp}?return-url={Uri.EscapeDataString(GetSafeReturnUrl())}")">@Localizer[nameof(AppStrings.SignUp)]</BitLink>
                                     </BitText>
                                 }
                             </BitStack>

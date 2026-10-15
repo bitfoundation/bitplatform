@@ -15,6 +15,7 @@ public partial class ProductsCountPerCategoryWidget
         Options = new BitChartOptions
         {
             AspectRatio = 1.4,
+            Culture = CultureInfo.CurrentCulture,
             Plugins = new BitChartPluginOptions
             {
                 Legend = new BitChartLegendOptions { Display = false }

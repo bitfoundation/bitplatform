@@ -262,6 +262,18 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     }
 
     /// <summary>
+    /// Records an element's resting target without animating to it - for an element the runtime
+    /// takes over already at rest because it was prerendered there. The values are already in the
+    /// DOM, so nothing is flushed; the target only becomes the base a gesture layer reverts to,
+    /// exactly as an <c>Animate</c> played with <c>setAsBase</c> would have left it.
+    /// </summary>
+    internal void SetBaseAnimation(string elementId, Dictionary<string, object?> values, BmotionTransitionConfig? transition)
+    {
+        if (_elements.TryGetValue(elementId, out var state))
+            state.SetBaseAnimation(values, transition);
+    }
+
+    /// <summary>
     /// Pauses rAF transform writes for an element for <paramref name="durationMs"/> so a WAAPI FLIP
     /// layout animation can own the transform without the engine fighting it each frame.
     /// </summary>
@@ -657,14 +669,9 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
         // shared transition doesn't cost every other animation its compositor offload.
         if (config.Path != null && BmotionArcTargets.Applies(values)) return null;
         if (config.Properties is { Count: > 0 }) return null;
-        if (config.RepeatDelay > 0) return null;
-        if (config.RepeatType == BmRepeatType.Reverse && (config.IsInfiniteRepeat || config.Repeat > 0)) return null;
-        if (config.Times != null) return null;
-        if (config.Type == BmotionTransitionType.Inertia) return null;
-        // A spring with initial velocity produces a per-distance curve that a shared normalized
-        // sample table can't represent.
-        if (config.Type == BmotionTransitionType.Spring && config.Velocity != 0) return null;
-        if (config.Type == BmotionTransitionType.Tween && config.Duration <= 0) return null;
+        // Repeat delays, reversing repeats, uneven keyframe times, inertia, a spring with initial
+        // velocity, a zero-length tween - shared with the prerendered CSS animations.
+        if (!BmotionBrowserTiming.CanPlay(config)) return null;
 
         // Every animated property must be a transform component or opacity with finite numeric
         // frames; anything else stays on the rAF path.
@@ -688,36 +695,13 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
 
         // Sample the curve. Springs need linear() easing support; tweens prefer it but can
         // fall back to their exact CSS easing.
-        double durationMs;
-        double[] samples;
-        string easing;
-        if (config.Type == BmotionTransitionType.Spring)
-        {
-            if (!await LinearEasingSupportedAsync()) return null;
-            var sampled = SampleSpringProgress(config);
-            if (sampled is null) return null;
-            (samples, durationMs) = sampled.Value;
-            easing = BuildLinearEasing(samples);
-        }
-        else
-        {
-            samples = SampleTweenProgress(config);
-            durationMs = config.Duration * 1000;
-            if (await LinearEasingSupportedAsync())
-            {
-                easing = BuildLinearEasing(samples);
-            }
-            else if (BmEaseFunctions.HasFaithfulCssEasing(config))
-            {
-                easing = BmEaseFunctions.ToCssString(config);
-            }
-            else
-            {
-                // Elastic/bounce can't be expressed as a CSS curve and the browser lacks linear()
-                // support - run it exactly on the rAF engine instead of shipping a wrong easing.
-                return null;
-            }
-        }
+        bool linearSupported = await LinearEasingSupportedAsync();
+        if (config.Type == BmotionTransitionType.Spring && !linearSupported) return null;
+        if (BmotionBrowserTiming.SampleProgress(config) is not { } sampled) return null;
+        var (samples, durationMs) = sampled;
+        // Without linear() support, a curve CSS can't express (elastic/bounce) runs exactly on the
+        // rAF engine instead of shipping a wrong easing.
+        if (BmotionBrowserTiming.ChooseEasing(config, samples, linearSupported, preferKeyword: false) is not { } easing) return null;
 
         var frameStyles = BuildFrameStyles(state, frameArrays, targets, touchesTransform, frameCount);
 
@@ -988,61 +972,6 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
                 catch { /* best-effort */ }
             }
         }
-    }
-
-    private static double[] SampleTweenProgress(BmotionTransitionConfig config)
-    {
-        var ease = BmEaseFunctions.Get(config);
-        const int sampleCount = 33;
-        var samples = new double[sampleCount];
-        for (int i = 0; i < sampleCount; i++)
-            samples[i] = ease((double)i / (sampleCount - 1));
-        return samples;
-    }
-
-    /// <summary>
-    /// Simulates the spring on a normalized 0→1 distance (valid for any distance when initial
-    /// velocity is zero - the ODE is linear) and returns the eased-progress samples plus the
-    /// settling duration. Null when the spring doesn't settle within 20 s.
-    /// </summary>
-    private static (double[] Samples, double DurationMs)? SampleSpringProgress(BmotionTransitionConfig config)
-    {
-        var sampling = config.Clone();
-        sampling.Delay = 0;
-        sampling.Repeat = 0;
-        sampling.RepeatInfinite = false;
-        sampling.RepeatDelay = 0;
-
-        double value = 0;
-        BmotionSpringDriver driver;
-        try { driver = new BmotionSpringDriver(0, 1, sampling, v => value = v); }
-        catch { return null; }
-
-        const double stepMs = 1000.0 / 60;
-        const int maxSamples = 20 * 60;
-        var samples = new List<double>(128);
-        double t = 0;
-        bool done = false;
-        for (int i = 0; i < maxSamples && !done; i++)
-        {
-            done = driver.Tick(t);
-            samples.Add(value);
-            t += stepMs;
-        }
-        if (!done || samples.Count < 2) return null;
-        samples[^1] = 1; // land exactly on the target
-        return (samples.ToArray(), (samples.Count - 1) * stepMs);
-    }
-
-    private static string BuildLinearEasing(double[] samples)
-    {
-        var sb = new System.Text.StringBuilder("linear(");
-        for (int i = 0; i < samples.Length; i++)
-        {
-            if (i > 0) sb.Append(", ");
-            sb.Append(Math.Round(samples[i], 4).ToString(System.Globalization.CultureInfo.InvariantCulture));
-        }
-        return sb.Append(')').ToString();
     }
 
     // ═══════════════════════════════════════════════════════════════════════════

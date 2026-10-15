@@ -18,6 +18,7 @@ public partial class MainLayout : IAsyncDisposable
     [AutoInject] private Keyboard keyboard = default!;
     [AutoInject] private AuthManager authManager = default!;
     [AutoInject] private ThemeService themeService = default!;
+    [AutoInject] private BitThemeNotifications bitThemeNotifications = default!;
     [AutoInject] private PubSubService pubSubService = default!;
     [AutoInject] private IUserController userController = default!;
     //#if (multitenant == true)
@@ -66,6 +67,7 @@ public partial class MainLayout : IAsyncDisposable
             }
 
             authManager.AuthenticationStateChanged += AuthManager_AuthenticationStateChanged;
+            bitThemeNotifications.ThemeChanged += BitThemeNotifications_ThemeChanged;
 
             unsubscribers.Add(pubSubService.Subscribe(ClientAppMessages.THEME_CHANGED, async payload =>
             {
@@ -141,6 +143,20 @@ public partial class MainLayout : IAsyncDisposable
         finally
         {
             await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async void BitThemeNotifications_ThemeChanged(object? sender, BitThemeChangedEventArgs e)
+    {
+        try
+        {
+            if (e.HasNewTheme is false) return;
+
+            await InvokeAsync(() => themeService.ApplyTheme(e.NewTheme));
+        }
+        catch (Exception ex)
+        {
+            exceptionHandler.Handle(ex);
         }
     }
 
@@ -261,6 +277,7 @@ public partial class MainLayout : IAsyncDisposable
         }
 
         authManager.AuthenticationStateChanged -= AuthManager_AuthenticationStateChanged;
+        bitThemeNotifications.ThemeChanged -= BitThemeNotifications_ThemeChanged;
 
         unsubscribers.ForEach(us => us.Invoke());
 

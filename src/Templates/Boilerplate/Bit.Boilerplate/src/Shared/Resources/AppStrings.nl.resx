@@ -328,6 +328,12 @@
   <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
     <value>Rij verwijderd</value>
   </data>
+    <data name="DataGridAnnouncementSearched" xml:space="preserve">
+    <value>Zoeken naar {0}</value>
+  </data>
+    <data name="DataGridAnnouncementSearchCleared" xml:space="preserve">
+    <value>Zoekopdracht gewist</value>
+  </data>
   <!-- Boilerplate strings -->
   <data name="Active" xml:space="preserve">
     <value>Actief</value>
@@ -1580,9 +1586,6 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   <data name="Users" xml:space="preserve">
     <value>Gebruikers</value>
   </data>
-  <data name="UsersWithCount" xml:space="preserve">
-    <value>Gebruikers {0}</value>
-  </data>
   <data name="Features" xml:space="preserve">
     <value>Functies</value>
   </data>
@@ -1638,9 +1641,6 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
   </data>
   <data name="DeleteRole" xml:space="preserve">
     <value>Gebruikersgroep verwijderen</value>
-  </data>
-  <data name="Sessions" xml:space="preserve">
-    <value>Sessies {0}</value>
   </data>
   <data name="DeleteUser" xml:space="preserve">
     <value>Gebruiker verwijderen</value>

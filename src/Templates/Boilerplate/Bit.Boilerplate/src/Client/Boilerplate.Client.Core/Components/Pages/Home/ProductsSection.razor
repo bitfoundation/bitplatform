@@ -1,6 +1,6 @@
 @inherits AppComponentBase
 
-<BitInfiniteScrolling ItemsProvider="LoadProducts" Class="products-inf-scr" ScrollerSelector="body" LastElementHeight="96px" Preload>
+<BitInfiniteScrolling ItemsProvider="LoadProducts" PageSize="10" Class="products-inf-scr" ScrollerSelector="body" LastElementHeight="96px" Preload>
     <ItemTemplate Context="product">
         <BitLink Href="@product.PageUrl" NoUnderline Class="product-item">
             <BitCard FullSize>
@@ -16,11 +16,11 @@
     <LoadingTemplate>
         <BitCard FullSize Class="product-item">
             <BitStack Class="product-stack">
-                <BitShimmer Height="200px" Width="100%" Background="BitColor.PrimaryBackground" />
-                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
-                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
-                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
-                <BitShimmer Height="2rem" Width="100%" Background="BitColor.PrimaryBackground" />
+                <BitShimmer Height="200px" Background="BitColor.PrimaryBackground" />
+                <BitShimmer Height="1rem" Background="BitColor.PrimaryBackground" />
+                <BitShimmer Height="1rem" Background="BitColor.PrimaryBackground" />
+                <BitShimmer Height="1rem" Background="BitColor.PrimaryBackground" />
+                <BitShimmer Height="2rem" Background="BitColor.PrimaryBackground" />
             </BitStack>
         </BitCard>
     </LoadingTemplate>

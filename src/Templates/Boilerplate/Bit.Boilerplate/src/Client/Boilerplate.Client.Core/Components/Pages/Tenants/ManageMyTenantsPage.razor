@@ -36,7 +36,7 @@
 
         @if (isLoading)
         {
-            <BitStack HorizontalAlign="BitAlignment.Center" Style="padding:3rem">
+            <BitStack HorizontalAlign="BitAlignment.Center" Padding="3rem">
                 <BitRippleLoading />
             </BitStack>
         }
@@ -44,7 +44,7 @@
         {
             @* The three tenant actions. Only one section is expanded at a time (single-expand accordion list).
                When the user has no tenant yet, the create section opens automatically. *@
-            <BitAccordionList TItem="BitAccordionListOption" Class="actions-accordion" Gap="8"
+            <BitAccordionList TItem="BitAccordionListOption"
                               DefaultExpandedKey="@(tenants.Count is 0 ? "create" : null)"
                               OnExpand="OnSectionExpand">
 
@@ -69,7 +69,7 @@
 
                     @* 2. Invite a user to the current tenant. *@
                     <BitAccordionListOption Key="invite"
-                                            IsEnabled="currentTenant is not null"
+                                            IsDisabled="currentTenant is null"
                                             Title="@(currentTenant is null
                                                        ? Localizer[nameof(AppStrings.Invite)]
                                                        : Localizer[nameof(AppStrings.InviteUserToTenant), string.IsNullOrWhiteSpace(currentTenant.Title) ? currentTenant.Name : currentTenant.Title!])">
@@ -82,7 +82,6 @@
                                               Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
                                 <ValidationMessage For="() => inviteRequest.Email" />
                                 <BitPhoneInput @bind-Value="inviteRequest.PhoneNumber"
-                                               DefaultCountry="@BitCountries.Current" FullWidth
                                                Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
                                                Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                                 <ValidationMessage For="() => inviteRequest.PhoneNumber" />
@@ -97,7 +96,7 @@
 
                     @* 3. Rename the current tenant (Update always targets the current tenant). *@
                     <BitAccordionListOption Key="update"
-                                            IsEnabled="currentTenant is not null"
+                                            IsDisabled="currentTenant is null"
                                             Title="@Localizer[nameof(AppStrings.EditTenant)]">
                         <EditForm Model="editingTenant" OnValidSubmit="WrapHandled(UpdateTenant)" Context="updateFormContext" novalidate>
                             <AppDataAnnotationsValidator @ref="editValidatorRef" />
@@ -115,17 +114,17 @@
                 </AuthorizeView>
             </BitAccordionList>
 
-            <BitBasicList Items="tenants" Class="tenants-list">
+            <BitBasicList Items="tenants" FullWidth>
                 <EmptyContent>
-                    <BitStack HorizontalAlign="BitAlignment.Center" Gap="1rem" Style="padding:3rem 1rem">
-                        <BitIcon IconName="@BitIconName.Org" Color="BitColor.Primary" Style="font-size:3rem" />
+                    <BitStack HorizontalAlign="BitAlignment.Center" Gap="1rem" Padding="3rem 1rem">
+                        <BitIcon IconName="@BitIconName.Org" Color="BitColor.Primary" FontSize="3rem" />
                         <BitText Typography="BitTypography.Body1" Align="BitTextAlign.Center">
                             @Localizer[nameof(AppStrings.SelectTenantMessage)]
                         </BitText>
                     </BitStack>
                 </EmptyContent>
                 <RowTemplate Context="tenant">
-                    <BitCard FullWidth Class="tenant-card" @key="tenant.Id">
+                    <BitCard role="listitem" FullWidth Class="tenant-card" @key="tenant.Id">
                         <BitStack Gap="1rem">
                             <BitStack Horizontal VerticalAlign="BitAlignment.Center" Gap="1rem" FitHeight>
                                 @* Green check for the current tenant, a mail icon for invitations not accepted yet, org icon otherwise. *@
@@ -133,19 +132,19 @@
                                 {
                                     <BitIcon IconName="@BitIconName.SkypeCircleCheck"
                                              Color="BitColor.Success"
-                                             Style="font-size:1.75rem"
+                                             FontSize="1.75rem"
                                              Title="@Localizer[nameof(AppStrings.CurrentTenant)]" />
                                 }
                                 else if (IsPendingInvitation(tenant))
                                 {
                                     <BitIcon IconName="@BitIconName.Mail"
                                              Color="BitColor.Warning"
-                                             Style="font-size:1.75rem"
+                                             FontSize="1.75rem"
                                              Title="@Localizer[nameof(AppStrings.PendingInvitation)]" />
                                 }
                                 else
                                 {
-                                    <BitIcon IconName="@BitIconName.Org" Color="BitColor.SecondaryForeground" Style="font-size:1.75rem" />
+                                    <BitIcon IconName="@BitIconName.Org" Color="BitColor.SecondaryForeground" FontSize="1.75rem" />
                                 }
 
                                 <BitStack Gap="0.125rem" Grows>
@@ -197,8 +196,6 @@
 
 <BitDialog OnOk="WrapHandled(LeaveTenant)"
            @bind-IsOpen="isLeaveTenantDialogOpen"
-           OkText="@Localizer[nameof(AppStrings.Yes)]"
-           CancelText="@Localizer[nameof(AppStrings.No)]"
            Title="@Localizer[tenantToLeave is not null && IsDecliningInvitation(tenantToLeave) ? nameof(AppStrings.DeclineInvitation) : nameof(AppStrings.LeaveTenant)]"
            Message="@(tenantToLeave is null
                       ? ""

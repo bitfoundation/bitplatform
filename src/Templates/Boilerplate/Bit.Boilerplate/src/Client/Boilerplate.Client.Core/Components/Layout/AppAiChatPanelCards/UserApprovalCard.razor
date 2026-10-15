@@ -12,7 +12,7 @@
             <BitStack Gap="0.875rem">
                 <BitStack Horizontal Gap="0.75rem" VerticalAlign="BitAlignment.Start">
                     <BitStack FitSize NoShrink Alignment="BitAlignment.Center" Class="approval-icon">
-                        <BitIcon IconName="@BitIconName.ShieldAlert" />
+                        <BitIcon IconName="@BitIconName.ShieldAlert" Color="BitColor.Error" FontSize="1.25rem" />
                     </BitStack>
 
                     <BitStack Gap="0.25rem" Grows Shrinkable>
@@ -27,7 +27,7 @@
                         @foreach (var consequence in text.Consequences)
                         {
                             <BitStack Element="li" Horizontal Gap="0.625rem" VerticalAlign="BitAlignment.Center">
-                                <BitIcon IconName="@consequence.IconName" Class="approval-consequence-icon" />
+                                <BitIcon IconName="@consequence.IconName" Color="BitColor.SecondaryForeground" />
                                 <BitText Typography="BitTypography.Body2">@consequence.Text</BitText>
                             </BitStack>
                         }
@@ -53,11 +53,11 @@
         <BitStack Horizontal FitHeight Gap="0.5rem" VerticalAlign="BitAlignment.Center" Class="@($"approval-outcome {OutcomeClass}")" role="status">
             @if (IsApproved)
             {
-                <BitEllipsisLoading Size="BitSize.Small" />
+                <BitEllipsisLoading Size="BitSize.Small" Role="none" />
             }
             else
             {
-                <BitIcon IconName="@OutcomeIcon" />
+                <BitIcon IconName="@OutcomeIcon" Color="BitColor.SecondaryForeground" FontSize="0.875rem" />
             }
             <BitText Typography="BitTypography.Body2">@OutcomeText(text)</BitText>
         </BitStack>

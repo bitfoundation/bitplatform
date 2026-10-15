@@ -9,11 +9,13 @@ namespace Bit.Bmotion;
 /// </summary>
 public sealed class BmotionInterop : IBmotionInterop
 {
+    private readonly IJSRuntime _js;
     private readonly Lazy<Task<IJSObjectReference>> _moduleTask;
 
     public BmotionInterop(IJSRuntime js)
     {
         ArgumentNullException.ThrowIfNull(js);
+        _js = js;
         IsInProcess = js is IJSInProcessRuntime;
         _moduleTask = new Lazy<Task<IJSObjectReference>>(
             () => js.InvokeAsync<IJSObjectReference>(
@@ -26,6 +28,59 @@ public sealed class BmotionInterop : IBmotionInterop
     /// library only functions on WebAssembly. This is checked before the rAF loop starts.
     /// </summary>
     public bool IsInProcess { get; }
+
+    /// <summary>
+    /// <c>true</c> while the components are being prerendered or statically rendered on the server.
+    /// Read live: a circuit's runtime only becomes usable once the circuit attaches to it.
+    /// </summary>
+    public bool IsPrerendering => IsStaticRuntime(_js);
+
+    // A scope with no browser gets one of two framework-internal runtimes: static SSR's placeholder
+    // (every call throws), or - in apps with Server interactivity - a circuit runtime no circuit has
+    // attached to. Neither type is public, so they are recognised by name.
+    [UnconditionalSuppressMessage("Trimming", "IL2075",
+        Justification = "RemoteJSRuntime only exists in Blazor Server apps, which are never trimmed; a missing property reads as interactive.")]
+    private static bool IsStaticRuntime(IJSRuntime js)
+    {
+        if (OperatingSystem.IsBrowser()) return false;
+        var type = js.GetType();
+        if (type.Name == "UnsupportedJavaScriptRuntime") return true;
+        if (type.Name == "RemoteJSRuntime")
+            return type.GetProperty("IsInitialized")?.GetValue(js) is false;
+        return false;
+    }
+
+    /// <summary>
+    /// How long the CSS animation of the prerendered element with id <paramref name="elementId"/>
+    /// has been running - read off the element itself, which is still in the DOM while the runtime
+    /// renders the markup that replaces it, so it is right however late that markup arrived
+    /// (streamed, or brought in by enhanced navigation). Synchronous, so WebAssembly only.
+    /// </summary>
+    [UnconditionalSuppressMessage("Trimming", "IL2026",
+        Justification = "Deserializes only JsonElement, which System.Text.Json handles without reflection over user types.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050",
+        Justification = "Deserializes only JsonElement, which needs no runtime code generation.")]
+    public double? GetPrerenderedAnimationElapsedMs(string elementId)
+    {
+        if (_js is not IJSInProcessRuntime js) return null;
+        try
+        {
+            using var element = js.Invoke<IJSInProcessObjectReference>("document.getElementById", elementId);
+            using var animations = element.Invoke<IJSInProcessObjectReference>("getAnimations");
+            // Every animation in the element's list started when the element did; a local time
+            // counts from there, delay included - the same origin the prerendered delays use.
+            var timing = animations.Invoke<System.Text.Json.JsonElement>("0.effect.getComputedTiming");
+            return timing.TryGetProperty("localTime", out var local) && local.TryGetDouble(out var ms)
+                ? Math.Max(0, ms)
+                : null;
+        }
+        catch
+        {
+            // No such element, or no animation still playing on it: there is nothing to continue,
+            // so the element lands at rest.
+            return null;
+        }
+    }
 
     private async ValueTask<IJSObjectReference> Module() => await _moduleTask.Value;
 

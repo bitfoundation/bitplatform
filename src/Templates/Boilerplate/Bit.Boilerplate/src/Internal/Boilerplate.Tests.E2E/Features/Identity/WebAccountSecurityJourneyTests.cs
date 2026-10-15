@@ -531,20 +531,6 @@ public partial class WebAccountSecurityJourneyTests : AppTestBase
     }
 
     /// <summary>
-    /// Types an E.164 number into a <c>BitPhoneInput</c> and waits until the component has taken it: it parses what
-    /// was typed on its change round-trip - which the blur raises - keeping only the local digits in the box and
-    /// moving the dialing code into the country button. Waiting for that is what stops the submit which follows from
-    /// racing the round-trip and posting an empty number.
-    /// </summary>
-    private async Task FillPhoneNumber(ILocator phoneInput, string phoneNumber)
-    {
-        await phoneInput.FillAsync(phoneNumber);
-        await phoneInput.BlurAsync();
-
-        await Expect(phoneInput).ToHaveValueAsync(phoneNumber["+1".Length..]);
-    }
-
-    /// <summary>
     /// The form (an <c>EditForm</c>) whose submit button reads <paramref name="submitButtonText"/> - the scope an OTP
     /// is typed into, since every box on the page looks alike.
     /// </summary>
@@ -559,57 +545,7 @@ public partial class WebAccountSecurityJourneyTests : AppTestBase
 
     private static string NewTestEmail() => $"e2e-{Guid.NewGuid():N}@bitplatform.dev";
 
-    /// <summary>
-    /// A number in the +1 555-0100..555-0199 range North America reserves for fiction, so the deployment's live Twilio
-    /// account can never text a real person. Random within it, and unique per run, because these accounts are found by
-    /// their identifiers.
-    /// </summary>
-    private static string NewTestPhoneNumber()
-        => FormattableString.Invariant($"+1{Random.Shared.Next(200, 1000)}555{Random.Shared.Next(100, 200):D4}");
-
     private static string AccountSectionUrl => $"{PageUrls.Settings}/{PageUrls.SettingsSections.Account}";
 
     private static Regex SignInPageUrl => new(Regex.Escape(PageUrls.SignIn), RegexOptions.IgnoreCase);
-
-    /// <summary>
-    /// Deletes whichever account ended up holding any of these identifiers, with everything hanging off it. Not by the
-    /// address it started with, because a journey that moves the account onto another one leaves it findable only by
-    /// the new one - and not on the test's own token, because a canceled or timed out test still owes the deployment
-    /// its cleanup.
-    /// </summary>
-    private static async Task DeleteAccounts(string[] emails, string[] phoneNumbers)
-    {
-        var globalApiClient = await DeployedApiClientProvider.GetGlobalApiClient(CancellationToken.None);
-        await using var dbContext = await globalApiClient.DbContextFactory!.CreateDbContextAsync(CancellationToken.None);
-
-        var normalizedEmails = emails.Select(email => email.ToUpperInvariant()).ToArray();
-
-        var userIds = await dbContext.Users.IgnoreQueryFilters()
-            .Where(user => (user.NormalizedEmail != null && normalizedEmails.Contains(user.NormalizedEmail))
-                           || (user.PhoneNumber != null && phoneNumbers.Contains(user.PhoneNumber)))
-            .Select(user => user.Id)
-            .ToListAsync(CancellationToken.None);
-
-        if (userIds.Count is 0)
-            return; // A journey that failed before its account existed has nothing to undo.
-
-        var sessionIds = await dbContext.UserSessions.IgnoreQueryFilters()
-            .Where(session => userIds.Contains(session.UserId))
-            .Select(session => session.Id)
-            .ToListAsync(CancellationToken.None);
-
-        if (sessionIds.Count > 0)
-        {
-            await dbContext.PushNotificationSubscriptions.IgnoreQueryFilters()
-                .Where(subscription => subscription.UserSessionId != null && sessionIds.Contains(subscription.UserSessionId.Value))
-                .ExecuteDeleteAsync(CancellationToken.None);
-        }
-
-        await dbContext.UserSessions.IgnoreQueryFilters().Where(session => userIds.Contains(session.UserId)).ExecuteDeleteAsync(CancellationToken.None);
-        await dbContext.TenantUsers.IgnoreQueryFilters().Where(membership => userIds.Contains(membership.UserId)).ExecuteDeleteAsync(CancellationToken.None);
-        await dbContext.UserRoles.IgnoreQueryFilters().Where(role => userIds.Contains(role.UserId)).ExecuteDeleteAsync(CancellationToken.None);
-        await dbContext.UserTokens.IgnoreQueryFilters().Where(token => userIds.Contains(token.UserId)).ExecuteDeleteAsync(CancellationToken.None);
-        await dbContext.WebAuthnCredential.IgnoreQueryFilters().Where(credential => userIds.Contains(credential.UserId)).ExecuteDeleteAsync(CancellationToken.None);
-        await dbContext.Users.IgnoreQueryFilters().Where(user => userIds.Contains(user.Id)).ExecuteDeleteAsync(CancellationToken.None);
-    }
 }

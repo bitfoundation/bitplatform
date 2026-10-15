@@ -22,6 +22,7 @@ internal class BmotionTestContext : Bunit.BunitContext
         Services.AddSingleton(Options);
         Services.AddScoped<BmotionAnimationEngine>();
         Services.AddScoped<BmotionLayoutRegistry>();
+        Services.AddScoped<BmotionPrerenderState>();
         Services.AddScoped<BmotionAnimateService>();
     }
 

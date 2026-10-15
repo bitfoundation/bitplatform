@@ -18,34 +18,37 @@
     }
     // Nothing of the page is produced on the server, so the scripts are the only thing that can ever fill it in.
     var noPrerenderedContent = renderMode is not null && (serverWebSettings.WebAppRender.PrerenderEnabled is false || noPrerender);
+    var themePreference = HttpContext.Request.Cookies[BitThemeCookie.PreferenceCookieName];
+    var themeOptions = new BitThemeSsrOptions
+    {
+        Persist = true,
+        PersistCookie = true,
+        ViewTransition = true,
+        ThemeColorMeta = true,
+        LightTheme = AppThemePresets.Light,
+        DarkTheme = AppThemePresets.Dark,
+        PersistedThemePair = HttpContext.Request.Cookies[BitThemeCookie.PairCookieName]
+    };
 }
 
 <!DOCTYPE html>
 <html lang="@(string.IsNullOrWhiteSpace(CultureInfo.CurrentUICulture.Name) ? null : CultureInfo.CurrentUICulture.Name)"
       dir="@(CultureInfo.CurrentUICulture.TextInfo.IsRightToLeft ? "rtl" : null)"
-      @attributes="BitThemeSsr.BuildRootThemeAttributeMap(HttpContext.Request.Cookies[BitThemeCookie.PreferenceCookieName])"
-      bit-theme-system bit-theme-persist bit-theme-persist-cookie bit-theme-view-transition
-      bit-theme-light="@AppThemePresets.Light" bit-theme-dark="@AppThemePresets.Dark">
+      @attributes="BitThemeSsr.BuildRootThemeAttributeMap(themePreference, themeOptions)">
 
 <head>
     <base href="/" />
+    <meta charset="utf-8" />
 
-    @* First after base on purpose: the CSP has to be in force before anything else in the document runs. *@
+    @* First after base and charset on purpose: the CSP has to be in force before anything else in the document runs. *@
     @*#if (appInsights == true)*@
     @* And App Insights has to be watching before blazor.web.js, so a crash while the app boots still gets reported. *@
     @*#endif*@
     <AppHeadCoordinator @rendermode="null" InHead />
+    @* [mirror] The PWA status bar / browser chrome color: BitThemeHead writes it for the theme painted first, and bit-theme-color-meta keeps it on the live --bit-clr-bg-pri. *@
+    @* Keep in sync with: src/Client/Boilerplate.Client.Web/wwwroot/index.html, src/Client/Boilerplate.Client.Maui/wwwroot/index.html, src/Client/Boilerplate.Client.Web/wwwroot/manifest.json *@
+    <BitThemeHead PersistedPreference="@themePreference" Options="@themeOptions" ThemeColors="@BitExtraThemeSurfaces.BackgroundPrimary" />
     <BitAccentColorHead PersistedAccent="@HttpContext.Request.Cookies[BitAccentColorNames.CookieName]" />
-
-    <meta charset="utf-8" />
-    @* [mirror] The PWA status bar / browser chrome color, which has to be a literal because no stylesheet has loaded yet. *@
-    @* AppThemePresets is the app's own background, pinned to the --bit-clr-bg-pri its stylesheet defines, and the *@
-    @* native apps paint their status bar / caption from the very same place, so an installed PWA looks like them. *@
-    @* The OS media queries only cover the first paint: Scripts/theme.ts rewrites BOTH tags with the live --bit-clr-bg-pri on every theme or accent change, so a *@
-    @* theme pinned against the OS, or a picked accent, wins as well. Keep in sync with: src/Client/Boilerplate.Client.Web/wwwroot/index.html, *@
-    @* src/Client/Boilerplate.Client.Maui/wwwroot/index.html, src/Client/Boilerplate.Client.Web/wwwroot/manifest.json *@
-    <meta name="theme-color" content="@AppThemePresets.LightBackground" media="(prefers-color-scheme: light)" />
-    <meta name="theme-color" content="@AppThemePresets.DarkBackground" media="(prefers-color-scheme: dark)" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
     @if (noPrerenderedContent)

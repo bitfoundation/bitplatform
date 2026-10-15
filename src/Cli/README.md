@@ -68,7 +68,6 @@ Every option of the bit Boilerplate template works the same way:
 | `--brouter` | `true`, `false` | `true` |
 | `--sample` | `true`, `false` | `false` |
 | `--advancedTests` | `true`, `false` | `false` |
-| `--realProject` | `true`, `false` | `false` |
 | `--apiServerUrl` | a URL | |
 | `--webAppUrl` | a URL | |
 

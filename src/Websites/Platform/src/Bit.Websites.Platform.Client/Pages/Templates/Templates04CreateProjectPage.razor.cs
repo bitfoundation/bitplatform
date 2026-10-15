@@ -23,8 +23,7 @@ public partial class Templates04CreateProjectPage
     [
         ProjectOptionCatalog.Get("aspire"),
         ProjectOptionCatalog.Get("cloudflare"),
-        ProjectOptionCatalog.Get("brouter"),
-        ProjectOptionCatalog.Get("realProject")
+        ProjectOptionCatalog.Get("brouter")
     ];
 
     private static readonly BitAccordionClassStyles summaryRowClasses = new()
