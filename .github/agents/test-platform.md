@@ -260,11 +260,18 @@ What it needs, all of it already on this machine:
   keyboard "still open" as if the app were wrong. `android` and the Android stage turn the device's autofill service
   and stylus handwriting off, so a new or wiped AVD gets them too. The Android stage's WebView videos are blank:
   `adb exec-out screencap -p` shows what is really on the screen.
+- **The keyboard has to resize the page.** An Android click that times out because an element just above the target
+  intercepts it means the soft keyboard panned the page instead of resizing it, and the click lands that far off.
+  Over CDP (`adb forward` to the app's `webview_devtools_remote_<pid>` socket), `innerHeight` must shrink when a field
+  takes the focus; a `visualViewport` that moves down instead is the app's bug, not the test's.
 
 Triage every failure:
 
 1. Re-run just that test the same way - `e2e -Stage <stage> -Filter "FullyQualifiedName~<Class>.<Method>"` - to
-   tell flaky from broken.
+   tell flaky from broken. A stage's console log counts every failed attempt of a test that retries, its TRX only
+   the last one: a test the TRX shows passed failed once and passed on its retry. Compare a failure only with earlier
+   runs against a deployment from the same branch: the demos run whichever branch the last CD built, and the
+   branches differ in their .NET.
 2. Read the server's side. The demo backends run on this machine and log to the Windows **Application** event log,
    source `.NET Runtime`. How much gets there is each site's own `Logging` section in its server-owned
    `appsettings.json` under `C:\inetpub\<site>`: the Boilerplate backends log from Information up, the platform
